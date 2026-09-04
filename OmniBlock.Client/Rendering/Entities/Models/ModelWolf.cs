@@ -2,6 +2,7 @@ using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.Util.Maths;
+using Silk.NET.Maths;
 
 namespace OmniBlock.Client.Rendering.Entities.Models;
 
@@ -37,10 +38,10 @@ public sealed class ModelWolf : BbModelEntityModel
     public override void SetLivingAnimations(EntityLiving entity, float limbSwing, float limbSwingAmount, float partialTick)
     {
         // Posed from the mob's behaviors rather than its class: it no longer has one.
-        TameableBehavior? tame = entity.Behaviors.Find<TameableBehavior>();
-        ShakeOffWaterBehavior? shake = entity.Behaviors.Find<ShakeOffWaterBehavior>();
-        HeadTiltBehavior? tilt = entity.Behaviors.Find<HeadTiltBehavior>();
-        bool sitting = tame?.IsSitting(entity) == true;
+        var tame = entity.Behaviors.Find<TameableBehavior>();
+        var shake = entity.Behaviors.Find<ShakeOffWaterBehavior>();
+        var tilt = entity.Behaviors.Find<HeadTiltBehavior>();
+        var sitting = tame?.IsSitting(entity) == true;
 
         if (tame?.IsAngry(entity) == true)
         {
@@ -85,7 +86,7 @@ public sealed class ModelWolf : BbModelEntityModel
             _wolfLeg4.RotateAngleX = MathHelper.Cos(limbSwing * 0.6662f) * 1.4f * limbSwingAmount;
         }
 
-        float shakeAngle = (tilt?.TiltAngle(entity, partialTick) ?? 0.0f) + ShakeAngle(shake, entity, partialTick, 0.0f);
+        var shakeAngle = (tilt?.TiltAngle(entity, partialTick) ?? 0.0f) + ShakeAngle(shake, entity, partialTick, 0.0f);
         _wolfHeadMain.RotateAngleZ = shakeAngle;
         _wolfRightEar.RotateAngleZ = shakeAngle;
         _wolfLeftEar.RotateAngleZ = shakeAngle;
@@ -96,8 +97,8 @@ public sealed class ModelWolf : BbModelEntityModel
 
         if (shake?.IsShaking(entity) == true)
         {
-            float shakeBrightness = entity.GetBrightnessAtEyes(partialTick) * shake.Shading(entity, partialTick);
-            GLManager.Color = new(shakeBrightness, shakeBrightness, shakeBrightness, 1.0F);
+            var shakeBrightness = entity.GetBrightnessAtEyes(partialTick) * shake.Shading(entity, partialTick);
+            GLManager.Color = new Vector4D<float>(shakeBrightness, shakeBrightness, shakeBrightness, 1.0F);
         }
     }
 

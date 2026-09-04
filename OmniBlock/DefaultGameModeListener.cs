@@ -1,10 +1,9 @@
+using Microsoft.Extensions.Logging;
 using OmniBlock.Entities;
 using OmniBlock.Network.Messages;
 using OmniBlock.Network.Packets;
 using OmniBlock.Registries;
-using OmniBlock.Registries.Data;
 using OmniBlock.Server;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock;
 
@@ -14,7 +13,7 @@ internal sealed class DefaultGameModeListener(OmniBlockServer server) : IRegistr
 
     public void OnRegistriesRebuilt(RegistryAccess registryAccess)
     {
-        Holder<GameMode>? resolved = ResolveDefaultGameMode(
+        var resolved = ResolveDefaultGameMode(
             registryAccess.GetOrThrow(RegistryKeys.GameModes),
             server.config.GetDefaultGamemode("survival"));
 
@@ -30,9 +29,9 @@ internal sealed class DefaultGameModeListener(OmniBlockServer server) : IRegistr
 
     public Packet[] GetSyncPackets(RegistryAccess registries, ServerPlayerEntity player)
     {
-        DataAssetLoader<GameMode> gameModes = registries.GetOrThrow(RegistryKeys.GameModes).AsAssetLoader();
+        var gameModes = registries.GetOrThrow(RegistryKeys.GameModes).AsAssetLoader();
 
-        if (gameModes.TryGetHolder(player.GameMode.Name, out Holder<GameMode>? updated))
+        if (gameModes.TryGetHolder(player.GameMode.Name, out var updated))
         {
             player.GameModeHolder = updated;
         }
@@ -51,25 +50,25 @@ internal sealed class DefaultGameModeListener(OmniBlockServer server) : IRegistr
     }
 
     /// <summary>
-    /// Resolves which game mode should be the server default.
-    /// Tries <paramref name="configuredName"/> first, then "survival", then "default",
-    /// then the first registered entry. Returns <c>null</c> if no game modes exist.
+    ///     Resolves which game mode should be the server default.
+    ///     Tries <paramref name="configuredName" /> first, then "survival", then "default",
+    ///     then the first registered entry. Returns <c>null</c> if no game modes exist.
     /// </summary>
     internal static Holder<GameMode>? ResolveDefaultGameMode(
         IReadableRegistry<GameMode> registry, string configuredName)
     {
-        DataAssetLoader<GameMode> loader = registry.AsAssetLoader();
+        var loader = registry.AsAssetLoader();
 
-        if (!string.IsNullOrEmpty(configuredName) && loader.TryGetHolder(configuredName, out Holder<GameMode>? named))
+        if (!string.IsNullOrEmpty(configuredName) && loader.TryGetHolder(configuredName, out var named))
             return named;
 
-        if (loader.TryGetHolder("survival", out Holder<GameMode>? survival))
+        if (loader.TryGetHolder("survival", out var survival))
             return survival;
 
-        if (loader.TryGetHolder("default", out Holder<GameMode>? defaultMode))
+        if (loader.TryGetHolder("default", out var defaultMode))
             return defaultMode;
 
-        ResourceLocation? firstKey = registry.Keys.FirstOrDefault();
+        var firstKey = registry.Keys.FirstOrDefault();
         return firstKey != null ? registry.Get(firstKey) : null;
     }
 }

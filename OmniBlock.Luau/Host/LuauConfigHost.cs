@@ -14,7 +14,7 @@ public enum LuauConfigValueKind
 
 public readonly record struct LuauConfigValue(LuauConfigValueKind Kind, bool Boolean = false, double Number = 0, string? String = null)
 {
-    public static LuauConfigValue From(bool value) => new(LuauConfigValueKind.Boolean, Boolean: value);
+    public static LuauConfigValue From(bool value) => new(LuauConfigValueKind.Boolean, value);
     public static LuauConfigValue From(double value) => new(LuauConfigValueKind.Number, Number: value);
     public static LuauConfigValue From(string value) => new(LuauConfigValueKind.String, String: value);
 }
@@ -22,6 +22,16 @@ public readonly record struct LuauConfigValue(LuauConfigValueKind Kind, bool Boo
 /// <summary>Typed FFI boundary for client-owned, persistent game configuration.</summary>
 public static unsafe class LuauConfigHost
 {
+    public const string Bootstrap = """
+                                    local config = { options = function(key) return __Config.options(key) end }
+                                    OMNI.config = setmetatable(config, {
+                                        __index = function(_, key) return __Config.get(key) end,
+                                        __newindex = function(_, key, value)
+                                            if not __Config.set(key, value, typeof(value)) then error("invalid configuration key or value: " .. key, 2) end
+                                        end
+                                    })
+                                    """;
+
     public static Func<string, LuauConfigValue>? Get;
     public static Func<string, LuauConfigValue, bool>? Set;
     public static Func<string, IReadOnlyList<LuauConfigValue>?>? Options;
@@ -44,7 +54,7 @@ public static unsafe class LuauConfigHost
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int GetClosure(IntPtr l)
     {
-        string? key = ReadString(l, 1);
+        var key = ReadString(l, 1);
         LuauConfigValue value = default;
         try
         {
@@ -54,6 +64,7 @@ public static unsafe class LuauConfigHost
         {
             // No managed exception may unwind through an UnmanagedCallersOnly frame.
         }
+
         Push(l, value);
         return 1;
     }
@@ -61,9 +72,9 @@ public static unsafe class LuauConfigHost
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int SetClosure(IntPtr l)
     {
-        string? key = ReadString(l, 1);
-        LuauConfigValue value = ReadValue(l, 2, ReadString(l, 3));
-        bool success = false;
+        var key = ReadString(l, 1);
+        var value = ReadValue(l, 2, ReadString(l, 3));
+        var success = false;
         try
         {
             success = key != null && Set?.Invoke(key, value) == true;
@@ -72,6 +83,7 @@ public static unsafe class LuauConfigHost
         {
             // No managed exception may unwind through an UnmanagedCallersOnly frame.
         }
+
         LuauNative.lua_pushboolean(l, success ? 1 : 0);
         return 1;
     }
@@ -82,7 +94,7 @@ public static unsafe class LuauConfigHost
         IReadOnlyList<LuauConfigValue>? values = null;
         try
         {
-            string? key = ReadString(l, 1);
+            var key = ReadString(l, 1);
             if (key != null) values = Options?.Invoke(key);
         }
         catch
@@ -97,11 +109,12 @@ public static unsafe class LuauConfigHost
         }
 
         LuauNative.lua_createtable(l, values.Count, 0);
-        for (int i = 0; i < values.Count; i++)
+        for (var i = 0; i < values.Count; i++)
         {
             Push(l, values[i]);
             LuauNative.lua_rawseti(l, -2, i + 1);
         }
+
         return 1;
     }
 
@@ -111,7 +124,7 @@ public static unsafe class LuauConfigHost
         if (kind == "number") return LuauConfigValue.From(LuauNative.lua_tonumberx(l, index, IntPtr.Zero));
         if (kind == "string")
         {
-            string? value = ReadString(l, index);
+            var value = ReadString(l, index);
             if (value != null) return LuauConfigValue.From(value);
         }
 
@@ -120,7 +133,7 @@ public static unsafe class LuauConfigHost
 
     private static string? ReadString(IntPtr l, int index)
     {
-        IntPtr pointer = LuauNative.lua_tolstring(l, index, out nuint length);
+        var pointer = LuauNative.lua_tolstring(l, index, out var length);
         return pointer == IntPtr.Zero ? null : Encoding.UTF8.GetString((byte*)pointer, (int)length);
     }
 
@@ -134,14 +147,4 @@ public static unsafe class LuauConfigHost
             default: LuauNative.lua_pushnil(l); break;
         }
     }
-
-    public const string Bootstrap = """
-local config = { options = function(key) return __Config.options(key) end }
-OMNI.config = setmetatable(config, {
-    __index = function(_, key) return __Config.get(key) end,
-    __newindex = function(_, key, value)
-        if not __Config.set(key, value, typeof(value)) then error("invalid configuration key or value: " .. key, 2) end
-    end
-})
-""";
 }

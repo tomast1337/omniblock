@@ -89,16 +89,15 @@ public sealed class SnapshotBuffer
 
     private readonly Snapshot[] _ring = new Snapshot[Capacity];
     private int _next;
-    private int _count;
 
     /// <summary>Number of snapshots currently held, up to <see cref="Capacity" />.</summary>
-    public int Count => _count;
+    public int Count { get; private set; }
 
     /// <summary>Server time of the newest snapshot, or 0 when empty.</summary>
-    public long NewestServerTimeMs => _count == 0 ? 0 : At(_count - 1).ServerTimeMs;
+    public long NewestServerTimeMs => Count == 0 ? 0 : At(Count - 1).ServerTimeMs;
 
     /// <summary>Server time of the oldest snapshot still held, or 0 when empty.</summary>
-    public long OldestServerTimeMs => _count == 0 ? 0 : At(0).ServerTimeMs;
+    public long OldestServerTimeMs => Count == 0 ? 0 : At(0).ServerTimeMs;
 
     /// <summary>
     ///     Median gap between consecutive snapshots, or 0 with fewer than two.
@@ -119,20 +118,20 @@ public sealed class SnapshotBuffer
     {
         get
         {
-            if (_count < 2)
+            if (Count < 2)
             {
                 return 0;
             }
 
-            Span<long> gaps = stackalloc long[_count - 1];
-            for (int i = 1; i < _count; i++)
+            Span<long> gaps = stackalloc long[Count - 1];
+            for (var i = 1; i < Count; i++)
             {
                 gaps[i - 1] = At(i).ServerTimeMs - At(i - 1).ServerTimeMs;
             }
 
             gaps.Sort();
 
-            int mid = gaps.Length / 2;
+            var mid = gaps.Length / 2;
             return gaps.Length % 2 == 0
                 ? (gaps[mid - 1] + gaps[mid]) / 2
                 : gaps[mid];
@@ -149,16 +148,16 @@ public sealed class SnapshotBuffer
     /// </summary>
     public void Push(in Snapshot snapshot)
     {
-        if (_count > 0 && snapshot.ServerTimeMs <= NewestServerTimeMs)
+        if (Count > 0 && snapshot.ServerTimeMs <= NewestServerTimeMs)
         {
             return;
         }
 
         _ring[_next] = snapshot;
         _next = (_next + 1) % Capacity;
-        if (_count < Capacity)
+        if (Count < Capacity)
         {
-            _count++;
+            Count++;
         }
     }
 
@@ -170,7 +169,7 @@ public sealed class SnapshotBuffer
     public void Clear()
     {
         _next = 0;
-        _count = 0;
+        Count = 0;
     }
 
     /// <summary>
@@ -180,12 +179,12 @@ public sealed class SnapshotBuffer
     {
         result = default;
 
-        if (_count == 0)
+        if (Count == 0)
         {
             return SampleKind.Empty;
         }
 
-        if (_count == 1)
+        if (Count == 1)
         {
             // A single snapshot has no interval to interpolate over and no velocity to extrapolate
             // along, so it is held regardless of which side of it render time falls.
@@ -193,7 +192,7 @@ public sealed class SnapshotBuffer
             return renderTimeMs < result.ServerTimeMs ? SampleKind.Clamped : SampleKind.Frozen;
         }
 
-        Snapshot oldest = At(0);
+        var oldest = At(0);
         if (renderTimeMs <= oldest.ServerTimeMs)
         {
             // Render time is behind everything held — the delay is larger than the history. Holding
@@ -202,7 +201,7 @@ public sealed class SnapshotBuffer
             return SampleKind.Clamped;
         }
 
-        Snapshot newest = At(_count - 1);
+        var newest = At(Count - 1);
         if (renderTimeMs >= newest.ServerTimeMs)
         {
             return SampleAheadOfBuffer(renderTimeMs, newest, out result);
@@ -210,14 +209,14 @@ public sealed class SnapshotBuffer
 
         // Newest-first: during normal playback render time sits near the recent end, so this
         // finds the bracketing pair in one or two steps.
-        for (int i = _count - 1; i > 0; i--)
+        for (var i = Count - 1; i > 0; i--)
         {
-            Snapshot s1 = At(i);
-            Snapshot s0 = At(i - 1);
+            var s1 = At(i);
+            var s0 = At(i - 1);
 
             if (renderTimeMs >= s0.ServerTimeMs && renderTimeMs <= s1.ServerTimeMs)
             {
-                double t = (renderTimeMs - s0.ServerTimeMs) / (double)(s1.ServerTimeMs - s0.ServerTimeMs);
+                var t = (renderTimeMs - s0.ServerTimeMs) / (double)(s1.ServerTimeMs - s0.ServerTimeMs);
                 result = Lerp(s0, s1, t, renderTimeMs);
                 return SampleKind.Interpolated;
             }
@@ -230,8 +229,8 @@ public sealed class SnapshotBuffer
 
     private SampleKind SampleAheadOfBuffer(long renderTimeMs, in Snapshot newest, out Snapshot result)
     {
-        long ahead = renderTimeMs - newest.ServerTimeMs;
-        bool frozen = ahead > ExtrapolationCapMs;
+        var ahead = renderTimeMs - newest.ServerTimeMs;
+        var frozen = ahead > ExtrapolationCapMs;
 
         // Past the cap the entity holds *where the extrapolation had reached*, not where the newest
         // snapshot put it. Returning the snapshot instead makes freezing a jump backwards by up to a
@@ -247,7 +246,7 @@ public sealed class SnapshotBuffer
         // Velocity from the last interval. Angles are deliberately not extrapolated — a player
         // flicking their view would spin the model well past where they actually looked, and the
         // snap back is far more noticeable than a held angle.
-        Snapshot previous = At(_count - 2);
+        var previous = At(Count - 2);
         double interval = newest.ServerTimeMs - previous.ServerTimeMs;
 
         if (interval <= 0.0)
@@ -256,16 +255,16 @@ public sealed class SnapshotBuffer
             return SampleKind.Frozen;
         }
 
-        double scale = ahead / interval;
+        var scale = ahead / interval;
 
         result = newest with
         {
             // The instant the returned position actually describes, which is render time only while
             // extrapolating; once frozen it is the capped instant the motion stopped at.
             ServerTimeMs = newest.ServerTimeMs + ahead,
-            X = newest.X + ((newest.X - previous.X) * scale),
-            Y = newest.Y + ((newest.Y - previous.Y) * scale),
-            Z = newest.Z + ((newest.Z - previous.Z) * scale)
+            X = newest.X + (newest.X - previous.X) * scale,
+            Y = newest.Y + (newest.Y - previous.Y) * scale,
+            Z = newest.Z + (newest.Z - previous.Z) * scale
         };
 
         return frozen ? SampleKind.Frozen : SampleKind.Extrapolated;
@@ -273,9 +272,9 @@ public sealed class SnapshotBuffer
 
     private static Snapshot Lerp(in Snapshot s0, in Snapshot s1, double t, long renderTimeMs) => new(
         renderTimeMs,
-        s0.X + ((s1.X - s0.X) * t),
-        s0.Y + ((s1.Y - s0.Y) * t),
-        s0.Z + ((s1.Z - s0.Z) * t),
+        s0.X + (s1.X - s0.X) * t,
+        s0.Y + (s1.Y - s0.Y) * t,
+        s0.Z + (s1.Z - s0.Z) * t,
         LerpAngle(s0.Yaw, s1.Yaw, t),
         LerpAngle(s0.Pitch, s1.Pitch, t));
 
@@ -297,13 +296,13 @@ public sealed class SnapshotBuffer
             delta -= 360.0;
         }
 
-        return (float)(from + (delta * t));
+        return (float)(from + delta * t);
     }
 
     /// <summary>Oldest-first indexing into the ring; <paramref name="index" /> 0 is the oldest held.</summary>
     private Snapshot At(int index)
     {
-        int start = _count == Capacity ? _next : 0;
+        var start = Count == Capacity ? _next : 0;
         return _ring[(start + index) % Capacity];
     }
 }

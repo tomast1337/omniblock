@@ -48,7 +48,7 @@ public sealed class FollowOwnerBehavior : IEntityTicker
 
     private void KeepUpWithOwner(EntityCreature self, TameableBehavior tame)
     {
-        EntityPlayer? owner = self.World.Entities.Players.Find(player => player.Name != null && player.Name.Equals(tame.Owner(self), StringComparison.OrdinalIgnoreCase));
+        var owner = self.World.Entities.Players.Find(player => player.Name != null && player.Name.Equals(tame.Owner(self), StringComparison.OrdinalIgnoreCase));
         if (owner == null)
         {
             // Nobody to follow, so it waits where it is, unless that would be in water.
@@ -60,7 +60,7 @@ public sealed class FollowOwnerBehavior : IEntityTicker
             return;
         }
 
-        float distance = owner.GetDistance(self);
+        var distance = owner.GetDistance(self);
         if (distance > _followRange)
         {
             PathOrTeleport(self, owner, distance);
@@ -80,13 +80,13 @@ public sealed class FollowOwnerBehavior : IEntityTicker
             return;
         }
 
-        int cornerX = MathHelper.Floor(owner.X) - 2;
-        int cornerZ = MathHelper.Floor(owner.Z) - 2;
-        int floorY = MathHelper.Floor(owner.BoundingBox.MinY);
+        var cornerX = MathHelper.Floor(owner.X) - 2;
+        var cornerZ = MathHelper.Floor(owner.Z) - 2;
+        var floorY = MathHelper.Floor(owner.BoundingBox.MinY);
 
-        for (int dx = 0; dx <= 4; ++dx)
+        for (var dx = 0; dx <= 4; ++dx)
         {
-            for (int dz = 0; dz <= 4; ++dz)
+            for (var dz = 0; dz <= 4; ++dz)
             {
                 // Skip the middle, so it never lands on top of the owner.
                 if (dx >= 1 && dz >= 1 && dx <= 3 && dz <= 3)
@@ -120,7 +120,7 @@ public sealed class FollowOwnerBehavior : IEntityTicker
     /// </summary>
     private void HuntPrey(EntityCreature self)
     {
-        List<EntityLiving> prey = self.World.Entities
+        var prey = self.World.Entities
             .CollectEntitiesOfType<EntityLiving>(new Box(self.X, self.Y, self.Z, self.X + 1.0D, self.Y + 1.0D, self.Z + 1.0D).Expand(_preyRadius, 4.0D, _preyRadius))
             .FindAll(candidate => candidate.Behaviors.Find<WoolBehavior>() != null);
 

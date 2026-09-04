@@ -1,6 +1,4 @@
 using OmniBlock.Network.Messages;
-using OmniBlock.Tests.TestSupport;
-using OmniBlock.Worlds.Chunks;
 
 namespace OmniBlock.Tests.Network;
 
@@ -23,15 +21,15 @@ public sealed class LightSectionsRoundTripTests
         source.Chunks.Add(0, 0);
         source.DrainLighting();
 
-        Chunk lit = source.BlockHost.GetChunk(0, 0);
+        var lit = source.BlockHost.GetChunk(0, 0);
 
         // Sky light exists to be carried; without it the assertions below would hold trivially.
         Assert.True(lit.GetPackedLight(8, 80, 8) != 0, "the source chunk should hold sky light to send");
 
-        uint sections = lit.LightDirtySections;
+        var sections = lit.LightDirtySections;
         Assert.NotEqual(0u, sections);
 
-        LightSectionsMessage sent = LightSectionsMessage.Of(lit, sections);
+        var sent = LightSectionsMessage.Of(lit, sections);
 
         using MemoryStream buffer = new();
         sent.Write(buffer);
@@ -48,7 +46,7 @@ public sealed class LightSectionsRoundTripTests
         // And that what arrived actually lights a chunk that had nothing.
         LightTestWorld destination = new();
         destination.Chunks.Add(0, 0, populateLight: false);
-        Chunk dark = destination.BlockHost.GetChunk(0, 0);
+        var dark = destination.BlockHost.GetChunk(0, 0);
         Assert.Equal(0, dark.GetPackedLight(8, 80, 8));
 
         received.ApplyTo(dark);

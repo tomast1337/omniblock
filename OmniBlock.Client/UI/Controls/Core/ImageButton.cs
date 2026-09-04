@@ -43,7 +43,7 @@ public class ImageButton : UIElement
 
     public override List<string> GetInspectorProperties()
     {
-        List<string> props = base.GetInspectorProperties();
+        var props = base.GetInspectorProperties();
         if (Texture != null)
         {
             props.Add($"Texture:  Id={Texture.Id}  {Texture.Texture?.Source ?? "null"}");
@@ -62,9 +62,9 @@ public class ImageButton : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        int hoverState = !Enabled ? 0 : IsHovered ? 2 : 1;
+        var hoverState = !Enabled ? 0 : IsHovered ? 2 : 1;
 
-        TextureHandle texture = renderer.TextureManager.GetTextureId("/gui/gui.png");
+        var texture = renderer.TextureManager.GetTextureId("/gui/gui.png");
 
         // Use fixed UV height of 20 to avoid reading into the next button in the spritesheet
         float uvHeight = 20;

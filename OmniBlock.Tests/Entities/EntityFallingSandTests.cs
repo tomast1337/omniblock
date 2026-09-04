@@ -1,15 +1,13 @@
-using OmniBlock.Blocks;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.NBT;
-using OmniBlock.Tests.TestSupport;
 
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Covers falling sand, the second non-living entity to lose its class. Which block is falling is
-/// per-instance state on one behavior across two slots, and the sand/gravel wire ids are declared
-/// data rather than a pair of hardcoded branches.
+///     Covers falling sand, the second non-living entity to lose its class. Which block is falling is
+///     per-instance state on one behavior across two slots, and the sand/gravel wire ids are declared
+///     data rather than a pair of hardcoded branches.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityFallingSandTests
@@ -18,7 +16,7 @@ public sealed class EntityFallingSandTests
 
     private static Entity FallingBlock(FakeWorldContext world, string block, double x = 8.5, double y = 70.0, double z = 8.5)
     {
-        Entity sand = TestEntityCatalog.ByName("fallingsand").Create(world);
+        var sand = TestEntityCatalog.ByName("fallingsand").Create(world);
         Settle.SetBlock(sand, TestBlocks.Get(block).Id);
         sand.SetPositionAndAngles(x, y, z, 0.0F, 0.0F);
         Assert.True(world.Entities.SpawnEntity(sand));
@@ -29,7 +27,7 @@ public sealed class EntityFallingSandTests
     public void Falling_sand_has_no_class_of_its_own()
     {
         FakeWorldContext world = new();
-        Entity sand = FallingBlock(world, "sand");
+        var sand = FallingBlock(world, "sand");
 
         Assert.Equal(typeof(EntityObject), sand.GetType());
         Assert.Same(TestEntityCatalog.ByName("fallingsand").Behaviors.Ticker, TestEntityCatalog.ByName("fallingsand").Behaviors.Persistence);
@@ -40,10 +38,10 @@ public sealed class EntityFallingSandTests
     {
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 15, 0, 15, 63);
-        int sandId = TestBlocks.Get("sand").Id;
-        Entity sand = FallingBlock(world, "sand", y: 70.0);
+        var sandId = TestBlocks.Get("sand").Id;
+        var sand = FallingBlock(world, "sand", y: 70.0);
 
-        for (int tick = 0; tick < 150 && !sand.Dead; tick++) sand.Tick();
+        for (var tick = 0; tick < 150 && !sand.Dead; tick++) sand.Tick();
 
         Assert.True(sand.Dead);
         Assert.Equal(sandId, world.Reader.GetBlockId(8, 64, 8));
@@ -54,9 +52,9 @@ public sealed class EntityFallingSandTests
     public void It_erases_the_block_it_fell_from()
     {
         FakeWorldContext world = new();
-        int sandId = TestBlocks.Get("sand").Id;
+        var sandId = TestBlocks.Get("sand").Id;
         world.Writer.SetBlock(8, 70, 8, sandId);
-        Entity sand = FallingBlock(world, "sand", y: 70.5);
+        var sand = FallingBlock(world, "sand", y: 70.5);
 
         sand.Tick();
 
@@ -68,9 +66,9 @@ public sealed class EntityFallingSandTests
     public void A_block_that_never_lands_becomes_a_drop()
     {
         FakeWorldContext world = new();
-        Entity sand = FallingBlock(world, "sand", y: 200.0);
+        var sand = FallingBlock(world, "sand", y: 200.0);
 
-        for (int tick = 0; tick < 101 && !sand.Dead; tick++)
+        for (var tick = 0; tick < 101 && !sand.Dead; tick++)
         {
             sand.Tick();
             sand.SetPositionAndAngles(8.5, 200.0, 8.5, 0.0F, 0.0F);
@@ -85,7 +83,7 @@ public sealed class EntityFallingSandTests
     public void A_block_of_nothing_dies_immediately()
     {
         FakeWorldContext world = new();
-        Entity sand = TestEntityCatalog.ByName("fallingsand").Create(world);
+        var sand = TestEntityCatalog.ByName("fallingsand").Create(world);
         sand.SetPositionAndAngles(8.5, 70.0, 8.5, 0.0F, 0.0F);
         Assert.True(world.Entities.SpawnEntity(sand));
 
@@ -98,27 +96,27 @@ public sealed class EntityFallingSandTests
     public void The_carried_block_survives_an_nbt_round_trip()
     {
         FakeWorldContext world = new();
-        Entity gravel = FallingBlock(world, "gravel");
+        var gravel = FallingBlock(world, "gravel");
 
         NBTTagCompound nbt = new();
         gravel.Write(nbt);
 
-        Entity restored = TestEntityCatalog.ByName("fallingsand").Create(world);
+        var restored = TestEntityCatalog.ByName("fallingsand").Create(world);
         restored.Read(nbt);
 
         Assert.Equal(TestBlocks.Get("gravel").Id, Settle.BlockId(restored));
     }
 
     /// <summary>
-    /// Sand and gravel are different ids on the wire — a protocol fact now declared in JSON. The
-    /// behavior answers in both directions: announcing an instance, and resolving a received spawn.
+    ///     Sand and gravel are different ids on the wire — a protocol fact now declared in JSON. The
+    ///     behavior answers in both directions: announcing an instance, and resolving a received spawn.
     /// </summary>
     [Fact]
     public void Wire_ids_are_declared_per_block_and_pinned()
     {
         FakeWorldContext world = new();
-        Entity sand = FallingBlock(world, "sand");
-        Entity gravel = FallingBlock(world, "gravel", x: 10.5);
+        var sand = FallingBlock(world, "sand");
+        var gravel = FallingBlock(world, "gravel", 10.5);
 
         Assert.Equal(70, Settle.SpawnObjectId(sand));
         Assert.Equal(71, Settle.SpawnObjectId(gravel));

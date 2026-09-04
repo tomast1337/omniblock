@@ -19,11 +19,11 @@ internal static unsafe class WgpuRelease
     /// </summary>
     public static void Deferred(WebGpuDevice device, nint[] bindGroups, nint sampler, nint view, nint texture)
     {
-        Silk.NET.WebGPU.WebGPU api = device.Api;
+        var api = device.Api;
 
         device.Retire(() =>
         {
-            foreach (nint bindGroup in bindGroups) api.BindGroupRelease((BindGroup*)bindGroup);
+            foreach (var bindGroup in bindGroups) api.BindGroupRelease((BindGroup*)bindGroup);
 
             if (sampler != 0) api.SamplerRelease((Sampler*)sampler);
             if (view != 0) api.TextureViewRelease((TextureView*)view);

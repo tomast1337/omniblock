@@ -1,7 +1,7 @@
+using Hexa.NET.ImGui;
 using OmniBlock.Blocks;
 using OmniBlock.Util.Hit;
 using OmniBlock.Util.Maths;
-using Hexa.NET.ImGui;
 
 namespace OmniBlock.Client.Diagnostics.Windows;
 
@@ -33,26 +33,26 @@ internal sealed class LocalPlayerInfoWindow(DebugWindowContext ctx) : DebugWindo
 
     private void DrawPositionSection()
     {
-        double x = Math.Floor(ctx.Player.X * 1000) / 1000;
-        double y = Math.Floor(ctx.Player.Y * 100000) / 100000;
-        double z = Math.Floor(ctx.Player.Z * 1000) / 1000;
+        var x = Math.Floor(ctx.Player.X * 1000) / 1000;
+        var y = Math.Floor(ctx.Player.Y * 100000) / 100000;
+        var z = Math.Floor(ctx.Player.Z * 1000) / 1000;
 
-        int bx = (int)Math.Floor(ctx.Player.X);
-        int by = (int)Math.Floor(ctx.Player.Y);
-        int bz = (int)Math.Floor(ctx.Player.Z);
+        var bx = (int)Math.Floor(ctx.Player.X);
+        var by = (int)Math.Floor(ctx.Player.Y);
+        var bz = (int)Math.Floor(ctx.Player.Z);
 
-        int facingIndex = MathHelper.Floor((double)(ctx.Player.Yaw * 4.0F / 360.0F) + 0.5D) & 3;
-        string cardinal = facingIndex is >= 0 and < 4 ? s_cardinalDirections[facingIndex] : "N/A";
-        string towards = facingIndex is >= 0 and < 4 ? s_towards[facingIndex] : "N/A";
-        string vertical = ctx.Player.Pitch <= -45f ? "up" : ctx.Player.Pitch >= 45f ? "down" : "level";
+        var facingIndex = MathHelper.Floor(ctx.Player.Yaw * 4.0F / 360.0F + 0.5D) & 3;
+        var cardinal = facingIndex is >= 0 and < 4 ? s_cardinalDirections[facingIndex] : "N/A";
+        var towards = facingIndex is >= 0 and < 4 ? s_towards[facingIndex] : "N/A";
+        var vertical = ctx.Player.Pitch <= -45f ? "up" : ctx.Player.Pitch >= 45f ? "down" : "level";
 
-        float yaw = ctx.Player.Yaw % 360f;
+        var yaw = ctx.Player.Yaw % 360f;
         if (yaw >= 180f) yaw -= 360f;
         if (yaw < -180f) yaw += 360f;
-        float pitch = ctx.Player.Pitch;
+        var pitch = ctx.Player.Pitch;
 
-        string biome = ctx.World.Dimension.BiomeSource.GetBiome(bx, bz).Name;
-        int light = ctx.World.Lighting.GetLightLevel(bx, by, bz);
+        var biome = ctx.World.Dimension.BiomeSource.GetBiome(bx, bz).Name;
+        var light = ctx.World.Lighting.GetLightLevel(bx, by, bz);
 
         ImGuiTextSafe.Text($"XYZ:    {x:F3} / {y:F5} / {z:F3}");
         ImGuiTextSafe.Text($"Block:  {bx} {by} {bz}");
@@ -70,28 +70,28 @@ internal sealed class LocalPlayerInfoWindow(DebugWindowContext ctx) : DebugWindo
             return;
         }
 
-        int bx = ctx.ObjectMouseOver.BlockX;
-        int by = ctx.ObjectMouseOver.BlockY;
-        int bz = ctx.ObjectMouseOver.BlockZ;
-        int id = ctx.World.Reader.GetBlockId(bx, by, bz);
-        int meta = ctx.World.Reader.GetBlockMeta(bx, by, bz);
-        Side side = ctx.ObjectMouseOver.Side.ToSide();
+        var bx = ctx.ObjectMouseOver.BlockX;
+        var by = ctx.ObjectMouseOver.BlockY;
+        var bz = ctx.ObjectMouseOver.BlockZ;
+        var id = ctx.World.Reader.GetBlockId(bx, by, bz);
+        var meta = ctx.World.Reader.GetBlockMeta(bx, by, bz);
+        var side = ctx.ObjectMouseOver.Side.ToSide();
 
-        string name = "Unknown";
+        var name = "Unknown";
         if (id == 0)
         {
             name = "Air";
         }
-        else if (id > 0 && BlockRegistry.TryGetByProtocolId(id, out Block? block))
+        else if (id > 0 && BlockRegistry.TryGetByProtocolId(id, out var block))
         {
-            string t = block.TranslateBlockName();
+            var t = block.TranslateBlockName();
             name = !string.IsNullOrWhiteSpace(t) ? t : block.BlockName;
         }
 
-        string sideName = side.ToString();
+        var sideName = side.ToString();
 
-        GetAdjacentBlockForFaceLight(bx, by, bz, side, out int ax, out int ay, out int az);
-        int faceLight = ctx.World.Lighting.GetLightLevel(ax, ay, az);
+        GetAdjacentBlockForFaceLight(bx, by, bz, side, out var ax, out var ay, out var az);
+        var faceLight = ctx.World.Lighting.GetLightLevel(ax, ay, az);
 
         ImGuiTextSafe.Text($"{name} ({id}:{meta})");
         ImGuiTextSafe.Text($"XYZ:  {bx} / {by} / {bz}");
@@ -103,25 +103,39 @@ internal sealed class LocalPlayerInfoWindow(DebugWindowContext ctx) : DebugWindo
         switch (side)
         {
             case Side.Down:
-                ax = bx; ay = by - 1; az = bz;
+                ax = bx;
+                ay = by - 1;
+                az = bz;
                 break;
             case Side.Up:
-                ax = bx; ay = by + 1; az = bz;
+                ax = bx;
+                ay = by + 1;
+                az = bz;
                 break;
             case Side.North:
-                ax = bx; ay = by; az = bz - 1;
+                ax = bx;
+                ay = by;
+                az = bz - 1;
                 break;
             case Side.South:
-                ax = bx; ay = by; az = bz + 1;
+                ax = bx;
+                ay = by;
+                az = bz + 1;
                 break;
             case Side.West:
-                ax = bx - 1; ay = by; az = bz;
+                ax = bx - 1;
+                ay = by;
+                az = bz;
                 break;
             case Side.East:
-                ax = bx + 1; ay = by; az = bz;
+                ax = bx + 1;
+                ay = by;
+                az = bz;
                 break;
             default:
-                ax = bx; ay = by; az = bz;
+                ax = bx;
+                ay = by;
+                az = bz;
                 break;
         }
     }

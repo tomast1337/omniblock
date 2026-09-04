@@ -62,7 +62,7 @@ public sealed class EntityConstructorProviderRegistry : IEntityConstructorProvid
     }
 
     public IEntityConstructorProvider Get(ResourceLocation type) =>
-        _providers.TryGetValue(type, out IEntityConstructorProvider? provider)
+        _providers.TryGetValue(type, out var provider)
             ? provider
             : throw new KeyNotFoundException($"Unknown entity constructor provider '{type}'.");
 

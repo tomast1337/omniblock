@@ -12,12 +12,11 @@ public class PlayerController
     protected readonly OmniBlock Game;
     public bool IsTestPlayer = false;
 
-    public PlayerController(OmniBlock game)
-    {
-        Game = game;
-    }
+    public PlayerController(OmniBlock game) => Game = game;
 
-    public virtual void ChangeWorld(World world) { }
+    public virtual void ChangeWorld(World world)
+    {
+    }
 
     public virtual void ClickBlock(int x, int y, int z, int direction)
     {
@@ -27,11 +26,11 @@ public class PlayerController
 
     public virtual bool SendBlockRemoved(int x, int y, int z, int direction)
     {
-        World world = Game.World;
-        Block block = BlockRegistry.GetByProtocolId(world.Reader.GetBlockId(x, y, z));
+        var world = Game.World;
+        var block = BlockRegistry.GetByProtocolId(world.Reader.GetBlockId(x, y, z));
         world.Broadcaster.NotifyNeighbors(x, y, z, world.Reader.GetBlockId(x, y, z));
-        int blockMeta = world.Reader.GetBlockMeta(x, y, z);
-        bool success = world.Writer.SetBlock(x, y, z, 0);
+        var blockMeta = world.Reader.GetBlockMeta(x, y, z);
+        var success = world.Writer.SetBlock(x, y, z, 0);
         if (block != null && success)
         {
             block.OnMetadataChange(new OnMetadataChangeEvent(world, x, y, z, blockMeta));
@@ -40,20 +39,26 @@ public class PlayerController
         return success;
     }
 
-    public virtual void SendBlockRemoving(int x, int y, int z, int direction) { }
+    public virtual void SendBlockRemoving(int x, int y, int z, int direction)
+    {
+    }
 
-    public virtual void ResetBlockRemoving() { }
+    public virtual void ResetBlockRemoving()
+    {
+    }
 
-    public virtual void SetPartialTime(float tickDelta) { }
+    public virtual void SetPartialTime(float tickDelta)
+    {
+    }
 
     public virtual float GetBlockReachDistance() => Game.Player.GameMode.BlockReach;
     public virtual float GetEntityReachDistance() => Game.Player.GameMode.EntityReach;
 
     public virtual bool SendUseItem(EntityPlayer player, World world, ItemStack stack)
     {
-        int originalCount = stack.Count;
-        ItemStack resultStack = stack.Use(world, player);
-        if (resultStack != stack || resultStack != null && resultStack.Count != originalCount)
+        var originalCount = stack.Count;
+        var resultStack = stack.Use(world, player);
+        if (resultStack != stack || (resultStack != null && resultStack.Count != originalCount))
         {
             player.Inventory.Main[player.Inventory.SelectedSlot] = resultStack;
             if (resultStack.Count == 0)
@@ -63,19 +68,23 @@ public class PlayerController
 
             return true;
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 
-    public virtual void FlipPlayer(EntityPlayer playerEntity) { }
+    public virtual void FlipPlayer(EntityPlayer playerEntity)
+    {
+    }
 
-    public virtual void UpdateController() { }
+    public virtual void UpdateController()
+    {
+    }
 
     public virtual bool ShouldDrawHUD() => true;
 
-    public virtual void FillHotbar(EntityPlayer player) { }
+    public virtual void FillHotbar(EntityPlayer player)
+    {
+    }
 
     public virtual bool SendPlaceBlock(
         ClientPlayerEntity player,
@@ -87,12 +96,12 @@ public class PlayerController
         int blockSide
     )
     {
-        int targetId = world.Reader.GetBlockId(blockX, blockY, blockZ);
+        var targetId = world.Reader.GetBlockId(blockX, blockY, blockZ);
 
         if (targetId > 0 && !player.IsSneaking())
         {
             if (!player.GameMode.CanInteract) return false;
-            bool used = BlockRegistry.GetByProtocolId(targetId).OnUse(new OnUseEvent(world, player, blockX, blockY, blockZ));
+            var used = BlockRegistry.GetByProtocolId(targetId).OnUse(new OnUseEvent(world, player, blockX, blockY, blockZ));
             if (used) return true;
         }
 
@@ -110,10 +119,7 @@ public class PlayerController
     public virtual void AttackEntity(EntityPlayer player, Entity target) =>
         player.Attack(target);
 
-    public virtual ItemStack OnSlotClick(int windowId, int slotIndex, int mouseButton, bool shiftClick, EntityPlayer player)
-    {
-        return player.CurrentScreenHandler.onSlotClick(slotIndex, mouseButton, shiftClick, player);
-    }
+    public virtual ItemStack OnSlotClick(int windowId, int slotIndex, int mouseButton, bool shiftClick, EntityPlayer player) => player.CurrentScreenHandler.onSlotClick(slotIndex, mouseButton, shiftClick, player);
 
     public virtual void OnGuiClosed(int windowId, EntityPlayer player)
     {

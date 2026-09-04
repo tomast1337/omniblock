@@ -28,15 +28,15 @@ internal static class MoveSpeedBudget
     /// <summary>Refills <paramref name="currentBudgetSq" /> by elapsed real time, then attempts to spend <paramref name="movedDistanceSq" /> from it.</summary>
     public static MoveBudgetResult Evaluate(double currentBudgetSq, double elapsedMs, double movedDistanceSq)
     {
-        double refilled = elapsedMs > 0
+        var refilled = elapsedMs > 0
             ? Math.Min(
                 currentBudgetSq + elapsedMs / MillisecondsPerTick * MaxDistanceSqPerTick,
                 MaxDistanceSqPerTick * BankedTicks)
             : currentBudgetSq;
 
         return movedDistanceSq > refilled
-            ? new MoveBudgetResult(refilled, ExceededBudget: true)
-            : new MoveBudgetResult(refilled - movedDistanceSq, ExceededBudget: false);
+            ? new MoveBudgetResult(refilled, true)
+            : new MoveBudgetResult(refilled - movedDistanceSq, false);
     }
 }
 

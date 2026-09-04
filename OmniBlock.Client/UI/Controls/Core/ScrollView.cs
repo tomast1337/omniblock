@@ -28,16 +28,16 @@ public class ScrollView : UIElement
         OnMouseDown += e =>
         {
             if (e.Button != MouseButton.Left) return;
-            float relativeX = e.MouseX - ScreenX;
+            var relativeX = e.MouseX - ScreenX;
             if (relativeX >= ComputedWidth - 10)
             {
                 _isDraggingScrollbar = true;
                 _dragStartY = e.MouseY;
 
-                float viewRatio = Math.Min(1.0f, ComputedHeight / ContentContainer.ComputedHeight);
-                float barHeight = Math.Max(32f, ComputedHeight * viewRatio);
-                float maxBarScroll = ComputedHeight - barHeight;
-                float scrollProgress = MaxScrollY > 0 ? ScrollY / MaxScrollY : 0;
+                var viewRatio = Math.Min(1.0f, ComputedHeight / ContentContainer.ComputedHeight);
+                var barHeight = Math.Max(32f, ComputedHeight * viewRatio);
+                var maxBarScroll = ComputedHeight - barHeight;
+                var scrollProgress = MaxScrollY > 0 ? ScrollY / MaxScrollY : 0;
 
                 _dragInitialScrollY = scrollProgress * maxBarScroll;
             }
@@ -53,16 +53,16 @@ public class ScrollView : UIElement
         {
             if (_isDraggingScrollbar)
             {
-                float dragDelta = e.MouseY - _dragStartY;
+                var dragDelta = e.MouseY - _dragStartY;
 
-                float viewRatio = Math.Min(1.0f, ComputedHeight / ContentContainer.ComputedHeight);
-                float barHeight = Math.Max(32f, ComputedHeight * viewRatio);
-                float maxBarScroll = ComputedHeight - barHeight;
+                var viewRatio = Math.Min(1.0f, ComputedHeight / ContentContainer.ComputedHeight);
+                var barHeight = Math.Max(32f, ComputedHeight * viewRatio);
+                var maxBarScroll = ComputedHeight - barHeight;
 
                 if (maxBarScroll > 0)
                 {
-                    float newThumbY = _dragInitialScrollY + dragDelta;
-                    float scrollProgress = Math.Clamp(newThumbY / maxBarScroll, 0, 1);
+                    var newThumbY = _dragInitialScrollY + dragDelta;
+                    var scrollProgress = Math.Clamp(newThumbY / maxBarScroll, 0, 1);
                     ScrollY = scrollProgress * MaxScrollY;
                     FixContentOffset();
                 }
@@ -71,7 +71,7 @@ public class ScrollView : UIElement
             }
             else if (_isDraggingContent)
             {
-                float dragDelta = e.MouseY - _dragStartY;
+                var dragDelta = e.MouseY - _dragStartY;
                 ScrollY = _dragInitialScrollY - dragDelta;
                 ScrollY = Math.Clamp(ScrollY, 0, MaxScrollY);
                 FixContentOffset();
@@ -112,12 +112,12 @@ public class ScrollView : UIElement
     {
         if (ClipToBounds && !ContainsPoint(screenX, screenY)) return null;
 
-        UIElement? hitContent = ContentContainer.HitTest(screenX, screenY);
+        var hitContent = ContentContainer.HitTest(screenX, screenY);
         if (hitContent != null) return hitContent;
 
-        for (int i = Children.Count - 1; i >= 0; i--)
+        for (var i = Children.Count - 1; i >= 0; i--)
         {
-            UIElement? hitChild = Children[i].HitTest(screenX, screenY);
+            var hitChild = Children[i].HitTest(screenX, screenY);
             if (hitChild != null) return hitChild;
         }
 
@@ -138,8 +138,8 @@ public class ScrollView : UIElement
 
         FlexLayout.ApplyLayout(layoutContext);
 
-        float calculatedHeight = 0f;
-        foreach (UIElement child in ContentContainer.Children)
+        var calculatedHeight = 0f;
+        foreach (var child in ContentContainer.Children)
         {
             calculatedHeight = Math.Max(calculatedHeight, child.ComputedY + child.ComputedHeight + child.Style.MarginBottom);
         }
@@ -169,10 +169,10 @@ public class ScrollView : UIElement
             renderer.DrawRect(0, 0, ContentContainer.ComputedWidth, ContentContainer.ComputedHeight, bg);
         }
 
-        float visibleTop = ScrollY;
-        float visibleBottom = ScrollY + ComputedHeight;
+        var visibleTop = ScrollY;
+        var visibleBottom = ScrollY + ComputedHeight;
 
-        foreach (UIElement child in ContentContainer.Children)
+        foreach (var child in ContentContainer.Children)
         {
             if (child.ComputedY + child.ComputedHeight < visibleTop || child.ComputedY > visibleBottom)
             {
@@ -193,11 +193,11 @@ public class ScrollView : UIElement
         // track
         renderer.DrawRect(ComputedWidth - 10, 0, 10, ComputedHeight, Color.BlackAlphaC0);
 
-        float viewRatio = Math.Min(1.0f, ComputedHeight / ContentContainer.ComputedHeight);
-        float barHeight = Math.Max(32f, ComputedHeight * viewRatio);
+        var viewRatio = Math.Min(1.0f, ComputedHeight / ContentContainer.ComputedHeight);
+        var barHeight = Math.Max(32f, ComputedHeight * viewRatio);
 
-        float scrollProgress = ScrollY / MaxScrollY;
-        float barY = scrollProgress * (ComputedHeight - barHeight);
+        var scrollProgress = ScrollY / MaxScrollY;
+        var barY = scrollProgress * (ComputedHeight - barHeight);
 
         renderer.DrawRect(ComputedWidth - 10, barY, 10, barHeight, Color.Gray80);
         renderer.DrawRect(ComputedWidth - 10, barY, 9, barHeight - 1, new Color(192, 192, 192));

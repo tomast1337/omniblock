@@ -12,13 +12,14 @@ public sealed class ProcessProviderRegistry : IProcessProviderRegistry
     {
         ArgumentNullException.ThrowIfNull(providers);
         var entries = new Dictionary<ResourceLocation, IProcessProvider>();
-        foreach ((ResourceLocation type, IProcessProvider provider) in providers)
+        foreach (var (type, provider) in providers)
         {
             ArgumentNullException.ThrowIfNull(type);
             ArgumentNullException.ThrowIfNull(provider);
             if (!entries.TryAdd(type, provider))
                 throw new ArgumentException($"Duplicate process provider type '{type}'.", nameof(providers));
         }
+
         _providers = entries.ToFrozenDictionary();
     }
 
@@ -33,21 +34,29 @@ public sealed class ProcessProviderRegistry : IProcessProviderRegistry
     {
         ArgumentNullException.ThrowIfNull(providerType);
         ArgumentNullException.ThrowIfNull(processId);
-        if (!_providers.TryGetValue(providerType, out IProcessProvider? provider))
+        if (!_providers.TryGetValue(providerType, out var provider))
+        {
             throw new ArgumentException(
                 $"Process '{processId}' uses unknown process provider '{providerType}'.",
                 nameof(providerType));
+        }
 
         try
         {
-            ICompiledProcess process = provider.Build(processId, definition, context)
-                ?? throw new InvalidOperationException("Provider returned null.");
+            var process = provider.Build(processId, definition, context)
+                          ?? throw new InvalidOperationException("Provider returned null.");
             if (process.Id != processId)
+            {
                 throw new InvalidOperationException(
                     $"Provider returned process id '{process.Id}', expected '{processId}'.");
+            }
+
             if (process.ProviderType != providerType)
+            {
                 throw new InvalidOperationException(
                     $"Provider returned type '{process.ProviderType}', expected '{providerType}'.");
+            }
+
             return process;
         }
         catch (Exception error)
@@ -61,11 +70,11 @@ public sealed class ProcessProviderRegistry : IProcessProviderRegistry
     public void Validate(IEnumerable<ICompiledProcess> processes)
     {
         ArgumentNullException.ThrowIfNull(processes);
-        foreach (IGrouping<ResourceLocation, ICompiledProcess> group in processes.GroupBy(process => process.ProviderType))
+        foreach (var group in processes.GroupBy(process => process.ProviderType))
         {
-            if (!_providers.TryGetValue(group.Key, out IProcessProvider? provider))
+            if (!_providers.TryGetValue(group.Key, out var provider))
                 throw new InvalidOperationException($"No provider remains registered for process type '{group.Key}'.");
-            ICompiledProcess[] entries = group.ToArray();
+            var entries = group.ToArray();
             try
             {
                 provider.Validate(entries);

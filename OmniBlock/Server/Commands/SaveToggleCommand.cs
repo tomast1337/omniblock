@@ -15,9 +15,9 @@ public class SaveOnCommand : Command.Command
 
     private static int Execute(CommandContext<CommandSource> context)
     {
-        CommandSource c = context.Source;
+        var c = context.Source;
         c.LogOp("Enabling level saving..");
-        for (int i = 0; i < c.Server.worlds.Length; i++)
+        for (var i = 0; i < c.Server.worlds.Length; i++)
         {
             c.Server.worlds[i].savingDisabled = false;
         }
@@ -38,9 +38,9 @@ public class SaveOffCommand : Command.Command
 
     private static int Execute(CommandContext<CommandSource> context)
     {
-        CommandSource c = context.Source;
+        var c = context.Source;
         c.LogOp("Disabling level saving..");
-        for (int i = 0; i < c.Server.worlds.Length; i++)
+        for (var i = 0; i < c.Server.worlds.Length; i++)
         {
             c.Server.worlds[i].savingDisabled = true;
         }

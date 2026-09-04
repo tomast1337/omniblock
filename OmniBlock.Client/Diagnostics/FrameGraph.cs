@@ -6,10 +6,10 @@ namespace OmniBlock.Client.Diagnostics;
 public sealed class FrameGraph(string label, int capacity = 100)
 {
     private readonly float[] _values = new float[capacity];
-    private int _index;
+    private bool _autoScale = true;
 
     private float _customMax;
-    private bool _autoScale = true;
+    private int _index;
     private bool _initializedMax;
 
     public void Push(float value)
@@ -32,6 +32,7 @@ public sealed class FrameGraph(string label, int capacity = 100)
                 _customMax = 100.0f;
                 _autoScale = true;
             }
+
             _initializedMax = true;
         }
 
@@ -48,9 +49,9 @@ public sealed class FrameGraph(string label, int capacity = 100)
             }
         }
 
-        ImDrawListPtr drawList = ImGui.GetWindowDrawList();
-        Vector2 p = ImGui.GetCursorScreenPos();
-        float width = ImGui.GetContentRegionAvail().X;
+        var drawList = ImGui.GetWindowDrawList();
+        var p = ImGui.GetCursorScreenPos();
+        var width = ImGui.GetContentRegionAvail().X;
 
         if (width < 10) width = 100;
 
@@ -58,25 +59,25 @@ public sealed class FrameGraph(string label, int capacity = 100)
 
         drawList.AddRectFilled(p, p + new Vector2(width, height), ImGui.GetColorU32(new Vector4(0, 0, 0, 0.4f)));
 
-        float maxValue = _autoScale ? GetMax() : _customMax;
+        var maxValue = _autoScale ? GetMax() : _customMax;
         if (maxValue <= 0) maxValue = 1.0f;
 
-        float scaleY = height / maxValue;
-        float barWidth = width / capacity;
-        uint color = ImGui.GetColorU32(new Vector4(0.2f, 0.7f, 1.0f, 1.0f));
+        var scaleY = height / maxValue;
+        var barWidth = width / capacity;
+        var color = ImGui.GetColorU32(new Vector4(0.2f, 0.7f, 1.0f, 1.0f));
 
-        for (int i = 0; i < capacity; i++)
+        for (var i = 0; i < capacity; i++)
         {
-            int bufferIndex = (_index + i) % capacity;
-            float val = _values[bufferIndex];
-            float h = val * scaleY;
+            var bufferIndex = (_index + i) % capacity;
+            var val = _values[bufferIndex];
+            var h = val * scaleY;
 
             if (h > 0)
             {
                 if (h > height) h = height;
 
-                float x = p.X + (i * barWidth);
-                float yBase = p.Y + height;
+                var x = p.X + i * barWidth;
+                var yBase = p.Y + height;
 
                 drawList.AddRectFilled(
                     new Vector2(x, yBase - h),
@@ -89,11 +90,12 @@ public sealed class FrameGraph(string label, int capacity = 100)
     private float GetMax()
     {
         float max = 0;
-        for (int i = 0; i < capacity; i++)
+        for (var i = 0; i < capacity; i++)
         {
             if (_values[i] > max)
                 max = _values[i];
         }
+
         return max;
     }
 }

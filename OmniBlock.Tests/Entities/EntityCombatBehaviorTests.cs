@@ -1,8 +1,6 @@
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
-using OmniBlock.Items;
 using OmniBlock.NBT;
-using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Tests.Entities;
@@ -52,17 +50,20 @@ public sealed class EntityCombatBehaviorTests
     public void Wolf_damage_from_player_sets_angry_and_target()
     {
         FakeWorldContext world = new();
-        EntityCreature wolf = (EntityCreature)TestEntityCatalog.ByName("wolf").Create(world);
+        var wolf = (EntityCreature)TestEntityCatalog.ByName("wolf").Create(world);
         wolf.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(wolf));
 
-        var player = new TestEntityPlayer(world) { Name = "tester" };
+        var player = new TestEntityPlayer(world)
+        {
+            Name = "tester"
+        };
         player.SetPositionAndAngles(9.0, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(player));
 
         Assert.True(wolf.Damage(player, 1));
 
-        TameableBehavior tame = wolf.Behaviors.Find<TameableBehavior>()!;
+        var tame = wolf.Behaviors.Find<TameableBehavior>()!;
         Assert.True(tame.IsAngry(wolf));
         Assert.Same(player, wolf.Target);
 
@@ -75,7 +76,7 @@ public sealed class EntityCombatBehaviorTests
     public void Wolf_server_status_shaking_branch_executes_without_throwing()
     {
         FakeWorldContext world = new();
-        EntityCreature wolf = (EntityCreature)TestEntityCatalog.ByName("wolf").Create(world);
+        var wolf = (EntityCreature)TestEntityCatalog.ByName("wolf").Create(world);
 
         wolf.ProcessServerEntityStatus(8);
         wolf.Tick();
@@ -88,19 +89,19 @@ public sealed class EntityCombatBehaviorTests
     {
         FakeWorldContext world = new();
 
-        Entity arrow = TestEntityCatalog.ByName("arrow").Create(world);
+        var arrow = TestEntityCatalog.ByName("arrow").Create(world);
         arrow.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         arrow.SetVelocityClient(0.2, 0.1, -0.3);
         Assert.NotEqual(0f, arrow.Yaw);
         Assert.NotEqual(0f, arrow.Pitch);
 
-        Entity egg = TestEntityCatalog.ByName("egg").Create(world);
+        var egg = TestEntityCatalog.ByName("egg").Create(world);
         egg.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         egg.SetVelocityClient(0.2, 0.1, -0.3);
         Assert.NotEqual(0f, egg.Yaw);
         Assert.NotEqual(0f, egg.Pitch);
 
-        Entity snowball = TestEntityCatalog.ByName("snowball").Create(world);
+        var snowball = TestEntityCatalog.ByName("snowball").Create(world);
         snowball.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         snowball.SetVelocityClient(0.2, 0.1, -0.3);
         Assert.NotEqual(0f, snowball.Yaw);
@@ -111,8 +112,8 @@ public sealed class EntityCombatBehaviorTests
     public void Wolf_nbt_roundtrip_preserves_owner_and_sitting_state()
     {
         FakeWorldContext worldA = new();
-        EntityCreature wolf = (EntityCreature)TestEntityCatalog.ByName("wolf").Create(worldA);
-        TameableBehavior tame = wolf.Behaviors.Find<TameableBehavior>()!;
+        var wolf = (EntityCreature)TestEntityCatalog.ByName("wolf").Create(worldA);
+        var tame = wolf.Behaviors.Find<TameableBehavior>()!;
         wolf.Synced<string?>("owner")!.Value = "owner";
         tame.SetSitting(wolf, true);
         wolf.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
@@ -121,7 +122,7 @@ public sealed class EntityCombatBehaviorTests
         Assert.True(wolf.SaveSelfNbt(nbt));
 
         FakeWorldContext worldB = new();
-        EntityLiving loaded = Assert.IsAssignableFrom<EntityLiving>(TestEntityCatalog.GetEntityFromNbt(nbt, worldB));
+        var loaded = Assert.IsAssignableFrom<EntityLiving>(TestEntityCatalog.GetEntityFromNbt(nbt, worldB));
         Assert.Equal("wolf", TestEntityCatalog.GetId(loaded));
         Assert.Equal("owner", tame.Owner(loaded));
         Assert.True(tame.IsSitting(loaded));

@@ -6,41 +6,41 @@ using OmniBlock.Client.Rendering.Core.Textures;
 namespace OmniBlock.Client.Rendering.Entities;
 
 /// <summary>
-/// Batches posed/lit entity model geometry (baked by <see cref="Models.ModelPart"/>) and draws it
-/// through the draw-command seam.
+///     Batches posed/lit entity model geometry (baked by <see cref="Models.ModelPart" />) and draws it
+///     through the draw-command seam.
 /// </summary>
 public sealed class EntityBatchRenderer : IDisposable
 {
-    private static EntityBatchRenderer? s_instance;
-    public static EntityBatchRenderer Instance =>
-        s_instance ?? throw new InvalidOperationException($"{nameof(EntityBatchRenderer)}.{nameof(Initialize)} must be called before use.");
-
-    public static void Initialize(GameOptions options) => s_instance ??= new EntityBatchRenderer(options);
-
     private const int MaxVertices = 65536;
-
-    private readonly EntityVertex[] _vertices = new EntityVertex[MaxVertices];
+    private static EntityBatchRenderer? s_instance;
     private readonly Dictionary<uint, int> _glTexToLogicalId = [];
     private readonly Vertex[] _seamVertices = new Vertex[MaxVertices];
 
-    private int _vertexCount;
+    private readonly EntityVertex[] _vertices = new EntityVertex[MaxVertices];
+    private bool _active;
     private uint _currentTextureId;
     private bool _useTexture;
-    private bool _active;
 
-    private EntityBatchRenderer(GameOptions options)
-    {
+    private int _vertexCount;
+
+    private EntityBatchRenderer(GameOptions options) =>
         // Queued geometry must be drawn under the blend, depth and alpha state it was posed with,
         // and renderers flip that state freely between parts of the same mob.
         GLManager.RasterStateChanging += Flush;
-    }
+
+    public static EntityBatchRenderer Instance =>
+        s_instance ?? throw new InvalidOperationException($"{nameof(EntityBatchRenderer)}.{nameof(Initialize)} must be called before use.");
 
     /// <summary>What the caller has bound.</summary>
     private static uint BoundTextureId => Texture2D.Bound?.Id ?? 0;
 
+    public void Dispose() => GLManager.RasterStateChanging -= Flush;
+
+    public static void Initialize(GameOptions options) => s_instance ??= new EntityBatchRenderer(options);
+
     /// <summary>
-    /// Opens a batching pass. Only affects how long geometry may sit queued; submissions made
-    /// outside a pass still draw, one part at a time.
+    ///     Opens a batching pass. Only affects how long geometry may sit queued; submissions made
+    ///     outside a pass still draw, one part at a time.
     /// </summary>
     public void Begin()
     {
@@ -57,12 +57,12 @@ public sealed class EntityBatchRenderer : IDisposable
     }
 
     /// <summary>
-    /// Associates a GL texture with the symbolic id its asset path is mapped to, so a flush can
-    /// tell the shader which entity it is drawing. Unregistered textures resolve to 0.
+    ///     Associates a GL texture with the symbolic id its asset path is mapped to, so a flush can
+    ///     tell the shader which entity it is drawing. Unregistered textures resolve to 0.
     /// </summary>
     public void RegisterTextureByPath(string assetPath, uint glTexId)
     {
-        int logicalId = EntityShaderIds.ForTexture(assetPath);
+        var logicalId = EntityShaderIds.ForTexture(assetPath);
         if (logicalId != 0)
         {
             _glTexToLogicalId[glTexId] = logicalId;
@@ -137,14 +137,14 @@ public sealed class EntityBatchRenderer : IDisposable
     {
         // The queued geometry belongs to the texture that was bound when it was posed, which is not
         // necessarily the one bound now: a texture change flushes before it takes effect.
-        Texture2D? caller = Texture2D.Bound;
-        Texture2D? batch = _useTexture ? Texture2D.Find(_currentTextureId) : null;
+        var caller = Texture2D.Bound;
+        var batch = _useTexture ? Texture2D.Find(_currentTextureId) : null;
         batch?.Bind();
 
-        Span<Vertex> converted = scratch.AsSpan(0, _vertexCount);
-        for (int i = 0; i < _vertexCount; i++)
+        var converted = scratch.AsSpan(0, _vertexCount);
+        for (var i = 0; i < _vertexCount; i++)
         {
-            ref readonly EntityVertex source = ref _vertices[i];
+            ref readonly var source = ref _vertices[i];
             converted[i] = new Vertex(source.X, source.Y, source.Z, source.U, source.V, (int)source.Color, 0);
         }
 
@@ -161,7 +161,7 @@ public sealed class EntityBatchRenderer : IDisposable
                 Channels = batch is null
                     ? VertexChannels.Color
                     : VertexChannels.Color | VertexChannels.Texture,
-                Slot = ProgramSlot.Textured,
+                Slot = ProgramSlot.Textured
             });
         }
         finally
@@ -170,10 +170,5 @@ public sealed class EntityBatchRenderer : IDisposable
             _vertexCount = 0;
             caller?.Bind();
         }
-    }
-
-    public void Dispose()
-    {
-        GLManager.RasterStateChanging -= Flush;
     }
 }

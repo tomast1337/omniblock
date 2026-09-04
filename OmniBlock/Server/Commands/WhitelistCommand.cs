@@ -35,8 +35,8 @@ public class WhitelistCommand : Command.Command
 
     private static int WhitelistList(CommandContext<CommandSource> context)
     {
-        HashSet<string> whitelist = context.Source.Server.playerManager.getWhitelist();
-        string names = string.Join(" ", whitelist);
+        var whitelist = context.Source.Server.playerManager.getWhitelist();
+        var names = string.Join(" ", whitelist);
         context.Source.Output.SendMessage("White-listed players: " + names);
         return 1;
     }
@@ -50,7 +50,7 @@ public class WhitelistCommand : Command.Command
 
     private static int WhitelistAdd(CommandContext<CommandSource> context)
     {
-        string target = context.GetArgument<string>("player").ToLower();
+        var target = context.GetArgument<string>("player").ToLower();
         context.Source.Server.playerManager.addToWhitelist(target);
         context.Source.LogOp("Added " + target + " to white-list");
         return 1;
@@ -58,7 +58,7 @@ public class WhitelistCommand : Command.Command
 
     private static int WhitelistRemove(CommandContext<CommandSource> context)
     {
-        string target = context.GetArgument<string>("player").ToLower();
+        var target = context.GetArgument<string>("player").ToLower();
         context.Source.Server.playerManager.removeFromWhitelist(target);
         context.Source.LogOp("Removed " + target + " from white-list");
         return 1;

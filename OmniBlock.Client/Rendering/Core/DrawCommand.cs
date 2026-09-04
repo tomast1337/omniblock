@@ -18,7 +18,7 @@ public enum DrawTopology
     ///     Has no WebGPU counterpart. One draw in the client uses it; a backend that cannot assemble
     ///     it has to say so rather than draw something else.
     /// </summary>
-    TriangleFan,
+    TriangleFan
 }
 
 /// <summary>Which optional attributes the vertices in a submission actually carry.</summary>
@@ -33,7 +33,7 @@ public enum VertexChannels
     None = 0,
     Texture = 1,
     Color = 2,
-    Normal = 4,
+    Normal = 4
 }
 
 /// <summary>The interleaved vertex layout <see cref="Tessellator" /> writes.</summary>

@@ -1,7 +1,3 @@
-using OmniBlock.Blocks;
-using OmniBlock.Tests.TestSupport;
-using OmniBlock.Worlds.Lighting;
-
 namespace OmniBlock.Tests.Worlds;
 
 /// <summary>
@@ -19,16 +15,16 @@ public sealed class RemoteWorldLightTests
     [Fact]
     public void PlacingATorchLightsTheAirOnAServerWorldButNotOnARemoteOne()
     {
-        LightTestWorld server = BuildWorldWithTorch(remote: false);
-        LightTestWorld remote = BuildWorldWithTorch(remote: true);
+        var server = BuildWorldWithTorch(false);
+        var remote = BuildWorldWithTorch(true);
 
         server.DrainLighting();
         remote.DrainLighting();
 
         // One cell above the torch: the server propagates to the torch's luminance minus one,
         // a remote world has nothing queued and stays at whatever the wire already left there.
-        int serverAbove = server.Lighting.GetBrightness(LightType.Block, 8, 2, 8);
-        int remoteAbove = remote.Lighting.GetBrightness(LightType.Block, 8, 2, 8);
+        var serverAbove = server.Lighting.GetBrightness(LightType.Block, 8, 2, 8);
+        var remoteAbove = remote.Lighting.GetBrightness(LightType.Block, 8, 2, 8);
 
         Assert.True(
             serverAbove > remoteAbove,
@@ -38,10 +34,13 @@ public sealed class RemoteWorldLightTests
 
     private static LightTestWorld BuildWorldWithTorch(bool remote)
     {
-        LightTestWorld world = new() { IsRemote = remote };
+        LightTestWorld world = new()
+        {
+            IsRemote = remote
+        };
         world.Chunks.Add(0, 0);
 
-        int torchId = TestBlocks.Get("torch").Id;
+        var torchId = TestBlocks.Get("torch").Id;
         world.Writer.SetBlock(8, 1, 8, torchId, 0);
 
         return world;

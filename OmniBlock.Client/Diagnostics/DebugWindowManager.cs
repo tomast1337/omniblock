@@ -1,33 +1,17 @@
 using System.Numerics;
+using Hexa.NET.ImGui;
 using OmniBlock.Client.Diagnostics.Windows;
 using OmniBlock.Profiling;
-using Hexa.NET.ImGui;
 
 namespace OmniBlock.Client.Diagnostics;
 
 internal sealed class DebugWindowManager
 {
-    private readonly Func<bool> _inGameHasFocus;
-    private readonly List<DebugWindow> _windows;
-    private readonly LiveStatsWindow _liveStatsWindow;
     private readonly ConsoleWindow _consoleWindow;
+    private readonly Func<bool> _inGameHasFocus;
+    private readonly LiveStatsWindow _liveStatsWindow;
+    private readonly List<DebugWindow> _windows;
     private bool _dockInitialized;
-
-    /// <summary>True when the "Game Viewport" ImGui window is the focused window (i.e. the user last clicked the game area).</summary>
-    public bool GameViewportFocused { get; private set; }
-
-    /// <summary>Content area size of the "Game Viewport" window from the previous frame, used to size the render target.</summary>
-    public Vector2 ViewportSize { get; private set; }
-
-    /// <summary>Top-left screen position of the "Game Viewport" content area, in window pixel coordinates.</summary>
-    public Vector2 ViewportPos { get; private set; }
-
-    /// <summary>
-    ///     Id of the rendered frame to display in the viewport — an OpenGL texture name under GL,
-    ///     or a <see cref="OmniBlock.Client.Rendering.Core.WebGPU.ImGuiWgpuBackend" /> id under
-    ///     WebGPU. Zero shows nothing.
-    /// </summary>
-    public ulong ViewportTextureId { get; set; }
 
     public DebugWindowManager(OmniBlock game, Func<bool> inGameHasFocus)
     {
@@ -36,13 +20,7 @@ internal sealed class DebugWindowManager
         var ctx = new DebugWindowContext(game);
         _consoleWindow = new ConsoleWindow(ctx);
 
-        var liveStatsSections = new DebugWindow[]
-        {
-            new NetworkInfoWindow(),
-            new ClientInfoWindow(ctx),
-            new LocalPlayerInfoWindow(ctx),
-            new ServerInfoWindow(),
-        };
+        var liveStatsSections = new DebugWindow[] { new NetworkInfoWindow(), new ClientInfoWindow(ctx), new LocalPlayerInfoWindow(ctx), new ServerInfoWindow() };
 
         _liveStatsWindow = new LiveStatsWindow(liveStatsSections);
 
@@ -60,6 +38,22 @@ internal sealed class DebugWindowManager
         ];
     }
 
+    /// <summary>True when the "Game Viewport" ImGui window is the focused window (i.e. the user last clicked the game area).</summary>
+    public bool GameViewportFocused { get; private set; }
+
+    /// <summary>Content area size of the "Game Viewport" window from the previous frame, used to size the render target.</summary>
+    public Vector2 ViewportSize { get; private set; }
+
+    /// <summary>Top-left screen position of the "Game Viewport" content area, in window pixel coordinates.</summary>
+    public Vector2 ViewportPos { get; private set; }
+
+    /// <summary>
+    ///     Id of the rendered frame to display in the viewport — an OpenGL texture name under GL,
+    ///     or a <see cref="OmniBlock.Client.Rendering.Core.WebGPU.ImGuiWgpuBackend" /> id under
+    ///     WebGPU. Zero shows nothing.
+    /// </summary>
+    public ulong ViewportTextureId { get; set; }
+
     public unsafe void Render(float deltaTime)
     {
         ImGuiIO* io = ImGui.GetIO();
@@ -73,7 +67,7 @@ internal sealed class DebugWindowManager
         }
 
         ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0, 0, 0, 0));
-        uint dockspaceId = ImGui.DockSpaceOverViewport(ImGui.GetMainViewport(), ImGuiDockNodeFlags.PassthruCentralNode);
+        var dockspaceId = ImGui.DockSpaceOverViewport(ImGui.GetMainViewport(), ImGuiDockNodeFlags.PassthruCentralNode);
         ImGui.PopStyleColor();
 
         if (!_dockInitialized)
@@ -83,20 +77,20 @@ internal sealed class DebugWindowManager
             ImGuiP.DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags.PassthruCentralNode);
             ImGuiP.DockBuilderSetNodeSize(dockspaceId, ImGui.GetMainViewport().Size);
 
-            uint dockMainId = dockspaceId;
+            var dockMainId = dockspaceId;
             uint dockIdLeft = 0, dockIdRight = 0, dockIdBottom = 0;
             ImGuiP.DockBuilderSplitNode(dockMainId, ImGuiDir.Left, 0.2f, &dockIdLeft, &dockMainId);
             ImGuiP.DockBuilderSplitNode(dockMainId, ImGuiDir.Right, 0.2f, &dockIdRight, &dockMainId);
             ImGuiP.DockBuilderSplitNode(dockMainId, ImGuiDir.Down, 0.28f, &dockIdBottom, &dockMainId);
 
-            foreach (DebugWindow window in _windows)
+            foreach (var window in _windows)
             {
                 if (window.DefaultDock == DebugDock.None)
                 {
                     continue;
                 }
 
-                uint targetDock = window.DefaultDock switch
+                var targetDock = window.DefaultDock switch
                 {
                     DebugDock.Left => dockIdLeft,
                     DebugDock.Right => dockIdRight,
@@ -123,12 +117,12 @@ internal sealed class DebugWindowManager
         // NoMouseInputs is intentionally omitted: when in-game, ImGuiConfigFlags.NoMouse is already
         // set globally, so it's redundant; when the debug UI is open, we need mouse events to reach
         // the title bar so the window can be dragged.
-        ImGuiWindowFlags gwFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollWithMouse;
+        var gwFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollWithMouse;
         using (Profiler.Begin("GameViewport"))
         {
             if (ImGui.Begin("Game Viewport", gwFlags))
             {
-                Vector2 contentSize = ImGui.GetContentRegionAvail();
+                var contentSize = ImGui.GetContentRegionAvail();
                 ViewportSize = contentSize;
                 ViewportPos = ImGui.GetCursorScreenPos();
 
@@ -142,21 +136,20 @@ internal sealed class DebugWindowManager
                     Vector2 uv0 = new(0, 0);
                     Vector2 uv1 = new(1, 1);
 
-                    unsafe
-                    {
-                        ImGui.Image(new ImTextureRef(null, new ImTextureID(ViewportTextureId)), contentSize, uv0, uv1);
-                    }
+                    ImGui.Image(new ImTextureRef(null, new ImTextureID(ViewportTextureId)), contentSize, uv0, uv1);
                 }
             }
             else
             {
                 GameViewportFocused = false;
             }
+
             ImGui.End();
         }
+
         ImGui.PopStyleVar();
 
-        foreach (DebugWindow window in _windows)
+        foreach (var window in _windows)
         {
             using (Profiler.Begin(window.Title.Replace(" ", "")))
             {
@@ -169,13 +162,14 @@ internal sealed class DebugWindowManager
     {
         if (ImGui.Begin("Debug Dashboard"))
         {
-            foreach (DebugWindow window in _windows)
+            foreach (var window in _windows)
             {
-                bool visible = window.IsVisible;
+                var visible = window.IsVisible;
                 ImGui.Checkbox(window.Title, ref visible);
                 window.IsVisible = visible;
             }
         }
+
         ImGui.End();
     }
 
@@ -201,7 +195,7 @@ internal sealed class DebugWindowManager
         style->FrameBorderSize = 0f;
         style->TabBorderSize = 0f;
 
-        Span<Vector4> colors = style->Colors;
+        var colors = style->Colors;
 
         colors[(int)ImGuiCol.Text] = new Vector4(0.92f, 0.92f, 0.92f, 1.00f);
         colors[(int)ImGuiCol.TextDisabled] = new Vector4(0.50f, 0.50f, 0.52f, 1.00f);

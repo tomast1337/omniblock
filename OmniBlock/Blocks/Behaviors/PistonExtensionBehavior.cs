@@ -30,10 +30,7 @@ public sealed class PistonExtensionBehavior : BlockRuntimeBehavior, IBlockPhysic
         @event.World.Writer.SetBlock(x, y, z, 0);
     }
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-    {
-        return false;
-    }
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => false;
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
     {
@@ -68,8 +65,10 @@ public sealed class PistonExtensionBehavior : BlockRuntimeBehavior, IBlockPhysic
         if (blockId != Blocks.Get("piston").Id && blockId != Blocks.Get("sticky_piston").Id)
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         else
+        {
             Blocks.GetByProtocolId(blockId).NeighborUpdate(new OnTickEvent(@event.World, @event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing],
                 @event.World.Reader.GetBlockMeta(@event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing]), block.Id));
+        }
     }
 
     public int GetTexture(Block block, Side side, int meta, int defaultTexture)
@@ -80,8 +79,5 @@ public sealed class PistonExtensionBehavior : BlockRuntimeBehavior, IBlockPhysic
         return side == facing.OppositeFace() ? 107 : 108;
     }
 
-    public static Side GetFacing(int meta)
-    {
-        return (meta & 7).ToSide();
-    }
+    public static Side GetFacing(int meta) => (meta & 7).ToSide();
 }

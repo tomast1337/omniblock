@@ -8,13 +8,20 @@ public class ChunkMeshVersion
     private long _lastMeshed;
     private long _pendingMesh = -1;
 
-    private ChunkMeshVersion()
-    {
-        TotalAllocated++;
-    }
+    private ChunkMeshVersion() => TotalAllocated++;
 
     public static int TotalAllocated { get; private set; }
     public static int TotalReleased { get; private set; }
+
+    /// <summary>
+    ///     How many times this chunk has been marked dirty, how far the last finished mesh got, and
+    ///     which epoch a mesh is being built for, or -1 for none.
+    /// </summary>
+    /// <remarks>
+    ///     For the debug view. A chunk whose epoch has outrun its last mesh with nothing pending is
+    ///     one the world has changed and the screen has not caught up with.
+    /// </remarks>
+    public (long Epoch, long LastMeshed, long Pending) State => (_epoch, _lastMeshed, _pendingMesh);
 
     public static void ClearPool()
     {
@@ -25,13 +32,14 @@ public class ChunkMeshVersion
 
     public static ChunkMeshVersion Get()
     {
-        if (s_pool.TryPop(out ChunkMeshVersion? version))
+        if (s_pool.TryPop(out var version))
         {
             version._epoch = 0;
             version._lastMeshed = 0;
             version._pendingMesh = -1;
             return version;
         }
+
         return new ChunkMeshVersion();
     }
 
@@ -41,10 +49,7 @@ public class ChunkMeshVersion
         s_pool.Push(this);
     }
 
-    public void MarkDirty()
-    {
-        _epoch++;
-    }
+    public void MarkDirty() => _epoch++;
 
     public long? SnapshotIfNeeded()
     {
@@ -53,6 +58,7 @@ public class ChunkMeshVersion
             _pendingMesh = _epoch;
             return _epoch;
         }
+
         return null;
     }
 
@@ -69,23 +75,7 @@ public class ChunkMeshVersion
         }
     }
 
-    public bool IsStale(long snapshotEpoch)
-    {
-        return _epoch > snapshotEpoch;
-    }
+    public bool IsStale(long snapshotEpoch) => _epoch > snapshotEpoch;
 
-    public bool IsModified()
-    {
-        return _epoch != _lastMeshed;
-    }
-
-    /// <summary>
-    ///     How many times this chunk has been marked dirty, how far the last finished mesh got, and
-    ///     which epoch a mesh is being built for, or -1 for none.
-    /// </summary>
-    /// <remarks>
-    ///     For the debug view. A chunk whose epoch has outrun its last mesh with nothing pending is
-    ///     one the world has changed and the screen has not caught up with.
-    /// </remarks>
-    public (long Epoch, long LastMeshed, long Pending) State => (_epoch, _lastMeshed, _pendingMesh);
+    public bool IsModified() => _epoch != _lastMeshed;
 }

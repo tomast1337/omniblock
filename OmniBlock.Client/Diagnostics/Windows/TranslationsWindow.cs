@@ -1,22 +1,18 @@
+using System.Numerics;
 using Hexa.NET.ImGui;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace OmniBlock.Client.Diagnostics.Windows;
 
 internal sealed class TranslationsWindow : DebugWindow
 {
-    public override string Title => "Translations";
-    public override DebugDock DefaultDock => DebugDock.Right;
+    private readonly string[] _languageNames = Array.Empty<string>();
+
+    private readonly Dictionary<string, Language> _nameToLanguage = new();
 
     private int _currentIndex = -1;
-    private Language? _language = null;
+    private bool _displayMissing;
+    private Language? _language;
     private string _search = string.Empty;
-    private bool _displayMissing = false;
-
-    private Dictionary<string, Language> _nameToLanguage = new();
-    private string[] _languageNames = Array.Empty<string>();
 
     public TranslationsWindow()
     {
@@ -39,6 +35,9 @@ internal sealed class TranslationsWindow : DebugWindow
         Translations.LanguageChanged += ChangeToCurrent;
     }
 
+    public override string Title => "Translations";
+    public override DebugDock DefaultDock => DebugDock.Right;
+
     private void ChangeToCurrent()
     {
         if (Translations.Instance.CurrentLanguage is Language lang)
@@ -55,7 +54,7 @@ internal sealed class TranslationsWindow : DebugWindow
 
         if (ImGui.Combo("##LanguageCombo", ref _currentIndex, _languageNames, _languageNames.Length))
         {
-            string selectedName = _languageNames[_currentIndex];
+            var selectedName = _languageNames[_currentIndex];
             _language = _nameToLanguage[selectedName];
         }
 
@@ -91,7 +90,7 @@ internal sealed class TranslationsWindow : DebugWindow
         ImGui.Separator();
 
         // strings
-        if (ImGui.BeginChild("TranslationListScrollview", System.Numerics.Vector2.Zero))
+        if (ImGui.BeginChild("TranslationListScrollview", Vector2.Zero))
         {
             if (_language != null)
             {
@@ -101,7 +100,7 @@ internal sealed class TranslationsWindow : DebugWindow
 
                 if (_language.Translations is null)
                 {
-                    ImGuiTextSafe.TextDisabled($"Translations were not loaded, and failed to load!");
+                    ImGuiTextSafe.TextDisabled("Translations were not loaded, and failed to load!");
 
                     ImGui.EndChild();
                     return;
@@ -117,28 +116,29 @@ internal sealed class TranslationsWindow : DebugWindow
                     {
                         ImGuiTextSafe.TextDisabled("Displaying translations missing in this language:");
 
-                        bool anyMissing = false;
+                        var anyMissing = false;
                         foreach (var translation in Translations.Instance.DefaultLanguage.Translations)
                         {
                             if (_language.Translations.ContainsKey(translation.Key)) continue;
 
-                            ImGuiTextSafe.TextColored(new System.Numerics.Vector4(0.8f, 0.4f, 0.4f, 1f), $"{translation.Key}: {translation.Value}");
+                            ImGuiTextSafe.TextColored(new Vector4(0.8f, 0.4f, 0.4f, 1f), $"{translation.Key}: {translation.Value}");
 
                             anyMissing = true;
                         }
+
                         if (anyMissing) ImGui.Separator();
                     }
                 }
 
-                bool noTranslations = true;
+                var noTranslations = true;
 
                 foreach (var translation in _language.Translations)
                 {
                     // filter
                     if (!string.IsNullOrWhiteSpace(_search))
                     {
-                        bool matchesKey = translation.Key.Contains(_search, StringComparison.OrdinalIgnoreCase);
-                        bool matchesValue = translation.Value?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false;
+                        var matchesKey = translation.Key.Contains(_search, StringComparison.OrdinalIgnoreCase);
+                        var matchesValue = translation.Value?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false;
 
                         if (!matchesKey && !matchesValue)
                             continue;
@@ -148,7 +148,7 @@ internal sealed class TranslationsWindow : DebugWindow
 
                     ImGuiTextSafe.Text($"{translation.Key}:");
                     ImGui.SameLine();
-                    ImGuiTextSafe.TextColored(new System.Numerics.Vector4(0.4f, 0.8f, 0.4f, 1f), translation.Value ?? string.Empty);
+                    ImGuiTextSafe.TextColored(new Vector4(0.4f, 0.8f, 0.4f, 1f), translation.Value ?? string.Empty);
                 }
 
                 if (noTranslations)

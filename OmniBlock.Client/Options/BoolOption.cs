@@ -2,16 +2,16 @@ namespace OmniBlock.Client.Options;
 
 public class BoolOption : GameOption
 {
-    public bool Value { get; set; }
-    public bool DefaultValue { get; }
-    public Func<bool, string>? Formatter { get; init; }
-    public Action<bool>? OnChanged { get; init; }
-
     public BoolOption(string translationKey, string saveKey, bool defaultValue = false) : base(translationKey, saveKey)
     {
         Value = defaultValue;
         DefaultValue = defaultValue;
     }
+
+    public bool Value { get; set; }
+    public bool DefaultValue { get; }
+    public Func<bool, string>? Formatter { get; init; }
+    public Action<bool>? OnChanged { get; init; }
 
     public override void Reset()
     {

@@ -9,11 +9,14 @@ public sealed class UiDomDocumentTests
     public void Query_and_properties_controlLiveTree()
     {
         UIElement root = new();
-        Label label = new() { Text = "before" };
+        Label label = new()
+        {
+            Text = "before"
+        };
         root.AddChild(label);
         UiDomDocument document = new(() => root, () => null);
 
-        int handle = document.Query("Label");
+        var handle = document.Query("Label");
 
         Assert.NotEqual(0, handle);
         Assert.Equal("Label", document.GetString(handle, "type"));
@@ -29,12 +32,16 @@ public sealed class UiDomDocumentTests
     {
         UIElement root = new();
         string? changed = null;
-        TextField field = new() { AutomationId = "field", Text = "before" };
+        TextField field = new()
+        {
+            AutomationId = "field",
+            Text = "before"
+        };
         field.OnTextChanged += value => changed = value;
         root.AddChild(field);
         UiDomDocument document = new(() => root, () => null);
 
-        int handle = document.Query("#field");
+        var handle = document.Query("#field");
 
         Assert.Equal("before", document.GetString(handle, "text"));
         Assert.True(document.SetString(handle, "text", "after"));
@@ -50,8 +57,8 @@ public sealed class UiDomDocumentTests
         root.AddChild(child);
         UiDomDocument document = new(() => root, () => null);
 
-        int rootHandle = document.Query("#root");
-        int childHandle = document.GetChild(rootHandle, 0);
+        var rootHandle = document.Query("#root");
+        var childHandle = document.GetChild(rootHandle, 0);
 
         Assert.Equal(1, document.GetChildCount(rootHandle));
         Assert.Equal(rootHandle, document.GetParent(childHandle));
@@ -61,14 +68,20 @@ public sealed class UiDomDocumentTests
     public void Query_and_children_includeScrollViewContent()
     {
         UIElement root = new();
-        ScrollView scroll = new() { AutomationId = "list" };
-        Button item = new(() => { }) { AutomationId = "list.item" };
+        ScrollView scroll = new()
+        {
+            AutomationId = "list"
+        };
+        Button item = new(() => { })
+        {
+            AutomationId = "list.item"
+        };
         scroll.AddContent(item);
         root.AddChild(scroll);
         UiDomDocument document = new(() => root, () => null);
 
-        int scrollHandle = document.Query("#list");
-        int itemHandle = document.Query("#list.item");
+        var scrollHandle = document.Query("#list");
+        var itemHandle = document.Query("#list.item");
 
         Assert.NotEqual(0, itemHandle);
         Assert.Equal(1, document.GetChildCount(scrollHandle));
@@ -81,9 +94,9 @@ public sealed class UiDomDocumentTests
     {
         UIElement first = new();
         UIElement second = new();
-        UIElement current = first;
+        var current = first;
         UiDomDocument document = new(() => current, () => null);
-        int oldHandle = document.Query("#root");
+        var oldHandle = document.Query("#root");
 
         current = second;
 
@@ -95,13 +108,16 @@ public sealed class UiDomDocumentTests
     public void AutomationId_queryAndClick_activateTheLiveControl()
     {
         UIElement root = new();
-        int clicks = 0;
-        Button button = new(() => { }) { AutomationId = "main.singleplayer" };
+        var clicks = 0;
+        Button button = new(() => { })
+        {
+            AutomationId = "main.singleplayer"
+        };
         button.OnClick += _ => clicks++;
         root.AddChild(button);
         UiDomDocument document = new(() => root, () => null);
 
-        int handle = document.Query("#main.singleplayer");
+        var handle = document.Query("#main.singleplayer");
 
         Assert.NotEqual(0, handle);
         Assert.Equal("main.singleplayer", document.GetString(handle, "id"));
@@ -113,8 +129,11 @@ public sealed class UiDomDocumentTests
     public void Click_dispatchesTheMouseGestureUsedByOptionControls()
     {
         UIElement root = new();
-        int mouseDowns = 0;
-        Button button = new(() => { }) { AutomationId = "option" };
+        var mouseDowns = 0;
+        Button button = new(() => { })
+        {
+            AutomationId = "option"
+        };
         button.OnMouseDown += _ => mouseDowns++;
         root.AddChild(button);
         UiDomDocument document = new(() => root, () => null);
@@ -131,11 +150,14 @@ public sealed class UiDomDocumentTests
     {
         UIElement root = new();
         UIElement parent = new();
-        Button button = new(() => { }) { AutomationId = "button" };
+        Button button = new(() => { })
+        {
+            AutomationId = "button"
+        };
         parent.AddChild(button);
         root.AddChild(parent);
         UiDomDocument document = new(() => root, () => null);
-        int handle = document.Query("#button");
+        var handle = document.Query("#button");
 
         Assert.True(document.SetBool(document.GetParent(handle), blockedProperty, false));
 
@@ -146,10 +168,13 @@ public sealed class UiDomDocumentTests
     public void RemovingAControlInvalidatesItsHandle()
     {
         UIElement root = new();
-        Button button = new(() => { }) { AutomationId = "button" };
+        Button button = new(() => { })
+        {
+            AutomationId = "button"
+        };
         root.AddChild(button);
         UiDomDocument document = new(() => root, () => null);
-        int handle = document.Query("#button");
+        var handle = document.Query("#button");
 
         root.RemoveChild(button);
 
@@ -161,10 +186,13 @@ public sealed class UiDomDocumentTests
     public void ClearingChildrenInvalidatesHandlesEvenWhenLegacyParentPointersRemain()
     {
         UIElement root = new();
-        Button button = new(() => { }) { AutomationId = "button" };
+        Button button = new(() => { })
+        {
+            AutomationId = "button"
+        };
         root.AddChild(button);
         UiDomDocument document = new(() => root, () => null);
-        int handle = document.Query("#button");
+        var handle = document.Query("#button");
 
         root.Children.Clear();
 

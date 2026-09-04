@@ -32,7 +32,7 @@ public class ErrorScreen(
         messageContainer.Style.AlignItems = Align.Center;
         messageContainer.Style.MarginBottom = 20;
 
-        foreach (string msg in _messages)
+        foreach (var msg in _messages)
         {
             Label lblMsg = new()
             {
@@ -46,7 +46,7 @@ public class ErrorScreen(
 
         Root.AddChild(messageContainer);
 
-        Button btnRestart = CreateButton();
+        var btnRestart = CreateButton();
         btnRestart.Text = "Please restart the Game.";
         btnRestart.Enabled = false;
 

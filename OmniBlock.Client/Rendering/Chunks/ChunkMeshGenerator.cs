@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
 using OmniBlock.Blocks;
 using OmniBlock.Client.Rendering.Blocks;
 using OmniBlock.Client.Rendering.Chunks.Occlusion;
@@ -8,7 +9,6 @@ using OmniBlock.Textures;
 using OmniBlock.Util;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core;
-using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
 
 namespace OmniBlock.Client.Rendering.Chunks;
@@ -31,23 +31,31 @@ internal struct MeshBuildResult : IDisposable
 
 internal class ChunkMeshGenerator : IDisposable
 {
-    private readonly ILogger<ChunkMeshGenerator> _logger = Log.Instance.For<ChunkMeshGenerator>();
+    private const float ColorScale = 0.0039215686F;
+    private const float TopShadow = 1.0F;
+    private const float BottomShadow = 0.5F;
+    private const float EastShadow = 0.8F;
+    private const float WestShadow = 0.8F;
+    private const float NorthShadow = 0.6F;
+    private const float SouthShadow = 0.6F;
 
-    private readonly ConcurrentQueue<MeshBuildResult> _results = new();
+    /// <summary>
+    ///     Grass draws a second, biome-tinted overlay quad over its side texture — a shape a single
+    ///     merged quad can't represent — so any block using this texture is excluded from the greedy
+    ///     path entirely and falls back to the ordinary per-block draw.
+    /// </summary>
+    private static readonly int s_grassSideTextureId = Atlases.Terrain.IndexOf("omniblock:grass_block_side");
+
     private readonly ObjectPool<PooledList<ChunkVertex>> _listPool =
         new(() => new PooledList<ChunkVertex>(), 64);
 
+    private readonly ILogger<ChunkMeshGenerator> _logger = Log.Instance.For<ChunkMeshGenerator>();
+
+    private readonly ConcurrentQueue<MeshBuildResult> _results = new();
+
     private SemaphoreSlim? _concurrencySemaphore;
 
-    public ChunkMeshGenerator(ushort maxConcurrentTasks = 0)
-    {
-        MaxConcurrentTasks = maxConcurrentTasks;
-    }
-
-    public bool TryDequeueMesh(out MeshBuildResult result)
-    {
-        return _results.TryDequeue(out result);
-    }
+    public ChunkMeshGenerator(ushort maxConcurrentTasks = 0) => MaxConcurrentTasks = maxConcurrentTasks;
 
     public ushort MaxConcurrentTasks
     {
@@ -62,6 +70,10 @@ internal class ChunkMeshGenerator : IDisposable
                 : null;
         }
     }
+
+    public void Dispose() => _listPool.Dispose();
+
+    public bool TryDequeueMesh(out MeshBuildResult result) => _results.TryDequeue(out result);
 
     //TODO: Make a chunk mesh config struct for alternateBlocks and other flags
     public void MeshChunk(World world, Vector3D<int> pos, long version, bool alternateBlocks)
@@ -81,7 +93,7 @@ internal class ChunkMeshGenerator : IDisposable
 
             try
             {
-                MeshBuildResult mesh = GenerateMesh(pos, version, cache, alternateBlocks);
+                var mesh = GenerateMesh(pos, version, cache, alternateBlocks);
                 _results.Enqueue(mesh);
             }
             catch (Exception ex)
@@ -98,12 +110,12 @@ internal class ChunkMeshGenerator : IDisposable
 
     private MeshBuildResult GenerateMesh(Vector3D<int> pos, long version, WorldRegionSnapshot cache, bool alternateBlocks)
     {
-        int minX = pos.X;
-        int minY = pos.Y;
-        int minZ = pos.Z;
-        int maxX = pos.X + SubChunkRenderer.Size;
-        int maxY = pos.Y + SubChunkRenderer.Size;
-        int maxZ = pos.Z + SubChunkRenderer.Size;
+        var minX = pos.X;
+        var minY = pos.Y;
+        var minZ = pos.Z;
+        var maxX = pos.X + SubChunkRenderer.Size;
+        var maxY = pos.Y + SubChunkRenderer.Size;
+        var maxZ = pos.Z + SubChunkRenderer.Size;
 
         var result = new MeshBuildResult
         {
@@ -119,13 +131,13 @@ internal class ChunkMeshGenerator : IDisposable
         // EmitGreedyMesh. Precomputed once so the sweep and the loop's skip check agree on
         // exactly which cells were handled the fast way.
         Block?[] greedyEligible = new Block[SubChunkRenderer.Size * SubChunkRenderer.Size * SubChunkRenderer.Size];
-        for (int y = minY; y < maxY; y++)
+        for (var y = minY; y < maxY; y++)
         {
-            for (int z = minZ; z < maxZ; z++)
+            for (var z = minZ; z < maxZ; z++)
             {
-                for (int x = minX; x < maxX; x++)
+                for (var x = minX; x < maxX; x++)
                 {
-                    if (TryGetGreedyEligibleBlock(cache, x, y, z, alternateBlocks, out Block? eligible))
+                    if (TryGetGreedyEligibleBlock(cache, x, y, z, alternateBlocks, out var eligible))
                     {
                         greedyEligible[LocalIndex(x - minX, y - minY, z - minZ)] = eligible;
                     }
@@ -133,9 +145,9 @@ internal class ChunkMeshGenerator : IDisposable
             }
         }
 
-        for (int pass = 0; pass < 2; pass++)
+        for (var pass = 0; pass < 2; pass++)
         {
-            bool hasNextPass = false;
+            var hasNextPass = false;
 
             tess.startCapture(TesselatorCaptureVertexFormat.Chunk);
             tess.startDrawingQuads();
@@ -146,17 +158,17 @@ internal class ChunkMeshGenerator : IDisposable
                 EmitGreedyMesh(cache, ctx, tess, greedyEligible, minX, minY, minZ);
             }
 
-            for (int y = minY; y < maxY; y++)
+            for (var y = minY; y < maxY; y++)
             {
-                for (int z = minZ; z < maxZ; z++)
+                for (var z = minZ; z < maxZ; z++)
                 {
-                    for (int x = minX; x < maxX; x++)
+                    for (var x = minX; x < maxX; x++)
                     {
-                        int id = cache.GetBlockId(x, y, z);
+                        var id = cache.GetBlockId(x, y, z);
                         if (id <= 0) continue;
 
-                        Block b = BlockRegistry.GetByProtocolId(id);
-                        int blockPass = b.RenderLayer;
+                        var b = BlockRegistry.GetByProtocolId(id);
+                        var blockPass = b.RenderLayer;
 
                         if (blockPass != pass)
                         {
@@ -173,10 +185,10 @@ internal class ChunkMeshGenerator : IDisposable
             tess.draw(ProgramSlot.Terrain);
             tess.setTranslationD(0, 0, 0);
 
-            PooledList<ChunkVertex> verts = tess.endCaptureChunkVertices();
+            var verts = tess.endCaptureChunkVertices();
             if (verts.Count > 0)
             {
-                PooledList<ChunkVertex> list = _listPool.Get();
+                var list = _listPool.Get();
                 list.AddRange(verts.Span);
 
                 if (pass == 0)
@@ -197,21 +209,6 @@ internal class ChunkMeshGenerator : IDisposable
         return result;
     }
 
-    private const float ColorScale = 0.0039215686F;
-    private const float TopShadow = 1.0F;
-    private const float BottomShadow = 0.5F;
-    private const float EastShadow = 0.8F;
-    private const float WestShadow = 0.8F;
-    private const float NorthShadow = 0.6F;
-    private const float SouthShadow = 0.6F;
-
-    /// <summary>
-    ///     Grass draws a second, biome-tinted overlay quad over its side texture — a shape a single
-    ///     merged quad can't represent — so any block using this texture is excluded from the greedy
-    ///     path entirely and falls back to the ordinary per-block draw.
-    /// </summary>
-    private static readonly int s_grassSideTextureId = Atlases.Terrain.IndexOf("omniblock:grass_block_side");
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int LocalIndex(int lx, int ly, int lz) => (lx * SubChunkRenderer.Size + lz) * SubChunkRenderer.Size + ly;
 
@@ -225,14 +222,14 @@ internal class ChunkMeshGenerator : IDisposable
     /// </summary>
     private static bool TryGetGreedyEligibleBlock(WorldRegionSnapshot cache, int x, int y, int z, bool alternateBlocks, out Block? block)
     {
-        int id = cache.GetBlockId(x, y, z);
+        var id = cache.GetBlockId(x, y, z);
         if (id <= 0)
         {
             block = null;
             return false;
         }
 
-        Block candidate = BlockRegistry.GetByProtocolId(id);
+        var candidate = BlockRegistry.GetByProtocolId(id);
         if (candidate.RenderType != BlockRendererType.Standard || candidate.RenderLayer != 0)
         {
             block = null;
@@ -240,7 +237,7 @@ internal class ChunkMeshGenerator : IDisposable
         }
 
         candidate.UpdateBoundingBox(cache, x, y, z);
-        Box bb = candidate.BoundingBox;
+        var bb = candidate.BoundingBox;
         if (bb.MinX != 0.0 || bb.MinY != 0.0 || bb.MinZ != 0.0 || bb.MaxX != 1.0 || bb.MaxY != 1.0 || bb.MaxZ != 1.0)
         {
             block = null;
@@ -266,18 +263,6 @@ internal class ChunkMeshGenerator : IDisposable
         return true;
     }
 
-    /// <summary>One corner of a quad about to be emitted: world position, tiled UV, and its light.</summary>
-    private readonly record struct QuadCorner(float X, float Y, float Z, float U, float V, CornerLight Light);
-
-    /// <summary>
-    ///     What two faces must agree on, bit for bit, to be merged: the same texture, the same tint,
-    ///     and identical lighting at all four corners. Requiring the whole tuple rather than just the
-    ///     shared edge is conservative — it merges less than a fully general algorithm would across a
-    ///     lighting gradient — but it means a merged quad's corners are exactly the value every
-    ///     contributing cell already agreed on, with no interpolation to get wrong.
-    /// </summary>
-    private readonly record struct FaceMergeKey(int ArrayLayer, int TintColor, CornerLight L0, CornerLight L1, CornerLight L2, CornerLight L3);
-
     private static void EmitGreedyMesh(WorldRegionSnapshot cache, BlockRenderContext ctx, Tessellator tess, Block?[] eligible, int minX, int minY, int minZ)
     {
         EmitGreedyTop(cache, ctx, tess, eligible, minX, minY, minZ);
@@ -290,28 +275,28 @@ internal class ChunkMeshGenerator : IDisposable
 
     private static void EmitGreedyTop(WorldRegionSnapshot cache, BlockRenderContext ctx, Tessellator tess, Block?[] eligible, int minX, int minY, int minZ)
     {
-        int size = SubChunkRenderer.Size;
-        FaceMergeKey?[] grid = new FaceMergeKey?[size * size];
+        var size = SubChunkRenderer.Size;
+        var grid = new FaceMergeKey?[size * size];
         List<(int U, int V, int W, int H, FaceMergeKey Key)> rects = [];
 
-        for (int depth = 0; depth < size; depth++)
+        for (var depth = 0; depth < size; depth++)
         {
-            int y = minY + depth;
+            var y = minY + depth;
             Array.Clear(grid);
 
-            for (int v = 0; v < size; v++)
+            for (var v = 0; v < size; v++)
             {
-                int z = minZ + v;
-                for (int u = 0; u < size; u++)
+                var z = minZ + v;
+                for (var u = 0; u < size; u++)
                 {
-                    int x = minX + u;
+                    var x = minX + u;
                     if (eligible[LocalIndex(u, depth, v)] is not { } block) continue;
                     if (!block.IsSideVisible(cache, x, y + 1, z, Side.Up)) continue;
 
                     var (v0, v1, v2, v3, _) = ctx.ComputeTopFaceLight(block, new BlockPos(x, y, z));
-                    int textureId = block.GetTextureId(cache, x, y, z, Side.Up);
-                    int layer = Atlases.Terrain.LayerOfGridIndex(textureId);
-                    int tint = block.GetColorMultiplier(cache, x, y, z);
+                    var textureId = block.GetTextureId(cache, x, y, z, Side.Up);
+                    var layer = Atlases.Terrain.LayerOfGridIndex(textureId);
+                    var tint = block.GetColorMultiplier(cache, x, y, z);
 
                     grid[v * size + u] = new FaceMergeKey(layer, tint, v0, v1, v2, v3);
                 }
@@ -331,7 +316,7 @@ internal class ChunkMeshGenerator : IDisposable
                 QuadCorner br = new(x0, yFace, z0, 0, 0, key.L2);
                 QuadCorner tr = new(x0, yFace, z1, 0, h, key.L3);
 
-                bool flipped = key.L0.FlipWeight + key.L2.FlipWeight > key.L1.FlipWeight + key.L3.FlipWeight;
+                var flipped = key.L0.FlipWeight + key.L2.FlipWeight > key.L1.FlipWeight + key.L3.FlipWeight;
                 EmitMergedQuad(tess, key, flipped, TopShadow, tl, bl, br, tr);
             }
         }
@@ -339,28 +324,28 @@ internal class ChunkMeshGenerator : IDisposable
 
     private static void EmitGreedyBottom(WorldRegionSnapshot cache, BlockRenderContext ctx, Tessellator tess, Block?[] eligible, int minX, int minY, int minZ)
     {
-        int size = SubChunkRenderer.Size;
-        FaceMergeKey?[] grid = new FaceMergeKey?[size * size];
+        var size = SubChunkRenderer.Size;
+        var grid = new FaceMergeKey?[size * size];
         List<(int U, int V, int W, int H, FaceMergeKey Key)> rects = [];
 
-        for (int depth = 0; depth < size; depth++)
+        for (var depth = 0; depth < size; depth++)
         {
-            int y = minY + depth;
+            var y = minY + depth;
             Array.Clear(grid);
 
-            for (int v = 0; v < size; v++)
+            for (var v = 0; v < size; v++)
             {
-                int z = minZ + v;
-                for (int u = 0; u < size; u++)
+                var z = minZ + v;
+                for (var u = 0; u < size; u++)
                 {
-                    int x = minX + u;
+                    var x = minX + u;
                     if (eligible[LocalIndex(u, depth, v)] is not { } block) continue;
                     if (!block.IsSideVisible(cache, x, y - 1, z, Side.Down)) continue;
 
                     var (v0, v1, v2, v3, _) = ctx.ComputeBottomFaceLight(block, new BlockPos(x, y, z));
-                    int textureId = block.GetTextureId(cache, x, y, z, Side.Down);
-                    int layer = Atlases.Terrain.LayerOfGridIndex(textureId);
-                    int tint = block.TextureId != 3 ? block.GetColorMultiplier(cache, x, y, z) : 0xFFFFFF;
+                    var textureId = block.GetTextureId(cache, x, y, z, Side.Down);
+                    var layer = Atlases.Terrain.LayerOfGridIndex(textureId);
+                    var tint = block.TextureId != 3 ? block.GetColorMultiplier(cache, x, y, z) : 0xFFFFFF;
 
                     grid[v * size + u] = new FaceMergeKey(layer, tint, v0, v1, v2, v3);
                 }
@@ -380,7 +365,7 @@ internal class ChunkMeshGenerator : IDisposable
                 QuadCorner br = new(x1, yFace, z0, w, 0, key.L2);
                 QuadCorner tr = new(x1, yFace, z1, w, h, key.L3);
 
-                bool flipped = key.L0.FlipWeight + key.L2.FlipWeight > key.L1.FlipWeight + key.L3.FlipWeight;
+                var flipped = key.L0.FlipWeight + key.L2.FlipWeight > key.L1.FlipWeight + key.L3.FlipWeight;
                 EmitMergedQuad(tess, key, flipped, BottomShadow, tl, bl, br, tr);
             }
         }
@@ -388,29 +373,29 @@ internal class ChunkMeshGenerator : IDisposable
 
     private static void EmitGreedyEast(WorldRegionSnapshot cache, BlockRenderContext ctx, Tessellator tess, Block?[] eligible, int minX, int minY, int minZ)
     {
-        int size = SubChunkRenderer.Size;
-        FaceMergeKey?[] grid = new FaceMergeKey?[size * size];
+        var size = SubChunkRenderer.Size;
+        var grid = new FaceMergeKey?[size * size];
         List<(int U, int V, int W, int H, FaceMergeKey Key)> rects = [];
 
-        for (int depth = 0; depth < size; depth++)
+        for (var depth = 0; depth < size; depth++)
         {
-            int z = minZ + depth;
+            var z = minZ + depth;
             Array.Clear(grid);
 
-            for (int v = 0; v < size; v++)
+            for (var v = 0; v < size; v++)
             {
-                int y = minY + v;
-                for (int u = 0; u < size; u++)
+                var y = minY + v;
+                for (var u = 0; u < size; u++)
                 {
-                    int x = minX + u;
+                    var x = minX + u;
                     if (eligible[LocalIndex(u, v, depth)] is not { } block) continue;
                     if (!block.IsSideVisible(cache, x, y, z - 1, Side.North)) continue;
 
                     var (v0, v1, v2, v3, _) = ctx.ComputeEastFaceLight(block, new BlockPos(x, y, z));
-                    int textureId = block.GetTextureId(cache, x, y, z, Side.North);
+                    var textureId = block.GetTextureId(cache, x, y, z, Side.North);
                     if (textureId == s_grassSideTextureId) continue;
-                    int layer = Atlases.Terrain.LayerOfGridIndex(textureId);
-                    int tint = block.TextureId != 3 ? block.GetColorMultiplier(cache, x, y, z) : 0xFFFFFF;
+                    var layer = Atlases.Terrain.LayerOfGridIndex(textureId);
+                    var tint = block.TextureId != 3 ? block.GetColorMultiplier(cache, x, y, z) : 0xFFFFFF;
 
                     grid[v * size + u] = new FaceMergeKey(layer, tint, v0, v1, v2, v3);
                 }
@@ -433,7 +418,7 @@ internal class ChunkMeshGenerator : IDisposable
                 QuadCorner br = new(x0, y0, zFace, w, h, key.L3);
                 QuadCorner tr = new(x0, y1, zFace, w, 0, key.L0);
 
-                bool flipped = key.L1.FlipWeight + key.L3.FlipWeight > key.L2.FlipWeight + key.L0.FlipWeight;
+                var flipped = key.L1.FlipWeight + key.L3.FlipWeight > key.L2.FlipWeight + key.L0.FlipWeight;
                 EmitMergedQuad(tess, key, flipped, EastShadow, tl, bl, br, tr);
             }
         }
@@ -441,29 +426,29 @@ internal class ChunkMeshGenerator : IDisposable
 
     private static void EmitGreedyWest(WorldRegionSnapshot cache, BlockRenderContext ctx, Tessellator tess, Block?[] eligible, int minX, int minY, int minZ)
     {
-        int size = SubChunkRenderer.Size;
-        FaceMergeKey?[] grid = new FaceMergeKey?[size * size];
+        var size = SubChunkRenderer.Size;
+        var grid = new FaceMergeKey?[size * size];
         List<(int U, int V, int W, int H, FaceMergeKey Key)> rects = [];
 
-        for (int depth = 0; depth < size; depth++)
+        for (var depth = 0; depth < size; depth++)
         {
-            int z = minZ + depth;
+            var z = minZ + depth;
             Array.Clear(grid);
 
-            for (int v = 0; v < size; v++)
+            for (var v = 0; v < size; v++)
             {
-                int y = minY + v;
-                for (int u = 0; u < size; u++)
+                var y = minY + v;
+                for (var u = 0; u < size; u++)
                 {
-                    int x = minX + u;
+                    var x = minX + u;
                     if (eligible[LocalIndex(u, v, depth)] is not { } block) continue;
                     if (!block.IsSideVisible(cache, x, y, z + 1, Side.South)) continue;
 
                     var (v0, v1, v2, v3, _) = ctx.ComputeWestFaceLight(block, new BlockPos(x, y, z));
-                    int textureId = block.GetTextureId(cache, x, y, z, Side.South);
+                    var textureId = block.GetTextureId(cache, x, y, z, Side.South);
                     if (textureId == s_grassSideTextureId) continue;
-                    int layer = Atlases.Terrain.LayerOfGridIndex(textureId);
-                    int tint = block.TextureId != 3 ? block.GetColorMultiplier(cache, x, y, z) : 0xFFFFFF;
+                    var layer = Atlases.Terrain.LayerOfGridIndex(textureId);
+                    var tint = block.TextureId != 3 ? block.GetColorMultiplier(cache, x, y, z) : 0xFFFFFF;
 
                     grid[v * size + u] = new FaceMergeKey(layer, tint, v0, v1, v2, v3);
                 }
@@ -483,7 +468,7 @@ internal class ChunkMeshGenerator : IDisposable
                 QuadCorner br = new(x1, y0, zFace, w, h, key.L2);
                 QuadCorner tr = new(x1, y1, zFace, w, 0, key.L3);
 
-                bool flipped = key.L0.FlipWeight + key.L2.FlipWeight > key.L1.FlipWeight + key.L3.FlipWeight;
+                var flipped = key.L0.FlipWeight + key.L2.FlipWeight > key.L1.FlipWeight + key.L3.FlipWeight;
                 EmitMergedQuad(tess, key, flipped, WestShadow, tl, bl, br, tr);
             }
         }
@@ -491,29 +476,29 @@ internal class ChunkMeshGenerator : IDisposable
 
     private static void EmitGreedyNorth(WorldRegionSnapshot cache, BlockRenderContext ctx, Tessellator tess, Block?[] eligible, int minX, int minY, int minZ)
     {
-        int size = SubChunkRenderer.Size;
-        FaceMergeKey?[] grid = new FaceMergeKey?[size * size];
+        var size = SubChunkRenderer.Size;
+        var grid = new FaceMergeKey?[size * size];
         List<(int U, int V, int W, int H, FaceMergeKey Key)> rects = [];
 
-        for (int depth = 0; depth < size; depth++)
+        for (var depth = 0; depth < size; depth++)
         {
-            int x = minX + depth;
+            var x = minX + depth;
             Array.Clear(grid);
 
-            for (int v = 0; v < size; v++)
+            for (var v = 0; v < size; v++)
             {
-                int y = minY + v;
-                for (int u = 0; u < size; u++)
+                var y = minY + v;
+                for (var u = 0; u < size; u++)
                 {
-                    int z = minZ + u;
+                    var z = minZ + u;
                     if (eligible[LocalIndex(depth, v, u)] is not { } block) continue;
                     if (!block.IsSideVisible(cache, x - 1, y, z, Side.West)) continue;
 
                     var (v0, v1, v2, v3, _) = ctx.ComputeNorthFaceLight(block, new BlockPos(x, y, z));
-                    int textureId = block.GetTextureId(cache, x, y, z, Side.West);
+                    var textureId = block.GetTextureId(cache, x, y, z, Side.West);
                     if (textureId == s_grassSideTextureId) continue;
-                    int layer = Atlases.Terrain.LayerOfGridIndex(textureId);
-                    int tint = block.TextureId != 3 ? block.GetColorMultiplier(cache, x, y, z) : 0xFFFFFF;
+                    var layer = Atlases.Terrain.LayerOfGridIndex(textureId);
+                    var tint = block.TextureId != 3 ? block.GetColorMultiplier(cache, x, y, z) : 0xFFFFFF;
 
                     grid[v * size + u] = new FaceMergeKey(layer, tint, v0, v1, v2, v3);
                 }
@@ -535,7 +520,7 @@ internal class ChunkMeshGenerator : IDisposable
                 QuadCorner br = new(xFace, y0, z1, w, h, key.L3);
                 QuadCorner tr = new(xFace, y1, z1, w, 0, key.L0);
 
-                bool flipped = key.L1.FlipWeight + key.L3.FlipWeight > key.L2.FlipWeight + key.L0.FlipWeight;
+                var flipped = key.L1.FlipWeight + key.L3.FlipWeight > key.L2.FlipWeight + key.L0.FlipWeight;
                 EmitMergedQuad(tess, key, flipped, NorthShadow, tl, bl, br, tr);
             }
         }
@@ -543,29 +528,29 @@ internal class ChunkMeshGenerator : IDisposable
 
     private static void EmitGreedySouth(WorldRegionSnapshot cache, BlockRenderContext ctx, Tessellator tess, Block?[] eligible, int minX, int minY, int minZ)
     {
-        int size = SubChunkRenderer.Size;
-        FaceMergeKey?[] grid = new FaceMergeKey?[size * size];
+        var size = SubChunkRenderer.Size;
+        var grid = new FaceMergeKey?[size * size];
         List<(int U, int V, int W, int H, FaceMergeKey Key)> rects = [];
 
-        for (int depth = 0; depth < size; depth++)
+        for (var depth = 0; depth < size; depth++)
         {
-            int x = minX + depth;
+            var x = minX + depth;
             Array.Clear(grid);
 
-            for (int v = 0; v < size; v++)
+            for (var v = 0; v < size; v++)
             {
-                int y = minY + v;
-                for (int u = 0; u < size; u++)
+                var y = minY + v;
+                for (var u = 0; u < size; u++)
                 {
-                    int z = minZ + u;
+                    var z = minZ + u;
                     if (eligible[LocalIndex(depth, v, u)] is not { } block) continue;
                     if (!block.IsSideVisible(cache, x + 1, y, z, Side.East)) continue;
 
                     var (v0, v1, v2, v3, _) = ctx.ComputeSouthFaceLight(block, new BlockPos(x, y, z));
-                    int textureId = block.GetTextureId(cache, x, y, z, Side.East);
+                    var textureId = block.GetTextureId(cache, x, y, z, Side.East);
                     if (textureId == s_grassSideTextureId) continue;
-                    int layer = Atlases.Terrain.LayerOfGridIndex(textureId);
-                    int tint = block.TextureId != 3 ? block.GetColorMultiplier(cache, x, y, z) : 0xFFFFFF;
+                    var layer = Atlases.Terrain.LayerOfGridIndex(textureId);
+                    var tint = block.TextureId != 3 ? block.GetColorMultiplier(cache, x, y, z) : 0xFFFFFF;
 
                     grid[v * size + u] = new FaceMergeKey(layer, tint, v0, v1, v2, v3);
                 }
@@ -587,7 +572,7 @@ internal class ChunkMeshGenerator : IDisposable
                 QuadCorner br = new(xFace, y0, z0, w, h, key.L1);
                 QuadCorner tr = new(xFace, y1, z0, w, 0, key.L2);
 
-                bool flipped = key.L3.FlipWeight + key.L1.FlipWeight > key.L0.FlipWeight + key.L2.FlipWeight;
+                var flipped = key.L3.FlipWeight + key.L1.FlipWeight > key.L0.FlipWeight + key.L2.FlipWeight;
                 EmitMergedQuad(tess, key, flipped, SouthShadow, tl, bl, br, tr);
             }
         }
@@ -601,21 +586,21 @@ internal class ChunkMeshGenerator : IDisposable
     /// </summary>
     private static void GreedyMergeLayer(FaceMergeKey?[] grid, int size, List<(int U, int V, int W, int H, FaceMergeKey Key)> rects)
     {
-        for (int v = 0; v < size; v++)
+        for (var v = 0; v < size; v++)
         {
-            for (int u = 0; u < size; u++)
+            for (var u = 0; u < size; u++)
             {
-                int idx = v * size + u;
+                var idx = v * size + u;
                 if (grid[idx] is not { } key) continue;
 
-                int w = 1;
+                var w = 1;
                 while (u + w < size && grid[v * size + u + w] is { } wk && wk.Equals(key)) w++;
 
-                int h = 1;
-                bool canExpand = true;
+                var h = 1;
+                var canExpand = true;
                 while (canExpand && v + h < size)
                 {
-                    for (int du = 0; du < w; du++)
+                    for (var du = 0; du < w; du++)
                     {
                         if (grid[(v + h) * size + u + du] is not { } hk || !hk.Equals(key))
                         {
@@ -627,9 +612,9 @@ internal class ChunkMeshGenerator : IDisposable
                     if (canExpand) h++;
                 }
 
-                for (int dv = 0; dv < h; dv++)
+                for (var dv = 0; dv < h; dv++)
                 {
-                    for (int du = 0; du < w; du++)
+                    for (var du = 0; du < w; du++)
                     {
                         grid[(v + dv) * size + u + du] = null;
                     }
@@ -648,25 +633,32 @@ internal class ChunkMeshGenerator : IDisposable
     /// </summary>
     private static void EmitMergedQuad(Tessellator tess, in FaceMergeKey key, bool flipped, float shade, QuadCorner tl, QuadCorner bl, QuadCorner br, QuadCorner tr)
     {
-        float r = (key.TintColor >> 16 & 255) * ColorScale * shade;
-        float g = (key.TintColor >> 8 & 255) * ColorScale * shade;
-        float b = (key.TintColor & 255) * ColorScale * shade;
+        var r = ((key.TintColor >> 16) & 255) * ColorScale * shade;
+        var g = ((key.TintColor >> 8) & 255) * ColorScale * shade;
+        var b = (key.TintColor & 255) * ColorScale * shade;
 
         tess.setArrayLayer(key.ArrayLayer);
 
         Span<QuadCorner> corners = [tl, bl, br, tr];
-        int start = flipped ? 1 : 0;
-        for (int i = 0; i < 4; i++)
+        var start = flipped ? 1 : 0;
+        for (var i = 0; i < 4; i++)
         {
-            QuadCorner c = corners[(start + i) % 4];
+            var c = corners[(start + i) % 4];
             tess.setColorOpaque_F(r, g, b);
             tess.setLight(c.Light.Sky, c.Light.Block);
             tess.addVertexWithUV(c.X, c.Y, c.Z, c.U, c.V);
         }
     }
 
-    public void Dispose()
-    {
-        _listPool.Dispose();
-    }
+    /// <summary>One corner of a quad about to be emitted: world position, tiled UV, and its light.</summary>
+    private readonly record struct QuadCorner(float X, float Y, float Z, float U, float V, CornerLight Light);
+
+    /// <summary>
+    ///     What two faces must agree on, bit for bit, to be merged: the same texture, the same tint,
+    ///     and identical lighting at all four corners. Requiring the whole tuple rather than just the
+    ///     shared edge is conservative — it merges less than a fully general algorithm would across a
+    ///     lighting gradient — but it means a merged quad's corners are exactly the value every
+    ///     contributing cell already agreed on, with no interpolation to get wrong.
+    /// </summary>
+    private readonly record struct FaceMergeKey(int ArrayLayer, int TintColor, CornerLight L0, CornerLight L1, CornerLight L2, CornerLight L3);
 }

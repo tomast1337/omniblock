@@ -2,7 +2,6 @@ using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Textures;
 using OmniBlock.Util.Maths;
-using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Client.Rendering.Blocks.Renderers;
 
@@ -15,6 +14,7 @@ public class RedstoneWireRenderer : IBlockRenderer
     ///     row below the unpowered dust, which is what these two are.
     /// </summary>
     private static readonly int s_crossShroudLayer = Atlases.Terrain.LayerOf("omniblock:redstone_dust_cross_on");
+
     private static readonly int s_lineShroudLayer = Atlases.Terrain.LayerOf("omniblock:redstone_dust_line_on");
 
     /// <summary>A run of wire with no branch, which is the cross tile's neighbour on the atlas.</summary>
@@ -25,28 +25,28 @@ public class RedstoneWireRenderer : IBlockRenderer
         // IsPowerProviderOrWire is an instance method (reads the wire's own JSON-configured
         // conductor/repeater set) — this renderer is only ever invoked for the redstone_wire
         // block itself, so `block` here already IS that instance's owning Block.
-        RedstoneWireBehavior wireBehavior = (RedstoneWireBehavior)block.Redstone!;
+        var wireBehavior = (RedstoneWireBehavior)block.Redstone!;
 
-        int powerLevel = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
-        int textureId = block.GetTexture(Side.Up, powerLevel);
+        var powerLevel = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
+        var textureId = block.GetTexture(Side.Up, powerLevel);
         if (ctx.OverrideTexture >= 0) textureId = ctx.OverrideTexture;
 
         // --- 1. Calculate the Glow Color & Emissive Lighting ---
-        float powerPercent = powerLevel / 15.0F;
+        var powerPercent = powerLevel / 15.0F;
 
         // The wire glows with its own charge, which is a floor on the block channel rather than a
         // brightness multiplier: powered wire should stay visible in the dark without the sky
         // channel making it brighter by day.
-        LightLevels wireLight = block.GetLightLevels(ctx.Lighting, pos.X, pos.Y + 1, pos.Z);
+        var wireLight = block.GetLightLevels(ctx.Lighting, pos.X, pos.Y + 1, pos.Z);
         ctx.Tess.setLight(wireLight.Sky, Math.Max(wireLight.Block, powerLevel * 0.4F));
 
         const float luminance = 1.0F;
 
-        float r = powerPercent * 0.6F + 0.4F;
+        var r = powerPercent * 0.6F + 0.4F;
         if (powerLevel == 0) r = 0.3F;
 
-        float g = powerPercent * powerPercent * 0.7F - 0.5F;
-        float b = powerPercent * powerPercent * 0.6F - 0.7F;
+        var g = powerPercent * powerPercent * 0.7F - 0.5F;
+        var b = powerPercent * powerPercent * 0.6F - 0.7F;
         if (g < 0.0F) g = 0.0F;
         if (b < 0.0F) b = 0.0F;
 
@@ -56,28 +56,28 @@ public class RedstoneWireRenderer : IBlockRenderer
         // Four tiles: a cross and a straight run, each with a brighter twin drawn underneath as the
         // shroud. An override -- the block-breaking overlay -- has only the one texture to give, so
         // every part of the wire falls back to it.
-        bool overridden = ctx.OverrideTexture >= 0;
-        int wireLayer = Atlases.Terrain.LayerOfGridIndex(textureId);
-        int shroudLayer = overridden ? wireLayer : s_crossShroudLayer;
+        var overridden = ctx.OverrideTexture >= 0;
+        var wireLayer = Atlases.Terrain.LayerOfGridIndex(textureId);
+        var shroudLayer = overridden ? wireLayer : s_crossShroudLayer;
 
-        float minU = 0.0F;
-        float maxU = 1.0F;
-        float minV = 0.0F;
-        float maxV = 1.0F;
+        var minU = 0.0F;
+        var maxU = 1.0F;
+        var minV = 0.0F;
+        var maxV = 1.0F;
 
         // --- 3. Connection Logic ---
-        bool connectsWest = wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X - 1, pos.Y, pos.Z, 1) ||
-                            (!ctx.BlockReader.ShouldSuffocate(pos.X - 1, pos.Y, pos.Z) &&
-                             wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X - 1, pos.Y - 1, pos.Z, -1));
-        bool connectsEast = wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X + 1, pos.Y, pos.Z, 3) ||
-                            (!ctx.BlockReader.ShouldSuffocate(pos.X + 1, pos.Y, pos.Z) &&
-                             wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X + 1, pos.Y - 1, pos.Z, -1));
-        bool connectsNorth = wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X, pos.Y, pos.Z - 1, 2) ||
-                             (!ctx.BlockReader.ShouldSuffocate(pos.X, pos.Y, pos.Z - 1) &&
-                              wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X, pos.Y - 1, pos.Z - 1, -1));
-        bool connectsSouth = wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X, pos.Y, pos.Z + 1, 0) ||
-                             (!ctx.BlockReader.ShouldSuffocate(pos.X, pos.Y, pos.Z + 1) &&
-                              wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X, pos.Y - 1, pos.Z + 1, -1));
+        var connectsWest = wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X - 1, pos.Y, pos.Z, 1) ||
+                           (!ctx.BlockReader.ShouldSuffocate(pos.X - 1, pos.Y, pos.Z) &&
+                            wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X - 1, pos.Y - 1, pos.Z, -1));
+        var connectsEast = wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X + 1, pos.Y, pos.Z, 3) ||
+                           (!ctx.BlockReader.ShouldSuffocate(pos.X + 1, pos.Y, pos.Z) &&
+                            wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X + 1, pos.Y - 1, pos.Z, -1));
+        var connectsNorth = wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X, pos.Y, pos.Z - 1, 2) ||
+                            (!ctx.BlockReader.ShouldSuffocate(pos.X, pos.Y, pos.Z - 1) &&
+                             wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X, pos.Y - 1, pos.Z - 1, -1));
+        var connectsSouth = wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X, pos.Y, pos.Z + 1, 0) ||
+                            (!ctx.BlockReader.ShouldSuffocate(pos.X, pos.Y, pos.Z + 1) &&
+                             wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X, pos.Y - 1, pos.Z + 1, -1));
 
         if (!ctx.BlockReader.ShouldSuffocate(pos.X, pos.Y + 1, pos.Z))
         {
@@ -98,7 +98,7 @@ public class RedstoneWireRenderer : IBlockRenderer
         // --- 4. Determine Shape ---
         float renderMinX = pos.X, renderMaxX = pos.X + 1;
         float renderMinZ = pos.Z, renderMaxZ = pos.Z + 1;
-        int shapeType = 0; // 0 = Cross, 1 = East/West, 2 = North/South
+        var shapeType = 0; // 0 = Cross, 1 = East/West, 2 = North/South
 
         if ((connectsWest || connectsEast) && !connectsNorth && !connectsSouth) shapeType = 1;
         if ((connectsNorth || connectsSouth) && !connectsEast && !connectsWest) shapeType = 2;
@@ -140,8 +140,8 @@ public class RedstoneWireRenderer : IBlockRenderer
         }
 
         // --- 5. Render Horizontal Ground Quad ---
-        float shadowY = pos.Y + QuarterPixel;
-        float wireY = shadowY + 0.001F;
+        var shadowY = pos.Y + QuarterPixel;
+        var wireY = shadowY + 0.001F;
 
         // Handle UV Rotation for North/South (Shape 2)
         float u1 = minU, u2 = maxU, u3 = maxU, u4 = minU;
@@ -187,7 +187,7 @@ public class RedstoneWireRenderer : IBlockRenderer
         minV = 0.0F;
         maxV = 1.0F;
 
-        float slopeHeight = pos.Y + 1.021875F;
+        var slopeHeight = pos.Y + 1.021875F;
 
         // West Slope
         if (ctx.BlockReader.ShouldSuffocate(pos.X - 1, pos.Y, pos.Z) &&

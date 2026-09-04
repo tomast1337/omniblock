@@ -10,7 +10,7 @@ public sealed class BlockSpongeTests
     public void OnBreak_ConfiguredRadius_RunsWithoutError()
     {
         FakeWorldContext world = new();
-        Block sponge = TestBlocks.Get("sponge");
+        var sponge = TestBlocks.Get("sponge");
 
         SpongeLifecycleBehavior behavior = new(1);
         behavior.OnBreak(sponge, new OnBreakEvent(world, null, 0, 64, 0));
@@ -19,15 +19,15 @@ public sealed class BlockSpongeTests
     [Fact]
     public void BehaviorRegistry_Build_MissingAbsorbRadius_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"sponge_lifecycle"}""");
+        using var json = JsonDocument.Parse("""{"Type":"sponge_lifecycle"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("sponge_lifecycle", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_ValidAbsorbRadius_ConstructsBehavior()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"sponge_lifecycle","absorb_radius":2}""");
-        object behavior = BehaviorRegistry.Build("sponge_lifecycle", json.RootElement);
+        using var json = JsonDocument.Parse("""{"Type":"sponge_lifecycle","absorb_radius":2}""");
+        var behavior = BehaviorRegistry.Build("sponge_lifecycle", json.RootElement);
         Assert.IsType<SpongeLifecycleBehavior>(behavior);
     }
 }

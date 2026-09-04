@@ -1,5 +1,4 @@
 using OmniBlock.Util.Maths;
-using OmniBlock.Worlds.Chunks;
 
 namespace OmniBlock.Entities.Behaviors;
 
@@ -27,7 +26,7 @@ public sealed class SlimeChunkSpawnBehavior(long chunkSeed, int chanceOneIn, int
             return false;
         }
 
-        Chunk chunk = self.World.ChunkHost.GetChunkFromPos(MathHelper.Floor(self.X), MathHelper.Floor(self.Z));
+        var chunk = self.World.ChunkHost.GetChunkFromPos(MathHelper.Floor(self.X), MathHelper.Floor(self.Z));
         return chunk.GetSlimeRandom(chunkSeed).NextInt(chunkChanceOneIn) == 0 && self.Y < maxHeight;
     }
 }

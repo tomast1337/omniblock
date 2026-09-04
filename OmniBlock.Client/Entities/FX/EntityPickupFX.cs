@@ -3,17 +3,18 @@ using OmniBlock.Client.Rendering.Entities;
 using OmniBlock.Entities;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core.Systems;
+using Silk.NET.Maths;
 
 namespace OmniBlock.Client.Entities.FX;
 
 public class EntityPickupFX : EntityFX
 {
+    private readonly int maxAge;
+    private readonly Entity source;
 
     private readonly Entity target;
-    private readonly Entity source;
-    private int currentAge;
-    private readonly int maxAge;
     private readonly float yOffset;
+    private int currentAge;
 
     public EntityPickupFX(IWorldContext world, Entity target, Entity source, float yOffset) : base(world, target.X, target.Y, target.Z, target.VelocityX, target.VelocityY, target.VelocityZ)
     {
@@ -25,26 +26,26 @@ public class EntityPickupFX : EntityFX
 
     public override void renderParticle(Tessellator t, float partialTick, float rotX, float rotY, float rotZ, float upX, float upZ)
     {
-        float lifeProgress = ((float)currentAge + partialTick) / (float)maxAge;
+        var lifeProgress = (currentAge + partialTick) / maxAge;
         lifeProgress *= lifeProgress;
-        double targetX = target.X;
-        double targetY = target.Y;
-        double targetZ = target.Z;
-        double sourceX = source.LastTickX + (source.X - source.LastTickX) * (double)partialTick;
-        double sourceY = source.LastTickY + (source.Y - source.LastTickY) * (double)partialTick + (double)yOffset;
-        double sourceZ = source.LastTickZ + (source.Z - source.LastTickZ) * (double)partialTick;
-        double renderX = targetX + (sourceX - targetX) * (double)lifeProgress;
-        double renderY = targetY + (sourceY - targetY) * (double)lifeProgress;
-        double renderZ = targetZ + (sourceZ - targetZ) * (double)lifeProgress;
-        int itemX = MathHelper.Floor(renderX);
-        int itemY = MathHelper.Floor(renderY + (double)(StandingEyeHeight / 2.0F));
-        int itemZ = MathHelper.Floor(renderZ);
-        float luminance = World.Lighting.GetLuminance(itemX, itemY, itemZ);
+        var targetX = target.X;
+        var targetY = target.Y;
+        var targetZ = target.Z;
+        var sourceX = source.LastTickX + (source.X - source.LastTickX) * partialTick;
+        var sourceY = source.LastTickY + (source.Y - source.LastTickY) * partialTick + yOffset;
+        var sourceZ = source.LastTickZ + (source.Z - source.LastTickZ) * partialTick;
+        var renderX = targetX + (sourceX - targetX) * lifeProgress;
+        var renderY = targetY + (sourceY - targetY) * lifeProgress;
+        var renderZ = targetZ + (sourceZ - targetZ) * lifeProgress;
+        var itemX = MathHelper.Floor(renderX);
+        var itemY = MathHelper.Floor(renderY + StandingEyeHeight / 2.0F);
+        var itemZ = MathHelper.Floor(renderZ);
+        var luminance = World.Lighting.GetLuminance(itemX, itemY, itemZ);
         renderX -= interpPosX;
         renderY -= interpPosY;
         renderZ -= interpPosZ;
-        GLManager.Color = new(luminance, luminance, luminance, 1.0F);
-        EntityRenderDispatcher.Instance.RenderEntityWithPosYaw(target, (double)((float)renderX), (double)((float)renderY), (double)((float)renderZ), target.Yaw, partialTick);
+        GLManager.Color = new Vector4D<float>(luminance, luminance, luminance, 1.0F);
+        EntityRenderDispatcher.Instance.RenderEntityWithPosYaw(target, (float)renderX, (float)renderY, (float)renderZ, target.Yaw, partialTick);
     }
 
     public override void Tick()
@@ -54,11 +55,7 @@ public class EntityPickupFX : EntityFX
         {
             MarkDead();
         }
-
     }
 
-    public override int getFXLayer()
-    {
-        return 3;
-    }
+    public override int getFXLayer() => 3;
 }

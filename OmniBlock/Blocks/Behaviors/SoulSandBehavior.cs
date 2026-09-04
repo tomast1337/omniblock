@@ -19,8 +19,5 @@ internal sealed class SoulSandBehavior(double speedFactor) : IBlockPhysics, IBlo
         @event.Entity.VelocityZ *= speedFactor;
     }
 
-    public Box? GetCollisionShape(Block block, IBlockReader reader, EntityManager entities, int x, int y, int z, Box? defaultShape)
-    {
-        return new Box(x, y, z, x + 1, y + 1 - Height, z + 1);
-    }
+    public Box? GetCollisionShape(Block block, IBlockReader reader, EntityManager entities, int x, int y, int z, Box? defaultShape) => new Box(x, y, z, x + 1, y + 1 - Height, z + 1);
 }

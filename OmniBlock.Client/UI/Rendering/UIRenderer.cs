@@ -34,7 +34,6 @@ public class UIRenderer
             DepthWrite = true
         };
 
-    private readonly UIContext _context;
     private readonly ItemRenderer _itemRenderer = new();
     private readonly Stack<(bool Enabled, int X, int Y, int W, int H)> _scissorStack = new();
     private readonly Stack<Vector2D<float>> _translationStack = new();
@@ -46,15 +45,16 @@ public class UIRenderer
     private float _translateX;
     private float _translateY;
 
-    public UIRenderer(UIContext context) => _context = context;
-    public UIContext Context => _context;
-    public TextureManager TextureManager => _context.TextureManager;
-    public TextRenderer TextRenderer => _context.TextRenderer;
-    private GameOptions _gameOptions => _context.Options;
-    private Func<Vector2D<int>> _getDisplaySize => _context.DisplaySize;
-    private TextureHandle _terrainTexture => _context.TerrainTexture;
-    private TextureHandle _itemsTexture => _context.ItemsTexture;
-    private UIBatchRenderer _batch => _context.UiBatchRenderer;
+    public UIRenderer(UIContext context) => Context = context;
+    public UIContext Context { get; }
+
+    public TextureManager TextureManager => Context.TextureManager;
+    public TextRenderer TextRenderer => Context.TextRenderer;
+    private GameOptions _gameOptions => Context.Options;
+    private Func<Vector2D<int>> _getDisplaySize => Context.DisplaySize;
+    private TextureHandle _terrainTexture => Context.TerrainTexture;
+    private TextureHandle _itemsTexture => Context.ItemsTexture;
+    private UIBatchRenderer _batch => Context.UiBatchRenderer;
 
 
     public void Begin()
@@ -62,7 +62,7 @@ public class UIRenderer
         // Lighting is a shader uniform rather than pipeline state, so it stays a separate call.
         GLManager.LightingEnabled = false;
         GLManager.State.Apply(RenderState.Interface);
-        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
         GLManager.ModelView.Push();
 
         _translateX = 0;
@@ -72,9 +72,9 @@ public class UIRenderer
         _scissorEnabled = false;
         _scissorStack.Clear();
 
-        Vector2D<int> displaySize = _getDisplaySize();
+        var displaySize = _getDisplaySize();
         ScaledResolution res = new(_gameOptions, displaySize.X, displaySize.Y);
-        Matrix4X4<float> proj = Matrix4X4.CreateOrthographicOffCenter(0f, res.ScaledWidth, res.ScaledHeight, 0f, -1f, 1f);
+        var proj = Matrix4X4.CreateOrthographicOffCenter(0f, res.ScaledWidth, res.ScaledHeight, 0f, -1f, 1f);
         _batch.Begin(proj);
     }
 
@@ -82,27 +82,27 @@ public class UIRenderer
     {
         _batch.End();
         GLManager.ModelView.Pop();
-        GLManager.Color = new(1.0f, 1.0f, 1.0f, 1.0f);
+        GLManager.Color = new Vector4D<float>(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
 
     public void PushColor(Color color)
     {
-        uint newTint = (uint)color;
+        var newTint = (uint)color;
         if (_currentTint != newTint)
         {
             _batch.Flush();
             _currentTint = newTint;
         }
 
-        GLManager.Color = new(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f, color.A / 255.0f);
+        GLManager.Color = new Vector4D<float>(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f, color.A / 255.0f);
     }
 
     public void PopColor()
     {
         _batch.Flush();
         _currentTint = 0xFFFFFFFF;
-        GLManager.Color = new(1.0f, 1.0f, 1.0f, 1.0f);
+        GLManager.Color = new Vector4D<float>(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     public void SetAlphaTest(bool flag)
@@ -175,7 +175,7 @@ public class UIRenderer
     {
         if (_translationStack.Count > 0)
         {
-            Vector2D<float> prev = _translationStack.Pop();
+            var prev = _translationStack.Pop();
             _translateX = prev.X;
             _translateY = prev.Y;
         }
@@ -200,13 +200,13 @@ public class UIRenderer
     {
         _batch.Flush();
 
-        Vector2D<int> displaySize = _getDisplaySize();
+        var displaySize = _getDisplaySize();
         ScaledResolution res = new(_gameOptions, displaySize.X, displaySize.Y);
 
-        float left = x + _translateX;
-        float top = y + _translateY;
-        float right = left + width;
-        float bottom = top + height;
+        var left = x + _translateX;
+        var top = y + _translateY;
+        var right = left + width;
+        var bottom = top + height;
 
         // Scissor rectangles are relative to the framebuffer currently bound for drawing, which is
         // the offscreen FBO the world and screens render into (GameRenderer wraps CurrentScreen.Render
@@ -215,31 +215,31 @@ public class UIRenderer
         // the window's framebuffer overstates the scale and pushes the clip rect right, cutting the
         // left edge off every row of the world and server lists. The origin stays at zero either
         // way: the FBO starts at the viewport, it does not contain it.
-        Vector2D<int> renderTarget = _context.RenderTargetSize;
-        int framebufferWidth = Math.Max(1, renderTarget.X);
-        int framebufferHeight = Math.Max(1, renderTarget.Y);
-        float scaleX = framebufferWidth / (float)res.ScaledWidth;
-        float scaleY = framebufferHeight / (float)res.ScaledHeight;
+        var renderTarget = Context.RenderTargetSize;
+        var framebufferWidth = Math.Max(1, renderTarget.X);
+        var framebufferHeight = Math.Max(1, renderTarget.Y);
+        var scaleX = framebufferWidth / (float)res.ScaledWidth;
+        var scaleY = framebufferHeight / (float)res.ScaledHeight;
 
-        int physicalLeft = (int)MathF.Floor(left * scaleX);
-        int physicalTop = (int)MathF.Floor(top * scaleY);
-        int physicalRight = (int)MathF.Ceiling(right * scaleX);
-        int physicalBottom = (int)MathF.Ceiling(bottom * scaleY);
+        var physicalLeft = (int)MathF.Floor(left * scaleX);
+        var physicalTop = (int)MathF.Floor(top * scaleY);
+        var physicalRight = (int)MathF.Ceiling(right * scaleX);
+        var physicalBottom = (int)MathF.Ceiling(bottom * scaleY);
 
-        int clampedLeft = Math.Clamp(physicalLeft, 0, framebufferWidth);
-        int clampedTop = Math.Clamp(physicalTop, 0, framebufferHeight);
-        int clampedRight = Math.Clamp(physicalRight, 0, framebufferWidth);
-        int clampedBottom = Math.Clamp(physicalBottom, 0, framebufferHeight);
+        var clampedLeft = Math.Clamp(physicalLeft, 0, framebufferWidth);
+        var clampedTop = Math.Clamp(physicalTop, 0, framebufferHeight);
+        var clampedRight = Math.Clamp(physicalRight, 0, framebufferWidth);
+        var clampedBottom = Math.Clamp(physicalBottom, 0, framebufferHeight);
 
-        int physicalX = clampedLeft;
-        int physicalY = framebufferHeight - clampedBottom;
-        int physicalWidth = clampedRight - clampedLeft;
-        int physicalHeight = clampedBottom - clampedTop;
+        var physicalX = clampedLeft;
+        var physicalY = framebufferHeight - clampedBottom;
+        var physicalWidth = clampedRight - clampedLeft;
+        var physicalHeight = clampedBottom - clampedTop;
 
         if (_scissorEnabled)
         {
-            int parentRight = _scissorRect.X + _scissorRect.W;
-            int parentTop = _scissorRect.Y + _scissorRect.H;
+            var parentRight = _scissorRect.X + _scissorRect.W;
+            var parentTop = _scissorRect.Y + _scissorRect.H;
             physicalX = Math.Max(physicalX, _scissorRect.X);
             physicalY = Math.Max(physicalY, _scissorRect.Y);
             physicalWidth = Math.Max(0, Math.Min(physicalX + physicalWidth, parentRight) - physicalX);
@@ -256,7 +256,7 @@ public class UIRenderer
     public void DisableClipping()
     {
         _batch.Flush();
-        if (_scissorStack.TryPop(out (bool Enabled, int X, int Y, int W, int H) prev))
+        if (_scissorStack.TryPop(out var prev))
         {
             _scissorEnabled = prev.Enabled;
             _scissorRect = (prev.X, prev.Y, prev.W, prev.H);
@@ -276,26 +276,26 @@ public class UIRenderer
 
     public void DrawRect(float x, float y, float width, float height, Color color)
     {
-        float x1 = MathF.Floor(x + _translateX);
-        float y1 = MathF.Floor(y + _translateY);
-        float x2 = MathF.Floor(x + _translateX + width);
-        float y2 = MathF.Floor(y + _translateY + height);
+        var x1 = MathF.Floor(x + _translateX);
+        var y1 = MathF.Floor(y + _translateY);
+        var x2 = MathF.Floor(x + _translateX + width);
+        var y2 = MathF.Floor(y + _translateY + height);
         _batch.AddColoredQuad(x1, y1, x2 - x1, y2 - y1, (uint)color);
     }
 
     public void DrawGradientRect(float x, float y, float width, float height, Color topColor, Color bottomColor)
     {
-        float x1 = MathF.Floor(x + _translateX);
-        float y1 = MathF.Floor(y + _translateY);
-        float x2 = MathF.Floor(x + _translateX + width);
-        float y2 = MathF.Floor(y + _translateY + height);
+        var x1 = MathF.Floor(x + _translateX);
+        var y1 = MathF.Floor(y + _translateY);
+        var x2 = MathF.Floor(x + _translateX + width);
+        var y2 = MathF.Floor(y + _translateY + height);
         _batch.AddGradientQuad(x1, y1, x2 - x1, y2 - y1, (uint)topColor, (uint)bottomColor);
     }
 
     public void DrawText(string text, float x, float y, Color color, float scale = 1.0f, bool shadow = true)
     {
-        float ix = MathF.Floor(x + _translateX);
-        float iy = MathF.Floor(y + _translateY);
+        var ix = MathF.Floor(x + _translateX);
+        var iy = MathF.Floor(y + _translateY);
         if (shadow)
         {
             TextRenderer.DrawStringWithShadow(text, ix, iy, color, batch: _batch, scale: scale);
@@ -310,8 +310,8 @@ public class UIRenderer
 
     public void DrawCenteredText(string text, float x, float y, Color color, float rotation = 0, float scale = 1.0f, bool shadow = true)
     {
-        float pivotX = MathF.Floor(x + _translateX);
-        float pivotY = MathF.Floor(y + _translateY);
+        var pivotX = MathF.Floor(x + _translateX);
+        var pivotY = MathF.Floor(y + _translateY);
 
         if (rotation == 0)
         {
@@ -327,9 +327,9 @@ public class UIRenderer
             return;
         }
 
-        float rad = rotation * MathF.PI / 180f;
-        float cos = MathF.Cos(rad);
-        float sin = MathF.Sin(rad);
+        var rad = rotation * MathF.PI / 180f;
+        var cos = MathF.Cos(rad);
+        var sin = MathF.Sin(rad);
 
         if (shadow)
         {
@@ -343,8 +343,8 @@ public class UIRenderer
 
     public void DrawTexture(TextureHandle texture, float x, float y, float width, float height)
     {
-        float finalX = MathF.Floor(x + _translateX);
-        float finalY = MathF.Floor(y + _translateY);
+        var finalX = MathF.Floor(x + _translateX);
+        var finalY = MathF.Floor(y + _translateY);
         _batch.SetTexture((uint)texture.Id);
         _batch.AddQuad(finalX, finalY, finalX + width, finalY + height, 0f, 0f, 1f, 1f, _currentTint);
     }
@@ -357,8 +357,8 @@ public class UIRenderer
     public void DrawTexturedModalRect(TextureHandle texture, float x, float y, float u, float v, float width, float height, float uvWidth, float uvHeight, float z)
     {
         const float f = 0.00390625F; // 1/256
-        float finalX = MathF.Floor(x + _translateX);
-        float finalY = MathF.Floor(y + _translateY);
+        var finalX = MathF.Floor(x + _translateX);
+        var finalY = MathF.Floor(y + _translateY);
         _batch.SetTexture((uint)texture.Id);
         _batch.AddQuad(finalX, finalY, finalX + width, finalY + height,
             u * f, v * f, (u + uvWidth) * f, (v + uvHeight) * f,
@@ -367,13 +367,13 @@ public class UIRenderer
 
     public void DrawRepeatingTexture(TextureHandle texture, float x, float y, float width, float height, float textureScale, float scrollOffsetY = 0f)
     {
-        float finalX = MathF.Floor(x + _translateX);
-        float finalY = MathF.Floor(y + _translateY);
+        var finalX = MathF.Floor(x + _translateX);
+        var finalY = MathF.Floor(y + _translateY);
 
-        float u0 = finalX / textureScale;
-        float v0 = (finalY + scrollOffsetY) / textureScale;
-        float u1 = (finalX + width) / textureScale;
-        float v1 = (finalY + height + scrollOffsetY) / textureScale;
+        var u0 = finalX / textureScale;
+        var v0 = (finalY + scrollOffsetY) / textureScale;
+        var u1 = (finalX + width) / textureScale;
+        var v1 = (finalY + height + scrollOffsetY) / textureScale;
 
         _batch.SetTexture((uint)texture.Id);
         _batch.AddQuad(finalX, finalY, finalX + width, finalY + height, u0, v0, u1, v1, (uint)Color.FromRgb(0x404040));
@@ -381,13 +381,13 @@ public class UIRenderer
 
     public void DrawItemIntoGui(ItemRenderer itemRenderer, int itemId, int itemMeta, int textureId, float x, float y)
     {
-        bool isBlock3D = itemId < 256 && BlockRenderer.IsSideLit(BlockRegistry.GetByProtocolId(itemId).RenderType);
+        var isBlock3D = itemId < 256 && BlockRenderer.IsSideLit(BlockRegistry.GetByProtocolId(itemId).RenderType);
 
         if (isBlock3D)
         {
             _batch.Flush();
             Lighting.turnOnGui();
-            itemRenderer.drawItemIntoGui(TextRenderer, TextureManager, _context.Content.Items.GetByProtocolId(itemId), itemMeta, textureId, (int)(x + _translateX), (int)(y + _translateY));
+            itemRenderer.drawItemIntoGui(TextRenderer, TextureManager, Context.Content.Items.GetByProtocolId(itemId), itemMeta, textureId, (int)(x + _translateX), (int)(y + _translateY));
             Lighting.turnOff();
             return;
         }
@@ -397,13 +397,13 @@ public class UIRenderer
             return;
         }
 
-        TextureHandle texHandle = itemId < 256 ? _terrainTexture : _itemsTexture;
+        var texHandle = itemId < 256 ? _terrainTexture : _itemsTexture;
 
-        int colorMultiplier = _context.Content.Items.GetByProtocolId(itemId).GetColorMultiplier(itemMeta);
-        float finalX = MathF.Floor(x + _translateX);
-        float finalY = MathF.Floor(y + _translateY);
-        float u0 = textureId % 16 * 16 / 256f;
-        float v0 = textureId / 16 * 16 / 256f;
+        var colorMultiplier = Context.Content.Items.GetByProtocolId(itemId).GetColorMultiplier(itemMeta);
+        var finalX = MathF.Floor(x + _translateX);
+        var finalY = MathF.Floor(y + _translateY);
+        var u0 = textureId % 16 * 16 / 256f;
+        var v0 = textureId / 16 * 16 / 256f;
         _batch.SetTexture((uint)texHandle.Id);
         _batch.AddQuad(finalX, finalY, finalX + 16f, finalY + 16f, u0, v0, u0 + 16f / 256f, v0 + 16f / 256f, (uint)Color.FromRgb((uint)colorMultiplier));
     }
@@ -415,7 +415,7 @@ public class UIRenderer
             return;
         }
 
-        bool isBlock = stack.ItemId < 256 && BlockRenderer.IsSideLit(BlockRegistry.GetByProtocolId(stack.ItemId).RenderType);
+        var isBlock = stack.ItemId < 256 && BlockRenderer.IsSideLit(BlockRegistry.GetByProtocolId(stack.ItemId).RenderType);
 
         if (isBlock)
         {
@@ -437,21 +437,21 @@ public class UIRenderer
         }
         else
         {
-            int iconIndex = stack.GetTextureId();
+            var iconIndex = stack.GetTextureId();
             if (iconIndex < 0)
             {
                 return;
             }
 
-            TextureHandle texHandle = stack.ItemId < 256 ? _terrainTexture : _itemsTexture;
+            var texHandle = stack.ItemId < 256 ? _terrainTexture : _itemsTexture;
 
-            int colorMultiplier = stack.GetItem().GetColorMultiplier(stack.GetDamage());
-            uint rgba = (uint)Color.FromRgb((uint)colorMultiplier);
+            var colorMultiplier = stack.GetItem().GetColorMultiplier(stack.GetDamage());
+            var rgba = (uint)Color.FromRgb((uint)colorMultiplier);
 
-            float finalX = MathF.Floor(x + _translateX);
-            float finalY = MathF.Floor(y + _translateY);
-            float u0 = iconIndex % 16 * 16 / 256f;
-            float v0 = iconIndex / 16 * 16 / 256f;
+            var finalX = MathF.Floor(x + _translateX);
+            var finalY = MathF.Floor(y + _translateY);
+            var u0 = iconIndex % 16 * 16 / 256f;
+            var v0 = iconIndex / 16 * 16 / 256f;
             _batch.SetTexture((uint)texHandle.Id);
             _batch.AddQuad(finalX, finalY, finalX + 16f, finalY + 16f, u0, v0, u0 + 16f / 256f, v0 + 16f / 256f, rgba);
         }
@@ -464,22 +464,22 @@ public class UIRenderer
             return;
         }
 
-        int bx = (int)(x + _translateX);
-        int by = (int)(y + _translateY);
+        var bx = (int)(x + _translateX);
+        var by = (int)(y + _translateY);
 
         if (stack.Count > 1)
         {
-            string stackText = stack.Count.ToString();
-            int textX = bx + 17 - TextRenderer.GetStringWidth(stackText);
+            var stackText = stack.Count.ToString();
+            var textX = bx + 17 - TextRenderer.GetStringWidth(stackText);
             TextRenderer.DrawStringWithShadow(stackText, textX, by + 9, Color.White, batch: _batch);
         }
 
         if (stack.IsDamaged())
         {
-            int barWidth = (int)Math.Round(13.0 - stack.GetDamage2() * 13.0 / stack.GetMaxDamage());
-            int damageColor = (int)Math.Round(255.0 - stack.GetDamage2() * 255.0 / stack.GetMaxDamage());
-            int barColor = ((255 - damageColor) << 16) | (damageColor << 8);
-            int bgColor = (((255 - damageColor) / 4) << 16) | 16128;
+            var barWidth = (int)Math.Round(13.0 - stack.GetDamage2() * 13.0 / stack.GetMaxDamage());
+            var damageColor = (int)Math.Round(255.0 - stack.GetDamage2() * 255.0 / stack.GetMaxDamage());
+            var barColor = ((255 - damageColor) << 16) | (damageColor << 8);
+            var bgColor = (((255 - damageColor) / 4) << 16) | 16128;
 
             _batch.AddColoredQuad(bx + 2, by + 13, 13, 2, (uint)Color.FromRgb(0));
             _batch.AddColoredQuad(bx + 2, by + 13, 12, 1, (uint)Color.FromRgb((uint)bgColor));
@@ -498,11 +498,11 @@ public class UIRenderer
         GLManager.ModelView.Scale(-scale, scale, scale);
         GLManager.ModelView.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
 
-        float bodyYaw = entity is EntityLiving el ? el.BodyYaw : entity.Yaw;
-        float headYaw = entity.Yaw;
-        float headPitch = entity.Pitch;
-        float lookX = x + _translateX - mouseX;
-        float lookY = y + _translateY - 50 - mouseY;
+        var bodyYaw = entity is EntityLiving el ? el.BodyYaw : entity.Yaw;
+        var headYaw = entity.Yaw;
+        var headPitch = entity.Pitch;
+        var lookX = x + _translateX - mouseX;
+        var lookY = y + _translateY - 50 - mouseY;
 
         GLManager.ModelView.Rotate(135.0F, 0.0F, 1.0F, 0.0F);
         Lighting.turnOn();
@@ -538,12 +538,12 @@ public class UIRenderer
 
     public void DrawScrollingText(string text, float x, float y, int containerWidth, int containerHeight, Color color, long scrollStartMs, int rightPadding = 2)
     {
-        int availableWidth = containerWidth - (int)x - rightPadding;
-        int textWidth = TextRenderer.GetStringWidth(text);
+        var availableWidth = containerWidth - (int)x - rightPadding;
+        var textWidth = TextRenderer.GetStringWidth(text);
 
         if (availableWidth > 0 && textWidth > availableWidth)
         {
-            float scrollOffset = scrollStartMs > 0 ? ComputeTextScrollOffset(textWidth - availableWidth, scrollStartMs) : 0f;
+            var scrollOffset = scrollStartMs > 0 ? ComputeTextScrollOffset(textWidth - availableWidth, scrollStartMs) : 0f;
             EnableClipping((int)x, 0, availableWidth, containerHeight);
             DrawText(text, x - scrollOffset, y, color);
             DisableClipping();
@@ -556,12 +556,12 @@ public class UIRenderer
 
     public void DrawScrollingCenteredText(string text, int containerWidth, int containerHeight, float textY, Color color, int padding = 2)
     {
-        int availableWidth = containerWidth - padding * 2;
-        int textWidth = TextRenderer.GetStringWidth(text);
+        var availableWidth = containerWidth - padding * 2;
+        var textWidth = TextRenderer.GetStringWidth(text);
 
         if (availableWidth > 0 && textWidth > availableWidth)
         {
-            float scrollOffset = ComputeTextScrollOffset(textWidth - availableWidth);
+            var scrollOffset = ComputeTextScrollOffset(textWidth - availableWidth);
             EnableClipping(padding, 0, availableWidth, containerHeight);
             DrawText(text, padding - scrollOffset, textY, color);
             DisableClipping();
@@ -579,12 +579,12 @@ public class UIRenderer
     {
         const float scrollSpeed = 30f;
         const float pauseSeconds = 1.0f;
-        float scrollDuration = overflow / scrollSpeed;
-        float period = (pauseSeconds + scrollDuration) * 2f;
+        var scrollDuration = overflow / scrollSpeed;
+        var period = (pauseSeconds + scrollDuration) * 2f;
 
-        long elapsedMs = startMs > 0 ? Environment.TickCount64 - startMs : Environment.TickCount64;
-        long periodMs = Math.Max(1L, (long)(period * 1000));
-        float t = elapsedMs % periodMs / 1000f;
+        var elapsedMs = startMs > 0 ? Environment.TickCount64 - startMs : Environment.TickCount64;
+        var periodMs = Math.Max(1L, (long)(period * 1000));
+        var t = elapsedMs % periodMs / 1000f;
 
         static float Smoothstep(float x) => x * x * (3f - 2f * x);
 
@@ -595,7 +595,7 @@ public class UIRenderer
         }
         else if (t < pauseSeconds + scrollDuration)
         {
-            float p = (t - pauseSeconds) / scrollDuration;
+            var p = (t - pauseSeconds) / scrollDuration;
             offset = Smoothstep(p) * overflow;
         }
         else if (t < pauseSeconds * 2f + scrollDuration)
@@ -604,7 +604,7 @@ public class UIRenderer
         }
         else
         {
-            float p = (t - pauseSeconds * 2f - scrollDuration) / scrollDuration;
+            var p = (t - pauseSeconds * 2f - scrollDuration) / scrollDuration;
             offset = (1f - Smoothstep(p)) * overflow;
         }
 
@@ -622,17 +622,17 @@ public class UIRenderer
         GLManager.ModelView.Scale(-scale, -scale, -scale);
         GLManager.ModelView.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
 
-        Block signBlock = sign.GetBlock();
+        var signBlock = sign.GetBlock();
         if (signBlock == BlockRegistry.Get("sign"))
         {
-            float rotation = sign.PushedBlockData * 360 / 16.0F;
+            var rotation = sign.PushedBlockData * 360 / 16.0F;
             GLManager.ModelView.Rotate(rotation, 0.0F, 1.0F, 0.0F);
             GLManager.ModelView.Translate(0.0F, -1.0625F, 0.0F);
         }
         else
         {
-            int rotationIndex = sign.PushedBlockData;
-            float angle = 0.0F;
+            var rotationIndex = sign.PushedBlockData;
+            var angle = 0.0F;
             if (rotationIndex == 2)
             {
                 angle = 180.0F;

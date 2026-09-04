@@ -12,8 +12,8 @@ public sealed class BlockRedstoneOreTests
     public void OnTick_ConfiguredLitOre_RevertsToConfiguredUnlitOre()
     {
         FakeWorldContext world = new();
-        Block customUnlit = TestBlocks.Get("stone");
-        Block customLit = TestBlocks.Get("glowstone");
+        var customUnlit = TestBlocks.Get("stone");
+        var customLit = TestBlocks.Get("glowstone");
         world.ReaderWriter.SetInitial(0, 64, 0, customLit.Id);
 
         RedstoneOreBehavior behavior = new(customUnlit, customLit);
@@ -26,9 +26,9 @@ public sealed class BlockRedstoneOreTests
     public void OnTick_VanillaLitRedstoneOreNotInCustomConfig_DoesNotRevert()
     {
         FakeWorldContext world = new();
-        Block customUnlit = TestBlocks.Get("stone");
-        Block customLit = TestBlocks.Get("glowstone");
-        Block vanillaLit = TestBlocks.Get("lit_redstone_ore");
+        var customUnlit = TestBlocks.Get("stone");
+        var customLit = TestBlocks.Get("glowstone");
+        var vanillaLit = TestBlocks.Get("lit_redstone_ore");
         world.ReaderWriter.SetInitial(0, 64, 0, vanillaLit.Id);
 
         RedstoneOreBehavior behavior = new(customUnlit, customLit);
@@ -41,8 +41,8 @@ public sealed class BlockRedstoneOreTests
     public void OnUse_ConfiguredUnlitOre_LightsToConfiguredLitOre()
     {
         FakeWorldContext world = new();
-        Block customUnlit = TestBlocks.Get("stone");
-        Block customLit = TestBlocks.Get("glowstone");
+        var customUnlit = TestBlocks.Get("stone");
+        var customLit = TestBlocks.Get("glowstone");
         world.ReaderWriter.SetInitial(0, 64, 0, customUnlit.Id);
 
         RedstoneOreBehavior behavior = new(customUnlit, customLit);
@@ -56,14 +56,14 @@ public sealed class BlockRedstoneOreTests
     [Fact]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"redstone_ore","unlit_ore":"omniblock:redstone_ore"}""");
+        using var json = JsonDocument.Parse("""{"Type":"redstone_ore","unlit_ore":"omniblock:redstone_ore"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("redstone_ore", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"redstone_ore","unlit_ore":"not_a_real_block","lit_ore":"omniblock:lit_redstone_ore"}""");
+        using var json = JsonDocument.Parse("""{"Type":"redstone_ore","unlit_ore":"not_a_real_block","lit_ore":"omniblock:lit_redstone_ore"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("redstone_ore", json.RootElement));
     }
 }

@@ -13,21 +13,14 @@ namespace OmniBlock.Client.Rendering.Core.WebGPU;
 /// </remarks>
 public sealed unsafe class WgpuTextureArray : IDisposable
 {
-    public Texture* Texture { get; }
-    public TextureView* View { get; }
-    public Sampler* Sampler { get; private set; }
-
-    public uint Width { get; }
-    public uint Height { get; }
-    public uint LayerCount { get; }
-
     /// <summary>The format every layer is uploaded as.</summary>
     public const TextureFormat Format = TextureFormat.Rgba8Unorm;
 
-    private readonly WebGpuDevice _device;
     private readonly Dictionary<nint, nint> _bindGroups = [];
-    private WgpuSamplerDescription _samplerDescription;
+
+    private readonly WebGpuDevice _device;
     private bool _disposed;
+    private WgpuSamplerDescription _samplerDescription;
 
     /// <summary>Creates an empty array; the caller fills layers with <see cref="UploadLayer" />.</summary>
     public WgpuTextureArray(WebGpuDevice device, uint width, uint height, uint layerCount,
@@ -37,7 +30,7 @@ public sealed unsafe class WgpuTextureArray : IDisposable
         Width = Math.Max(1, width);
         Height = Math.Max(1, height);
         LayerCount = Math.Max(1, layerCount);
-        Silk.NET.WebGPU.WebGPU api = device.Api;
+        var api = device.Api;
 
         TextureDescriptor desc = new()
         {
@@ -46,7 +39,7 @@ public sealed unsafe class WgpuTextureArray : IDisposable
             Size = new Extent3D(Width, Height, LayerCount),
             Format = Format,
             MipLevelCount = 1,
-            SampleCount = 1,
+            SampleCount = 1
         };
 
         Texture = api.DeviceCreateTexture(device.Device, in desc);
@@ -57,7 +50,7 @@ public sealed unsafe class WgpuTextureArray : IDisposable
             Dimension = TextureViewDimension.Dimension2DArray,
             MipLevelCount = 1,
             ArrayLayerCount = LayerCount,
-            Aspect = TextureAspect.All,
+            Aspect = TextureAspect.All
         };
 
         View = api.TextureCreateView(Texture, in viewDesc);
@@ -72,8 +65,27 @@ public sealed unsafe class WgpuTextureArray : IDisposable
         : this(device, layerSize, layerSize, layerCount, WgpuSamplerDescription.Nearest) =>
         BindGroup = BindGroupFor(textureBindGroupLayout);
 
+    public Texture* Texture { get; }
+    public TextureView* View { get; }
+    public Sampler* Sampler { get; private set; }
+
+    public uint Width { get; }
+    public uint Height { get; }
+    public uint LayerCount { get; }
+
     /// <summary>The bind group made by the single-layout constructor.</summary>
     public BindGroup* BindGroup { get; }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+
+        // The pack switch this defers for is the one that rebuilds these arrays: NamedTextureArray
+        // reallocates every layer at the new resolution while the frame is still being recorded.
+        WgpuRelease.Deferred(_device, [.. _bindGroups.Values], (nint)Sampler, (nint)View, (nint)Texture);
+        _bindGroups.Clear();
+    }
 
     /// <summary>
     ///     Replaces the filtering and wrap rules, rebuilding the sampler and dropping the bind
@@ -93,20 +105,28 @@ public sealed unsafe class WgpuTextureArray : IDisposable
     /// <summary>The bind group binding this array and its sampler for a pipeline using <paramref name="layout" />.</summary>
     public BindGroup* BindGroupFor(BindGroupLayout* layout)
     {
-        if (_bindGroups.TryGetValue((nint)layout, out nint cached)) return (BindGroup*)cached;
+        if (_bindGroups.TryGetValue((nint)layout, out var cached)) return (BindGroup*)cached;
 
-        BindGroupEntry* entries = stackalloc BindGroupEntry[2];
-        entries[0] = new BindGroupEntry { Binding = 0, TextureView = View };
-        entries[1] = new BindGroupEntry { Binding = 1, Sampler = Sampler };
+        var entries = stackalloc BindGroupEntry[2];
+        entries[0] = new BindGroupEntry
+        {
+            Binding = 0,
+            TextureView = View
+        };
+        entries[1] = new BindGroupEntry
+        {
+            Binding = 1,
+            Sampler = Sampler
+        };
 
         BindGroupDescriptor bgDesc = new()
         {
             Layout = layout,
             EntryCount = 2,
-            Entries = entries,
+            Entries = entries
         };
 
-        BindGroup* bindGroup = _device.Api.DeviceCreateBindGroup(_device.Device, in bgDesc);
+        var bindGroup = _device.Api.DeviceCreateBindGroup(_device.Device, in bgDesc);
         _bindGroups[(nint)layout] = (nint)bindGroup;
         return bindGroup;
     }
@@ -120,22 +140,22 @@ public sealed unsafe class WgpuTextureArray : IDisposable
     {
         if (width == 0 || height == 0 || layerIndex >= LayerCount) return;
 
-        ReadOnlySpan<byte> rows = WgpuPixelRows.Align(rgba, width, height, out uint bytesPerRow);
-        Silk.NET.WebGPU.WebGPU api = _device.Api;
+        var rows = WgpuPixelRows.Align(rgba, width, height, out var bytesPerRow);
+        var api = _device.Api;
 
         ImageCopyTexture destination = new()
         {
             Texture = Texture,
             MipLevel = 0,
             Origin = new Origin3D(x, y, layerIndex),
-            Aspect = TextureAspect.All,
+            Aspect = TextureAspect.All
         };
 
         TextureDataLayout layout = new()
         {
             Offset = 0,
             BytesPerRow = bytesPerRow,
-            RowsPerImage = height,
+            RowsPerImage = height
         };
 
         Extent3D extent = new(width, height, 1);
@@ -158,20 +178,9 @@ public sealed unsafe class WgpuTextureArray : IDisposable
             MipmapFilter = description.Mipmap,
             LodMinClamp = 0.0f,
             LodMaxClamp = Math.Max(0.0f, description.LodMaxClamp),
-            MaxAnisotropy = (ushort)Math.Max(1u, description.MaxAnisotropy),
+            MaxAnisotropy = (ushort)Math.Max(1u, description.MaxAnisotropy)
         };
 
         return _device.Api.DeviceCreateSampler(_device.Device, in samplerDesc);
-    }
-
-    public void Dispose()
-    {
-        if (_disposed) return;
-        _disposed = true;
-
-        // The pack switch this defers for is the one that rebuilds these arrays: NamedTextureArray
-        // reallocates every layer at the new resolution while the frame is still being recorded.
-        WgpuRelease.Deferred(_device, [.. _bindGroups.Values], (nint)Sampler, (nint)View, (nint)Texture);
-        _bindGroups.Clear();
     }
 }

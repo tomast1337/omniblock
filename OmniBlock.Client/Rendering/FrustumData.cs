@@ -7,10 +7,10 @@ namespace OmniBlock.Client.Rendering;
 
 public class FrustumData
 {
-    public float[] Frustum = new float[24];
-    public float[] ProjectionMatrix = new float[16];
-    public float[] ModelviewMatrix = new float[16];
     public float[] ClippingMatrix = new float[16];
+    public float[] Frustum = new float[24];
+    public float[] ModelviewMatrix = new float[16];
+    public float[] ProjectionMatrix = new float[16];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsBoxInFrustum(in Box box)
@@ -29,7 +29,7 @@ public class FrustumData
         return IsBoxInFrustumUnsafe(fMinX, fMinY, fMinZ, fMaxX, fMaxY, fMaxZ);
     }
 
-    private unsafe bool IsBoxInFrustumSIMD(float fMinX, float fMinY, float fMinZ, float fMaxX, float fMaxY, float fMaxZ)
+    private bool IsBoxInFrustumSIMD(float fMinX, float fMinY, float fMinZ, float fMaxX, float fMaxY, float fMaxZ)
     {
         var vX1 = Vector128.Create(fMinX, fMaxX, fMinX, fMaxX);
         var vY1 = Vector128.Create(fMinY, fMinY, fMaxY, fMaxY);
@@ -38,11 +38,11 @@ public class FrustumData
         var vY2 = vY1;
         var vZ2 = Vector128.Create(fMaxZ, fMaxZ, fMaxZ, fMaxZ);
 
-        ref float frustumRef = ref MemoryMarshal.GetArrayDataReference(Frustum);
+        ref var frustumRef = ref MemoryMarshal.GetArrayDataReference(Frustum);
 
-        for (int i = 0; i < 6; i++)
+        for (var i = 0; i < 6; i++)
         {
-            int offset = i << 2;
+            var offset = i << 2;
             var va = Vector128.Create(Unsafe.Add(ref frustumRef, offset));
             var vb = Vector128.Create(Unsafe.Add(ref frustumRef, offset + 1));
             var vc = Vector128.Create(Unsafe.Add(ref frustumRef, offset + 2));
@@ -57,19 +57,20 @@ public class FrustumData
                 return false;
             }
         }
+
         return true;
     }
 
     private bool IsBoxInFrustumUnsafe(float fMinX, float fMinY, float fMinZ, float fMaxX, float fMaxY, float fMaxZ)
     {
-        ref float frustumRef = ref MemoryMarshal.GetArrayDataReference(Frustum);
-        for (int i = 0; i < 6; i++)
+        ref var frustumRef = ref MemoryMarshal.GetArrayDataReference(Frustum);
+        for (var i = 0; i < 6; i++)
         {
-            int offset = i << 2;
-            float a = Unsafe.Add(ref frustumRef, offset);
-            float b = Unsafe.Add(ref frustumRef, offset + 1);
-            float c = Unsafe.Add(ref frustumRef, offset + 2);
-            float d = Unsafe.Add(ref frustumRef, offset + 3);
+            var offset = i << 2;
+            var a = Unsafe.Add(ref frustumRef, offset);
+            var b = Unsafe.Add(ref frustumRef, offset + 1);
+            var c = Unsafe.Add(ref frustumRef, offset + 2);
+            var d = Unsafe.Add(ref frustumRef, offset + 3);
 
             if (a * fMinX + b * fMinY + c * fMinZ + d <= 0.0f &&
                 a * fMaxX + b * fMinY + c * fMinZ + d <= 0.0f &&
@@ -83,6 +84,7 @@ public class FrustumData
                 return false;
             }
         }
+
         return true;
     }
 }

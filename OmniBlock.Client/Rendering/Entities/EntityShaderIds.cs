@@ -1,17 +1,18 @@
 namespace OmniBlock.Client.Rendering.Entities;
 
 /// <summary>
-/// Symbolic ids the entity shader branches on: which mob is being drawn, and which part of it.
-/// <para>
-/// Both come from a properties file next to the shaders rather than from constants, so a shader
-/// pack can be written against stable names and the ids regrouped without touching C#. A name
-/// absent from its file resolves to 0, which every shader treats as passthrough — an unmapped
-/// texture or an unnamed bone renders exactly as it did before any of this existed.
-/// </para>
+///     Symbolic ids the entity shader branches on: which mob is being drawn, and which part of it.
+///     <para>
+///         Both come from a properties file next to the shaders rather than from constants, so a shader
+///         pack can be written against stable names and the ids regrouped without touching C#. A name
+///         absent from its file resolves to 0, which every shader treats as passthrough — an unmapped
+///         texture or an unnamed bone renders exactly as it did before any of this existed.
+///     </para>
 /// </summary>
 internal static class EntityShaderIds
 {
     private static readonly Dictionary<string, int> s_textureIds = Load("shaders/entity_textures.properties");
+
     private static readonly Dictionary<string, uint> s_partIds =
         Load("shaders/entity_parts.properties").ToDictionary(e => e.Key, e => (uint)e.Value, StringComparer.OrdinalIgnoreCase);
 
@@ -29,16 +30,16 @@ internal static class EntityShaderIds
 
         try
         {
-            string text = AssetManager.Instance.GetAsset(assetPath).GetTextContent();
-            foreach (string line in text.Split('\n'))
+            var text = AssetManager.Instance.GetAsset(assetPath).GetTextContent();
+            foreach (var line in text.Split('\n'))
             {
-                string trimmed = line.Trim();
+                var trimmed = line.Trim();
                 if (trimmed.Length == 0 || trimmed[0] == '#') continue;
 
-                int eq = trimmed.IndexOf('=');
+                var eq = trimmed.IndexOf('=');
                 if (eq < 0) continue;
 
-                if (int.TryParse(trimmed[(eq + 1)..].Trim(), out int id))
+                if (int.TryParse(trimmed[(eq + 1)..].Trim(), out var id))
                 {
                     ids[trimmed[..eq].Trim()] = id;
                 }

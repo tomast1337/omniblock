@@ -7,15 +7,14 @@ namespace OmniBlock.Screens;
 
 public class GenericContainerScreenHandler : ScreenHandler
 {
-
-    private IInventory inventory;
-    private int rows;
+    private readonly IInventory inventory;
+    private readonly int rows;
 
     public GenericContainerScreenHandler(IInventory playerInventory, IInventory inventory)
     {
         this.inventory = inventory;
         rows = inventory.Size / 9;
-        int inventoryYOffset = (rows - 4) * 18;
+        var inventoryYOffset = (rows - 4) * 18;
 
         int row;
         int column;
@@ -39,21 +38,17 @@ public class GenericContainerScreenHandler : ScreenHandler
         {
             AddSlot(new Slot(playerInventory, row, 8 + row * 18, 161 + inventoryYOffset));
         }
-
     }
 
-    public override bool canUse(EntityPlayer player)
-    {
-        return inventory.CanPlayerUse(player);
-    }
+    public override bool canUse(EntityPlayer player) => inventory.CanPlayerUse(player);
 
     public override ItemStack quickMove(int slotNumber)
     {
         ItemStack movedStack = null;
-        Slot slot = Slots[slotNumber];
+        var slot = Slots[slotNumber];
         if (slot != null && slot.hasStack())
         {
-            ItemStack slotStack = slot.getStack();
+            var slotStack = slot.getStack();
             movedStack = slotStack.Copy();
             if (slotNumber < rows * 9)
             {

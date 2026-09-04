@@ -1,5 +1,4 @@
 using OmniBlock.Network;
-using OmniBlock.Network.Messages;
 using OmniBlock.Network.Packets;
 
 namespace OmniBlock.Tests.Network;
@@ -15,17 +14,6 @@ public sealed class ExtendedProtocolGateTests
 {
     /// <summary>An extended packet, standing in for whatever the peer happens to send first.</summary>
     private static OmniMessagePacket Extended(int messageId = 0) => OmniMessagePacket.Get(messageId, []);
-
-    private sealed class Fixture
-    {
-        public FakeTransportConnection Transport { get; } = new();
-
-        public UdpConnection Connection { get; }
-
-        public int SentCount => Transport.Sent.Count;
-
-        public Fixture() => Connection = new UdpConnection(Transport);
-    }
 
     [Fact]
     public void Extended_packets_are_dropped_while_the_peer_is_unknown()
@@ -105,5 +93,15 @@ public sealed class ExtendedProtocolGateTests
         // covers all of them. If it stopped being an ExtendedProtocolPacket, a vanilla peer would
         // receive an id it cannot parse and drop the connection.
         Assert.IsAssignableFrom<ExtendedProtocolPacket>(Extended());
+    }
+
+    private sealed class Fixture
+    {
+        public Fixture() => Connection = new UdpConnection(Transport);
+        public FakeTransportConnection Transport { get; } = new();
+
+        public UdpConnection Connection { get; }
+
+        public int SentCount => Transport.Sent.Count;
     }
 }

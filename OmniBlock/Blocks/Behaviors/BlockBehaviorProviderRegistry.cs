@@ -7,8 +7,6 @@ namespace OmniBlock.Blocks.Behaviors;
 
 internal sealed class BlockBehaviorProviderRegistry : IBlockBehaviorProviderRegistry
 {
-    private delegate object BehaviorFactory(JsonElement json);
-
     private readonly BehaviorBuildContext _context;
     private readonly FrozenDictionary<ResourceLocation, BehaviorFactory> _factories;
 
@@ -149,20 +147,11 @@ internal sealed class BlockBehaviorProviderRegistry : IBlockBehaviorProviderRegi
         };
     }
 
-    private int ResolveTexture(string name)
-    {
-        return _context.ResolveTerrainTexture(name);
-    }
+    private int ResolveTexture(string name) => _context.ResolveTerrainTexture(name);
 
-    private int Texture(JsonElement json, string property)
-    {
-        return ResolveTexture(json.GetProperty(property).GetString()!);
-    }
+    private int Texture(JsonElement json, string property) => ResolveTexture(json.GetProperty(property).GetString()!);
 
-    private BlockFaceTextures ResolveFaceTextures(JsonElement json)
-    {
-        return new BlockFaceTextures(Texture(json, "top"), Texture(json, "side"), Texture(json, "bottom"));
-    }
+    private BlockFaceTextures ResolveFaceTextures(JsonElement json) => new(Texture(json, "top"), Texture(json, "side"), Texture(json, "bottom"));
 
     private int[] ResolveTextures(JsonElement array)
     {
@@ -173,28 +162,17 @@ internal sealed class BlockBehaviorProviderRegistry : IBlockBehaviorProviderRegi
         return textures;
     }
 
-    private Block ResolveBlock(string name)
-    {
-        return _context.ResolveBlock(ResourceLocation.Parse(name));
-    }
+    private Block ResolveBlock(string name) => _context.ResolveBlock(ResourceLocation.Parse(name));
 
     private int ResolveBlockOrAir(string name)
     {
         var key = ResourceLocation.Parse(name);
-        return key.Namespace == Namespace.OmniBlock && key.Path == "air"
-            ? 0
-            : _context.ResolveBlock(key).Id;
+        return key.Namespace.Equals(Namespace.OmniBlock) && key.Path == "air" ? 0 : _context.ResolveBlock(key).Id;
     }
 
-    private Item ResolveItem(string name)
-    {
-        return _context.ResolveItem(ResourceLocation.Parse(name));
-    }
+    private Item ResolveItem(string name) => _context.ResolveItem(ResourceLocation.Parse(name));
 
-    private Material ResolveMaterial(string name)
-    {
-        return _context.ResolveMaterial(ResourceLocation.Parse(name));
-    }
+    private Material ResolveMaterial(string name) => _context.ResolveMaterial(ResourceLocation.Parse(name));
 
     private Block[] ResolveBlockArray(JsonElement array)
     {
@@ -204,4 +182,6 @@ internal sealed class BlockBehaviorProviderRegistry : IBlockBehaviorProviderRegi
 
         return blocks;
     }
+
+    private delegate object BehaviorFactory(JsonElement json);
 }

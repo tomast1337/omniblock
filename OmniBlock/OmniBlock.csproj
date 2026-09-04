@@ -20,34 +20,34 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Brigadier.NET" Version="2.0.15-beta" />
-    <PackageReference Include="Hexa.NET.ImGui" Version="2.2.9" />
-    <PackageReference Include="Hexa.NET.ImGui.Backends" Version="1.0.18" />
-    <PackageReference Include="Hexa.NET.ImGui.Backends.GLFW" Version="1.0.18" />
-    <PackageReference Include="LiteNetLib" Version="2.1.4" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.3" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.3" />
-    <PackageReference Include="SFML.Audio" Version="3.0.0" />
-    <PackageReference Include="Silk.NET.GLFW" Version="2.23.0" />
-    <PackageReference Include="Silk.NET.Input.Glfw" Version="2.23.0" />
-    <PackageReference Include="Silk.NET.OpenGL" Version="2.23.0" />
-    <PackageReference Include="Silk.NET.WebGPU" Version="2.23.0" />
+    <PackageReference Include="Brigadier.NET" Version="2.0.15-beta"/>
+    <PackageReference Include="Hexa.NET.ImGui" Version="2.2.9"/>
+    <PackageReference Include="Hexa.NET.ImGui.Backends" Version="1.0.18"/>
+    <PackageReference Include="Hexa.NET.ImGui.Backends.GLFW" Version="1.0.18"/>
+    <PackageReference Include="LiteNetLib" Version="2.1.4"/>
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.3"/>
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.3"/>
+    <PackageReference Include="SFML.Audio" Version="3.0.0"/>
+    <PackageReference Include="Silk.NET.GLFW" Version="2.23.0"/>
+    <PackageReference Include="Silk.NET.Input.Glfw" Version="2.23.0"/>
+    <PackageReference Include="Silk.NET.OpenGL" Version="2.23.0"/>
+    <PackageReference Include="Silk.NET.WebGPU" Version="2.23.0"/>
     <!--
       The native half is wgpu-native, not Dawn. Both implement the same webgpu.h C API that
       Silk.NET.WebGPU binds, so the choice is invisible above the binding; it matters only in that
       wgpu-native ships prebuilt for every RID we target and Dawn does not.
     -->
-    <PackageReference Include="Silk.NET.WebGPU.Native.WGPU" Version="2.23.0" />
-    <PackageReference Include="Silk.NET.Windowing" Version="2.23.0" />
-    <PackageReference Include="Silk.NET.Windowing.Glfw" Version="2.23.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+    <PackageReference Include="Silk.NET.WebGPU.Native.WGPU" Version="2.23.0"/>
+    <PackageReference Include="Silk.NET.Windowing" Version="2.23.0"/>
+    <PackageReference Include="Silk.NET.Windowing.Glfw" Version="2.23.0"/>
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12"/>
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="shaders\**\*" />
-    <EmbeddedResource Include="textures\**\*" />
+    <EmbeddedResource Include="shaders\**\*"/>
+    <EmbeddedResource Include="textures\**\*"/>
   </ItemGroup>
   <ItemGroup>
-    <InternalsVisibleTo Include="OmniBlock.Tests" />
+    <InternalsVisibleTo Include="OmniBlock.Tests"/>
   </ItemGroup>
 </Project>

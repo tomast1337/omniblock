@@ -18,14 +18,14 @@ public class SavingIndicator(Func<bool> isSavingComplete) : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        bool isSavingActive = !isSavingComplete();
+        var isSavingActive = !isSavingComplete();
 
         if (isSavingActive || _tickCounter < 20)
         {
-            float pulse = _tickCounter % 10 / 10.0F;
+            var pulse = _tickCounter % 10 / 10.0F;
             pulse = MathHelper.Sin(pulse * (float)Math.PI * 2.0F) * 0.2F + 0.8F;
-            int colorVal = (int)(255.0F * pulse);
-            Color color = Color.FromRgb((uint)((colorVal << 16) | (colorVal << 8) | colorVal));
+            var colorVal = (int)(255.0F * pulse);
+            var color = Color.FromRgb((uint)((colorVal << 16) | (colorVal << 8) | colorVal));
 
             renderer.DrawText("Saving level...", 0, 0, color);
         }

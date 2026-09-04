@@ -1,6 +1,6 @@
 using System.Text.Json;
 using OmniBlock.Entities;
-using OmniBlock.Registries;
+using OmniBlock.Entities.State;
 
 namespace OmniBlock.Tests.Entities;
 
@@ -10,8 +10,11 @@ public sealed class EntityReferenceValidationTests
     [Fact]
     public void Unknown_held_item_identifies_the_owning_entity_and_item()
     {
-        EntityDefinition definition = Definition("bad_held_item", 20);
-        definition = definition with { HeldItem = "example:missing_item" };
+        var definition = Definition("bad_held_item", 20);
+        definition = definition with
+        {
+            HeldItem = "example:missing_item"
+        };
 
         AssertInvalid(definition, "omniblock:bad_held_item", "example:missing_item");
     }
@@ -27,15 +30,13 @@ public sealed class EntityReferenceValidationTests
         string owner,
         string behavior,
         string provider,
-        string reference)
-    {
+        string reference) =>
         AssertInvalid(Definition(owner, 20, behavior), $"omniblock:{owner}", provider, reference);
-    }
 
     [Fact]
     public void Unknown_constructor_provider_identifies_owner_and_provider()
     {
-        EntityDefinition definition = Definition("bad_constructor", 20) with
+        var definition = Definition("bad_constructor", 20) with
         {
             Constructor = "example:missing_constructor"
         };
@@ -57,12 +58,12 @@ public sealed class EntityReferenceValidationTests
     [Fact]
     public void Duplicate_synced_wire_ids_fail_before_publication()
     {
-        EntityDefinition definition = Definition("duplicate_synced", 20) with
+        var definition = Definition("duplicate_synced", 20) with
         {
             SyncedProperties =
             [
-                new("first", 16, OmniBlock.Entities.State.SyncedValueKind.Byte),
-                new("second", 16, OmniBlock.Entities.State.SyncedValueKind.Int)
+                new SyncedPropertyDefinition("first", 16, SyncedValueKind.Byte),
+                new SyncedPropertyDefinition("second", 16, SyncedValueKind.Int)
             ]
         };
 
@@ -71,13 +72,13 @@ public sealed class EntityReferenceValidationTests
 
     private static void AssertInvalid(EntityDefinition definition, params string[] fragments)
     {
-        ContentRuntime published = ContentRuntime.Current;
-        ContentRuntimeBuilder builder = ContentRuntimeBuilder.CreateBuiltIns();
+        var published = ContentRuntime.Current;
+        var builder = ContentRuntimeBuilder.CreateBuiltIns();
         builder.AddEntityDefinition(definition);
 
-        Exception error = Assert.ThrowsAny<Exception>(() => builder.Build());
+        var error = Assert.ThrowsAny<Exception>(() => builder.Build());
 
-        foreach (string fragment in fragments) Assert.Contains(fragment, error.ToString());
+        foreach (var fragment in fragments) Assert.Contains(fragment, error.ToString());
         Assert.Same(published, ContentRuntime.Current);
     }
 

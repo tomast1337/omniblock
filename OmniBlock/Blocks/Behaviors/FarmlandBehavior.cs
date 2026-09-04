@@ -28,20 +28,14 @@ internal sealed class FarmlandBehavior(Block revertBlock, Block crop, int trampl
         if (Random.Shared.Next(trampleChanceOneIn) == 0) @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, revertBlock.Id);
     }
 
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId)
-    {
-        return revertBlock.GetDroppedItemId(0);
-    }
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => revertBlock.GetDroppedItemId(0);
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
         if (@event.World.Reader.GetMaterial(@event.X, @event.Y + 1, @event.Z).IsSolid) @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, revertBlock.Id);
     }
 
-    public Box? GetCollisionShape(Block block, IBlockReader reader, EntityManager entities, int x, int y, int z, Box? defaultShape)
-    {
-        return new Box(x, y, z, x + 1, y + 1, z + 1);
-    }
+    public Box? GetCollisionShape(Block block, IBlockReader reader, EntityManager entities, int x, int y, int z, Box? defaultShape) => new Box(x, y, z, x + 1, y + 1, z + 1);
 
     public void OnTick(Block block, OnTickEvent @event)
     {
@@ -74,8 +68,10 @@ internal sealed class FarmlandBehavior(Block revertBlock, Block crop, int trampl
     {
         for (var dx = x - 0; dx <= x + 0; ++dx)
         for (var dy = z - 0; dy <= z + 0; ++dy)
+        {
             if (world.GetBlockId(dx, y + 1, dy) == crop.Id)
                 return true;
+        }
 
         return false;
     }
@@ -85,8 +81,10 @@ internal sealed class FarmlandBehavior(Block revertBlock, Block crop, int trampl
         for (var checkX = x - waterCheckRadius; checkX <= x + waterCheckRadius; ++checkX)
         for (var checkY = y; checkY <= y + 1; ++checkY)
         for (var checkZ = z - waterCheckRadius; checkZ <= z + waterCheckRadius; ++checkZ)
+        {
             if (reader.GetMaterial(checkX, checkY, checkZ) == Material.Water)
                 return true;
+        }
 
         return false;
     }

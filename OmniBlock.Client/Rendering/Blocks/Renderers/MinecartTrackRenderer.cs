@@ -9,9 +9,9 @@ public class MinecartTrackRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
+        var metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
 
-        int textureId = block.GetTexture(0, metadata);
+        var textureId = block.GetTexture(0, metadata);
         if (ctx.OverrideTexture >= 0)
         {
             textureId = ctx.OverrideTexture;
@@ -33,16 +33,16 @@ public class MinecartTrackRenderer : IBlockRenderer
         const float minV = 0.0F;
         const float maxV = 1.0F;
 
-        float verticalOffset = 1.0F / 16.0F; // 1 pixel above the ground
+        var verticalOffset = 1.0F / 16.0F; // 1 pixel above the ground
 
         // Default vertex positions (flat square)
         float x1 = pos.X + 1, x2 = pos.X + 1, x3 = pos.X + 0, x4 = pos.X + 0;
         float z1 = pos.Z + 0, z2 = pos.Z + 1, z3 = pos.Z + 1, z4 = pos.Z + 0;
 
-        float h1 = pos.Y + verticalOffset;
-        float h2 = pos.Y + verticalOffset;
-        float h3 = pos.Y + verticalOffset;
-        float h4 = pos.Y + verticalOffset;
+        var h1 = pos.Y + verticalOffset;
+        var h2 = pos.Y + verticalOffset;
+        var h3 = pos.Y + verticalOffset;
+        var h4 = pos.Y + verticalOffset;
 
         // Handle coordinate swapping for curves and orientation
         if (metadata != 1 && metadata != 2 && metadata != 3 && metadata != 7)

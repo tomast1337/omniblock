@@ -2,15 +2,14 @@ using System.Text.Json;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.Entities.State;
-using OmniBlock.Items;
 using OmniBlock.Loot;
 using OmniBlock.Loot.Conditions;
 
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Covers behavior loading: capability slots are declared in <c>assets/entity/*.json</c> and built
-/// at registration, not wired in mob constructors.
+///     Covers behavior loading: capability slots are declared in <c>assets/entity/*.json</c> and built
+///     at registration, not wired in mob constructors.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityBehaviorJsonTests
@@ -25,7 +24,11 @@ public sealed class EntityBehaviorJsonTests
     {
         var providers = new EntityBehaviorProviderRegistry();
         var context = new EntityBehaviorBuildContext(
-            definition ?? new EntityDefinition { ProtocolId = 1, Name = "test" },
+            definition ?? new EntityDefinition
+            {
+                ProtocolId = 1,
+                Name = "test"
+            },
             new EntityStateLayout(),
             ContentRuntime.Current.Blocks,
             ContentRuntime.Current.Items,
@@ -53,16 +56,16 @@ public sealed class EntityBehaviorJsonTests
     [Fact]
     public void Jump_attack_can_nest_a_fallback_behavior()
     {
-        object built = Build("""{"Type":"jump","fallback":{"Type":"melee"}}""");
-        JumpAttackBehavior jump = Assert.IsType<JumpAttackBehavior>(built);
+        var built = Build("""{"Type":"jump","fallback":{"Type":"melee"}}""");
+        var jump = Assert.IsType<JumpAttackBehavior>(built);
 
         // The nested melee is what a spider falls back to outside its lunge band.
         FakeWorldContext world = new();
-        EntityCreature spider = (EntityCreature)TestEntityCatalog.ByName("spider").Create(world);
-        EntityCreature target = (EntityCreature)TestEntityCatalog.ByName("pig").Create(world);
+        var spider = (EntityCreature)TestEntityCatalog.ByName("spider").Create(world);
+        var target = (EntityCreature)TestEntityCatalog.ByName("pig").Create(world);
         spider.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         target.SetPositionAndAngles(9.0, 65.0, 8.5, 0f, 0f);
-        int before = target.Health;
+        var before = target.Health;
 
         jump.AttackEntity(spider, target, 1.0f); // inside melee range, outside the jump band
         Assert.True(target.Health < before);
@@ -71,16 +74,14 @@ public sealed class EntityBehaviorJsonTests
     [Fact]
     public void Unknown_behavior_type_fails_loudly()
     {
-        ArgumentException error = Assert.Throws<ArgumentException>(
-            () => Build("""{"Type":"teleport"}"""));
+        var error = Assert.Throws<ArgumentException>(() => Build("""{"Type":"teleport"}"""));
         Assert.Contains("teleport", error.Message);
     }
 
     [Fact]
     public void Unknown_loot_condition_fails_loudly()
     {
-        ArgumentException error = Assert.Throws<ArgumentException>(
-            () => LootJson.ParseCondition(Json("""{"type":"phase_of_the_moon"}""")));
+        var error = Assert.Throws<ArgumentException>(() => LootJson.ParseCondition(Json("""{"type":"phase_of_the_moon"}""")));
         Assert.Contains("phase_of_the_moon", error.Message);
     }
 
@@ -89,24 +90,21 @@ public sealed class EntityBehaviorJsonTests
     [InlineData("""{"type":"on_fire"}""", typeof(OnFireCondition))]
     [InlineData("""{"type":"sheep_not_sheared"}""", typeof(SheepNotShearedCondition))]
     [InlineData("""{"type":"size","size":1}""", typeof(SizeCondition))]
-    public void Every_named_condition_parses(string json, Type expected)
-    {
-        Assert.IsType(expected, LootJson.ParseCondition(Json(json)));
-    }
+    public void Every_named_condition_parses(string json, Type expected) => Assert.IsType(expected, LootJson.ParseCondition(Json(json)));
 
     [Fact]
     public void Loot_table_json_round_trips_pools_entries_and_weights()
     {
-        LootTable table = LootJson.ParseTable(Json("""
-        {
-          "Pools": [
-            { "Entries": [{"Item":"omniblock:arrow"}], "MinCount": 1, "MaxCount": 1 },
-            { "Entries": [{"Item":"omniblock:bone"}], "MinCount": 1, "MaxCount": 1 }
-          ]
-        }
-        """), ContentRuntime.Current.Items);
+        var table = LootJson.ParseTable(Json("""
+                                             {
+                                               "Pools": [
+                                                 { "Entries": [{"Item":"omniblock:arrow"}], "MinCount": 1, "MaxCount": 1 },
+                                                 { "Entries": [{"Item":"omniblock:bone"}], "MinCount": 1, "MaxCount": 1 }
+                                               ]
+                                             }
+                                             """), ContentRuntime.Current.Items);
 
-        List<int> ids = table.Roll(new LootContext(null, null, 0, System.Random.Shared)).Select(s => s.ItemId).ToList();
+        var ids = table.Roll(new LootContext(null, null, 0, Random.Shared)).Select(s => s.ItemId).ToList();
 
         Assert.Equal(2, ids.Count);
         Assert.Contains(ContentRuntime.Current.Items.Get("omniblock:arrow").Id, ids);
@@ -116,20 +114,20 @@ public sealed class EntityBehaviorJsonTests
     [Fact]
     public void Loot_entry_can_name_a_block_as_well_as_an_item()
     {
-        LootTable table = LootJson.ParseTable(Json("""
-        { "Pools": [ { "Entries": [{"Item":"omniblock:wool"}], "MinCount": 1, "MaxCount": 1 } ] }
-        """), ContentRuntime.Current.Items);
+        var table = LootJson.ParseTable(Json("""
+                                             { "Pools": [ { "Entries": [{"Item":"omniblock:wool"}], "MinCount": 1, "MaxCount": 1 } ] }
+                                             """), ContentRuntime.Current.Items);
 
-        ItemStack stack = Assert.Single(table.Roll(new LootContext(null, null, 0, System.Random.Shared)));
+        var stack = Assert.Single(table.Roll(new LootContext(null, null, 0, Random.Shared)));
         Assert.Equal(TestBlocks.Get("wool").Id, stack.ItemId);
     }
 
     [Fact]
     public void Unknown_item_in_a_loot_entry_fails_when_parsed()
     {
-        KeyNotFoundException error = Assert.Throws<KeyNotFoundException>(() => LootJson.ParseTable(Json("""
-            { "Pools": [ { "Entries": [{"Item":"omniblock:not_a_real_item"}], "MinCount": 1, "MaxCount": 1 } ] }
-            """), ContentRuntime.Current.Items));
+        var error = Assert.Throws<KeyNotFoundException>(() => LootJson.ParseTable(Json("""
+                                                                                       { "Pools": [ { "Entries": [{"Item":"omniblock:not_a_real_item"}], "MinCount": 1, "MaxCount": 1 } ] }
+                                                                                       """), ContentRuntime.Current.Items));
         Assert.Contains("not_a_real_item", error.Message);
     }
 
@@ -137,14 +135,14 @@ public sealed class EntityBehaviorJsonTests
     public void Sheep_wool_takes_its_meta_from_the_live_fleece_colour()
     {
         FakeWorldContext world = new();
-        EntityCreature sheep = (EntityCreature)TestEntityCatalog.ByName("sheep").Create(world);
+        var sheep = (EntityCreature)TestEntityCatalog.ByName("sheep").Create(world);
         ((WoolBehavior)TestEntityCatalog.ByName("sheep").Behaviors.Interactable!).SetColorOn(sheep, 11);
 
-        LootTable table = LootJson.ParseTable(Json("""
-        { "Pools": [ { "Entries": [{"Item":"omniblock:wool","MetaFrom":"FleeceColor"}], "MinCount": 1, "MaxCount": 1 } ] }
-        """), ContentRuntime.Current.Items);
+        var table = LootJson.ParseTable(Json("""
+                                             { "Pools": [ { "Entries": [{"Item":"omniblock:wool","MetaFrom":"FleeceColor"}], "MinCount": 1, "MaxCount": 1 } ] }
+                                             """), ContentRuntime.Current.Items);
 
-        ItemStack stack = Assert.Single(table.Roll(LootContext.ForMob(sheep, null)));
+        var stack = Assert.Single(table.Roll(LootContext.ForMob(sheep, null)));
         Assert.Equal(11, stack.GetDamage());
     }
 
@@ -153,12 +151,12 @@ public sealed class EntityBehaviorJsonTests
     {
         FakeWorldContext world = new();
 
-        EntityCreature zombie = (EntityCreature)TestEntityCatalog.ByName("zombie").Create(world);
+        var zombie = (EntityCreature)TestEntityCatalog.ByName("zombie").Create(world);
         Assert.IsType<MeleeAttackBehavior>(zombie.Attack);
         Assert.IsType<AlwaysHuntTargetBehavior>(zombie.Targeting);
         Assert.IsType<LootTableBehavior>(zombie.Loot);
 
-        EntityCreature spider = (EntityCreature)TestEntityCatalog.ByName("spider").Create(world);
+        var spider = (EntityCreature)TestEntityCatalog.ByName("spider").Create(world);
         // The jump attack is wrapped: a spider in daylight loses interest before it attacks.
         Assert.IsType<JumpAttackBehavior>(Assert.IsType<LoseTargetInDaylightBehavior>(spider.Attack).Inner);
         Assert.IsType<DarknessOnlyTargetBehavior>(spider.Targeting);
@@ -168,7 +166,7 @@ public sealed class EntityBehaviorJsonTests
         Assert.IsType<LightningConversionBehavior>(TestEntityCatalog.ByName("pig").Behaviors.Lifecycle);
 
         // Animals declare no Attack/Targeting, and a wolf declares no Loot at all.
-        EntityCreature cow = (EntityCreature)TestEntityCatalog.ByName("cow").Create(world);
+        var cow = (EntityCreature)TestEntityCatalog.ByName("cow").Create(world);
         Assert.Null(cow.Attack);
         Assert.Null(cow.Targeting);
         Assert.Null(TestEntityCatalog.ByName("wolf").Behaviors.Loot);
@@ -185,8 +183,7 @@ public sealed class EntityBehaviorJsonTests
         };
 
         // Validated at load from the registered base type, not per spawn.
-        ArgumentException error = Assert.Throws<ArgumentException>(
-            () => BuildBehaviors(definition, typeof(EntityLiving)));
+        var error = Assert.Throws<ArgumentException>(() => BuildBehaviors(definition, typeof(EntityLiving)));
         Assert.Contains("EntityCreature", error.Message);
     }
 
@@ -210,10 +207,8 @@ public sealed class EntityBehaviorJsonTests
             ]
         };
 
-        ArgumentException unknownError = Assert.Throws<ArgumentException>(
-            () => BuildBehaviors(unknown, typeof(EntityObject)));
-        ArgumentException duplicateError = Assert.Throws<ArgumentException>(
-            () => BuildBehaviors(duplicate, typeof(EntityObject)));
+        var unknownError = Assert.Throws<ArgumentException>(() => BuildBehaviors(unknown, typeof(EntityObject)));
+        var duplicateError = Assert.Throws<ArgumentException>(() => BuildBehaviors(duplicate, typeof(EntityObject)));
 
         Assert.Contains("bad_slot", unknownError.Message);
         Assert.Contains("Teleport", unknownError.Message);
@@ -231,28 +226,27 @@ public sealed class EntityBehaviorJsonTests
             Behaviors = [Behavior("""{"Slots":[],"Type":"ignore_fall_damage"}""")]
         };
 
-        ArgumentException error = Assert.Throws<ArgumentException>(
-            () => BuildBehaviors(definition, typeof(EntityObject)));
+        var error = Assert.Throws<ArgumentException>(() => BuildBehaviors(definition, typeof(EntityObject)));
 
         Assert.Contains("slotless", error.Message);
         Assert.Contains("no slots", error.Message);
     }
 
     /// <summary>
-    /// A typed definition deserializes its snake_case parameters into C# properties, so the
-    /// behavior's constructor receives values rather than a JsonElement to dig through.
+    ///     A typed definition deserializes its snake_case parameters into C# properties, so the
+    ///     behavior's constructor receives values rather than a JsonElement to dig through.
     /// </summary>
     [Fact]
     public void A_typed_definition_reads_its_parameters_into_properties()
     {
-        BoatDefinition boat = JsonSerializer.Deserialize<BoatDefinition>(Behavior("""
-            {
-              "Slots": ["Ticker"],
-              "Type": "boat",
-              "break_damage": 25,
-              "wreckage": [{ "Item": "omniblock:planks", "Count": 3 }]
-            }
-            """), ProviderJsonOptions())!;
+        var boat = Behavior("""
+                            {
+                              "Slots": ["Ticker"],
+                              "Type": "boat",
+                              "break_damage": 25,
+                              "wreckage": [{ "Item": "omniblock:planks", "Count": 3 }]
+                            }
+                            """).Deserialize<BoatDefinition>(ProviderJsonOptions())!;
 
         Assert.Equal(["Ticker"], boat.Slots);
         Assert.Equal(25, boat.BreakDamage);
@@ -264,15 +258,14 @@ public sealed class EntityBehaviorJsonTests
     [Fact]
     public void An_omitted_parameter_falls_back_to_the_property_default()
     {
-        ArrowDefinition arrow = JsonSerializer.Deserialize<ArrowDefinition>(
-            Behavior("""{"Slots":["Ticker"],"Type":"arrow"}"""), ProviderJsonOptions())!;
+        var arrow = Behavior("""{"Slots":["Ticker"],"Type":"arrow"}""").Deserialize<ArrowDefinition>(ProviderJsonOptions())!;
 
         Assert.Equal(4, arrow.Damage);
     }
 
     /// <summary>
-    /// The failure that used to surface as a bare TypeInitializationException: a bad value now
-    /// names the entity and the behavior that carried it.
+    ///     The failure that used to surface as a bare TypeInitializationException: a bad value now
+    ///     names the entity and the behavior that carried it.
     /// </summary>
     [Fact]
     public void A_bad_value_names_the_entity_and_the_behavior()
@@ -281,13 +274,15 @@ public sealed class EntityBehaviorJsonTests
         {
             ProtocolId = 55,
             Name = "test_boat",
-            Behaviors = [Behavior("""
-                {"Slots":["Ticker"],"Type":"boat","wreckage":[{"Item":"omniblock:not_a_real_item","Count":1}]}
-                """)]
+            Behaviors =
+            [
+                Behavior("""
+                         {"Slots":["Ticker"],"Type":"boat","wreckage":[{"Item":"omniblock:not_a_real_item","Count":1}]}
+                         """)
+            ]
         };
 
-        ArgumentException error = Assert.Throws<ArgumentException>(
-            () => BuildBehaviors(definition, typeof(EntityObject)));
+        var error = Assert.Throws<ArgumentException>(() => BuildBehaviors(definition, typeof(EntityObject)));
 
         Assert.Contains("test_boat", error.Message);
         Assert.Contains("boat", error.Message);
@@ -304,8 +299,7 @@ public sealed class EntityBehaviorJsonTests
             Behaviors = [Behavior("""{"Slots":["Ticker"],"Type":"no_such_behavior"}""")]
         };
 
-        ArgumentException error = Assert.Throws<ArgumentException>(
-            () => BuildBehaviors(definition, typeof(EntityObject)));
+        var error = Assert.Throws<ArgumentException>(() => BuildBehaviors(definition, typeof(EntityObject)));
 
         Assert.Contains("no_such_behavior", error.Message);
         Assert.Contains("test_entity", error.Message);
@@ -319,9 +313,9 @@ public sealed class EntityBehaviorJsonTests
     private sealed class RegistryEntityTypeView : IEntityTypeBuildView
     {
         public EntityType Get(ResourceLocation key) =>
-            OmniBlock.Registries.ContentRuntime.Current.EntityTypes.Get(key);
+            ContentRuntime.Current.EntityTypes.Get(key);
 
         public bool TryGet(ResourceLocation key, out EntityType? type) =>
-            OmniBlock.Registries.ContentRuntime.Current.EntityTypes.TryGet(key, out type);
+            ContentRuntime.Current.EntityTypes.TryGet(key, out type);
     }
 }

@@ -13,15 +13,9 @@ internal sealed class DoorBehavior(Material material) : BlockRuntimeBehavior, IB
 {
     private const float Thickness = 3.0F / 16.0F;
 
-    public bool OnUse(Block block, OnUseEvent @event)
-    {
-        return ToggleDoor(block, @event.Player, @event.World, @event.X, @event.Y, @event.Z);
-    }
+    public bool OnUse(Block block, OnUseEvent @event) => ToggleDoor(block, @event.Player, @event.World, @event.X, @event.Y, @event.Z);
 
-    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event)
-    {
-        ToggleDoor(block, @event.Player, @event.World, @event.X, @event.Y, @event.Z);
-    }
+    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event) => ToggleDoor(block, @event.Player, @event.World, @event.X, @event.Y, @event.Z);
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
@@ -71,15 +65,9 @@ internal sealed class DoorBehavior(Material material) : BlockRuntimeBehavior, IB
         }
     }
 
-    public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
-    {
-        ApplyBoundingBox(block, SetOpen(reader.GetBlockMeta(x, y, z)));
-    }
+    public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z) => ApplyBoundingBox(block, SetOpen(reader.GetBlockMeta(x, y, z)));
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext ctx)
-    {
-        return ctx.Y < 127 && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z);
-    }
+    public bool CanPlaceAt(Block block, CanPlaceAtContext ctx) => ctx.Y < 127 && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z);
 
     public int GetTexture(Block block, Side side, int meta, int defaultTexture)
     {
@@ -129,16 +117,10 @@ internal sealed class DoorBehavior(Material material) : BlockRuntimeBehavior, IB
     ///     Computes the visual facing (0-3) from door metadata, accounting for the
     ///     open/closed swing hinge.
     /// </summary>
-    private static int SetOpen(int meta)
-    {
-        return (meta & 4) == 0 ? (meta - 1) & 3 : meta & 3;
-    }
+    private static int SetOpen(int meta) => (meta & 4) == 0 ? (meta - 1) & 3 : meta & 3;
 
     /// <summary>Returns true when the door is in the open position.</summary>
-    public static bool IsOpen(int meta)
-    {
-        return (meta & 4) != 0;
-    }
+    public static bool IsOpen(int meta) => (meta & 4) != 0;
 
     private static void SetOpen(Block block, IWorldContext world, int x, int y, int z, bool open)
     {

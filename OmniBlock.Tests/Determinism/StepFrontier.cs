@@ -30,7 +30,7 @@ internal static class StepFrontier
         "OmniBlock.Entities.Entity.GetEntitiesInside",
         "OmniBlock.Entities.Entity.SyncPositionToBoundingBox",
         "OmniBlock.Entities.Entity.UpdateBoundingBox",
-        "OmniBlock.Entities.Entity.IsInsideWall",
+        "OmniBlock.Entities.Entity.IsInsideWall"
     ];
 
     /// <summary>
@@ -50,7 +50,7 @@ internal static class StepFrontier
         "OmniBlock.Entities.Entity.AccumulateWalkDistance",
         "OmniBlock.Entities.Entity.NotifyBlocksOfCollision",
         "OmniBlock.Entities.Entity.ApplyFireAndWater",
-        "OmniBlock.Entities.Entity.Fall",
+        "OmniBlock.Entities.Entity.Fall"
     ];
 
     /// <summary>
@@ -84,7 +84,7 @@ internal static class StepFrontier
         new("OmniBlock.Entities.EntityPlayer.IncreaseStat",
             "mutates stat counters; needs to become a StepEffects entry"),
         new("OmniBlock.Entities.ServerPlayerEntity.IncreaseStat",
-            "mutates stat counters; needs to become a StepEffects entry"),
+            "mutates stat counters; needs to become a StepEffects entry")
     ];
 
     /// <summary>
@@ -135,7 +135,7 @@ internal static class StepFrontier
         new("System.Threading.Thread.", "no threading inside Step"),
         new("System.Threading.Tasks.Task.", "no async inside Step"),
         new("System.Object.GetHashCode", "reference hash codes vary per process"),
-        new("System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode", "reference hash code"),
+        new("System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode", "reference hash code")
     ];
 
     /// <summary>
@@ -157,7 +157,7 @@ internal static class StepFrontier
         new("OmniBlock.Entities.Entity.ApplyFireAndWater", "OmniBlock.Worlds.Core.Systems.WorldEventBroadcaster.",
             "emits the fizz sound directly; needs it routed through StepEffects"),
         new("OmniBlock.Entities.Entity.AccumulateWalkDistance", "OmniBlock.Worlds.Core.Systems.WorldEventBroadcaster.",
-            "emits footstep sounds directly; needs them routed through StepEffects"),
+            "emits footstep sounds directly; needs them routed through StepEffects")
     ];
 
     /// <summary>
@@ -171,7 +171,7 @@ internal static class StepFrontier
         // only the generated body is absent, and a compiled regex matcher calls nothing that could
         // appear on the banned list. Affects 3 methods (ResourceLocation.Reg,
         // DimensionFileFilter.DimensionPattern, DataFilenameFilter.ChunkFilePattern).
-        "CS8795",
+        "CS8795"
     ];
 
     internal readonly record struct BannedSymbol(string Pattern, string Reason)

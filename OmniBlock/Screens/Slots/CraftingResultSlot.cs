@@ -7,9 +7,8 @@ namespace OmniBlock.Screens.Slots;
 
 internal class CraftingResultSlot : Slot
 {
-
     private readonly IInventory craftMatrix;
-    private EntityPlayer thePlayer;
+    private readonly EntityPlayer thePlayer;
 
     public CraftingResultSlot(EntityPlayer player, IInventory craftMatrix, IInventory resultInventory, int slotIndex, int x, int y) : base(resultInventory, slotIndex, x, y)
     {
@@ -17,10 +16,7 @@ internal class CraftingResultSlot : Slot
         this.craftMatrix = craftMatrix;
     }
 
-    public override bool canInsert(ItemStack stack)
-    {
-        return false;
-    }
+    public override bool canInsert(ItemStack stack) => false;
 
     public override void onTakeItem(ItemStack stack)
     {
@@ -58,9 +54,9 @@ internal class CraftingResultSlot : Slot
             thePlayer.IncreaseStat(Achievements.CraftSword, 1);
         }
 
-        for (int slotIndex = 0; slotIndex < craftMatrix.Size; ++slotIndex)
+        for (var slotIndex = 0; slotIndex < craftMatrix.Size; ++slotIndex)
         {
-            ItemStack? ingredientStack = craftMatrix.GetStack(slotIndex);
+            var ingredientStack = craftMatrix.GetStack(slotIndex);
             if (ingredientStack != null)
             {
                 craftMatrix.RemoveStack(slotIndex, 1);
@@ -70,6 +66,5 @@ internal class CraftingResultSlot : Slot
                 }
             }
         }
-
     }
 }

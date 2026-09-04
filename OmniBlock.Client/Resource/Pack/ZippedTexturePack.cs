@@ -1,6 +1,6 @@
 using System.IO.Compression;
-using OmniBlock.Client.Rendering.Core.Textures;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Client.Rendering.Core.Textures;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -9,11 +9,11 @@ namespace OmniBlock.Client.Resource.Pack;
 public class ZippedTexturePack : TexturePack
 {
     private readonly ILogger _logger = Log.Instance.For<ZippedTexturePack>();
-    private ZipArchive? _texturePackZipFile;
-    private TextureHandle? _texturePackName;
-    private Image<Rgba32>? _texturePackThumbnail;
 
     private readonly FileInfo _texturePackFile;
+    private TextureHandle? _texturePackName;
+    private Image<Rgba32>? _texturePackThumbnail;
+    private ZipArchive? _texturePackZipFile;
 
     public ZippedTexturePack(FileInfo file)
     {
@@ -27,6 +27,7 @@ public class ZippedTexturePack : TexturePack
         {
             return str[..34];
         }
+
         return str ?? string.Empty;
     }
 
@@ -34,21 +35,21 @@ public class ZippedTexturePack : TexturePack
     {
         try
         {
-            using ZipArchive archive = ZipFile.OpenRead(_texturePackFile.FullName);
+            using var archive = ZipFile.OpenRead(_texturePackFile.FullName);
 
-            ZipArchiveEntry? packTxtEntry = archive.GetEntry("pack.txt");
+            var packTxtEntry = archive.GetEntry("pack.txt");
             if (packTxtEntry != null)
             {
-                using Stream stream = packTxtEntry.Open();
+                using var stream = packTxtEntry.Open();
                 using var reader = new StreamReader(stream); // Replaces BufferedReader
                 FirstDescriptionLine = TruncateString(reader.ReadLine());
                 SecondDescriptionLine = TruncateString(reader.ReadLine());
             }
 
-            ZipArchiveEntry? packPngEntry = archive.GetEntry("pack.png");
+            var packPngEntry = archive.GetEntry("pack.png");
             if (packPngEntry != null)
             {
-                using Stream stream = packPngEntry.Open();
+                using var stream = packPngEntry.Open();
                 _texturePackThumbnail = Image.Load<Rgba32>(stream); // Native ImageSharp load
             }
         }
@@ -64,7 +65,6 @@ public class ZippedTexturePack : TexturePack
         {
             textureManager.Delete(_texturePackName);
             _texturePackThumbnail.Dispose();
-
         }
 
         CloseTexturePackFile();
@@ -103,16 +103,17 @@ public class ZippedTexturePack : TexturePack
     {
         try
         {
-            string entryName = path.StartsWith("/") ? path[1..] : path;
+            var entryName = path.StartsWith("/") ? path[1..] : path;
 
-            ZipArchiveEntry? entry = _texturePackZipFile?.GetEntry(entryName);
+            var entry = _texturePackZipFile?.GetEntry(entryName);
             if (entry != null)
             {
                 var ms = new MemoryStream();
-                using (Stream entryStream = entry.Open())
+                using (var entryStream = entry.Open())
                 {
                     entryStream.CopyTo(ms);
                 }
+
                 ms.Position = 0;
                 return ms;
             }

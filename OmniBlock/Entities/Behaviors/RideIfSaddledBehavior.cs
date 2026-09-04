@@ -1,4 +1,3 @@
-using System.Text.Json;
 using OmniBlock.Entities.State;
 
 namespace OmniBlock.Entities.Behaviors;
@@ -12,7 +11,7 @@ public sealed class RideIfSaddledBehavior : IEntityInteractable
     private readonly SyncedHandle<bool> _saddled;
 
     public RideIfSaddledBehavior(in EntityBehaviorContext context) =>
-        _saddled = context.Synced<bool>(context.Json.TryGetProperty("saddled_property", out JsonElement name)
+        _saddled = context.Synced<bool>(context.Json.TryGetProperty("saddled_property", out var name)
             ? name.GetString() ?? "saddled"
             : "saddled");
 

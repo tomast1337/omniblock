@@ -13,7 +13,7 @@ public class ServerListItem(ServerData data) : ListItem<ServerData>(data)
 
         renderer.DrawText(Value.Name, 5, 5, Color.White);
 
-        string secondary = string.IsNullOrEmpty(Value.Motd) ? Value.Ip : Value.Motd;
+        var secondary = string.IsNullOrEmpty(Value.Motd) ? Value.Ip : Value.Motd;
         renderer.DrawText(secondary, 5, 17, Color.GrayA0);
     }
 }

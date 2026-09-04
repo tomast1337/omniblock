@@ -64,8 +64,5 @@ internal sealed class BlockDraft
     internal int DropCount { get; set; }
     internal bool PreservesMetaOnDrop { get; set; }
 
-    internal void Apply()
-    {
-        Block.ApplyDraft(this);
-    }
+    internal void Apply() => Block.ApplyDraft(this);
 }

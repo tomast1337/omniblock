@@ -136,8 +136,8 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
 
         if (!self.World.IsRemote)
         {
-            EntityPlayer? angler = Angler(self);
-            ItemStack? heldItem = angler?.GetHand();
+            var angler = Angler(self);
+            var heldItem = angler?.GetHand();
             if (angler != null && (angler.Dead || !angler.IsAlive || heldItem == null || heldItem.GetItem() != _rod || self.GetSquaredDistance(angler) > _maxAnglerDistanceSquared))
             {
                 self.MarkDead();
@@ -166,7 +166,7 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
 
         if (self.State[_inGround])
         {
-            int blockId = self.World.Reader.GetBlockId(self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
+            var blockId = self.World.Reader.GetBlockId(self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
             if (blockId == self.State[_inTile])
             {
                 ++self.State[_ticksInGround];
@@ -206,8 +206,8 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
     /// </summary>
     public static Entity Cast(IWorldContext world, EntityPlayer angler)
     {
-        Entity bobber = world.Content.EntityTypes.Create("omniblock:fishhook", world);
-        FishingBobberBehavior hook = bobber.Behaviors.Find<FishingBobberBehavior>()!;
+        var bobber = world.Content.EntityTypes.Create("omniblock:fishhook", world);
+        var hook = bobber.Behaviors.Find<FishingBobberBehavior>()!;
         bobber.State.SetRef(hook._angler, angler);
         angler.FishHook = bobber;
         bobber.SetPositionAndAnglesKeepPrevAngles(angler.X, angler.Y + 1.62D - angler.StandingEyeHeight, angler.Z, angler.Yaw, angler.Pitch);
@@ -231,7 +231,7 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
 
     private void SetHeading(Entity self, double dirX, double dirY, double dirZ, float speed, float spread)
     {
-        float length = MathHelper.Sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        var length = MathHelper.Sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
         dirX /= length;
         dirY /= length;
         dirZ /= length;
@@ -244,7 +244,7 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
         self.VelocityX = dirX;
         self.VelocityY = dirY;
         self.VelocityZ = dirZ;
-        float horizontalLength = MathHelper.Sqrt(dirX * dirX + dirZ * dirZ);
+        var horizontalLength = MathHelper.Sqrt(dirX * dirX + dirZ * dirZ);
         self.PrevYaw = self.Yaw = (float)(Math.Atan2(dirX, dirZ) * 180.0D / (float)Math.PI);
         self.PrevPitch = self.Pitch = (float)(Math.Atan2(dirY, horizontalLength) * 180.0D / (float)Math.PI);
         self.State[_ticksInGround] = 0;
@@ -252,12 +252,12 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
 
     private void EaseTowardsSyncedPosition(Entity self)
     {
-        int steps = self.State[_syncTicks];
-        double interpX = self.X + (self.State[_targetX] - self.X) / steps;
-        double interpY = self.Y + (self.State[_targetY] - self.Y) / steps;
-        double interpZ = self.Z + (self.State[_targetZ] - self.Z) / steps;
+        var steps = self.State[_syncTicks];
+        var interpX = self.X + (self.State[_targetX] - self.X) / steps;
+        var interpY = self.Y + (self.State[_targetY] - self.Y) / steps;
+        var interpZ = self.Z + (self.State[_targetZ] - self.Z) / steps;
 
-        double yawDelta = self.State[_targetYaw] - self.Yaw;
+        var yawDelta = self.State[_targetYaw] - self.Yaw;
         while (yawDelta < -180.0D)
         {
             yawDelta += 360.0D;
@@ -283,7 +283,7 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
     {
         Vec3D rayStart = new(self.X, self.Y, self.Z);
         Vec3D rayEnd = new(self.X + self.VelocityX, self.Y + self.VelocityY, self.Z + self.VelocityZ);
-        HitResult hit = self.World.Reader.Raycast(rayStart, rayEnd);
+        var hit = self.World.Reader.Raycast(rayStart, rayEnd);
         rayStart = new Vec3D(self.X, self.Y, self.Z);
         rayEnd = new Vec3D(self.X + self.VelocityX, self.Y + self.VelocityY, self.Z + self.VelocityZ);
         if (hit.Type != HitResultType.Miss)
@@ -291,12 +291,12 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
             rayEnd = new Vec3D(hit.Pos.X, hit.Pos.Y, hit.Pos.Z);
         }
 
-        EntityPlayer? angler = Angler(self);
+        var angler = Angler(self);
         Entity? hitEntity = null;
-        List<Entity> entities = self.World.Entities.GetEntities(self, self.BoundingBox.Stretch(self.VelocityX, self.VelocityY, self.VelocityZ).Expand(1.0D, 1.0D, 1.0D));
-        double minHitDistance = 0.0D;
+        var entities = self.World.Entities.GetEntities(self, self.BoundingBox.Stretch(self.VelocityX, self.VelocityY, self.VelocityZ).Expand(1.0D, 1.0D, 1.0D));
+        var minHitDistance = 0.0D;
 
-        foreach (Entity entity in entities)
+        foreach (var entity in entities)
         {
             if (!entity.HasCollision || (Equals(entity, angler) && self.State[_ticksInAir] < 5))
             {
@@ -304,14 +304,14 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
             }
 
             const float expandAmount = 0.3F;
-            Box expandedBox = entity.BoundingBox.Expand(expandAmount, expandAmount, expandAmount);
-            HitResult entityHit = expandedBox.Raycast(rayStart, rayEnd);
+            var expandedBox = entity.BoundingBox.Expand(expandAmount, expandAmount, expandAmount);
+            var entityHit = expandedBox.Raycast(rayStart, rayEnd);
             if (entityHit.Type == HitResultType.Miss)
             {
                 continue;
             }
 
-            double distance = rayStart.DistanceTo(entityHit.Pos);
+            var distance = rayStart.DistanceTo(entityHit.Pos);
             if (!(distance < minHitDistance) && minHitDistance != 0.0D)
             {
                 continue;
@@ -348,7 +348,7 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
     private void Drift(Entity self)
     {
         self.Move(self.VelocityX, self.VelocityY, self.VelocityZ);
-        float horizontalSpeed = MathHelper.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
+        var horizontalSpeed = MathHelper.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
         self.Yaw = (float)(Math.Atan2(self.VelocityX, self.VelocityZ) * 180.0D / (float)Math.PI);
         self.Pitch = (float)(Math.Atan2(self.VelocityY, horizontalSpeed) * 180.0D / Math.PI);
 
@@ -374,19 +374,19 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
 
         self.Pitch = self.PrevPitch + (self.Pitch - self.PrevPitch) * 0.2F;
         self.Yaw = self.PrevYaw + (self.Yaw - self.PrevYaw) * 0.2F;
-        float drag = 0.92F;
+        var drag = 0.92F;
         if (self.OnGround || self.HorizontalCollision)
         {
             drag = 0.5F;
         }
 
         const byte waterCheckSegments = 5;
-        double waterSubmersion = 0.0D;
+        var waterSubmersion = 0.0D;
 
-        for (int segment = 0; segment < waterCheckSegments; ++segment)
+        for (var segment = 0; segment < waterCheckSegments; ++segment)
         {
-            double segmentBottom = self.BoundingBox.MinY + (self.BoundingBox.MaxY - self.BoundingBox.MinY) * (segment + 0) / waterCheckSegments - 0.125D + 0.125D;
-            double segmentTop = self.BoundingBox.MinY + (self.BoundingBox.MaxY - self.BoundingBox.MinY) * (segment + 1) / waterCheckSegments - 0.125D + 0.125D;
+            var segmentBottom = self.BoundingBox.MinY + (self.BoundingBox.MaxY - self.BoundingBox.MinY) * (segment + 0) / waterCheckSegments - 0.125D + 0.125D;
+            var segmentTop = self.BoundingBox.MinY + (self.BoundingBox.MaxY - self.BoundingBox.MinY) * (segment + 1) / waterCheckSegments - 0.125D + 0.125D;
             Box segmentBox = new(self.BoundingBox.MinX, segmentBottom, self.BoundingBox.MinZ, self.BoundingBox.MaxX, segmentTop, self.BoundingBox.MaxZ);
             if (self.World.Reader.IsMaterialInBox(segmentBox, m => m == Material.Water))
             {
@@ -404,7 +404,7 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
             self.VelocityY -= self.Random.NextFloat() * self.Random.NextFloat() * self.Random.NextFloat() * 0.2D;
         }
 
-        double buoyancy = waterSubmersion * 2.0D - 1.0D;
+        var buoyancy = waterSubmersion * 2.0D - 1.0D;
         self.VelocityY += 0.04F * buoyancy;
         if (waterSubmersion > 0.0D)
         {
@@ -427,7 +427,7 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
             return;
         }
 
-        int catchDelay = self.World.Environment.IsRainingAt(MathHelper.Floor(self.X), MathHelper.Floor(self.Y) + 1, MathHelper.Floor(self.Z))
+        var catchDelay = self.World.Environment.IsRainingAt(MathHelper.Floor(self.X), MathHelper.Floor(self.Y) + 1, MathHelper.Floor(self.Z))
             ? _biteDelayWhenRaining
             : _biteDelay;
 
@@ -441,17 +441,17 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
         self.World.Broadcaster.PlaySoundAtEntity(self, "random.splash", 0.25F, 1.0F + (self.Random.NextFloat() - self.Random.NextFloat()) * 0.4F);
         float waterSurface = MathHelper.Floor(self.BoundingBox.MinY);
 
-        for (int particle = 0; particle < 1.0F + self.Width * 20.0F; ++particle)
+        for (var particle = 0; particle < 1.0F + self.Width * 20.0F; ++particle)
         {
-            float offsetX = (self.Random.NextFloat() * 2.0F - 1.0F) * self.Width;
-            float offsetZ = (self.Random.NextFloat() * 2.0F - 1.0F) * self.Width;
+            var offsetX = (self.Random.NextFloat() * 2.0F - 1.0F) * self.Width;
+            var offsetZ = (self.Random.NextFloat() * 2.0F - 1.0F) * self.Width;
             self.World.Broadcaster.AddParticle("bubble", self.X + offsetX, waterSurface + 1.0F, self.Z + offsetZ, self.VelocityX, self.VelocityY - self.Random.NextFloat() * 0.2F, self.VelocityZ);
         }
 
-        for (int particle = 0; particle < 1.0F + self.Width * 20.0F; ++particle)
+        for (var particle = 0; particle < 1.0F + self.Width * 20.0F; ++particle)
         {
-            float offsetX = (self.Random.NextFloat() * 2.0F - 1.0F) * self.Width;
-            float offsetZ = (self.Random.NextFloat() * 2.0F - 1.0F) * self.Width;
+            var offsetX = (self.Random.NextFloat() * 2.0F - 1.0F) * self.Width;
+            var offsetZ = (self.Random.NextFloat() * 2.0F - 1.0F) * self.Width;
             self.World.Broadcaster.AddParticle("splash", self.X + offsetX, waterSurface + 1.0F, self.Z + offsetZ, self.VelocityX, self.VelocityY, self.VelocityZ);
         }
     }
@@ -462,7 +462,7 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
     /// </summary>
     public int Reel(Entity self)
     {
-        EntityPlayer? angler = Angler(self);
+        var angler = Angler(self);
         byte wear = 0;
 
         if (self.State.GetRef(_hooked) is { } hooked)
@@ -476,7 +476,7 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
         }
         else if (self.State[_ticksCatchable] > 0)
         {
-            Entity fish = DroppedItemBehavior.Create(self.World, self.X, self.Y, self.Z, new ItemStack(_catch));
+            var fish = DroppedItemBehavior.Create(self.World, self.X, self.Y, self.Z, new ItemStack(_catch));
             if (angler != null)
             {
                 YankTowardsAngler(self, angler, fish, false);
@@ -507,14 +507,14 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
     /// </summary>
     private static void YankTowardsAngler(Entity self, EntityPlayer angler, Entity target, bool additive)
     {
-        double deltaX = angler.X - self.X;
-        double deltaY = angler.Y - self.Y;
-        double deltaZ = angler.Z - self.Z;
+        var deltaX = angler.X - self.X;
+        var deltaY = angler.Y - self.Y;
+        var deltaZ = angler.Z - self.Z;
         double distance = MathHelper.Sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
 
-        double pullX = deltaX * PullStrength;
-        double pullY = deltaY * PullStrength + MathHelper.Sqrt(distance) * 0.08D;
-        double pullZ = deltaZ * PullStrength;
+        var pullX = deltaX * PullStrength;
+        var pullY = deltaY * PullStrength + MathHelper.Sqrt(distance) * 0.08D;
+        var pullZ = deltaZ * PullStrength;
 
         target.VelocityX = additive ? target.VelocityX + pullX : pullX;
         target.VelocityY = additive ? target.VelocityY + pullY : pullY;

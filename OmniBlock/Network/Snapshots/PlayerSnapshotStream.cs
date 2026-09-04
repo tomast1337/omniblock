@@ -90,9 +90,9 @@ public sealed class PlayerSnapshotStream
         _deltas.Clear();
         _changes.Clear();
 
-        foreach ((int entityId, EntitySnapshotState state) in current)
+        foreach (var (entityId, state) in current)
         {
-            EntitySnapshotMessage.EntityDelta? delta =
+            var delta =
                 EntitySnapshotMessage.Encode(entityId, state, _baseline);
 
             if (delta is null)
@@ -109,7 +109,7 @@ public sealed class PlayerSnapshotStream
             return null;
         }
 
-        uint sequence = _nextSequence++;
+        var sequence = _nextSequence++;
 
         // Zero is reserved for "no baseline", so a wrap has to skip it rather than emit a snapshot
         // the peer would read as a resynchronisation.
@@ -124,7 +124,7 @@ public sealed class PlayerSnapshotStream
         {
             Sequence = sequence,
             Baseline = _baseline.Sequence,
-            Deltas = [.. _deltas],
+            Deltas = [.. _deltas]
         };
     }
 }

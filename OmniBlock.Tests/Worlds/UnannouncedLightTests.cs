@@ -1,10 +1,6 @@
-using OmniBlock.Blocks;
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Entities;
 using OmniBlock.Network.Messages;
-using OmniBlock.Tests.TestSupport;
-using OmniBlock.Worlds.Chunks;
-using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Tests.Worlds;
@@ -52,8 +48,8 @@ public sealed class UnannouncedLightTests
     [Fact]
     public void The_cell_above_a_placed_block_keeps_the_sky_light_the_server_holds()
     {
-        LightTestWorld server = Lit();
-        LightTestWorld client = Lit();
+        var server = Lit();
+        var client = Lit();
 
         Assert.Equal(15, server.SkyLightAt(8, PlacedY + 1, 8));
         Assert.Equal(15, client.SkyLightAt(8, PlacedY + 1, 8));
@@ -78,8 +74,8 @@ public sealed class UnannouncedLightTests
     [Fact]
     public void The_cell_below_a_placed_block_is_announced_and_arrives()
     {
-        LightTestWorld server = Lit();
-        LightTestWorld client = Lit();
+        var server = Lit();
+        var client = Lit();
 
         RecordingListener announced = new();
         server.Broadcaster.AddWorldAccess(announced);
@@ -99,7 +95,7 @@ public sealed class UnannouncedLightTests
     {
         LightTestWorld world = new();
 
-        foreach ((int x, int z) in s_neighborhood)
+        foreach (var (x, z) in s_neighborhood)
         {
             world.Chunks.Add(x, z);
         }
@@ -118,7 +114,7 @@ public sealed class UnannouncedLightTests
     /// </remarks>
     private static void Replay(RecordingListener announced, LightTestWorld server, LightTestWorld client)
     {
-        foreach ((int x, int y, int z) in announced.BlockUpdates.Distinct())
+        foreach (var (x, y, z) in announced.BlockUpdates.Distinct())
         {
             BlockUpdateMessage update = new()
             {
@@ -126,7 +122,7 @@ public sealed class UnannouncedLightTests
                 Y = (sbyte)y,
                 Z = z,
                 BlockRawId = (byte)server.Reader.GetBlockId(x, y, z),
-                BlockMetadata = (byte)server.Reader.GetBlockMeta(x, y, z),
+                BlockMetadata = (byte)server.Reader.GetBlockMeta(x, y, z)
             };
 
             using MemoryStream buffer = new();
@@ -140,12 +136,12 @@ public sealed class UnannouncedLightTests
                 received.X, received.Y, received.Z, received.BlockRawId, received.BlockMetadata);
         }
 
-        foreach ((int chunkX, int chunkZ) in announced.BlockUpdates
+        foreach (var (chunkX, chunkZ) in announced.BlockUpdates
                      .Select(p => (p.X >> 4, p.Z >> 4))
                      .Distinct())
         {
-            Chunk serverChunk = server.BlockHost.GetChunk(chunkX, chunkZ);
-            uint sections = serverChunk.TakeLightDirtySections();
+            var serverChunk = server.BlockHost.GetChunk(chunkX, chunkZ);
+            var sections = serverChunk.TakeLightDirtySections();
 
             if (sections != 0)
             {

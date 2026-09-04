@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Reflection;
 using OmniBlock.Entities;
 using OmniBlock.Worlds.Core.Systems;
@@ -7,34 +5,18 @@ using OmniBlock.Worlds.Core.Systems;
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Characterization test pinning every mob's resolved configuration to the values Beta 1.7.3 gives
-/// it. Written against a dump of the real values, not assumed ones, so it catches transcription
-/// errors in <c>assets/entity/*.json</c>.
-/// <para>
-/// Excluded, because they are genuinely dynamic rather than configuration: the slime (stats derive
-/// from a randomly chosen size), the wolf's living sound (a random roll over four clips), and the
-/// ghast's texture (swapped per tick while charging).
-/// </para>
+///     Characterization test pinning every mob's resolved configuration to the values Beta 1.7.3 gives
+///     it. Written against a dump of the real values, not assumed ones, so it catches transcription
+///     errors in <c>assets/entity/*.json</c>.
+///     <para>
+///         Excluded, because they are genuinely dynamic rather than configuration: the slime (stats derive
+///         from a randomly chosen size), the wolf's living sound (a random roll over four clips), and the
+///         ghast's texture (swapped per tick while charging).
+///     </para>
 /// </summary>
 [Collection("EntityTests")]
 public sealed class MobConfigurationTests
 {
-    public sealed record MobConfig(
-        int Health,
-        float MovementSpeed,
-        int? AttackStrength,
-        float Width,
-        float Height,
-        string Texture,
-        string? LivingSound,
-        string? HurtSound,
-        string? DeathSound,
-        float SoundVolume,
-        bool FireImmune,
-        int MaxSpawnedInChunk,
-        bool CanDespawn,
-        int TalkInterval);
-
     public static TheoryData<string, MobConfig> ExpectedConfigs() => new()
     {
         { "zombie", new MobConfig(20, 0.5f, 5, 0.6f, 1.8f, "/mob/zombie.png", "mob.zombie", "mob.zombiehurt", "mob.zombiedeath", 1f, false, 4, true, 80) },
@@ -50,7 +32,7 @@ public sealed class MobConfigurationTests
         { "chicken", new MobConfig(4, 0.7f, 2, 0.3f, 0.4f, "/mob/chicken.png", "mob.chicken", "mob.chickenhurt", "mob.chickenhurt", 1f, false, 4, true, 120) },
         // AttackStrength is null where it was 2: the squid is no longer an EntityCreature, and the
         // value was never reachable — it has neither an attack nor targeting to spend it on.
-        { "squid", new MobConfig(10, 0.7f, null, 0.95f, 0.95f, "/mob/squid.png", null, null, null, 0.4f, false, 4, true, 120) },
+        { "squid", new MobConfig(10, 0.7f, null, 0.95f, 0.95f, "/mob/squid.png", null, null, null, 0.4f, false, 4, true, 120) }
     };
 
     private static EntityLiving CreateMob(string name, IWorldContext world) => name switch
@@ -75,7 +57,7 @@ public sealed class MobConfigurationTests
     public void Mob_configuration_matches_vanilla_values(string name, MobConfig expected)
     {
         FakeWorldContext world = new();
-        EntityLiving mob = CreateMob(name, world);
+        var mob = CreateMob(name, world);
 
         Assert.Equal(expected, Describe(mob));
     }
@@ -84,8 +66,8 @@ public sealed class MobConfigurationTests
     public void Wolf_configuration_matches_except_its_randomised_living_sound()
     {
         FakeWorldContext world = new();
-        EntityCreature wolf = (EntityCreature)TestEntityCatalog.ByName("wolf").Create(world);
-        MobConfig actual = Describe(wolf);
+        var wolf = (EntityCreature)TestEntityCatalog.ByName("wolf").Create(world);
+        var actual = Describe(wolf);
 
         Assert.Equal(
             new MobConfig(8, 1.1f, 2, 0.8f, 0.8f, "/mob/wolf.png", actual.LivingSound, "mob.wolf.hurt", "mob.wolf.death", 0.4f, false, 8, true, 120),
@@ -99,9 +81,9 @@ public sealed class MobConfigurationTests
     {
         FakeWorldContext world = new();
 
-        for (int attempt = 0; attempt < 20; attempt++)
+        for (var attempt = 0; attempt < 20; attempt++)
         {
-            EntityLiving slime = (EntityLiving)TestEntityCatalog.ByName("slime").Create(world);
+            var slime = (EntityLiving)TestEntityCatalog.ByName("slime").Create(world);
             int size = slime.Synced<byte>("size")!.Value;
 
             Assert.Contains(size, new[] { 1, 2, 4 });
@@ -115,7 +97,7 @@ public sealed class MobConfigurationTests
     {
         T Read<T>(string name, T fallback)
         {
-            PropertyInfo? property = mob.GetType().GetProperty(
+            var property = mob.GetType().GetProperty(
                 name,
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
             return property?.GetValue(mob) is T value ? value : fallback;
@@ -137,4 +119,20 @@ public sealed class MobConfigurationTests
             Read("CanDespawn", true),
             Read("TalkInterval", 0));
     }
+
+    public sealed record MobConfig(
+        int Health,
+        float MovementSpeed,
+        int? AttackStrength,
+        float Width,
+        float Height,
+        string Texture,
+        string? LivingSound,
+        string? HurtSound,
+        string? DeathSound,
+        float SoundVolume,
+        bool FireImmune,
+        int MaxSpawnedInChunk,
+        bool CanDespawn,
+        int TalkInterval);
 }

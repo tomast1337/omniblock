@@ -9,26 +9,26 @@ internal class SugarCanePatchFeature : Feature
 {
     public override bool Generate(IWorldContext level, JavaRandom rand, int x, int y, int z)
     {
-        for (int i = 0; i < 20; ++i)
+        for (var i = 0; i < 20; ++i)
         {
-            int genX = x + rand.NextInt(4) - rand.NextInt(4);
-            int genZ = z + rand.NextInt(4) - rand.NextInt(4);
+            var genX = x + rand.NextInt(4) - rand.NextInt(4);
+            var genZ = z + rand.NextInt(4) - rand.NextInt(4);
 
             if (!level.Reader.IsAir(genX, y, genZ))
             {
                 continue;
             }
 
-            bool hasWaterNearby = level.Reader.GetMaterial(genX - 1, y - 1, genZ) == Material.Water ||
-                                  level.Reader.GetMaterial(genX + 1, y - 1, genZ) == Material.Water ||
-                                  level.Reader.GetMaterial(genX, y - 1, genZ - 1) == Material.Water ||
-                                  level.Reader.GetMaterial(genX, y - 1, genZ + 1) == Material.Water;
+            var hasWaterNearby = level.Reader.GetMaterial(genX - 1, y - 1, genZ) == Material.Water ||
+                                 level.Reader.GetMaterial(genX + 1, y - 1, genZ) == Material.Water ||
+                                 level.Reader.GetMaterial(genX, y - 1, genZ - 1) == Material.Water ||
+                                 level.Reader.GetMaterial(genX, y - 1, genZ + 1) == Material.Water;
 
             if (hasWaterNearby)
             {
-                int height = 2 + rand.NextInt(rand.NextInt(3) + 1);
+                var height = 2 + rand.NextInt(rand.NextInt(3) + 1);
 
-                for (int h = 0; h < height; ++h)
+                for (var h = 0; h < height; ++h)
                 {
                     if (level.Content.Blocks.Get("sugar_cane").CanGrow(new OnTickEvent(level, genX, y + h, genZ, level.Reader.GetBlockMeta(genX, y + h, genZ), level.Reader.GetBlockId(genX, y + h, genZ))))
                     {

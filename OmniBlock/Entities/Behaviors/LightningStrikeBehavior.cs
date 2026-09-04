@@ -91,11 +91,11 @@ public sealed class LightningStrikeBehavior : IEntityTicker, IEntityLifecycle, I
             return true;
         }
 
-        List<Entity> struck = self.World.Entities.GetEntities(self, new Box(
+        var struck = self.World.Entities.GetEntities(self, new Box(
             self.X - _strikeRadius, self.Y - _strikeRadius, self.Z - _strikeRadius,
             self.X + _strikeRadius, self.Y + 6.0D + _strikeRadius, self.Z + _strikeRadius));
 
-        foreach (Entity entity in struck)
+        foreach (var entity in struck)
         {
             entity.OnStruckByLightning(self);
         }
@@ -122,11 +122,11 @@ public sealed class LightningStrikeBehavior : IEntityTicker, IEntityLifecycle, I
 
         TryPlaceFire(self.World, MathHelper.Floor(self.X), MathHelper.Floor(self.Y), MathHelper.Floor(self.Z));
 
-        for (int i = 0; i < _extraFires; ++i)
+        for (var i = 0; i < _extraFires; ++i)
         {
-            int fireX = MathHelper.Floor(self.X) + self.Random.NextInt(3) - 1;
-            int fireY = MathHelper.Floor(self.Y) + self.Random.NextInt(3) - 1;
-            int fireZ = MathHelper.Floor(self.Z) + self.Random.NextInt(3) - 1;
+            var fireX = MathHelper.Floor(self.X) + self.Random.NextInt(3) - 1;
+            var fireY = MathHelper.Floor(self.Y) + self.Random.NextInt(3) - 1;
+            var fireZ = MathHelper.Floor(self.Z) + self.Random.NextInt(3) - 1;
             TryPlaceFire(self.World, fireX, fireY, fireZ);
         }
     }

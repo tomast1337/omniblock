@@ -9,27 +9,21 @@ namespace OmniBlock.Client.Network;
 
 public class EntityClientPlayerMP : ClientPlayerEntity
 {
-    public ClientNetworkHandler sendQueue;
-    private int inventorySyncTickCounter;
     private bool hasReceivedInitialHealth;
-    private double oldPosX;
+    private int inventorySyncTickCounter;
+    private bool lastOnGround;
     private double lastSentMinY;
+    private double oldPosX;
     private double oldPosY;
     private double oldPosZ;
-    private float oldRotationYaw;
     private float oldRotationPitch;
-    private bool lastOnGround;
+    private float oldRotationYaw;
+    public ClientNetworkHandler sendQueue;
     private bool wasSneaking;
 
-    public EntityClientPlayerMP(OmniBlock game, World world, Session session, ClientNetworkHandler clientNetworkHandler) : base(game, world, session, 0)
-    {
-        sendQueue = clientNetworkHandler;
-    }
+    public EntityClientPlayerMP(OmniBlock game, World world, Session session, ClientNetworkHandler clientNetworkHandler) : base(game, world, session, 0) => sendQueue = clientNetworkHandler;
 
-    public override bool Damage(Entity? ent, int amount)
-    {
-        return false;
-    }
+    public override bool Damage(Entity? ent, int amount) => false;
 
     public override void Heal(int amount)
     {
@@ -52,57 +46,105 @@ public class EntityClientPlayerMP : ClientPlayerEntity
             inventorySyncTickCounter = 0;
         }
 
-        bool isSneaking = base.IsSneaking();
+        var isSneaking = base.IsSneaking();
         if (isSneaking != wasSneaking)
         {
             if (isSneaking)
             {
-                sendQueue.SendMessage(new ClientCommandMessage { EntityId = ID, Mode = 1 });
+                sendQueue.SendMessage(new ClientCommandMessage
+                {
+                    EntityId = ID,
+                    Mode = 1
+                });
             }
             else
             {
-                sendQueue.SendMessage(new ClientCommandMessage { EntityId = ID, Mode = 2 });
+                sendQueue.SendMessage(new ClientCommandMessage
+                {
+                    EntityId = ID,
+                    Mode = 2
+                });
             }
 
             wasSneaking = isSneaking;
         }
 
-        double dx = X - oldPosX;
-        double dMinY = BoundingBox.MinY - lastSentMinY;
-        double dy = Y - oldPosY;
-        double dz = Z - oldPosZ;
-        double dYaw = (double)(Yaw - oldRotationYaw);
-        double yPitch = (double)(Pitch - oldRotationPitch);
-        bool positionChanged = dMinY != 0.0D || dy != 0.0D || dx != 0.0D || dz != 0.0D;
-        bool rotationChanged = dYaw != 0.0D || yPitch != 0.0D;
+        var dx = X - oldPosX;
+        var dMinY = BoundingBox.MinY - lastSentMinY;
+        var dy = Y - oldPosY;
+        var dz = Z - oldPosZ;
+        var dYaw = (double)(Yaw - oldRotationYaw);
+        var yPitch = (double)(Pitch - oldRotationPitch);
+        var positionChanged = dMinY != 0.0D || dy != 0.0D || dx != 0.0D || dz != 0.0D;
+        var rotationChanged = dYaw != 0.0D || yPitch != 0.0D;
         if (Vehicle != null)
         {
             if (rotationChanged)
             {
-                sendQueue.SendMessage(new PlayerMovePositionMessage { X = VelocityX, Y = -1000.0D, EyeHeight = -1000.0D, Z = VelocityZ, OnGround = OnGround });
+                sendQueue.SendMessage(new PlayerMovePositionMessage
+                {
+                    X = VelocityX,
+                    Y = -1000.0D,
+                    EyeHeight = -1000.0D,
+                    Z = VelocityZ,
+                    OnGround = OnGround
+                });
             }
             else
             {
-                sendQueue.SendMessage(new PlayerMoveFullMessage { X = VelocityX, Y = -1000.0D, EyeHeight = -1000.0D, Z = VelocityZ, Yaw = Yaw, Pitch = Pitch, OnGround = OnGround });
+                sendQueue.SendMessage(new PlayerMoveFullMessage
+                {
+                    X = VelocityX,
+                    Y = -1000.0D,
+                    EyeHeight = -1000.0D,
+                    Z = VelocityZ,
+                    Yaw = Yaw,
+                    Pitch = Pitch,
+                    OnGround = OnGround
+                });
             }
 
             positionChanged = false;
         }
         else if (positionChanged && rotationChanged)
         {
-            sendQueue.SendMessage(new PlayerMoveFullMessage { X = X, Y = BoundingBox.MinY, EyeHeight = Y, Z = Z, Yaw = Yaw, Pitch = Pitch, OnGround = OnGround });
+            sendQueue.SendMessage(new PlayerMoveFullMessage
+            {
+                X = X,
+                Y = BoundingBox.MinY,
+                EyeHeight = Y,
+                Z = Z,
+                Yaw = Yaw,
+                Pitch = Pitch,
+                OnGround = OnGround
+            });
         }
         else if (positionChanged)
         {
-            sendQueue.SendMessage(new PlayerMovePositionMessage { X = X, Y = BoundingBox.MinY, EyeHeight = Y, Z = Z, OnGround = OnGround });
+            sendQueue.SendMessage(new PlayerMovePositionMessage
+            {
+                X = X,
+                Y = BoundingBox.MinY,
+                EyeHeight = Y,
+                Z = Z,
+                OnGround = OnGround
+            });
         }
         else if (rotationChanged)
         {
-            sendQueue.SendMessage(new PlayerMoveLookMessage { Yaw = Yaw, Pitch = Pitch, OnGround = OnGround });
+            sendQueue.SendMessage(new PlayerMoveLookMessage
+            {
+                Yaw = Yaw,
+                Pitch = Pitch,
+                OnGround = OnGround
+            });
         }
         else if (lastOnGround != OnGround)
         {
-            sendQueue.SendMessage(new PlayerMoveMessage { OnGround = OnGround });
+            sendQueue.SendMessage(new PlayerMoveMessage
+            {
+                OnGround = OnGround
+            });
         }
 
         lastOnGround = OnGround;
@@ -119,7 +161,6 @@ public class EntityClientPlayerMP : ClientPlayerEntity
             oldRotationYaw = Yaw;
             oldRotationPitch = Pitch;
         }
-
     }
 
     public override void DropSelectedItem()
@@ -131,7 +172,11 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         {
             IncreaseStat(Stats.Stats.DropStat, 1);
         }
-        sendQueue.SendMessage(new PlayerActionMessage { Action = (byte)PlayerActionMessage.Actions.DropSelectedItem });
+
+        sendQueue.SendMessage(new PlayerActionMessage
+        {
+            Action = (byte)PlayerActionMessage.Actions.DropSelectedItem
+        });
     }
 
     private void sendInventoryChanged()
@@ -142,10 +187,10 @@ public class EntityClientPlayerMP : ClientPlayerEntity
     {
     }
 
-    public override void SendChatMessage(string message)
+    public override void SendChatMessage(string message) => sendQueue.SendMessage(new ChatMessage
     {
-        sendQueue.SendMessage(new ChatMessage { Text = message });
-    }
+        Text = message
+    });
 
     public override void SwingHand()
     {
@@ -153,24 +198,27 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         sendQueue.SendMessage(new EntityAnimationMessage
         {
             EntityId = ID,
-            AnimationId = (byte)EntityAnimationMessage.EntityAnimation.SwingHand,
+            AnimationId = (byte)EntityAnimationMessage.EntityAnimation.SwingHand
         });
     }
 
     public override void Respawn()
     {
         sendInventoryChanged();
-        sendQueue.SendMessage(new PlayerRespawnMessage { DimensionId = (sbyte)DimensionId });
+        sendQueue.SendMessage(new PlayerRespawnMessage
+        {
+            DimensionId = (sbyte)DimensionId
+        });
     }
 
-    protected override void ApplyDamage(int amount)
-    {
-        Health -= amount;
-    }
+    protected override void ApplyDamage(int amount) => Health -= amount;
 
     public override void CloseHandledScreen()
     {
-        sendQueue.SendMessage(new CloseScreenMessage { SyncId = (sbyte)CurrentScreenHandler.SyncId });
+        sendQueue.SendMessage(new CloseScreenMessage
+        {
+            SyncId = (sbyte)CurrentScreenHandler.SyncId
+        });
         Inventory.SetCursorStack(null);
         base.CloseHandledScreen();
     }
@@ -186,7 +234,6 @@ public class EntityClientPlayerMP : ClientPlayerEntity
             Health = amount;
             hasReceivedInitialHealth = true;
         }
-
     }
 
     public override void IncreaseStat(StatBase stat, int amount)
@@ -197,7 +244,6 @@ public class EntityClientPlayerMP : ClientPlayerEntity
             {
                 base.IncreaseStat(stat, amount);
             }
-
         }
     }
 

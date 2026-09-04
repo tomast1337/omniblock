@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Threading.Channels;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Util;
 
 namespace OmniBlock.Network.Transport;
 
@@ -47,27 +48,29 @@ public sealed class LiteNetLibTransport : ITransport
 
     private static readonly ILogger<LiteNetLibTransport> s_logger = Log.Instance.For<LiteNetLibTransport>();
 
-    private readonly NetManager _manager;
-    private readonly EventBasedNetListener _listener;
+    /// <summary>
+    ///     Inbound connections waiting to be accepted. Unbounded: refusing a peer that has
+    ///     already completed a handshake is worse than holding it.
+    /// </summary>
+    private readonly Channel<ITransportConnection> _accepted =
+        Channel.CreateUnbounded<ITransportConnection>(new UnboundedChannelOptions
+        {
+            SingleReader = true
+        });
+
     private readonly string _connectionKey;
 
     /// <summary>Live connections by peer, so receive callbacks can find the right inbox.</summary>
     private readonly ConcurrentDictionary<NetPeer, LiteNetLibConnection> _connections = new();
 
-    /// <summary>Inbound connections waiting to be accepted. Unbounded: refusing a peer that has
-    ///     already completed a handshake is worse than holding it.</summary>
-    private readonly Channel<ITransportConnection> _accepted =
-        Channel.CreateUnbounded<ITransportConnection>(new UnboundedChannelOptions { SingleReader = true });
+    private readonly EventBasedNetListener _listener;
 
-    /// <summary>Completes a pending <see cref="ConnectAsync" />; null on a server.</summary>
-    private TaskCompletionSource<LiteNetLibConnection>? _pendingConnect;
+    private readonly NetManager _manager;
 
     private bool _disposed;
 
-    public byte ChannelCount => Channels;
-
-    /// <summary>The port actually bound, which matters when 0 was requested.</summary>
-    public int LocalPort => _manager.LocalPort;
+    /// <summary>Completes a pending <see cref="ConnectAsync" />; null on a server.</summary>
+    private TaskCompletionSource<LiteNetLibConnection>? _pendingConnect;
 
     public LiteNetLibTransport(string connectionKey = DefaultConnectionKey, bool enableIPv6 = true)
     {
@@ -112,7 +115,7 @@ public sealed class LiteNetLibTransport : ITransport
             // Five buys most of it back for one extra wakeup every 10 ms on a thread that does
             // nothing when there is nothing queued. Going lower has sharply diminishing returns:
             // 1 ms would save four more milliseconds for five times the wakeups.
-            UpdateTime = 5,
+            UpdateTime = 5
         };
 
         _listener.ConnectionRequestEvent += request => request.AcceptIfKey(_connectionKey);
@@ -123,39 +126,10 @@ public sealed class LiteNetLibTransport : ITransport
             s_logger.LogDebug("Transport error from {EndPoint}: {Error}", endPoint, error);
     }
 
-    /// <summary>Binds every interface and begins listening. Port 0 takes an ephemeral one; read it
-    ///     back from <see cref="LocalPort" />.</summary>
-    public void Listen(int port) => Start(port);
+    /// <summary>The port actually bound, which matters when 0 was requested.</summary>
+    public int LocalPort => _manager.LocalPort;
 
-    /// <summary>
-    ///     Binds one address. Kept distinct from <see cref="Listen(int)" /> because the difference
-    ///     matters operationally: a server told to bind loopback and silently given every interface
-    ///     is exposed to a network its operator meant to exclude.
-    /// </summary>
-    public void Listen(IPAddress address, int port)
-    {
-        ArgumentNullException.ThrowIfNull(address);
-
-        bool bound = address.AddressFamily == AddressFamily.InterNetworkV6
-            ? _manager.Start(IPAddress.Any, address, port)
-            : _manager.Start(address, IPAddress.IPv6Any, port);
-
-        if (!bound)
-        {
-            throw new IOException($"Could not bind a UDP socket on {address}:{port}.");
-        }
-    }
-
-    /// <summary>Binds an ephemeral port for outbound use.</summary>
-    public void StartClient() => Start(0);
-
-    private void Start(int port)
-    {
-        if (!_manager.Start(port))
-        {
-            throw new IOException($"Could not bind a UDP socket on port {port}.");
-        }
-    }
+    public byte ChannelCount => Channels;
 
     public async ValueTask<ITransportConnection> ConnectAsync(
         IPEndPoint remote, CancellationToken cancellationToken)
@@ -177,61 +151,13 @@ public sealed class LiteNetLibTransport : ITransport
         // sends are silently dropped.
         _manager.Connect(remote, _connectionKey);
 
-        await using CancellationTokenRegistration registration = cancellationToken.Register(
-            () => pending.TrySetCanceled(cancellationToken));
+        await using var registration = cancellationToken.Register(() => pending.TrySetCanceled(cancellationToken));
 
         return await pending.Task.ConfigureAwait(false);
     }
 
     public IAsyncEnumerable<ITransportConnection> AcceptAsync(CancellationToken cancellationToken) =>
         _accepted.Reader.ReadAllAsync(cancellationToken);
-
-    private void OnPeerConnected(NetPeer peer)
-    {
-        LiteNetLibConnection connection = new(peer, Channels);
-        _connections[peer] = connection;
-
-        // An outbound connect completes its awaiter; an inbound one joins the accept queue. The
-        // event is the same either way, so which of the two it is has to come from local state.
-        TaskCompletionSource<LiteNetLibConnection>? pending =
-            Interlocked.Exchange(ref _pendingConnect, null);
-
-        if (pending is not null)
-        {
-            pending.TrySetResult(connection);
-            return;
-        }
-
-        _accepted.Writer.TryWrite(connection);
-    }
-
-    private void OnPeerDisconnected(NetPeer peer, DisconnectInfo info)
-    {
-        if (_connections.TryRemove(peer, out LiteNetLibConnection? connection))
-        {
-            connection.MarkDisconnected();
-        }
-
-        // A failed outbound handshake surfaces here rather than as a connect event, so an awaiter
-        // that would otherwise hang forever is failed explicitly.
-        TaskCompletionSource<LiteNetLibConnection>? pending =
-            Interlocked.Exchange(ref _pendingConnect, null);
-
-        pending?.TrySetException(
-            new IOException($"Connection to {peer.Address} failed: {info.Reason}."));
-    }
-
-    private void OnNetworkReceive(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod method)
-    {
-        if (_connections.TryGetValue(peer, out LiteNetLibConnection? connection))
-        {
-            // Copied here, on the callback, because AutoRecycle reclaims the reader the moment this
-            // returns. The arrival stamp is taken here for the same reason it cannot be taken later:
-            // this is the only point that knows when the bytes actually landed.
-            connection.Enqueue(new ReceivedDatagram(
-                channel, reader.GetRemainingBytes(), Util.MonotonicClock.NowTicks()));
-        }
-    }
 
     public ValueTask DisposeAsync()
     {
@@ -250,6 +176,89 @@ public sealed class LiteNetLibTransport : ITransport
         _connections.Clear();
 
         return ValueTask.CompletedTask;
+    }
+
+    /// <summary>
+    ///     Binds every interface and begins listening. Port 0 takes an ephemeral one; read it
+    ///     back from <see cref="LocalPort" />.
+    /// </summary>
+    public void Listen(int port) => Start(port);
+
+    /// <summary>
+    ///     Binds one address. Kept distinct from <see cref="Listen(int)" /> because the difference
+    ///     matters operationally: a server told to bind loopback and silently given every interface
+    ///     is exposed to a network its operator meant to exclude.
+    /// </summary>
+    public void Listen(IPAddress address, int port)
+    {
+        ArgumentNullException.ThrowIfNull(address);
+
+        var bound = address.AddressFamily == AddressFamily.InterNetworkV6
+            ? _manager.Start(IPAddress.Any, address, port)
+            : _manager.Start(address, IPAddress.IPv6Any, port);
+
+        if (!bound)
+        {
+            throw new IOException($"Could not bind a UDP socket on {address}:{port}.");
+        }
+    }
+
+    /// <summary>Binds an ephemeral port for outbound use.</summary>
+    public void StartClient() => Start(0);
+
+    private void Start(int port)
+    {
+        if (!_manager.Start(port))
+        {
+            throw new IOException($"Could not bind a UDP socket on port {port}.");
+        }
+    }
+
+    private void OnPeerConnected(NetPeer peer)
+    {
+        LiteNetLibConnection connection = new(peer, Channels);
+        _connections[peer] = connection;
+
+        // An outbound connect completes its awaiter; an inbound one joins the accept queue. The
+        // event is the same either way, so which of the two it is has to come from local state.
+        var pending =
+            Interlocked.Exchange(ref _pendingConnect, null);
+
+        if (pending is not null)
+        {
+            pending.TrySetResult(connection);
+            return;
+        }
+
+        _accepted.Writer.TryWrite(connection);
+    }
+
+    private void OnPeerDisconnected(NetPeer peer, DisconnectInfo info)
+    {
+        if (_connections.TryRemove(peer, out var connection))
+        {
+            connection.MarkDisconnected();
+        }
+
+        // A failed outbound handshake surfaces here rather than as a connect event, so an awaiter
+        // that would otherwise hang forever is failed explicitly.
+        var pending =
+            Interlocked.Exchange(ref _pendingConnect, null);
+
+        pending?.TrySetException(
+            new IOException($"Connection to {peer.Address} failed: {info.Reason}."));
+    }
+
+    private void OnNetworkReceive(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod method)
+    {
+        if (_connections.TryGetValue(peer, out var connection))
+        {
+            // Copied here, on the callback, because AutoRecycle reclaims the reader the moment this
+            // returns. The arrival stamp is taken here for the same reason it cannot be taken later:
+            // this is the only point that knows when the bytes actually landed.
+            connection.Enqueue(new ReceivedDatagram(
+                channel, reader.GetRemainingBytes(), MonotonicClock.NowTicks()));
+        }
     }
 
     /// <summary>One peer. Receives on LiteNetLib's thread, is drained on the game's.</summary>
@@ -290,8 +299,8 @@ public sealed class LiteNetLibTransport : ITransport
                 return 0;
             }
 
-            return peer.GetPacketsCountInReliableQueue(channel, ordered: true)
-                + peer.GetPacketsCountInReliableQueue(channel, ordered: false);
+            return peer.GetPacketsCountInReliableQueue(channel, true)
+                   + peer.GetPacketsCountInReliableQueue(channel, false);
         }
 
         public void Close(DisconnectReason reason)
@@ -303,11 +312,11 @@ public sealed class LiteNetLibTransport : ITransport
             }
         }
 
+        public void Dispose() => Close(DisconnectReason.Local);
+
         internal void Enqueue(ReceivedDatagram datagram) => _inbox.Enqueue(datagram);
 
         internal void MarkDisconnected() => _connected = false;
-
-        public void Dispose() => Close(DisconnectReason.Local);
 
         /// <summary>
         ///     LiteNetLib's <c>ReliableSequenced</c> has no counterpart here on purpose: it is
@@ -321,7 +330,7 @@ public sealed class LiteNetLibTransport : ITransport
             DeliveryMode.UnreliableSequenced => DeliveryMethod.Sequenced,
             DeliveryMode.Reliable => DeliveryMethod.ReliableUnordered,
             DeliveryMode.ReliableOrdered => DeliveryMethod.ReliableOrdered,
-            _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unknown delivery mode."),
+            _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unknown delivery mode.")
         };
     }
 }

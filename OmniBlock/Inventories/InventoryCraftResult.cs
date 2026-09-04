@@ -15,13 +15,12 @@ internal class InventoryCraftResult : IInventory
 
     public ItemStack? RemoveStack(int slotIndex, int amount)
     {
-        ItemStack? stack = _result[slotIndex];
+        var stack = _result[slotIndex];
 
         if (stack == null) return null;
 
         _result[slotIndex] = null;
         return stack;
-
     }
 
     public void SetStack(int slotIndex, ItemStack? itemStack) => _result[slotIndex] = itemStack;

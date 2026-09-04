@@ -15,11 +15,11 @@ public class SaveAllCommand : Command.Command
 
     private static int Execute(CommandContext<CommandSource> context)
     {
-        CommandSource c = context.Source;
+        var c = context.Source;
         c.LogOp("Forcing save..");
         c.Server.playerManager?.savePlayers();
 
-        for (int i = 0; i < c.Server.worlds.Length; i++)
+        for (var i = 0; i < c.Server.worlds.Length; i++)
         {
             c.Server.worlds[i].SaveWithLoadingDisplay(true, null);
         }

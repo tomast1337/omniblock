@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.Util.Hit;
@@ -7,9 +6,9 @@ using OmniBlock.Util.Maths;
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Covers the line-of-sight branches that were unreachable while <see cref="FakeWorldContext"/>
-/// reported every raycast as a miss. The fake now runs the production traversal over its own block
-/// grid, so a wall between two entities is a real wall.
+///     Covers the line-of-sight branches that were unreachable while <see cref="FakeWorldContext" />
+///     reported every raycast as a miss. The fake now runs the production traversal over its own block
+///     grid, so a wall between two entities is a real wall.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityLineOfSightTests
@@ -19,12 +18,12 @@ public sealed class EntityLineOfSightTests
     /// <summary>Builds a solid column at (x, z) tall enough to break a standing entity's sightline.</summary>
     private static void Wall(FakeWorldContext world, int x, int z)
     {
-        for (int y = 63; y < 69; y++) world.ReaderWriter.SetBlock(x, y, z, s_stone, 0);
+        for (var y = 63; y < 69; y++) world.ReaderWriter.SetBlock(x, y, z, s_stone, 0);
     }
 
     private static EntityCreature Spawn(FakeWorldContext world, string name, double x, double z)
     {
-        EntityCreature mob = (EntityCreature)TestEntityCatalog.ByName(name).Create(world);
+        var mob = (EntityCreature)TestEntityCatalog.ByName(name).Create(world);
         mob.SetPositionAndAngles(x, 65.0, z, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(mob));
         return mob;
@@ -32,7 +31,10 @@ public sealed class EntityLineOfSightTests
 
     private static TestEntityPlayer Player(FakeWorldContext world, double x, double z)
     {
-        TestEntityPlayer player = new(world) { Name = "tester" };
+        TestEntityPlayer player = new(world)
+        {
+            Name = "tester"
+        };
         player.SetPositionAndAngles(x, 65.0, z, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(player));
         return player;
@@ -46,7 +48,7 @@ public sealed class EntityLineOfSightTests
 
         Assert.Equal(HitResultType.Miss, world.Reader.Raycast(new Vec3D(8.5, 65.5, 8.5), new Vec3D(10.5, 65.5, 8.5)).Type);
 
-        HitResult hit = world.Reader.Raycast(new Vec3D(8.5, 65.5, 8.5), new Vec3D(14.5, 65.5, 8.5));
+        var hit = world.Reader.Raycast(new Vec3D(8.5, 65.5, 8.5), new Vec3D(14.5, 65.5, 8.5));
 
         Assert.Equal(HitResultType.Tile, hit.Type);
         Assert.Equal(12, hit.BlockX);
@@ -56,8 +58,8 @@ public sealed class EntityLineOfSightTests
     public void An_entity_cannot_see_through_a_wall()
     {
         FakeWorldContext world = new();
-        EntityCreature zombie = Spawn(world, "zombie", 8.5, 8.5);
-        TestEntityPlayer player = Player(world, 14.5, 8.5);
+        var zombie = Spawn(world, "zombie", 8.5, 8.5);
+        var player = Player(world, 14.5, 8.5);
 
         Assert.True(zombie.CanSee(player));
 
@@ -67,14 +69,14 @@ public sealed class EntityLineOfSightTests
     }
 
     /// <summary>
-    ///     The rejection branch in <see cref="Behaviors.AlwaysHuntTargetBehavior"/>: the player is
+    ///     The rejection branch in <see cref="Behaviors.AlwaysHuntTargetBehavior" />: the player is
     ///     well within range, so only the sightline check can turn the target down.
     /// </summary>
     [Fact]
     public void Always_hunt_targeting_rejects_a_player_behind_a_wall()
     {
         FakeWorldContext world = new();
-        EntityCreature zombie = Spawn(world, "zombie", 8.5, 8.5);
+        var zombie = Spawn(world, "zombie", 8.5, 8.5);
         Player(world, 14.5, 8.5);
 
         Assert.NotNull(zombie.Targeting!.FindPlayerToAttack(zombie));
@@ -100,7 +102,7 @@ public sealed class EntityLineOfSightTests
     private static Entity? TargetThroughWall(string name)
     {
         FakeWorldContext world = new();
-        EntityCreature mob = Spawn(world, name, 8.5, 8.5);
+        var mob = Spawn(world, name, 8.5, 8.5);
         Player(world, 14.5, 8.5);
         Wall(world, 11, 8);
 
@@ -112,13 +114,13 @@ public sealed class EntityLineOfSightTests
     public void Slime_contact_damage_needs_a_clear_line()
     {
         FakeWorldContext world = new();
-        EntityLiving slime = (EntityLiving)TestEntityCatalog.ByName("slime").Create(world);
+        var slime = (EntityLiving)TestEntityCatalog.ByName("slime").Create(world);
         slime.Behaviors.Find<SizedBodyBehavior>()!.SetSize(slime, 4);
         slime.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(slime));
 
-        TestEntityPlayer player = Player(world, 9.5, 8.5);
-        int before = player.Health;
+        var player = Player(world, 9.5, 8.5);
+        var before = player.Health;
 
         Wall(world, 9, 8);
         slime.OnPlayerInteraction(player);

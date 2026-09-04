@@ -47,10 +47,7 @@ internal sealed class FurnaceBehavior(bool lit, int top, int frontOff, int front
         InventoryUtility.OnPlaced(block, @event);
     }
 
-    public void OnBreak(Block block, OnBreakEvent @event)
-    {
-        InventoryUtility.OnBreak(block, @event);
-    }
+    public void OnBreak(Block block, OnBreakEvent @event) => InventoryUtility.OnBreak(block, @event);
 
     public void RandomDisplayTick(Block block, OnTickEvent @event)
     {

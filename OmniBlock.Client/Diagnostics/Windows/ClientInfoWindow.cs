@@ -1,5 +1,5 @@
-using OmniBlock.Diagnostics;
 using Hexa.NET.ImGui;
+using OmniBlock.Diagnostics;
 
 namespace OmniBlock.Client.Diagnostics.Windows;
 
@@ -13,7 +13,7 @@ internal sealed class ClientInfoWindow(DebugWindowContext ctx) : DebugWindow
     {
         if (ImGui.CollapsingHeader("Performance", ImGuiTreeNodeFlags.DefaultOpen))
         {
-            float frameTimeMs = MetricRegistry.Get(ClientMetrics.FrameTimeMs);
+            var frameTimeMs = MetricRegistry.Get(ClientMetrics.FrameTimeMs);
             _frameTimeGraph.Push(frameTimeMs);
 
             ImGuiTextSafe.Text($"FPS:        {MetricRegistry.Get(ClientMetrics.Fps)}");
@@ -24,9 +24,9 @@ internal sealed class ClientInfoWindow(DebugWindowContext ctx) : DebugWindow
 
         if (ImGui.CollapsingHeader("Memory", ImGuiTreeNodeFlags.DefaultOpen))
         {
-            long maxMem = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
-            long usedMem = Environment.WorkingSet;
-            long heapMem = GC.GetTotalMemory(false);
+            var maxMem = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
+            var usedMem = Environment.WorkingSet;
+            var heapMem = GC.GetTotalMemory(false);
 
             ImGuiTextSafe.Text($"Used: {FormatMb(usedMem)} / {FormatMb(maxMem)} MB");
             ImGuiTextSafe.Text($"Heap: {FormatMb(heapMem)} MB");
@@ -34,7 +34,7 @@ internal sealed class ClientInfoWindow(DebugWindowContext ctx) : DebugWindow
 
         if (ImGui.CollapsingHeader("World", ImGuiTreeNodeFlags.DefaultOpen))
         {
-            string chunkInfo = ctx.World?.GetDebugInfo() ?? "No world loaded.";
+            var chunkInfo = ctx.World?.GetDebugInfo() ?? "No world loaded.";
             ImGuiTextSafe.Text(chunkInfo);
         }
     }

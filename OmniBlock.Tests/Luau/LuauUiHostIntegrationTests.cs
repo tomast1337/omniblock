@@ -1,5 +1,5 @@
-using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using OmniBlock.Luau;
 using OmniBlock.Luau.Host;
 
@@ -33,7 +33,7 @@ public sealed unsafe class LuauUiHostIntegrationTests
         using LuauState state = new();
         state.ResetInstructionBudget(10_000);
 
-        int invocationCount = 0;
+        var invocationCount = 0;
         (int CommandId, int Arg0, int Arg1, int Arg2)? received = null;
 
         LuauUiHost.Dispatch = (commandId, arg0, arg1, arg2) =>
@@ -46,7 +46,7 @@ public sealed unsafe class LuauUiHostIntegrationTests
         {
             LuauUiHost.Install(state.Handle);
 
-            byte[] source = System.Text.Encoding.UTF8.GetBytes("Host.openScreen(42, 1, 2, 3)");
+            var source = Encoding.UTF8.GetBytes("Host.openScreen(42, 1, 2, 3)");
             byte* bytecode;
             nuint bytecodeSize;
             fixed (byte* sourcePtr = source)
@@ -56,10 +56,10 @@ public sealed unsafe class LuauUiHostIntegrationTests
 
             Assert.True(bytecode != null);
 
-            int loadResult = LuauNative.luau_load(state.Handle, "=ui_host_test", bytecode, bytecodeSize, 0);
+            var loadResult = LuauNative.luau_load(state.Handle, "=ui_host_test", bytecode, bytecodeSize, 0);
             Assert.Equal(0, loadResult);
 
-            int pcallResult = LuauNative.lua_pcall(state.Handle, 0, 0, 0);
+            var pcallResult = LuauNative.lua_pcall(state.Handle, 0, 0, 0);
 
             Assert.Equal(0, pcallResult);
             Assert.Equal(1, invocationCount);
@@ -78,7 +78,7 @@ public sealed unsafe class LuauUiHostIntegrationTests
             return true;
         }
 
-        string fileName = OperatingSystem.IsWindows() ? "omniblock_luau.dll"
+        var fileName = OperatingSystem.IsWindows() ? "omniblock_luau.dll"
             : OperatingSystem.IsMacOS() ? "libomniblock_luau.dylib"
             : "libomniblock_luau.so";
         return NativeLibrary.TryLoad(Path.Combine(AppContext.BaseDirectory, fileName), out _);

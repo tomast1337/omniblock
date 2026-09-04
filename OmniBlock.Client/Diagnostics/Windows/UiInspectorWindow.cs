@@ -1,26 +1,24 @@
 using System.Numerics;
+using System.Text;
+using Hexa.NET.ImGui;
 using OmniBlock.Client.UI;
 using OmniBlock.Client.UI.Controls.Core;
-using OmniBlock.Client.UI.Screens.InGame;
-using Hexa.NET.ImGui;
-using Silk.NET.Maths;
 
 namespace OmniBlock.Client.Diagnostics.Windows;
 
 internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
 {
+    private UIElement? _hoveredElement;
+    private UIScreen? _lastScreen;
+    private UIElement? _selectedElement;
     public override string Title => "UI Inspector";
     public override DebugDock DefaultDock => DebugDock.Right;
-
-    private UIElement? _hoveredElement;
-    private UIElement? _selectedElement;
-    private UIScreen? _lastScreen;
 
     protected override void OnDraw()
     {
         _hoveredElement = null;
 
-        UIScreen? screen = ctx.CurrentScreen;
+        var screen = ctx.CurrentScreen;
 
         if (screen != _lastScreen)
         {
@@ -40,18 +38,18 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
             ImGui.Spacing();
 
             ImGui.PushID("screen");
-            DrawElementNode(screen.Root, depth: 0);
+            DrawElementNode(screen.Root, 0);
             ImGui.PopID();
         }
 
         ImGui.Spacing();
         ImGui.SeparatorText("HUD");
 
-        HUD hud = ctx.HUD;
+        var hud = ctx.HUD;
         if (hud?.Root is { } hudRoot)
         {
             ImGui.PushID("hud");
-            DrawElementNode(hudRoot, depth: 0);
+            DrawElementNode(hudRoot, 0);
             ImGui.PopID();
         }
         else
@@ -78,14 +76,14 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
 
     private void DrawElementNode(UIElement element, int depth)
     {
-        ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags.SpanAvailWidth;
+        var nodeFlags = ImGuiTreeNodeFlags.SpanAvailWidth;
         if (depth == 0)
             nodeFlags |= ImGuiTreeNodeFlags.DefaultOpen;
 
-        bool dim = !element.Visible || !element.Enabled;
-        bool isSelected = element == _selectedElement;
+        var dim = !element.Visible || !element.Enabled;
+        var isSelected = element == _selectedElement;
 
-        int colorPushCount = 0;
+        var colorPushCount = 0;
         if (isSelected)
         {
             ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.35f, 0.75f, 1f, 1f));
@@ -97,12 +95,13 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
             colorPushCount++;
         }
 
-        bool open = ImGui.TreeNodeEx("##n", nodeFlags);
+        var open = ImGui.TreeNodeEx("##n", nodeFlags);
 
         if (ImGui.IsItemHovered())
         {
             _hoveredElement = element;
         }
+
         if (ImGui.IsItemClicked())
         {
             _selectedElement = isSelected ? null : element;
@@ -123,7 +122,7 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
 
         if (open)
         {
-            bool propsOpen = ImGui.TreeNodeEx("##p", ImGuiTreeNodeFlags.SpanAvailWidth);
+            var propsOpen = ImGui.TreeNodeEx("##p", ImGuiTreeNodeFlags.SpanAvailWidth);
             ImGui.SameLine();
             ImGuiTextSafe.TextDisabled("Properties");
 
@@ -133,7 +132,7 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
                 ImGui.TreePop();
             }
 
-            for (int i = 0; i < element.Children.Count; i++)
+            for (var i = 0; i < element.Children.Count; i++)
             {
                 ImGui.PushID(i);
                 DrawElementNode(element.Children[i], depth + 1);
@@ -153,68 +152,68 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
 
     private unsafe void DrawOverlays()
     {
-        int scaleFactor = GetScaleFactor();
-        Vector2 vpOffset = ctx.DebugViewportScreenPos;
+        var scaleFactor = GetScaleFactor();
+        var vpOffset = ctx.DebugViewportScreenPos;
         ImDrawList* drawList = ImGui.GetForegroundDrawList();
 
         if (_hoveredElement != null && _hoveredElement != _selectedElement)
         {
-            DrawElementHighlight(drawList, _hoveredElement, scaleFactor, vpOffset, isSelected: false);
+            DrawElementHighlight(drawList, _hoveredElement, scaleFactor, vpOffset, false);
         }
 
         if (_selectedElement != null)
         {
-            DrawElementHighlight(drawList, _selectedElement, scaleFactor, vpOffset, isSelected: true);
+            DrawElementHighlight(drawList, _selectedElement, scaleFactor, vpOffset, true);
         }
     }
 
-    private static unsafe void DrawElementHighlight(ImDrawList* drawList, UIElement el, int scaleFactor, System.Numerics.Vector2 vpOffset, bool isSelected)
+    private static unsafe void DrawElementHighlight(ImDrawList* drawList, UIElement el, int scaleFactor, Vector2 vpOffset, bool isSelected)
     {
-        float x = el.ScreenX * scaleFactor + vpOffset.X;
-        float y = el.ScreenY * scaleFactor + vpOffset.Y;
-        float w = el.ComputedWidth * scaleFactor;
-        float h = el.ComputedHeight * scaleFactor;
+        var x = el.ScreenX * scaleFactor + vpOffset.X;
+        var y = el.ScreenY * scaleFactor + vpOffset.Y;
+        var w = el.ComputedWidth * scaleFactor;
+        var h = el.ComputedHeight * scaleFactor;
 
         if (w <= 0 || h <= 0) return;
 
         var min = new Vector2(x, y);
         var max = new Vector2(x + w, y + h);
 
-        uint fillColor = isSelected
+        var fillColor = isSelected
             ? ImGui.ColorConvertFloat4ToU32(new Vector4(0.25f, 0.60f, 1.0f, 0.30f))
             : ImGui.ColorConvertFloat4ToU32(new Vector4(0.25f, 0.60f, 1.0f, 0.14f));
 
-        uint borderColor = isSelected
+        var borderColor = isSelected
             ? ImGui.ColorConvertFloat4ToU32(new Vector4(0.20f, 0.55f, 1.0f, 1.0f))
             : ImGui.ColorConvertFloat4ToU32(new Vector4(0.20f, 0.55f, 1.0f, 0.65f));
 
-        float borderThickness = isSelected ? 2f : 1f;
+        var borderThickness = isSelected ? 2f : 1f;
 
         drawList->AddRectFilled(min, max, fillColor);
         drawList->AddRect(min, max, borderColor, 0f, 0, borderThickness);
 
-        string typeName = el.GetType().Name;
-        string sizeStr = $"  {el.ComputedWidth:F0}×{el.ComputedHeight:F0}";
+        var typeName = el.GetType().Name;
+        var sizeStr = $"  {el.ComputedWidth:F0}×{el.ComputedHeight:F0}";
 
-        Vector2 typeSize = ImGui.CalcTextSize(typeName);
-        Vector2 sizeTextSize = ImGui.CalcTextSize(sizeStr);
-        float padX = 5f;
-        float padY = 2f;
-        float chipW = typeSize.X + sizeTextSize.X + padX * 2;
-        float chipH = typeSize.Y + padY * 2;
+        var typeSize = ImGui.CalcTextSize(typeName);
+        var sizeTextSize = ImGui.CalcTextSize(sizeStr);
+        var padX = 5f;
+        var padY = 2f;
+        var chipW = typeSize.X + sizeTextSize.X + padX * 2;
+        var chipH = typeSize.Y + padY * 2;
 
-        float chipX = x;
-        float chipY = y - chipH - 1f;
+        var chipX = x;
+        var chipY = y - chipH - 1f;
         if (chipY < 0) chipY = y + 1f;
 
         var chipMin = new Vector2(chipX, chipY);
         var chipMax = new Vector2(chipX + chipW, chipY + chipH);
 
-        uint chipBg = ImGui.ColorConvertFloat4ToU32(new Vector4(0.08f, 0.08f, 0.08f, 0.90f));
-        uint typeColor = isSelected
+        var chipBg = ImGui.ColorConvertFloat4ToU32(new Vector4(0.08f, 0.08f, 0.08f, 0.90f));
+        var typeColor = isSelected
             ? ImGui.ColorConvertFloat4ToU32(new Vector4(0.35f, 0.75f, 1.0f, 1.0f))
             : ImGui.ColorConvertFloat4ToU32(new Vector4(0.55f, 0.80f, 1.0f, 1.0f));
-        uint dimColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0.70f, 0.70f, 0.70f, 1.0f));
+        var dimColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0.70f, 0.70f, 0.70f, 1.0f));
 
         drawList->AddRectFilled(chipMin, chipMax, chipBg, 3f);
         drawList->AddText(new Vector2(chipX + padX, chipY + padY), typeColor, typeName);
@@ -223,15 +222,15 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
 
     private int GetScaleFactor()
     {
-        UIContext uiCtx = ctx.UIContext;
-        Vector2D<int> inputSize = uiCtx.InputDisplaySize;
+        var uiCtx = ctx.UIContext;
+        var inputSize = uiCtx.InputDisplaySize;
         var res = new ScaledResolution(uiCtx.Options, inputSize.X, inputSize.Y);
         return res.ScaleFactor;
     }
 
     private static void DrawProperties(UIElement el)
     {
-        foreach (string prop in el.GetInspectorProperties())
+        foreach (var prop in el.GetInspectorProperties())
         {
             ImGuiTextSafe.Text(prop);
         }
@@ -239,19 +238,19 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
 
     private static string BuildLabel(UIElement el)
     {
-        string typeName = el.GetType().Name;
-        string sizeStr = el.ComputedWidth > 0 || el.ComputedHeight > 0
+        var typeName = el.GetType().Name;
+        var sizeStr = el.ComputedWidth > 0 || el.ComputedHeight > 0
             ? $"  {el.ComputedWidth:F0}×{el.ComputedHeight:F0}"
             : string.Empty;
 
-        var sb = new System.Text.StringBuilder();
+        var sb = new StringBuilder();
         if (!el.Visible) sb.Append(" [hidden]");
         if (!el.Enabled) sb.Append(" [disabled]");
         if (el.IsHovered) sb.Append(" [hovered]");
         if (el.IsFocused) sb.Append(" [focused]");
         if (!el.IsHitTestVisible) sb.Append(" [no-hit]");
 
-        string flags = sb.Length > 0 ? "  " + sb.ToString().TrimStart() : string.Empty;
+        var flags = sb.Length > 0 ? "  " + sb.ToString().TrimStart() : string.Empty;
         return $"{typeName}{sizeStr}{flags}";
     }
 }

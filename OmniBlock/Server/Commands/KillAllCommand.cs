@@ -1,8 +1,7 @@
-using OmniBlock.Entities;
-using OmniBlock.Entities.Behaviors;
-using OmniBlock.Worlds.Core;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
 
 namespace OmniBlock.Server.Commands;
 
@@ -23,21 +22,21 @@ public class KillAllCommand : Command.Command
     private static int KillAll(CommandContext<CommandSource> context, byte type, string filter)
     {
         filter = filter.ToLower();
-        int count = 0;
+        var count = 0;
 
-        for (int w = 0; w < context.Source.Server.worlds.Length; w++)
+        for (var w = 0; w < context.Source.Server.worlds.Length; w++)
         {
-            ServerWorld world = context.Source.Server.worlds[w];
+            var world = context.Source.Server.worlds[w];
             List<Entity> entities = new(world.Entities.Entities);
 
-            foreach (Entity entity in entities)
+            foreach (var entity in entities)
             {
                 if (entity is EntityPlayer)
                 {
                     continue;
                 }
 
-                bool shouldKill = type switch
+                var shouldKill = type switch
                 {
                     (byte)TypeFilter.All => true,
                     (byte)TypeFilter.Mob => entity is EntityLiving,

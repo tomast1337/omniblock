@@ -2,8 +2,8 @@ namespace OmniBlock.Util.Maths;
 
 public sealed class WeightedRandomSelector<T>
 {
-    private readonly List<T> _items = [];
     private readonly List<int> _cumulativeWeight = [0];
+    private readonly List<T> _items = [];
 
     public bool Empty => _items.Count == 0;
 
@@ -26,7 +26,7 @@ public sealed class WeightedRandomSelector<T>
     {
         if (Empty) throw new InvalidOperationException("No items to select from.");
 
-        int index = _cumulativeWeight.BinarySearch(r);
+        var index = _cumulativeWeight.BinarySearch(r);
         if (index < 0) index = ~index - 1; // If not found, BinarySearch returns the bitwise complement of the index of the next element that is larger than the search value.
 
         return _items[index];

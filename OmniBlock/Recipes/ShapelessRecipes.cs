@@ -1,34 +1,32 @@
 using OmniBlock.Inventories;
 using OmniBlock.Items;
+
 namespace OmniBlock.Recipes;
 
 internal class ShapelessRecipes(ItemStack output, List<ItemStack> items) : IRecipe
 {
-    public ItemStack GetRecipeOutput()
-    {
-        return output;
-    }
+    public ItemStack GetRecipeOutput() => output;
 
     public bool Matches(InventoryCrafting craftingInventory)
     {
         List<ItemStack> remainingIngredients = [.. items];
 
-        for (int row = 0; row < 3; ++row)
+        for (var row = 0; row < 3; ++row)
         {
-            for (int col = 0; col < 3; ++col)
+            for (var col = 0; col < 3; ++col)
             {
-                ItemStack? gridStack = craftingInventory.GetStackAt(col, row);
+                var gridStack = craftingInventory.GetStackAt(col, row);
                 if (gridStack == null)
                 {
                     continue;
                 }
 
-                bool foundMatch = false;
-                List<ItemStack>.Enumerator iterator = remainingIngredients.GetEnumerator();
+                var foundMatch = false;
+                var iterator = remainingIngredients.GetEnumerator();
 
                 while (iterator.MoveNext())
                 {
-                    ItemStack recipeItem = iterator.Current;
+                    var recipeItem = iterator.Current;
                     if (gridStack.ItemId != recipeItem.ItemId || (recipeItem.GetDamage() != -1 && gridStack.GetDamage() != recipeItem.GetDamage()))
                     {
                         continue;
@@ -49,20 +47,14 @@ internal class ShapelessRecipes(ItemStack output, List<ItemStack> items) : IReci
         return remainingIngredients.Count == 0;
     }
 
-    public ItemStack GetCraftingResult(InventoryCrafting craftingInventory)
-    {
-        return output.Copy();
-    }
+    public ItemStack GetCraftingResult(InventoryCrafting craftingInventory) => output.Copy();
 
-    public int GetRecipeSize()
-    {
-        return items.Count;
-    }
+    public int GetRecipeSize() => items.Count;
 
     public override int GetHashCode()
     {
-        int hash = 0;
-        for (int i = 0; i < items.Count; i++)
+        var hash = 0;
+        for (var i = 0; i < items.Count; i++)
         {
             hash += (items[i].ItemId + (items[i].GetDamage() << 8)) * (i + 1);
         }

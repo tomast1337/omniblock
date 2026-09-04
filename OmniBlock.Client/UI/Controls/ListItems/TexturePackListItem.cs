@@ -1,4 +1,3 @@
-using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.Resource.Pack;
 using OmniBlock.Client.UI.Controls.Core;
 using OmniBlock.Client.UI.Rendering;
@@ -12,10 +11,10 @@ public class TexturePackListItem(TexturePack value) : ListItem<TexturePack>(valu
     {
         base.Render(renderer);
 
-        TextureHandle thumbnail = Value.GetThumbnailTexture(renderer.TextureManager);
+        var thumbnail = Value.GetThumbnailTexture(renderer.TextureManager);
         renderer.DrawTexture(thumbnail, 4, 4, 24, 24);
 
-        string? fileName = Value.TexturePackFileName;
+        var fileName = Value.TexturePackFileName;
         if (string.IsNullOrEmpty(fileName))
         {
             fileName = "Unknown Pack";

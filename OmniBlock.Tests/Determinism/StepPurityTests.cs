@@ -34,8 +34,11 @@ public sealed class StepPurityTests
     ///     </para>
     ///     <list type="bullet">
     ///         <item>
-    ///             <c>Entity.IsFootprintLoaded → ChunkHost.GetChunk → IChunkSource.GetChunk →
-    ///             ServerChunkCache.LoadChunk → DecorateTerrain</c> — reached from
+    ///             <c>
+    ///                 Entity.IsFootprintLoaded → ChunkHost.GetChunk → IChunkSource.GetChunk →
+    ///                 ServerChunkCache.LoadChunk → DecorateTerrain
+    ///             </c>
+    ///             — reached from
     ///             <c>Entity.Movement.cs:121</c>. Worth keeping: it means the movement path can
     ///             trigger terrain generation, which is the concrete argument for
     ///             <c>ICollisionView</c> being a read-only view that cannot generate.
@@ -74,7 +77,7 @@ public sealed class StepPurityTests
     [Fact]
     public void Sources_compile_clean_enough_to_bind()
     {
-        CallGraph graph = CallGraph.Instance;
+        var graph = CallGraph.Instance;
 
         Assert.True(
             graph.CompilationErrors.IsEmpty,
@@ -91,7 +94,7 @@ public sealed class StepPurityTests
     [Fact]
     public void Every_declared_root_exists()
     {
-        CallGraph graph = CallGraph.Instance;
+        var graph = CallGraph.Instance;
 
         string[] missing =
         [
@@ -113,13 +116,13 @@ public sealed class StepPurityTests
     [Fact]
     public void Analysis_is_not_vacuous()
     {
-        CallGraph graph = CallGraph.Instance;
-        CallGraph.Reachability core = WalkCore(graph);
+        var graph = CallGraph.Instance;
+        var core = WalkCore(graph);
 
         Assert.True(graph.AllMethods.Length > 2000, $"Only {graph.AllMethods.Length} methods found in OmniBlock — the compilation did not load.");
         Assert.True(core.Count > 50, $"Only {core.Count} methods reachable from the physics core — the call graph collapsed.");
 
-        double unresolvedRatio = graph.TotalInvocations == 0
+        var unresolvedRatio = graph.TotalInvocations == 0
             ? 1.0
             : graph.UnresolvedInvocations / (double)graph.TotalInvocations;
 
@@ -140,13 +143,13 @@ public sealed class StepPurityTests
     ///     The load-bearing assertion. Everything else in this file exists to keep it honest.
     /// </summary>
     [Fact(Skip = ParkedReason + " Last run: 2,015 methods reachable from the core, 2,211 violations. "
-                 + "Needs the remaining cut points from the note above before it can be green.")]
+                              + "Needs the remaining cut points from the note above before it can be green.")]
     public void Core_step_path_is_free_of_banned_symbols()
     {
-        CallGraph graph = CallGraph.Instance;
-        CallGraph.Reachability core = WalkCore(graph);
+        var graph = CallGraph.Instance;
+        var core = WalkCore(graph);
 
-        List<Violation> violations = [.. FindViolations(core, applyWaivers: true)];
+        List<Violation> violations = [.. FindViolations(core, true)];
 
         Assert.True(violations.Count == 0, Report(violations, core));
     }
@@ -156,12 +159,12 @@ public sealed class StepPurityTests
     ///     A rising number means new impurity was added to the movement tick rather than lifted out.
     /// </summary>
     [Fact(Skip = ParkedReason + " TailBudget is also stale: the tail measured 2,091 after the first "
-                 + "cut points landed, and will move again once the rest do, so re-measure rather "
-                 + "than trusting the constant.")]
+                              + "cut points landed, and will move again once the rest do, so re-measure rather "
+                              + "than trusting the constant.")]
     public void Effect_tail_only_shrinks()
     {
-        CallGraph graph = CallGraph.Instance;
-        CallGraph.Reachability tail = graph.Walk(StepFrontier.TailRoots.SelectMany(graph.Resolve));
+        var graph = CallGraph.Instance;
+        var tail = graph.Walk(StepFrontier.TailRoots.SelectMany(graph.Resolve));
 
         Assert.True(
             tail.Count <= TailBudget,
@@ -188,12 +191,12 @@ public sealed class StepPurityTests
     [Fact]
     public void Waivers_do_not_rot()
     {
-        CallGraph graph = CallGraph.Instance;
-        CallGraph.Reachability core = WalkCore(graph);
+        var graph = CallGraph.Instance;
+        var core = WalkCore(graph);
 
         HashSet<(string Method, string Pattern)> live =
         [
-            .. FindViolations(core, applyWaivers: false)
+            .. FindViolations(core, false)
                 .Select(v => (v.MethodName, v.Banned.Pattern))
         ];
 
@@ -221,13 +224,13 @@ public sealed class StepPurityTests
     ///     true. Same ratchet as <see cref="Waivers_do_not_rot" />: the list may only shrink.
     /// </summary>
     [Fact(Skip = ParkedReason + " Fails on the cut points that are declared but not yet reached, "
-                 + "because Walk applies them to explicitly-supplied roots as well.")]
+                              + "because Walk applies them to explicitly-supplied roots as well.")]
     public void Cut_points_do_not_rot()
     {
-        CallGraph graph = CallGraph.Instance;
+        var graph = CallGraph.Instance;
 
-        CallGraph.Reachability core = WalkCore(graph);
-        CallGraph.Reachability tail = graph.Walk(StepFrontier.TailRoots.SelectMany(graph.Resolve));
+        var core = WalkCore(graph);
+        var tail = graph.Walk(StepFrontier.TailRoots.SelectMany(graph.Resolve));
 
         HashSet<string> hit = [.. core.CutPointsHit, .. tail.CutPointsHit];
 
@@ -257,9 +260,9 @@ public sealed class StepPurityTests
     [Fact]
     public void Report_frontier_size()
     {
-        CallGraph graph = CallGraph.Instance;
-        CallGraph.Reachability core = WalkCore(graph);
-        CallGraph.Reachability tail = graph.Walk(StepFrontier.TailRoots.SelectMany(graph.Resolve));
+        var graph = CallGraph.Instance;
+        var core = WalkCore(graph);
+        var tail = graph.Walk(StepFrontier.TailRoots.SelectMany(graph.Resolve));
 
         // Visible with `dotnet test --logger "console;verbosity=detailed"`.
         Console.WriteLine(
@@ -269,7 +272,7 @@ public sealed class StepPurityTests
                reachable from core      : {core.Count:N0}
                reachable from tail      : {tail.Count:N0}   (budget {TailBudget:N0})
                invocations bound        : {graph.TotalInvocations - graph.UnresolvedInvocations:N0}/{graph.TotalInvocations:N0}
-               core violations          : {FindViolations(core, applyWaivers: true).Count()}
+               core violations          : {FindViolations(core, true).Count()}
                active waivers           : {StepFrontier.Waivers.Length}
                active cut points        : {StepFrontier.CutPoints.Length}
              """);
@@ -284,13 +287,13 @@ public sealed class StepPurityTests
 
     private static IEnumerable<Violation> FindViolations(CallGraph.Reachability reachable, bool applyWaivers)
     {
-        foreach (IMethodSymbol method in reachable.Methods)
+        foreach (var method in reachable.Methods)
         {
-            string methodName = CallGraph.NameOf(method);
+            var methodName = CallGraph.NameOf(method);
 
-            foreach (CallGraph.Reference reference in reachable.ReferencesFrom(method))
+            foreach (var reference in reachable.ReferencesFrom(method))
             {
-                foreach (StepFrontier.BannedSymbol banned in StepFrontier.Banned)
+                foreach (var banned in StepFrontier.Banned)
                 {
                     if (!banned.Matches(reference.Name))
                     {
@@ -315,14 +318,14 @@ public sealed class StepPurityTests
         report.AppendLine();
         report.AppendLine($"{violations.Count} banned symbol(s) reachable from the physics core.");
 
-        foreach (IGrouping<string, Violation> group in violations.GroupBy(v => v.Banned.Pattern).OrderBy(g => g.Key))
+        foreach (var group in violations.GroupBy(v => v.Banned.Pattern).OrderBy(g => g.Key))
         {
             report.AppendLine($"  {group.Key}");
             report.AppendLine($"    why banned: {group.First().Banned.Reason}");
 
-            foreach (Violation violation in group.DistinctBy(v => (v.MethodName, v.Reference.Name)).Take(10))
+            foreach (var violation in group.DistinctBy(v => (v.MethodName, v.Reference.Name)).Take(10))
             {
-                FileLinePositionSpan span = violation.Reference.At.GetLineSpan();
+                var span = violation.Reference.At.GetLineSpan();
                 report.AppendLine();
                 report.AppendLine($"    {violation.Reference.Name}");
                 report.AppendLine($"      at {Path.GetFileName(span.Path)}:{span.StartLinePosition.Line + 1}");

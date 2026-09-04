@@ -1,6 +1,6 @@
-using OmniBlock.Server.Command;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
+using OmniBlock.Server.Command;
 
 namespace OmniBlock.Server.Commands;
 
@@ -41,12 +41,12 @@ public class TickCommand : Command.Command
     private static int ScheduleClearDimension(CommandContext<CommandSource> context)
     {
         var sender = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
-        int dimDefault = 0;
+        var dimDefault = 0;
         if (sender != null) dimDefault = sender.DimensionId;
 
-        int dimId = context.GetArgumentOrDefault("dimensionId", dimDefault);
+        var dimId = context.GetArgumentOrDefault("dimensionId", dimDefault);
         var tickScheduler = context.Source.Server.getWorld(dimId).TickScheduler;
-        long count = tickScheduler.Count;
+        var count = tickScheduler.Count;
         tickScheduler.ClearFullQueue();
 
         sender?.SendMessage($"Cleared {count - tickScheduler.Count} ticks from the scheduler.");
@@ -59,7 +59,7 @@ public class TickCommand : Command.Command
         var sender = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
         if (sender == null) throw new Exception("Could not find sender.");
         var tickScheduler = context.Source.Server.getWorld(sender.DimensionId).TickScheduler;
-        long count = tickScheduler.Count;
+        var count = tickScheduler.Count;
         tickScheduler.Tick(context.GetArgumentOrDefault("forceFlush", false));
 
         sender.SendMessage($"Processed {count - tickScheduler.Count} ticks from the scheduler.");
@@ -68,8 +68,8 @@ public class TickCommand : Command.Command
 
     private static int Tick(CommandContext<CommandSource> context)
     {
-        int ticks = context.GetArgumentOrDefault("ticks", 1);
-        for (int i = 0; i < ticks; i++)
+        var ticks = context.GetArgumentOrDefault("ticks", 1);
+        for (var i = 0; i < ticks; i++)
         {
             context.Source.Server.Tick();
         }
@@ -82,14 +82,14 @@ public class TickCommand : Command.Command
 
     private static int Pause(CommandContext<CommandSource> context)
     {
-        bool oldState = context.Source.Server.Paused;
+        var oldState = context.Source.Server.Paused;
         context.Source.Server.Paused = context.GetArgumentOrDefault("pause", true);
         return GetPause(context, oldState);
     }
 
     private static int Unpause(CommandContext<CommandSource> context)
     {
-        bool oldState = context.Source.Server.Paused;
+        var oldState = context.Source.Server.Paused;
         context.Source.Server.Paused = false;
         return GetPause(context, oldState);
     }
@@ -98,7 +98,7 @@ public class TickCommand : Command.Command
     {
         var sender = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
         if (sender == null) return 1;
-        bool paused = context.Source.Server.Paused;
+        var paused = context.Source.Server.Paused;
         sender.SendMessage(oldState == paused ? $"Game already {(paused ? "paused" : "unpaused")}" : $"Game {(paused ? "paused" : "unpaused")}");
         return 1;
     }

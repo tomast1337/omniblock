@@ -28,20 +28,11 @@ public static class MaterialRegistry
         ["wood"] = MapColor.Wood
     }.ToFrozenDictionary();
 
-    public static Material Get(string key)
-    {
-        return s_registry.Get(key);
-    }
+    public static Material Get(string key) => s_registry.Get(key);
 
-    public static bool TryGet(string key, [NotNullWhen(true)] out Material? material)
-    {
-        return s_registry.TryGet(key, out material);
-    }
+    public static bool TryGet(string key, [NotNullWhen(true)] out Material? material) => s_registry.TryGet(key, out material);
 
-    public static string? TryGetName(Material material)
-    {
-        return s_registry.TryGetKey(material);
-    }
+    public static string? TryGetName(Material material) => s_registry.TryGetKey(material);
 
     internal static void Initialize()
     {
@@ -57,8 +48,10 @@ public static class MaterialRegistry
     private static Material CreateMaterial(MaterialDefinition definition)
     {
         if (!s_mapColors.TryGetValue(definition.MapColor, out var mapColor))
+        {
             throw new AssetLoadException(
                 $"Material '{definition.Name}' references unknown map color '{definition.MapColor}'.");
+        }
 
         return new Material
         {

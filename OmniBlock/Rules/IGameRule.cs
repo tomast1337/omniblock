@@ -1,6 +1,8 @@
 namespace OmniBlock.Rules;
 
-public interface IRuleValue { }
+public interface IRuleValue
+{
+}
 
 public interface IGameRule
 {

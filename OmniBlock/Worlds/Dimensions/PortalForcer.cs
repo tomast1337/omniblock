@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Entities;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Chunks;
@@ -19,26 +18,26 @@ internal class PortalForcer
 
     public static bool TeleportToValidPortal(World world, Entity entity)
     {
-        int portalId = world.Content.Blocks.Get("omniblock:nether_portal").Id;
+        var portalId = world.Content.Blocks.Get("omniblock:nether_portal").Id;
         short searchRadius = 128;
-        double closestDistance = -1.0D;
-        int foundX = 0;
-        int foundY = 0;
-        int foundZ = 0;
+        var closestDistance = -1.0D;
+        var foundX = 0;
+        var foundY = 0;
+        var foundZ = 0;
 
-        int entityX = MathHelper.Floor(entity.X);
-        int entityZ = MathHelper.Floor(entity.Z);
+        var entityX = MathHelper.Floor(entity.X);
+        var entityZ = MathHelper.Floor(entity.Z);
 
         // An existing portal wins outright; only build one if the search comes back empty.
-        for (int x = entityX - searchRadius; x <= entityX + searchRadius; ++x)
+        for (var x = entityX - searchRadius; x <= entityX + searchRadius; ++x)
         {
-            double dx = x + 0.5D - entity.X;
+            var dx = x + 0.5D - entity.X;
 
-            for (int z = entityZ - searchRadius; z <= entityZ + searchRadius; ++z)
+            for (var z = entityZ - searchRadius; z <= entityZ + searchRadius; ++z)
             {
-                double dz = z + 0.5D - entity.Z;
+                var dz = z + 0.5D - entity.Z;
 
-                for (int y = 127; y >= 0; --y)
+                for (var y = 127; y >= 0; --y)
                 {
                     if (world.Reader.GetBlockId(x, y, z) == portalId)
                     {
@@ -48,8 +47,8 @@ internal class PortalForcer
                             --y;
                         }
 
-                        double dy = y + 0.5D - entity.Y;
-                        double distanceSq = dx * dx + dy * dy + dz * dz;
+                        var dy = y + 0.5D - entity.Y;
+                        var distanceSq = dx * dx + dy * dy + dz * dz;
 
                         if (closestDistance < 0.0D || distanceSq < closestDistance)
                         {
@@ -65,9 +64,9 @@ internal class PortalForcer
 
         if (closestDistance >= 0.0D)
         {
-            double targetX = foundX + 0.5D;
-            double targetY = foundY + 0.5D;
-            double targetZ = foundZ + 0.5D;
+            var targetX = foundX + 0.5D;
+            var targetY = foundY + 0.5D;
+            var targetZ = foundZ + 0.5D;
 
             // Offset the player so they don't spawn inside the obsidian frame
             if (world.Reader.GetBlockId(foundX - 1, foundY, foundZ) == portalId)
@@ -100,33 +99,33 @@ internal class PortalForcer
 
     public static bool CreatePortal(World world, Entity entity)
     {
-        int obsidianId = world.Content.Blocks.Get("omniblock:obsidian").Id;
-        int portalId = world.Content.Blocks.Get("omniblock:nether_portal").Id;
+        var obsidianId = world.Content.Blocks.Get("omniblock:obsidian").Id;
+        var portalId = world.Content.Blocks.Get("omniblock:nether_portal").Id;
         byte searchRadius = 16;
-        double closestDistance = -1.0D;
+        var closestDistance = -1.0D;
 
-        int entityX = MathHelper.Floor(entity.X);
-        int entityY = MathHelper.Floor(entity.Y);
-        int entityZ = MathHelper.Floor(entity.Z);
+        var entityX = MathHelper.Floor(entity.X);
+        var entityY = MathHelper.Floor(entity.Y);
+        var entityZ = MathHelper.Floor(entity.Z);
 
-        int bestX = entityX;
-        int bestY = entityY;
-        int bestZ = entityZ;
-        int bestDirection = 0;
+        var bestX = entityX;
+        var bestY = entityY;
+        var bestZ = entityZ;
+        var bestDirection = 0;
 
-        int randomDirection = Random.Shared.Next(4);
-        int h1 = ChuckFormat.WorldHeight - 1;
+        var randomDirection = Random.Shared.Next(4);
+        var h1 = ChuckFormat.WorldHeight - 1;
 
         // First choice: a flat 3x4 area of solid ground.
-        for (int x = entityX - searchRadius; x <= entityX + searchRadius; ++x)
+        for (var x = entityX - searchRadius; x <= entityX + searchRadius; ++x)
         {
-            double dx = x + 0.5D - entity.X;
+            var dx = x + 0.5D - entity.X;
 
-            for (int z = entityZ - searchRadius; z <= entityZ + searchRadius; ++z)
+            for (var z = entityZ - searchRadius; z <= entityZ + searchRadius; ++z)
             {
-                double dz = z + 0.5D - entity.Z;
+                var dz = z + 0.5D - entity.Z;
 
-                for (int y = h1; y >= 0; --y)
+                for (var y = h1; y >= 0; --y)
                 {
                     if (world.Reader.IsAir(x, y, z))
                     {
@@ -135,26 +134,26 @@ internal class PortalForcer
                             --y;
                         }
 
-                        for (int dirOffset = randomDirection; dirOffset < randomDirection + 4; ++dirOffset)
+                        for (var dirOffset = randomDirection; dirOffset < randomDirection + 4; ++dirOffset)
                         {
-                            int dirX = dirOffset % 2;
-                            int dirZ = 1 - dirX;
+                            var dirX = dirOffset % 2;
+                            var dirZ = 1 - dirX;
                             if (dirOffset % 4 >= 2)
                             {
                                 dirX = -dirX;
                                 dirZ = -dirZ;
                             }
 
-                            bool validLocation = true;
-                            for (int width = 0; width < 3 && validLocation; ++width)
+                            var validLocation = true;
+                            for (var width = 0; width < 3 && validLocation; ++width)
                             {
-                                for (int widthDepth = 0; widthDepth < 4 && validLocation; ++widthDepth)
+                                for (var widthDepth = 0; widthDepth < 4 && validLocation; ++widthDepth)
                                 {
-                                    for (int height = -1; height < 4 && validLocation; ++height)
+                                    for (var height = -1; height < 4 && validLocation; ++height)
                                     {
-                                        int checkX = x + (widthDepth - 1) * dirX + width * dirZ;
-                                        int checkY = y + height;
-                                        int checkZ = z + (widthDepth - 1) * dirZ - width * dirX;
+                                        var checkX = x + (widthDepth - 1) * dirX + width * dirZ;
+                                        var checkY = y + height;
+                                        var checkZ = z + (widthDepth - 1) * dirZ - width * dirX;
 
                                         if ((height < 0 && !world.Reader.GetMaterial(checkX, checkY, checkZ).IsSolid) || (height >= 0 && !world.Reader.IsAir(checkX, checkY, checkZ)))
                                         {
@@ -166,8 +165,8 @@ internal class PortalForcer
 
                             if (validLocation)
                             {
-                                double dy = y + 0.5D - entity.Y;
-                                double distanceSq = dx * dx + dy * dy + dz * dz;
+                                var dy = y + 0.5D - entity.Y;
+                                var distanceSq = dx * dx + dy * dy + dz * dz;
                                 if (closestDistance < 0.0D || distanceSq < closestDistance)
                                 {
                                     closestDistance = distanceSq;
@@ -186,15 +185,15 @@ internal class PortalForcer
         // Nothing flat enough, so settle for a tighter 1x4 area.
         if (closestDistance < 0.0D)
         {
-            for (int x = entityX - searchRadius; x <= entityX + searchRadius; ++x)
+            for (var x = entityX - searchRadius; x <= entityX + searchRadius; ++x)
             {
-                double dx = x + 0.5D - entity.X;
+                var dx = x + 0.5D - entity.X;
 
-                for (int z = entityZ - searchRadius; z <= entityZ + searchRadius; ++z)
+                for (var z = entityZ - searchRadius; z <= entityZ + searchRadius; ++z)
                 {
-                    double dz = z + 0.5D - entity.Z;
+                    var dz = z + 0.5D - entity.Z;
 
-                    for (int y = h1; y >= 0; --y)
+                    for (var y = h1; y >= 0; --y)
                     {
                         if (world.Reader.IsAir(x, y, z))
                         {
@@ -203,19 +202,19 @@ internal class PortalForcer
                                 --y;
                             }
 
-                            for (int dirOffset = randomDirection; dirOffset < randomDirection + 2; ++dirOffset)
+                            for (var dirOffset = randomDirection; dirOffset < randomDirection + 2; ++dirOffset)
                             {
-                                int dirX = dirOffset % 2;
-                                int dirZ = 1 - dirX;
+                                var dirX = dirOffset % 2;
+                                var dirZ = 1 - dirX;
 
-                                bool validLocation = true;
-                                for (int widthDepth = 0; widthDepth < 4 && validLocation; ++widthDepth)
+                                var validLocation = true;
+                                for (var widthDepth = 0; widthDepth < 4 && validLocation; ++widthDepth)
                                 {
-                                    for (int height = -1; height < 4 && validLocation; ++height)
+                                    for (var height = -1; height < 4 && validLocation; ++height)
                                     {
-                                        int checkX = x + (widthDepth - 1) * dirX;
-                                        int checkY = y + height;
-                                        int checkZ = z + (widthDepth - 1) * dirZ;
+                                        var checkX = x + (widthDepth - 1) * dirX;
+                                        var checkY = y + height;
+                                        var checkZ = z + (widthDepth - 1) * dirZ;
 
                                         if ((height < 0 && !world.Reader.GetMaterial(checkX, checkY, checkZ).IsSolid) || (height >= 0 && !world.Reader.IsAir(checkX, checkY, checkZ)))
                                         {
@@ -226,8 +225,8 @@ internal class PortalForcer
 
                                 if (validLocation)
                                 {
-                                    double dy = y + 0.5D - entity.Y;
-                                    double distanceSq = dx * dx + dy * dy + dz * dz;
+                                    var dy = y + 0.5D - entity.Y;
+                                    var distanceSq = dx * dx + dy * dy + dz * dz;
                                     if (closestDistance < 0.0D || distanceSq < closestDistance)
                                     {
                                         closestDistance = distanceSq;
@@ -245,12 +244,12 @@ internal class PortalForcer
         }
 
         // Nowhere suitable at all, so build where the entity is and force the terrain to accept it.
-        int finalX = bestX;
-        int finalY = bestY;
-        int finalZ = bestZ;
+        var finalX = bestX;
+        var finalY = bestY;
+        var finalZ = bestZ;
 
-        int finalDirX = bestDirection % 2;
-        int finalDirZ = 1 - finalDirX;
+        var finalDirX = bestDirection % 2;
+        var finalDirZ = 1 - finalDirX;
 
         if (bestDirection % 4 >= 2)
         {
@@ -263,17 +262,17 @@ internal class PortalForcer
         {
             finalY = Math.Clamp(finalY, 70, 118);
 
-            for (int w = -1; w <= 1; ++w)
+            for (var w = -1; w <= 1; ++w)
             {
-                for (int wDepth = 1; wDepth < 3; ++wDepth)
+                for (var wDepth = 1; wDepth < 3; ++wDepth)
                 {
-                    for (int h = -1; h < 3; ++h)
+                    for (var h = -1; h < 3; ++h)
                     {
-                        int buildX = finalX + (wDepth - 1) * finalDirX + w * finalDirZ;
-                        int buildY = finalY + h;
-                        int buildZ = finalZ + (wDepth - 1) * finalDirZ - w * finalDirX;
+                        var buildX = finalX + (wDepth - 1) * finalDirX + w * finalDirZ;
+                        var buildY = finalY + h;
+                        var buildZ = finalZ + (wDepth - 1) * finalDirZ - w * finalDirX;
 
-                        bool isFloor = h < 0;
+                        var isFloor = h < 0;
                         world.Writer.SetBlock(buildX, buildY, buildZ, isFloor ? obsidianId : 0);
                     }
                 }
@@ -281,29 +280,29 @@ internal class PortalForcer
         }
 
         // Frame first, then the portal blocks inside it.
-        for (int pass = 0; pass < 4; ++pass)
+        for (var pass = 0; pass < 4; ++pass)
         {
-            for (int wDepth = 0; wDepth < 4; ++wDepth)
+            for (var wDepth = 0; wDepth < 4; ++wDepth)
             {
-                for (int h = -1; h < 4; ++h)
+                for (var h = -1; h < 4; ++h)
                 {
-                    int buildX = finalX + (wDepth - 1) * finalDirX;
-                    int buildY = finalY + h;
-                    int buildZ = finalZ + (wDepth - 1) * finalDirZ;
+                    var buildX = finalX + (wDepth - 1) * finalDirX;
+                    var buildY = finalY + h;
+                    var buildZ = finalZ + (wDepth - 1) * finalDirZ;
 
-                    bool isFrameEdge = wDepth == 0 || wDepth == 3 || h == -1 || h == 3;
+                    var isFrameEdge = wDepth == 0 || wDepth == 3 || h == -1 || h == 3;
                     world.Writer.SetBlockInternal(buildX, buildY, buildZ, isFrameEdge ? obsidianId : portalId);
                 }
             }
 
             // Block updates (lighting, neighbor checks)
-            for (int wDepth = 0; wDepth < 4; ++wDepth)
+            for (var wDepth = 0; wDepth < 4; ++wDepth)
             {
-                for (int h = -1; h < 4; ++h)
+                for (var h = -1; h < 4; ++h)
                 {
-                    int buildX = finalX + (wDepth - 1) * finalDirX;
-                    int buildY = finalY + h;
-                    int buildZ = finalZ + (wDepth - 1) * finalDirZ;
+                    var buildX = finalX + (wDepth - 1) * finalDirX;
+                    var buildY = finalY + h;
+                    var buildZ = finalZ + (wDepth - 1) * finalDirZ;
 
                     world.Broadcaster.NotifyNeighbors(buildX, buildY, buildZ, world.Reader.GetBlockId(buildX, buildY, buildZ));
                 }

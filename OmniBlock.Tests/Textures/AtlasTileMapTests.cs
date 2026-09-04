@@ -7,7 +7,7 @@ public sealed class AtlasTileMapTests
     public static TheoryData<string, AtlasTileMap> Atlases => new()
     {
         { "terrain", OmniBlock.Textures.Atlases.Terrain },
-        { "items", OmniBlock.Textures.Atlases.Items },
+        { "items", OmniBlock.Textures.Atlases.Items }
     };
 
     /// <summary>
@@ -33,7 +33,7 @@ public sealed class AtlasTileMapTests
     [MemberData(nameof(Atlases))]
     public void Every_tile_is_inside_the_grid(string name, AtlasTileMap atlas)
     {
-        foreach (AtlasTile tile in atlas.Tiles)
+        foreach (var tile in atlas.Tiles)
         {
             Assert.True(tile.X >= 0 && tile.X < atlas.GridWidth && tile.Y >= 0 && tile.Y < atlas.GridHeight,
                 $"{name} atlas tile '{tile.Name}' at ({tile.X},{tile.Y}) is outside the {atlas.GridWidth}x{atlas.GridHeight} grid.");
@@ -55,7 +55,7 @@ public sealed class AtlasTileMapTests
     [MemberData(nameof(Atlases))]
     public void A_tile_resolves_to_the_same_layer_by_name_and_by_grid_index(string name, AtlasTileMap atlas)
     {
-        foreach (AtlasTile tile in atlas.Tiles)
+        foreach (var tile in atlas.Tiles)
         {
             Assert.True(atlas.LayerOf(tile.Name) == atlas.LayerOfGridIndex(atlas.IndexOf(tile.Name)),
                 $"{name} atlas tile '{tile.Name}' resolves to a different layer by name than by index.");
@@ -70,18 +70,15 @@ public sealed class AtlasTileMapTests
     [Theory]
     [InlineData(-1)]
     [InlineData(256)]
-    public void An_index_outside_the_grid_resolves_to_the_reserved_layer(int gridIndex)
-    {
-        Assert.Equal(AtlasTileMap.MissingLayer, OmniBlock.Textures.Atlases.Terrain.LayerOfGridIndex(gridIndex));
-    }
+    public void An_index_outside_the_grid_resolves_to_the_reserved_layer(int gridIndex) => Assert.Equal(AtlasTileMap.MissingLayer, OmniBlock.Textures.Atlases.Terrain.LayerOfGridIndex(gridIndex));
 
     [Fact]
     public void An_unclaimed_cell_inside_the_grid_resolves_to_the_reserved_layer()
     {
-        AtlasTileMap atlas = OmniBlock.Textures.Atlases.Terrain;
+        var atlas = OmniBlock.Textures.Atlases.Terrain;
         var claimed = atlas.Tiles.Select(t => t.X + t.Y * atlas.GridWidth).ToHashSet();
 
-        int unclaimed = Enumerable.Range(0, atlas.GridWidth * atlas.GridHeight).First(i => !claimed.Contains(i));
+        var unclaimed = Enumerable.Range(0, atlas.GridWidth * atlas.GridHeight).First(i => !claimed.Contains(i));
 
         Assert.Equal(AtlasTileMap.MissingLayer, atlas.LayerOfGridIndex(unclaimed));
     }

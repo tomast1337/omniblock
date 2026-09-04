@@ -38,7 +38,7 @@ public sealed class PrimedExplosiveBehavior : IEntityTicker, IEntityLifecycle, I
     public void OnCreated(Entity self)
     {
         self.State[_fuse] = _fuseTicks;
-        float randomAngle = (float)(Random.Shared.NextSingle() * Math.PI * 2.0D);
+        var randomAngle = (float)(Random.Shared.NextSingle() * Math.PI * 2.0D);
         self.VelocityX = -MathHelper.Sin(randomAngle * (float)Math.PI / 180.0F) * 0.02F;
         self.VelocityY = 0.2F;
         self.VelocityZ = -MathHelper.Cos(randomAngle * (float)Math.PI / 180.0F) * 0.02F;

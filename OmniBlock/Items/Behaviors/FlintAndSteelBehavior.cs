@@ -38,7 +38,7 @@ internal sealed class FlintAndSteelBehavior : IItemBehavior
             ++x;
         }
 
-        int blockId = world.Reader.GetBlockId(x, y, z);
+        var blockId = world.Reader.GetBlockId(x, y, z);
         if (blockId == 0)
         {
             world.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "fire.ignite", 1.0F, Item.s_itemRand.NextFloat() * 0.4F + 0.8F);

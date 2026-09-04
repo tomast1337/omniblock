@@ -22,10 +22,10 @@ public static class AtlasSlicer
     /// </summary>
     public static Dictionary<string, Image<Rgba32>> Slice(Image<Rgba32> source, AtlasTileMap map)
     {
-        int pixelTileSize = source.Width / map.GridWidth;
+        var pixelTileSize = source.Width / map.GridWidth;
         var tiles = new Dictionary<string, Image<Rgba32>>(map.Tiles.Count);
 
-        foreach (AtlasTile tile in map.Tiles)
+        foreach (var tile in map.Tiles)
         {
             var rect = new Rectangle(tile.X * pixelTileSize, tile.Y * pixelTileSize, pixelTileSize, pixelTileSize);
             tiles[tile.Name] = source.Clone(ctx => ctx.Crop(rect));

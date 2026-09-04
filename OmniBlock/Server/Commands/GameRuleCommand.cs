@@ -1,8 +1,6 @@
-using OmniBlock.Entities;
-using OmniBlock.Rules;
-using OmniBlock.Worlds.Core;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
+using OmniBlock.Rules;
 
 namespace OmniBlock.Server.Commands;
 
@@ -21,11 +19,11 @@ public class GameRuleCommand : Command.Command
 
     private static int ListRules(CommandContext<CommandSource> context)
     {
-        (RuleSet rules, RuleRegistry registry) = GetContext(context);
+        var (rules, registry) = GetContext(context);
         context.Source.Output.SendMessage("Available Game Rules:");
-        foreach (IGameRule rule in registry.All)
+        foreach (var rule in registry.All)
         {
-            IRuleValue val = rules.Get(rule.Key);
+            var val = rules.Get(rule.Key);
             context.Source.Output.SendMessage($"  {rule.Key} = {rule.Serialize(val)}");
         }
 
@@ -34,13 +32,13 @@ public class GameRuleCommand : Command.Command
 
     private static int GetRule(CommandContext<CommandSource> context)
     {
-        (RuleSet rules, RuleRegistry registry) = GetContext(context);
-        string ruleName = context.GetArgument<string>("rule");
-        ResourceLocation key = ResourceLocation.Parse(ruleName);
+        var (rules, registry) = GetContext(context);
+        var ruleName = context.GetArgument<string>("rule");
+        var key = ResourceLocation.Parse(ruleName);
 
-        if (registry.TryGet(key, out IGameRule? rule))
+        if (registry.TryGet(key, out var rule))
         {
-            IRuleValue val = rules.Get(key);
+            var val = rules.Get(key);
             context.Source.Output.SendMessage($"{ruleName} = {rule.Serialize(val)}");
         }
         else
@@ -53,12 +51,12 @@ public class GameRuleCommand : Command.Command
 
     private static int SetRule(CommandContext<CommandSource> context)
     {
-        (RuleSet rules, RuleRegistry registry) = GetContext(context);
-        string ruleName = context.GetArgument<string>("rule");
-        string valueStr = context.GetArgument<string>("value");
-        ResourceLocation key = ResourceLocation.Parse(ruleName);
+        var (rules, registry) = GetContext(context);
+        var ruleName = context.GetArgument<string>("rule");
+        var valueStr = context.GetArgument<string>("value");
+        var key = ResourceLocation.Parse(ruleName);
 
-        if (!registry.TryGet(key, out IGameRule? _))
+        if (!registry.TryGet(key, out var _))
         {
             context.Source.Output.SendMessage($"Unknown game rule: {ruleName}");
             return 1;
@@ -86,8 +84,8 @@ public class GameRuleCommand : Command.Command
 
     private static (RuleSet rules, RuleRegistry registry) GetContext(CommandContext<CommandSource> context)
     {
-        ServerPlayerEntity? player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
-        ServerWorld world = player != null ? context.Source.Server.getWorld(player.DimensionId) : context.Source.Server.worlds[0];
+        var player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
+        var world = player != null ? context.Source.Server.getWorld(player.DimensionId) : context.Source.Server.worlds[0];
         return (world.Rules, RuleRegistry.Instance);
     }
 }

@@ -16,7 +16,7 @@ public static class SyncedPropertyFactory
 
     public static void Declare(DataSynchronizer synchronizer, IReadOnlyList<SyncedPropertyDefinition> definitions, string owner)
     {
-        foreach (SyncedPropertyDefinition definition in definitions)
+        foreach (var definition in definitions)
         {
             if (definition.Id is FlagsId or < 0 or > MaxId)
             {
@@ -54,7 +54,7 @@ public static class SyncedPropertyFactory
     /// <summary>Saves every declared property that names an NBT key.</summary>
     public static void Write(DataSynchronizer synchronizer, IReadOnlyList<SyncedPropertyDefinition> definitions, NBTTagCompound nbt)
     {
-        foreach (SyncedPropertyDefinition definition in definitions)
+        foreach (var definition in definitions)
         {
             if (definition.Nbt is not { } key)
             {
@@ -77,7 +77,7 @@ public static class SyncedPropertyFactory
     /// <summary>Restores every declared property that names an NBT key.</summary>
     public static void Read(DataSynchronizer synchronizer, IReadOnlyList<SyncedPropertyDefinition> definitions, NBTTagCompound nbt)
     {
-        foreach (SyncedPropertyDefinition definition in definitions)
+        foreach (var definition in definitions)
         {
             if (definition.Nbt is not { } key)
             {
@@ -103,7 +103,7 @@ public static class SyncedPropertyFactory
     /// </summary>
     public static SyncedHandle<T> Resolve<T>(EntityDefinition definition, string name)
     {
-        foreach (SyncedPropertyDefinition property in definition.SyncedProperties)
+        foreach (var property in definition.SyncedProperties)
         {
             if (property.Name != name)
             {

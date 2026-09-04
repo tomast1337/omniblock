@@ -10,7 +10,7 @@ internal class SimplexNoiseSampler
     private readonly double _xCoord;
     private readonly double _yCoord;
 
-    public SimplexNoiseSampler() : this(new())
+    public SimplexNoiseSampler() : this(new JavaRandom())
     {
     }
 
@@ -22,44 +22,40 @@ internal class SimplexNoiseSampler
         _ = rand.NextDouble();
 
         // Fill perm with values from 0 to 255 in random order, duplicating the first 256 values to the end of the array
-        for (int i = 0; i < 256; i++)
+        for (var i = 0; i < 256; i++)
         {
             _permutations[i] = i;
         }
 
-        for (int i = 0; i < 256; ++i)
+        for (var i = 0; i < 256; ++i)
         {
-            int j = rand.NextInt(256 - i) + i;
+            var j = rand.NextInt(256 - i) + i;
             (_permutations[i], _permutations[j]) = (_permutations[j], _permutations[i]);
             _permutations[i + 256] = _permutations[i];
         }
-
     }
 
-    private static double Dot((int x, int y) grad, double dx, double dy)
-    {
-        return grad.x * dx + grad.y * dy;
-    }
+    private static double Dot((int x, int y) grad, double dx, double dy) => grad.x * dx + grad.y * dy;
 
     public void Sample(double[] buffer, double x, double z, int width, int depth, double xFrequency, double zFrequency, double amplitude)
     {
-        int counter = 0;
+        var counter = 0;
 
-        for (int x1 = 0; x1 < width; ++x1)
+        for (var x1 = 0; x1 < width; ++x1)
         {
-            double x2 = (x + x1) * xFrequency + _xCoord;
+            var x2 = (x + x1) * xFrequency + _xCoord;
 
-            for (int z1 = 0; z1 < depth; ++z1)
+            for (var z1 = 0; z1 < depth; ++z1)
             {
-                double z2 = (z + z1) * zFrequency + _yCoord;
-                double s = (x2 + z2) * F2;
-                int i = MathHelper.Floor(x2 + s);
-                int j = MathHelper.Floor(z2 + s);
-                double t = (i + j) * G2;
-                double x3 = i - t;
-                double z3 = j - t;
-                double x4 = x2 - x3;
-                double z4 = z2 - z3;
+                var z2 = (z + z1) * zFrequency + _yCoord;
+                var s = (x2 + z2) * F2;
+                var i = MathHelper.Floor(x2 + s);
+                var j = MathHelper.Floor(z2 + s);
+                var t = (i + j) * G2;
+                var x3 = i - t;
+                var z3 = j - t;
+                var x4 = x2 - x3;
+                var z4 = z2 - z3;
                 byte i1;
                 byte j1;
                 if (x4 > z4)
@@ -73,16 +69,16 @@ internal class SimplexNoiseSampler
                     j1 = 1;
                 }
 
-                double x5 = x4 - i1 + G2;
-                double z5 = z4 - j1 + G2;
-                double x6 = x4 - 1.0D + 2.0D * G2;
-                double z6 = z4 - 1.0D + 2.0D * G2;
-                int ii = i & 255;
-                int jj = j & 255;
-                int gi0 = _permutations[ii + _permutations[jj]] % 12;
-                int gi1 = _permutations[ii + i1 + _permutations[jj + j1]] % 12;
-                int gi2 = _permutations[ii + 1 + _permutations[jj + 1]] % 12;
-                double t0 = 0.5D - x4 * x4 - z4 * z4;
+                var x5 = x4 - i1 + G2;
+                var z5 = z4 - j1 + G2;
+                var x6 = x4 - 1.0D + 2.0D * G2;
+                var z6 = z4 - 1.0D + 2.0D * G2;
+                var ii = i & 255;
+                var jj = j & 255;
+                var gi0 = _permutations[ii + _permutations[jj]] % 12;
+                var gi1 = _permutations[ii + i1 + _permutations[jj + j1]] % 12;
+                var gi2 = _permutations[ii + 1 + _permutations[jj + 1]] % 12;
+                var t0 = 0.5D - x4 * x4 - z4 * z4;
                 double n0;
                 if (t0 < 0.0D)
                 {
@@ -94,7 +90,7 @@ internal class SimplexNoiseSampler
                     n0 = t0 * t0 * Dot(s_grads[gi0], x4, z4);
                 }
 
-                double t1 = 0.5D - x5 * x5 - z5 * z5;
+                var t1 = 0.5D - x5 * x5 - z5 * z5;
                 double n1;
                 if (t1 < 0.0D)
                 {
@@ -106,7 +102,7 @@ internal class SimplexNoiseSampler
                     n1 = t1 * t1 * Dot(s_grads[gi1], x5, z5);
                 }
 
-                double t2 = 0.5D - x6 * x6 - z6 * z6;
+                var t2 = 0.5D - x6 * x6 - z6 * z6;
                 double n2;
                 if (t2 < 0.0D)
                 {

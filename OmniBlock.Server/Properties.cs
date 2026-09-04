@@ -1,11 +1,11 @@
-namespace OmniBlock.Server;
-
 using System.Text;
+
+namespace OmniBlock.Server;
 
 public sealed class Properties : Dictionary<string, string>
 {
     public string GetProperty(string key, string defaultValue = "")
-        => TryGetValue(key, out string? value) ? value : defaultValue;
+        => TryGetValue(key, out var value) ? value : defaultValue;
 
     public void SetProperty(string key, string value)
         => this[key] = value;
@@ -17,9 +17,9 @@ public sealed class Properties : Dictionary<string, string>
         if (!File.Exists(path))
             return props;
 
-        foreach (string rawLine in File.ReadAllLines(path, Encoding.UTF8))
+        foreach (var rawLine in File.ReadAllLines(path, Encoding.UTF8))
         {
-            string line = rawLine.Trim();
+            var line = rawLine.Trim();
 
             if (string.IsNullOrWhiteSpace(line))
                 continue;
@@ -27,7 +27,7 @@ public sealed class Properties : Dictionary<string, string>
             if (line.StartsWith('#') || line.StartsWith('!'))
                 continue;
 
-            int idx = line.IndexOf('=');
+            var idx = line.IndexOf('=');
             if (idx < 0)
                 idx = line.IndexOf(':');
 
@@ -37,8 +37,8 @@ public sealed class Properties : Dictionary<string, string>
                 continue;
             }
 
-            string key = line[..idx].Trim();
-            string value = line[(idx + 1)..].Trim();
+            var key = line[..idx].Trim();
+            var value = line[(idx + 1)..].Trim();
 
             props[key] = value;
         }

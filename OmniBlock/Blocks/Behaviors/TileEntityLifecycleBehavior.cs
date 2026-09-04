@@ -11,8 +11,5 @@ public sealed class TileEntityLifecycleBehavior : IBlockLifecycle
         if (block.GetBlockEntity() is { } blockEntity) @event.World.Entities.SetBlockEntity(@event.X, @event.Y, @event.Z, blockEntity);
     }
 
-    public void OnBreak(Block block, OnBreakEvent @event)
-    {
-        @event.World.Entities.RemoveBlockEntity(@event.X, @event.Y, @event.Z);
-    }
+    public void OnBreak(Block block, OnBreakEvent @event) => @event.World.Entities.RemoveBlockEntity(@event.X, @event.Y, @event.Z);
 }

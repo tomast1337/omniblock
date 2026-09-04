@@ -15,7 +15,7 @@ public class BanCommand : Command.Command
 
     private static int Execute(CommandContext<CommandSource> context)
     {
-        string target = context.GetArgument<string>("player");
+        var target = context.GetArgument<string>("player");
         context.Source.Server.playerManager.banPlayer(target);
         context.Source.LogOp("Banning " + target);
         context.Source.Server.playerManager.getPlayer(target)?.NetworkHandler.disconnect("Banned by admin");

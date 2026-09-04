@@ -8,16 +8,21 @@ public class RepeaterRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
-        int direction = metadata & 3;
-        int delay = (metadata & 12) >> 2;
+        var metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
+        var direction = metadata & 3;
+        var delay = (metadata & 12) >> 2;
         // 1. Base Rendering
-        var slabCtx = ctx with { EnableAo = true, AoBlendMode = 0, UvRotateTop = direction % 4 };
+        var slabCtx = ctx with
+        {
+            EnableAo = true,
+            AoBlendMode = 0,
+            UvRotateTop = direction % 4
+        };
 
         slabCtx.DrawBlock(block, pos);
 
         // 2. Prepare Torch Rendering
-        float luminance = 1.0F;
+        var luminance = 1.0F;
         ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
         if (BlockRegistry.GetLightEmission(block.Id) > 0)
         {
@@ -29,11 +34,11 @@ public class RepeaterRenderer : IBlockRenderer
         ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
 
         // Torch pins are rendered slightly below the slab surface so they sit inside it
-        float torchVerticalOffset = -0.1875F;
-        float staticTorchX = 0.0F;
-        float staticTorchZ = 0.0F;
-        float delayTorchX = 0.0F;
-        float delayTorchZ = 0.0F;
+        var torchVerticalOffset = -0.1875F;
+        var staticTorchX = 0.0F;
+        var staticTorchZ = 0.0F;
+        var delayTorchX = 0.0F;
+        var delayTorchZ = 0.0F;
 
         switch (direction)
         {

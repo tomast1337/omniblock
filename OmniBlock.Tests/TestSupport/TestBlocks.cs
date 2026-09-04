@@ -1,12 +1,11 @@
 using OmniBlock.Blocks;
-using OmniBlock.Registries;
 
 namespace OmniBlock.Tests.TestSupport;
 
 /// <summary>
-/// Test-only block lookups that bypass the transitional <see cref="BlockRegistry" /> static facade.
-/// The published runtime is the same object BlockRegistry used to forward to; keeping this wrapper
-/// means tests do not create new production dependencies on the static registry.
+///     Test-only block lookups that bypass the transitional <see cref="BlockRegistry" /> static facade.
+///     The published runtime is the same object BlockRegistry used to forward to; keeping this wrapper
+///     means tests do not create new production dependencies on the static registry.
 /// </summary>
 public static class TestBlocks
 {
@@ -19,14 +18,14 @@ public static class TestBlocks
     public static int GetLightEmission(int protocolId) => ContentRuntime.Current.Blocks.GetLightEmission(protocolId);
 
     public static bool AllowsVision(int protocolId) =>
-        !ContentRuntime.Current.Blocks.TryGetByProtocolId(protocolId, out Block? block) || block?.AllowsVision == true;
+        !ContentRuntime.Current.Blocks.TryGetByProtocolId(protocolId, out var block) || block?.AllowsVision == true;
 
     public static bool HasBlockEntity(int protocolId) =>
-        ContentRuntime.Current.Blocks.TryGetByProtocolId(protocolId, out Block? block) && block?.HasBlockEntity == true;
+        ContentRuntime.Current.Blocks.TryGetByProtocolId(protocolId, out var block) && block?.HasBlockEntity == true;
 
     public static bool TicksRandomly(int protocolId) =>
-        ContentRuntime.Current.Blocks.TryGetByProtocolId(protocolId, out Block? block) && block?.TickRandomly == true;
+        ContentRuntime.Current.Blocks.TryGetByProtocolId(protocolId, out var block) && block?.TickRandomly == true;
 
     public static bool IgnoresMetaUpdates(int protocolId) =>
-        ContentRuntime.Current.Blocks.TryGetByProtocolId(protocolId, out Block? block) && block?.IgnoreMetaUpdates == true;
+        ContentRuntime.Current.Blocks.TryGetByProtocolId(protocolId, out var block) && block?.IgnoreMetaUpdates == true;
 }

@@ -40,7 +40,10 @@ public class WorldScreen(
         Root.AddChild(title);
         AddTitleSpacer();
 
-        _scrollView = new ScrollView { AutomationId = "world.list" };
+        _scrollView = new ScrollView
+        {
+            AutomationId = "world.list"
+        };
         _scrollView.Style.Width = 300;
         _scrollView.Style.FlexGrow = 1;
         _scrollView.Style.MaxHeight = 200;
@@ -68,7 +71,7 @@ public class WorldScreen(
         _btnSelect.OnClick += e => SelectWorld(_selectedWorldIndex);
         row1.AddChild(_btnSelect);
 
-        Button btnCreate = CreateButton();
+        var btnCreate = CreateButton();
         btnCreate.AutomationId = "world.create";
         btnCreate.Text = Translations.Get("selectWorld.create");
         btnCreate.Style.Width = 150;
@@ -98,7 +101,7 @@ public class WorldScreen(
         _btnDelete.OnClick += e => DeleteSelected();
         row2.AddChild(_btnDelete);
 
-        Button btnCancel = CreateButton();
+        var btnCancel = CreateButton();
         btnCancel.AutomationId = "world.cancel";
         btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 150;
@@ -133,9 +136,9 @@ public class WorldScreen(
         _listItems.Clear();
         _selectedWorldIndex = -1;
 
-        for (int i = 0; i < _saveList.Count; i++)
+        for (var i = 0; i < _saveList.Count; i++)
         {
-            int index = i;
+            var index = i;
             WorldListItem item = new(_saveList[i]);
             item.AutomationId = $"world.item.{_saveList[i].FileName}";
             item.OnClick += e => SelectListItem(index);
@@ -147,7 +150,7 @@ public class WorldScreen(
     private void SelectListItem(int index)
     {
         _selectedWorldIndex = index;
-        foreach (WorldListItem item in _listItems)
+        foreach (var item in _listItems)
         {
             item.IsSelected = false;
         }
@@ -162,8 +165,8 @@ public class WorldScreen(
 
     private void UpdateButtons()
     {
-        bool hasSelection = _selectedWorldIndex >= 0;
-        bool isSupported = hasSelection && !_saveList[_selectedWorldIndex].IsUnsupported;
+        var hasSelection = _selectedWorldIndex >= 0;
+        var isSupported = hasSelection && !_saveList[_selectedWorldIndex].IsUnsupported;
 
         _btnSelect.Enabled = isSupported;
         _btnRename.Enabled = isSupported;
@@ -177,14 +180,14 @@ public class WorldScreen(
             return;
         }
 
-        WorldSaveInfo worldInfo = _saveList[index];
+        var worldInfo = _saveList[index];
         if (worldInfo.IsUnsupported)
         {
             return;
         }
 
-        string worldFileName = worldInfo.FileName ?? $"World{index}";
-        WorldProperties? props = singleplayerHost.SaveLoader.GetProperties(worldFileName);
+        var worldFileName = worldInfo.FileName ?? $"World{index}";
+        var props = singleplayerHost.SaveLoader.GetProperties(worldFileName);
 
         WorldSettings settings;
         if (props != null)
@@ -206,7 +209,7 @@ public class WorldScreen(
             return;
         }
 
-        string fileName = _saveList[_selectedWorldIndex].FileName;
+        var fileName = _saveList[_selectedWorldIndex].FileName;
         Context.Navigator.Navigate(new RenameWorldScreen(Context, this, fileName, singleplayerHost.SaveLoader));
     }
 
@@ -217,10 +220,10 @@ public class WorldScreen(
             return;
         }
 
-        WorldSaveInfo worldInfo = _saveList[_selectedWorldIndex];
+        var worldInfo = _saveList[_selectedWorldIndex];
 
-        string deleteQuestion = Translations.Get("selectWorld.deleteQuestion");
-        string deleteWarning = "'" + worldInfo.DisplayName + "' " + Translations.Get("selectWorld.deleteWarning");
+        var deleteQuestion = Translations.Get("selectWorld.deleteQuestion");
+        var deleteWarning = "'" + worldInfo.DisplayName + "' " + Translations.Get("selectWorld.deleteWarning");
 
         Context.Navigator.Navigate(new ConfirmationScreen(Context, this, deleteQuestion, deleteWarning, Translations.Get("gui.delete"), Translations.Get("gui.cancel"), confirmed =>
         {

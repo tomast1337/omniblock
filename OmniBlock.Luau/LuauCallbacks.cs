@@ -61,14 +61,14 @@ internal static unsafe class LuauCallbacks
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     internal static void Interrupt(IntPtr L, int gc)
     {
-        IntPtr counterPtr = LuauNative.lua_getthreaddata(L);
+        var counterPtr = LuauNative.lua_getthreaddata(L);
         if (counterPtr == IntPtr.Zero)
         {
             return;
         }
 
-        long* counter = (long*)counterPtr;
-        if (--(*counter) <= 0)
+        var counter = (long*)counterPtr;
+        if (--*counter <= 0)
         {
             LuauNative.luaL_errorL(L, "OmniBlock.Luau: instruction budget exceeded");
         }

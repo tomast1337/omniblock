@@ -1,16 +1,7 @@
-using OmniBlock.Registries;
-
 namespace OmniBlock.Tests;
 
 public class IndexedRegistryTests
 {
-    // Simple value type used as registry entries.
-    private sealed class Color
-    {
-        public string Name { get; init; } = "";
-        public override string ToString() => Name;
-    }
-
     private static readonly ResourceLocation s_regKey = ResourceLocation.Parse("test:colors");
     private static readonly ResourceLocation s_red = ResourceLocation.Parse("test:red");
     private static readonly ResourceLocation s_green = ResourceLocation.Parse("test:green");
@@ -19,9 +10,18 @@ public class IndexedRegistryTests
     private static IndexedRegistry<Color> Build(bool freeze = false)
     {
         var reg = new IndexedRegistry<Color>(s_regKey);
-        reg.Register(s_red, new Color { Name = "red" });
-        reg.Register(s_green, new Color { Name = "green" });
-        reg.Register(s_blue, new Color { Name = "blue" });
+        reg.Register(s_red, new Color
+        {
+            Name = "red"
+        });
+        reg.Register(s_green, new Color
+        {
+            Name = "green"
+        });
+        reg.Register(s_blue, new Color
+        {
+            Name = "blue"
+        });
         if (freeze) reg.Freeze();
         return reg;
     }
@@ -41,7 +41,7 @@ public class IndexedRegistryTests
     public void Get_by_key_returns_registered_value()
     {
         var reg = Build();
-        Color? c = reg.Get(s_red)?.Value;
+        var c = reg.Get(s_red)?.Value;
         Assert.NotNull(c);
         Assert.Equal("red", c.Name);
     }
@@ -79,7 +79,10 @@ public class IndexedRegistryTests
     public void Register_with_explicit_id_places_value_at_correct_position()
     {
         var reg = new IndexedRegistry<Color>(s_regKey);
-        reg.Register(10, s_red, new Color { Name = "red" });
+        reg.Register(10, s_red, new Color
+        {
+            Name = "red"
+        });
 
         Assert.Equal("red", reg.Get(10)!.Name);
         Assert.Null(reg.Get(0));
@@ -91,7 +94,7 @@ public class IndexedRegistryTests
     public void GetId_returns_correct_id_for_registered_value()
     {
         var reg = Build();
-        Color green = reg.Get(s_green)!.Value;
+        var green = reg.Get(s_green)!.Value;
         Assert.Equal(1, reg.GetId(green));
     }
 
@@ -99,14 +102,17 @@ public class IndexedRegistryTests
     public void GetId_returns_negative_one_for_unregistered_value()
     {
         var reg = Build();
-        Assert.Equal(-1, reg.GetId(new Color { Name = "purple" }));
+        Assert.Equal(-1, reg.GetId(new Color
+        {
+            Name = "purple"
+        }));
     }
 
     [Fact]
     public void GetKey_returns_location_for_registered_value()
     {
         var reg = Build();
-        Color blue = reg.Get(s_blue)!.Value;
+        var blue = reg.Get(s_blue)!.Value;
         Assert.Equal(s_blue, reg.GetKey(blue));
     }
 
@@ -114,7 +120,10 @@ public class IndexedRegistryTests
     public void GetKey_returns_null_for_unregistered_value()
     {
         var reg = Build();
-        Assert.Null(reg.GetKey(new Color { Name = "purple" }));
+        Assert.Null(reg.GetKey(new Color
+        {
+            Name = "purple"
+        }));
     }
 
     // ---- ContainsKey / Keys ----
@@ -148,7 +157,7 @@ public class IndexedRegistryTests
     public void GetHolder_returns_holder_wrapping_registered_value()
     {
         var reg = Build();
-        Holder<Color>? h = reg.Get(s_green);
+        var h = reg.Get(s_green);
 
         Assert.NotNull(h);
         Assert.Equal("green", h.Value.Name);
@@ -158,8 +167,8 @@ public class IndexedRegistryTests
     public void GetHolder_returns_same_holder_instance_on_repeated_calls()
     {
         var reg = Build();
-        Holder<Color>? h1 = reg.Get(s_red);
-        Holder<Color>? h2 = reg.Get(s_red);
+        var h1 = reg.Get(s_red);
+        var h2 = reg.Get(s_red);
 
         Assert.Same(h1, h2);
     }
@@ -202,7 +211,7 @@ public class IndexedRegistryTests
     [Fact]
     public void Register_after_freeze_throws()
     {
-        var reg = Build(freeze: true);
+        var reg = Build(true);
         Assert.Throws<InvalidOperationException>(() => reg.Register(ResourceLocation.Parse("test:yellow"), new Color()));
     }
 
@@ -212,14 +221,30 @@ public class IndexedRegistryTests
     public void Register_duplicate_key_throws()
     {
         var reg = Build();
-        Assert.Throws<ArgumentException>(() => reg.Register(s_red, new Color { Name = "red2" }));
+        Assert.Throws<ArgumentException>(() => reg.Register(s_red, new Color
+        {
+            Name = "red2"
+        }));
     }
 
     [Fact]
     public void Register_duplicate_id_throws()
     {
         var reg = new IndexedRegistry<Color>(s_regKey);
-        reg.Register(5, s_red, new Color { Name = "red" });
-        Assert.Throws<ArgumentException>(() => reg.Register(5, s_green, new Color { Name = "green" }));
+        reg.Register(5, s_red, new Color
+        {
+            Name = "red"
+        });
+        Assert.Throws<ArgumentException>(() => reg.Register(5, s_green, new Color
+        {
+            Name = "green"
+        }));
+    }
+
+    // Simple value type used as registry entries.
+    private sealed class Color
+    {
+        public string Name { get; init; } = "";
+        public override string ToString() => Name;
     }
 }

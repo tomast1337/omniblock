@@ -19,10 +19,7 @@ public sealed class GrassVisualBehavior(int side, int snowySide) : IBlockVisuals
         return materialAbove != Material.SnowLayer && materialAbove != Material.SnowBlock ? side : snowySide;
     }
 
-    public int GetColorForFace(Block block, int meta, int face, int defaultColor)
-    {
-        return face == 1 ? GrassColors.getDefaultColor() : defaultColor;
-    }
+    public int GetColorForFace(Block block, int meta, int face, int defaultColor) => face == 1 ? GrassColors.getDefaultColor() : defaultColor;
 
     public int GetColorMultiplier(Block block, IBlockReader reader, int x, int y, int z, int defaultColor)
     {

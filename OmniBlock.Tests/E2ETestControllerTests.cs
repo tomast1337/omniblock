@@ -8,8 +8,8 @@ public sealed class E2ETestControllerTests
     [Fact]
     public void Pass_writesArtifactsAndKeepsTheFirstResult()
     {
-        string directory = Directory.CreateTempSubdirectory("omniblock-e2e-result-").FullName;
-        int shutdownRequests = 0;
+        var directory = Directory.CreateTempSubdirectory("omniblock-e2e-result-").FullName;
+        var shutdownRequests = 0;
         E2ETestLaunchOptions options = new(
             new StartupScript("smoke.luau", "OMNI.test.pass()"),
             TimeSpan.FromSeconds(10),
@@ -26,7 +26,7 @@ public sealed class E2ETestControllerTests
             Assert.True(controller.IsCompleted);
             Assert.Equal(1, shutdownRequests);
             Assert.True(File.Exists(Path.Combine(directory, "client.log")));
-            using JsonDocument result = JsonDocument.Parse(File.ReadAllText(Path.Combine(directory, "result.json")));
+            using var result = JsonDocument.Parse(File.ReadAllText(Path.Combine(directory, "result.json")));
             Assert.Equal("passed", result.RootElement.GetProperty("status").GetString());
             Assert.Equal(0, result.RootElement.GetProperty("exitCode").GetInt32());
         }
@@ -39,7 +39,7 @@ public sealed class E2ETestControllerTests
     [Fact]
     public void Watchdog_timesOutAndRequestsShutdown()
     {
-        string directory = Directory.CreateTempSubdirectory("omniblock-e2e-timeout-").FullName;
+        var directory = Directory.CreateTempSubdirectory("omniblock-e2e-timeout-").FullName;
         using ManualResetEventSlim shutdown = new();
         E2ETestLaunchOptions options = new(
             new StartupScript("hung.luau", "OMNI.wait(100)"),
@@ -52,7 +52,7 @@ public sealed class E2ETestControllerTests
 
             Assert.True(shutdown.Wait(TimeSpan.FromSeconds(5)));
             Assert.Equal(E2ETestController.TimedOutExitCode, controller.ExitCode);
-            using JsonDocument result = JsonDocument.Parse(File.ReadAllText(Path.Combine(directory, "result.json")));
+            using var result = JsonDocument.Parse(File.ReadAllText(Path.Combine(directory, "result.json")));
             Assert.Equal("timeout", result.RootElement.GetProperty("status").GetString());
         }
         finally

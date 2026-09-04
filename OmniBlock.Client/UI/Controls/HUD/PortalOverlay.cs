@@ -17,12 +17,12 @@ public class PortalOverlay(Func<ClientPlayerEntity?> getPlayer) : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        ClientPlayerEntity? player = getPlayer();
+        var player = getPlayer();
         if (player == null) return;
 
-        float last = player.LastScreenDistortion;
-        float curr = player.ChangeDimensionCooldown;
-        float portal = last + (curr - last) * _partialTicks;
+        var last = player.LastScreenDistortion;
+        var curr = player.ChangeDimensionCooldown;
+        var portal = last + (curr - last) * _partialTicks;
 
         if (portal > 0.0F)
         {
@@ -36,7 +36,7 @@ public class PortalOverlay(Func<ClientPlayerEntity?> getPlayer) : UIElement
             renderer.SetAlphaTest(false);
             renderer.PushColor(new Color(255, 255, 255, (byte)(255 * portal)));
 
-            int tile = Atlases.Terrain.IndexOf("nether_portal");
+            var tile = Atlases.Terrain.IndexOf("nether_portal");
             renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/terrain.png"), 0, 0,
                 tile % Atlases.Terrain.GridWidth * Atlases.Terrain.TileSize,
                 tile / Atlases.Terrain.GridWidth * Atlases.Terrain.TileSize,

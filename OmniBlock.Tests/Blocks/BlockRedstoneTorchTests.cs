@@ -1,5 +1,4 @@
 using OmniBlock.Blocks;
-using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Tests.Blocks;
 
@@ -13,15 +12,12 @@ public sealed class BlockRedstoneTorchTests
     [Fact]
     public void GetTexture_UpFace_MatchesRedstoneWireTexture()
     {
-        int meta = 2;
+        var meta = 2;
         Assert.Equal(TestBlocks.Get("redstone_wire").GetTexture(Side.Up, meta), TestBlocks.Get("lit_redstone_torch").GetTexture(Side.Up, meta));
     }
 
     [Fact]
-    public void GetTexture_SideFace_UsesBlockTextureId()
-    {
-        Assert.Equal(TestBlocks.Get("lit_redstone_torch").TextureId, TestBlocks.Get("lit_redstone_torch").GetTexture(Side.North, 5));
-    }
+    public void GetTexture_SideFace_UsesBlockTextureId() => Assert.Equal(TestBlocks.Get("lit_redstone_torch").TextureId, TestBlocks.Get("lit_redstone_torch").GetTexture(Side.North, 5));
 
     [Fact]
     public void GetDroppedItemId_AlwaysLitTorch()
@@ -68,7 +64,7 @@ public sealed class BlockRedstoneTorchTests
         FakeWorldContext world = new();
         int x = 12, y = 70, z = 12;
         world.ReaderWriter.SetInitial(x, y - 1, z, TestBlocks.Get("stone").Id);
-        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("lit_redstone_torch").Id, 0);
+        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("lit_redstone_torch").Id);
 
         TestBlocks.Get("lit_redstone_torch").OnPlaced(Placed(world, x, y, z, Side.Up));
 
@@ -81,7 +77,7 @@ public sealed class BlockRedstoneTorchTests
         FakeWorldContext world = new();
         int x = 13, y = 70, z = 13;
         world.ReaderWriter.SetInitial(x, y - 1, z, TestBlocks.Get("stone").Id);
-        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("redstone_torch").Id, 0);
+        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("redstone_torch").Id);
 
         TestBlocks.Get("redstone_torch").OnPlaced(Placed(world, x, y, z, Side.Up));
 
@@ -212,7 +208,7 @@ public sealed class BlockRedstoneTorchTests
     public void RandomDisplayTick_LitTorch_EachMeta_AddsReddust()
     {
         FakeWorldContext world = new();
-        for (int meta = 1; meta <= 5; meta++)
+        for (var meta = 1; meta <= 5; meta++)
         {
             world.ReaderWriter.SetInitial(20 + meta, 64, 20, TestBlocks.Get("lit_redstone_torch").Id, meta);
             TestBlocks.Get("lit_redstone_torch").RandomDisplayTick(Tick(world, 20 + meta, 64, 20));
@@ -237,7 +233,7 @@ public sealed class BlockRedstoneTorchTests
         world.ReaderWriter.SetInitial(x, y - 1, z, 0);
         world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("lit_redstone_torch").Id, 5);
 
-        for (int cycle = 0; cycle < 7; cycle++)
+        for (var cycle = 0; cycle < 7; cycle++)
         {
             world.ReaderWriter.SetInitial(x, y - 1, z, TestBlocks.Get("lit_redstone_torch").Id);
             TestBlocks.Get("lit_redstone_torch").OnTick(Tick(world, x, y, z));
@@ -289,8 +285,8 @@ public sealed class BlockRedstoneTorchTests
     }
 
     /// <summary>
-    /// After eight rapid lit→unlit transitions at the same coordinates, Beta 1.7.3 schedules a long recovery tick (burnout).
-    /// Uses an isolated coordinate so static burnout bookkeeping does not collide with other torch tests.
+    ///     After eight rapid lit→unlit transitions at the same coordinates, Beta 1.7.3 schedules a long recovery tick (burnout).
+    ///     Uses an isolated coordinate so static burnout bookkeeping does not collide with other torch tests.
     /// </summary>
     [Fact]
     public void OnTick_EighthRapidPowerCycle_SchedulesLongRecoveryTick()
@@ -302,7 +298,7 @@ public sealed class BlockRedstoneTorchTests
         world.ReaderWriter.SetInitial(x, y - 1, z, 0);
         world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("lit_redstone_torch").Id, 5);
 
-        for (int cycle = 0; cycle < 7; cycle++)
+        for (var cycle = 0; cycle < 7; cycle++)
         {
             world.ReaderWriter.SetInitial(x, y - 1, z, TestBlocks.Get("lit_redstone_torch").Id);
             TestBlocks.Get("lit_redstone_torch").OnTick(Tick(world, x, y, z));

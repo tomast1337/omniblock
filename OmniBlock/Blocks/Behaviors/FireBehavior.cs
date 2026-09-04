@@ -33,20 +33,11 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
             @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
     }
 
-    public bool HasCollision(Block block, bool defaultHasCollision)
-    {
-        return false;
-    }
+    public bool HasCollision(Block block, bool defaultHasCollision) => false;
 
-    public bool IsFlammable(Block block, IBlockReader reader, int x, int y, int z, bool defaultFlammable)
-    {
-        return BurnChanceAt(reader, x, y, z) > 0;
-    }
+    public bool IsFlammable(Block block, IBlockReader reader, int x, int y, int z, bool defaultFlammable) => BurnChanceAt(reader, x, y, z) > 0;
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-    {
-        return @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) || AreBlocksAroundFlammable(@event.World.Reader, @event.X, @event.Y, @event.Z);
-    }
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) || AreBlocksAroundFlammable(@event.World.Reader, @event.X, @event.Y, @event.Z);
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
@@ -75,53 +66,53 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
             switch (isOnNetherrack)
             {
                 case false when !AreBlocksAroundFlammable(@event.World.Reader, @event.X, @event.Y, @event.Z):
-                {
-                    if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) || fireAge > 3) @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
+                    {
+                        if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) || fireAge > 3) @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
 
-                    break;
-                }
+                        break;
+                    }
                 case false when !IsFlammableId(@event.World.Reader, @event.X, @event.Y - 1, @event.Z) && fireAge == maxAge && @event.World.Random.NextInt(4) == 0:
                     @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
                     break;
                 default:
-                {
-                    TrySpreadingFire(block, @event.World, @event.X + 1, @event.Y, @event.Z, 300, @event.World.Random, fireAge);
-                    TrySpreadingFire(block, @event.World, @event.X - 1, @event.Y, @event.Z, 300, @event.World.Random, fireAge);
-                    TrySpreadingFire(block, @event.World, @event.X, @event.Y - 1, @event.Z, 250, @event.World.Random, fireAge);
-                    TrySpreadingFire(block, @event.World, @event.X, @event.Y + 1, @event.Z, 250, @event.World.Random, fireAge);
-                    TrySpreadingFire(block, @event.World, @event.X, @event.Y, @event.Z - 1, 300, @event.World.Random, fireAge);
-                    TrySpreadingFire(block, @event.World, @event.X, @event.Y, @event.Z + 1, 300, @event.World.Random, fireAge);
-
-                    for (var checkX = @event.X - 1; checkX <= @event.X + 1; ++checkX)
-                    for (var checkZ = @event.Z - 1; checkZ <= @event.Z + 1; ++checkZ)
-                    for (var checkY = @event.Y - 1; checkY <= @event.Y + 4; ++checkY)
                     {
-                        if (checkX == @event.X && checkY == @event.Y && checkZ == @event.Z) continue;
+                        TrySpreadingFire(block, @event.World, @event.X + 1, @event.Y, @event.Z, 300, @event.World.Random, fireAge);
+                        TrySpreadingFire(block, @event.World, @event.X - 1, @event.Y, @event.Z, 300, @event.World.Random, fireAge);
+                        TrySpreadingFire(block, @event.World, @event.X, @event.Y - 1, @event.Z, 250, @event.World.Random, fireAge);
+                        TrySpreadingFire(block, @event.World, @event.X, @event.Y + 1, @event.Z, 250, @event.World.Random, fireAge);
+                        TrySpreadingFire(block, @event.World, @event.X, @event.Y, @event.Z - 1, 300, @event.World.Random, fireAge);
+                        TrySpreadingFire(block, @event.World, @event.X, @event.Y, @event.Z + 1, 300, @event.World.Random, fireAge);
 
-                        var spreadDifficulty = 100;
-                        if (checkY > @event.Y + 1) spreadDifficulty += (checkY - (@event.Y + 1)) * 100;
+                        for (var checkX = @event.X - 1; checkX <= @event.X + 1; ++checkX)
+                        for (var checkZ = @event.Z - 1; checkZ <= @event.Z + 1; ++checkZ)
+                        for (var checkY = @event.Y - 1; checkY <= @event.Y + 4; ++checkY)
+                        {
+                            if (checkX == @event.X && checkY == @event.Y && checkZ == @event.Z) continue;
 
-                        var burnChance = GetBurnChance(@event.World.Reader, checkX, checkY, checkZ);
-                        if (burnChance <= 0) continue;
+                            var spreadDifficulty = 100;
+                            if (checkY > @event.Y + 1) spreadDifficulty += (checkY - (@event.Y + 1)) * 100;
 
-                        var spreadThreshold = (burnChance + 40) / (fireAge + 30);
-                        if (spreadThreshold <= 0 ||
-                            @event.World.Random.NextInt(spreadDifficulty) > spreadThreshold ||
-                            (@event.World.Environment.IsRaining && @event.World.Environment.IsRainingAt(checkX, checkY, checkZ)) ||
-                            @event.World.Environment.IsRainingAt(checkX - 1, checkY, checkZ) ||
-                            @event.World.Environment.IsRainingAt(checkX + 1, checkY, checkZ) ||
-                            @event.World.Environment.IsRainingAt(checkX, checkY - 1, checkZ) ||
-                            @event.World.Environment.IsRainingAt(checkX, checkY + 1, checkZ))
-                            continue;
+                            var burnChance = GetBurnChance(@event.World.Reader, checkX, checkY, checkZ);
+                            if (burnChance <= 0) continue;
 
-                        var spreadChance = fireAge + @event.World.Random.NextInt(5) / 4;
-                        if (spreadChance > maxAge) spreadChance = maxAge;
+                            var spreadThreshold = (burnChance + 40) / (fireAge + 30);
+                            if (spreadThreshold <= 0 ||
+                                @event.World.Random.NextInt(spreadDifficulty) > spreadThreshold ||
+                                (@event.World.Environment.IsRaining && @event.World.Environment.IsRainingAt(checkX, checkY, checkZ)) ||
+                                @event.World.Environment.IsRainingAt(checkX - 1, checkY, checkZ) ||
+                                @event.World.Environment.IsRainingAt(checkX + 1, checkY, checkZ) ||
+                                @event.World.Environment.IsRainingAt(checkX, checkY - 1, checkZ) ||
+                                @event.World.Environment.IsRainingAt(checkX, checkY + 1, checkZ))
+                                continue;
 
-                        @event.World.Writer.SetBlock(checkX, checkY, checkZ, block.Id, spreadChance);
+                            var spreadChance = fireAge + @event.World.Random.NextInt(5) / 4;
+                            if (spreadChance > maxAge) spreadChance = maxAge;
+
+                            @event.World.Writer.SetBlock(checkX, checkY, checkZ, block.Id, spreadChance);
+                        }
+
+                        break;
                     }
-
-                    break;
-                }
             }
         }
         else
@@ -142,6 +133,7 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
         if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) && !IsFlammableId(@event.World.Reader, @event.X, @event.Y - 1, @event.Z))
         {
             if (IsFlammableId(@event.World.Reader, @event.X - 1, @event.Y, @event.Z))
+            {
                 for (particleIndex = 0; particleIndex < 2; ++particleIndex)
                 {
                     particleX = @event.X + Random.Shared.NextSingle() * 0.1F;
@@ -149,8 +141,10 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
                     particleZ = @event.Z + Random.Shared.NextSingle();
                     @event.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
                 }
+            }
 
             if (IsFlammableId(@event.World.Reader, @event.X + 1, @event.Y, @event.Z))
+            {
                 for (particleIndex = 0; particleIndex < 2; ++particleIndex)
                 {
                     particleX = @event.X + 1 - Random.Shared.NextSingle() * 0.1F;
@@ -158,8 +152,10 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
                     particleZ = @event.Z + Random.Shared.NextSingle();
                     @event.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
                 }
+            }
 
             if (IsFlammableId(@event.World.Reader, @event.X, @event.Y, @event.Z - 1))
+            {
                 for (particleIndex = 0; particleIndex < 2; ++particleIndex)
                 {
                     particleX = @event.X + Random.Shared.NextSingle();
@@ -167,8 +163,10 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
                     particleZ = @event.Z + Random.Shared.NextSingle() * 0.1F;
                     @event.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
                 }
+            }
 
             if (IsFlammableId(@event.World.Reader, @event.X, @event.Y, @event.Z + 1))
+            {
                 for (particleIndex = 0; particleIndex < 2; ++particleIndex)
                 {
                     particleX = @event.X + Random.Shared.NextSingle();
@@ -176,8 +174,10 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
                     particleZ = @event.Z + 1 - Random.Shared.NextSingle() * 0.1F;
                     @event.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
                 }
+            }
 
             if (IsFlammableId(@event.World.Reader, @event.X, @event.Y + 1, @event.Z))
+            {
                 for (particleIndex = 0; particleIndex < 2; ++particleIndex)
                 {
                     particleX = @event.X + Random.Shared.NextSingle();
@@ -185,6 +185,7 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
                     particleZ = @event.Z + Random.Shared.NextSingle();
                     @event.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
                 }
+            }
         }
         else
         {
@@ -228,10 +229,7 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
                IsFlammableId(world, x, y, z + 1);
     }
 
-    private bool IsFlammableId(IBlockReader world, int x, int y, int z)
-    {
-        return BurnChanceAt(world, x, y, z) > 0;
-    }
+    private bool IsFlammableId(IBlockReader world, int x, int y, int z) => BurnChanceAt(world, x, y, z) > 0;
 
     private int GetBurnChance(IBlockReader world, int x, int y, int z)
     {
@@ -252,13 +250,7 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
         return blockBurnChance > currentChance ? blockBurnChance : currentChance;
     }
 
-    private int BurnChanceAt(IBlockReader world, int x, int y, int z)
-    {
-        return Blocks.TryGetByProtocolId(world.GetBlockId(x, y, z), out var block) ? block.BurnChance : 0;
-    }
+    private int BurnChanceAt(IBlockReader world, int x, int y, int z) => Blocks.TryGetByProtocolId(world.GetBlockId(x, y, z), out var block) ? block.BurnChance : 0;
 
-    private int SpreadChanceAt(IBlockReader world, int x, int y, int z)
-    {
-        return Blocks.TryGetByProtocolId(world.GetBlockId(x, y, z), out var block) ? block.SpreadChance : 0;
-    }
+    private int SpreadChanceAt(IBlockReader world, int x, int y, int z) => Blocks.TryGetByProtocolId(world.GetBlockId(x, y, z), out var block) ? block.SpreadChance : 0;
 }

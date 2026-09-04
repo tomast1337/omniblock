@@ -35,7 +35,7 @@ public class IngameMenuScreen(
         Root.AddChild(title);
         AddTitleSpacer();
 
-        Button btnBack = CreateButton();
+        var btnBack = CreateButton();
         btnBack.Text = Translations.Get("gamemenu.backToGame");
         btnBack.OnClick += e =>
         {
@@ -52,12 +52,12 @@ public class IngameMenuScreen(
         rowStats.Style.Width = 200;
         rowStats.Style.MarginBottom = 4;
 
-        Button btnAchievements = CreateButton();
+        var btnAchievements = CreateButton();
         btnAchievements.Text = Translations.Get("achievements.title");
         btnAchievements.Style.Width = 98;
         btnAchievements.OnClick += e => Context.Navigator.Navigate(new AchievementsScreen(Context, this, statFileWriter));
 
-        Button btnStats = CreateButton();
+        var btnStats = CreateButton();
         btnStats.Text = Translations.Get("gui.stats");
         btnStats.Style.Width = 98;
         btnStats.OnClick += e => Context.Navigator.Navigate(new StatsScreen(Context, this, statFileWriter));
@@ -73,12 +73,12 @@ public class IngameMenuScreen(
         feedbackRow.Style.Width = 200;
         feedbackRow.Style.MarginBottom = 4;
 
-        Button btnFeedback = CreateButton();
+        var btnFeedback = CreateButton();
         btnFeedback.Text = Translations.Get("menu.sendFeedback");
         btnFeedback.Style.Width = 98;
         btnFeedback.OnClick += e => OpenLink("https://git.gay/omniblock-official/omniblock/issues/new/choose");
 
-        Button btnReport = CreateButton();
+        var btnReport = CreateButton();
         btnReport.Text = Translations.Get("menu.reportBugs");
         btnReport.Style.Width = 98;
         btnReport.OnClick += e => OpenLink("https://git.gay/omniblock-official/omniblock/issues/new?template=.github%2fISSUE_TEMPLATE%2fbug_report.yml");
@@ -93,7 +93,7 @@ public class IngameMenuScreen(
         optionsRow.Style.Width = 224;
         optionsRow.Style.MarginLeft = -26;
 
-        ImageButton btnLang = CreateImageButton();
+        var btnLang = CreateImageButton();
         btnLang.OnClick += e => Context.Navigator.Navigate(new LanguageSelectionScreen(Context, this));
         btnLang.Texture = Renderer.TextureManager.GetTextureId("/gui/Globe.png");
         btnLang.U = 0;
@@ -102,7 +102,7 @@ public class IngameMenuScreen(
         btnLang.VHeight = 24;
         optionsRow.AddChild(btnLang);
 
-        Button btnOptions = CreateButton();
+        var btnOptions = CreateButton();
         btnOptions.Text = Translations.Get("menu.options");
         btnOptions.OnClick += e => Context.Navigator.Navigate(new OptionsScreen(Context, this, texturePacks));
         btnOptions.Style.MarginBottom = 4;
@@ -110,7 +110,7 @@ public class IngameMenuScreen(
 
         Root.AddChild(optionsRow);
 
-        Button btnQuit = CreateButton();
+        var btnQuit = CreateButton();
         btnQuit.Text = quitButtonText;
         btnQuit.OnClick += e =>
         {

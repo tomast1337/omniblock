@@ -3,7 +3,6 @@ using OmniBlock.Client.UI.Controls;
 using OmniBlock.Client.UI.Controls.Core;
 using OmniBlock.Client.UI.Controls.ListItems;
 using OmniBlock.Client.UI.Layout.Flexbox;
-using OmniBlock.Items;
 using OmniBlock.Worlds.Gen.Flat;
 using Color = OmniBlock.Client.UI.Colors.Color;
 
@@ -11,6 +10,8 @@ namespace OmniBlock.Client.UI.Screens.Menu.World;
 
 public class FlatPresetsScreen(UIContext context, CreateFlatWorldScreen parent) : UIScreen(context)
 {
+    private readonly List<FlatPresetListItem> _listItems = [];
+
     private readonly List<PresetItem> _presets =
     [
         new("Classic Flat", "2;7,2x3,2;1;village"),
@@ -23,7 +24,6 @@ public class FlatPresetsScreen(UIContext context, CreateFlatWorldScreen parent) 
         new("Redstone Ready", "2;7,3x1,52x24;1;", context.Content.Items.Get("omniblock:redstone").Id)
     ];
 
-    private readonly List<FlatPresetListItem> _listItems = [];
     private Button _btnSelect = null!;
 
     private ScrollView _scrollView = null!;
@@ -80,7 +80,7 @@ public class FlatPresetsScreen(UIContext context, CreateFlatWorldScreen parent) 
         _btnSelect.OnClick += e => SelectSelected();
         buttonPanel.AddChild(_btnSelect);
 
-        Button btnCancel = CreateButton();
+        var btnCancel = CreateButton();
         btnCancel.Text = "Cancel";
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
@@ -94,14 +94,14 @@ public class FlatPresetsScreen(UIContext context, CreateFlatWorldScreen parent) 
     private void PopulatePresetList()
     {
         _listItems.Clear();
-        foreach (PresetItem preset in _presets)
+        foreach (var preset in _presets)
         {
-            int index = _listItems.Count;
+            var index = _listItems.Count;
             FlatPresetListItem item = new(preset);
             item.OnClick += e =>
             {
                 _txfOptions.Text = preset.Value;
-                foreach (FlatPresetListItem li in _listItems)
+                foreach (var li in _listItems)
                 {
                     li.IsSelected = false;
                 }
@@ -134,13 +134,13 @@ public class FlatPresetsScreen(UIContext context, CreateFlatWorldScreen parent) 
 
         private static int GetIconIdFromValue(string value)
         {
-            FlatGeneratorInfo info = FlatGeneratorInfo.CreateFromString(value);
+            var info = FlatGeneratorInfo.CreateFromString(value);
             return info.FlatLayers.Count > 0 ? info.FlatLayers[^1].FillBlock : BlockRegistry.Get("grass_block").Id;
         }
 
         private static int GetIconMetaFromValue(string value)
         {
-            FlatGeneratorInfo info = FlatGeneratorInfo.CreateFromString(value);
+            var info = FlatGeneratorInfo.CreateFromString(value);
             return info.FlatLayers.Count > 0 ? info.FlatLayers[^1].FillBlockMeta : 0;
         }
     }

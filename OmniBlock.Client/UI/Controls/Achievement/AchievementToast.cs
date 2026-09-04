@@ -43,17 +43,17 @@ public class AchievementToast : UIElement
             return;
         }
 
-        long elapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - _startTime;
+        var elapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - _startTime;
         if (!_isInfo && elapsed > Duration)
         {
             _startTime = 0;
             return;
         }
 
-        double progress = elapsed / (double)Duration;
-        double anim = CalculateAnim(progress);
+        var progress = elapsed / (double)Duration;
+        var anim = CalculateAnim(progress);
 
-        float y = (float)(-anim * 36);
+        var y = (float)(-anim * 36);
 
         renderer.TextureManager.BindTexture(renderer.TextureManager.GetTextureId("/achievement/bg.png"));
         renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/achievement/bg.png"), 0, y, 96, 202, 160, 32);
@@ -73,7 +73,7 @@ public class AchievementToast : UIElement
 
     private static double CalculateAnim(double progress)
     {
-        double p = progress * 2.0;
+        var p = progress * 2.0;
         if (p > 1.0)
         {
             p = 2.0 - p;

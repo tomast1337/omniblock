@@ -32,10 +32,7 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
             block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
     }
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-    {
-        return @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
-    }
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
@@ -206,16 +203,10 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
         return true;
     }
 
-    public static bool IsRail(Block block)
-    {
-        return block.Physics is RailBehavior;
-    }
+    public static bool IsRail(Block block) => block.Physics is RailBehavior;
 
     /// <summary>True for powered/detector rail: straight+ramp shapes only, no corners.</summary>
-    public static bool IsAlwaysStraight(Block block)
-    {
-        return block.Physics is RailBehavior { _isPoweredTrack: true };
-    }
+    public static bool IsAlwaysStraight(Block block) => block.Physics is RailBehavior { _isPoweredTrack: true };
 
     /// <summary>
     ///     Computes the metadata (0-9) representing which two neighbors a rail piece connects to,
@@ -389,16 +380,15 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
             return null;
         }
 
-        private bool IsRail(IWorldContext level, int x, int y, int z)
-        {
-            return _blocks.TryGetByProtocolId(level.Reader.GetBlockId(x, y, z), out var block) && RailBehavior.IsRail(block);
-        }
+        private bool IsRail(IWorldContext level, int x, int y, int z) => _blocks.TryGetByProtocolId(level.Reader.GetBlockId(x, y, z), out var block) && RailBehavior.IsRail(block);
 
         private bool IsConnectedTo(TrackLogic targetLogic)
         {
             foreach (var pos in _connectedTracks)
+            {
                 if (pos.X == targetLogic._trackPos.X && pos.Z == targetLogic._trackPos.Z)
                     return true;
+            }
 
             return false;
         }
@@ -406,8 +396,10 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
         private bool IsInTrack(Vec3I pos)
         {
             foreach (var connectedPos in _connectedTracks)
+            {
                 if (connectedPos.X == pos.X && connectedPos.Z == pos.Z)
                     return true;
+            }
 
             return false;
         }

@@ -30,7 +30,7 @@ internal class FixedBiomeSource : BiomeSource
 
     public override double[] GetTemperatures(double[] map, int x, int y, int width, int depth)
     {
-        int size = width * depth;
+        var size = width * depth;
         if (map == null || map.Length < size)
         {
             map = new double[size];
@@ -42,7 +42,7 @@ internal class FixedBiomeSource : BiomeSource
 
     public override Biome[] GetBiomesInArea(Biome[] biomes, int x, int y, int width, int depth)
     {
-        int size = width * depth;
+        var size = width * depth;
         if (biomes == null || biomes.Length < size)
         {
             biomes = new Biome[size];
@@ -61,8 +61,5 @@ internal class FixedBiomeSource : BiomeSource
         return biomes;
     }
 
-    public override BiomeSource Clone()
-    {
-        return new FixedBiomeSource(_biome, _temperature, _downfall);
-    }
+    public override BiomeSource Clone() => new FixedBiomeSource(_biome, _temperature, _downfall);
 }

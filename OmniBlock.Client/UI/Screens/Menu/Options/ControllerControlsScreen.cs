@@ -1,6 +1,3 @@
-using OmniBlock.Client.Input;
-using OmniBlock.Client.UI.Controls.Core;
-
 namespace OmniBlock.Client.UI.Screens.Menu.Options;
 
 public class ControllerControlsScreen : BaseOptionsScreen
@@ -14,10 +11,10 @@ public class ControllerControlsScreen : BaseOptionsScreen
 
     protected override UIElement CreateContent()
     {
-        Panel list = CreateTwoColumnList();
+        var list = CreateTwoColumnList();
 
         // Sensitivity
-        UIElement sens = CreateControlForOption(Options.ControllerSensitivityOption);
+        var sens = CreateControlForOption(Options.ControllerSensitivityOption);
         sens.Style.Width = ButtonSize;
         sens.Style.MarginLeft = ButtonPadding;
         sens.Style.MarginRight = ButtonPadding;
@@ -25,7 +22,7 @@ public class ControllerControlsScreen : BaseOptionsScreen
         list.AddChild(sens);
 
         // Controller Type
-        UIElement type = CreateControlForOption(Options.ControllerTypeOption);
+        var type = CreateControlForOption(Options.ControllerTypeOption);
         type.Style.Width = ButtonSize;
         type.Style.MarginLeft = ButtonPadding;
         type.Style.MarginRight = ButtonPadding;
@@ -33,7 +30,7 @@ public class ControllerControlsScreen : BaseOptionsScreen
         list.AddChild(type);
 
         // Edit Bindings Button
-        Button btnBindings = CreateButton();
+        var btnBindings = CreateButton();
         btnBindings.Text = Translations.Get("options.editBindings");
         btnBindings.Style.Width = ButtonSize;
         btnBindings.Style.MarginLeft = ButtonPadding;
@@ -43,7 +40,7 @@ public class ControllerControlsScreen : BaseOptionsScreen
         list.AddChild(btnBindings);
 
         // Reset Button
-        Button btnReset = CreateButton();
+        var btnReset = CreateButton();
         btnReset.Style.Width = ButtonSize;
         btnReset.Style.MarginLeft = ButtonPadding;
         btnReset.Style.MarginRight = ButtonPadding;
@@ -51,7 +48,7 @@ public class ControllerControlsScreen : BaseOptionsScreen
         btnReset.Text = Translations.Get("options.resetBindings");
         btnReset.OnClick += e =>
         {
-            foreach (ControllerBinding cb in Options.ControllerBindings)
+            foreach (var cb in Options.ControllerBindings)
             {
                 cb.Button = cb.DefaultButton;
             }

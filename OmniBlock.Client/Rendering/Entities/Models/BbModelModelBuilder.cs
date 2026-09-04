@@ -4,28 +4,28 @@ public static class BbModelModelBuilder
 {
     public static BbModelBuiltModel Build(BbModelDocument document, float inflationOffset = 0f)
     {
-        Dictionary<string, BbModelElement> elementsByUuid = document.Elements.ToDictionary(e => e.Uuid, StringComparer.OrdinalIgnoreCase);
-        Dictionary<string, BbModelGroup> groupsByUuid = document.Groups.ToDictionary(g => g.Uuid, StringComparer.OrdinalIgnoreCase);
+        var elementsByUuid = document.Elements.ToDictionary(e => e.Uuid, StringComparer.OrdinalIgnoreCase);
+        var groupsByUuid = document.Groups.ToDictionary(g => g.Uuid, StringComparer.OrdinalIgnoreCase);
 
         Dictionary<string, ModelPart> parts = new(StringComparer.OrdinalIgnoreCase);
         Dictionary<string, BbModelPartGeometry> geometry = new(StringComparer.OrdinalIgnoreCase);
         List<string> renderOrder = new();
 
-        foreach (BbModelOutlinerEntry entry in document.Outliner)
+        foreach (var entry in document.Outliner)
         {
-            if (!groupsByUuid.TryGetValue(entry.Uuid, out BbModelGroup? group) || !group.Export)
+            if (!groupsByUuid.TryGetValue(entry.Uuid, out var group) || !group.Export)
                 continue;
 
-            string? cubeUuid = entry.Children.FirstOrDefault();
-            if (cubeUuid is null || !elementsByUuid.TryGetValue(cubeUuid, out BbModelElement? element) || !element.Export)
+            var cubeUuid = entry.Children.FirstOrDefault();
+            if (cubeUuid is null || !elementsByUuid.TryGetValue(cubeUuid, out var element) || !element.Export)
                 continue;
 
             if (!string.Equals(element.Type, "cube", StringComparison.OrdinalIgnoreCase))
                 continue;
 
-            BbModelPartGeometry partGeometry = ConvertElement(group, element, inflationOffset);
-            ModelPart part = CreateModelPart(partGeometry);
-            string boneName = group.Name;
+            var partGeometry = ConvertElement(group, element, inflationOffset);
+            var part = CreateModelPart(partGeometry);
+            var boneName = group.Name;
 
             parts[boneName] = part;
             geometry[boneName] = partGeometry;
@@ -52,31 +52,31 @@ public static class BbModelModelBuilder
             throw new InvalidDataException($"Bone '{group.Name}' has invalid origin or cube bounds.");
         }
 
-        float ox = group.Origin[0];
-        float oy = group.Origin[1];
-        float oz = group.Origin[2];
+        var ox = group.Origin[0];
+        var oy = group.Origin[1];
+        var oz = group.Origin[2];
 
-        float dx = element.To[0] - element.From[0];
-        float dy = element.To[1] - element.From[1];
-        float dz = element.To[2] - element.From[2];
+        var dx = element.To[0] - element.From[0];
+        var dy = element.To[1] - element.From[1];
+        var dz = element.To[2] - element.From[2];
 
-        int sizeX = (int)MathF.Round(dx);
-        int sizeY = (int)MathF.Round(dy);
-        int sizeZ = (int)MathF.Round(dz);
+        var sizeX = (int)MathF.Round(dx);
+        var sizeY = (int)MathF.Round(dy);
+        var sizeZ = (int)MathF.Round(dz);
 
-        float boxX = ox - element.From[0] - dx;
-        float boxY = oy - element.From[1] - dy;
-        float boxZ = element.From[2] - oz;
+        var boxX = ox - element.From[0] - dx;
+        var boxY = oy - element.From[1] - dy;
+        var boxZ = element.From[2] - oz;
 
-        float pivotX = -ox;
-        float pivotY = 24f - oy;
-        float pivotZ = oz;
+        var pivotX = -ox;
+        var pivotY = 24f - oy;
+        var pivotZ = oz;
 
-        int uvU = element.UvOffset.Length > 0 ? element.UvOffset[0] : 0;
-        int uvV = element.UvOffset.Length > 1 ? element.UvOffset[1] : 0;
-        float inflate = element.Inflate + inflationOffset;
+        var uvU = element.UvOffset.Length > 0 ? element.UvOffset[0] : 0;
+        var uvV = element.UvOffset.Length > 1 ? element.UvOffset[1] : 0;
+        var inflate = element.Inflate + inflationOffset;
 
-        return new BbModelPartGeometry( group.Name, pivotX, pivotY, pivotZ, boxX, boxY, boxZ, sizeX, sizeY, sizeZ, uvU, uvV, inflate, element.MirrorUv);
+        return new BbModelPartGeometry(group.Name, pivotX, pivotY, pivotZ, boxX, boxY, boxZ, sizeX, sizeY, sizeZ, uvU, uvV, inflate, element.MirrorUv);
     }
 
     private static ModelPart CreateModelPart(BbModelPartGeometry geometry)

@@ -8,10 +8,7 @@ namespace OmniBlock.Blocks.Behaviors;
 /// </summary>
 internal sealed class LockedChestBehavior(int top, int side, int front) : BlockRuntimeBehavior, IBlockVisuals, IBlockTicker
 {
-    public void OnTick(Block block, OnTickEvent @event)
-    {
-        @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
-    }
+    public void OnTick(Block block, OnTickEvent @event) => @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
 
     public int GetTexture(Block block, Side renderSide, int defaultTexture)
     {

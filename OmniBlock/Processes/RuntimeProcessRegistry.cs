@@ -20,7 +20,7 @@ public sealed class RuntimeProcessRegistry
         ArgumentNullException.ThrowIfNull(processes);
         ArgumentNullException.ThrowIfNull(providers);
         var byId = new Dictionary<ResourceLocation, ICompiledProcess>();
-        foreach (ICompiledProcess process in processes)
+        foreach (var process in processes)
         {
             if (!byId.TryAdd(process.Id, process))
                 throw new InvalidOperationException($"Duplicate process id '{process.Id}'.");
@@ -36,26 +36,7 @@ public sealed class RuntimeProcessRegistry
         Smelting = new RuntimeSmeltingProcessView(entries.OfType<CompiledSmeltingProcess>());
         _manifestEntries = (manifestEntries ?? entries.Select(process =>
             new KeyValuePair<ResourceLocation, ProcessCatalogEntry>(process.Id,
-                new(process.ProviderType, "")))).ToFrozenDictionary();
-    }
-
-    internal static RuntimeProcessRegistry Compile(
-        IEnumerable<ProcessDefinition> definitions,
-        IProcessProviderRegistry providers,
-        in ProcessBuildContext context)
-    {
-        var ids = new HashSet<ResourceLocation>();
-        var compiled = new List<ICompiledProcess>();
-        var manifestEntries = new List<KeyValuePair<ResourceLocation, ProcessCatalogEntry>>();
-        foreach (ProcessDefinition definition in definitions)
-        {
-            ResourceLocation id = definition.GetProcessId();
-            if (!ids.Add(id)) throw new InvalidOperationException($"Duplicate process id '{id}'.");
-            ResourceLocation type = definition.GetProviderType();
-            compiled.Add(providers.Build(type, id, definition.GetProviderDefinition(), context));
-            manifestEntries.Add(new(id, new ProcessCatalogEntry(type, definition.ComputeCanonicalHash())));
-        }
-        return new RuntimeProcessRegistry(compiled, providers, manifestEntries);
+                new ProcessCatalogEntry(process.ProviderType, "")))).ToFrozenDictionary();
     }
 
     public static RuntimeProcessRegistry Empty { get; } = new(
@@ -68,8 +49,28 @@ public sealed class RuntimeProcessRegistry
     public RuntimeCraftingProcessView Crafting { get; }
     public RuntimeSmeltingProcessView Smelting { get; }
 
+    internal static RuntimeProcessRegistry Compile(
+        IEnumerable<ProcessDefinition> definitions,
+        IProcessProviderRegistry providers,
+        in ProcessBuildContext context)
+    {
+        var ids = new HashSet<ResourceLocation>();
+        var compiled = new List<ICompiledProcess>();
+        var manifestEntries = new List<KeyValuePair<ResourceLocation, ProcessCatalogEntry>>();
+        foreach (var definition in definitions)
+        {
+            var id = definition.GetProcessId();
+            if (!ids.Add(id)) throw new InvalidOperationException($"Duplicate process id '{id}'.");
+            var type = definition.GetProviderType();
+            compiled.Add(providers.Build(type, id, definition.GetProviderDefinition(), context));
+            manifestEntries.Add(new KeyValuePair<ResourceLocation, ProcessCatalogEntry>(id, new ProcessCatalogEntry(type, definition.ComputeCanonicalHash())));
+        }
+
+        return new RuntimeProcessRegistry(compiled, providers, manifestEntries);
+    }
+
     public ICompiledProcess Get(ResourceLocation id) =>
-        _byId.TryGetValue(id, out ICompiledProcess? process)
+        _byId.TryGetValue(id, out var process)
             ? process
             : throw new KeyNotFoundException($"Unknown process '{id}'.");
 
@@ -77,7 +78,7 @@ public sealed class RuntimeProcessRegistry
         _byId.TryGetValue(id, out process);
 
     public IReadOnlyList<ICompiledProcess> GetByType(ResourceLocation providerType) =>
-        _byType.TryGetValue(providerType, out IReadOnlyList<ICompiledProcess>? processes)
+        _byType.TryGetValue(providerType, out var processes)
             ? processes
             : Array.Empty<ICompiledProcess>();
 }
@@ -94,8 +95,9 @@ public sealed class RuntimeCraftingProcessView
     public ICompiledCraftingProcess? Find(InventoryCrafting input)
     {
         ArgumentNullException.ThrowIfNull(input);
-        foreach (ICompiledCraftingProcess process in _recipes)
-            if (process.Matches(input)) return process;
+        foreach (var process in _recipes)
+            if (process.Matches(input))
+                return process;
         return null;
     }
 
@@ -114,8 +116,10 @@ public sealed class RuntimeSmeltingProcessView
     public int Count => _byInputItemId.Count;
 
     public ICompiledSmeltingProcess? Find(ItemStack input) =>
-        _byInputItemId.TryGetValue(input.ItemId, out ICompiledSmeltingProcess? process)
-        && process.Matches(input) ? process : null;
+        _byInputItemId.TryGetValue(input.ItemId, out var process)
+        && process.Matches(input)
+            ? process
+            : null;
 
     public ICompiledSmeltingProcess? Find(int inputItemId) =>
         _byInputItemId.GetValueOrDefault(inputItemId);

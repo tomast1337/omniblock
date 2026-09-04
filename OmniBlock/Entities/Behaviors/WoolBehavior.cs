@@ -1,5 +1,3 @@
-using System.Text.Json;
-using OmniBlock.Blocks;
 using OmniBlock.Items;
 using OmniBlock.NBT;
 using OmniBlock.Util;
@@ -36,7 +34,7 @@ public sealed class WoolBehavior : IEntityInteractable, IEntityPersistence, IEnt
 
     public WoolBehavior(in EntityBehaviorContext context)
     {
-        _property = context.Json.TryGetProperty("property", out JsonElement name)
+        _property = context.Json.TryGetProperty("property", out var name)
             ? name.GetString() ?? "wool"
             : "wool";
         _tool = context.Items.Get(ResourceLocation.Parse(context.Json.GetProperty("tool").GetString()!));
@@ -46,7 +44,7 @@ public sealed class WoolBehavior : IEntityInteractable, IEntityPersistence, IEnt
 
     public bool OnInteract(Entity self, EntityPlayer player)
     {
-        ItemStack? held = player.Inventory.ItemInHand;
+        var held = player.Inventory.ItemInHand;
         if (held == null || held.ItemId != _tool.Id || IsShearedOn(self))
         {
             return false;
@@ -55,11 +53,11 @@ public sealed class WoolBehavior : IEntityInteractable, IEntityPersistence, IEnt
         if (!self.World.IsRemote)
         {
             SetShearedOn(self, true);
-            int count = _minDrop + self.Random.NextInt(_dropRange);
+            var count = _minDrop + self.Random.NextInt(_dropRange);
 
-            for (int i = 0; i < count; ++i)
+            for (var i = 0; i < count; ++i)
             {
-                Entity wool = self.DropItem(new ItemStack(self.World.Content.Items, self.World.Content.Blocks.Get(new ResourceLocation(Namespace.OmniBlock, "wool")).Id, 1, ColorOf(self)), 1.0F);
+                var wool = self.DropItem(new ItemStack(self.World.Content.Items, self.World.Content.Blocks.Get(new ResourceLocation(Namespace.OmniBlock, "wool")).Id, 1, ColorOf(self)), 1.0F);
                 wool.VelocityY += self.Random.NextFloat() * 0.05F;
                 wool.VelocityX += (self.Random.NextFloat() - self.Random.NextFloat()) * 0.1F;
                 wool.VelocityZ += (self.Random.NextFloat() - self.Random.NextFloat()) * 0.1F;

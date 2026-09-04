@@ -2,34 +2,18 @@ namespace OmniBlock.NBT;
 
 internal sealed class NBTTagString : NBTBase
 {
-    public string Value { get; set; } = string.Empty;
-
     public NBTTagString()
     {
     }
 
-    public NBTTagString(string value)
-    {
-        Value = value;
-    }
+    public NBTTagString(string value) => Value = value;
+    public string Value { get; set; } = string.Empty;
 
-    public override void WriteTagContents(Stream output)
-    {
-        output.WriteString(Value);
-    }
+    public override void WriteTagContents(Stream output) => output.WriteString(Value);
 
-    public override void ReadTagContents(Stream input)
-    {
-        Value = input.ReadString();
-    }
+    public override void ReadTagContents(Stream input) => Value = input.ReadString();
 
-    public override byte GetTagType()
-    {
-        return 8;
-    }
+    public override byte GetTagType() => 8;
 
-    public override string ToString()
-    {
-        return Value;
-    }
+    public override string ToString() => Value;
 }

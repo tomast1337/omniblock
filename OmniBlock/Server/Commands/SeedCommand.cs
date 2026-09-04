@@ -14,7 +14,7 @@ public class SeedCommand : Command.Command
 
     private static int Execute(CommandContext<CommandSource> context)
     {
-        long seed = context.Source.Server.worlds[0].Seed;
+        var seed = context.Source.Server.worlds[0].Seed;
         context.Source.Output.SendMessage($"Seed: {seed}");
         return 1;
     }

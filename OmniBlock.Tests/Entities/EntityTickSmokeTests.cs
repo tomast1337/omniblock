@@ -9,11 +9,11 @@ public sealed class EntityTickSmokeTests
     public static IEnumerable<object[]> RegistryEntityTypesExceptPlayer()
     {
         // Enumerates the registry itself now that TestEntityCatalog exposes no per-type static fields.
-        foreach (ResourceLocation key in OmniBlock.Registries.ContentRuntime.Current.EntityTypes.Keys)
+        foreach (var key in ContentRuntime.Current.EntityTypes.Keys)
         {
             if (key.Path == "player") continue;
 
-            yield return [key.Path, OmniBlock.Registries.ContentRuntime.Current.EntityTypes.Get(key)];
+            yield return [key.Path, ContentRuntime.Current.EntityTypes.Get(key)];
         }
     }
 
@@ -23,8 +23,8 @@ public sealed class EntityTickSmokeTests
     {
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 15, 0, 15, 63);
-        Entity entity = EntityTestHarness.CreateSpawned(world, type, 8.5, 65.0, 8.5);
-        int beforeTicksAlive = EntityTestHarness.AliveEntityCount(world);
+        var entity = EntityTestHarness.CreateSpawned(world, type, 8.5, 65.0, 8.5);
+        var beforeTicksAlive = EntityTestHarness.AliveEntityCount(world);
         EntityTestHarness.AdvanceGameTicks(world, 64);
         Assert.False(string.IsNullOrEmpty(registryFieldName));
         Assert.NotNull(entity);

@@ -19,14 +19,14 @@ internal class GrassPatchFeature : Feature
     {
         while (true)
         {
-            int blockId = level.Reader.GetBlockId(x, y, z);
+            var blockId = level.Reader.GetBlockId(x, y, z);
             if ((blockId != 0 && blockId != level.Content.Blocks.Get("leaves").Id) || y <= 0)
             {
-                for (int i = 0; i < 128; ++i)
+                for (var i = 0; i < 128; ++i)
                 {
-                    int genX = x + rand.NextInt(8) - rand.NextInt(8);
-                    int genY = y + rand.NextInt(4) - rand.NextInt(4);
-                    int genZ = z + rand.NextInt(8) - rand.NextInt(8);
+                    var genX = x + rand.NextInt(8) - rand.NextInt(8);
+                    var genY = y + rand.NextInt(4) - rand.NextInt(4);
+                    var genZ = z + rand.NextInt(8) - rand.NextInt(8);
                     if (level.Reader.IsAir(genX, genY, genZ) &&
                         level.Content.Blocks.GetByProtocolId(_tallGrassBlockId).CanGrow(new OnTickEvent(level, genX, genY, genZ, level.Reader.GetBlockMeta(genX, genY, genZ), level.Reader.GetBlockId(genX, genY, genZ))))
                     {

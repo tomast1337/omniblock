@@ -22,55 +22,76 @@ namespace OmniBlock.Luau;
 /// </summary>
 public sealed unsafe class LuauState : IDisposable
 {
-    private readonly IntPtr _state;
     private readonly long* _instructionBudget;
     private bool _disposed;
 
-    /// <summary>
-    ///     Raw <c>lua_State*</c>, for a future Host facade to push closures into during its own
-    ///     setup, or to compile/load/run against. An opaque handle, not a C# object crossing the
-    ///     FFI boundary — matches the IDs-over-objects boundary rule.
-    /// </summary>
-    public IntPtr Handle => _state;
-
     public LuauState()
     {
-        IntPtr allocFn = (IntPtr)(delegate* unmanaged[Cdecl]<void*, void*, nuint, nuint, void*>)&LuauCallbacks.Allocate;
-        _state = LuauNative.lua_newstate(allocFn, IntPtr.Zero);
-        if (_state == IntPtr.Zero)
+        var allocFn = (IntPtr)(delegate* unmanaged[Cdecl]<void*, void*, nuint, nuint, void*>)&LuauCallbacks.Allocate;
+        Handle = LuauNative.lua_newstate(allocFn, IntPtr.Zero);
+        if (Handle == IntPtr.Zero)
         {
             throw new InvalidOperationException("lua_newstate failed");
         }
 
         try
         {
-            LuauNative.luaL_openlibs(_state);
+            LuauNative.luaL_openlibs(Handle);
             PruneUnsafeLibraries();
 
             // Zero-initialized, not just allocated: a zero counter makes Interrupt fire on the
             // very first safepoint, so a Host-phase call made before anyone calls
             // ResetInstructionBudget fails closed instead of reading uninitialized memory as a
             // budget.
-            _instructionBudget = (long*)NativeMemory.AllocZeroed((nuint)sizeof(long));
-            LuauNative.lua_setthreaddata(_state, (IntPtr)_instructionBudget);
+            _instructionBudget = (long*)NativeMemory.AllocZeroed(sizeof(long));
+            LuauNative.lua_setthreaddata(Handle, (IntPtr)_instructionBudget);
 
             // lua_Callbacks { void* userdata; void(*interrupt)(lua_State*, int); ... } —
             // interrupt is the second pointer-sized field, right after userdata (same layout
             // LuauInterruptIntegrationTests already verified against the real VM).
-            IntPtr callbacks = LuauNative.lua_callbacks(_state);
-            IntPtr interruptFn = (IntPtr)(delegate* unmanaged[Cdecl]<IntPtr, int, void>)&LuauCallbacks.Interrupt;
+            var callbacks = LuauNative.lua_callbacks(Handle);
+            var interruptFn = (IntPtr)(delegate* unmanaged[Cdecl]<IntPtr, int, void>)&LuauCallbacks.Interrupt;
             Marshal.WriteIntPtr(callbacks, IntPtr.Size, interruptFn);
 
             // lua_Callbacks.userthread is the fourth pointer (after userdata, interrupt and
             // panic). Propagate this VM's shared budget into coroutines created by OMNI.run.
-            IntPtr userThreadFn = (IntPtr)(delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void>)&LuauCallbacks.UserThread;
+            var userThreadFn = (IntPtr)(delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void>)&LuauCallbacks.UserThread;
             Marshal.WriteIntPtr(callbacks, IntPtr.Size * 3, userThreadFn);
         }
         catch
         {
-            LuauNative.lua_close(_state);
+            LuauNative.lua_close(Handle);
             throw;
         }
+    }
+
+    /// <summary>
+    ///     Raw <c>lua_State*</c>, for a future Host facade to push closures into during its own
+    ///     setup, or to compile/load/run against. An opaque handle, not a C# object crossing the
+    ///     FFI boundary — matches the IDs-over-objects boundary rule.
+    /// </summary>
+    public IntPtr Handle { get; }
+
+    /// <summary>Live heap size in KB (<c>LUA_GCCOUNT</c>) — for debug telemetry, not required for correct operation.</summary>
+    public int HeapSizeKb
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return LuauNative.lua_gc(Handle, LuauNative.LUA_GCCOUNT, 0);
+        }
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        LuauNative.lua_close(Handle);
+        NativeMemory.Free(_instructionBudget);
     }
 
     private void PruneUnsafeLibraries()
@@ -82,8 +103,8 @@ public sealed unsafe class LuauState : IDisposable
         // needs, but whether/how much to prune it is an open question
         // (docs/luau-persistent-lifecycle-plan.md Open Questions #3) deliberately left alone
         // here rather than guessed.
-        LuauNative.lua_pushnil(_state);
-        LuauNative.lua_setfield(_state, LuauNative.GlobalsIndex, "os");
+        LuauNative.lua_pushnil(Handle);
+        LuauNative.lua_setfield(Handle, LuauNative.GlobalsIndex, "os");
     }
 
     /// <summary>
@@ -112,17 +133,7 @@ public sealed unsafe class LuauState : IDisposable
     public void StepGarbageCollector(int stepSizeKb)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        LuauNative.lua_gc(_state, LuauNative.LUA_GCSTEP, stepSizeKb);
-    }
-
-    /// <summary>Live heap size in KB (<c>LUA_GCCOUNT</c>) — for debug telemetry, not required for correct operation.</summary>
-    public int HeapSizeKb
-    {
-        get
-        {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-            return LuauNative.lua_gc(_state, LuauNative.LUA_GCCOUNT, 0);
-        }
+        LuauNative.lua_gc(Handle, LuauNative.LUA_GCSTEP, stepSizeKb);
     }
 
     /// <summary>
@@ -136,8 +147,8 @@ public sealed unsafe class LuauState : IDisposable
 
         try
         {
-            LuauNative.lua_settop(_state, 0);
-            if (TryExecuteSource("return " + source, out output, out bool expressionLoaded))
+            LuauNative.lua_settop(Handle, 0);
+            if (TryExecuteSource("return " + source, out output, out var expressionLoaded))
             {
                 return true;
             }
@@ -150,7 +161,7 @@ public sealed unsafe class LuauState : IDisposable
             // A failed expression parse leaves an error object on the stack. Statements such as
             // assignments and function declarations get a second compile attempt without the REPL
             // expression wrapper.
-            LuauNative.lua_settop(_state, 0);
+            LuauNative.lua_settop(Handle, 0);
             return TryExecuteSource(source, out output, out _);
         }
         catch (Exception ex)
@@ -160,7 +171,7 @@ public sealed unsafe class LuauState : IDisposable
         }
         finally
         {
-            LuauNative.lua_settop(_state, 0);
+            LuauNative.lua_settop(Handle, 0);
         }
     }
 
@@ -175,10 +186,10 @@ public sealed unsafe class LuauState : IDisposable
 
         try
         {
-            LuauNative.lua_settop(_state, 0);
-            LuauNative.lua_getfield(_state, LuauNative.GlobalsIndex, functionName);
-            LuauNative.lua_pushnumber(_state, argument);
-            if (LuauNative.lua_pcall(_state, 1, 0, 0) != 0)
+            LuauNative.lua_settop(Handle, 0);
+            LuauNative.lua_getfield(Handle, LuauNative.GlobalsIndex, functionName);
+            LuauNative.lua_pushnumber(Handle, argument);
+            if (LuauNative.lua_pcall(Handle, 1, 0, 0) != 0)
             {
                 error = DescribeValue(-1);
                 return false;
@@ -194,14 +205,14 @@ public sealed unsafe class LuauState : IDisposable
         }
         finally
         {
-            LuauNative.lua_settop(_state, 0);
+            LuauNative.lua_settop(Handle, 0);
         }
     }
 
     private bool TryExecuteSource(string source, out string output, out bool loaded)
     {
         loaded = false;
-        byte[] sourceBytes = Encoding.UTF8.GetBytes(source);
+        var sourceBytes = Encoding.UTF8.GetBytes(source);
         byte* bytecode;
         nuint bytecodeSize;
         fixed (byte* sourcePtr = sourceBytes)
@@ -217,7 +228,7 @@ public sealed unsafe class LuauState : IDisposable
 
         try
         {
-            if (LuauNative.luau_load(_state, "=console", bytecode, bytecodeSize, 0) != 0)
+            if (LuauNative.luau_load(Handle, "=console", bytecode, bytecodeSize, 0) != 0)
             {
                 output = DescribeValue(-1);
                 return false;
@@ -229,21 +240,21 @@ public sealed unsafe class LuauState : IDisposable
         }
 
         loaded = true;
-        if (LuauNative.lua_pcall(_state, 0, -1, 0) != 0)
+        if (LuauNative.lua_pcall(Handle, 0, -1, 0) != 0)
         {
             output = DescribeValue(-1);
             return false;
         }
 
-        int top = LuauNative.lua_gettop(_state);
+        var top = LuauNative.lua_gettop(Handle);
         if (top == 0)
         {
             output = "(no return value)";
             return true;
         }
 
-        string[] values = new string[top];
-        for (int i = 0; i < top; i++)
+        var values = new string[top];
+        for (var i = 0; i < top; i++)
         {
             values[i] = DescribeValue(i + 1);
         }
@@ -254,7 +265,7 @@ public sealed unsafe class LuauState : IDisposable
 
     private string DescribeValue(int index)
     {
-        int type = LuauNative.lua_type(_state, index);
+        var type = LuauNative.lua_type(Handle, index);
         if (type == 0)
         {
             return "nil";
@@ -262,29 +273,17 @@ public sealed unsafe class LuauState : IDisposable
 
         if (type == 1)
         {
-            return LuauNative.lua_toboolean(_state, index) != 0 ? "true" : "false";
+            return LuauNative.lua_toboolean(Handle, index) != 0 ? "true" : "false";
         }
 
-        if (LuauNative.lua_isstring(_state, index) != 0)
+        if (LuauNative.lua_isstring(Handle, index) != 0)
         {
-            IntPtr pointer = LuauNative.lua_tolstring(_state, index, out nuint length);
+            var pointer = LuauNative.lua_tolstring(Handle, index, out var length);
             return pointer == IntPtr.Zero ? string.Empty : Encoding.UTF8.GetString((byte*)pointer, (int)length);
         }
 
-        IntPtr namePointer = LuauNative.lua_typename(_state, type);
-        string typeName = namePointer == IntPtr.Zero ? "unknown" : Marshal.PtrToStringUTF8(namePointer) ?? "unknown";
+        var namePointer = LuauNative.lua_typename(Handle, type);
+        var typeName = namePointer == IntPtr.Zero ? "unknown" : Marshal.PtrToStringUTF8(namePointer) ?? "unknown";
         return $"<{typeName}>";
-    }
-
-    public void Dispose()
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-        _disposed = true;
-        LuauNative.lua_close(_state);
-        NativeMemory.Free(_instructionBudget);
     }
 }

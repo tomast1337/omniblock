@@ -1,4 +1,3 @@
-using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.UI.Rendering;
 using Color = OmniBlock.Client.UI.Colors.Color;
 
@@ -34,7 +33,7 @@ public class Background : FullscreenElement
         }
         else
         {
-            TextureHandle texture = renderer.TextureManager.GetTextureId(TexturePath);
+            var texture = renderer.TextureManager.GetTextureId(TexturePath);
             renderer.DrawRepeatingTexture(texture, 0, 0, ComputedWidth, ComputedHeight, Scale);
         }
 

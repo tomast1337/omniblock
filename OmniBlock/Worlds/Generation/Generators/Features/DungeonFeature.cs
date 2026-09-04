@@ -1,7 +1,6 @@
-using OmniBlock.Blocks;
 using OmniBlock.Blocks.Entities;
-using OmniBlock.Blocks.Materials;
 using OmniBlock.Items;
+using OmniBlock.Registries;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core.Systems;
 
@@ -12,28 +11,28 @@ internal class DungeonFeature : Feature
     public override bool Generate(IWorldContext level, JavaRandom rand, int x, int y, int z)
     {
         byte height = 3;
-        int radiusX = rand.NextInt(2) + 2;
-        int radiusZ = rand.NextInt(2) + 2;
-        int openingsCount = 0;
+        var radiusX = rand.NextInt(2) + 2;
+        var radiusZ = rand.NextInt(2) + 2;
+        var openingsCount = 0;
 
 
-        for (int cx = x - radiusX - 1; cx <= x + radiusX + 1; ++cx)
+        for (var cx = x - radiusX - 1; cx <= x + radiusX + 1; ++cx)
         {
-            for (int cy = y - 1; cy <= y + height + 1; ++cy)
+            for (var cy = y - 1; cy <= y + height + 1; ++cy)
             {
-                for (int cz = z - radiusZ - 1; cz <= z + radiusZ + 1; ++cz)
+                for (var cz = z - radiusZ - 1; cz <= z + radiusZ + 1; ++cz)
                 {
-                    Material mat = level.Reader.GetMaterial(cx, cy, cz);
+                    var mat = level.Reader.GetMaterial(cx, cy, cz);
 
                     if ((cy == y - 1 || cy == y + height + 1) && !mat.IsSolid)
                     {
                         return false;
                     }
 
-                    bool isWall = cx == x - radiusX - 1 ||
-                                  cx == x + radiusX + 1 ||
-                                  cz == z - radiusZ - 1 ||
-                                  cz == z + radiusZ + 1;
+                    var isWall = cx == x - radiusX - 1 ||
+                                 cx == x + radiusX + 1 ||
+                                 cz == z - radiusZ - 1 ||
+                                 cz == z + radiusZ + 1;
 
                     if (isWall && cy == y && level.Reader.IsAir(cx, cy, cz) && level.Reader.IsAir(cx, cy + 1, cz))
                     {
@@ -48,18 +47,18 @@ internal class DungeonFeature : Feature
             return false;
         }
 
-        for (int cx = x - radiusX - 1; cx <= x + radiusX + 1; ++cx)
+        for (var cx = x - radiusX - 1; cx <= x + radiusX + 1; ++cx)
         {
-            for (int cy = y + height; cy >= y - 1; --cy)
+            for (var cy = y + height; cy >= y - 1; --cy)
             {
-                for (int cz = z - radiusZ - 1; cz <= z + radiusZ + 1; ++cz)
+                for (var cz = z - radiusZ - 1; cz <= z + radiusZ + 1; ++cz)
                 {
-                    bool isInside = cx != x - radiusX - 1 &&
-                                    cy != y - 1 &&
-                                    cz != z - radiusZ - 1 &&
-                                    cx != x + radiusX + 1 &&
-                                    cy != y + height + 1 &&
-                                    cz != z + radiusZ + 1;
+                    var isInside = cx != x - radiusX - 1 &&
+                                   cy != y - 1 &&
+                                   cz != z - radiusZ - 1 &&
+                                   cx != x + radiusX + 1 &&
+                                   cy != y + height + 1 &&
+                                   cz != z + radiusZ + 1;
                     if (isInside)
                     {
                         level.Writer.SetBlock(cx, cy, cz, 0, 0, false);
@@ -84,15 +83,15 @@ internal class DungeonFeature : Feature
         }
 
 
-        for (int i = 0; i < 2; ++i)
+        for (var i = 0; i < 2; ++i)
         {
-            for (int j = 0; j < 3; ++j)
+            for (var j = 0; j < 3; ++j)
             {
-                int chestX = x + rand.NextInt(radiusX * 2 + 1) - radiusX;
-                int chestZ = z + rand.NextInt(radiusZ * 2 + 1) - radiusZ;
+                var chestX = x + rand.NextInt(radiusX * 2 + 1) - radiusX;
+                var chestZ = z + rand.NextInt(radiusZ * 2 + 1) - radiusZ;
                 if (level.Reader.IsAir(chestX, y, chestZ))
                 {
-                    int neighbors = 0;
+                    var neighbors = 0;
                     if (level.Reader.GetMaterial(chestX - 1, y, chestZ).IsSolid)
                     {
                         ++neighbors;
@@ -120,10 +119,10 @@ internal class DungeonFeature : Feature
 
                     level.Writer.SetBlock(chestX, y, chestZ, level.Content.Blocks.Get("chest").Id, 0, true);
 
-                    BlockEntityChest? chest = level.Entities.GetBlockEntity<BlockEntityChest>(chestX, y, chestZ);
-                    for (int k = 0; k < 8; ++k)
+                    var chest = level.Entities.GetBlockEntity<BlockEntityChest>(chestX, y, chestZ);
+                    for (var k = 0; k < 8; ++k)
                     {
-                        ItemStack? loot = PickCheckLootItem(level.Content.Items, rand);
+                        var loot = PickCheckLootItem(level.Content.Items, rand);
                         if (loot != null)
                         {
                             chest!.SetStack(rand.NextInt(chest!.Size), loot);
@@ -134,14 +133,14 @@ internal class DungeonFeature : Feature
         }
 
         level.Writer.SetBlock(x, y, z, level.Content.Blocks.Get("spawner").Id, 0, true);
-        BlockEntityMobSpawner? spawner = level.Entities.GetBlockEntity<BlockEntityMobSpawner>(x, y, z);
+        var spawner = level.Entities.GetBlockEntity<BlockEntityMobSpawner>(x, y, z);
         spawner!.SetSpawnedEntityId(PickMobSpawner(rand));
         return true;
     }
 
-    private static ItemStack? PickCheckLootItem(Registries.RuntimeItemRegistry items, JavaRandom rand)
+    private static ItemStack? PickCheckLootItem(RuntimeItemRegistry items, JavaRandom rand)
     {
-        int chance = rand.NextInt(11);
+        var chance = rand.NextInt(11);
 
         return chance switch
         {

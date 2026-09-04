@@ -12,33 +12,33 @@ public sealed class BlockFallingBlockTests
     public void CanFallThrough_ConfiguredObstacle_ReturnsTrue()
     {
         FakeWorldContext world = new();
-        Block customPassable = TestBlocks.Get("torch");
+        var customPassable = TestBlocks.Get("torch");
         world.ReaderWriter.SetInitial(0, 63, 0, customPassable.Id);
 
-        FallingBlockBehavior behavior = Bound(new FallingBlockBehavior([customPassable], 32));
+        var behavior = Bound(new FallingBlockBehavior([customPassable], 32));
 
-        Assert.True(behavior.CanFallThrough(Tick(world, 0, 63, 0)));
+        Assert.True(behavior.CanFallThrough(Tick(world, 0, 63)));
     }
 
     [Fact]
     public void CanFallThrough_VanillaFireNotInCustomConfig_ReturnsFalse()
     {
         FakeWorldContext world = new();
-        Block customPassable = TestBlocks.Get("torch");
+        var customPassable = TestBlocks.Get("torch");
         world.ReaderWriter.SetInitial(0, 63, 0, TestBlocks.Get("fire").Id);
 
-        FallingBlockBehavior behavior = Bound(new FallingBlockBehavior([customPassable], 32));
+        var behavior = Bound(new FallingBlockBehavior([customPassable], 32));
 
-        Assert.False(behavior.CanFallThrough(Tick(world, 0, 63, 0)));
+        Assert.False(behavior.CanFallThrough(Tick(world, 0, 63)));
     }
 
     [Fact]
     public void CanFallThrough_Air_AlwaysReturnsTrue()
     {
         FakeWorldContext world = new();
-        FallingBlockBehavior behavior = Bound(new FallingBlockBehavior([], 32));
+        var behavior = Bound(new FallingBlockBehavior([], 32));
 
-        Assert.True(behavior.CanFallThrough(Tick(world, 0, 63, 0)));
+        Assert.True(behavior.CanFallThrough(Tick(world, 0, 63)));
     }
 
     [Fact]
@@ -46,35 +46,35 @@ public sealed class BlockFallingBlockTests
     {
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(0, 63, 0, TestBlocks.Get("water").Id);
-        FallingBlockBehavior behavior = Bound(new FallingBlockBehavior([], 32));
+        var behavior = Bound(new FallingBlockBehavior([], 32));
 
-        Assert.True(behavior.CanFallThrough(Tick(world, 0, 63, 0)));
+        Assert.True(behavior.CanFallThrough(Tick(world, 0, 63)));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"falling_block"}""");
+        using var json = JsonDocument.Parse("""{"Type":"falling_block"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("falling_block", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"falling_block","passable":["not_a_real_block"]}""");
+        using var json = JsonDocument.Parse("""{"Type":"falling_block","passable":["not_a_real_block"]}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("falling_block", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_MissingRegionLoadCheckRadius_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"falling_block","passable":["omniblock:fire"]}""");
+        using var json = JsonDocument.Parse("""{"Type":"falling_block","passable":["omniblock:fire"]}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("falling_block", json.RootElement));
     }
 
     private static FallingBlockBehavior Bound(FallingBlockBehavior behavior)
     {
-        behavior.BindRuntime(OmniBlock.Registries.ContentRuntime.Current.Blocks);
+        behavior.BindRuntime(ContentRuntime.Current.Blocks);
         return behavior;
     }
 }

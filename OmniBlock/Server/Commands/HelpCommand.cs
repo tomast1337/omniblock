@@ -1,8 +1,8 @@
-using OmniBlock.Server.Command;
-using OmniBlock.Server.Internal;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 using Brigadier.NET.Tree;
+using OmniBlock.Server.Command;
+using OmniBlock.Server.Internal;
 using StringReader = Brigadier.NET.StringReader;
 
 namespace OmniBlock.Server.Commands;
@@ -22,12 +22,12 @@ public class HelpCommand : Command.Command
 
     private int HelpAll(CommandContext<CommandSource> context)
     {
-        CommandSource c = context.Source;
-        bool inInternalServer = c.Server is InternalServer;
-        byte per = inInternalServer ? (byte)4 : c.Output.PermissionLevel;
+        var c = context.Source;
+        var inInternalServer = c.Server is InternalServer;
+        var per = inInternalServer ? (byte)4 : c.Output.PermissionLevel;
 
         c.Output.SendMessage("Available commands:");
-        foreach (Command.Command cmd in _helpEntries)
+        foreach (var cmd in _helpEntries)
         {
             if (per < cmd.PermissionLevel)
             {
@@ -39,7 +39,7 @@ public class HelpCommand : Command.Command
                 continue;
             }
 
-            foreach (string usage in cmd.Usages)
+            foreach (var usage in cmd.Usages)
             {
                 c.Output.SendMessage($"  {usage,-30} - {cmd.Description}");
             }
@@ -50,20 +50,20 @@ public class HelpCommand : Command.Command
 
     private int HelpTargeted(CommandContext<CommandSource> context)
     {
-        CommandSource c = context.Source;
+        var c = context.Source;
 
-        string arg = context.GetArgument<string>("command");
-        string[] s = arg.Split(' ');
-        bool found = false;
+        var arg = context.GetArgument<string>("command");
+        var s = arg.Split(' ');
+        var found = false;
 
-        CommandNode<CommandSource>? node = c.Handler.Dispatcher.Root.GetChild(s[0]);
-        int i = 0;
+        var node = c.Handler.Dispatcher.Root.GetChild(s[0]);
+        var i = 0;
         if (node != null)
         {
             found = true;
             for (i = 1; i < s.Length; i++)
             {
-                CommandNode<CommandSource>? a = node.GetChild(s[i]);
+                var a = node.GetChild(s[i]);
                 if (a != null)
                 {
                     node = a;
@@ -79,16 +79,16 @@ public class HelpCommand : Command.Command
 
                 foreach (var r2 in relevantNodes)
                 {
-                    Type type = r2.GetType();
+                    var type = r2.GetType();
                     if (type.IsGenericType &&
                         type.GetGenericTypeDefinition() == typeof(ArgumentCommandNode<,>))
                     {
-                        Type[] args = type.GetGenericArguments();
-                        Type valueType = args[1];
+                        var args = type.GetGenericArguments();
+                        var valueType = args[1];
 
                         if (valueType.IsEnum)
                         {
-                            if (Enum.TryParse(valueType, s[i], true, out object? _))
+                            if (Enum.TryParse(valueType, s[i], true, out var _))
                             {
                                 a = r2;
                                 break;
@@ -118,7 +118,7 @@ public class HelpCommand : Command.Command
             else
             {
                 // partial find.
-                string arg2 = string.Join(' ', s, 0, i);
+                var arg2 = string.Join(' ', s, 0, i);
                 // list relevant nodes.
                 var relevantNodes = node.GetRelevantNodes(new StringReader(s[i])).ToArray();
                 foreach (var n in relevantNodes)
@@ -143,7 +143,7 @@ public class HelpCommand : Command.Command
             return;
         }
 
-        foreach (CommandNode<CommandSource> node in context.Children)
+        foreach (var node in context.Children)
         {
             BuildHelp(s + ' ' + node.UsageText, o, node);
         }

@@ -1,5 +1,3 @@
-using System.Reflection;
-
 namespace OmniBlock.Client.UI.Colors;
 
 public readonly partial struct Color
@@ -17,7 +15,7 @@ public readonly partial struct Color
     /// </example>
     public static void SetTheme(string json)
     {
-        string[] split = json.Split('"');
+        var split = json.Split('"');
         if ((split.Length - 1) % 4 != 0)
         {
             throw new ArgumentException("Invalid json theme format", nameof(json));
@@ -42,7 +40,7 @@ public readonly partial struct Color
     /// </example>
     public static void SetTheme(IReadOnlyDictionary<string, string> dict)
     {
-        foreach (KeyValuePair<string, string> pair in dict)
+        foreach (var pair in dict)
         {
             SetColorWithStr(pair.Key, pair.Value);
         }
@@ -56,7 +54,7 @@ public readonly partial struct Color
     /// <exception cref="ArgumentException">Invalid color</exception>
     private static void SetColorWithStr(string name, string colorStr)
     {
-        PropertyInfo? prop = typeof(Color).GetProperty(name);
+        var prop = typeof(Color).GetProperty(name);
         if (prop == null)
         {
             Console.WriteLine($"Color by name \"{name}\" not found");
@@ -69,13 +67,13 @@ public readonly partial struct Color
             colorStr = colorStr.Substring(2);
         }
 
-        int length = colorStr.Length;
+        var length = colorStr.Length;
         if (length > 8)
         {
             throw new ArgumentException($"Invalid json color format \"{colorStr}\"", nameof(colorStr));
         }
 
-        Color color = length <= 6 ? FromRgb(Convert.ToUInt32(colorStr, 16)) : FromArgb(Convert.ToUInt32(colorStr, 16));
+        var color = length <= 6 ? FromRgb(Convert.ToUInt32(colorStr, 16)) : FromArgb(Convert.ToUInt32(colorStr, 16));
         prop.SetValue(null, color);
     }
 }

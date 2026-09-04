@@ -1,11 +1,9 @@
-using OmniBlock.Blocks;
-using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Targeted world setups (rails, fluids, walls) to exercise branches beyond plain open-air ticking.
+///     Targeted world setups (rails, fluids, walls) to exercise branches beyond plain open-air ticking.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityMobScenarioTests
@@ -17,7 +15,7 @@ public sealed class EntityMobScenarioTests
         EntityTestHarness.PlaceStoneFloor(world, 0, 31, 0, 15, 63);
         EntityTestHarness.PlaceRailRunX(world, 4, 28, 64, 8);
 
-        Entity cart = MinecartBehavior.Place(world, 6.5, 65.0, 8.5, MinecartBehavior.Rideable);
+        var cart = MinecartBehavior.Place(world, 6.5, 65.0, 8.5, MinecartBehavior.Rideable);
         Assert.True(world.Entities.SpawnEntity(cart));
         EntityTestHarness.AdvanceGameTicks(world, 400);
         Assert.False(cart.Dead);
@@ -29,7 +27,7 @@ public sealed class EntityMobScenarioTests
     {
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 15, 0, 15, 63);
-        Entity sand = TestEntityCatalog.ByName("fallingsand").Create(world);
+        var sand = TestEntityCatalog.ByName("fallingsand").Create(world);
         sand.Behaviors.Find<SettleAsBlockBehavior>()!.SetBlock(sand, TestBlocks.Get("sand").Id);
         sand.SetPositionAndAngles(8.5, 72.0, 8.5, 0.0F, 0.0F);
         Assert.True(world.Entities.SpawnEntity(sand));
@@ -44,7 +42,7 @@ public sealed class EntityMobScenarioTests
         EntityTestHarness.PlaceStoneFloor(world, 0, 15, 0, 15, 63);
         EntityTestHarness.FillWaterColumn(world, 8, 8, 64, 70);
 
-        Entity squid = EntityTestHarness.CreateSpawned(world, TestEntityCatalog.ByName("squid"), 8.5, 66.0, 8.5);
+        var squid = EntityTestHarness.CreateSpawned(world, TestEntityCatalog.ByName("squid"), 8.5, 66.0, 8.5);
         EntityTestHarness.AdvanceGameTicks(world, 200);
         Assert.False(squid.Dead);
         Assert.True(world.Reader.GetMaterial(8, 66, 8).IsFluid);
@@ -58,7 +56,7 @@ public sealed class EntityMobScenarioTests
         // The anchor block is the backing: the canvas hangs proud of it, so the wall is at z=8.
         EntityTestHarness.PlaceStoneWallStrip(world, 8, 8, 64, 68);
 
-        Entity painting = HangingArtBehavior.HangAt(world, 8, 65, 8, 2, "Kebab");
+        var painting = HangingArtBehavior.HangAt(world, 8, 65, 8, 2, "Kebab");
         Assert.True(world.Entities.SpawnEntity(painting));
         EntityTestHarness.AdvanceGameTicks(world, 120);
         Assert.False(painting.Dead);
@@ -75,7 +73,7 @@ public sealed class EntityMobScenarioTests
         player.SetPositionAndAngles(10.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(player));
 
-        Entity creeper = EntityTestHarness.CreateSpawned(world, TestEntityCatalog.ByName("creeper"), 8.5, 65.0, 8.5);
+        var creeper = EntityTestHarness.CreateSpawned(world, TestEntityCatalog.ByName("creeper"), 8.5, 65.0, 8.5);
         EntityTestHarness.AdvanceGameTicks(world, 120);
         Assert.True(creeper.Dead || world.Entities.Entities.Contains(creeper));
         Assert.True(EntityTestHarness.AliveEntityCount(world) >= 1);
@@ -86,8 +84,8 @@ public sealed class EntityMobScenarioTests
     {
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 15, 0, 15, 63);
-        Entity sheep = EntityTestHarness.CreateSpawned(world, TestEntityCatalog.ByName("sheep"), 5.5, 65.0, 5.5);
-        Entity cow = EntityTestHarness.CreateSpawned(world, TestEntityCatalog.ByName("cow"), 9.5, 65.0, 9.5);
+        var sheep = EntityTestHarness.CreateSpawned(world, TestEntityCatalog.ByName("sheep"), 5.5, 65.0, 5.5);
+        var cow = EntityTestHarness.CreateSpawned(world, TestEntityCatalog.ByName("cow"), 9.5, 65.0, 9.5);
         EntityTestHarness.AdvanceGameTicks(world, 256);
         Assert.False(sheep.Dead);
         Assert.False(cow.Dead);

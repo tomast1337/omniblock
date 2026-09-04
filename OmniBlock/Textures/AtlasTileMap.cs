@@ -20,21 +20,24 @@ public sealed record AtlasTile(string Name, int X, int Y);
 /// </remarks>
 public sealed class AtlasTileMap
 {
-    private static readonly JsonSerializerOptions s_options = new(JsonSerializerDefaults.Web);
-
-    private Dictionary<string, int>? _indexByName;
-    private int[]? _layerByGridIndex;
-
     /// <summary>
     ///     The layer a renderer lands on when it asks for a cell no tile is named after. Reserved so
     ///     that looks broken rather than like whichever tile happened to be listed first.
     /// </summary>
     public const int MissingLayer = 0;
 
+    private static readonly JsonSerializerOptions s_options = new(JsonSerializerDefaults.Web);
+
+    private Dictionary<string, int>? _indexByName;
+    private int[]? _layerByGridIndex;
+
     public int TileSize { get; init; } = 16;
     public int GridWidth { get; init; } = 16;
     public int GridHeight { get; init; } = 16;
     public IReadOnlyList<AtlasTile> Tiles { get; init; } = [];
+
+    /// <summary>How many texture-array layers this map needs, the reserved one included.</summary>
+    public int LayerCount => Tiles.Count + 1;
 
     public static AtlasTileMap Parse(string json) =>
         JsonSerializer.Deserialize<AtlasTileMap>(json, s_options)
@@ -48,9 +51,9 @@ public sealed class AtlasTileMap
     /// </summary>
     public static AtlasTileMap Load(string embeddedAssetPath)
     {
-        string resourceName = $"{nameof(OmniBlock)}.{embeddedAssetPath.Replace('/', '.')}";
-        using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName)
-            ?? throw new FileNotFoundException($"Embedded resource not found: {resourceName}");
+        var resourceName = $"{nameof(OmniBlock)}.{embeddedAssetPath.Replace('/', '.')}";
+        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName)
+                           ?? throw new FileNotFoundException($"Embedded resource not found: {resourceName}");
         using var reader = new StreamReader(stream);
 
         return Parse(reader.ReadToEnd());
@@ -70,13 +73,10 @@ public sealed class AtlasTileMap
             name = ResourceLocation.Parse(name).Path;
         }
 
-        return _indexByName.TryGetValue(name, out int index)
+        return _indexByName.TryGetValue(name, out var index)
             ? index
             : throw new KeyNotFoundException($"No atlas tile named '{name}'.");
     }
-
-    /// <summary>How many texture-array layers this map needs, the reserved one included.</summary>
-    public int LayerCount => Tiles.Count + 1;
 
     /// <summary>
     ///     The array layer holding <paramref name="name" />: its position in <see cref="Tiles" />,
@@ -102,12 +102,12 @@ public sealed class AtlasTileMap
 
     private int[] BuildGridLayers()
     {
-        int[] layers = new int[GridWidth * GridHeight];
+        var layers = new int[GridWidth * GridHeight];
 
-        for (int i = 0; i < Tiles.Count; i++)
+        for (var i = 0; i < Tiles.Count; i++)
         {
-            AtlasTile tile = Tiles[i];
-            int gridIndex = tile.X + tile.Y * GridWidth;
+            var tile = Tiles[i];
+            var gridIndex = tile.X + tile.Y * GridWidth;
 
             if ((uint)gridIndex < (uint)layers.Length) layers[gridIndex] = i + 1;
         }

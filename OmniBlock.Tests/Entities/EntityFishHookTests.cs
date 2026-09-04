@@ -2,14 +2,13 @@ using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.Items;
 using OmniBlock.NBT;
-using OmniBlock.Tests.TestSupport;
 
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Covers the fishing bobber, the eleventh non-living entity to lose its class — and the only
-/// projectile tied to its thrower for its whole life: the angler owns it, the rod reels it, and it
-/// removes itself the moment the angler stops holding a rod or walks too far off.
+///     Covers the fishing bobber, the eleventh non-living entity to lose its class — and the only
+///     projectile tied to its thrower for its whole life: the angler owns it, the rod reels it, and it
+///     removes itself the moment the angler stops holding a rod or walks too far off.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityFishHookTests
@@ -18,7 +17,10 @@ public sealed class EntityFishHookTests
 
     private static TestEntityPlayer Angler(FakeWorldContext world)
     {
-        TestEntityPlayer player = new(world) { Name = "angler" };
+        TestEntityPlayer player = new(world)
+        {
+            Name = "angler"
+        };
         player.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         player.Inventory.SetStack(player.Inventory.SelectedSlot, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:fishing_rod"), 1));
         Assert.True(world.Entities.SpawnEntity(player));
@@ -27,7 +29,7 @@ public sealed class EntityFishHookTests
 
     private static Entity Cast(FakeWorldContext world, TestEntityPlayer angler)
     {
-        Entity bobber = FishingBobberBehavior.Cast(world, angler);
+        var bobber = FishingBobberBehavior.Cast(world, angler);
         Assert.True(world.Entities.SpawnEntity(bobber));
         return bobber;
     }
@@ -36,7 +38,7 @@ public sealed class EntityFishHookTests
     public void A_bobber_has_no_class_of_its_own()
     {
         FakeWorldContext world = new();
-        Entity bobber = TestEntityCatalog.ByName("fishhook").Create(world);
+        var bobber = TestEntityCatalog.ByName("fishhook").Create(world);
 
         Assert.Equal(typeof(EntityObject), bobber.GetType());
         Assert.True(bobber.IgnoreFrustumCheck, "The line has to be drawn even when the float is off-screen.");
@@ -46,9 +48,9 @@ public sealed class EntityFishHookTests
     public void Casting_hangs_the_bobber_off_the_angler()
     {
         FakeWorldContext world = new();
-        TestEntityPlayer angler = Angler(world);
+        var angler = Angler(world);
 
-        Entity bobber = Cast(world, angler);
+        var bobber = Cast(world, angler);
 
         Assert.Same(angler, Bobber.Angler(bobber));
         Assert.Same(bobber, angler.FishHook);
@@ -59,8 +61,8 @@ public sealed class EntityFishHookTests
     public void A_bobber_removes_itself_when_the_angler_walks_away()
     {
         FakeWorldContext world = new();
-        TestEntityPlayer angler = Angler(world);
-        Entity bobber = Cast(world, angler);
+        var angler = Angler(world);
+        var bobber = Cast(world, angler);
 
         angler.SetPositionAndAngles(200.5, 65.0, 8.5, 0f, 0f);
         bobber.Tick();
@@ -73,8 +75,8 @@ public sealed class EntityFishHookTests
     public void A_bobber_removes_itself_when_the_rod_is_put_away()
     {
         FakeWorldContext world = new();
-        TestEntityPlayer angler = Angler(world);
-        Entity bobber = Cast(world, angler);
+        var angler = Angler(world);
+        var bobber = Cast(world, angler);
 
         angler.Inventory.SetStack(angler.Inventory.SelectedSlot, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 1));
         bobber.Tick();
@@ -88,8 +90,8 @@ public sealed class EntityFishHookTests
     public void Reeling_an_empty_line_wears_the_rod_none()
     {
         FakeWorldContext world = new();
-        TestEntityPlayer angler = Angler(world);
-        Entity bobber = Cast(world, angler);
+        var angler = Angler(world);
+        var bobber = Cast(world, angler);
 
         Assert.Equal(0, Bobber.Reel(bobber));
 
@@ -98,24 +100,24 @@ public sealed class EntityFishHookTests
     }
 
     /// <summary>
-    /// A bobber that strikes a mob hooks it, rides it, and drags it back on the reel — the wear of
-    /// three is what tells the rod that is what happened.
+    ///     A bobber that strikes a mob hooks it, rides it, and drags it back on the reel — the wear of
+    ///     three is what tells the rod that is what happened.
     /// </summary>
     [Fact]
     public void Reeling_a_hooked_mob_drags_it_towards_the_angler()
     {
         FakeWorldContext world = new();
-        TestEntityPlayer angler = Angler(world);
-        EntityLiving pig = (EntityLiving)TestEntityCatalog.ByName("pig").Create(world);
+        var angler = Angler(world);
+        var pig = (EntityLiving)TestEntityCatalog.ByName("pig").Create(world);
         pig.SetPositionAndAngles(8.5, 65.0, 14.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(pig));
 
-        Entity bobber = Cast(world, angler);
+        var bobber = Cast(world, angler);
         bobber.SetPositionAndAngles(8.5, 65.5, 11.5, 0f, 0f);
         bobber.VelocityX = bobber.VelocityY = 0.0;
         bobber.VelocityZ = 0.5;
 
-        for (int tick = 0; tick < 30 && Bobber.Hooked(bobber) is null; tick++) bobber.Tick();
+        for (var tick = 0; tick < 30 && Bobber.Hooked(bobber) is null; tick++) bobber.Tick();
 
         Assert.Same(pig, Bobber.Hooked(bobber));
 
@@ -134,17 +136,17 @@ public sealed class EntityFishHookTests
     public void Flight_state_survives_an_nbt_round_trip()
     {
         FakeWorldContext world = new();
-        Entity bobber = TestEntityCatalog.ByName("fishhook").Create(world);
+        var bobber = TestEntityCatalog.ByName("fishhook").Create(world);
         bobber.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
         NBTTagCompound nbt = new();
         bobber.Write(nbt);
         nbt.SetShort("xTile", 4);
-        nbt.SetByte("inTile", (sbyte)2);
-        nbt.SetByte("shake", (sbyte)3);
+        nbt.SetByte("inTile", 2);
+        nbt.SetByte("shake", 3);
         nbt.SetByte("inGround", 1);
 
-        Entity restored = TestEntityCatalog.ByName("fishhook").Create(world);
+        var restored = TestEntityCatalog.ByName("fishhook").Create(world);
         restored.Read(nbt);
         NBTTagCompound written = new();
         restored.Write(written);
@@ -158,7 +160,7 @@ public sealed class EntityFishHookTests
     [Fact]
     public void Protocol_facts_are_pinned()
     {
-        EntityDefinition bobber = TestEntityCatalog.ByName("fishhook").RequireDefinition();
+        var bobber = TestEntityCatalog.ByName("fishhook").RequireDefinition();
 
         Assert.Equal(64, bobber.ProtocolId);
         Assert.Equal(90, bobber.SpawnObjectId);

@@ -167,10 +167,10 @@ public class ChatScreen(
 
     private void SendMessage()
     {
-        string msg = _textField.Text.Trim();
+        var msg = _textField.Text.Trim();
         if (msg.Length > 0)
         {
-            string sendMsg = ConvertAmpersandToSection(msg);
+            var sendMsg = ConvertAmpersandToSection(msg);
             player.SendChatMessage(sendMsg);
             s_history.Add(msg); // Store original with & for history navigation
             if (s_history.Count > 100)
@@ -192,11 +192,11 @@ public class ChatScreen(
         StringBuilder sb = new();
         const string colorCodes = "0123456789abcdefklmnor";
 
-        for (int i = 0; i < input.Length; i++)
+        for (var i = 0; i < input.Length; i++)
         {
             if (input[i] == '&' && i + 1 < input.Length)
             {
-                char c = char.ToLower(input[i + 1]);
+                var c = char.ToLower(input[i + 1]);
                 if (colorCodes.Contains(c))
                 {
                     sb.Append('\u00a7');

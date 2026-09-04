@@ -15,7 +15,7 @@ public class Value
 
     public static void CopyValue(Value[] dest, Value[] src)
     {
-        for (int i = 0; i < src.Length; i++)
+        for (var i = 0; i < src.Length; i++)
         {
             dest[i].value = src[i].value;
             dest[i].unit = src[i].unit;

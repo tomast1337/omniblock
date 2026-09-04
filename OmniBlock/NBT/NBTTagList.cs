@@ -33,15 +33,9 @@ public sealed class NBTTagList : NBTBase
         }
     }
 
-    public override byte GetTagType()
-    {
-        return 9;
-    }
+    public override byte GetTagType() => 9;
 
-    public override string ToString()
-    {
-        return $"{list.Count} entries of type {GetTagName(type)}";
-    }
+    public override string ToString() => $"{list.Count} entries of type {GetTagName(type)}";
 
     public void SetTag(NBTBase value)
     {
@@ -49,13 +43,7 @@ public sealed class NBTTagList : NBTBase
         list.Add(value);
     }
 
-    public NBTBase TagAt(int value)
-    {
-        return list[value];
-    }
+    public NBTBase TagAt(int value) => list[value];
 
-    public int TagCount()
-    {
-        return list.Count;
-    }
+    public int TagCount() => list.Count;
 }

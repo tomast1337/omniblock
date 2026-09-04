@@ -45,7 +45,7 @@ public sealed class MinecartCargo(Entity cart) : IInventory
             return stack;
         }
 
-        ItemStack taken = stack.Split(amount);
+        var taken = stack.Split(amount);
         if (stack.Count == 0)
         {
             _slots[slotIndex] = null;

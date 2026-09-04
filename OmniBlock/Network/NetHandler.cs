@@ -1,6 +1,6 @@
+using Microsoft.Extensions.Logging;
 using OmniBlock.Network.Messages;
 using OmniBlock.Network.Packets;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Network;
 
@@ -11,14 +11,21 @@ public abstract class NetHandler
     /// <summary>Keys already reported as unknown, so a repeating message logs once, not per packet.</summary>
     private readonly HashSet<int> _reportedUnknownMessages = [];
 
-    public abstract bool isServerSide();
-
     /// <summary>
     ///     The session's negotiated message table, or null on a handler that does not participate in
     ///     the extensible layer. Null makes <see cref="onOmniMessage" /> a no-op drop, which is the
     ///     correct behaviour during login, before negotiation has happened.
     /// </summary>
     public virtual MessageRegistry? Messages => null;
+
+    /// <summary>
+    ///     Where this peer declares which messages it wants. Populated by the subclass, and open to
+    ///     content and mods for the same reason the registry is: nobody has to edit a switch in the
+    ///     engine to receive a message they defined.
+    /// </summary>
+    public MessageDispatcher MessageHandlers { get; } = new();
+
+    public abstract bool isServerSide();
 
     /// <summary>
     ///     Adopts the server's message ordering. Client side; a server receiving this is a protocol
@@ -55,13 +62,13 @@ public abstract class NetHandler
             return;
         }
 
-        MessageRegistry? registry = Messages;
+        var registry = Messages;
         if (registry is null || !registry.Negotiated)
         {
             return;
         }
 
-        Message? message = registry.Create(packet.MessageId);
+        var message = registry.Create(packet.MessageId);
         if (message is null)
         {
             if (_reportedUnknownMessages.Add(packet.MessageId))
@@ -83,7 +90,7 @@ public abstract class NetHandler
 
         try
         {
-            using MemoryStream payload = new(packet.Payload, writable: false);
+            using MemoryStream payload = new(packet.Payload, false);
             message.Read(payload);
         }
         catch (Exception e) when (e is InvalidDataException or EndOfStreamException or ArgumentException)
@@ -96,13 +103,6 @@ public abstract class NetHandler
 
         onMessage(message);
     }
-
-    /// <summary>
-    ///     Where this peer declares which messages it wants. Populated by the subclass, and open to
-    ///     content and mods for the same reason the registry is: nobody has to edit a switch in the
-    ///     engine to receive a message they defined.
-    /// </summary>
-    public MessageDispatcher MessageHandlers { get; } = new();
 
     /// <summary>
     ///     Handles a decoded message. Virtual for the rare handler that wants to see everything;
@@ -118,14 +118,7 @@ public abstract class NetHandler
     {
     }
 
-    public virtual void onHello(LoginHelloPacket packet)
-    {
-        handle(packet);
-    }
+    public virtual void onHello(LoginHelloPacket packet) => handle(packet);
 
-    public virtual void onHandshake(HandshakePacket packet)
-    {
-        handle(packet);
-    }
-
+    public virtual void onHandshake(HandshakePacket packet) => handle(packet);
 }

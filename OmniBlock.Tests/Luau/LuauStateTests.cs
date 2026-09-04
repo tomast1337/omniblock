@@ -1,5 +1,5 @@
-using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using OmniBlock.Luau;
 
 namespace OmniBlock.Tests.Luau;
@@ -58,7 +58,7 @@ public sealed unsafe class LuauStateTests
         using LuauState state = new();
         state.ResetInstructionBudget(10_000);
 
-        int type = RunAndGetTopType(state.Handle, "return os");
+        var type = RunAndGetTopType(state.Handle, "return os");
 
         Assert.Equal(0, type); // LUA_TNIL — os was set to nil at construction.
     }
@@ -71,7 +71,7 @@ public sealed unsafe class LuauStateTests
         using LuauState state = new();
         state.ResetInstructionBudget(10_000);
 
-        int type = RunAndGetTopType(state.Handle, "return math.floor(3.7)");
+        var type = RunAndGetTopType(state.Handle, "return math.floor(3.7)");
 
         Assert.Equal(3, LuauNative.lua_tointegerx(state.Handle, -1, IntPtr.Zero));
         Assert.NotEqual(0, type);
@@ -86,7 +86,7 @@ public sealed unsafe class LuauStateTests
         // Deliberately no ResetInstructionBudget call — the zero-initialized counter must make
         // even a trivial script fail immediately, not run against uninitialized memory.
 
-        byte[] source = System.Text.Encoding.UTF8.GetBytes("return 1");
+        var source = Encoding.UTF8.GetBytes("return 1");
         byte* bytecode;
         nuint bytecodeSize;
         fixed (byte* sourcePtr = source)
@@ -95,7 +95,7 @@ public sealed unsafe class LuauStateTests
         }
 
         LuauNative.luau_load(state.Handle, "=fail_closed_test", bytecode, bytecodeSize, 0);
-        int pcallResult = LuauNative.lua_pcall(state.Handle, 0, -1, 0);
+        var pcallResult = LuauNative.lua_pcall(state.Handle, 0, -1, 0);
 
         Assert.NotEqual(0, pcallResult);
     }
@@ -108,7 +108,7 @@ public sealed unsafe class LuauStateTests
         using LuauState state = new();
         state.ResetInstructionBudget(1000);
 
-        byte[] source = System.Text.Encoding.UTF8.GetBytes("while true do end");
+        var source = Encoding.UTF8.GetBytes("while true do end");
         byte* bytecode;
         nuint bytecodeSize;
         fixed (byte* sourcePtr = source)
@@ -117,14 +117,14 @@ public sealed unsafe class LuauStateTests
         }
 
         LuauNative.luau_load(state.Handle, "=budget_test", bytecode, bytecodeSize, 0);
-        int pcallResult = LuauNative.lua_pcall(state.Handle, 0, -1, 0);
+        var pcallResult = LuauNative.lua_pcall(state.Handle, 0, -1, 0);
 
         Assert.NotEqual(0, pcallResult);
 
         // The VM itself must survive — a persistent state's whole point is outliving one
         // interrupted call, unlike LuauQuickRun's ephemeral VM which is discarded regardless.
         state.ResetInstructionBudget(10_000);
-        int type = RunAndGetTopType(state.Handle, "return 42");
+        var type = RunAndGetTopType(state.Handle, "return 42");
         Assert.NotEqual(0, type);
         Assert.Equal(42, LuauNative.lua_tointegerx(state.Handle, -1, IntPtr.Zero));
     }
@@ -150,7 +150,7 @@ public sealed unsafe class LuauStateTests
         state.ResetInstructionBudget(10_000);
 
         Assert.True(state.TryExecute("answer = 40", out _));
-        Assert.True(state.TryExecute("answer + 2", out string output));
+        Assert.True(state.TryExecute("answer + 2", out var output));
 
         Assert.Equal("42", output);
     }
@@ -163,8 +163,8 @@ public sealed unsafe class LuauStateTests
         state.ResetInstructionBudget(10_000);
 
         Assert.True(state.TryExecute("value = 'persistent'", out _));
-        Assert.True(state.TryExecute("1, 2", out string first));
-        Assert.True(state.TryExecute("value", out string second));
+        Assert.True(state.TryExecute("1, 2", out var first));
+        Assert.True(state.TryExecute("value", out var second));
 
         Assert.Equal("1, 2", first);
         Assert.Equal("persistent", second);
@@ -172,7 +172,7 @@ public sealed unsafe class LuauStateTests
 
     private static int RunAndGetTopType(IntPtr L, string source)
     {
-        byte[] sourceBytes = System.Text.Encoding.UTF8.GetBytes(source);
+        var sourceBytes = Encoding.UTF8.GetBytes(source);
         byte* bytecode;
         nuint bytecodeSize;
         fixed (byte* sourcePtr = sourceBytes)
@@ -181,7 +181,7 @@ public sealed unsafe class LuauStateTests
         }
 
         LuauNative.luau_load(L, "=state_test", bytecode, bytecodeSize, 0);
-        int pcallResult = LuauNative.lua_pcall(L, 0, -1, 0);
+        var pcallResult = LuauNative.lua_pcall(L, 0, -1, 0);
         Assert.Equal(0, pcallResult);
 
         return LuauNative.lua_type(L, -1);
@@ -194,7 +194,7 @@ public sealed unsafe class LuauStateTests
             return true;
         }
 
-        string fileName = OperatingSystem.IsWindows() ? "omniblock_luau.dll"
+        var fileName = OperatingSystem.IsWindows() ? "omniblock_luau.dll"
             : OperatingSystem.IsMacOS() ? "libomniblock_luau.dylib"
             : "libomniblock_luau.so";
         return NativeLibrary.TryLoad(Path.Combine(AppContext.BaseDirectory, fileName), out _);

@@ -21,15 +21,15 @@ internal sealed class DoorBehavior : IItemBehavior
 
         y++;
 
-        int blockId = _doorMaterial == MaterialRegistry.Get("wood") ? BlockRegistry.Get("door").Id : BlockRegistry.Get("iron_door").Id;
+        var blockId = _doorMaterial == MaterialRegistry.Get("wood") ? BlockRegistry.Get("door").Id : BlockRegistry.Get("iron_door").Id;
         if (!BlockRegistry.GetByProtocolId(blockId).CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
         {
             return false;
         }
 
-        int facing = MathHelper.Floor((player.Yaw + 180.0f) * 4.0f / 360.0f - 0.5f) & 3;
-        int offsetX = 0;
-        int offsetZ = 0;
+        var facing = MathHelper.Floor((player.Yaw + 180.0f) * 4.0f / 360.0f - 0.5f) & 3;
+        var offsetX = 0;
+        var offsetZ = 0;
         if (facing == 0)
         {
             offsetZ = 1;
@@ -50,15 +50,15 @@ internal sealed class DoorBehavior : IItemBehavior
             offsetX = 1;
         }
 
-        int leftSolid = (world.Reader.ShouldSuffocate(x - offsetX, y, z - offsetZ) ? 1 : 0) +
+        var leftSolid = (world.Reader.ShouldSuffocate(x - offsetX, y, z - offsetZ) ? 1 : 0) +
                         (world.Reader.ShouldSuffocate(x - offsetX, y + 1, z - offsetZ) ? 1 : 0);
-        int rightSolid = (world.Reader.ShouldSuffocate(x + offsetX, y, z + offsetZ) ? 1 : 0) +
+        var rightSolid = (world.Reader.ShouldSuffocate(x + offsetX, y, z + offsetZ) ? 1 : 0) +
                          (world.Reader.ShouldSuffocate(x + offsetX, y + 1, z + offsetZ) ? 1 : 0);
-        bool leftHasDoor = world.Reader.GetBlockId(x - offsetX, y, z - offsetZ) == blockId ||
-                           world.Reader.GetBlockId(x - offsetX, y + 1, z - offsetZ) == blockId;
-        bool rightHasDoor = world.Reader.GetBlockId(x + offsetX, y, z + offsetZ) == blockId ||
-                            world.Reader.GetBlockId(x + offsetX, y + 1, z + offsetZ) == blockId;
-        bool mirror = (leftHasDoor && !rightHasDoor) || rightSolid > leftSolid;
+        var leftHasDoor = world.Reader.GetBlockId(x - offsetX, y, z - offsetZ) == blockId ||
+                          world.Reader.GetBlockId(x - offsetX, y + 1, z - offsetZ) == blockId;
+        var rightHasDoor = world.Reader.GetBlockId(x + offsetX, y, z + offsetZ) == blockId ||
+                           world.Reader.GetBlockId(x + offsetX, y + 1, z + offsetZ) == blockId;
+        var mirror = (leftHasDoor && !rightHasDoor) || rightSolid > leftSolid;
 
         if (mirror)
         {

@@ -12,7 +12,7 @@ public sealed class LuauDomHostIntegrationTests
         Skip.IfNot(LuauQuickRun.IsAvailable(), "native library not resolvable for this checkout.");
         using LuauState state = new();
         state.ResetInstructionBudget(100_000);
-        bool visible = true;
+        var visible = true;
 
         LuauDomHost.Query = selector => selector == "#root" ? 7 : 0;
         LuauDomHost.Parent = _ => 0;
@@ -27,7 +27,7 @@ public sealed class LuauDomHostIntegrationTests
             visible = value;
             return true;
         };
-        int clicks = 0;
+        var clicks = 0;
         LuauDomHost.Click = handle =>
         {
             if (handle != 7) return false;
@@ -39,14 +39,14 @@ public sealed class LuauDomHostIntegrationTests
         try
         {
             LuauDomHost.Install(state.Handle);
-            Assert.True(state.TryExecute(LuauDomHost.Bootstrap, out string bootstrapError), bootstrapError);
-            Assert.True(state.TryExecute("OMNI.ui.root.type", out string type));
+            Assert.True(state.TryExecute(LuauDomHost.Bootstrap, out var bootstrapError), bootstrapError);
+            Assert.True(state.TryExecute("OMNI.ui.root.type", out var type));
             Assert.True(state.TryExecute("OMNI.ui.root.visible = false", out _));
-            Assert.True(state.TryExecute("OMNI.ui.root.visible", out string currentVisibility));
-            Assert.True(state.TryExecute("OMNI.environment", out string environment));
-            Assert.True(state.TryExecute("OMNI.has(\"ui\")", out string hasUi));
-            Assert.True(state.TryExecute("OMNI.ui.root:click()", out string clicked));
-            Assert.True(state.TryExecute("OMNI.ui.screen", out string screen));
+            Assert.True(state.TryExecute("OMNI.ui.root.visible", out var currentVisibility));
+            Assert.True(state.TryExecute("OMNI.environment", out var environment));
+            Assert.True(state.TryExecute("OMNI.has(\"ui\")", out var hasUi));
+            Assert.True(state.TryExecute("OMNI.ui.root:click()", out var clicked));
+            Assert.True(state.TryExecute("OMNI.ui.screen", out var screen));
 
             Assert.Equal("Panel", type);
             Assert.False(visible);

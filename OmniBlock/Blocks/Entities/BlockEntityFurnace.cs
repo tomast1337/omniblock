@@ -10,7 +10,6 @@ namespace OmniBlock.Blocks.Entities;
 
 public class BlockEntityFurnace : BlockEntity, IInventory
 {
-
     private ItemStack?[] _inventory = new ItemStack[3];
     protected override BlockEntityType Type => Furnace;
     public int BurnTime { get; set; }
@@ -21,10 +20,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
 
     public int Size => _inventory.Length;
 
-    public ItemStack? GetStack(int slot)
-    {
-        return _inventory[slot];
-    }
+    public ItemStack? GetStack(int slot) => _inventory[slot];
 
     public ItemStack? RemoveStack(int slot, int stack)
     {
@@ -58,10 +54,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
 
     public int MaxCountPerStack => 64;
 
-    public bool CanPlayerUse(EntityPlayer player)
-    {
-        return World!.Entities.GetBlockEntity<BlockEntityFurnace>(X, Y, Z) == this && player.GetSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
-    }
+    public bool CanPlayerUse(EntityPlayer player) => World!.Entities.GetBlockEntity<BlockEntityFurnace>(X, Y, Z) == this && player.GetSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
 
     protected override void ReadNbt(NBTTagCompound nbt)
     {
@@ -101,10 +94,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
         nbt.SetTag("Items", itemList);
     }
 
-    public int GetCookTimeDelta(int multiplier)
-    {
-        return CookTime * multiplier / 200;
-    }
+    public int GetCookTimeDelta(int multiplier) => CookTime * multiplier / 200;
 
     public int GetFuelTimeDelta(int multiplier)
     {

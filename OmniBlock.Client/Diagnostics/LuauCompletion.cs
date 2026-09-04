@@ -21,6 +21,7 @@ internal sealed partial class LuauCompletion
     private static readonly string[] s_testMembers = ["fail", "pass"];
     private static readonly string[] s_worldMembers = ["list", "load"];
     private static readonly string[] s_uiMembers = ["hud", "querySelector", "root", "screen"];
+
     private static readonly string[] s_configMembers =
     [
         "advancedItemTooltips", "alternateBlocks", "anisotropicLevel", "bobView", "cameraMode",
@@ -29,6 +30,7 @@ internal sealed partial class LuauCompletion
         "language", "lastServer", "menuMusic", "mouseSensitivity", "msaaLevel", "music", "options", "showCoordinates",
         "skin", "softClouds", "sound", "uiCursors", "useMipmaps", "viewDistance", "vsync"
     ];
+
     private static readonly string[] s_nodeMembers =
         ["child", "childCount", "click", "enabled", "hitTestVisible", "id", "parent", "text", "type", "visible"];
 
@@ -37,17 +39,17 @@ internal sealed partial class LuauCompletion
     public CompletionEdit Complete(string source, int cursor)
     {
         cursor = Math.Clamp(cursor, 0, source.Length);
-        int start = cursor;
+        var start = cursor;
         while (start > 0 && IsIdentifierCharacter(source[start - 1]))
             start--;
 
-        string prefix = source[start..cursor];
-        bool memberAccess = start > 0 && source[start - 1] == '.';
-        IEnumerable<string> pool = memberAccess
+        var prefix = source[start..cursor];
+        var memberAccess = start > 0 && source[start - 1] == '.';
+        var pool = memberAccess
             ? MembersForReceiver(source, start - 1)
             : s_globals.Concat(_sessionGlobals);
 
-        string[] matches = pool
+        var matches = pool
             .Where(candidate => candidate.StartsWith(prefix, StringComparison.Ordinal))
             .Distinct(StringComparer.Ordinal)
             .Order(StringComparer.Ordinal)
@@ -56,7 +58,7 @@ internal sealed partial class LuauCompletion
         if (matches.Length == 0)
             return new CompletionEdit(start, cursor - start, prefix, matches);
 
-        string replacement = LongestCommonPrefix(matches);
+        var replacement = LongestCommonPrefix(matches);
         return new CompletionEdit(start, cursor - start, replacement, matches);
     }
 
@@ -73,11 +75,11 @@ internal sealed partial class LuauCompletion
 
     private static IEnumerable<string> MembersForReceiver(string source, int dot)
     {
-        int end = dot;
-        int start = end;
+        var end = dot;
+        var start = end;
         while (start > 0 && (IsIdentifierCharacter(source[start - 1]) || source[start - 1] == '.'))
             start--;
-        string receiver = source[start..end];
+        var receiver = source[start..end];
         if (receiver == "OMNI") return s_omniMembers;
         if (receiver.EndsWith("OMNI.client", StringComparison.Ordinal)) return s_clientMembers;
         if (receiver.EndsWith("OMNI.client.state", StringComparison.Ordinal)) return s_clientStateMembers;
@@ -90,15 +92,16 @@ internal sealed partial class LuauCompletion
 
     private static string LongestCommonPrefix(string[] values)
     {
-        string first = values[0];
-        int length = first.Length;
-        foreach (string value in values.AsSpan(1))
+        var first = values[0];
+        var length = first.Length;
+        foreach (var value in values.AsSpan(1))
         {
             length = Math.Min(length, value.Length);
-            int i = 0;
+            var i = 0;
             while (i < length && first[i] == value[i]) i++;
             length = i;
         }
+
         return first[..length];
     }
 

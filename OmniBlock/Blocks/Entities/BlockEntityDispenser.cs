@@ -14,10 +14,7 @@ public class BlockEntityDispenser : BlockEntity, IInventory
 
     public int Size => 9;
 
-    public ItemStack? GetStack(int slot)
-    {
-        return _itemStacks[slot];
-    }
+    public ItemStack? GetStack(int slot) => _itemStacks[slot];
 
     public ItemStack? RemoveStack(int slot, int amount)
     {
@@ -51,10 +48,7 @@ public class BlockEntityDispenser : BlockEntity, IInventory
 
     public int MaxCountPerStack => 64;
 
-    public bool CanPlayerUse(EntityPlayer player)
-    {
-        return World!.Entities.GetBlockEntity<BlockEntityDispenser>(X, Y, Z) == this && player.GetSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
-    }
+    public bool CanPlayerUse(EntityPlayer player) => World!.Entities.GetBlockEntity<BlockEntityDispenser>(X, Y, Z) == this && player.GetSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
 
     public ItemStack? GetItemToDispose()
     {
@@ -62,8 +56,10 @@ public class BlockEntityDispenser : BlockEntity, IInventory
         var nonNullCount = 1;
 
         for (var slotIndex = 0; slotIndex < _itemStacks.Length; ++slotIndex)
+        {
             if (_itemStacks[slotIndex] != null && _random.NextInt(nonNullCount++) == 0)
                 selectedSlot = slotIndex;
+        }
 
         return selectedSlot >= 0 ? RemoveStack(selectedSlot, 1) : null;
     }

@@ -86,12 +86,13 @@ public ref struct BlockRenderContext
     ///     overlay -- which is how snowy and unsnowy grass share one renderer.
     /// </summary>
     private static readonly int s_grassSideTexture = Atlases.Terrain.IndexOf("omniblock:grass_block_side");
+
     private static readonly int s_grassSideOverlayTexture = Atlases.Terrain.IndexOf("omniblock:grass_block_side_overlay");
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static int ApplyVariance(int hash, TextureVariance variance, out int flipMask)
     {
-        byte allowed = (byte)variance;
+        var allowed = (byte)variance;
         flipMask = (hash & allowed & 12) >> 2;
         return hash & allowed & 3;
     }
@@ -101,44 +102,44 @@ public ref struct BlockRenderContext
     {
         unchecked
         {
-            long seed = (x * 3129871L) ^ (z * 116129781L) ^ y;
-            seed = (seed * seed * 42317861L) + (seed * 11L);
+            var seed = (x * 3129871L) ^ (z * 116129781L) ^ y;
+            seed = seed * seed * 42317861L + seed * 11L;
             return (int)(seed >> 16);
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static float Clamp(float value) => value < 0f ? 0f : (value > 1f ? 1f : value);
+    private static float Clamp(float value) => value < 0f ? 0f : value > 1f ? 1f : value;
 
     internal readonly void DrawBottomFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
-        Box bb = OverrideBounds ?? block.BoundingBox;
+        var bb = OverrideBounds ?? block.BoundingBox;
         Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
-        float bbMinX = (float)bb.MinX;
-        float bbMaxX = (float)bb.MaxX;
-        float bbMinZ = (float)bb.MinZ;
-        float bbMaxZ = (float)bb.MaxZ;
+        var bbMinX = (float)bb.MinX;
+        var bbMaxX = (float)bb.MaxX;
+        var bbMinZ = (float)bb.MinZ;
+        var bbMaxZ = (float)bb.MaxZ;
 
-        float bMinX = Clamp(bbMinX);
-        float bMaxX = Clamp(bbMaxX);
-        float bMinZ = Clamp(bbMinZ);
-        float bMaxZ = Clamp(bbMaxZ);
+        var bMinX = Clamp(bbMinX);
+        var bMaxX = Clamp(bbMaxX);
+        var bMinZ = Clamp(bbMinZ);
+        var bMaxZ = Clamp(bbMaxZ);
 
-        CalculateUv(bMinX, bMaxZ, UvRotateBottom, FlipBottom, out float u0, out float v0);
-        CalculateUv(bMinX, bMinZ, UvRotateBottom, FlipBottom, out float u1, out float v1);
-        CalculateUv(bMaxX, bMinZ, UvRotateBottom, FlipBottom, out float u2, out float v2);
-        CalculateUv(bMaxX, bMaxZ, UvRotateBottom, FlipBottom, out float u3, out float v3);
+        CalculateUv(bMinX, bMaxZ, UvRotateBottom, FlipBottom, out var u0, out var v0);
+        CalculateUv(bMinX, bMinZ, UvRotateBottom, FlipBottom, out var u1, out var v1);
+        CalculateUv(bMaxX, bMinZ, UvRotateBottom, FlipBottom, out var u2, out var v2);
+        CalculateUv(bMaxX, bMaxZ, UvRotateBottom, FlipBottom, out var u3, out var v3);
 
-        float pX = (float)pos.X;
-        float pY = (float)pos.Y;
-        float pZ = (float)pos.Z;
+        var pX = (float)pos.X;
+        var pY = (float)pos.Y;
+        var pZ = (float)pos.Z;
 
-        float minX = pX + bbMinX;
-        float maxX = pX + bbMaxX;
-        float minY = pY + (float)bb.MinY;
-        float minZ = pZ + bbMinZ;
-        float maxZ = pZ + bbMaxZ;
+        var minX = pX + bbMinX;
+        var maxX = pX + bbMaxX;
+        var minY = pY + (float)bb.MinY;
+        var minZ = pZ + bbMinZ;
+        var maxZ = pZ + bbMaxZ;
 
         if (EnableAo)
         {
@@ -176,33 +177,33 @@ public ref struct BlockRenderContext
 
     internal readonly void DrawTopFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
-        Box bb = OverrideBounds ?? block.BoundingBox;
+        var bb = OverrideBounds ?? block.BoundingBox;
         Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
-        float bbMinX = (float)bb.MinX;
-        float bbMaxX = (float)bb.MaxX;
-        float bbMinZ = (float)bb.MinZ;
-        float bbMaxZ = (float)bb.MaxZ;
+        var bbMinX = (float)bb.MinX;
+        var bbMaxX = (float)bb.MaxX;
+        var bbMinZ = (float)bb.MinZ;
+        var bbMaxZ = (float)bb.MaxZ;
 
-        float bMinX = Clamp(bbMinX);
-        float bMaxX = Clamp(bbMaxX);
-        float bMinZ = Clamp(bbMinZ);
-        float bMaxZ = Clamp(bbMaxZ);
+        var bMinX = Clamp(bbMinX);
+        var bMaxX = Clamp(bbMaxX);
+        var bMinZ = Clamp(bbMinZ);
+        var bMaxZ = Clamp(bbMaxZ);
 
-        CalculateUv(bMaxX, bMaxZ, UvRotateTop, FlipTop, out float u0, out float v0);
-        CalculateUv(bMaxX, bMinZ, UvRotateTop, FlipTop, out float u1, out float v1);
-        CalculateUv(bMinX, bMinZ, UvRotateTop, FlipTop, out float u2, out float v2);
-        CalculateUv(bMinX, bMaxZ, UvRotateTop, FlipTop, out float u3, out float v3);
+        CalculateUv(bMaxX, bMaxZ, UvRotateTop, FlipTop, out var u0, out var v0);
+        CalculateUv(bMaxX, bMinZ, UvRotateTop, FlipTop, out var u1, out var v1);
+        CalculateUv(bMinX, bMinZ, UvRotateTop, FlipTop, out var u2, out var v2);
+        CalculateUv(bMinX, bMaxZ, UvRotateTop, FlipTop, out var u3, out var v3);
 
-        float pX = (float)pos.X;
-        float pY = (float)pos.Y;
-        float pZ = (float)pos.Z;
+        var pX = (float)pos.X;
+        var pY = (float)pos.Y;
+        var pZ = (float)pos.Z;
 
-        float minX = pX + bbMinX;
-        float maxX = pX + bbMaxX;
-        float maxY = pY + (float)bb.MaxY;
-        float minZ = pZ + bbMinZ;
-        float maxZ = pZ + bbMaxZ;
+        var minX = pX + bbMinX;
+        var maxX = pX + bbMaxX;
+        var maxY = pY + (float)bb.MaxY;
+        var minZ = pZ + bbMinZ;
+        var maxZ = pZ + bbMaxZ;
 
         if (EnableAo)
         {
@@ -240,28 +241,28 @@ public ref struct BlockRenderContext
 
     internal readonly void DrawNorthFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
-        Box bb = OverrideBounds ?? block.BoundingBox;
+        var bb = OverrideBounds ?? block.BoundingBox;
         Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
-        float bbMinY = (float)bb.MinY;
-        float bbMaxY = (float)bb.MaxY;
-        float bbMinZ = (float)bb.MinZ;
-        float bbMaxZ = (float)bb.MaxZ;
+        var bbMinY = (float)bb.MinY;
+        var bbMaxY = (float)bb.MaxY;
+        var bbMinZ = (float)bb.MinZ;
+        var bbMaxZ = (float)bb.MaxZ;
 
-        CalculateUv(bbMinZ, 1.0f - bbMaxY, UvRotateNorth, FlipNorth, out float uTl, out float vTl);
-        CalculateUv(bbMinZ, 1.0f - bbMinY, UvRotateNorth, FlipNorth, out float uBl, out float vBl);
-        CalculateUv(bbMaxZ, 1.0f - bbMinY, UvRotateNorth, FlipNorth, out float uBr, out float vBr);
-        CalculateUv(bbMaxZ, 1.0f - bbMaxY, UvRotateNorth, FlipNorth, out float uTr, out float vTr);
+        CalculateUv(bbMinZ, 1.0f - bbMaxY, UvRotateNorth, FlipNorth, out var uTl, out var vTl);
+        CalculateUv(bbMinZ, 1.0f - bbMinY, UvRotateNorth, FlipNorth, out var uBl, out var vBl);
+        CalculateUv(bbMaxZ, 1.0f - bbMinY, UvRotateNorth, FlipNorth, out var uBr, out var vBr);
+        CalculateUv(bbMaxZ, 1.0f - bbMaxY, UvRotateNorth, FlipNorth, out var uTr, out var vTr);
 
-        float pX = (float)pos.X;
-        float pY = (float)pos.Y;
-        float pZ = (float)pos.Z;
+        var pX = (float)pos.X;
+        var pY = (float)pos.Y;
+        var pZ = (float)pos.Z;
 
-        float minX = pX + (float)bb.MinX;
-        float minY = pY + bbMinY;
-        float maxY = pY + bbMaxY;
-        float minZ = pZ + bbMinZ;
-        float maxZ = pZ + bbMaxZ;
+        var minX = pX + (float)bb.MinX;
+        var minY = pY + bbMinY;
+        var maxY = pY + bbMaxY;
+        var minZ = pZ + bbMinZ;
+        var maxZ = pZ + bbMaxZ;
 
         if (EnableAo)
         {
@@ -299,33 +300,33 @@ public ref struct BlockRenderContext
 
     internal readonly void DrawSouthFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
-        Box bb = OverrideBounds ?? block.BoundingBox;
+        var bb = OverrideBounds ?? block.BoundingBox;
         Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
-        float bbMinY = (float)bb.MinY;
-        float bbMaxY = (float)bb.MaxY;
-        float bbMinZ = (float)bb.MinZ;
-        float bbMaxZ = (float)bb.MaxZ;
+        var bbMinY = (float)bb.MinY;
+        var bbMaxY = (float)bb.MaxY;
+        var bbMinZ = (float)bb.MinZ;
+        var bbMaxZ = (float)bb.MaxZ;
 
-        float bMinY = Clamp(bbMinY);
-        float bMaxY = Clamp(bbMaxY);
-        float bMinZ = Clamp(bbMinZ);
-        float bMaxZ = Clamp(bbMaxZ);
+        var bMinY = Clamp(bbMinY);
+        var bMaxY = Clamp(bbMaxY);
+        var bMinZ = Clamp(bbMinZ);
+        var bMaxZ = Clamp(bbMaxZ);
 
-        CalculateUv(1.0f - bMaxZ, 1.0f - bMaxY, UvRotateSouth, FlipSouth, out float uTl, out float vTl);
-        CalculateUv(1.0f - bMaxZ, 1.0f - bMinY, UvRotateSouth, FlipSouth, out float uBl, out float vBl);
-        CalculateUv(1.0f - bMinZ, 1.0f - bMinY, UvRotateSouth, FlipSouth, out float uBr, out float vBr);
-        CalculateUv(1.0f - bMinZ, 1.0f - bMaxY, UvRotateSouth, FlipSouth, out float uTr, out float vTr);
+        CalculateUv(1.0f - bMaxZ, 1.0f - bMaxY, UvRotateSouth, FlipSouth, out var uTl, out var vTl);
+        CalculateUv(1.0f - bMaxZ, 1.0f - bMinY, UvRotateSouth, FlipSouth, out var uBl, out var vBl);
+        CalculateUv(1.0f - bMinZ, 1.0f - bMinY, UvRotateSouth, FlipSouth, out var uBr, out var vBr);
+        CalculateUv(1.0f - bMinZ, 1.0f - bMaxY, UvRotateSouth, FlipSouth, out var uTr, out var vTr);
 
-        float pX = (float)pos.X;
-        float pY = (float)pos.Y;
-        float pZ = (float)pos.Z;
+        var pX = (float)pos.X;
+        var pY = (float)pos.Y;
+        var pZ = (float)pos.Z;
 
-        float posX = pX + (float)bb.MaxX;
-        float minY = pY + bbMinY;
-        float maxY = pY + bbMaxY;
-        float minZ = pZ + bbMinZ;
-        float maxZ = pZ + bbMaxZ;
+        var posX = pX + (float)bb.MaxX;
+        var minY = pY + bbMinY;
+        var maxY = pY + bbMaxY;
+        var minZ = pZ + bbMinZ;
+        var maxZ = pZ + bbMaxZ;
 
         if (EnableAo)
         {
@@ -363,33 +364,33 @@ public ref struct BlockRenderContext
 
     internal readonly void DrawEastFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
-        Box bb = OverrideBounds ?? block.BoundingBox;
+        var bb = OverrideBounds ?? block.BoundingBox;
         Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
-        float bbMinX = (float)bb.MinX;
-        float bbMaxX = (float)bb.MaxX;
-        float bbMinY = (float)bb.MinY;
-        float bbMaxY = (float)bb.MaxY;
+        var bbMinX = (float)bb.MinX;
+        var bbMaxX = (float)bb.MaxX;
+        var bbMinY = (float)bb.MinY;
+        var bbMaxY = (float)bb.MaxY;
 
-        float bMinX = Clamp(bbMinX);
-        float bMaxX = Clamp(bbMaxX);
-        float bMinY = Clamp(bbMinY);
-        float bMaxY = Clamp(bbMaxY);
+        var bMinX = Clamp(bbMinX);
+        var bMaxX = Clamp(bbMaxX);
+        var bMinY = Clamp(bbMinY);
+        var bMaxY = Clamp(bbMaxY);
 
-        CalculateUv(1.0f - bMaxX, 1.0f - bMaxY, UvRotateEast, FlipEast, out float uTl, out float vTl);
-        CalculateUv(1.0f - bMaxX, 1.0f - bMinY, UvRotateEast, FlipEast, out float uBl, out float vBl);
-        CalculateUv(1.0f - bMinX, 1.0f - bMinY, UvRotateEast, FlipEast, out float uBr, out float vBr);
-        CalculateUv(1.0f - bMinX, 1.0f - bMaxY, UvRotateEast, FlipEast, out float uTr, out float vTr);
+        CalculateUv(1.0f - bMaxX, 1.0f - bMaxY, UvRotateEast, FlipEast, out var uTl, out var vTl);
+        CalculateUv(1.0f - bMaxX, 1.0f - bMinY, UvRotateEast, FlipEast, out var uBl, out var vBl);
+        CalculateUv(1.0f - bMinX, 1.0f - bMinY, UvRotateEast, FlipEast, out var uBr, out var vBr);
+        CalculateUv(1.0f - bMinX, 1.0f - bMaxY, UvRotateEast, FlipEast, out var uTr, out var vTr);
 
-        float pX = (float)pos.X;
-        float pY = (float)pos.Y;
-        float pZ = (float)pos.Z;
+        var pX = (float)pos.X;
+        var pY = (float)pos.Y;
+        var pZ = (float)pos.Z;
 
-        float minX = pX + bbMinX;
-        float maxX = pX + bbMaxX;
-        float minY = pY + bbMinY;
-        float maxY = pY + bbMaxY;
-        float minZ = pZ + (float)bb.MinZ;
+        var minX = pX + bbMinX;
+        var maxX = pX + bbMaxX;
+        var minY = pY + bbMinY;
+        var maxY = pY + bbMaxY;
+        var minZ = pZ + (float)bb.MinZ;
 
         if (EnableAo)
         {
@@ -427,33 +428,33 @@ public ref struct BlockRenderContext
 
     internal readonly void DrawWestFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
-        Box bb = OverrideBounds ?? block.BoundingBox;
+        var bb = OverrideBounds ?? block.BoundingBox;
         Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
-        float bbMinX = (float)bb.MinX;
-        float bbMaxX = (float)bb.MaxX;
-        float bbMinY = (float)bb.MinY;
-        float bbMaxY = (float)bb.MaxY;
+        var bbMinX = (float)bb.MinX;
+        var bbMaxX = (float)bb.MaxX;
+        var bbMinY = (float)bb.MinY;
+        var bbMaxY = (float)bb.MaxY;
 
-        float bMinX = Clamp(bbMinX);
-        float bMaxX = Clamp(bbMaxX);
-        float bMinY = Clamp(bbMinY);
-        float bMaxY = Clamp(bbMaxY);
+        var bMinX = Clamp(bbMinX);
+        var bMaxX = Clamp(bbMaxX);
+        var bMinY = Clamp(bbMinY);
+        var bMaxY = Clamp(bbMaxY);
 
-        CalculateUv(bMinX, 1.0f - bMaxY, UvRotateWest, FlipWest, out float uTl, out float vTl);
-        CalculateUv(bMinX, 1.0f - bMinY, UvRotateWest, FlipWest, out float uBl, out float vBl);
-        CalculateUv(bMaxX, 1.0f - bMinY, UvRotateWest, FlipWest, out float uBr, out float vBr);
-        CalculateUv(bMaxX, 1.0f - bMaxY, UvRotateWest, FlipWest, out float uTr, out float vTr);
+        CalculateUv(bMinX, 1.0f - bMaxY, UvRotateWest, FlipWest, out var uTl, out var vTl);
+        CalculateUv(bMinX, 1.0f - bMinY, UvRotateWest, FlipWest, out var uBl, out var vBl);
+        CalculateUv(bMaxX, 1.0f - bMinY, UvRotateWest, FlipWest, out var uBr, out var vBr);
+        CalculateUv(bMaxX, 1.0f - bMaxY, UvRotateWest, FlipWest, out var uTr, out var vTr);
 
-        float pX = (float)pos.X;
-        float pY = (float)pos.Y;
-        float pZ = (float)pos.Z;
+        var pX = (float)pos.X;
+        var pY = (float)pos.Y;
+        var pZ = (float)pos.Z;
 
-        float minX = pX + bbMinX;
-        float maxX = pX + bbMaxX;
-        float minY = pY + bbMinY;
-        float maxY = pY + bbMaxY;
-        float maxZ = pZ + (float)bb.MaxZ;
+        var minX = pX + bbMinX;
+        var maxX = pX + bbMaxX;
+        var minY = pY + bbMinY;
+        var maxY = pY + bbMaxY;
+        var maxZ = pZ + (float)bb.MaxZ;
 
         if (EnableAo)
         {
@@ -502,7 +503,7 @@ public ref struct BlockRenderContext
     /// </remarks>
     internal readonly void SetLightAt(in Block block, int x, int y, int z)
     {
-        LightLevels levels = block.GetLightLevels(Lighting, x, y, z);
+        var levels = block.GetLightLevels(Lighting, x, y, z);
         Tess.setLight(levels.Sky, levels.Block);
     }
 
@@ -533,7 +534,7 @@ public ref struct BlockRenderContext
 
     private readonly CornerLight Sample(in Block block, int x, int y, int z)
     {
-        LightLevels levels = block.GetLightLevels(Lighting, x, y, z);
+        var levels = block.GetLightLevels(Lighting, x, y, z);
         return new CornerLight(levels.Sky, levels.Block);
     }
 
@@ -563,30 +564,30 @@ public ref struct BlockRenderContext
     {
         int cx = pos.X + ox, cy = pos.Y + oy, cz = pos.Z + oz;
 
-        CornerLight centre = Sample(block, cx, cy, cz);
-        CornerLight edgeAMinus = Sample(block, cx - ax, cy - ay, cz - az);
-        CornerLight edgeAPlus = Sample(block, cx + ax, cy + ay, cz + az);
-        CornerLight edgeBMinus = Sample(block, cx - bx, cy - by, cz - bz);
-        CornerLight edgeBPlus = Sample(block, cx + bx, cy + by, cz + bz);
+        var centre = Sample(block, cx, cy, cz);
+        var edgeAMinus = Sample(block, cx - ax, cy - ay, cz - az);
+        var edgeAPlus = Sample(block, cx + ax, cy + ay, cz + az);
+        var edgeBMinus = Sample(block, cx - bx, cy - by, cz - bz);
+        var edgeBPlus = Sample(block, cx + bx, cy + by, cz + bz);
 
-        bool opaqueAMinus = IsOpaque(cx - ax, cy - ay, cz - az);
-        bool opaqueAPlus = IsOpaque(cx + ax, cy + ay, cz + az);
-        bool opaqueBMinus = IsOpaque(cx - bx, cy - by, cz - bz);
-        bool opaqueBPlus = IsOpaque(cx + bx, cy + by, cz + bz);
+        var opaqueAMinus = IsOpaque(cx - ax, cy - ay, cz - az);
+        var opaqueAPlus = IsOpaque(cx + ax, cy + ay, cz + az);
+        var opaqueBMinus = IsOpaque(cx - bx, cy - by, cz - bz);
+        var opaqueBPlus = IsOpaque(cx + bx, cy + by, cz + bz);
 
-        CornerLight cornerMinusMinus = opaqueAMinus && opaqueBMinus
+        var cornerMinusMinus = opaqueAMinus && opaqueBMinus
             ? edgeAMinus
             : Sample(block, cx - ax - bx, cy - ay - by, cz - az - bz);
 
-        CornerLight cornerMinusPlus = opaqueAMinus && opaqueBPlus
+        var cornerMinusPlus = opaqueAMinus && opaqueBPlus
             ? edgeAMinus
             : Sample(block, cx - ax + bx, cy - ay + by, cz - az + bz);
 
-        CornerLight cornerPlusMinus = opaqueAPlus && opaqueBMinus
+        var cornerPlusMinus = opaqueAPlus && opaqueBMinus
             ? edgeAPlus
             : Sample(block, cx + ax - bx, cy + ay - by, cz + az - bz);
 
-        CornerLight cornerPlusPlus = opaqueAPlus && opaqueBPlus
+        var cornerPlusPlus = opaqueAPlus && opaqueBPlus
             ? edgeAPlus
             : Sample(block, cx + ax + bx, cy + ay + by, cz + az + bz);
 
@@ -608,15 +609,15 @@ public ref struct BlockRenderContext
 
     internal readonly bool DrawBlock(in Block block, in BlockPos pos)
     {
-        bool hasRendered = false;
-        Box bounds = OverrideBounds ?? block.BoundingBox;
+        var hasRendered = false;
+        var bounds = OverrideBounds ?? block.BoundingBox;
 
-        int colorMultiplier = block.GetColorMultiplier(BlockReader, pos.X, pos.Y, pos.Z);
-        float r = (colorMultiplier >> 16 & 255) * 0.0039215686F;
-        float g = (colorMultiplier >> 8 & 255) * 0.0039215686F;
-        float b = (colorMultiplier & 255) * 0.0039215686F;
+        var colorMultiplier = block.GetColorMultiplier(BlockReader, pos.X, pos.Y, pos.Z);
+        var r = ((colorMultiplier >> 16) & 255) * 0.0039215686F;
+        var g = ((colorMultiplier >> 8) & 255) * 0.0039215686F;
+        var b = (colorMultiplier & 255) * 0.0039215686F;
 
-        bool hasOverrideTex = OverrideTexture >= 0;
+        var hasOverrideTex = OverrideTexture >= 0;
         bool tintBottom = true, tintTop = true, tintEast = true, tintWest = true, tintNorth = true, tintSouth = true;
 
         if (block.TextureId == 3 || hasOverrideTex)
@@ -625,16 +626,19 @@ public ref struct BlockRenderContext
         }
 
         CornerLight v0, v1, v2, v3;
-        bool ao = AoBlendMode > 0;
+        var ao = AoBlendMode > 0;
         Vec3D vecPos = new(pos.X, pos.Y, pos.Z); // Allocate struct once
 
         // BOTTOM FACE (Y - 1)
         if (RenderAllFaces || bounds.MinY > 0.0F || block.IsSideVisible(BlockReader, pos.X, pos.Y - 1, pos.Z, Side.Down))
         {
-            if (!ao) { v0 = v1 = v2 = v3 = Sample(block, pos.X, pos.Y - 1, pos.Z); }
+            if (!ao)
+            {
+                v0 = v1 = v2 = v3 = Sample(block, pos.X, pos.Y - 1, pos.Z);
+            }
             else
             {
-                FaceQuadrants q = SampleFace(block, pos, 0, -1, 0, 1, 0, 0, 0, 0, 1);
+                var q = SampleFace(block, pos, 0, -1, 0, 1, 0, 0, 0, 0, 1);
                 v0 = q.MinusPlus;
                 v1 = q.MinusMinus;
                 v2 = q.PlusMinus;
@@ -643,9 +647,9 @@ public ref struct BlockRenderContext
 
             ApplyFlatLightIfUnread(v0);
             var colors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 0.5F, tintBottom);
-            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.Down);
+            var textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.Down);
 
-            DrawBottomFace(block, in vecPos, colors, textureId, ao && (v0.FlipWeight + v2.FlipWeight > v1.FlipWeight + v3.FlipWeight));
+            DrawBottomFace(block, in vecPos, colors, textureId, ao && v0.FlipWeight + v2.FlipWeight > v1.FlipWeight + v3.FlipWeight);
 
             hasRendered = true;
         }
@@ -653,10 +657,13 @@ public ref struct BlockRenderContext
         // TOP FACE (Y + 1)
         if (RenderAllFaces || bounds.MaxY < 1.0F || block.IsSideVisible(BlockReader, pos.X, pos.Y + 1, pos.Z, Side.Up))
         {
-            if (!ao) { v0 = v1 = v2 = v3 = Sample(block, pos.X, pos.Y + 1, pos.Z); }
+            if (!ao)
+            {
+                v0 = v1 = v2 = v3 = Sample(block, pos.X, pos.Y + 1, pos.Z);
+            }
             else
             {
-                FaceQuadrants q = SampleFace(block, pos, 0, 1, 0, 1, 0, 0, 0, 0, 1);
+                var q = SampleFace(block, pos, 0, 1, 0, 1, 0, 0, 0, 0, 1);
                 v0 = q.PlusPlus;
                 v1 = q.PlusMinus;
                 v2 = q.MinusMinus;
@@ -665,9 +672,9 @@ public ref struct BlockRenderContext
 
             ApplyFlatLightIfUnread(v0);
             var colors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 1.0F, tintTop);
-            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.Up);
+            var textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.Up);
 
-            DrawTopFace(block, in vecPos, colors, textureId, ao && (v0.FlipWeight + v2.FlipWeight > v1.FlipWeight + v3.FlipWeight));
+            DrawTopFace(block, in vecPos, colors, textureId, ao && v0.FlipWeight + v2.FlipWeight > v1.FlipWeight + v3.FlipWeight);
 
             hasRendered = true;
         }
@@ -675,20 +682,23 @@ public ref struct BlockRenderContext
         // EAST FACE (Z - 1)
         if (RenderAllFaces || bounds.MinZ > 0.0F || block.IsSideVisible(BlockReader, pos.X, pos.Y, pos.Z - 1, Side.North))
         {
-            if (!ao) { v0 = v1 = v2 = v3 = Sample(block, pos.X, pos.Y, pos.Z - 1); }
+            if (!ao)
+            {
+                v0 = v1 = v2 = v3 = Sample(block, pos.X, pos.Y, pos.Z - 1);
+            }
             else
             {
-                FaceQuadrants q = SampleFace(block, pos, 0, 0, -1, 1, 0, 0, 0, 1, 0);
+                var q = SampleFace(block, pos, 0, 0, -1, 1, 0, 0, 0, 1, 0);
                 v0 = q.MinusPlus;
                 v1 = q.PlusPlus;
                 v2 = q.PlusMinus;
                 v3 = q.MinusMinus;
             }
 
-            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.North);
+            var textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.North);
             ApplyFlatLightIfUnread(v1);
             var colors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.8F, tintEast);
-            bool flipped = ao && (v1.FlipWeight + v3.FlipWeight > v2.FlipWeight + v0.FlipWeight);
+            var flipped = ao && v1.FlipWeight + v3.FlipWeight > v2.FlipWeight + v0.FlipWeight;
 
             DrawEastFace(block, in vecPos, colors, textureId, flipped);
 
@@ -704,20 +714,23 @@ public ref struct BlockRenderContext
         // WEST FACE (Z + 1)
         if (RenderAllFaces || bounds.MaxZ < 1.0F || block.IsSideVisible(BlockReader, pos.X, pos.Y, pos.Z + 1, Side.South))
         {
-            if (!ao) { v0 = v1 = v2 = v3 = Sample(block, pos.X, pos.Y, pos.Z + 1); }
+            if (!ao)
+            {
+                v0 = v1 = v2 = v3 = Sample(block, pos.X, pos.Y, pos.Z + 1);
+            }
             else
             {
-                FaceQuadrants q = SampleFace(block, pos, 0, 0, 1, 1, 0, 0, 0, 1, 0);
+                var q = SampleFace(block, pos, 0, 0, 1, 1, 0, 0, 0, 1, 0);
                 v0 = q.MinusPlus;
                 v1 = q.MinusMinus;
                 v2 = q.PlusMinus;
                 v3 = q.PlusPlus;
             }
 
-            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.South);
+            var textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.South);
             ApplyFlatLightIfUnread(v0);
             var colors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 0.8F, tintWest);
-            bool flipped = ao && (v0.FlipWeight + v2.FlipWeight > v1.FlipWeight + v3.FlipWeight);
+            var flipped = ao && v0.FlipWeight + v2.FlipWeight > v1.FlipWeight + v3.FlipWeight;
 
             DrawWestFace(block, in vecPos, colors, textureId, flipped);
 
@@ -733,20 +746,23 @@ public ref struct BlockRenderContext
         // NORTH FACE (X - 1)
         if (RenderAllFaces || bounds.MinX > 0.0F || block.IsSideVisible(BlockReader, pos.X - 1, pos.Y, pos.Z, Side.West))
         {
-            if (!ao) { v0 = v1 = v2 = v3 = Sample(block, pos.X - 1, pos.Y, pos.Z); }
+            if (!ao)
+            {
+                v0 = v1 = v2 = v3 = Sample(block, pos.X - 1, pos.Y, pos.Z);
+            }
             else
             {
-                FaceQuadrants q = SampleFace(block, pos, -1, 0, 0, 0, 0, 1, 0, 1, 0);
+                var q = SampleFace(block, pos, -1, 0, 0, 0, 0, 1, 0, 1, 0);
                 v0 = q.PlusPlus;
                 v1 = q.MinusPlus;
                 v2 = q.MinusMinus;
                 v3 = q.PlusMinus;
             }
 
-            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.West);
+            var textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.West);
             ApplyFlatLightIfUnread(v1);
             var colors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.6F, tintNorth);
-            bool flipped = ao && (v1.FlipWeight + v3.FlipWeight > v2.FlipWeight + v0.FlipWeight);
+            var flipped = ao && v1.FlipWeight + v3.FlipWeight > v2.FlipWeight + v0.FlipWeight;
 
             DrawNorthFace(block, in vecPos, colors, textureId, flipped);
 
@@ -762,20 +778,23 @@ public ref struct BlockRenderContext
         // SOUTH FACE (X + 1)
         if (RenderAllFaces || bounds.MaxX < 1.0F || block.IsSideVisible(BlockReader, pos.X + 1, pos.Y, pos.Z, Side.East))
         {
-            if (!ao) { v0 = v1 = v2 = v3 = Sample(block, pos.X + 1, pos.Y, pos.Z); }
+            if (!ao)
+            {
+                v0 = v1 = v2 = v3 = Sample(block, pos.X + 1, pos.Y, pos.Z);
+            }
             else
             {
-                FaceQuadrants q = SampleFace(block, pos, 1, 0, 0, 0, 0, 1, 0, 1, 0);
+                var q = SampleFace(block, pos, 1, 0, 0, 0, 0, 1, 0, 1, 0);
                 v0 = q.PlusMinus;
                 v1 = q.MinusMinus;
                 v2 = q.MinusPlus;
                 v3 = q.PlusPlus;
             }
 
-            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, 5.ToSide());
+            var textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, 5.ToSide());
             ApplyFlatLightIfUnread(v3);
             var colors = FaceColors.AssignVertexColors(v3, v0, v1, v2, r, g, b, 0.6F, tintSouth);
-            bool flipped = ao && (v3.FlipWeight + v1.FlipWeight > v0.FlipWeight + v2.FlipWeight);
+            var flipped = ao && v3.FlipWeight + v1.FlipWeight > v0.FlipWeight + v2.FlipWeight;
 
             DrawSouthFace(block, in vecPos, colors, textureId, flipped);
 
@@ -803,42 +822,42 @@ public ref struct BlockRenderContext
     /// </remarks>
     internal readonly (CornerLight V0, CornerLight V1, CornerLight V2, CornerLight V3, bool Flipped) ComputeTopFaceLight(in Block block, in BlockPos pos)
     {
-        FaceQuadrants q = SampleFace(block, pos, 0, 1, 0, 1, 0, 0, 0, 0, 1);
+        var q = SampleFace(block, pos, 0, 1, 0, 1, 0, 0, 0, 0, 1);
         CornerLight v0 = q.PlusPlus, v1 = q.PlusMinus, v2 = q.MinusMinus, v3 = q.MinusPlus;
         return (v0, v1, v2, v3, v0.FlipWeight + v2.FlipWeight > v1.FlipWeight + v3.FlipWeight);
     }
 
     internal readonly (CornerLight V0, CornerLight V1, CornerLight V2, CornerLight V3, bool Flipped) ComputeBottomFaceLight(in Block block, in BlockPos pos)
     {
-        FaceQuadrants q = SampleFace(block, pos, 0, -1, 0, 1, 0, 0, 0, 0, 1);
+        var q = SampleFace(block, pos, 0, -1, 0, 1, 0, 0, 0, 0, 1);
         CornerLight v0 = q.MinusPlus, v1 = q.MinusMinus, v2 = q.PlusMinus, v3 = q.PlusPlus;
         return (v0, v1, v2, v3, v0.FlipWeight + v2.FlipWeight > v1.FlipWeight + v3.FlipWeight);
     }
 
     internal readonly (CornerLight V0, CornerLight V1, CornerLight V2, CornerLight V3, bool Flipped) ComputeEastFaceLight(in Block block, in BlockPos pos)
     {
-        FaceQuadrants q = SampleFace(block, pos, 0, 0, -1, 1, 0, 0, 0, 1, 0);
+        var q = SampleFace(block, pos, 0, 0, -1, 1, 0, 0, 0, 1, 0);
         CornerLight v0 = q.MinusPlus, v1 = q.PlusPlus, v2 = q.PlusMinus, v3 = q.MinusMinus;
         return (v0, v1, v2, v3, v1.FlipWeight + v3.FlipWeight > v2.FlipWeight + v0.FlipWeight);
     }
 
     internal readonly (CornerLight V0, CornerLight V1, CornerLight V2, CornerLight V3, bool Flipped) ComputeWestFaceLight(in Block block, in BlockPos pos)
     {
-        FaceQuadrants q = SampleFace(block, pos, 0, 0, 1, 1, 0, 0, 0, 1, 0);
+        var q = SampleFace(block, pos, 0, 0, 1, 1, 0, 0, 0, 1, 0);
         CornerLight v0 = q.MinusPlus, v1 = q.MinusMinus, v2 = q.PlusMinus, v3 = q.PlusPlus;
         return (v0, v1, v2, v3, v0.FlipWeight + v2.FlipWeight > v1.FlipWeight + v3.FlipWeight);
     }
 
     internal readonly (CornerLight V0, CornerLight V1, CornerLight V2, CornerLight V3, bool Flipped) ComputeNorthFaceLight(in Block block, in BlockPos pos)
     {
-        FaceQuadrants q = SampleFace(block, pos, -1, 0, 0, 0, 0, 1, 0, 1, 0);
+        var q = SampleFace(block, pos, -1, 0, 0, 0, 0, 1, 0, 1, 0);
         CornerLight v0 = q.PlusPlus, v1 = q.MinusPlus, v2 = q.MinusMinus, v3 = q.PlusMinus;
         return (v0, v1, v2, v3, v1.FlipWeight + v3.FlipWeight > v2.FlipWeight + v0.FlipWeight);
     }
 
     internal readonly (CornerLight V0, CornerLight V1, CornerLight V2, CornerLight V3, bool Flipped) ComputeSouthFaceLight(in Block block, in BlockPos pos)
     {
-        FaceQuadrants q = SampleFace(block, pos, 1, 0, 0, 0, 0, 1, 0, 1, 0);
+        var q = SampleFace(block, pos, 1, 0, 0, 0, 0, 1, 0, 1, 0);
         CornerLight v0 = q.PlusMinus, v1 = q.MinusMinus, v2 = q.MinusPlus, v3 = q.PlusPlus;
         return (v0, v1, v2, v3, v3.FlipWeight + v1.FlipWeight > v0.FlipWeight + v2.FlipWeight);
     }
@@ -859,7 +878,7 @@ public ref struct BlockRenderContext
         const float topMinVOffset = 6.0f * texel;
         const float topMaxVOffset = 8.0f * texel;
 
-        int textureId = OverrideTexture >= 0 ? OverrideTexture : block.GetTexture(0);
+        var textureId = OverrideTexture >= 0 ? OverrideTexture : block.GetTexture(0);
 
         Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
@@ -873,38 +892,38 @@ public ref struct BlockRenderContext
         const float topMaxU = minU + topMaxUOffset;
         const float topMaxV = minV + topMaxVOffset;
 
-        float pX = (float)pos.X;
-        float pY = (float)pos.Y;
-        float pZ = (float)pos.Z;
+        var pX = (float)pos.X;
+        var pY = (float)pos.Y;
+        var pZ = (float)pos.Z;
 
-        float centerX = pX + 0.5f;
-        float centerZ = pZ + 0.5f;
-        float leftX = pX;
-        float rightX = pX + 1.0f;
-        float frontZ = pZ;
-        float backZ = pZ + 1.0f;
+        var centerX = pX + 0.5f;
+        var centerZ = pZ + 0.5f;
+        var leftX = pX;
+        var rightX = pX + 1.0f;
+        var frontZ = pZ;
+        var backZ = pZ + 1.0f;
 
-        float yBot = pY;
-        float yTop = pY + 1.0f;
-        float yTip = pY + height;
+        var yBot = pY;
+        var yTop = pY + 1.0f;
+        var yTip = pY + height;
 
-        float cXmin = centerX - radius;
-        float cXmax = centerX + radius;
-        float cZmin = centerZ - radius;
-        float cZmax = centerZ + radius;
+        var cXmin = centerX - radius;
+        var cXmax = centerX + radius;
+        var cZmin = centerZ - radius;
+        var cZmax = centerZ + radius;
 
-        float tLeftX = leftX + tiltX;
-        float tRightX = rightX + tiltX;
-        float tFrontZ = frontZ + tiltZ;
-        float tBackZ = backZ + tiltZ;
+        var tLeftX = leftX + tiltX;
+        var tRightX = rightX + tiltX;
+        var tFrontZ = frontZ + tiltZ;
+        var tBackZ = backZ + tiltZ;
 
-        float cXminT = cXmin + tiltX;
-        float cXmaxT = cXmax + tiltX;
-        float cZminT = cZmin + tiltZ;
-        float cZmaxT = cZmax + tiltZ;
+        var cXminT = cXmin + tiltX;
+        var cXmaxT = cXmax + tiltX;
+        var cZminT = cZmin + tiltZ;
+        var cZmaxT = cZmax + tiltZ;
 
-        float tipX = centerX + tiltX * tipOffsetBase;
-        float tipZ = centerZ + tiltZ * tipOffsetBase;
+        var tipX = centerX + tiltX * tipOffsetBase;
+        var tipZ = centerZ + tiltZ * tipOffsetBase;
 
         Tess.setColorOpaque_F(1.0f, 1.0f, 1.0f);
 

@@ -16,10 +16,7 @@ namespace OmniBlock.Blocks.Behaviors;
 /// </summary>
 public sealed class PlantSurvivalBehavior(Block[] validGround) : IBlockTicker, IBlockPhysics
 {
-    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-    {
-        return IsValidGround(@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z));
-    }
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => IsValidGround(@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z));
 
     public bool CanGrow(Block block, OnTickEvent ctx)
     {
@@ -27,21 +24,17 @@ public sealed class PlantSurvivalBehavior(Block[] validGround) : IBlockTicker, I
                && IsValidGround(ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z));
     }
 
-    public void NeighborUpdate(Block block, OnTickEvent @event)
-    {
-        BreakIfCannotSurvive(block, @event.World, @event.X, @event.Y, @event.Z);
-    }
+    public void NeighborUpdate(Block block, OnTickEvent @event) => BreakIfCannotSurvive(block, @event.World, @event.X, @event.Y, @event.Z);
 
-    public void OnTick(Block block, OnTickEvent @event)
-    {
-        BreakIfCannotSurvive(block, @event.World, @event.X, @event.Y, @event.Z);
-    }
+    public void OnTick(Block block, OnTickEvent @event) => BreakIfCannotSurvive(block, @event.World, @event.X, @event.Y, @event.Z);
 
     private bool IsValidGround(int id)
     {
         foreach (var ground in validGround)
+        {
             if (id == ground.Id)
                 return true;
+        }
 
         return false;
     }

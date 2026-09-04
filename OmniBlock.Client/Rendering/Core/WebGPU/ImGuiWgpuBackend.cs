@@ -1,8 +1,8 @@
-using System.Numerics;
 using System.Runtime.InteropServices;
 using Hexa.NET.ImGui;
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
+using Buffer = System.Buffer;
 using WgpuBuffer = Silk.NET.WebGPU.Buffer;
 
 namespace OmniBlock.Client.Rendering.Core.WebGPU;
@@ -26,42 +26,34 @@ namespace OmniBlock.Client.Rendering.Core.WebGPU;
 /// </remarks>
 public sealed unsafe class ImGuiWgpuBackend : IDisposable
 {
-    private readonly WebGpuDevice _device;
-    private readonly Silk.NET.WebGPU.WebGPU _api;
-
-    private readonly ShaderModule* _shaderModule;
-    private readonly BindGroupLayout* _uniformLayout;
-    private readonly BindGroupLayout* _textureLayout;
-    private readonly PipelineLayout* _pipelineLayout;
-    private readonly RenderPipeline* _pipeline;
-    private readonly WgpuBuffer* _uniformBuffer;
-    private readonly BindGroup* _uniformBindGroup;
-    private readonly Sampler* _sampler;
-
-    private WgpuBuffer* _vertexBuffer;
-    private WgpuBuffer* _indexBuffer;
-    private ulong _vertexCapacity;
-    private ulong _indexCapacity;
-
-    private byte[] _vertexScratch = [];
-    private byte[] _indexScratch = [];
-
-    private readonly Dictionary<ulong, BackendTexture> _textures = [];
-    private ulong _nextTextureId = 1;
-
-    private bool _disposed;
-
-    private readonly struct BackendTexture(Texture* texture, TextureView* view, BindGroup* bindGroup)
-    {
-        public Texture* Texture { get; } = texture;
-        public TextureView* View { get; } = view;
-        public BindGroup* BindGroup { get; } = bindGroup;
-    }
-
     /// <summary>One <c>mat4x4&lt;f32&gt;</c>, and the smallest a uniform binding is allowed to be.</summary>
     private const ulong UniformSize = 64;
 
     private static readonly uint s_vertexStride = (uint)sizeof(ImDrawVert);
+    private readonly Silk.NET.WebGPU.WebGPU _api;
+    private readonly WebGpuDevice _device;
+    private readonly RenderPipeline* _pipeline;
+    private readonly PipelineLayout* _pipelineLayout;
+    private readonly Sampler* _sampler;
+
+    private readonly ShaderModule* _shaderModule;
+    private readonly BindGroupLayout* _textureLayout;
+
+    private readonly Dictionary<ulong, BackendTexture> _textures = [];
+    private readonly BindGroup* _uniformBindGroup;
+    private readonly WgpuBuffer* _uniformBuffer;
+    private readonly BindGroupLayout* _uniformLayout;
+
+    private bool _disposed;
+    private WgpuBuffer* _indexBuffer;
+    private ulong _indexCapacity;
+    private byte[] _indexScratch = [];
+    private ulong _nextTextureId = 1;
+
+    private WgpuBuffer* _vertexBuffer;
+    private ulong _vertexCapacity;
+
+    private byte[] _vertexScratch = [];
 
     public ImGuiWgpuBackend(WebGpuDevice device)
     {
@@ -80,6 +72,35 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
         CreateUniforms(out _uniformBuffer, out _uniformBindGroup);
     }
 
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        foreach (var texture in _textures.Values)
+        {
+            Release(texture);
+        }
+
+        _textures.Clear();
+
+        if (_vertexBuffer is not null) _api.BufferRelease(_vertexBuffer);
+        if (_indexBuffer is not null) _api.BufferRelease(_indexBuffer);
+
+        _api.BindGroupRelease(_uniformBindGroup);
+        _api.BufferRelease(_uniformBuffer);
+        _api.SamplerRelease(_sampler);
+        _api.RenderPipelineRelease(_pipeline);
+        _api.PipelineLayoutRelease(_pipelineLayout);
+        _api.BindGroupLayoutRelease(_textureLayout);
+        _api.BindGroupLayoutRelease(_uniformLayout);
+        _api.ShaderModuleRelease(_shaderModule);
+    }
+
     /// <summary>Draws one frame's ImGui output into an already-begun render pass.</summary>
     public void RenderDrawData(ImDrawDataPtr drawData, RenderPassEncoder* pass)
     {
@@ -87,8 +108,8 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
         // pass, so servicing requests here rather than before the pass began is still in time.
         ServiceTextureRequests(drawData);
 
-        int framebufferWidth = (int)(drawData.DisplaySize.X * drawData.FramebufferScale.X);
-        int framebufferHeight = (int)(drawData.DisplaySize.Y * drawData.FramebufferScale.Y);
+        var framebufferWidth = (int)(drawData.DisplaySize.X * drawData.FramebufferScale.X);
+        var framebufferHeight = (int)(drawData.DisplaySize.Y * drawData.FramebufferScale.Y);
         if (framebufferWidth <= 0 || framebufferHeight <= 0 || drawData.TotalVtxCount == 0)
         {
             return;
@@ -102,19 +123,19 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
         _api.RenderPassEncoderSetVertexBuffer(pass, 0, _vertexBuffer, 0, _vertexCapacity);
         _api.RenderPassEncoderSetIndexBuffer(pass, _indexBuffer, IndexFormat.Uint16, 0, _indexCapacity);
 
-        Vector2 clipOffset = drawData.DisplayPos;
-        Vector2 clipScale = drawData.FramebufferScale;
+        var clipOffset = drawData.DisplayPos;
+        var clipScale = drawData.FramebufferScale;
 
-        int vertexOffset = 0;
+        var vertexOffset = 0;
         uint indexOffset = 0;
 
-        for (int list = 0; list < drawData.CmdListsCount; list++)
+        for (var list = 0; list < drawData.CmdListsCount; list++)
         {
-            ImDrawListPtr cmdList = drawData.CmdLists[list];
+            var cmdList = drawData.CmdLists[list];
 
-            for (int i = 0; i < cmdList.CmdBuffer.Size; i++)
+            for (var i = 0; i < cmdList.CmdBuffer.Size; i++)
             {
-                ImDrawCmd cmd = cmdList.CmdBuffer[i];
+                var cmd = cmdList.CmdBuffer[i];
                 if (cmd.UserCallback is not null || cmd.ElemCount == 0)
                 {
                     continue;
@@ -122,10 +143,10 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
 
                 // ImGui's clip rects are in ImGui space and may run past the framebuffer on either
                 // side; WebGPU rejects a scissor that does, rather than clamping it as GL did.
-                int minX = (int)((cmd.ClipRect.X - clipOffset.X) * clipScale.X);
-                int minY = (int)((cmd.ClipRect.Y - clipOffset.Y) * clipScale.Y);
-                int maxX = (int)((cmd.ClipRect.Z - clipOffset.X) * clipScale.X);
-                int maxY = (int)((cmd.ClipRect.W - clipOffset.Y) * clipScale.Y);
+                var minX = (int)((cmd.ClipRect.X - clipOffset.X) * clipScale.X);
+                var minY = (int)((cmd.ClipRect.Y - clipOffset.Y) * clipScale.Y);
+                var maxX = (int)((cmd.ClipRect.Z - clipOffset.X) * clipScale.X);
+                var maxY = (int)((cmd.ClipRect.W - clipOffset.Y) * clipScale.Y);
 
                 minX = Math.Clamp(minX, 0, framebufferWidth);
                 minY = Math.Clamp(minY, 0, framebufferHeight);
@@ -137,7 +158,7 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
                     continue;
                 }
 
-                if (!_textures.TryGetValue(cmd.TexRef.GetTexID().Handle, out BackendTexture texture))
+                if (!_textures.TryGetValue(cmd.TexRef.GetTexID().Handle, out var texture))
                 {
                     continue;
                 }
@@ -161,15 +182,15 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
     /// <summary>Answers every texture request ImGui made this frame.</summary>
     private void ServiceTextureRequests(ImDrawDataPtr drawData)
     {
-        ImVector<ImTextureDataPtr>* requests = drawData.Handle->Textures;
+        var requests = drawData.Handle->Textures;
         if (requests is null)
         {
             return;
         }
 
-        for (int i = 0; i < requests->Size; i++)
+        for (var i = 0; i < requests->Size; i++)
         {
-            ImTextureDataPtr request = (*requests)[i];
+            var request = (*requests)[i];
             switch (request.Status)
             {
                 case ImTextureStatus.WantCreate:
@@ -196,10 +217,10 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
             Size = new Extent3D((uint)request.Width, (uint)request.Height, 1),
             Format = TextureFormat.Rgba8Unorm,
             MipLevelCount = 1,
-            SampleCount = 1,
+            SampleCount = 1
         };
 
-        Texture* texture = _api.DeviceCreateTexture(_device.Device, in descriptor);
+        var texture = _api.DeviceCreateTexture(_device.Device, in descriptor);
 
         TextureViewDescriptor viewDescriptor = new()
         {
@@ -207,25 +228,33 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
             Dimension = TextureViewDimension.Dimension2D,
             MipLevelCount = 1,
             ArrayLayerCount = 1,
-            Aspect = TextureAspect.All,
+            Aspect = TextureAspect.All
         };
 
-        TextureView* view = _api.TextureCreateView(texture, in viewDescriptor);
+        var view = _api.TextureCreateView(texture, in viewDescriptor);
 
-        BindGroupEntry* entries = stackalloc BindGroupEntry[2];
-        entries[0] = new BindGroupEntry { Binding = 0, TextureView = view };
-        entries[1] = new BindGroupEntry { Binding = 1, Sampler = _sampler };
+        var entries = stackalloc BindGroupEntry[2];
+        entries[0] = new BindGroupEntry
+        {
+            Binding = 0,
+            TextureView = view
+        };
+        entries[1] = new BindGroupEntry
+        {
+            Binding = 1,
+            Sampler = _sampler
+        };
 
         BindGroupDescriptor bindGroupDescriptor = new()
         {
             Layout = _textureLayout,
             EntryCount = 2,
-            Entries = entries,
+            Entries = entries
         };
 
-        BindGroup* bindGroup = _api.DeviceCreateBindGroup(_device.Device, in bindGroupDescriptor);
+        var bindGroup = _api.DeviceCreateBindGroup(_device.Device, in bindGroupDescriptor);
 
-        ulong id = _nextTextureId++;
+        var id = _nextTextureId++;
         _textures[id] = new BackendTexture(texture, view, bindGroup);
 
         request.SetTexID(new ImTextureID(id));
@@ -236,12 +265,12 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
 
     private void UpdateTexture(ImTextureDataPtr request)
     {
-        if (!_textures.TryGetValue(request.GetTexID().Handle, out BackendTexture texture))
+        if (!_textures.TryGetValue(request.GetTexID().Handle, out var texture))
         {
             return;
         }
 
-        ImTextureRect rect = request.UpdateRect;
+        var rect = request.UpdateRect;
         WriteRegion(texture.Texture, request, rect.X, rect.Y, rect.W, rect.H);
         request.SetStatus(ImTextureStatus.Ok);
     }
@@ -266,31 +295,31 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
             Texture = texture,
             MipLevel = 0,
             Origin = new Origin3D((uint)x, (uint)y, 0),
-            Aspect = TextureAspect.All,
+            Aspect = TextureAspect.All
         };
 
-        uint pitch = (uint)request.GetPitch();
+        var pitch = (uint)request.GetPitch();
 
         TextureDataLayout layout = new()
         {
             Offset = 0,
             BytesPerRow = pitch,
-            RowsPerImage = (uint)height,
+            RowsPerImage = (uint)height
         };
 
         Extent3D extent = new((uint)width, (uint)height, 1);
 
         // The last row is the only one that need not be a full pitch, but wgpu reads
         // BytesPerRow * (height - 1) + widthInBytes, so handing it the whole span is safe.
-        nuint size = (nuint)(pitch * (uint)height);
+        var size = (nuint)(pitch * (uint)height);
 
         _api.QueueWriteTexture(_device.Queue, in destination, request.GetPixelsAt(x, y), size, in layout, in extent);
     }
 
     private void DestroyTexture(ImTextureDataPtr request)
     {
-        ulong id = request.GetTexID().Handle;
-        if (_textures.Remove(id, out BackendTexture texture))
+        var id = request.GetTexID().Handle;
+        if (_textures.Remove(id, out var texture))
         {
             Release(texture);
         }
@@ -313,8 +342,8 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
     /// </remarks>
     public ulong RegisterExternalTexture(TextureView* view)
     {
-        BindGroup* bindGroup = CreateExternalBindGroup(view);
-        ulong id = _nextTextureId++;
+        var bindGroup = CreateExternalBindGroup(view);
+        var id = _nextTextureId++;
         // Texture/View left null: that is how Release tells an external entry apart from one it
         // created itself and must destroy.
         _textures[id] = new BackendTexture(null, null, bindGroup);
@@ -339,32 +368,40 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
     /// </remarks>
     public void UpdateExternalTexture(ulong id, TextureView* view)
     {
-        if (id == 0 || !_textures.TryGetValue(id, out BackendTexture old))
+        if (id == 0 || !_textures.TryGetValue(id, out var old))
         {
             return;
         }
 
-        BindGroup* bindGroup = CreateExternalBindGroup(view);
+        var bindGroup = CreateExternalBindGroup(view);
         _api.BindGroupRelease(old.BindGroup);
         _textures[id] = new BackendTexture(null, null, bindGroup);
     }
 
     private BindGroup* CreateExternalBindGroup(TextureView* view)
     {
-        BindGroupEntry* entries = stackalloc BindGroupEntry[2];
-        entries[0] = new BindGroupEntry { Binding = 0, TextureView = view };
-        entries[1] = new BindGroupEntry { Binding = 1, Sampler = _sampler };
+        var entries = stackalloc BindGroupEntry[2];
+        entries[0] = new BindGroupEntry
+        {
+            Binding = 0,
+            TextureView = view
+        };
+        entries[1] = new BindGroupEntry
+        {
+            Binding = 1,
+            Sampler = _sampler
+        };
 
-        byte* label = (byte*)SilkMarshal.StringToPtr("ImGui.ExternalTexture");
+        var label = (byte*)SilkMarshal.StringToPtr("ImGui.ExternalTexture");
         BindGroupDescriptor descriptor = new()
         {
             Label = label,
             Layout = _textureLayout,
             EntryCount = 2,
-            Entries = entries,
+            Entries = entries
         };
 
-        BindGroup* group = _api.DeviceCreateBindGroup(_device.Device, in descriptor);
+        var group = _api.DeviceCreateBindGroup(_device.Device, in descriptor);
         SilkMarshal.Free((nint)label);
         return group;
     }
@@ -372,7 +409,7 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
     /// <summary>Releases the bind group created by <see cref="RegisterExternalTexture" />. A no-op for id 0.</summary>
     public void UnregisterExternalTexture(ulong id)
     {
-        if (id != 0 && _textures.Remove(id, out BackendTexture texture))
+        if (id != 0 && _textures.Remove(id, out var texture))
         {
             Release(texture);
         }
@@ -400,8 +437,8 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
     /// </remarks>
     private void UploadGeometry(ImDrawDataPtr drawData)
     {
-        ulong vertexBytes = Align4((ulong)drawData.TotalVtxCount * s_vertexStride);
-        ulong indexBytes = Align4((ulong)drawData.TotalIdxCount * sizeof(ushort));
+        var vertexBytes = Align4((ulong)drawData.TotalVtxCount * s_vertexStride);
+        var indexBytes = Align4((ulong)drawData.TotalIdxCount * sizeof(ushort));
 
         EnsureBuffer(ref _vertexBuffer, ref _vertexCapacity, vertexBytes, BufferUsage.Vertex);
         EnsureBuffer(ref _indexBuffer, ref _indexCapacity, indexBytes, BufferUsage.Index);
@@ -418,16 +455,16 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
         fixed (byte* vertexScratch = _vertexScratch)
         fixed (byte* indexScratch = _indexScratch)
         {
-            for (int list = 0; list < drawData.CmdListsCount; list++)
+            for (var list = 0; list < drawData.CmdListsCount; list++)
             {
-                ImDrawListPtr cmdList = drawData.CmdLists[list];
+                var cmdList = drawData.CmdLists[list];
 
-                ulong listVertexBytes = (ulong)cmdList.VtxBuffer.Size * s_vertexStride;
-                ulong listIndexBytes = (ulong)cmdList.IdxBuffer.Size * sizeof(ushort);
+                var listVertexBytes = (ulong)cmdList.VtxBuffer.Size * s_vertexStride;
+                var listIndexBytes = (ulong)cmdList.IdxBuffer.Size * sizeof(ushort);
 
-                System.Buffer.MemoryCopy(
+                Buffer.MemoryCopy(
                     cmdList.VtxBuffer.Data, vertexScratch + vertexOffset, vertexBytes - vertexOffset, listVertexBytes);
-                System.Buffer.MemoryCopy(
+                Buffer.MemoryCopy(
                     cmdList.IdxBuffer.Data, indexScratch + indexOffset, indexBytes - indexOffset, listIndexBytes);
 
                 vertexOffset += listVertexBytes;
@@ -461,13 +498,13 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
         }
 
         // Overshoot so a frame that grows by a few glyphs does not reallocate.
-        capacity = Math.Max(Align4(needed + (needed / 2)), 4096);
+        capacity = Math.Max(Align4(needed + needed / 2), 4096);
 
         BufferDescriptor descriptor = new()
         {
             Usage = usage | BufferUsage.CopyDst,
             Size = capacity,
-            MappedAtCreation = false,
+            MappedAtCreation = false
         };
 
         buffer = _api.DeviceCreateBuffer(_device.Device, in descriptor);
@@ -483,10 +520,10 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
     /// </remarks>
     private void UploadProjection(ImDrawDataPtr drawData)
     {
-        float left = drawData.DisplayPos.X;
-        float right = drawData.DisplayPos.X + drawData.DisplaySize.X;
-        float top = drawData.DisplayPos.Y;
-        float bottom = drawData.DisplayPos.Y + drawData.DisplaySize.Y;
+        var left = drawData.DisplayPos.X;
+        var right = drawData.DisplayPos.X + drawData.DisplaySize.X;
+        var top = drawData.DisplayPos.Y;
+        var bottom = drawData.DisplayPos.Y + drawData.DisplaySize.Y;
 
         // Column-major, as WGSL reads a mat4x4.
         Span<float> projection =
@@ -494,7 +531,7 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
             2.0f / (right - left), 0.0f, 0.0f, 0.0f,
             0.0f, 2.0f / (top - bottom), 0.0f, 0.0f,
             0.0f, 0.0f, 1.0f, 0.0f,
-            (right + left) / (left - right), (top + bottom) / (bottom - top), 0.0f, 1.0f,
+            (right + left) / (left - right), (top + bottom) / (bottom - top), 0.0f, 1.0f
         ];
 
         fixed (float* data = projection)
@@ -505,18 +542,24 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
 
     private ShaderModule* CreateShaderModule()
     {
-        string source = AssetManager.Instance.GetAsset("shaders/imgui.wgsl").GetTextContent();
-        byte* code = (byte*)SilkMarshal.StringToPtr(source);
+        var source = AssetManager.Instance.GetAsset("shaders/imgui.wgsl").GetTextContent();
+        var code = (byte*)SilkMarshal.StringToPtr(source);
 
         try
         {
             ShaderModuleWGSLDescriptor wgsl = new()
             {
-                Chain = new ChainedStruct { SType = SType.ShaderModuleWgslDescriptor },
-                Code = code,
+                Chain = new ChainedStruct
+                {
+                    SType = SType.ShaderModuleWgslDescriptor
+                },
+                Code = code
             };
 
-            ShaderModuleDescriptor descriptor = new() { NextInChain = (ChainedStruct*)&wgsl };
+            ShaderModuleDescriptor descriptor = new()
+            {
+                NextInChain = (ChainedStruct*)&wgsl
+            };
             return _api.DeviceCreateShaderModule(_device.Device, in descriptor);
         }
         finally
@@ -534,14 +577,18 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
             Buffer = new BufferBindingLayout
             {
                 Type = BufferBindingType.Uniform,
-                MinBindingSize = UniformSize,
-            },
+                MinBindingSize = UniformSize
+            }
         };
 
-        BindGroupLayoutDescriptor uniformDescriptor = new() { EntryCount = 1, Entries = &uniformEntry };
+        BindGroupLayoutDescriptor uniformDescriptor = new()
+        {
+            EntryCount = 1,
+            Entries = &uniformEntry
+        };
         uniformLayout = _api.DeviceCreateBindGroupLayout(_device.Device, in uniformDescriptor);
 
-        BindGroupLayoutEntry* textureEntries = stackalloc BindGroupLayoutEntry[2];
+        var textureEntries = stackalloc BindGroupLayoutEntry[2];
         textureEntries[0] = new BindGroupLayoutEntry
         {
             Binding = 0,
@@ -549,30 +596,37 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
             Texture = new TextureBindingLayout
             {
                 SampleType = TextureSampleType.Float,
-                ViewDimension = TextureViewDimension.Dimension2D,
-            },
+                ViewDimension = TextureViewDimension.Dimension2D
+            }
         };
         textureEntries[1] = new BindGroupLayoutEntry
         {
             Binding = 1,
             Visibility = ShaderStage.Fragment,
-            Sampler = new SamplerBindingLayout { Type = SamplerBindingType.Filtering },
+            Sampler = new SamplerBindingLayout
+            {
+                Type = SamplerBindingType.Filtering
+            }
         };
 
-        BindGroupLayoutDescriptor textureDescriptor = new() { EntryCount = 2, Entries = textureEntries };
+        BindGroupLayoutDescriptor textureDescriptor = new()
+        {
+            EntryCount = 2,
+            Entries = textureEntries
+        };
         textureLayout = _api.DeviceCreateBindGroupLayout(_device.Device, in textureDescriptor);
     }
 
     private PipelineLayout* CreatePipelineLayout()
     {
-        BindGroupLayout** layouts = stackalloc BindGroupLayout*[2];
+        var layouts = stackalloc BindGroupLayout*[2];
         layouts[0] = _uniformLayout;
         layouts[1] = _textureLayout;
 
         PipelineLayoutDescriptor descriptor = new()
         {
             BindGroupLayoutCount = 2,
-            BindGroupLayouts = layouts,
+            BindGroupLayouts = layouts
         };
 
         return _api.DeviceCreatePipelineLayout(_device.Device, in descriptor);
@@ -580,24 +634,24 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
 
     private RenderPipeline* CreatePipeline()
     {
-        VertexAttribute* attributes = stackalloc VertexAttribute[3];
+        var attributes = stackalloc VertexAttribute[3];
         attributes[0] = new VertexAttribute
         {
             Format = VertexFormat.Float32x2,
             Offset = (ulong)Marshal.OffsetOf<ImDrawVert>(nameof(ImDrawVert.Pos)),
-            ShaderLocation = 0,
+            ShaderLocation = 0
         };
         attributes[1] = new VertexAttribute
         {
             Format = VertexFormat.Float32x2,
             Offset = (ulong)Marshal.OffsetOf<ImDrawVert>(nameof(ImDrawVert.Uv)),
-            ShaderLocation = 1,
+            ShaderLocation = 1
         };
         attributes[2] = new VertexAttribute
         {
             Format = VertexFormat.Unorm8x4,
             Offset = (ulong)Marshal.OffsetOf<ImDrawVert>(nameof(ImDrawVert.Col)),
-            ShaderLocation = 2,
+            ShaderLocation = 2
         };
 
         VertexBufferLayout bufferLayout = new()
@@ -605,7 +659,7 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
             ArrayStride = s_vertexStride,
             StepMode = VertexStepMode.Vertex,
             AttributeCount = 3,
-            Attributes = attributes,
+            Attributes = attributes
         };
 
         BlendState blend = new()
@@ -614,25 +668,25 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
             {
                 Operation = BlendOperation.Add,
                 SrcFactor = BlendFactor.SrcAlpha,
-                DstFactor = BlendFactor.OneMinusSrcAlpha,
+                DstFactor = BlendFactor.OneMinusSrcAlpha
             },
             Alpha = new BlendComponent
             {
                 Operation = BlendOperation.Add,
                 SrcFactor = BlendFactor.One,
-                DstFactor = BlendFactor.OneMinusSrcAlpha,
-            },
+                DstFactor = BlendFactor.OneMinusSrcAlpha
+            }
         };
 
         ColorTargetState target = new()
         {
             Format = _device.SurfaceFormat,
             Blend = &blend,
-            WriteMask = ColorWriteMask.All,
+            WriteMask = ColorWriteMask.All
         };
 
-        byte* vertexEntry = (byte*)SilkMarshal.StringToPtr("vs_main");
-        byte* fragmentEntry = (byte*)SilkMarshal.StringToPtr("fs_main");
+        var vertexEntry = (byte*)SilkMarshal.StringToPtr("vs_main");
+        var fragmentEntry = (byte*)SilkMarshal.StringToPtr("fs_main");
 
         try
         {
@@ -641,7 +695,7 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
                 Module = _shaderModule,
                 EntryPoint = fragmentEntry,
                 TargetCount = 1,
-                Targets = &target,
+                Targets = &target
             };
 
             RenderPipelineDescriptor descriptor = new()
@@ -652,17 +706,21 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
                     Module = _shaderModule,
                     EntryPoint = vertexEntry,
                     BufferCount = 1,
-                    Buffers = &bufferLayout,
+                    Buffers = &bufferLayout
                 },
                 Primitive = new PrimitiveState
                 {
                     Topology = PrimitiveTopology.TriangleList,
                     StripIndexFormat = IndexFormat.Undefined,
                     FrontFace = FrontFace.Ccw,
-                    CullMode = Silk.NET.WebGPU.CullMode.None,
+                    CullMode = Silk.NET.WebGPU.CullMode.None
                 },
-                Multisample = new MultisampleState { Count = 1, Mask = uint.MaxValue },
-                Fragment = &fragment,
+                Multisample = new MultisampleState
+                {
+                    Count = 1,
+                    Mask = uint.MaxValue
+                },
+                Fragment = &fragment
             };
 
             return _api.DeviceCreateRenderPipeline(_device.Device, in descriptor);
@@ -686,7 +744,7 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
             MipmapFilter = MipmapFilterMode.Linear,
             LodMinClamp = 0.0f,
             LodMaxClamp = 1.0f,
-            MaxAnisotropy = 1,
+            MaxAnisotropy = 1
         };
 
         return _api.DeviceCreateSampler(_device.Device, in descriptor);
@@ -697,7 +755,7 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
         BufferDescriptor bufferDescriptor = new()
         {
             Usage = BufferUsage.Uniform | BufferUsage.CopyDst,
-            Size = UniformSize,
+            Size = UniformSize
         };
 
         buffer = _api.DeviceCreateBuffer(_device.Device, in bufferDescriptor);
@@ -707,16 +765,16 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
             Binding = 0,
             Buffer = buffer,
             Offset = 0,
-            Size = UniformSize,
+            Size = UniformSize
         };
 
-        byte* label = (byte*)SilkMarshal.StringToPtr("ImGui.Uniform");
+        var label = (byte*)SilkMarshal.StringToPtr("ImGui.Uniform");
         BindGroupDescriptor descriptor = new()
         {
             Label = label,
             Layout = _uniformLayout,
             EntryCount = 1,
-            Entries = &entry,
+            Entries = &entry
         };
 
         bindGroup = _api.DeviceCreateBindGroup(_device.Device, in descriptor);
@@ -725,32 +783,10 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
 
     private static ulong Align4(ulong size) => (size + 3UL) & ~3UL;
 
-    public void Dispose()
+    private readonly struct BackendTexture(Texture* texture, TextureView* view, BindGroup* bindGroup)
     {
-        if (_disposed)
-        {
-            return;
-        }
-
-        _disposed = true;
-
-        foreach (BackendTexture texture in _textures.Values)
-        {
-            Release(texture);
-        }
-
-        _textures.Clear();
-
-        if (_vertexBuffer is not null) _api.BufferRelease(_vertexBuffer);
-        if (_indexBuffer is not null) _api.BufferRelease(_indexBuffer);
-
-        _api.BindGroupRelease(_uniformBindGroup);
-        _api.BufferRelease(_uniformBuffer);
-        _api.SamplerRelease(_sampler);
-        _api.RenderPipelineRelease(_pipeline);
-        _api.PipelineLayoutRelease(_pipelineLayout);
-        _api.BindGroupLayoutRelease(_textureLayout);
-        _api.BindGroupLayoutRelease(_uniformLayout);
-        _api.ShaderModuleRelease(_shaderModule);
+        public Texture* Texture { get; } = texture;
+        public TextureView* View { get; } = view;
+        public BindGroup* BindGroup { get; } = bindGroup;
     }
 }

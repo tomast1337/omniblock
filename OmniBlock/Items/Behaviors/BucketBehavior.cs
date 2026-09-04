@@ -9,15 +9,15 @@ namespace OmniBlock.Items.Behaviors;
 
 internal sealed class BucketBehavior : IItemBehavior
 {
+    private readonly Item _bucket;
+    private readonly Item _bucketLava;
+
+    private readonly Item _bucketWater;
+
     // Deferred: BucketBehaviorDefinition.Build() runs during ItemFactory.Create(), which runs
     // before BlockRegistry.Initialize() — resolving "flowing_water"/"flowing_lava" eagerly here
     // would run before blocks exist. Evaluated lazily, well after boot completes.
     private readonly Func<int> _isFullFactory;
-    private int _isFull => _isFullFactory();
-
-    private readonly Item _bucket;
-    private readonly Item _bucketWater;
-    private readonly Item _bucketLava;
 
     internal BucketBehavior(Func<int> isFull, Item bucket, Item bucketWater, Item bucketLava)
     {
@@ -27,24 +27,26 @@ internal sealed class BucketBehavior : IItemBehavior
         _bucketLava = bucketLava;
     }
 
+    private int _isFull => _isFullFactory();
+
     public ItemStack Use(Item item, ItemStack itemStack, IWorldContext world, EntityPlayer player)
     {
-        float partialTick = 1.0F;
-        float pitch = player.PrevPitch + (player.Pitch - player.PrevPitch) * partialTick;
-        float yaw = player.PrevYaw + (player.Yaw - player.PrevYaw) * partialTick;
-        double x = player.PrevX + (player.X - player.PrevX) * partialTick;
-        double y = player.PrevY + (player.Y - player.PrevY) * partialTick + 1.62D - player.StandingEyeHeight;
-        double z = player.PrevZ + (player.Z - player.PrevZ) * partialTick;
+        var partialTick = 1.0F;
+        var pitch = player.PrevPitch + (player.Pitch - player.PrevPitch) * partialTick;
+        var yaw = player.PrevYaw + (player.Yaw - player.PrevYaw) * partialTick;
+        var x = player.PrevX + (player.X - player.PrevX) * partialTick;
+        var y = player.PrevY + (player.Y - player.PrevY) * partialTick + 1.62D - player.StandingEyeHeight;
+        var z = player.PrevZ + (player.Z - player.PrevZ) * partialTick;
         Vec3D rayStart = new(x, y, z);
-        float cosYaw = MathHelper.Cos(-yaw * ((float)Math.PI / 180.0F) - (float)Math.PI);
-        float sinYaw = MathHelper.Sin(-yaw * ((float)Math.PI / 180.0F) - (float)Math.PI);
-        float cosPitch = -MathHelper.Cos(-pitch * ((float)Math.PI / 180.0F));
-        float sinPitch = MathHelper.Sin(-pitch * ((float)Math.PI / 180.0F));
-        float dirX = sinYaw * cosPitch;
-        float dirZ = cosYaw * cosPitch;
-        float reach = player.GameMode.BlockReach;
-        Vec3D rayEnd = rayStart + new Vec3D(dirX * reach, sinPitch * reach, dirZ * reach);
-        HitResult hitResult = world.Reader.Raycast(rayStart, rayEnd, _isFull == 0);
+        var cosYaw = MathHelper.Cos(-yaw * ((float)Math.PI / 180.0F) - (float)Math.PI);
+        var sinYaw = MathHelper.Sin(-yaw * ((float)Math.PI / 180.0F) - (float)Math.PI);
+        var cosPitch = -MathHelper.Cos(-pitch * ((float)Math.PI / 180.0F));
+        var sinPitch = MathHelper.Sin(-pitch * ((float)Math.PI / 180.0F));
+        var dirX = sinYaw * cosPitch;
+        var dirZ = cosYaw * cosPitch;
+        var reach = player.GameMode.BlockReach;
+        var rayEnd = rayStart + new Vec3D(dirX * reach, sinPitch * reach, dirZ * reach);
+        var hitResult = world.Reader.Raycast(rayStart, rayEnd, _isFull == 0);
 
         if (hitResult.Type == HitResultType.Miss)
         {
@@ -53,9 +55,9 @@ internal sealed class BucketBehavior : IItemBehavior
 
         if (hitResult.Type == HitResultType.Tile)
         {
-            int hitX = hitResult.BlockX;
-            int hitY = hitResult.BlockY;
-            int hitZ = hitResult.BlockZ;
+            var hitX = hitResult.BlockX;
+            var hitY = hitResult.BlockY;
+            var hitZ = hitResult.BlockZ;
             if (!world.CanInteract(player, hitX, hitY, hitZ))
             {
                 return itemStack;
@@ -117,7 +119,7 @@ internal sealed class BucketBehavior : IItemBehavior
                     if (world.Dimension.EvaporatesWater && _isFull == BlockRegistry.Get("flowing_water").Id)
                     {
                         world.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "random.fizz", 0.5F, 2.6F + (world.Random.NextFloat() - world.Random.NextFloat()) * 0.8F);
-                        for (int i = 0; i < 8; ++i)
+                        for (var i = 0; i < 8; ++i)
                         {
                             world.Broadcaster.AddParticle("largesmoke", hitX + Random.Shared.NextDouble(), hitY + Random.Shared.NextDouble(), hitZ + Random.Shared.NextDouble(), 0.0D, 0.0D, 0.0D);
                         }

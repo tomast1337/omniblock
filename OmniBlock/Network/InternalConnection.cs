@@ -1,16 +1,12 @@
 using System.Net;
+using Microsoft.Extensions.Logging;
 using OmniBlock.Network.Messages;
 using OmniBlock.Network.Packets;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Network;
 
 public class InternalConnection : Connection
 {
-    public InternalConnection RemoteConnection { get; set; }
-
-    public string Name { get; set; }
-
     private readonly ILogger<InternalConnection> _logger = Log.Instance.For<InternalConnection>();
 
     public InternalConnection(NetHandler? netHandler, string name)
@@ -19,18 +15,19 @@ public class InternalConnection : Connection
         Name = name;
     }
 
+    public InternalConnection RemoteConnection { get; set; }
+
+    public string Name { get; set; }
+
     public override bool IsInternal => true;
 
-    public void AssignRemote(InternalConnection remote)
-    {
-        RemoteConnection = remote;
-    }
+    public void AssignRemote(InternalConnection remote) => RemoteConnection = remote;
 
     public override void sendPacket(Packet packet)
     {
         if (!closed)
         {
-            int pSize = packet.Size();
+            var pSize = packet.Size();
             BytesWritten += pSize;
             PacketsWritten++;
 
@@ -60,7 +57,7 @@ public class InternalConnection : Connection
     {
         if (netHandler == null)
         {
-            throw new Exception($"InternalConnection is not initialized");
+            throw new Exception("InternalConnection is not initialized");
         }
 
         // No cap here, deliberately: loopback hands packets over directly, so a queue depth is a
@@ -101,10 +98,7 @@ public class InternalConnection : Connection
         }
     }
 
-    public override void disconnect()
-    {
-        disconnect("Disconnecting");
-    }
+    public override void disconnect() => disconnect("Disconnecting");
 
     public override void tick()
     {
@@ -115,8 +109,5 @@ public class InternalConnection : Connection
         }
     }
 
-    public override IPEndPoint getAddress()
-    {
-        return new IPEndPoint(IPAddress.Parse("127.0.0.1"), 12345);
-    }
+    public override IPEndPoint getAddress() => new(IPAddress.Parse("127.0.0.1"), 12345);
 }

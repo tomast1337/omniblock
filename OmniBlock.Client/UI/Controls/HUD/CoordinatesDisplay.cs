@@ -10,12 +10,12 @@ public class CoordinatesDisplay(Func<Entity?> getEntity, Func<bool> showCoordina
     {
         if (!showCoordinates()) return;
 
-        Entity? entity = getEntity();
+        var entity = getEntity();
         if (entity == null) return;
 
-        int x = (int)Math.Floor(entity.X);
-        int y = (int)Math.Floor(entity.Y);
-        int z = (int)Math.Floor(entity.Z);
+        var x = (int)Math.Floor(entity.X);
+        var y = (int)Math.Floor(entity.Y);
+        var z = (int)Math.Floor(entity.Z);
 
         renderer.DrawText($"Position: {x}, {y}, {z}", 0, 0, Color.White, shadow: true);
     }

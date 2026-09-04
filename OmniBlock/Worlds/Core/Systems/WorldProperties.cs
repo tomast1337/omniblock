@@ -1,7 +1,7 @@
 using OmniBlock.Entities;
 using OmniBlock.NBT;
-using OmniBlock.Util.Maths;
 using OmniBlock.Registries;
+using OmniBlock.Util.Maths;
 
 namespace OmniBlock.Worlds.Core.Systems;
 
@@ -29,7 +29,7 @@ public class WorldProperties
 
         if (nbt.HasKey("generatorName"))
         {
-            string generatorName = nbt.GetString("generatorName");
+            var generatorName = nbt.GetString("generatorName");
             TerrainType = WorldType.ParseWorldType(generatorName);
         }
         else
@@ -173,6 +173,7 @@ public class WorldProperties
         {
             worldNbt.SetCompoundTag("GameRules", RulesTag);
         }
+
         if (ContentManifest is not null) worldNbt.SetCompoundTag("ContentCatalog", ContentManifest.ToNbt());
     }
 

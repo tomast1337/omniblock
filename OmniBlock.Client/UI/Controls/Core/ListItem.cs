@@ -35,7 +35,7 @@ public abstract class ListItem : UIElement
         }
         else
         {
-            Color borderColor = IsHovered ? Color.GrayCC : Color.GrayA0;
+            var borderColor = IsHovered ? Color.GrayCC : Color.GrayA0;
             renderer.DrawRect(0, 0, ComputedWidth, ComputedHeight, borderColor);
             renderer.DrawRect(1, 1, ComputedWidth - 2, ComputedHeight - 2, Color.Black);
         }

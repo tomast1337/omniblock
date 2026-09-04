@@ -31,9 +31,9 @@ public readonly record struct LightLevels(byte Sky, byte Block)
     ///     survives having the channels separate at all.
     /// </remarks>
     public LightLevels Max(LightLevels other) =>
-        new(System.Math.Max(Sky, other.Sky), System.Math.Max(Block, other.Block));
+        new(Math.Max(Sky, other.Sky), Math.Max(Block, other.Block));
 
     /// <summary>Raises the block channel to a floor, for a block that emits its own light.</summary>
     public LightLevels WithBlockFloor(int minBlock) =>
-        minBlock <= Block ? this : new(Sky, (byte)Math.Clamp(minBlock, 0, 15));
+        minBlock <= Block ? this : new LightLevels(Sky, (byte)Math.Clamp(minBlock, 0, 15));
 }

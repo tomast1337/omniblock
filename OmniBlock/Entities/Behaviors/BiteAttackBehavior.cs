@@ -23,7 +23,7 @@ public sealed class BiteAttackBehavior(float range, int damage, int tamedDamage)
 
         self.AttackTime = 20;
 
-        bool tamed = self.Behaviors.Find<TameableBehavior>()?.IsTamed(self) == true;
+        var tamed = self.Behaviors.Find<TameableBehavior>()?.IsTamed(self) == true;
         target.Damage(self, tamed ? tamedDamage : damage);
     }
 }

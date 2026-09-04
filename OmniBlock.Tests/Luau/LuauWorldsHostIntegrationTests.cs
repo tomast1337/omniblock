@@ -18,19 +18,23 @@ public sealed class LuauWorldsHostIntegrationTests
             new LuauWorldInfo("World1", "First World", 123, 456, false),
             new LuauWorldInfo("Old", "Old World", 12, 34, true)
         ];
-        LuauWorldsHost.Load = id => { requested = id; return id == "World1"; };
+        LuauWorldsHost.Load = id =>
+        {
+            requested = id;
+            return id == "World1";
+        };
 
         try
         {
-            Assert.True(state.TryExecute(LuauDomHost.Bootstrap, out string omniError), omniError);
+            Assert.True(state.TryExecute(LuauDomHost.Bootstrap, out var omniError), omniError);
             LuauWorldsHost.Install(state.Handle);
-            Assert.True(state.TryExecute(LuauWorldsHost.Bootstrap, out string worldsError), worldsError);
+            Assert.True(state.TryExecute(LuauWorldsHost.Bootstrap, out var worldsError), worldsError);
 
-            Assert.True(state.TryExecute("#OMNI.client.worlds.list()", out string count), count);
-            Assert.True(state.TryExecute("OMNI.client.worlds.list()[1].name", out string name), name);
-            Assert.True(state.TryExecute("OMNI.client.worlds.list()[2].unsupported", out string unsupported), unsupported);
-            Assert.True(state.TryExecute("OMNI.client.worlds.load(\"World1\")", out string accepted), accepted);
-            Assert.True(state.TryExecute("OMNI.has(\"worlds\")", out string hasWorlds), hasWorlds);
+            Assert.True(state.TryExecute("#OMNI.client.worlds.list()", out var count), count);
+            Assert.True(state.TryExecute("OMNI.client.worlds.list()[1].name", out var name), name);
+            Assert.True(state.TryExecute("OMNI.client.worlds.list()[2].unsupported", out var unsupported), unsupported);
+            Assert.True(state.TryExecute("OMNI.client.worlds.load(\"World1\")", out var accepted), accepted);
+            Assert.True(state.TryExecute("OMNI.has(\"worlds\")", out var hasWorlds), hasWorlds);
 
             Assert.Equal("2", count);
             Assert.Equal("First World", name);

@@ -32,27 +32,28 @@ internal sealed class EntityDefinitionJsonLoader(string path, LoadLocations loca
         }
     };
 
-    private readonly Dictionary<int, EntityDefinition> _byId = [];
-
-    private readonly Dictionary<int, ResourceLocation> _bySpawnObjectId = [];
     private readonly Dictionary<int, ResourceLocation> _byGlobalSpawnId = [];
 
+    private readonly Dictionary<int, EntityDefinition> _byId = [];
+
     private readonly Dictionary<ResourceLocation, EntityDefinition> _byLocation = [];
+
+    private readonly Dictionary<int, ResourceLocation> _bySpawnObjectId = [];
     private JsonElement? _defaults;
 
     public ResourceLocation RegistryKey => new(Namespace.OmniBlock, path);
 
     public Holder<EntityDefinition>? Get(ResourceLocation key) =>
-        _byLocation.TryGetValue(key, out EntityDefinition? value) ? new Holder<EntityDefinition>(value) : null;
+        _byLocation.TryGetValue(key, out var value) ? new Holder<EntityDefinition>(value) : null;
 
-    public EntityDefinition? Get(int id) => _byId.TryGetValue(id, out EntityDefinition? value) ? value : null;
+    public EntityDefinition? Get(int id) => _byId.TryGetValue(id, out var value) ? value : null;
 
     public int GetId(EntityDefinition value) =>
-        _byId.TryGetValue(value.ProtocolId, out EntityDefinition? existing) && ReferenceEquals(existing, value) ? value.ProtocolId : -1;
+        _byId.TryGetValue(value.ProtocolId, out var existing) && ReferenceEquals(existing, value) ? value.ProtocolId : -1;
 
     public ResourceLocation? GetKey(EntityDefinition value)
     {
-        foreach (KeyValuePair<ResourceLocation, EntityDefinition> pair in _byLocation)
+        foreach (var pair in _byLocation)
         {
             if (ReferenceEquals(pair.Value, value))
             {
@@ -94,7 +95,7 @@ internal sealed class EntityDefinitionJsonLoader(string path, LoadLocations loca
 
     private void LoadAssetsFromFolders(string assetPath, LoadLocations location)
     {
-        foreach (string dir in Directory.GetDirectories(assetPath, "*", SearchOption.TopDirectoryOnly))
+        foreach (var dir in Directory.GetDirectories(assetPath, "*", SearchOption.TopDirectoryOnly))
         {
             LoadAssets(Namespace.Get(Path.GetFileName(dir)), dir, location);
         }
@@ -102,14 +103,14 @@ internal sealed class EntityDefinitionJsonLoader(string path, LoadLocations loca
 
     private void LoadAssets(Namespace @namespace, string basePath, LoadLocations location)
     {
-        string dir = Path.Join(basePath, path);
+        var dir = Path.Join(basePath, path);
         if (!Directory.Exists(dir))
         {
             Directory.CreateDirectory(dir);
             return;
         }
 
-        string defaultsPath = Path.Combine(dir, DefaultsFileName);
+        var defaultsPath = Path.Combine(dir, DefaultsFileName);
         if (File.Exists(defaultsPath))
         {
             try
@@ -124,7 +125,7 @@ internal sealed class EntityDefinitionJsonLoader(string path, LoadLocations loca
             }
         }
 
-        foreach (string file in Directory.EnumerateFiles(dir, "*.json").OrderBy(f => f, StringComparer.Ordinal))
+        foreach (var file in Directory.EnumerateFiles(dir, "*.json").OrderBy(f => f, StringComparer.Ordinal))
         {
             if (Path.GetFileName(file) == DefaultsFileName)
             {
@@ -133,10 +134,10 @@ internal sealed class EntityDefinitionJsonLoader(string path, LoadLocations loca
 
             try
             {
-                JsonElement raw = JsonSerializer.Deserialize<JsonElement>(File.ReadAllText(file), s_options);
-                JsonElement merged = _defaults is { } d ? JsonMerge.Merge(d, raw, s_options) : raw;
+                var raw = JsonSerializer.Deserialize<JsonElement>(File.ReadAllText(file), s_options);
+                var merged = _defaults is { } d ? JsonMerge.Merge(d, raw, s_options) : raw;
 
-                EntityDefinition? definition = merged.Deserialize<EntityDefinition>(s_options);
+                var definition = merged.Deserialize<EntityDefinition>(s_options);
                 if (definition is null)
                 {
                     HasErrors = true;
@@ -153,19 +154,19 @@ internal sealed class EntityDefinitionJsonLoader(string path, LoadLocations loca
                     continue;
                 }
 
-                string name = Path.GetFileNameWithoutExtension(file);
+                var name = Path.GetFileNameWithoutExtension(file);
                 ResourceLocation key = new(@namespace, name);
                 definition.Name = key.Path;
                 definition.Namespace = key.Namespace;
 
-                if (_byLocation.TryGetValue(key, out EntityDefinition? existing))
+                if (_byLocation.TryGetValue(key, out var existing))
                 {
                     _byId.Remove(existing.ProtocolId);
                     if (existing.SpawnObjectId != 0) _bySpawnObjectId.Remove(existing.SpawnObjectId);
                     if (existing.GlobalSpawnId != 0) _byGlobalSpawnId.Remove(existing.GlobalSpawnId);
                 }
 
-                if (_byId.TryGetValue(definition.ProtocolId, out EntityDefinition? protocolOwner))
+                if (_byId.TryGetValue(definition.ProtocolId, out var protocolOwner))
                 {
                     throw new JsonException(
                         $"Entity '{key}' duplicates ProtocolId {definition.ProtocolId} used by '{protocolOwner.Namespace}:{protocolOwner.Name}'.");
@@ -195,21 +196,22 @@ internal sealed class EntityDefinitionJsonLoader(string path, LoadLocations loca
         }
 
         EntityDefinitionJsonLoader clone = new(path, Locations);
-        foreach (KeyValuePair<ResourceLocation, EntityDefinition> pair in _byLocation)
+        foreach (var pair in _byLocation)
         {
             clone._byLocation[pair.Key] = pair.Value;
         }
 
-        foreach (KeyValuePair<int, EntityDefinition> pair in _byId)
+        foreach (var pair in _byId)
         {
             clone._byId[pair.Key] = pair.Value;
         }
 
-        foreach (KeyValuePair<int, ResourceLocation> pair in _bySpawnObjectId)
+        foreach (var pair in _bySpawnObjectId)
         {
             clone._bySpawnObjectId[pair.Key] = pair.Value;
         }
-        foreach (KeyValuePair<int, ResourceLocation> pair in _byGlobalSpawnId)
+
+        foreach (var pair in _byGlobalSpawnId)
         {
             clone._byGlobalSpawnId[pair.Key] = pair.Value;
         }
@@ -227,7 +229,7 @@ internal sealed class EntityDefinitionJsonLoader(string path, LoadLocations loca
         string field,
         ResourceLocation key)
     {
-        if (id != 0 && owners.TryGetValue(id, out ResourceLocation? owner))
+        if (id != 0 && owners.TryGetValue(id, out var owner))
             throw new JsonException($"Entity '{key}' duplicates {field} {id} used by '{owner}'.");
     }
 }

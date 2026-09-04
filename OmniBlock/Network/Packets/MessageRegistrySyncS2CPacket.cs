@@ -1,5 +1,6 @@
-namespace OmniBlock.Network.Packets;
 using OmniBlock.Registries;
+
+namespace OmniBlock.Network.Packets;
 
 /// <summary>
 ///     Advertises the server's message table so both peers agree on which integer means which
@@ -39,6 +40,7 @@ public class MessageRegistrySyncS2CPacket() : ExtendedProtocolPacket(PacketId.Me
     ///     </para>
     /// </summary>
     public int ProtocolVersion { get; private set; }
+
     public string CatalogFingerprint { get; private set; } = "";
 
     public static MessageRegistrySyncS2CPacket Get(IReadOnlyList<ResourceLocation> keys, ContentCatalogManifest? manifest = null)
@@ -46,7 +48,7 @@ public class MessageRegistrySyncS2CPacket() : ExtendedProtocolPacket(PacketId.Me
         ArgumentNullException.ThrowIfNull(keys);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(keys.Count, MaxEntries);
 
-        MessageRegistrySyncS2CPacket p = Get<MessageRegistrySyncS2CPacket>(PacketId.MessageRegistrySyncS2C);
+        var p = Get<MessageRegistrySyncS2CPacket>(PacketId.MessageRegistrySyncS2C);
         p.Keys = keys;
         p.ProtocolVersion = ProtocolHandshake.Version;
         p.CatalogFingerprint = manifest?.Fingerprint ?? "";
@@ -58,15 +60,15 @@ public class MessageRegistrySyncS2CPacket() : ExtendedProtocolPacket(PacketId.Me
         ProtocolVersion = stream.ReadVarInt();
         CatalogFingerprint = ProtocolVersion >= 2 ? stream.ReadString(128) : "";
 
-        int count = stream.ReadVarInt();
+        var count = stream.ReadVarInt();
         if (count < 0 || count > MaxEntries)
         {
             throw new InvalidDataException(
                 $"Message table declares {count} entries; the limit is {MaxEntries}.");
         }
 
-        ResourceLocation[] keys = new ResourceLocation[count];
-        for (int i = 0; i < count; i++)
+        var keys = new ResourceLocation[count];
+        for (var i = 0; i < count; i++)
         {
             keys[i] = stream.ReadResourceLocation();
         }
@@ -80,7 +82,7 @@ public class MessageRegistrySyncS2CPacket() : ExtendedProtocolPacket(PacketId.Me
         if (ProtocolVersion >= 2) stream.WriteString(CatalogFingerprint);
         stream.WriteVarInt(Keys.Count);
 
-        foreach (ResourceLocation key in Keys)
+        foreach (var key in Keys)
         {
             stream.WriteResourceLocation(key);
         }
@@ -90,15 +92,15 @@ public class MessageRegistrySyncS2CPacket() : ExtendedProtocolPacket(PacketId.Me
 
     public override int Size()
     {
-        int size = StreamExtensions.VarIntSize(ProtocolVersion)
+        var size = StreamExtensions.VarIntSize(ProtocolVersion)
                    + (ProtocolVersion >= 2 ? StreamExtensions.LongStringSize(CatalogFingerprint) : 0)
                    + StreamExtensions.VarIntSize(Keys.Count);
 
-        foreach (ResourceLocation key in Keys)
+        foreach (var key in Keys)
         {
             // Path always goes out as a length-prefixed ASCII-256 string. The namespace does
             // too, except WriteNamespace takes a 1-byte fast path for the default namespace.
-            int namespaceSize = key.Namespace.GetHashCode() == 0 ? 1 : 1 + key.Namespace.ToString().Length;
+            var namespaceSize = key.Namespace.GetHashCode() == 0 ? 1 : 1 + key.Namespace.ToString().Length;
             size += namespaceSize + 1 + key.Path.Length;
         }
 

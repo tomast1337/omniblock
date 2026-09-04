@@ -4,18 +4,6 @@ namespace OmniBlock.Profiling;
 
 public static class ProfilerRenderer
 {
-    private class ProfilerNode(string name)
-    {
-        public readonly string Name = name;
-        public readonly Dictionary<string, ProfilerNode> Children = new();
-        public double Last;
-        public double Avg;
-        public double Max;
-        public double[] History = [];
-        public int HistoryHead;
-        public bool HasData;
-    }
-
     private static int s_sortColumn; // 0=Section, 1=Cur, 2=Avg, 3=Max
     private static bool s_sortDescending = true;
 
@@ -67,8 +55,10 @@ public static class ProfilerRenderer
                     child = new ProfilerNode(part);
                     current.Children[part] = child;
                 }
+
                 current = child;
             }
+
             current.Last = last;
             current.Avg = avg;
             current.Max = max;
@@ -76,6 +66,7 @@ public static class ProfilerRenderer
             current.HistoryHead = historyHead;
             current.HasData = true;
         }
+
         return root;
     }
 
@@ -119,7 +110,7 @@ public static class ProfilerRenderer
             1 => a.Last.CompareTo(b.Last),
             2 => a.Avg.CompareTo(b.Avg),
             3 => a.Max.CompareTo(b.Max),
-            _ => string.Compare(a.Name, b.Name, StringComparison.Ordinal),
+            _ => string.Compare(a.Name, b.Name, StringComparison.Ordinal)
         };
         return direction == ImGuiSortDirection.Descending ? -result : result;
     }
@@ -145,36 +136,62 @@ public static class ProfilerRenderer
                 var open = ImGui.TreeNodeEx(child.Name, ImGuiTreeNodeFlags.DefaultOpen);
                 if (child.HasData)
                 {
-                    ImGui.TableNextColumn(); ImGui.Text($"{child.Last:F3}");
-                    ImGui.TableNextColumn(); ImGui.Text($"{child.Avg:F3}");
-                    ImGui.TableNextColumn(); ImGui.Text($"{child.Max:F3}");
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"{child.Last:F3}");
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"{child.Avg:F3}");
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"{child.Max:F3}");
                 }
                 else
                 {
-                    ImGui.TableNextColumn(); ImGui.Text("-");
-                    ImGui.TableNextColumn(); ImGui.Text("-");
-                    ImGui.TableNextColumn(); ImGui.Text("-");
+                    ImGui.TableNextColumn();
+                    ImGui.Text("-");
+                    ImGui.TableNextColumn();
+                    ImGui.Text("-");
+                    ImGui.TableNextColumn();
+                    ImGui.Text("-");
                 }
+
                 if (open)
                 {
                     RenderNode(child, sortColumn, sortDirection);
                     ImGui.TreePop();
                 }
+
                 continue;
             }
 
             if (child.HasData)
             {
-                ImGui.TableNextColumn(); ImGui.Text($"{child.Last:F3}");
-                ImGui.TableNextColumn(); ImGui.Text($"{child.Avg:F3}");
-                ImGui.TableNextColumn(); ImGui.Text($"{child.Max:F3}");
+                ImGui.TableNextColumn();
+                ImGui.Text($"{child.Last:F3}");
+                ImGui.TableNextColumn();
+                ImGui.Text($"{child.Avg:F3}");
+                ImGui.TableNextColumn();
+                ImGui.Text($"{child.Max:F3}");
             }
             else
             {
-                ImGui.TableNextColumn(); ImGui.Text("-");
-                ImGui.TableNextColumn(); ImGui.Text("-");
-                ImGui.TableNextColumn(); ImGui.Text("-");
+                ImGui.TableNextColumn();
+                ImGui.Text("-");
+                ImGui.TableNextColumn();
+                ImGui.Text("-");
+                ImGui.TableNextColumn();
+                ImGui.Text("-");
             }
         }
+    }
+
+    private class ProfilerNode(string name)
+    {
+        public readonly Dictionary<string, ProfilerNode> Children = new();
+        public readonly string Name = name;
+        public double Avg;
+        public bool HasData;
+        public double[] History = [];
+        public int HistoryHead;
+        public double Last;
+        public double Max;
     }
 }

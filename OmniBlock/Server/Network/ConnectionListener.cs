@@ -1,30 +1,24 @@
 using System.Net;
+using Microsoft.Extensions.Logging;
 using OmniBlock.Network;
 using OmniBlock.Network.Transport;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Server.Network;
 
 public class ConnectionListener
 {
-    /// <summary>
-    ///     The UDP transport peers arrive on, or null for the singleplayer server, which accepts
-    ///     only loopback connections handed to it directly.
-    /// </summary>
-    public LiteNetLibTransport? Transport { get; }
-
     private readonly CancellationTokenSource? _accepting;
+    private readonly object _connectionCounterLock = new();
+    private readonly List<ServerPlayNetworkHandler> _connections = [];
+    private readonly object _connectionsLock = new();
     private readonly ILogger<ConnectionListener> _logger = Log.Instance.For<ConnectionListener>();
+    private readonly List<ServerLoginNetworkHandler> _pendingConnections = [];
+    private readonly object _pendingConnectionsLock = new();
+    private int _connectionCounter;
 
     public volatile bool open;
-    private int _connectionCounter = 0;
-    private readonly object _connectionCounterLock = new();
-    private readonly object _pendingConnectionsLock = new();
-    private readonly object _connectionsLock = new();
-    private readonly List<ServerLoginNetworkHandler> _pendingConnections = [];
-    private readonly List<ServerPlayNetworkHandler> _connections = [];
-    public OmniBlockServer server;
     public int port;
+    public OmniBlockServer server;
 
     public ConnectionListener(OmniBlockServer server, IPAddress address, int port, bool dualStack = false)
     {
@@ -54,6 +48,12 @@ public class ConnectionListener
     }
 
     /// <summary>
+    ///     The UDP transport peers arrive on, or null for the singleplayer server, which accepts
+    ///     only loopback connections handed to it directly.
+    /// </summary>
+    public LiteNetLibTransport? Transport { get; }
+
+    /// <summary>
     ///     Turns accepted transport peers into pending logins.
     ///     <para>
     ///         The per-address throttle the stream listener carried is gone with it. It existed
@@ -67,7 +67,7 @@ public class ConnectionListener
     {
         try
         {
-            await foreach (ITransportConnection peer in Transport!.AcceptAsync(cancellationToken))
+            await foreach (var peer in Transport!.AcceptAsync(cancellationToken))
             {
                 UdpConnection connection = new(peer);
                 ServerLoginNetworkHandler handler = new(server, connection);
@@ -126,12 +126,10 @@ public class ConnectionListener
         {
             throw new ArgumentException("Got null pendingconnection!", nameof(connection));
         }
-        else
+
+        lock (_pendingConnectionsLock)
         {
-            lock (_pendingConnectionsLock)
-            {
-                _pendingConnections.Add(connection);
-            }
+            _pendingConnections.Add(connection);
         }
     }
 
@@ -148,9 +146,9 @@ public class ConnectionListener
     {
         lock (_pendingConnectionsLock)
         {
-            for (int i = 0; i < _pendingConnections.Count; i++)
+            for (var i = 0; i < _pendingConnections.Count; i++)
             {
-                ServerLoginNetworkHandler connection = _pendingConnections[i];
+                var connection = _pendingConnections[i];
 
                 try
                 {
@@ -166,15 +164,14 @@ public class ConnectionListener
                 {
                     _pendingConnections.RemoveAt(i--);
                 }
-
             }
         }
 
         lock (_connectionsLock)
         {
-            for (int i = 0; i < _connections.Count; i++)
+            for (var i = 0; i < _connections.Count; i++)
             {
-                ServerPlayNetworkHandler connection = _connections[i];
+                var connection = _connections[i];
 
                 try
                 {
@@ -190,7 +187,6 @@ public class ConnectionListener
                 {
                     _connections.RemoveAt(i--);
                 }
-
             }
         }
     }

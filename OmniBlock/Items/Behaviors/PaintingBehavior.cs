@@ -29,7 +29,7 @@ internal sealed class PaintingBehavior : IItemBehavior
             direction = 3;
         }
 
-        Entity painting = HangingArtBehavior.HangAt(world, x, y, z, direction);
+        var painting = HangingArtBehavior.HangAt(world, x, y, z, direction);
         if (!painting.Behaviors.Find<HangingArtBehavior>()!.CanHang(painting))
         {
             return true;

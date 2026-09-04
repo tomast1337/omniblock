@@ -23,16 +23,16 @@ internal class FireSprite(string tile, string customTexture) : Rendering.Core.Te
             return;
         }
 
-        for (int x = 0; x < 16; ++x)
+        for (var x = 0; x < 16; ++x)
         {
-            for (int y = 0; y < 20; ++y)
+            for (var y = 0; y < 20; ++y)
             {
-                int weight = 18;
-                float heat = _current[x + (y + 1) % 20 * 16] * weight;
+                var weight = 18;
+                var heat = _current[x + (y + 1) % 20 * 16] * weight;
 
-                for (int nx = x - 1; nx <= x + 1; ++nx)
+                for (var nx = x - 1; nx <= x + 1; ++nx)
                 {
-                    for (int ny = y; ny <= y + 1; ++ny)
+                    for (var ny = y; ny <= y + 1; ++ny)
                     {
                         if (nx >= 0 && ny >= 0 && nx < 16 && ny < 20)
                         {
@@ -54,9 +54,9 @@ internal class FireSprite(string tile, string customTexture) : Rendering.Core.Te
 
         (_next, _current) = (_current, _next);
 
-        for (int pixelIndex = 0; pixelIndex < 256; ++pixelIndex)
+        for (var pixelIndex = 0; pixelIndex < 256; ++pixelIndex)
         {
-            float intensity = _current[pixelIndex] * 1.8F;
+            var intensity = _current[pixelIndex] * 1.8F;
 
             if (intensity > 1.0F)
             {
@@ -68,9 +68,9 @@ internal class FireSprite(string tile, string customTexture) : Rendering.Core.Te
                 intensity = 0.0F;
             }
 
-            int r = (int)(intensity * 155.0F + 100.0F);
-            int g = (int)(intensity * intensity * 255.0F);
-            int b = (int)(intensity * intensity * intensity * intensity * intensity * intensity * intensity * intensity * intensity * intensity * 255.0F);
+            var r = (int)(intensity * 155.0F + 100.0F);
+            var g = (int)(intensity * intensity * 255.0F);
+            var b = (int)(intensity * intensity * intensity * intensity * intensity * intensity * intensity * intensity * intensity * intensity * 255.0F);
             short a = 255;
 
             if (intensity < 0.5F)

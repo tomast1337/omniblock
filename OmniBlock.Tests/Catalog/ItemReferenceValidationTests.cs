@@ -1,6 +1,5 @@
 using System.Text.Json;
 using OmniBlock.Items;
-using OmniBlock.Registries;
 
 namespace OmniBlock.Tests.Catalog;
 
@@ -26,19 +25,20 @@ public sealed class ItemReferenceValidationTests
         ItemDefinition definition,
         string badReference)
     {
-        ContentRuntime? publishedBefore = ContentRuntime.TryGetCurrent(out ContentRuntime? current) ? current : null;
-        ContentRuntimeBuilder builder = ContentRuntimeBuilder.CreateBuiltIns();
+        var publishedBefore = ContentRuntime.TryGetCurrent(out var current) ? current : null;
+        var builder = ContentRuntimeBuilder.CreateBuiltIns();
         builder.AddItemDefinition(definition);
 
-        InvalidOperationException error = Assert.Throws<InvalidOperationException>(() => builder.Build());
+        var error = Assert.Throws<InvalidOperationException>(() => builder.Build());
 
         Assert.Contains($"omniblock:{definition.Name}", error.Message);
         Assert.Contains(badReference, error.Message);
         if (publishedBefore is not null)
         {
-            Assert.True(ContentRuntime.TryGetCurrent(out ContentRuntime? publishedAfter));
+            Assert.True(ContentRuntime.TryGetCurrent(out var publishedAfter));
             Assert.Same(publishedBefore, publishedAfter);
         }
+
         Assert.False(ContentRuntime.Current.Items.TryGetByProtocolId(definition.ProtocolId, out _));
     }
 

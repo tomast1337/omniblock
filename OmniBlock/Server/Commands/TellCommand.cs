@@ -1,8 +1,8 @@
-using OmniBlock.Entities;
-using OmniBlock.Network.Messages;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Entities;
+using OmniBlock.Network.Messages;
 
 namespace OmniBlock.Server.Commands;
 
@@ -19,16 +19,19 @@ public class TellCommand : Command.Command
 
     private static int Execute(CommandContext<CommandSource> context)
     {
-        ServerPlayerEntity target = context.GetArgument<ServerPlayerEntity>("player");
-        string message = context.GetArgument<string>("message");
+        var target = context.GetArgument<ServerPlayerEntity>("player");
+        var message = context.GetArgument<string>("message");
         s_logger.LogInformation("[" + context.Source.SenderName + "->" + target.Name + "] " + message);
 
-        string whisper = "§7" + context.Source.SenderName + " whispers " + message;
+        var whisper = "§7" + context.Source.SenderName + " whispers " + message;
         s_logger.LogInformation(whisper);
 
         if (target.NetworkHandler is { } handler)
         {
-            handler.SendMessage(new ChatMessage { Text = whisper });
+            handler.SendMessage(new ChatMessage
+            {
+                Text = whisper
+            });
         }
         else
         {

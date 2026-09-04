@@ -1,6 +1,5 @@
 using OmniBlock.Blocks;
 using OmniBlock.Textures;
-using OmniBlock.Items;
 
 namespace OmniBlock.Tests.Blocks;
 
@@ -25,9 +24,9 @@ public sealed class BlockDropsAndTexturesTests
     public void LapisOre_DropsDyeItemInRange()
     {
         Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:dye_powder").Id, TestBlocks.Get("lapis_ore").GetDroppedItemId(0));
-        for (int i = 0; i < 50; i++)
+        for (var i = 0; i < 50; i++)
         {
-            int count = TestBlocks.Get("lapis_ore").GetDroppedItemCount();
+            var count = TestBlocks.Get("lapis_ore").GetDroppedItemCount();
             Assert.InRange(count, 4, 8);
         }
     }
@@ -36,9 +35,9 @@ public sealed class BlockDropsAndTexturesTests
     public void Glowstone_DropsGlowstoneDustInRange()
     {
         Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:yellow_dust").Id, TestBlocks.Get("glowstone").GetDroppedItemId(0));
-        for (int i = 0; i < 50; i++)
+        for (var i = 0; i < 50; i++)
         {
-            int count = TestBlocks.Get("glowstone").GetDroppedItemCount();
+            var count = TestBlocks.Get("glowstone").GetDroppedItemCount();
             Assert.InRange(count, 2, 4);
         }
     }
@@ -53,11 +52,11 @@ public sealed class BlockDropsAndTexturesTests
     [Fact]
     public void Gravel_DropsOnlyGravelOrFlint()
     {
-        bool sawGravel = false;
-        bool sawFlint = false;
-        for (int i = 0; i < 200; i++)
+        var sawGravel = false;
+        var sawFlint = false;
+        for (var i = 0; i < 200; i++)
         {
-            int itemId = TestBlocks.Get("gravel").GetDroppedItemId(0);
+            var itemId = TestBlocks.Get("gravel").GetDroppedItemId(0);
             Assert.True(itemId == TestBlocks.Get("gravel").Id || itemId == ContentRuntime.Current.Items.Get("omniblock:flint").Id);
             sawGravel |= itemId == TestBlocks.Get("gravel").Id;
             sawFlint |= itemId == ContentRuntime.Current.Items.Get("omniblock:flint").Id;
@@ -96,7 +95,7 @@ public sealed class BlockDropsAndTexturesTests
     [Fact]
     public void Stone_PickBlockItem_BackupIsCobblestoneWithNoMetaConstraint()
     {
-        (int primaryMeta, int backupId, int backupMeta) = TestBlocks.Get("stone").GetPickBlockItem(0);
+        var (primaryMeta, backupId, backupMeta) = TestBlocks.Get("stone").GetPickBlockItem(0);
         Assert.Equal(0, primaryMeta);
         Assert.Equal(TestBlocks.Get("cobblestone").Id, backupId);
         Assert.Equal(-1, backupMeta);
@@ -105,14 +104,14 @@ public sealed class BlockDropsAndTexturesTests
     [Fact]
     public void Gravel_PickBlockItem_BackupIsGravelNotFlint()
     {
-        (_, int backupId, _) = TestBlocks.Get("gravel").GetPickBlockItem(0);
+        var (_, backupId, _) = TestBlocks.Get("gravel").GetPickBlockItem(0);
         Assert.Equal(TestBlocks.Get("gravel").Id, backupId);
     }
 
     [Fact]
     public void DoubleSlab_PickBlockItem_BackupPreservesBlockMetaOnSlabItem()
     {
-        (_, int backupId, int backupMeta) = TestBlocks.Get("double_slab").GetPickBlockItem(3);
+        var (_, backupId, backupMeta) = TestBlocks.Get("double_slab").GetPickBlockItem(3);
         Assert.Equal(TestBlocks.Get("slab").Id, backupId);
         Assert.Equal(3, backupMeta);
     }
@@ -120,7 +119,7 @@ public sealed class BlockDropsAndTexturesTests
     [Fact]
     public void GrassBlock_PickBlockItem_BackupIsDirtWithNoMetaConstraint()
     {
-        (_, int backupId, int backupMeta) = TestBlocks.Get("grass_block").GetPickBlockItem(0);
+        var (_, backupId, backupMeta) = TestBlocks.Get("grass_block").GetPickBlockItem(0);
         Assert.Equal(TestBlocks.Get("dirt").Id, backupId);
         Assert.Equal(-1, backupMeta);
     }
@@ -128,7 +127,7 @@ public sealed class BlockDropsAndTexturesTests
     [Fact]
     public void Bedrock_HasNoLootTable_PickBlockItemHasNoBackup()
     {
-        (int primaryMeta, int backupId, int backupMeta) = TestBlocks.Get("bedrock").GetPickBlockItem(0);
+        var (primaryMeta, backupId, backupMeta) = TestBlocks.Get("bedrock").GetPickBlockItem(0);
         Assert.Equal(0, primaryMeta);
         Assert.Equal(0, backupId);
         Assert.Equal(-1, backupMeta);
@@ -138,7 +137,7 @@ public sealed class BlockDropsAndTexturesTests
     public void Leaves_PickBlockItem_MasksDecayBitsAndBacksUpToSapling()
     {
         const int oakWithDecayAndPersistentBits = 0b1101; // oak (bits 0-1 = 01) + check-decay (4) + persistent (8)
-        (int primaryMeta, int backupId, int backupMeta) = TestBlocks.Get("leaves").GetPickBlockItem(oakWithDecayAndPersistentBits);
+        var (primaryMeta, backupId, backupMeta) = TestBlocks.Get("leaves").GetPickBlockItem(oakWithDecayAndPersistentBits);
         Assert.Equal(1, primaryMeta);
         Assert.Equal(TestBlocks.Get("sapling").Id, backupId);
         Assert.Equal(1, backupMeta);

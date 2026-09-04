@@ -12,7 +12,10 @@ internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locat
 
     private static readonly JsonSerializerOptions s_options = new()
     {
-        Converters = { new JsonStringEnumConverter() }
+        Converters =
+        {
+            new JsonStringEnumConverter()
+        }
     };
 
     private readonly Dictionary<int, BlockDefinition> _byId = [];
@@ -22,46 +25,30 @@ internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locat
 
     public ResourceLocation RegistryKey => new(Namespace.OmniBlock, path);
 
-    public Holder<BlockDefinition>? Get(ResourceLocation key)
-    {
-        return _byLocation.TryGetValue(key, out var value) ? new Holder<BlockDefinition>(value) : null;
-    }
+    public Holder<BlockDefinition>? Get(ResourceLocation key) => _byLocation.TryGetValue(key, out var value) ? new Holder<BlockDefinition>(value) : null;
 
-    public BlockDefinition? Get(int id)
-    {
-        return _byId.TryGetValue(id, out var value) ? value : null;
-    }
+    public BlockDefinition? Get(int id) => _byId.TryGetValue(id, out var value) ? value : null;
 
-    public int GetId(BlockDefinition value)
-    {
-        return value.ProtocolId >= 0 && _byId.TryGetValue(value.ProtocolId, out var existing) && ReferenceEquals(existing, value) ? value.ProtocolId : -1;
-    }
+    public int GetId(BlockDefinition value) => value.ProtocolId >= 0 && _byId.TryGetValue(value.ProtocolId, out var existing) && ReferenceEquals(existing, value) ? value.ProtocolId : -1;
 
     public ResourceLocation? GetKey(BlockDefinition value)
     {
         foreach (var pair in _byLocation)
+        {
             if (ReferenceEquals(pair.Value, value))
                 return pair.Key;
+        }
 
         return null;
     }
 
-    public bool ContainsKey(ResourceLocation key)
-    {
-        return _byLocation.ContainsKey(key);
-    }
+    public bool ContainsKey(ResourceLocation key) => _byLocation.ContainsKey(key);
 
     public IEnumerable<ResourceLocation> Keys => _byLocation.Keys;
 
-    public IEnumerator<BlockDefinition> GetEnumerator()
-    {
-        return _byLocation.Values.GetEnumerator();
-    }
+    public IEnumerator<BlockDefinition> GetEnumerator() => _byLocation.Values.GetEnumerator();
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     private protected override void Clear()
     {
@@ -96,6 +83,7 @@ internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locat
 
         var defaultsPath = Path.Combine(dir, DefaultsFileName);
         if (File.Exists(defaultsPath))
+        {
             try
             {
                 _defaults = JsonSerializer.Deserialize<JsonElement>(File.ReadAllText(defaultsPath), s_options);
@@ -106,6 +94,7 @@ internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locat
                 FirstErrorMessage ??= $"Syntax error in '_defaults.json' at line {ex.LineNumber}, pos {ex.BytePositionInLine}: {ex.Message}";
                 return;
             }
+        }
 
         foreach (var file in Directory.EnumerateFiles(dir, "*.json").OrderBy(f => f, StringComparer.Ordinal))
         {
@@ -132,13 +121,15 @@ internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locat
                 }
 
                 var name = Path.GetFileNameWithoutExtension(file);
-                var key = new ResourceLocation(@namespace, name);
+                ResourceLocation key = new(@namespace, name);
                 definition.Name = key.Path;
                 definition.Namespace = key.Namespace;
 
                 if (_byLocation.TryGetValue(key, out var existing))
+                {
                     if (existing.ProtocolId >= 0)
                         _byId.Remove(existing.ProtocolId);
+                }
 
                 _byLocation[key] = definition;
                 if (definition.ProtocolId >= 0)
@@ -165,7 +156,7 @@ internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locat
     {
         if (!Locations.HasFlag(LoadLocations.WorldDatapack)) return null;
 
-        var clone = new BlockDefinitionJsonLoader(path, Locations);
+        BlockDefinitionJsonLoader clone = new(path, Locations);
         foreach (var pair in _byLocation) clone._byLocation[pair.Key] = pair.Value;
         foreach (var pair in _byId) clone._byId[pair.Key] = pair.Value;
         clone._defaults = _defaults;
@@ -173,8 +164,5 @@ internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locat
         return clone;
     }
 
-    public bool ContainsId(int id)
-    {
-        return _byId.ContainsKey(id);
-    }
+    public bool ContainsId(int id) => _byId.ContainsKey(id);
 }

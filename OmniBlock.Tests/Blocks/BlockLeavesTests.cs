@@ -1,7 +1,6 @@
 using System.Text.Json;
 using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
-using OmniBlock.Items;
 
 namespace OmniBlock.Tests.Blocks;
 
@@ -35,15 +34,15 @@ public sealed class BlockLeavesTests
     public void OnTick_CustomTrunk_DecaysAgainstConfiguredTrunkNotVanillaLog()
     {
         FakeWorldContext world = new();
-        Block leavesBlock = TestBlocks.Get("leaves");
-        Block customTrunk = TestBlocks.Get("stone");
-        Block sapling = TestBlocks.Get("sapling");
-        Item shears = ContentRuntime.Current.Items.Get("omniblock:shears");
+        var leavesBlock = TestBlocks.Get("leaves");
+        var customTrunk = TestBlocks.Get("stone");
+        var sapling = TestBlocks.Get("sapling");
+        var shears = ContentRuntime.Current.Items.Get("omniblock:shears");
 
         world.ReaderWriter.SetInitial(0, 63, 0, customTrunk.Id);
         world.ReaderWriter.SetInitial(0, 64, 0, leavesBlock.Id, 8);
 
-        LeavesBehavior behavior = new(customTrunk, sapling, shears, fancyTextures: [0, 0, 0, 0], fastTextures: [0, 0, 0, 0]);
+        LeavesBehavior behavior = new(customTrunk, sapling, shears, [0, 0, 0, 0], [0, 0, 0, 0]);
         behavior.OnTick(leavesBlock, Tick(world));
 
         Assert.Equal(0, world.Reader.GetBlockMeta(0, 64, 0) & 8);
@@ -52,11 +51,11 @@ public sealed class BlockLeavesTests
     [Fact]
     public void GetDroppedItemId_CustomSapling_ReturnsConfiguredItem()
     {
-        Block log = TestBlocks.Get("log");
-        Block sand = TestBlocks.Get("sand");
-        Item shears = ContentRuntime.Current.Items.Get("omniblock:shears");
+        var log = TestBlocks.Get("log");
+        var sand = TestBlocks.Get("sand");
+        var shears = ContentRuntime.Current.Items.Get("omniblock:shears");
 
-        LeavesBehavior behavior = new(log, sand, shears, fancyTextures: [0, 0, 0, 0], fastTextures: [0, 0, 0, 0]);
+        LeavesBehavior behavior = new(log, sand, shears, [0, 0, 0, 0], [0, 0, 0, 0]);
         Assert.Equal(sand.Id, behavior.GetDroppedItemId(TestBlocks.Get("leaves"), 0, 0));
     }
 
@@ -66,14 +65,14 @@ public sealed class BlockLeavesTests
     [Fact]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"leaves","sapling":"omniblock:sapling","harvest_tool":"omniblock:shears"}""");
+        using var json = JsonDocument.Parse("""{"Type":"leaves","sapling":"omniblock:sapling","harvest_tool":"omniblock:shears"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("leaves", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"leaves","trunk":"not_a_real_block","sapling":"omniblock:sapling","harvest_tool":"omniblock:shears"}""");
+        using var json = JsonDocument.Parse("""{"Type":"leaves","trunk":"not_a_real_block","sapling":"omniblock:sapling","harvest_tool":"omniblock:shears"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("leaves", json.RootElement));
     }
 }

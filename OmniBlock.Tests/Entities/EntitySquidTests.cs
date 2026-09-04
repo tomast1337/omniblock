@@ -1,13 +1,12 @@
-using OmniBlock.Blocks;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Covers the squid, which has no class of its own: a bare <see cref="EntityLiving"/> whose
-/// swimming is one behavior across Physics and Ticker, with the water-only spawn rule beside it in
-/// the same slot.
+///     Covers the squid, which has no class of its own: a bare <see cref="EntityLiving" /> whose
+///     swimming is one behavior across Physics and Ticker, with the water-only spawn rule beside it in
+///     the same slot.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntitySquidTests
@@ -16,7 +15,7 @@ public sealed class EntitySquidTests
 
     private static EntityLiving Squid(FakeWorldContext world, double x = 8.5, double y = 65.0, double z = 8.5)
     {
-        EntityLiving squid = (EntityLiving)TestEntityCatalog.ByName("squid").Create(world);
+        var squid = (EntityLiving)TestEntityCatalog.ByName("squid").Create(world);
         squid.SetPositionAndAngles(x, y, z, 0f, 0f);
         return squid;
     }
@@ -24,11 +23,11 @@ public sealed class EntitySquidTests
     /// <summary>Floods a cube around the given column so the mob is genuinely submerged.</summary>
     private static void Flood(FakeWorldContext world, int x, int z)
     {
-        for (int dx = -1; dx <= 1; dx++)
+        for (var dx = -1; dx <= 1; dx++)
         {
-            for (int dz = -1; dz <= 1; dz++)
+            for (var dz = -1; dz <= 1; dz++)
             {
-                for (int y = 62; y <= 68; y++) world.ReaderWriter.SetBlock(x + dx, y, z + dz, s_water, 0);
+                for (var y = 62; y <= 68; y++) world.ReaderWriter.SetBlock(x + dx, y, z + dz, s_water, 0);
             }
         }
     }
@@ -52,8 +51,8 @@ public sealed class EntitySquidTests
     [Fact]
     public void Swimming_fills_both_of_its_slots_with_one_behavior()
     {
-        EntityBehaviorSet behaviors = TestEntityCatalog.ByName("squid").Behaviors;
-        JetSwimBehavior swim = behaviors.Find<JetSwimBehavior>()!;
+        var behaviors = TestEntityCatalog.ByName("squid").Behaviors;
+        var swim = behaviors.Find<JetSwimBehavior>()!;
 
         Assert.Same(swim, ((CompositeBehavior)behaviors.Physics!).Children.OfType<JetSwimBehavior>().Single());
         Assert.Same(swim, ((CompositeBehavior)behaviors.Ticker!).Children.OfType<JetSwimBehavior>().Single());
@@ -82,7 +81,7 @@ public sealed class EntitySquidTests
     public void A_squid_coasts_on_exactly_the_velocity_it_was_given()
     {
         FakeWorldContext world = new();
-        EntityLiving squid = Squid(world);
+        var squid = Squid(world);
         squid.VelocityX = 0.1D;
         squid.VelocityY = 0.05D;
 
@@ -100,7 +99,7 @@ public sealed class EntitySquidTests
     public void Out_of_water_a_squid_sinks_and_stops_steering()
     {
         FakeWorldContext world = new();
-        EntityLiving squid = Squid(world);
+        var squid = Squid(world);
         Assert.True(world.Entities.SpawnEntity(squid));
         squid.VelocityX = 0.5D;
 
@@ -120,12 +119,12 @@ public sealed class EntitySquidTests
         FakeWorldContext world = new();
         Flood(world, 8, 8);
 
-        EntityLiving squid = Squid(world);
+        var squid = Squid(world);
         Assert.True(world.Entities.SpawnEntity(squid));
         squid.Behaviors.Ticker!.OnTickLiving(squid);
 
         // The kick lands in the last quarter of the first half-cycle, so it takes a few beats.
-        for (int tick = 0; tick < 60; tick++)
+        for (var tick = 0; tick < 60; tick++)
         {
             squid.Behaviors.Physics!.AfterTickMovement(squid);
             if (squid.VelocityY > 0.0D || squid.VelocityX != 0.0D) return;
@@ -141,7 +140,7 @@ public sealed class EntitySquidTests
         FakeWorldContext world = new();
         Flood(world, 8, 8);
 
-        EntityLiving squid = Squid(world);
+        var squid = Squid(world);
         Assert.True(world.Entities.SpawnEntity(squid));
 
         Assert.True(squid.Behaviors.Ticker!.OnTickLiving(squid));
@@ -161,8 +160,8 @@ public sealed class EntitySquidTests
         FakeWorldContext world = new();
         Flood(world, 40, 40);
 
-        EntityLiving squid = Squid(world, 40.5, 65.0, 40.5);
-        EntityCreature zombie = (EntityCreature)TestEntityCatalog.ByName("zombie").Create(world);
+        var squid = Squid(world, 40.5, 65.0, 40.5);
+        var zombie = (EntityCreature)TestEntityCatalog.ByName("zombie").Create(world);
         zombie.SetPositionAndAngles(40.5, 65.0, 40.5, 0f, 0f);
 
         Assert.True(squid.CanSpawn());

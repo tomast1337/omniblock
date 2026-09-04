@@ -1,18 +1,20 @@
+using Microsoft.Extensions.Logging;
 using OmniBlock.Network.Messages;
 using OmniBlock.Server.Network;
 using OmniBlock.Worlds.Core.Systems;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Server.Internal;
 
 public class InternalServer : OmniBlockServer
 {
-    private readonly string _worldPath;
     private readonly Lock _difficultyLock = new();
     private readonly int _initialDifficulty;
     private readonly ILogger<InternalServer> _logger = Log.Instance.For<InternalServer>();
+    private readonly string _worldPath;
 
     private int _lastDifficulty;
+
+    public volatile bool isReady;
 
     public InternalServer(string worldPath, string levelName, WorldSettings settings, int viewDistance, int initialDifficulty) :
         base(new InternalServerConfiguration(levelName, settings.TerrainType.Name, settings.Seed.ToString(), settings.GeneratorOptions, viewDistance))
@@ -25,12 +27,10 @@ public class InternalServer : OmniBlockServer
 
     public void SetViewDistance(int viewDistanceChunks)
     {
-        InternalServerConfiguration serverConfiguration = (InternalServerConfiguration)config;
+        var serverConfiguration = (InternalServerConfiguration)config;
         serverConfiguration.SetViewDistance(viewDistanceChunks);
         playerManager?.SetViewDistance(viewDistanceChunks);
     }
-
-    public volatile bool isReady;
 
     protected override bool Init()
     {
@@ -38,11 +38,11 @@ public class InternalServer : OmniBlockServer
 
         _logger.LogInformation("Starting internal server");
 
-        bool result = base.Init();
+        var result = base.Init();
 
         if (result)
         {
-            for (int i = 0; i < worlds.Length; ++i)
+            for (var i = 0; i < worlds.Length; ++i)
             {
                 if (worlds[i] != null)
                 {
@@ -53,13 +53,11 @@ public class InternalServer : OmniBlockServer
 
             isReady = true;
         }
+
         return result;
     }
 
-    public override FileInfo GetFile(string path)
-    {
-        return new(Path.Combine(_worldPath, path));
-    }
+    public override FileInfo GetFile(string path) => new(Path.Combine(_worldPath, path));
 
     public void SetDifficulty(int difficulty)
     {
@@ -68,7 +66,7 @@ public class InternalServer : OmniBlockServer
             if (_lastDifficulty != difficulty)
             {
                 _lastDifficulty = difficulty;
-                for (int i = 0; i < worlds.Length; ++i)
+                for (var i = 0; i < worlds.Length; ++i)
                 {
                     if (worlds[i] != null)
                     {
@@ -77,7 +75,7 @@ public class InternalServer : OmniBlockServer
                     }
                 }
 
-                string difficultyName = difficulty switch
+                var difficultyName = difficulty switch
                 {
                     0 => "Peaceful",
                     1 => "Easy",
@@ -86,7 +84,10 @@ public class InternalServer : OmniBlockServer
                     _ => "Unknown"
                 };
 
-                playerManager?.sendToAll(new ChatMessage { Text = $"Difficulty set to {difficultyName}" });
+                playerManager?.sendToAll(new ChatMessage
+                {
+                    Text = $"Difficulty set to {difficultyName}"
+                });
             }
         }
     }

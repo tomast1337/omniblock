@@ -6,29 +6,15 @@ namespace OmniBlock.Client.Chunks;
 
 public class MultiplayerChunkCache(World world) : IChunkSource
 {
-    private readonly Chunk _empty = new EmptyChunk(world, new byte[ChuckFormat.ChunkSize], 0, 0);
     private readonly Dictionary<ChunkPos, Chunk> _chunkByPos = [];
+    private readonly Chunk _empty = new EmptyChunk(world, new byte[ChuckFormat.ChunkSize], 0, 0);
 
-    public bool IsChunkLoaded(int x, int z)
-    {
-        return _chunkByPos.ContainsKey(new ChunkPos(x, z));
-    }
-
-    public void UnloadChunk(int x, int z)
-    {
-        Chunk chunk = GetChunk(x, z);
-        if (!chunk.IsEmpty())
-        {
-            chunk.Unload();
-        }
-
-        _chunkByPos.Remove(new ChunkPos(x, z));
-    }
+    public bool IsChunkLoaded(int x, int z) => _chunkByPos.ContainsKey(new ChunkPos(x, z));
 
     public Chunk LoadChunk(int x, int z)
     {
         ChunkPos key = new(x, z);
-        byte[] blocks = new byte[ChuckFormat.ChunkSize];
+        var blocks = new byte[ChuckFormat.ChunkSize];
         Chunk chunk = new(world, blocks, x, z);
 
         Array.Fill(chunk.SkyLight.Bytes, (byte)255);
@@ -43,7 +29,7 @@ public class MultiplayerChunkCache(World world) : IChunkSource
 
     public Chunk GetChunk(int x, int z)
     {
-        _chunkByPos.TryGetValue(new ChunkPos(x, z), out Chunk? chunk);
+        _chunkByPos.TryGetValue(new ChunkPos(x, z), out var chunk);
         return chunk ?? _empty;
     }
 
@@ -53,9 +39,24 @@ public class MultiplayerChunkCache(World world) : IChunkSource
 
     public bool CanSave() => false;
 
-    public void DecorateTerrain(IChunkSource source, int x, int y) { }
-
-    public void markChunksForUnload(int _) { }
+    public void DecorateTerrain(IChunkSource source, int x, int y)
+    {
+    }
 
     public string GetDebugInfo() => $"MultiplayerChunkCache: {_chunkByPos.Count}";
+
+    public void UnloadChunk(int x, int z)
+    {
+        var chunk = GetChunk(x, z);
+        if (!chunk.IsEmpty())
+        {
+            chunk.Unload();
+        }
+
+        _chunkByPos.Remove(new ChunkPos(x, z));
+    }
+
+    public void markChunksForUnload(int _)
+    {
+    }
 }

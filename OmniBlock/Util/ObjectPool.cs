@@ -4,9 +4,9 @@ namespace OmniBlock.Util;
 
 public class ObjectPool<T> : IDisposable where T : class
 {
+    private readonly int capacity;
     private readonly Func<T> factory;
     private readonly ConcurrentBag<T> pool;
-    private readonly int capacity;
 
     public ObjectPool(Func<T> factory, int capacity = 32)
     {
@@ -15,7 +15,15 @@ public class ObjectPool<T> : IDisposable where T : class
         pool = new ConcurrentBag<T>();
     }
 
-    public T Get() => pool.TryTake(out T? item) ? item : factory();
+    public void Dispose()
+    {
+        while (pool.TryTake(out var obj))
+        {
+            if (obj is IDisposable d) d.Dispose();
+        }
+    }
+
+    public T Get() => pool.TryTake(out var item) ? item : factory();
 
     public void Return(T obj)
     {
@@ -26,14 +34,6 @@ public class ObjectPool<T> : IDisposable where T : class
         else if (obj is IDisposable d)
         {
             d.Dispose();
-        }
-    }
-
-    public void Dispose()
-    {
-        while (pool.TryTake(out T? obj))
-        {
-            if (obj is IDisposable d) d.Dispose();
         }
     }
 }

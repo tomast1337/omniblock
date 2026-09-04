@@ -30,18 +30,19 @@ public class Painting
 
     public static readonly int MaxArtTitleLength = "SkullAndRoses".Length;
 
-    public readonly string Title;
-    public readonly int SizeX;
-    public readonly int SizeY;
-    public readonly int OffsetX;
-    public readonly int OffsetY;
-
     public static readonly Painting[] Values =
     [
         Kebab, Aztec, Alban, Aztec2, Bomb, Plant, Wasteland, Pool, Courbet, Sea, Sunset, Creebet,
         Wanderer, Graham, Match, Bust, Stage, Void, SkullAndRoses, Fighters, Pointer, Pigscene,
         BurningSkull, Skeleton, DonkeyKong
     ];
+
+    public readonly int OffsetX;
+    public readonly int OffsetY;
+    public readonly int SizeX;
+    public readonly int SizeY;
+
+    public readonly string Title;
 
     private Painting(string title, int sizeX, int sizeY, int offsetX, int offsetY)
     {

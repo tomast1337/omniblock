@@ -58,20 +58,11 @@ public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestT
         Block.DropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(ctx.World.Content.Items, block.Id, 1, ctx.Meta & 3));
     }
 
-    public int GetDroppedItemCount(Block block, int defaultCount)
-    {
-        return Random.Shared.Next(20) == 0 ? 1 : 0;
-    }
+    public int GetDroppedItemCount(Block block, int defaultCount) => Random.Shared.Next(20) == 0 ? 1 : 0;
 
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId)
-    {
-        return saplingItem.Id;
-    }
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => saplingItem.Id;
 
-    public (int primaryMeta, int backupItemId, int backupMeta) GetPickBlockItem(Block block, int blockMeta, int defaultBackupId, int defaultBackupMeta)
-    {
-        return (blockMeta & 3, saplingItem.Id, blockMeta & 3);
-    }
+    public (int primaryMeta, int backupItemId, int backupMeta) GetPickBlockItem(Block block, int blockMeta, int defaultBackupId, int defaultBackupMeta) => (blockMeta & 3, saplingItem.Id, blockMeta & 3);
 
     public void OnTick(Block block, OnTickEvent @event)
     {
@@ -139,10 +130,7 @@ public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestT
             BreakLeaves(block, @event.World, @event.X, @event.Y, @event.Z);
     }
 
-    public int GetColor(Block block, int meta, int defaultColor)
-    {
-        return (meta & 1) == 1 ? FoliageColors.getSpruceColor() : (meta & 2) == 2 ? FoliageColors.getBirchColor() : FoliageColors.getDefaultColor();
-    }
+    public int GetColor(Block block, int meta, int defaultColor) => (meta & 1) == 1 ? FoliageColors.getSpruceColor() : (meta & 2) == 2 ? FoliageColors.getBirchColor() : FoliageColors.getDefaultColor();
 
     public int GetColorMultiplier(Block block, IBlockReader reader, int x, int y, int z, int defaultColor)
     {
@@ -156,20 +144,11 @@ public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestT
     }
 
     // Four species slots for two metadata bits, the same as the log the canopy grew from.
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
-    {
-        return (_graphicsLevel ? fancyTextures : fastTextures)[meta & 3];
-    }
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => (_graphicsLevel ? fancyTextures : fastTextures)[meta & 3];
 
-    public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
-    {
-        return (_graphicsLevel || reader.GetBlockId(x, y, z) != block.Id) && defaultVisibility;
-    }
+    public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility) => (_graphicsLevel || reader.GetBlockId(x, y, z) != block.Id) && defaultVisibility;
 
-    public bool IsOpaque(Block block, bool defaultOpaque)
-    {
-        return !_graphicsLevel;
-    }
+    public bool IsOpaque(Block block, bool defaultOpaque) => !_graphicsLevel;
 
     private static void BreakLeaves(Block block, IWorldContext level, int x, int y, int z)
     {

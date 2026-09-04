@@ -1,4 +1,3 @@
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -44,7 +43,7 @@ public static class LuauQuickRun
             return true;
         }
 
-        string fileName = OperatingSystem.IsWindows() ? "omniblock_luau.dll"
+        var fileName = OperatingSystem.IsWindows() ? "omniblock_luau.dll"
             : OperatingSystem.IsMacOS() ? "libomniblock_luau.dylib"
             : "libomniblock_luau.so";
         return NativeLibrary.TryLoad(Path.Combine(AppContext.BaseDirectory, fileName), out _);
@@ -66,7 +65,7 @@ public static class LuauQuickRun
     ///     convention already carves out an exception for — a debug console must never take the
     ///     client process down because someone fat-fingered a script.
     /// </remarks>
-    public static unsafe bool TryExecute(string source, out string output)
+    public static bool TryExecute(string source, out string output)
     {
         try
         {
@@ -81,8 +80,8 @@ public static class LuauQuickRun
 
     private static unsafe bool TryExecuteCore(string source, out string output)
     {
-        IntPtr allocFn = (IntPtr)(delegate* unmanaged[Cdecl]<void*, void*, nuint, nuint, void*>)&LuauCallbacks.Allocate;
-        IntPtr L = LuauNative.lua_newstate(allocFn, IntPtr.Zero);
+        var allocFn = (IntPtr)(delegate* unmanaged[Cdecl]<void*, void*, nuint, nuint, void*>)&LuauCallbacks.Allocate;
+        var L = LuauNative.lua_newstate(allocFn, IntPtr.Zero);
         if (L == IntPtr.Zero)
         {
             output = "lua_newstate failed";
@@ -94,7 +93,7 @@ public static class LuauQuickRun
             LuauNative.luaL_openlibs(L);
 
 
-            byte[] sourceBytes = Encoding.UTF8.GetBytes(source);
+            var sourceBytes = Encoding.UTF8.GetBytes(source);
             byte* bytecode;
             nuint bytecodeSize;
             fixed (byte* sourcePtr = sourceBytes)
@@ -108,14 +107,14 @@ public static class LuauQuickRun
                 return false;
             }
 
-            int loadResult = LuauNative.luau_load(L, "=console", bytecode, bytecodeSize, 0);
+            var loadResult = LuauNative.luau_load(L, "=console", bytecode, bytecodeSize, 0);
             if (loadResult != 0)
             {
                 output = DescribeValue(L, -1);
                 return false;
             }
 
-            int pcallResult = LuauNative.lua_pcall(L, 0, -1, 0);
+            var pcallResult = LuauNative.lua_pcall(L, 0, -1, 0);
             if (pcallResult != 0)
             {
                 output = DescribeValue(L, -1);
@@ -133,14 +132,14 @@ public static class LuauQuickRun
 
     private static unsafe string DescribeResults(IntPtr L)
     {
-        int top = LuauNative.lua_gettop(L);
+        var top = LuauNative.lua_gettop(L);
         if (top == 0)
         {
             return "(no return value)";
         }
 
         var values = new string[top];
-        for (int i = 0; i < top; i++)
+        for (var i = 0; i < top; i++)
         {
             values[i] = DescribeValue(L, i + 1);
         }
@@ -150,7 +149,7 @@ public static class LuauQuickRun
 
     private static unsafe string DescribeValue(IntPtr L, int idx)
     {
-        int type = LuauNative.lua_type(L, idx);
+        var type = LuauNative.lua_type(L, idx);
 
         if (type == 0) // LUA_TNIL — see lua_type's binding comment for why this is safe to hardcode.
         {
@@ -164,12 +163,12 @@ public static class LuauQuickRun
 
         if (LuauNative.lua_isstring(L, idx) != 0)
         {
-            IntPtr strPtr = LuauNative.lua_tolstring(L, idx, out nuint len);
+            var strPtr = LuauNative.lua_tolstring(L, idx, out var len);
             return strPtr == IntPtr.Zero ? string.Empty : Encoding.UTF8.GetString((byte*)strPtr, (int)len);
         }
 
-        IntPtr namePtr = LuauNative.lua_typename(L, type);
-        string typeName = namePtr == IntPtr.Zero ? "unknown" : Marshal.PtrToStringUTF8(namePtr) ?? "unknown";
+        var namePtr = LuauNative.lua_typename(L, type);
+        var typeName = namePtr == IntPtr.Zero ? "unknown" : Marshal.PtrToStringUTF8(namePtr) ?? "unknown";
         return $"<{typeName}>";
     }
 }

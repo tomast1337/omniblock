@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Entities;
 using OmniBlock.Profiling;
@@ -15,9 +14,9 @@ public class EntityManager
     [ThreadStatic] private static List<Entity>? _tempCollisionEntitiesResult;
 
     private readonly List<BlockEntity> _blockEntityUpdateQueue = [];
-    private readonly IWorldContext _world;
     private readonly Dictionary<int, Entity> _entitiesById = new();
     private readonly List<Entity> _entitiesToUnload = [];
+    private readonly IWorldContext _world;
     private bool _processingDeferred;
 
     public List<BlockEntity> BlockEntities = [];
@@ -25,10 +24,7 @@ public class EntityManager
     public List<Entity> GlobalEntities = [];
     public List<EntityPlayer> Players = [];
 
-    public EntityManager(IWorldContext world)
-    {
-        _world = world;
-    }
+    public EntityManager(IWorldContext world) => _world = world;
 
     public bool AllPlayersSleeping { get; private set; }
 
@@ -81,9 +77,9 @@ public class EntityManager
     {
         RemoveEntityFromChunkList(entity, entity.ChunkX, entity.ChunkZ, entity.ChunkSlice);
 
-        int currentChunkX = MathHelper.Floor(entity.X / 16.0D);
-        int currentChunkY = MathHelper.Floor(entity.Y / 16.0D);
-        int currentChunkZ = MathHelper.Floor(entity.Z / 16.0D);
+        var currentChunkX = MathHelper.Floor(entity.X / 16.0D);
+        var currentChunkY = MathHelper.Floor(entity.Y / 16.0D);
+        var currentChunkZ = MathHelper.Floor(entity.Z / 16.0D);
 
         if (currentChunkX != entity.ChunkX || currentChunkY != entity.ChunkSlice || currentChunkZ != entity.ChunkZ)
         {
@@ -105,7 +101,7 @@ public class EntityManager
 
         RemoveEntityFromAllKnownChunkLists(entity);
 
-        bool wasTracked = false;
+        var wasTracked = false;
 
         if (Entities.Remove(entity))
         {
@@ -117,7 +113,7 @@ public class EntityManager
             wasTracked = true;
         }
 
-        if (_entitiesById.TryGetValue(entity.ID, out Entity? current) && ReferenceEquals(current, entity))
+        if (_entitiesById.TryGetValue(entity.ID, out var current) && ReferenceEquals(current, entity))
         {
             _entitiesById.Remove(entity.ID);
             wasTracked = true;
@@ -144,12 +140,12 @@ public class EntityManager
             return;
         }
 
-        Entity[] pendingUnloads = _entitiesToUnload.ToArray();
+        var pendingUnloads = _entitiesToUnload.ToArray();
         _entitiesToUnload.Clear();
 
-        foreach (Entity entity in pendingUnloads)
+        foreach (var entity in pendingUnloads)
         {
-            RemoveEntityNow(entity, forceNotify: true);
+            RemoveEntityNow(entity, true);
         }
     }
 
@@ -157,9 +153,9 @@ public class EntityManager
     {
         ProcessQueuedUnloads();
 
-        for (int i = Entities.Count - 1; i >= 0; --i)
+        for (var i = Entities.Count - 1; i >= 0; --i)
         {
-            Entity entity = Entities[i];
+            var entity = Entities[i];
 
             if (ShouldSkipStandaloneUpdate(entity))
             {
@@ -175,9 +171,9 @@ public class EntityManager
 
     public bool SpawnEntity(Entity entity)
     {
-        int chunkX = MathHelper.Floor(entity.X / 16.0D);
-        int chunkZ = MathHelper.Floor(entity.Z / 16.0D);
-        bool isPlayer = entity is EntityPlayer;
+        var chunkX = MathHelper.Floor(entity.X / 16.0D);
+        var chunkZ = MathHelper.Floor(entity.Z / 16.0D);
+        var isPlayer = entity is EntityPlayer;
 
         if (!isPlayer && !_world.ChunkHost.ChunkSource.IsChunkLoaded(chunkX, chunkZ))
         {
@@ -235,7 +231,7 @@ public class EntityManager
 
     public void WakeAllPlayers()
     {
-        foreach (EntityPlayer player in Players.Where(p => p.IsSleeping))
+        foreach (var player in Players.Where(p => p.IsSleeping))
         {
             player.WakeUp(false, false, true);
         }
@@ -249,9 +245,9 @@ public class EntityManager
     {
         List<BlockEntity> blockEntInArea = [];
 
-        for (int i = 0; i < BlockEntities.Count; i++)
+        for (var i = 0; i < BlockEntities.Count; i++)
         {
-            BlockEntity blockEnt = BlockEntities[i];
+            var blockEnt = BlockEntities[i];
             if (blockEnt.X >= minX && blockEnt.Y >= minY && blockEnt.Z >= minZ &&
                 blockEnt.X < maxX && blockEnt.Y < maxY && blockEnt.Z < maxZ)
             {
@@ -266,9 +262,9 @@ public class EntityManager
     {
         using (Profiler.Begin("WeatherEffects"))
         {
-            for (int i = 0; i < GlobalEntities.Count; ++i)
+            for (var i = 0; i < GlobalEntities.Count; ++i)
             {
-                Entity globalEntity = GlobalEntities[i];
+                var globalEntity = GlobalEntities[i];
                 globalEntity.Tick();
                 if (globalEntity.Dead)
                 {
@@ -284,9 +280,9 @@ public class EntityManager
 
         using (Profiler.Begin("UpdateEntities"))
         {
-            for (int i = Entities.Count - 1; i >= 0; --i)
+            for (var i = Entities.Count - 1; i >= 0; --i)
             {
-                Entity entity = Entities[i];
+                var entity = Entities[i];
 
                 if (ShouldSkipStandaloneUpdate(entity))
                 {
@@ -313,9 +309,9 @@ public class EntityManager
         _processingDeferred = true;
         using (Profiler.Begin("UpdateBlockEntities"))
         {
-            for (int i = BlockEntities.Count - 1; i >= 0; i--)
+            for (var i = BlockEntities.Count - 1; i >= 0; i--)
             {
-                BlockEntity blockEntity = BlockEntities[i];
+                var blockEntity = BlockEntities[i];
                 if (!blockEntity.IsRemoved())
                 {
                     blockEntity.Tick(this);
@@ -324,7 +320,7 @@ public class EntityManager
                 if (blockEntity.IsRemoved())
                 {
                     BlockEntities.RemoveAt(i);
-                    Chunk chunk = _world.ChunkHost.GetChunk(blockEntity.X >> 4, blockEntity.Z >> 4);
+                    var chunk = _world.ChunkHost.GetChunk(blockEntity.X >> 4, blockEntity.Z >> 4);
                     chunk?.RemoveBlockEntityAt(blockEntity.X & 15, blockEntity.Y, blockEntity.Z & 15);
                 }
             }
@@ -333,7 +329,7 @@ public class EntityManager
 
             if (_blockEntityUpdateQueue.Count > 0)
             {
-                foreach (BlockEntity queuedBlockEntity in _blockEntityUpdateQueue)
+                foreach (var queuedBlockEntity in _blockEntityUpdateQueue)
                 {
                     if (!queuedBlockEntity.IsRemoved())
                     {
@@ -342,7 +338,7 @@ public class EntityManager
                             BlockEntities.Add(queuedBlockEntity);
                         }
 
-                        Chunk chunk = _world.ChunkHost.GetChunk(queuedBlockEntity.X >> 4, queuedBlockEntity.Z >> 4);
+                        var chunk = _world.ChunkHost.GetChunk(queuedBlockEntity.X >> 4, queuedBlockEntity.Z >> 4);
                         chunk?.SetBlockEntity(queuedBlockEntity.X & 15, queuedBlockEntity.Y, queuedBlockEntity.Z & 15, queuedBlockEntity);
                         OnBlockUpdateRequired?.Invoke(queuedBlockEntity.X, queuedBlockEntity.Y, queuedBlockEntity.Z);
                     }
@@ -365,8 +361,8 @@ public class EntityManager
             return;
         }
 
-        int blockX = MathHelper.Floor(entity.X);
-        int blockZ = MathHelper.Floor(entity.Z);
+        var blockX = MathHelper.Floor(entity.X);
+        var blockZ = MathHelper.Floor(entity.Z);
         const byte loadRadius = 32;
 
         if (!requireLoaded || _world.ChunkHost.IsRegionLoaded(blockX - loadRadius, 0, blockZ - loadRadius, blockX + loadRadius, 128, blockZ + loadRadius))
@@ -414,9 +410,9 @@ public class EntityManager
                 entity.Yaw = entity.PrevYaw;
             }
 
-            int newChunkX = MathHelper.Floor(entity.X / 16.0D);
-            int newChunkY = MathHelper.Floor(entity.Y / 16.0D);
-            int newChunkZ = MathHelper.Floor(entity.Z / 16.0D);
+            var newChunkX = MathHelper.Floor(entity.X / 16.0D);
+            var newChunkY = MathHelper.Floor(entity.Y / 16.0D);
+            var newChunkZ = MathHelper.Floor(entity.Z / 16.0D);
 
             if (!entity.IsPersistent || entity.ChunkX != newChunkX || entity.ChunkSlice != newChunkY || entity.ChunkZ != newChunkZ)
             {
@@ -452,8 +448,8 @@ public class EntityManager
     }
 
     /// <summary>
-    /// Ticks a vehicle without consulting OnEntityUpdating, so the server can manually tick
-    /// the ridden vehicle when processing a movement packet (avoids filter that skips entities with EntityPlayer passenger).
+    ///     Ticks a vehicle without consulting OnEntityUpdating, so the server can manually tick
+    ///     the ridden vehicle when processing a movement packet (avoids filter that skips entities with EntityPlayer passenger).
     /// </summary>
     public void TickVehicleBypassingFilter(Entity vehicle, bool requireLoaded)
     {
@@ -462,8 +458,8 @@ public class EntityManager
             return;
         }
 
-        int blockX = MathHelper.Floor(vehicle.X);
-        int blockZ = MathHelper.Floor(vehicle.Z);
+        var blockX = MathHelper.Floor(vehicle.X);
+        var blockZ = MathHelper.Floor(vehicle.Z);
         const byte loadRadius = 32;
 
         if (!requireLoaded || _world.ChunkHost.IsRegionLoaded(blockX - loadRadius, 0, blockZ - loadRadius, blockX + loadRadius, ChuckFormat.WorldHeight, blockZ + loadRadius))
@@ -511,9 +507,9 @@ public class EntityManager
                 vehicle.Yaw = vehicle.PrevYaw;
             }
 
-            int newChunkX = MathHelper.Floor(vehicle.X / 16.0D);
-            int newChunkY = MathHelper.Floor(vehicle.Y / 16.0D);
-            int newChunkZ = MathHelper.Floor(vehicle.Z / 16.0D);
+            var newChunkX = MathHelper.Floor(vehicle.X / 16.0D);
+            var newChunkY = MathHelper.Floor(vehicle.Y / 16.0D);
+            var newChunkZ = MathHelper.Floor(vehicle.Z / 16.0D);
 
             if (!vehicle.IsPersistent || vehicle.ChunkX != newChunkX || vehicle.ChunkSlice != newChunkY || vehicle.ChunkZ != newChunkZ)
             {
@@ -559,12 +555,12 @@ public class EntityManager
 
     private List<Box> GetEntityCollisions(Entity entity, Box area, List<Box> collidingBoundingBoxes)
     {
-        int minX = MathHelper.Floor(area.MinX);
-        int maxX = MathHelper.Floor(area.MaxX + 1.0D);
-        int minY = MathHelper.Floor(area.MinY);
-        int maxY = MathHelper.Floor(area.MaxY + 1.0D);
-        int minZ = MathHelper.Floor(area.MinZ);
-        int maxZ = MathHelper.Floor(area.MaxZ + 1.0D);
+        var minX = MathHelper.Floor(area.MinX);
+        var maxX = MathHelper.Floor(area.MaxX + 1.0D);
+        var minY = MathHelper.Floor(area.MinY);
+        var maxY = MathHelper.Floor(area.MaxY + 1.0D);
+        var minZ = MathHelper.Floor(area.MinZ);
+        var maxZ = MathHelper.Floor(area.MaxZ + 1.0D);
 
         if (minX > maxX)
         {
@@ -581,16 +577,16 @@ public class EntityManager
             (minZ, maxZ) = (maxZ, minZ);
         }
 
-        for (int x = minX; x < maxX; ++x)
+        for (var x = minX; x < maxX; ++x)
         {
-            for (int z = minZ; z < maxZ; ++z)
+            for (var z = minZ; z < maxZ; ++z)
             {
                 if (_world.ChunkHost.IsPosLoaded(x, 64, z))
                 {
-                    for (int y = minY - 1; y < maxY; ++y)
+                    for (var y = minY - 1; y < maxY; ++y)
                     {
                         if (_world.Content.Blocks.TryGetByProtocolId(
-                                _world.Reader.GetBlockId(x, y, z), out Block? block))
+                                _world.Reader.GetBlockId(x, y, z), out var block))
                         {
                             block.AddIntersectingBoundingBox(_world.Reader, this, x, y, z, area, collidingBoundingBoxes);
                         }
@@ -605,8 +601,8 @@ public class EntityManager
 
         GetEntities(entity, area.Expand(expansion, expansion, expansion), _tempCollisionEntities);
 
-        int collisionCount = 0;
-        int maxCollisions = _world.Rules.GetInt(DefaultRules.MaxCollisions);
+        var collisionCount = 0;
+        var maxCollisions = _world.Rules.GetInt(DefaultRules.MaxCollisions);
 
         foreach (var other in _tempCollisionEntities)
         {
@@ -615,7 +611,7 @@ public class EntityManager
                 continue;
             }
 
-            Box? entityBox = other.GetBoundingBox();
+            var entityBox = other.GetBoundingBox();
             if (entityBox != null && entityBox.Value.Intersects(area))
             {
                 collidingBoundingBoxes.Add(entityBox.Value);
@@ -646,10 +642,10 @@ public class EntityManager
 
         GetEntities(entity, area.Expand(expansion, expansion, expansion), _tempCollisionEntities);
 
-        int collisionCount = 0;
-        int maxCollisions = _world.Rules.GetInt(DefaultRules.MaxCollisions);
+        var collisionCount = 0;
+        var maxCollisions = _world.Rules.GetInt(DefaultRules.MaxCollisions);
 
-        double maxY = 0.0D;
+        var maxY = 0.0D;
 
         foreach (var other in _tempCollisionEntities)
         {
@@ -658,13 +654,14 @@ public class EntityManager
                 continue;
             }
 
-            Box? entityBox = other.GetBoundingBox();
+            var entityBox = other.GetBoundingBox();
             if (entityBox != null && entityBox.Value.Intersects(area))
             {
                 if (entityBox.Value.MaxY > maxY)
                 {
                     maxY = entityBox.Value.MaxY;
                 }
+
                 collisionCount++;
             }
 
@@ -675,6 +672,7 @@ public class EntityManager
                 {
                     maxY = entityBox.Value.MaxY;
                 }
+
                 collisionCount++;
             }
 
@@ -698,14 +696,14 @@ public class EntityManager
 
     private List<Entity> GetEntities(Entity? excludeEntity, Box area, List<Entity> results)
     {
-        int minChunkX = MathHelper.Floor((area.MinX - 2.0D) / 16.0D);
-        int maxChunkX = MathHelper.Floor((area.MaxX + 2.0D) / 16.0D);
-        int minChunkZ = MathHelper.Floor((area.MinZ - 2.0D) / 16.0D);
-        int maxChunkZ = MathHelper.Floor((area.MaxZ + 2.0D) / 16.0D);
+        var minChunkX = MathHelper.Floor((area.MinX - 2.0D) / 16.0D);
+        var maxChunkX = MathHelper.Floor((area.MaxX + 2.0D) / 16.0D);
+        var minChunkZ = MathHelper.Floor((area.MinZ - 2.0D) / 16.0D);
+        var maxChunkZ = MathHelper.Floor((area.MaxZ + 2.0D) / 16.0D);
 
-        for (int chunkX = minChunkX; chunkX <= maxChunkX; ++chunkX)
+        for (var chunkX = minChunkX; chunkX <= maxChunkX; ++chunkX)
         {
-            for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; ++chunkZ)
+            for (var chunkZ = minChunkZ; chunkZ <= maxChunkZ; ++chunkZ)
             {
                 if (_world.ChunkHost.ChunkSource.IsChunkLoaded(chunkX, chunkZ))
                 {
@@ -721,14 +719,14 @@ public class EntityManager
     {
         List<T> results = new();
 
-        int minChunkX = MathHelper.Floor((area.MinX - 2.0D) / 16.0D);
-        int maxChunkX = MathHelper.Floor((area.MaxX + 2.0D) / 16.0D);
-        int minChunkZ = MathHelper.Floor((area.MinZ - 2.0D) / 16.0D);
-        int maxChunkZ = MathHelper.Floor((area.MaxZ + 2.0D) / 16.0D);
+        var minChunkX = MathHelper.Floor((area.MinX - 2.0D) / 16.0D);
+        var maxChunkX = MathHelper.Floor((area.MaxX + 2.0D) / 16.0D);
+        var minChunkZ = MathHelper.Floor((area.MinZ - 2.0D) / 16.0D);
+        var maxChunkZ = MathHelper.Floor((area.MaxZ + 2.0D) / 16.0D);
 
-        for (int chunkX = minChunkX; chunkX <= maxChunkX; ++chunkX)
+        for (var chunkX = minChunkX; chunkX <= maxChunkX; ++chunkX)
         {
-            for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; ++chunkZ)
+            for (var chunkZ = minChunkZ; chunkZ <= maxChunkZ; ++chunkZ)
             {
                 if (_world.ChunkHost.HasChunk(chunkX, chunkZ))
                 {
@@ -746,8 +744,8 @@ public class EntityManager
     /// </summary>
     public int CountEntitiesInCategory(string category)
     {
-        int res = 0;
-        foreach (Entity entity in Entities)
+        var res = 0;
+        foreach (var entity in Entities)
         {
             if (entity is EntityLiving living && living.Definition.SpawnCategory == category)
             {
@@ -760,8 +758,8 @@ public class EntityManager
 
     public int CountEntitiesOfType(Type type)
     {
-        int res = 0;
-        foreach (Entity entity in Entities)
+        var res = 0;
+        foreach (var entity in Entities)
         {
             if (type.IsInstanceOfType(entity))
             {
@@ -775,7 +773,7 @@ public class EntityManager
     public void AddEntities(List<Entity> entitiesToAdd)
     {
         Entities.AddRange(entitiesToAdd);
-        for (int i = 0; i < entitiesToAdd.Count; ++i)
+        for (var i = 0; i < entitiesToAdd.Count; ++i)
         {
             _entitiesById[entitiesToAdd[i].ID] = entitiesToAdd[i];
             NotifyEntityAdded(entitiesToAdd[i]);
@@ -786,17 +784,17 @@ public class EntityManager
 
     public EntityPlayer? GetClosestPlayer(double x, double y, double z, double range)
     {
-        double minDistanceSquared = -1.0D;
+        var minDistanceSquared = -1.0D;
         EntityPlayer? closestPlayer = null;
-        double rangeSquared = range * range;
+        var rangeSquared = range * range;
 
         foreach (var player in Players)
         {
             if (!player.GameMode.VisibleToWorld) continue;
-            double distanceSquared = player.GetSquaredDistance(x, y, z);
+            var distanceSquared = player.GetSquaredDistance(x, y, z);
 
-            bool withinRange = range < 0.0D || distanceSquared < rangeSquared;
-            bool isClosestSoFar = minDistanceSquared == -1.0D || distanceSquared < minDistanceSquared;
+            var withinRange = range < 0.0D || distanceSquared < rangeSquared;
+            var isClosestSoFar = minDistanceSquared == -1.0D || distanceSquared < minDistanceSquared;
 
             if (withinRange && isClosestSoFar)
             {
@@ -810,17 +808,17 @@ public class EntityManager
 
     public EntityPlayer? GetClosestPlayerTarget(double x, double y, double z, double range)
     {
-        double minDistanceSquared = -1.0D;
+        var minDistanceSquared = -1.0D;
         EntityPlayer? closestPlayer = null;
-        double rangeSquared = range * range;
+        var rangeSquared = range * range;
 
         foreach (var player in Players)
         {
             if (!player.GameMode.CanBeTargeted || !player.IsAlive) continue;
-            double distanceSquared = player.GetSquaredDistance(x, y, z);
+            var distanceSquared = player.GetSquaredDistance(x, y, z);
 
-            bool withinRange = range < 0.0D || distanceSquared < rangeSquared;
-            bool isClosestSoFar = minDistanceSquared == -1.0D || distanceSquared < minDistanceSquared;
+            var withinRange = range < 0.0D || distanceSquared < rangeSquared;
+            var isClosestSoFar = minDistanceSquared == -1.0D || distanceSquared < minDistanceSquared;
 
             if (withinRange && isClosestSoFar)
             {
@@ -834,12 +832,12 @@ public class EntityManager
 
     public EntityPlayer? GetPlayer(string name) => Players.FirstOrDefault(p => p.Name == name);
 
-    public Entity? GetEntityByID(int id) => _entitiesById.TryGetValue(id, out Entity? entity) ? entity : null;
+    public Entity? GetEntityByID(int id) => _entitiesById.TryGetValue(id, out var entity) ? entity : null;
 
     public void UpdateSleepingPlayers()
     {
         AllPlayersSleeping = Players.Count > 0;
-        foreach (EntityPlayer player in Players)
+        foreach (var player in Players)
         {
             if (!player.IsSleeping)
             {
@@ -851,13 +849,13 @@ public class EntityManager
 
     public bool CanSpawnEntity(Box spawnArea)
     {
-        List<Entity> nearbyEntities = GetEntitiesScratch(null, spawnArea);
+        var nearbyEntities = GetEntitiesScratch(null, spawnArea);
         return nearbyEntities.All(entity => entity.Dead || !entity.PreventEntitySpawning);
     }
 
     public T? GetOrCreateBlockEntity<T>(int x, int y, int z) where T : BlockEntity
     {
-        BlockEntity? entity = _blockEntityUpdateQueue.FirstOrDefault(e => e.X == x && e.Y == y && e.Z == z);
+        var entity = _blockEntityUpdateQueue.FirstOrDefault(e => e.X == x && e.Y == y && e.Z == z);
 
         if (entity == null || entity.IsRemoved())
         {
@@ -869,7 +867,7 @@ public class EntityManager
             return entity as T;
         }
 
-        int blockId = _world.Reader.GetBlockId(x, y, z);
+        var blockId = _world.Reader.GetBlockId(x, y, z);
         if (blockId == 0 || !_world.Content.Blocks.GetByProtocolId(blockId).HasBlockEntity)
         {
             return null;
@@ -894,13 +892,13 @@ public class EntityManager
 
     public void LoadChunksNearEntity(Entity entity)
     {
-        int chunkX = MathHelper.Floor(entity.X / 16.0D);
-        int chunkZ = MathHelper.Floor(entity.Z / 16.0D);
+        var chunkX = MathHelper.Floor(entity.X / 16.0D);
+        var chunkZ = MathHelper.Floor(entity.Z / 16.0D);
         const byte loadRadius = 2;
 
-        for (int x = chunkX - loadRadius; x <= chunkX + loadRadius; ++x)
+        for (var x = chunkX - loadRadius; x <= chunkX + loadRadius; ++x)
         {
-            for (int z = chunkZ - loadRadius; z <= chunkZ + loadRadius; ++z)
+            for (var z = chunkZ - loadRadius; z <= chunkZ + loadRadius; ++z)
             {
                 _world.ChunkHost.GetChunk(x, z);
             }
@@ -914,17 +912,17 @@ public class EntityManager
 
     public T? GetBlockEntity<T>(int x, int y, int z) where T : BlockEntity
     {
-        Chunk chunk = _world.ChunkHost.GetChunk(x >> 4, z >> 4);
-        BlockEntity? entity = chunk.GetBlockEntity(x & 15, y, z & 15)
-                            ?? BlockEntities.FirstOrDefault(e => e.X == x && e.Y == y && e.Z == z);
+        var chunk = _world.ChunkHost.GetChunk(x >> 4, z >> 4);
+        var entity = chunk.GetBlockEntity(x & 15, y, z & 15)
+                     ?? BlockEntities.FirstOrDefault(e => e.X == x && e.Y == y && e.Z == z);
         return entity as T;
     }
 
     public T? PeekBlockEntity<T>(int x, int y, int z) where T : BlockEntity
     {
-        Chunk chunk = _world.ChunkHost.GetChunk(x >> 4, z >> 4);
-        BlockEntity? entity = chunk.PeekBlockEntity(x & 15, y, z & 15)
-                            ?? BlockEntities.FirstOrDefault(e => e.X == x && e.Y == y && e.Z == z);
+        var chunk = _world.ChunkHost.GetChunk(x >> 4, z >> 4);
+        var entity = chunk.PeekBlockEntity(x & 15, y, z & 15)
+                     ?? BlockEntities.FirstOrDefault(e => e.X == x && e.Y == y && e.Z == z);
         return entity as T;
     }
 
@@ -945,7 +943,7 @@ public class EntityManager
         else
         {
             BlockEntities.Add(blockEntity);
-            Chunk? chunk = _world.ChunkHost.GetChunk(x >> 4, z >> 4);
+            var chunk = _world.ChunkHost.GetChunk(x >> 4, z >> 4);
             if (chunk != null)
             {
                 chunk.SetBlockEntity(x & 15, y, z & 15, blockEntity);
@@ -955,7 +953,7 @@ public class EntityManager
 
     public void RemoveBlockEntity(int x, int y, int z)
     {
-        BlockEntity? entity = GetBlockEntity<BlockEntity>(x, y, z);
+        var entity = GetBlockEntity<BlockEntity>(x, y, z);
         if (entity != null && _processingDeferred)
         {
             entity.MarkRemoved();

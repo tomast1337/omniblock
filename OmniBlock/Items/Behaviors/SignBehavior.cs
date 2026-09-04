@@ -60,7 +60,7 @@ internal sealed class SignBehavior : IItemBehavior
         }
 
         itemStack.ConsumeItem(player);
-        BlockEntitySign? blockEntitySign = world.Entities.GetBlockEntity<BlockEntitySign>(x, y, z);
+        var blockEntitySign = world.Entities.GetBlockEntity<BlockEntitySign>(x, y, z);
         if (blockEntitySign != null)
         {
             player.openEditSignScreen(blockEntitySign);

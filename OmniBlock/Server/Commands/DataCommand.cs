@@ -1,11 +1,9 @@
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Entities;
 using OmniBlock.Inventories;
 using OmniBlock.Server.Command;
-using OmniBlock.Util.Maths;
-using OmniBlock.Worlds.Core.Systems;
-using Brigadier.NET.Builder;
-using Brigadier.NET.Context;
 
 namespace OmniBlock.Server.Commands;
 
@@ -31,7 +29,7 @@ public class DataCommand : Command.Command
 
     private static IEnumerable<IEntity> GetEntityList(CommandContext<CommandSource> context, ListKindEntity kind, ServerPlayerEntity player)
     {
-        EntityManager entities = context.Source.Server.getWorld(player.DimensionId).Entities;
+        var entities = context.Source.Server.getWorld(player.DimensionId).Entities;
         return kind switch
         {
             ListKindEntity.Player => entities.Players,
@@ -45,14 +43,14 @@ public class DataCommand : Command.Command
 
     private static int DataGetCount(CommandContext<CommandSource> context, ListKindEntity kind)
     {
-        ServerPlayerEntity? player = GetSenderPlayer(context);
+        var player = GetSenderPlayer(context);
         if (player == null)
         {
             return 1;
         }
 
-        List<IEntity> items = GetEntityList(context, kind, player).ToList();
-        string name = KindName(kind);
+        var items = GetEntityList(context, kind, player).ToList();
+        var name = KindName(kind);
         if (items.Count != 1)
         {
             FormatPlural(ref name);
@@ -64,7 +62,7 @@ public class DataCommand : Command.Command
 
     private static int DataGetBySelector(CommandContext<CommandSource> context, ListKindEntity kind, Selector? selector)
     {
-        ServerPlayerEntity? player = GetSenderPlayer(context);
+        var player = GetSenderPlayer(context);
         if (player == null)
         {
             return 1;
@@ -76,13 +74,13 @@ public class DataCommand : Command.Command
 
     private static int DataGetById(CommandContext<CommandSource> context, ListKindEntity kind, int id)
     {
-        ServerPlayerEntity? player = GetSenderPlayer(context);
+        var player = GetSenderPlayer(context);
         if (player == null)
         {
             return 1;
         }
 
-        IEntity? entity = GetEntityList(context, kind, player).FirstOrDefault(e => e.GetId() == id);
+        var entity = GetEntityList(context, kind, player).FirstOrDefault(e => e.GetId() == id);
         if (entity == null)
         {
             context.Source.Output.SendMessage($"{id} not found.");
@@ -95,16 +93,16 @@ public class DataCommand : Command.Command
 
     private static int DataGetByType(CommandContext<CommandSource> context, ListKindEntity kind, string typeName, Selector? selector)
     {
-        ServerPlayerEntity? player = GetSenderPlayer(context);
+        var player = GetSenderPlayer(context);
         if (player == null)
         {
             return 1;
         }
 
-        IEnumerable<IEntity> items = GetEntityList(context, kind, player);
+        var items = GetEntityList(context, kind, player);
         string displayName;
 
-        if (player.World.Content.EntityTypes.TryGet(typeName, out EntityType? entityType))
+        if (player.World.Content.EntityTypes.TryGet(typeName, out var entityType))
         {
             displayName = entityType.BaseType.Name;
             items = items.Where(e => e is Entity entity && ReferenceEquals(entity.Type, entityType));
@@ -123,7 +121,7 @@ public class DataCommand : Command.Command
     {
         if (selector == Selector.First)
         {
-            IEntity? item = items.FirstOrDefault();
+            var item = items.FirstOrDefault();
             if (item == null)
             {
                 output.SendMessage($"Found 0 instances of {displayName}");
@@ -135,27 +133,27 @@ public class DataCommand : Command.Command
         else if (selector == Selector.Close)
         {
             IEntity? closest = null;
-            double distance = double.MaxValue;
-            double distanceFast = double.MaxValue;
+            var distance = double.MaxValue;
+            var distanceFast = double.MaxValue;
 
-            foreach (IEntity entity in items)
+            foreach (var entity in items)
             {
                 // Tiered distance check for faster comparison
-                double d = Math.Abs(entity.Position.X - player.X) + Math.Abs(entity.Position.Z - player.Z);
+                var d = Math.Abs(entity.Position.X - player.X) + Math.Abs(entity.Position.Z - player.Z);
                 if (d * d * 1.15 > distanceFast)
                 {
                     continue;
                 }
 
-                Vec3D pPos = player.Position;
-                Vec3D ePos = entity.Position;
+                var pPos = player.Position;
+                var ePos = entity.Position;
                 d = pPos.SquareDistance2DTo(ePos);
                 if (d > distanceFast)
                 {
                     continue;
                 }
 
-                double slowD = pPos.SquareDistanceTo(ePos);
+                var slowD = pPos.SquareDistanceTo(ePos);
                 if (slowD > distance)
                 {
                     continue;
@@ -181,8 +179,8 @@ public class DataCommand : Command.Command
         }
         else
         {
-            List<IEntity> list = items.ToList();
-            int count = list.Count;
+            var list = items.ToList();
+            var count = list.Count;
 
             if (listHits && count > 0)
             {
@@ -292,7 +290,7 @@ public class DataCommand : Command.Command
         Global = 2,
         G = 2,
         Block = 3,
-        B = 3,
+        B = 3
     }
 
     private enum Selector

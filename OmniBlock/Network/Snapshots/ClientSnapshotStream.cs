@@ -13,8 +13,8 @@ namespace OmniBlock.Network.Snapshots;
 /// </summary>
 public sealed class ClientSnapshotStream
 {
-    private readonly SnapshotBaseline _baseline = new();
     private readonly List<KeyValuePair<int, EntitySnapshotState>> _applied = [];
+    private readonly SnapshotBaseline _baseline = new();
 
     /// <summary>
     ///     The newest snapshot successfully applied, and the value to acknowledge. Zero asks the
@@ -60,7 +60,7 @@ public sealed class ClientSnapshotStream
             return _applied;
         }
 
-        foreach (EntitySnapshotMessage.EntityDelta delta in message.Deltas)
+        foreach (var delta in message.Deltas)
         {
             _applied.Add(new KeyValuePair<int, EntitySnapshotState>(
                 delta.EntityId, EntitySnapshotMessage.Decode(delta, _baseline)));

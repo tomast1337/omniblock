@@ -6,13 +6,13 @@ namespace OmniBlock.Client.Input;
 
 public sealed class VirtualCursor
 {
-    private float _x;
-    private float _y;
+    private bool _wasDpadDownDown;
 
     private bool _wasDpadLeftDown;
     private bool _wasDpadRightDown;
     private bool _wasDpadUpDown;
-    private bool _wasDpadDownDown;
+    private float _x;
+    private float _y;
 
     public float X => _x;
     public float Y => _y;
@@ -25,13 +25,13 @@ public sealed class VirtualCursor
 
     public void Update(UIScreen? currentScreen, GameOptions options, int displayWidth, int displayHeight, float deltaTime)
     {
-        float lx = Controller.LeftStickX;
-        float ly = Controller.LeftStickY;
+        var lx = Controller.LeftStickX;
+        var ly = Controller.LeftStickY;
 
-        bool dpadLeft = Controller.IsButtonDown(GamepadButton.DPadLeft);
-        bool dpadRight = Controller.IsButtonDown(GamepadButton.DPadRight);
-        bool dpadUp = Controller.IsButtonDown(GamepadButton.DPadUp);
-        bool dpadDown = Controller.IsButtonDown(GamepadButton.DPadDown);
+        var dpadLeft = Controller.IsButtonDown(GamepadButton.DPadLeft);
+        var dpadRight = Controller.IsButtonDown(GamepadButton.DPadRight);
+        var dpadUp = Controller.IsButtonDown(GamepadButton.DPadUp);
+        var dpadDown = Controller.IsButtonDown(GamepadButton.DPadDown);
 
         if (currentScreen != null)
         {
@@ -53,7 +53,7 @@ public sealed class VirtualCursor
         if (currentScreen?.IsEditingSlider == true) return;
 
         ScaledResolution sr = new(options, displayWidth, displayHeight);
-        float speed = 200f * sr.ScaleFactor;
+        var speed = 200f * sr.ScaleFactor;
 
         _x = Math.Clamp(_x + lx * speed * deltaTime, 0, displayWidth);
         _y = Math.Clamp(_y + ly * speed * deltaTime, 0, displayHeight);

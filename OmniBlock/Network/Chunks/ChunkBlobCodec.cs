@@ -51,9 +51,6 @@ public static class ChunkBlobCodec
     /// <summary>Blocks in one section.</summary>
     public const int SectionVolume = ChunkWidth * ChunkWidth * SectionHeight;
 
-    /// <summary>Sections stacked in one chunk.</summary>
-    public static int SectionsPerChunk => ChuckFormat.ChunkHeight / SectionHeight;
-
     /// <summary>
     ///     Largest palette that still beats sending the section raw. At 256 entries the table costs
     ///     512 bytes and the indices 4,096, against 6,144 for the raw pair — still a win, and past it
@@ -61,39 +58,8 @@ public static class ChunkBlobCodec
     /// </summary>
     public const int MaxPaletteSize = 256;
 
-    /// <summary>How the block states of one section were written.</summary>
-    private enum StateEncoding : byte
-    {
-        /// <summary>Every block in the section is the same state. Three bytes for 4,096 blocks.</summary>
-        Uniform = 0,
-
-        /// <summary>A table of distinct states, then one index per block at the narrowest width that fits.</summary>
-        Palette = 1,
-
-        /// <summary>
-        ///     Ids and metadata in their original layout. Reached only by a section with more than
-        ///     <see cref="MaxPaletteSize" /> distinct states, which generated terrain does not
-        ///     produce; it exists so a pathological player build is merely uncompressed rather than
-        ///     impossible to represent.
-        /// </summary>
-        Raw = 2,
-    }
-
-    /// <summary>How one nibble array of one section was written.</summary>
-    private enum NibbleEncoding : byte
-    {
-        /// <summary>One value throughout — an unlit section, or open sky.</summary>
-        Uniform = 0,
-
-        /// <summary>
-        ///     Fewer than eight distinct levels, packed at one to three bits. Worth having because
-        ///     the alternative is four bits per value and light is usually flat over a small volume.
-        /// </summary>
-        Palette = 1,
-
-        /// <summary>Four bits per value, as stored.</summary>
-        Raw = 2,
-    }
+    /// <summary>Sections stacked in one chunk.</summary>
+    public static int SectionsPerChunk => ChuckFormat.ChunkHeight / SectionHeight;
 
     /// <summary>
     ///     Encodes one chunk.
@@ -121,7 +87,7 @@ public static class ChunkBlobCodec
         // the whole chunk rather than per section; BuildPalette clears it.
         Span<short> indexOfState = stackalloc short[1 << 12];
 
-        for (int section = 0; section < SectionsPerChunk; section++)
+        for (var section = 0; section < SectionsPerChunk; section++)
         {
             ReadSectionStates(blocks, meta, section, states);
             WriteStates(output, states, indexOfState);
@@ -151,8 +117,8 @@ public static class ChunkBlobCodec
     {
         ValidateSizes(blocks, meta, blockLight, skyLight);
 
-        int offset = 0;
-        byte version = ReadByte(blob, ref offset);
+        var offset = 0;
+        var version = ReadByte(blob, ref offset);
         if (version != Version)
         {
             throw new InvalidDataException($"Chunk blob is version {version}; this build reads {Version}.");
@@ -168,7 +134,7 @@ public static class ChunkBlobCodec
         Span<ushort> states = stackalloc ushort[SectionVolume];
         Span<byte> nibbles = stackalloc byte[SectionVolume];
 
-        for (int section = 0; section < sections; section++)
+        for (var section = 0; section < sections; section++)
         {
             ReadStates(blob, ref offset, states);
             WriteSectionStates(blocks, meta, section, states);
@@ -201,15 +167,15 @@ public static class ChunkBlobCodec
     private static void ReadSectionStates(
         ReadOnlySpan<byte> blocks, ReadOnlySpan<byte> meta, int section, Span<ushort> states)
     {
-        int baseY = section * SectionHeight;
+        var baseY = section * SectionHeight;
 
-        for (int x = 0; x < ChunkWidth; x++)
+        for (var x = 0; x < ChunkWidth; x++)
         {
-            for (int z = 0; z < ChunkWidth; z++)
+            for (var z = 0; z < ChunkWidth; z++)
             {
-                for (int y = 0; y < SectionHeight; y++)
+                for (var y = 0; y < SectionHeight; y++)
                 {
-                    int index = ChuckFormat.GetIndex(x, baseY + y, z);
+                    var index = ChuckFormat.GetIndex(x, baseY + y, z);
                     states[LocalIndex(x, z, y)] = StateOf(blocks[index], GetNibble(meta, index));
                 }
             }
@@ -219,16 +185,16 @@ public static class ChunkBlobCodec
     private static void WriteSectionStates(
         Span<byte> blocks, Span<byte> meta, int section, ReadOnlySpan<ushort> states)
     {
-        int baseY = section * SectionHeight;
+        var baseY = section * SectionHeight;
 
-        for (int x = 0; x < ChunkWidth; x++)
+        for (var x = 0; x < ChunkWidth; x++)
         {
-            for (int z = 0; z < ChunkWidth; z++)
+            for (var z = 0; z < ChunkWidth; z++)
             {
-                for (int y = 0; y < SectionHeight; y++)
+                for (var y = 0; y < SectionHeight; y++)
                 {
-                    ushort state = states[LocalIndex(x, z, y)];
-                    int index = ChuckFormat.GetIndex(x, baseY + y, z);
+                    var state = states[LocalIndex(x, z, y)];
+                    var index = ChuckFormat.GetIndex(x, baseY + y, z);
 
                     blocks[index] = (byte)(state >> 4);
                     SetNibble(meta, index, state & 0xF);
@@ -239,13 +205,13 @@ public static class ChunkBlobCodec
 
     private static void ReadSectionNibbles(ReadOnlySpan<byte> source, int section, Span<byte> values)
     {
-        int baseY = section * SectionHeight;
+        var baseY = section * SectionHeight;
 
-        for (int x = 0; x < ChunkWidth; x++)
+        for (var x = 0; x < ChunkWidth; x++)
         {
-            for (int z = 0; z < ChunkWidth; z++)
+            for (var z = 0; z < ChunkWidth; z++)
             {
-                for (int y = 0; y < SectionHeight; y++)
+                for (var y = 0; y < SectionHeight; y++)
                 {
                     values[LocalIndex(x, z, y)] = (byte)GetNibble(source, ChuckFormat.GetIndex(x, baseY + y, z));
                 }
@@ -255,13 +221,13 @@ public static class ChunkBlobCodec
 
     private static void WriteSectionNibbles(Span<byte> destination, int section, ReadOnlySpan<byte> values)
     {
-        int baseY = section * SectionHeight;
+        var baseY = section * SectionHeight;
 
-        for (int x = 0; x < ChunkWidth; x++)
+        for (var x = 0; x < ChunkWidth; x++)
         {
-            for (int z = 0; z < ChunkWidth; z++)
+            for (var z = 0; z < ChunkWidth; z++)
             {
-                for (int y = 0; y < SectionHeight; y++)
+                for (var y = 0; y < SectionHeight; y++)
                 {
                     SetNibble(destination, ChuckFormat.GetIndex(x, baseY + y, z), values[LocalIndex(x, z, y)]);
                 }
@@ -279,7 +245,7 @@ public static class ChunkBlobCodec
 
     private static void SetNibble(Span<byte> nibbles, int index, int value)
     {
-        ref byte cell = ref nibbles[index >> 1];
+        ref var cell = ref nibbles[index >> 1];
 
         cell = (index & 1) == 0
             ? (byte)((cell & 0xF0) | (value & 0xF))
@@ -291,7 +257,7 @@ public static class ChunkBlobCodec
     private static void WriteStates(Stream output, ReadOnlySpan<ushort> states, Span<short> indexOfState)
     {
         Span<ushort> palette = stackalloc ushort[MaxPaletteSize];
-        int paletteSize = BuildPalette(states, palette, indexOfState);
+        var paletteSize = BuildPalette(states, palette, indexOfState);
 
         if (paletteSize == 1)
         {
@@ -305,12 +271,12 @@ public static class ChunkBlobCodec
             // More distinct states than a palette can pay for. Ids and metadata go out in their
             // original shape, which is exactly what the inherited format sends.
             output.WriteByte((byte)StateEncoding.Raw);
-            for (int i = 0; i < SectionVolume; i++)
+            for (var i = 0; i < SectionVolume; i++)
             {
                 output.WriteByte((byte)(states[i] >> 4));
             }
 
-            for (int i = 0; i < SectionVolume; i += 2)
+            for (var i = 0; i < SectionVolume; i += 2)
             {
                 output.WriteByte((byte)((states[i] & 0xF) | ((states[i + 1] & 0xF) << 4)));
             }
@@ -320,14 +286,14 @@ public static class ChunkBlobCodec
 
         output.WriteByte((byte)StateEncoding.Palette);
         output.WriteByte((byte)(paletteSize - 1));
-        for (int i = 0; i < paletteSize; i++)
+        for (var i = 0; i < paletteSize; i++)
         {
             WriteUInt16(output, palette[i]);
         }
 
-        int bits = BitsFor(paletteSize);
+        var bits = BitsFor(paletteSize);
         Span<ushort> indices = stackalloc ushort[SectionVolume];
-        for (int i = 0; i < SectionVolume; i++)
+        for (var i = 0; i < SectionVolume; i++)
         {
             indices[i] = (ushort)indexOfState[states[i]];
         }
@@ -337,7 +303,7 @@ public static class ChunkBlobCodec
 
     private static void ReadStates(ReadOnlySpan<byte> blob, ref int offset, Span<ushort> states)
     {
-        StateEncoding encoding = (StateEncoding)ReadByte(blob, ref offset);
+        var encoding = (StateEncoding)ReadByte(blob, ref offset);
 
         switch (encoding)
         {
@@ -347,12 +313,12 @@ public static class ChunkBlobCodec
 
             case StateEncoding.Raw:
                 {
-                    ReadOnlySpan<byte> ids = Take(blob, ref offset, SectionVolume);
-                    ReadOnlySpan<byte> metadata = Take(blob, ref offset, SectionVolume / 2);
+                    var ids = Take(blob, ref offset, SectionVolume);
+                    var metadata = Take(blob, ref offset, SectionVolume / 2);
 
-                    for (int i = 0; i < SectionVolume; i++)
+                    for (var i = 0; i < SectionVolume; i++)
                     {
-                        int nibble = (i & 1) == 0 ? metadata[i >> 1] & 0xF : (metadata[i >> 1] >> 4) & 0xF;
+                        var nibble = (i & 1) == 0 ? metadata[i >> 1] & 0xF : (metadata[i >> 1] >> 4) & 0xF;
                         states[i] = StateOf(ids[i], nibble);
                     }
 
@@ -361,19 +327,19 @@ public static class ChunkBlobCodec
 
             case StateEncoding.Palette:
                 {
-                    int paletteSize = ReadByte(blob, ref offset) + 1;
+                    var paletteSize = ReadByte(blob, ref offset) + 1;
                     Span<ushort> palette = stackalloc ushort[paletteSize];
-                    for (int i = 0; i < paletteSize; i++)
+                    for (var i = 0; i < paletteSize; i++)
                     {
                         palette[i] = ReadUInt16(blob, ref offset);
                     }
 
-                    int bits = BitsFor(paletteSize);
-                    ReadOnlySpan<byte> packed = Take(blob, ref offset, PackedLength(SectionVolume, bits));
+                    var bits = BitsFor(paletteSize);
+                    var packed = Take(blob, ref offset, PackedLength(SectionVolume, bits));
 
-                    for (int i = 0; i < SectionVolume; i++)
+                    for (var i = 0; i < SectionVolume; i++)
                     {
-                        int index = Unpack(packed, i, bits);
+                        var index = Unpack(packed, i, bits);
                         if (index >= paletteSize)
                         {
                             throw new InvalidDataException(
@@ -400,9 +366,9 @@ public static class ChunkBlobCodec
         Span<sbyte> indexOfValue = stackalloc sbyte[16];
         indexOfValue.Fill(-1);
         Span<byte> palette = stackalloc byte[16];
-        int paletteSize = 0;
+        var paletteSize = 0;
 
-        foreach (byte value in values)
+        foreach (var value in values)
         {
             if (indexOfValue[value] >= 0)
             {
@@ -420,13 +386,13 @@ public static class ChunkBlobCodec
             return;
         }
 
-        int bits = BitsFor(paletteSize);
+        var bits = BitsFor(paletteSize);
 
         // Four bits is what the array already costs, so a palette only earns its table below that.
         if (bits >= 4)
         {
             output.WriteByte((byte)NibbleEncoding.Raw);
-            for (int i = 0; i < SectionVolume; i += 2)
+            for (var i = 0; i < SectionVolume; i += 2)
             {
                 output.WriteByte((byte)(values[i] | (values[i + 1] << 4)));
             }
@@ -436,13 +402,13 @@ public static class ChunkBlobCodec
 
         output.WriteByte((byte)NibbleEncoding.Palette);
         output.WriteByte((byte)(paletteSize - 1));
-        for (int i = 0; i < paletteSize; i++)
+        for (var i = 0; i < paletteSize; i++)
         {
             output.WriteByte(palette[i]);
         }
 
         Span<ushort> indices = stackalloc ushort[SectionVolume];
-        for (int i = 0; i < SectionVolume; i++)
+        for (var i = 0; i < SectionVolume; i++)
         {
             indices[i] = (ushort)indexOfValue[values[i]];
         }
@@ -452,7 +418,7 @@ public static class ChunkBlobCodec
 
     private static void ReadNibbles(ReadOnlySpan<byte> blob, ref int offset, Span<byte> values)
     {
-        NibbleEncoding encoding = (NibbleEncoding)ReadByte(blob, ref offset);
+        var encoding = (NibbleEncoding)ReadByte(blob, ref offset);
 
         switch (encoding)
         {
@@ -462,8 +428,8 @@ public static class ChunkBlobCodec
 
             case NibbleEncoding.Raw:
                 {
-                    ReadOnlySpan<byte> packed = Take(blob, ref offset, SectionVolume / 2);
-                    for (int i = 0; i < SectionVolume; i += 2)
+                    var packed = Take(blob, ref offset, SectionVolume / 2);
+                    for (var i = 0; i < SectionVolume; i += 2)
                     {
                         values[i] = (byte)(packed[i >> 1] & 0xF);
                         values[i + 1] = (byte)((packed[i >> 1] >> 4) & 0xF);
@@ -474,15 +440,15 @@ public static class ChunkBlobCodec
 
             case NibbleEncoding.Palette:
                 {
-                    int paletteSize = ReadByte(blob, ref offset) + 1;
-                    ReadOnlySpan<byte> palette = Take(blob, ref offset, paletteSize);
+                    var paletteSize = ReadByte(blob, ref offset) + 1;
+                    var palette = Take(blob, ref offset, paletteSize);
 
-                    int bits = BitsFor(paletteSize);
-                    ReadOnlySpan<byte> packed = Take(blob, ref offset, PackedLength(SectionVolume, bits));
+                    var bits = BitsFor(paletteSize);
+                    var packed = Take(blob, ref offset, PackedLength(SectionVolume, bits));
 
-                    for (int i = 0; i < SectionVolume; i++)
+                    for (var i = 0; i < SectionVolume; i++)
                     {
-                        int index = Unpack(packed, i, bits);
+                        var index = Unpack(packed, i, bits);
                         if (index >= paletteSize)
                         {
                             throw new InvalidDataException(
@@ -517,9 +483,9 @@ public static class ChunkBlobCodec
     private static int BuildPalette(ReadOnlySpan<ushort> states, Span<ushort> palette, Span<short> indexOfState)
     {
         indexOfState.Fill(-1);
-        int size = 0;
+        var size = 0;
 
-        foreach (ushort state in states)
+        foreach (var state in states)
         {
             if (indexOfState[state] >= 0)
             {
@@ -541,7 +507,7 @@ public static class ChunkBlobCodec
     /// <summary>Narrowest index width that addresses <paramref name="paletteSize" /> entries.</summary>
     private static int BitsFor(int paletteSize)
     {
-        int bits = 1;
+        var bits = 1;
         while (1 << bits < paletteSize)
         {
             bits++;
@@ -550,7 +516,7 @@ public static class ChunkBlobCodec
         return bits;
     }
 
-    private static int PackedLength(int count, int bits) => ((count * bits) + 7) / 8;
+    private static int PackedLength(int count, int bits) => (count * bits + 7) / 8;
 
     /// <summary>
     ///     Packs indices least-significant-bit first, straddling byte boundaries.
@@ -566,14 +532,14 @@ public static class ChunkBlobCodec
     {
         ArgumentOutOfRangeException.ThrowIfGreaterThan(bits, 8);
 
-        byte[] packed = new byte[PackedLength(indices.Length, bits)];
-        int bitPosition = 0;
+        var packed = new byte[PackedLength(indices.Length, bits)];
+        var bitPosition = 0;
 
-        foreach (ushort index in indices)
+        foreach (var index in indices)
         {
-            int byteIndex = bitPosition >> 3;
-            int bitOffset = bitPosition & 7;
-            uint shifted = (uint)index << bitOffset;
+            var byteIndex = bitPosition >> 3;
+            var bitOffset = bitPosition & 7;
+            var shifted = (uint)index << bitOffset;
 
             packed[byteIndex] |= (byte)shifted;
 
@@ -591,9 +557,9 @@ public static class ChunkBlobCodec
 
     private static int Unpack(ReadOnlySpan<byte> packed, int index, int bits)
     {
-        int bitPosition = index * bits;
-        int byteIndex = bitPosition >> 3;
-        int bitOffset = bitPosition & 7;
+        var bitPosition = index * bits;
+        var byteIndex = bitPosition >> 3;
+        var bitOffset = bitPosition & 7;
 
         uint window = packed[byteIndex];
         if (byteIndex + 1 < packed.Length)
@@ -614,7 +580,7 @@ public static class ChunkBlobCodec
 
     private static ushort ReadUInt16(ReadOnlySpan<byte> blob, ref int offset)
     {
-        ReadOnlySpan<byte> pair = Take(blob, ref offset, 2);
+        var pair = Take(blob, ref offset, 2);
         return (ushort)((pair[0] << 8) | pair[1]);
     }
 
@@ -636,7 +602,7 @@ public static class ChunkBlobCodec
                 $"Chunk blob is truncated: wanted {count} bytes at {offset} of {blob.Length}.");
         }
 
-        ReadOnlySpan<byte> slice = blob.Slice(offset, count);
+        var slice = blob.Slice(offset, count);
         offset += count;
         return slice;
     }
@@ -647,11 +613,45 @@ public static class ChunkBlobCodec
         ReadOnlySpan<byte> blockLight,
         ReadOnlySpan<byte> skyLight)
     {
-        int volume = ChuckFormat.ChunkSize;
+        var volume = ChuckFormat.ChunkSize;
 
         ArgumentOutOfRangeException.ThrowIfNotEqual(blocks.Length, volume, nameof(blocks));
         ArgumentOutOfRangeException.ThrowIfNotEqual(meta.Length, volume / 2, nameof(meta));
         ArgumentOutOfRangeException.ThrowIfNotEqual(blockLight.Length, volume / 2, nameof(blockLight));
         ArgumentOutOfRangeException.ThrowIfNotEqual(skyLight.Length, volume / 2, nameof(skyLight));
+    }
+
+    /// <summary>How the block states of one section were written.</summary>
+    private enum StateEncoding : byte
+    {
+        /// <summary>Every block in the section is the same state. Three bytes for 4,096 blocks.</summary>
+        Uniform = 0,
+
+        /// <summary>A table of distinct states, then one index per block at the narrowest width that fits.</summary>
+        Palette = 1,
+
+        /// <summary>
+        ///     Ids and metadata in their original layout. Reached only by a section with more than
+        ///     <see cref="MaxPaletteSize" /> distinct states, which generated terrain does not
+        ///     produce; it exists so a pathological player build is merely uncompressed rather than
+        ///     impossible to represent.
+        /// </summary>
+        Raw = 2
+    }
+
+    /// <summary>How one nibble array of one section was written.</summary>
+    private enum NibbleEncoding : byte
+    {
+        /// <summary>One value throughout — an unlit section, or open sky.</summary>
+        Uniform = 0,
+
+        /// <summary>
+        ///     Fewer than eight distinct levels, packed at one to three bits. Worth having because
+        ///     the alternative is four bits per value and light is usually flat over a small volume.
+        /// </summary>
+        Palette = 1,
+
+        /// <summary>Four bits per value, as stored.</summary>
+        Raw = 2
     }
 }

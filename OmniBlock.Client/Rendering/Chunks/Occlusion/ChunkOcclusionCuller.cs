@@ -9,41 +9,8 @@ public interface IChunkVisibilityVisitor
 
 public class ChunkOcclusionCuller
 {
-    private class ChunkQueue
-    {
-        private readonly SubChunkRenderer[] _data;
-        private int _read;
-        private int _write;
-
-        public ChunkQueue(int capacity)
-        {
-            _data = new SubChunkRenderer[capacity];
-            _read = 0;
-            _write = 0;
-        }
-
-        public void Enqueue(SubChunkRenderer item)
-        {
-            _data[_write++] = item;
-        }
-
-        public SubChunkRenderer? Dequeue()
-        {
-            if (_read == _write) return null;
-            return _data[_read++];
-        }
-
-        public void Reset()
-        {
-            _read = 0;
-            _write = 0;
-        }
-
-        public bool IsEmpty => _read == _write;
-    }
-
     private readonly ChunkQueue[] _queues = [new(32768), new(32768)];
-    private int _currentQueue = 0;
+    private int _currentQueue;
 
     public void FindVisible(
         IChunkVisibilityVisitor visitor,
@@ -54,8 +21,8 @@ public class ChunkOcclusionCuller
         bool useOcclusionCulling,
         int frame)
     {
-        ChunkQueue readQueue = _queues[_currentQueue];
-        ChunkQueue writeQueue = _queues[1 - _currentQueue];
+        var readQueue = _queues[_currentQueue];
+        var writeQueue = _queues[1 - _currentQueue];
 
         readQueue.Reset();
         writeQueue.Reset();
@@ -69,7 +36,7 @@ public class ChunkOcclusionCuller
         startNode.IncomingDirections = ChunkDirectionMask.None;
         visitor.Visit(startNode);
 
-        ChunkDirectionMask initialOutgoing = useOcclusionCulling
+        var initialOutgoing = useOcclusionCulling
             ? startNode.VisibilityData.GetVisibleFrom(ChunkDirectionMask.None, viewPos, startNode)
             : ChunkDirectionMask.All;
 
@@ -138,15 +105,15 @@ public class ChunkOcclusionCuller
 
     private static ChunkDirectionMask GetOutwardDirections(Vector3D<double> viewPos, SubChunkRenderer renderer)
     {
-        int chunkX = renderer.Position.X / SubChunkRenderer.Size;
-        int chunkY = renderer.Position.Y / SubChunkRenderer.Size;
-        int chunkZ = renderer.Position.Z / SubChunkRenderer.Size;
+        var chunkX = renderer.Position.X / SubChunkRenderer.Size;
+        var chunkY = renderer.Position.Y / SubChunkRenderer.Size;
+        var chunkZ = renderer.Position.Z / SubChunkRenderer.Size;
 
-        int viewChunkX = (int)Math.Floor(viewPos.X / SubChunkRenderer.Size);
-        int viewChunkY = (int)Math.Floor(viewPos.Y / SubChunkRenderer.Size);
-        int viewChunkZ = (int)Math.Floor(viewPos.Z / SubChunkRenderer.Size);
+        var viewChunkX = (int)Math.Floor(viewPos.X / SubChunkRenderer.Size);
+        var viewChunkY = (int)Math.Floor(viewPos.Y / SubChunkRenderer.Size);
+        var viewChunkZ = (int)Math.Floor(viewPos.Z / SubChunkRenderer.Size);
 
-        ChunkDirectionMask mask = ChunkDirectionMask.None;
+        var mask = ChunkDirectionMask.None;
         if (chunkX <= viewChunkX) mask |= ChunkDirectionMask.West;
         if (chunkX >= viewChunkX) mask |= ChunkDirectionMask.East;
         if (chunkY <= viewChunkY) mask |= ChunkDirectionMask.Down;
@@ -154,5 +121,35 @@ public class ChunkOcclusionCuller
         if (chunkZ <= viewChunkZ) mask |= ChunkDirectionMask.North;
         if (chunkZ >= viewChunkZ) mask |= ChunkDirectionMask.South;
         return mask;
+    }
+
+    private class ChunkQueue
+    {
+        private readonly SubChunkRenderer[] _data;
+        private int _read;
+        private int _write;
+
+        public ChunkQueue(int capacity)
+        {
+            _data = new SubChunkRenderer[capacity];
+            _read = 0;
+            _write = 0;
+        }
+
+        public bool IsEmpty => _read == _write;
+
+        public void Enqueue(SubChunkRenderer item) => _data[_write++] = item;
+
+        public SubChunkRenderer? Dequeue()
+        {
+            if (_read == _write) return null;
+            return _data[_read++];
+        }
+
+        public void Reset()
+        {
+            _read = 0;
+            _write = 0;
+        }
     }
 }

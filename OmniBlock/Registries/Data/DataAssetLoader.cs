@@ -15,19 +15,16 @@ public abstract class DataAssetLoader
 
     private protected readonly LoadLocations Locations;
 
+    private protected DataAssetLoader(LoadLocations locations) => Locations = locations;
+
     public bool IsFrozen { get; private set; }
     public bool HasErrors { get; protected set; }
     public string? FirstErrorMessage { get; protected set; }
 
-    private protected DataAssetLoader(LoadLocations locations)
-    {
-        Locations = locations;
-    }
-
     internal void Freeze() => IsFrozen = true;
 
     /// <summary>
-    /// Runs the full load pipeline for this loader instance. Used by <see cref="RegistryAccess.Build"/>.
+    ///     Runs the full load pipeline for this loader instance. Used by <see cref="RegistryAccess.Build" />.
     /// </summary>
     internal void LoadFromPaths(string? basePath, string? datapackPath, string? worldDatapackPath)
     {
@@ -38,7 +35,7 @@ public abstract class DataAssetLoader
 
         if (Locations.HasFlag(LoadLocations.Assets))
         {
-            string assetsPath = Path.Combine(basePath ?? AppContext.BaseDirectory, "assets");
+            var assetsPath = Path.Combine(basePath ?? AppContext.BaseDirectory, "assets");
             if (!Directory.Exists(assetsPath))
                 Directory.CreateDirectory(assetsPath);
             OnLoadAssets(assetsPath, false, LoadLocations.Assets);
@@ -62,17 +59,17 @@ public abstract class DataAssetLoader
             throw new InvalidOperationException("Cannot load into a frozen registry.");
         }
 
-        string packsDir = Path.Combine(basePath, "datapacks");
+        var packsDir = Path.Combine(basePath, "datapacks");
         if (!Directory.Exists(packsDir))
         {
             Directory.CreateDirectory(packsDir);
             return;
         }
 
-        foreach (string pack in Directory.EnumerateDirectories(packsDir))
+        foreach (var pack in Directory.EnumerateDirectories(packsDir))
         {
             if (pack.EndsWith(".disabled")) continue;
-            string assets = Path.Join(pack, "data");
+            var assets = Path.Join(pack, "data");
             if (!Directory.Exists(assets)) continue;
             OnLoadAssets(assets, true, location);
         }

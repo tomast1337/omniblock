@@ -21,12 +21,12 @@ public class ControllerBindingsScreen(UIContext context, UIScreen? parent)
 
     protected override UIElement CreateContent()
     {
-        Panel list = CreateTwoColumnList();
+        var list = CreateTwoColumnList();
 
-        for (int i = 0; i < Options.ControllerBindings.Length; i++)
+        for (var i = 0; i < Options.ControllerBindings.Length; i++)
         {
-            int index = i;
-            ControllerBinding bind = Options.ControllerBindings[i];
+            var index = i;
+            var bind = Options.ControllerBindings[i];
 
             Panel row = new();
             row.Style.FlexDirection = FlexDirection.Row;
@@ -41,8 +41,8 @@ public class ControllerBindingsScreen(UIContext context, UIScreen? parent)
             label.Style.FlexGrow = 1;
             row.AddChild(label);
 
-            string btnText = _listeningIndex == i ? "> ??? <" : bind.GetButtonName();
-            Button btn = CreateButton();
+            var btnText = _listeningIndex == i ? "> ??? <" : bind.GetButtonName();
+            var btn = CreateButton();
             btn.Text = btnText;
             btn.Style.Width = 80;
             btn.OnClick += e =>

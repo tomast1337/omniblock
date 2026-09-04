@@ -5,21 +5,30 @@ namespace OmniBlock.Util.Maths;
 
 public static class MathHelper
 {
-    private static readonly float[] s_sinTable = new float[65536];
     private const float FastMathFactor = 65536.0f / (float)(Math.PI * 2.0);
+    private static readonly float[] s_sinTable = new float[65536];
+
+    static MathHelper()
+    {
+        for (var i = 0; i < 65536; ++i)
+        {
+            s_sinTable[i] = (float)Math.Sin(i * Math.PI * 2.0D / 65536.0D);
+        }
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static float Sin(float value)
     {
         // Bypasses .NET array bounds checking for maximum performance
-        ref float tableRef = ref MemoryMarshal.GetArrayDataReference(s_sinTable);
+        ref var tableRef = ref MemoryMarshal.GetArrayDataReference(s_sinTable);
         return Unsafe.Add(ref tableRef, (int)(value * FastMathFactor) & 0xFFFF);
     }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static float Cos(float value)
     {
         // 16384 is 90 degrees in this 65536-step table
-        ref float tableRef = ref MemoryMarshal.GetArrayDataReference(s_sinTable);
+        ref var tableRef = ref MemoryMarshal.GetArrayDataReference(s_sinTable);
         return Unsafe.Add(ref tableRef, (int)(value * FastMathFactor + 16384.0f) & 0xFFFF);
     }
 
@@ -32,14 +41,14 @@ public static class MathHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Floor(float value)
     {
-        int truncatedValue = (int)value;
+        var truncatedValue = (int)value;
         return value < truncatedValue ? truncatedValue - 1 : truncatedValue;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Floor(double value)
     {
-        int i = (int)value;
+        var i = (int)value;
         return value < i ? i - 1 : i;
     }
 
@@ -47,38 +56,24 @@ public static class MathHelper
     public static float Abs(float value) => MathF.Abs(value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Round(float value)
-    {
-        return (int)MathF.Round(value, MidpointRounding.ToPositiveInfinity);
-    }
+    public static int Round(float value) => (int)MathF.Round(value, MidpointRounding.ToPositiveInfinity);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long Round(double value)
-    {
-        return (long)Math.Round(value, MidpointRounding.ToPositiveInfinity);
-    }
+    public static long Round(double value) => (long)Math.Round(value, MidpointRounding.ToPositiveInfinity);
 
     public static double GetDistSqr(double x1, double y1, double z1, double x2, double y2, double z2)
     {
-        double dX = x1 - x2;
-        double dY = y1 - y2;
-        double dZ = z1 - z2;
+        var dX = x1 - x2;
+        var dY = y1 - y2;
+        var dZ = z1 - z2;
         return dX * dX + dY * dY + dZ * dZ;
     }
 
     public static double GetDistSqr(double x1, double y1, double z1, int x2, int y2, int z2)
     {
-        double dX = x1 - (x2 + 0.5);
-        double dY = y1 - (y2 + 0.5);
-        double dZ = z1 - (z2 + 0.5);
+        var dX = x1 - (x2 + 0.5);
+        var dY = y1 - (y2 + 0.5);
+        var dZ = z1 - (z2 + 0.5);
         return dX * dX + dY * dY + dZ * dZ;
-    }
-
-    static MathHelper()
-    {
-        for (int i = 0; i < 65536; ++i)
-        {
-            s_sinTable[i] = (float)Math.Sin(i * Math.PI * 2.0D / 65536.0D);
-        }
     }
 }

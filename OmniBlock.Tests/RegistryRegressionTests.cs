@@ -1,19 +1,17 @@
-using OmniBlock.Registries;
-
 namespace OmniBlock.Tests;
 
 /// <summary>
-/// Regression tests for bugs discovered during development of the registry infrastructure.
-/// Each test documents a specific bug, its root cause, and the fix. If a fix is ever
-/// accidentally reverted, the corresponding test will fail with a clear description.
+///     Regression tests for bugs discovered during development of the registry infrastructure.
+///     Each test documents a specific bug, its root cause, and the fix. If a fix is ever
+///     accidentally reverted, the corresponding test will fail with a clear description.
 /// </summary>
 [Collection("RegistryAccess")]
 public class RegistryRegressionTests : IDisposable
 {
-    private readonly string _tempDir;
-
     private static readonly RegistryKey<TestEnchantment> s_enchKey =
         new(ResourceLocation.Parse("test:enchantment"));
+
+    private readonly string _tempDir;
 
     public RegistryRegressionTests()
     {
@@ -28,27 +26,24 @@ public class RegistryRegressionTests : IDisposable
         GC.Collect();
         GC.WaitForPendingFinalizers();
         if (Directory.Exists(_tempDir))
-            Directory.Delete(_tempDir, recursive: true);
+            Directory.Delete(_tempDir, true);
     }
 
     private void WriteBaseEnchantment(string name, int maxLevel)
     {
-        string dir = Path.Combine(_tempDir, "assets", "enchantment");
+        var dir = Path.Combine(_tempDir, "assets", "enchantment");
         Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, $"{name}.json"), $"{{\"MaxLevel\":{maxLevel}}}");
     }
 
     private void WriteWorldEnchantment(string packName, string name, int maxLevel)
     {
-        string dir = Path.Combine(_tempDir, "world", "datapacks", packName, "data", "omniblock", "enchantment");
+        var dir = Path.Combine(_tempDir, "world", "datapacks", packName, "data", "omniblock", "enchantment");
         Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, $"{name}.json"), $"{{\"MaxLevel\":{maxLevel}}}");
     }
 
-    private void RegisterEnchantment()
-    {
-        RegistryAccess.AddDynamic(new RegistryDefinition<TestEnchantment>(s_enchKey, "enchantment"));
-    }
+    private void RegisterEnchantment() => RegistryAccess.AddDynamic(new RegistryDefinition<TestEnchantment>(s_enchKey, "enchantment"));
 
     // -------------------------------------------------------------------------
     // Bug: CloneForWorldDatapacks shared Holder<T> references between the clone
@@ -63,16 +58,16 @@ public class RegistryRegressionTests : IDisposable
     [Fact]
     public void World_datapack_override_does_not_corrupt_server_level_registry()
     {
-        WriteBaseEnchantment("sharpness", maxLevel: 5);
-        WriteWorldEnchantment("pack", "sharpness", maxLevel: 99);
+        WriteBaseEnchantment("sharpness", 5);
+        WriteWorldEnchantment("pack", "sharpness", 99);
 
         RegisterEnchantment();
-        RegistryAccess serverRa = RegistryAccess.Build(basePath: _tempDir);
+        var serverRa = RegistryAccess.Build(_tempDir);
         _ = serverRa.WithWorldDatapacks(Path.Combine(_tempDir, "world"));
 
         // Before the fix: the server registry also returned 99 because the
         // world-datapack write mutated the shared Holder<T>.
-        int serverLevel = serverRa.GetOrThrow(s_enchKey)
+        var serverLevel = serverRa.GetOrThrow(s_enchKey)
             .GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel;
 
         Assert.Equal(5, serverLevel);
@@ -93,18 +88,18 @@ public class RegistryRegressionTests : IDisposable
     [Fact]
     public void RegistryAccess_is_a_snapshot_file_changes_after_build_are_not_visible()
     {
-        WriteBaseEnchantment("sharpness", maxLevel: 5);
+        WriteBaseEnchantment("sharpness", 5);
 
         RegisterEnchantment();
-        RegistryAccess snapshot = RegistryAccess.Build(basePath: _tempDir);
+        var snapshot = RegistryAccess.Build(_tempDir);
 
         // File changes after the build must not be visible through the old instance.
-        WriteBaseEnchantment("sharpness", maxLevel: 99);
-        _ = RegistryAccess.Build(basePath: _tempDir);
+        WriteBaseEnchantment("sharpness", 99);
+        _ = RegistryAccess.Build(_tempDir);
 
         // Before the fix: the lazy holder in `snapshot` would read the updated file
         // on first access and return 99.
-        int level = snapshot.GetOrThrow(s_enchKey)
+        var level = snapshot.GetOrThrow(s_enchKey)
             .GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel;
 
         Assert.Equal(5, level);
@@ -124,11 +119,11 @@ public class RegistryRegressionTests : IDisposable
     [Fact]
     public void Enumerating_registry_yields_all_entries_not_just_previously_accessed_ones()
     {
-        WriteBaseEnchantment("sharpness", maxLevel: 5);
-        WriteBaseEnchantment("fortune", maxLevel: 3);
+        WriteBaseEnchantment("sharpness", 5);
+        WriteBaseEnchantment("fortune", 3);
 
         RegisterEnchantment();
-        RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
+        var ra = RegistryAccess.Build(_tempDir);
 
         // Deliberately do NOT call Get() on any entry first — the bug only
         // manifested when entries had never been individually accessed.
@@ -152,17 +147,17 @@ public class RegistryRegressionTests : IDisposable
     [Fact]
     public void ResolveDefaultGameMode_fallback_to_first_does_not_throw_before_any_entry_is_accessed()
     {
-        string dir = Path.Combine(_tempDir, "assets", "gamemode");
+        var dir = Path.Combine(_tempDir, "assets", "gamemode");
         Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, "adventure.json"), "{}");
 
         RegistryAccess.AddDynamic(RegistryDefinitions.GameModes);
-        RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
+        var ra = RegistryAccess.Build(_tempDir);
         var registry = ra.GetOrThrow(RegistryKeys.GameModes);
 
         // Before the fix: this threw InvalidOperationException because
         // no GameMode holder had been resolved yet and First() yielded nothing.
-        Holder<OmniBlock.GameMode>? result = null;
+        Holder<GameMode>? result = null;
         var ex = Record.Exception(() => result = DefaultGameModeListener.ResolveDefaultGameMode(registry, ""));
 
         Assert.Null(ex);
@@ -182,24 +177,24 @@ public class RegistryRegressionTests : IDisposable
     [Fact]
     public void Two_world_registries_from_same_server_registry_are_fully_independent()
     {
-        WriteBaseEnchantment("sharpness", maxLevel: 5);
+        WriteBaseEnchantment("sharpness", 5);
 
-        string worldADir = Path.Combine(_tempDir, "worldA");
-        string worldBDir = Path.Combine(_tempDir, "worldB");
-        string packA = Path.Combine(worldADir, "datapacks", "pack", "data", "omniblock", "enchantment");
-        string packB = Path.Combine(worldBDir, "datapacks", "pack", "data", "omniblock", "enchantment");
+        var worldADir = Path.Combine(_tempDir, "worldA");
+        var worldBDir = Path.Combine(_tempDir, "worldB");
+        var packA = Path.Combine(worldADir, "datapacks", "pack", "data", "omniblock", "enchantment");
+        var packB = Path.Combine(worldBDir, "datapacks", "pack", "data", "omniblock", "enchantment");
         Directory.CreateDirectory(packA);
         Directory.CreateDirectory(packB);
         File.WriteAllText(Path.Combine(packA, "sharpness.json"), "{\"MaxLevel\":10}");
         File.WriteAllText(Path.Combine(packB, "sharpness.json"), "{\"MaxLevel\":20}");
 
         RegisterEnchantment();
-        RegistryAccess serverRa = RegistryAccess.Build(basePath: _tempDir);
-        RegistryAccess raA = serverRa.WithWorldDatapacks(worldADir);
-        RegistryAccess raB = serverRa.WithWorldDatapacks(worldBDir);
+        var serverRa = RegistryAccess.Build(_tempDir);
+        var raA = serverRa.WithWorldDatapacks(worldADir);
+        var raB = serverRa.WithWorldDatapacks(worldBDir);
 
-        int levelA = raA.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel;
-        int levelB = raB.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel;
+        var levelA = raA.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel;
+        var levelB = raB.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel;
 
         // Before the fix: one world's write would bleed into the other.
         Assert.Equal(10, levelA);

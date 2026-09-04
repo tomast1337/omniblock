@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using Silk.NET.WebGPU;
 using WgpuBuffer = Silk.NET.WebGPU.Buffer;
 
@@ -15,15 +14,14 @@ namespace OmniBlock.Client.Rendering.Core.WebGPU;
 /// </remarks>
 public sealed unsafe class WgpuDynamicBuffer : IDisposable
 {
-    public WgpuBuffer* Buffer { get; }
-    public ulong Capacity { get; }
+    private const ulong WgpuWholeSizeValue = ulong.MaxValue;
 
     private readonly WebGpuDevice _device;
     private bool _disposed;
 
     /// <summary>
-    ///     Allocates a GPU buffer of <paramref name="capacity"/> bytes with
-    ///     <see cref="BufferUsage.Vertex"/> and <see cref="BufferUsage.CopyDst"/>.
+    ///     Allocates a GPU buffer of <paramref name="capacity" /> bytes with
+    ///     <see cref="BufferUsage.Vertex" /> and <see cref="BufferUsage.CopyDst" />.
     /// </summary>
     public WgpuDynamicBuffer(WebGpuDevice device, ulong capacity)
     {
@@ -33,16 +31,32 @@ public sealed unsafe class WgpuDynamicBuffer : IDisposable
         BufferDescriptor descriptor = new()
         {
             Usage = BufferUsage.Vertex | BufferUsage.CopyDst,
-            Size = capacity,
+            Size = capacity
         };
 
         Buffer = device.Api.DeviceCreateBuffer(device.Device, in descriptor);
     }
 
-    /// <summary>Uploads <paramref name="data"/> to the GPU buffer through the queue.</summary>
+    public WgpuBuffer* Buffer { get; }
+    public ulong Capacity { get; }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+
+        var api = _device.Api;
+        if (Buffer is not null)
+        {
+            api.BufferDestroy(Buffer);
+            api.BufferRelease(Buffer);
+        }
+    }
+
+    /// <summary>Uploads <paramref name="data" /> to the GPU buffer through the queue.</summary>
     public void Write<T>(ReadOnlySpan<T> data) where T : unmanaged
     {
-        ulong byteCount = (ulong)(data.Length * sizeof(T));
+        var byteCount = (ulong)(data.Length * sizeof(T));
         if (byteCount > Capacity)
         {
             throw new ArgumentException(
@@ -56,23 +70,5 @@ public sealed unsafe class WgpuDynamicBuffer : IDisposable
     }
 
     /// <summary>Binds the buffer at vertex slot 0 on the render pass.</summary>
-    public void Bind(RenderPassEncoder* pass)
-    {
-        _device.Api.RenderPassEncoderSetVertexBuffer(pass, 0, Buffer, 0, WgpuWholeSizeValue);
-    }
-
-    private const ulong WgpuWholeSizeValue = ulong.MaxValue;
-
-    public void Dispose()
-    {
-        if (_disposed) return;
-        _disposed = true;
-
-        Silk.NET.WebGPU.WebGPU api = _device.Api;
-        if (Buffer is not null)
-        {
-            api.BufferDestroy(Buffer);
-            api.BufferRelease(Buffer);
-        }
-    }
+    public void Bind(RenderPassEncoder* pass) => _device.Api.RenderPassEncoderSetVertexBuffer(pass, 0, Buffer, 0, WgpuWholeSizeValue);
 }

@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Util.Maths;
@@ -8,40 +7,34 @@ namespace OmniBlock.Client.Rendering.Particles;
 
 public static class ParticleUpdater
 {
-    // Queues new particles spawned during update to avoid mutating the active buffer while iterating
-    public struct DeferredSmoke
-    {
-        public double X, Y, Z, VelX, VelY, VelZ;
-    }
-
     public static void Update(ParticleBuffer buf, IWorldContext world, List<DeferredSmoke> deferredSmoke)
     {
-        int count = buf.Count;
+        var count = buf.Count;
         if (count == 0)
         {
             return;
         }
 
         // Localize arrays
-        double[] x = buf.X;
-        double[] y = buf.Y;
-        double[] z = buf.Z;
-        double[] px = buf.PrevX;
-        double[] py = buf.PrevY;
-        double[] pz = buf.PrevZ;
-        double[] vx = buf.VelX;
-        double[] vy = buf.VelY;
-        double[] vz = buf.VelZ;
-        short[] age = buf.Age;
-        short[] maxAge = buf.MaxAge;
+        var x = buf.X;
+        var y = buf.Y;
+        var z = buf.Z;
+        var px = buf.PrevX;
+        var py = buf.PrevY;
+        var pz = buf.PrevZ;
+        var vx = buf.VelX;
+        var vy = buf.VelY;
+        var vz = buf.VelZ;
+        var age = buf.Age;
+        var maxAge = buf.MaxAge;
 
         Array.Copy(x, px, count);
         Array.Copy(y, py, count);
         Array.Copy(z, pz, count);
 
-        Random rng = Random.Shared;
+        var rng = Random.Shared;
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             if (++age[i] >= maxAge[i])
             {
@@ -49,11 +42,11 @@ public static class ParticleUpdater
                 continue;
             }
 
-            ref readonly ParticleTypeConfig config = ref ParticleTypeConfig.Configs[(int)buf.Type[i]];
+            ref readonly var config = ref ParticleTypeConfig.Configs[(int)buf.Type[i]];
 
             if (config.AnimatesTexture)
             {
-                buf.TextureIndex[i] = 7 - (age[i] * 8 / maxAge[i]);
+                buf.TextureIndex[i] = 7 - age[i] * 8 / maxAge[i];
             }
 
             switch (config.Physics)
@@ -82,9 +75,9 @@ public static class ParticleUpdater
                     vy[i] += config.GravityAccel;
                     ParticlePhysics.MoveWithCollision(buf, i, world);
                     if (world.Reader.GetMaterial(
-                        MathHelper.Floor(x[i]),
-                        MathHelper.Floor(y[i]),
-                        MathHelper.Floor(z[i])) != Material.Water)
+                            MathHelper.Floor(x[i]),
+                            MathHelper.Floor(y[i]),
+                            MathHelper.Floor(z[i])) != Material.Water)
                         buf.Dead[i] = true;
                     break;
 
@@ -121,7 +114,7 @@ public static class ParticleUpdater
             }
         }
 
-        for (int i = buf.Count - 1; i >= 0; i--)
+        for (var i = buf.Count - 1; i >= 0; i--)
         {
             if (buf.Dead[i]) buf.SwapRemove(i);
         }
@@ -129,8 +122,8 @@ public static class ParticleUpdater
 
     private static void TickPortal(ParticleBuffer buf, int i)
     {
-        float progress = (float)buf.Age[i] / buf.MaxAge[i];
-        float factor = 1.0f - (-progress + progress * progress * 2.0f);
+        var progress = (float)buf.Age[i] / buf.MaxAge[i];
+        var factor = 1.0f - (-progress + progress * progress * 2.0f);
 
         buf.X[i] = buf.SpawnX[i] + buf.VelX[i] * factor;
         buf.Y[i] = buf.SpawnY[i] + buf.VelY[i] * factor + (1.0f - progress);
@@ -145,11 +138,11 @@ public static class ParticleUpdater
             return; // No need to check fluid height if we are already on solid ground
         }
 
-        int fx = MathHelper.Floor(buf.X[i]);
-        int fy = MathHelper.Floor(buf.Y[i]);
-        int fz = MathHelper.Floor(buf.Z[i]);
+        var fx = MathHelper.Floor(buf.X[i]);
+        var fy = MathHelper.Floor(buf.Y[i]);
+        var fz = MathHelper.Floor(buf.Z[i]);
 
-        Material mat = world.Reader.GetMaterial(fx, fy, fz);
+        var mat = world.Reader.GetMaterial(fx, fy, fz);
         if (mat.IsFluid || mat.IsSolid)
         {
             double surfaceY = fy + 1 - FluidMath.GetFluidHeightFromMeta(world.Reader.GetBlockMeta(fx, fy, fz));
@@ -174,5 +167,11 @@ public static class ParticleUpdater
 
         buf.VelY[i] += config.GravityAccel;
         ParticlePhysics.MoveWithCollision(buf, i, world);
+    }
+
+    // Queues new particles spawned during update to avoid mutating the active buffer while iterating
+    public struct DeferredSmoke
+    {
+        public double X, Y, Z, VelX, VelY, VelZ;
     }
 }

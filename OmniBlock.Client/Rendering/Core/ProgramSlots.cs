@@ -19,8 +19,6 @@ namespace OmniBlock.Client.Rendering.Core;
 /// </remarks>
 public static class ProgramSlots
 {
-    private readonly record struct SlotInfo(string PackName, ProgramSlot Parent, bool IsRoot);
-
     private static readonly Dictionary<ProgramSlot, SlotInfo> s_slots = Build();
 
     private static readonly Dictionary<string, ProgramSlot> s_byPackName =
@@ -40,7 +38,7 @@ public static class ProgramSlots
     /// <returns><c>false</c> for <see cref="ProgramSlot.Basic" />, which is where the chain stops.</returns>
     public static bool TryGetParent(ProgramSlot slot, out ProgramSlot parent)
     {
-        SlotInfo info = s_slots[slot];
+        var info = s_slots[slot];
         parent = info.Parent;
 
         return !info.IsRoot;
@@ -58,7 +56,7 @@ public static class ProgramSlots
     {
         yield return slot;
 
-        while (TryGetParent(slot, out ProgramSlot parent))
+        while (TryGetParent(slot, out var parent))
         {
             yield return parent;
             slot = parent;
@@ -87,15 +85,15 @@ public static class ProgramSlots
 
             // No Iris counterpart, so no gbuffers_ prefix to inherit and nothing for a ported pack
             // to collide with.
-            [ProgramSlot.Gui] = Under("gui", ProgramSlot.Textured),
+            [ProgramSlot.Gui] = Under("gui", ProgramSlot.Textured)
         };
 
         Validate(slots);
 
         return slots;
 
-        static SlotInfo Root(string packName) => new(packName, ProgramSlot.Basic, IsRoot: true);
-        static SlotInfo Under(string packName, ProgramSlot parent) => new(packName, parent, IsRoot: false);
+        static SlotInfo Root(string packName) => new(packName, ProgramSlot.Basic, true);
+        static SlotInfo Under(string packName, ProgramSlot parent) => new(packName, parent, false);
     }
 
     /// <summary>
@@ -105,15 +103,15 @@ public static class ProgramSlots
     /// </summary>
     private static void Validate(Dictionary<ProgramSlot, SlotInfo> slots)
     {
-        foreach (ProgramSlot slot in Enum.GetValues<ProgramSlot>())
+        foreach (var slot in Enum.GetValues<ProgramSlot>())
         {
             if (!slots.ContainsKey(slot))
             {
                 throw new InvalidOperationException($"{nameof(ProgramSlot)}.{slot} has no fallback declared.");
             }
 
-            ProgramSlot walk = slot;
-            for (int steps = 0; steps <= slots.Count; steps++)
+            var walk = slot;
+            for (var steps = 0; steps <= slots.Count; steps++)
             {
                 if (!slots[walk].IsRoot)
                 {
@@ -136,4 +134,6 @@ public static class ProgramSlots
             }
         }
     }
+
+    private readonly record struct SlotInfo(string PackName, ProgramSlot Parent, bool IsRoot);
 }

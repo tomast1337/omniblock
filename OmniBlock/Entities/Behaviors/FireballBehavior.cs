@@ -63,7 +63,7 @@ public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityP
             return false;
         }
 
-        Vec3D? lookVector = attacker.LookVector;
+        var lookVector = attacker.LookVector;
         if (lookVector == null)
         {
             return true;
@@ -111,7 +111,7 @@ public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityP
 
         if (self.State[_inGround])
         {
-            int inGroundBlockId = self.World.Reader.GetBlockId(self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
+            var inGroundBlockId = self.World.Reader.GetBlockId(self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
             if (inGroundBlockId == self.State[_blockId])
             {
                 ++self.State[_removalTimer];
@@ -137,7 +137,7 @@ public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityP
 
         Vec3D startPos = new(self.X, self.Y, self.Z);
         Vec3D endPos = new(self.X + self.VelocityX, self.Y + self.VelocityY, self.Z + self.VelocityZ);
-        HitResult hitResult = self.World.Reader.Raycast(startPos, endPos);
+        var hitResult = self.World.Reader.Raycast(startPos, endPos);
         startPos = new Vec3D(self.X, self.Y, self.Z);
         endPos = new Vec3D(self.X + self.VelocityX, self.Y + self.VelocityY, self.Z + self.VelocityZ);
         if (hitResult.Type != HitResultType.Miss)
@@ -145,12 +145,12 @@ public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityP
             endPos = new Vec3D(hitResult.Pos.X, hitResult.Pos.Y, hitResult.Pos.Z);
         }
 
-        EntityLiving? owner = Owner(self);
+        var owner = Owner(self);
         Entity? hitEntity = null;
-        List<Entity> candidateEntities = self.World.Entities.GetEntities(self, self.BoundingBox.Stretch(self.VelocityX, self.VelocityY, self.VelocityZ).Expand(1.0D, 1.0D, 1.0D));
-        double nearestHitDistance = 0.0D;
+        var candidateEntities = self.World.Entities.GetEntities(self, self.BoundingBox.Stretch(self.VelocityX, self.VelocityY, self.VelocityZ).Expand(1.0D, 1.0D, 1.0D));
+        var nearestHitDistance = 0.0D;
 
-        foreach (Entity candidateEntity in candidateEntities)
+        foreach (var candidateEntity in candidateEntities)
         {
             if (!candidateEntity.HasCollision || (Equals(candidateEntity, owner) && self.State[_inAirTime] < 25))
             {
@@ -158,14 +158,14 @@ public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityP
             }
 
             const float collisionMargin = 0.3F;
-            Box candidateBox = candidateEntity.BoundingBox.Expand(collisionMargin, collisionMargin, collisionMargin);
-            HitResult candidateHit = candidateBox.Raycast(startPos, endPos);
+            var candidateBox = candidateEntity.BoundingBox.Expand(collisionMargin, collisionMargin, collisionMargin);
+            var candidateHit = candidateBox.Raycast(startPos, endPos);
             if (candidateHit.Type == HitResultType.Miss)
             {
                 continue;
             }
 
-            double hitDistance = startPos.DistanceTo(candidateHit.Pos);
+            var hitDistance = startPos.DistanceTo(candidateHit.Pos);
             if (!(hitDistance < nearestHitDistance) && nearestHitDistance != 0.0D)
             {
                 continue;
@@ -197,7 +197,7 @@ public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         self.X += self.VelocityX;
         self.Y += self.VelocityY;
         self.Z += self.VelocityZ;
-        float horizontalSpeed = MathHelper.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
+        var horizontalSpeed = MathHelper.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
         self.Yaw = (float)(Math.Atan2(self.VelocityX, self.VelocityZ) * 180.0D / (float)Math.PI);
 
         self.Pitch = (float)(Math.Atan2(self.VelocityY, horizontalSpeed) * 180.0D / Math.PI);
@@ -223,10 +223,10 @@ public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityP
 
         self.Pitch = self.PrevPitch + (self.Pitch - self.PrevPitch) * 0.2F;
         self.Yaw = self.PrevYaw + (self.Yaw - self.PrevYaw) * 0.2F;
-        float drag = 0.95F;
+        var drag = 0.95F;
         if (self.IsInWater)
         {
-            for (int bubbleIndex = 0; bubbleIndex < 4; ++bubbleIndex)
+            for (var bubbleIndex = 0; bubbleIndex < 4; ++bubbleIndex)
             {
                 const float bubbleOffset = 0.25F;
                 self.World.Broadcaster.AddParticle("bubble", self.X - self.VelocityX * bubbleOffset, self.Y - self.VelocityY * bubbleOffset, self.Z - self.VelocityZ * bubbleOffset, self.VelocityX, self.VelocityY, self.VelocityZ);
@@ -253,8 +253,8 @@ public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     /// </summary>
     public static Entity Shoot(IWorldContext world, EntityLiving owner, double dx, double dy, double dz)
     {
-        Entity fireball = world.Content.EntityTypes.Create("omniblock:fireball", world);
-        FireballBehavior flight = fireball.Behaviors.Find<FireballBehavior>()!;
+        var fireball = world.Content.EntityTypes.Create("omniblock:fireball", world);
+        var flight = fireball.Behaviors.Find<FireballBehavior>()!;
         fireball.State.SetRef(flight._owner, owner);
         fireball.SetPositionAndAnglesKeepPrevAngles(owner.X, owner.Y, owner.Z, owner.Yaw, owner.Pitch);
         fireball.SetPosition(fireball.X, fireball.Y, fireball.Z);

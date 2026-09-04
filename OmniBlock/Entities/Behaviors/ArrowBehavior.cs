@@ -100,7 +100,7 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
             return true;
         }
 
-        float length = MathHelper.Sqrt(vx * vx + vz * vz);
+        var length = MathHelper.Sqrt(vx * vx + vz * vz);
         self.PrevYaw = self.Yaw = (float)(Math.Atan2(vx, vz) * 180.0D / (float)Math.PI);
         self.PrevPitch = self.Pitch = (float)(Math.Atan2(vy, length) * 180.0D / (float)Math.PI);
         self.SetPositionAndAnglesKeepPrevAngles(self.X, self.Y, self.Z, self.Yaw, self.Pitch);
@@ -113,16 +113,16 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
         self.BaseTick();
         if (self.PrevPitch == 0.0F && self.PrevYaw == 0.0F)
         {
-            float length = MathHelper.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
+            var length = MathHelper.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
             self.PrevYaw = self.Yaw = (float)(Math.Atan2(self.VelocityX, self.VelocityZ) * 180.0D / (float)Math.PI);
             self.PrevPitch = self.Pitch = (float)(Math.Atan2(self.VelocityY, length) * 180.0D / (float)Math.PI);
         }
 
-        int blockId = self.World.Reader.GetBlockId(self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
+        var blockId = self.World.Reader.GetBlockId(self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
         if (blockId > 0)
         {
             BlockRegistry.GetByProtocolId(blockId).UpdateBoundingBox(self.World.Reader, self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
-            Box? box = BlockRegistry.GetByProtocolId(blockId).GetCollisionShape(self.World.Reader, self.World.Entities, self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
+            var box = BlockRegistry.GetByProtocolId(blockId).GetCollisionShape(self.World.Reader, self.World.Entities, self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
             if (box != null && box.Value.Contains(new Vec3D(self.X, self.Y, self.Z)))
             {
                 self.State[_inGround] = true;
@@ -137,7 +137,7 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
         if (self.State[_inGround])
         {
             blockId = self.World.Reader.GetBlockId(self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
-            int blockMeta = self.World.Reader.GetBlockMeta(self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
+            var blockMeta = self.World.Reader.GetBlockMeta(self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
             if (blockId == self.State[_inTile] && blockMeta == self.State[_inData])
             {
                 ++self.State[_ticksInGround];
@@ -161,19 +161,19 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
             ++self.State[_ticksInAir];
             Vec3D rayStart = new(self.X, self.Y, self.Z);
             Vec3D rayEnd = new(self.X + self.VelocityX, self.Y + self.VelocityY, self.Z + self.VelocityZ);
-            HitResult hit = self.World.Reader.Raycast(rayStart, rayEnd, false, true);
+            var hit = self.World.Reader.Raycast(rayStart, rayEnd, false, true);
             if (hit.Type != HitResultType.Miss)
             {
                 rayEnd = new Vec3D(hit.Pos.X, hit.Pos.Y, hit.Pos.Z);
             }
 
-            EntityLiving? owner = Owner(self);
+            var owner = Owner(self);
             Entity? hitEntity = null;
-            List<Entity> candidates = self.World.Entities.GetEntities(self, self.BoundingBox.Stretch(self.VelocityX, self.VelocityY, self.VelocityZ).Expand(1.0D, 1.0D, 1.0D));
-            double minHitDistance = 0.0D;
+            var candidates = self.World.Entities.GetEntities(self, self.BoundingBox.Stretch(self.VelocityX, self.VelocityY, self.VelocityZ).Expand(1.0D, 1.0D, 1.0D));
+            var minHitDistance = 0.0D;
 
             float expandAmount;
-            foreach (Entity entity in candidates)
+            foreach (var entity in candidates)
             {
                 if (!entity.HasCollision || (Equals(entity, owner) && self.State[_ticksInAir] < 5))
                 {
@@ -181,14 +181,14 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
                 }
 
                 expandAmount = 0.3F;
-                Box expandedBox = entity.BoundingBox.Expand(expandAmount, expandAmount, expandAmount);
-                HitResult hitResult = expandedBox.Raycast(rayStart, rayEnd);
+                var expandedBox = entity.BoundingBox.Expand(expandAmount, expandAmount, expandAmount);
+                var hitResult = expandedBox.Raycast(rayStart, rayEnd);
                 if (hitResult.Type == HitResultType.Miss)
                 {
                     continue;
                 }
 
-                double hitDistance = rayStart.DistanceTo(hitResult.Pos);
+                var hitDistance = rayStart.DistanceTo(hitResult.Pos);
                 if (!(hitDistance < minHitDistance) && minHitDistance != 0.0D)
                 {
                     continue;
@@ -272,12 +272,12 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
 
             self.Pitch = self.PrevPitch + (self.Pitch - self.PrevPitch) * 0.2F;
             self.Yaw = self.PrevYaw + (self.Yaw - self.PrevYaw) * 0.2F;
-            float drag = 0.99F;
+            var drag = 0.99F;
             const float gravity = 0.03F;
 
             if (self.IsInWater)
             {
-                for (int i = 0; i < 4; ++i)
+                for (var i = 0; i < 4; ++i)
                 {
                     const float bubbleOffset = 0.25F;
                     self.World.Broadcaster.AddParticle("bubble", self.X - self.VelocityX * bubbleOffset, self.Y - self.VelocityY * bubbleOffset, self.Z - self.VelocityZ * bubbleOffset, self.VelocityX, self.VelocityY, self.VelocityZ);
@@ -310,8 +310,8 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
     /// </summary>
     public static Entity Shoot(IWorldContext world, EntityLiving owner)
     {
-        Entity arrow = world.Content.EntityTypes.Create("omniblock:arrow", world);
-        ArrowBehavior flight = arrow.Behaviors.Find<ArrowBehavior>()!;
+        var arrow = world.Content.EntityTypes.Create("omniblock:arrow", world);
+        var flight = arrow.Behaviors.Find<ArrowBehavior>()!;
         arrow.State.SetRef(flight._owner, owner);
         arrow.State[flight._belongsToPlayer] = owner is EntityPlayer;
         arrow.SetPositionAndAnglesKeepPrevAngles(owner.X, owner.Y + owner.EyeHeight, owner.Z, owner.Yaw, owner.Pitch);
@@ -340,7 +340,7 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
 
     public void SetHeading(Entity self, double x, double y, double z, float speed, float spread)
     {
-        float length = MathHelper.Sqrt(x * x + y * y + z * z);
+        var length = MathHelper.Sqrt(x * x + y * y + z * z);
         x /= length;
         y /= length;
         z /= length;
@@ -353,7 +353,7 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
         self.VelocityX = x;
         self.VelocityY = y;
         self.VelocityZ = z;
-        float horizontalSpeed = MathHelper.Sqrt(x * x + z * z);
+        var horizontalSpeed = MathHelper.Sqrt(x * x + z * z);
         self.PrevYaw = self.Yaw = (float)(Math.Atan2(x, z) * 180.0D / (float)Math.PI);
         self.PrevPitch = self.Pitch = (float)(Math.Atan2(y, horizontalSpeed) * 180.0D / (float)Math.PI);
         self.State[_ticksInGround] = 0;

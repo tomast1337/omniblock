@@ -3,8 +3,8 @@ using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Entities;
 using OmniBlock.Items;
-using OmniBlock.Registries;
 using OmniBlock.Registries.Data;
+using Xunit.Sdk;
 
 namespace OmniBlock.Tests.Catalog;
 
@@ -13,16 +13,16 @@ public sealed class CatalogConstructionTests
     [Fact]
     public void Every_shipped_block_definition_has_a_constructed_block_and_all_declared_slots()
     {
-        BlockDefinitionJsonLoader loader = LoadBlocks();
+        var loader = LoadBlocks();
 
-        foreach (BlockDefinition definition in loader)
+        foreach (var definition in loader)
         {
-            Block block = TestBlocks.Get(definition.Name);
+            var block = TestBlocks.Get(definition.Name);
             Assert.Equal(definition.ProtocolId, block.Id);
 
-            foreach (JsonElement behavior in definition.Behaviors)
+            foreach (var behavior in definition.Behaviors)
             {
-                foreach (JsonElement slot in behavior.GetProperty("Slots").EnumerateArray())
+                foreach (var slot in behavior.GetProperty("Slots").EnumerateArray())
                 {
                     AssertBlockSlotAttached(block, slot.GetString()!);
                 }
@@ -33,9 +33,9 @@ public sealed class CatalogConstructionTests
     [Fact]
     public void Every_shipped_item_definition_has_a_constructed_item()
     {
-        foreach (ItemDefinition definition in TestItemCatalog.LoadDefinitions())
+        foreach (var definition in TestItemCatalog.LoadDefinitions())
         {
-            Item item = ContentRuntime.Current.Items.GetByProtocolId(definition.ProtocolId);
+            var item = ContentRuntime.Current.Items.GetByProtocolId(definition.ProtocolId);
             Assert.Equal(definition.ProtocolId, item.Id);
             Assert.Same(item, ContentRuntime.Current.Items.Get(new ResourceLocation(definition.Namespace, definition.Name)));
         }
@@ -44,11 +44,11 @@ public sealed class CatalogConstructionTests
     [Fact]
     public void Every_shipped_block_has_a_builder_owned_item_in_the_runtime()
     {
-        ContentRuntime runtime = ContentRuntime.Current;
+        var runtime = ContentRuntime.Current;
 
-        foreach (BlockDefinition definition in LoadBlocks())
+        foreach (var definition in LoadBlocks())
         {
-            Item item = runtime.Items.GetByProtocolId(definition.ProtocolId);
+            var item = runtime.Items.GetByProtocolId(definition.ProtocolId);
 
             Assert.Equal(definition.ProtocolId, item.Id);
             Assert.Same(item, runtime.Items.GetByProtocolId(definition.ProtocolId));
@@ -69,8 +69,8 @@ public sealed class CatalogConstructionTests
         string declaredType,
         Type expectedItemType)
     {
-        BlockDefinition definition = Assert.Single(LoadBlocks(), definition => definition.Name == blockName);
-        Item item = ContentRuntime.Current.Items.GetByProtocolId(definition.ProtocolId);
+        var definition = Assert.Single(LoadBlocks(), definition => definition.Name == blockName);
+        var item = ContentRuntime.Current.Items.GetByProtocolId(definition.ProtocolId);
 
         Assert.Equal(declaredType, definition.BlockItem.Type);
         Assert.IsType(expectedItemType, item);
@@ -79,15 +79,15 @@ public sealed class CatalogConstructionTests
     [Fact]
     public void Every_shipped_entity_definition_has_a_constructed_type_and_all_declared_slots()
     {
-        foreach (EntityType type in ContentRuntime.Current.EntityTypes.Values.Where(static type => type.Definition is not null))
+        foreach (var type in ContentRuntime.Current.EntityTypes.Values.Where(static type => type.Definition is not null))
         {
-            EntityDefinition definition = type.RequireDefinition();
+            var definition = type.RequireDefinition();
             Assert.Same(type, TestEntityCatalog.ByName(definition.Name));
             Assert.Equal(definition.ProtocolId, ContentRuntime.Current.EntityTypes.GetProtocolId(type));
 
             foreach (var behavior in definition.Behaviors)
             {
-                foreach (string slot in behavior.GetProperty("Slots").EnumerateArray().Select(element => element.GetString()!))
+                foreach (var slot in behavior.GetProperty("Slots").EnumerateArray().Select(element => element.GetString()!))
                 {
                     AssertEntitySlotAttached(type, slot);
                 }
@@ -98,9 +98,9 @@ public sealed class CatalogConstructionTests
     [Fact]
     public void Unknown_block_behavior_type_fails_loudly()
     {
-        JsonElement json = JsonSerializer.Deserialize<JsonElement>("""{"Type":"example:missing","Slots":["Ticker"]}""");
+        var json = JsonSerializer.Deserialize<JsonElement>("""{"Type":"example:missing","Slots":["Ticker"]}""");
 
-        ArgumentException error = Assert.Throws<ArgumentException>(() => BehaviorRegistry.Build("example:missing", json));
+        var error = Assert.Throws<ArgumentException>(() => BehaviorRegistry.Build("example:missing", json));
 
         Assert.Contains("example:missing", error.Message);
     }
@@ -144,7 +144,7 @@ public sealed class CatalogConstructionTests
             "Visuals" => block.Visuals,
             "Interactable" => block.Interactable,
             "Redstone" => block.Redstone,
-            _ => throw new Xunit.Sdk.XunitException($"Unknown block slot '{slot}'.")
+            _ => throw new XunitException($"Unknown block slot '{slot}'.")
         };
 
         Assert.True(attached is not null, $"Block {block.Id} declares slot '{slot}', but it was not attached.");
@@ -162,7 +162,7 @@ public sealed class CatalogConstructionTests
             "Physics" => type.Behaviors.Physics,
             "Persistence" => type.Behaviors.Persistence,
             "Lifecycle" => type.Behaviors.Lifecycle,
-            _ => throw new Xunit.Sdk.XunitException($"Unknown entity slot '{slot}' on '{type.Id}'.")
+            _ => throw new XunitException($"Unknown entity slot '{slot}' on '{type.Id}'.")
         };
 
         Assert.True(attached is not null, $"Entity '{type.Id}' declares slot '{slot}', but it was not attached.");
@@ -173,7 +173,7 @@ public sealed class CatalogConstructionTests
         public TemporaryCatalog(string catalog, int protocolId)
         {
             Root = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-            string directory = Path.Combine(Root, "assets", catalog);
+            var directory = Path.Combine(Root, "assets", catalog);
             Directory.CreateDirectory(directory);
             File.WriteAllText(Path.Combine(directory, "invalid.json"), $$"""{"ProtocolId":{{protocolId}}}""");
         }
@@ -182,7 +182,7 @@ public sealed class CatalogConstructionTests
 
         public void Dispose()
         {
-            if (Directory.Exists(Root)) Directory.Delete(Root, recursive: true);
+            if (Directory.Exists(Root)) Directory.Delete(Root, true);
         }
     }
 }

@@ -25,7 +25,7 @@ internal sealed class E2ETestController : IDisposable
             _ => Complete("timeout", $"Timed out after {options.Timeout.TotalSeconds:g} seconds", TimedOutExitCode),
             null,
             options.Timeout,
-            System.Threading.Timeout.InfiniteTimeSpan);
+            Timeout.InfiniteTimeSpan);
     }
 
     public int ExitCode
@@ -50,15 +50,14 @@ internal sealed class E2ETestController : IDisposable
         }
     }
 
+    public void Dispose() => _watchdog?.Dispose();
+
     public void Pass() => Complete("passed", null, 0);
 
     public void Fail(string reason, int exitCode = FailedExitCode) =>
         Complete("failed", string.IsNullOrWhiteSpace(reason) ? "Test failed" : reason, exitCode);
 
-    public void EnsureCompleted()
-    {
-        Complete("failed", "Client exited before OMNI.test.pass() was called", FailedExitCode);
-    }
+    public void EnsureCompleted() => Complete("failed", "Client exited before OMNI.test.pass() was called", FailedExitCode);
 
     private void Complete(string status, string? reason, int exitCode)
     {
@@ -79,7 +78,7 @@ internal sealed class E2ETestController : IDisposable
             _result = result;
         }
 
-        _watchdog?.Change(System.Threading.Timeout.InfiniteTimeSpan, System.Threading.Timeout.InfiniteTimeSpan);
+        _watchdog?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
         ILogger logger = Log.Instance.For<E2ETestController>();
         if (exitCode == 0)
             logger.LogInformation("E2E test passed in {Duration:F3}s", result.DurationSeconds);
@@ -94,15 +93,15 @@ internal sealed class E2ETestController : IDisposable
         try
         {
             Directory.CreateDirectory(_options.ArtifactsPath);
-            string json = JsonSerializer.Serialize(result, new JsonSerializerOptions
+            var json = JsonSerializer.Serialize(result, new JsonSerializerOptions
             {
                 WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
             File.WriteAllText(Path.Combine(_options.ArtifactsPath, "result.json"), json + Environment.NewLine);
 
             StringBuilder log = new();
-            foreach (LogEntry entry in Log.Instance.GetRecentEntries())
+            foreach (var entry in Log.Instance.GetRecentEntries())
             {
                 log.Append(entry.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff"))
                     .Append(" [").Append(entry.Level).Append("] ")
@@ -112,6 +111,7 @@ internal sealed class E2ETestController : IDisposable
                     log.AppendLine(entry.Exception.ToString());
                 }
             }
+
             File.WriteAllText(Path.Combine(_options.ArtifactsPath, "client.log"), log.ToString());
         }
         catch (Exception ex)
@@ -119,8 +119,6 @@ internal sealed class E2ETestController : IDisposable
             Log.Instance.For<E2ETestController>().LogError(ex, "Failed to write E2E artifacts to {Path}", _options.ArtifactsPath);
         }
     }
-
-    public void Dispose() => _watchdog?.Dispose();
 }
 
 internal sealed record E2ETestResult(

@@ -37,20 +37,11 @@ public class BlockEntityPiston : BlockEntity
         return _progress + (_lastProgress - _progress) * tickDelta;
     }
 
-    public float GetRenderOffsetX(float tickDelta)
-    {
-        return IsExtending ? (GetProgress(tickDelta) - 1.0F) * PistonConstants.HeadOffsetX[Facing] : (1.0F - GetProgress(tickDelta)) * PistonConstants.HeadOffsetX[Facing];
-    }
+    public float GetRenderOffsetX(float tickDelta) => IsExtending ? (GetProgress(tickDelta) - 1.0F) * PistonConstants.HeadOffsetX[Facing] : (1.0F - GetProgress(tickDelta)) * PistonConstants.HeadOffsetX[Facing];
 
-    public float GetRenderOffsetY(float tickDelta)
-    {
-        return IsExtending ? (GetProgress(tickDelta) - 1.0F) * PistonConstants.HeadOffsetY[Facing] : (1.0F - GetProgress(tickDelta)) * PistonConstants.HeadOffsetY[Facing];
-    }
+    public float GetRenderOffsetY(float tickDelta) => IsExtending ? (GetProgress(tickDelta) - 1.0F) * PistonConstants.HeadOffsetY[Facing] : (1.0F - GetProgress(tickDelta)) * PistonConstants.HeadOffsetY[Facing];
 
-    public float GetRenderOffsetZ(float tickDelta)
-    {
-        return IsExtending ? (GetProgress(tickDelta) - 1.0F) * PistonConstants.HeadOffsetZ[Facing] : (1.0F - GetProgress(tickDelta)) * PistonConstants.HeadOffsetZ[Facing];
-    }
+    public float GetRenderOffsetZ(float tickDelta) => IsExtending ? (GetProgress(tickDelta) - 1.0F) * PistonConstants.HeadOffsetZ[Facing] : (1.0F - GetProgress(tickDelta)) * PistonConstants.HeadOffsetZ[Facing];
 
     private void PushEntities(EntityManager entities, float collisionShapeSizeMultiplier, float entityMoveMultiplier)
     {
@@ -72,11 +63,13 @@ public class BlockEntityPiston : BlockEntity
         //     AddRange(List<Entity>)
         // Candidates are:
         foreach (var entity in pushedEntities)
+        {
             entity.Move(
                 entityMoveMultiplier * PistonConstants.HeadOffsetX[Facing],
                 entityMoveMultiplier * PistonConstants.HeadOffsetY[Facing],
                 entityMoveMultiplier * PistonConstants.HeadOffsetZ[Facing]
             );
+        }
 
         pushedEntities.Clear();
     }
@@ -99,10 +92,7 @@ public class BlockEntityPiston : BlockEntity
         MarkRemoved();
     }
 
-    public void AbandonExtensionToStaticBlock()
-    {
-        FinalizeBlock();
-    }
+    public void AbandonExtensionToStaticBlock() => FinalizeBlock();
 
     public void Finish()
     {

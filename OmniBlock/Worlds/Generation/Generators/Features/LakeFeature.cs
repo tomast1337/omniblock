@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core.Systems;
@@ -21,31 +20,31 @@ internal class LakeFeature : Feature
         }
 
         y -= 4;
-        bool[] lakeMask = new bool[2048];
-        int blobCount = rand.NextInt(4) + 4;
+        var lakeMask = new bool[2048];
+        var blobCount = rand.NextInt(4) + 4;
 
 
-        for (int i = 0; i < blobCount; ++i)
+        for (var i = 0; i < blobCount; ++i)
         {
-            double radiusH = rand.NextDouble() * 6.0D + 3.0D;
-            double radiusV = rand.NextDouble() * 4.0D + 2.0D;
-            double radiusH2 = rand.NextDouble() * 6.0D + 3.0D;
+            var radiusH = rand.NextDouble() * 6.0D + 3.0D;
+            var radiusV = rand.NextDouble() * 4.0D + 2.0D;
+            var radiusH2 = rand.NextDouble() * 6.0D + 3.0D;
 
-            double centerX = rand.NextDouble() * (16.0D - radiusH - 2.0D) + 1.0D + radiusH / 2.0D;
-            double centerY = rand.NextDouble() * (8.0D - radiusV - 4.0D) + 2.0D + radiusV / 2.0D;
-            double centerZ = rand.NextDouble() * (16.0D - radiusH2 - 2.0D) + 1.0D + radiusH2 / 2.0D;
+            var centerX = rand.NextDouble() * (16.0D - radiusH - 2.0D) + 1.0D + radiusH / 2.0D;
+            var centerY = rand.NextDouble() * (8.0D - radiusV - 4.0D) + 2.0D + radiusV / 2.0D;
+            var centerZ = rand.NextDouble() * (16.0D - radiusH2 - 2.0D) + 1.0D + radiusH2 / 2.0D;
 
-            for (int dx = 1; dx < 15; ++dx)
+            for (var dx = 1; dx < 15; ++dx)
             {
-                for (int dy = 1; dy < 15; ++dy)
+                for (var dy = 1; dy < 15; ++dy)
                 {
-                    for (int dz = 1; dz < 7; ++dz)
+                    for (var dz = 1; dz < 7; ++dz)
                     {
-                        double normX = (dx - centerX) / (radiusH / 2.0D);
-                        double normY = (dz - centerY) / (radiusV / 2.0D);
-                        double normZ = (dy - centerZ) / (radiusH2 / 2.0D);
+                        var normX = (dx - centerX) / (radiusH / 2.0D);
+                        var normY = (dz - centerY) / (radiusV / 2.0D);
+                        var normZ = (dy - centerZ) / (radiusH2 / 2.0D);
 
-                        double distSq = normX * normX + normY * normY + normZ * normZ;
+                        var distSq = normX * normX + normY * normY + normZ * normZ;
                         if (distSq < 1.0D)
                         {
                             lakeMask[(dx * 16 + dy) * 8 + dz] = true;
@@ -56,17 +55,17 @@ internal class LakeFeature : Feature
         }
 
 
-        for (int dx = 0; dx < 16; ++dx)
+        for (var dx = 0; dx < 16; ++dx)
         {
-            for (int dz = 0; dz < 16; ++dz)
+            for (var dz = 0; dz < 16; ++dz)
             {
-                for (int dy = 0; dy < 8; ++dy)
+                for (var dy = 0; dy < 8; ++dy)
                 {
-                    bool isEdge = !lakeMask[(dx * 16 + dz) * 8 + dy] && ((dx < 15 && lakeMask[((dx + 1) * 16 + dz) * 8 + dy]) || (dx > 0 && lakeMask[((dx - 1) * 16 + dz) * 8 + dy]) || (dz < 15 && lakeMask[(dx * 16 + dz + 1) * 8 + dy]) ||
-                                                                         (dz > 0 && lakeMask[(dx * 16 + (dz - 1)) * 8 + dy]) || (dy < 7 && lakeMask[(dx * 16 + dz) * 8 + dy + 1]) || (dy > 0 && lakeMask[(dx * 16 + dz) * 8 + (dy - 1)]));
+                    var isEdge = !lakeMask[(dx * 16 + dz) * 8 + dy] && ((dx < 15 && lakeMask[((dx + 1) * 16 + dz) * 8 + dy]) || (dx > 0 && lakeMask[((dx - 1) * 16 + dz) * 8 + dy]) || (dz < 15 && lakeMask[(dx * 16 + dz + 1) * 8 + dy]) ||
+                                                                        (dz > 0 && lakeMask[(dx * 16 + (dz - 1)) * 8 + dy]) || (dy < 7 && lakeMask[(dx * 16 + dz) * 8 + dy + 1]) || (dy > 0 && lakeMask[(dx * 16 + dz) * 8 + (dy - 1)]));
                     if (isEdge)
                     {
-                        Material mat = level.Reader.GetMaterial(x + dx, y + dy, z + dz);
+                        var mat = level.Reader.GetMaterial(x + dx, y + dy, z + dz);
                         if (dy >= 4 && mat.IsFluid)
                         {
                             return false;
@@ -81,26 +80,26 @@ internal class LakeFeature : Feature
             }
         }
 
-        for (int dx = 0; dx < 16; ++dx)
+        for (var dx = 0; dx < 16; ++dx)
         {
-            for (int dy = 0; dy < 16; ++dy)
+            for (var dy = 0; dy < 16; ++dy)
             {
-                for (int dz = 0; dz < 8; ++dz)
+                for (var dz = 0; dz < 8; ++dz)
                 {
                     if (lakeMask[(dx * 16 + dy) * 8 + dz])
                     {
-                        int blockId = dz >= 4 ? 0 : _waterBlockId;
+                        var blockId = dz >= 4 ? 0 : _waterBlockId;
                         level.Writer.SetBlockWithoutNotifyingNeighbors(x + dx, y + dz, z + dy, blockId, 0, false);
                     }
                 }
             }
         }
 
-        for (int dx = 0; dx < 16; ++dx)
+        for (var dx = 0; dx < 16; ++dx)
         {
-            for (int dy = 0; dy < 16; ++dy)
+            for (var dy = 0; dy < 16; ++dy)
             {
-                for (int dz = 4; dz < 8; ++dz)
+                for (var dz = 4; dz < 8; ++dz)
                 {
                     if (lakeMask[(dx * 16 + dy) * 8 + dz] &&
                         level.Reader.GetBlockId(x + dx, y + dz - 1, z + dy) == level.Content.Blocks.Get("dirt").Id &&
@@ -114,21 +113,21 @@ internal class LakeFeature : Feature
 
         if (level.Content.Blocks.GetByProtocolId(_waterBlockId).Material == Material.Lava)
         {
-            for (int dx = 0; dx < 16; ++dx)
+            for (var dx = 0; dx < 16; ++dx)
             {
-                for (int dy = 0; dy < 16; ++dy)
+                for (var dy = 0; dy < 16; ++dy)
                 {
-                    for (int dz = 0; dz < 8; ++dz)
+                    for (var dz = 0; dz < 8; ++dz)
                     {
-                        bool isEdge = !lakeMask[(dx * 16 + dy) * 8 + dz] &&
-                                      (
-                                          (dx < 15 && lakeMask[((dx + 1) * 16 + dy) * 8 + dz]) ||
-                                          (dx > 0 && lakeMask[((dx - 1) * 16 + dy) * 8 + dz]) ||
-                                          (dy < 15 && lakeMask[(dx * 16 + dy + 1) * 8 + dz]) ||
-                                          (dy > 0 && lakeMask[(dx * 16 + (dy - 1)) * 8 + dz]) ||
-                                          (dz < 7 && lakeMask[(dx * 16 + dy) * 8 + dz + 1]) ||
-                                          (dz > 0 && lakeMask[(dx * 16 + dy) * 8 + (dz - 1)])
-                                      );
+                        var isEdge = !lakeMask[(dx * 16 + dy) * 8 + dz] &&
+                                     (
+                                         (dx < 15 && lakeMask[((dx + 1) * 16 + dy) * 8 + dz]) ||
+                                         (dx > 0 && lakeMask[((dx - 1) * 16 + dy) * 8 + dz]) ||
+                                         (dy < 15 && lakeMask[(dx * 16 + dy + 1) * 8 + dz]) ||
+                                         (dy > 0 && lakeMask[(dx * 16 + (dy - 1)) * 8 + dz]) ||
+                                         (dz < 7 && lakeMask[(dx * 16 + dy) * 8 + dz + 1]) ||
+                                         (dz > 0 && lakeMask[(dx * 16 + dy) * 8 + (dz - 1)])
+                                     );
                         if (isEdge && (dz < 4 || rand.NextInt(2) != 0) && level.Reader.GetMaterial(x + dx, y + dz, z + dy).IsSolid)
                         {
                             level.Writer.SetBlockWithoutNotifyingNeighbors(x + dx, y + dz, z + dy, level.Content.Blocks.Get("stone").Id, 0, false);

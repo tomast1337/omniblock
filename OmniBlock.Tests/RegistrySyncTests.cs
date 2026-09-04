@@ -3,7 +3,6 @@ using System.Net;
 using System.Net.Sockets;
 using OmniBlock.Client.Network;
 using OmniBlock.Network.Messages;
-using OmniBlock.Registries;
 using OmniBlock.Registries.Data;
 
 namespace OmniBlock.Tests;
@@ -13,10 +12,10 @@ namespace OmniBlock.Tests;
 // ---------------------------------------------------------------------------
 
 /// <summary>
-/// Minimal in-memory implementation of <see cref="IReadableRegistry{T}"/> for testing.
-/// Keys are built from the entry's <see cref="IDataAsset.Name"/> in the OmniBlock namespace.
+///     Minimal in-memory implementation of <see cref="IReadableRegistry{T}" /> for testing.
+///     Keys are built from the entry's <see cref="IDataAsset.Name" /> in the OmniBlock namespace.
 /// </summary>
-file sealed class StubRegistry<T>(RegistryKey<T> key, IEnumerable<T> items) : IReadableRegistry<T>
+sealed file class StubRegistry<T>(RegistryKey<T> key, IEnumerable<T> items) : IReadableRegistry<T>
     where T : class, IDataAsset
 {
     private readonly Dictionary<ResourceLocation, T> _entries =
@@ -25,7 +24,7 @@ file sealed class StubRegistry<T>(RegistryKey<T> key, IEnumerable<T> items) : IR
     public ResourceLocation RegistryKey => key.Location;
 
     public Holder<T>? Get(ResourceLocation location)
-        => _entries.TryGetValue(location, out T? v) ? new Holder<T>(v) : null;
+        => _entries.TryGetValue(location, out var v) ? new Holder<T>(v) : null;
 
     public T? Get(int id) => null;
 
@@ -49,10 +48,10 @@ file sealed class StubRegistry<T>(RegistryKey<T> key, IEnumerable<T> items) : IR
 [Collection("RegistryAccess")]
 public sealed class RegistrySyncTests : IDisposable
 {
-    private readonly string _tempDir;
-
     private static readonly RegistryKey<TestEnchantment> s_enchKey =
         new(ResourceLocation.Parse("test:enchantment"));
+
+    private readonly string _tempDir;
 
     public RegistrySyncTests()
     {
@@ -67,12 +66,12 @@ public sealed class RegistrySyncTests : IDisposable
         GC.Collect();
         GC.WaitForPendingFinalizers();
         if (Directory.Exists(_tempDir))
-            Directory.Delete(_tempDir, recursive: true);
+            Directory.Delete(_tempDir, true);
     }
 
     private void WriteBaseEnchantment(string name, int maxLevel)
     {
-        string dir = Path.Combine(_tempDir, "assets", "enchantment");
+        var dir = Path.Combine(_tempDir, "assets", "enchantment");
         Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, $"{name}.json"),
             $"{{\"MaxLevel\":{maxLevel}}}");
@@ -81,13 +80,13 @@ public sealed class RegistrySyncTests : IDisposable
     [Fact]
     public void BuildSyncMessages_yields_message_for_reloadable_registry()
     {
-        WriteBaseEnchantment("sharpness", maxLevel: 5);
+        WriteBaseEnchantment("sharpness", 5);
 
         var def = new RegistryDefinition<TestEnchantment>(s_enchKey, "enchantment", isReloadable: true);
         RegistryAccess.AddDynamic(def);
-        RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
+        var ra = RegistryAccess.Build(_tempDir);
 
-        List<RegistryDataMessage> messages = ra.BuildSyncMessages().ToList();
+        var messages = ra.BuildSyncMessages().ToList();
         Assert.Single(messages);
         Assert.Equal(s_enchKey.Location, messages[0].RegistryId);
     }
@@ -95,27 +94,27 @@ public sealed class RegistrySyncTests : IDisposable
     [Fact]
     public void BuildSyncMessages_skips_non_reloadable_registry()
     {
-        WriteBaseEnchantment("sharpness", maxLevel: 5);
+        WriteBaseEnchantment("sharpness", 5);
 
         var def = new RegistryDefinition<TestEnchantment>(s_enchKey, "enchantment", isReloadable: false);
         RegistryAccess.AddDynamic(def);
-        RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
+        var ra = RegistryAccess.Build(_tempDir);
 
-        List<RegistryDataMessage> messages = ra.BuildSyncMessages().ToList();
+        var messages = ra.BuildSyncMessages().ToList();
         Assert.Empty(messages);
     }
 
     [Fact]
     public void BuildSyncMessages_message_contains_entry_for_each_loaded_asset()
     {
-        WriteBaseEnchantment("sharpness", maxLevel: 5);
-        WriteBaseEnchantment("fortune", maxLevel: 3);
+        WriteBaseEnchantment("sharpness", 5);
+        WriteBaseEnchantment("fortune", 3);
 
         var def = new RegistryDefinition<TestEnchantment>(s_enchKey, "enchantment", isReloadable: true);
         RegistryAccess.AddDynamic(def);
-        RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
+        var ra = RegistryAccess.Build(_tempDir);
 
-        RegistryDataMessage message = ra.BuildSyncMessages().Single();
+        var message = ra.BuildSyncMessages().Single();
         IEnumerable<string> names = message.Entries.Select(e => e.Key.Path).OrderBy(n => n);
         Assert.Equal(["fortune", "sharpness"], names);
     }
@@ -123,7 +122,7 @@ public sealed class RegistrySyncTests : IDisposable
     [Fact]
     public void BuildSyncMessages_only_reloadable_of_mixed_definitions_are_included()
     {
-        WriteBaseEnchantment("sharpness", maxLevel: 5);
+        WriteBaseEnchantment("sharpness", 5);
 
         var reloadable = new RegistryKey<TestEnchantment>(ResourceLocation.Parse("test:reloadable_ench"));
         var nonReloadable = new RegistryKey<TestEnchantment>(ResourceLocation.Parse("test:baked_ench"));
@@ -133,9 +132,9 @@ public sealed class RegistrySyncTests : IDisposable
         RegistryAccess.AddDynamic(
             new RegistryDefinition<TestEnchantment>(nonReloadable, "enchantment", isReloadable: false));
 
-        RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
+        var ra = RegistryAccess.Build(_tempDir);
 
-        List<ResourceLocation> ids = ra.BuildSyncMessages().Select(p => p.RegistryId).ToList();
+        var ids = ra.BuildSyncMessages().Select(p => p.RegistryId).ToList();
         Assert.Single(ids);
         Assert.Equal(reloadable.Location, ids[0]);
     }
@@ -143,16 +142,16 @@ public sealed class RegistrySyncTests : IDisposable
     [Fact]
     public void Rebuild_reloadable_definition_produces_updated_sync_message()
     {
-        WriteBaseEnchantment("sharpness", maxLevel: 5);
+        WriteBaseEnchantment("sharpness", 5);
 
         var def = new RegistryDefinition<TestEnchantment>(s_enchKey, "enchantment", isReloadable: true);
         RegistryAccess.AddDynamic(def);
-        RegistryAccess first = RegistryAccess.Build(basePath: _tempDir);
+        var first = RegistryAccess.Build(_tempDir);
 
-        WriteBaseEnchantment("fortune", maxLevel: 3);
-        RegistryAccess rebuilt = first.Rebuild();
+        WriteBaseEnchantment("fortune", 3);
+        var rebuilt = first.Rebuild();
 
-        RegistryDataMessage message = rebuilt.BuildSyncMessages().Single();
+        var message = rebuilt.BuildSyncMessages().Single();
         IEnumerable<string> names = message.Entries.Select(e => e.Key.Path).OrderBy(n => n);
         Assert.Equal(["fortune", "sharpness"], names);
     }
@@ -165,7 +164,7 @@ public sealed class RegistrySyncTests : IDisposable
 public sealed class PacketSerializationTests
 {
     /// <summary>
-    /// Creates a connected loopback stream pair for packet round-trip tests.
+    ///     Creates a connected loopback stream pair for packet round-trip tests.
     /// </summary>
     private static (NetworkStream write, NetworkStream read, Action cleanup) MakeLoopbackPair()
     {
@@ -173,11 +172,15 @@ public sealed class PacketSerializationTests
         listener.Start();
         var client = new TcpClient();
         client.Connect((IPEndPoint)listener.LocalEndpoint);
-        TcpClient server = listener.AcceptTcpClient();
+        var server = listener.AcceptTcpClient();
         listener.Stop();
         return (client.GetStream(), server.GetStream(),
-            () => { client.Dispose(); server.Dispose(); }
-        );
+                () =>
+                {
+                    client.Dispose();
+                    server.Dispose();
+                }
+            );
     }
 
     // ---- RegistryDataMessage ----
@@ -185,10 +188,13 @@ public sealed class PacketSerializationTests
     [Fact]
     public void RegistryDataMessage_FromRegistry_sets_registry_id()
     {
-        var mode = new GameMode { Name = "survival" };
+        var mode = new GameMode
+        {
+            Name = "survival"
+        };
         var registry = new StubRegistry<GameMode>(RegistryKeys.GameModes, [mode]);
 
-        RegistryDataMessage message = RegistryDataMessage.FromRegistry(RegistryKeys.GameModes, registry);
+        var message = RegistryDataMessage.FromRegistry(RegistryKeys.GameModes, registry);
 
         Assert.Equal(RegistryKeys.GameModes.Location, message.RegistryId);
     }
@@ -196,11 +202,17 @@ public sealed class PacketSerializationTests
     [Fact]
     public void RegistryDataMessage_FromRegistry_serializes_each_entry_to_json()
     {
-        var survival = new GameMode { Name = "survival" };
-        var creative = new GameMode { Name = "creative" };
+        var survival = new GameMode
+        {
+            Name = "survival"
+        };
+        var creative = new GameMode
+        {
+            Name = "creative"
+        };
         var registry = new StubRegistry<GameMode>(RegistryKeys.GameModes, [survival, creative]);
 
-        RegistryDataMessage message = RegistryDataMessage.FromRegistry(RegistryKeys.GameModes, registry);
+        var message = RegistryDataMessage.FromRegistry(RegistryKeys.GameModes, registry);
 
         Assert.Equal(2, message.Entries.Count);
         Assert.All(message.Entries, e => Assert.NotNull(e.JsonData));
@@ -223,9 +235,9 @@ public sealed class PacketSerializationTests
         };
         var registry = new StubRegistry<GameMode>(RegistryKeys.GameModes, [creative]);
 
-        RegistryDataMessage message = RegistryDataMessage.FromRegistry(RegistryKeys.GameModes, registry);
+        var message = RegistryDataMessage.FromRegistry(RegistryKeys.GameModes, registry);
 
-        string json = message.Entries.Single().JsonData!;
+        var json = message.Entries.Single().JsonData!;
         Assert.Contains("\"DisallowFlying\":false", json);
         Assert.Contains("\"FiniteResources\":false", json);
         Assert.Contains("\"BlockDrops\":false", json);
@@ -238,13 +250,18 @@ public sealed class PacketSerializationTests
     [Fact]
     public void RegistryDataMessage_roundtrip_preserves_registry_id_and_entries()
     {
-        var enchantment = new TestEnchantment { Name = "sharpness", MaxLevel = 5, Rarity = "common" };
+        var enchantment = new TestEnchantment
+        {
+            Name = "sharpness",
+            MaxLevel = 5,
+            Rarity = "common"
+        };
         var key = new RegistryKey<TestEnchantment>(ResourceLocation.Parse("test:enchantment"));
         var registry = new StubRegistry<TestEnchantment>(key, [enchantment]);
 
-        RegistryDataMessage sent = RegistryDataMessage.FromRegistry(key, registry);
+        var sent = RegistryDataMessage.FromRegistry(key, registry);
 
-        (NetworkStream? writeStream, NetworkStream? readStream, Action? cleanup) = MakeLoopbackPair();
+        var (writeStream, readStream, cleanup) = MakeLoopbackPair();
         try
         {
             sent.Write(writeStream);
@@ -268,7 +285,7 @@ public sealed class PacketSerializationTests
     {
         // Construct a message directly via round-trip: pack a null entry by sending
         // known bytes over a loopback stream.
-        (NetworkStream? writeStream, NetworkStream? readStream, Action? cleanup) = MakeLoopbackPair();
+        var (writeStream, readStream, cleanup) = MakeLoopbackPair();
         try
         {
             // Manually write the wire format: registryId, count=1 (varint), name, hasData=false
@@ -302,7 +319,7 @@ public sealed class PacketSerializationTests
             GameModeName = "survival"
         };
 
-        (NetworkStream? writeStream, NetworkStream? readStream, Action? cleanup) = MakeLoopbackPair();
+        var (writeStream, readStream, cleanup) = MakeLoopbackPair();
         try
         {
             sent.Write(writeStream);
@@ -336,13 +353,19 @@ public sealed class ClientRegistryAccessTests
     [Fact]
     public void Accumulate_and_GetAll_deserializes_all_entries()
     {
-        var survival = new GameMode { Name = "survival" };
-        var creative = new GameMode { Name = "creative" };
+        var survival = new GameMode
+        {
+            Name = "survival"
+        };
+        var creative = new GameMode
+        {
+            Name = "creative"
+        };
 
         var access = new ClientRegistryAccess(ContentRuntime.Current.Items);
         access.Accumulate(BuildMessage(survival, creative));
 
-        IReadOnlyDictionary<ResourceLocation, Holder<GameMode>> all = access.GetAll(s_gameModeKey);
+        var all = access.GetAll(s_gameModeKey);
         Assert.Equal(2, all.Count);
         Assert.True(all.ContainsKey("survival"));
         Assert.True(all.ContainsKey("creative"));
@@ -351,13 +374,20 @@ public sealed class ClientRegistryAccessTests
     [Fact]
     public void Get_returns_correct_entry_by_name()
     {
-        var survival = new GameMode { Name = "survival" };                    // BreakSpeed = 1f
-        var creative = new GameMode { Name = "creative", BreakSpeed = 0.5f }; // distinct value
+        var survival = new GameMode
+        {
+            Name = "survival"
+        }; // BreakSpeed = 1f
+        var creative = new GameMode
+        {
+            Name = "creative",
+            BreakSpeed = 0.5f
+        }; // distinct value
 
         var access = new ClientRegistryAccess(ContentRuntime.Current.Items);
         access.Accumulate(BuildMessage(survival, creative));
 
-        GameMode? found = access.Get(s_gameModeKey, "creative")?.Value;
+        var found = access.Get(s_gameModeKey, "creative")?.Value;
         Assert.NotNull(found);
         Assert.Equal(0.5f, found.BreakSpeed);
     }
@@ -366,7 +396,10 @@ public sealed class ClientRegistryAccessTests
     public void Get_returns_null_for_unknown_name()
     {
         var access = new ClientRegistryAccess(ContentRuntime.Current.Items);
-        access.Accumulate(BuildMessage(new GameMode { Name = "survival" }));
+        access.Accumulate(BuildMessage(new GameMode
+        {
+            Name = "survival"
+        }));
 
         Assert.Null(access.Get(s_gameModeKey, "spectator"));
     }
@@ -377,27 +410,35 @@ public sealed class ClientRegistryAccessTests
         var access = new ClientRegistryAccess(ContentRuntime.Current.Items);
         // Accumulate nothing for this registry.
 
-        IReadOnlyDictionary<ResourceLocation, Holder<GameMode>> all = access.GetAll(s_gameModeKey);
+        var all = access.GetAll(s_gameModeKey);
         Assert.Empty(all);
     }
 
     [Fact]
     public void Re_accumulate_invalidates_cache_and_reflects_new_data()
     {
-        var initial = new GameMode { Name = "survival", BreakSpeed = 1f };
+        var initial = new GameMode
+        {
+            Name = "survival",
+            BreakSpeed = 1f
+        };
         var access = new ClientRegistryAccess(ContentRuntime.Current.Items);
         access.Accumulate(BuildMessage(initial));
 
         // Force the cache to populate.
-        GameMode? first = access.Get(s_gameModeKey, "survival")?.Value;
+        var first = access.Get(s_gameModeKey, "survival")?.Value;
         Assert.NotNull(first);
         Assert.Equal(1f, first.BreakSpeed);
 
         // Re-accumulate with changed data.
-        var updated = new GameMode { Name = "survival", BreakSpeed = 0.5f };
+        var updated = new GameMode
+        {
+            Name = "survival",
+            BreakSpeed = 0.5f
+        };
         access.Accumulate(BuildMessage(updated));
 
-        GameMode? second = access.Get(s_gameModeKey, "survival")?.Value;
+        var second = access.Get(s_gameModeKey, "survival")?.Value;
         Assert.NotNull(second);
         Assert.Equal(0.5f, second.BreakSpeed);
     }
@@ -423,7 +464,7 @@ public sealed class ClientRegistryAccessTests
         var access = new ClientRegistryAccess(ContentRuntime.Current.Items);
         access.Accumulate(BuildMessage(creative));
 
-        GameMode? result = access.Get(s_gameModeKey, "creative")?.Value;
+        var result = access.Get(s_gameModeKey, "creative")?.Value;
         Assert.NotNull(result);
         Assert.False(result.DisallowFlying);
         Assert.False(result.FiniteResources);
@@ -437,13 +478,19 @@ public sealed class ClientRegistryAccessTests
     [Fact]
     public void Re_accumulate_without_entry_invalidates_its_holder()
     {
-        var survival = new GameMode { Name = "survival" };
-        var creative = new GameMode { Name = "creative" };
+        var survival = new GameMode
+        {
+            Name = "survival"
+        };
+        var creative = new GameMode
+        {
+            Name = "creative"
+        };
         var access = new ClientRegistryAccess(ContentRuntime.Current.Items);
         access.Accumulate(BuildMessage(survival, creative));
 
         // Retain a holder reference before the resync.
-        Holder<GameMode>? holder = access.Get(s_gameModeKey, "creative");
+        var holder = access.Get(s_gameModeKey, "creative");
         Assert.NotNull(holder);
         Assert.False(holder.IsInvalid);
 
@@ -458,11 +505,14 @@ public sealed class ClientRegistryAccessTests
     [Fact]
     public void Deserialized_entry_has_Name_set_to_the_registry_entry_name()
     {
-        var mode = new GameMode { Name = "survival" };
+        var mode = new GameMode
+        {
+            Name = "survival"
+        };
         var access = new ClientRegistryAccess(ContentRuntime.Current.Items);
         access.Accumulate(BuildMessage(mode));
 
-        GameMode? result = access.Get(s_gameModeKey, "survival")?.Value;
+        var result = access.Get(s_gameModeKey, "survival")?.Value;
         Assert.NotNull(result);
         Assert.Equal("survival", result.Name);
     }

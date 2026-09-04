@@ -9,10 +9,10 @@ public class BedRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        Box bounds = ctx.OverrideBounds ?? block.BoundingBox;
-        int metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
-        int direction = BedBehavior.GetDirection(metadata);
-        bool isHead = BedBehavior.IsHeadOfBed(metadata);
+        var bounds = ctx.OverrideBounds ?? block.BoundingBox;
+        var metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
+        var direction = BedBehavior.GetDirection(metadata);
+        var isHead = BedBehavior.IsHeadOfBed(metadata);
 
         const float lightBottom = 0.5F;
         const float lightTop = 1.0F;
@@ -23,7 +23,7 @@ public class BedRenderer : IBlockRenderer
         ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
         ctx.Tess.setColorOpaque_F(lightBottom, lightBottom, lightBottom);
 
-        int texBottom = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, 0);
+        var texBottom = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, 0);
         ctx.Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(texBottom));
 
         const float minU = 0.0F;
@@ -31,11 +31,11 @@ public class BedRenderer : IBlockRenderer
         const float minV = 0.0F;
         const float maxV = 1.0F;
 
-        float minX = (float)(pos.X + bounds.MinX);
-        float maxX = (float)(pos.X + bounds.MaxX);
-        float bedBottomY = (float)(pos.Y + bounds.MinY + 0.1875f); // Bed legs are 3 pixels tall (3/16 = 0.1875)
-        float minZ = (float)(pos.Z + bounds.MinZ);
-        float maxZ = (float)(pos.Z + bounds.MaxZ);
+        var minX = (float)(pos.X + bounds.MinX);
+        var maxX = (float)(pos.X + bounds.MaxX);
+        var bedBottomY = (float)(pos.Y + bounds.MinY + 0.1875f); // Bed legs are 3 pixels tall (3/16 = 0.1875)
+        var minZ = (float)(pos.Z + bounds.MinZ);
+        var maxZ = (float)(pos.Z + bounds.MaxZ);
 
         ctx.Tess.addVertexWithUV(minX, bedBottomY, maxZ, minU, maxV);
         ctx.Tess.addVertexWithUV(minX, bedBottomY, minZ, minU, minV);
@@ -46,7 +46,7 @@ public class BedRenderer : IBlockRenderer
         ctx.SetLightAt(block, pos.X, pos.Y + 1, pos.Z);
         ctx.Tess.setColorOpaque_F(lightTop, lightTop, lightTop);
 
-        int texTop = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.Up);
+        var texTop = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.Up);
         ctx.Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(texTop));
 
         float u1 = minU, u2 = maxU, u3 = minU, u4 = maxU;
@@ -79,7 +79,7 @@ public class BedRenderer : IBlockRenderer
             v3 = minV;
         }
 
-        float bedTopY = (float)(pos.Y + bounds.MaxY);
+        var bedTopY = (float)(pos.Y + bounds.MaxY);
 
         ctx.Tess.addVertexWithUV(maxX, bedTopY, maxZ, u3, v3);
         ctx.Tess.addVertexWithUV(maxX, bedTopY, minZ, u1, v1);
@@ -87,7 +87,7 @@ public class BedRenderer : IBlockRenderer
         ctx.Tess.addVertexWithUV(minX, bedTopY, maxZ, u4, v4);
 
         // SIDE FACES
-        int forwardDir = Facings.ToDir[direction];
+        var forwardDir = Facings.ToDir[direction];
         if (isHead)
         {
             forwardDir = Facings.ToDir[Facings.Opposite[direction]];
@@ -105,12 +105,22 @@ public class BedRenderer : IBlockRenderer
             case 3: textureFlipDir = 2; break;
         }
 
-        var flatCtx = ctx with { EnableAo = false };
+        var flatCtx = ctx with
+        {
+            EnableAo = false
+        };
         // East Face (Z - 1)
         if (forwardDir != 2 && (ctx.RenderAllFaces || block.IsSideVisible(ctx.BlockReader, pos.X, pos.Y, pos.Z - 1, Side.North)))
         {
-            if (bounds.MinZ > 0.0f) { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z); }
-            else { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z - 1); }
+            if (bounds.MinZ > 0.0f)
+            {
+                ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
+            }
+            else
+            {
+                ctx.SetLightAt(block, pos.X, pos.Y, pos.Z - 1);
+            }
+
             ctx.Tess.setColorOpaque_F(lightZ, lightZ, lightZ);
 
             flatCtx.FlipTexture = textureFlipDir == 2;
@@ -121,8 +131,15 @@ public class BedRenderer : IBlockRenderer
         // West Face (Z + 1)
         if (forwardDir != 3 && (ctx.RenderAllFaces || block.IsSideVisible(ctx.BlockReader, pos.X, pos.Y, pos.Z + 1, Side.South)))
         {
-            if (bounds.MaxZ < 1.0f) { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z); }
-            else { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z + 1); }
+            if (bounds.MaxZ < 1.0f)
+            {
+                ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
+            }
+            else
+            {
+                ctx.SetLightAt(block, pos.X, pos.Y, pos.Z + 1);
+            }
+
             ctx.Tess.setColorOpaque_F(lightZ, lightZ, lightZ);
 
             flatCtx.FlipTexture = textureFlipDir == 3;
@@ -133,8 +150,15 @@ public class BedRenderer : IBlockRenderer
         // North Face (X - 1)
         if (forwardDir != 4 && (ctx.RenderAllFaces || block.IsSideVisible(ctx.BlockReader, pos.X - 1, pos.Y, pos.Z, Side.West)))
         {
-            if (bounds.MinX > 0.0f) { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z); }
-            else { ctx.SetLightAt(block, pos.X - 1, pos.Y, pos.Z); }
+            if (bounds.MinX > 0.0f)
+            {
+                ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
+            }
+            else
+            {
+                ctx.SetLightAt(block, pos.X - 1, pos.Y, pos.Z);
+            }
+
             ctx.Tess.setColorOpaque_F(lightX, lightX, lightX);
 
             flatCtx.FlipTexture = textureFlipDir == 4;
@@ -145,8 +169,15 @@ public class BedRenderer : IBlockRenderer
         // South Face (X + 1)
         if (forwardDir != 5 && (ctx.RenderAllFaces || block.IsSideVisible(ctx.BlockReader, pos.X + 1, pos.Y, pos.Z, Side.East)))
         {
-            if (bounds.MaxX < 1.0f) { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z); }
-            else { ctx.SetLightAt(block, pos.X + 1, pos.Y, pos.Z); }
+            if (bounds.MaxX < 1.0f)
+            {
+                ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
+            }
+            else
+            {
+                ctx.SetLightAt(block, pos.X + 1, pos.Y, pos.Z);
+            }
+
             ctx.Tess.setColorOpaque_F(lightX, lightX, lightX);
 
             flatCtx.FlipTexture = textureFlipDir == 5;

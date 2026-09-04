@@ -1,21 +1,16 @@
-using OmniBlock.Registries;
-
 namespace OmniBlock.Tests;
 
 public class HolderTests
 {
-    private sealed class Widget
-    {
-        public string Label { get; init; } = "";
-        public override string ToString() => Label;
-    }
-
     // ---- Construction ----
 
     [Fact]
     public void Direct_holder_is_immediately_resolved()
     {
-        var w = new Widget { Label = "foo" };
+        var w = new Widget
+        {
+            Label = "foo"
+        };
         var h = new Holder<Widget>(w);
 
         Assert.True(h.IsResolved);
@@ -25,7 +20,10 @@ public class HolderTests
     [Fact]
     public void Direct_factory_is_immediately_resolved()
     {
-        var w = new Widget { Label = "bar" };
+        var w = new Widget
+        {
+            Label = "bar"
+        };
         var h = new Holder<Widget>(w);
 
         Assert.True(h.IsResolved);
@@ -35,8 +33,15 @@ public class HolderTests
     [Fact]
     public void Lazy_holder_is_not_resolved_before_first_access()
     {
-        int calls = 0;
-        var h = Holder<Widget>.Reference(() => { calls++; return new Widget { Label = "lazy" }; });
+        var calls = 0;
+        var h = Holder<Widget>.Reference(() =>
+        {
+            calls++;
+            return new Widget
+            {
+                Label = "lazy"
+            };
+        });
 
         Assert.False(h.IsResolved);
         Assert.Equal(0, calls);
@@ -45,10 +50,17 @@ public class HolderTests
     [Fact]
     public void Lazy_holder_resolves_on_first_value_access()
     {
-        int calls = 0;
-        var h = Holder<Widget>.Reference(() => { calls++; return new Widget { Label = "lazy" }; });
+        var calls = 0;
+        var h = Holder<Widget>.Reference(() =>
+        {
+            calls++;
+            return new Widget
+            {
+                Label = "lazy"
+            };
+        });
 
-        Widget w = h.Value;
+        var w = h.Value;
 
         Assert.True(h.IsResolved);
         Assert.Equal(1, calls);
@@ -58,8 +70,15 @@ public class HolderTests
     [Fact]
     public void Lazy_holder_resolver_is_called_only_once()
     {
-        int calls = 0;
-        var h = Holder<Widget>.Reference(() => { calls++; return new Widget { Label = "once" }; });
+        var calls = 0;
+        var h = Holder<Widget>.Reference(() =>
+        {
+            calls++;
+            return new Widget
+            {
+                Label = "once"
+            };
+        });
 
         _ = h.Value;
         _ = h.Value;
@@ -78,7 +97,10 @@ public class HolderTests
     [Fact]
     public void Value_returns_what_the_holder_holds()
     {
-        var w = new Widget { Label = "unwrapped" };
+        var w = new Widget
+        {
+            Label = "unwrapped"
+        };
         var h = new Holder<Widget>(w);
 
         Assert.Same(w, h.Value);
@@ -89,8 +111,14 @@ public class HolderTests
     [Fact]
     public void Setting_value_replaces_existing_value()
     {
-        var first = new Widget { Label = "first" };
-        var second = new Widget { Label = "second" };
+        var first = new Widget
+        {
+            Label = "first"
+        };
+        var second = new Widget
+        {
+            Label = "second"
+        };
         var h = new Holder<Widget>(first);
 
         h.Value = second;
@@ -101,9 +129,16 @@ public class HolderTests
     [Fact]
     public void Setting_value_on_lazy_holder_resolves_it_without_calling_resolver()
     {
-        int calls = 0;
-        var h = Holder<Widget>.Reference(() => { calls++; return new Widget(); });
-        var replacement = new Widget { Label = "override" };
+        var calls = 0;
+        var h = Holder<Widget>.Reference(() =>
+        {
+            calls++;
+            return new Widget();
+        });
+        var replacement = new Widget
+        {
+            Label = "override"
+        };
 
         h.Value = replacement;
 
@@ -127,7 +162,10 @@ public class HolderTests
     [Fact]
     public void ToString_on_unresolved_holder_returns_placeholder()
     {
-        var h = Holder<Widget>.Reference(() => new Widget { Label = "x" });
+        var h = Holder<Widget>.Reference(() => new Widget
+        {
+            Label = "x"
+        });
 
         Assert.Equal("<unresolved>", h.ToString());
     }
@@ -135,8 +173,17 @@ public class HolderTests
     [Fact]
     public void ToString_on_resolved_holder_delegates_to_value()
     {
-        var h = new Holder<Widget>(new Widget { Label = "hello" });
+        var h = new Holder<Widget>(new Widget
+        {
+            Label = "hello"
+        });
 
         Assert.Equal("hello", h.ToString());
+    }
+
+    private sealed class Widget
+    {
+        public string Label { get; init; } = "";
+        public override string ToString() => Label;
     }
 }

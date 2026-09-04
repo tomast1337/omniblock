@@ -8,10 +8,7 @@ namespace OmniBlock.Blocks.Behaviors;
 /// </summary>
 public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlockPhysics, IBlockLifecycle
 {
-    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event)
-    {
-        ToggleLever(block, @event.World, @event.X, @event.Y, @event.Z);
-    }
+    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event) => ToggleLever(block, @event.World, @event.X, @event.Y, @event.Z);
 
     public bool OnUse(Block block, OnUseEvent @event)
     {
@@ -45,19 +42,19 @@ public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlo
                 meta = 1;
                 break;
             default:
-            {
-                if (@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z))
-                    meta = 1;
-                else if (@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z))
-                    meta = 2;
-                else if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1))
-                    meta = 3;
-                else if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1))
-                    meta = 4;
-                else if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z)) meta = 5 + Random.Shared.Next(2);
+                {
+                    if (@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z))
+                        meta = 1;
+                    else if (@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z))
+                        meta = 2;
+                    else if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1))
+                        meta = 3;
+                    else if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1))
+                        meta = 4;
+                    else if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z)) meta = 5 + Random.Shared.Next(2);
 
-                break;
-            }
+                    break;
+                }
         }
 
         if (meta == -1)
@@ -99,10 +96,7 @@ public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlo
         }
     }
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext context)
-    {
-        return HasSupport(context.World.Reader, context.X, context.Y, context.Z);
-    }
+    public bool CanPlaceAt(Block block, CanPlaceAtContext context) => HasSupport(context.World.Reader, context.X, context.Y, context.Z);
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
@@ -149,10 +143,7 @@ public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlo
         }
     }
 
-    public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
-    {
-        return (reader.GetBlockMeta(x, y, z) & 8) > 0;
-    }
+    public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => (reader.GetBlockMeta(x, y, z) & 8) > 0;
 
     public bool IsStrongPoweringSide(Block block, IBlockReader world, int x, int y, int z, int side)
     {
@@ -168,10 +159,7 @@ public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlo
                (direction == 1 && side == 5);
     }
 
-    public bool CanEmitRedstonePower(Block block)
-    {
-        return true;
-    }
+    public bool CanEmitRedstonePower(Block block) => true;
 
     private static bool HasSupport(IBlockReader reader, int x, int y, int z)
     {

@@ -1,11 +1,9 @@
-using OmniBlock.Blocks;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.Items;
 using OmniBlock.Network.Messages;
 using OmniBlock.Network.Packets;
 using OmniBlock.Network.Snapshots;
-using OmniBlock.Util;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core;
 
@@ -13,26 +11,39 @@ namespace OmniBlock.Server.Entities;
 
 internal class EntityTrackerEntry
 {
+    private readonly bool alwaysUpdateVelocity;
     public Entity currentTrackedEntity;
-    public int trackedDistance;
-    public int trackingFrequency;
+    private bool isInitialized;
+    public int lastPitch;
     public int lastX;
     public int lastY;
-    public int lastZ;
     public int lastYaw;
-    public int lastPitch;
+    public int lastZ;
+    public HashSet<ServerPlayerEntity> listeners = [];
+    public bool newPlayerDataUpdated;
+    public int ticks;
+    private int ticksSinceLastDismount;
+    public int trackedDistance;
+    public int trackingFrequency;
     public double velocityX;
     public double velocityY;
     public double velocityZ;
-    public int ticks;
     private double x;
     private double y;
     private double z;
-    private bool isInitialized;
-    private bool alwaysUpdateVelocity;
-    private int ticksSinceLastDismount;
-    public bool newPlayerDataUpdated;
-    public HashSet<ServerPlayerEntity> listeners = [];
+
+    public EntityTrackerEntry(Entity entity, int trackedDistance, int trackedFrequency, bool alwaysUpdateVelocity)
+    {
+        currentTrackedEntity = entity;
+        this.trackedDistance = trackedDistance;
+        trackingFrequency = trackedFrequency;
+        this.alwaysUpdateVelocity = alwaysUpdateVelocity;
+        lastX = MathHelper.Floor(entity.X * 32.0);
+        lastY = MathHelper.Floor(entity.Y * 32.0);
+        lastZ = MathHelper.Floor(entity.Z * 32.0);
+        lastYaw = MathHelper.Floor(entity.Yaw * 256.0F / 360.0F);
+        lastPitch = MathHelper.Floor(entity.Pitch * 256.0F / 360.0F);
+    }
 
     /// <summary>
     ///     Where this entity has been for the last couple of seconds, for lag-compensated hit
@@ -55,28 +66,9 @@ internal class EntityTrackerEntry
     /// </summary>
     public EntitySnapshotState SnapshotState { get; private set; }
 
-    public EntityTrackerEntry(Entity entity, int trackedDistance, int trackedFrequency, bool alwaysUpdateVelocity)
-    {
-        currentTrackedEntity = entity;
-        this.trackedDistance = trackedDistance;
-        trackingFrequency = trackedFrequency;
-        this.alwaysUpdateVelocity = alwaysUpdateVelocity;
-        lastX = MathHelper.Floor(entity.X * 32.0);
-        lastY = MathHelper.Floor(entity.Y * 32.0);
-        lastZ = MathHelper.Floor(entity.Z * 32.0);
-        lastYaw = MathHelper.Floor(entity.Yaw * 256.0F / 360.0F);
-        lastPitch = MathHelper.Floor(entity.Pitch * 256.0F / 360.0F);
-    }
+    public override bool Equals(object? obj) => obj is EntityTrackerEntry entry && entry.currentTrackedEntity.ID == currentTrackedEntity.ID;
 
-    public override bool Equals(object? obj)
-    {
-        return obj is EntityTrackerEntry entry && entry.currentTrackedEntity.ID == currentTrackedEntity.ID;
-    }
-
-    public override int GetHashCode()
-    {
-        return currentTrackedEntity.ID;
-    }
+    public override int GetHashCode() => currentTrackedEntity.ID;
 
     public void notifyNewLocation(IEnumerable<ServerPlayerEntity> players, long simulationTimeMs)
     {
@@ -105,16 +97,16 @@ internal class EntityTrackerEntry
         // tracking window instead of waiting for the next and possibly drifting client side.
         if (alwaysUpdateVelocity)
         {
-            double velDeltaX = currentTrackedEntity.VelocityX - velocityX;
-            double velDeltaY = currentTrackedEntity.VelocityY - velocityY;
-            double velDeltaZ = currentTrackedEntity.VelocityZ - velocityZ;
-            double velocityTolerance = 0.02;
-            double velDeltaSqr = velDeltaX * velDeltaX + velDeltaY * velDeltaY + velDeltaZ * velDeltaZ;
+            var velDeltaX = currentTrackedEntity.VelocityX - velocityX;
+            var velDeltaY = currentTrackedEntity.VelocityY - velocityY;
+            var velDeltaZ = currentTrackedEntity.VelocityZ - velocityZ;
+            var velocityTolerance = 0.02;
+            var velDeltaSqr = velDeltaX * velDeltaX + velDeltaY * velDeltaY + velDeltaZ * velDeltaZ;
             if (velDeltaSqr > velocityTolerance * velocityTolerance
-                || velDeltaSqr > 0.0
-                && currentTrackedEntity.VelocityX == 0.0
-                && currentTrackedEntity.VelocityY == 0.0
-                && currentTrackedEntity.VelocityZ == 0.0)
+                || (velDeltaSqr > 0.0
+                    && currentTrackedEntity.VelocityX == 0.0
+                    && currentTrackedEntity.VelocityY == 0.0
+                    && currentTrackedEntity.VelocityZ == 0.0))
             {
                 velocityX = currentTrackedEntity.VelocityX;
                 velocityY = currentTrackedEntity.VelocityY;
@@ -125,14 +117,14 @@ internal class EntityTrackerEntry
 
         if (++ticks % trackingFrequency == 0)
         {
-            int posX = MathHelper.Floor(currentTrackedEntity.X * 32.0);
-            int posY = MathHelper.Floor(currentTrackedEntity.Y * 32.0);
-            int posZ = MathHelper.Floor(currentTrackedEntity.Z * 32.0);
-            int rotYaw = MathHelper.Floor(currentTrackedEntity.Yaw * 256.0F / 360.0F);
-            int rotPitch = MathHelper.Floor(currentTrackedEntity.Pitch * 256.0F / 360.0F);
-            int deltaX = posX - lastX;
-            int deltaY = posY - lastY;
-            int deltaZ = posZ - lastZ;
+            var posX = MathHelper.Floor(currentTrackedEntity.X * 32.0);
+            var posY = MathHelper.Floor(currentTrackedEntity.Y * 32.0);
+            var posZ = MathHelper.Floor(currentTrackedEntity.Z * 32.0);
+            var rotYaw = MathHelper.Floor(currentTrackedEntity.Yaw * 256.0F / 360.0F);
+            var rotPitch = MathHelper.Floor(currentTrackedEntity.Pitch * 256.0F / 360.0F);
+            var deltaX = posX - lastX;
+            var deltaY = posY - lastY;
+            var deltaZ = posZ - lastZ;
 
             // Offered to the snapshot encoder unconditionally, before the movement thresholds below.
             // Those thresholds exist because the packets they gate cost 8 to 10 bytes to say that
@@ -142,8 +134,8 @@ internal class EntityTrackerEntry
             // discarding every turn under eleven degrees.
             OfferedThisTick = true;
             SnapshotState = new EntitySnapshotState(posX, posY, posZ, (byte)rotYaw, (byte)rotPitch);
-            bool hasMoved = Math.Abs(deltaX) >= 1 || Math.Abs(deltaY) >= 1 || Math.Abs(deltaZ) >= 1;
-            bool hasRotated = Math.Abs(rotYaw - lastYaw) >= 8 || Math.Abs(rotPitch - lastPitch) >= 8;
+            var hasMoved = Math.Abs(deltaX) >= 1 || Math.Abs(deltaY) >= 1 || Math.Abs(deltaZ) >= 1;
+            var hasRotated = Math.Abs(rotYaw - lastYaw) >= 8 || Math.Abs(rotPitch - lastPitch) >= 8;
             Message? positionMessage = null;
             if (deltaX < -128 || deltaX >= 128 || deltaY < -128 || deltaY >= 128 || deltaZ < -128 || deltaZ >= 128 || ticksSinceLastDismount > 400)
             {
@@ -158,26 +150,26 @@ internal class EntityTrackerEntry
                     Y = posY,
                     Z = posZ,
                     Yaw = (sbyte)rotYaw,
-                    Pitch = (sbyte)rotPitch,
+                    Pitch = (sbyte)rotPitch
                 };
             }
             else if (hasMoved || hasRotated)
             {
                 // Some entities want their angle on every step rather than only when they visibly
                 // turn — an arrow's flight is all arc and bounce, so it declares as much.
-                bool sendsRotation =
+                var sendsRotation =
                     hasRotated || currentTrackedEntity.Type?.Definition is { AlwaysSyncsRotation: true };
 
                 positionMessage = new EntityMoveMessage
                 {
                     EntityId = currentTrackedEntity.ID,
                     Mask = (hasMoved ? EntityMoveMessage.Field.Moved : EntityMoveMessage.Field.None)
-                        | (sendsRotation ? EntityMoveMessage.Field.Rotated : EntityMoveMessage.Field.None),
+                           | (sendsRotation ? EntityMoveMessage.Field.Rotated : EntityMoveMessage.Field.None),
                     DeltaX = (sbyte)deltaX,
                     DeltaY = (sbyte)deltaY,
                     DeltaZ = (sbyte)deltaZ,
                     Yaw = (sbyte)rotYaw,
-                    Pitch = (sbyte)rotPitch,
+                    Pitch = (sbyte)rotPitch
                 };
             }
 
@@ -186,12 +178,16 @@ internal class EntityTrackerEntry
                 sendPositionToLegacyListeners(positionMessage);
             }
 
-            DataSynchronizer dataSync = currentTrackedEntity.DataSynchronizer;
+            var dataSync = currentTrackedEntity.DataSynchronizer;
             if (dataSync.Dirty)
             {
                 var stream = new MemoryStream();
                 dataSync.WriteChanges(stream);
-                sendToAround(new EntityDataMessage { EntityId = currentTrackedEntity.ID, Data = stream.ToArray() });
+                sendToAround(new EntityDataMessage
+                {
+                    EntityId = currentTrackedEntity.ID,
+                    Data = stream.ToArray()
+                });
             }
 
             if (hasMoved)
@@ -236,7 +232,7 @@ internal class EntityTrackerEntry
             EntityId = entityId,
             MotionX = (short)(Math.Clamp(x, -limit, limit) * 8000.0),
             MotionY = (short)(Math.Clamp(y, -limit, limit) * 8000.0),
-            MotionZ = (short)(Math.Clamp(z, -limit, limit) * 8000.0),
+            MotionZ = (short)(Math.Clamp(z, -limit, limit) * 8000.0)
         };
     }
 
@@ -246,7 +242,7 @@ internal class EntityTrackerEntry
         EntityId = entityId,
         Slot = (short)slot,
         ItemRawId = (short)(stack?.ItemId ?? -1),
-        ItemDamage = (short)(stack?.GetDamage() ?? 0),
+        ItemDamage = (short)(stack?.GetDamage() ?? 0)
     };
 
     public void sendToListeners(Packet packet)
@@ -295,6 +291,7 @@ internal class EntityTrackerEntry
         {
             p.NetworkHandler.SendPacket(packet);
         }
+
         if (currentTrackedEntity is ServerPlayerEntity entity)
         {
             entity.NetworkHandler.SendPacket(packet);
@@ -307,6 +304,7 @@ internal class EntityTrackerEntry
         {
             p.NetworkHandler.SendMessage(message);
         }
+
         if (currentTrackedEntity is ServerPlayerEntity entity)
         {
             entity.NetworkHandler.SendMessage(message);
@@ -320,7 +318,10 @@ internal class EntityTrackerEntry
             player.SnapshotStream.Forget(currentTrackedEntity.ID);
         }
 
-        sendToListeners(new EntityDestroyMessage { EntityId = currentTrackedEntity.ID });
+        sendToListeners(new EntityDestroyMessage
+        {
+            EntityId = currentTrackedEntity.ID
+        });
     }
 
     public void notifyEntityRemoved(ServerPlayerEntity player)
@@ -335,8 +336,8 @@ internal class EntityTrackerEntry
     {
         if (player != currentTrackedEntity)
         {
-            double distX = player.X - lastX / 32.0;
-            double distZ = player.Z - lastZ / 32.0;
+            var distX = player.X - lastX / 32.0;
+            var distZ = player.Z - lastZ / 32.0;
             if (distX >= -trackedDistance && distX <= trackedDistance && distZ >= -trackedDistance && distZ <= trackedDistance)
             {
                 if (!listeners.Contains(player))
@@ -345,8 +346,8 @@ internal class EntityTrackerEntry
                         && player.DimensionId == sw.Dimension.Id
                         && sw.ChunkMap != null)
                     {
-                        int entityChunkX = MathHelper.Floor(currentTrackedEntity.X / 16.0);
-                        int entityChunkZ = MathHelper.Floor(currentTrackedEntity.Z / 16.0);
+                        var entityChunkX = MathHelper.Floor(currentTrackedEntity.X / 16.0);
+                        var entityChunkZ = MathHelper.Floor(currentTrackedEntity.Z / 16.0);
                         if (!ChunkMap.HasPlayerReceivedChunkTerrain(player, entityChunkX, entityChunkZ))
                         {
                             return;
@@ -364,10 +365,10 @@ internal class EntityTrackerEntry
                             currentTrackedEntity.VelocityZ));
                     }
 
-                    ItemStack?[] equipment = currentTrackedEntity.Equipment;
+                    var equipment = currentTrackedEntity.Equipment;
                     if (equipment != null)
                     {
-                        for (int slot = 0; slot < equipment.Length; slot++)
+                        for (var slot = 0; slot < equipment.Length; slot++)
                         {
                             player.NetworkHandler.SendMessage(Equipment(currentTrackedEntity.ID, slot, equipment[slot]));
                         }
@@ -392,7 +393,10 @@ internal class EntityTrackerEntry
             else if (listeners.Remove(player))
             {
                 player.SnapshotStream.Forget(currentTrackedEntity.ID);
-                player.NetworkHandler.SendMessage(new EntityDestroyMessage { EntityId = currentTrackedEntity.ID });
+                player.NetworkHandler.SendMessage(new EntityDestroyMessage
+                {
+                    EntityId = currentTrackedEntity.ID
+                });
             }
         }
     }
@@ -415,7 +419,7 @@ internal class EntityTrackerEntry
     {
         if (currentTrackedEntity.Behaviors.Find<DroppedItemBehavior>() is { } dropped)
         {
-            ItemStack stack = dropped.Stack(currentTrackedEntity)!;
+            var stack = dropped.Stack(currentTrackedEntity)!;
             ItemEntitySpawnMessage spawn = new()
             {
                 EntityId = currentTrackedEntity.ID,
@@ -427,7 +431,7 @@ internal class EntityTrackerEntry
                 Z = Fixed(currentTrackedEntity.Z),
                 VelocityX = (sbyte)(int)(currentTrackedEntity.VelocityX * 128.0),
                 VelocityY = (sbyte)(int)(currentTrackedEntity.VelocityY * 128.0),
-                VelocityZ = (sbyte)(int)(currentTrackedEntity.VelocityZ * 128.0),
+                VelocityZ = (sbyte)(int)(currentTrackedEntity.VelocityZ * 128.0)
             };
 
             // Snaps the entity to the position that was just quantised, so the server's idea of
@@ -439,9 +443,10 @@ internal class EntityTrackerEntry
 
             return spawn;
         }
-        else if (currentTrackedEntity is ServerPlayerEntity p)
+
+        if (currentTrackedEntity is ServerPlayerEntity p)
         {
-            ItemStack? inHand = p.Inventory.ItemInHand;
+            var inHand = p.Inventory.ItemInHand;
 
             return new PlayerSpawnMessage
             {
@@ -452,83 +457,84 @@ internal class EntityTrackerEntry
                 Z = Fixed(p.Z),
                 Yaw = Angle(p.Yaw),
                 Pitch = Angle(p.Pitch),
-                CurrentItem = (short)(inHand?.ItemId ?? 0),
+                CurrentItem = (short)(inHand?.ItemId ?? 0)
             };
         }
-        else
+
+        // Three cart kinds share one entity type, so which object-spawn id a minecart goes out
+        // on comes from the behavior rather than the definition's single id.
+        if (currentTrackedEntity.Behaviors.Find<MinecartBehavior>() is { } cart)
         {
-            // Three cart kinds share one entity type, so which object-spawn id a minecart goes out
-            // on comes from the behavior rather than the definition's single id.
-            if (currentTrackedEntity.Behaviors.Find<MinecartBehavior>() is { } cart)
-            {
-                return ObjectSpawn(cart.SpawnObjectId(currentTrackedEntity));
-            }
-
-            if (currentTrackedEntity is EntityLiving living and not EntityPlayer)
-            {
-                MemoryStream data = new();
-                living.DataSynchronizer.WriteAll(data);
-
-                return new LivingEntitySpawnMessage
-                {
-                    EntityId = living.ID,
-                    Type = (sbyte)living.World.Content.EntityTypes.GetProtocolId(living),
-                    X = Fixed(living.X),
-                    Y = Fixed(living.Y),
-                    Z = Fixed(living.Z),
-                    Yaw = Angle(living.Yaw),
-                    Pitch = Angle(living.Pitch),
-                    Data = data.ToArray(),
-                };
-            }
-            // An arrow's spawn packet names whoever loosed it, so the client can credit the hit;
-            // an unowned one (a dispenser's) names itself.
-            else if (currentTrackedEntity.Behaviors.Find<ArrowBehavior>() is { } flight)
-            {
-                EntityLiving? shooter = flight.Owner(currentTrackedEntity);
-                return ObjectSpawn(60, shooter?.ID ?? currentTrackedEntity.ID);
-            }
-            // A fireball's spawn packet carries its shooter's id and rides its power vector in the
-            // velocity fields, so it comes from the behavior rather than the generic declared branch.
-            else if (currentTrackedEntity.Behaviors.Find<FireballBehavior>() is { } fireball)
-            {
-                EntitySpawnMessage spawn = ObjectSpawn(63, fireball.Owner(currentTrackedEntity)!.ID);
-                spawn.VelocityX = (short)(fireball.PowerX(currentTrackedEntity) * 8000.0);
-                spawn.VelocityY = (short)(fireball.PowerY(currentTrackedEntity) * 8000.0);
-                spawn.VelocityZ = (short)(fireball.PowerZ(currentTrackedEntity) * 8000.0);
-
-                return spawn;
-            }
-            // A falling block's object-spawn id depends on which block it carries, so it comes from
-            // the behavior rather than the definition's single SpawnObjectId.
-            else if (currentTrackedEntity.Behaviors.Find<SettleAsBlockBehavior>() is { } settle)
-            {
-                return ObjectSpawn(settle.SpawnObjectId(currentTrackedEntity));
-            }
-            else if (currentTrackedEntity.Type?.Definition is { SpawnObjectId: > 0 } declared)
-            {
-                return ObjectSpawn(declared.SpawnObjectId);
-            }
-            // A painting spawns by name and anchor rather than by position, so it has its own packet.
-            else if (currentTrackedEntity.Behaviors.Find<HangingArtBehavior>() is not null)
-            {
-                HangingArtBehavior hanging = currentTrackedEntity.Behaviors.Find<HangingArtBehavior>()!;
-
-                return new PaintingSpawnMessage
-                {
-                    EntityId = currentTrackedEntity.ID,
-                    Title = hanging.Art(currentTrackedEntity)!.Title,
-                    X = hanging.TileX(currentTrackedEntity),
-                    Y = hanging.TileY(currentTrackedEntity),
-                    Z = hanging.TileZ(currentTrackedEntity),
-                    Direction = hanging.Direction(currentTrackedEntity),
-                };
-            }
-            else
-            {
-                throw new ArgumentException("Don't know how to add " + currentTrackedEntity.GetType() + "!");
-            }
+            return ObjectSpawn(cart.SpawnObjectId(currentTrackedEntity));
         }
+
+        if (currentTrackedEntity is EntityLiving living and not EntityPlayer)
+        {
+            MemoryStream data = new();
+            living.DataSynchronizer.WriteAll(data);
+
+            return new LivingEntitySpawnMessage
+            {
+                EntityId = living.ID,
+                Type = (sbyte)living.World.Content.EntityTypes.GetProtocolId(living),
+                X = Fixed(living.X),
+                Y = Fixed(living.Y),
+                Z = Fixed(living.Z),
+                Yaw = Angle(living.Yaw),
+                Pitch = Angle(living.Pitch),
+                Data = data.ToArray()
+            };
+        }
+        // An arrow's spawn packet names whoever loosed it, so the client can credit the hit;
+        // an unowned one (a dispenser's) names itself.
+
+        if (currentTrackedEntity.Behaviors.Find<ArrowBehavior>() is { } flight)
+        {
+            var shooter = flight.Owner(currentTrackedEntity);
+            return ObjectSpawn(60, shooter?.ID ?? currentTrackedEntity.ID);
+        }
+        // A fireball's spawn packet carries its shooter's id and rides its power vector in the
+        // velocity fields, so it comes from the behavior rather than the generic declared branch.
+
+        if (currentTrackedEntity.Behaviors.Find<FireballBehavior>() is { } fireball)
+        {
+            var spawn = ObjectSpawn(63, fireball.Owner(currentTrackedEntity)!.ID);
+            spawn.VelocityX = (short)(fireball.PowerX(currentTrackedEntity) * 8000.0);
+            spawn.VelocityY = (short)(fireball.PowerY(currentTrackedEntity) * 8000.0);
+            spawn.VelocityZ = (short)(fireball.PowerZ(currentTrackedEntity) * 8000.0);
+
+            return spawn;
+        }
+        // A falling block's object-spawn id depends on which block it carries, so it comes from
+        // the behavior rather than the definition's single SpawnObjectId.
+
+        if (currentTrackedEntity.Behaviors.Find<SettleAsBlockBehavior>() is { } settle)
+        {
+            return ObjectSpawn(settle.SpawnObjectId(currentTrackedEntity));
+        }
+
+        if (currentTrackedEntity.Type?.Definition is { SpawnObjectId: > 0 } declared)
+        {
+            return ObjectSpawn(declared.SpawnObjectId);
+        }
+        // A painting spawns by name and anchor rather than by position, so it has its own packet.
+
+        if (currentTrackedEntity.Behaviors.Find<HangingArtBehavior>() is not null)
+        {
+            var hanging = currentTrackedEntity.Behaviors.Find<HangingArtBehavior>()!;
+
+            return new PaintingSpawnMessage
+            {
+                EntityId = currentTrackedEntity.ID,
+                Title = hanging.Art(currentTrackedEntity)!.Title,
+                X = hanging.TileX(currentTrackedEntity),
+                Y = hanging.TileY(currentTrackedEntity),
+                Z = hanging.TileZ(currentTrackedEntity),
+                Direction = hanging.Direction(currentTrackedEntity)
+            };
+        }
+
+        throw new ArgumentException("Don't know how to add " + currentTrackedEntity.GetType() + "!");
     }
 
     /// <summary>
@@ -561,7 +567,7 @@ internal class EntityTrackerEntry
                 : (short)0,
             VelocityZ = entityData > 0
                 ? (short)(Math.Clamp(currentTrackedEntity.VelocityZ, -limit, limit) * 8000.0)
-                : (short)0,
+                : (short)0
         };
     }
 
@@ -570,7 +576,10 @@ internal class EntityTrackerEntry
         if (listeners.Remove(player))
         {
             player.SnapshotStream.Forget(currentTrackedEntity.ID);
-            player.NetworkHandler.SendMessage(new EntityDestroyMessage { EntityId = currentTrackedEntity.ID });
+            player.NetworkHandler.SendMessage(new EntityDestroyMessage
+            {
+                EntityId = currentTrackedEntity.ID
+            });
         }
     }
 }

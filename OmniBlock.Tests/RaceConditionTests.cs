@@ -1,7 +1,5 @@
 using OmniBlock.Client.Network;
 using OmniBlock.Network.Messages;
-using OmniBlock.Network.Packets;
-using OmniBlock.Registries;
 using OmniBlock.Registries.Data;
 
 namespace OmniBlock.Tests;
@@ -12,13 +10,13 @@ public class RaceConditionTests
     public void RegistrySync_Invalidates_Removed_Holders_Leading_To_Potential_Crash()
     {
         var registries = new ClientRegistryAccess(ContentRuntime.Current.Items);
-        RegistryKey<GameMode> key = RegistryKeys.GameModes;
+        var key = RegistryKeys.GameModes;
 
         var message1 = RegistryDataMessage.FromRegistry(key, BuildRegistry("survival", "deleted_mode"));
         registries.Accumulate(message1);
 
-        Holder<GameMode> survivalHolder = registries.Get(key, "survival")!;
-        Holder<GameMode> deletedHolder = registries.Get(key, "deleted_mode")!;
+        var survivalHolder = registries.Get(key, "survival")!;
+        var deletedHolder = registries.Get(key, "deleted_mode")!;
 
         Assert.NotNull(survivalHolder.Value);
         Assert.NotNull(deletedHolder.Value);
@@ -36,11 +34,11 @@ public class RaceConditionTests
     public void Sequential_Message_Delivery_Prevents_RaceCondition_By_Updating_State_Atomically()
     {
         var registries = new ClientRegistryAccess(ContentRuntime.Current.Items);
-        RegistryKey<GameMode> key = RegistryKeys.GameModes;
+        var key = RegistryKeys.GameModes;
 
         registries.Accumulate(RegistryDataMessage.FromRegistry(key, BuildRegistry("survival", "deleted_mode")));
-        Holder<GameMode> initialHolder = registries.Get(key, "deleted_mode")!;
-        Holder<GameMode> currentPlayerHolder = initialHolder;
+        var initialHolder = registries.Get(key, "deleted_mode")!;
+        var currentPlayerHolder = initialHolder;
 
         // Simulate sequential message delivery: registry data arrives, then migration packet.
         registries.Accumulate(RegistryDataMessage.FromRegistry(key, BuildRegistry("survival")));
@@ -52,7 +50,7 @@ public class RaceConditionTests
         };
 
         // This simulates ClientNetworkHandler.onPlayerGameModeUpdate
-        Holder<GameMode> updated = registries.Get(key, migrationMessage.GameModeName)!;
+        var updated = registries.Get(key, migrationMessage.GameModeName)!;
         currentPlayerHolder = updated;
 
         Assert.True(initialHolder.IsInvalid, "The old holder should have been invalidated during the merge.");
@@ -62,12 +60,16 @@ public class RaceConditionTests
 
     private static DataAssetLoader<GameMode> BuildRegistry(params string[] names)
     {
-        var loader = new DataAssetLoader<GameMode>("gamemode", LoadLocations.None, allowUnhandled: false);
-        foreach (string name in names)
+        var loader = new DataAssetLoader<GameMode>("gamemode", LoadLocations.None, false);
+        foreach (var name in names)
         {
             var rl = new ResourceLocation(Namespace.OmniBlock, name);
-            loader.Assets.Add(rl, new Holder<GameMode>(new GameMode { Name = name }));
+            loader.Assets.Add(rl, new Holder<GameMode>(new GameMode
+            {
+                Name = name
+            }));
         }
+
         return loader;
     }
 }

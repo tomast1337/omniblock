@@ -8,7 +8,10 @@ namespace OmniBlock.Tests.Network;
 /// </summary>
 public sealed class EntityInterpolatorTests
 {
-    private static EntityInterpolator Available() => new() { Available = true };
+    private static EntityInterpolator Available() => new()
+    {
+        Available = true
+    };
 
     // ---- gating ----
 
@@ -27,15 +30,16 @@ public sealed class EntityInterpolatorTests
     [Fact]
     public void Available_alone_does_not_activate_a_disabled_interpolator()
     {
-        EntityInterpolator interpolator = new() { Available = true, Enabled = false };
+        EntityInterpolator interpolator = new()
+        {
+            Available = true,
+            Enabled = false
+        };
         Assert.False(interpolator.Active);
     }
 
     [Fact]
-    public void Active_requires_both()
-    {
-        Assert.True(Available().Active);
-    }
+    public void Active_requires_both() => Assert.True(Available().Active);
 
     [Fact]
     public void An_entity_is_not_interpolating_while_the_timeline_is_missing()
@@ -43,7 +47,7 @@ public sealed class EntityInterpolatorTests
         // The regression this guards: if IsInterpolating returned true here, the caller would skip
         // the legacy retarget while Apply did nothing, and every remote entity would freeze.
         EntityInterpolator interpolator = new();
-        interpolator.Record(1, serverTimeMs: 1000, 0, 0, 0, 0, 0);
+        interpolator.Record(1, 1000, 0, 0, 0, 0, 0);
 
         Assert.False(interpolator.IsInterpolating(1));
     }
@@ -51,17 +55,14 @@ public sealed class EntityInterpolatorTests
     [Fact]
     public void An_entity_is_interpolating_once_the_timeline_exists()
     {
-        EntityInterpolator interpolator = Available();
-        interpolator.Record(1, serverTimeMs: 1000, 0, 0, 0, 0, 0);
+        var interpolator = Available();
+        interpolator.Record(1, 1000, 0, 0, 0, 0, 0);
 
         Assert.True(interpolator.IsInterpolating(1));
     }
 
     [Fact]
-    public void An_unknown_entity_is_never_interpolating()
-    {
-        Assert.False(Available().IsInterpolating(99));
-    }
+    public void An_unknown_entity_is_never_interpolating() => Assert.False(Available().IsInterpolating(99));
 
     // ---- recording ----
 
@@ -70,8 +71,8 @@ public sealed class EntityInterpolatorTests
     {
         // Zero means the server does not stamp. Recording it would put a snapshot on no timeline,
         // which is the guess this whole mechanism replaces.
-        EntityInterpolator interpolator = Available();
-        interpolator.Record(1, serverTimeMs: 0, 0, 0, 0, 0, 0);
+        var interpolator = Available();
+        interpolator.Record(1, 0, 0, 0, 0, 0, 0);
 
         Assert.Equal(0, interpolator.TrackedCount);
         Assert.False(interpolator.IsInterpolating(1));
@@ -80,7 +81,7 @@ public sealed class EntityInterpolatorTests
     [Fact]
     public void Recording_tracks_one_buffer_per_entity()
     {
-        EntityInterpolator interpolator = Available();
+        var interpolator = Available();
         interpolator.Record(1, 1000, 0, 0, 0, 0, 0);
         interpolator.Record(1, 1050, 1, 0, 0, 0, 0);
         interpolator.Record(2, 1050, 0, 0, 0, 0, 0);
@@ -93,7 +94,7 @@ public sealed class EntityInterpolatorTests
     [Fact]
     public void Forget_drops_only_that_entity()
     {
-        EntityInterpolator interpolator = Available();
+        var interpolator = Available();
         interpolator.Record(1, 1000, 0, 0, 0, 0, 0);
         interpolator.Record(2, 1000, 0, 0, 0, 0, 0);
 
@@ -107,7 +108,7 @@ public sealed class EntityInterpolatorTests
     [Fact]
     public void Forgetting_an_untracked_entity_is_harmless()
     {
-        EntityInterpolator interpolator = Available();
+        var interpolator = Available();
         interpolator.Forget(42);
 
         Assert.Equal(0, interpolator.TrackedCount);
@@ -116,7 +117,7 @@ public sealed class EntityInterpolatorTests
     [Fact]
     public void Clear_drops_everything()
     {
-        EntityInterpolator interpolator = Available();
+        var interpolator = Available();
         interpolator.Record(1, 1000, 0, 0, 0, 0, 0);
         interpolator.Record(2, 1000, 0, 0, 0, 0, 0);
 
@@ -145,7 +146,10 @@ public sealed class EntityInterpolatorTests
     [InlineData(80, 460)]
     public void Jitter_widens_every_entitys_delay_by_twice_its_value(long jitterMs, long expected)
     {
-        EntityInterpolator interpolator = new() { NetworkJitterMs = jitterMs };
+        EntityInterpolator interpolator = new()
+        {
+            NetworkJitterMs = jitterMs
+        };
 
         Assert.Equal(expected, interpolator.DelayForMs(BufferAtInterval(150)));
     }
@@ -159,7 +163,10 @@ public sealed class EntityInterpolatorTests
     [Fact]
     public void The_jitter_margin_applies_on_top_of_a_slow_tracking_frequency()
     {
-        EntityInterpolator interpolator = new() { NetworkJitterMs = 100 };
+        EntityInterpolator interpolator = new()
+        {
+            NetworkJitterMs = 100
+        };
 
         // A dropped item at one update per second: 2000 ms of interval, plus 200 ms of jitter.
         Assert.Equal(2200, interpolator.DelayForMs(BufferAtInterval(1000)));
@@ -172,7 +179,10 @@ public sealed class EntityInterpolatorTests
     [Fact]
     public void The_jitter_margin_is_still_bounded()
     {
-        EntityInterpolator interpolator = new() { NetworkJitterMs = 10_000 };
+        EntityInterpolator interpolator = new()
+        {
+            NetworkJitterMs = 10_000
+        };
 
         Assert.Equal(EntityInterpolator.MaxDelayMs, interpolator.DelayForMs(BufferAtInterval(150)));
     }
@@ -184,19 +194,22 @@ public sealed class EntityInterpolatorTests
     [Fact]
     public void A_buffer_with_no_measurable_interval_still_gets_the_jitter_margin()
     {
-        EntityInterpolator interpolator = new() { NetworkJitterMs = 40 };
+        EntityInterpolator interpolator = new()
+        {
+            NetworkJitterMs = 40
+        };
 
         Assert.Equal(
             EntityInterpolator.DefaultDelayMs + 80,
-            interpolator.DelayForMs(BufferAtInterval(150, snapshots: 1)));
+            interpolator.DelayForMs(BufferAtInterval(150, 1)));
     }
 
     private static SnapshotBuffer BufferAtInterval(long intervalMs, int snapshots = 8)
     {
         SnapshotBuffer buffer = new();
-        for (int i = 0; i < snapshots; i++)
+        for (var i = 0; i < snapshots; i++)
         {
-            buffer.Push(new Snapshot(1000 + (i * intervalMs), i, 0, 0, 0, 0));
+            buffer.Push(new Snapshot(1000 + i * intervalMs, i, 0, 0, 0, 0));
         }
 
         return buffer;
@@ -208,10 +221,10 @@ public sealed class EntityInterpolatorTests
     ///     through 20 for dropped items.
     /// </summary>
     [Theory]
-    [InlineData(100, 200)]    // players, every 2 ticks
-    [InlineData(150, 300)]    // mobs, every 3 ticks
-    [InlineData(500, 1000)]   // projectiles, every 10 ticks
-    [InlineData(1000, 2000)]  // dropped items, every 20 ticks
+    [InlineData(100, 200)] // players, every 2 ticks
+    [InlineData(150, 300)] // mobs, every 3 ticks
+    [InlineData(500, 1000)] // projectiles, every 10 ticks
+    [InlineData(1000, 2000)] // dropped items, every 20 ticks
     public void The_delay_is_twice_the_observed_interval(long intervalMs, long expectedDelayMs)
     {
         EntityInterpolator interpolator = new();
@@ -231,7 +244,7 @@ public sealed class EntityInterpolatorTests
 
         // A dropped item: one update per second, so it needs two seconds of delay to have
         // snapshots on both sides of render time.
-        long delay = interpolator.DelayForMs(BufferAtInterval(1000));
+        var delay = interpolator.DelayForMs(BufferAtInterval(1000));
 
         Assert.True(delay >= 2000, $"delay of {delay} ms cannot bracket a 1000 ms update interval");
         Assert.True(delay <= EntityInterpolator.MaxDelayMs);
@@ -263,7 +276,7 @@ public sealed class EntityInterpolatorTests
     {
         EntityInterpolator interpolator = new();
 
-        Assert.Equal(EntityInterpolator.DefaultDelayMs, interpolator.DelayForMs(BufferAtInterval(150, snapshots: 1)));
+        Assert.Equal(EntityInterpolator.DefaultDelayMs, interpolator.DelayForMs(BufferAtInterval(150, 1)));
     }
 
     /// <summary>
@@ -288,9 +301,9 @@ public sealed class EntityInterpolatorTests
     {
         EntityInterpolator interpolator = new();
 
-        interpolator.SmoothedDelayFor(1, BufferAtInterval(150));   // settles at 300
+        interpolator.SmoothedDelayFor(1, BufferAtInterval(150)); // settles at 300
 
-        long afterOneTick = interpolator.SmoothedDelayFor(1, BufferAtInterval(400));  // target 800
+        var afterOneTick = interpolator.SmoothedDelayFor(1, BufferAtInterval(400)); // target 800
 
         Assert.Equal(300 + EntityInterpolator.DelayRaisePerTickMs, afterOneTick);
     }
@@ -300,9 +313,9 @@ public sealed class EntityInterpolatorTests
     {
         EntityInterpolator interpolator = new();
 
-        interpolator.SmoothedDelayFor(1, BufferAtInterval(400));   // settles at 800
+        interpolator.SmoothedDelayFor(1, BufferAtInterval(400)); // settles at 800
 
-        long afterOneTick = interpolator.SmoothedDelayFor(1, BufferAtInterval(150));  // target 300
+        var afterOneTick = interpolator.SmoothedDelayFor(1, BufferAtInterval(150)); // target 300
 
         Assert.Equal(800 - EntityInterpolator.DelayLowerPerTickMs, afterOneTick);
     }
@@ -314,9 +327,9 @@ public sealed class EntityInterpolatorTests
 
         interpolator.SmoothedDelayFor(1, BufferAtInterval(150));
 
-        SnapshotBuffer slower = BufferAtInterval(400);
+        var slower = BufferAtInterval(400);
         long delay = 0;
-        for (int tick = 0; tick < 200; tick++)
+        for (var tick = 0; tick < 200; tick++)
         {
             delay = interpolator.SmoothedDelayFor(1, slower);
         }
@@ -346,7 +359,7 @@ public sealed class EntityInterpolatorTests
     {
         EntityInterpolator interpolator = new();
 
-        interpolator.SmoothedDelayFor(1, BufferAtInterval(400));   // settles at 800
+        interpolator.SmoothedDelayFor(1, BufferAtInterval(400)); // settles at 800
         interpolator.Forget(1);
 
         // Re-adopted whole rather than eased down from 800.

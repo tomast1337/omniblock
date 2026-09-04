@@ -1,17 +1,17 @@
 using OmniBlock.Blocks;
 using OmniBlock.Client.Rendering.Core;
-using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Entities;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core;
+using Silk.NET.Maths;
 
 namespace OmniBlock.Client.Rendering.Entities;
 
 public abstract class EntityRenderer
 {
-    public EntityRenderDispatcher Dispatcher { get; set; } = null!;
     protected float ShadowRadius = 0.0F;
     protected float ShadowStrength = 1.0F;
+    public EntityRenderDispatcher Dispatcher { get; set; } = null!;
 
     protected World World => Dispatcher.World;
     public TextRenderer TextRenderer => Dispatcher.getTextRenderer();
@@ -20,10 +20,10 @@ public abstract class EntityRenderer
 
     protected void loadTexture(string path)
     {
-        TextureManager? textureManager = Dispatcher.TextureManager;
+        var textureManager = Dispatcher.TextureManager;
         if (textureManager == null) return;
 
-        TextureHandle handle = textureManager.GetTextureId(path);
+        var handle = textureManager.GetTextureId(path);
 
         // Every entity texture reaches the batch through here, so this is the one place the path
         // is known alongside the GL id the shader will see.
@@ -39,7 +39,7 @@ public abstract class EntityRenderer
     {
         if (!string.IsNullOrEmpty(url))
         {
-            TextureHandle? skinHandle = Dispatcher.SkinManager?.GetTextureHandle(url);
+            var skinHandle = Dispatcher.SkinManager?.GetTextureHandle(url);
             if (skinHandle != null)
             {
                 EntityBatchRenderer.Instance.SetTexture((uint)skinHandle.Id);
@@ -58,9 +58,9 @@ public abstract class EntityRenderer
     {
         GLManager.LightingEnabled = false;
 
-        int textureId = BlockRegistry.Get("fire").TextureId;
-        int texX = (textureId & 15) << 4;
-        int texY = textureId & 240;
+        var textureId = BlockRegistry.Get("fire").TextureId;
+        var texX = (textureId & 15) << 4;
+        var texY = textureId & 240;
 
         float minU;
         float maxU;
@@ -70,23 +70,23 @@ public abstract class EntityRenderer
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate((float)pos.X, (float)pos.Y, (float)pos.Z);
 
-        float scale = ent.Width * 1.4F;
+        var scale = ent.Width * 1.4F;
         GLManager.ModelView.Scale(scale, scale, scale);
 
         loadTexture("/terrain.png");
-        Tessellator tess = Tessellator.instance;
+        var tess = Tessellator.instance;
 
-        float widthOffset = 0.5F;
-        float depthOffset = 0.0F;
-        float heightRatio = ent.Height / scale;
-        float yOffset = (float)(ent.Y - ent.BoundingBox.MinY);
+        var widthOffset = 0.5F;
+        var depthOffset = 0.0F;
+        var heightRatio = ent.Height / scale;
+        var yOffset = (float)(ent.Y - ent.BoundingBox.MinY);
 
         GLManager.ModelView.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
         GLManager.ModelView.Translate(0.0F, 0.0F, -0.3F + (int)heightRatio * 0.02F);
-        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
 
-        float zOffset = 0.0F;
-        int pass = 0;
+        var zOffset = 0.0F;
+        var pass = 0;
 
         tess.startDrawingQuads();
 
@@ -133,38 +133,42 @@ public abstract class EntityRenderer
     {
         // Blended and depth tested but not depth writing, and unculled like the models it sits under:
         // several shadows can overlap on the ground without the first one drawn hiding the rest.
-        GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha, DepthWrite = false });
+        GLManager.State.Apply(RenderState.Entity with
+        {
+            Blend = BlendMode.Alpha,
+            DepthWrite = false
+        });
 
-        TextureManager textureManager = Dispatcher.TextureManager;
+        var textureManager = Dispatcher.TextureManager;
         textureManager.BindTexture(textureManager.GetTextureId("%clamp%/misc/shadow.png"));
 
-        float radius = ShadowRadius;
+        var radius = ShadowRadius;
 
-        double targetX = target.LastTickX + (target.X - target.LastTickX) * tickDelta;
-        double targetY = target.LastTickY + (target.Y - target.LastTickY) * tickDelta + target.GetShadowRadius();
-        double targetZ = target.LastTickZ + (target.Z - target.LastTickZ) * tickDelta;
+        var targetX = target.LastTickX + (target.X - target.LastTickX) * tickDelta;
+        var targetY = target.LastTickY + (target.Y - target.LastTickY) * tickDelta + target.GetShadowRadius();
+        var targetZ = target.LastTickZ + (target.Z - target.LastTickZ) * tickDelta;
 
-        int minX = MathHelper.Floor(targetX - radius);
-        int maxX = MathHelper.Floor(targetX + radius);
-        int minY = MathHelper.Floor(targetY - radius);
-        int maxY = MathHelper.Floor(targetY);
-        int minZ = MathHelper.Floor(targetZ - radius);
-        int maxZ = MathHelper.Floor(targetZ + radius);
+        var minX = MathHelper.Floor(targetX - radius);
+        var maxX = MathHelper.Floor(targetX + radius);
+        var minY = MathHelper.Floor(targetY - radius);
+        var maxY = MathHelper.Floor(targetY);
+        var minZ = MathHelper.Floor(targetZ - radius);
+        var maxZ = MathHelper.Floor(targetZ + radius);
 
-        double dx = pos.X - targetX;
-        double dy = pos.Y - targetY;
-        double dz = pos.Z - targetZ;
+        var dx = pos.X - targetX;
+        var dy = pos.Y - targetY;
+        var dz = pos.Z - targetZ;
 
-        Tessellator tess = Tessellator.instance;
+        var tess = Tessellator.instance;
         tess.startDrawingQuads();
 
-        for (int blockX = minX; blockX <= maxX; ++blockX)
+        for (var blockX = minX; blockX <= maxX; ++blockX)
         {
-            for (int blockY = minY; blockY <= maxY; ++blockY)
+            for (var blockY = minY; blockY <= maxY; ++blockY)
             {
-                for (int blockZ = minZ; blockZ <= maxZ; ++blockZ)
+                for (var blockZ = minZ; blockZ <= maxZ; ++blockZ)
                 {
-                    int blockId = World.Reader.GetBlockId(blockX, blockY - 1, blockZ);
+                    var blockId = World.Reader.GetBlockId(blockX, blockY - 1, blockZ);
                     if (blockId > 0 && World.Lighting.GetLightLevel(blockX, blockY, blockZ) > 3)
                     {
                         renderShadowOnBlock(
@@ -181,7 +185,7 @@ public abstract class EntityRenderer
         }
 
         tess.draw(ProgramSlot.Entities);
-        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
         GLManager.State.Apply(RenderState.Entity);
     }
 
@@ -189,38 +193,38 @@ public abstract class EntityRenderer
     {
         if (!block.IsFullCube()) return;
 
-        double shadowDarkness = (shadowiness - (pos.Y - (blockY + offset.Y)) / 2.0D) * 0.5D * World.GetLuminance(blockX, blockY, blockZ);
+        var shadowDarkness = (shadowiness - (pos.Y - (blockY + offset.Y)) / 2.0D) * 0.5D * World.GetLuminance(blockX, blockY, blockZ);
 
         if (shadowDarkness < 0.0D) return;
 
         if (shadowDarkness > 1.0D)
             shadowDarkness = 1.0D;
 
-        Tessellator tess = Tessellator.instance;
+        var tess = Tessellator.instance;
         tess.setColorRGBA_F(1.0F, 1.0F, 1.0F, (float)shadowDarkness);
 
-        double minX = blockX + block.BoundingBox.MinX + offset.X;
-        double maxX = blockX + block.BoundingBox.MaxX + offset.X;
-        double minY = blockY + block.BoundingBox.MinY + offset.Y + 1.0D / 64.0D;
-        double minZ = blockZ + block.BoundingBox.MinZ + offset.Z;
-        double maxZ = blockZ + block.BoundingBox.MaxZ + offset.Z;
+        var minX = blockX + block.BoundingBox.MinX + offset.X;
+        var maxX = blockX + block.BoundingBox.MaxX + offset.X;
+        var minY = blockY + block.BoundingBox.MinY + offset.Y + 1.0D / 64.0D;
+        var minZ = blockZ + block.BoundingBox.MinZ + offset.Z;
+        var maxZ = blockZ + block.BoundingBox.MaxZ + offset.Z;
 
-        float minU = (float)((pos.X - minX) / 2.0D / (double)radius + 0.5D);
-        float maxU = (float)((pos.X - maxX) / 2.0D / (double)radius + 0.5D);
-        float minV = (float)((pos.Z - minZ) / 2.0D / (double)radius + 0.5D);
-        float maxV = (float)((pos.Z - maxZ) / 2.0D / (double)radius + 0.5D);
+        var minU = (float)((pos.X - minX) / 2.0D / radius + 0.5D);
+        var maxU = (float)((pos.X - maxX) / 2.0D / radius + 0.5D);
+        var minV = (float)((pos.Z - minZ) / 2.0D / radius + 0.5D);
+        var maxV = (float)((pos.Z - maxZ) / 2.0D / radius + 0.5D);
 
-        tess.addVertexWithUV(minX, minY, minZ, (double)minU, (double)minV);
-        tess.addVertexWithUV(minX, minY, maxZ, (double)minU, (double)maxV);
-        tess.addVertexWithUV(maxX, minY, maxZ, (double)maxU, (double)maxV);
-        tess.addVertexWithUV(maxX, minY, minZ, (double)maxU, (double)minV);
+        tess.addVertexWithUV(minX, minY, minZ, minU, minV);
+        tess.addVertexWithUV(minX, minY, maxZ, minU, maxV);
+        tess.addVertexWithUV(maxX, minY, maxZ, maxU, maxV);
+        tess.addVertexWithUV(maxX, minY, minZ, maxU, minV);
     }
 
     public static void renderShape(Box aabb, Vec3D pos)
     {
         GLManager.TextureEnabled = false;
-        Tessellator tess = Tessellator.instance;
-        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
+        var tess = Tessellator.instance;
+        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
 
         tess.startDrawingQuads();
         tess.setTranslationD(pos.X, pos.Y, pos.Z);
@@ -269,7 +273,7 @@ public abstract class EntityRenderer
 
     public static void renderShapeFlat(Box aabb)
     {
-        Tessellator tess = Tessellator.instance;
+        var tess = Tessellator.instance;
         tess.startDrawingQuads();
 
         tess.addVertex(aabb.MinX, aabb.MaxY, aabb.MinZ);
@@ -309,8 +313,8 @@ public abstract class EntityRenderer
     {
         if (ShadowRadius > 0.0F)
         {
-            double distance = Dispatcher.GetSquareDistanceTo(target.X, target.Y, target.Z);
-            float shadowiness = (float)((1.0D - distance / 256.0D) * ShadowStrength);
+            var distance = Dispatcher.GetSquareDistanceTo(target.X, target.Y, target.Z);
+            var shadowiness = (float)((1.0D - distance / 256.0D) * ShadowStrength);
             if (shadowiness > 0.0F)
             {
                 RenderShadow(target, pos, shadowiness, tickDelta);
@@ -321,7 +325,6 @@ public abstract class EntityRenderer
         {
             RenderOnFire(target, pos, tickDelta);
         }
-
     }
 
     public void RenderBoundingBox(Entity target, Vec3D pos, float yaw, float tickDelta)
@@ -332,17 +335,17 @@ public abstract class EntityRenderer
         GLManager.TextureEnabled = false;
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate((float)pos.X, (float)pos.Y, (float)pos.Z);
-        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
 
-        Box bb = target.BoundingBox;
-        double minX = bb.MinX - target.X;
-        double maxX = bb.MaxX - target.X;
-        double minY = bb.MinY - target.Y;
-        double maxY = bb.MaxY - target.Y;
-        double minZ = bb.MinZ - target.Z;
-        double maxZ = bb.MaxZ - target.Z;
+        var bb = target.BoundingBox;
+        var minX = bb.MinX - target.X;
+        var maxX = bb.MaxX - target.X;
+        var minY = bb.MinY - target.Y;
+        var maxY = bb.MaxY - target.Y;
+        var minZ = bb.MinZ - target.Z;
+        var maxZ = bb.MaxZ - target.Z;
 
-        Tessellator tess = Tessellator.instance;
+        var tess = Tessellator.instance;
         tess.startDrawing(1);
 
         tess.addVertex(minX, minY, minZ);
@@ -374,7 +377,7 @@ public abstract class EntityRenderer
 
         tess.draw(ProgramSlot.Basic);
         tess.startDrawing(1);
-        GLManager.Color = new(1.0F, 1.0F, 0, 1.0F);
+        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 0, 1.0F);
 
         tess.addVertex(minX, target.EyeHeight, minZ);
         tess.addVertex(maxX, target.EyeHeight, minZ);
@@ -387,11 +390,11 @@ public abstract class EntityRenderer
 
         tess.draw(ProgramSlot.Line);
         tess.startDrawing(1);
-        GLManager.Color = new(1.0F, 0, 0, 1.0F);
+        GLManager.Color = new Vector4D<float>(1.0F, 0, 0, 1.0F);
 
         const float toRad = -MathF.PI / 180.0F;
         yaw *= toRad;
-        float pitchCos = MathHelper.Cos(target.Pitch * toRad);
+        var pitchCos = MathHelper.Cos(target.Pitch * toRad);
 
         tess.addVertex(0, target.EyeHeight, 0);
         tess.addVertex(MathHelper.Sin(yaw) * pitchCos, target.EyeHeight + MathHelper.Sin(target.Pitch * toRad), MathHelper.Cos(yaw) * pitchCos);

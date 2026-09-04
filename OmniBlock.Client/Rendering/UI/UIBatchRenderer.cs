@@ -23,23 +23,21 @@ public sealed class UIBatchRenderer : IDisposable
     /// <summary>Interface quads are flat, unlit and sample the plain 2D texture rather than an array layer.</summary>
     private const int NoArrayLayer = Tessellator.NoArrayLayer;
 
-    private readonly Vertex[] _vertices = new Vertex[MaxVertices];
-    private readonly Dictionary<uint, int> _texToLogicalId = [];
-
     private static readonly Dictionary<string, int> s_pathToLogicalId = new(StringComparer.Ordinal);
     private static bool s_propertiesLoaded;
+    private readonly Dictionary<uint, int> _texToLogicalId = [];
+
+    private readonly Vertex[] _vertices = new Vertex[MaxVertices];
+    private uint _currentTextureId;
 
     private Matrix4X4<float> _projection = Matrix4X4<float>.Identity;
-    private int _vertexCount;
-    private uint _currentTextureId;
     private bool _useTexture;
+    private int _vertexCount;
 
-    public UIBatchRenderer(GameOptions gameOptions)
-    {
+    public UIBatchRenderer(GameOptions gameOptions) =>
         // Nothing to build. The parameter stays because the interface constructs this before the
         // draw target exists, and a later shader option belongs here rather than at every caller.
         _ = gameOptions;
-    }
 
     /// <summary>
     ///     The blend the interface has selected, which queued geometry is drawn under.
@@ -54,6 +52,11 @@ public sealed class UIBatchRenderer : IDisposable
     /// </remarks>
     public BlendMode Blend { get; set; } = BlendMode.Alpha;
 
+    public void Dispose()
+    {
+        // Nothing owned. Kept so the interface can go on disposing what it built.
+    }
+
     public void Begin(Matrix4X4<float> proj)
     {
         _projection = proj;
@@ -67,22 +70,24 @@ public sealed class UIBatchRenderer : IDisposable
 
     public void SetTexture(uint texId)
     {
-        if (texId == 0) { SetNoTexture(); return; }
+        if (texId == 0)
+        {
+            SetNoTexture();
+            return;
+        }
+
         if (_useTexture && _currentTextureId == texId) return;
         Flush();
         _currentTextureId = texId;
         _useTexture = true;
     }
 
-    public void RegisterTexture(uint texId, int logicalId)
-    {
-        _texToLogicalId[texId] = logicalId;
-    }
+    public void RegisterTexture(uint texId, int logicalId) => _texToLogicalId[texId] = logicalId;
 
     public void RegisterTextureByPath(string assetPath, uint texId)
     {
         EnsurePropertiesLoaded();
-        if (s_pathToLogicalId.TryGetValue(assetPath, out int logicalId))
+        if (s_pathToLogicalId.TryGetValue(assetPath, out var logicalId))
             _texToLogicalId[texId] = logicalId;
     }
 
@@ -93,17 +98,17 @@ public sealed class UIBatchRenderer : IDisposable
 
         try
         {
-            string text = AssetManager.Instance.GetAsset("shaders/ui_textures.properties").GetTextContent();
-            foreach (string line in text.Split('\n'))
+            var text = AssetManager.Instance.GetAsset("shaders/ui_textures.properties").GetTextContent();
+            foreach (var line in text.Split('\n'))
             {
-                string trimmed = line.Trim();
+                var trimmed = line.Trim();
                 if (trimmed.Length == 0 || trimmed[0] == '#') continue;
 
-                int eq = trimmed.IndexOf('=');
+                var eq = trimmed.IndexOf('=');
                 if (eq < 0) continue;
 
-                string path = trimmed[..eq].Trim();
-                if (int.TryParse(trimmed[(eq + 1)..].Trim(), out int id))
+                var path = trimmed[..eq].Trim();
+                if (int.TryParse(trimmed[(eq + 1)..].Trim(), out var id))
                     s_pathToLogicalId[path] = id;
             }
         }
@@ -180,7 +185,7 @@ public sealed class UIBatchRenderer : IDisposable
         _vertices[_vertexCount++] = new Vertex(x, y, 0.0f, u, v, (int)rgba, 0)
         {
             ArrayLayer = NoArrayLayer,
-            Light = Tessellator.FullBrightLight,
+            Light = Tessellator.FullBrightLight
         };
     }
 
@@ -195,9 +200,12 @@ public sealed class UIBatchRenderer : IDisposable
         // claiming blend was off while it was on, and the next draw asking for off got nothing.
         //
         // Everything but the blend, which is the caller's to choose; see <see cref="Blend" />.
-        GLManager.State.Apply(RenderState.Interface with { Blend = Blend });
+        GLManager.State.Apply(RenderState.Interface with
+        {
+            Blend = Blend
+        });
 
-        Texture2D? texture = _useTexture ? Texture2D.Find(_currentTextureId) : null;
+        var texture = _useTexture ? Texture2D.Find(_currentTextureId) : null;
         texture?.Bind();
 
         GLManager.GuiTextureId = texture is null
@@ -222,7 +230,7 @@ public sealed class UIBatchRenderer : IDisposable
                 Channels = texture is null
                     ? VertexChannels.Color
                     : VertexChannels.Color | VertexChannels.Texture,
-                Slot = texture is null ? ProgramSlot.Basic : ProgramSlot.Gui,
+                Slot = texture is null ? ProgramSlot.Basic : ProgramSlot.Gui
             };
 
             GLManager.DrawTarget.Submit(command);
@@ -233,10 +241,5 @@ public sealed class UIBatchRenderer : IDisposable
             GLManager.Projection.Pop();
             _vertexCount = 0;
         }
-    }
-
-    public void Dispose()
-    {
-        // Nothing owned. Kept so the interface can go on disposing what it built.
     }
 }

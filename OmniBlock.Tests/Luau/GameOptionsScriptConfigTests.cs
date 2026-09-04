@@ -9,9 +9,13 @@ public sealed class GameOptionsScriptConfigTests
     public void TypedScriptWritesUseNormalOptionSettersAndCallbacks()
     {
         float observed = -1;
-        FloatOption option = new("test", "volume") { Steps = 10, OnChanged = value => observed = value };
+        FloatOption option = new("test", "volume")
+        {
+            Steps = 10,
+            OnChanged = value => observed = value
+        };
 
-        bool changed = GameOptions.SetOptionValue(option, LuauConfigValue.From(1.7));
+        var changed = GameOptions.SetOptionValue(option, LuauConfigValue.From(1.7));
 
         Assert.True(changed);
         Assert.Equal(1, option.Value);

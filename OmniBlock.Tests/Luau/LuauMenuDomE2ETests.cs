@@ -18,7 +18,7 @@ public sealed class LuauMenuDomE2ETests
     {
         Skip.IfNot(LuauQuickRun.IsAvailable(), "native library not resolvable for this checkout.");
 
-        UIElement menuRoot = BuildMenuFixture();
+        var menuRoot = BuildMenuFixture();
         UiDomDocument document = new(() => menuRoot, () => null);
         Bind(document);
 
@@ -28,25 +28,25 @@ public sealed class LuauMenuDomE2ETests
         try
         {
             LuauDomHost.Install(state.Handle);
-            Assert.True(state.TryExecute(LuauDomHost.Bootstrap, out string bootstrapError), bootstrapError);
+            Assert.True(state.TryExecute(LuauDomHost.Bootstrap, out var bootstrapError), bootstrapError);
 
             const string assertions = """
-local found = {}
-local function walk(node)
-    if node.text ~= nil then found[node.text] = node.type end
-    for index = 1, node.childCount do walk(node:child(index)) end
-end
+                                      local found = {}
+                                      local function walk(node)
+                                          if node.text ~= nil then found[node.text] = node.type end
+                                          for index = 1, node.childCount do walk(node:child(index)) end
+                                      end
 
-walk(OMNI.ui.root)
-assert(found["Singleplayer"] == "Button", "Singleplayer button missing")
-assert(found["Multiplayer"] == "Button", "Multiplayer button missing")
-assert(found["Options..."] == "Button", "Options button missing")
-assert(found["Quit Game"] == "Button", "Quit button missing")
-assert(found["OmniBlock"] == "Label", "title label missing")
-return "menu DOM OK"
-""";
+                                      walk(OMNI.ui.root)
+                                      assert(found["Singleplayer"] == "Button", "Singleplayer button missing")
+                                      assert(found["Multiplayer"] == "Button", "Multiplayer button missing")
+                                      assert(found["Options..."] == "Button", "Options button missing")
+                                      assert(found["Quit Game"] == "Button", "Quit button missing")
+                                      assert(found["OmniBlock"] == "Label", "title label missing")
+                                      return "menu DOM OK"
+                                      """;
 
-            Assert.True(state.TryExecute(assertions, out string output), output);
+            Assert.True(state.TryExecute(assertions, out var output), output);
             Assert.Equal("menu DOM OK", output);
         }
         finally
@@ -58,12 +58,28 @@ return "menu DOM OK"
     private static UIElement BuildMenuFixture()
     {
         UIElement root = new();
-        root.AddChild(new Label { Text = "OmniBlock" });
-        root.AddChild(new Button(() => { }) { Text = "Singleplayer", AutomationId = "main.singleplayer" });
-        root.AddChild(new Button(() => { }) { Text = "Multiplayer" });
+        root.AddChild(new Label
+        {
+            Text = "OmniBlock"
+        });
+        root.AddChild(new Button(() => { })
+        {
+            Text = "Singleplayer",
+            AutomationId = "main.singleplayer"
+        });
+        root.AddChild(new Button(() => { })
+        {
+            Text = "Multiplayer"
+        });
         UIElement footer = new Panel();
-        footer.AddChild(new Button(() => { }) { Text = "Options..." });
-        footer.AddChild(new Button(() => { }) { Text = "Quit Game" });
+        footer.AddChild(new Button(() => { })
+        {
+            Text = "Options..."
+        });
+        footer.AddChild(new Button(() => { })
+        {
+            Text = "Quit Game"
+        });
         root.AddChild(footer);
         return root;
     }

@@ -4,8 +4,8 @@ namespace OmniBlock.Client.Rendering.Entities.Models;
 
 public abstract class ModelBase
 {
-    public float OnGround;
     public bool IsRiding = false;
+    public float OnGround;
 
     public virtual void Render(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)
     {

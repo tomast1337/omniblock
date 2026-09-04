@@ -1,5 +1,4 @@
 using OmniBlock.Worlds.Core.Systems;
-using Xunit;
 
 namespace OmniBlock.Tests.Worlds;
 
@@ -16,17 +15,17 @@ public class LightLevelsTests
     [Fact]
     public void FlooringTheBlockChannelMatchesFlooringTheCollapsedValue()
     {
-        for (int sky = 0; sky <= 15; sky++)
+        for (var sky = 0; sky <= 15; sky++)
         {
-            for (int block = 0; block <= 15; block++)
+            for (var block = 0; block <= 15; block++)
             {
-                for (int emission = 0; emission <= 15; emission++)
+                for (var emission = 0; emission <= 15; emission++)
                 {
-                    for (int ambientDarkness = 0; ambientDarkness <= 15; ambientDarkness++)
+                    for (var ambientDarkness = 0; ambientDarkness <= 15; ambientDarkness++)
                     {
-                        LightLevels levels = LightLevels.Of(sky, block);
-                        int collapsedThenFloored = Math.Max(Collapse(levels, ambientDarkness), emission);
-                        int flooredThenCollapsed = Collapse(levels.WithBlockFloor(emission), ambientDarkness);
+                        var levels = LightLevels.Of(sky, block);
+                        var collapsedThenFloored = Math.Max(Collapse(levels, ambientDarkness), emission);
+                        var flooredThenCollapsed = Collapse(levels.WithBlockFloor(emission), ambientDarkness);
 
                         Assert.Equal(collapsedThenFloored, flooredThenCollapsed);
                     }
@@ -44,8 +43,8 @@ public class LightLevelsTests
     [Fact]
     public void TakingTheMaxPerChannelIsNotTheCollapsedMax()
     {
-        LightLevels litByTorch = LightLevels.Of(sky: 0, block: 12);
-        LightLevels litBySun = LightLevels.Of(sky: 12, block: 0);
+        var litByTorch = LightLevels.Of(0, 12);
+        var litBySun = LightLevels.Of(12, 0);
 
         Assert.Equal(12, Collapse(litByTorch, 0));
         Assert.Equal(12, Collapse(litBySun, 0));
@@ -67,8 +66,5 @@ public class LightLevelsTests
     }
 
     [Fact]
-    public void LevelsAreClampedToWhatANibbleCanHold()
-    {
-        Assert.Equal(LightLevels.Of(15, 0), LightLevels.Of(99, -4));
-    }
+    public void LevelsAreClampedToWhatANibbleCanHold() => Assert.Equal(LightLevels.Of(15, 0), LightLevels.Of(99, -4));
 }

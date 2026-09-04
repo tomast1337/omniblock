@@ -1,11 +1,10 @@
 using System.Text.Json;
-using OmniBlock.Registries;
 
 namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
-/// Keeps older focused behavior tests concise while production construction uses an explicitly
-/// owned <see cref="ContentRuntimeBuilder" />. Delete this shim as those tests gain custom contexts.
+///     Keeps older focused behavior tests concise while production construction uses an explicitly
+///     owned <see cref="ContentRuntimeBuilder" />. Delete this shim as those tests gain custom contexts.
 /// </summary>
 internal static class BehaviorRegistry
 {

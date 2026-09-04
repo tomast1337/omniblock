@@ -7,12 +7,8 @@ namespace OmniBlock.Registries.Data;
 
 public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T : class, IDataAsset
 {
-    private readonly string _path;
     private readonly bool _allowUnhandled;
-
-    public Dictionary<ResourceLocation, Holder<T>> Assets { get; } = [];
-
-    public static implicit operator Dictionary<ResourceLocation, Holder<T>>(DataAssetLoader<T> loader) => loader.Assets;
+    private readonly string _path;
 
     public DataAssetLoader(string path, LoadLocations locations, bool allowUnhandled = true) : base(locations)
     {
@@ -20,25 +16,69 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
         _allowUnhandled = allowUnhandled;
     }
 
+    public Dictionary<ResourceLocation, Holder<T>> Assets { get; } = [];
+
+    // ---- IReadableRegistry<T> implementation ----
+
+    public ResourceLocation RegistryKey => new(Namespace.OmniBlock, _path);
+
+    Holder<T>? IReadableRegistry<T>.Get(ResourceLocation key)
+    {
+        Assets.TryGetValue(key, out var holder);
+        return holder;
+    }
+
+    T? IReadableRegistry<T>.Get(int id) => null;
+
+    int IReadableRegistry<T>.GetId(T value) => -1;
+
+    ResourceLocation? IReadableRegistry<T>.GetKey(T value)
+    {
+        foreach (var pair in Assets)
+        {
+            if (pair.Value.IsResolved && ReferenceEquals(pair.Value.Value, value))
+                return pair.Key;
+        }
+
+        return null;
+    }
+
+    bool IReadableRegistry<T>.ContainsKey(ResourceLocation key) => Assets.ContainsKey(key);
+
+    IEnumerable<ResourceLocation> IReadableRegistry<T>.Keys => Assets.Keys;
+
+    public IEnumerator<T> GetEnumerator()
+    {
+        foreach (var h in Assets.Values)
+        {
+            yield return h.Value;
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    public static implicit operator Dictionary<ResourceLocation, Holder<T>>(DataAssetLoader<T> loader) => loader.Assets;
+
     private protected override void Clear() => Assets.Clear();
 
     /// <summary>
-    /// Creates a copy of this loader with all currently-loaded assets, then applies
-    /// <paramref name="worldDatapackPath"/> on top. The original loader is unaffected.
+    ///     Creates a copy of this loader with all currently-loaded assets, then applies
+    ///     <paramref name="worldDatapackPath" /> on top. The original loader is unaffected.
     /// </summary>
     internal override DataAssetLoader<T>? CloneForWorldDatapacks(string worldDatapackPath)
     {
         if (!Locations.HasFlag(LoadLocations.WorldDatapack)) return null;
         var clone = new DataAssetLoader<T>(_path, Locations, _allowUnhandled);
-        foreach (KeyValuePair<ResourceLocation, Holder<T>> pair in Assets)
+        foreach (var pair in Assets)
         {
             // Create an independent holder so world-datapack mutations cannot
             // corrupt the server-level registry that owns the original holders.
-            Holder<T> original = pair.Value;
+            var original = pair.Value;
             clone.Assets[pair.Key] = original.IsResolved
                 ? new Holder<T>(original.Value)
                 : Holder<T>.Reference(() => original.Value);
         }
+
         clone.LoadPacksFrom(worldDatapackPath, LoadLocations.WorldDatapack);
         return clone;
     }
@@ -51,9 +91,9 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
 
     private void LoadAssetsFromFolders(string path, LoadLocations location)
     {
-        foreach (string dir in Directory.GetDirectories(path, "*", SearchOption.TopDirectoryOnly))
+        foreach (var dir in Directory.GetDirectories(path, "*", SearchOption.TopDirectoryOnly))
         {
-            string dirName = Path.GetFileName(dir);
+            var dirName = Path.GetFileName(dir);
             LoadAssets(Namespace.Get(dirName), dir, location);
         }
     }
@@ -66,16 +106,16 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
             Directory.CreateDirectory(path);
         }
 
-        foreach (string file in Directory.EnumerateFiles(path, "*.json"))
+        foreach (var file in Directory.EnumerateFiles(path, "*.json"))
         {
             try
             {
                 var id = new ResourceLocation(@namespace, Path.GetFileNameWithoutExtension(file));
 
-                if (Assets.TryGetValue(id, out Holder<T>? assetRef))
+                if (Assets.TryGetValue(id, out var assetRef))
                 {
-                    using FileStream json = File.OpenRead(file);
-                    JsonElement obj = JsonSerializer.Deserialize<JsonElement>(json, s_jsonOptions);
+                    using var json = File.OpenRead(file);
+                    var obj = JsonSerializer.Deserialize<JsonElement>(json, s_jsonOptions);
 
                     if (obj.ValueKind != JsonValueKind.Object)
                     {
@@ -89,19 +129,18 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
                         ReplaceHolder(obj, file, id, assetRef);
                         continue;
                     }
-                    else
-                    {
-                        UpdateHolder(obj, assetRef);
-                        continue;
-                    }
+
+                    UpdateHolder(obj, assetRef);
+                    continue;
                 }
-                else if (_allowUnhandled)
+
+                if (_allowUnhandled)
                 {
                     Assets.Add(id, CreateLazyHolder(File.ReadAllText(file), id));
                     continue;
                 }
 
-                T? asset = FromPath(file);
+                var asset = FromPath(file);
                 if (asset == null)
                 {
                     s_logger.LogError($"Asset failed to load from file '{file}'");
@@ -115,7 +154,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
             }
             catch (JsonException ex)
             {
-                string msg = $"Syntax error in '{file}' at line {ex.LineNumber}, pos {ex.BytePositionInLine}: {ex.Message}";
+                var msg = $"Syntax error in '{file}' at line {ex.LineNumber}, pos {ex.BytePositionInLine}: {ex.Message}";
                 HasErrors = true;
                 FirstErrorMessage ??= msg;
             }
@@ -129,7 +168,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
 
     private static bool GetReplace(JsonElement json)
     {
-        if (json.TryGetProperty("Replace", out JsonElement nameElement))
+        if (json.TryGetProperty("Replace", out var nameElement))
         {
             return nameElement.GetBoolean();
         }
@@ -139,7 +178,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
 
     private static T? FromPath(string path)
     {
-        using FileStream json = File.OpenRead(path);
+        using var json = File.OpenRead(path);
         return JsonSerializer.Deserialize<T>(json, s_jsonOptions);
     }
 
@@ -150,12 +189,12 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
         try
         {
             // Serialize the default value to JSON
-            JsonElement defaultElement = JsonSerializer.SerializeToElement(target.Value);
+            var defaultElement = JsonSerializer.SerializeToElement(target.Value);
 
             // Merge the JSON with the default, preferring values from json
-            JsonElement merged = JsonMerge.Merge(defaultElement, json, s_jsonOptions);
+            var merged = JsonMerge.Merge(defaultElement, json, s_jsonOptions);
 
-            T? asset = merged.Deserialize<T>(s_jsonOptions);
+            var asset = merged.Deserialize<T>(s_jsonOptions);
             if (asset == null)
             {
                 s_logger.LogError($"Asset failed to deserialize into class '{target}'");
@@ -168,7 +207,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
         }
         catch (JsonException ex)
         {
-            string msg = $"Syntax error updating '{target}' at line {ex.LineNumber}, pos {ex.BytePositionInLine}: {ex.Message}";
+            var msg = $"Syntax error updating '{target}' at line {ex.LineNumber}, pos {ex.BytePositionInLine}: {ex.Message}";
             HasErrors = true;
             FirstErrorMessage ??= msg;
         }
@@ -180,9 +219,9 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
     }
 
     /// <summary>
-    /// Creates a lazy <see cref="Holder{T}"/> that parses <paramref name="jsonContent"/> on
-    /// first access. The raw JSON string is captured at load time so no file I/O occurs at
-    /// resolve time.
+    ///     Creates a lazy <see cref="Holder{T}" /> that parses <paramref name="jsonContent" /> on
+    ///     first access. The raw JSON string is captured at load time so no file I/O occurs at
+    ///     resolve time.
     /// </summary>
     internal static Holder<T> CreateLazyHolder(string jsonContent, ResourceLocation id)
     {
@@ -190,20 +229,20 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
         {
             try
             {
-                T asset = JsonSerializer.Deserialize<T>(jsonContent, s_jsonOptions)
-                    ?? throw new InvalidOperationException($"Asset '{id}' deserialized to null.");
+                var asset = JsonSerializer.Deserialize<T>(jsonContent, s_jsonOptions)
+                            ?? throw new InvalidOperationException($"Asset '{id}' deserialized to null.");
                 asset.Name = id.Path;
                 asset.Namespace = id.Namespace;
                 return asset;
             }
             catch (JsonException ex)
             {
-                string msg = $"Syntax error in lazy-loaded JSON for '{id}' at line {ex.LineNumber}, pos {ex.BytePositionInLine}: {ex.Message}";
+                var msg = $"Syntax error in lazy-loaded JSON for '{id}' at line {ex.LineNumber}, pos {ex.BytePositionInLine}: {ex.Message}";
                 throw new InvalidOperationException(msg, ex);
             }
             catch (Exception ex) when (ex is not InvalidOperationException)
             {
-                string msg = $"Unexpected error parsing lazy-loaded JSON for '{id}': {ex.Message}";
+                var msg = $"Unexpected error parsing lazy-loaded JSON for '{id}': {ex.Message}";
                 throw new InvalidOperationException(msg, ex);
             }
         });
@@ -213,7 +252,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
     {
         try
         {
-            T? v = FromJson(json);
+            var v = FromJson(json);
             if (v == null)
             {
                 s_logger.LogError($"Asset failed to load from file '{path}'");
@@ -227,7 +266,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
         }
         catch (JsonException ex)
         {
-            string msg = $"Syntax error in '{path}' at line {ex.LineNumber}, pos {ex.BytePositionInLine}: {ex.Message}";
+            var msg = $"Syntax error in '{path}' at line {ex.LineNumber}, pos {ex.BytePositionInLine}: {ex.Message}";
             HasErrors = true;
             FirstErrorMessage ??= msg;
         }
@@ -239,8 +278,8 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
     }
 
     /// <summary>
-    /// Looks up an entry by name. If <paramref name="name"/> contains a <c>:</c> it is
-    /// treated as <c>namespace:path</c>; otherwise all namespaces are searched by path.
+    ///     Looks up an entry by name. If <paramref name="name" /> contains a <c>:</c> it is
+    ///     treated as <c>namespace:path</c>; otherwise all namespaces are searched by path.
     /// </summary>
     public bool TryGet(string name, [NotNullWhen(true)] out T? asset)
     {
@@ -267,33 +306,34 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
     }
 
     public bool TryGetHolder(string name, [NotNullWhen(true)] out Holder<T>? holder)
-        => TryGetHolderInternal(name, out holder, prefix: false);
+        => TryGetHolderInternal(name, out holder, false);
 
     public bool TryGetHolderByPrefix(string prefix, [NotNullWhen(true)] out Holder<T>? holder)
-        => TryGetHolderInternal(prefix, out holder, prefix: true);
+        => TryGetHolderInternal(prefix, out holder, true);
 
     private bool TryGetHolderInternal(string name, [NotNullWhen(true)] out Holder<T>? holder, bool prefix)
     {
         holder = null;
-        int split = name.IndexOf(':');
+        var split = name.IndexOf(':');
 
         if (split != -1)
         {
-            string namespaceName = name.Substring(0, split);
+            var namespaceName = name.Substring(0, split);
             name = name.Substring(split + 1);
 
-            List<Namespace> nss = Namespace.FindNamespaces(namespaceName.ToLower(), prefix);
+            var nss = Namespace.FindNamespaces(namespaceName.ToLower(), prefix);
 
             if (nss.Count == 0) return false;
 
-            foreach (Namespace ns in nss)
+            foreach (var ns in nss)
             {
                 if (TryGetHolderInNamespace(ns, name, out holder, prefix)) return true;
             }
+
             return false;
         }
 
-        foreach (KeyValuePair<ResourceLocation, Holder<T>> a in Assets)
+        foreach (var a in Assets)
         {
             if (a.Key.Path != name) continue;
 
@@ -303,10 +343,10 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
 
         if (prefix)
         {
-            int nameLen = name.Length;
+            var nameLen = name.Length;
             if (nameLen == 1)
             {
-                foreach (KeyValuePair<ResourceLocation, Holder<T>> a in Assets)
+                foreach (var a in Assets)
                 {
                     if (a.Key.Path[0] != name[0]) continue;
                     holder = a.Value;
@@ -315,7 +355,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
             }
             else
             {
-                foreach (KeyValuePair<ResourceLocation, Holder<T>> a in Assets)
+                foreach (var a in Assets)
                 {
                     if (a.Key.Path.Length <= nameLen || a.Key.Path.Substring(0, nameLen) != name) continue;
 
@@ -342,7 +382,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
             return false;
         }
 
-        foreach (KeyValuePair<ResourceLocation, Holder<T>> a in Assets)
+        foreach (var a in Assets)
         {
             if (!a.Key.Namespace.Equals(ns)) continue;
             if (a.Key.Path != name) continue;
@@ -351,10 +391,10 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
             return true;
         }
 
-        int nameLen = name.Length;
+        var nameLen = name.Length;
         if (nameLen == 1)
         {
-            foreach (KeyValuePair<ResourceLocation, Holder<T>> a in Assets)
+            foreach (var a in Assets)
             {
                 if (a.Key.Path[0] != name[0]) continue;
                 if (!a.Key.Namespace.Equals(ns)) continue;
@@ -364,7 +404,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
         }
         else
         {
-            foreach (KeyValuePair<ResourceLocation, Holder<T>> a in Assets)
+            foreach (var a in Assets)
             {
                 if (!a.Key.Namespace.Equals(ns)) continue;
                 if (a.Key.Path.Length <= nameLen || a.Key.Path.Substring(0, nameLen) != name) continue;
@@ -377,42 +417,4 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
         holder = null;
         return false;
     }
-
-    // ---- IReadableRegistry<T> implementation ----
-
-    public ResourceLocation RegistryKey => new(Namespace.OmniBlock, _path);
-
-    Holder<T>? IReadableRegistry<T>.Get(ResourceLocation key)
-    {
-        Assets.TryGetValue(key, out Holder<T>? holder);
-        return holder;
-    }
-
-    T? IReadableRegistry<T>.Get(int id) => null;
-
-    int IReadableRegistry<T>.GetId(T value) => -1;
-
-    ResourceLocation? IReadableRegistry<T>.GetKey(T value)
-    {
-        foreach (KeyValuePair<ResourceLocation, Holder<T>> pair in Assets)
-        {
-            if (pair.Value.IsResolved && ReferenceEquals(pair.Value.Value, value))
-                return pair.Key;
-        }
-        return null;
-    }
-
-    bool IReadableRegistry<T>.ContainsKey(ResourceLocation key) => Assets.ContainsKey(key);
-
-    IEnumerable<ResourceLocation> IReadableRegistry<T>.Keys => Assets.Keys;
-
-    public IEnumerator<T> GetEnumerator()
-    {
-        foreach (Holder<T> h in Assets.Values)
-        {
-            yield return h.Value;
-        }
-    }
-
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

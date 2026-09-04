@@ -2,18 +2,9 @@ namespace OmniBlock.Client.Options;
 
 public class CycleOption : GameOption
 {
-    public int Value { get; set; }
-    public int DefaultIndex { get; }
-    public int Length { get; }
-    public string[] Labels { get; }
-    public Func<int, string>? Formatter { get; init; }
-    /// <summary>
-    ///     Settable rather than init-only so a handler that has to reach the option back can be
-    ///     attached after it exists, instead of closing over a property still being assigned.
-    /// </summary>
-    public Action<int>? OnChanged { get; set; }
-
-    public CycleOption(string translationKey, string saveKey, string[] labels, int defaultValue = 0) : this(translationKey, saveKey, labels, defaultValue, labels.Length) { }
+    public CycleOption(string translationKey, string saveKey, string[] labels, int defaultValue = 0) : this(translationKey, saveKey, labels, defaultValue, labels.Length)
+    {
+    }
 
     public CycleOption(string translationKey, string saveKey, string[] labels, int defaultValue, int length) : base(translationKey, saveKey)
     {
@@ -22,6 +13,18 @@ public class CycleOption : GameOption
         DefaultIndex = defaultValue;
         Length = length;
     }
+
+    public int Value { get; set; }
+    public int DefaultIndex { get; }
+    public int Length { get; }
+    public string[] Labels { get; }
+    public Func<int, string>? Formatter { get; init; }
+
+    /// <summary>
+    ///     Settable rather than init-only so a handler that has to reach the option back can be
+    ///     attached after it exists, instead of closing over a property still being assigned.
+    /// </summary>
+    public Action<int>? OnChanged { get; set; }
 
     public void Cycle(int increment = 1)
     {
@@ -47,10 +50,7 @@ public class CycleOption : GameOption
         return Labels.Length <= Value ? Translations.Get(Labels[Value]) : Translations.Get(Labels.Last());
     }
 
-    public override void Load(string raw)
-    {
-        Value = int.Parse(raw) % Length;
-    }
+    public override void Load(string raw) => Value = int.Parse(raw) % Length;
 
     public override string Save() => Value.ToString();
 }

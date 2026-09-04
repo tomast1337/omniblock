@@ -37,7 +37,7 @@ public class Config
         dest.Logger = src.Logger;
         dest.Context = src.Context;
 
-        for (int i = 0; i < src.experimentalFeatures.Length; i++)
+        for (var i = 0; i < src.experimentalFeatures.Length; i++)
         {
             dest.experimentalFeatures[i] = src.experimentalFeatures[i];
         }

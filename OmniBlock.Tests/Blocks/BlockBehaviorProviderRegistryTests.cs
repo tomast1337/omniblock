@@ -1,9 +1,6 @@
 using System.Text.Json;
-using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Blocks.Materials;
-using OmniBlock.Items;
-using OmniBlock.Registries;
 
 namespace OmniBlock.Tests.Blocks;
 
@@ -12,8 +9,8 @@ public sealed class BlockBehaviorProviderRegistryTests
     [Fact]
     public void Each_content_builder_owns_a_distinct_provider_registry()
     {
-        ContentRuntimeBuilder first = ContentRuntimeBuilder.CreateBuiltIns();
-        ContentRuntimeBuilder second = ContentRuntimeBuilder.CreateBuiltIns();
+        var first = ContentRuntimeBuilder.CreateBuiltIns();
+        var second = ContentRuntimeBuilder.CreateBuiltIns();
 
         Assert.NotSame(first.BlockBehaviorProviders, second.BlockBehaviorProviders);
     }
@@ -21,16 +18,32 @@ public sealed class BlockBehaviorProviderRegistryTests
     [Fact]
     public void Build_context_resolves_every_dependency_through_injected_functions()
     {
-        Block expectedBlock = TestBlocks.Get("stone");
-        Item expectedItem = ContentRuntime.Current.Items.Get("omniblock:stick");
-        Material expectedMaterial = MaterialRegistry.Get("wood");
+        var expectedBlock = TestBlocks.Get("stone");
+        var expectedItem = ContentRuntime.Current.Items.Get("omniblock:stick");
+        var expectedMaterial = MaterialRegistry.Get("wood");
         List<string> calls = [];
 
         BehaviorBuildContext context = new(
-            key => { calls.Add($"block:{key}"); return expectedBlock; },
-            key => { calls.Add($"item:{key}"); return expectedItem; },
-            key => { calls.Add($"material:{key}"); return expectedMaterial; },
-            key => { calls.Add($"texture:{key}"); return 73; });
+            key =>
+            {
+                calls.Add($"block:{key}");
+                return expectedBlock;
+            },
+            key =>
+            {
+                calls.Add($"item:{key}");
+                return expectedItem;
+            },
+            key =>
+            {
+                calls.Add($"material:{key}");
+                return expectedMaterial;
+            },
+            key =>
+            {
+                calls.Add($"texture:{key}");
+                return 73;
+            });
 
         Assert.Same(expectedBlock, context.ResolveBlock("example:block"));
         Assert.Same(expectedItem, context.ResolveItem("example:item"));
@@ -44,11 +57,11 @@ public sealed class BlockBehaviorProviderRegistryTests
     [Fact]
     public void Built_in_provider_builds_existing_behavior_by_namespaced_key()
     {
-        ContentRuntimeBuilder content = ContentRuntimeBuilder.CreateBuiltIns();
-        JsonElement definition = JsonSerializer.Deserialize<JsonElement>(
+        var content = ContentRuntimeBuilder.CreateBuiltIns();
+        var definition = JsonSerializer.Deserialize<JsonElement>(
             """{"Type":"button","Slots":["Physics"]}""");
 
-        object behavior = content.BuildBlockBehavior("omniblock:button", definition);
+        var behavior = content.BuildBlockBehavior("omniblock:button", definition);
 
         Assert.IsType<ButtonBehavior>(behavior);
     }
@@ -56,12 +69,11 @@ public sealed class BlockBehaviorProviderRegistryTests
     [Fact]
     public void Built_in_provider_rejects_foreign_namespace_instead_of_using_its_path()
     {
-        ContentRuntimeBuilder content = ContentRuntimeBuilder.CreateBuiltIns();
-        JsonElement definition = JsonSerializer.Deserialize<JsonElement>(
+        var content = ContentRuntimeBuilder.CreateBuiltIns();
+        var definition = JsonSerializer.Deserialize<JsonElement>(
             """{"Type":"example:button","Slots":["Physics"]}""");
 
-        ArgumentException error = Assert.Throws<ArgumentException>(
-            () => content.BuildBlockBehavior("example:button", definition));
+        var error = Assert.Throws<ArgumentException>(() => content.BuildBlockBehavior("example:button", definition));
 
         Assert.Contains("example:button", error.Message);
     }
@@ -69,32 +81,48 @@ public sealed class BlockBehaviorProviderRegistryTests
     [Fact]
     public void Built_in_factories_resolve_all_content_dependencies_through_the_builder_context()
     {
-        Block block = TestBlocks.Get("dirt");
-        Item item = ContentRuntime.Current.Items.Get("omniblock:snowball");
-        Material material = MaterialRegistry.Get("wood");
+        var block = TestBlocks.Get("dirt");
+        var item = ContentRuntime.Current.Items.Get("omniblock:snowball");
+        var material = MaterialRegistry.Get("wood");
         List<string> calls = [];
         BehaviorBuildContext context = new(
-            key => { calls.Add($"block:{key}"); return block; },
-            key => { calls.Add($"item:{key}"); return item; },
-            key => { calls.Add($"material:{key}"); return material; },
-            key => { calls.Add($"texture:{key}"); return 73; });
-        ContentRuntimeBuilder content = ContentRuntimeBuilder.CreateBuiltIns(context);
+            key =>
+            {
+                calls.Add($"block:{key}");
+                return block;
+            },
+            key =>
+            {
+                calls.Add($"item:{key}");
+                return item;
+            },
+            key =>
+            {
+                calls.Add($"material:{key}");
+                return material;
+            },
+            key =>
+            {
+                calls.Add($"texture:{key}");
+                return 73;
+            });
+        var content = ContentRuntimeBuilder.CreateBuiltIns(context);
 
         _ = content.BuildBlockBehavior("omniblock:door", Json("""{"material":"example:wood"}"""));
         _ = content.BuildBlockBehavior("omniblock:grass_ticker", Json("""
-            {
-              "soil":"example:soil",
-              "die_light_threshold":4,
-              "die_chance_one_in":4,
-              "spread_light_threshold":9
-            }
-            """));
+                                                                      {
+                                                                        "soil":"example:soil",
+                                                                        "die_light_threshold":4,
+                                                                        "die_chance_one_in":4,
+                                                                        "spread_light_threshold":9
+                                                                      }
+                                                                      """));
         _ = content.BuildBlockBehavior("omniblock:snow", Json("""
-            {"drop_item":"example:snowball","drop_spread":0.7}
-            """));
+                                                              {"drop_item":"example:snowball","drop_spread":0.7}
+                                                              """));
         _ = content.BuildBlockBehavior("omniblock:sapling", Json("""
-            {"textures":["example/sapling"]}
-            """));
+                                                                 {"textures":["example/sapling"]}
+                                                                 """));
 
         Assert.Equal(
             [
@@ -111,8 +139,7 @@ public sealed class BlockBehaviorProviderRegistryTests
     {
         BehaviorBuildContext context = default;
 
-        InvalidOperationException error = Assert.Throws<InvalidOperationException>(
-            () => context.ResolveBlock("omniblock:stone"));
+        var error = Assert.Throws<InvalidOperationException>(() => context.ResolveBlock("omniblock:stone"));
 
         Assert.Contains(nameof(BehaviorBuildContext), error.Message);
     }

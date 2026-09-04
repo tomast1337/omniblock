@@ -1,5 +1,4 @@
 using OmniBlock.Network.Chunks;
-using OmniBlock.Tests.TestSupport;
 using OmniBlock.Worlds.Chunks;
 
 namespace OmniBlock.Tests.Network;
@@ -19,10 +18,10 @@ public sealed class ChunkTransportLightTests
     [Fact]
     public void The_blob_carries_sky_light()
     {
-        Chunk lit = Lit();
-        Chunk received = Empty();
+        var lit = Lit();
+        var received = Empty();
 
-        byte[] blob = ChunkBlobCodec.Encode(
+        var blob = ChunkBlobCodec.Encode(
             lit.Blocks, lit.Meta.Bytes, lit.BlockLight.Bytes, lit.SkyLight.Bytes);
 
         ChunkBlobCodec.Decode(
@@ -39,11 +38,11 @@ public sealed class ChunkTransportLightTests
     [Fact]
     public void The_legacy_packet_carries_sky_light()
     {
-        Chunk lit = Lit();
-        Chunk received = Empty();
+        var lit = Lit();
+        var received = Empty();
 
         // Sized as the sender sizes it: blocks, then a nibble each for meta, block light and sky.
-        byte[] bytes = new byte[ChuckFormat.ChunkSize * 5 / 2];
+        var bytes = new byte[ChuckFormat.ChunkSize * 5 / 2];
         lit.ToPacket(bytes, 0, 0, 0, 16, ChuckFormat.ChunkHeight, 16, 0);
 
         received.LoadFromPacket(bytes, 0, 0, 0, 16, ChuckFormat.ChunkHeight, 16, 0);
@@ -59,7 +58,7 @@ public sealed class ChunkTransportLightTests
         world.Chunks.Add(0, 0);
         world.DrainLighting();
 
-        Chunk chunk = world.BlockHost.GetChunk(0, 0);
+        var chunk = world.BlockHost.GetChunk(0, 0);
 
         // Without this the comparisons below would hold for two empty arrays.
         Assert.NotEqual(0, chunk.GetPackedLight(8, 80, 8));

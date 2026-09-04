@@ -9,7 +9,7 @@ public static class ToolMaterialRegistry
     internal static void LoadFrom(IEnumerable<ToolMaterialDefinition> definitions)
     {
         s_materials.Clear();
-        foreach (ToolMaterialDefinition def in definitions)
+        foreach (var def in definitions)
         {
             s_materials[def.Name] = new ToolMaterial(def.Name, def.MaxUses, def.Efficiency, def.DamageBonus, def.HarvestLevel);
         }

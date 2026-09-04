@@ -77,7 +77,7 @@ public class ObjectRegistry<T1, T2>(int initialSize = 0)
     public void Register(T2[] items)
     {
         // find largest index
-        int idMax = -1;
+        var idMax = -1;
         foreach (var item in items)
         {
             if (idMax < item.Id) idMax = item.Id;
@@ -87,7 +87,7 @@ public class ObjectRegistry<T1, T2>(int initialSize = 0)
 
         foreach (var item in items)
         {
-            int id = item.Id;
+            var id = item.Id;
             if (id < 0)
             {
                 var e = new ArgumentException("Id cannot be negative:" + id, nameof(items));
@@ -110,7 +110,7 @@ public class ObjectRegistry<T1, T2>(int initialSize = 0)
     {
         if (_registry.Length < size)
         {
-            T2?[] newItems = new T2?[size];
+            var newItems = new T2?[size];
             if (_registry.Length > 0)
             {
                 Array.Copy(_registry, newItems, _registry.Length);
@@ -144,8 +144,8 @@ public static class ObjectRegistryExtensions
 
         public int Register(T obj)
         {
-            int i = 0;
-            for (int l = registry.Count; i < l; i++)
+            var i = 0;
+            for (var l = registry.Count; i < l; i++)
             {
                 if (registry[i] == null)
                 {
@@ -173,7 +173,7 @@ public class FactoryItem<T>(int id, Func<T> item) : RegistryItem<Func<T>>(id, it
 
 public class FactoryPoolItem<T>(int id, Func<T> item, int capacity = 32) : RegistryItem<ObjectPool<T>>(id, new ObjectPool<T>(item, capacity)), IDisposable where T : class
 {
+    public void Dispose() => Item.Dispose();
     public virtual T Get() => Item.Get();
     public void Return(T obj) => Item.Return(obj);
-    public void Dispose() => Item.Dispose();
 }

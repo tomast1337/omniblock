@@ -1,5 +1,3 @@
-using OmniBlock.Blocks;
-using OmniBlock.Items;
 using Brigadier.NET;
 using Brigadier.NET.ArgumentTypes;
 using Brigadier.NET.Exceptions;
@@ -16,13 +14,13 @@ public abstract partial class Command
 
         public (int id, int meta) Parse(IStringReader reader)
         {
-            string name = ArgItemStack.ParseString(reader);
+            var name = ArgItemStack.ParseString(reader);
 
-            int separator = name.IndexOf(':');
+            var separator = name.IndexOf(':');
             if (separator < 0)
             {
                 // No meta data, resolve id.
-                if (int.TryParse(name, out int id))
+                if (int.TryParse(name, out var id))
                 {
                     if (id == 0 || blocks.TryGetByProtocolId(id, out _)) return (id, 0);
                     throw s_blockNotFound.Create(name);
@@ -35,11 +33,11 @@ public abstract partial class Command
             }
             else
             {
-                string idPart = name.Substring(0, separator);
-                string metaPart = name.Substring(separator + 1);
+                var idPart = name.Substring(0, separator);
+                var metaPart = name.Substring(separator + 1);
 
                 // Resolve id and meta data.
-                if (int.TryParse(idPart, out int id))
+                if (int.TryParse(idPart, out var id))
                 {
                     if (id != 0 && !blocks.TryGetByProtocolId(id, out _)) throw s_blockNotFound.Create(name);
                     return (id, int.Parse(metaPart));
@@ -52,7 +50,7 @@ public abstract partial class Command
             }
 
 
-            if (items.TryParse(name, out ItemStack? result)
+            if (items.TryParse(name, out var result)
                 && blocks.TryGetByProtocolId(result.ItemId, out _))
             {
                 return (result.ItemId, result.GetDamage());

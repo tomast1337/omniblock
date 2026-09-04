@@ -1,7 +1,7 @@
 namespace OmniBlock.Client.Diagnostics.Windows;
 
 /// <summary>
-/// A specialized debug window that aggregates multiple diagnostic windows into a single docked panel.
+///     A specialized debug window that aggregates multiple diagnostic windows into a single docked panel.
 /// </summary>
 internal sealed class LiveStatsWindow(IEnumerable<DebugWindow> sections) : DebugWindow
 {
@@ -11,7 +11,7 @@ internal sealed class LiveStatsWindow(IEnumerable<DebugWindow> sections) : Debug
 
     protected override void OnDraw()
     {
-        foreach (DebugWindow section in sections)
+        foreach (var section in sections)
         {
             section.DrawSection();
         }

@@ -50,14 +50,14 @@ public class MainMenuScreen(
         AddTitleSpacer(LogoTopPadding + 64f, 48f);
 
         // --- Buttons ---
-        Button btnSingleplayer = CreateButton();
+        var btnSingleplayer = CreateButton();
         btnSingleplayer.AutomationId = "main.singleplayer";
         btnSingleplayer.Text = Translations.Get("menu.singleplayer");
         btnSingleplayer.OnClick += e => Context.Navigator.Navigate(new WorldScreen(Context, singleplayerHost));
         btnSingleplayer.Style.MarginBottom = 4;
         Root.AddChild(btnSingleplayer);
 
-        Button btnMultiplayer = CreateButton();
+        var btnMultiplayer = CreateButton();
         btnMultiplayer.AutomationId = "main.multiplayer";
         btnMultiplayer.Text = Translations.Get("menu.multiplayer");
         btnMultiplayer.OnClick += e => Context.Navigator.Navigate(new MultiplayerScreen(Context, networkContext));
@@ -77,7 +77,7 @@ public class MainMenuScreen(
         footerButtons.Style.Width = 224;
         footerButtons.Style.MarginLeft = -26;
 
-        ImageButton btnLang = CreateImageButton();
+        var btnLang = CreateImageButton();
         btnLang.AutomationId = "main.language";
         btnLang.OnClick += e => Context.Navigator.Navigate(new LanguageSelectionScreen(Context, this));
         btnLang.Texture = Renderer.TextureManager.GetTextureId("/gui/Globe.png");
@@ -86,13 +86,13 @@ public class MainMenuScreen(
         btnLang.UWidth = 24;
         btnLang.VHeight = 24;
 
-        Button btnOptions = CreateButton();
+        var btnOptions = CreateButton();
         btnOptions.AutomationId = "main.options";
         btnOptions.Text = Translations.Get("menu.options");
         btnOptions.Style.Width = 98;
         btnOptions.OnClick += e => Context.Navigator.Navigate(new OptionsScreen(Context, this, texturePackList));
 
-        Button btnQuit = CreateButton();
+        var btnQuit = CreateButton();
         btnQuit.AutomationId = "main.quit";
         btnQuit.Text = Translations.Get("menu.quit");
         btnQuit.Style.Width = 98;

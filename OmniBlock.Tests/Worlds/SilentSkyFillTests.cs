@@ -1,6 +1,5 @@
 using OmniBlock.Network.Chunks;
 using OmniBlock.Network.Messages;
-using OmniBlock.Tests.TestSupport;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core.Systems;
 
@@ -32,7 +31,7 @@ public sealed class SilentSkyFillTests
     public void The_first_sky_fill_records_what_it_wrote()
     {
         LightTestWorld world = new();
-        Chunk chunk = world.Chunks.Add(0, 0);
+        var chunk = world.Chunks.Add(0, 0);
         world.DrainLighting();
 
         Assert.Equal(15, world.SkyLightAt(8, 100, 8));
@@ -47,7 +46,7 @@ public sealed class SilentSkyFillTests
     public void Taking_the_dirty_sections_clears_them()
     {
         LightTestWorld world = new();
-        Chunk chunk = world.Chunks.Add(0, 0);
+        var chunk = world.Chunks.Add(0, 0);
         world.DrainLighting();
 
         Assert.NotEqual(0u, chunk.TakeLightDirtySections());
@@ -68,16 +67,16 @@ public sealed class SilentSkyFillTests
         LightTestWorld source = new();
         LightTestWorld target = new();
 
-        Chunk from = source.Chunks.Add(0, 0);
-        Chunk to = target.Chunks.Add(0, 0, populateLight: false);
+        var from = source.Chunks.Add(0, 0);
+        var to = target.Chunks.Add(0, 0, populateLight: false);
 
         // Distinct per cell, so a run landing in the wrong column is a failure rather than a
         // coincidence that happens to match.
-        for (int x = 0; x < 16; x++)
+        for (var x = 0; x < 16; x++)
         {
-            for (int z = 0; z < 16; z++)
+            for (var z = 0; z < 16; z++)
             {
-                for (int y = 32; y < 48; y++)
+                for (var y = 32; y < 48; y++)
                 {
                     from.SetLight(LightType.Sky, x, y, z, (x + y) & 15);
                     from.SetLight(LightType.Block, x, y, z, (z + y) & 15);
@@ -85,15 +84,15 @@ public sealed class SilentSkyFillTests
             }
         }
 
-        byte[] payload = new byte[Chunk.LightSectionPayloadBytes];
+        var payload = new byte[Chunk.LightSectionPayloadBytes];
         from.CopyLightSection(2, payload);
         to.ApplyLightSection(2, payload);
 
-        for (int x = 0; x < 16; x++)
+        for (var x = 0; x < 16; x++)
         {
-            for (int z = 0; z < 16; z++)
+            for (var z = 0; z < 16; z++)
             {
-                for (int y = 32; y < 48; y++)
+                for (var y = 32; y < 48; y++)
                 {
                     Assert.Equal(from.GetLight(LightType.Sky, x, y, z), to.GetLight(LightType.Sky, x, y, z));
                     Assert.Equal(from.GetLight(LightType.Block, x, y, z), to.GetLight(LightType.Block, x, y, z));
@@ -107,7 +106,7 @@ public sealed class SilentSkyFillTests
     public void Applying_a_light_section_leaves_the_others_alone()
     {
         LightTestWorld world = new();
-        Chunk chunk = world.Chunks.Add(0, 0);
+        var chunk = world.Chunks.Add(0, 0);
 
         chunk.SetLight(LightType.Sky, 3, 20, 5, 7);
         chunk.SetLight(LightType.Sky, 3, 60, 5, 9);
@@ -131,11 +130,11 @@ public sealed class SilentSkyFillTests
         LightTestWorld client = new();
 
         // Present and unlit, which is what the chunk is for the whole window this test is about.
-        Chunk serverChunk = server.Chunks.Add(0, 0, populateLight: false);
+        var serverChunk = server.Chunks.Add(0, 0, populateLight: false);
 
         // The client's copy, encoded from the chunk exactly as it stands — which is how
         // ServerPlayerEntity.SendChunkData builds it, live at send time rather than from a snapshot.
-        Chunk clientChunk = client.Chunks.Add(0, 0, populateLight: false);
+        var clientChunk = client.Chunks.Add(0, 0, populateLight: false);
         clientChunk.LoadFromBlob(ChunkBlobCodec.Encode(
             serverChunk.Blocks, serverChunk.Meta.Bytes,
             serverChunk.BlockLight.Bytes, serverChunk.SkyLight.Bytes));
@@ -160,10 +159,10 @@ public sealed class SilentSkyFillTests
     /// </summary>
     private static void Replay(Chunk serverChunk, LightTestWorld client)
     {
-        uint sections = serverChunk.TakeLightDirtySections();
+        var sections = serverChunk.TakeLightDirtySections();
         Assert.NotEqual(0u, sections);
 
-        LightSectionsMessage sent = LightSectionsMessage.Of(serverChunk, sections);
+        var sent = LightSectionsMessage.Of(serverChunk, sections);
 
         using MemoryStream buffer = new();
         sent.Write(buffer);

@@ -1,5 +1,3 @@
-using OmniBlock.Entities;
-using OmniBlock.Worlds.Core;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 
@@ -19,29 +17,29 @@ public class SummonCommand : Command.Command
 
     private static int Summon(CommandContext<CommandSource> context, int count)
     {
-        ServerPlayerEntity? player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
+        var player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
         if (player == null)
         {
             context.Source.Output.SendMessage("Could not find your player.");
             return 0;
         }
 
-        string entityName = context.GetArgument<string>("entity");
+        var entityName = context.GetArgument<string>("entity");
 
-        ServerWorld world = context.Source.Server.getWorld(player.DimensionId);
+        var world = context.Source.Server.getWorld(player.DimensionId);
 
         // Resolved once: a misspelled name is one message, not one failed spawn per requested count.
-        if (!world.Content.EntityTypes.TryGet(entityName, out EntityType? entityType))
+        if (!world.Content.EntityTypes.TryGet(entityName, out var entityType))
         {
             context.Source.Output.SendMessage($"Unknown entity: {entityName}");
             return 0;
         }
 
-        int summoned = 0;
+        var summoned = 0;
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            Entity entity = entityType.Create(world);
+            var entity = entityType.Create(world);
             entity.SetPositionAndAngles((float)player.X, (float)player.Y, (float)player.Z, 0, 0);
             if (world.SpawnEntity(entity))
             {

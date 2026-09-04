@@ -14,7 +14,7 @@ internal class Path
 
         if (_count == _pathPoints.Length)
         {
-            PathPoint[] newArray = new PathPoint[_count << 1];
+            var newArray = new PathPoint[_count << 1];
             Array.Copy(_pathPoints, 0, newArray, 0, _count);
             _pathPoints = newArray;
         }
@@ -28,7 +28,7 @@ internal class Path
 
     public PathPoint Dequeue()
     {
-        PathPoint result = _pathPoints[0];
+        var result = _pathPoints[0];
         _pathPoints[0] = _pathPoints[--_count];
         _pathPoints[_count] = null!;
 
@@ -43,7 +43,7 @@ internal class Path
 
     public void ChangeDistance(PathPoint point, float newDistance)
     {
-        float oldDistance = point.DistanceToTarget;
+        var oldDistance = point.DistanceToTarget;
         point.DistanceToTarget = newDistance;
 
         if (newDistance < oldDistance)
@@ -58,13 +58,13 @@ internal class Path
 
     private void SiftUp(int index)
     {
-        PathPoint point = _pathPoints[index];
-        float distance = point.DistanceToTarget;
+        var point = _pathPoints[index];
+        var distance = point.DistanceToTarget;
 
         while (index > 0)
         {
-            int parentIndex = (index - 1) >> 1;
-            PathPoint parentNode = _pathPoints[parentIndex];
+            var parentIndex = (index - 1) >> 1;
+            var parentNode = _pathPoints[parentIndex];
 
             if (distance >= parentNode.DistanceToTarget)
             {
@@ -82,25 +82,25 @@ internal class Path
 
     private void SiftDown(int index)
     {
-        PathPoint point = _pathPoints[index];
-        float distance = point.DistanceToTarget;
+        var point = _pathPoints[index];
+        var distance = point.DistanceToTarget;
 
         while (true)
         {
-            int leftChildIndex = 1 + (index << 1);
-            int rightChildIndex = leftChildIndex + 1;
+            var leftChildIndex = 1 + (index << 1);
+            var rightChildIndex = leftChildIndex + 1;
 
             if (leftChildIndex >= _count)
             {
                 break;
             }
 
-            PathPoint leftChild = _pathPoints[leftChildIndex];
-            float leftDistance = leftChild.DistanceToTarget;
+            var leftChild = _pathPoints[leftChildIndex];
+            var leftDistance = leftChild.DistanceToTarget;
 
             PathPoint? rightChild = null;
 
-            float rightDistance = float.PositiveInfinity;
+            var rightDistance = float.PositiveInfinity;
 
             if (rightChildIndex < _count)
             {

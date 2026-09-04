@@ -16,15 +16,9 @@ namespace OmniBlock.Blocks.Behaviors;
 /// </summary>
 internal sealed class ReedBehavior(Block[] validGround) : IBlockTicker, IBlockPhysics
 {
-    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-    {
-        return CanSurviveAt(@event.World.Reader, block.Id, @event.X, @event.Y, @event.Z);
-    }
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => CanSurviveAt(@event.World.Reader, block.Id, @event.X, @event.Y, @event.Z);
 
-    public bool CanGrow(Block block, OnTickEvent @event)
-    {
-        return CanSurviveAt(@event.World.Reader, block.Id, @event.X, @event.Y, @event.Z);
-    }
+    public bool CanGrow(Block block, OnTickEvent @event) => CanSurviveAt(@event.World.Reader, block.Id, @event.X, @event.Y, @event.Z);
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
@@ -63,11 +57,13 @@ internal sealed class ReedBehavior(Block[] validGround) : IBlockTicker, IBlockPh
 
         var onValidGround = false;
         foreach (var ground in validGround)
+        {
             if (blockBelowId == ground.Id)
             {
                 onValidGround = true;
                 break;
             }
+        }
 
         if (!onValidGround) return false;
 

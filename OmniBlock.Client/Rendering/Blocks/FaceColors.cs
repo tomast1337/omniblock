@@ -9,10 +9,6 @@ namespace OmniBlock.Client.Rendering.Blocks;
 /// </remarks>
 internal readonly record struct CornerLight(float Sky, float Block)
 {
-    /// <summary>The mean of four cells, which is what a smooth-lit corner is.</summary>
-    public static CornerLight Mean(CornerLight a, CornerLight b, CornerLight c, CornerLight d) =>
-        new((a.Sky + b.Sky + c.Sky + d.Sky) * 0.25f, (a.Block + b.Block + c.Block + d.Block) * 0.25f);
-
     /// <summary>
     ///     A single number for deciding which way to split the quad, so the seam runs along the
     ///     darker diagonal.
@@ -23,6 +19,10 @@ internal readonly record struct CornerLight(float Sky, float Block)
     ///     at dusk would have to be rebuilt for it.
     /// </remarks>
     public float FlipWeight => Sky + Block;
+
+    /// <summary>The mean of four cells, which is what a smooth-lit corner is.</summary>
+    public static CornerLight Mean(CornerLight a, CornerLight b, CornerLight c, CornerLight d) =>
+        new((a.Sky + b.Sky + c.Sky + d.Sky) * 0.25f, (a.Block + b.Block + c.Block + d.Block) * 0.25f);
 }
 
 /// <summary>The colour and light at each of a face's four corners.</summary>
@@ -31,11 +31,22 @@ internal readonly record struct CornerLight(float Sky, float Block)
 ///     one colour and one light for a whole primitive themselves, so what they pass here is ignored.
 /// </remarks>
 internal readonly ref struct FaceColors(
-    float rTl, float gTl, float bTl,
-    float rBl, float gBl, float bBl,
-    float rBr, float gBr, float bBr,
-    float rTr, float gTr, float bTr,
-    CornerLight lTl, CornerLight lBl, CornerLight lBr, CornerLight lTr)
+    float rTl,
+    float gTl,
+    float bTl,
+    float rBl,
+    float gBl,
+    float bBl,
+    float rBr,
+    float gBr,
+    float bBr,
+    float rTr,
+    float gTr,
+    float bTr,
+    CornerLight lTl,
+    CornerLight lBl,
+    CornerLight lBr,
+    CornerLight lTr)
 {
     public readonly float RedTopLeft = rTl, GreenTopLeft = gTl, BlueTopLeft = bTl;
     public readonly float RedBottomLeft = rBl, GreenBottomLeft = gBl, BlueBottomLeft = bBl;
@@ -59,9 +70,9 @@ internal readonly ref struct FaceColors(
         CornerLight l0, CornerLight l1, CornerLight l2, CornerLight l3,
         float r, float g, float b, float faceShadow, bool tint)
     {
-        float tr = (tint ? r : 1.0F) * faceShadow;
-        float tg = (tint ? g : 1.0F) * faceShadow;
-        float tb = (tint ? b : 1.0F) * faceShadow;
+        var tr = (tint ? r : 1.0F) * faceShadow;
+        var tg = (tint ? g : 1.0F) * faceShadow;
+        var tb = (tint ? b : 1.0F) * faceShadow;
 
         return new FaceColors(
             tr, tg, tb,

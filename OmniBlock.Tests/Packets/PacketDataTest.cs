@@ -8,10 +8,11 @@ public class PacketDataTest : PacketTestBase
     // migrated to the message layer, where GeneratedMessageTests covers the same property
     // across every registered type rather than the few somebody remembered to list.
 
-    [Theory, MemberData(nameof(PacketIds))]
+    [Theory]
+    [MemberData(nameof(PacketIds))]
     public void VerifyPacketDefaultReadWriteLenght(PacketId value)
     {
-        Packet p = Packet.Get(value);
+        var p = Packet.Get(value);
 
         MemoryStream stream = new();
         p.Write(stream);
@@ -32,10 +33,11 @@ public class PacketDataTest : PacketTestBase
     ///         which stays true however far off <c>Size()</c> is.
     ///     </para>
     /// </summary>
-    [Theory, MemberData(nameof(PacketIds))]
+    [Theory]
+    [MemberData(nameof(PacketIds))]
     public void VerifyPacketReportsTheSizeItWrites(PacketId value)
     {
-        Packet p = Packet.Get(value);
+        var p = Packet.Get(value);
 
         using MemoryStream stream = new();
         p.Write(stream);

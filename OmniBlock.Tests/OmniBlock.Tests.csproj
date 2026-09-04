@@ -9,28 +9,28 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="coverlet.collector" Version="6.0.4"/>
     <!-- Determinism/StepPurityTests.cs compiles the OmniBlock sources and walks the call graph. -->
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-    <PackageReference Include="xunit" Version="2.9.3" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
-    <PackageReference Include="Xunit.SkippableFact" Version="1.5.61" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0"/>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1"/>
+    <PackageReference Include="xunit" Version="2.9.3"/>
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4"/>
+    <PackageReference Include="Xunit.SkippableFact" Version="1.5.61"/>
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Xunit" />
+    <Using Include="Xunit"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OmniBlock\OmniBlock.csproj" />
-    <ProjectReference Include="..\OmniBlock.Client\OmniBlock.Client.csproj" />
-    <ProjectReference Include="..\OmniBlock.Server\OmniBlock.Server.csproj" />
-    <ProjectReference Include="..\OmniBlock.Luau\OmniBlock.Luau.csproj" />
+    <ProjectReference Include="..\OmniBlock\OmniBlock.csproj"/>
+    <ProjectReference Include="..\OmniBlock.Client\OmniBlock.Client.csproj"/>
+    <ProjectReference Include="..\OmniBlock.Server\OmniBlock.Server.csproj"/>
+    <ProjectReference Include="..\OmniBlock.Luau\OmniBlock.Luau.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Catalog\catalog.snapshot.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Catalog\catalog.snapshot.txt" CopyToOutputDirectory="PreserveNewest"/>
   </ItemGroup>
 
 </Project>

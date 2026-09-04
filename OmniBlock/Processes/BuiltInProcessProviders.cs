@@ -1,4 +1,5 @@
 using System.Text.Json;
+using OmniBlock.Inventories;
 using OmniBlock.Items;
 using OmniBlock.Recipes;
 
@@ -24,7 +25,7 @@ internal sealed record CompiledCraftingProcess(
 {
     public ProcessItemStack Output { get; } = ProcessItemStack.FromStack(Recipe.GetRecipeOutput());
     public int IngredientCount => Recipe.GetRecipeSize();
-    public bool Matches(OmniBlock.Inventories.InventoryCrafting input) => Recipe.Matches(input);
+    public bool Matches(InventoryCrafting input) => Recipe.Matches(input);
     public ItemStack CreateResult() => Output.CreateStack();
 }
 
@@ -45,14 +46,14 @@ internal sealed class ShapedCraftingProcessProvider : IProcessProvider
         JsonElement definition,
         in ProcessBuildContext context)
     {
-        ShapedCraftingDefinition schema = ProcessJson.Deserialize<ShapedCraftingDefinition>(definition, id);
+        var schema = ProcessJson.Deserialize<ShapedCraftingDefinition>(definition, id);
         if (schema.Pattern.Length is < 1 or > 3)
             throw new ArgumentException("Pattern height must be between 1 and 3.");
-        int width = schema.Pattern.Max(row => row.Length);
+        var width = schema.Pattern.Max(row => row.Length);
         if (width is < 1 or > 3) throw new ArgumentException("Pattern width must be between 1 and 3.");
 
         var keys = new Dictionary<char, ItemStack>();
-        foreach ((string symbol, string reference) in schema.Key)
+        foreach (var (symbol, reference) in schema.Key)
         {
             if (symbol.Length != 1 || symbol[0] == ' ')
                 throw new ArgumentException($"Invalid shaped-recipe key '{symbol}'.");
@@ -61,20 +62,20 @@ internal sealed class ShapedCraftingProcessProvider : IProcessProvider
         }
 
         var grid = new ItemStack?[width * schema.Pattern.Length];
-        for (int row = 0; row < schema.Pattern.Length; row++)
+        for (var row = 0; row < schema.Pattern.Length; row++)
         {
-            string patternRow = schema.Pattern[row];
-            for (int column = 0; column < patternRow.Length; column++)
+            var patternRow = schema.Pattern[row];
+            for (var column = 0; column < patternRow.Length; column++)
             {
-                char symbol = patternRow[column];
+                var symbol = patternRow[column];
                 if (symbol == ' ') continue;
-                if (!keys.TryGetValue(symbol, out ItemStack? ingredient))
+                if (!keys.TryGetValue(symbol, out var ingredient))
                     throw new ArgumentException($"Pattern uses undefined key '{symbol}'.");
                 grid[column + row * width] = ingredient.Copy();
             }
         }
 
-        ItemStack result = ProcessJson.ResolveResult(schema.Result, context);
+        var result = ProcessJson.ResolveResult(schema.Result, context);
         return new CompiledCraftingProcess(
             id, ProcessTypes.CraftingShaped,
             new ShapedRecipes(width, schema.Pattern.Length, grid, result));
@@ -91,12 +92,15 @@ internal sealed class ShapelessCraftingProcessProvider : IProcessProvider
         JsonElement definition,
         in ProcessBuildContext context)
     {
-        ShapelessCraftingDefinition schema = ProcessJson.Deserialize<ShapelessCraftingDefinition>(definition, id);
+        var schema = ProcessJson.Deserialize<ShapelessCraftingDefinition>(definition, id);
         if (schema.Ingredients.Length is < 1 or > 9)
             throw new ArgumentException("Shapeless recipes must contain between 1 and 9 ingredients.");
-        ProcessBuildContext buildContext = context;
-        List<ItemStack> ingredients = [.. schema.Ingredients.Select(reference =>
-            buildContext.ResolveItemStack(reference, defaultMeta: -1))];
+        var buildContext = context;
+        List<ItemStack> ingredients =
+        [
+            .. schema.Ingredients.Select(reference =>
+                buildContext.ResolveItemStack(reference, defaultMeta: -1))
+        ];
         return new CompiledCraftingProcess(
             id, ProcessTypes.CraftingShapeless,
             new ShapelessRecipes(ProcessJson.ResolveResult(schema.Result, context), ingredients));
@@ -113,10 +117,10 @@ internal sealed class SmeltingProcessProvider : IProcessProvider
         JsonElement definition,
         in ProcessBuildContext context)
     {
-        SmeltingDefinition schema = ProcessJson.Deserialize<SmeltingDefinition>(definition, id);
+        var schema = ProcessJson.Deserialize<SmeltingDefinition>(definition, id);
         if (string.IsNullOrWhiteSpace(schema.Input))
             throw new ArgumentException("Smelting process has no input.");
-        ItemStack input = context.ResolveItemStack(schema.Input, defaultMeta: -1);
+        var input = context.ResolveItemStack(schema.Input, defaultMeta: -1);
         return new CompiledSmeltingProcess(
             id,
             ProcessTypes.Smelting,
@@ -127,11 +131,13 @@ internal sealed class SmeltingProcessProvider : IProcessProvider
     public void Validate(IReadOnlyList<ICompiledProcess> processes)
     {
         var inputs = new Dictionary<int, ResourceLocation>();
-        foreach (CompiledSmeltingProcess process in processes.Cast<CompiledSmeltingProcess>())
+        foreach (var process in processes.Cast<CompiledSmeltingProcess>())
         {
             if (!inputs.TryAdd(process.Input.Item.Id, process.Id))
+            {
                 throw new InvalidOperationException(
                     $"Processes '{inputs[process.Input.Item.Id]}' and '{process.Id}' overlap on input item {process.Input.Item.Id}.");
+            }
         }
     }
 }
@@ -153,15 +159,17 @@ internal static class ProcessJson
 
     public static void ValidateEquivalentCraftingRecipes(IReadOnlyList<ICompiledProcess> processes)
     {
-        for (int current = 0; current < processes.Count; current++)
+        for (var current = 0; current < processes.Count; current++)
         {
-            CompiledCraftingProcess candidate = (CompiledCraftingProcess)processes[current];
-            for (int previous = 0; previous < current; previous++)
+            var candidate = (CompiledCraftingProcess)processes[current];
+            for (var previous = 0; previous < current; previous++)
             {
-                CompiledCraftingProcess existing = (CompiledCraftingProcess)processes[previous];
+                var existing = (CompiledCraftingProcess)processes[previous];
                 if (IRecipe.Equals(existing.Recipe, candidate.Recipe))
+                {
                     throw new InvalidOperationException(
                         $"Processes '{existing.Id}' and '{candidate.Id}' compile to equivalent recipes.");
+                }
             }
         }
     }

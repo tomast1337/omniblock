@@ -1,4 +1,3 @@
-using OmniBlock;
 using OmniBlock.Blocks;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Items;
@@ -6,7 +5,6 @@ using OmniBlock.NBT;
 using OmniBlock.Network.Messages;
 using OmniBlock.Util.Hit;
 using OmniBlock.Util.Maths;
-using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Entities;
@@ -19,7 +17,7 @@ public class EntityLiving : Entity
 {
     public EntityLiving(IWorldContext world, EntityType type) : base(world, type)
     {
-        EntityDefinition? definition = type.Definition;
+        var definition = type.Definition;
         Definition = definition ?? EntityDefinition.Default;
         PreventEntitySpawning = true;
         SetPosition(X, Y, Z);
@@ -136,9 +134,9 @@ public class EntityLiving : Entity
                 return climbing;
             }
 
-            int x = MathHelper.Floor(X);
-            int y = MathHelper.Floor(BoundingBox.MinY);
-            int z = MathHelper.Floor(Z);
+            var x = MathHelper.Floor(X);
+            var y = MathHelper.Floor(BoundingBox.MinY);
+            var z = MathHelper.Floor(Z);
             return World.Reader.GetBlockId(x, y, z) == BlockRegistry.Get("ladder").Id;
         }
     }
@@ -176,7 +174,7 @@ public class EntityLiving : Entity
 
     public void PlayLivingSound()
     {
-        string? sound = LivingSound;
+        var sound = LivingSound;
         if (sound != null)
         {
             World.Broadcaster.PlaySoundAtEntity(this, sound, SoundVolume, (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
@@ -210,11 +208,11 @@ public class EntityLiving : Entity
             {
                 Air = 0;
 
-                for (int i = 0; i < 8; ++i)
+                for (var i = 0; i < 8; ++i)
                 {
-                    float offsetX = Random.NextFloat() - Random.NextFloat();
-                    float offsetY = Random.NextFloat() - Random.NextFloat();
-                    float offsetZ = Random.NextFloat() - Random.NextFloat();
+                    var offsetX = Random.NextFloat() - Random.NextFloat();
+                    var offsetY = Random.NextFloat() - Random.NextFloat();
+                    var offsetZ = Random.NextFloat() - Random.NextFloat();
                     World.Broadcaster.AddParticle("bubble", X + offsetX, Y + offsetY, Z + offsetZ, VelocityX, VelocityY, VelocityZ);
                 }
 
@@ -252,11 +250,11 @@ public class EntityLiving : Entity
                 OnEntityDeath();
                 MarkDead();
 
-                for (int i = 0; i < 20; ++i)
+                for (var i = 0; i < 20; ++i)
                 {
-                    double velX = Random.NextGaussian() * 0.02D;
-                    double velY = Random.NextGaussian() * 0.02D;
-                    double velZ = Random.NextGaussian() * 0.02D;
+                    var velX = Random.NextGaussian() * 0.02D;
+                    var velY = Random.NextGaussian() * 0.02D;
+                    var velZ = Random.NextGaussian() * 0.02D;
                     World.Broadcaster.AddParticle("explode", X + Random.NextFloat() * Width * 2.0F - Width, Y + Random.NextFloat() * Height, Z + Random.NextFloat() * Width * 2.0F - Width, velX, velY, velZ);
                 }
             }
@@ -278,12 +276,12 @@ public class EntityLiving : Entity
 
     public void AnimateSpawn()
     {
-        for (int i = 0; i < 20; ++i)
+        for (var i = 0; i < 20; ++i)
         {
-            double velX = Random.NextGaussian() * 0.02D;
-            double velY = Random.NextGaussian() * 0.02D;
-            double velZ = Random.NextGaussian() * 0.02D;
-            double spread = 10.0D;
+            var velX = Random.NextGaussian() * 0.02D;
+            var velY = Random.NextGaussian() * 0.02D;
+            var velZ = Random.NextGaussian() * 0.02D;
+            var spread = 10.0D;
             World.Broadcaster.AddParticle("explode", X + Random.NextFloat() * Width * 2.0F - Width - velX * spread, Y + Random.NextFloat() * Height - velY * spread, Z + Random.NextFloat() * Width * 2.0F - Width - velZ * spread, velX, velY,
                 velZ);
         }
@@ -316,13 +314,13 @@ public class EntityLiving : Entity
         // whichever path it took.
         Physics?.AfterTickMovement(this);
 
-        double dx = X - PrevX;
-        double dz = Z - PrevZ;
-        float horizontalDistance = MathHelper.Sqrt(dx * dx + dz * dz);
-        float computedYaw = BodyYaw;
-        float walkSpeed = 0.0F;
+        var dx = X - PrevX;
+        var dz = Z - PrevZ;
+        var horizontalDistance = MathHelper.Sqrt(dx * dx + dz * dz);
+        var computedYaw = BodyYaw;
+        var walkSpeed = 0.0F;
         LastWalkProgress = WalkProgress;
-        float walkAmount = 0.0F;
+        var walkAmount = 0.0F;
         if (horizontalDistance > 0.05F)
         {
             walkAmount = 1.0F;
@@ -342,7 +340,7 @@ public class EntityLiving : Entity
 
         WalkProgress += (walkAmount - WalkProgress) * 0.3F;
 
-        float yawDelta = computedYaw - BodyYaw;
+        var yawDelta = computedYaw - BodyYaw;
         while (yawDelta < -180.0F)
         {
             yawDelta += 360.0F;
@@ -355,7 +353,7 @@ public class EntityLiving : Entity
 
         BodyYaw += yawDelta * 0.3F;
 
-        float headYawDelta = Yaw - BodyYaw;
+        var headYawDelta = Yaw - BodyYaw;
         while (headYawDelta < -180.0F)
         {
             headYawDelta += 360.0F;
@@ -366,7 +364,7 @@ public class EntityLiving : Entity
             headYawDelta -= 360.0F;
         }
 
-        bool headFacingBackward = headYawDelta < -90.0F || headYawDelta >= 90.0F;
+        var headFacingBackward = headYawDelta < -90.0F || headYawDelta >= 90.0F;
 
         if (headYawDelta < -75.0F)
         {
@@ -463,7 +461,7 @@ public class EntityLiving : Entity
         }
 
         WalkAnimationSpeed = 1.5F;
-        bool playHurtEffects = true;
+        var playHurtEffects = true;
         if (Hearts > MaxHealth / 2.0F)
         {
             if (amount <= DamageForDisplay)
@@ -491,7 +489,7 @@ public class EntityLiving : Entity
             ScheduleVelocityUpdate();
             if (entity != null)
             {
-                double knockbackX = entity.X - X;
+                var knockbackX = entity.X - X;
 
                 double knockbackZ;
                 for (knockbackZ = entity.Z - Z; knockbackX * knockbackX + knockbackZ * knockbackZ < 1.0E-4D; knockbackZ = (System.Random.Shared.NextDouble() - System.Random.Shared.NextDouble()) * 0.01D)
@@ -543,7 +541,7 @@ public class EntityLiving : Entity
 
     private void KnockBack(Entity entity, int amount, double dx, double dy)
     {
-        float knockbackLength = MathHelper.Sqrt(dx * dx + dy * dy);
+        var knockbackLength = MathHelper.Sqrt(dx * dx + dy * dy);
         const float knockbackStrength = 0.4F;
         VelocityX /= 2.0D;
         VelocityY /= 2.0D;
@@ -600,20 +598,20 @@ public class EntityLiving : Entity
         }
 
         base.OnLanding(fallDistance);
-        int fallDamage = (int)Math.Ceiling(fallDistance - 3.0F);
+        var fallDamage = (int)Math.Ceiling(fallDistance - 3.0F);
         if (fallDamage <= 0)
         {
             return;
         }
 
         Damage(null, fallDamage);
-        int groundBlockId = World.Reader.GetBlockId(MathHelper.Floor(X), MathHelper.Floor(Y - 0.2F - StandingEyeHeight), MathHelper.Floor(Z));
+        var groundBlockId = World.Reader.GetBlockId(MathHelper.Floor(X), MathHelper.Floor(Y - 0.2F - StandingEyeHeight), MathHelper.Floor(Z));
         if (groundBlockId <= 0)
         {
             return;
         }
 
-        BlockSoundGroup soundGroup = BlockRegistry.GetByProtocolId(groundBlockId).SoundGroup;
+        var soundGroup = BlockRegistry.GetByProtocolId(groundBlockId).SoundGroup;
         World.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.5F, soundGroup.Pitch * (12.0F / 16.0F));
     }
 
@@ -655,24 +653,24 @@ public class EntityLiving : Entity
         }
         else
         {
-            float friction = 0.91F;
+            var friction = 0.91F;
             if (OnGround)
             {
                 friction = 546.0F * 0.1F * 0.1F * 0.1F;
-                int groundBlockId = World.Reader.GetBlockId(MathHelper.Floor(X), MathHelper.Floor(BoundingBox.MinY) - 1, MathHelper.Floor(Z));
+                var groundBlockId = World.Reader.GetBlockId(MathHelper.Floor(X), MathHelper.Floor(BoundingBox.MinY) - 1, MathHelper.Floor(Z));
                 if (groundBlockId > 0)
                 {
                     friction = BlockRegistry.GetByProtocolId(groundBlockId).Slipperiness * 0.91F;
                 }
             }
 
-            float movementFactor = 0.16277136F / (friction * friction * friction);
+            var movementFactor = 0.16277136F / (friction * friction * friction);
             MoveNonSolid(strafe, forward, OnGround ? 0.1F * movementFactor : AirSpeed);
             friction = 0.91F;
             if (OnGround)
             {
                 friction = 546.0F * 0.1F * 0.1F * 0.1F;
-                int groundBlockId = World.Reader.GetBlockId(MathHelper.Floor(X), MathHelper.Floor(BoundingBox.MinY) - 1, MathHelper.Floor(Z));
+                var groundBlockId = World.Reader.GetBlockId(MathHelper.Floor(X), MathHelper.Floor(BoundingBox.MinY) - 1, MathHelper.Floor(Z));
                 if (groundBlockId > 0)
                 {
                     friction = BlockRegistry.GetByProtocolId(groundBlockId).Slipperiness * 0.91F;
@@ -728,8 +726,8 @@ public class EntityLiving : Entity
 
         LastWalkAnimationSpeed = WalkAnimationSpeed;
         previousY = X - PrevX;
-        double deltaZ = Z - PrevZ;
-        float distanceMoved = MathHelper.Sqrt(previousY * previousY + deltaZ * deltaZ) * 4.0F;
+        var deltaZ = Z - PrevZ;
+        var distanceMoved = MathHelper.Sqrt(previousY * previousY + deltaZ * deltaZ) * 4.0F;
         if (distanceMoved > 1.0F)
         {
             distanceMoved = 1.0F;
@@ -768,16 +766,16 @@ public class EntityLiving : Entity
 
         if (World.IsRemote && this is not EntityPlayer)
         {
-            int minChunkX = MathHelper.Floor(BoundingBox.MinX) >> 4;
-            int maxChunkX = MathHelper.Floor(BoundingBox.MaxX) >> 4;
-            int minChunkZ = MathHelper.Floor(BoundingBox.MinZ) >> 4;
-            int maxChunkZ = MathHelper.Floor(BoundingBox.MaxZ) >> 4;
+            var minChunkX = MathHelper.Floor(BoundingBox.MinX) >> 4;
+            var maxChunkX = MathHelper.Floor(BoundingBox.MaxX) >> 4;
+            var minChunkZ = MathHelper.Floor(BoundingBox.MinZ) >> 4;
+            var maxChunkZ = MathHelper.Floor(BoundingBox.MaxZ) >> 4;
 
-            for (int chunkX = minChunkX; chunkX <= maxChunkX; ++chunkX)
+            for (var chunkX = minChunkX; chunkX <= maxChunkX; ++chunkX)
             {
-                for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; ++chunkZ)
+                for (var chunkZ = minChunkZ; chunkZ <= maxChunkZ; ++chunkZ)
                 {
-                    Chunk chunk = World.ChunkHost.GetChunk(chunkX, chunkZ);
+                    var chunk = World.ChunkHost.GetChunk(chunkX, chunkZ);
                     if (chunk.Loaded)
                     {
                         continue;
@@ -795,9 +793,9 @@ public class EntityLiving : Entity
 
         if (NewPosRotationIncrements > 0)
         {
-            double newX = X + (NewPosX - X) / NewPosRotationIncrements;
-            double newY = Y + (NewPosY - Y) / NewPosRotationIncrements;
-            double newZ = Z + (NewPosZ - Z) / NewPosRotationIncrements;
+            var newX = X + (NewPosX - X) / NewPosRotationIncrements;
+            var newY = Y + (NewPosY - Y) / NewPosRotationIncrements;
+            var newZ = Z + (NewPosZ - Z) / NewPosRotationIncrements;
 
             double yawDelta;
             for (yawDelta = NewRotationYaw - Yaw; yawDelta < -180.0D; yawDelta += 360.0D)
@@ -814,13 +812,13 @@ public class EntityLiving : Entity
             --NewPosRotationIncrements;
             SetPosition(newX, newY, newZ);
             SetRotation(Yaw, Pitch);
-            List<Box> collisions = World.Entities.GetEntityCollisionsScratch(this, BoundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
+            var collisions = World.Entities.GetEntityCollisionsScratch(this, BoundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
             if (collisions.Count > 0)
             {
-                double highestCollisionY = BoundingBox.MinY;
-                bool applyStep = false;
+                var highestCollisionY = BoundingBox.MinY;
+                var applyStep = false;
 
-                foreach (Box col in collisions)
+                foreach (var col in collisions)
                 {
                     if (!(col.MaxY > highestCollisionY) || !(col.MaxY <= BoundingBox.MinY + 1.0))
                     {
@@ -855,8 +853,8 @@ public class EntityLiving : Entity
             Ticker?.AfterTickLiving(this);
         }
 
-        bool isInWater = InWater;
-        bool isTouchingLava = IsTouchingLava;
+        var isInWater = InWater;
+        var isTouchingLava = IsTouchingLava;
         if (Jumping)
         {
             if (isInWater || isTouchingLava)
@@ -873,13 +871,13 @@ public class EntityLiving : Entity
         ForwardSpeed *= 0.98F;
         RotationSpeed *= 0.9F;
         Travel(SidewaysSpeed, ForwardSpeed);
-        List<Entity> nearbyEntities = World.Entities.GetEntitiesScratch(this, BoundingBox.Expand(0.2F, 0.0D, 0.2F));
+        var nearbyEntities = World.Entities.GetEntitiesScratch(this, BoundingBox.Expand(0.2F, 0.0D, 0.2F));
         if (nearbyEntities.Count <= 0)
         {
             return;
         }
 
-        foreach (Entity entity in nearbyEntities)
+        foreach (var entity in nearbyEntities)
         {
             if (entity.IsPushable)
             {
@@ -898,16 +896,16 @@ public class EntityLiving : Entity
     /// </summary>
     protected internal void TickDespawn()
     {
-        EntityPlayer? player = World.Entities.GetClosestPlayer(X, Y, Z, -1.0D);
+        var player = World.Entities.GetClosestPlayer(X, Y, Z, -1.0D);
         if (!CanDespawn || player == null)
         {
             return;
         }
 
-        double dx = player.X - X;
-        double dy = player.Y - Y;
-        double dz = player.Z - Z;
-        double squaredDistance = dx * dx + dy * dy + dz * dz;
+        var dx = player.X - X;
+        var dy = player.Y - Y;
+        var dz = player.Z - Z;
+        var squaredDistance = dx * dx + dy * dy + dz * dz;
         if (squaredDistance > 16384.0D)
         {
             MarkDead();
@@ -944,7 +942,7 @@ public class EntityLiving : Entity
         const float lookRange = 8.0F;
         if (Random.NextFloat() < 0.02F)
         {
-            EntityPlayer? closestPlayer = World.Entities.GetClosestPlayer(X, Y, Z, lookRange);
+            var closestPlayer = World.Entities.GetClosestPlayer(X, Y, Z, lookRange);
             if (closestPlayer != null)
             {
                 CurrentTarget = closestPlayer;
@@ -975,8 +973,8 @@ public class EntityLiving : Entity
             Pitch = DefaultPitch;
         }
 
-        bool isInWater = InWater;
-        bool isTouchingLava = IsTouchingLava;
+        var isInWater = InWater;
+        var isTouchingLava = IsTouchingLava;
         if (isInWater || isTouchingLava)
         {
             Jumping = Random.NextFloat() < 0.8F;
@@ -987,8 +985,8 @@ public class EntityLiving : Entity
 
     protected internal void faceEntity(Entity entity, float yawSpeed, float pitchSpeed)
     {
-        double dx = entity.X - X;
-        double dz = entity.Z - Z;
+        var dx = entity.X - X;
+        var dz = entity.Z - Z;
         double dy;
         if (entity is EntityLiving living)
         {
@@ -1000,15 +998,15 @@ public class EntityLiving : Entity
         }
 
         double horizontalDistance = MathHelper.Sqrt(dx * dx + dz * dz);
-        float targetYaw = (float)(Math.Atan2(dz, dx) * 180.0D / (float)Math.PI) - 90.0F;
-        float targetPitch = (float)-(Math.Atan2(dy, horizontalDistance) * 180.0D / (float)Math.PI);
+        var targetYaw = (float)(Math.Atan2(dz, dx) * 180.0D / (float)Math.PI) - 90.0F;
+        var targetPitch = (float)-(Math.Atan2(dy, horizontalDistance) * 180.0D / (float)Math.PI);
         Pitch = -UpdateRotation(Pitch, targetPitch, pitchSpeed);
         Yaw = UpdateRotation(Yaw, targetYaw, yawSpeed);
     }
 
     private static float UpdateRotation(float currentRotation, float targetRotation, float maxDelta)
     {
-        float delta = targetRotation - currentRotation;
+        var delta = targetRotation - currentRotation;
 
         while (delta < -180.0F)
         {
@@ -1050,7 +1048,7 @@ public class EntityLiving : Entity
 
     public float GetSwingProgress(float partialTick)
     {
-        float progressDelta = SwingAnimationProgress - LastSwingAnimationProgress;
+        var progressDelta = SwingAnimationProgress - LastSwingAnimationProgress;
         if (progressDelta < 0.0F)
         {
             ++progressDelta;
@@ -1068,9 +1066,9 @@ public class EntityLiving : Entity
             return new Vec3D(X, Y, Z);
         }
 
-        double x = PrevX + (X - PrevX) * partialTick;
-        double y = PrevY + (Y - PrevY) * partialTick;
-        double z = PrevZ + (Z - PrevZ) * partialTick;
+        var x = PrevX + (X - PrevX) * partialTick;
+        var y = PrevY + (Y - PrevY) * partialTick;
+        var z = PrevZ + (Z - PrevZ) * partialTick;
         return new Vec3D(x, y, z);
     }
 
@@ -1093,16 +1091,16 @@ public class EntityLiving : Entity
         sinYaw = PrevYaw + (Yaw - PrevYaw) * partialTick;
         cosPitch = MathHelper.Cos(-sinYaw * ((float)Math.PI / 180.0F) - (float)Math.PI);
         sinPitch = MathHelper.Sin(-sinYaw * ((float)Math.PI / 180.0F) - (float)Math.PI);
-        float horizontalCos = -MathHelper.Cos(-cosYaw * ((float)Math.PI / 180.0F));
-        float verticalSin = MathHelper.Sin(-cosYaw * ((float)Math.PI / 180.0F));
+        var horizontalCos = -MathHelper.Cos(-cosYaw * ((float)Math.PI / 180.0F));
+        var verticalSin = MathHelper.Sin(-cosYaw * ((float)Math.PI / 180.0F));
         return new Vec3D(sinPitch * horizontalCos, verticalSin, cosPitch * horizontalCos);
     }
 
     public HitResult RayTrace(double range, float partialTick)
     {
-        Vec3D startPos = GetPosition(partialTick);
-        Vec3D lookDir = GetLook(partialTick);
-        Vec3D endPos = startPos + range * lookDir;
+        var startPos = GetPosition(partialTick);
+        var lookDir = GetLook(partialTick);
+        var endPos = startPos + range * lookDir;
         return World.Reader.Raycast(startPos, endPos);
     }
 

@@ -8,7 +8,7 @@ public class LadderRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int textureId = block.GetTexture(0);
+        var textureId = block.GetTexture(0);
         if (ctx.OverrideTexture >= 0)
         {
             textureId = ctx.OverrideTexture;
@@ -24,10 +24,10 @@ public class LadderRenderer : IBlockRenderer
         const float minV = 0.0F;
         const float maxV = 1.0F;
 
-        int metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
+        var metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
 
         // Push the ladder slightly off the wall
-        float offset = 0.05f;
+        var offset = 0.05f;
 
         if (metadata == 5)
         {

@@ -1,11 +1,10 @@
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace OmniBlock.Tests.Catalog;
 
 /// <summary>
-/// Ensures no consumer bypasses the published content runtime through the legacy block array.
+///     Ensures no consumer bypasses the published content runtime through the legacy block array.
 /// </summary>
 public sealed class StaticBlockCatalogAccessTests
 {
@@ -29,7 +28,7 @@ public sealed class StaticBlockCatalogAccessTests
     [Fact]
     public void Direct_static_block_catalog_access_is_forbidden()
     {
-        IReadOnlyList<StaticAccess> accesses = FindAccesses();
+        var accesses = FindAccesses();
 
         Assert.True(accesses.Count == 0,
             $"Use BlockRegistry instead of the legacy static block array:{Environment.NewLine}"
@@ -39,7 +38,7 @@ public sealed class StaticBlockCatalogAccessTests
     [Fact]
     public void Parallel_static_block_metadata_arrays_are_forbidden()
     {
-        string[] violations = FindSourceFiles()
+        var violations = FindSourceFiles()
             .SelectMany(file => File.ReadLines(file)
                 .Select((line, index) => (line, number: index + 1))
                 .Where(entry => s_forbiddenDerivedMetadataArrays.Any(entry.line.Contains))
@@ -54,7 +53,7 @@ public sealed class StaticBlockCatalogAccessTests
     [Fact]
     public void Block_cannot_own_a_bootstrap_catalog()
     {
-        string[] violations = FindSourceFiles()
+        var violations = FindSourceFiles()
             .SelectMany(file => File.ReadLines(file)
                 .Select((line, index) => (line, number: index + 1))
                 .Where(entry => s_forbiddenBootstrapStoreIdentifiers.Any(entry.line.Contains))
@@ -69,8 +68,8 @@ public sealed class StaticBlockCatalogAccessTests
     [Fact]
     public void Block_registry_cannot_bridge_items_or_write_the_legacy_item_array()
     {
-        string blockRegistry = Path.Combine(FindRepositoryRoot(), "OmniBlock", "Blocks", "BlockRegistry.cs");
-        string source = File.ReadAllText(blockRegistry);
+        var blockRegistry = Path.Combine(FindRepositoryRoot(), "OmniBlock", "Blocks", "BlockRegistry.cs");
+        var source = File.ReadAllText(blockRegistry);
 
         Assert.DoesNotContain("BridgeTo" + "Items", source);
         Assert.DoesNotContain("Item." + "Items", source);
@@ -79,9 +78,9 @@ public sealed class StaticBlockCatalogAccessTests
     [Fact]
     public void Runtime_block_behaviors_cannot_access_global_content_registries()
     {
-        string behaviorDirectory = Path.Combine(FindRepositoryRoot(), "OmniBlock", "Blocks", "Behaviors");
+        var behaviorDirectory = Path.Combine(FindRepositoryRoot(), "OmniBlock", "Blocks", "Behaviors");
         string[] forbidden = ["BlockRegistry.", "MaterialRegistry.", "Item.ByName", "ItemLookup", "Atlases.", "SoundGroupRegistry."];
-        string[] violations = Directory.EnumerateFiles(behaviorDirectory, "*.cs")
+        var violations = Directory.EnumerateFiles(behaviorDirectory, "*.cs")
             .Where(static file => Path.GetFileName(file) != "BehaviorBuildContext.cs")
             .SelectMany(file => File.ReadLines(file)
                 .Select((line, index) => (line, number: index + 1))
@@ -97,13 +96,13 @@ public sealed class StaticBlockCatalogAccessTests
     [Fact]
     public void World_core_cannot_access_the_static_block_registry()
     {
-        string root = FindRepositoryRoot();
+        var root = FindRepositoryRoot();
         string[] directories =
         [
             Path.Combine(root, "OmniBlock", "Worlds", "Core"),
             Path.Combine(root, "OmniBlock", "Blocks", "Entities")
         ];
-        string[] violations = directories
+        var violations = directories
             .SelectMany(static directory => Directory.EnumerateFiles(directory, "*.cs", SearchOption.AllDirectories))
             .SelectMany(file => File.ReadLines(file)
                 .Select((line, index) => (line, number: index + 1))
@@ -119,7 +118,7 @@ public sealed class StaticBlockCatalogAccessTests
     [Fact]
     public void Migrated_hot_path_world_systems_cannot_access_the_static_block_registry()
     {
-        string root = FindRepositoryRoot();
+        var root = FindRepositoryRoot();
         string[] files =
         [
             Path.Combine(root, "OmniBlock", "Worlds", "Chunks", "Chunk.cs"),
@@ -128,7 +127,7 @@ public sealed class StaticBlockCatalogAccessTests
             Path.Combine(root, "OmniBlock", "Worlds", "Mechanics", "Explosion.cs"),
             Path.Combine(root, "OmniBlock", "PathFinding", "PathFinder.cs")
         ];
-        string[] violations = files
+        var violations = files
             .SelectMany(file => File.ReadLines(file)
                 .Select((line, index) => (line, number: index + 1, file))
                 .Where(static entry => entry.line.Contains("BlockRegistry."))
@@ -142,13 +141,13 @@ public sealed class StaticBlockCatalogAccessTests
 
     private static IReadOnlyList<StaticAccess> FindAccesses()
     {
-        string sourceRoot = FindRepositoryRoot();
+        var sourceRoot = FindRepositoryRoot();
         var accesses = new List<StaticAccess>();
 
-        foreach (string file in FindSourceFiles())
+        foreach (var file in FindSourceFiles())
         {
-            SyntaxTree tree = CSharpSyntaxTree.ParseText(File.ReadAllText(file), path: file);
-            foreach (MemberAccessExpressionSyntax member in tree.GetRoot()
+            var tree = CSharpSyntaxTree.ParseText(File.ReadAllText(file), path: file);
+            foreach (var member in tree.GetRoot()
                          .DescendantNodes()
                          .OfType<MemberAccessExpressionSyntax>())
             {
@@ -156,7 +155,7 @@ public sealed class StaticBlockCatalogAccessTests
                     && member.Name.Identifier.ValueText == "Blocks"
                     && member.Parent is ElementAccessExpressionSyntax)
                 {
-                    FileLinePositionSpan location = member.GetLocation().GetLineSpan();
+                    var location = member.GetLocation().GetLineSpan();
                     accesses.Add(new StaticAccess(
                         Path.GetRelativePath(sourceRoot, file).Replace(Path.DirectorySeparatorChar, '/'),
                         location.StartLinePosition.Line + 1));
@@ -169,7 +168,7 @@ public sealed class StaticBlockCatalogAccessTests
 
     private static IEnumerable<string> FindSourceFiles()
     {
-        string sourceRoot = FindRepositoryRoot();
+        var sourceRoot = FindRepositoryRoot();
         return Directory.EnumerateDirectories(sourceRoot, "OmniBlock*")
             .SelectMany(static directory => Directory.EnumerateFiles(directory, "*.cs", SearchOption.AllDirectories))
             .Where(static file => !file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}")

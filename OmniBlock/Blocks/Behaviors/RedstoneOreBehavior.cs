@@ -11,15 +11,9 @@ namespace OmniBlock.Blocks.Behaviors;
 /// </summary>
 public sealed class RedstoneOreBehavior(Block unlitOre, Block litOre) : IBlockInteractable, IBlockTicker
 {
-    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event)
-    {
-        Light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
-    }
+    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event) => Light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
 
-    public void OnSteppedOn(Block block, OnEntityStepEvent @event)
-    {
-        Light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
-    }
+    public void OnSteppedOn(Block block, OnEntityStepEvent @event) => Light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
 
     public bool OnUse(Block block, OnUseEvent @event)
     {
@@ -37,10 +31,7 @@ public sealed class RedstoneOreBehavior(Block unlitOre, Block litOre) : IBlockIn
         if (IsLit(block)) SpawnParticles(ctx.World.Reader, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
     }
 
-    private bool IsLit(Block block)
-    {
-        return block.Id == litOre.Id;
-    }
+    private bool IsLit(Block block) => block.Id == litOre.Id;
 
     private void Light(IBlockWriter worldWriter, IBlockReader worldRead, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {

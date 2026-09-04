@@ -41,25 +41,13 @@ public abstract class BlockEntity : IEntity
 
     public Vec3D Position => new(X, Y, Z);
 
-    void IEntity.Read(NBTTagCompound nbt)
-    {
-        ReadNbt(nbt);
-    }
+    void IEntity.Read(NBTTagCompound nbt) => ReadNbt(nbt);
 
-    void IEntity.Write(NBTTagCompound nbt)
-    {
-        WriteNbt(nbt);
-    }
+    void IEntity.Write(NBTTagCompound nbt) => WriteNbt(nbt);
 
-    void IEntity.Tick()
-    {
-        Tick(World!.Entities);
-    }
+    void IEntity.Tick() => Tick(World!.Entities);
 
-    int IEntity.GetId()
-    {
-        return GetBlock().Id;
-    }
+    int IEntity.GetId() => GetBlock().Id;
 
     IWorldContext IEntity.World => World!;
 
@@ -129,19 +117,13 @@ public abstract class BlockEntity : IEntity
         return dx * dx + dy * dy + dz * dz;
     }
 
-    public Block GetBlock()
-    {
-        return World!.Content.Blocks.GetByProtocolId(World.Reader.GetBlockId(X, Y, Z));
-    }
+    public Block GetBlock() => World!.Content.Blocks.GetByProtocolId(World.Reader.GetBlockId(X, Y, Z));
 
     /// <summary>
     ///     What to send a client that has just loaded this block entity, or null when its NBT is
     ///     everything the client needs.
     /// </summary>
-    public virtual Message? CreateUpdateMessage()
-    {
-        return null;
-    }
+    public virtual Message? CreateUpdateMessage() => null;
 
     public bool IsRemoved()
     {
@@ -151,13 +133,7 @@ public abstract class BlockEntity : IEntity
         return id == 0 || !World!.Content.Blocks.GetByProtocolId(id).HasBlockEntity;
     }
 
-    public void MarkRemoved()
-    {
-        _removed = true;
-    }
+    public void MarkRemoved() => _removed = true;
 
-    public void CancelRemoval()
-    {
-        _removed = false;
-    }
+    public void CancelRemoval() => _removed = false;
 }

@@ -10,33 +10,29 @@ namespace OmniBlock.Client.Rendering;
 
 public class CameraController
 {
+    private readonly float _cameraRoll = 0.0F;
+    private readonly float _cameraRollAmount = 0.0F;
+    private readonly float _frontThirdPersonDistance = 4.0F;
     private readonly OmniBlock _game;
     private readonly float _thirdPersonDistance = 4.0F;
-    private readonly float _frontThirdPersonDistance = 4.0F;
-    public float ViewBob { get; private set; }
-    public float LastViewBob { get; private set; }
+    private readonly float _thirdPersonPitch = 0.0F;
+    private readonly float _thirdPersonYaw = 0.0F;
+    private float _prevCameraRoll;
+    private float _prevCameraRollAmount;
+    private float _prevFrontThirdPersonDistance = 4.0F;
 
     private float _prevThirdPersonDistance = 4.0F;
-    private float _prevFrontThirdPersonDistance = 4.0F;
-    private readonly float _thirdPersonYaw = 0.0F;
-    private float _prevThirdPersonYaw;
-    private readonly float _thirdPersonPitch = 0.0F;
     private float _prevThirdPersonPitch;
-    private readonly float _cameraRoll = 0.0F;
-    private float _prevCameraRoll;
-    private readonly float _cameraRollAmount = 0.0F;
-    private float _prevCameraRollAmount;
-    private bool _isZoomHeld;
+    private float _prevThirdPersonYaw;
     private float _zoomScale = 2.0F;
+
+    public CameraController(OmniBlock game) => _game = game;
+    public float ViewBob { get; private set; }
+    public float LastViewBob { get; private set; }
     public double CameraZoom { get; private set; } = 1.0D;
     public double CameraYaw { get; } = 0.0D;
     public double CameraPitch { get; } = 0.0D;
-    public bool IsZoomActive => _isZoomHeld;
-
-    public CameraController(OmniBlock game)
-    {
-        _game = game;
-    }
+    public bool IsZoomActive { get; private set; }
 
     public void UpdateCamera()
     {
@@ -48,23 +44,23 @@ public class CameraController
         _prevCameraRoll = _cameraRoll;
         _prevCameraRollAmount = _cameraRollAmount;
 
-        float luminance = _game.World.GetLuminance(MathHelper.Floor(_game.Camera.X), MathHelper.Floor(_game.Camera.Y), MathHelper.Floor(_game.Camera.Z));
-        float renderDistFactor = Math.Clamp((_game.Options.RenderDistance - 4.0F) / 28.0F, 0.0F, 1.0F);
-        float targetBob = luminance * (1.0F - renderDistFactor) + renderDistFactor;
+        var luminance = _game.World.GetLuminance(MathHelper.Floor(_game.Camera.X), MathHelper.Floor(_game.Camera.Y), MathHelper.Floor(_game.Camera.Z));
+        var renderDistFactor = Math.Clamp((_game.Options.RenderDistance - 4.0F) / 28.0F, 0.0F, 1.0F);
+        var targetBob = luminance * (1.0F - renderDistFactor) + renderDistFactor;
         ViewBob += (targetBob - ViewBob) * 0.1F;
     }
 
     public void SetZoomState(bool isHeld, float zoomScale)
     {
-        _isZoomHeld = isHeld;
+        IsZoomActive = isHeld;
         _zoomScale = Math.Clamp(zoomScale, 1.25F, 20.0F);
         CameraZoom = 1.0D;
     }
 
     public float GetFov(float tickDelta, bool isHand = false)
     {
-        EntityLiving cameraEntity = _game.Camera;
-        float fov = isHand ? 70.0F : (30.0F + _game.Options.Fov * 90.0F);
+        var cameraEntity = _game.Camera;
+        var fov = isHand ? 70.0F : 30.0F + _game.Options.Fov * 90.0F;
 
         if (cameraEntity.IsInFluid(Material.Water))
         {
@@ -73,14 +69,14 @@ public class CameraController
 
         if (cameraEntity.Health <= 0)
         {
-            float deathTimeF = cameraEntity.DeathTime + tickDelta;
+            var deathTimeF = cameraEntity.DeathTime + tickDelta;
             fov /= (1.0F - 500.0F / (deathTimeF + 500.0F)) * 2.0F + 1.0F;
         }
 
-        if (_isZoomHeld && !isHand)
+        if (IsZoomActive && !isHand)
         {
-            float zoomProgress = 1.0F / _zoomScale;
-            float easedZoomProgress = (float)Math.Pow(zoomProgress, 2.0D);
+            var zoomProgress = 1.0F / _zoomScale;
+            var easedZoomProgress = (float)Math.Pow(zoomProgress, 2.0D);
             fov = 1.0F + (fov - 1.0F) * easedZoomProgress;
         }
 
@@ -89,12 +85,12 @@ public class CameraController
 
     public void ApplyDamageTiltEffect(float tickDelta)
     {
-        EntityLiving cameraEntity = _game.Camera;
-        float hurtTimeF = cameraEntity.HurtTime - tickDelta;
+        var cameraEntity = _game.Camera;
+        var hurtTimeF = cameraEntity.HurtTime - tickDelta;
 
         if (cameraEntity.Health <= 0)
         {
-            float deathTimeF = cameraEntity.DeathTime + tickDelta;
+            var deathTimeF = cameraEntity.DeathTime + tickDelta;
             GLManager.ModelView.Rotate(40.0F - 8000.0F / (deathTimeF + 200.0F), 0.0F, 0.0F, 1.0F);
         }
 
@@ -102,7 +98,7 @@ public class CameraController
         {
             hurtTimeF /= cameraEntity.MaxHurtTime;
             hurtTimeF = MathHelper.Sin(hurtTimeF * hurtTimeF * hurtTimeF * hurtTimeF * (float)Math.PI);
-            float attackedYaw = cameraEntity.AttackedAtYaw;
+            var attackedYaw = cameraEntity.AttackedAtYaw;
             GLManager.ModelView.Rotate(-attackedYaw, 0.0F, 1.0F, 0.0F);
             GLManager.ModelView.Rotate(-hurtTimeF * 14.0F, 0.0F, 0.0F, 1.0F);
             GLManager.ModelView.Rotate(attackedYaw, 0.0F, 1.0F, 0.0F);
@@ -113,10 +109,10 @@ public class CameraController
     {
         if (_game.Camera is EntityPlayer player)
         {
-            float speedDelta = player.HorizontalSpeed - player.PrevHorizontalSpeed;
-            float speed = -(player.HorizontalSpeed + speedDelta * tickDelta);
-            float bobAmount = player.PrevStepBobbingAmount + (player.StepBobbingAmount - player.PrevStepBobbingAmount) * tickDelta;
-            float pitch = player.CameraPitch + (player.Tilt - player.CameraPitch) * tickDelta;
+            var speedDelta = player.HorizontalSpeed - player.PrevHorizontalSpeed;
+            var speed = -(player.HorizontalSpeed + speedDelta * tickDelta);
+            var bobAmount = player.PrevStepBobbingAmount + (player.StepBobbingAmount - player.PrevStepBobbingAmount) * tickDelta;
+            var pitch = player.CameraPitch + (player.Tilt - player.CameraPitch) * tickDelta;
 
             GLManager.ModelView.Translate(MathHelper.Sin(speed * (float)Math.PI) * bobAmount * 0.5F, -Math.Abs(MathHelper.Cos(speed * (float)Math.PI) * bobAmount), 0.0F);
             GLManager.ModelView.Rotate(MathHelper.Sin(speed * (float)Math.PI) * bobAmount * 3.0F, 0.0F, 0.0F, 1.0F);
@@ -127,25 +123,25 @@ public class CameraController
 
     public void ApplyCameraTransform(float tickDelta)
     {
-        EntityLiving cameraEntity = _game.Camera;
-        float eyeHeightOffset = cameraEntity.StandingEyeHeight - 1.62F;
-        double x = cameraEntity.PrevX + (cameraEntity.X - cameraEntity.PrevX) * (double)tickDelta;
-        double y = cameraEntity.PrevY + (cameraEntity.Y - cameraEntity.PrevY) * (double)tickDelta - (double)eyeHeightOffset;
-        double z = cameraEntity.PrevZ + (cameraEntity.Z - cameraEntity.PrevZ) * (double)tickDelta;
+        var cameraEntity = _game.Camera;
+        var eyeHeightOffset = cameraEntity.StandingEyeHeight - 1.62F;
+        var x = cameraEntity.PrevX + (cameraEntity.X - cameraEntity.PrevX) * tickDelta;
+        var y = cameraEntity.PrevY + (cameraEntity.Y - cameraEntity.PrevY) * tickDelta - eyeHeightOffset;
+        var z = cameraEntity.PrevZ + (cameraEntity.Z - cameraEntity.PrevZ) * tickDelta;
 
         GLManager.ModelView.Rotate(_prevCameraRollAmount + (_cameraRollAmount - _prevCameraRollAmount) * tickDelta, 0.0F, 0.0F, 1.0F);
 
         if (cameraEntity.IsSleeping)
         {
-            eyeHeightOffset = (float)((double)eyeHeightOffset + 1.0D);
+            eyeHeightOffset = (float)(eyeHeightOffset + 1.0D);
             GLManager.ModelView.Translate(0.0F, 0.3F, 0.0F);
             if (!_game.Options.DebugCamera)
             {
-                int blockId = _game.World.Reader.GetBlockId(MathHelper.Floor(cameraEntity.X), MathHelper.Floor(cameraEntity.Y), MathHelper.Floor(cameraEntity.Z));
+                var blockId = _game.World.Reader.GetBlockId(MathHelper.Floor(cameraEntity.X), MathHelper.Floor(cameraEntity.Y), MathHelper.Floor(cameraEntity.Z));
                 if (blockId == BlockRegistry.Get("bed").Id)
                 {
-                    int meta = _game.World.Reader.GetBlockMeta(MathHelper.Floor(cameraEntity.X), MathHelper.Floor(cameraEntity.Y), MathHelper.Floor(cameraEntity.Z));
-                    int rotation = meta & 3;
+                    var meta = _game.World.Reader.GetBlockMeta(MathHelper.Floor(cameraEntity.X), MathHelper.Floor(cameraEntity.Y), MathHelper.Floor(cameraEntity.Z));
+                    var rotation = meta & 3;
                     GLManager.ModelView.Rotate(rotation * 90, 0.0F, 1.0F, 0.0F);
                 }
 
@@ -181,17 +177,17 @@ public class CameraController
                 targetYaw = cameraEntity.Yaw;
                 targetPitch = cameraEntity.Pitch;
 
-                double vecX = (double)(-MathHelper.Sin(targetYaw / 180.0F * (float)Math.PI) * MathHelper.Cos(targetPitch / 180.0F * (float)Math.PI)) * currentDistance;
-                double vecZ = (double)(MathHelper.Cos(targetYaw / 180.0F * (float)Math.PI) * MathHelper.Cos(targetPitch / 180.0F * (float)Math.PI)) * currentDistance;
-                double vecY = (double)(-MathHelper.Sin(targetPitch / 180.0F * (float)Math.PI)) * currentDistance;
+                var vecX = -MathHelper.Sin(targetYaw / 180.0F * (float)Math.PI) * MathHelper.Cos(targetPitch / 180.0F * (float)Math.PI) * currentDistance;
+                var vecZ = MathHelper.Cos(targetYaw / 180.0F * (float)Math.PI) * MathHelper.Cos(targetPitch / 180.0F * (float)Math.PI) * currentDistance;
+                var vecY = -MathHelper.Sin(targetPitch / 180.0F * (float)Math.PI) * currentDistance;
 
-                for (int i = 0; i < 8; ++i)
+                for (var i = 0; i < 8; ++i)
                 {
-                    float offsetX = ((i & 1) * 2 - 1) * 0.1F;
-                    float offsetY = ((i >> 1 & 1) * 2 - 1) * 0.1F;
-                    float offsetZ = ((i >> 2 & 1) * 2 - 1) * 0.1F;
+                    var offsetX = ((i & 1) * 2 - 1) * 0.1F;
+                    var offsetY = (((i >> 1) & 1) * 2 - 1) * 0.1F;
+                    var offsetZ = (((i >> 2) & 1) * 2 - 1) * 0.1F;
 
-                    HitResult hit = new HitResult(HitResultType.Miss);
+                    var hit = new HitResult(HitResultType.Miss);
 
                     if (_game.Options.CameraMode == CameraMode.FrontThirdPerson)
                     {
@@ -210,7 +206,7 @@ public class CameraController
 
                     if (hit.Type != HitResultType.Miss)
                     {
-                        double dist = hit.Pos.DistanceTo(new Vec3D(x, y, z));
+                        var dist = hit.Pos.DistanceTo(new Vec3D(x, y, z));
                         if (dist < currentDistance)
                         {
                             currentDistance = dist;
@@ -225,6 +221,7 @@ public class CameraController
                 {
                     GLManager.ModelView.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
                 }
+
                 GLManager.ModelView.Rotate(targetYaw - cameraEntity.Yaw, 0.0F, 1.0F, 0.0F);
                 GLManager.ModelView.Rotate(targetPitch - cameraEntity.Pitch, 1.0F, 0.0F, 0.0F);
             }

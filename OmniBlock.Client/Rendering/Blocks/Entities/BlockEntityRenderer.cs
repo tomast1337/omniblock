@@ -3,17 +3,31 @@ using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Entities;
 using OmniBlock.Worlds.Core;
+using Silk.NET.Maths;
 
 namespace OmniBlock.Client.Rendering.Blocks.Entities;
 
 public class BlockEntityRenderer
 {
-    private readonly Dictionary<Type, BlockEntitySpecialRenderer?> _specialRendererMap = [];
-    public static BlockEntityRenderer Instance { get; } = new();
-    private TextRenderer _fontRenderer;
     public static double StaticPlayerX;
     public static double StaticPlayerY;
     public static double StaticPlayerZ;
+    private readonly Dictionary<Type, BlockEntitySpecialRenderer?> _specialRendererMap = [];
+    private TextRenderer _fontRenderer;
+
+    private BlockEntityRenderer()
+    {
+        _specialRendererMap.Add(typeof(BlockEntitySign), new BlockEntitySignRenderer());
+        _specialRendererMap.Add(typeof(BlockEntityMobSpawner), new BlockEntityMobSpawnerRenderer());
+        _specialRendererMap.Add(typeof(BlockEntityPiston), new BlockEntityRendererPiston());
+
+        foreach (var renderer in _specialRendererMap.Values)
+        {
+            renderer!.setTileEntityRenderer(this);
+        }
+    }
+
+    public static BlockEntityRenderer Instance { get; } = new();
     public TextureManager TextureManager { get; set; }
     public World World { get; set; }
     public EntityLiving PlayerEntity { get; set; }
@@ -23,21 +37,9 @@ public class BlockEntityRenderer
     public double PlayerY { get; set; }
     public double PlayerZ { get; set; }
 
-    private BlockEntityRenderer()
-    {
-        _specialRendererMap.Add(typeof(BlockEntitySign), new BlockEntitySignRenderer());
-        _specialRendererMap.Add(typeof(BlockEntityMobSpawner), new BlockEntityMobSpawnerRenderer());
-        _specialRendererMap.Add(typeof(BlockEntityPiston), new BlockEntityRendererPiston());
-
-        foreach (BlockEntitySpecialRenderer? renderer in _specialRendererMap.Values)
-        {
-            renderer!.setTileEntityRenderer(this);
-        }
-    }
-
     public BlockEntitySpecialRenderer? GetSpecialRendererForClass(Type t)
     {
-        _specialRendererMap.TryGetValue(t, out BlockEntitySpecialRenderer? renderer);
+        _specialRendererMap.TryGetValue(t, out var renderer);
         if (renderer == null && t != typeof(BlockEntity))
         {
             renderer = GetSpecialRendererForClass(t.BaseType);
@@ -47,10 +49,7 @@ public class BlockEntityRenderer
         return renderer;
     }
 
-    public BlockEntitySpecialRenderer? GetSpecialRendererForEntity(BlockEntity? be)
-    {
-        return be == null ? null : GetSpecialRendererForClass(be.GetType());
-    }
+    public BlockEntitySpecialRenderer? GetSpecialRendererForEntity(BlockEntity? be) => be == null ? null : GetSpecialRendererForClass(be.GetType());
 
     public void CacheActiveRenderInfo(World world, TextureManager textureManager, TextRenderer fontRenderer, EntityLiving player, float tickDelta)
     {
@@ -64,40 +63,35 @@ public class BlockEntityRenderer
         _fontRenderer = fontRenderer;
         PlayerYaw = player.PrevYaw + (player.Yaw - player.PrevYaw) * tickDelta;
         PlayerPitch = player.PrevPitch + (player.Pitch - player.PrevPitch) * tickDelta;
-        PlayerX = player.LastTickX + (player.X - player.LastTickX) * (double)tickDelta;
-        PlayerY = player.LastTickY + (player.Y - player.LastTickY) * (double)tickDelta;
-        PlayerZ = player.LastTickZ + (player.Z - player.LastTickZ) * (double)tickDelta;
+        PlayerX = player.LastTickX + (player.X - player.LastTickX) * tickDelta;
+        PlayerY = player.LastTickY + (player.Y - player.LastTickY) * tickDelta;
+        PlayerZ = player.LastTickZ + (player.Z - player.LastTickZ) * tickDelta;
     }
 
     public void RenderTileEntity(BlockEntity blockEntity, float tickDelta)
     {
         if (blockEntity.distanceFrom(PlayerX, PlayerY, PlayerZ) < 4096.0D)
         {
-            float brightness = World.GetLuminance(blockEntity.X, blockEntity.Y, blockEntity.Z);
-            GLManager.Color = new(brightness, brightness, brightness, 1.0F);
+            var brightness = World.GetLuminance(blockEntity.X, blockEntity.Y, blockEntity.Z);
+            GLManager.Color = new Vector4D<float>(brightness, brightness, brightness, 1.0F);
             RenderTileEntityAt(blockEntity, blockEntity.X - StaticPlayerX, blockEntity.Y - StaticPlayerY, blockEntity.Z - StaticPlayerZ, tickDelta);
         }
-
     }
 
     public void RenderTileEntityAt(BlockEntity blockEntity, double x, double y, double z, float tickDelta)
     {
-        BlockEntitySpecialRenderer? renderer = GetSpecialRendererForEntity(blockEntity);
+        var renderer = GetSpecialRendererForEntity(blockEntity);
         renderer?.renderTileEntityAt(blockEntity, x, y, z, tickDelta);
-
     }
 
     public void func_31072_a(World world)
     {
         World = world;
-        foreach (BlockEntitySpecialRenderer? renderer in _specialRendererMap.Values)
+        foreach (var renderer in _specialRendererMap.Values)
         {
             renderer?.func_31069_a(world);
         }
     }
 
-    public TextRenderer GetFontRenderer()
-    {
-        return _fontRenderer;
-    }
+    public TextRenderer GetFontRenderer() => _fontRenderer;
 }

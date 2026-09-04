@@ -48,7 +48,7 @@ public sealed class HeadTiltBehavior : IEntityPhysics, IEntityTicker
             return;
         }
 
-        ItemStack? held = watched.Inventory.ItemInHand;
+        var held = watched.Inventory.ItemInHand;
         if (held == null)
         {
             return;
@@ -61,10 +61,10 @@ public sealed class HeadTiltBehavior : IEntityPhysics, IEntityTicker
 
     public void OnTickEnd(EntityLiving self)
     {
-        EntityState state = self.State;
+        var state = self.State;
         state[_previousTilt] = state[_tilt];
 
-        float target = state[_interested] ? 1.0F : 0.0F;
+        var target = state[_interested] ? 1.0F : 0.0F;
         state[_tilt] += (target - state[_tilt]) * _tiltSpeed;
 
         // Keep watching while the offer stands, instead of glancing away mid-tilt.
@@ -77,7 +77,7 @@ public sealed class HeadTiltBehavior : IEntityPhysics, IEntityTicker
     /// <summary>Interpolated head angle for the renderer, which finds this behavior by capability.</summary>
     public float TiltAngle(Entity self, float tickDelta)
     {
-        EntityState state = self.State;
+        var state = self.State;
         return (state[_previousTilt] + (state[_tilt] - state[_previousTilt]) * tickDelta) * 0.15F * (float)Math.PI;
     }
 }

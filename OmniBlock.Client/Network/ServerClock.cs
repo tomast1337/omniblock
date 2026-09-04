@@ -50,24 +50,20 @@ public sealed class ServerClock
     /// </summary>
     private const long PendingTimeoutMs = 30_000;
 
-    private long _appliedOffsetMs;
-    private long _targetOffsetMs;
-    private long _rttMedianMs;
-    private long _jitterMs;
-    private bool _synchronised;
-
-    private uint _nextSequence;
-    private long _firstProbeTime;
-    private int _burstRemaining = BurstProbes;
+    /// <summary>Outstanding probes. Sequence → T0.</summary>
+    private readonly Dictionary<uint, long> _pending = [];
 
     /// <summary>Ring buffer of accepted samples, newest replacing oldest.</summary>
     private readonly TimeSample[] _window = new TimeSample[WindowSize];
 
-    private int _windowIndex;
+    private int _burstRemaining = BurstProbes;
+    private long _firstProbeTime;
+
+    private uint _nextSequence;
+    private long _targetOffsetMs;
     private int _windowCount;
 
-    /// <summary>Outstanding probes. Sequence → T0.</summary>
-    private readonly Dictionary<uint, long> _pending = [];
+    private int _windowIndex;
 
     /// <summary>
     ///     Distribution of measured round-trip times, for the overlay.
@@ -89,24 +85,24 @@ public sealed class ServerClock
     ///     <see cref="Synchronised" /> is true; before that the login burst is still running and
     ///     the answer would be a degenerate guess.
     /// </summary>
-    public long ServerTimeMs => MonotonicNowMs() + _appliedOffsetMs;
+    public long ServerTimeMs => MonotonicNowMs() + OffsetMs;
 
     /// <summary>True once the login burst has completed and the first offset is applied.</summary>
-    public bool Synchronised => _synchronised;
+    public bool Synchronised { get; private set; }
 
     /// <summary>Estimated round-trip time to the server, in milliseconds.</summary>
-    public long RttMedianMs => _rttMedianMs;
+    public long RttMedianMs { get; private set; }
 
     /// <summary>
     ///     Mean absolute deviation of RTT from its median. Feeds
     ///     <see cref="EntityInterpolator.NetworkJitterMs" />.
     /// </summary>
-    public long JitterMs => _jitterMs;
+    public long JitterMs { get; private set; }
 
     /// <summary>
     ///     Server clock minus client clock. Positive means the server is ahead.
     /// </summary>
-    public long OffsetMs => _appliedOffsetMs;
+    public long OffsetMs { get; private set; }
 
     /// <summary>
     ///     True when the last correction was a step rather than a slew, meaning every snapshot
@@ -117,7 +113,7 @@ public sealed class ServerClock
     /// <summary>Consumed once after a step; resets itself.</summary>
     public bool ConsumeSnapshotFlush()
     {
-        bool value = NeedsSnapshotFlush;
+        var value = NeedsSnapshotFlush;
         NeedsSnapshotFlush = false;
         return value;
     }
@@ -130,7 +126,7 @@ public sealed class ServerClock
     /// </summary>
     public (uint Sequence, long ClientSendTime)? Poll()
     {
-        long nowMs = MonotonicNowMs();
+        var nowMs = MonotonicNowMs();
 
         if (_burstRemaining > 0)
         {
@@ -169,14 +165,14 @@ public sealed class ServerClock
     /// </summary>
     public void Complete(uint sequence, long t0, long t1, long t2, long t3)
     {
-        if (!_pending.Remove(sequence, out long expectedT0) || expectedT0 != t0)
+        if (!_pending.Remove(sequence, out var expectedT0) || expectedT0 != t0)
         {
             // A response that does not match an outstanding probe, or whose echoed T0 disagrees:
             // drop it rather than feeding stale data into the window.
             return;
         }
 
-        long rtt = (t3 - t0) - (t2 - t1);
+        var rtt = t3 - t0 - (t2 - t1);
 
         // RTT cannot be negative, and a zero or near-zero value is a degenerate probe — typically
         // a server that echoed before the client's own thread registered the send.
@@ -190,12 +186,12 @@ public sealed class ServerClock
         // would hide the events the estimate is being protected from.
         RttHistogram.Record(rtt);
 
-        long offset = ((t1 - t0) + (t2 - t3)) / 2;
+        var offset = (t1 - t0 + (t2 - t3)) / 2;
 
         // A rejected outlier still advances the window and counts as a sample for the median, so
         // the rejection threshold itself tracks changing conditions. A sample far enough out is
         // excluded from the best-N selection but stays in the median baseline.
-        bool outlier = _windowCount > 0 && rtt > (long)(_rttMedianMs * RejectRttMultiplier);
+        var outlier = _windowCount > 0 && rtt > (long)(RttMedianMs * RejectRttMultiplier);
 
         TimeSample sample = new(sequence, rtt, offset, outlier);
 
@@ -248,8 +244,8 @@ public sealed class ServerClock
 
     private (uint, long) SendProbe()
     {
-        uint seq = _nextSequence++;
-        long t0 = MonotonicNowMs();
+        var seq = _nextSequence++;
+        var t0 = MonotonicNowMs();
 
         // Drop probes old enough that a reply is no longer plausible. Without this, every lost
         // response leaks an entry for the life of the connection, and a peer that drops them all —
@@ -257,7 +253,7 @@ public sealed class ServerClock
         // one entry per second.
         if (_pending.Count > 0)
         {
-            foreach (uint stale in _pending
+            foreach (var stale in _pending
                          .Where(p => t0 - p.Value > PendingTimeoutMs)
                          .Select(p => p.Key)
                          .ToArray())
@@ -280,10 +276,10 @@ public sealed class ServerClock
         // Median RTT from the full window, not just the best N. The rejection threshold below needs
         // an uncontaminated median, and computing it from the same set it rejects against would
         // create a feedback loop.
-        _rttMedianMs = MedianRtt();
+        RttMedianMs = MedianRtt();
 
         // Best BestCount non-outlier samples by RTT.
-        TimeSample[] best = _window.Take(_windowCount).Where(s => !s.Outlier).OrderBy(s => s.Rtt).Take(BestCount).ToArray();
+        var best = _window.Take(_windowCount).Where(s => !s.Outlier).OrderBy(s => s.Rtt).Take(BestCount).ToArray();
 
         // Degenerate: every sample was an outlier. Drop the outlier flag and select by RTT directly.
         if (best.Length == 0)
@@ -291,41 +287,41 @@ public sealed class ServerClock
             best = _window.Take(_windowCount).OrderBy(s => s.Rtt).Take(BestCount).ToArray();
         }
 
-        long[] offsets = best.Select(s => s.Offset).Order().ToArray();
+        var offsets = best.Select(s => s.Offset).Order().ToArray();
 
-        int mid = offsets.Length / 2;
+        var mid = offsets.Length / 2;
         _targetOffsetMs = offsets.Length % 2 == 0
             ? (offsets[mid - 1] + offsets[mid]) / 2
             : offsets[mid];
 
         // Jitter: mean absolute deviation from median RTT, over the accepted (non-outlier) samples.
-        long[] acceptedRtts = _window.Take(_windowCount).Where(s => !s.Outlier).Select(s => s.Rtt).ToArray();
+        var acceptedRtts = _window.Take(_windowCount).Where(s => !s.Outlier).Select(s => s.Rtt).ToArray();
         if (acceptedRtts.Length == 0)
         {
             acceptedRtts = _window.Take(_windowCount).Select(s => s.Rtt).ToArray();
         }
 
-        _jitterMs = (long)acceptedRtts.Average(r => Math.Abs(r - _rttMedianMs));
+        JitterMs = (long)acceptedRtts.Average(r => Math.Abs(r - RttMedianMs));
 
         // Apply: step on the first reading, slew afterwards.
-        if (!_synchronised)
+        if (!Synchronised)
         {
             // First offset ever: set directly. No terrain is visible yet.
-            _appliedOffsetMs = _targetOffsetMs;
-            _synchronised = true;
+            OffsetMs = _targetOffsetMs;
+            Synchronised = true;
             NeedsSnapshotFlush = true;
             return;
         }
 
-        long error = _targetOffsetMs - _appliedOffsetMs;
+        var error = _targetOffsetMs - OffsetMs;
         if (Math.Abs(error) > StepThresholdMs)
         {
-            _appliedOffsetMs = _targetOffsetMs;
+            OffsetMs = _targetOffsetMs;
             NeedsSnapshotFlush = true;
         }
         else
         {
-            _appliedOffsetMs += (long)Math.Clamp((double)error, -SlewStepMs, SlewStepMs);
+            OffsetMs += (long)Math.Clamp(error, -SlewStepMs, SlewStepMs);
         }
     }
 
@@ -336,9 +332,9 @@ public sealed class ServerClock
             return 0;
         }
 
-        long[] sorted = _window.Take(_windowCount).Select(s => s.Rtt).Order().ToArray();
+        var sorted = _window.Take(_windowCount).Select(s => s.Rtt).Order().ToArray();
 
-        int mid = sorted.Length / 2;
+        var mid = sorted.Length / 2;
         return sorted.Length % 2 == 0
             ? (sorted[mid - 1] + sorted[mid]) / 2
             : sorted[mid];

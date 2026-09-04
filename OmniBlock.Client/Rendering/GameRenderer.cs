@@ -2,15 +2,12 @@ using OmniBlock.Blocks;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Client.Input;
 using OmniBlock.Client.Options;
-using OmniBlock.Client.Rendering.Chunks;
 using OmniBlock.Client.Rendering.Core;
-using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.Rendering.Items;
 using OmniBlock.Entities;
 using OmniBlock.Profiling;
 using OmniBlock.Util.Hit;
 using OmniBlock.Util.Maths;
-using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Generation.Biomes;
 using Silk.NET.Maths;
 
@@ -18,24 +15,24 @@ namespace OmniBlock.Client.Rendering;
 
 public class GameRenderer
 {
-    public static readonly CommonShaderInfo ShaderInfo = new CommonShaderInfo();
+    public static readonly CommonShaderInfo ShaderInfo = new();
+    private readonly OmniBlock _client;
 
     private readonly bool _cloudFog = false;
-    private readonly OmniBlock _client;
-    private float _viewDistance;
-    public readonly HeldItemRenderer ItemRenderer;
-    public readonly CameraController CameraController;
-    private int _ticks;
-    private Entity? _targetedEntity;
     private readonly MouseFilter _mouseFilterXAxis = new();
     private readonly MouseFilter _mouseFilterYAxis = new();
+    private readonly JavaRandom _random = new();
+    public readonly CameraController CameraController;
+    public readonly HeldItemRenderer ItemRenderer;
+    private float _fogColorBlue;
+    private float _fogColorGreen;
+    private float _fogColorRed;
 
     private long _prevFrameTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-    private readonly JavaRandom _random = new();
     private int _rainSoundCounter;
-    private float _fogColorRed;
-    private float _fogColorGreen;
-    private float _fogColorBlue;
+    private Entity? _targetedEntity;
+    private int _ticks;
+    private float _viewDistance;
 
     public GameRenderer(OmniBlock game)
     {
@@ -43,6 +40,16 @@ public class GameRenderer
         ItemRenderer = new HeldItemRenderer(game);
         CameraController = new CameraController(game);
     }
+
+    /// <summary>
+    ///     The colour the world pass starts from, which is the distance fog's.
+    /// </summary>
+    /// <remarks>
+    ///     Read by a backend that clears as part of opening its pass rather than with a call, and so
+    ///     has to know the colour before the pass exists. Valid once
+    ///     <see cref="BeginWorldFrame" /> has run for the frame.
+    /// </remarks>
+    public Vector4D<float> WorldClearColor => new(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0f);
 
     public void UpdateCamera()
     {
@@ -74,35 +81,35 @@ public class GameRenderer
 
         double reachDistance = _client.PlayerController.GetBlockReachDistance();
         _client.ObjectMouseOver = _client.Camera.RayTrace(reachDistance, tickDelta);
-        Vec3D cameraPosition = _client.Camera.GetPosition(tickDelta);
+        var cameraPosition = _client.Camera.GetPosition(tickDelta);
 
         if (_client.ObjectMouseOver.Type != HitResultType.Miss)
         {
             reachDistance = Math.Min(
-                    _client.ObjectMouseOver.Pos.DistanceTo(cameraPosition),
-                    _client.PlayerController.GetEntityReachDistance()
-                );
+                _client.ObjectMouseOver.Pos.DistanceTo(cameraPosition),
+                _client.PlayerController.GetEntityReachDistance()
+            );
         }
         else
         {
             reachDistance = _client.PlayerController.GetEntityReachDistance();
         }
 
-        Vec3D lookVec = _client.Camera.GetLook(tickDelta);
-        Vec3D targetVec = cameraPosition + reachDistance * lookVec;
+        var lookVec = _client.Camera.GetLook(tickDelta);
+        var targetVec = cameraPosition + reachDistance * lookVec;
         _targetedEntity = null;
 
-        float searchMargin = 1.0F;
-        List<Entity> entities = _client.World.Entities.GetEntities(_client.Camera, _client.Camera.BoundingBox.Stretch(lookVec.X * reachDistance, lookVec.Y * reachDistance, lookVec.Z * reachDistance).Expand(searchMargin, searchMargin, searchMargin));
+        var searchMargin = 1.0F;
+        var entities = _client.World.Entities.GetEntities(_client.Camera, _client.Camera.BoundingBox.Stretch(lookVec.X * reachDistance, lookVec.Y * reachDistance, lookVec.Z * reachDistance).Expand(searchMargin, searchMargin, searchMargin));
 
-        double closestDistance = double.MaxValue;
+        var closestDistance = double.MaxValue;
         foreach (var ent in entities)
         {
             if (ent.HasCollision)
             {
-                float targetingMargin = ent.TargetingMargin;
-                Box box = ent.BoundingBox.Expand(targetingMargin, targetingMargin, targetingMargin);
-                HitResult hit = box.Raycast(cameraPosition, targetVec);
+                var targetingMargin = ent.TargetingMargin;
+                var box = ent.BoundingBox.Expand(targetingMargin, targetingMargin, targetingMargin);
+                var hit = box.Raycast(cameraPosition, targetVec);
 
                 if (box.Contains(cameraPosition))
                 {
@@ -110,9 +117,10 @@ public class GameRenderer
                     closestDistance = 0.0D;
                     break;
                 }
+
                 if (hit.Type != HitResultType.Miss)
                 {
-                    double hitDistance = cameraPosition.DistanceTo(hit.Pos);
+                    var hitDistance = cameraPosition.DistanceTo(hit.Pos);
                     if (hitDistance < closestDistance)
                     {
                         _targetedEntity = ent;
@@ -161,10 +169,10 @@ public class GameRenderer
             CameraController.ApplyViewBobbing(tickDelta);
         }
 
-        float screenDistortion = _client.Player.LastScreenDistortion + (_client.Player.ChangeDimensionCooldown - _client.Player.LastScreenDistortion) * tickDelta;
+        var screenDistortion = _client.Player.LastScreenDistortion + (_client.Player.ChangeDimensionCooldown - _client.Player.LastScreenDistortion) * tickDelta;
         if (screenDistortion > 0.0F)
         {
-            float distortionScale = 5.0F / (screenDistortion * screenDistortion + 5.0F) - screenDistortion * 0.04F;
+            var distortionScale = 5.0F / (screenDistortion * screenDistortion + 5.0F) - screenDistortion * 0.04F;
             distortionScale *= distortionScale;
             GLManager.ModelView.Rotate((_ticks + tickDelta) * 20.0F, 0.0F, 1.0F, 1.0F);
             GLManager.ModelView.Scale(1.0F / distortionScale, 1.0F, 1.0F);
@@ -237,23 +245,23 @@ public class GameRenderer
         if (_client.InGameHasFocus)
         {
             _client.MouseHelper.MouseXYChange();
-            float baseSensitivity = _client.Options.MouseSensitivity * 0.6F + 0.2F;
-            float lookScale = baseSensitivity * baseSensitivity * baseSensitivity * 8.0F;
-            float yawDelta = _client.MouseHelper.DeltaX * lookScale;
-            float pitchDelta = _client.MouseHelper.DeltaY * lookScale;
+            var baseSensitivity = _client.Options.MouseSensitivity * 0.6F + 0.2F;
+            var lookScale = baseSensitivity * baseSensitivity * baseSensitivity * 8.0F;
+            var yawDelta = _client.MouseHelper.DeltaX * lookScale;
+            var pitchDelta = _client.MouseHelper.DeltaY * lookScale;
 
-            bool zoomHeldForSensitivity = _client.CurrentScreen == null && _client.InGameHasFocus && Keyboard.isKeyDown(_client.Options.KeyBindZoom.ScanCode);
+            var zoomHeldForSensitivity = _client.CurrentScreen == null && _client.InGameHasFocus && Keyboard.isKeyDown(_client.Options.KeyBindZoom.ScanCode);
             if (zoomHeldForSensitivity)
             {
-                float zoomProgress = 1.0F / Math.Clamp(_client.Options.ZoomScale, 1.25F, 20.0F);
-                float sensitivityFloor = 0.4F;
-                float zoomSensitivityMultiplier = sensitivityFloor + (1.0F - sensitivityFloor) * zoomProgress;
+                var zoomProgress = 1.0F / Math.Clamp(_client.Options.ZoomScale, 1.25F, 20.0F);
+                var sensitivityFloor = 0.4F;
+                var zoomSensitivityMultiplier = sensitivityFloor + (1.0F - sensitivityFloor) * zoomProgress;
                 yawDelta *= zoomSensitivityMultiplier;
                 pitchDelta *= zoomSensitivityMultiplier;
             }
 
             ControllerManager.HandleLook(ref yawDelta, ref pitchDelta, lookScale, _client.Timer.DeltaTime);
-            int invertMultiplier = -1;
+            var invertMultiplier = -1;
             if (_client.Options.InvertMouse)
             {
                 invertMultiplier = 1;
@@ -268,19 +276,9 @@ public class GameRenderer
             _client.Player.ChangeLookDirection(yawDelta, pitchDelta * invertMultiplier);
         }
 
-        bool zoomHeld = (_client.CurrentScreen == null && _client.InGameHasFocus && Keyboard.isKeyDown(_client.Options.KeyBindZoom.ScanCode)) || ControllerManager.IsZoomHeld();
+        var zoomHeld = (_client.CurrentScreen == null && _client.InGameHasFocus && Keyboard.isKeyDown(_client.Options.KeyBindZoom.ScanCode)) || ControllerManager.IsZoomHeld();
         CameraController.SetZoomState(zoomHeld, _client.Options.ZoomScale);
     }
-
-    /// <summary>
-    ///     The colour the world pass starts from, which is the distance fog's.
-    /// </summary>
-    /// <remarks>
-    ///     Read by a backend that clears as part of opening its pass rather than with a call, and so
-    ///     has to know the colour before the pass exists. Valid once
-    ///     <see cref="BeginWorldFrame" /> has run for the frame.
-    /// </remarks>
-    public Vector4D<float> WorldClearColor => new(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0f);
 
     /// <summary>
     ///     Everything the world pass needs decided before it opens: what the camera is pointed at,
@@ -321,12 +319,12 @@ public class GameRenderer
     /// </summary>
     public void DrawWorld(float tickDelta, bool includeHand = true)
     {
-        EntityLiving entity = _client.Camera;
-        WorldRenderer worldRenderer = _client.WorldRenderer;
-        ParticleManager particleManager = _client.ParticleManager;
-        double entX = entity.LastTickX + (entity.X - entity.LastTickX) * tickDelta;
-        double entY = entity.LastTickY + (entity.Y - entity.LastTickY) * tickDelta;
-        double entZ = entity.LastTickZ + (entity.Z - entity.LastTickZ) * tickDelta;
+        var entity = _client.Camera;
+        var worldRenderer = _client.WorldRenderer;
+        var particleManager = _client.ParticleManager;
+        var entX = entity.LastTickX + (entity.X - entity.LastTickX) * tickDelta;
+        var entY = entity.LastTickY + (entity.Y - entity.LastTickY) * tickDelta;
+        var entZ = entity.LastTickZ + (entity.Z - entity.LastTickZ) * tickDelta;
 
         SetupWorldCamera(tickDelta);
         Frustum.Instance();
@@ -386,7 +384,10 @@ public class GameRenderer
         // still depth writing. The depth write was previously inherited rather than stated — the
         // entity pass before this leaves it on only because shadows put it back — which is what
         // the DepthMask below is cleaning up after.
-        GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
+        GLManager.State.Apply(RenderState.Entity with
+        {
+            Blend = BlendMode.Alpha
+        });
         _client.TextureManager.BindTexture(_client.TextureManager.GetTextureId("/terrain.png"));
 
         using (Profiler.Begin("SortAndRenderTranslucent"))
@@ -410,7 +411,9 @@ public class GameRenderer
 
         RenderSnow(tickDelta);
         GLManager.FogEnabled = false;
-        if (_targetedEntity != null) { }
+        if (_targetedEntity != null)
+        {
+        }
 
         ApplyFog(0);
         GLManager.FogEnabled = true;
@@ -420,8 +423,8 @@ public class GameRenderer
             RenderChunkBorders(tickDelta);
         }
 
-        bool cloudBlurPass = _client.Options is { SoftClouds: true, CloudsQuality: >= 2 }
-            && GLManager.CloudBlurPassOrNull is not null;
+        var cloudBlurPass = _client.Options is { SoftClouds: true, CloudsQuality: >= 2 }
+                            && GLManager.CloudBlurPassOrNull is not null;
 
         if (cloudBlurPass) GLManager.CloudBlurPassOrNull!.Begin();
         worldRenderer.RenderClouds(tickDelta);
@@ -456,13 +459,13 @@ public class GameRenderer
 
     private void RenderChunkBorders(float tickDelta)
     {
-        EntityLiving camera = _client.Camera;
-        double camX = camera.LastTickX + (camera.X - camera.LastTickX) * tickDelta;
-        double camY = camera.LastTickY + (camera.Y - camera.LastTickY) * tickDelta;
-        double camZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * tickDelta;
+        var camera = _client.Camera;
+        var camX = camera.LastTickX + (camera.X - camera.LastTickX) * tickDelta;
+        var camY = camera.LastTickY + (camera.Y - camera.LastTickY) * tickDelta;
+        var camZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * tickDelta;
 
-        int playerChunkX = _client.Player.ChunkX;
-        int playerChunkZ = _client.Player.ChunkZ;
+        var playerChunkX = _client.Player.ChunkX;
+        var playerChunkZ = _client.Player.ChunkZ;
 
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate((float)-camX, (float)-camY, (float)-camZ);
@@ -475,20 +478,20 @@ public class GameRenderer
         // it left out is what decided whether the lines were blended.
         GLManager.State.Apply(RenderState.Opaque);
 
-        double minX = playerChunkX * 16.0;
-        double maxX = (playerChunkX + 1) * 16.0;
-        double minZ = playerChunkZ * 16.0;
-        double maxZ = (playerChunkZ + 1) * 16.0;
+        var minX = playerChunkX * 16.0;
+        var maxX = (playerChunkX + 1) * 16.0;
+        var minZ = playerChunkZ * 16.0;
+        var maxZ = (playerChunkZ + 1) * 16.0;
 
-        Tessellator tess = Tessellator.instance;
+        var tess = Tessellator.instance;
         tess.startDrawing(1);
 
         tess.setColorRGBA_F(1.0F, 1.0F, 0.0F, 1.0F);
 
-        for (int i = 0; i <= 16; i += 4)
+        for (var i = 0; i <= 16; i += 4)
         {
-            double x = minX + i;
-            double z = minZ + i;
+            var x = minX + i;
+            var z = minZ + i;
 
             tess.addVertex(x, 0.0, minZ);
             tess.addVertex(x, 128.0, minZ);
@@ -503,7 +506,7 @@ public class GameRenderer
             tess.addVertex(maxX, 128.0, z);
         }
 
-        for (int y = 0; y <= 128; y += 4)
+        for (var y = 0; y <= 128; y += 4)
         {
             if (y % 16 == 0) tess.setColorRGBA_F(0.0F, 0.0F, 1.0F, 1.0F);
             tess.addVertex(minX, y, minZ);
@@ -527,10 +530,10 @@ public class GameRenderer
 
         tess.setColorRGBA_F(1.0F, 0.0F, 0.0F, 1.0F);
 
-        for (int i = 0; i < 4; i++)
+        for (var i = 0; i < 4; i++)
         {
-            double x = minX + (i * 16);
-            double z = minZ + (i * 16);
+            var x = minX + i * 16;
+            var z = minZ + i * 16;
 
             tess.addVertex(x, 0.0, minZ);
             tess.addVertex(x, 128.0, minZ);
@@ -552,32 +555,32 @@ public class GameRenderer
 
     private void RenderRain()
     {
-        float rainGradient = _client.World.Environment.GetRainGradient(1.0F);
+        var rainGradient = _client.World.Environment.GetRainGradient(1.0F);
 
         if (rainGradient != 0.0F)
         {
             _random.SetSeed(_ticks * 312987231L);
-            EntityLiving camera = _client.Camera;
-            World world = _client.World;
-            int cameraBlockX = MathHelper.Floor(camera.X);
-            int cameraBlockY = MathHelper.Floor(camera.Y);
-            int cameraBlockZ = MathHelper.Floor(camera.Z);
+            var camera = _client.Camera;
+            var world = _client.World;
+            var cameraBlockX = MathHelper.Floor(camera.X);
+            var cameraBlockY = MathHelper.Floor(camera.Y);
+            var cameraBlockZ = MathHelper.Floor(camera.Z);
             byte searchRadius = 10;
-            double rainSoundX = 0.0D;
-            double rainSoundY = 0.0D;
-            double rainSoundZ = 0.0D;
-            int validDropCount = 0;
+            var rainSoundX = 0.0D;
+            var rainSoundY = 0.0D;
+            var rainSoundZ = 0.0D;
+            var validDropCount = 0;
 
-            for (int sampleIndex = 0; sampleIndex < (int)(100.0F * rainGradient * rainGradient); ++sampleIndex)
+            for (var sampleIndex = 0; sampleIndex < (int)(100.0F * rainGradient * rainGradient); ++sampleIndex)
             {
-                int sampleX = cameraBlockX + _random.NextInt(searchRadius) - _random.NextInt(searchRadius);
-                int sampleZ = cameraBlockZ + _random.NextInt(searchRadius) - _random.NextInt(searchRadius);
-                int topSolidY = world.Reader.GetTopSolidBlockY(sampleX, sampleZ);
-                int blockBelowId = world.Reader.GetBlockId(sampleX, topSolidY - 1, sampleZ);
+                var sampleX = cameraBlockX + _random.NextInt(searchRadius) - _random.NextInt(searchRadius);
+                var sampleZ = cameraBlockZ + _random.NextInt(searchRadius) - _random.NextInt(searchRadius);
+                var topSolidY = world.Reader.GetTopSolidBlockY(sampleX, sampleZ);
+                var blockBelowId = world.Reader.GetBlockId(sampleX, topSolidY - 1, sampleZ);
                 if (topSolidY <= cameraBlockY + searchRadius && topSolidY >= cameraBlockY - searchRadius && world.GetBiomeSource().GetBiome(sampleX, sampleZ).CanSpawnLightningBolt())
                 {
-                    float xOffset = _random.NextFloat();
-                    float zOffset = _random.NextFloat();
+                    var xOffset = _random.NextFloat();
+                    var zOffset = _random.NextFloat();
                     if (blockBelowId > 0)
                     {
                         if (BlockRegistry.GetByProtocolId(blockBelowId).Material == Material.Lava)
@@ -589,9 +592,9 @@ public class GameRenderer
                             ++validDropCount;
                             if (_random.NextInt(validDropCount) == 0)
                             {
-                                rainSoundX = (sampleX + xOffset);
-                                rainSoundY = (topSolidY + 0.1) - BlockRegistry.GetByProtocolId(blockBelowId).BoundingBox.MinY;
-                                rainSoundZ = (sampleZ + zOffset);
+                                rainSoundX = sampleX + xOffset;
+                                rainSoundY = topSolidY + 0.1 - BlockRegistry.GetByProtocolId(blockBelowId).BoundingBox.MinY;
+                                rainSoundZ = sampleZ + zOffset;
                             }
 
                             _client.ParticleManager.AddRain(sampleX + xOffset, topSolidY + 0.1F - BlockRegistry.GetByProtocolId(blockBelowId).BoundingBox.MinY, sampleZ + zOffset);
@@ -617,32 +620,35 @@ public class GameRenderer
 
     protected void RenderSnow(float tickDelta)
     {
-        float rainGradient = _client.World.Environment.GetRainGradient(tickDelta);
+        var rainGradient = _client.World.Environment.GetRainGradient(tickDelta);
         if (rainGradient > 0.0F)
         {
-            EntityLiving camera = _client.Camera;
-            World world = _client.World;
-            int cameraBlockX = MathHelper.Floor(camera.X);
-            int cameraBlockY = MathHelper.Floor(camera.Y);
-            int cameraBlockZ = MathHelper.Floor(camera.Z);
-            Tessellator tessellator = Tessellator.instance;
+            var camera = _client.Camera;
+            var world = _client.World;
+            var cameraBlockX = MathHelper.Floor(camera.X);
+            var cameraBlockY = MathHelper.Floor(camera.Y);
+            var cameraBlockZ = MathHelper.Floor(camera.Z);
+            var tessellator = Tessellator.instance;
 
             // Culling off because the rain and snow quads are camera-facing strips with no
             // meaningful back, and still depth writing, which is what they have always done.
-            GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
-            GLManager.Normal = new(0.0F, 1.0F, 0.0F);
+            GLManager.State.Apply(RenderState.Entity with
+            {
+                Blend = BlendMode.Alpha
+            });
+            GLManager.Normal = new Vector3D<float>(0.0F, 1.0F, 0.0F);
 
             // Lower than the usual 0.1 so the faint tail of a raindrop is not cut off.
             GLManager.AlphaThreshold = 0.01F;
             _client.TextureManager.BindTexture(_client.TextureManager.GetTextureId("/environment/snow.png"));
-            double renderX = camera.LastTickX + (camera.X - camera.LastTickX) * tickDelta;
-            double renderY = camera.LastTickY + (camera.Y - camera.LastTickY) * tickDelta;
-            double renderZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * tickDelta;
-            int cameraYFloor = MathHelper.Floor(renderY);
+            var renderX = camera.LastTickX + (camera.X - camera.LastTickX) * tickDelta;
+            var renderY = camera.LastTickY + (camera.Y - camera.LastTickY) * tickDelta;
+            var renderZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * tickDelta;
+            var cameraYFloor = MathHelper.Floor(renderY);
             byte renderRadius = 10;
 
-            Biome[] biomes = world.GetBiomeSource().GetBiomesInArea(cameraBlockX - renderRadius, cameraBlockZ - renderRadius, renderRadius * 2 + 1, renderRadius * 2 + 1);
-            int biomeIndex = 0;
+            var biomes = world.GetBiomeSource().GetBiomesInArea(cameraBlockX - renderRadius, cameraBlockZ - renderRadius, renderRadius * 2 + 1, renderRadius * 2 + 1);
+            var biomeIndex = 0;
 
             int sampleX;
             int sampleZ;
@@ -671,7 +677,7 @@ public class GameRenderer
                         }
 
                         maxY = cameraBlockY - renderRadius;
-                        int maxRenderY = cameraBlockY + renderRadius;
+                        var maxRenderY = cameraBlockY + renderRadius;
                         if (maxY < topSolidY)
                         {
                             maxY = topSolidY;
@@ -686,25 +692,25 @@ public class GameRenderer
                         if (maxY != maxRenderY)
                         {
                             _random.SetSeed(sampleX * sampleX * 3121 + sampleX * 45238971 + sampleZ * sampleZ * 418711 + sampleZ * 13761);
-                            float animationTime = _ticks + tickDelta;
-                            float textureVOffset = ((_ticks & 511) + tickDelta) / 512.0F;
-                            float textureUDrift = _random.NextFloat() + animationTime * 0.01F * (float)_random.NextGaussian();
-                            float textureVDrift = _random.NextFloat() + animationTime * (float)_random.NextGaussian() * 0.001F;
-                            double dx = (sampleX + 0.5) - camera.X;
-                            double dz = (sampleZ + 0.5) - camera.Z;
-                            float distanceFactor = MathHelper.Sqrt(dx * dx + dz * dz) / renderRadius;
+                            var animationTime = _ticks + tickDelta;
+                            var textureVOffset = ((_ticks & 511) + tickDelta) / 512.0F;
+                            var textureUDrift = _random.NextFloat() + animationTime * 0.01F * (float)_random.NextGaussian();
+                            var textureVDrift = _random.NextFloat() + animationTime * (float)_random.NextGaussian() * 0.001F;
+                            var dx = sampleX + 0.5 - camera.X;
+                            var dz = sampleZ + 0.5 - camera.Z;
+                            var distanceFactor = MathHelper.Sqrt(dx * dx + dz * dz) / renderRadius;
                             tessellator.startDrawingQuads();
-                            float brightness = world.GetLuminance(sampleX, minY, sampleZ);
-                            GLManager.Color = new(brightness, brightness, brightness, ((1.0F - distanceFactor * distanceFactor) * 0.3F + 0.5F) * rainGradient);
+                            var brightness = world.GetLuminance(sampleX, minY, sampleZ);
+                            GLManager.Color = new Vector4D<float>(brightness, brightness, brightness, ((1.0F - distanceFactor * distanceFactor) * 0.3F + 0.5F) * rainGradient);
                             tessellator.setTranslationD(-renderX * 1.0D, -renderY * 1.0D, -renderZ * 1.0D);
-                            tessellator.addVertexWithUV(sampleX + 0, maxY, sampleZ + 0.5D, (0.0F * textureScroll + textureUDrift), (maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
-                            tessellator.addVertexWithUV(sampleX + 1, maxY, sampleZ + 0.5D, (1.0F * textureScroll + textureUDrift), (maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
-                            tessellator.addVertexWithUV(sampleX + 1, maxRenderY, sampleZ + 0.5D, (1.0F * textureScroll + textureUDrift), (maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
-                            tessellator.addVertexWithUV(sampleX + 0, maxRenderY, sampleZ + 0.5D, (0.0F * textureScroll + textureUDrift), (maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
-                            tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 0, (0.0F * textureScroll + textureUDrift), (maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
-                            tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 1, (1.0F * textureScroll + textureUDrift), (maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
-                            tessellator.addVertexWithUV(sampleX + 0.5D, maxRenderY, sampleZ + 1, (1.0F * textureScroll + textureUDrift), (maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
-                            tessellator.addVertexWithUV(sampleX + 0.5D, maxRenderY, sampleZ + 0, (0.0F * textureScroll + textureUDrift), (maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
+                            tessellator.addVertexWithUV(sampleX + 0, maxY, sampleZ + 0.5D, 0.0F * textureScroll + textureUDrift, maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift);
+                            tessellator.addVertexWithUV(sampleX + 1, maxY, sampleZ + 0.5D, 1.0F * textureScroll + textureUDrift, maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift);
+                            tessellator.addVertexWithUV(sampleX + 1, maxRenderY, sampleZ + 0.5D, 1.0F * textureScroll + textureUDrift, maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift);
+                            tessellator.addVertexWithUV(sampleX + 0, maxRenderY, sampleZ + 0.5D, 0.0F * textureScroll + textureUDrift, maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift);
+                            tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 0, 0.0F * textureScroll + textureUDrift, maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift);
+                            tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 1, 1.0F * textureScroll + textureUDrift, maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift);
+                            tessellator.addVertexWithUV(sampleX + 0.5D, maxRenderY, sampleZ + 1, 1.0F * textureScroll + textureUDrift, maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift);
+                            tessellator.addVertexWithUV(sampleX + 0.5D, maxRenderY, sampleZ + 0, 0.0F * textureScroll + textureUDrift, maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift);
                             tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
                             tessellator.draw(ProgramSlot.Weather);
                         }
@@ -737,26 +743,26 @@ public class GameRenderer
                             maxY = topSolidY;
                         }
 
-                        float rainUvScale = 1.0F;
+                        var rainUvScale = 1.0F;
                         if (minY != maxY)
                         {
                             _random.SetSeed(sampleX * sampleX * 3121 + sampleX * 45238971 + sampleZ * sampleZ * 418711 + sampleZ * 13761);
-                            textureScroll = ((_ticks + sampleX * sampleX * 3121 + sampleX * 45238971 + sampleZ * sampleZ * 418711 + sampleZ * 13761 & 31) + tickDelta) / 32.0F * (3.0F + _random.NextFloat());
-                            double rainDx = (sampleX + 0.5) - camera.X;
-                            double rainDz = (sampleZ + 0.5) - camera.Z;
-                            float rainDistanceFactor = MathHelper.Sqrt(rainDx * rainDx + rainDz * rainDz) / renderRadius;
+                            textureScroll = (((_ticks + sampleX * sampleX * 3121 + sampleX * 45238971 + sampleZ * sampleZ * 418711 + sampleZ * 13761) & 31) + tickDelta) / 32.0F * (3.0F + _random.NextFloat());
+                            var rainDx = sampleX + 0.5 - camera.X;
+                            var rainDz = sampleZ + 0.5 - camera.Z;
+                            var rainDistanceFactor = MathHelper.Sqrt(rainDx * rainDx + rainDz * rainDz) / renderRadius;
                             tessellator.startDrawingQuads();
-                            float rainBrightness = world.GetLuminance(sampleX, 128, sampleZ) * 0.85F + 0.15F;
-                            GLManager.Color = new(rainBrightness, rainBrightness, rainBrightness, ((1.0F - rainDistanceFactor * rainDistanceFactor) * 0.5F + 0.5F) * rainGradient);
+                            var rainBrightness = world.GetLuminance(sampleX, 128, sampleZ) * 0.85F + 0.15F;
+                            GLManager.Color = new Vector4D<float>(rainBrightness, rainBrightness, rainBrightness, ((1.0F - rainDistanceFactor * rainDistanceFactor) * 0.5F + 0.5F) * rainGradient);
                             tessellator.setTranslationD(-renderX * 1.0D, -renderY * 1.0D, -renderZ * 1.0D);
-                            tessellator.addVertexWithUV(sampleX + 0, minY, sampleZ + 0.5D, 0, (minY * rainUvScale / 4.0F + textureScroll * rainUvScale));
-                            tessellator.addVertexWithUV(sampleX + 1, minY, sampleZ + 0.5D, rainUvScale, (minY * rainUvScale / 4.0F + textureScroll * rainUvScale));
-                            tessellator.addVertexWithUV(sampleX + 1, maxY, sampleZ + 0.5D, rainUvScale, (maxY * rainUvScale / 4.0F + textureScroll * rainUvScale));
-                            tessellator.addVertexWithUV(sampleX + 0, maxY, sampleZ + 0.5D, 0, (maxY * rainUvScale / 4.0F + textureScroll * rainUvScale));
-                            tessellator.addVertexWithUV(sampleX + 0.5D, minY, sampleZ + 0, 0, (minY * rainUvScale / 4.0F + textureScroll * rainUvScale));
-                            tessellator.addVertexWithUV(sampleX + 0.5D, minY, sampleZ + 1, rainUvScale, (minY * rainUvScale / 4.0F + textureScroll * rainUvScale));
-                            tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 1, rainUvScale, (maxY * rainUvScale / 4.0F + textureScroll * rainUvScale));
-                            tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 0, 0, (maxY * rainUvScale / 4.0F + textureScroll * rainUvScale));
+                            tessellator.addVertexWithUV(sampleX + 0, minY, sampleZ + 0.5D, 0, minY * rainUvScale / 4.0F + textureScroll * rainUvScale);
+                            tessellator.addVertexWithUV(sampleX + 1, minY, sampleZ + 0.5D, rainUvScale, minY * rainUvScale / 4.0F + textureScroll * rainUvScale);
+                            tessellator.addVertexWithUV(sampleX + 1, maxY, sampleZ + 0.5D, rainUvScale, maxY * rainUvScale / 4.0F + textureScroll * rainUvScale);
+                            tessellator.addVertexWithUV(sampleX + 0, maxY, sampleZ + 0.5D, 0, maxY * rainUvScale / 4.0F + textureScroll * rainUvScale);
+                            tessellator.addVertexWithUV(sampleX + 0.5D, minY, sampleZ + 0, 0, minY * rainUvScale / 4.0F + textureScroll * rainUvScale);
+                            tessellator.addVertexWithUV(sampleX + 0.5D, minY, sampleZ + 1, rainUvScale, minY * rainUvScale / 4.0F + textureScroll * rainUvScale);
+                            tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 1, rainUvScale, maxY * rainUvScale / 4.0F + textureScroll * rainUvScale);
+                            tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 0, 0, maxY * rainUvScale / 4.0F + textureScroll * rainUvScale);
                             tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
                             tessellator.draw(ProgramSlot.Weather);
                         }
@@ -783,7 +789,7 @@ public class GameRenderer
     public void RenderInterface(float tickDelta)
     {
         ScaledResolution scaledResolution = new(_client.Options, _client.DisplayWidth, _client.DisplayHeight);
-        GetScaledMouse(scaledResolution, out int scaledMouseX, out int scaledMouseY);
+        GetScaledMouse(scaledResolution, out var scaledMouseX, out var scaledMouseY);
 
         if (_client.World != null)
         {
@@ -820,8 +826,8 @@ public class GameRenderer
     /// <summary>Where the pointer is in interface coordinates, past the F3 viewport's offset.</summary>
     private void GetScaledMouse(ScaledResolution resolution, out int x, out int y)
     {
-        int scaledWidth = resolution.ScaledWidth;
-        int scaledHeight = resolution.ScaledHeight;
+        var scaledWidth = resolution.ScaledWidth;
+        var scaledHeight = resolution.ScaledHeight;
 
         if (_client.IsControllerMode)
         {
@@ -830,8 +836,8 @@ public class GameRenderer
             return;
         }
 
-        int vpOffsetX = (int)_client.DebugViewportOffset.X;
-        int vpOffsetY = (int)_client.DebugViewportOffset.Y;
+        var vpOffsetX = (int)_client.DebugViewportOffset.X;
+        var vpOffsetY = (int)_client.DebugViewportOffset.Y;
 
         x = (Mouse.getX() - vpOffsetX) * scaledWidth / _client.DisplayWidth;
         y = scaledHeight - (Mouse.getY() - vpOffsetY) * scaledHeight / _client.DisplayHeight - 1;
@@ -857,9 +863,9 @@ public class GameRenderer
             // Drawn over the screen the pointer is pointing at, so it takes no part in the depth
             // buffer at all. Same state as everything else in the interface.
             GLManager.State.Apply(RenderState.Interface);
-            GLManager.Color = new(1.0f, 1.0f, 1.0f, 1.0f);
+            GLManager.Color = new Vector4D<float>(1.0f, 1.0f, 1.0f, 1.0f);
 
-            TextureHandle textureId = _client.TextureManager.GetTextureId("/gui/Pointer.png");
+            var textureId = _client.TextureManager.GetTextureId("/gui/Pointer.png");
             _client.TextureManager.BindTexture(textureId);
 
             const int width = 32;
@@ -869,7 +875,7 @@ public class GameRenderer
             y -= height / 2;
 
             const float zLevel = 10.0f;
-            Tessellator tess = Tessellator.instance;
+            var tess = Tessellator.instance;
             tess.startDrawingQuads();
             tess.addVertexWithUV(x, y + height, zLevel, 0.0, 1.0);
             tess.addVertexWithUV(x + width, y + height, zLevel, 1.0, 1.0);
@@ -885,23 +891,23 @@ public class GameRenderer
 
     private void UpdateSkyAndFogColors(float tickDelta)
     {
-        World world = _client.World;
-        EntityLiving camera = _client.Camera;
-        float fogBlend = 4.0F / _client.Options.RenderDistance;
+        var world = _client.World;
+        var camera = _client.Camera;
+        var fogBlend = 4.0F / _client.Options.RenderDistance;
         fogBlend = Math.Clamp(fogBlend, 0.25f, 1.0f);
         fogBlend = 1.0F - (float)Math.Pow(fogBlend, 0.25D);
-        Vector3D<double> skyColor = world.Environment.GetSkyColor(_client.Camera, tickDelta);
-        float skyRed = (float)skyColor.X;
-        float skyGreen = (float)skyColor.Y;
-        float skyBlue = (float)skyColor.Z;
-        Vector3D<double> fogColor = world.GetFogColor(tickDelta);
+        var skyColor = world.Environment.GetSkyColor(_client.Camera, tickDelta);
+        var skyRed = (float)skyColor.X;
+        var skyGreen = (float)skyColor.Y;
+        var skyBlue = (float)skyColor.Z;
+        var fogColor = world.GetFogColor(tickDelta);
         _fogColorRed = (float)fogColor.X;
         _fogColorGreen = (float)fogColor.Y;
         _fogColorBlue = (float)fogColor.Z;
         _fogColorRed += (skyRed - _fogColorRed) * fogBlend;
         _fogColorGreen += (skyGreen - _fogColorGreen) * fogBlend;
         _fogColorBlue += (skyBlue - _fogColorBlue) * fogBlend;
-        float rainGradient = world.Environment.GetRainGradient(tickDelta);
+        var rainGradient = world.Environment.GetRainGradient(tickDelta);
         float rainDarken;
         float fogBrightness;
         if (rainGradient > 0.0F)
@@ -924,7 +930,7 @@ public class GameRenderer
 
         if (_cloudFog)
         {
-            Vector3D<double> cloudColor = world.Environment.GetCloudColor(tickDelta);
+            var cloudColor = world.Environment.GetCloudColor(tickDelta);
             _fogColorRed = (float)cloudColor.X;
             _fogColorGreen = (float)cloudColor.Y;
             _fogColorBlue = (float)cloudColor.Z;
@@ -952,10 +958,10 @@ public class GameRenderer
 
     private void ApplyFog(int mode)
     {
-        EntityLiving camera = _client.Camera;
+        var camera = _client.Camera;
         Vector4D<float> color = new(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0f);
-        GLManager.Normal = new(0.0F, -1.0F, 0.0F);
-        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Normal = new Vector3D<float>(0.0F, -1.0F, 0.0F);
+        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
 
         if (_cloudFog || camera.IsInFluid(Material.Water))
         {
@@ -963,7 +969,7 @@ public class GameRenderer
             {
                 Color = color,
                 Curve = FogCurve.Exponential,
-                Density = 0.1f,
+                Density = 0.1f
             };
         }
         else if (camera.IsInFluid(Material.Lava))
@@ -972,13 +978,13 @@ public class GameRenderer
             {
                 Color = color,
                 Curve = FogCurve.Exponential,
-                Density = 2.0f,
+                Density = 2.0f
             };
         }
         else
         {
-            float start = _viewDistance * 0.25F;
-            float end = _viewDistance;
+            var start = _viewDistance * 0.25F;
+            var end = _viewDistance;
 
             if (mode < 0)
             {
@@ -996,9 +1002,8 @@ public class GameRenderer
                 Color = color,
                 Curve = FogCurve.Linear,
                 Start = start,
-                End = end,
+                End = end
             };
         }
-
     }
 }

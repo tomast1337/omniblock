@@ -184,7 +184,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
 
         // MarkDead spills the cargo on the way out, so only the cart's own pieces are dropped here.
         self.MarkDead();
-        foreach (int itemId in _wreckage.GetValueOrDefault(Type(self), []))
+        foreach (var itemId in _wreckage.GetValueOrDefault(Type(self), []))
         {
             self.DropItem(itemId, 1, 0.0F);
         }
@@ -211,23 +211,23 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
             return;
         }
 
-        for (int slotIndex = 0; slotIndex < cargo.SlotCount; ++slotIndex)
+        for (var slotIndex = 0; slotIndex < cargo.SlotCount; ++slotIndex)
         {
             if (cargo.GetStack(slotIndex) is not { } stack)
             {
                 continue;
             }
 
-            float offsetX = self.Random.NextFloat() * 0.8F + 0.1F;
-            float offsetY = self.Random.NextFloat() * 0.8F + 0.1F;
-            float offsetZ = self.Random.NextFloat() * 0.8F + 0.1F;
+            var offsetX = self.Random.NextFloat() * 0.8F + 0.1F;
+            var offsetY = self.Random.NextFloat() * 0.8F + 0.1F;
+            var offsetZ = self.Random.NextFloat() * 0.8F + 0.1F;
 
             while (stack.Count > 0)
             {
-                int dropCount = Math.Min(self.Random.NextInt(21) + 10, stack.Count);
+                var dropCount = Math.Min(self.Random.NextInt(21) + 10, stack.Count);
                 stack.Count -= dropCount;
 
-                Entity dropped = DroppedItemBehavior.Create(
+                var dropped = DroppedItemBehavior.Create(
                     self.World,
                     self.X + offsetX,
                     self.Y + offsetY,
@@ -245,7 +245,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
 
     public void OnWriteNbt(Entity self, NBTTagCompound nbt)
     {
-        int type = Type(self);
+        var type = Type(self);
         nbt.SetInteger("Type", type);
 
         if (type == Furnace)
@@ -257,7 +257,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         else if (type == Chest && Cargo(self) is { } cargo)
         {
             NBTTagList items = new();
-            for (int slotIndex = 0; slotIndex < cargo.SlotCount; ++slotIndex)
+            for (var slotIndex = 0; slotIndex < cargo.SlotCount; ++slotIndex)
             {
                 if (cargo.GetStack(slotIndex) is not { } stack)
                 {
@@ -276,7 +276,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
 
     public void OnReadNbt(Entity self, NBTTagCompound nbt)
     {
-        int type = nbt.GetInteger("Type");
+        var type = nbt.GetInteger("Type");
         self.State[_type] = type;
 
         if (type == Furnace)
@@ -290,11 +290,11 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
             MinecartCargo cargo = new(self);
             self.State.SetRef(_cargo, cargo);
 
-            NBTTagList items = nbt.GetTagList("Items");
-            for (int i = 0; i < items.TagCount(); ++i)
+            var items = nbt.GetTagList("Items");
+            for (var i = 0; i < items.TagCount(); ++i)
             {
-                NBTTagCompound itemTag = (NBTTagCompound)items.TagAt(i);
-                int slotIndex = itemTag.GetByte("Slot") & 255;
+                var itemTag = (NBTTagCompound)items.TagAt(i);
+                var slotIndex = itemTag.GetByte("Slot") & 255;
                 if (slotIndex >= 0 && slotIndex < cargo.SlotCount)
                 {
                     cargo.SetStack(slotIndex, new ItemStack(self.World.Content.Items, itemTag));
@@ -346,9 +346,9 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
             other.SetVehicle(self);
         }
 
-        double deltaX = other.X - self.X;
-        double deltaZ = other.Z - self.Z;
-        double distanceSq = deltaX * deltaX + deltaZ * deltaZ;
+        var deltaX = other.X - self.X;
+        var deltaZ = other.Z - self.Z;
+        var distanceSq = deltaX * deltaX + deltaZ * deltaZ;
         if (distanceSq < 1.0E-4D)
         {
             return true;
@@ -358,7 +358,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         deltaX /= distance;
         deltaZ /= distance;
 
-        double forceScale = Math.Min(1.0D / distance, 1.0D);
+        var forceScale = Math.Min(1.0D / distance, 1.0D);
         deltaX *= forceScale * 0.1F * 0.5D;
         deltaZ *= forceScale * 0.1F * 0.5D;
 
@@ -371,14 +371,14 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
 
         // Verbatim from Beta, including mixing the other cart's PrevX into what reads as an
         // alignment test: a glancing pile-up is ignored instead of resolved.
-        double collisionAlignment = (other.X - self.X) * other.VelocityZ + (other.Z - self.Z) * other.PrevX;
+        var collisionAlignment = (other.X - self.X) * other.VelocityZ + (other.Z - self.Z) * other.PrevX;
         if (collisionAlignment * collisionAlignment > 5.0D)
         {
             return true;
         }
 
-        double averageVelocityX = other.VelocityX + self.VelocityX;
-        double averageVelocityZ = other.VelocityZ + self.VelocityZ;
+        var averageVelocityX = other.VelocityX + self.VelocityX;
+        var averageVelocityZ = other.VelocityZ + self.VelocityZ;
 
         if (otherCart.Type(other) == Furnace && Type(self) != Furnace)
         {
@@ -436,17 +436,17 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         self.PrevZ = self.Z;
         self.VelocityY -= 0.04D;
 
-        int blockX = MathHelper.Floor(self.X);
-        int blockY = MathHelper.Floor(self.Y);
-        int blockZ = MathHelper.Floor(self.Z);
+        var blockX = MathHelper.Floor(self.X);
+        var blockY = MathHelper.Floor(self.Y);
+        var blockZ = MathHelper.Floor(self.Z);
 
         if (IsRailBlock(self.World.Reader.GetBlockId(blockX, blockY - 1, blockZ)))
         {
             --blockY;
         }
 
-        bool shouldEmitSmoke = false;
-        int railBlockId = self.World.Reader.GetBlockId(blockX, blockY, blockZ);
+        var shouldEmitSmoke = false;
+        var railBlockId = self.World.Reader.GetBlockId(blockX, blockY, blockZ);
 
         if (IsRailBlock(railBlockId))
         {
@@ -479,8 +479,8 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     /// </summary>
     public static Entity Place(IWorldContext world, double x, double y, double z, int type)
     {
-        Entity cart = world.Content.EntityTypes.Create("omniblock:minecart", world);
-        MinecartBehavior rolling = cart.Behaviors.Find<MinecartBehavior>()!;
+        var cart = world.Content.EntityTypes.Create("omniblock:minecart", world);
+        var rolling = cart.Behaviors.Find<MinecartBehavior>()!;
         cart.State[rolling._type] = type;
         if (type == Chest)
         {
@@ -520,7 +520,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     /// <summary>The cart type a given object-spawn id names, or null when it names none of them.</summary>
     public int? TypeForSpawnObjectId(int id)
     {
-        foreach ((int type, int wireId) in _wireIds)
+        foreach (var (type, wireId) in _wireIds)
         {
             if (wireId == id)
             {
@@ -539,12 +539,12 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     {
         if (self.State[_lerpSteps] > 0)
         {
-            int steps = self.State[_lerpSteps];
-            double interpolatedX = self.X + (self.State[_targetX] - self.X) / steps;
-            double interpolatedY = self.Y + (self.State[_targetY] - self.Y) / steps;
-            double interpolatedZ = self.Z + (self.State[_targetZ] - self.Z) / steps;
+            var steps = self.State[_lerpSteps];
+            var interpolatedX = self.X + (self.State[_targetX] - self.X) / steps;
+            var interpolatedY = self.Y + (self.State[_targetY] - self.Y) / steps;
+            var interpolatedZ = self.Z + (self.State[_targetZ] - self.Z) / steps;
 
-            double yawDelta = WrapDegrees(self.State[_targetYaw] - self.Yaw);
+            var yawDelta = WrapDegrees(self.State[_targetYaw] - self.Yaw);
             self.Yaw = (float)(self.Yaw + yawDelta / steps);
             self.Pitch = (float)(self.Pitch + (self.State[_targetPitch] - self.Pitch) / steps);
             --self.State[_lerpSteps];
@@ -565,13 +565,13 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     /// </summary>
     private bool RideRail(Entity self, int blockX, int blockY, int blockZ, int railBlockId)
     {
-        bool shouldEmitSmoke = false;
-        Vec3D? previousTrackPosition = GetTrackPosition(self, self.X, self.Y, self.Z);
-        int railMeta = self.World.Reader.GetBlockMeta(blockX, blockY, blockZ);
+        var shouldEmitSmoke = false;
+        var previousTrackPosition = GetTrackPosition(self, self.X, self.Y, self.Z);
+        var railMeta = self.World.Reader.GetBlockMeta(blockX, blockY, blockZ);
 
         double trackY = blockY;
-        bool poweredRailActive = false;
-        bool poweredRailBraking = false;
+        var poweredRailActive = false;
+        var poweredRailBraking = false;
 
         if (railBlockId == BlockRegistry.Get("powered_rail").Id)
         {
@@ -597,10 +597,10 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
             case 5: self.VelocityZ -= SlopeAcceleration; break;
         }
 
-        int[][] railEnds = s_railShapeVectors[railMeta];
+        var railEnds = s_railShapeVectors[railMeta];
         double railDirX = railEnds[1][0] - railEnds[0][0];
         double railDirZ = railEnds[1][2] - railEnds[0][2];
-        double railDirLength = Math.Sqrt(railDirX * railDirX + railDirZ * railDirZ);
+        var railDirLength = Math.Sqrt(railDirX * railDirX + railDirZ * railDirZ);
 
         // Point the rail the way the cart is already going, so it keeps its heading through a turn.
         if (self.VelocityX * railDirX + self.VelocityZ * railDirZ < 0.0D)
@@ -609,7 +609,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
             railDirZ = -railDirZ;
         }
 
-        double horizontalSpeed = Math.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
+        var horizontalSpeed = Math.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
         self.VelocityX = horizontalSpeed * railDirX / railDirLength;
         self.VelocityZ = horizontalSpeed * railDirZ / railDirLength;
 
@@ -620,8 +620,8 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
 
         SnapOntoRailLine(self, blockX, blockZ, railEnds, trackY);
 
-        double moveX = self.VelocityX;
-        double moveZ = self.VelocityZ;
+        var moveX = self.VelocityX;
+        var moveZ = self.VelocityZ;
 
         if (self.Passenger != null)
         {
@@ -660,10 +660,10 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         }
 
         // Climbing costs speed and descending returns it, read off the height the cart actually moved.
-        Vec3D? currentTrackPosition = GetTrackPosition(self, self.X, self.Y, self.Z);
+        var currentTrackPosition = GetTrackPosition(self, self.X, self.Y, self.Z);
         if (currentTrackPosition != null && previousTrackPosition != null)
         {
-            double railHeightDeltaForce = (previousTrackPosition.Value.Y - currentTrackPosition.Value.Y) * 0.05D;
+            var railHeightDeltaForce = (previousTrackPosition.Value.Y - currentTrackPosition.Value.Y) * 0.05D;
             horizontalSpeed = Math.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
             if (horizontalSpeed > 0.0D)
             {
@@ -674,8 +674,8 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
             SitOnTrack(self, self.X, currentTrackPosition.Value.Y, self.Z);
         }
 
-        int currentBlockX = MathHelper.Floor(self.X);
-        int currentBlockZ = MathHelper.Floor(self.Z);
+        var currentBlockX = MathHelper.Floor(self.X);
+        var currentBlockZ = MathHelper.Floor(self.Z);
         if (currentBlockX != blockX || currentBlockZ != blockZ)
         {
             horizontalSpeed = Math.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
@@ -699,7 +699,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     /// <summary>Unpowered powered rail is a brake: it halves speed, then stops the cart dead.</summary>
     private static void Brake(Entity self)
     {
-        double brakingSpeed = Math.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
+        var brakingSpeed = Math.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
         if (brakingSpeed < 0.03D)
         {
             self.VelocityX = self.VelocityY = self.VelocityZ = 0.0D;
@@ -717,7 +717,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     /// </summary>
     private static void Boost(Entity self, int blockX, int blockY, int blockZ, int railMeta)
     {
-        double speedMagnitude = Math.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
+        var speedMagnitude = Math.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
         if (speedMagnitude > 0.01D)
         {
             self.VelocityX += self.VelocityX / speedMagnitude * PoweredRailBoost;
@@ -752,10 +752,10 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     /// <summary>Places the cart exactly on the rail's centre line, keeping how far along it sits.</summary>
     private void SnapOntoRailLine(Entity self, int blockX, int blockZ, int[][] railEnds, double trackY)
     {
-        double railStartX = blockX + 0.5D + railEnds[0][0] * 0.5D;
-        double railStartZ = blockZ + 0.5D + railEnds[0][2] * 0.5D;
-        double railDirX = blockX + 0.5D + railEnds[1][0] * 0.5D - railStartX;
-        double railDirZ = blockZ + 0.5D + railEnds[1][2] * 0.5D - railStartZ;
+        var railStartX = blockX + 0.5D + railEnds[0][0] * 0.5D;
+        var railStartZ = blockZ + 0.5D + railEnds[0][2] * 0.5D;
+        var railDirX = blockX + 0.5D + railEnds[1][0] * 0.5D - railStartX;
+        var railDirZ = blockZ + 0.5D + railEnds[1][2] * 0.5D - railStartZ;
 
         double positionAlongRail;
         if (railDirX == 0.0D)
@@ -876,8 +876,8 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     {
         self.Pitch = 0.0F;
 
-        double deltaX = self.PrevX - self.X;
-        double deltaZ = self.PrevZ - self.Z;
+        var deltaX = self.PrevX - self.X;
+        var deltaZ = self.PrevZ - self.Z;
         if (deltaX * deltaX + deltaZ * deltaZ > 0.001D)
         {
             self.Yaw = (float)(Math.Atan2(deltaZ, deltaX) * 180.0D / Math.PI);
@@ -887,7 +887,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
             }
         }
 
-        double yawChange = WrapDegrees(self.Yaw - self.PrevYaw);
+        var yawChange = WrapDegrees(self.Yaw - self.PrevYaw);
         if (yawChange < -170.0D || yawChange >= 170.0D)
         {
             self.Yaw += 180.0F;
@@ -899,7 +899,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
 
     private static void BumpNeighbouringCarts(Entity self)
     {
-        foreach (Entity other in self.World.Entities.GetEntities(self, self.BoundingBox.Expand(0.2D, 0.0D, 0.2D)))
+        foreach (var other in self.World.Entities.GetEntities(self, self.BoundingBox.Expand(0.2D, 0.0D, 0.2D)))
         {
             if (!Equals(other, self.Passenger) && other.IsPushable && IsMinecart(other))
             {
@@ -914,22 +914,22 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     /// </summary>
     public Vec3D? GetTrackPositionOffset(Entity self, double x, double y, double z, double distanceAlongTrack)
     {
-        int blockX = MathHelper.Floor(x);
-        int blockY = MathHelper.Floor(y);
-        int blockZ = MathHelper.Floor(z);
+        var blockX = MathHelper.Floor(x);
+        var blockY = MathHelper.Floor(y);
+        var blockZ = MathHelper.Floor(z);
 
         if (IsRailBlock(self.World.Reader.GetBlockId(blockX, blockY - 1, blockZ)))
         {
             --blockY;
         }
 
-        int blockId = self.World.Reader.GetBlockId(blockX, blockY, blockZ);
+        var blockId = self.World.Reader.GetBlockId(blockX, blockY, blockZ);
         if (!IsRailBlock(blockId))
         {
             return null;
         }
 
-        int railMeta = self.World.Reader.GetBlockMeta(blockX, blockY, blockZ);
+        var railMeta = self.World.Reader.GetBlockMeta(blockX, blockY, blockZ);
         if (RailBehavior.IsAlwaysStraight(BlockRegistry.GetByProtocolId(blockId)))
         {
             railMeta &= 7;
@@ -937,10 +937,10 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
 
         y = railMeta is >= 2 and <= 5 ? blockY + 1 : blockY;
 
-        int[][] railEnds = s_railShapeVectors[railMeta];
+        var railEnds = s_railShapeVectors[railMeta];
         double railDirX = railEnds[1][0] - railEnds[0][0];
         double railDirZ = railEnds[1][2] - railEnds[0][2];
-        double railDirLength = Math.Sqrt(railDirX * railDirX + railDirZ * railDirZ);
+        var railDirLength = Math.Sqrt(railDirX * railDirX + railDirZ * railDirZ);
 
         x += railDirX / railDirLength * distanceAlongTrack;
         z += railDirZ / railDirLength * distanceAlongTrack;
@@ -960,22 +960,22 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     /// <summary>Where on the rail's centre line a point sits, or null when it is not over rail.</summary>
     public Vec3D? GetTrackPosition(Entity self, double x, double y, double z)
     {
-        int blockX = MathHelper.Floor(x);
-        int blockY = MathHelper.Floor(y);
-        int blockZ = MathHelper.Floor(z);
+        var blockX = MathHelper.Floor(x);
+        var blockY = MathHelper.Floor(y);
+        var blockZ = MathHelper.Floor(z);
 
         if (IsRailBlock(self.World.Reader.GetBlockId(blockX, blockY - 1, blockZ)))
         {
             --blockY;
         }
 
-        int blockId = self.World.Reader.GetBlockId(blockX, blockY, blockZ);
+        var blockId = self.World.Reader.GetBlockId(blockX, blockY, blockZ);
         if (!IsRailBlock(blockId))
         {
             return null;
         }
 
-        int railMeta = self.World.Reader.GetBlockMeta(blockX, blockY, blockZ);
+        var railMeta = self.World.Reader.GetBlockMeta(blockX, blockY, blockZ);
         if (RailBehavior.IsAlwaysStraight(BlockRegistry.GetByProtocolId(blockId)))
         {
             railMeta &= 7;
@@ -983,15 +983,15 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
 
         y = railMeta is >= 2 and <= 5 ? blockY + 1 : blockY;
 
-        int[][] railEnds = s_railShapeVectors[railMeta];
+        var railEnds = s_railShapeVectors[railMeta];
 
-        double railStartX = blockX + 0.5D + railEnds[0][0] * 0.5D;
-        double railStartY = blockY + 0.5D + railEnds[0][1] * 0.5D;
-        double railStartZ = blockZ + 0.5D + railEnds[0][2] * 0.5D;
+        var railStartX = blockX + 0.5D + railEnds[0][0] * 0.5D;
+        var railStartY = blockY + 0.5D + railEnds[0][1] * 0.5D;
+        var railStartZ = blockZ + 0.5D + railEnds[0][2] * 0.5D;
 
-        double railDirX = blockX + 0.5D + railEnds[1][0] * 0.5D - railStartX;
-        double railDirY = (blockY + 0.5D + railEnds[1][1] * 0.5D - railStartY) * 2.0D;
-        double railDirZ = blockZ + 0.5D + railEnds[1][2] * 0.5D - railStartZ;
+        var railDirX = blockX + 0.5D + railEnds[1][0] * 0.5D - railStartX;
+        var railDirY = (blockY + 0.5D + railEnds[1][1] * 0.5D - railStartY) * 2.0D;
+        var railDirZ = blockZ + 0.5D + railEnds[1][2] * 0.5D - railStartZ;
 
         double positionAlongRail;
         if (railDirX == 0.0D)
@@ -1027,7 +1027,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     }
 
     private static bool IsRailBlock(int blockId) =>
-        BlockRegistry.TryGetByProtocolId(blockId, out Block? block) && RailBehavior.IsRail(block);
+        BlockRegistry.TryGetByProtocolId(blockId, out var block) && RailBehavior.IsRail(block);
 
     private static double WrapDegrees(double angle)
     {

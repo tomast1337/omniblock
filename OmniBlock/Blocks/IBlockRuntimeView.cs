@@ -10,20 +10,11 @@ public interface IBlockRuntimeView
 
 public static class BlockRuntimeViewExtensions
 {
-    public static bool IsOpaque(this IBlockRuntimeView blocks, int protocolId)
-    {
-        return blocks.TryGetByProtocolId(protocolId, out var block) && block.IsOpaque;
-    }
+    public static bool IsOpaque(this IBlockRuntimeView blocks, int protocolId) => blocks.TryGetByProtocolId(protocolId, out var block) && block.IsOpaque;
 
-    public static int GetOpacity(this IBlockRuntimeView blocks, int protocolId)
-    {
-        return blocks.TryGetByProtocolId(protocolId, out var block) ? block.Opacity : 0;
-    }
+    public static int GetOpacity(this IBlockRuntimeView blocks, int protocolId) => blocks.TryGetByProtocolId(protocolId, out var block) ? block.Opacity : 0;
 
-    public static int GetLightEmission(this IBlockRuntimeView blocks, int protocolId)
-    {
-        return blocks.TryGetByProtocolId(protocolId, out var block) ? block.LightEmission : 0;
-    }
+    public static int GetLightEmission(this IBlockRuntimeView blocks, int protocolId) => blocks.TryGetByProtocolId(protocolId, out var block) ? block.LightEmission : 0;
 }
 
 public sealed class StagedBlockRuntimeView : IBlockRuntimeView
@@ -46,10 +37,7 @@ public sealed class StagedBlockRuntimeView : IBlockRuntimeView
             : throw new KeyNotFoundException($"Unknown block protocol id {protocolId}.");
     }
 
-    public bool TryGetByProtocolId(int protocolId, out Block? block)
-    {
-        return _blocks.TryGetValue(protocolId, out block);
-    }
+    public bool TryGetByProtocolId(int protocolId, out Block? block) => _blocks.TryGetValue(protocolId, out block);
 
     internal void Add(ResourceLocation key, Block block)
     {
@@ -58,8 +46,5 @@ public sealed class StagedBlockRuntimeView : IBlockRuntimeView
         _blocksByKey.TryAdd(key, block);
     }
 
-    internal void Freeze()
-    {
-        _frozen = true;
-    }
+    internal void Freeze() => _frozen = true;
 }

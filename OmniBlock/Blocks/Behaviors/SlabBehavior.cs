@@ -59,10 +59,7 @@ internal sealed class SlabBehavior : BlockRuntimeBehavior, IBlockPhysics, IBlock
         }
     }
 
-    public int GetTexture(Block block, Side side, int defaultTexture)
-    {
-        return GetTexture(block, side, 0, defaultTexture);
-    }
+    public int GetTexture(Block block, Side side, int defaultTexture) => GetTexture(block, side, 0, defaultTexture);
 
     public int GetTexture(Block block, Side side, int meta, int defaultTexture)
     {

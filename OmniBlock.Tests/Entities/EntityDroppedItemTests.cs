@@ -1,16 +1,14 @@
-using OmniBlock.Blocks;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.Items;
 using OmniBlock.NBT;
-using OmniBlock.Tests.TestSupport;
 
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Covers the dropped item, the fourth non-living entity to lose its class — and the most widely
-/// constructed one: every drop in the game now goes through DroppedItemBehavior.Create. The stack,
-/// the pickup delay, and the five hit points are one behavior across five slots.
+///     Covers the dropped item, the fourth non-living entity to lose its class — and the most widely
+///     constructed one: every drop in the game now goes through DroppedItemBehavior.Create. The stack,
+///     the pickup delay, and the five hit points are one behavior across five slots.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityDroppedItemTests
@@ -19,14 +17,17 @@ public sealed class EntityDroppedItemTests
 
     private static Entity Drop(FakeWorldContext world, ItemStack stack, int pickupDelay = 0, double y = 65.0)
     {
-        Entity item = DroppedItemBehavior.Create(world, 8.5, y, 8.5, stack, pickupDelay);
+        var item = DroppedItemBehavior.Create(world, 8.5, y, 8.5, stack, pickupDelay);
         Assert.True(world.Entities.SpawnEntity(item));
         return item;
     }
 
     private static TestEntityPlayer Player(FakeWorldContext world)
     {
-        TestEntityPlayer player = new(world) { Name = "collector" };
+        TestEntityPlayer player = new(world)
+        {
+            Name = "collector"
+        };
         player.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(player));
         return player;
@@ -36,7 +37,7 @@ public sealed class EntityDroppedItemTests
     public void A_dropped_item_has_no_class_of_its_own()
     {
         FakeWorldContext world = new();
-        Entity item = Drop(world, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 1));
+        var item = Drop(world, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 1));
 
         Assert.Equal(typeof(EntityObject), item.GetType());
         Assert.Same(TestEntityCatalog.ByName("item").Behaviors.Ticker, TestEntityCatalog.ByName("item").Behaviors.Interactable);
@@ -48,7 +49,7 @@ public sealed class EntityDroppedItemTests
     public void A_drop_is_born_with_a_pop_and_its_own_phase()
     {
         FakeWorldContext world = new();
-        Entity item = Drop(world, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 1));
+        var item = Drop(world, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 1));
 
         Assert.Equal(0.2, item.VelocityY, 5);
     }
@@ -57,8 +58,8 @@ public sealed class EntityDroppedItemTests
     public void A_player_walking_over_a_drop_picks_it_up()
     {
         FakeWorldContext world = new();
-        Entity item = Drop(world, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 3));
-        TestEntityPlayer player = Player(world);
+        var item = Drop(world, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 3));
+        var player = Player(world);
 
         item.OnPlayerInteraction(player);
 
@@ -68,8 +69,8 @@ public sealed class EntityDroppedItemTests
 
     private static int CountInInventory(TestEntityPlayer player, int itemId)
     {
-        int count = 0;
-        for (int slot = 0; slot < player.Inventory.Size; slot++)
+        var count = 0;
+        for (var slot = 0; slot < player.Inventory.Size; slot++)
         {
             if (player.Inventory.GetStack(slot) is { } stack && stack.ItemId == itemId) count += stack.Count;
         }
@@ -82,8 +83,8 @@ public sealed class EntityDroppedItemTests
     public void The_pickup_delay_holds_the_drop_out_of_reach()
     {
         FakeWorldContext world = new();
-        Entity item = Drop(world, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 1), pickupDelay: 2);
-        TestEntityPlayer player = Player(world);
+        var item = Drop(world, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 1), 2);
+        var player = Player(world);
 
         item.OnPlayerInteraction(player);
         Assert.False(item.Dead);
@@ -99,7 +100,7 @@ public sealed class EntityDroppedItemTests
     public void Five_points_of_damage_destroy_a_drop()
     {
         FakeWorldContext world = new();
-        Entity item = Drop(world, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 1));
+        var item = Drop(world, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 1));
 
         Assert.False(item.Damage(null, 4));
         Assert.False(item.Dead);
@@ -113,9 +114,9 @@ public sealed class EntityDroppedItemTests
     {
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 15, 0, 15, 63);
-        Entity item = Drop(world, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 1), y: 64.5);
+        var item = Drop(world, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 1), y: 64.5);
 
-        for (int tick = 0; tick < 6001 && !item.Dead; tick++) item.Tick();
+        for (var tick = 0; tick < 6001 && !item.Dead; tick++) item.Tick();
 
         Assert.True(item.Dead);
     }
@@ -124,15 +125,15 @@ public sealed class EntityDroppedItemTests
     public void The_stack_survives_an_nbt_round_trip()
     {
         FakeWorldContext world = new();
-        Entity item = Drop(world, new ItemStack(world.Content.Items, TestBlocks.Get("wool").Id, 5, 11));
+        var item = Drop(world, new ItemStack(world.Content.Items, TestBlocks.Get("wool").Id, 5, 11));
 
         NBTTagCompound nbt = new();
         item.Write(nbt);
 
-        Entity restored = TestEntityCatalog.ByName("item").Create(world);
+        var restored = TestEntityCatalog.ByName("item").Create(world);
         restored.Read(nbt);
 
-        ItemStack stack = Dropped.Stack(restored)!;
+        var stack = Dropped.Stack(restored)!;
         Assert.Equal(TestBlocks.Get("wool").Id, stack.ItemId);
         Assert.Equal(5, stack.Count);
         Assert.Equal(11, stack.GetDamage());
@@ -143,8 +144,8 @@ public sealed class EntityDroppedItemTests
     public void Picking_up_a_log_awards_the_achievement()
     {
         FakeWorldContext world = new();
-        Entity item = Drop(world, new ItemStack(world.Content.Items, TestBlocks.Get("log").Id, 1, 0));
-        TestEntityPlayer player = Player(world);
+        var item = Drop(world, new ItemStack(world.Content.Items, TestBlocks.Get("log").Id, 1, 0));
+        var player = Player(world);
 
         item.OnPlayerInteraction(player);
 
@@ -154,7 +155,7 @@ public sealed class EntityDroppedItemTests
     [Fact]
     public void Protocol_facts_are_pinned()
     {
-        EntityType type = TestEntityCatalog.ByName("item");
+        var type = TestEntityCatalog.ByName("item");
 
         Assert.Equal(1, type.RequireDefinition().ProtocolId);
         Assert.True(type.RequireDefinition().TracksVelocity);

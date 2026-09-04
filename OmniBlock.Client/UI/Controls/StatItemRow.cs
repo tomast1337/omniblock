@@ -31,7 +31,7 @@ public class StatItemRow : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        if (!renderer.Context.Content.Items.TryGetByProtocolId(ItemId, out Item? item) || item is null)
+        if (!renderer.Context.Content.Items.TryGetByProtocolId(ItemId, out var item) || item is null)
         {
             return;
         }
@@ -44,14 +44,14 @@ public class StatItemRow : UIElement
         renderer.DrawItem(itemStack, IconX + 1, IconY + 1);
 
         // don't draw unlocalized names for now
-        string? tileName = itemStack.GetItemName();
+        var tileName = itemStack.GetItemName();
 
         if (tileName.StartsWith("item."))
         {
             tileName = tileName.Replace("item.", "tile.");
         }
 
-        string? name = Translations.Get($"{tileName}.name");
+        var name = Translations.Get($"{tileName}.name");
 
         if (!string.IsNullOrWhiteSpace(name) && !name.Contains('.'))
         {
@@ -66,7 +66,7 @@ public class StatItemRow : UIElement
 #endif
         }
 
-        float rightOffset = ComputedWidth - 10;
+        var rightOffset = ComputedWidth - 10;
         renderer.DrawText(Value3, rightOffset - 30, TextY, Color.White);
         renderer.DrawText(Value2, rightOffset - 80, TextY, Color.White);
         renderer.DrawText(Value1, rightOffset - 130, TextY, Color.White);

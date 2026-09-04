@@ -1,5 +1,4 @@
 using OmniBlock.Items;
-using OmniBlock.Registries;
 using OmniBlock.Registries.Data;
 
 namespace OmniBlock.Tests;

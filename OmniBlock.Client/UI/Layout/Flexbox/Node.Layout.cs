@@ -130,7 +130,7 @@ public partial class Node
 
         public string ToStr(int indent)
         {
-            string line = "{\n";
+            var line = "{\n";
             indent++;
             string tab = new(' ', indent * 2);
             line += tab + "box = " + string.Format("(x:{0} y:{1} w:{2} h:{3}) (l:{4} t:{5} r:{6} b:{7})", x, y, width, height, left, top, right, bottom) + "\n";

@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json;
 
 namespace OmniBlock;
@@ -21,7 +18,7 @@ public class Language(string code, string name, string author)
         if (asset == null)
             return;
 
-        using JsonDocument doc = JsonDocument.Parse(asset.GetTextContent());
+        using var doc = JsonDocument.Parse(asset.GetTextContent());
 
         Dictionary<string, string> output = new();
         FlattenJson(output, doc.RootElement);
@@ -35,12 +32,13 @@ public class Language(string code, string name, string author)
             case JsonValueKind.Object:
                 foreach (var property in element.EnumerateObject())
                 {
-                    string key = string.IsNullOrEmpty(prefix)
+                    var key = string.IsNullOrEmpty(prefix)
                         ? property.Name
                         : $"{prefix}.{property.Name}";
 
                     FlattenJson(output, property.Value, key);
                 }
+
                 break;
 
             case JsonValueKind.String:
@@ -60,6 +58,6 @@ public class Language(string code, string name, string author)
         if (Translations is null) LoadTranslations();
         // still not loaded, must be error
         if (Translations is null) return key;
-        return Translations.TryGetValue(key, out string? translation) ? translation : key;
+        return Translations.TryGetValue(key, out var translation) ? translation : key;
     }
 }

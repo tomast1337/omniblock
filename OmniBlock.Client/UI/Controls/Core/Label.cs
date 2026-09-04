@@ -22,7 +22,7 @@ public class Label : UIElement
 
     public override List<string> GetInspectorProperties()
     {
-        List<string> props = base.GetInspectorProperties();
+        var props = base.GetInspectorProperties();
         props.Add($"Text:     \"{Text}\"");
         props.Add($"Color:    #{TextColor}");
         props.Add($"Scale:    {Scale}   Shadow: {HasShadow}   Centered: {Centered}");

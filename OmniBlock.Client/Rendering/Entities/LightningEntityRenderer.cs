@@ -16,24 +16,27 @@ public class LightningEntityRenderer : EntityRenderer
     ///     it. Saying all of it is the point, since a pipeline is selected whole rather than
     ///     adjusted a field at a time.
     /// </remarks>
-    private static readonly RenderState s_bolt = RenderState.Entity with { Blend = BlendMode.AdditiveByAlpha };
+    private static readonly RenderState s_bolt = RenderState.Entity with
+    {
+        Blend = BlendMode.AdditiveByAlpha
+    };
 
     public void render(long renderSeed, double x, double y, double z)
     {
-        Tessellator tessellator = Tessellator.instance;
+        var tessellator = Tessellator.instance;
 
         // Texturing and lighting are shader uniforms underneath rather than pipeline state, so they
         // stay as they are and are not part of the state above.
         GLManager.TextureEnabled = false;
         GLManager.LightingEnabled = false;
         GLManager.State.Apply(s_bolt);
-        double[] xOffsets = new double[8];
-        double[] zOffsets = new double[8];
-        double offsetX = 0.0D;
-        double offsetZ = 0.0D;
+        var xOffsets = new double[8];
+        var zOffsets = new double[8];
+        var offsetX = 0.0D;
+        var offsetZ = 0.0D;
         JavaRandom random = new(renderSeed);
 
-        for (int segmentIndex = 7; segmentIndex >= 0; --segmentIndex)
+        for (var segmentIndex = 7; segmentIndex >= 0; --segmentIndex)
         {
             xOffsets[segmentIndex] = offsetX;
             zOffsets[segmentIndex] = offsetZ;
@@ -41,14 +44,14 @@ public class LightningEntityRenderer : EntityRenderer
             offsetZ += random.NextInt(11) - 5;
         }
 
-        for (int layerIndex = 0; layerIndex < 4; ++layerIndex)
+        for (var layerIndex = 0; layerIndex < 4; ++layerIndex)
         {
             JavaRandom branchRandom = new(renderSeed);
 
-            for (int branchDepth = 0; branchDepth < 3; ++branchDepth)
+            for (var branchDepth = 0; branchDepth < 3; ++branchDepth)
             {
-                int startIndex = 7;
-                int endIndex = 0;
+                var startIndex = 7;
+                var endIndex = 0;
                 if (branchDepth > 0)
                 {
                     startIndex = 7 - branchDepth;
@@ -59,13 +62,13 @@ public class LightningEntityRenderer : EntityRenderer
                     endIndex = startIndex - 2;
                 }
 
-                double branchX = xOffsets[startIndex] - offsetX;
-                double branchZ = zOffsets[startIndex] - offsetZ;
+                var branchX = xOffsets[startIndex] - offsetX;
+                var branchZ = zOffsets[startIndex] - offsetZ;
 
-                for (int yIndex = startIndex; yIndex >= endIndex; --yIndex)
+                for (var yIndex = startIndex; yIndex >= endIndex; --yIndex)
                 {
-                    double prevBranchX = branchX;
-                    double prevBranchZ = branchZ;
+                    var prevBranchX = branchX;
+                    var prevBranchZ = branchZ;
                     if (branchDepth == 0)
                     {
                         branchX += branchRandom.NextInt(11) - 5;
@@ -78,24 +81,24 @@ public class LightningEntityRenderer : EntityRenderer
                     }
 
                     tessellator.startDrawing(5);
-                    float alphaScale = 0.5F;
+                    var alphaScale = 0.5F;
                     tessellator.setColorRGBA_F(0.9F * alphaScale, 0.9F * alphaScale, 1.0F * alphaScale, 0.3F);
-                    double outerRadius = 0.1D + layerIndex * 0.2D;
+                    var outerRadius = 0.1D + layerIndex * 0.2D;
                     if (branchDepth == 0)
                     {
                         outerRadius *= yIndex * 0.1D + 1.0D;
                     }
 
-                    double innerRadius = 0.1D + layerIndex * 0.2D;
+                    var innerRadius = 0.1D + layerIndex * 0.2D;
                     if (branchDepth == 0)
                     {
                         innerRadius *= (yIndex - 1) * 0.1D + 1.0D;
                     }
 
-                    for (int cornerIndex = 0; cornerIndex < 5; ++cornerIndex)
+                    for (var cornerIndex = 0; cornerIndex < 5; ++cornerIndex)
                     {
-                        double outerX = x + 0.5D - outerRadius;
-                        double outerZ = z + 0.5D - outerRadius;
+                        var outerX = x + 0.5D - outerRadius;
+                        var outerZ = z + 0.5D - outerRadius;
                         if (cornerIndex == 1 || cornerIndex == 2)
                         {
                             outerX += outerRadius * 2.0D;
@@ -106,8 +109,8 @@ public class LightningEntityRenderer : EntityRenderer
                             outerZ += outerRadius * 2.0D;
                         }
 
-                        double innerX = x + 0.5D - innerRadius;
-                        double innerZ = z + 0.5D - innerRadius;
+                        var innerX = x + 0.5D - innerRadius;
+                        var innerZ = z + 0.5D - innerRadius;
                         if (cornerIndex == 1 || cornerIndex == 2)
                         {
                             innerX += innerRadius * 2.0D;
@@ -134,7 +137,7 @@ public class LightningEntityRenderer : EntityRenderer
 
     public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
-        long renderSeed = target.Behaviors.Find<LightningStrikeBehavior>()?.RenderSeed(target) ?? 0L;
+        var renderSeed = target.Behaviors.Find<LightningStrikeBehavior>()?.RenderSeed(target) ?? 0L;
         render(renderSeed, x, y, z);
     }
 }

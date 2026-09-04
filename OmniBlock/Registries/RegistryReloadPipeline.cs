@@ -1,18 +1,16 @@
 using OmniBlock.Entities;
 using OmniBlock.Network.Messages;
-using OmniBlock.Network.Packets;
-using OmniBlock.Server;
 
 namespace OmniBlock.Registries;
 
 /// <summary>
-/// Orchestrates the full reload-sync pipeline.
+///     Orchestrates the full reload-sync pipeline.
 /// </summary>
 public static class RegistryReloadPipeline
 {
     /// <summary>
-    /// Sends all reloadable registry data messages and listener migration packets to
-    /// each connected player.
+    ///     Sends all reloadable registry data messages and listener migration packets to
+    ///     each connected player.
     /// </summary>
     public static void SyncToPlayers(
         RegistryAccess registries,
@@ -21,22 +19,22 @@ public static class RegistryReloadPipeline
     {
         List<RegistryDataMessage> syncMessages = [.. registries.BuildSyncMessages()];
 
-        foreach (ServerPlayerEntity player in players)
+        foreach (var player in players)
         {
             // Send registry data messages directly — no bundling needed since messages
             // are individually framed and the stream alignment guarantee comes from the
             // length prefix, not from a wrapper.
-            foreach (RegistryDataMessage message in syncMessages)
+            foreach (var message in syncMessages)
             {
                 player.NetworkHandler.SendMessage(message);
             }
 
             // Collect per-player migration packets from each listener
-            foreach (IRegistryReloadListener listener in listeners)
+            foreach (var listener in listeners)
             {
-                Packet[] packets = listener.GetSyncPackets(registries, player);
+                var packets = listener.GetSyncPackets(registries, player);
 
-                foreach (Packet packet in packets)
+                foreach (var packet in packets)
                 {
                     player.NetworkHandler.SendPacket(packet);
                 }

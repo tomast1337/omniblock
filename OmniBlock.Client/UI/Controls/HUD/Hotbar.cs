@@ -2,8 +2,6 @@ using OmniBlock.Blocks.Materials;
 using OmniBlock.Client.Entities;
 using OmniBlock.Client.Input;
 using OmniBlock.Client.UI.Rendering;
-using OmniBlock.Inventories;
-using OmniBlock.Items;
 using OmniBlock.Util.Maths;
 
 namespace OmniBlock.Client.UI.Controls.HUD;
@@ -37,7 +35,7 @@ public class Hotbar : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        ClientPlayerEntity? player = _getPlayer();
+        var player = _getPlayer();
         if (player == null)
         {
             return;
@@ -48,12 +46,12 @@ public class Hotbar : UIElement
         renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/gui.png"), 0, 0, 0, 0, 182, 22);
 
         // Selection highlight
-        InventoryPlayer inventory = player.Inventory;
+        var inventory = player.Inventory;
         renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/gui.png"), inventory.SelectedSlot * 20 - 1, -1, 0, 22, 24, 22);
 
         RenderStats(renderer);
 
-        for (int i = 0; i < 9; ++i)
+        for (var i = 0; i < 9; ++i)
         {
             RenderSlot(renderer, i, i * 20 + 3, 3);
         }
@@ -63,7 +61,7 @@ public class Hotbar : UIElement
 
     private void RenderStats(UIRenderer renderer)
     {
-        ClientPlayerEntity? player = _getPlayer();
+        var player = _getPlayer();
         if (player == null)
         {
             return;
@@ -76,21 +74,21 @@ public class Hotbar : UIElement
 
         renderer.TextureManager.BindTexture(renderer.TextureManager.GetTextureId("/gui/icons.png"));
 
-        int armorValue = player.getPlayerArmorValue();
-        int health = player.Health;
-        int lastHealth = player.LastHealth;
-        bool heartBlink = player.Hearts / 3 % 2 == 1 && player.Hearts >= 10;
+        var armorValue = player.getPlayerArmorValue();
+        var health = player.Health;
+        var lastHealth = player.LastHealth;
+        var heartBlink = player.Hearts / 3 % 2 == 1 && player.Hearts >= 10;
 
         _rand.SetSeed(_updateCounter * 312871);
 
-        for (int i = 0; i < 10; ++i)
+        for (var i = 0; i < 10; ++i)
         {
-            int statY = -10; // Relative to hotbar top
+            var statY = -10; // Relative to hotbar top
 
             // --- Armor ---
             if (armorValue > 0)
             {
-                int armorX = 173 - i * 8; // Offset from right
+                var armorX = 173 - i * 8; // Offset from right
                 if (i * 2 + 1 < armorValue)
                 {
                     renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/icons.png"), armorX, statY, 34, 9, 9, 9);
@@ -111,14 +109,14 @@ public class Hotbar : UIElement
                 continue;
             }
 
-            int healthX = i * 8;
-            int healthY = statY;
+            var healthX = i * 8;
+            var healthY = statY;
             if (health <= 4)
             {
                 healthY += _rand.NextInt(2);
             }
 
-            byte blinkIndex = (byte)(heartBlink ? 1 : 0);
+            var blinkIndex = (byte)(heartBlink ? 1 : 0);
             // BG
             renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/icons.png"), healthX, healthY, 16 + blinkIndex * 9, 0, 9, 9);
             // Blink overlay
@@ -148,11 +146,11 @@ public class Hotbar : UIElement
         // --- Air ---
         if (!player.IsInFluid(Material.Water) || !player.GameMode.NeedsAir) return;
 
-        int air = player.Air;
-        int fullBubbles = (int)Math.Ceiling((air - 2) * 10.0D / 300.0D);
-        int partialBubbles = (int)Math.Ceiling(air * 10.0D / 300.0D) - fullBubbles;
+        var air = player.Air;
+        var fullBubbles = (int)Math.Ceiling((air - 2) * 10.0D / 300.0D);
+        var partialBubbles = (int)Math.Ceiling(air * 10.0D / 300.0D) - fullBubbles;
 
-        for (int k = 0; k < fullBubbles + partialBubbles; ++k)
+        for (var k = 0; k < fullBubbles + partialBubbles; ++k)
         {
             renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/icons.png"), k * 8, -19, k < fullBubbles ? 16 : 25, 18, 9, 9);
         }
@@ -160,7 +158,7 @@ public class Hotbar : UIElement
 
     private void RenderSlot(UIRenderer renderer, int slotIndex, int x, int y)
     {
-        ItemStack? stack = _getPlayer()?.Inventory.Main[slotIndex];
+        var stack = _getPlayer()?.Inventory.Main[slotIndex];
         if (stack == null) return;
 
         renderer.DrawItem(stack, x, y);

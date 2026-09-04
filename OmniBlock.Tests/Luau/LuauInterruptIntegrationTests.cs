@@ -1,5 +1,5 @@
-using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using OmniBlock.Luau;
 
 namespace OmniBlock.Tests.Luau;
@@ -28,26 +28,26 @@ public sealed unsafe class LuauInterruptIntegrationTests
         Skip.IfNot(IsNativeLibraryAvailable(),
             "native/luau/build-local.sh hasn't been run for this checkout — omniblock_luau isn't resolvable.");
 
-        IntPtr allocFn = (IntPtr)(delegate* unmanaged[Cdecl]<void*, void*, nuint, nuint, void*>)&LuauCallbacks.Allocate;
-        IntPtr L = LuauNative.lua_newstate(allocFn, IntPtr.Zero);
+        var allocFn = (IntPtr)(delegate* unmanaged[Cdecl]<void*, void*, nuint, nuint, void*>)&LuauCallbacks.Allocate;
+        var L = LuauNative.lua_newstate(allocFn, IntPtr.Zero);
         Assert.NotEqual(IntPtr.Zero, L);
 
         long* budget = null;
         try
         {
-            IntPtr callbacks = LuauNative.lua_callbacks(L);
+            var callbacks = LuauNative.lua_callbacks(L);
             Assert.NotEqual(IntPtr.Zero, callbacks);
 
             // lua_Callbacks { void* userdata; void(*interrupt)(lua_State*, int); ... } —
             // interrupt is the second pointer-sized field, right after userdata.
-            IntPtr interruptFn = (IntPtr)(delegate* unmanaged[Cdecl]<IntPtr, int, void>)&LuauCallbacks.Interrupt;
+            var interruptFn = (IntPtr)(delegate* unmanaged[Cdecl]<IntPtr, int, void>)&LuauCallbacks.Interrupt;
             Marshal.WriteIntPtr(callbacks, IntPtr.Size, interruptFn);
 
-            budget = (long*)NativeMemory.Alloc((nuint)sizeof(long));
+            budget = (long*)NativeMemory.Alloc(sizeof(long));
             *budget = 1000;
             LuauNative.lua_setthreaddata(L, (IntPtr)budget);
 
-            byte[] source = System.Text.Encoding.UTF8.GetBytes("while true do end");
+            var source = Encoding.UTF8.GetBytes("while true do end");
             byte* bytecode;
             nuint bytecodeSize;
             fixed (byte* sourcePtr = source)
@@ -57,10 +57,10 @@ public sealed unsafe class LuauInterruptIntegrationTests
 
             Assert.True(bytecode != null);
 
-            int loadResult = LuauNative.luau_load(L, "=budget_test", bytecode, bytecodeSize, 0);
+            var loadResult = LuauNative.luau_load(L, "=budget_test", bytecode, bytecodeSize, 0);
             Assert.Equal(0, loadResult);
 
-            int pcallResult = LuauNative.lua_pcall(L, 0, 0, 0);
+            var pcallResult = LuauNative.lua_pcall(L, 0, 0, 0);
 
             // A real infinite loop: the only way lua_pcall returns at all is Interrupt firing
             // and raising the budget-exceeded error, not the script finishing on its own.
@@ -84,7 +84,7 @@ public sealed unsafe class LuauInterruptIntegrationTests
             return true;
         }
 
-        string fileName = OperatingSystem.IsWindows() ? "omniblock_luau.dll"
+        var fileName = OperatingSystem.IsWindows() ? "omniblock_luau.dll"
             : OperatingSystem.IsMacOS() ? "libomniblock_luau.dylib"
             : "libomniblock_luau.so";
         return NativeLibrary.TryLoad(Path.Combine(AppContext.BaseDirectory, fileName), out _);

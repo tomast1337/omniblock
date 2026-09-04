@@ -35,8 +35,8 @@ public sealed class FlyingMovementBehavior : IEntityPhysics
         }
         else
         {
-            float friction = GroundFriction(self);
-            float accelerationFactor = 0.16277136F / (friction * friction * friction);
+            var friction = GroundFriction(self);
+            var accelerationFactor = 0.16277136F / (friction * friction * friction);
             self.MoveNonSolid(strafe, forward, self.OnGround ? 0.1F * accelerationFactor : 0.02F);
 
             // Re-read instead of reusing: the acceleration above may have moved the mob onto a
@@ -49,9 +49,9 @@ public sealed class FlyingMovementBehavior : IEntityPhysics
         }
 
         self.LastWalkAnimationSpeed = self.WalkAnimationSpeed;
-        double dx = self.X - self.PrevX;
-        double dz = self.Z - self.PrevZ;
-        float distanceMoved = MathHelper.Sqrt(dx * dx + dz * dz) * 4.0F;
+        var dx = self.X - self.PrevX;
+        var dz = self.Z - self.PrevZ;
+        var distanceMoved = MathHelper.Sqrt(dx * dx + dz * dz) * 4.0F;
         if (distanceMoved > 1.0F)
         {
             distanceMoved = 1.0F;
@@ -69,7 +69,7 @@ public sealed class FlyingMovementBehavior : IEntityPhysics
             return 0.91F;
         }
 
-        int groundBlockId = self.World.Reader.GetBlockId(
+        var groundBlockId = self.World.Reader.GetBlockId(
             MathHelper.Floor(self.X),
             MathHelper.Floor(self.BoundingBox.MinY) - 1,
             MathHelper.Floor(self.Z));

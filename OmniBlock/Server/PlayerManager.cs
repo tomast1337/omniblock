@@ -13,23 +13,23 @@ namespace OmniBlock.Server;
 
 public class PlayerManager
 {
-    public List<ServerPlayerEntity> players = [];
-    private readonly OmniBlockServer _server;
     private readonly ChunkMap[] _chunkMaps;
     private readonly int _maxPlayerCount;
-    protected readonly HashSet<string> bannedPlayers = [];
+    private readonly OmniBlockServer _server;
+    private readonly bool _whitelistEnabled;
     protected readonly HashSet<string> bannedIps = [];
+    protected readonly HashSet<string> bannedPlayers = [];
     protected readonly HashSet<string> ops = [];
     protected readonly HashSet<string> whitelist = [];
-    private IPlayerStorage _saveHandler;
-    private readonly bool _whitelistEnabled;
     private volatile int _pendingViewDistance = -1;
+    private IPlayerStorage _saveHandler;
+    public List<ServerPlayerEntity> players = [];
 
     public PlayerManager(OmniBlockServer server)
     {
         _chunkMaps = new ChunkMap[2];
         _server = server;
-        int viewDistance = server.config.GetViewDistance(10);
+        var viewDistance = server.config.GetViewDistance(10);
         _chunkMaps[0] = new ChunkMap(server, 0, viewDistance);
         _chunkMaps[1] = new ChunkMap(server, -1, viewDistance);
         _maxPlayerCount = server.config.GetMaxPlayers(20);
@@ -43,6 +43,7 @@ public class PlayerManager
         {
             world[0].ChunkMap = _chunkMaps[0];
         }
+
         if (world.Length > 1 && world[1] != null)
         {
             world[1].ChunkMap = _chunkMaps[1];
@@ -55,35 +56,23 @@ public class PlayerManager
         player.ActiveChunks.Clear();
         player.ChunksTerrainSentToClient.Clear();
         GetChunkMap(player.DimensionId).addPlayer(player);
-        ServerWorld var2 = _server.getWorld(player.DimensionId);
+        var var2 = _server.getWorld(player.DimensionId);
         var2.ChunkCache.LoadChunk((int)player.X >> 4, (int)player.Z >> 4);
     }
 
-    public int getBlockViewDistance()
-    {
-        return _chunkMaps[0].getBlockViewDistance();
-    }
+    public int getBlockViewDistance() => _chunkMaps[0].getBlockViewDistance();
 
-    public void SetViewDistance(int newDistance)
-    {
-        _pendingViewDistance = newDistance;
-    }
+    public void SetViewDistance(int newDistance) => _pendingViewDistance = newDistance;
 
-    private ChunkMap GetChunkMap(int dimensionId)
-    {
-        return dimensionId == -1 ? _chunkMaps[1] : _chunkMaps[0];
-    }
+    private ChunkMap GetChunkMap(int dimensionId) => dimensionId == -1 ? _chunkMaps[1] : _chunkMaps[0];
 
-    public void loadPlayerData(ServerPlayerEntity player)
-    {
-        _saveHandler.LoadPlayerData(player);
-    }
+    public void loadPlayerData(ServerPlayerEntity player) => _saveHandler.LoadPlayerData(player);
 
     public void addPlayer(ServerPlayerEntity player)
     {
         players.Add(player);
         player.ResetChunkStreamingState();
-        ServerWorld playerWorld = _server.getWorld(player.DimensionId);
+        var playerWorld = _server.getWorld(player.DimensionId);
         playerWorld.ChunkCache.LoadChunk((int)player.X >> 4, (int)player.Z >> 4);
 
         while (playerWorld.Entities.GetEntityCollisions(player, player.BoundingBox).Count != 0)
@@ -95,10 +84,7 @@ public class PlayerManager
         GetChunkMap(player.DimensionId).addPlayer(player);
     }
 
-    public void updatePlayerChunks(ServerPlayerEntity player)
-    {
-        GetChunkMap(player.DimensionId).updatePlayerChunks(player);
-    }
+    public void updatePlayerChunks(ServerPlayerEntity player) => GetChunkMap(player.DimensionId).updatePlayerChunks(player);
 
     public void disconnect(ServerPlayerEntity player)
     {
@@ -133,7 +119,7 @@ public class PlayerManager
         }
 
         // TODO: This does not work with IPEndpoint's ToString
-        string address = loginNetworkHandler.connection.getAddress().ToString();
+        var address = loginNetworkHandler.connection.getAddress().ToString();
         address = address.Substring(address.IndexOf("/") + 1);
         address = address.Substring(0, address.IndexOf(":"));
         if (bannedIps.Contains(address))
@@ -166,7 +152,7 @@ public class PlayerManager
         GetChunkMap(player.DimensionId).removePlayer(player);
         players.Remove(player);
         _server.getWorld(player.DimensionId).Entities.ServerRemove(player);
-        Vec3I? spawnPos = player.GetSpawnPos();
+        var spawnPos = player.GetSpawnPos();
         player.DimensionId = dimensionId;
         ServerPlayerEntity serverPlayer = new(
             _server, _server.getWorld(player.DimensionId), player.Name, new ServerPlayerInteractionManager(_server.getWorld(player.DimensionId))
@@ -175,19 +161,21 @@ public class PlayerManager
             ID = player.ID,
             NetworkHandler = player.NetworkHandler
         };
-        ServerWorld targetWorld = _server.getWorld(player.DimensionId);
+        var targetWorld = _server.getWorld(player.DimensionId);
         if (spawnPos is (int x, int y, int z))
         {
-            Vec3I? respawnPosition = EntityPlayer.FindRespawnPosition(_server.getWorld(player.DimensionId), spawnPos);
+            var respawnPosition = EntityPlayer.FindRespawnPosition(_server.getWorld(player.DimensionId), spawnPos);
             if (respawnPosition is (int x2, int y2, int z2))
             {
                 serverPlayer.SetPositionAndAnglesKeepPrevAngles(x2 + 0.5F, y2 + 0.1F, z2 + 0.5F, 0.0F, 0.0F);
                 serverPlayer.SetSpawnPos(spawnPos);
-
             }
             else
             {
-                serverPlayer.NetworkHandler.SendMessage(new GameStateChangeMessage { Reason = 0 });
+                serverPlayer.NetworkHandler.SendMessage(new GameStateChangeMessage
+                {
+                    Reason = 0
+                });
             }
         }
 
@@ -198,7 +186,10 @@ public class PlayerManager
             serverPlayer.SetPosition(serverPlayer.X, serverPlayer.Y + 1.0, serverPlayer.Z);
         }
 
-        serverPlayer.NetworkHandler.SendMessage(new PlayerRespawnMessage { DimensionId = (sbyte)serverPlayer.DimensionId });
+        serverPlayer.NetworkHandler.SendMessage(new PlayerRespawnMessage
+        {
+            DimensionId = (sbyte)serverPlayer.DimensionId
+        });
         serverPlayer.NetworkHandler.teleport(serverPlayer.X, serverPlayer.Y, serverPlayer.Z, serverPlayer.Yaw, serverPlayer.Pitch);
         sendWorldInfo(serverPlayer, targetWorld);
         GetChunkMap(serverPlayer.DimensionId).addPlayer(serverPlayer);
@@ -210,7 +201,7 @@ public class PlayerManager
 
     public void changePlayerDimension(ServerPlayerEntity player)
     {
-        int targetDim = 0;
+        var targetDim = 0;
         if (player.DimensionId == -1)
         {
             targetDim = 0;
@@ -225,9 +216,9 @@ public class PlayerManager
 
     public void sendPlayerToDimension(ServerPlayerEntity player, int targetDim)
     {
-        int sourceDim = player.DimensionId;
-        ServerWorld currentWorld = _server.getWorld(sourceDim);
-        ServerWorld targetWorld = _server.getWorld(targetDim);
+        var sourceDim = player.DimensionId;
+        var currentWorld = _server.getWorld(sourceDim);
+        var targetWorld = _server.getWorld(targetDim);
 
         if (targetWorld == null)
         {
@@ -239,7 +230,10 @@ public class PlayerManager
         GetChunkMap(sourceDim).removePlayer(player);
 
         player.DimensionId = targetDim;
-        player.NetworkHandler.SendMessage(new PlayerRespawnMessage { DimensionId = (sbyte)player.DimensionId });
+        player.NetworkHandler.SendMessage(new PlayerRespawnMessage
+        {
+            DimensionId = (sbyte)player.DimensionId
+        });
         player.NetworkHandler.SendMessage(new PlayerGameModeUpdateMessage
         {
             GameModeNamespace = player.GameMode.Namespace.ToString(),
@@ -247,9 +241,9 @@ public class PlayerManager
         });
         currentWorld.Entities.ServerRemove(player);
         player.Dead = false;
-        double x = player.X;
-        double z = player.Z;
-        double scale = 8.0;
+        var x = player.X;
+        var z = player.Z;
+        var scale = 8.0;
 
         if (player.DimensionId == -1)
         {
@@ -284,7 +278,9 @@ public class PlayerManager
 
             // Fully drain lighting updates generated during portal chunk
             // creation before the chunks are queued for the client.
-            while (targetWorld.Lighting.DoLightingUpdates()) { }
+            while (targetWorld.Lighting.DoLightingUpdates())
+            {
+            }
         }
 
         updatePlayerAfterDimensionChange(player);
@@ -296,7 +292,7 @@ public class PlayerManager
 
     public void updateAllChunks()
     {
-        int viewDistanceUpdate = _pendingViewDistance;
+        var viewDistanceUpdate = _pendingViewDistance;
         if (viewDistanceUpdate != -1)
         {
             _chunkMaps[0].SetViewDistance(viewDistanceUpdate);
@@ -304,7 +300,7 @@ public class PlayerManager
             _pendingViewDistance = -1;
         }
 
-        for (int chunkMapIndex = 0; chunkMapIndex < _chunkMaps.Length; chunkMapIndex++)
+        for (var chunkMapIndex = 0; chunkMapIndex < _chunkMaps.Length; chunkMapIndex++)
         {
             _chunkMaps[chunkMapIndex].updateChunks();
         }
@@ -312,40 +308,37 @@ public class PlayerManager
 
     public void flushPendingChunkUpdates()
     {
-        for (int i = 0; i < players.Count; i++)
+        for (var i = 0; i < players.Count; i++)
         {
             players[i].FlushPendingChunkUpdates();
         }
     }
 
-    public void markDirty(int x, int y, int z, int dimensionId)
-    {
-        GetChunkMap(dimensionId).markBlockForUpdate(x, y, z);
-    }
+    public void markDirty(int x, int y, int z, int dimensionId) => GetChunkMap(dimensionId).markBlockForUpdate(x, y, z);
 
     public void sendToAll(Packet packet)
     {
-        for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
+        for (var playerIndex = 0; playerIndex < players.Count; playerIndex++)
         {
-            ServerPlayerEntity playerEntity = players[playerIndex];
+            var playerEntity = players[playerIndex];
             playerEntity.NetworkHandler.SendPacket(packet);
         }
     }
 
     public void sendToAll(Message message)
     {
-        for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
+        for (var playerIndex = 0; playerIndex < players.Count; playerIndex++)
         {
-            ServerPlayerEntity playerEntity = players[playerIndex];
+            var playerEntity = players[playerIndex];
             playerEntity.NetworkHandler.SendMessage(message);
         }
     }
 
     public void sendToDimension(Packet packet, int dimensionId)
     {
-        for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
+        for (var playerIndex = 0; playerIndex < players.Count; playerIndex++)
         {
-            ServerPlayerEntity playerEntity = players[playerIndex];
+            var playerEntity = players[playerIndex];
             if (playerEntity.DimensionId == dimensionId)
             {
                 playerEntity.NetworkHandler.SendPacket(packet);
@@ -355,9 +348,9 @@ public class PlayerManager
 
     public void sendToDimension(Message message, int dimensionId)
     {
-        for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
+        for (var playerIndex = 0; playerIndex < players.Count; playerIndex++)
         {
-            ServerPlayerEntity playerEntity = players[playerIndex];
+            var playerEntity = players[playerIndex];
             if (playerEntity.DimensionId == dimensionId)
             {
                 playerEntity.NetworkHandler.SendMessage(message);
@@ -365,10 +358,7 @@ public class PlayerManager
         }
     }
 
-    public string getPlayerList()
-    {
-        return string.Join(", ", players.ConvertAll(p => p.Name));
-    }
+    public string getPlayerList() => string.Join(", ", players.ConvertAll(p => p.Name));
 
     public void banPlayer(string name)
     {
@@ -444,16 +434,13 @@ public class PlayerManager
         return !_whitelistEnabled || ops.Contains(name) || whitelist.Contains(name);
     }
 
-    public bool isOperator(string name)
-    {
-        return ops.Contains(name.Trim().ToLower());
-    }
+    public bool isOperator(string name) => ops.Contains(name.Trim().ToLower());
 
     public ServerPlayerEntity? getPlayer(string name)
     {
-        for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
+        for (var playerIndex = 0; playerIndex < players.Count; playerIndex++)
         {
-            ServerPlayerEntity playerEntity = players[playerIndex];
+            var playerEntity = players[playerIndex];
             if (playerEntity.Name.EqualsIgnoreCase(name))
             {
                 return playerEntity;
@@ -466,7 +453,7 @@ public class PlayerManager
     public ServerPlayerEntity? GetRandomPlayer()
     {
         if (players.Count == 0) return null;
-        int id = Random.Shared.Next(players.Count);
+        var id = Random.Shared.Next(players.Count);
         return players[id];
     }
 
@@ -488,7 +475,7 @@ public class PlayerManager
 
         if (range > 0)
         {
-            Vec3D pos = position!.Value;
+            var pos = position!.Value;
             dict = players.Select((item, i) => (i, item)).ToDictionary(t => t.item.Position.DistanceTo(pos), t => t.item);
         }
         else
@@ -502,7 +489,7 @@ public class PlayerManager
                 case Selector.Nearest:
                 case Selector.Furthest:
                     if (position == null) throw new ArgumentNullException(nameof(position));
-                    Vec3D pos = position.Value;
+                    var pos = position.Value;
                     dict = players.Select((item, i) => (i, item)).ToDictionary(t => t.item.Position.DistanceTo(pos), t => t.item);
                     break;
                 default:
@@ -512,7 +499,7 @@ public class PlayerManager
 
         if (dimensionId != null)
         {
-            int d = dimensionId.Value;
+            var d = dimensionId.Value;
             var keysToRemove = new List<double>();
             foreach (var p in dict)
             {
@@ -521,7 +508,8 @@ public class PlayerManager
                     keysToRemove.Add(p.Key);
                 }
             }
-            foreach (double key in keysToRemove)
+
+            foreach (var key in keysToRemove)
             {
                 dict.Remove(key);
             }
@@ -537,7 +525,8 @@ public class PlayerManager
                     keysToRemove.Add(p.Key);
                 }
             }
-            foreach (double key in keysToRemove)
+
+            foreach (var key in keysToRemove)
             {
                 dict.Remove(key);
             }
@@ -566,35 +555,32 @@ public class PlayerManager
 
     public void messagePlayer(string name, string message)
     {
-        ServerPlayerEntity playerEntity = getPlayer(name);
+        var playerEntity = getPlayer(name);
         if (playerEntity != null)
         {
-            playerEntity.NetworkHandler.SendMessage(new ChatMessage { Text = message });
+            playerEntity.NetworkHandler.SendMessage(new ChatMessage
+            {
+                Text = message
+            });
         }
     }
 
-    public void sendToAround(double x, double y, double z, double range, int dimensionId, Packet packet)
-    {
-        sendToAround(null, x, y, z, range, dimensionId, packet);
-    }
+    public void sendToAround(double x, double y, double z, double range, int dimensionId, Packet packet) => sendToAround(null, x, y, z, range, dimensionId, packet);
 
-    public void sendToAround(double x, double y, double z, double range, int dimensionId, Message message)
-    {
-        sendToAround(null, x, y, z, range, dimensionId, message);
-    }
+    public void sendToAround(double x, double y, double z, double range, int dimensionId, Message message) => sendToAround(null, x, y, z, range, dimensionId, message);
 
     public void sendToAround(
         EntityPlayer? player, double x, double y, double z, double range, int dimensionId, Message message)
     {
-        for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
+        for (var playerIndex = 0; playerIndex < players.Count; playerIndex++)
         {
-            ServerPlayerEntity playerEntity = players[playerIndex];
+            var playerEntity = players[playerIndex];
             if (playerEntity != player && playerEntity.DimensionId == dimensionId)
             {
-                double deltaX = x - playerEntity.X;
-                double deltaY = y - playerEntity.Y;
-                double deltaZ = z - playerEntity.Z;
-                if ((deltaX * deltaX) + (deltaY * deltaY) + (deltaZ * deltaZ) < range * range)
+                var deltaX = x - playerEntity.X;
+                var deltaY = y - playerEntity.Y;
+                var deltaZ = z - playerEntity.Z;
+                if (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ < range * range)
                 {
                     playerEntity.NetworkHandler.SendMessage(message);
                 }
@@ -604,14 +590,14 @@ public class PlayerManager
 
     public void sendToAround(EntityPlayer? player, double x, double y, double z, double range, int dimensionId, Packet packet)
     {
-        for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
+        for (var playerIndex = 0; playerIndex < players.Count; playerIndex++)
         {
-            ServerPlayerEntity playerEntity = players[playerIndex];
+            var playerEntity = players[playerIndex];
             if (playerEntity != player && playerEntity.DimensionId == dimensionId)
             {
-                double deltaX = x - playerEntity.X;
-                double deltaY = y - playerEntity.Y;
-                double deltaZ = z - playerEntity.Z;
+                var deltaX = x - playerEntity.X;
+                var deltaY = y - playerEntity.Y;
+                var deltaZ = z - playerEntity.Z;
                 if (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ < range * range)
                 {
                     playerEntity.NetworkHandler.SendPacket(packet);
@@ -621,12 +607,15 @@ public class PlayerManager
     }
 
     /// <summary>
-    /// Send <see cref="ChatMessage"/> to all operators.
+    ///     Send <see cref="ChatMessage" /> to all operators.
     /// </summary>
     /// <param name="message">message to log</param>
     public void BroadcastOp(string message)
     {
-        var chatMessage = new ChatMessage { Text = message };
+        var chatMessage = new ChatMessage
+        {
+            Text = message
+        };
 
         foreach (var player in players)
         {
@@ -637,10 +626,7 @@ public class PlayerManager
         }
     }
 
-    public bool sendPacket(string player, Packet packet)
-    {
-        return sendPacket(getPlayer(player), packet);
-    }
+    public bool sendPacket(string player, Packet packet) => sendPacket(getPlayer(player), packet);
 
     public static bool sendPacket(ServerPlayerEntity? player, Packet packet)
     {
@@ -655,7 +641,7 @@ public class PlayerManager
 
     public void savePlayers()
     {
-        for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
+        for (var playerIndex = 0; playerIndex < players.Count; playerIndex++)
         {
             _saveHandler.SavePlayerData(players[playerIndex]);
         }
@@ -677,22 +663,22 @@ public class PlayerManager
         saveWhitelist();
     }
 
-    public HashSet<string> getWhitelist()
-    {
-        return whitelist;
-    }
+    public HashSet<string> getWhitelist() => whitelist;
 
-    public void reloadWhitelist()
-    {
-        loadWhitelist();
-    }
+    public void reloadWhitelist() => loadWhitelist();
 
     public static void sendWorldInfo(ServerPlayerEntity player, ServerWorld world)
     {
-        player.NetworkHandler.SendMessage(new WorldTimeUpdateMessage { Time = world.GetTime() });
+        player.NetworkHandler.SendMessage(new WorldTimeUpdateMessage
+        {
+            Time = world.GetTime()
+        });
         if (world.Properties.IsRaining)
         {
-            player.NetworkHandler.SendMessage(new GameStateChangeMessage { Reason = 1 });
+            player.NetworkHandler.SendMessage(new GameStateChangeMessage
+            {
+                Reason = 1
+            });
         }
     }
 

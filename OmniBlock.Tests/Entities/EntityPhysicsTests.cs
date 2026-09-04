@@ -6,15 +6,15 @@ using OmniBlock.NBT;
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Covers the Physics capability slot and the three animals that lost their classes to it. Pig,
-/// chicken and sheep are now <c>EntityCreature</c> instances configured entirely by JSON.
+///     Covers the Physics capability slot and the three animals that lost their classes to it. Pig,
+///     chicken and sheep are now <c>EntityCreature</c> instances configured entirely by JSON.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityPhysicsTests
 {
     private static EntityCreature Spawn(FakeWorldContext world, string name)
     {
-        EntityCreature animal = (EntityCreature)TestEntityCatalog.ByName(name).Create(world);
+        var animal = (EntityCreature)TestEntityCatalog.ByName(name).Create(world);
         animal.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         world.Entities.SpawnEntity(animal);
         return animal;
@@ -61,7 +61,7 @@ public sealed class EntityPhysicsTests
     public void A_chicken_absorbs_its_landing_and_a_cow_does_not()
     {
         FakeWorldContext world = new();
-        EntityCreature chicken = Spawn(world, "chicken");
+        var chicken = Spawn(world, "chicken");
 
         Assert.True(chicken.Behaviors.Physics!.OnLanding(chicken, 20.0F));
         Assert.Null(TestEntityCatalog.ByName("cow").Behaviors.Find<FlapDescentBehavior>());
@@ -70,12 +70,12 @@ public sealed class EntityPhysicsTests
     /// <summary>
     ///     The wings drive the render angle, and a renderer reaches them by capability rather than by
     ///     reading the Physics slot: the chicken shares that slot with the grazing rules, so the slot
-    ///     holds a composite and a cast to <see cref="FlapDescentBehavior"/> finds nothing.
+    ///     holds a composite and a cast to <see cref="FlapDescentBehavior" /> finds nothing.
     /// </summary>
     [Fact]
     public void A_chickens_wings_are_reachable_even_though_the_slot_holds_a_composite()
     {
-        EntityBehaviorSet behaviors = TestEntityCatalog.ByName("chicken").Behaviors;
+        var behaviors = TestEntityCatalog.ByName("chicken").Behaviors;
 
         Assert.IsNotType<FlapDescentBehavior>(behaviors.Physics);
         Assert.NotNull(behaviors.Find<FlapDescentBehavior>());
@@ -91,11 +91,11 @@ public sealed class EntityPhysicsTests
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 15, 0, 15, 63);
 
-        EntityCreature chicken = (EntityCreature)TestEntityCatalog.ByName("chicken").Create(world);
+        var chicken = (EntityCreature)TestEntityCatalog.ByName("chicken").Create(world);
         chicken.SetPositionAndAngles(8.5, 64.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(chicken));
 
-        FlapDescentBehavior wings = chicken.Behaviors.Find<FlapDescentBehavior>()!;
+        var wings = chicken.Behaviors.Find<FlapDescentBehavior>()!;
 
         // Standing on the floor: the wings fold flat, so the angle collapses to nothing.
         EntityTestHarness.AdvanceGameTicks(world, 20);
@@ -106,8 +106,8 @@ public sealed class EntityPhysicsTests
         chicken.SetPositionAndAngles(8.5, 80.0, 8.5, 0f, 0f);
         chicken.OnGround = false;
 
-        float highest = 0.0F;
-        for (int i = 0; i < 10; i++)
+        var highest = 0.0F;
+        for (var i = 0; i < 10; i++)
         {
             EntityTestHarness.AdvanceGameTicks(world, 1);
             highest = Math.Max(highest, wings.WingRotation(chicken, 1.0F));
@@ -124,8 +124,11 @@ public sealed class EntityPhysicsTests
     public void A_pig_credits_its_rider_without_suppressing_fall_damage()
     {
         FakeWorldContext world = new();
-        EntityCreature pig = Spawn(world, "pig");
-        TestEntityPlayer player = new(world) { Name = "tester" };
+        var pig = Spawn(world, "pig");
+        TestEntityPlayer player = new(world)
+        {
+            Name = "tester"
+        };
         player.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         player.SetVehicle(pig);
 
@@ -133,7 +136,10 @@ public sealed class EntityPhysicsTests
         Assert.True(player.HasStat(Achievements.KillPig));
 
         // Below the threshold nothing is credited.
-        TestEntityPlayer shortFall = new(world) { Name = "short" };
+        TestEntityPlayer shortFall = new(world)
+        {
+            Name = "short"
+        };
         shortFall.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         shortFall.SetVehicle(pig);
         Assert.False(pig.Behaviors.Physics.OnLanding(pig, 1.0F) || shortFall.HasStat(Achievements.KillPig));
@@ -144,11 +150,14 @@ public sealed class EntityPhysicsTests
     public void Shearing_a_sheep_drops_its_wool_and_keeps_its_colour()
     {
         FakeWorldContext world = new();
-        EntityCreature sheep = Spawn(world, "sheep");
-        WoolBehavior wool = Assert.IsType<WoolBehavior>(sheep.Behaviors.Interactable);
+        var sheep = Spawn(world, "sheep");
+        var wool = Assert.IsType<WoolBehavior>(sheep.Behaviors.Interactable);
         wool.SetColorOn(sheep, 11);
 
-        TestEntityPlayer player = new(world) { Name = "tester" };
+        TestEntityPlayer player = new(world)
+        {
+            Name = "tester"
+        };
         player.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         player.Inventory.SetStack(player.Inventory.SelectedSlot, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:shears")));
 
@@ -159,7 +168,7 @@ public sealed class EntityPhysicsTests
         Assert.Contains(world.Entities.Entities, EntityTestHarness.IsDroppedItem);
 
         // Already sheared: a second attempt drops nothing more.
-        int before = world.Entities.Entities.Count(EntityTestHarness.IsDroppedItem);
+        var before = world.Entities.Entities.Count(EntityTestHarness.IsDroppedItem);
         sheep.Interact(player);
         Assert.Equal(before, world.Entities.Entities.Count(EntityTestHarness.IsDroppedItem));
     }
@@ -168,8 +177,8 @@ public sealed class EntityPhysicsTests
     public void A_sheep_round_trips_its_packed_wool_byte_through_nbt()
     {
         FakeWorldContext world = new();
-        EntityCreature sheep = Spawn(world, "sheep");
-        WoolBehavior wool = (WoolBehavior)sheep.Behaviors.Interactable!;
+        var sheep = Spawn(world, "sheep");
+        var wool = (WoolBehavior)sheep.Behaviors.Interactable!;
         wool.SetColorOn(sheep, 12);
 
         NBTTagCompound nbt = new();
@@ -189,8 +198,8 @@ public sealed class EntityPhysicsTests
     public void A_spawned_sheep_rolls_a_fleece_colour()
     {
         FakeWorldContext world = new();
-        EntityCreature sheep = Spawn(world, "sheep");
-        WoolBehavior wool = (WoolBehavior)sheep.Behaviors.Interactable!;
+        var sheep = Spawn(world, "sheep");
+        var wool = (WoolBehavior)sheep.Behaviors.Interactable!;
 
         sheep.PostSpawn();
 

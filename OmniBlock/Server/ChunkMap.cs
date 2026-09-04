@@ -1,25 +1,22 @@
-using OmniBlock.Blocks;
+using Microsoft.Extensions.Logging;
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Entities;
 using OmniBlock.Network.Messages;
-using OmniBlock.Network.Packets;
 using OmniBlock.Util.Maths;
-using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Server;
 
 internal class ChunkMap
 {
-    public List<ServerPlayerEntity> players = [];
     private readonly Dictionary<long, TrackedChunk> _chunkMapping = new();
     private readonly List<TrackedChunk> _chunksToUpdate = [];
-    public readonly ChunkLoadingQueue loadQueue;
-    private OmniBlockServer _server;
     private readonly int _dimensionId;
-    private int _viewDistance;
     private readonly ILogger<ChunkMap> _logger = Log.Instance.For<ChunkMap>();
+    private readonly OmniBlockServer _server;
+    public readonly ChunkLoadingQueue loadQueue;
+    private int _viewDistance;
+    public List<ServerPlayerEntity> players = [];
 
     public ChunkMap(OmniBlockServer server, int dimensionId, int viewRadius)
     {
@@ -27,6 +24,7 @@ internal class ChunkMap
         {
             throw new ArgumentException("Too big view Radius! Max is 32.", nameof(viewRadius));
         }
+
         if (viewRadius < 4)
         {
             throw new ArgumentException("Too small view Radius! Min is 4.", nameof(viewRadius));
@@ -38,14 +36,11 @@ internal class ChunkMap
         loadQueue = new ChunkLoadingQueue(this);
     }
 
-    public ServerWorld getWorld()
-    {
-        return _server.getWorld(_dimensionId);
-    }
+    public ServerWorld getWorld() => _server.getWorld(_dimensionId);
 
     public void SetViewDistance(int newDistance)
     {
-        int oldDistance = _viewDistance;
+        var oldDistance = _viewDistance;
         _viewDistance = newDistance;
 
         if (newDistance < oldDistance)
@@ -53,8 +48,8 @@ internal class ChunkMap
             // Unload chunks that are now out of view distance
             foreach (var player in players)
             {
-                int px = (int)player.LastX >> 4;
-                int pz = (int)player.LastZ >> 4;
+                var px = (int)player.LastX >> 4;
+                var pz = (int)player.LastZ >> 4;
 
                 foreach (var item in GetChunks(player, oldDistance))
                 {
@@ -78,12 +73,12 @@ internal class ChunkMap
         else if (newDistance > oldDistance)
         {
             // Load chunks that are now within view distance
-            foreach (ServerPlayerEntity player in players)
+            foreach (var player in players)
             {
-                int px = (int)player.LastX >> 4;
-                int pz = (int)player.LastZ >> 4;
+                var px = (int)player.LastX >> 4;
+                var pz = (int)player.LastZ >> 4;
 
-                foreach (ChunkPos item in GetChunks(player))
+                foreach (var item in GetChunks(player))
                 {
                     if (isWithinOldViewDistance(item.X, item.Z, px, pz, oldDistance))
                     {
@@ -108,14 +103,14 @@ internal class ChunkMap
 
     private static bool isWithinOldViewDistance(int chunkX, int chunkZ, int centerX, int centerZ, int oldDist)
     {
-        int dx = chunkX - centerX;
-        int dz = chunkZ - centerZ;
+        var dx = chunkX - centerX;
+        var dz = chunkZ - centerZ;
         return dx >= -oldDist && dx <= oldDist && dz >= -oldDist && dz <= oldDist;
     }
 
     public void updateChunks()
     {
-        foreach (TrackedChunk chunk in _chunksToUpdate)
+        foreach (var chunk in _chunksToUpdate)
         {
             chunk.updateChunk();
         }
@@ -126,7 +121,7 @@ internal class ChunkMap
         // changes without any block changing, and the pass that first lights a chunk writes the
         // arrays directly and so puts nothing on any list at all. Testing a mask is a field read,
         // which is what makes sweeping the whole set affordable.
-        foreach (TrackedChunk chunk in _chunkMapping.Values)
+        foreach (var chunk in _chunkMapping.Values)
         {
             chunk.sendDirtyLight();
         }
@@ -134,15 +129,12 @@ internal class ChunkMap
         loadQueue.Tick();
     }
 
-    public static long GetChunkHash(int chunkX, int chunkZ)
-    {
-        return (chunkX + 2147483647L) | ((chunkZ + 2147483647L) << 32);
-    }
+    public static long GetChunkHash(int chunkX, int chunkZ) => (chunkX + 2147483647L) | ((chunkZ + 2147483647L) << 32);
 
     internal TrackedChunk? GetOrCreateChunk(int chunkX, int chunkZ, bool createIfAbsent)
     {
-        long chunkHash = GetChunkHash(chunkX, chunkZ);
-        TrackedChunk? chunk = _chunkMapping.GetValueOrDefault(chunkHash);
+        var chunkHash = GetChunkHash(chunkX, chunkZ);
+        var chunk = _chunkMapping.GetValueOrDefault(chunkHash);
         if (chunk == null && createIfAbsent)
         {
             chunk = new TrackedChunk(this, chunkX, chunkZ);
@@ -154,16 +146,16 @@ internal class ChunkMap
 
     public void markBlockForUpdate(int x, int y, int z)
     {
-        int chunkX = x >> 4;
-        int chunkZ = z >> 4;
-        TrackedChunk? trackedChunk = GetOrCreateChunk(chunkX, chunkZ, false);
+        var chunkX = x >> 4;
+        var chunkZ = z >> 4;
+        var trackedChunk = GetOrCreateChunk(chunkX, chunkZ, false);
         trackedChunk?.updatePlayerChunks(x & 15, y, z & 15);
     }
 
     internal bool IsChunkTrackedAndSent(int chunkX, int chunkZ)
     {
-        long key = GetChunkHash(chunkX, chunkZ);
-        return _chunkMapping.TryGetValue(key, out TrackedChunk? trackedChunk) && trackedChunk != null && trackedChunk.HasPlayersAndHasBeenSent();
+        var key = GetChunkHash(chunkX, chunkZ);
+        return _chunkMapping.TryGetValue(key, out var trackedChunk) && trackedChunk != null && trackedChunk.HasPlayersAndHasBeenSent();
     }
 
     internal static bool HasPlayerReceivedChunkTerrain(ServerPlayerEntity player, int chunkX, int chunkZ)
@@ -177,18 +169,18 @@ internal class ChunkMap
         int[] dxs = [0, 1, 0, 1];
         int[] dzs = [0, 0, 1, 1];
 
-        for (int c = 0; c < 4; c++)
+        for (var c = 0; c < 4; c++)
         {
-            int cx = chunkX + dxs[c];
-            int cz = chunkZ + dzs[c];
+            var cx = chunkX + dxs[c];
+            var cz = chunkZ + dzs[c];
 
-            long key = GetChunkHash(cx, cz);
-            if (!_chunkMapping.TryGetValue(key, out TrackedChunk? trackedChunk) || trackedChunk == null) continue;
+            var key = GetChunkHash(cx, cz);
+            if (!_chunkMapping.TryGetValue(key, out var trackedChunk) || trackedChunk == null) continue;
 
             trackedChunk.updatePlayerChunks(0, 50, 0);
             trackedChunk.updatePlayerChunks(15, 124, 15);
 
-            for (int i = 0; i < 8; i++)
+            for (var i = 0; i < 8; i++)
             {
                 trackedChunk.updatePlayerChunks(i, 64, i);
             }
@@ -201,8 +193,8 @@ internal class ChunkMap
         player.LastX = player.X;
         player.LastZ = player.Z;
 
-        bool isHomeChunk = true;
-        foreach (ChunkPos item in GetChunks(player))
+        var isHomeChunk = true;
+        foreach (var item in GetChunks(player))
         {
             // The player's own chunk (always first out of GetChunks) is force-loaded
             // synchronously — the async worker pool gives no per-tick guarantee it'll be ready
@@ -225,9 +217,9 @@ internal class ChunkMap
 
     public void removePlayer(ServerPlayerEntity player)
     {
-        foreach (ChunkPos item in GetChunks(player))
+        foreach (var item in GetChunks(player))
         {
-            TrackedChunk? chunk = GetOrCreateChunk(item.X, item.Z, false);
+            var chunk = GetOrCreateChunk(item.X, item.Z, false);
             chunk?.removePlayer(player);
         }
 
@@ -238,19 +230,19 @@ internal class ChunkMap
 
     private bool isWithinViewDistance(int chunkX, int chunkZ, int centerX, int centerZ)
     {
-        int deltaX = chunkX - centerX;
-        int deltaZ = chunkZ - centerZ;
+        var deltaX = chunkX - centerX;
+        var deltaZ = chunkZ - centerZ;
         return deltaX >= -_viewDistance && deltaX <= _viewDistance && deltaZ >= -_viewDistance && deltaZ <= _viewDistance;
     }
 
     public void updatePlayerChunks(ServerPlayerEntity player)
     {
-        int playerChunkCenterX = (int)player.X >> 4;
-        int playerChunkCenterZ = (int)player.Z >> 4;
-        int playerLastChunkCenterX = (int)player.LastX >> 4;
-        int playerLastChunkCenterZ = (int)player.LastZ >> 4;
-        int playerChunkCenterDeltaX = playerChunkCenterX - playerLastChunkCenterX;
-        int playerChunkCenterDeltaZ = playerChunkCenterZ - playerLastChunkCenterZ;
+        var playerChunkCenterX = (int)player.X >> 4;
+        var playerChunkCenterZ = (int)player.Z >> 4;
+        var playerLastChunkCenterX = (int)player.LastX >> 4;
+        var playerLastChunkCenterZ = (int)player.LastZ >> 4;
+        var playerChunkCenterDeltaX = playerChunkCenterX - playerLastChunkCenterX;
+        var playerChunkCenterDeltaZ = playerChunkCenterZ - playerLastChunkCenterZ;
         if (playerChunkCenterDeltaX == 0 && playerChunkCenterDeltaZ == 0)
         {
             return;
@@ -258,9 +250,9 @@ internal class ChunkMap
 
         player.UpdateChunkStreamingMotion(playerChunkCenterDeltaX, playerChunkCenterDeltaZ);
 
-        for (int x = playerChunkCenterX - _viewDistance; x <= playerChunkCenterX + _viewDistance; x++)
+        for (var x = playerChunkCenterX - _viewDistance; x <= playerChunkCenterX + _viewDistance; x++)
         {
-            for (int z = playerChunkCenterZ - _viewDistance; z <= playerChunkCenterZ + _viewDistance; z++)
+            for (var z = playerChunkCenterZ - _viewDistance; z <= playerChunkCenterZ + _viewDistance; z++)
             {
                 if (!isWithinViewDistance(x, z, playerLastChunkCenterX, playerLastChunkCenterZ))
                 {
@@ -279,8 +271,8 @@ internal class ChunkMap
 
                 if (!isWithinViewDistance(x - playerChunkCenterDeltaX, z - playerChunkCenterDeltaZ, playerChunkCenterX, playerChunkCenterZ))
                 {
-                    int oldChunkX = x - playerChunkCenterDeltaX;
-                    int oldChunkZ = z - playerChunkCenterDeltaZ;
+                    var oldChunkX = x - playerChunkCenterDeltaX;
+                    var oldChunkZ = z - playerChunkCenterDeltaZ;
                     if (GetOrCreateChunk(oldChunkX, oldChunkZ, false) is TrackedChunk chunk)
                     {
                         chunk.removePlayer(player);
@@ -299,38 +291,32 @@ internal class ChunkMap
         player.LastZ = player.Z;
     }
 
-    public int getBlockViewDistance()
-    {
-        return _viewDistance * 16 - 16;
-    }
+    public int getBlockViewDistance() => _viewDistance * 16 - 16;
 
-    private ReadOnlySpan<ChunkPos> GetChunks(ServerPlayerEntity player)
-    {
-        return GetChunks(player, _viewDistance);
-    }
+    private ReadOnlySpan<ChunkPos> GetChunks(ServerPlayerEntity player) => GetChunks(player, _viewDistance);
 
     private static ReadOnlySpan<ChunkPos> GetChunks(ServerPlayerEntity player, int radius)
     {
-        int playerChunkX = (int)player.X >> 4;
-        int playerChunkZ = (int)player.Z >> 4;
-        int diameter = radius * 2 + 1;
+        var playerChunkX = (int)player.X >> 4;
+        var playerChunkZ = (int)player.Z >> 4;
+        var diameter = radius * 2 + 1;
         var chunks = new ChunkPos[diameter * diameter];
-        int index = 0;
+        var index = 0;
 
         chunks[index++] = new ChunkPos(playerChunkX, playerChunkZ);
 
-        for (int currentRadius = 1; currentRadius <= radius; currentRadius++)
+        for (var currentRadius = 1; currentRadius <= radius; currentRadius++)
         {
-            for (int dx = -currentRadius; dx <= currentRadius; dx++)
+            for (var dx = -currentRadius; dx <= currentRadius; dx++)
                 chunks[index++] = new ChunkPos(playerChunkX + dx, playerChunkZ - currentRadius);
 
-            for (int dz = -currentRadius + 1; dz <= currentRadius; dz++)
+            for (var dz = -currentRadius + 1; dz <= currentRadius; dz++)
                 chunks[index++] = new ChunkPos(playerChunkX + currentRadius, playerChunkZ + dz);
 
-            for (int dx = currentRadius - 1; dx >= -currentRadius; dx--)
+            for (var dx = currentRadius - 1; dx >= -currentRadius; dx--)
                 chunks[index++] = new ChunkPos(playerChunkX + dx, playerChunkZ + currentRadius);
 
-            for (int dz = currentRadius - 1; dz >= -currentRadius + 1; dz--)
+            for (var dz = currentRadius - 1; dz >= -currentRadius + 1; dz--)
                 chunks[index++] = new ChunkPos(playerChunkX - currentRadius, playerChunkZ + dz);
         }
 
@@ -340,18 +326,18 @@ internal class ChunkMap
     internal class TrackedChunk
     {
         private const int MaxDirtyBlocks = 10;
-        private readonly ILogger<TrackedChunk> _logger = Log.Instance.For<TrackedChunk>();
         private readonly ChunkMap _chunkMap;
-        private readonly HashSet<ServerPlayerEntity> _players;
         private readonly ChunkPos _chunkPos;
         private readonly short[] _dirtyBlocks;
+        private readonly ILogger<TrackedChunk> _logger = Log.Instance.For<TrackedChunk>();
+        private readonly HashSet<ServerPlayerEntity> _players;
         private int _dirtyBlockCount;
-        private int _dirtyBlockMinX;
-        private int _dirtyBlockMinY;
-        private int _dirtyBlockMinZ;
         private int _dirtyBlockMaxX;
         private int _dirtyBlockMaxY;
         private int _dirtyBlockMaxZ;
+        private int _dirtyBlockMinX;
+        private int _dirtyBlockMinY;
+        private int _dirtyBlockMinZ;
         private bool _hasBeenSent;
 
         public TrackedChunk(ChunkMap chunkMap, int chunkX, int chunkZ)
@@ -375,7 +361,12 @@ internal class ChunkMap
 
             if (player.ActiveChunks.Add(_chunkPos))
             {
-                player.NetworkHandler.SendMessage(new ChunkStatusUpdateMessage { X = _chunkPos.X, Z = _chunkPos.Z, Loaded = true });
+                player.NetworkHandler.SendMessage(new ChunkStatusUpdateMessage
+                {
+                    X = _chunkPos.X,
+                    Z = _chunkPos.Z,
+                    Loaded = true
+                });
             }
 
             player.ScheduleChunkSend(_chunkPos);
@@ -404,7 +395,7 @@ internal class ChunkMap
             {
                 if (_players.Count == 0)
                 {
-                    long chunkHash = GetChunkHash(_chunkPos.X, _chunkPos.Z);
+                    var chunkHash = GetChunkHash(_chunkPos.X, _chunkPos.Z);
                     _chunkMap._chunkMapping.Remove(chunkHash);
                     if (_dirtyBlockCount > 0)
                     {
@@ -416,7 +407,12 @@ internal class ChunkMap
 
                 if (player.ActiveChunks.Remove(_chunkPos))
                 {
-                    player.NetworkHandler.SendMessage(new ChunkStatusUpdateMessage { X = _chunkPos.X, Z = _chunkPos.Z, Loaded = false });
+                    player.NetworkHandler.SendMessage(new ChunkStatusUpdateMessage
+                    {
+                        X = _chunkPos.X,
+                        Z = _chunkPos.Z,
+                        Loaded = false
+                    });
                 }
 
                 player.CancelChunkSend(_chunkPos);
@@ -466,9 +462,9 @@ internal class ChunkMap
             if (_dirtyBlockCount < MaxDirtyBlocks)
             {
                 // for some reason, this uses a 255 value for y.
-                short blockArrayIndex = (short)(x << 12 | z << 8 | y);
+                var blockArrayIndex = (short)((x << 12) | (z << 8) | y);
 
-                for (int i = 0; i < _dirtyBlockCount; i++)
+                for (var i = 0; i < _dirtyBlockCount; i++)
                 {
                     if (_dirtyBlocks[i] == blockArrayIndex)
                     {
@@ -482,7 +478,7 @@ internal class ChunkMap
 
         public void sendMessageToPlayers(Message message)
         {
-            foreach (ServerPlayerEntity serverPlayer in _players)
+            foreach (var serverPlayer in _players)
             {
                 if (serverPlayer.ActiveChunks.Contains(_chunkPos))
                 {
@@ -493,14 +489,14 @@ internal class ChunkMap
 
         public void updateChunk()
         {
-            ServerWorld sWorld = _chunkMap.getWorld();
+            var sWorld = _chunkMap.getWorld();
             if (_dirtyBlockCount != 0)
             {
                 if (_dirtyBlockCount == 1)
                 {
-                    int worldX = _chunkPos.X * 16 + _dirtyBlockMinX;
-                    int worldY = _dirtyBlockMinY;
-                    int worldZ = _chunkPos.Z * 16 + _dirtyBlockMinZ;
+                    var worldX = _chunkPos.X * 16 + _dirtyBlockMinX;
+                    var worldY = _dirtyBlockMinY;
+                    var worldZ = _chunkPos.Z * 16 + _dirtyBlockMinZ;
                     sendMessageToPlayers(new BlockUpdateMessage
                     {
                         X = worldX,
@@ -509,7 +505,7 @@ internal class ChunkMap
                         BlockRawId = (byte)sWorld.Reader.GetBlockId(worldX, worldY, worldZ),
                         BlockMetadata = (byte)sWorld.Reader.GetBlockMeta(worldX, worldY, worldZ)
                     });
-                    if (sWorld.Content.Blocks.TryGetByProtocolId(sWorld.Reader.GetBlockId(worldX, worldY, worldZ), out Block? block)
+                    if (sWorld.Content.Blocks.TryGetByProtocolId(sWorld.Reader.GetBlockId(worldX, worldY, worldZ), out var block)
                         && block.HasBlockEntity)
                     {
                         sendBlockEntityUpdate(sWorld.Entities.GetBlockEntity<BlockEntity>(worldX, worldY, worldZ));
@@ -519,44 +515,49 @@ internal class ChunkMap
                 {
                     _dirtyBlockMinY = _dirtyBlockMinY / 2 * 2;
                     _dirtyBlockMaxY = (_dirtyBlockMaxY / 2 + 1) * 2;
-                    int worldX = _dirtyBlockMinX + _chunkPos.X * 16;
-                    int worldY = _dirtyBlockMinY;
-                    int worldZ = _dirtyBlockMinZ + _chunkPos.Z * 16;
-                    int sizeX = _dirtyBlockMaxX - _dirtyBlockMinX + 1;
-                    int sizeY = _dirtyBlockMaxY - _dirtyBlockMinY + 2;
-                    int sizeZ = _dirtyBlockMaxZ - _dirtyBlockMinZ + 1;
+                    var worldX = _dirtyBlockMinX + _chunkPos.X * 16;
+                    var worldY = _dirtyBlockMinY;
+                    var worldZ = _dirtyBlockMinZ + _chunkPos.Z * 16;
+                    var sizeX = _dirtyBlockMaxX - _dirtyBlockMinX + 1;
+                    var sizeY = _dirtyBlockMaxY - _dirtyBlockMinY + 2;
+                    var sizeZ = _dirtyBlockMaxZ - _dirtyBlockMinZ + 1;
                     sendMessageToPlayers(RegionDataMessage.Of(worldX, worldY, worldZ, sizeX, sizeY, sizeZ, sWorld));
-                    List<BlockEntity> blockEntities = sWorld.getBlockEntities(worldX, worldY, worldZ, worldX + sizeX, worldY + sizeY, worldZ + sizeZ);
+                    var blockEntities = sWorld.getBlockEntities(worldX, worldY, worldZ, worldX + sizeX, worldY + sizeY, worldZ + sizeZ);
 
-                    for (int i = 0; i < blockEntities.Count; i++)
+                    for (var i = 0; i < blockEntities.Count; i++)
                     {
                         sendBlockEntityUpdate(blockEntities[i]);
                     }
                 }
                 else
                 {
-                    var delta = new ChunkDeltaUpdateMessage { X = _chunkPos.X, Z = _chunkPos.Z };
+                    var delta = new ChunkDeltaUpdateMessage
+                    {
+                        X = _chunkPos.X,
+                        Z = _chunkPos.Z
+                    };
                     delta.Positions = new short[_dirtyBlockCount];
                     delta.BlockRawIds = new byte[_dirtyBlockCount];
                     delta.BlockMetadata = new byte[_dirtyBlockCount];
-                    Chunk chunk = sWorld.BlockHost.GetChunk(_chunkPos.X, _chunkPos.Z);
-                    for (int i = 0; i < _dirtyBlockCount; i++)
+                    var chunk = sWorld.BlockHost.GetChunk(_chunkPos.X, _chunkPos.Z);
+                    for (var i = 0; i < _dirtyBlockCount; i++)
                     {
-                        int bx = (_dirtyBlocks[i] >> 12) & 15;
-                        int bz = (_dirtyBlocks[i] >> 8) & 15;
-                        int by = _dirtyBlocks[i] & 255;
+                        var bx = (_dirtyBlocks[i] >> 12) & 15;
+                        var bz = (_dirtyBlocks[i] >> 8) & 15;
+                        var by = _dirtyBlocks[i] & 255;
                         delta.Positions[i] = _dirtyBlocks[i];
                         delta.BlockRawIds[i] = (byte)chunk.GetBlockId(bx, by, bz);
                         delta.BlockMetadata[i] = (byte)chunk.GetBlockMeta(bx, by, bz);
                     }
+
                     sendMessageToPlayers(delta);
 
-                    for (int i = 0; i < _dirtyBlockCount; i++)
+                    for (var i = 0; i < _dirtyBlockCount; i++)
                     {
-                        int worldX = _chunkPos.X * 16 + (_dirtyBlocks[i] >> 12 & 15);
-                        int worldY = _dirtyBlocks[i] & 0xFF;
-                        int worldZ = _chunkPos.Z * 16 + (_dirtyBlocks[i] >> 8 & 15);
-                        if (sWorld.Content.Blocks.TryGetByProtocolId(sWorld.Reader.GetBlockId(worldX, worldY, worldZ), out Block? block)
+                        var worldX = _chunkPos.X * 16 + ((_dirtyBlocks[i] >> 12) & 15);
+                        var worldY = _dirtyBlocks[i] & 0xFF;
+                        var worldZ = _chunkPos.Z * 16 + ((_dirtyBlocks[i] >> 8) & 15);
+                        if (sWorld.Content.Blocks.TryGetByProtocolId(sWorld.Reader.GetBlockId(worldX, worldY, worldZ), out var block)
                             && block.HasBlockEntity)
                         {
                             sendBlockEntityUpdate(sWorld.Entities.GetBlockEntity<BlockEntity>(worldX, worldY, worldZ));
@@ -578,14 +579,14 @@ internal class ChunkMap
         /// </remarks>
         public void sendDirtyLight()
         {
-            ServerWorld sWorld = _chunkMap.getWorld();
+            var sWorld = _chunkMap.getWorld();
             if (!sWorld.BlockHost.HasChunk(_chunkPos.X, _chunkPos.Z))
             {
                 return;
             }
 
-            Chunk chunk = sWorld.BlockHost.GetChunk(_chunkPos.X, _chunkPos.Z);
-            uint sections = chunk.TakeLightDirtySections();
+            var chunk = sWorld.BlockHost.GetChunk(_chunkPos.X, _chunkPos.Z);
+            var sections = chunk.TakeLightDirtySections();
 
             if (sections == 0 || _players.Count == 0)
             {

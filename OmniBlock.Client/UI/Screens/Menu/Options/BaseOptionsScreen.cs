@@ -48,11 +48,11 @@ public abstract class BaseOptionsScreen(
         scroll.Style.MaxHeight = MaxWidth;
         scroll.Style.MarginBottom = 10;
 
-        UIElement content = CreateContent();
+        var content = CreateContent();
         scroll.AddContent(content);
         Root.AddChild(scroll);
 
-        Button btnDone = CreateButton();
+        var btnDone = CreateButton();
         btnDone.AutomationId = "options.done";
         btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.MarginBottom = 20;
@@ -67,19 +67,19 @@ public abstract class BaseOptionsScreen(
         root.Style.AlignItems = Align.Center;
         root.Style.Width = ScrollContentSize;
 
-        List<OptionSection> options = GetOptions();
-        bool first = true;
-        foreach (OptionSection section in options)
+        var options = GetOptions();
+        var first = true;
+        foreach (var section in options)
         {
             if (section.Name is not null)
             {
                 root.AddChild(CreateSectionHeader(section.Name, first));
             }
 
-            Panel grid = CreateTwoColumnList();
-            foreach (GameOption option in section.Options)
+            var grid = CreateTwoColumnList();
+            foreach (var option in section.Options)
             {
-                UIElement control = CreateControlForOption(option);
+                var control = CreateControlForOption(option);
                 control.Style.Width = ButtonSize;
                 control.Style.MarginTop = 2;
                 control.Style.MarginBottom = 2;
@@ -163,7 +163,7 @@ public abstract class BaseOptionsScreen(
     {
         if (option is FloatOption floatOpt)
         {
-            Slider slider = CreateSlider();
+            var slider = CreateSlider();
             slider.AutomationId = $"option.{option.SaveKey}";
             slider.Value = floatOpt.Value;
             slider.Text = option.GetDisplayString();
@@ -186,7 +186,7 @@ public abstract class BaseOptionsScreen(
 
         if (option is ShaderRangeOption rangeOpt)
         {
-            Slider slider = CreateSlider();
+            var slider = CreateSlider();
             slider.AutomationId = $"option.{option.SaveKey}";
             slider.Value = rangeOpt.NormalizedValue;
             slider.Text = option.GetDisplayString();
@@ -207,7 +207,7 @@ public abstract class BaseOptionsScreen(
             return slider;
         }
 
-        Button btn = CreateButton();
+        var btn = CreateButton();
         btn.AutomationId = $"option.{option.SaveKey}";
         btn.Text = option.GetDisplayString();
         btn.OnMouseDown += e =>

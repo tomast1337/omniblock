@@ -16,7 +16,7 @@ public partial class Namespace
     {
         lock (s_nameToId)
         {
-            if (s_nameToId.TryGetValue(name, out int value)) return s_idToName[value];
+            if (s_nameToId.TryGetValue(name, out var value)) return s_idToName[value];
             value = s_idToName.Count;
             var ns = new Namespace(value, name);
             s_nameToId.Add(name, value);
@@ -27,7 +27,7 @@ public partial class Namespace
 
     public static bool TryGetValue(string name, [NotNullWhen(true)] out Namespace? asset)
     {
-        if (s_nameToId.TryGetValue(name, out int value))
+        if (s_nameToId.TryGetValue(name, out var value))
         {
             asset = s_idToName[value];
             return true;
@@ -52,7 +52,7 @@ public partial class Namespace
     public static Namespace? FindNamespace(string name, bool allowShortName)
     {
         if (string.IsNullOrEmpty(name)) return null;
-        if (s_nameToId.TryGetValue(name, out int value)) return s_idToName[value];
+        if (s_nameToId.TryGetValue(name, out var value)) return s_idToName[value];
         if (!allowShortName) return null;
         if (name.Length == 1)
         {
@@ -77,11 +77,12 @@ public partial class Namespace
     {
         List<Namespace> l = new();
         if (string.IsNullOrEmpty(name)) return l;
-        if (s_nameToId.TryGetValue(name, out int value))
+        if (s_nameToId.TryGetValue(name, out var value))
         {
             l.Add(s_idToName[value]);
             return l;
         }
+
         if (!allowShortName) return l;
         if (name.Length == 1)
         {

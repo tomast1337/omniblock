@@ -5,7 +5,7 @@ namespace OmniBlock.Server;
 
 internal class DedicatedServerConfiguration : IServerConfiguration
 {
-    private static ILogger<DedicatedServerConfiguration> logger = Log.Instance.For<DedicatedServerConfiguration>();
+    private static readonly ILogger<DedicatedServerConfiguration> logger = Log.Instance.For<DedicatedServerConfiguration>();
     private readonly Properties _properties = new();
     private readonly FileInfo _propertiesFile;
 
@@ -31,17 +31,6 @@ internal class DedicatedServerConfiguration : IServerConfiguration
         }
     }
 
-    public void generateNew()
-    {
-        logger.LogInformation("Generating new properties file");
-        save();
-    }
-
-    public void save()
-    {
-        Save();
-    }
-
     public void Save()
     {
         try
@@ -55,14 +44,9 @@ internal class DedicatedServerConfiguration : IServerConfiguration
         }
     }
 
-    public string getProperty(string property, string fallback)
-    {
-        return GetProperty(property, fallback);
-    }
-
     public string GetProperty(string property, string fallback)
     {
-        if (_properties.TryGetValue(property, out string? propertyValue))
+        if (_properties.TryGetValue(property, out var propertyValue))
         {
             return propertyValue;
         }
@@ -71,11 +55,6 @@ internal class DedicatedServerConfiguration : IServerConfiguration
         save();
 
         return propertyValue ?? fallback;
-    }
-
-    public int getProperty(string property, int fallback)
-    {
-        return GetProperty(property, fallback);
     }
 
     public int GetProperty(string property, int fallback)
@@ -91,11 +70,6 @@ internal class DedicatedServerConfiguration : IServerConfiguration
         }
     }
 
-    public bool getProperty(string property, bool fallback)
-    {
-        return GetProperty(property, fallback);
-    }
-
     public bool GetProperty(string property, bool fallback)
     {
         try
@@ -107,11 +81,6 @@ internal class DedicatedServerConfiguration : IServerConfiguration
             _properties.SetProperty(property, "" + fallback);
             return fallback;
         }
-    }
-
-    public void setProperty(string property, bool value)
-    {
-        SetProperty(property, value);
     }
 
     public void SetProperty(string property, bool value)
@@ -138,4 +107,20 @@ internal class DedicatedServerConfiguration : IServerConfiguration
     public bool GetWhiteList(bool fallback) => GetProperty("white-list", fallback);
     public int GetSpawnRegionSize(int fallback) => GetProperty("spawn-region-size", fallback);
     public string GetDefaultGamemode(string fallback) => GetProperty("default-gamemode", fallback);
+
+    public void generateNew()
+    {
+        logger.LogInformation("Generating new properties file");
+        save();
+    }
+
+    public void save() => Save();
+
+    public string getProperty(string property, string fallback) => GetProperty(property, fallback);
+
+    public int getProperty(string property, int fallback) => GetProperty(property, fallback);
+
+    public bool getProperty(string property, bool fallback) => GetProperty(property, fallback);
+
+    public void setProperty(string property, bool value) => SetProperty(property, value);
 }

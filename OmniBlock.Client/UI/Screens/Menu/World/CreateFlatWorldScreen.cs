@@ -67,7 +67,7 @@ public class CreateFlatWorldScreen(
         _btnRemove.OnClick += e => RemoveSelected();
         row1.AddChild(_btnRemove);
 
-        Button btnPresets = CreateButton();
+        var btnPresets = CreateButton();
         btnPresets.Text = Translations.Get("newWorld.customize.presets");
         btnPresets.Style.Width = 150;
         btnPresets.Style.SetMargin(2);
@@ -79,7 +79,7 @@ public class CreateFlatWorldScreen(
         Panel row2 = new();
         row2.Style.FlexDirection = FlexDirection.Row;
 
-        Button btnDone = CreateButton();
+        var btnDone = CreateButton();
         btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.Width = 150;
         btnDone.Style.SetMargin(2);
@@ -90,7 +90,7 @@ public class CreateFlatWorldScreen(
         };
         row2.AddChild(btnDone);
 
-        Button btnCancel = CreateButton();
+        var btnCancel = CreateButton();
         btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
@@ -107,10 +107,10 @@ public class CreateFlatWorldScreen(
         _listItems.Clear();
         _selectedIndex = -1;
 
-        for (int i = 0; i < _generatorInfo.FlatLayers.Count; i++)
+        for (var i = 0; i < _generatorInfo.FlatLayers.Count; i++)
         {
-            int index = i;
-            FlatLayerInfo layer = _generatorInfo.FlatLayers[_generatorInfo.FlatLayers.Count - i - 1];
+            var index = i;
+            var layer = _generatorInfo.FlatLayers[_generatorInfo.FlatLayers.Count - i - 1];
             FlatLayerListItem item = new(layer);
             item.OnClick += e => SelectItem(index);
             _scrollView.AddContent(item);
@@ -121,7 +121,7 @@ public class CreateFlatWorldScreen(
     private void SelectItem(int index)
     {
         _selectedIndex = index;
-        foreach (FlatLayerListItem item in _listItems)
+        foreach (var item in _listItems)
         {
             item.IsSelected = false;
         }

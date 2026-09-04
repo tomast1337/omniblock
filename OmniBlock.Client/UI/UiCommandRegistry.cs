@@ -1,6 +1,9 @@
 namespace OmniBlock.Client.UI;
 
-/// <summary>Handler for one UI command, invoked with whatever a given command needs in <paramref name="arg0" />..<paramref name="arg2" /> — a container window ID, a toast severity, etc. Always primitive ints, never a marshalled string or object reference, matching every other Host-phase binding (docs/luau-ui-host-api-plan.md §3).</summary>
+/// <summary>
+///     Handler for one UI command, invoked with whatever a given command needs in <paramref name="arg0" />..<paramref name="arg2" /> — a container window ID, a toast severity, etc. Always primitive ints, never a marshalled string or object reference,
+///     matching every other Host-phase binding (docs/luau-ui-host-api-plan.md §3).
+/// </summary>
 public delegate void UiCommandHandler(int arg0, int arg1, int arg2);
 
 /// <summary>
@@ -33,8 +36,8 @@ public delegate void UiCommandHandler(int arg0, int arg1, int arg2);
 /// </summary>
 public sealed class UiCommandRegistry
 {
-    private readonly Dictionary<ResourceLocation, int> _idByKey = [];
     private readonly List<UiCommandHandler?> _byId = [];
+    private readonly Dictionary<ResourceLocation, int> _idByKey = [];
 
     public bool Frozen { get; private set; }
 
@@ -76,12 +79,12 @@ public sealed class UiCommandRegistry
         ArgumentNullException.ThrowIfNull(key);
         EnsureNotFrozen(key);
 
-        if (_idByKey.TryGetValue(key, out int existingId))
+        if (_idByKey.TryGetValue(key, out var existingId))
         {
             return existingId;
         }
 
-        int id = _byId.Count;
+        var id = _byId.Count;
         _idByKey[key] = id;
         _byId.Add(null);
         return id;

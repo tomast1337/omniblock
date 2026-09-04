@@ -1,15 +1,15 @@
 using System.IO.Compression;
-using OmniBlock.Worlds.Chunks.Storage;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Worlds.Chunks.Storage;
 
 namespace OmniBlock.Worlds.Storage.RegionFormat;
 
 internal class RegionFile
 {
     private static readonly byte[] s_emptySector = new byte[4096];
-    private readonly ILogger<RegionFile> _logger = Log.Instance.For<RegionFile>();
     private readonly int[] _chunkSaveTimes = new int[1024];
     private readonly FileStream _dataFile;
+    private readonly ILogger<RegionFile> _logger = Log.Instance.For<RegionFile>();
     private readonly int[] _offsets = new int[1024];
     private readonly List<bool> _sectorFree;
     private int _sizeDelta;
@@ -66,7 +66,7 @@ internal class RegionFile
                 _offsets[sectorIndex] = offset;
                 if (offset != 0 && (offset >> 8) + (offset & 255) <= _sectorFree.Count())
                 {
-                    for (int usedSectorIndex = 0; usedSectorIndex < (offset & 255); ++usedSectorIndex)
+                    for (var usedSectorIndex = 0; usedSectorIndex < (offset & 255); ++usedSectorIndex)
                     {
                         _sectorFree[(offset >> 8) + usedSectorIndex] = false;
                     }
@@ -89,7 +89,7 @@ internal class RegionFile
     {
         lock (this)
         {
-            int delta = _sizeDelta;
+            var delta = _sizeDelta;
             _sizeDelta = 0;
             return delta;
         }
@@ -106,14 +106,14 @@ internal class RegionFile
 
             try
             {
-                int offset = GetOffset(chunkX, chunkZ);
+                var offset = GetOffset(chunkX, chunkZ);
                 if (offset == 0)
                 {
                     return null;
                 }
 
-                int sectorNumber = offset >> 8;
-                int sectorCount = offset & 255;
+                var sectorNumber = offset >> 8;
+                var sectorCount = offset & 255;
 
                 if (sectorNumber + sectorCount > _sectorFree.Count())
                 {
@@ -121,13 +121,13 @@ internal class RegionFile
                 }
 
                 _dataFile.Seek(sectorNumber * 4096, SeekOrigin.Begin);
-                int compressedLength = _dataFile.ReadInt();
+                var compressedLength = _dataFile.ReadInt();
                 if (compressedLength > 4096 * sectorCount)
                 {
                     return null;
                 }
 
-                CompressionType compressionType = (CompressionType)_dataFile.ReadByte();
+                var compressionType = (CompressionType)_dataFile.ReadByte();
                 byte[] compressedData;
                 Stream stream;
 
@@ -165,10 +165,10 @@ internal class RegionFile
         {
             try
             {
-                int offset = GetOffset(chunkX, chunkZ);
-                int sectorNumber = offset >> 8;
-                int allocatedSectorCount = offset & 255;
-                int requiredSectorCount = (length + 5) / 4096 + 1;
+                var offset = GetOffset(chunkX, chunkZ);
+                var sectorNumber = offset >> 8;
+                var allocatedSectorCount = offset & 255;
+                var requiredSectorCount = (length + 5) / 4096 + 1;
                 if (requiredSectorCount >= 256)
                 {
                     return;
@@ -187,7 +187,7 @@ internal class RegionFile
                     }
 
                     freeRunStart = _sectorFree.IndexOf(true);
-                    int freeRunLength = 0;
+                    var freeRunLength = 0;
                     int sectorIndex;
                     if (freeRunStart != -1)
                     {

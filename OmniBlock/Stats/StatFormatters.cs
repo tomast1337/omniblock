@@ -4,8 +4,8 @@ internal static class StatFormatters
 {
     public static string FormatDistance(int value)
     {
-        double meters = value / 100.0;
-        double kilometers = meters / 1000.0;
+        var meters = value / 100.0;
+        var kilometers = meters / 1000.0;
 
         if (kilometers > 0.5) return $"{kilometers:0.##} km";
         if (meters > 0.5) return $"{meters:0.##} m";
@@ -15,11 +15,11 @@ internal static class StatFormatters
 
     public static string FormatTime(int value)
     {
-        double seconds = value / 20.0;
-        double minutes = seconds / 60.0;
-        double hours = minutes / 60.0;
-        double days = hours / 24.0;
-        double years = days / 365.0;
+        var seconds = value / 20.0;
+        var minutes = seconds / 60.0;
+        var hours = minutes / 60.0;
+        var days = hours / 24.0;
+        var years = days / 365.0;
 
         return value switch
         {

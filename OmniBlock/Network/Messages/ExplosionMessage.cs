@@ -28,15 +28,15 @@ public sealed class ExplosionMessage : Message
         Z = stream.ReadDouble();
         Radius = stream.ReadFloat();
 
-        int count = stream.ReadInt();
+        var count = stream.ReadInt();
         DestroyedBlocks.Clear();
         DestroyedBlocks.Capacity = count;
 
-        int originX = (int)X;
-        int originY = (int)Y;
-        int originZ = (int)Z;
+        var originX = (int)X;
+        var originY = (int)Y;
+        var originZ = (int)Z;
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             int xOffset = (sbyte)stream.ReadByte();
             int yOffset = (sbyte)stream.ReadByte();
@@ -54,11 +54,11 @@ public sealed class ExplosionMessage : Message
         stream.WriteFloat(Radius);
         stream.WriteInt(DestroyedBlocks.Count);
 
-        int originX = (int)X;
-        int originY = (int)Y;
-        int originZ = (int)Z;
+        var originX = (int)X;
+        var originY = (int)Y;
+        var originZ = (int)Z;
 
-        foreach (BlockPos pos in DestroyedBlocks)
+        foreach (var pos in DestroyedBlocks)
         {
             stream.WriteByte((byte)(pos.X - originX));
             stream.WriteByte((byte)(pos.Y - originY));

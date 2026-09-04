@@ -1,6 +1,5 @@
 using OmniBlock.Blocks.Entities;
 using OmniBlock.NBT;
-using Xunit;
 
 namespace OmniBlock.Tests;
 

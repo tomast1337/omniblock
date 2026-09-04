@@ -42,12 +42,11 @@ internal sealed class DebugTelemetry
     private const int FrameHistorySize = 600;
 
     private readonly double[] _frameTimesMs = new double[FrameHistorySize];
-    private int _nextFrameIndex;
+
     private int _frameSampleCount;
+    private int _nextFrameIndex;
 
-    private DebugSystemSnapshot _systemSnapshot = DebugSystemSnapshot.Empty;
-
-    public DebugSystemSnapshot SystemSnapshot => _systemSnapshot;
+    public DebugSystemSnapshot SystemSnapshot { get; } = DebugSystemSnapshot.Empty;
 
     public void RecordFrameTime(double frameTimeMs)
     {
@@ -71,17 +70,17 @@ internal sealed class DebugTelemetry
             return DebugFrameStatsSnapshot.Empty;
         }
 
-        double[] samples = new double[_frameSampleCount];
-        int start = (_nextFrameIndex - _frameSampleCount + _frameTimesMs.Length) % _frameTimesMs.Length;
-        for (int i = 0; i < _frameSampleCount; i++)
+        var samples = new double[_frameSampleCount];
+        var start = (_nextFrameIndex - _frameSampleCount + _frameTimesMs.Length) % _frameTimesMs.Length;
+        for (var i = 0; i < _frameSampleCount; i++)
         {
             samples[i] = _frameTimesMs[(start + i) % _frameTimesMs.Length];
         }
 
-        double totalMs = 0.0D;
-        double minFrameTimeMs = double.MaxValue;
-        double maxFrameTimeMs = double.MinValue;
-        foreach (double sample in samples)
+        var totalMs = 0.0D;
+        var minFrameTimeMs = double.MaxValue;
+        var maxFrameTimeMs = double.MinValue;
+        foreach (var sample in samples)
         {
             totalMs += sample;
             if (sample < minFrameTimeMs)
@@ -95,13 +94,13 @@ internal sealed class DebugTelemetry
             }
         }
 
-        double averageFrameMs = totalMs / _frameSampleCount;
+        var averageFrameMs = totalMs / _frameSampleCount;
 
         return new DebugFrameStatsSnapshot(
-            SampleCount: _frameSampleCount,
-            AverageFrameTimeMs: averageFrameMs,
-            MinFps: ToFps(maxFrameTimeMs),
-            MaxFps: ToFps(minFrameTimeMs));
+            _frameSampleCount,
+            averageFrameMs,
+            ToFps(maxFrameTimeMs),
+            ToFps(minFrameTimeMs));
     }
 
     private static double ToFps(double frameTimeMs)
@@ -118,7 +117,7 @@ internal sealed class DebugTelemetry
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            string? processorIdentifier = Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER");
+            var processorIdentifier = Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER");
             if (!string.IsNullOrWhiteSpace(processorIdentifier))
             {
                 return processorIdentifier.Trim();
@@ -127,7 +126,7 @@ internal sealed class DebugTelemetry
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            string? cpuName = TryReadValueFromFile("/proc/cpuinfo", "model name");
+            var cpuName = TryReadValueFromFile("/proc/cpuinfo", "model name");
             if (!string.IsNullOrWhiteSpace(cpuName))
             {
                 return cpuName;
@@ -136,7 +135,7 @@ internal sealed class DebugTelemetry
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            string? cpuName = TryRunCommand("sysctl", "-n machdep.cpu.brand_string");
+            var cpuName = TryRunCommand("sysctl", "-n machdep.cpu.brand_string");
             if (!string.IsNullOrWhiteSpace(cpuName))
             {
                 return cpuName;
@@ -150,14 +149,14 @@ internal sealed class DebugTelemetry
     {
         try
         {
-            foreach (string line in File.ReadLines(path))
+            foreach (var line in File.ReadLines(path))
             {
                 if (!line.StartsWith(key, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
-                int separator = line.IndexOf(':');
+                var separator = line.IndexOf(':');
                 return separator >= 0 ? line[(separator + 1)..].Trim() : line.Trim();
             }
         }
@@ -186,12 +185,12 @@ internal sealed class DebugTelemetry
                 return null;
             }
 
-            string stdout = process.StandardOutput.ReadToEnd();
+            var stdout = process.StandardOutput.ReadToEnd();
             if (!process.WaitForExit(1500))
             {
                 try
                 {
-                    process.Kill(entireProcessTree: true);
+                    process.Kill(true);
                 }
                 catch
                 {
@@ -205,7 +204,7 @@ internal sealed class DebugTelemetry
                 return null;
             }
 
-            string value = stdout.Trim();
+            var value = stdout.Trim();
             return string.IsNullOrWhiteSpace(value) ? null : value;
         }
         catch
@@ -214,9 +213,5 @@ internal sealed class DebugTelemetry
         }
     }
 
-    private static string SafeValue(string? value)
-    {
-        return string.IsNullOrWhiteSpace(value) ? UnknownValue : value.Trim();
-    }
-
+    private static string SafeValue(string? value) => string.IsNullOrWhiteSpace(value) ? UnknownValue : value.Trim();
 }

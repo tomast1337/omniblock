@@ -1,6 +1,5 @@
 using OmniBlock.Client.Network;
 using OmniBlock.Network.Messages;
-using OmniBlock.Registries;
 
 namespace OmniBlock.Tests.Recipes;
 
@@ -9,13 +8,13 @@ public sealed class ProcessReloadAtomicityTests
     [Fact]
     public void Client_stages_complete_process_snapshot_only_at_configuration_boundary()
     {
-        ContentRuntime original = ContentRuntime.Current;
+        var original = ContentRuntime.Current;
         ContentRuntime? staged = null;
         var access = new ClientRegistryAccess(original, candidate => staged = candidate);
-        RegistryDataMessage message = Message("example:coal_to_stick", """
-            {"type":"shaped","pattern":["#"],"key":{"#":"omniblock:coal"},
-             "result":{"id":"omniblock:stick","count":2}}
-            """);
+        var message = Message("example:coal_to_stick", """
+                                                       {"type":"shaped","pattern":["#"],"key":{"#":"omniblock:coal"},
+                                                        "result":{"id":"omniblock:stick","count":2}}
+                                                       """);
 
         access.Accumulate(message);
 
@@ -35,10 +34,10 @@ public sealed class ProcessReloadAtomicityTests
     {
         ContentRuntime? staged = null;
         var access = new ClientRegistryAccess(ContentRuntime.Current, candidate => staged = candidate);
-        RegistryDataMessage message = Message("example:invalid", """
-            {"type":"shaped","pattern":["#"],"key":{"#":"example:missing"},
-             "result":{"id":"omniblock:stick"}}
-            """);
+        var message = Message("example:invalid", """
+                                                 {"type":"shaped","pattern":["#"],"key":{"#":"example:missing"},
+                                                  "result":{"id":"omniblock:stick"}}
+                                                 """);
 
         Assert.Throws<InvalidOperationException>(() => access.Accumulate(message));
         access.CompleteConfiguration();
@@ -52,12 +51,11 @@ public sealed class ProcessReloadAtomicityTests
         ContentRuntime? staged = null;
         var access = new ClientRegistryAccess(ContentRuntime.Current, candidate => staged = candidate);
         access.Accumulate(Message("example:coal_to_stick", """
-            {"type":"shaped","pattern":["#"],"key":{"#":"omniblock:coal"},
-             "result":{"id":"omniblock:stick"}}
-            """));
+                                                           {"type":"shaped","pattern":["#"],"key":{"#":"omniblock:coal"},
+                                                            "result":{"id":"omniblock:stick"}}
+                                                           """));
 
-        InvalidDataException error = Assert.Throws<InvalidDataException>(
-            () => access.CompleteConfiguration(new string('0', 64)));
+        var error = Assert.Throws<InvalidDataException>(() => access.CompleteConfiguration(new string('0', 64)));
 
         Assert.Contains("does not match", error.Message);
         Assert.Null(staged);
@@ -65,7 +63,10 @@ public sealed class ProcessReloadAtomicityTests
 
     private static RegistryDataMessage Message(string id, string json)
     {
-        var message = new RegistryDataMessage { RegistryId = RegistryKeys.Recipes.Location };
+        var message = new RegistryDataMessage
+        {
+            RegistryId = RegistryKeys.Recipes.Location
+        };
         message.Entries.Add(new RegistryDataMessage.Entry(ResourceLocation.Parse(id), json));
         return message;
     }

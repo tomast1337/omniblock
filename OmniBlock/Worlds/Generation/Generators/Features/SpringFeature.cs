@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core.Systems;
 
@@ -22,13 +21,13 @@ internal class SpringFeature : Feature
             return false;
         }
 
-        int targetId = level.Reader.GetBlockId(x, y, z);
+        var targetId = level.Reader.GetBlockId(x, y, z);
         if (targetId != 0 && targetId != level.Content.Blocks.Get("stone").Id)
         {
             return false;
         }
 
-        int stoneNeighbors = 0;
+        var stoneNeighbors = 0;
         if (level.Reader.GetBlockId(x - 1, y, z) == level.Content.Blocks.Get("stone").Id)
         {
             ++stoneNeighbors;
@@ -50,7 +49,7 @@ internal class SpringFeature : Feature
         }
 
 
-        int airNeighbors = 0;
+        var airNeighbors = 0;
         if (level.Reader.IsAir(x - 1, y, z))
         {
             ++airNeighbors;

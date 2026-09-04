@@ -26,7 +26,7 @@ public abstract partial class Entity : IEntity
         _flags = DataSynchronizer.MakeProperty<byte>(0, 0);
 
         _type = type;
-        EntityBehaviorSet behaviors = type?.Behaviors ?? EntityBehaviorSet.Empty;
+        var behaviors = type?.Behaviors ?? EntityBehaviorSet.Empty;
         Behaviors = behaviors;
         State = behaviors.StateLayout.Create();
 
@@ -209,7 +209,7 @@ public abstract partial class Entity : IEntity
     /// </summary>
     public SyncedProperty<T>? Synced<T>(string name)
     {
-        foreach (SyncedPropertyDefinition declaration in SyncedDeclarations)
+        foreach (var declaration in SyncedDeclarations)
         {
             if (declaration.Name == name)
             {
@@ -240,7 +240,7 @@ public abstract partial class Entity : IEntity
         {
             if (!InWater && !_firstTick)
             {
-                float volume = MathHelper.Sqrt(VelocityX * VelocityX * 0.2F + VelocityY * VelocityY + VelocityZ * VelocityZ * 0.2F) * 0.2F;
+                var volume = MathHelper.Sqrt(VelocityX * VelocityX * 0.2F + VelocityY * VelocityY + VelocityZ * VelocityZ * 0.2F) * 0.2F;
                 if (volume > 1.0F)
                 {
                     volume = 1.0F;
@@ -249,7 +249,7 @@ public abstract partial class Entity : IEntity
                 World.Broadcaster.PlaySoundAtEntity(this, "random.splash", volume, 1.0F + (Random.NextFloat() - Random.NextFloat()) * 0.4F);
                 float floorMinY = MathHelper.Floor(BoundingBox.MinY);
 
-                for (int i = 0; i < 1.0F + Width * 20.0F; ++i)
+                for (var i = 0; i < 1.0F + Width * 20.0F; ++i)
                 {
                     double xOffset = (Random.NextFloat() * 2.0F - 1.0F) * Width;
                     double zOffset = (Random.NextFloat() * 2.0F - 1.0F) * Width;
@@ -337,19 +337,19 @@ public abstract partial class Entity : IEntity
 
     public float GetBrightnessAtEyes(float tickDelta)
     {
-        int floorX = MathHelper.Floor(X);
-        double eyeOffset = (BoundingBox.MaxY - BoundingBox.MinY) * 0.66D;
-        int floorY = MathHelper.Floor(Y - StandingEyeHeight + eyeOffset);
-        int floorZ = MathHelper.Floor(Z);
+        var floorX = MathHelper.Floor(X);
+        var eyeOffset = (BoundingBox.MaxY - BoundingBox.MinY) * 0.66D;
+        var floorY = MathHelper.Floor(Y - StandingEyeHeight + eyeOffset);
+        var floorZ = MathHelper.Floor(Z);
 
-        int minX = MathHelper.Floor(BoundingBox.MinX);
-        int minY = MathHelper.Floor(BoundingBox.MinY);
-        int minZ = MathHelper.Floor(BoundingBox.MinZ);
-        int maxX = MathHelper.Floor(BoundingBox.MaxX);
-        int maxY = MathHelper.Floor(BoundingBox.MaxY);
-        int maxZ = MathHelper.Floor(BoundingBox.MaxZ);
+        var minX = MathHelper.Floor(BoundingBox.MinX);
+        var minY = MathHelper.Floor(BoundingBox.MinY);
+        var minZ = MathHelper.Floor(BoundingBox.MinZ);
+        var maxX = MathHelper.Floor(BoundingBox.MaxX);
+        var maxY = MathHelper.Floor(BoundingBox.MaxY);
+        var maxZ = MathHelper.Floor(BoundingBox.MaxZ);
 
-        int h = ChuckFormat.WorldHeight - 1;
+        var h = ChuckFormat.WorldHeight - 1;
         minY = Math.Clamp(minY, 0, h);
         maxY = Math.Clamp(maxY, 0, h);
 
@@ -358,7 +358,7 @@ public abstract partial class Entity : IEntity
             return MinBrightness;
         }
 
-        float lum = World.Lighting.GetLuminance(floorX, floorY, floorZ);
+        var lum = World.Lighting.GetLuminance(floorX, floorY, floorZ);
         if (lum < MinBrightness)
         {
             lum = MinBrightness;
@@ -385,7 +385,7 @@ public abstract partial class Entity : IEntity
 
     protected virtual bool ShouldRender(double sqDist)
     {
-        double edgeLength = BoundingBox.AverageEdgeLength;
+        var edgeLength = BoundingBox.AverageEdgeLength;
         edgeLength *= 64.0D * RenderDistanceWeight;
         return sqDist < edgeLength * edgeLength;
     }
@@ -398,7 +398,7 @@ public abstract partial class Entity : IEntity
 
     protected internal Entity DropItem(ItemStack stack, float y)
     {
-        Entity item = DroppedItemBehavior.Create(World, X, Y + y, Z, stack, 10);
+        var item = DroppedItemBehavior.Create(World, X, Y + y, Z, stack, 10);
         World.SpawnEntity(item);
         return item;
     }
@@ -433,7 +433,7 @@ public abstract partial class Entity : IEntity
 
     private void SetFlag(int index, bool value)
     {
-        byte oldValue = _flags.Value;
+        var oldValue = _flags.Value;
         byte newValue;
         if (value)
         {

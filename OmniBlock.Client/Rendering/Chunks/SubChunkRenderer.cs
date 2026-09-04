@@ -1,3 +1,4 @@
+using OmniBlock.Client.Rendering.Chunks.Occlusion;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.WebGPU;
 using OmniBlock.Util;
@@ -10,32 +11,11 @@ namespace OmniBlock.Client.Rendering.Chunks;
 public class SubChunkRenderer : IDisposable
 {
     public const int Size = 16;
-    public bool HasTranslucentMesh => vertexCounts[1] > 0;
-    public Vector3D<int> Position { get; }
-    public Vector3D<int> PositionPlus { get; }
-    public Vector3D<int> PositionMinus { get; }
-    public Vector3D<int> ClipPosition { get; }
-    public Box BoundingBox { get; }
-
-    public float Age { get; private set; } = 0.0f;
-    public bool HasFadedIn => Age >= FadeDuration;
     public const float FadeDuration = 1.0f;
 
-    public int SolidMeshSizeBytes => vertexCounts[0] * 16;
-    public int TranslucentMeshSizeBytes => vertexCounts[1] * 16;
-
-    public Occlusion.ChunkVisibilityStore VisibilityData;
-    public Occlusion.ChunkDirectionMask IncomingDirections;
-    public int LastVisibleFrame = -1;
-
-    public SubChunkRenderer? AdjacentDown;
-    public SubChunkRenderer? AdjacentUp;
-    public SubChunkRenderer? AdjacentNorth;
-    public SubChunkRenderer? AdjacentSouth;
-    public SubChunkRenderer? AdjacentWest;
-    public SubChunkRenderer? AdjacentEast;
-
     private readonly WgpuMesh?[] _meshes = new WgpuMesh?[2];
+
+    private readonly int[] vertexCounts = new int[2];
 
     /// <summary>
     ///     Debug wireframe companion to the solid mesh (index 0 only — translucent geometry has no
@@ -46,15 +26,24 @@ public class SubChunkRenderer : IDisposable
     /// </summary>
     private WgpuMesh? _wireframeMesh;
 
-    private readonly int[] vertexCounts = new int[2];
+    public SubChunkRenderer? AdjacentDown;
+    public SubChunkRenderer? AdjacentEast;
+    public SubChunkRenderer? AdjacentNorth;
+    public SubChunkRenderer? AdjacentSouth;
+    public SubChunkRenderer? AdjacentUp;
+    public SubChunkRenderer? AdjacentWest;
     private bool disposed;
+    public ChunkDirectionMask IncomingDirections;
+    public int LastVisibleFrame = -1;
+
+    public ChunkVisibilityStore VisibilityData;
 
     public SubChunkRenderer(Vector3D<int> position)
     {
         Position = position;
 
-        PositionPlus = new(position.X + Size / 2, position.Y + Size / 2, position.Z + Size / 2);
-        ClipPosition = new(position.X & 1023, position.Y, position.Z & 1023);
+        PositionPlus = new Vector3D<int>(position.X + Size / 2, position.Y + Size / 2, position.Z + Size / 2);
+        ClipPosition = new Vector3D<int>(position.X & 1023, position.Y, position.Z & 1023);
         PositionMinus = position - ClipPosition;
 
         const float padding = 6.0f;
@@ -73,15 +62,45 @@ public class SubChunkRenderer : IDisposable
         vertexCounts[1] = 0;
     }
 
+    public bool HasTranslucentMesh => vertexCounts[1] > 0;
+    public Vector3D<int> Position { get; }
+    public Vector3D<int> PositionPlus { get; }
+    public Vector3D<int> PositionMinus { get; }
+    public Vector3D<int> ClipPosition { get; }
+    public Box BoundingBox { get; }
+
+    public float Age { get; private set; }
+    public bool HasFadedIn => Age >= FadeDuration;
+
+    public int SolidMeshSizeBytes => vertexCounts[0] * 16;
+    public int TranslucentMeshSizeBytes => vertexCounts[1] * 16;
+
+    public void Dispose()
+    {
+        if (disposed)
+            return;
+
+        GC.SuppressFinalize(this);
+
+        _meshes[0]?.Dispose();
+        _meshes[1]?.Dispose();
+        _wireframeMesh?.Dispose();
+
+        vertexCounts[0] = 0;
+        vertexCounts[1] = 0;
+
+        disposed = true;
+    }
+
     public bool IsVisible(ICuller camera, Vector3D<double> viewPos, float renderDistance)
     {
         if (!camera.IsBoundingBoxInFrustum(BoundingBox)) return false;
 
-        double dx = PositionPlus.X - viewPos.X;
-        double dy = PositionPlus.Y - viewPos.Y;
-        double dz = PositionPlus.Z - viewPos.Z;
+        var dx = PositionPlus.X - viewPos.X;
+        var dy = PositionPlus.Y - viewPos.Y;
+        var dz = PositionPlus.Z - viewPos.Z;
 
-        return (dx * dx + dz * dz) < (renderDistance * renderDistance) && Math.Abs(dy) < renderDistance;
+        return dx * dx + dz * dz < renderDistance * renderDistance && Math.Abs(dy) < renderDistance;
     }
 
     public void UploadMeshData(PooledList<ChunkVertex>? solidMesh, PooledList<ChunkVertex>? translucentMesh)
@@ -93,7 +112,7 @@ public class SubChunkRenderer : IDisposable
         {
             if (solidMesh.Count > 0)
             {
-                Span<ChunkVertex> solidMeshData = solidMesh.Span;
+                var solidMeshData = solidMesh.Span;
                 UploadMesh(0, solidMeshData);
             }
 
@@ -104,7 +123,7 @@ public class SubChunkRenderer : IDisposable
         {
             if (translucentMesh.Count > 0)
             {
-                Span<ChunkVertex> translucentMeshData = translucentMesh.Span;
+                var translucentMeshData = translucentMesh.Span;
                 UploadMesh(1, translucentMeshData);
             }
 
@@ -138,13 +157,16 @@ public class SubChunkRenderer : IDisposable
         if (triangles.Length == 0) return null;
 
         var lines = new ChunkVertex[triangles.Length * 2];
-        int outIdx = 0;
-        for (int i = 0; i + 2 < triangles.Length; i += 3)
+        var outIdx = 0;
+        for (var i = 0; i + 2 < triangles.Length; i += 3)
         {
             ChunkVertex a = triangles[i], b = triangles[i + 1], c = triangles[i + 2];
-            lines[outIdx++] = a; lines[outIdx++] = b;
-            lines[outIdx++] = b; lines[outIdx++] = c;
-            lines[outIdx++] = c; lines[outIdx++] = a;
+            lines[outIdx++] = a;
+            lines[outIdx++] = b;
+            lines[outIdx++] = b;
+            lines[outIdx++] = c;
+            lines[outIdx++] = c;
+            lines[outIdx++] = a;
         }
 
         return WgpuMesh.FromChunkVertices(WebGpuDevice.Current!, lines, PrimitiveTopology.LineList);
@@ -179,22 +201,5 @@ public class SubChunkRenderer : IDisposable
         if (vertexCounts[0] == 0) return;
 
         _wireframeMesh?.Draw(passEncoder);
-    }
-
-    public void Dispose()
-    {
-        if (disposed)
-            return;
-
-        GC.SuppressFinalize(this);
-
-        _meshes[0]?.Dispose();
-        _meshes[1]?.Dispose();
-        _wireframeMesh?.Dispose();
-
-        vertexCounts[0] = 0;
-        vertexCounts[1] = 0;
-
-        disposed = true;
     }
 }

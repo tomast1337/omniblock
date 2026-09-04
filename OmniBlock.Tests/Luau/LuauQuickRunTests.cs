@@ -19,7 +19,7 @@ public sealed class LuauQuickRunTests
         Skip.IfNot(LuauQuickRun.IsAvailable(),
             "native/luau/build-local.sh hasn't been run for this checkout — omniblock_luau isn't resolvable.");
 
-        bool success = LuauQuickRun.TryExecute("return 10 + 32", out string output);
+        var success = LuauQuickRun.TryExecute("return 10 + 32", out var output);
 
         Assert.True(success);
         Assert.Equal("42", output);
@@ -30,7 +30,7 @@ public sealed class LuauQuickRunTests
     {
         Skip.IfNot(LuauQuickRun.IsAvailable(), "native library not resolvable for this checkout.");
 
-        bool success = LuauQuickRun.TryExecute("return 'hello'", out string output);
+        var success = LuauQuickRun.TryExecute("return 'hello'", out var output);
 
         Assert.True(success);
         Assert.Equal("hello", output);
@@ -41,7 +41,7 @@ public sealed class LuauQuickRunTests
     {
         Skip.IfNot(LuauQuickRun.IsAvailable(), "native library not resolvable for this checkout.");
 
-        bool success = LuauQuickRun.TryExecute("return 1 == 1", out string output);
+        var success = LuauQuickRun.TryExecute("return 1 == 1", out var output);
 
         Assert.True(success);
         Assert.Equal("true", output);
@@ -52,7 +52,7 @@ public sealed class LuauQuickRunTests
     {
         Skip.IfNot(LuauQuickRun.IsAvailable(), "native library not resolvable for this checkout.");
 
-        bool success = LuauQuickRun.TryExecute("return nil", out string output);
+        var success = LuauQuickRun.TryExecute("return nil", out var output);
 
         Assert.True(success);
         Assert.Equal("nil", output);
@@ -63,7 +63,7 @@ public sealed class LuauQuickRunTests
     {
         Skip.IfNot(LuauQuickRun.IsAvailable(), "native library not resolvable for this checkout.");
 
-        bool success = LuauQuickRun.TryExecute("local x = 1", out string output);
+        var success = LuauQuickRun.TryExecute("local x = 1", out var output);
 
         Assert.True(success);
         Assert.Equal("(no return value)", output);
@@ -74,7 +74,7 @@ public sealed class LuauQuickRunTests
     {
         Skip.IfNot(LuauQuickRun.IsAvailable(), "native library not resolvable for this checkout.");
 
-        bool success = LuauQuickRun.TryExecute("return 1, 'two', false", out string output);
+        var success = LuauQuickRun.TryExecute("return 1, 'two', false", out var output);
 
         Assert.True(success);
         Assert.Equal("1, two, false", output);
@@ -85,7 +85,7 @@ public sealed class LuauQuickRunTests
     {
         Skip.IfNot(LuauQuickRun.IsAvailable(), "native library not resolvable for this checkout.");
 
-        bool success = LuauQuickRun.TryExecute("return {}", out string output);
+        var success = LuauQuickRun.TryExecute("return {}", out var output);
 
         Assert.True(success);
         Assert.Equal("<table>", output);
@@ -96,7 +96,7 @@ public sealed class LuauQuickRunTests
     {
         Skip.IfNot(LuauQuickRun.IsAvailable(), "native library not resolvable for this checkout.");
 
-        bool success = LuauQuickRun.TryExecute("this is not valid luau (((", out string output);
+        var success = LuauQuickRun.TryExecute("this is not valid luau (((", out var output);
 
         Assert.False(success);
         Assert.False(string.IsNullOrWhiteSpace(output));
@@ -107,7 +107,7 @@ public sealed class LuauQuickRunTests
     {
         Skip.IfNot(LuauQuickRun.IsAvailable(), "native library not resolvable for this checkout.");
 
-        bool success = LuauQuickRun.TryExecute("error('boom')", out string output);
+        var success = LuauQuickRun.TryExecute("error('boom')", out var output);
 
         Assert.False(success);
         Assert.Contains("boom", output);
@@ -118,7 +118,7 @@ public sealed class LuauQuickRunTests
     {
         Skip.IfNot(LuauQuickRun.IsAvailable(), "native library not resolvable for this checkout.");
 
-        bool success = LuauQuickRun.TryExecute("local f = nil; f()", out string output);
+        var success = LuauQuickRun.TryExecute("local f = nil; f()", out var output);
 
         Assert.False(success);
         Assert.False(string.IsNullOrWhiteSpace(output));

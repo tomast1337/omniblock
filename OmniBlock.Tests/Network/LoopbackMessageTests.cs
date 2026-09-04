@@ -16,15 +16,6 @@ namespace OmniBlock.Tests.Network;
 /// </summary>
 public sealed class LoopbackMessageTests
 {
-    private sealed class Recorder : NetHandler
-    {
-        public List<Message> Received { get; } = [];
-
-        public override bool isServerSide() => true;
-
-        public override void onMessage(Message message) => Received.Add(message);
-    }
-
     private static (InternalConnection Sender, Recorder Handler) Pair()
     {
         Recorder handler = new();
@@ -47,8 +38,13 @@ public sealed class LoopbackMessageTests
     [Fact]
     public void A_message_arrives_as_the_very_object_that_was_sent()
     {
-        (InternalConnection sender, Recorder handler) = Pair();
-        EntityMoveMessage sent = new() { EntityId = 99, Mask = EntityMoveMessage.Field.Moved, DeltaX = 5 };
+        var (sender, handler) = Pair();
+        EntityMoveMessage sent = new()
+        {
+            EntityId = 99,
+            Mask = EntityMoveMessage.Field.Moved,
+            DeltaX = 5
+        };
 
         sender.sendMessage(Negotiated(), sent);
         sender.RemoteConnection.tick();
@@ -66,9 +62,12 @@ public sealed class LoopbackMessageTests
     [Fact]
     public void An_unregistered_message_still_travels_on_loopback()
     {
-        (InternalConnection sender, Recorder handler) = Pair();
+        var (sender, handler) = Pair();
 
-        sender.sendMessage(new MessageRegistry(), new EntityDestroyMessage { EntityId = 3 });
+        sender.sendMessage(new MessageRegistry(), new EntityDestroyMessage
+        {
+            EntityId = 3
+        });
         sender.RemoteConnection.tick();
 
         Assert.Equal(3, Assert.IsType<EntityDestroyMessage>(Assert.Single(handler.Received)).EntityId);
@@ -82,8 +81,17 @@ public sealed class LoopbackMessageTests
     [Fact]
     public void A_serialised_envelope_carries_no_live_message()
     {
-        MessageRegistry registry = Negotiated();
+        var registry = Negotiated();
 
         Assert.Null(OmniMessagePacket.For(registry, new EntityMoveMessage())!.Carried);
+    }
+
+    private sealed class Recorder : NetHandler
+    {
+        public List<Message> Received { get; } = [];
+
+        public override bool isServerSide() => true;
+
+        public override void onMessage(Message message) => Received.Add(message);
     }
 }

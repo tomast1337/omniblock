@@ -30,7 +30,10 @@ public sealed class SendPriorityTests
 
     private static UdpConnection Connected(FakeTransportConnection transport, bool capable = true)
     {
-        UdpConnection connection = new(transport) { betaSharpClient = capable };
+        UdpConnection connection = new(transport)
+        {
+            betaSharpClient = capable
+        };
         return connection;
     }
 
@@ -81,10 +84,10 @@ public sealed class SendPriorityTests
     {
         Assert.Equal(
             SendPriority.High,
-            PacketPriorities.Of(OmniMessagePacket.Get(0, [], carriesSendTime: false, SendPriority.High)));
+            PacketPriorities.Of(OmniMessagePacket.Get(0, [], false, SendPriority.High)));
         Assert.Equal(
             SendPriority.Normal,
-            PacketPriorities.Of(OmniMessagePacket.Get(0, [], carriesSendTime: false, SendPriority.Normal)));
+            PacketPriorities.Of(OmniMessagePacket.Get(0, [])));
     }
 
     [Fact]
@@ -124,7 +127,7 @@ public sealed class SendPriorityTests
     public void A_packet_goes_out_on_the_channel_its_class_selects()
     {
         FakeTransportConnection transport = new();
-        UdpConnection connection = Connected(transport);
+        var connection = Connected(transport);
 
         connection.sendPacket(Envelope(new RegionDataMessage()));
         connection.sendPacket(Envelope(new EntityMoveMessage()));
@@ -144,7 +147,7 @@ public sealed class SendPriorityTests
     public void Everything_is_sent_reliably_and_in_order_for_now()
     {
         FakeTransportConnection transport = new();
-        UdpConnection connection = Connected(transport);
+        var connection = Connected(transport);
 
         connection.sendPacket(Envelope(new EntityMoveMessage()));
         connection.sendPacket(Envelope(new RegionDataMessage()));
@@ -160,7 +163,7 @@ public sealed class SendPriorityTests
     public void Order_within_a_channel_is_preserved()
     {
         FakeTransportConnection transport = new();
-        UdpConnection connection = Connected(transport);
+        var connection = Connected(transport);
 
         connection.sendPacket(Envelope(new KeepAliveMessage()));
         connection.sendPacket(Envelope(new RegionDataMessage()));

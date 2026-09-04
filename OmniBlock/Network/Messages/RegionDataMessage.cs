@@ -73,7 +73,7 @@ public sealed class RegionDataMessage : Message
         ArgumentOutOfRangeException.ThrowIfGreaterThan(sizeY, short.MaxValue);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(sizeZ, byte.MaxValue);
 
-        byte[] raw = world.ChunkHost.GetChunkData(x, y, z, sizeX, sizeY, sizeZ);
+        var raw = world.ChunkHost.GetChunkData(x, y, z, sizeX, sizeY, sizeZ);
 
         MemoryStream output = new(raw.Length / 4);
         using (ZLibStream compressor = new(output, CompressionLevel.Optimal, true))
@@ -100,13 +100,13 @@ public sealed class RegionDataMessage : Message
     /// </summary>
     public byte[] Decompress()
     {
-        int limit = Math.Min(MaxDecodedBytes, SizeX * SizeY * SizeZ * 5 / 2 + 1);
+        var limit = Math.Min(MaxDecodedBytes, SizeX * SizeY * SizeZ * 5 / 2 + 1);
 
         using MemoryStream input = new(Compressed, false);
         using ZLibStream decompressor = new(input, CompressionMode.Decompress);
 
         MemoryStream output = new(Math.Min(limit, Compressed.Length * 4));
-        byte[] buffer = new byte[8192];
+        var buffer = new byte[8192];
         int read;
 
         while ((read = decompressor.Read(buffer, 0, buffer.Length)) > 0)

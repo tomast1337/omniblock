@@ -51,8 +51,8 @@ public abstract partial class Entity
             _vehiclePitchDelta += 360.0D;
         }
 
-        double yawDelta = _vehicleYawDelta * 0.5D;
-        double pitchDelta = _vehiclePitchDelta * 0.5D;
+        var yawDelta = _vehicleYawDelta * 0.5D;
+        var pitchDelta = _vehiclePitchDelta * 0.5D;
         const double limit = 10.0F;
         if (yawDelta > limit)
         {

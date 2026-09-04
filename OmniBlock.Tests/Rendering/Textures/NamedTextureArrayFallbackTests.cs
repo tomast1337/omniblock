@@ -3,7 +3,6 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using Xunit;
 
 namespace OmniBlock.Tests.Rendering.Textures;
 
@@ -27,17 +26,17 @@ public class NamedTextureArrayFallbackTests
             ["grass_block_top"] = new Image<Rgba32>(16, 16)
         };
 
-        ResolvedTexture result = TextureFallbackChain.Resolve(
+        var result = TextureFallbackChain.Resolve(
             "grass_block_top",
             _ => EncodePng(Color.Lime),
             defaults,
-            fallbackSize: 16);
+            16);
 
         Assert.Equal(TextureSource.Pack, result.Source);
         Assert.Equal(Color.Lime.ToPixel<Rgba32>(), result.Image[0, 0]);
 
         result.Image.Dispose();
-        foreach (Image<Rgba32> image in defaults.Values) image.Dispose();
+        foreach (var image in defaults.Values) image.Dispose();
     }
 
     [Fact]
@@ -45,13 +44,16 @@ public class NamedTextureArrayFallbackTests
     {
         var defaultImage = new Image<Rgba32>(16, 16);
         defaultImage.Mutate(ctx => ctx.BackgroundColor(Color.Blue));
-        Dictionary<string, Image<Rgba32>> defaults = new() { ["grass_block_top"] = defaultImage };
+        Dictionary<string, Image<Rgba32>> defaults = new()
+        {
+            ["grass_block_top"] = defaultImage
+        };
 
-        ResolvedTexture result = TextureFallbackChain.Resolve(
+        var result = TextureFallbackChain.Resolve(
             "grass_block_top",
             _ => null,
             defaults,
-            fallbackSize: 16);
+            16);
 
         Assert.Equal(TextureSource.Default, result.Source);
         Assert.Equal(Color.Blue.ToPixel<Rgba32>(), result.Image[0, 0]);
@@ -69,11 +71,11 @@ public class NamedTextureArrayFallbackTests
     {
         Dictionary<string, Image<Rgba32>> defaults = [];
 
-        ResolvedTexture result = TextureFallbackChain.Resolve(
+        var result = TextureFallbackChain.Resolve(
             "totally_unknown_texture",
             _ => null,
             defaults,
-            fallbackSize: 8);
+            8);
 
         Assert.Equal(TextureSource.Fallback, result.Source);
         Assert.Equal(8, result.Image.Width);
@@ -87,13 +89,16 @@ public class NamedTextureArrayFallbackTests
     {
         var defaultImage = new Image<Rgba32>(16, 16);
         defaultImage.Mutate(ctx => ctx.BackgroundColor(Color.Blue));
-        Dictionary<string, Image<Rgba32>> defaults = new() { ["grass_block_top"] = defaultImage };
+        Dictionary<string, Image<Rgba32>> defaults = new()
+        {
+            ["grass_block_top"] = defaultImage
+        };
 
-        ResolvedTexture result = TextureFallbackChain.Resolve(
+        var result = TextureFallbackChain.Resolve(
             "grass_block_top",
             _ => new MemoryStream([1, 2, 3, 4]), // not a valid image
             defaults,
-            fallbackSize: 16);
+            16);
 
         Assert.Equal(TextureSource.Default, result.Source);
 

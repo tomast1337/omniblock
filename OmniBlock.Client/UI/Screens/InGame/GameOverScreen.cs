@@ -43,7 +43,7 @@ public class GameOverScreen(
         scoreLabel.Style.MarginBottom = 20;
         Root.AddChild(scoreLabel);
 
-        Button btnRespawn = CreateButton();
+        var btnRespawn = CreateButton();
         btnRespawn.Text = Translations.Get("gameover.respawn");
         btnRespawn.OnClick += e =>
         {
@@ -59,7 +59,7 @@ public class GameOverScreen(
 
         Root.AddChild(btnRespawn);
 
-        Button btnTitle = CreateButton();
+        var btnTitle = CreateButton();
         btnTitle.Text = Translations.Get("gameover.titleMenu");
         btnTitle.OnClick += e =>
         {

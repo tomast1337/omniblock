@@ -30,7 +30,7 @@ public sealed class LayEggsBehavior : IEntityTicker
             return;
         }
 
-        int remaining = self.State[_ticksUntilNextEgg];
+        var remaining = self.State[_ticksUntilNextEgg];
         if (remaining <= 0)
         {
             // Zero means "never seeded" for an entity built before Reset ran, as well as "due now".

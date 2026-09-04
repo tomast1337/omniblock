@@ -47,7 +47,7 @@ public class DirectConnectScreen(
         Panel buttonPanel = new();
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
-        Button btnJoin = CreateButton();
+        var btnJoin = CreateButton();
         btnJoin.Text = Translations.Get("gui.joinServer");
         btnJoin.Style.Width = 100;
         btnJoin.Style.SetMargin(0, 4, 0, 0);
@@ -60,7 +60,7 @@ public class DirectConnectScreen(
         };
         buttonPanel.AddChild(btnJoin);
 
-        Button btnCancel = CreateButton();
+        var btnCancel = CreateButton();
         btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 100;
         btnCancel.OnClick += e => Context.Navigator.Navigate(parent);
@@ -71,9 +71,9 @@ public class DirectConnectScreen(
 
     private void ConnectToServer(string ip)
     {
-        string[] parts = ip.Split(':');
-        string host = parts[0];
-        int portNum = 25565;
+        var parts = ip.Split(':');
+        var host = parts[0];
+        var portNum = 25565;
         if (parts.Length > 1)
         {
             int.TryParse(parts[1], out portNum);

@@ -31,18 +31,15 @@ public class BlockEntitySign : BlockEntity
         }
     }
 
-    public override Message? CreateUpdateMessage()
+    public override Message? CreateUpdateMessage() => new UpdateSignMessage
     {
-        return new UpdateSignMessage { X = X, Y = (short)Y, Z = Z, Lines = Texts };
-    }
+        X = X,
+        Y = (short)Y,
+        Z = Z,
+        Lines = Texts
+    };
 
-    public bool IsEditable()
-    {
-        return _editable;
-    }
+    public bool IsEditable() => _editable;
 
-    public void SetEditable(bool editable)
-    {
-        _editable = editable;
-    }
+    public void SetEditable(bool editable) => _editable = editable;
 }

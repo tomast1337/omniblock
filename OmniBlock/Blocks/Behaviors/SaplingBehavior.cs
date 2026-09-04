@@ -17,10 +17,7 @@ internal sealed class SaplingBehavior(int[] textures) : BlockRuntimeBehavior, IB
 {
     private static readonly JavaRandom s_random = new();
 
-    public int GetDroppedItemMeta(Block block, int blockMeta, int defaultMeta)
-    {
-        return blockMeta & 3;
-    }
+    public int GetDroppedItemMeta(Block block, int blockMeta, int defaultMeta) => blockMeta & 3;
 
     public void OnTick(Block block, OnTickEvent @event)
     {
@@ -35,10 +32,7 @@ internal sealed class SaplingBehavior(int[] textures) : BlockRuntimeBehavior, IB
             Generate(@event.World, @event.X, @event.Y, @event.Z, block.Id);
     }
 
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
-    {
-        return textures[meta & 3];
-    }
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => textures[meta & 3];
 
     public static void Generate(IWorldContext world, int x, int y, int z, int saplingId)
     {

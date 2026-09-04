@@ -24,7 +24,7 @@ public sealed class SkinManager : IDisposable
     private readonly ConcurrentDictionary<string, TextureHandle> _textureHandles = new();
     private readonly TextureManager _textureManager;
 
-    private int _cacheSize = 0;
+    private int _cacheSize;
 
     public SkinManager(TextureManager textureManager)
     {
@@ -43,14 +43,14 @@ public sealed class SkinManager : IDisposable
     {
         _httpClient.Dispose();
 
-        foreach (Image<Rgba32> image in _downloadedImages.Values)
+        foreach (var image in _downloadedImages.Values)
         {
             image.Dispose();
         }
 
         _downloadedImages.Clear();
 
-        foreach (TextureHandle handle in _textureHandles.Values)
+        foreach (var handle in _textureHandles.Values)
         {
             _textureManager.Delete(handle);
         }
@@ -60,11 +60,11 @@ public sealed class SkinManager : IDisposable
 
     private void InvalidateCache()
     {
-        string path = Path.Combine(Path.GetTempPath(), "OmniBlock", SkinCacheDirectoryName);
+        var path = Path.Combine(Path.GetTempPath(), "OmniBlock", SkinCacheDirectoryName);
         if (!Directory.Exists(path)) return;
 
-        DateTime cacheAgeLimit = DateTime.Now.AddDays(-SkinCacheValidForDays);
-        foreach (string file in Directory.GetFiles(path))
+        var cacheAgeLimit = DateTime.Now.AddDays(-SkinCacheValidForDays);
+        foreach (var file in Directory.GetFiles(path))
         {
             if (File.GetCreationTime(file) >= cacheAgeLimit) continue;
 
@@ -98,8 +98,8 @@ public sealed class SkinManager : IDisposable
     {
         try
         {
-            bool skinLoadedFromCache = await TryLoadTextureFromCache(username, username + ".png");
-            bool capeLoadedFromCache = await TryLoadCapeId(username);
+            var skinLoadedFromCache = await TryLoadTextureFromCache(username, username + ".png");
+            var capeLoadedFromCache = await TryLoadCapeId(username);
 
             if (skinLoadedFromCache && capeLoadedFromCache)
             {
@@ -123,25 +123,25 @@ public sealed class SkinManager : IDisposable
             }
 
 
-            string? id = await GetProfileIdFromName(username);
+            var id = await GetProfileIdFromName(username);
             if (id == null) throw new ProfileException();
 
-            string? value = await GetProfilePropertiesFromId(id);
+            var value = await GetProfilePropertiesFromId(id);
             ArgumentException.ThrowIfNullOrWhiteSpace(value);
 
-            JsonNode? node = JsonNode.Parse(Encoding.UTF8.GetString(Convert.FromBase64String(value)));
-            string? texture = node?["textures"]?["SKIN"]?["url"]?.GetValue<string>();
-            string? capeTexture = node?["textures"]?["CAPE"]?["url"]?.GetValue<string>();
+            var node = JsonNode.Parse(Encoding.UTF8.GetString(Convert.FromBase64String(value)));
+            var texture = node?["textures"]?["SKIN"]?["url"]?.GetValue<string>();
+            var capeTexture = node?["textures"]?["CAPE"]?["url"]?.GetValue<string>();
 
             ArgumentException.ThrowIfNullOrWhiteSpace(texture);
 
-            bool isCacheFull = _cacheSize >= SkinCacheSize;
+            var isCacheFull = _cacheSize >= SkinCacheSize;
 
             if (!skinLoadedFromCache)
             {
-                await using Stream textureStream = await _httpClient.GetStreamAsync(texture);
+                await using var textureStream = await _httpClient.GetStreamAsync(texture);
 
-                Image<Rgba32> image = await Image.LoadAsync<Rgba32>(textureStream);
+                var image = await Image.LoadAsync<Rgba32>(textureStream);
 
                 if (image is { Height: 64, Width: 64 })
                 {
@@ -176,7 +176,7 @@ public sealed class SkinManager : IDisposable
             {
                 if (!string.IsNullOrWhiteSpace(capeTexture))
                 {
-                    string capeId = GetIdFromUrl(capeTexture);
+                    var capeId = GetIdFromUrl(capeTexture);
                     await DownloadCapeFromUrl(capeTexture, capeId, username, cache);
                     if (cache && !isCacheFull) await SaveTxtCache(username + ".txt", capeId, SkinCacheDirectoryName);
                 }
@@ -205,20 +205,20 @@ public sealed class SkinManager : IDisposable
 
     private async Task<bool> TryLoadTextureFromCache(string textureKey, string cacheFileName, string dir = SkinCacheDirectoryName)
     {
-        string skinCachePath = Path.Combine(Path.GetTempPath(), "OmniBlock", dir, cacheFileName);
+        var skinCachePath = Path.Combine(Path.GetTempPath(), "OmniBlock", dir, cacheFileName);
         if (!File.Exists(skinCachePath)) return false;
 
-        Image<Rgba32> cachedImage = await Image.LoadAsync<Rgba32>(skinCachePath);
+        var cachedImage = await Image.LoadAsync<Rgba32>(skinCachePath);
         _downloadedImages[textureKey] = cachedImage;
         return true;
     }
 
     private async Task<bool> TryLoadCapeId(string username)
     {
-        string skinCachePath = Path.Combine(Path.GetTempPath(), "OmniBlock", SkinCacheDirectoryName, username + ".txt");
+        var skinCachePath = Path.Combine(Path.GetTempPath(), "OmniBlock", SkinCacheDirectoryName, username + ".txt");
         if (!File.Exists(skinCachePath)) return false;
 
-        string id = Encoding.ASCII.GetString(await File.ReadAllBytesAsync(skinCachePath));
+        var id = Encoding.ASCII.GetString(await File.ReadAllBytesAsync(skinCachePath));
 
         // player have no cape equipped.
         if (string.IsNullOrEmpty(id)) return true;
@@ -240,9 +240,9 @@ public sealed class SkinManager : IDisposable
 
     private async Task DownloadCapeFromUrl(string url, string id, string? username = null, bool cache = true)
     {
-        await using Stream capeTextureStream = await _httpClient.GetStreamAsync(url);
+        await using var capeTextureStream = await _httpClient.GetStreamAsync(url);
 
-        Image<Rgba32> capeImage = await Image.LoadAsync<Rgba32>(capeTextureStream);
+        var capeImage = await Image.LoadAsync<Rgba32>(capeTextureStream);
         _downloadedImages[id] = capeImage;
 
         if (!string.IsNullOrEmpty(username))
@@ -269,7 +269,7 @@ public sealed class SkinManager : IDisposable
 
     private async Task SaveTextureToCache(string cacheFileName, Image image, string directoryName)
     {
-        string path = Path.Combine(Path.GetTempPath(), "OmniBlock", directoryName);
+        var path = Path.Combine(Path.GetTempPath(), "OmniBlock", directoryName);
         if (!Directory.Exists(path))
         {
             Directory.CreateDirectory(path);
@@ -284,7 +284,7 @@ public sealed class SkinManager : IDisposable
 
     private async Task SaveTxtCache(string filename, string text, string directoryName)
     {
-        string path = Path.Combine(Path.GetTempPath(), "OmniBlock", directoryName);
+        var path = Path.Combine(Path.GetTempPath(), "OmniBlock", directoryName);
         if (!Directory.Exists(path))
         {
             Directory.CreateDirectory(path);
@@ -299,18 +299,18 @@ public sealed class SkinManager : IDisposable
 
     private async Task<string?> GetProfileIdFromName(string username)
     {
-        HttpResponseMessage profileResponse = await _httpClient.GetAsync($"https://api.mojang.com/minecraft/profile/lookup/name/{username}");
-        await using Stream profileStream = await profileResponse.Content.ReadAsStreamAsync();
-        JsonNode? profileNode = await JsonNode.ParseAsync(profileStream);
+        var profileResponse = await _httpClient.GetAsync($"https://api.mojang.com/minecraft/profile/lookup/name/{username}");
+        await using var profileStream = await profileResponse.Content.ReadAsStreamAsync();
+        var profileNode = await JsonNode.ParseAsync(profileStream);
 
         return profileNode?["id"]?.GetValue<string>();
     }
 
     private async Task<string?> GetProfilePropertiesFromId(string id)
     {
-        HttpResponseMessage skinResponse = await _httpClient.GetAsync($"https://sessionserver.mojang.com/session/minecraft/profile/{id}");
-        await using Stream skinStream = await skinResponse.Content.ReadAsStreamAsync();
-        JsonNode? skinNode = await JsonNode.ParseAsync(skinStream);
+        var skinResponse = await _httpClient.GetAsync($"https://sessionserver.mojang.com/session/minecraft/profile/{id}");
+        await using var skinStream = await skinResponse.Content.ReadAsStreamAsync();
+        var skinNode = await JsonNode.ParseAsync(skinStream);
 
         return skinNode?["properties"]?[0]?["value"]?.GetValue<string>();
     }
@@ -322,12 +322,12 @@ public sealed class SkinManager : IDisposable
             return null;
         }
 
-        if (_textureHandles.TryGetValue(url, out TextureHandle? handle))
+        if (_textureHandles.TryGetValue(url, out var handle))
         {
             return handle;
         }
 
-        if (!_downloadedImages.TryRemove(url, out Image<Rgba32>? image))
+        if (!_downloadedImages.TryRemove(url, out var image))
         {
             return null;
         }
@@ -343,8 +343,8 @@ public sealed class SkinManager : IDisposable
     public void Release(string? url)
     {
         if (string.IsNullOrWhiteSpace(url)) return;
-        if (_downloadedImages.TryRemove(url, out Image<Rgba32>? image)) image.Dispose();
-        if (_textureHandles.TryRemove(url, out TextureHandle? handle)) _textureManager.Delete(handle);
+        if (_downloadedImages.TryRemove(url, out var image)) image.Dispose();
+        if (_textureHandles.TryRemove(url, out var handle)) _textureManager.Delete(handle);
     }
 
     private class ProfileException : Exception;

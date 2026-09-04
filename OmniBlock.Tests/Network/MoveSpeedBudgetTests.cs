@@ -15,10 +15,10 @@ public sealed class MoveSpeedBudgetTests
     [Fact]
     public void Evaluate_aSingleVanillaSizedMove_afterOneTickOfElapsedTime_isAccepted()
     {
-        MoveBudgetResult result = MoveSpeedBudget.Evaluate(
-            currentBudgetSq: MoveSpeedBudget.MaxDistanceSqPerTick,
-            elapsedMs: MoveSpeedBudget.MillisecondsPerTick,
-            movedDistanceSq: MoveSpeedBudget.MaxDistanceSqPerTick - 1.0);
+        var result = MoveSpeedBudget.Evaluate(
+            MoveSpeedBudget.MaxDistanceSqPerTick,
+            MoveSpeedBudget.MillisecondsPerTick,
+            MoveSpeedBudget.MaxDistanceSqPerTick - 1.0);
 
         Assert.False(result.ExceededBudget);
     }
@@ -28,15 +28,15 @@ public sealed class MoveSpeedBudgetTests
     {
         // The exploit this closes: flood packets faster than the server tick rate, each individually
         // legal-sized, to move faster than one tick's budget should allow in real time.
-        double budget = MoveSpeedBudget.MaxDistanceSqPerTick;
-        double perPacketDistanceSq = MoveSpeedBudget.MaxDistanceSqPerTick / 10.0;
-        int accepted = 0;
+        var budget = MoveSpeedBudget.MaxDistanceSqPerTick;
+        var perPacketDistanceSq = MoveSpeedBudget.MaxDistanceSqPerTick / 10.0;
+        var accepted = 0;
 
-        for (int i = 0; i < 1000; i++)
+        for (var i = 0; i < 1000; i++)
         {
             // No time passes between these packets: they all land within the same instant, as a
             // flood would.
-            MoveBudgetResult result = MoveSpeedBudget.Evaluate(budget, elapsedMs: 0, perPacketDistanceSq);
+            var result = MoveSpeedBudget.Evaluate(budget, 0, perPacketDistanceSq);
             if (result.ExceededBudget)
             {
                 break;
@@ -46,7 +46,7 @@ public sealed class MoveSpeedBudgetTests
             accepted++;
         }
 
-        double totalDistanceMovedSq = accepted * perPacketDistanceSq;
+        var totalDistanceMovedSq = accepted * perPacketDistanceSq;
         Assert.True(
             totalDistanceMovedSq <= MoveSpeedBudget.MaxDistanceSqPerTick,
             $"Flooding packets allowed {totalDistanceMovedSq} sq. units of movement with no elapsed time, more than one tick's {MoveSpeedBudget.MaxDistanceSqPerTick} sq. unit budget.");
@@ -55,9 +55,9 @@ public sealed class MoveSpeedBudgetTests
     [Fact]
     public void Evaluate_aMoveLargerThanTheBudget_isRejected_andBudgetIsUnchanged()
     {
-        double budget = MoveSpeedBudget.MaxDistanceSqPerTick;
+        var budget = MoveSpeedBudget.MaxDistanceSqPerTick;
 
-        MoveBudgetResult result = MoveSpeedBudget.Evaluate(budget, elapsedMs: 0, movedDistanceSq: budget + 1.0);
+        var result = MoveSpeedBudget.Evaluate(budget, 0, budget + 1.0);
 
         Assert.True(result.ExceededBudget);
         Assert.Equal(budget, result.RemainingBudgetSq);
@@ -66,9 +66,9 @@ public sealed class MoveSpeedBudgetTests
     [Fact]
     public void Evaluate_afterALongIdleGap_budgetBanksNoMoreThanTheCappedTicks()
     {
-        double hugeElapsedMs = MoveSpeedBudget.MillisecondsPerTick * 1000;
+        var hugeElapsedMs = MoveSpeedBudget.MillisecondsPerTick * 1000;
 
-        MoveBudgetResult result = MoveSpeedBudget.Evaluate(currentBudgetSq: 0, elapsedMs: hugeElapsedMs, movedDistanceSq: 0);
+        var result = MoveSpeedBudget.Evaluate(0, hugeElapsedMs, 0);
 
         Assert.Equal(MoveSpeedBudget.MaxDistanceSqPerTick * MoveSpeedBudget.BankedTicks, result.RemainingBudgetSq);
     }
@@ -79,11 +79,11 @@ public sealed class MoveSpeedBudgetTests
         // A laggy-but-legitimate client: several ticks' worth of real gameplay time passed, then its
         // backlogged packets all drain within one server tick. The elapsed real time between the
         // previous check and this one should cover the combined distance.
-        double elapsedMs = MoveSpeedBudget.MillisecondsPerTick * 3;
-        double combinedLegitimateDistanceSq = MoveSpeedBudget.MaxDistanceSqPerTick * 3 - 1.0;
+        var elapsedMs = MoveSpeedBudget.MillisecondsPerTick * 3;
+        var combinedLegitimateDistanceSq = MoveSpeedBudget.MaxDistanceSqPerTick * 3 - 1.0;
 
-        MoveBudgetResult result = MoveSpeedBudget.Evaluate(
-            currentBudgetSq: MoveSpeedBudget.MaxDistanceSqPerTick,
+        var result = MoveSpeedBudget.Evaluate(
+            MoveSpeedBudget.MaxDistanceSqPerTick,
             elapsedMs,
             combinedLegitimateDistanceSq);
 

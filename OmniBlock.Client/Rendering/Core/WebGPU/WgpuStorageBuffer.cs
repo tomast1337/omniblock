@@ -10,20 +10,16 @@ namespace OmniBlock.Client.Rendering.Core.WebGPU;
 /// </summary>
 /// <remarks>
 ///     Created once at the size of the largest possible instance batch. Rewritten each frame via
-///     <see cref="Write"/> when the instance count changes.
+///     <see cref="Write" /> when the instance count changes.
 /// </remarks>
 public sealed unsafe class WgpuStorageBuffer : IDisposable
 {
-    public WgpuBuffer* Buffer { get; }
-    public BindGroup* BindGroup { get; }
-    public ulong Capacity { get; }
-
     private readonly WebGpuDevice _device;
     private bool _disposed;
 
     /// <summary>
-    ///     Allocates a storage buffer of <paramref name="capacity"/> bytes and creates a bind group
-    ///     at <paramref name="binding"/> within <paramref name="layout"/>.
+    ///     Allocates a storage buffer of <paramref name="capacity" /> bytes and creates a bind group
+    ///     at <paramref name="binding" /> within <paramref name="layout" />.
     /// </summary>
     public WgpuStorageBuffer(WebGpuDevice device, ulong capacity, BindGroupLayout* layout, uint binding = 0)
     {
@@ -33,7 +29,7 @@ public sealed unsafe class WgpuStorageBuffer : IDisposable
         BufferDescriptor bufferDesc = new()
         {
             Usage = BufferUsage.Storage | BufferUsage.CopyDst,
-            Size = capacity,
+            Size = capacity
         };
 
         Buffer = device.Api.DeviceCreateBuffer(device.Device, in bufferDesc);
@@ -43,23 +39,41 @@ public sealed unsafe class WgpuStorageBuffer : IDisposable
             Binding = binding,
             Buffer = Buffer,
             Offset = 0,
-            Size = capacity,
+            Size = capacity
         };
 
         BindGroupDescriptor groupDesc = new()
         {
             Layout = layout,
             EntryCount = 1,
-            Entries = &entry,
+            Entries = &entry
         };
 
         BindGroup = device.Api.DeviceCreateBindGroup(device.Device, in groupDesc);
     }
 
-    /// <summary>Uploads <paramref name="data"/> to the storage buffer through the queue.</summary>
+    public WgpuBuffer* Buffer { get; }
+    public BindGroup* BindGroup { get; }
+    public ulong Capacity { get; }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+
+        var api = _device.Api;
+        if (BindGroup is not null) api.BindGroupRelease(BindGroup);
+        if (Buffer is not null)
+        {
+            api.BufferDestroy(Buffer);
+            api.BufferRelease(Buffer);
+        }
+    }
+
+    /// <summary>Uploads <paramref name="data" /> to the storage buffer through the queue.</summary>
     public void Write<T>(ReadOnlySpan<T> data) where T : unmanaged
     {
-        ulong byteCount = (ulong)(data.Length * sizeof(T));
+        var byteCount = (ulong)(data.Length * sizeof(T));
         if (byteCount > Capacity)
         {
             throw new ArgumentException(
@@ -72,23 +86,6 @@ public sealed unsafe class WgpuStorageBuffer : IDisposable
         }
     }
 
-    /// <summary>Binds the storage buffer's bind group at <paramref name="groupIndex"/> on the pass.</summary>
-    public void Bind(RenderPassEncoder* pass, uint groupIndex = 1)
-    {
-        _device.Api.RenderPassEncoderSetBindGroup(pass, groupIndex, BindGroup, 0, null);
-    }
-
-    public void Dispose()
-    {
-        if (_disposed) return;
-        _disposed = true;
-
-        Silk.NET.WebGPU.WebGPU api = _device.Api;
-        if (BindGroup is not null) api.BindGroupRelease(BindGroup);
-        if (Buffer is not null)
-        {
-            api.BufferDestroy(Buffer);
-            api.BufferRelease(Buffer);
-        }
-    }
+    /// <summary>Binds the storage buffer's bind group at <paramref name="groupIndex" /> on the pass.</summary>
+    public void Bind(RenderPassEncoder* pass, uint groupIndex = 1) => _device.Api.RenderPassEncoderSetBindGroup(pass, groupIndex, BindGroup, 0, null);
 }

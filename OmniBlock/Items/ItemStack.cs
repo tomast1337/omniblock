@@ -8,7 +8,7 @@ namespace OmniBlock.Items;
 
 public class ItemStack
 {
-    private Item _item;
+    private readonly Item _item;
     private int _damage;
     public int AnimationTime;
     public int Count;
@@ -64,7 +64,7 @@ public class ItemStack
 
     public bool useOnBlock(EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
-        bool item = GetItem().useOnBlock(this, entityPlayer, world, x, y, z, meta);
+        var item = GetItem().useOnBlock(this, entityPlayer, world, x, y, z, meta);
         if (item)
         {
             entityPlayer.IncreaseStat(Stats.Stats.Used[ItemId], 1);
@@ -183,7 +183,7 @@ public class ItemStack
 
     public void PostHit(EntityLiving entityLiving, EntityPlayer entityPlayer)
     {
-        bool hit = _item.PostHit(this, entityLiving, entityPlayer);
+        var hit = _item.PostHit(this, entityLiving, entityPlayer);
         if (hit)
         {
             entityPlayer.IncreaseStat(Stats.Stats.Used[ItemId], 1);
@@ -192,7 +192,7 @@ public class ItemStack
 
     public void PostMine(int blockId, int x, int y, int z, EntityPlayer entityPlayer)
     {
-        bool mined = _item.PostMine(this, blockId, x, y, z, entityPlayer);
+        var mined = _item.PostMine(this, blockId, x, y, z, entityPlayer);
         if (mined)
         {
             entityPlayer.IncreaseStat(Stats.Stats.Used[ItemId], 1);
@@ -211,7 +211,7 @@ public class ItemStack
 
     public ItemStack Copy() => new(_item, Count, _damage);
 
-    public static bool AreEqual(ItemStack? a, ItemStack? b) => a == null && b == null || a != null && b != null && a.Equals2(b);
+    public static bool AreEqual(ItemStack? a, ItemStack? b) => (a == null && b == null) || (a != null && b != null && a.Equals2(b));
 
     private bool Equals2(ItemStack itemStack) => Count == itemStack.Count && ItemId == itemStack.ItemId && _damage == itemStack._damage;
 

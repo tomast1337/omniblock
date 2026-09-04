@@ -11,6 +11,16 @@ public sealed class PooledList<T>(int initialCapacity = 16) : IDisposable where 
 
     public Span<T> Span => Buffer.AsSpan(0, Count);
 
+    public void Dispose()
+    {
+        if (Buffer != null)
+        {
+            ArrayPool<T>.Shared.Return(Buffer, false);
+            Buffer = null!;
+            Count = 0;
+        }
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(T value)
     {
@@ -32,29 +42,16 @@ public sealed class PooledList<T>(int initialCapacity = 16) : IDisposable where 
 
     private void Grow(int minCapacity)
     {
-        int newSize = Buffer.Length * 2;
+        var newSize = Buffer.Length * 2;
         if (newSize < minCapacity)
             newSize = minCapacity;
 
-        T[] newBuffer = ArrayPool<T>.Shared.Rent(newSize);
+        var newBuffer = ArrayPool<T>.Shared.Rent(newSize);
         Array.Copy(Buffer, newBuffer, Count);
-        ArrayPool<T>.Shared.Return(Buffer, clearArray: false);
+        ArrayPool<T>.Shared.Return(Buffer);
         Buffer = newBuffer;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Clear()
-    {
-        Count = 0;
-    }
-
-    public void Dispose()
-    {
-        if (Buffer != null)
-        {
-            ArrayPool<T>.Shared.Return(Buffer, clearArray: false);
-            Buffer = null!;
-            Count = 0;
-        }
-    }
+    public void Clear() => Count = 0;
 }

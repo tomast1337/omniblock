@@ -5,15 +5,15 @@ using OmniBlock.Textures;
 namespace OmniBlock.Tests.Blocks;
 
 /// <summary>
-/// Pins the <see cref="IBlockVisuals"/> extraction (wool/grass/glass/ice) against the behavior
-/// of the deleted <c>BlockCloth</c>, <c>BlockGlass</c>, and <c>BlockBreakable</c> subclasses.
+///     Pins the <see cref="IBlockVisuals" /> extraction (wool/grass/glass/ice) against the behavior
+///     of the deleted <c>BlockCloth</c>, <c>BlockGlass</c>, and <c>BlockBreakable</c> subclasses.
 /// </summary>
 public class BlockVisualsTests
 {
     [Fact]
     public void Wool_MetaRoundTripsBetweenItemAndBlock()
     {
-        for (int itemMeta = 0; itemMeta < 16; itemMeta++)
+        for (var itemMeta = 0; itemMeta < 16; itemMeta++)
         {
             Assert.Equal(itemMeta, ClothVisualBehavior.GetItemMeta(ClothVisualBehavior.GetBlockMeta(itemMeta)));
         }

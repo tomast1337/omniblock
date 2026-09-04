@@ -9,15 +9,15 @@ using OmniBlock.Worlds.Core.Systems;
 namespace OmniBlock.Worlds.Core;
 
 /// <summary>
-/// IBlockAccess implementation for rendering a single block in item/entity contexts.
-/// Reports a fixed (blockId, metadata) at (0,0,0), open-air defaults elsewhere, and
-/// a constant luminance so custom block renderers can respect caller-provided brightness.
+///     IBlockAccess implementation for rendering a single block in item/entity contexts.
+///     Reports a fixed (blockId, metadata) at (0,0,0), open-air defaults elsewhere, and
+///     a constant luminance so custom block renderers can respect caller-provided brightness.
 /// </summary>
 public sealed class ItemRenderBlockAccess : IBlockReader, ILightProvider
 {
     private readonly int _blockId;
-    private readonly int _metadata;
     private readonly float _brightness;
+    private readonly int _metadata;
 
     public ItemRenderBlockAccess(int blockId, int metadata, float brightness)
     {
@@ -26,42 +26,22 @@ public sealed class ItemRenderBlockAccess : IBlockReader, ILightProvider
         _brightness = brightness;
     }
 
-    public int getBlockId(int x, int y, int z)
-        => x == 0 && y == 0 && z == 0 ? _blockId : 0;
-
-    public static BlockEntity? getBlockEntity(int x, int y, int z) => null;
-
-    public float getNaturalBrightness(int x, int y, int z, int blockLight) => _brightness;
-
-    public float getLuminance(int x, int y, int z) => _brightness;
-
-    public int GetMeta(int x, int y, int z)
-    {
-        return x == 0 && y == 0 && z == 0 ? _metadata : 0;
-    }
-
-    public static Material getMaterial(int x, int y, int z) => Material.Air;
-
-    public static bool isOpaque(int x, int y, int z) => false;
-
-    public static bool shouldSuffocate(int x, int y, int z) => false;
-
-    public static BiomeSource getBiomeSource() => null!;
     public int GetBlockId(int x, int y, int z) => getBlockId(x, y, z);
     public int GetBlockMeta(int x, int y, int z) => GetMeta(x, y, z);
-    public BlockEntity? GetBlockEntity(int x, int y, int z) => getBlockEntity(x, y, z);
     public Material GetMaterial(int x, int y, int z) => getMaterial(x, y, z);
     public bool IsOpaque(int x, int y, int z) => isOpaque(x, y, z);
     public bool ShouldSuffocate(int x, int y, int z) => shouldSuffocate(x, y, z);
     public BiomeSource GetBiomeSource() => getBiomeSource();
     public bool IsAir(int x, int y, int z) => GetBlockId(x, y, z) == 0;
+
     public int GetBrightness(int x, int y, int z)
     {
-        int value = (int)(_brightness * 15f);
+        var value = (int)(_brightness * 15f);
         if (value < 0) value = 0;
         if (value > 15) value = 15;
         return value;
     }
+
     public bool IsTopY(int x, int y, int z) => false;
     public int GetTopY(int x, int z) => 0;
     public int GetTopSolidBlockY(int x, int z) => 0;
@@ -82,4 +62,24 @@ public sealed class ItemRenderBlockAccess : IBlockReader, ILightProvider
     /// </summary>
     public LightLevels GetLightLevels(int x, int y, int z, int minBlockLight) =>
         LightLevels.Of(0, Math.Max(GetBrightness(x, y, z), minBlockLight));
+
+    public int getBlockId(int x, int y, int z)
+        => x == 0 && y == 0 && z == 0 ? _blockId : 0;
+
+    public static BlockEntity? getBlockEntity(int x, int y, int z) => null;
+
+    public float getNaturalBrightness(int x, int y, int z, int blockLight) => _brightness;
+
+    public float getLuminance(int x, int y, int z) => _brightness;
+
+    public int GetMeta(int x, int y, int z) => x == 0 && y == 0 && z == 0 ? _metadata : 0;
+
+    public static Material getMaterial(int x, int y, int z) => Material.Air;
+
+    public static bool isOpaque(int x, int y, int z) => false;
+
+    public static bool shouldSuffocate(int x, int y, int z) => false;
+
+    public static BiomeSource getBiomeSource() => null!;
+    public BlockEntity? GetBlockEntity(int x, int y, int z) => getBlockEntity(x, y, z);
 }

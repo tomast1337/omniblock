@@ -4,6 +4,16 @@ public class ResourceManager : IDisposable
 {
     private readonly List<IResourceLoader> _loaders = [];
 
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        foreach (var loader in _loaders)
+        {
+            if (loader is IDisposable disposable)
+                disposable.Dispose();
+        }
+    }
+
     public ResourceManager Add(IResourceLoader loader)
     {
         _loaders.Add(loader);
@@ -12,19 +22,9 @@ public class ResourceManager : IDisposable
 
     public async Task LoadAllAsync()
     {
-        foreach (IResourceLoader loader in _loaders)
+        foreach (var loader in _loaders)
         {
             await loader.LoadAsync();
-        }
-    }
-
-    public void Dispose()
-    {
-        GC.SuppressFinalize(this);
-        foreach (IResourceLoader loader in _loaders)
-        {
-            if (loader is IDisposable disposable)
-                disposable.Dispose();
         }
     }
 }

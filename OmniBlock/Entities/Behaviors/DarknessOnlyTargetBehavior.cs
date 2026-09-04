@@ -9,7 +9,7 @@ public sealed class DarknessOnlyTargetBehavior(double radius = 16.0D) : IEntityT
 {
     public Entity? FindPlayerToAttack(EntityCreature self)
     {
-        float brightness = self.GetBrightnessAtEyes(1.0F);
+        var brightness = self.GetBrightnessAtEyes(1.0F);
         return !(brightness < 0.5F) ? null : self.World.Entities.GetClosestPlayerTarget(self.X, self.Y, self.Z, radius);
     }
 }

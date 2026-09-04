@@ -14,9 +14,9 @@ public struct Box(double minX, double minY, double minZ, double maxX, double max
 
     public Box Stretch(double x, double y, double z)
     {
-        (double newMinX, double newMaxX) = x < 0 ? (MinX + x, MaxX) : (MinX, MaxX + x);
-        (double newMinY, double newMaxY) = y < 0 ? (MinY + y, MaxY) : (MinY, MaxY + y);
-        (double newMinZ, double newMaxZ) = z < 0 ? (MinZ + z, MaxZ) : (MinZ, MaxZ + z);
+        var (newMinX, newMaxX) = x < 0 ? (MinX + x, MaxX) : (MinX, MaxX + x);
+        var (newMinY, newMaxY) = y < 0 ? (MinY + y, MaxY) : (MinY, MaxY + y);
+        var (newMinZ, newMaxZ) = z < 0 ? (MinZ + z, MaxZ) : (MinZ, MaxZ + z);
 
         return new Box(newMinX, newMinY, newMinZ, newMaxX, newMaxY, newMaxZ);
     }
@@ -56,7 +56,7 @@ public struct Box(double minX, double minY, double minZ, double maxX, double max
 
         if (offsetY > 0 && other.MaxY <= MinY)
         {
-            double diff = MinY - other.MaxY;
+            var diff = MinY - other.MaxY;
             if (diff < offsetY)
             {
                 offsetY = diff;
@@ -64,7 +64,7 @@ public struct Box(double minX, double minY, double minZ, double maxX, double max
         }
         else if (offsetY < 0 && other.MinY >= MaxY)
         {
-            double diff = MaxY - other.MinY;
+            var diff = MaxY - other.MinY;
             if (diff > offsetY)
             {
                 offsetY = diff;
@@ -81,7 +81,7 @@ public struct Box(double minX, double minY, double minZ, double maxX, double max
 
         if (offsetZ > 0 && other.MaxZ <= MinZ)
         {
-            double diff = MinZ - other.MaxZ;
+            var diff = MinZ - other.MaxZ;
             if (diff < offsetZ)
             {
                 offsetZ = diff;
@@ -89,7 +89,7 @@ public struct Box(double minX, double minY, double minZ, double maxX, double max
         }
         else if (offsetZ < 0 && other.MinZ >= MaxZ)
         {
-            double diff = MaxZ - other.MinZ;
+            var diff = MaxZ - other.MinZ;
             if (diff > offsetZ)
             {
                 offsetZ = diff;
@@ -127,16 +127,21 @@ public struct Box(double minX, double minY, double minZ, double maxX, double max
     public Box Contract(double x, double y, double z) =>
         new(MinX + x, MinY + y, MinZ + z, MaxX - x, MaxY - y, MaxZ - z);
 
-    private enum Axis { X, Y, Z}
+    private enum Axis
+    {
+        X,
+        Y,
+        Z
+    }
 
     public HitResult Raycast(Vec3D start, Vec3D end)
     {
-        Vec3D? hitX = GetClosest(start, end, start.GetIntermediateWithXValue(end, MinX), start.GetIntermediateWithXValue(end, MaxX), Axis.X);
-        Vec3D? hitY = GetClosest(start, end, start.GetIntermediateWithYValue(end, MinY), start.GetIntermediateWithYValue(end, MaxY), Axis.Y);
-        Vec3D? hitZ = GetClosest(start, end, start.GetIntermediateWithZValue(end, MinZ), start.GetIntermediateWithZValue(end, MaxZ), Axis.Z);
+        var hitX = GetClosest(start, end, start.GetIntermediateWithXValue(end, MinX), start.GetIntermediateWithXValue(end, MaxX), Axis.X);
+        var hitY = GetClosest(start, end, start.GetIntermediateWithYValue(end, MinY), start.GetIntermediateWithYValue(end, MaxY), Axis.Y);
+        var hitZ = GetClosest(start, end, start.GetIntermediateWithZValue(end, MinZ), start.GetIntermediateWithZValue(end, MaxZ), Axis.Z);
 
         Vec3D? finalHit = null;
-        int side = -1;
+        var side = -1;
 
         UpdateHit(hitX, ref finalHit, ref side, start.GetIntermediateWithXValue(end, MinX) == hitX ? 4 : 5);
         UpdateHit(hitY, ref finalHit, ref side, start.GetIntermediateWithYValue(end, MinY) == hitY ? 0 : 1);
@@ -174,8 +179,8 @@ public struct Box(double minX, double minY, double minZ, double maxX, double max
 
     private Vec3D? GetClosest(in Vec3D start, in Vec3D end, in Vec3D? a, in Vec3D? b, Axis axis)
     {
-        bool aValid = a is not null && IsValid(a.Value, axis);
-        bool bValid = b is not null && IsValid(b.Value, axis);
+        var aValid = a is not null && IsValid(a.Value, axis);
+        var bValid = b is not null && IsValid(b.Value, axis);
 
         if (aValid && bValid)
         {

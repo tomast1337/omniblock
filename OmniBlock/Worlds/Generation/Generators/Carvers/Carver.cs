@@ -1,6 +1,5 @@
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Chunks;
-using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Worlds.Generation.Generators.Carvers;
@@ -21,12 +20,12 @@ internal class Carver
     public virtual void carve(IChunkSource source, IWorldContext world, int chunkX, int chunkZ, byte[] blocks)
     {
         Rand.SetSeed(world.Seed);
-        long xOffset = Rand.NextLong() / 2L * 2L + 1L;
-        long yOffset = Rand.NextLong() / 2L * 2L + 1L;
+        var xOffset = Rand.NextLong() / 2L * 2L + 1L;
+        var yOffset = Rand.NextLong() / 2L * 2L + 1L;
 
-        for (int currentX = chunkX - Radius; currentX <= chunkX + Radius; ++currentX)
+        for (var currentX = chunkX - Radius; currentX <= chunkX + Radius; ++currentX)
         {
-            for (int currentZ = chunkZ - Radius; currentZ <= chunkZ + Radius; ++currentZ)
+            for (var currentZ = chunkZ - Radius; currentZ <= chunkZ + Radius; ++currentZ)
             {
                 Rand.SetSeed((currentX * xOffset + currentZ * yOffset) ^ world.Seed);
                 CarveCaves(world, currentX, currentZ, chunkX, chunkZ, blocks);

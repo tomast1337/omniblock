@@ -29,7 +29,7 @@ public static class ChunkHash
         SHA256.HashData(blob, digest);
 
         ulong hash = 0;
-        for (int i = 0; i < sizeof(ulong); i++)
+        for (var i = 0; i < sizeof(ulong); i++)
         {
             hash = (hash << 8) | digest[i];
         }

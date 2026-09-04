@@ -11,12 +11,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OmniBlock\OmniBlock.csproj" />
-    <ProjectReference Include="..\OmniBlock.Luau\OmniBlock.Luau.csproj" />
+    <ProjectReference Include="..\OmniBlock\OmniBlock.csproj"/>
+    <ProjectReference Include="..\OmniBlock.Luau\OmniBlock.Luau.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="OmniBlock.Tests" />
+    <InternalsVisibleTo Include="OmniBlock.Tests"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -24,12 +24,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="SixLabors.Fonts" Version="2.1.3" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.7" />
+    <PackageReference Include="SixLabors.Fonts" Version="2.1.3"/>
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.7"/>
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="BannedSymbols.txt" />
+    <AdditionalFiles Include="BannedSymbols.txt"/>
   </ItemGroup>
 
   <!--
@@ -46,11 +46,11 @@
   </PropertyGroup>
 
   <Target Name="CopyLocalLuauNative" AfterTargets="Build" Condition="Exists('$(_LuauNativeLocalArtifact)')">
-    <Copy SourceFiles="$(_LuauNativeLocalArtifact)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(_LuauNativeLocalArtifact)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true"/>
   </Target>
 
   <ItemGroup>
-    <None Include="assets\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="assets\**\*" CopyToOutputDirectory="PreserveNewest"/>
     <None Include="..\OmniBlock\assets\**\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <Link>assets\%(RecursiveDir)%(Filename)%(Extension)</Link>
@@ -77,12 +77,12 @@
   -->
   <Target Name="CreateGlfwCompatSymlink" AfterTargets="Build" Condition="'$(OS)' != 'Windows_NT'">
     <ItemGroup>
-      <_GlfwSo3Files Include="$(OutDir)runtimes\linux-*\native\libglfw.so.3" />
-      <_GlfwSo3Files Include="$(OutDir)libglfw.so.3" Condition="Exists('$(OutDir)libglfw.so.3')" />
+      <_GlfwSo3Files Include="$(OutDir)runtimes\linux-*\native\libglfw.so.3"/>
+      <_GlfwSo3Files Include="$(OutDir)libglfw.so.3" Condition="Exists('$(OutDir)libglfw.so.3')"/>
     </ItemGroup>
     <!-- Remove any regular-file copy left by an older build, otherwise the symlink is skipped. -->
-    <Delete Files="@(_GlfwSo3Files->'%(RootDir)%(Directory)libglfw.so')" />
-    <Exec Command="ln -sfn libglfw.so.3 '%(_GlfwSo3Files.RootDir)%(_GlfwSo3Files.Directory)libglfw.so'" Condition="'@(_GlfwSo3Files)' != ''" />
+    <Delete Files="@(_GlfwSo3Files->'%(RootDir)%(Directory)libglfw.so')"/>
+    <Exec Command="ln -sfn libglfw.so.3 '%(_GlfwSo3Files.RootDir)%(_GlfwSo3Files.Directory)libglfw.so'" Condition="'@(_GlfwSo3Files)' != ''"/>
   </Target>
 
 </Project>

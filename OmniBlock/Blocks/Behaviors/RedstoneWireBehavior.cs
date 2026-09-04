@@ -42,10 +42,7 @@ public sealed class RedstoneWireBehavior(Block wire, Block[] conductors, Block r
         NotifySurroundingWires(@event.World, @event.X, @event.Y, @event.Z);
     }
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-    {
-        return @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
-    }
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
@@ -83,15 +80,9 @@ public sealed class RedstoneWireBehavior(Block wire, Block[] conductors, Block r
         @event.World.Broadcaster.AddParticle("reddust", x, y, z, xVel, yVel, zVel);
     }
 
-    public int GetColorMultiplier(Block block, IBlockReader reader, int x, int y, int z, int defaultColor)
-    {
-        return 8388608;
-    }
+    public int GetColorMultiplier(Block block, IBlockReader reader, int x, int y, int z, int defaultColor) => 8388608;
 
-    public bool CanEmitRedstonePower(Block block)
-    {
-        return s_wiresProvidePower.Value;
-    }
+    public bool CanEmitRedstonePower(Block block) => s_wiresProvidePower.Value;
 
     public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
     {
@@ -105,11 +96,13 @@ public sealed class RedstoneWireBehavior(Block wire, Block[] conductors, Block r
         var connectsPlusZ = IsPowerProviderOrWire(reader, x, y, z + 1, 0) || (!reader.ShouldSuffocate(x, y, z + 1) && IsPowerProviderOrWire(reader, x, y - 1, z + 1, -1));
 
         if (reader.ShouldSuffocate(x, y + 1, z))
+        {
             return (!connectsMinusZ && !connectsPlusX && !connectsMinusX && !connectsPlusZ && side is >= 2 and <= 5) ||
                    (side == 2 && connectsMinusZ && !connectsMinusX && !connectsPlusX) ||
                    (side == 3 && connectsPlusZ && !connectsMinusX && !connectsPlusX) ||
                    (side == 4 && connectsMinusX && !connectsMinusZ && !connectsPlusZ) ||
                    (side == 5 && connectsPlusX && !connectsMinusZ && !connectsPlusZ);
+        }
 
         if (reader.ShouldSuffocate(x - 1, y, z) && IsPowerProviderOrWire(reader, x - 1, y + 1, z, -1))
             connectsMinusX = true;
@@ -130,10 +123,7 @@ public sealed class RedstoneWireBehavior(Block wire, Block[] conductors, Block r
                (side == 5 && connectsPlusX && !connectsMinusZ && !connectsPlusZ);
     }
 
-    public bool IsStrongPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
-    {
-        return s_wiresProvidePower.Value && IsPoweringSide(block, reader, x, y, z, side);
-    }
+    public bool IsStrongPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => s_wiresProvidePower.Value && IsPoweringSide(block, reader, x, y, z, side);
 
     private void NotifySurroundingWires(IWorldContext level, int x, int y, int z)
     {
@@ -250,8 +240,10 @@ public sealed class RedstoneWireBehavior(Block wire, Block[] conductors, Block r
         if (blockId == wire.Id) return true;
 
         foreach (var conductor in conductors)
+        {
             if (blockId == conductor.Id)
                 return true;
+        }
 
         if (blockId != repeater.Id && blockId != poweredRepeater.Id) return Blocks.GetByProtocolId(blockId).CanEmitRedstonePower();
         if (direction < 0) return false;

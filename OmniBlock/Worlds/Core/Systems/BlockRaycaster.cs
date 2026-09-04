@@ -22,32 +22,32 @@ public static class BlockRaycaster
             return new HitResult(HitResultType.Miss);
         }
 
-        int targetX = MathHelper.Floor(end.X);
-        int targetY = MathHelper.Floor(end.Y);
-        int targetZ = MathHelper.Floor(end.Z);
-        int currentX = MathHelper.Floor(start.X);
-        int currentY = MathHelper.Floor(start.Y);
-        int currentZ = MathHelper.Floor(start.Z);
+        var targetX = MathHelper.Floor(end.X);
+        var targetY = MathHelper.Floor(end.Y);
+        var targetZ = MathHelper.Floor(end.Z);
+        var currentX = MathHelper.Floor(start.X);
+        var currentY = MathHelper.Floor(start.Y);
+        var currentZ = MathHelper.Floor(start.Z);
 
-        int initialId = reader.GetBlockId(currentX, currentY, currentZ);
-        int initialMeta = reader.GetBlockMeta(currentX, currentY, currentZ);
-        blocks.TryGetByProtocolId(initialId, out Block? initialBlock);
+        var initialId = reader.GetBlockId(currentX, currentY, currentZ);
+        var initialMeta = reader.GetBlockMeta(currentX, currentY, currentZ);
+        blocks.TryGetByProtocolId(initialId, out var initialBlock);
 
         if ((!ignoreNonSolid || initialBlock == null ||
              initialBlock.GetCollisionShape(reader, entities, currentX, currentY, currentZ) != null) &&
             initialId > 0 && initialBlock!.HasCollision(initialMeta, includeFluids))
         {
-            HitResult result = initialBlock.Raycast(reader, entities, currentX, currentY, currentZ, start, end);
+            var result = initialBlock.Raycast(reader, entities, currentX, currentY, currentZ, start, end);
             if (result.Type != HitResultType.Miss)
             {
                 return result;
             }
         }
 
-        int iterationsRemaining = 200;
+        var iterationsRemaining = 200;
         while (iterationsRemaining-- >= 0)
         {
-            if (double.IsNaN(start.X) || double.IsNaN(start.Y) || double.IsNaN(start.Z) || currentX == targetX && currentY == targetY && currentZ == targetZ)
+            if (double.IsNaN(start.X) || double.IsNaN(start.Y) || double.IsNaN(start.Z) || (currentX == targetX && currentY == targetY && currentZ == targetZ))
             {
                 return new HitResult(HitResultType.Miss);
             }
@@ -94,9 +94,9 @@ public static class BlockRaycaster
                 canMoveZ = false;
             }
 
-            double deltaX = end.X - start.X;
-            double deltaY = end.Y - start.Y;
-            double deltaZ = end.Z - start.Z;
+            var deltaX = end.X - start.X;
+            var deltaY = end.Y - start.Y;
+            var deltaZ = end.Z - start.Z;
 
             double scaleX = 999.0D, scaleY = 999.0D, scaleZ = 999.0D;
             if (canMoveX)
@@ -159,15 +159,15 @@ public static class BlockRaycaster
                 currentStepPos.Z++;
             }
 
-            int blockIdAtStep = reader.GetBlockId(currentX, currentY, currentZ);
-            int metaAtStep = reader.GetBlockMeta(currentX, currentY, currentZ);
-            blocks.TryGetByProtocolId(blockIdAtStep, out Block? blockAtStep);
+            var blockIdAtStep = reader.GetBlockId(currentX, currentY, currentZ);
+            var metaAtStep = reader.GetBlockMeta(currentX, currentY, currentZ);
+            blocks.TryGetByProtocolId(blockIdAtStep, out var blockAtStep);
 
             if ((!ignoreNonSolid || blockAtStep == null ||
                  blockAtStep.GetCollisionShape(reader, entities, currentX, currentY, currentZ) != null) &&
                 blockIdAtStep > 0 && blockAtStep!.HasCollision(metaAtStep, includeFluids))
             {
-                HitResult hit = blockAtStep.Raycast(reader, entities, currentX, currentY, currentZ, start, end);
+                var hit = blockAtStep.Raycast(reader, entities, currentX, currentY, currentZ, start, end);
                 if (hit.Type != HitResultType.Miss)
                 {
                     return hit;

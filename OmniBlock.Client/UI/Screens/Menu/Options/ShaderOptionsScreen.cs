@@ -1,5 +1,4 @@
 using OmniBlock.Client.Options;
-using OmniBlock.Client.UI.Controls.Core;
 
 namespace OmniBlock.Client.UI.Screens.Menu.Options;
 
@@ -9,7 +8,7 @@ public class ShaderOptionsScreen(UIContext context, UIScreen? parent)
     protected override List<OptionSection> GetOptions()
     {
         List<OptionSection> sections = [];
-        foreach (KeyValuePair<string, ShaderOptionSet> set in Context.Options.ShaderOptions.Sets)
+        foreach (var set in Context.Options.ShaderOptions.Sets)
         {
             if (set.Value.Options.Count == 0)
             {
@@ -38,7 +37,7 @@ public class ShaderOptionsScreen(UIContext context, UIScreen? parent)
     {
         if (option is ShaderPresetOption presetOpt)
         {
-            Button btn = CreateButton();
+            var btn = CreateButton();
             btn.Text = option.GetDisplayString();
             btn.OnMouseDown += e =>
             {

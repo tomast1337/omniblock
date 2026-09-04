@@ -18,8 +18,8 @@ internal static class AchievementMap
                 while (reader.ReadLine() is { } line)
                 {
                     if (line == "") continue;
-                    string[] parts = line.Split(',');
-                    int key = int.Parse(parts[0]);
+                    var parts = line.Split(',');
+                    var key = int.Parse(parts[0]);
                     s_guidMap.Add(key, parts[1].Trim());
                 }
             }
@@ -32,7 +32,7 @@ internal static class AchievementMap
 
     public static string GetGuid(int id)
     {
-        if (!s_guidMap.TryGetValue(id, out string? value))
+        if (!s_guidMap.TryGetValue(id, out var value))
         {
             //s_logger.LogWarning("No guid found for id: " + id);
             return string.Empty;

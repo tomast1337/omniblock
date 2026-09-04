@@ -28,12 +28,12 @@ public static class BbModelLoader
     {
         lock (s_cache)
         {
-            if (s_cache.TryGetValue(entityId, out BbModelDocument? cached))
+            if (s_cache.TryGetValue(entityId, out var cached))
             {
                 return cached;
             }
 
-            BbModelDocument document = Load(entityId);
+            var document = Load(entityId);
             s_cache[entityId] = document;
             return document;
         }
@@ -41,7 +41,7 @@ public static class BbModelLoader
 
     public static BbModelDocument Load(string entityId)
     {
-        string path = GetEntityModelPath(entityId);
+        var path = GetEntityModelPath(entityId);
         return !File.Exists(path) ? throw new FileNotFoundException($".bbmodel not found: {path}", path) : LoadFromFile(path, entityId);
     }
 
@@ -49,12 +49,12 @@ public static class BbModelLoader
     {
         entityId ??= Path.GetFileNameWithoutExtension(path);
 
-        string json = File.ReadAllText(path);
-        using JsonDocument root = JsonDocument.Parse(json);
-        JsonElement rootElement = root.RootElement;
+        var json = File.ReadAllText(path);
+        using var root = JsonDocument.Parse(json);
+        var rootElement = root.RootElement;
 
-        BbModelDocument? document = JsonSerializer.Deserialize<BbModelDocument>(json, s_jsonOptions)
-                                    ?? throw new InvalidDataException($"Failed to deserialize .bbmodel '{entityId}'.");
+        var document = JsonSerializer.Deserialize<BbModelDocument>(json, s_jsonOptions)
+                       ?? throw new InvalidDataException($"Failed to deserialize .bbmodel '{entityId}'.");
 
         document.Outliner = ParseOutliner(rootElement);
         Validate(document, entityId);
@@ -64,34 +64,34 @@ public static class BbModelLoader
     private static List<BbModelOutlinerEntry> ParseOutliner(JsonElement root)
     {
         List<BbModelOutlinerEntry> result = new();
-        if (!root.TryGetProperty("outliner", out JsonElement outliner) || outliner.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty("outliner", out var outliner) || outliner.ValueKind != JsonValueKind.Array)
             return result;
 
-        foreach (JsonElement entry in outliner.EnumerateArray())
+        foreach (var entry in outliner.EnumerateArray())
         {
             if (entry.ValueKind != JsonValueKind.Object) continue;
 
             BbModelOutlinerEntry node = new();
-            if (entry.TryGetProperty("uuid", out JsonElement uuidProp))
+            if (entry.TryGetProperty("uuid", out var uuidProp))
             {
                 node.Uuid = uuidProp.GetString() ?? "";
             }
 
-            if (entry.TryGetProperty("children", out JsonElement children) && children.ValueKind == JsonValueKind.Array)
+            if (entry.TryGetProperty("children", out var children) && children.ValueKind == JsonValueKind.Array)
             {
-                foreach (JsonElement child in children.EnumerateArray())
+                foreach (var child in children.EnumerateArray())
                 {
                     if (child.ValueKind == JsonValueKind.String)
                     {
-                        string? id = child.GetString();
+                        var id = child.GetString();
                         if (!string.IsNullOrEmpty(id))
                         {
                             node.Children.Add(id);
                         }
                     }
-                    else if (child.ValueKind == JsonValueKind.Object && child.TryGetProperty("uuid", out JsonElement childUuid))
+                    else if (child.ValueKind == JsonValueKind.Object && child.TryGetProperty("uuid", out var childUuid))
                     {
-                        string? id = childUuid.GetString();
+                        var id = childUuid.GetString();
                         if (!string.IsNullOrEmpty(id))
                         {
                             node.Children.Add(id);

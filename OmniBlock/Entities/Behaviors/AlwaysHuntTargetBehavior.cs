@@ -5,7 +5,7 @@ public sealed class AlwaysHuntTargetBehavior(double radius = 16.0D) : IEntityTar
 {
     public Entity? FindPlayerToAttack(EntityCreature self)
     {
-        EntityPlayer? player = self.World.Entities.GetClosestPlayerTarget(self.X, self.Y, self.Z, radius);
+        var player = self.World.Entities.GetClosestPlayerTarget(self.X, self.Y, self.Z, radius);
         return player != null && self.CanSee(player) ? player : null;
     }
 }

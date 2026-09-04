@@ -2,6 +2,7 @@ using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Entities.Models;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
+using Silk.NET.Maths;
 
 namespace OmniBlock.Client.Rendering.Entities;
 
@@ -14,15 +15,15 @@ public sealed class ChargingEntityRenderer(ModelBase main, float shadowRadius) :
 {
     protected override void PreRenderCallback(EntityLiving entity, float tickDelta)
     {
-        FireballAttackBehavior? attack = entity.Behaviors.Find<FireballAttackBehavior>();
+        var attack = entity.Behaviors.Find<FireballAttackBehavior>();
         if (attack is null) return;
 
         // Near zero charge this is ~1 and the model is drawn square; at full charge it falls away,
         // stretching the model tall and thin.
-        float progress = attack.ChargeProgress(entity, tickDelta);
-        float squash = 1.0F / (progress * progress * progress * progress * progress * 2.0F + 1.0F);
+        var progress = attack.ChargeProgress(entity, tickDelta);
+        var squash = 1.0F / (progress * progress * progress * progress * progress * 2.0F + 1.0F);
 
         GLManager.ModelView.Scale((8.0F + 1.0F / squash) / 2.0F, (8.0F + squash) / 2.0F, (8.0F + 1.0F / squash) / 2.0F);
-        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
     }
 }

@@ -16,10 +16,7 @@ internal sealed class PumpkinBehavior(int top, int side, int face, int itemFace)
         @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, direction);
     }
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-    {
-        return @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
-    }
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
 
     public int GetTexture(Block block, Side renderSide, int meta, int defaultTexture)
     {

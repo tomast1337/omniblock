@@ -22,7 +22,7 @@ public sealed class ProtocolHandshakeTests
     [InlineData(int.MaxValue)]
     public void A_declaration_round_trips_its_version(int version)
     {
-        Assert.True(ProtocolHandshake.TryDecode(ProtocolHandshake.Encode(version), out int decoded));
+        Assert.True(ProtocolHandshake.TryDecode(ProtocolHandshake.Encode(version), out var decoded));
         Assert.Equal(version, decoded);
     }
 
@@ -40,7 +40,7 @@ public sealed class ProtocolHandshakeTests
     [InlineData(0x627368617270L)] // the constant this replaced
     public void A_peer_that_declares_nothing_is_not_mistaken_for_a_capable_one(long seed)
     {
-        Assert.False(ProtocolHandshake.TryDecode(seed, out int version));
+        Assert.False(ProtocolHandshake.TryDecode(seed, out var version));
         Assert.Equal(0, version);
     }
 
@@ -58,16 +58,16 @@ public sealed class ProtocolHandshakeTests
             stream);
         stream.Position = 0;
 
-        LoginHelloPacket received = Assert.IsType<LoginHelloPacket>(Packet.Read(stream, server: true));
+        var received = Assert.IsType<LoginHelloPacket>(Packet.Read(stream, true));
 
-        Assert.True(ProtocolHandshake.TryDecode(received.WorldSeed, out int version));
+        Assert.True(ProtocolHandshake.TryDecode(received.WorldSeed, out var version));
         Assert.Equal(ProtocolHandshake.Version, version);
     }
 
     [Fact]
     public void A_declaration_marks_the_connection_capable_and_records_the_version()
     {
-        UdpConnection connection = TestConnection();
+        var connection = TestConnection();
         Assert.False(connection.betaSharpClient);
         Assert.Equal(0, connection.PeerProtocolVersion);
 
@@ -85,7 +85,7 @@ public sealed class ProtocolHandshakeTests
     [Fact]
     public void Inferred_capability_leaves_the_version_unknown_without_clearing_capability()
     {
-        UdpConnection connection = TestConnection();
+        var connection = TestConnection();
 
         connection.NotePeerCapability(OmniMessagePacket.Get(0, []));
 
@@ -107,8 +107,8 @@ public sealed class ProtocolHandshakeTests
         Packet.Write(MessageRegistrySyncS2CPacket.Get(server.NegotiateAsServer(), ContentRuntime.Current.Manifest), stream);
         stream.Position = 0;
 
-        MessageRegistrySyncS2CPacket received =
-            Assert.IsType<MessageRegistrySyncS2CPacket>(Packet.Read(stream, server: false));
+        var received =
+            Assert.IsType<MessageRegistrySyncS2CPacket>(Packet.Read(stream, false));
 
         Assert.Equal(ProtocolHandshake.Version, received.ProtocolVersion);
         Assert.Equal(server.NegotiatedOrder, received.Keys);

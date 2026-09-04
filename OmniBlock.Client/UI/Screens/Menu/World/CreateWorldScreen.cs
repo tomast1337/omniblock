@@ -107,7 +107,7 @@ public class CreateWorldScreen(
         buttonPanel.Style.Width = 310;
         buttonPanel.Style.MarginTop = 10;
 
-        Button btnCreate = CreateButton();
+        var btnCreate = CreateButton();
         btnCreate.AutomationId = "world.create.submit";
         btnCreate.Text = Translations.Get("gui.create");
         btnCreate.Style.Width = 150;
@@ -115,8 +115,8 @@ public class CreateWorldScreen(
         btnCreate.OnClick += e => DoCreateWorld();
         buttonPanel.AddChild(btnCreate);
 
-        string moreOptionsText = _moreOptions ? Translations.Get("gui.done") : Translations.Get("selectWorld.moreWorldOptions");
-        Button btnToggleMore = CreateButton();
+        var moreOptionsText = _moreOptions ? Translations.Get("gui.done") : Translations.Get("selectWorld.moreWorldOptions");
+        var btnToggleMore = CreateButton();
         btnToggleMore.AutomationId = "world.create.more";
         btnToggleMore.Text = moreOptionsText;
         btnToggleMore.Style.Width = 150;
@@ -128,7 +128,7 @@ public class CreateWorldScreen(
         };
         buttonPanel.AddChild(btnToggleMore);
 
-        Button btnCancel = CreateButton();
+        var btnCancel = CreateButton();
         btnCancel.AutomationId = "world.create.cancel";
         btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 150;
@@ -147,12 +147,12 @@ public class CreateWorldScreen(
 
     private void DoCreateWorld()
     {
-        long worldSeed = new JavaRandom().NextLong();
+        var worldSeed = new JavaRandom().NextLong();
         if (!string.IsNullOrEmpty(_seed))
         {
             try
             {
-                if (long.TryParse(_seed, out long parsedSeed) && parsedSeed != 0L)
+                if (long.TryParse(_seed, out var parsedSeed) && parsedSeed != 0L)
                 {
                     worldSeed = parsedSeed;
                 }
@@ -167,9 +167,9 @@ public class CreateWorldScreen(
             }
         }
 
-        string folderName = _worldName.Trim();
-        char[] invalidCharacters = ChatAllowedCharacters.InvalidFileNameChars;
-        foreach (char c in invalidCharacters)
+        var folderName = _worldName.Trim();
+        var invalidCharacters = ChatAllowedCharacters.InvalidFileNameChars;
+        foreach (var c in invalidCharacters)
         {
             folderName = folderName.Replace(c, '_');
         }
@@ -188,8 +188,8 @@ public class CreateWorldScreen(
 
     private static long CalculateJavaHash(string input)
     {
-        int hash = 0;
-        foreach (char c in input)
+        var hash = 0;
+        foreach (var c in input)
         {
             hash = 31 * hash + c;
         }

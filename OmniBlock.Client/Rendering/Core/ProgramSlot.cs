@@ -67,5 +67,5 @@ public enum ProgramSlot
     ///     UI widgets, item slots, the inventory mob preview. Has no Iris counterpart — Iris does not
     ///     shade the GUI — and exists here because the UI is already its own program.
     /// </summary>
-    Gui,
+    Gui
 }

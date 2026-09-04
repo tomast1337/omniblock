@@ -1,4 +1,3 @@
-using System.Text.Json;
 using OmniBlock.Entities.State;
 
 namespace OmniBlock.Entities.Behaviors;
@@ -37,7 +36,7 @@ public sealed class FuseBehavior : IEntityAttackBehavior, IEntityTicker, IEntity
         _armedRange = context.Float("armed_range", 7.0F);
         _power = context.Float("power", 3.0F);
         _poweredPower = context.Float("powered_power", 6.0F);
-        _fuseSound = context.Json.TryGetProperty("fuse_sound", out JsonElement s)
+        _fuseSound = context.Json.TryGetProperty("fuse_sound", out var s)
             ? s.GetString() ?? "random.fuse"
             : "random.fuse";
 
@@ -55,7 +54,7 @@ public sealed class FuseBehavior : IEntityAttackBehavior, IEntityTicker, IEntity
         }
 
         // Once lit, the creeper keeps closing from further away than it took to light it.
-        float range = Step(State(self)) <= 0 ? _triggerRange : _armedRange;
+        var range = Step(State(self)) <= 0 ? _triggerRange : _armedRange;
         if (!(distance < range))
         {
             WindDown(self);
@@ -70,7 +69,7 @@ public sealed class FuseBehavior : IEntityAttackBehavior, IEntityTicker, IEntity
         SetState(self, WindingUp);
         if (++self.State[_charge] >= _fuseTicks)
         {
-            float power = self.DataSynchronizer.Get<bool>(_powered.Id).Value ? _poweredPower : _power;
+            var power = self.DataSynchronizer.Get<bool>(_powered.Id).Value ? _poweredPower : _power;
             self.World.CreateExplosion(self, self.X, self.Y, self.Z, power);
             self.MarkDead();
         }
@@ -111,7 +110,7 @@ public sealed class FuseBehavior : IEntityAttackBehavior, IEntityTicker, IEntity
             return;
         }
 
-        int step = Step(State(self));
+        var step = Step(State(self));
         if (step > 0 && self.State[_charge] == 0)
         {
             self.World.Broadcaster.PlaySoundAtEntity(self, _fuseSound, 1.0F, 0.5F);
@@ -154,7 +153,7 @@ public sealed class FuseBehavior : IEntityAttackBehavior, IEntityTicker, IEntity
     /// </summary>
     public float FlashTime(Entity self, float tickDelta)
     {
-        int previous = self.State[_previousCharge];
+        var previous = self.State[_previousCharge];
         return (previous + (self.State[_charge] - previous) * tickDelta) / (_fuseTicks - 2.0F);
     }
 }

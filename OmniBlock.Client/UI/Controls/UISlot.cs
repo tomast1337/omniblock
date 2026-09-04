@@ -1,6 +1,4 @@
-using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.UI.Rendering;
-using OmniBlock.Items;
 using OmniBlock.Screens.Slots;
 using Color = OmniBlock.Client.UI.Colors.Color;
 
@@ -20,15 +18,15 @@ public class UISlot : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        ItemStack stack = Slot.getStack();
+        var stack = Slot.getStack();
 
         if (stack == null)
         {
-            int iconIdx = Slot.getBackgroundTextureId();
+            var iconIdx = Slot.getBackgroundTextureId();
             if (iconIdx >= 0)
             {
                 // Background icon (e.g. for armor slots)
-                TextureHandle texture = renderer.TextureManager.GetTextureId("/gui/items.png");
+                var texture = renderer.TextureManager.GetTextureId("/gui/items.png");
                 renderer.DrawTexturedModalRect(texture, 0, 0, iconIdx % 16 * 16, iconIdx / 16 * 16, 16, 16);
             }
         }

@@ -1,5 +1,5 @@
-using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using OmniBlock.Luau;
 using OmniBlock.Luau.Host;
 
@@ -27,7 +27,7 @@ public sealed unsafe class LuauRegistryHostIntegrationTests
         state.ResetInstructionBudget(10_000);
 
         List<string> received = [];
-        LuauRegistryHost.RegisterUi = (string name, out int id) =>
+        LuauRegistryHost.RegisterUi = (name, out id) =>
         {
             received.Add(name);
             id = received.Count - 1; // mirrors UiCommandRegistry's real call-order assignment
@@ -38,7 +38,7 @@ public sealed unsafe class LuauRegistryHostIntegrationTests
         {
             LuauRegistryHost.Install(state.Handle);
 
-            byte[] source = System.Text.Encoding.UTF8.GetBytes(
+            var source = Encoding.UTF8.GetBytes(
                 "local id = Registry.registerUi(\"omniblock:inventory.open\") return id");
             byte* bytecode;
             nuint bytecodeSize;
@@ -49,10 +49,10 @@ public sealed unsafe class LuauRegistryHostIntegrationTests
 
             Assert.True(bytecode != null);
 
-            int loadResult = LuauNative.luau_load(state.Handle, "=registry_host_test", bytecode, bytecodeSize, 0);
+            var loadResult = LuauNative.luau_load(state.Handle, "=registry_host_test", bytecode, bytecodeSize, 0);
             Assert.Equal(0, loadResult);
 
-            int pcallResult = LuauNative.lua_pcall(state.Handle, 0, -1, 0);
+            var pcallResult = LuauNative.lua_pcall(state.Handle, 0, -1, 0);
 
             Assert.Equal(0, pcallResult);
             Assert.Equal(["omniblock:inventory.open"], received);
@@ -74,7 +74,7 @@ public sealed unsafe class LuauRegistryHostIntegrationTests
         state.ResetInstructionBudget(10_000);
 
         List<string> received = [];
-        LuauRegistryHost.RegisterUi = (string name, out int id) =>
+        LuauRegistryHost.RegisterUi = (name, out id) =>
         {
             received.Add(name);
             id = received.Count - 1;
@@ -85,7 +85,7 @@ public sealed unsafe class LuauRegistryHostIntegrationTests
         {
             LuauRegistryHost.Install(state.Handle);
 
-            byte[] source = System.Text.Encoding.UTF8.GetBytes(
+            var source = Encoding.UTF8.GetBytes(
                 """
                 local a = Registry.registerUi("omniblock:inventory.open")
                 local b = Registry.registerUi("omniblock:debug.toast")
@@ -100,10 +100,10 @@ public sealed unsafe class LuauRegistryHostIntegrationTests
 
             Assert.True(bytecode != null);
 
-            int loadResult = LuauNative.luau_load(state.Handle, "=registry_host_order_test", bytecode, bytecodeSize, 0);
+            var loadResult = LuauNative.luau_load(state.Handle, "=registry_host_order_test", bytecode, bytecodeSize, 0);
             Assert.Equal(0, loadResult);
 
-            int pcallResult = LuauNative.lua_pcall(state.Handle, 0, -1, 0);
+            var pcallResult = LuauNative.lua_pcall(state.Handle, 0, -1, 0);
 
             Assert.Equal(0, pcallResult);
             Assert.Equal(["omniblock:inventory.open", "omniblock:debug.toast"], received);
@@ -125,7 +125,7 @@ public sealed unsafe class LuauRegistryHostIntegrationTests
         using LuauState state = new();
         state.ResetInstructionBudget(10_000);
 
-        LuauRegistryHost.RegisterUi = (string _, out int id) =>
+        LuauRegistryHost.RegisterUi = (_, out id) =>
         {
             id = -1;
             return false; // the exact contract RegisterUiClosure treats as "reject, luaL_error".
@@ -135,7 +135,7 @@ public sealed unsafe class LuauRegistryHostIntegrationTests
         {
             LuauRegistryHost.Install(state.Handle);
 
-            byte[] source = System.Text.Encoding.UTF8.GetBytes(
+            var source = Encoding.UTF8.GetBytes(
                 "Registry.registerUi(\"omniblock:too.late\")");
             byte* bytecode;
             nuint bytecodeSize;
@@ -146,10 +146,10 @@ public sealed unsafe class LuauRegistryHostIntegrationTests
 
             Assert.True(bytecode != null);
 
-            int loadResult = LuauNative.luau_load(state.Handle, "=registry_host_frozen_test", bytecode, bytecodeSize, 0);
+            var loadResult = LuauNative.luau_load(state.Handle, "=registry_host_frozen_test", bytecode, bytecodeSize, 0);
             Assert.Equal(0, loadResult);
 
-            int pcallResult = LuauNative.lua_pcall(state.Handle, 0, 0, 0);
+            var pcallResult = LuauNative.lua_pcall(state.Handle, 0, 0, 0);
 
             // Non-zero pcall result is luaL_errorL's longjmp landing back here — the same signal
             // LuauInterruptIntegrationTests uses to prove Interrupt actually halts a script,
@@ -158,13 +158,13 @@ public sealed unsafe class LuauRegistryHostIntegrationTests
             // call on the same state still works afterward.
             Assert.NotEqual(0, pcallResult);
 
-            LuauRegistryHost.RegisterUi = (string _, out int id) =>
+            LuauRegistryHost.RegisterUi = (_, out id) =>
             {
                 id = 7;
                 return true;
             };
 
-            byte[] source2 = System.Text.Encoding.UTF8.GetBytes(
+            var source2 = Encoding.UTF8.GetBytes(
                 "return Registry.registerUi(\"omniblock:still.works\")");
             byte* bytecode2;
             nuint bytecodeSize2;
@@ -173,9 +173,9 @@ public sealed unsafe class LuauRegistryHostIntegrationTests
                 bytecode2 = LuauNative.luau_compile(sourcePtr, (nuint)source2.Length, IntPtr.Zero, &bytecodeSize2);
             }
 
-            int loadResult2 = LuauNative.luau_load(state.Handle, "=registry_host_recovery_test", bytecode2, bytecodeSize2, 0);
+            var loadResult2 = LuauNative.luau_load(state.Handle, "=registry_host_recovery_test", bytecode2, bytecodeSize2, 0);
             Assert.Equal(0, loadResult2);
-            int pcallResult2 = LuauNative.lua_pcall(state.Handle, 0, -1, 0);
+            var pcallResult2 = LuauNative.lua_pcall(state.Handle, 0, -1, 0);
 
             Assert.Equal(0, pcallResult2);
             Assert.Equal(7, LuauNative.lua_tointegerx(state.Handle, -1, IntPtr.Zero));
@@ -193,7 +193,7 @@ public sealed unsafe class LuauRegistryHostIntegrationTests
             return true;
         }
 
-        string fileName = OperatingSystem.IsWindows() ? "omniblock_luau.dll"
+        var fileName = OperatingSystem.IsWindows() ? "omniblock_luau.dll"
             : OperatingSystem.IsMacOS() ? "libomniblock_luau.dylib"
             : "libomniblock_luau.so";
         return NativeLibrary.TryLoad(Path.Combine(AppContext.BaseDirectory, fileName), out _);

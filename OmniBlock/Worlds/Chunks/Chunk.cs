@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using OmniBlock.Blocks;
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Entities;
@@ -6,23 +7,13 @@ using OmniBlock.Network.Chunks;
 using OmniBlock.Profiling;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core.Systems;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Worlds.Chunks;
 
 public class Chunk
 {
-    public static bool HasSkyLight;
-
-    public byte[] Blocks;
-    public ChunkNibbleArray Meta;
-    public ChunkNibbleArray SkyLight;
-    public ChunkNibbleArray BlockLight;
-
     // (15 << 4) + 15 == 256
     internal const int DefaultHeightMapHeight = 256;
-    // The value in a hightmap is HeightMap[chunkZ << 4 | chunk] == height
-    public readonly byte[] HeightMap = new byte[DefaultHeightMapHeight];
 
     /// <summary>The height of one light section, and how many of them a column is divided into.</summary>
     /// <remarks>
@@ -33,37 +24,44 @@ public class Chunk
     /// </remarks>
     public const int LightSectionHeight = 16;
 
-    /// <inheritdoc cref="LightSectionHeight" />
-    public static int LightSectionCount => ChuckFormat.ChunkHeight / LightSectionHeight;
+    /// <summary>Bytes one section occupies in one light array: 256 columns of 16 nibbles.</summary>
+    public const int LightSectionBytes = 16 * 16 * LightSectionHeight / 2;
 
-    private uint _lightDirtySections;
+    /// <summary>What <see cref="CopyLightSection" /> writes and <see cref="ApplyLightSection" /> reads.</summary>
+    public const int LightSectionPayloadBytes = LightSectionBytes * 2;
 
     /// <summary>
-    ///     Which sections have had light written into them since anything last took them.
+    ///     A section is not contiguous. The index is <c>(x &lt;&lt; 11) | (z &lt;&lt; 7) | y</c>, so
+    ///     y is the fastest axis and a slice of the column is 256 runs of eight bytes, one per
+    ///     column, spaced 64 apart.
     /// </summary>
-    /// <remarks>
-    ///     Held here, beside the arrays, rather than on <c>LightingEngine</c>. Its
-    ///     <c>SetLight</c> is not the only writer and never was: <see cref="PopulateHeightMap" />
-    ///     fills the sky array directly, and a mask driven from the engine would be blind to
-    ///     exactly the pass that establishes a chunk's light in the first place. Every writer goes
-    ///     through this type, so tracking it here is the only placement where being complete is
-    ///     structural rather than a thing to remember.
-    /// </remarks>
-    public uint LightDirtySections => _lightDirtySections;
+    private const int ColumnBytes = ChunkHeightForStride / 2;
 
-    public bool Loaded;
-    public IWorldContext World;
-    public int MinHeightMapValue;
+    private const int ChunkHeightForStride = 128;
+    public static bool HasSkyLight;
+
+    private static readonly ILogger<Chunk> s_logger = Log.Instance.For<Chunk>();
+
+    // The value in a hightmap is HeightMap[chunkZ << 4 | chunk] == height
+    public readonly byte[] HeightMap = new byte[DefaultHeightMapHeight];
     public readonly int X;
     public readonly int Z;
+
     public Dictionary<BlockPos, BlockEntity> BlockEntities;
-    public List<Entity>[] Entities;
-    public bool TerrainPopulated;
+    public ChunkNibbleArray BlockLight;
+
+    public byte[] Blocks;
     public bool Dirty;
+    public List<Entity>[] Entities;
     public bool LastSaveHadEntities;
     public long LastSaveTime;
 
-    private static readonly ILogger<Chunk> s_logger = Log.Instance.For<Chunk>();
+    public bool Loaded;
+    public ChunkNibbleArray Meta;
+    public int MinHeightMapValue;
+    public ChunkNibbleArray SkyLight;
+    public bool TerrainPopulated;
+    public IWorldContext World;
 
     public Chunk(IWorldContext world, int x, int z)
     {
@@ -77,7 +75,7 @@ public class Chunk
         X = x;
         Z = z;
 
-        for (int i = 0; i < Entities.Length; i++)
+        for (var i = 0; i < Entities.Length; i++)
         {
             Entities[i] = [];
         }
@@ -102,12 +100,31 @@ public class Chunk
         BlockLight = new ChunkNibbleArray(blocks.Length);
     }
 
+    /// <inheritdoc cref="LightSectionHeight" />
+    public static int LightSectionCount => ChuckFormat.ChunkHeight / LightSectionHeight;
+
+    /// <summary>
+    ///     Which sections have had light written into them since anything last took them.
+    /// </summary>
+    /// <remarks>
+    ///     Held here, beside the arrays, rather than on <c>LightingEngine</c>. Its
+    ///     <c>SetLight</c> is not the only writer and never was: <see cref="PopulateHeightMap" />
+    ///     fills the sky array directly, and a mask driven from the engine would be blind to
+    ///     exactly the pass that establishes a chunk's light in the first place. Every writer goes
+    ///     through this type, so tracking it here is the only placement where being complete is
+    ///     structural rather than a thing to remember.
+    /// </remarks>
+    public uint LightDirtySections { get; private set; }
+
+    public virtual int this[int x, int y, int z]
+    {
+        get => Blocks[ChuckFormat.GetIndex(x, y, z)];
+        set => Blocks[ChuckFormat.GetIndex(x, y, z)] = (byte)value;
+    }
+
     public virtual bool ChunkPosEquals(int x, int z) => x == X && z == Z;
 
-    public virtual int GetHeight(int localX, int localZ)
-    {
-        return HeightMap[localZ << 4 | localX];
-    }
+    public virtual int GetHeight(int localX, int localZ) => HeightMap[(localZ << 4) | localX];
 
     /// <summary>
     ///     Lights a chunk whose block light was never stored, by the same route as
@@ -117,22 +134,22 @@ public class Chunk
 
     public virtual void PopulateHeightMapOnly()
     {
-        int h = ChuckFormat.ChunkHeight - 1;
-        int minHeight = h;
+        var h = ChuckFormat.ChunkHeight - 1;
+        var minHeight = h;
 
-        for (int localX = 0; localX < 16; ++localX)
+        for (var localX = 0; localX < 16; ++localX)
         {
-            for (int localZ = 0; localZ < 16; ++localZ)
+            for (var localZ = 0; localZ < 16; ++localZ)
             {
-                int y = h;
-                int index = ChuckFormat.GetIndex(localX, localZ);
+                var y = h;
+                var index = ChuckFormat.GetIndex(localX, localZ);
 
                 while (y > 0 && World.Content.Blocks.GetOpacity(Blocks[index + y - 1]) == 0)
                 {
                     --y;
                 }
 
-                HeightMap[localZ << 4 | localX] = (byte)y;
+                HeightMap[(localZ << 4) | localX] = (byte)y;
                 if (y < minHeight) minHeight = y;
             }
         }
@@ -143,28 +160,28 @@ public class Chunk
 
     public virtual void PopulateHeightMap()
     {
-        int h = ChuckFormat.ChunkHeight - 1;
-        int minHeight = h;
+        var h = ChuckFormat.ChunkHeight - 1;
+        var minHeight = h;
 
-        for (int localX = 0; localX < 16; ++localX)
+        for (var localX = 0; localX < 16; ++localX)
         {
-            for (int localZ = 0; localZ < 16; ++localZ)
+            for (var localZ = 0; localZ < 16; ++localZ)
             {
-                int y = h;
-                int index = ChuckFormat.GetIndex(localX, localZ);
+                var y = h;
+                var index = ChuckFormat.GetIndex(localX, localZ);
 
                 while (y > 0 && World.Content.Blocks.GetOpacity(Blocks[index + y - 1]) == 0)
                 {
                     --y;
                 }
 
-                HeightMap[localZ << 4 | localX] = (byte)y;
+                HeightMap[(localZ << 4) | localX] = (byte)y;
                 if (y < minHeight) minHeight = y;
 
                 if (!World.Dimension.HasCeiling)
                 {
-                    int lightLevel = 15;
-                    int currentY = h;
+                    var lightLevel = 15;
+                    var currentY = h;
 
                     do
                     {
@@ -182,9 +199,9 @@ public class Chunk
 
         MinHeightMapValue = minHeight;
 
-        for (int localX = 0; localX < 16; ++localX)
+        for (var localX = 0; localX < 16; ++localX)
         {
-            for (int localZ = 0; localZ < 16; ++localZ)
+            for (var localZ = 0; localZ < 16; ++localZ)
             {
                 LightGaps(localX, localZ);
             }
@@ -210,16 +227,16 @@ public class Chunk
     /// </remarks>
     public virtual void PopulateBlockLight()
     {
-        for (int localX = 0; localX < 16; ++localX)
+        for (var localX = 0; localX < 16; ++localX)
         {
-            int worldX = X * 16 + localX;
+            var worldX = X * 16 + localX;
 
-            for (int localZ = 0; localZ < 16; ++localZ)
+            for (var localZ = 0; localZ < 16; ++localZ)
             {
-                int worldZ = Z * 16 + localZ;
-                int column = ChuckFormat.GetIndex(localX, localZ);
+                var worldZ = Z * 16 + localZ;
+                var column = ChuckFormat.GetIndex(localX, localZ);
 
-                for (int y = 0; y < ChuckFormat.ChunkHeight; ++y)
+                for (var y = 0; y < ChuckFormat.ChunkHeight; ++y)
                 {
                     if (World.Content.Blocks.GetLightEmission(Blocks[column + y]) == 0)
                     {
@@ -234,9 +251,9 @@ public class Chunk
 
     private void LightGaps(int localX, int localZ)
     {
-        int height = GetHeight(localX, localZ);
-        int worldX = X * 16 + localX;
-        int worldZ = Z * 16 + localZ;
+        var height = GetHeight(localX, localZ);
+        var worldX = X * 16 + localX;
+        var worldZ = Z * 16 + localZ;
 
         LightGap(worldX - 1, worldZ, height);
         LightGap(worldX + 1, worldZ, height);
@@ -246,7 +263,7 @@ public class Chunk
 
     private void LightGap(int worldX, int worldZ, int height)
     {
-        int topY = World.Reader.GetTopY(worldX, worldZ);
+        var topY = World.Reader.GetTopY(worldX, worldZ);
         if (topY > height)
         {
             World.Lighting.QueueLightUpdate(LightType.Sky, worldX, height, worldZ, worldX, topY, worldZ);
@@ -261,12 +278,12 @@ public class Chunk
 
     private void UpdateHeightMap(int localX, int y, int localZ)
     {
-        int oldHeight = HeightMap[localZ << 4 | localX];
-        int newHeight = oldHeight;
+        int oldHeight = HeightMap[(localZ << 4) | localX];
+        var newHeight = oldHeight;
 
         if (y > oldHeight) newHeight = y;
 
-        int index = ChuckFormat.GetIndex(localX, localZ);
+        var index = ChuckFormat.GetIndex(localX, localZ);
         while (newHeight > 0 && World.Content.Blocks.GetOpacity(Blocks[index + newHeight - 1]) == 0)
         {
             --newHeight;
@@ -275,7 +292,7 @@ public class Chunk
         if (newHeight == oldHeight) return;
 
         World.Broadcaster.SetBlocksDirty(localX, localZ, newHeight, oldHeight);
-        HeightMap[localZ << 4 | localX] = (byte)newHeight;
+        HeightMap[(localZ << 4) | localX] = (byte)newHeight;
 
         if (newHeight < MinHeightMapValue)
         {
@@ -283,14 +300,14 @@ public class Chunk
         }
         else
         {
-            int min = ChuckFormat.ChunkHeight - 1;
-            for (int i = 0; i < 16; ++i)
+            var min = ChuckFormat.ChunkHeight - 1;
+            for (var i = 0; i < 16; ++i)
             {
-                for (int j = 0; j < 16; ++j)
+                for (var j = 0; j < 16; ++j)
                 {
-                    if (HeightMap[j << 4 | i] < min)
+                    if (HeightMap[(j << 4) | i] < min)
                     {
-                        min = HeightMap[j << 4 | i];
+                        min = HeightMap[(j << 4) | i];
                     }
                 }
             }
@@ -298,8 +315,8 @@ public class Chunk
             MinHeightMapValue = min;
         }
 
-        int worldX = X * 16 + localX;
-        int worldZ = Z * 16 + localZ;
+        var worldX = X * 16 + localX;
+        var worldZ = Z * 16 + localZ;
 
         // The heightmap itself is still recomputed on a remote world above — the renderer needs
         // it and the wire carries none. The sky light that follows from a height change is not:
@@ -314,7 +331,7 @@ public class Chunk
 
             if (newHeight < oldHeight)
             {
-                for (int currY = newHeight; currY < oldHeight; ++currY)
+                for (var currY = newHeight; currY < oldHeight; ++currY)
                 {
                     SkyLight.SetNibble(localX, currY, localZ, 15);
                 }
@@ -322,14 +339,14 @@ public class Chunk
             else
             {
                 World.Lighting.QueueLightUpdate(LightType.Sky, worldX, oldHeight, worldZ, worldX, newHeight, worldZ);
-                for (int currY = oldHeight; currY < newHeight; ++currY)
+                for (var currY = oldHeight; currY < newHeight; ++currY)
                 {
                     SkyLight.SetNibble(localX, currY, localZ, 0);
                 }
             }
 
-            int lightLevel = 15;
-            int updateY = newHeight;
+            var lightLevel = 15;
+            var updateY = newHeight;
 
             MarkLightDirty(0, newHeight);
 
@@ -338,7 +355,7 @@ public class Chunk
                 SkyLight.SetNibble(localX, newHeight, localZ, lightLevel);
                 --newHeight;
 
-                int opacity = World.Content.Blocks.GetOpacity(GetBlockId(localX, newHeight, localZ));
+                var opacity = World.Content.Blocks.GetOpacity(GetBlockId(localX, newHeight, localZ));
                 if (opacity == 0) opacity = 1;
 
                 lightLevel -= opacity;
@@ -361,25 +378,19 @@ public class Chunk
 
     public virtual int GetBlockId(int x, int y, int z) => this[x, y, z];
 
-    public virtual int this[int x, int y, int z]
-    {
-        get => Blocks[ChuckFormat.GetIndex(x, y, z)];
-        set => Blocks[ChuckFormat.GetIndex(x, y, z)] = (byte)value;
-    }
-
 
     public virtual bool SetBlock(int localX, int y, int localZ, int rawId, int meta, bool notifyBlockPlaced = true)
     {
-        int pos = ChuckFormat.GetIndex(localX, y, localZ);
-        byte newId = (byte)rawId;
-        int height = HeightMap[localZ << 4 | localX];
+        var pos = ChuckFormat.GetIndex(localX, y, localZ);
+        var newId = (byte)rawId;
+        int height = HeightMap[(localZ << 4) | localX];
         int oldId = Blocks[pos];
 
-        bool sameId = oldId == rawId;
+        var sameId = oldId == rawId;
         if (sameId && Meta.GetNibble(localX, y, localZ) == meta) return false;
 
-        int worldX = X * 16 + localX;
-        int worldZ = Z * 16 + localZ;
+        var worldX = X * 16 + localX;
+        var worldZ = Z * 16 + localZ;
         Blocks[pos] = newId;
 
         if (notifyBlockPlaced && oldId != 0 && !World.IsRemote)
@@ -425,15 +436,15 @@ public class Chunk
 
     public virtual bool SetBlock(int localX, int y, int localZ, int rawId, bool notifyBlockPlaced = true)
     {
-        int pos = ChuckFormat.GetIndex(localX, y, localZ);
-        byte newId = (byte)rawId;
-        int height = HeightMap[localZ << 4 | localX];
+        var pos = ChuckFormat.GetIndex(localX, y, localZ);
+        var newId = (byte)rawId;
+        int height = HeightMap[(localZ << 4) | localX];
         int oldId = Blocks[pos];
 
         if (oldId == rawId) return false;
 
-        int worldX = X * 16 + localX;
-        int worldZ = Z * 16 + localZ;
+        var worldX = X * 16 + localX;
+        var worldZ = Z * 16 + localZ;
         Blocks[pos] = newId;
 
         if (oldId != 0)
@@ -473,10 +484,7 @@ public class Chunk
         Meta.SetNibble(x, y, z, meta);
     }
 
-    public virtual int GetLight(LightType lightType, int x, int y, int z)
-    {
-        return lightType == LightType.Sky ? SkyLight.GetNibble(x, y, z) : lightType == LightType.Block ? BlockLight.GetNibble(x, y, z) : 0;
-    }
+    public virtual int GetLight(LightType lightType, int x, int y, int z) => lightType == LightType.Sky ? SkyLight.GetNibble(x, y, z) : lightType == LightType.Block ? BlockLight.GetNibble(x, y, z) : 0;
 
     public virtual void SetLight(LightType lightType, int x, int y, int z, int value)
     {
@@ -491,18 +499,18 @@ public class Chunk
     {
         if ((uint)y < (uint)ChuckFormat.ChunkHeight)
         {
-            _lightDirtySections |= 1u << (y / LightSectionHeight);
+            LightDirtySections |= 1u << (y / LightSectionHeight);
         }
     }
 
     /// <summary>Records the sections spanned by a range, inclusive, clamped to the column.</summary>
     public void MarkLightDirty(int minY, int maxY)
     {
-        for (int section = Math.Max(minY, 0) / LightSectionHeight;
+        for (var section = Math.Max(minY, 0) / LightSectionHeight;
              section <= Math.Min(maxY, ChuckFormat.ChunkHeight - 1) / LightSectionHeight;
              section++)
         {
-            _lightDirtySections |= 1u << section;
+            LightDirtySections |= 1u << section;
         }
     }
 
@@ -513,29 +521,15 @@ public class Chunk
     ///     just arrived, which is when nearly every section is dirty anyway.
     /// </remarks>
     public void MarkAllLightDirty() =>
-        _lightDirtySections = LightSectionCount >= 32 ? uint.MaxValue : (1u << LightSectionCount) - 1u;
+        LightDirtySections = LightSectionCount >= 32 ? uint.MaxValue : (1u << LightSectionCount) - 1u;
 
     /// <summary>Reads the dirty sections and clears them, so each change is claimed once.</summary>
     public uint TakeLightDirtySections()
     {
-        uint taken = _lightDirtySections;
-        _lightDirtySections = 0;
+        var taken = LightDirtySections;
+        LightDirtySections = 0;
         return taken;
     }
-
-    /// <summary>Bytes one section occupies in one light array: 256 columns of 16 nibbles.</summary>
-    public const int LightSectionBytes = 16 * 16 * LightSectionHeight / 2;
-
-    /// <summary>What <see cref="CopyLightSection" /> writes and <see cref="ApplyLightSection" /> reads.</summary>
-    public const int LightSectionPayloadBytes = LightSectionBytes * 2;
-
-    /// <summary>
-    ///     A section is not contiguous. The index is <c>(x &lt;&lt; 11) | (z &lt;&lt; 7) | y</c>, so
-    ///     y is the fastest axis and a slice of the column is 256 runs of eight bytes, one per
-    ///     column, spaced 64 apart.
-    /// </summary>
-    private const int ColumnBytes = ChunkHeightForStride / 2;
-    private const int ChunkHeightForStride = 128;
 
     /// <summary>The sky and block nibbles for one section, sky first.</summary>
     /// <remarks>
@@ -546,12 +540,12 @@ public class Chunk
     public void CopyLightSection(int section, Span<byte> destination)
     {
         const int runBytes = LightSectionHeight / 2;
-        int start = section * runBytes;
+        var start = section * runBytes;
 
-        for (int column = 0; column < 256; column++)
+        for (var column = 0; column < 256; column++)
         {
-            int source = column * ColumnBytes + start;
-            int target = column * runBytes;
+            var source = column * ColumnBytes + start;
+            var target = column * runBytes;
 
             SkyLight.Bytes.AsSpan(source, runBytes).CopyTo(destination[target..]);
             BlockLight.Bytes.AsSpan(source, runBytes).CopyTo(destination[(LightSectionBytes + target)..]);
@@ -562,12 +556,12 @@ public class Chunk
     public void ApplyLightSection(int section, ReadOnlySpan<byte> source)
     {
         const int runBytes = LightSectionHeight / 2;
-        int start = section * runBytes;
+        var start = section * runBytes;
 
-        for (int column = 0; column < 256; column++)
+        for (var column = 0; column < 256; column++)
         {
-            int target = column * ColumnBytes + start;
-            int origin = column * runBytes;
+            var target = column * ColumnBytes + start;
+            var origin = column * runBytes;
 
             source.Slice(origin, runBytes).CopyTo(SkyLight.Bytes.AsSpan(target, runBytes));
             source.Slice(LightSectionBytes + origin, runBytes).CopyTo(BlockLight.Bytes.AsSpan(target, runBytes));
@@ -589,8 +583,8 @@ public class Chunk
     /// </summary>
     public bool SetPackedLight(int x, int y, int z, byte packed)
     {
-        int block = packed & 0xF;
-        int sky = (packed >> 4) & 0xF;
+        var block = packed & 0xF;
+        var sky = (packed >> 4) & 0xF;
 
         if (BlockLight.GetNibble(x, y, z) == block && SkyLight.GetNibble(x, y, z) == sky)
         {
@@ -606,11 +600,11 @@ public class Chunk
 
     public virtual int GetLight(int x, int y, int z, int ambientDarkness)
     {
-        int sky = SkyLight.GetNibble(x, y, z);
+        var sky = SkyLight.GetNibble(x, y, z);
         if (sky > 0) HasSkyLight = true;
 
         sky -= ambientDarkness;
-        int block = BlockLight.GetNibble(x, y, z);
+        var block = BlockLight.GetNibble(x, y, z);
 
         return block > sky ? block : sky;
     }
@@ -618,8 +612,8 @@ public class Chunk
     public virtual void AddEntity(Entity entity)
     {
         LastSaveHadEntities = true;
-        int chunkX = MathHelper.Floor(entity.X / 16.0D);
-        int chunkZ = MathHelper.Floor(entity.Z / 16.0D);
+        var chunkX = MathHelper.Floor(entity.X / 16.0D);
+        var chunkZ = MathHelper.Floor(entity.Z / 16.0D);
 
         if (chunkX != X || chunkZ != Z)
         {
@@ -627,7 +621,7 @@ public class Chunk
             s_logger.LogDebug(Environment.StackTrace);
         }
 
-        int slice = MathHelper.Floor(entity.Y / 16.0D);
+        var slice = MathHelper.Floor(entity.Y / 16.0D);
         if (slice < 0) slice = 0;
         if (slice >= Entities.Length) slice = Entities.Length - 1;
 
@@ -648,16 +642,13 @@ public class Chunk
         Entities[chunkSlice].Remove(entity);
     }
 
-    public virtual bool IsAboveMaxHeight(int localX, int y, int localZ)
-    {
-        return y >= HeightMap[localZ << 4 | localX];
-    }
+    public virtual bool IsAboveMaxHeight(int localX, int y, int localZ) => y >= HeightMap[(localZ << 4) | localX];
 
     public virtual BlockEntity? GetBlockEntity(int localX, int y, int localZ)
     {
         BlockPos pos = new(localX, y, localZ);
 
-        if (BlockEntities.TryGetValue(pos, out BlockEntity? entity))
+        if (BlockEntities.TryGetValue(pos, out var entity))
         {
             if (entity != null && !entity.IsRemoved())
             {
@@ -665,8 +656,8 @@ public class Chunk
             }
         }
 
-        int worldX = X * 16 + localX;
-        int worldZ = Z * 16 + localZ;
+        var worldX = X * 16 + localX;
+        var worldZ = Z * 16 + localZ;
 
         entity = World.Entities.GetOrCreateBlockEntity<BlockEntity>(worldX, y, worldZ);
 
@@ -682,13 +673,13 @@ public class Chunk
     public virtual BlockEntity? PeekBlockEntity(int localX, int y, int localZ)
     {
         BlockPos pos = new(localX, y, localZ);
-        return BlockEntities.TryGetValue(pos, out BlockEntity? entity) && entity != null && !entity.IsRemoved() ? entity : null;
+        return BlockEntities.TryGetValue(pos, out var entity) && entity != null && !entity.IsRemoved() ? entity : null;
     }
 
     public virtual void AddBlockEntity(BlockEntity blockEntity)
     {
-        int localX = blockEntity.X - X * 16;
-        int localZ = blockEntity.Z - Z * 16;
+        var localX = blockEntity.X - X * 16;
+        var localZ = blockEntity.Z - Z * 16;
         SetBlockEntity(localX, blockEntity.Y, localZ, blockEntity);
 
         if (Loaded) World.Entities.BlockEntities.Add(blockEntity);
@@ -702,8 +693,8 @@ public class Chunk
         blockEntity.Y = y;
         blockEntity.Z = Z * 16 + localZ;
 
-        int id = GetBlockId(localX, y, localZ);
-        if (id != 0 && World.Content.Blocks.TryGetByProtocolId(id, out Block? block) && block.HasBlockEntity)
+        var id = GetBlockId(localX, y, localZ);
+        if (id != 0 && World.Content.Blocks.TryGetByProtocolId(id, out var block) && block.HasBlockEntity)
         {
             blockEntity.CancelRemoval();
             BlockEntities[pos] = blockEntity;
@@ -717,7 +708,7 @@ public class Chunk
     public virtual void RemoveBlockEntityAt(int localX, int y, int localZ)
     {
         BlockPos pos = new(localX, y, localZ);
-        if (Loaded && BlockEntities.Remove(pos, out BlockEntity? entity))
+        if (Loaded && BlockEntities.Remove(pos, out var entity))
         {
             entity.MarkRemoved();
         }
@@ -730,7 +721,7 @@ public class Chunk
         Loaded = true;
         World.Entities.ProcessBlockUpdates(BlockEntities.Values);
 
-        foreach (List<Entity> list in Entities)
+        foreach (var list in Entities)
         {
             World.Entities.AddEntities(list);
         }
@@ -740,12 +731,12 @@ public class Chunk
     {
         Loaded = false;
 
-        foreach (BlockEntity blockEntity in BlockEntities.Values)
+        foreach (var blockEntity in BlockEntities.Values)
         {
             blockEntity.MarkRemoved();
         }
 
-        for (int sectionIndex = 0; sectionIndex < Entities.Length; ++sectionIndex)
+        for (var sectionIndex = 0; sectionIndex < Entities.Length; ++sectionIndex)
         {
             World.Entities.UnloadEntities(Entities[sectionIndex]);
         }
@@ -755,15 +746,15 @@ public class Chunk
 
     public virtual void CollectOtherEntities(Entity except, Box box, List<Entity> result)
     {
-        int minSlice = MathHelper.Floor((box.MinY - 2.0D) / 16.0D);
-        int maxSlice = MathHelper.Floor((box.MaxY + 2.0D) / 16.0D);
+        var minSlice = MathHelper.Floor((box.MinY - 2.0D) / 16.0D);
+        var maxSlice = MathHelper.Floor((box.MaxY + 2.0D) / 16.0D);
 
         if (minSlice < 0) minSlice = 0;
         if (maxSlice >= Entities.Length) maxSlice = Entities.Length - 1;
 
-        for (int i = minSlice; i <= maxSlice; ++i)
+        for (var i = minSlice; i <= maxSlice; ++i)
         {
-            foreach (Entity entity in Entities[i])
+            foreach (var entity in Entities[i])
             {
                 if (entity != except && entity.BoundingBox.Intersects(box) && !entity.Dead)
                 {
@@ -775,15 +766,15 @@ public class Chunk
 
     public virtual void CollectEntitiesOfType<T>(Box box, List<T> result) where T : Entity
     {
-        int minSlice = MathHelper.Floor((box.MinY - 2.0D) / 16.0D);
-        int maxSlice = MathHelper.Floor((box.MaxY + 2.0D) / 16.0D);
+        var minSlice = MathHelper.Floor((box.MinY - 2.0D) / 16.0D);
+        var maxSlice = MathHelper.Floor((box.MaxY + 2.0D) / 16.0D);
 
         if (minSlice < 0) minSlice = 0;
         if (maxSlice >= Entities.Length) maxSlice = Entities.Length - 1;
 
-        for (int i = minSlice; i <= maxSlice; ++i)
+        for (var i = minSlice; i <= maxSlice; ++i)
         {
-            foreach (Entity entity in Entities[i])
+            foreach (var entity in Entities[i])
             {
                 if (!entity.Dead && entity is T typedEntity && entity.BoundingBox.Intersects(box))
                 {
@@ -811,18 +802,18 @@ public class Chunk
 
     public virtual int LoadFromPacket(byte[] bytes, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, int offset)
     {
-        int sizeX = maxX - minX;
-        int sizeY = maxY - minY;
-        int sizeZ = maxZ - minZ;
-        bool isFullChunk = sizeX == 16 && sizeY == ChuckFormat.ChunkHeight && sizeZ == 16;
+        var sizeX = maxX - minX;
+        var sizeY = maxY - minY;
+        var sizeZ = maxZ - minZ;
+        var isFullChunk = sizeX == 16 && sizeY == ChuckFormat.ChunkHeight && sizeZ == 16;
 
         using (Profiler.Begin(isFullChunk ? "LoadChunkFull" : "LoadChunkPartial"))
         {
-            for (int x = minX; x < maxX; ++x)
+            for (var x = minX; x < maxX; ++x)
             {
-                for (int z = minZ; z < maxZ; ++z)
+                for (var z = minZ; z < maxZ; ++z)
                 {
-                    int index = ChuckFormat.GetIndex(x, minY, z);
+                    var index = ChuckFormat.GetIndex(x, minY, z);
                     Buffer.BlockCopy(bytes, offset, Blocks, index, sizeY);
                     offset += sizeY;
                 }
@@ -830,46 +821,46 @@ public class Chunk
 
             PopulateHeightMapOnly();
 
-            int halfSizeY = sizeY / 2;
+            var halfSizeY = sizeY / 2;
 
-            for (int x = minX; x < maxX; ++x)
+            for (var x = minX; x < maxX; ++x)
             {
-                for (int z = minZ; z < maxZ; ++z)
+                for (var z = minZ; z < maxZ; ++z)
                 {
-                    int index = (ChuckFormat.GetIndex(x, minY, z)) >> 1;
+                    var index = ChuckFormat.GetIndex(x, minY, z) >> 1;
                     Buffer.BlockCopy(bytes, offset, Meta.Bytes, index, halfSizeY);
                     offset += halfSizeY;
                 }
             }
 
-            for (int x = minX; x < maxX; ++x)
+            for (var x = minX; x < maxX; ++x)
             {
-                for (int z = minZ; z < maxZ; ++z)
+                for (var z = minZ; z < maxZ; ++z)
                 {
-                    int index = (ChuckFormat.GetIndex(x, minY, z)) >> 1;
+                    var index = ChuckFormat.GetIndex(x, minY, z) >> 1;
                     Buffer.BlockCopy(bytes, offset, BlockLight.Bytes, index, halfSizeY);
                     offset += halfSizeY;
                 }
             }
 
-            for (int x = minX; x < maxX; ++x)
+            for (var x = minX; x < maxX; ++x)
             {
-                for (int z = minZ; z < maxZ; ++z)
+                for (var z = minZ; z < maxZ; ++z)
                 {
-                    int index = (ChuckFormat.GetIndex(x, minY, z)) >> 1;
+                    var index = ChuckFormat.GetIndex(x, minY, z) >> 1;
                     Buffer.BlockCopy(bytes, offset, SkyLight.Bytes, index, halfSizeY);
                     offset += halfSizeY;
                 }
             }
 
-            for (int x = minX; x < maxX; ++x)
+            for (var x = minX; x < maxX; ++x)
             {
-                for (int z = minZ; z < maxZ; ++z)
+                for (var z = minZ; z < maxZ; ++z)
                 {
-                    for (int y = minY; y < maxY; y++)
+                    for (var y = minY; y < maxY; y++)
                     {
-                        int id = GetBlockId(x, y, z);
-                        if (id > 0 && World.Content.Blocks.TryGetByProtocolId(id, out Block? block) && block.HasBlockEntity)
+                        var id = GetBlockId(x, y, z);
+                        if (id > 0 && World.Content.Blocks.TryGetByProtocolId(id, out var block) && block.HasBlockEntity)
                         {
                             GetBlockEntity(x, y, z);
                         }
@@ -906,14 +897,14 @@ public class Chunk
 
             PopulateHeightMapOnly();
 
-            for (int x = 0; x < 16; x++)
+            for (var x = 0; x < 16; x++)
             {
-                for (int z = 0; z < 16; z++)
+                for (var z = 0; z < 16; z++)
                 {
-                    for (int y = 0; y < ChuckFormat.ChunkHeight; y++)
+                    for (var y = 0; y < ChuckFormat.ChunkHeight; y++)
                     {
-                        int id = GetBlockId(x, y, z);
-                        if (id > 0 && World.Content.Blocks.TryGetByProtocolId(id, out Block? block) && block.HasBlockEntity)
+                        var id = GetBlockId(x, y, z);
+                        if (id > 0 && World.Content.Blocks.TryGetByProtocolId(id, out var block) && block.HasBlockEntity)
                         {
                             GetBlockEntity(x, y, z);
                         }
@@ -927,9 +918,9 @@ public class Chunk
 
     public int ToPacket(byte[] bytes, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, int offset)
     {
-        int sizeX = maxX - minX;
-        int sizeY = maxY - minY;
-        int sizeZ = maxZ - minZ;
+        var sizeX = maxX - minX;
+        var sizeY = maxY - minY;
+        var sizeZ = maxZ - minZ;
 
         if (sizeX * sizeY * sizeZ == Blocks.Length)
         {
@@ -942,58 +933,53 @@ public class Chunk
             Buffer.BlockCopy(SkyLight.Bytes, 0, bytes, offset, SkyLight.Bytes.Length);
             return offset + SkyLight.Bytes.Length;
         }
-        else
+
+        for (var x = minX; x < maxX; x++)
         {
-            for (int x = minX; x < maxX; x++)
+            for (var z = minZ; z < maxZ; z++)
             {
-                for (int z = minZ; z < maxZ; z++)
-                {
-                    int index = ChuckFormat.GetIndex(x, minY, z);
-                    Buffer.BlockCopy(Blocks, index, bytes, offset, sizeY);
-                    offset += sizeY;
-                }
+                var index = ChuckFormat.GetIndex(x, minY, z);
+                Buffer.BlockCopy(Blocks, index, bytes, offset, sizeY);
+                offset += sizeY;
             }
-
-            int halfSizeY = sizeY / 2;
-
-            for (int x = minX; x < maxX; x++)
-            {
-                for (int z = minZ; z < maxZ; z++)
-                {
-                    int index = (ChuckFormat.GetIndex(x, minY, z)) >> 1;
-                    Buffer.BlockCopy(Meta.Bytes, index, bytes, offset, halfSizeY);
-                    offset += halfSizeY;
-                }
-            }
-
-            for (int x = minX; x < maxX; x++)
-            {
-                for (int z = minZ; z < maxZ; z++)
-                {
-                    int index = (ChuckFormat.GetIndex(x, minY, z)) >> 1;
-                    Buffer.BlockCopy(BlockLight.Bytes, index, bytes, offset, halfSizeY);
-                    offset += halfSizeY;
-                }
-            }
-
-            for (int x = minX; x < maxX; x++)
-            {
-                for (int z = minZ; z < maxZ; z++)
-                {
-                    int index = (ChuckFormat.GetIndex(x, minY, z)) >> 1;
-                    Buffer.BlockCopy(SkyLight.Bytes, index, bytes, offset, halfSizeY);
-                    offset += halfSizeY;
-                }
-            }
-
-            return offset;
         }
+
+        var halfSizeY = sizeY / 2;
+
+        for (var x = minX; x < maxX; x++)
+        {
+            for (var z = minZ; z < maxZ; z++)
+            {
+                var index = ChuckFormat.GetIndex(x, minY, z) >> 1;
+                Buffer.BlockCopy(Meta.Bytes, index, bytes, offset, halfSizeY);
+                offset += halfSizeY;
+            }
+        }
+
+        for (var x = minX; x < maxX; x++)
+        {
+            for (var z = minZ; z < maxZ; z++)
+            {
+                var index = ChuckFormat.GetIndex(x, minY, z) >> 1;
+                Buffer.BlockCopy(BlockLight.Bytes, index, bytes, offset, halfSizeY);
+                offset += halfSizeY;
+            }
+        }
+
+        for (var x = minX; x < maxX; x++)
+        {
+            for (var z = minZ; z < maxZ; z++)
+            {
+                var index = ChuckFormat.GetIndex(x, minY, z) >> 1;
+                Buffer.BlockCopy(SkyLight.Bytes, index, bytes, offset, halfSizeY);
+                offset += halfSizeY;
+            }
+        }
+
+        return offset;
     }
 
-    public virtual JavaRandom GetSlimeRandom(long scrambler)
-    {
-        return new JavaRandom(World.Seed + X * X * 4987142 + X * 5947611 + Z * Z * 4392871L + Z * 389711 ^ scrambler);
-    }
+    public virtual JavaRandom GetSlimeRandom(long scrambler) => new((World.Seed + X * X * 4987142 + X * 5947611 + Z * Z * 4392871L + Z * 389711) ^ scrambler);
 
     public virtual bool IsEmpty() => false;
 

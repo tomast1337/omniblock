@@ -5,9 +5,8 @@ namespace OmniBlock.Client.Rendering.Core;
 public class MatrixStack
 {
     private readonly Stack<Matrix4X4<float>> _stack = new();
-    private Matrix4X4<float> _current = Matrix4X4<float>.Identity;
 
-    public Matrix4X4<float> Top => _current;
+    public Matrix4X4<float> Top { get; private set; } = Matrix4X4<float>.Identity;
 
     /// <summary>
     ///     Counts mutations, so a consumer can tell whether what it last uploaded is still current.
@@ -22,20 +21,20 @@ public class MatrixStack
 
     public void LoadIdentity()
     {
-        _current = Matrix4X4<float>.Identity;
+        Top = Matrix4X4<float>.Identity;
         Version++;
     }
 
     /// <summary>Replaces the top with a matrix the caller has already built.</summary>
     public void Load(Matrix4X4<float> matrix)
     {
-        _current = matrix;
+        Top = matrix;
         Version++;
     }
 
     public void Push()
     {
-        _stack.Push(_current);
+        _stack.Push(Top);
         Version++;
     }
 
@@ -43,7 +42,7 @@ public class MatrixStack
     {
         if (_stack.Count > 0)
         {
-            _current = _stack.Pop();
+            Top = _stack.Pop();
         }
 
         Version++;
@@ -51,40 +50,40 @@ public class MatrixStack
 
     public void Translate(float x, float y, float z)
     {
-        _current = Matrix4X4.CreateTranslation(x, y, z) * _current;
+        Top = Matrix4X4.CreateTranslation(x, y, z) * Top;
         Version++;
     }
 
     public void Scale(float x, float y, float z)
     {
-        _current = Matrix4X4.CreateScale(x, y, z) * _current;
+        Top = Matrix4X4.CreateScale(x, y, z) * Top;
         Version++;
     }
 
     public void Rotate(float angleDeg, float x, float y, float z)
     {
         Version++;
-        float angleRad = angleDeg * (MathF.PI / 180.0f);
-        float len = MathF.Sqrt(x * x + y * y + z * z);
+        var angleRad = angleDeg * (MathF.PI / 180.0f);
+        var len = MathF.Sqrt(x * x + y * y + z * z);
 
         if (len > 0.0001f)
         {
             x /= len;
             y /= len;
             z /= len;
-            _current = Matrix4X4.CreateFromAxisAngle(new Vector3D<float>(x, y, z), angleRad) * _current;
+            Top = Matrix4X4.CreateFromAxisAngle(new Vector3D<float>(x, y, z), angleRad) * Top;
         }
     }
 
     public void Ortho(double left, double right, double bottom, double top, double zNear, double zFar)
     {
-        _current *= Matrix4X4.CreateOrthographicOffCenter((float)left, (float)right, (float)bottom, (float)top, (float)zNear, (float)zFar);
+        Top *= Matrix4X4.CreateOrthographicOffCenter((float)left, (float)right, (float)bottom, (float)top, (float)zNear, (float)zFar);
         Version++;
     }
 
     public void Frustum(double left, double right, double bottom, double top, double zNear, double zFar)
     {
-        _current *= Matrix4X4.CreatePerspectiveOffCenter((float)left, (float)right, (float)bottom, (float)top, (float)zNear, (float)zFar);
+        Top *= Matrix4X4.CreatePerspectiveOffCenter((float)left, (float)right, (float)bottom, (float)top, (float)zNear, (float)zFar);
         Version++;
     }
 }

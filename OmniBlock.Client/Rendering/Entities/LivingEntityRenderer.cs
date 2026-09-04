@@ -1,8 +1,9 @@
+using Microsoft.Extensions.Logging;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Entities.Models;
 using OmniBlock.Entities;
 using OmniBlock.Util.Maths;
-using Microsoft.Extensions.Logging;
+using Silk.NET.Maths;
 using Color = OmniBlock.Client.UI.Colors.Color;
 using Exception = System.Exception;
 
@@ -10,24 +11,21 @@ namespace OmniBlock.Client.Rendering.Entities;
 
 public class LivingEntityRenderer : EntityRenderer
 {
-
-    protected ModelBase Main;
-    protected ModelBase renderPassModel;
-    private readonly ILogger<LivingEntityRenderer> _logger = Log.Instance.For<LivingEntityRenderer>();
-
     /// <summary>Exception messages already logged, so an unported renderer doesn't relog every frame.</summary>
     private static readonly HashSet<string> s_reportedErrors = [];
 
+    private readonly ILogger<LivingEntityRenderer> _logger = Log.Instance.For<LivingEntityRenderer>();
+
+    protected ModelBase Main;
+    protected ModelBase renderPassModel;
+
     public LivingEntityRenderer(ModelBase main, float shadowRadius)
     {
-        this.Main = main;
+        Main = main;
         ShadowRadius = shadowRadius;
     }
 
-    public void setRenderPassModel(ModelBase model)
-    {
-        renderPassModel = model;
-    }
+    public void setRenderPassModel(ModelBase model) => renderPassModel = model;
 
     public virtual void DoRenderLiving(EntityLiving entity, double x, double y, double z, float yaw, float tickDelta)
     {
@@ -50,18 +48,18 @@ public class LivingEntityRenderer : EntityRenderer
 
         try
         {
-            float bodyYaw = entity.LastBodyYaw + (entity.BodyYaw - entity.LastBodyYaw) * tickDelta;
-            float headYaw = entity.PrevYaw + (entity.Yaw - entity.PrevYaw) * tickDelta;
-            float pitch = entity.PrevPitch + (entity.Pitch - entity.PrevPitch) * tickDelta;
+            var bodyYaw = entity.LastBodyYaw + (entity.BodyYaw - entity.LastBodyYaw) * tickDelta;
+            var headYaw = entity.PrevYaw + (entity.Yaw - entity.PrevYaw) * tickDelta;
+            var pitch = entity.PrevPitch + (entity.Pitch - entity.PrevPitch) * tickDelta;
             Func_22012_b(entity, x, y, z);
-            float animationProgress = getAnimationProgress(entity, tickDelta);
+            var animationProgress = getAnimationProgress(entity, tickDelta);
             RotateCorpse(entity, animationProgress, bodyYaw, tickDelta);
-            float modelScale = 1.0F / 16.0F;
+            var modelScale = 1.0F / 16.0F;
             GLManager.ModelView.Scale(-1.0F, -1.0F, 1.0F);
             PreRenderCallback(entity, tickDelta);
-            GLManager.ModelView.Translate(0.0F, -24.0F * modelScale - (1 / 128f), 0.0F);
-            float walkSpeed = entity.LastWalkAnimationSpeed + (entity.WalkAnimationSpeed - entity.LastWalkAnimationSpeed) * tickDelta;
-            float walkPhase = entity.AnimationPhase - entity.WalkAnimationSpeed * (1.0F - tickDelta);
+            GLManager.ModelView.Translate(0.0F, -24.0F * modelScale - 1 / 128f, 0.0F);
+            var walkSpeed = entity.LastWalkAnimationSpeed + (entity.WalkAnimationSpeed - entity.LastWalkAnimationSpeed) * tickDelta;
+            var walkPhase = entity.AnimationPhase - entity.WalkAnimationSpeed * (1.0F - tickDelta);
             if (walkSpeed > 1.0F)
             {
                 walkSpeed = 1.0F;
@@ -72,7 +70,7 @@ public class LivingEntityRenderer : EntityRenderer
             Main.SetLivingAnimations(entity, walkPhase, walkSpeed, tickDelta);
             Main.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
 
-            for (int renderPass = 0; renderPass < 4; ++renderPass)
+            for (var renderPass = 0; renderPass < 4; ++renderPass)
             {
                 if (ShouldRenderPass(entity, renderPass, tickDelta))
                 {
@@ -83,9 +81,9 @@ public class LivingEntityRenderer : EntityRenderer
             }
 
             RenderMore(entity, tickDelta);
-            float brightness = entity.GetBrightnessAtEyes(tickDelta);
-            int colorMultiplier = getColorMultiplier(entity, brightness, tickDelta);
-            if ((colorMultiplier >> 24 & 255) > 0 || entity.HurtTime > 0 || entity.DeathTime > 0)
+            var brightness = entity.GetBrightnessAtEyes(tickDelta);
+            var colorMultiplier = getColorMultiplier(entity, brightness, tickDelta);
+            if (((colorMultiplier >> 24) & 255) > 0 || entity.HurtTime > 0 || entity.DeathTime > 0)
             {
                 EntityBatchRenderer.Instance.SetNoTexture();
 
@@ -103,33 +101,33 @@ public class LivingEntityRenderer : EntityRenderer
                 });
                 if (entity.HurtTime > 0 || entity.DeathTime > 0)
                 {
-                    GLManager.Color = new(brightness, 0.0F, 0.0F, 0.4F);
+                    GLManager.Color = new Vector4D<float>(brightness, 0.0F, 0.0F, 0.4F);
                     Main.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
 
-                    for (int damagePass = 0; damagePass < 4; ++damagePass)
+                    for (var damagePass = 0; damagePass < 4; ++damagePass)
                     {
                         if (func_27005_b(entity, damagePass, tickDelta))
                         {
-                            GLManager.Color = new(brightness, 0.0F, 0.0F, 0.4F);
+                            GLManager.Color = new Vector4D<float>(brightness, 0.0F, 0.0F, 0.4F);
                             renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
                         }
                     }
                 }
 
-                if ((colorMultiplier >> 24 & 255) > 0)
+                if (((colorMultiplier >> 24) & 255) > 0)
                 {
-                    float red = (colorMultiplier >> 16 & 255) / 255.0F;
-                    float green = (colorMultiplier >> 8 & 255) / 255.0F;
-                    float blue = (colorMultiplier & 255) / 255.0F;
-                    float alpha = (colorMultiplier >> 24 & 255) / 255.0F;
-                    GLManager.Color = new(red, green, blue, alpha);
+                    var red = ((colorMultiplier >> 16) & 255) / 255.0F;
+                    var green = ((colorMultiplier >> 8) & 255) / 255.0F;
+                    var blue = (colorMultiplier & 255) / 255.0F;
+                    var alpha = ((colorMultiplier >> 24) & 255) / 255.0F;
+                    GLManager.Color = new Vector4D<float>(red, green, blue, alpha);
                     Main.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
 
-                    for (int overlayPass = 0; overlayPass < 4; ++overlayPass)
+                    for (var overlayPass = 0; overlayPass < 4; ++overlayPass)
                     {
                         if (func_27005_b(entity, overlayPass, tickDelta))
                         {
-                            GLManager.Color = new(red, green, blue, alpha);
+                            GLManager.Color = new Vector4D<float>(red, green, blue, alpha);
                             renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
                         }
                     }
@@ -139,7 +137,6 @@ public class LivingEntityRenderer : EntityRenderer
                 GLManager.AlphaTestEnabled = true;
                 GLManager.TextureEnabled = true;
             }
-
         }
         catch (Exception e)
         {
@@ -153,17 +150,14 @@ public class LivingEntityRenderer : EntityRenderer
         PassSpecialRender(entity, x, y, z);
     }
 
-    protected virtual void Func_22012_b(EntityLiving entity, double x, double y, double z)
-    {
-        GLManager.ModelView.Translate((float)x, (float)y, (float)z);
-    }
+    protected virtual void Func_22012_b(EntityLiving entity, double x, double y, double z) => GLManager.ModelView.Translate((float)x, (float)y, (float)z);
 
     protected virtual void RotateCorpse(EntityLiving entity, float animationProgress, float bodyYaw, float tickDelta)
     {
         GLManager.ModelView.Rotate(180.0F - bodyYaw, 0.0F, 1.0F, 0.0F);
         if (entity.DeathTime > 0)
         {
-            float deathRotation = (entity.DeathTime + tickDelta - 1.0F) / 20.0F * 1.6F;
+            var deathRotation = (entity.DeathTime + tickDelta - 1.0F) / 20.0F * 1.6F;
             deathRotation = MathHelper.Sqrt(deathRotation);
             if (deathRotation > 1.0F)
             {
@@ -172,42 +166,23 @@ public class LivingEntityRenderer : EntityRenderer
 
             GLManager.ModelView.Rotate(deathRotation * getDeathMaxRotation(entity), 0.0F, 0.0F, 1.0F);
         }
-
     }
 
-    protected float func_167_c(EntityLiving entity, float tickDelta)
-    {
-        return entity.GetSwingProgress(tickDelta);
-    }
+    protected float func_167_c(EntityLiving entity, float tickDelta) => entity.GetSwingProgress(tickDelta);
 
-    protected virtual float getAnimationProgress(EntityLiving entity, float tickDelta)
-    {
-        return entity.Age + tickDelta;
-    }
+    protected virtual float getAnimationProgress(EntityLiving entity, float tickDelta) => entity.Age + tickDelta;
 
     protected virtual void RenderMore(EntityLiving entity, float tickDelta)
     {
     }
 
-    protected virtual bool func_27005_b(EntityLiving entity, int renderPass, float tickDelta)
-    {
-        return ShouldRenderPass(entity, renderPass, tickDelta);
-    }
+    protected virtual bool func_27005_b(EntityLiving entity, int renderPass, float tickDelta) => ShouldRenderPass(entity, renderPass, tickDelta);
 
-    protected virtual bool ShouldRenderPass(EntityLiving entity, int renderPass, float tickDelta)
-    {
-        return false;
-    }
+    protected virtual bool ShouldRenderPass(EntityLiving entity, int renderPass, float tickDelta) => false;
 
-    protected virtual float getDeathMaxRotation(EntityLiving entity)
-    {
-        return 90.0F;
-    }
+    protected virtual float getDeathMaxRotation(EntityLiving entity) => 90.0F;
 
-    protected virtual int getColorMultiplier(EntityLiving entity, float brightness, float tickDelta)
-    {
-        return 0;
-    }
+    protected virtual int getColorMultiplier(EntityLiving entity, float brightness, float tickDelta) => 0;
 
     protected virtual void PreRenderCallback(EntityLiving entity, float tickDelta)
     {
@@ -219,20 +194,19 @@ public class LivingEntityRenderer : EntityRenderer
         {
             renderLivingLabel(entity, entity.ID.ToString(), x, y, z, 64);
         }
-
     }
 
     protected void renderLivingLabel(EntityLiving entity, string label, double x, double y, double z, int maxDistance)
     {
-        float distance = entity.GetDistance(Dispatcher.CameraEntity);
+        var distance = entity.GetDistance(Dispatcher.CameraEntity);
         if (distance <= maxDistance)
         {
-            TextRenderer fontRenderer = TextRenderer;
-            float labelScale = 1.6F;
-            float renderScale = (float)(1.0D / 60.0D) * labelScale;
+            var fontRenderer = TextRenderer;
+            var labelScale = 1.6F;
+            var renderScale = (float)(1.0D / 60.0D) * labelScale;
             GLManager.ModelView.Push();
             GLManager.ModelView.Translate((float)x + 0.0F, (float)y + 2.3F, (float)z);
-            GLManager.Normal = new(0.0F, 1.0F, 0.0F);
+            GLManager.Normal = new Vector3D<float>(0.0F, 1.0F, 0.0F);
             GLManager.ModelView.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
             GLManager.ModelView.Rotate(Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
             GLManager.ModelView.Scale(-renderScale, -renderScale, renderScale);
@@ -245,8 +219,8 @@ public class LivingEntityRenderer : EntityRenderer
                 DepthTest = false,
                 DepthWrite = false
             });
-            Tessellator tessellator = Tessellator.instance;
-            int yOffset = 0;
+            var tessellator = Tessellator.instance;
+            var yOffset = 0;
             if (label.Equals("deadmau5"))
             {
                 yOffset = -10;
@@ -254,7 +228,7 @@ public class LivingEntityRenderer : EntityRenderer
 
             GLManager.TextureEnabled = false;
             tessellator.startDrawingQuads();
-            int labelHalfWidth = fontRenderer.GetStringWidth(label) / 2;
+            var labelHalfWidth = fontRenderer.GetStringWidth(label) / 2;
             tessellator.setColorRGBA_F(0.0F, 0.0F, 0.0F, 0.25F);
             tessellator.addVertex(-labelHalfWidth - 1, -1 + yOffset, 0.0D);
             tessellator.addVertex(-labelHalfWidth - 1, 8 + yOffset, 0.0D);
@@ -265,17 +239,17 @@ public class LivingEntityRenderer : EntityRenderer
             fontRenderer.DrawString(label, -fontRenderer.GetStringWidth(label) / 2, yOffset, Color.WhiteAlpha20);
             // And again with depth restored, so the part of the label that is genuinely in front
             // draws solidly over the faint copy laid down above.
-            GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
+            GLManager.State.Apply(RenderState.Entity with
+            {
+                Blend = BlendMode.Alpha
+            });
             fontRenderer.DrawString(label, -fontRenderer.GetStringWidth(label) / 2, yOffset, Color.WhiteAlpha20);
             GLManager.LightingEnabled = true;
             GLManager.State.Apply(RenderState.Entity);
-            GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
+            GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
             GLManager.ModelView.Pop();
         }
     }
 
-    public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)
-    {
-        DoRenderLiving((EntityLiving)target, x, y, z, yaw, tickDelta);
-    }
+    public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta) => DoRenderLiving((EntityLiving)target, x, y, z, yaw, tickDelta);
 }

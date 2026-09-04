@@ -1,7 +1,7 @@
-using OmniBlock;
-using OmniBlock.Util;
-using OmniBlock.Luau;
 using Microsoft.Extensions.Logging;
+using OmniBlock;
+using OmniBlock.Luau;
+using OmniBlock.Util;
 
 Log.Instance.Initialize(PathHelper.GetAppDir(nameof(OmniBlock)));
 AssetManager.Initialize(AssetManager.AssetProfile.Full);

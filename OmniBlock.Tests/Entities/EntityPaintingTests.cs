@@ -1,15 +1,13 @@
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
-using OmniBlock.Items;
 using OmniBlock.NBT;
-using OmniBlock.Tests.TestSupport;
 
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Covers the painting, the tenth non-living entity to lose its class — and the first whose box is
-/// not its definition's: the canvas sizes it. Everything that disturbs a painting knocks it down as
-/// an item, which is why the behavior fills the two new movement hooks as well as damage.
+///     Covers the painting, the tenth non-living entity to lose its class — and the first whose box is
+///     not its definition's: the canvas sizes it. Everything that disturbs a painting knocks it down as
+///     an item, which is why the behavior fills the two new movement hooks as well as damage.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityPaintingTests
@@ -17,9 +15,9 @@ public sealed class EntityPaintingTests
     private static HangingArtBehavior Hanging => TestEntityCatalog.ByName("painting").Behaviors.Find<HangingArtBehavior>()!;
 
     /// <summary>
-    /// The backing a painting anchored at (8, 65, 8) facing +Z hangs on. The art's own anchor block
-    /// is the wall — the canvas sits nine-sixteenths of a block proud of it — so the strip goes at
-    /// z=8, not behind it.
+    ///     The backing a painting anchored at (8, 65, 8) facing +Z hangs on. The art's own anchor block
+    ///     is the wall — the canvas sits nine-sixteenths of a block proud of it — so the strip goes at
+    ///     z=8, not behind it.
     /// </summary>
     private static FakeWorldContext WalledWorld()
     {
@@ -32,7 +30,7 @@ public sealed class EntityPaintingTests
 
     private static Entity Hang(FakeWorldContext world, string title = "Kebab")
     {
-        Entity painting = HangingArtBehavior.HangAt(world, 8, 65, 8, 2, title);
+        var painting = HangingArtBehavior.HangAt(world, 8, 65, 8, 2, title);
         Assert.True(world.Entities.SpawnEntity(painting));
         return painting;
     }
@@ -44,8 +42,8 @@ public sealed class EntityPaintingTests
     [Fact]
     public void A_painting_has_no_class_of_its_own()
     {
-        FakeWorldContext world = WalledWorld();
-        Entity painting = Hang(world);
+        var world = WalledWorld();
+        var painting = Hang(world);
 
         Assert.Equal(typeof(EntityObject), painting.GetType());
         Assert.Equal("Kebab", Hanging.Art(painting)!.Title);
@@ -56,11 +54,11 @@ public sealed class EntityPaintingTests
     [Fact]
     public void The_art_sizes_the_bounding_box()
     {
-        FakeWorldContext world = WalledWorld();
-        Entity small = Hang(world, "Kebab");
+        var world = WalledWorld();
+        var small = Hang(world);
 
-        FakeWorldContext otherWorld = WalledWorld();
-        Entity wide = HangingArtBehavior.HangAt(otherWorld, 8, 65, 8, 2, "Pool");
+        var otherWorld = WalledWorld();
+        var wide = HangingArtBehavior.HangAt(otherWorld, 8, 65, 8, 2, "Pool");
         Assert.True(otherWorld.Entities.SpawnEntity(wide));
 
         Assert.True(wide.BoundingBox.MaxX - wide.BoundingBox.MinX > small.BoundingBox.MaxX - small.BoundingBox.MinX,
@@ -70,8 +68,8 @@ public sealed class EntityPaintingTests
     [Fact]
     public void A_hit_knocks_the_painting_down_as_an_item()
     {
-        FakeWorldContext world = WalledWorld();
-        Entity painting = Hang(world);
+        var world = WalledWorld();
+        var painting = Hang(world);
 
         Assert.True(painting.Damage(null, 1));
 
@@ -83,8 +81,8 @@ public sealed class EntityPaintingTests
     [Fact]
     public void Being_moved_knocks_the_painting_down()
     {
-        FakeWorldContext world = WalledWorld();
-        Entity painting = Hang(world);
+        var world = WalledWorld();
+        var painting = Hang(world);
 
         painting.Move(0.1, 0.0, 0.0);
 
@@ -95,8 +93,8 @@ public sealed class EntityPaintingTests
     [Fact]
     public void Being_shoved_knocks_the_painting_down()
     {
-        FakeWorldContext world = WalledWorld();
-        Entity painting = Hang(world);
+        var world = WalledWorld();
+        var painting = Hang(world);
 
         painting.AddVelocity(0.0, 0.2, 0.0);
 
@@ -108,11 +106,11 @@ public sealed class EntityPaintingTests
     [Fact]
     public void A_still_painting_on_a_solid_wall_stays_hung()
     {
-        FakeWorldContext world = WalledWorld();
-        Entity painting = Hang(world);
+        var world = WalledWorld();
+        var painting = Hang(world);
 
         painting.Move(0.0, 0.0, 0.0);
-        for (int tick = 0; tick < 200; tick++) painting.Tick();
+        for (var tick = 0; tick < 200; tick++) painting.Tick();
 
         Assert.False(painting.Dead);
     }
@@ -121,12 +119,12 @@ public sealed class EntityPaintingTests
     [Fact]
     public void A_painting_whose_wall_is_gone_falls_on_the_next_check()
     {
-        FakeWorldContext world = WalledWorld();
-        Entity painting = Hang(world);
+        var world = WalledWorld();
+        var painting = Hang(world);
 
-        for (int y = 64; y <= 68; y++) world.Writer.SetBlock(8, y, 8, 0);
+        for (var y = 64; y <= 68; y++) world.Writer.SetBlock(8, y, 8, 0);
 
-        for (int tick = 0; tick < 200 && !painting.Dead; tick++) painting.Tick();
+        for (var tick = 0; tick < 200 && !painting.Dead; tick++) painting.Tick();
 
         Assert.True(painting.Dead);
         Assert.True(DroppedAPainting(world));
@@ -135,10 +133,10 @@ public sealed class EntityPaintingTests
     [Fact]
     public void Two_paintings_cannot_claim_the_same_wall()
     {
-        FakeWorldContext world = WalledWorld();
+        var world = WalledWorld();
         Hang(world);
 
-        Entity second = HangingArtBehavior.HangAt(world, 8, 65, 8, 2, "Kebab");
+        var second = HangingArtBehavior.HangAt(world, 8, 65, 8, 2, "Kebab");
 
         Assert.False(second.Behaviors.Find<HangingArtBehavior>()!.CanHang(second));
     }
@@ -146,16 +144,16 @@ public sealed class EntityPaintingTests
     [Fact]
     public void The_art_and_anchor_survive_an_nbt_round_trip()
     {
-        FakeWorldContext world = WalledWorld();
-        Entity painting = Hang(world, "Aztec");
+        var world = WalledWorld();
+        var painting = Hang(world, "Aztec");
 
         NBTTagCompound nbt = new();
         painting.Write(nbt);
 
-        Entity restored = TestEntityCatalog.ByName("painting").Create(world);
+        var restored = TestEntityCatalog.ByName("painting").Create(world);
         restored.Read(nbt);
 
-        HangingArtBehavior hanging = restored.Behaviors.Find<HangingArtBehavior>()!;
+        var hanging = restored.Behaviors.Find<HangingArtBehavior>()!;
         Assert.Equal("Aztec", hanging.Art(restored)!.Title);
         Assert.Equal(2, hanging.Direction(restored));
         Assert.Equal(8, hanging.TileX(restored));
@@ -166,7 +164,7 @@ public sealed class EntityPaintingTests
     [Fact]
     public void Protocol_facts_are_pinned()
     {
-        EntityDefinition painting = TestEntityCatalog.ByName("painting").RequireDefinition();
+        var painting = TestEntityCatalog.ByName("painting").RequireDefinition();
 
         Assert.Equal(9, painting.ProtocolId);
         Assert.Equal(0, painting.SpawnObjectId);

@@ -20,69 +20,14 @@ public sealed class LiteNetLibTransportTests
     /// <summary>Generous: this is a real handshake over a real socket, not a function call.</summary>
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(10);
 
-    /// <summary>
-    ///     A connected pair. Returned server-side connection first, since most assertions are about
-    ///     what arrives rather than what is sent.
-    /// </summary>
-    private sealed class Pair : IAsyncDisposable
-    {
-        public required LiteNetLibTransport ServerTransport { get; init; }
-        public required LiteNetLibTransport ClientTransport { get; init; }
-        public required ITransportConnection ServerSide { get; init; }
-        public required ITransportConnection ClientSide { get; init; }
-
-        public static async Task<Pair> ConnectAsync()
-        {
-            LiteNetLibTransport server = new();
-            server.Listen(0);
-
-            LiteNetLibTransport client = new();
-            client.StartClient();
-
-            using CancellationTokenSource cancellation = new(Timeout);
-
-            // Started before connecting: the accept is what completes second, and awaiting it only
-            // after the connect returns would race the enumerator's subscription.
-            Task<ITransportConnection> accepting = FirstAcceptedAsync(server, cancellation.Token);
-
-            ITransportConnection clientSide = await client.ConnectAsync(
-                new IPEndPoint(IPAddress.Loopback, server.LocalPort), cancellation.Token);
-
-            return new Pair
-            {
-                ServerTransport = server,
-                ClientTransport = client,
-                ServerSide = await accepting,
-                ClientSide = clientSide,
-            };
-        }
-
-        private static async Task<ITransportConnection> FirstAcceptedAsync(
-            ITransport transport, CancellationToken cancellationToken)
-        {
-            await foreach (ITransportConnection connection in transport.AcceptAsync(cancellationToken))
-            {
-                return connection;
-            }
-
-            throw new InvalidOperationException("The transport was disposed before a peer connected.");
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await ClientTransport.DisposeAsync();
-            await ServerTransport.DisposeAsync();
-        }
-    }
-
     /// <summary>Polls until a datagram arrives, since delivery is asynchronous to the caller.</summary>
     private static async Task<ReceivedDatagram> ReceiveAsync(ITransportConnection connection)
     {
-        DateTime deadline = DateTime.UtcNow + Timeout;
+        var deadline = DateTime.UtcNow + Timeout;
 
         while (DateTime.UtcNow < deadline)
         {
-            if (connection.TryReceive(out ReceivedDatagram datagram))
+            if (connection.TryReceive(out var datagram))
             {
                 return datagram;
             }
@@ -96,11 +41,11 @@ public sealed class LiteNetLibTransportTests
     private static async Task<List<ReceivedDatagram>> ReceiveAsync(ITransportConnection connection, int count)
     {
         List<ReceivedDatagram> received = [];
-        DateTime deadline = DateTime.UtcNow + Timeout;
+        var deadline = DateTime.UtcNow + Timeout;
 
         while (received.Count < count && DateTime.UtcNow < deadline)
         {
-            if (connection.TryReceive(out ReceivedDatagram datagram))
+            if (connection.TryReceive(out var datagram))
             {
                 received.Add(datagram);
                 continue;
@@ -115,7 +60,7 @@ public sealed class LiteNetLibTransportTests
     [Fact]
     public async Task A_client_and_server_complete_a_handshake()
     {
-        await using Pair pair = await Pair.ConnectAsync();
+        await using var pair = await Pair.ConnectAsync();
 
         Assert.True(pair.ClientSide.IsConnected);
         Assert.True(pair.ServerSide.IsConnected);
@@ -131,7 +76,7 @@ public sealed class LiteNetLibTransportTests
     [Fact]
     public async Task The_connection_is_usable_the_moment_connect_returns()
     {
-        await using Pair pair = await Pair.ConnectAsync();
+        await using var pair = await Pair.ConnectAsync();
 
         pair.ClientSide.Send(0, DeliveryMode.ReliableOrdered, [1, 2, 3]);
 
@@ -147,7 +92,7 @@ public sealed class LiteNetLibTransportTests
     {
         // Loopback loses nothing, so this checks that each mode is wired to a real LiteNetLib method
         // and round trips — not that the unreliable ones are reliable.
-        await using Pair pair = await Pair.ConnectAsync();
+        await using var pair = await Pair.ConnectAsync();
 
         pair.ClientSide.Send(0, mode, [0xAA, 0xBB]);
 
@@ -157,7 +102,7 @@ public sealed class LiteNetLibTransportTests
     [Fact]
     public async Task Traffic_flows_in_both_directions()
     {
-        await using Pair pair = await Pair.ConnectAsync();
+        await using var pair = await Pair.ConnectAsync();
 
         pair.ServerSide.Send(0, DeliveryMode.ReliableOrdered, [0x01]);
         pair.ClientSide.Send(0, DeliveryMode.ReliableOrdered, [0x02]);
@@ -173,11 +118,11 @@ public sealed class LiteNetLibTransportTests
     [Fact]
     public async Task The_channel_survives_the_round_trip()
     {
-        await using Pair pair = await Pair.ConnectAsync();
+        await using var pair = await Pair.ConnectAsync();
 
         pair.ClientSide.Send(3, DeliveryMode.ReliableOrdered, [0x42]);
 
-        ReceivedDatagram datagram = await ReceiveAsync(pair.ServerSide);
+        var datagram = await ReceiveAsync(pair.ServerSide);
 
         Assert.Equal(3, datagram.Channel);
         Assert.Equal([0x42], datagram.Payload);
@@ -188,10 +133,9 @@ public sealed class LiteNetLibTransportTests
     {
         // Caught here rather than inside LiteNetLib, where it is an index out of range on a peer's
         // internal array and says nothing about what the caller did wrong.
-        await using Pair pair = await Pair.ConnectAsync();
+        await using var pair = await Pair.ConnectAsync();
 
-        Assert.Throws<ArgumentOutOfRangeException>(
-            () => pair.ClientSide.Send(LiteNetLibTransport.Channels, DeliveryMode.ReliableOrdered, [0]));
+        Assert.Throws<ArgumentOutOfRangeException>(() => pair.ClientSide.Send(LiteNetLibTransport.Channels, DeliveryMode.ReliableOrdered, [0]));
     }
 
     /// <summary>
@@ -201,14 +145,14 @@ public sealed class LiteNetLibTransportTests
     [Fact]
     public async Task Reliable_ordered_payloads_arrive_in_order_on_their_channel()
     {
-        await using Pair pair = await Pair.ConnectAsync();
+        await using var pair = await Pair.ConnectAsync();
 
         for (byte i = 0; i < 32; i++)
         {
             pair.ClientSide.Send(1, DeliveryMode.ReliableOrdered, [i]);
         }
 
-        List<ReceivedDatagram> received = await ReceiveAsync(pair.ServerSide, 32);
+        var received = await ReceiveAsync(pair.ServerSide, 32);
 
         Assert.Equal(32, received.Count);
         Assert.Equal(Enumerable.Range(0, 32).Select(i => (byte)i), received.Select(d => d.Payload[0]));
@@ -223,14 +167,14 @@ public sealed class LiteNetLibTransportTests
     [Fact]
     public async Task A_chunk_sized_payload_is_fragmented_and_reassembled()
     {
-        await using Pair pair = await Pair.ConnectAsync();
+        await using var pair = await Pair.ConnectAsync();
 
-        byte[] chunk = new byte[81_920];
+        var chunk = new byte[81_920];
         Random.Shared.NextBytes(chunk);
 
         pair.ServerSide.Send(4, DeliveryMode.ReliableOrdered, chunk);
 
-        ReceivedDatagram received = await ReceiveAsync(pair.ClientSide);
+        var received = await ReceiveAsync(pair.ClientSide);
 
         Assert.Equal(chunk.Length, received.Payload.Length);
         Assert.Equal(chunk, received.Payload);
@@ -244,9 +188,9 @@ public sealed class LiteNetLibTransportTests
     [Fact]
     public async Task Stats_report_a_usable_mtu_and_a_non_negative_round_trip()
     {
-        await using Pair pair = await Pair.ConnectAsync();
+        await using var pair = await Pair.ConnectAsync();
 
-        ConnectionStats stats = pair.ClientSide.Stats;
+        var stats = pair.ClientSide.Stats;
 
         Assert.True(stats.Mtu > 0, $"MTU was {stats.Mtu}");
         Assert.True(stats.RoundTripMs >= 0, $"round trip was {stats.RoundTripMs}");
@@ -255,12 +199,12 @@ public sealed class LiteNetLibTransportTests
     [Fact]
     public async Task Closing_one_end_disconnects_the_other()
     {
-        await using Pair pair = await Pair.ConnectAsync();
+        await using var pair = await Pair.ConnectAsync();
 
         pair.ClientSide.Close(DisconnectReason.Local);
         Assert.False(pair.ClientSide.IsConnected);
 
-        DateTime deadline = DateTime.UtcNow + Timeout;
+        var deadline = DateTime.UtcNow + Timeout;
         while (pair.ServerSide.IsConnected && DateTime.UtcNow < deadline)
         {
             await Task.Delay(10);
@@ -299,9 +243,9 @@ public sealed class LiteNetLibTransportTests
         IPEndPoint endPoint = new(IPAddress.Loopback, server.LocalPort);
 
         List<ITransportConnection> accepted = [];
-        Task accepting = Task.Run(async () =>
+        var accepting = Task.Run(async () =>
         {
-            await foreach (ITransportConnection connection in server.AcceptAsync(cancellation.Token))
+            await foreach (var connection in server.AcceptAsync(cancellation.Token))
             {
                 accepted.Add(connection);
                 if (accepted.Count == 3)
@@ -315,7 +259,7 @@ public sealed class LiteNetLibTransportTests
         await using LiteNetLibTransport b = new();
         await using LiteNetLibTransport c = new();
 
-        foreach (LiteNetLibTransport client in (LiteNetLibTransport[])[a, b, c])
+        foreach (var client in (LiteNetLibTransport[])[a, b, c])
         {
             client.StartClient();
             await client.ConnectAsync(endPoint, cancellation.Token);
@@ -325,5 +269,60 @@ public sealed class LiteNetLibTransportTests
 
         Assert.Equal(3, accepted.Count);
         Assert.All(accepted, connection => Assert.True(connection.IsConnected));
+    }
+
+    /// <summary>
+    ///     A connected pair. Returned server-side connection first, since most assertions are about
+    ///     what arrives rather than what is sent.
+    /// </summary>
+    private sealed class Pair : IAsyncDisposable
+    {
+        public required LiteNetLibTransport ServerTransport { get; init; }
+        public required LiteNetLibTransport ClientTransport { get; init; }
+        public required ITransportConnection ServerSide { get; init; }
+        public required ITransportConnection ClientSide { get; init; }
+
+        public async ValueTask DisposeAsync()
+        {
+            await ClientTransport.DisposeAsync();
+            await ServerTransport.DisposeAsync();
+        }
+
+        public static async Task<Pair> ConnectAsync()
+        {
+            LiteNetLibTransport server = new();
+            server.Listen(0);
+
+            LiteNetLibTransport client = new();
+            client.StartClient();
+
+            using CancellationTokenSource cancellation = new(Timeout);
+
+            // Started before connecting: the accept is what completes second, and awaiting it only
+            // after the connect returns would race the enumerator's subscription.
+            var accepting = FirstAcceptedAsync(server, cancellation.Token);
+
+            var clientSide = await client.ConnectAsync(
+                new IPEndPoint(IPAddress.Loopback, server.LocalPort), cancellation.Token);
+
+            return new Pair
+            {
+                ServerTransport = server,
+                ClientTransport = client,
+                ServerSide = await accepting,
+                ClientSide = clientSide
+            };
+        }
+
+        private static async Task<ITransportConnection> FirstAcceptedAsync(
+            ITransport transport, CancellationToken cancellationToken)
+        {
+            await foreach (var connection in transport.AcceptAsync(cancellationToken))
+            {
+                return connection;
+            }
+
+            throw new InvalidOperationException("The transport was disposed before a peer connected.");
+        }
     }
 }

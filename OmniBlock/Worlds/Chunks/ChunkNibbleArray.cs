@@ -6,20 +6,14 @@ public readonly struct ChunkNibbleArray
 {
     public readonly byte[] Bytes;
 
-    public ChunkNibbleArray(int size)
-    {
-        Bytes = new byte[size >> 1];
-    }
+    public ChunkNibbleArray(int size) => Bytes = new byte[size >> 1];
 
-    public ChunkNibbleArray(byte[] bytes)
-    {
-        Bytes = bytes;
-    }
+    public ChunkNibbleArray(byte[] bytes) => Bytes = bytes;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetNibble(int x, int y, int z)
     {
-        int index = ChuckFormat.GetNibIndex(x, y, z);
+        var index = ChuckFormat.GetNibIndex(x, y, z);
 
         return (y & 1) == 0
             ? Bytes[index] & 0x0F
@@ -29,7 +23,7 @@ public readonly struct ChunkNibbleArray
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SetNibble(int x, int y, int z, int value)
     {
-        int index = ChuckFormat.GetNibIndex(x, y, z);
+        var index = ChuckFormat.GetNibIndex(x, y, z);
 
         if ((y & 1) == 0)
         {

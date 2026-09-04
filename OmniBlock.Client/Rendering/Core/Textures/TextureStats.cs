@@ -18,10 +18,7 @@ public static class TextureStats
         s_bindsLastSecond++;
     }
 
-    public static void StartFrame()
-    {
-        s_bindsInCurrentFrame = 0;
-    }
+    public static void StartFrame() => s_bindsInCurrentFrame = 0;
 
     public static void EndFrame()
     {

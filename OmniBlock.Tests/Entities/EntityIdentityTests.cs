@@ -1,14 +1,12 @@
-using System.Text.Json;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
-using OmniBlock.Items;
 using OmniBlock.NBT;
 
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Covers entity identity moving off the C# class and onto the registered type, which is what lets a
-/// mob exist with no class of its own. The cow is the first: <c>cow.json</c> is the whole entity.
+///     Covers entity identity moving off the C# class and onto the registered type, which is what lets a
+///     mob exist with no class of its own. The cow is the first: <c>cow.json</c> is the whole entity.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityIdentityTests
@@ -41,7 +39,7 @@ public sealed class EntityIdentityTests
     public void A_cow_round_trips_through_nbt_as_a_cow()
     {
         FakeWorldContext world = new();
-        Entity saved = Cow(world);
+        var saved = Cow(world);
         saved.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
         NBTTagCompound nbt = new();
@@ -50,7 +48,7 @@ public sealed class EntityIdentityTests
         // The on-disk name is the capitalised vanilla one, unchanged by the class going away.
         Assert.Equal("omniblock:cow", nbt.GetString("id"));
 
-        Entity? loaded = TestEntityCatalog.GetEntityFromNbt(nbt, world);
+        var loaded = TestEntityCatalog.GetEntityFromNbt(nbt, world);
 
         Assert.NotNull(loaded);
         Assert.Equal(typeof(EntityCreature), loaded.GetType());
@@ -61,7 +59,7 @@ public sealed class EntityIdentityTests
     public void A_cow_still_reads_its_configuration_and_slots_from_json()
     {
         FakeWorldContext world = new();
-        EntityLiving cow = (EntityLiving)Cow(world);
+        var cow = (EntityLiving)Cow(world);
 
         Assert.Equal("creature", cow.Definition.SpawnCategory);
         Assert.Equal("/mob/cow.png", cow.Definition.Texture);
@@ -77,7 +75,7 @@ public sealed class EntityIdentityTests
     [Fact]
     public void A_cow_declares_its_renderer_in_json()
     {
-        JsonElement renderer = Assert.NotNull(TestEntityCatalog.ByName("cow").Definition!.Renderer);
+        var renderer = Assert.NotNull(TestEntityCatalog.ByName("cow").Definition!.Renderer);
 
         Assert.Equal("living", renderer.GetProperty("Type").GetString());
         Assert.Equal("cow", renderer.GetProperty("Model").GetString());
@@ -122,9 +120,9 @@ public sealed class EntityIdentityTests
     {
         FakeWorldContext world = new();
 
-        EntityLiving skeleton = (EntityLiving)TestEntityCatalog.ByName("skeleton").Create(world);
-        EntityLiving zombie = (EntityLiving)TestEntityCatalog.ByName("zombie").Create(world);
-        EntityLiving pigZombie = (EntityLiving)TestEntityCatalog.ByName("pigzombie").Create(world);
+        var skeleton = (EntityLiving)TestEntityCatalog.ByName("skeleton").Create(world);
+        var zombie = (EntityLiving)TestEntityCatalog.ByName("zombie").Create(world);
+        var pigZombie = (EntityLiving)TestEntityCatalog.ByName("pigzombie").Create(world);
 
         Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:bow").Id, skeleton.HeldItem!.ItemId);
         Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:sword_gold").Id, pigZombie.HeldItem!.ItemId);

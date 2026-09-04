@@ -4,7 +4,6 @@ namespace OmniBlock.Client.Rendering;
 
 public class FrustrumCuller : ICuller
 {
-
     private readonly FrustumData _frustum = Frustum.Instance();
     private double _x;
     private double _y;
@@ -17,13 +16,7 @@ public class FrustrumCuller : ICuller
         _z = z;
     }
 
-    public bool IsBoxInFrustum(Box box)
-    {
-        return _frustum.IsBoxInFrustum(box.Offset(-_x, -_y, -_z));
-    }
+    public bool IsBoundingBoxInFrustum(Box aabb) => IsBoxInFrustum(aabb);
 
-    public bool IsBoundingBoxInFrustum(Box aabb)
-    {
-        return IsBoxInFrustum(aabb);
-    }
+    public bool IsBoxInFrustum(Box box) => _frustum.IsBoxInFrustum(box.Offset(-_x, -_y, -_z));
 }

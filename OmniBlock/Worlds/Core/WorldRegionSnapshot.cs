@@ -20,12 +20,13 @@ namespace OmniBlock.Worlds.Core;
 /// </summary>
 public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 {
-    public bool IsLit { get; private set; }
-
     private readonly BiomeSource _biomeSource;
-    private readonly float[] _lightTable;
-    private readonly int _skylightSubtracted;
+    private readonly byte[] _blockLight;
+
+    private readonly byte[] _blocks;
     private readonly IBlockRuntimeView _contentBlocks;
+    private readonly float[] _lightTable;
+    private readonly byte[] _meta;
 
     private readonly int _minX;
     private readonly int _minY;
@@ -33,11 +34,8 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
     private readonly int _sizeX;
     private readonly int _sizeY;
     private readonly int _sizeZ;
-
-    private readonly byte[] _blocks;
-    private readonly byte[] _meta;
     private readonly byte[] _skyLight;
-    private readonly byte[] _blockLight;
+    private readonly int _skylightSubtracted;
 
     public WorldRegionSnapshot(IWorldContext world, int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
@@ -51,8 +49,8 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         _sizeY = maxY - minY + 1;
         _sizeZ = maxZ - minZ + 1;
 
-        int cellCount = _sizeX * _sizeY * _sizeZ;
-        int nibbleByteCount = (cellCount + 1) >> 1;
+        var cellCount = _sizeX * _sizeY * _sizeZ;
+        var nibbleByteCount = (cellCount + 1) >> 1;
 
         _blocks = ArrayPool<byte>.Shared.Rent(cellCount);
         _meta = ArrayPool<byte>.Shared.Rent(nibbleByteCount);
@@ -62,37 +60,37 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         // Cells outside [0, WorldHeight) are never read (GetBlockId/GetLightValueExt guard on Y
         // before touching the arrays above), so the padding rows above/below the world don't
         // need to be written here.
-        int rowMinY = Math.Max(minY, 0);
-        int rowMaxY = Math.Min(maxY, ChuckFormat.WorldHeight - 1);
+        var rowMinY = Math.Max(minY, 0);
+        var rowMaxY = Math.Min(maxY, ChuckFormat.WorldHeight - 1);
 
-        int minChunkX = minX >> 4;
-        int maxChunkX = maxX >> 4;
-        int minChunkZ = minZ >> 4;
-        int maxChunkZ = maxZ >> 4;
+        var minChunkX = minX >> 4;
+        var maxChunkX = maxX >> 4;
+        var minChunkZ = minZ >> 4;
+        var maxChunkZ = maxZ >> 4;
 
-        for (int cx = minChunkX; cx <= maxChunkX; cx++)
+        for (var cx = minChunkX; cx <= maxChunkX; cx++)
         {
-            int columnMinX = Math.Max(minX, cx << 4);
-            int columnMaxX = Math.Min(maxX, (cx << 4) + 15);
+            var columnMinX = Math.Max(minX, cx << 4);
+            var columnMaxX = Math.Min(maxX, (cx << 4) + 15);
 
-            for (int cz = minChunkZ; cz <= maxChunkZ; cz++)
+            for (var cz = minChunkZ; cz <= maxChunkZ; cz++)
             {
-                int columnMinZ = Math.Max(minZ, cz << 4);
-                int columnMaxZ = Math.Min(maxZ, (cz << 4) + 15);
+                var columnMinZ = Math.Max(minZ, cz << 4);
+                var columnMaxZ = Math.Min(maxZ, (cz << 4) + 15);
 
-                Chunk chunk = world.ChunkHost.GetChunk(cx, cz);
+                var chunk = world.ChunkHost.GetChunk(cx, cz);
 
-                for (int worldX = columnMinX; worldX <= columnMaxX; worldX++)
+                for (var worldX = columnMinX; worldX <= columnMaxX; worldX++)
                 {
-                    int chunkLocalX = worldX & 15;
+                    var chunkLocalX = worldX & 15;
 
-                    for (int worldZ = columnMinZ; worldZ <= columnMaxZ; worldZ++)
+                    for (var worldZ = columnMinZ; worldZ <= columnMaxZ; worldZ++)
                     {
-                        int chunkLocalZ = worldZ & 15;
+                        var chunkLocalZ = worldZ & 15;
 
-                        for (int worldY = rowMinY; worldY <= rowMaxY; worldY++)
+                        for (var worldY = rowMinY; worldY <= rowMaxY; worldY++)
                         {
-                            int index = LocalIndex(worldX - minX, worldY - minY, worldZ - minZ);
+                            var index = LocalIndex(worldX - minX, worldY - minY, worldZ - minZ);
                             _blocks[index] = chunk.Blocks[ChuckFormat.GetIndex(chunkLocalX, worldY, chunkLocalZ)];
                             SetNibble(_meta, index, chunk.Meta.GetNibble(chunkLocalX, worldY, chunkLocalZ));
                             SetNibble(_skyLight, index, chunk.SkyLight.GetNibble(chunkLocalX, worldY, chunkLocalZ));
@@ -107,13 +105,86 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         _skylightSubtracted = world.Environment.AmbientDarkness;
     }
 
+    public bool IsLit { get; private set; }
+
+    public int GetBlockId(int x, int y, int z)
+    {
+        if (y < 0 || y >= ChuckFormat.WorldHeight)
+        {
+            return 0;
+        }
+
+        return TryGetLocalIndex(x, y, z, out var index) ? _blocks[index] : 0;
+    }
+
+    public BiomeSource GetBiomeSource() => _biomeSource;
+
+    public bool ShouldSuffocate(int x, int y, int z)
+    {
+        return _contentBlocks.TryGetByProtocolId(GetBlockId(x, y, z), out var block)
+               && block.Material.BlocksMovement && block.IsFullCube();
+    }
+
+    public bool IsOpaque(int x, int y, int z) => _contentBlocks.TryGetByProtocolId(GetBlockId(x, y, z), out var block) && block.IsOpaque;
+
+    public int GetBlockMeta(int x, int y, int z)
+    {
+        if (y < 0 || y >= ChuckFormat.WorldHeight)
+        {
+            return 0;
+        }
+
+        return TryGetLocalIndex(x, y, z, out var index) ? GetNibble(_meta, index) : 0;
+    }
+
+    public Material GetMaterial(int x, int y, int z)
+    {
+        var blockId = GetBlockId(x, y, z);
+        return blockId == 0 ? Material.Air : _contentBlocks.GetByProtocolId(blockId).Material;
+    }
+
+    public bool IsAir(int x, int y, int z) => GetBlockId(x, y, z) == 0;
+    public int GetBrightness(int x, int y, int z) => GetLightValue(x, y, z);
+    public bool IsTopY(int x, int y, int z) => throw new NotImplementedException();
+    public int GetTopY(int x, int z) => throw new NotImplementedException();
+    public int GetTopSolidBlockY(int x, int z) => throw new NotImplementedException();
+    public int GetSpawnPositionValidityY(int x, int z) => throw new NotImplementedException();
+    public float GetVisibilityRatio(Vec3D sourcePosition, Box targetBox) => throw new NotImplementedException();
+    public HitResult Raycast(Vec3D start, Vec3D end, bool includeFluids = false, bool ignoreNonSolid = false) => throw new NotImplementedException();
+    public bool IsMaterialInBox(Box area, Func<Material, bool> predicate) => throw new NotImplementedException();
+    public bool UpdateMovementInFluid(Box entityBox, Material fluidMaterial, Entity entity) => throw new NotImplementedException();
+    public bool IsPosLoaded(int x, int y, int z) => throw new NotImplementedException();
+
+    public void MarkChunkDirty(int x, int z) => throw new NotImplementedException();
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+
+        ArrayPool<byte>.Shared.Return(_blocks);
+        ArrayPool<byte>.Shared.Return(_meta);
+        ArrayPool<byte>.Shared.Return(_skyLight);
+        ArrayPool<byte>.Shared.Return(_blockLight);
+    }
+
+    public float GetNaturalBrightness(int x, int y, int z, int minLight)
+    {
+        var light = GetLightValue(x, y, z);
+        return _lightTable[Math.Max(light, minLight)];
+    }
+
+    public float GetLuminance(int x, int y, int z) => _lightTable[GetLightValue(x, y, z)];
+
+    public LightLevels GetLightLevels(int x, int y, int z, int minBlockLight) =>
+        GetLightLevelsExt(x, y, z, true).WithBlockFloor(minBlockLight);
+
     private int LocalIndex(int lx, int ly, int lz) => (lx * _sizeZ + lz) * _sizeY + ly;
 
     private bool TryGetLocalIndex(int x, int y, int z, out int index)
     {
-        int lx = x - _minX;
-        int ly = y - _minY;
-        int lz = z - _minZ;
+        var lx = x - _minX;
+        var ly = y - _minY;
+        var lz = z - _minZ;
 
         if ((uint)lx >= (uint)_sizeX || (uint)ly >= (uint)_sizeY || (uint)lz >= (uint)_sizeZ)
         {
@@ -130,73 +201,11 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 
     private static void SetNibble(byte[] nibbles, int index, int value)
     {
-        int byteIndex = index >> 1;
+        var byteIndex = index >> 1;
         nibbles[byteIndex] = (index & 1) == 0
             ? (byte)((nibbles[byteIndex] & 0xF0) | (value & 0x0F))
             : (byte)((nibbles[byteIndex] & 0x0F) | ((value & 0x0F) << 4));
     }
-
-    public int GetBlockId(int x, int y, int z)
-    {
-        if (y < 0 || y >= ChuckFormat.WorldHeight)
-        {
-            return 0;
-        }
-
-        return TryGetLocalIndex(x, y, z, out int index) ? _blocks[index] : 0;
-    }
-
-    public BiomeSource GetBiomeSource() => _biomeSource;
-
-    public bool ShouldSuffocate(int x, int y, int z)
-    {
-        return _contentBlocks.TryGetByProtocolId(GetBlockId(x, y, z), out Block? block)
-               && block.Material.BlocksMovement && block.IsFullCube();
-    }
-
-    public bool IsOpaque(int x, int y, int z)
-    {
-        return _contentBlocks.TryGetByProtocolId(GetBlockId(x, y, z), out Block? block) && block.IsOpaque;
-    }
-
-    public int GetBlockMeta(int x, int y, int z)
-    {
-        if (y < 0 || y >= ChuckFormat.WorldHeight)
-        {
-            return 0;
-        }
-
-        return TryGetLocalIndex(x, y, z, out int index) ? GetNibble(_meta, index) : 0;
-    }
-
-    public Material GetMaterial(int x, int y, int z)
-    {
-        int blockId = GetBlockId(x, y, z);
-        return blockId == 0 ? Material.Air : _contentBlocks.GetByProtocolId(blockId).Material;
-    }
-
-    public bool IsAir(int x, int y, int z) => GetBlockId(x, y, z) == 0;
-    public int GetBrightness(int x, int y, int z) => GetLightValue(x, y, z);
-    public bool IsTopY(int x, int y, int z) => throw new NotImplementedException();
-    public int GetTopY(int x, int z) => throw new NotImplementedException();
-    public int GetTopSolidBlockY(int x, int z) => throw new NotImplementedException();
-    public int GetSpawnPositionValidityY(int x, int z) => throw new NotImplementedException();
-    public float GetVisibilityRatio(Vec3D sourcePosition, Box targetBox) => throw new NotImplementedException();
-    public HitResult Raycast(Vec3D start, Vec3D end, bool includeFluids = false, bool ignoreNonSolid = false) => throw new NotImplementedException();
-    public bool IsMaterialInBox(Box area, Func<Material, bool> predicate) => throw new NotImplementedException();
-    public bool UpdateMovementInFluid(Box entityBox, Material fluidMaterial, Entity entity) => throw new NotImplementedException();
-    public bool IsPosLoaded(int x, int y, int z) => throw new NotImplementedException();
-
-    public float GetNaturalBrightness(int x, int y, int z, int minLight)
-    {
-        int light = GetLightValue(x, y, z);
-        return _lightTable[Math.Max(light, minLight)];
-    }
-
-    public float GetLuminance(int x, int y, int z) => _lightTable[GetLightValue(x, y, z)];
-
-    public LightLevels GetLightLevels(int x, int y, int z, int minBlockLight) =>
-        GetLightLevelsExt(x, y, z, true).WithBlockFloor(minBlockLight);
 
     /// <summary>
     ///     <see cref="GetLightValueExt" /> per channel, with the time of day left to the shader.
@@ -216,7 +225,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 
         if (checkStairs)
         {
-            int blockId = GetBlockId(x, y, z);
+            var blockId = GetBlockId(x, y, z);
             if (blockId == _contentBlocks.Get("slab").Id || blockId == _contentBlocks.Get("farmland").Id || blockId == _contentBlocks.Get("wooden_stairs").Id || blockId == _contentBlocks.Get("cobblestone_stairs").Id)
             {
                 return GetLightLevelsExt(x, y + 1, z, false)
@@ -240,12 +249,12 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         // Outside the snapshot's bounded volume: only reachable via the stairs-check probe
         // right at the edge of the padding. No data to be more precise with, so this reads the
         // same as "above the world": full sun, no torch.
-        if (!TryGetLocalIndex(x, y, z, out int index))
+        if (!TryGetLocalIndex(x, y, z, out var index))
         {
             return LightLevels.FullSky;
         }
 
-        int skyLight = GetNibble(_skyLight, index);
+        var skyLight = GetNibble(_skyLight, index);
         if (skyLight > 0)
         {
             IsLit = true;
@@ -266,10 +275,10 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 
         if (checkStairs)
         {
-            int blockId = GetBlockId(x, y, z);
+            var blockId = GetBlockId(x, y, z);
             if (blockId == _contentBlocks.Get("slab").Id || blockId == _contentBlocks.Get("farmland").Id || blockId == _contentBlocks.Get("wooden_stairs").Id || blockId == _contentBlocks.Get("cobblestone_stairs").Id)
             {
-                int maxLight = GetLightValueExt(x, y + 1, z, false);
+                var maxLight = GetLightValueExt(x, y + 1, z, false);
                 maxLight = Math.Max(maxLight, GetLightValueExt(x + 1, y, z, false)); // East
                 maxLight = Math.Max(maxLight, GetLightValueExt(x - 1, y, z, false)); // West
                 maxLight = Math.Max(maxLight, GetLightValueExt(x, y, z + 1, false)); // South
@@ -289,19 +298,19 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         }
 
         // Outside the snapshot's bounded volume — see GetLightLevelsExt.
-        if (!TryGetLocalIndex(x, y, z, out int index))
+        if (!TryGetLocalIndex(x, y, z, out var index))
         {
             return Math.Max(0, 15 - _skylightSubtracted);
         }
 
-        int skyLight = GetNibble(_skyLight, index);
+        var skyLight = GetNibble(_skyLight, index);
         if (skyLight > 0)
         {
             IsLit = true;
         }
 
         skyLight -= _skylightSubtracted;
-        int blockLight = GetNibble(_blockLight, index);
+        var blockLight = GetNibble(_blockLight, index);
         if (blockLight > skyLight)
         {
             skyLight = blockLight;
@@ -310,20 +319,5 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         return skyLight;
     }
 
-    public void Dispose()
-    {
-        GC.SuppressFinalize(this);
-
-        ArrayPool<byte>.Shared.Return(_blocks);
-        ArrayPool<byte>.Shared.Return(_meta);
-        ArrayPool<byte>.Shared.Return(_skyLight);
-        ArrayPool<byte>.Shared.Return(_blockLight);
-    }
-
-    ~WorldRegionSnapshot()
-    {
-        Dispose();
-    }
-
-    public void MarkChunkDirty(int x, int z) => throw new NotImplementedException();
+    ~WorldRegionSnapshot() => Dispose();
 }

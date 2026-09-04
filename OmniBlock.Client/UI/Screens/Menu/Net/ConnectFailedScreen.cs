@@ -53,7 +53,7 @@ public class ConnectFailedScreen : UIScreen
         lblDetail.Style.MarginBottom = 20;
         Root.AddChild(lblDetail);
 
-        Button btnToMenu = CreateButton();
+        var btnToMenu = CreateButton();
         btnToMenu.Text = Translations.Get("gui.toMenu");
         btnToMenu.Style.Width = 150;
         btnToMenu.OnClick += e => Context.Navigator.Navigate(null);

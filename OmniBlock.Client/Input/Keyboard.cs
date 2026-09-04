@@ -1,3 +1,4 @@
+using System.Reflection;
 using Silk.NET.GLFW;
 
 namespace OmniBlock.Client.Input;
@@ -151,11 +152,36 @@ public class Keyboard
     private static readonly bool[] keyDownBuffer = new bool[KEYBOARD_SIZE];
     private static readonly Queue<KeyEvent> eventQueue = new();
     private static readonly Queue<char> charQueue = new();
-    private static KeyEvent current_event = new();
+    private static KeyEvent current_event;
     private static bool repeat_enabled;
 
     private static Dictionary<Keys, int> keyMap = null!;
     private static string[] keyNames = null!;
+
+    private static readonly Dictionary<char, char> ShiftMap = new()
+    {
+        { '1', '!' },
+        { '2', '@' },
+        { '3', '#' },
+        { '4', '$' },
+        { '5', '%' },
+        { '6', '^' },
+        { '7', '&' },
+        { '8', '*' },
+        { '9', '(' },
+        { '0', ')' },
+        { '`', '~' },
+        { '-', '_' },
+        { '=', '+' },
+        { '[', '{' },
+        { ']', '}' },
+        { '\\', '|' },
+        { ';', ':' },
+        { '\'', '"' },
+        { ',', '<' },
+        { '.', '>' },
+        { '/', '?' }
+    };
 
     public static unsafe void create(Glfw glfwApi, WindowHandle* windowHandle)
     {
@@ -173,17 +199,17 @@ public class Keyboard
 
         var keyboardType = typeof(Keyboard);
         var fields = keyboardType.GetFields(
-            System.Reflection.BindingFlags.Public |
-            System.Reflection.BindingFlags.Static |
-            System.Reflection.BindingFlags.FlattenHierarchy
+            BindingFlags.Public |
+            BindingFlags.Static |
+            BindingFlags.FlattenHierarchy
         );
 
         foreach (var field in fields)
         {
             if (field.IsLiteral && !field.IsInitOnly && field.Name.StartsWith("KEY_", StringComparison.Ordinal))
             {
-                int keyCode = (int)field.GetValue(null)!;
-                string keyName = field.Name[4..];
+                var keyCode = (int)field.GetValue(null)!;
+                var keyName = field.Name[4..];
 
                 if (keyCode >= 0 && keyCode < keyNames.Length)
                 {
@@ -192,7 +218,7 @@ public class Keyboard
             }
         }
 
-        for (int i = 0; i < keyNames.Length; i++)
+        for (var i = 0; i < keyNames.Length; i++)
         {
             if (keyNames[i] == null)
             {
@@ -313,17 +339,10 @@ public class Keyboard
         };
     }
 
-    private static readonly Dictionary<char, char> ShiftMap = new() {
-        { '1', '!' }, { '2', '@' }, { '3', '#' }, { '4', '$' }, { '5', '%' },
-        { '6', '^' }, { '7', '&' }, { '8', '*' }, { '9', '(' }, { '0', ')' },
-        { '`', '~' }, { '-', '_' }, { '=', '+' }, { '[', '{' }, { ']', '}' },
-        { '\\', '|' }, { ';', ':' }, { '\'', '"' }, { ',', '<' }, { '.', '>' }, { '/', '?' }
-    };
-
     private static char ShiftUp(char c)
     {
         if (char.IsLetter(c)) return char.ToUpper(c);
-        if (ShiftMap.TryGetValue(c, out char up)) return up;
+        if (ShiftMap.TryGetValue(c, out var up)) return up;
         return c;
     }
 
@@ -336,10 +355,10 @@ public class Keyboard
 
         OnGlfwKey?.Invoke(key, action, mods);
 
-        if (!keyMap.TryGetValue(key, out int lwjglKey)) lwjglKey = KEY_NONE;
+        if (!keyMap.TryGetValue(key, out var lwjglKey)) lwjglKey = KEY_NONE;
 
-        bool pressed = action == InputAction.Press || action == InputAction.Repeat;
-        bool isRepeat = action == InputAction.Repeat;
+        var pressed = action == InputAction.Press || action == InputAction.Repeat;
+        var isRepeat = action == InputAction.Repeat;
 
         if (lwjglKey > 0 && lwjglKey < KEYBOARD_SIZE)
         {
@@ -362,7 +381,7 @@ public class Keyboard
 
         if (codepoint <= char.MaxValue)
         {
-            char character = (char)codepoint;
+            var character = (char)codepoint;
             if (!char.IsSurrogate(character))
             {
                 charQueue.Enqueue(character);
@@ -379,7 +398,7 @@ public class Keyboard
 
         while (eventQueue.Count > 0)
         {
-            KeyEvent evt = eventQueue.Dequeue();
+            var evt = eventQueue.Dequeue();
 
             if (evt.Repeat && !repeat_enabled)
                 continue;
@@ -409,10 +428,7 @@ public class Keyboard
         return keyDownBuffer[key];
     }
 
-    public static void enableRepeatEvents(bool enable)
-    {
-        repeat_enabled = enable;
-    }
+    public static void enableRepeatEvents(bool enable) => repeat_enabled = enable;
 
     public static void Flush()
     {
@@ -432,10 +448,7 @@ public class Keyboard
         charQueue.Clear();
     }
 
-    private static long GetNanos()
-    {
-        return DateTime.UtcNow.Ticks * 100;
-    }
+    private static long GetNanos() => DateTime.UtcNow.Ticks * 100;
 
     public static string getKeyName(int keyCode)
     {

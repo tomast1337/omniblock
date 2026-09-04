@@ -11,7 +11,7 @@ public enum SendPriority
     Normal,
 
     /// <summary>Drained ahead of anything <see cref="Normal" />. See <see cref="PacketPriorities" />.</summary>
-    High,
+    High
 }
 
 /// <summary>

@@ -23,8 +23,6 @@ public sealed class NullBlockReader : IBlockReader
 
     public int GetBlockId(int x, int y, int z) => 0;
 
-    public static BlockEntity? GetBlockEntity(int x, int y, int z) => null;
-
     public bool IsOpaque(int x, int y, int z) => false;
 
     public bool ShouldSuffocate(int x, int y, int z) => false;
@@ -57,6 +55,8 @@ public sealed class NullBlockReader : IBlockReader
     public bool UpdateMovementInFluid(Box entityBox, Material fluidMaterial, Entity entity) => false;
 
     public bool IsPosLoaded(int x, int y, int z) => true;
+
+    public static BlockEntity? GetBlockEntity(int x, int y, int z) => null;
 
     public static float GetNaturalBrightness(int x, int y, int z, int blockLight) => 1.0f;
 

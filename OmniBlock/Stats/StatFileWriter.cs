@@ -1,6 +1,5 @@
 using System.Text;
 using System.Text.Json;
-using OmniBlock.Util;
 using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Stats;
@@ -11,12 +10,12 @@ public class StatFileWriter
 
     private readonly Dictionary<StatBase, int> _statsData = new();
     private readonly Dictionary<StatBase, int> _statsSyncedData = new();
-    private bool _statsExist;
     private readonly StatsSynchronizer _statsSyncer;
+    private bool _statsExist;
 
     public StatFileWriter(Session session, string mcDataDir)
     {
-        string statsFolder = System.IO.Path.Combine(mcDataDir, "stats");
+        var statsFolder = Path.Combine(mcDataDir, "stats");
         if (!Directory.Exists(statsFolder))
         {
             Directory.CreateDirectory(statsFolder);
@@ -24,10 +23,10 @@ public class StatFileWriter
 
         if (Directory.Exists(mcDataDir))
         {
-            foreach (string filePath in Directory.GetFiles(mcDataDir, "stats_*.dat"))
+            foreach (var filePath in Directory.GetFiles(mcDataDir, "stats_*.dat"))
             {
-                string fileName = System.IO.Path.GetFileName(filePath);
-                string targetPath = System.IO.Path.Combine(statsFolder, fileName);
+                var fileName = Path.GetFileName(filePath);
+                var targetPath = Path.Combine(statsFolder, fileName);
 
                 if (!File.Exists(targetPath))
                 {
@@ -36,6 +35,7 @@ public class StatFileWriter
                 }
             }
         }
+
         _statsSyncer = new StatsSynchronizer(session, this, statsFolder);
     }
 
@@ -48,14 +48,11 @@ public class StatFileWriter
 
     private static void WriteStatToMap(Dictionary<StatBase, int> map, StatBase stat, int increment)
     {
-        map.TryGetValue(stat, out int current);
+        map.TryGetValue(stat, out var current);
         map[stat] = current + increment;
     }
 
-    public Dictionary<StatBase, int> GetStatsSyncedData()
-    {
-        return new Dictionary<StatBase, int>(_statsSyncedData);
-    }
+    public Dictionary<StatBase, int> GetStatsSyncedData() => new(_statsSyncedData);
 
     public void LoadStats(Dictionary<StatBase, int> statsMap)
     {
@@ -76,7 +73,7 @@ public class StatFileWriter
         {
             foreach (var kvp in newStats)
             {
-                _statsSyncedData.TryGetValue(kvp.Key, out int currentSynced);
+                _statsSyncedData.TryGetValue(kvp.Key, out var currentSynced);
                 _statsData[kvp.Key] = kvp.Value + currentSynced;
             }
         }
@@ -99,23 +96,23 @@ public class StatFileWriter
         var statsMap = new Dictionary<StatBase, int>();
         try
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
-            using JsonDocument statsJson = JsonDocument.Parse(statsFileContents);
-            JsonElement root = statsJson.RootElement;
+            using var statsJson = JsonDocument.Parse(statsFileContents);
+            var root = statsJson.RootElement;
 
-            if (root.TryGetProperty("stats-change", out JsonElement statsChangeArray))
+            if (root.TryGetProperty("stats-change", out var statsChangeArray))
             {
-                foreach (JsonElement statJson in statsChangeArray.EnumerateArray())
+                foreach (var statJson in statsChangeArray.EnumerateArray())
                 {
-                    JsonProperty prop = statJson.EnumerateObject().First();
+                    var prop = statJson.EnumerateObject().First();
 
-                    int id = int.Parse(prop.Name);
-                    int value = prop.Value.ValueKind == JsonValueKind.Number
+                    var id = int.Parse(prop.Name);
+                    var value = prop.Value.ValueKind == JsonValueKind.Number
                         ? prop.Value.GetInt32()
                         : int.Parse(prop.Value.GetString() ?? "0");
 
-                    StatBase statBase = Stats.GetStatById(id);
+                    var statBase = Stats.GetStatById(id);
                     if (statBase == null)
                     {
                         s_logger.LogInformation($"{id} is not a valid stat");
@@ -140,7 +137,7 @@ public class StatFileWriter
     public static string SerializeStats(string username, string salt, Dictionary<StatBase, int> statsMap)
     {
         var sb = new StringBuilder();
-        bool isFirst = true;
+        var isFirst = true;
 
         sb.Append("{\r\n");
         if (username != null && salt != null)
@@ -156,8 +153,8 @@ public class StatFileWriter
 
         foreach (var kvp in statsMap)
         {
-            StatBase stat = kvp.Key;
-            int value = kvp.Value;
+            var stat = kvp.Key;
+            var value = kvp.Value;
 
             if (!isFirst)
                 sb.Append("},");
@@ -180,29 +177,17 @@ public class StatFileWriter
         return sb.ToString();
     }
 
-    public bool HasAchievementUnlocked(Achievement achievement)
-    {
-        return _statsData.ContainsKey(achievement);
-    }
+    public bool HasAchievementUnlocked(Achievement achievement) => _statsData.ContainsKey(achievement);
 
-    public bool CanUnlockAchievement(Achievement achievement)
-    {
-        return achievement.parent == null || HasAchievementUnlocked(achievement.parent);
-    }
+    public bool CanUnlockAchievement(Achievement achievement) => achievement.parent == null || HasAchievementUnlocked(achievement.parent);
 
-    public int GetStatValue(StatBase stat)
-    {
-        return _statsData.TryGetValue(stat, out int val) ? val : 0;
-    }
+    public int GetStatValue(StatBase stat) => _statsData.TryGetValue(stat, out var val) ? val : 0;
 
     public static void Tick()
     {
     }
 
-    public void SyncStats()
-    {
-        _statsSyncer.SyncStatsFileWithMap(GetStatsSyncedData());
-    }
+    public void SyncStats() => _statsSyncer.SyncStatsFileWithMap(GetStatsSyncedData());
 
     public void SyncStatsIfReady()
     {

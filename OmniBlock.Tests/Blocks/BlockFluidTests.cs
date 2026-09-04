@@ -11,28 +11,28 @@ public sealed class BlockFluidTests
     [Fact]
     public void BehaviorRegistry_Build_StationaryFluid_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"stationary_fluid","source_solidified":"omniblock:obsidian","flow_solidified":"omniblock:cobblestone"}""");
+        using var json = JsonDocument.Parse("""{"Type":"stationary_fluid","source_solidified":"omniblock:obsidian","flow_solidified":"omniblock:cobblestone"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("stationary_fluid", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_StationaryFluid_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"stationary_fluid","ignition_target":"omniblock:fire","source_solidified":"not_a_real_block","flow_solidified":"omniblock:cobblestone"}""");
+        using var json = JsonDocument.Parse("""{"Type":"stationary_fluid","ignition_target":"omniblock:fire","source_solidified":"not_a_real_block","flow_solidified":"omniblock:cobblestone"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("stationary_fluid", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_FlowingFluid_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"flowing_fluid","source_solidified":"omniblock:obsidian","flow_solidified":"omniblock:cobblestone"}""");
+        using var json = JsonDocument.Parse("""{"Type":"flowing_fluid","source_solidified":"omniblock:obsidian","flow_solidified":"omniblock:cobblestone"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("flowing_fluid", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_FlowingFluid_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"flowing_fluid","passable":["not_a_real_block"],"source_solidified":"omniblock:obsidian","flow_solidified":"omniblock:cobblestone"}""");
+        using var json = JsonDocument.Parse("""{"Type":"flowing_fluid","passable":["not_a_real_block"],"source_solidified":"omniblock:obsidian","flow_solidified":"omniblock:cobblestone"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("flowing_fluid", json.RootElement));
     }
 
@@ -40,8 +40,8 @@ public sealed class BlockFluidTests
     public void LavaNeighborUpdate_WithMetaZeroAndAdjacentWater_HardensToObsidian()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("lava").Id, 0);
-        world.ReaderWriter.SetInitial(1, 64, 0, TestBlocks.Get("water").Id, 0);
+        world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("lava").Id);
+        world.ReaderWriter.SetInitial(1, 64, 0, TestBlocks.Get("water").Id);
 
         TestBlocks.Get("lava").NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 0, TestBlocks.Get("water").Id));
 
@@ -53,7 +53,7 @@ public sealed class BlockFluidTests
     {
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("flowing_lava").Id, 3);
-        world.ReaderWriter.SetInitial(1, 64, 0, TestBlocks.Get("water").Id, 0);
+        world.ReaderWriter.SetInitial(1, 64, 0, TestBlocks.Get("water").Id);
 
         TestBlocks.Get("flowing_lava").NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 3, TestBlocks.Get("water").Id));
 
@@ -65,7 +65,7 @@ public sealed class BlockFluidTests
     {
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("flowing_lava").Id, 4);
-        world.ReaderWriter.SetInitial(1, 64, 0, TestBlocks.Get("water").Id, 0);
+        world.ReaderWriter.SetInitial(1, 64, 0, TestBlocks.Get("water").Id);
 
         TestBlocks.Get("flowing_lava").NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 4, TestBlocks.Get("water").Id));
 
@@ -77,7 +77,7 @@ public sealed class BlockFluidTests
     {
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("flowing_lava").Id, 5);
-        world.ReaderWriter.SetInitial(1, 64, 0, TestBlocks.Get("water").Id, 0);
+        world.ReaderWriter.SetInitial(1, 64, 0, TestBlocks.Get("water").Id);
 
         TestBlocks.Get("flowing_lava").NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 5, TestBlocks.Get("water").Id));
 
@@ -89,8 +89,8 @@ public sealed class BlockFluidTests
     public void LavaNeighborUpdate_WithOnlyWaterBelow_DoesNotHarden()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("lava").Id, 0);
-        world.ReaderWriter.SetInitial(0, 63, 0, TestBlocks.Get("water").Id, 0);
+        world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("lava").Id);
+        world.ReaderWriter.SetInitial(0, 63, 0, TestBlocks.Get("water").Id);
 
         TestBlocks.Get("lava").NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 0, TestBlocks.Get("water").Id));
 
@@ -104,8 +104,8 @@ public sealed class BlockFluidTests
     public void LavaNeighborUpdate_WithWaterAbove_HardensToObsidian()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("lava").Id, 0);
-        world.ReaderWriter.SetInitial(0, 65, 0, TestBlocks.Get("water").Id, 0);
+        world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("lava").Id);
+        world.ReaderWriter.SetInitial(0, 65, 0, TestBlocks.Get("water").Id);
 
         TestBlocks.Get("lava").NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 0, TestBlocks.Get("water").Id));
 
@@ -119,7 +119,7 @@ public sealed class BlockFluidTests
         RecordingWorldEventListener listener = new();
         world.Broadcaster.AddWorldAccess(listener);
         world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("flowing_lava").Id, 3);
-        world.ReaderWriter.SetInitial(1, 64, 0, TestBlocks.Get("water").Id, 0);
+        world.ReaderWriter.SetInitial(1, 64, 0, TestBlocks.Get("water").Id);
 
         TestBlocks.Get("flowing_lava").NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 3, TestBlocks.Get("water").Id));
 
@@ -176,10 +176,7 @@ public sealed class BlockFluidTests
         {
         }
 
-        public void WorldEvent(EntityPlayer? player, int @event, int x, int y, int z, int data)
-        {
-            WorldEvents.Add((@event, x, y, z, data));
-        }
+        public void WorldEvent(EntityPlayer? player, int @event, int x, int y, int z, int data) => WorldEvents.Add((@event, x, y, z, data));
 
         public void BroadcastEntityEvent(Entity entity, byte @event)
         {

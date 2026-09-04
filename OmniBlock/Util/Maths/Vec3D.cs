@@ -34,9 +34,9 @@ public record struct Vec3D
 
     public double SquareDistanceTo(Vec3D other)
     {
-        double dx = other.X - X;
-        double dy = other.Y - Y;
-        double dz = other.Z - Z;
+        var dx = other.X - X;
+        var dy = other.Y - Y;
+        var dz = other.Z - Z;
         return dx * dx + dy * dy + dz * dz;
     }
 
@@ -44,8 +44,8 @@ public record struct Vec3D
 
     public double SquareDistance2DTo(Vec3D other)
     {
-        double dx = other.X - X;
-        double dz = other.Z - Z;
+        var dx = other.X - X;
+        var dz = other.Z - Z;
         return dx * dx + dz * dz;
     }
 
@@ -53,7 +53,7 @@ public record struct Vec3D
 
     public Vec3D Normalize()
     {
-        double mag = Magnitude();
+        var mag = Magnitude();
         return mag < 1.0E-4D ? Zero : this / mag;
     }
 
@@ -61,53 +61,53 @@ public record struct Vec3D
 
     public Vec3D? GetIntermediateWithXValue(Vec3D other, double xValue)
     {
-        double deltaX = other.X - X;
-        double deltaY = other.Y - Y;
-        double deltaZ = other.Z - Z;
+        var deltaX = other.X - X;
+        var deltaY = other.Y - Y;
+        var deltaZ = other.Z - Z;
         if (deltaX * deltaX < 1.0E-7F)
         {
             return null;
         }
 
-        double progress = (xValue - X) / deltaX;
+        var progress = (xValue - X) / deltaX;
         return progress is >= 0.0D and <= 1.0D ? new Vec3D(X + deltaX * progress, Y + deltaY * progress, Z + deltaZ * progress) : null;
     }
 
     public Vec3D? GetIntermediateWithYValue(Vec3D other, double yValue)
     {
-        double deltaX = other.X - X;
-        double deltaY = other.Y - Y;
-        double deltaZ = other.Z - Z;
+        var deltaX = other.X - X;
+        var deltaY = other.Y - Y;
+        var deltaZ = other.Z - Z;
         if (deltaY * deltaY < 1.0E-7F)
         {
             return null;
         }
 
-        double progress = (yValue - Y) / deltaY;
+        var progress = (yValue - Y) / deltaY;
         return progress is >= 0.0D and <= 1.0D ? new Vec3D(X + deltaX * progress, Y + deltaY * progress, Z + deltaZ * progress) : null;
     }
 
     public Vec3D? GetIntermediateWithZValue(Vec3D other, double zValue)
     {
-        double deltaX = other.X - X;
-        double deltaY = other.Y - Y;
-        double deltaZ = other.Z - Z;
+        var deltaX = other.X - X;
+        var deltaY = other.Y - Y;
+        var deltaZ = other.Z - Z;
         if (deltaZ * deltaZ < 1.0E-7F)
         {
             return null;
         }
 
-        double progress = (zValue - Z) / deltaZ;
+        var progress = (zValue - Z) / deltaZ;
         return progress is >= 0.0D and <= 1.0D ? new Vec3D(X + deltaX * progress, Y + deltaY * progress, Z + deltaZ * progress) : null;
     }
 
     public void RotateAroundX(float angleRadians)
     {
-        float cosAngle = MathHelper.Cos(angleRadians);
-        float sinAngle = MathHelper.Sin(angleRadians);
+        var cosAngle = MathHelper.Cos(angleRadians);
+        var sinAngle = MathHelper.Sin(angleRadians);
 
-        double rotatedY = Y * cosAngle + Z * sinAngle;
-        double rotatedZ = Z * cosAngle - Y * sinAngle;
+        var rotatedY = Y * cosAngle + Z * sinAngle;
+        var rotatedZ = Z * cosAngle - Y * sinAngle;
 
         Y = rotatedY;
         Z = rotatedZ;
@@ -115,11 +115,11 @@ public record struct Vec3D
 
     public void RotateAroundY(float angleRadians)
     {
-        float cosAngle = MathHelper.Cos(angleRadians);
-        float sinAngle = MathHelper.Sin(angleRadians);
+        var cosAngle = MathHelper.Cos(angleRadians);
+        var sinAngle = MathHelper.Sin(angleRadians);
 
-        double rotatedX = X * cosAngle + Z * sinAngle;
-        double rotatedZ = Z * cosAngle - X * sinAngle;
+        var rotatedX = X * cosAngle + Z * sinAngle;
+        var rotatedZ = Z * cosAngle - X * sinAngle;
 
         X = rotatedX;
         Z = rotatedZ;

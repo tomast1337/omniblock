@@ -12,7 +12,7 @@ public class InventoryCrafting : IInventory
 
     public InventoryCrafting(ScreenHandler eventHandler, int width, int height)
     {
-        int gridSize = width * height;
+        var gridSize = width * height;
         _stacks = new ItemStack[gridSize];
         _handler = eventHandler;
         _width = width;
@@ -26,7 +26,7 @@ public class InventoryCrafting : IInventory
 
     public ItemStack? RemoveStack(int slotIndex, int amount)
     {
-        ItemStack? stack = _stacks[slotIndex];
+        var stack = _stacks[slotIndex];
 
         if (stack == null) return null;
 
@@ -47,7 +47,6 @@ public class InventoryCrafting : IInventory
 
         _handler.onSlotUpdate(this);
         return removeStack;
-
     }
 
     public void SetStack(int slotIndex, ItemStack? itemStack)
@@ -68,7 +67,7 @@ public class InventoryCrafting : IInventory
     {
         if (x < 0 || x >= _width) return null;
 
-        int slotIndex = x + y * _width;
+        var slotIndex = x + y * _width;
         return GetStack(slotIndex);
     }
 }

@@ -6,20 +6,20 @@ namespace OmniBlock.Client.Rendering.Core.Textures;
 
 public class DynamicTexture(int iconIdx)
 {
-    public byte[] Pixels = new byte[1024];
-    public readonly int Sprite = iconIdx;
-    public int Replicate = 1;
-    public FxImage Atlas = FxImage.Terrain;
-
-    protected byte[][]? CustomFrames;
-    protected int CustomFrameIndex;
-    protected int CustomFrameCount;
-
     public enum FxImage
     {
         Terrain,
         Items
     }
+
+    public readonly int Sprite = iconIdx;
+    public FxImage Atlas = FxImage.Terrain;
+    protected int CustomFrameCount;
+    protected int CustomFrameIndex;
+
+    protected byte[][]? CustomFrames;
+    public byte[] Pixels = new byte[1024];
+    public int Replicate = 1;
 
     public virtual void Setup(OmniBlock game)
     {
@@ -35,7 +35,7 @@ public class DynamicTexture(int iconIdx)
         CustomFrameIndex = 0;
         CustomFrameCount = 0;
 
-        using Stream? stream = game.TexturePackList.SelectedTexturePack.GetResourceAsStream(resourceName);
+        using var stream = game.TexturePackList.SelectedTexturePack.GetResourceAsStream(resourceName);
         if (stream == null)
         {
             if (Pixels.Length != 1024) Pixels = new byte[1024];
@@ -44,15 +44,15 @@ public class DynamicTexture(int iconIdx)
 
         try
         {
-            string atlasPath = Atlas == FxImage.Terrain ? "/terrain.png" : "/gui/items.png";
-            int targetWidth = game.TextureManager.GetTextureId(atlasPath).Texture?.Width ?? 256;
-            int targetTileSize = targetWidth / 16;
+            var atlasPath = Atlas == FxImage.Terrain ? "/terrain.png" : "/gui/items.png";
+            var targetWidth = game.TextureManager.GetTextureId(atlasPath).Texture?.Width ?? 256;
+            var targetTileSize = targetWidth / 16;
 
             if (targetTileSize < 1) targetTileSize = 1;
 
-            using Image<Rgba32> image = Image.Load<Rgba32>(stream);
-            int width = image.Width;
-            int height = image.Height;
+            using var image = Image.Load<Rgba32>(stream);
+            var width = image.Width;
+            var height = image.Height;
 
             if (height % width != 0) return;
 
@@ -60,27 +60,31 @@ public class DynamicTexture(int iconIdx)
 
             if (width != targetTileSize)
             {
-                image.Mutate(x => x.Resize(new ResizeOptions { Size = new Size(targetTileSize, targetTileSize * CustomFrameCount), Sampler = KnownResamplers.NearestNeighbor }));
+                image.Mutate(x => x.Resize(new ResizeOptions
+                {
+                    Size = new Size(targetTileSize, targetTileSize * CustomFrameCount),
+                    Sampler = KnownResamplers.NearestNeighbor
+                }));
                 width = image.Width;
                 height = image.Height;
             }
 
             CustomFrames = new byte[CustomFrameCount][];
 
-            int pixelsPerFrame = width * height;
-            int bytesPerFrame = pixelsPerFrame * 4;
+            var pixelsPerFrame = width * height;
+            var bytesPerFrame = pixelsPerFrame * 4;
 
             if (Pixels.Length != bytesPerFrame)
             {
                 Pixels = new byte[bytesPerFrame];
             }
 
-            for (int i = 0; i < CustomFrameCount; i++)
+            for (var i = 0; i < CustomFrameCount; i++)
             {
                 CustomFrames[i] = new byte[bytesPerFrame];
-                int currentFrameIndex = i;
+                var currentFrameIndex = i;
 
-                using Image<Rgba32> frame = image.Clone(ctx => ctx.Crop(new Rectangle(0, currentFrameIndex * width, width, width)));
+                using var frame = image.Clone(ctx => ctx.Crop(new Rectangle(0, currentFrameIndex * width, width, width)));
                 frame.CopyPixelDataTo(CustomFrames[i]);
             }
         }

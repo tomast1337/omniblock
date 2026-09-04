@@ -1,3 +1,4 @@
+using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 
 namespace OmniBlock.Client.Rendering.Core.WebGPU;
@@ -13,54 +14,17 @@ namespace OmniBlock.Client.Rendering.Core.WebGPU;
 /// </remarks>
 public sealed unsafe class WgpuFramebuffer : IDisposable
 {
-    public Texture* ColorTexture { get; private set; }
-    public TextureView* ColorView { get; private set; }
-
-    public Texture* DepthTexture { get; private set; }
-    public TextureView* DepthView { get; private set; }
-
-    public uint Width { get; private set; }
-    public uint Height { get; private set; }
-
-    private readonly WebGpuDevice _device;
-    private readonly TextureFormat _colorFormat;
-    private readonly TextureUsage _extraDepthUsage;
-    private readonly bool _hasDepth;
-    private Sampler* _blitSampler;
-    private BindGroup* _blitBindGroup;
-    private bool _disposed;
-
     /// <summary>A format every backend offers for depth.</summary>
     public const TextureFormat DepthFormat = TextureFormat.Depth32float;
 
-    /// <summary>Creates a colour-only framebuffer.</summary>
-    public static WgpuFramebuffer CreateColor(WebGpuDevice device, uint width, uint height,
-        TextureFormat format = TextureFormat.Rgba8Unorm)
-    {
-        CreateColorTexture(device, width, height, format,
-            out Texture* cTex, out TextureView* cView);
+    private readonly TextureFormat _colorFormat;
 
-        return new WgpuFramebuffer(device, width, height, format, 0, cTex, cView, null, null);
-    }
-
-    /// <summary>Creates a colour + depth framebuffer.</summary>
-    /// <param name="extraDepthUsage">
-    ///     Additional <see cref="TextureUsage" /> flags for the depth texture beyond
-    ///     <see cref="TextureUsage.RenderAttachment" />, e.g. <see cref="TextureUsage.CopySrc" /> or
-    ///     <see cref="TextureUsage.CopyDst" /> for the cloud-blur depth copy. Preserved across
-    ///     <see cref="ResizeIfNeeded" />.
-    /// </param>
-    public static WgpuFramebuffer CreateColorDepth(WebGpuDevice device, uint width, uint height,
-        TextureFormat colorFormat = TextureFormat.Rgba8Unorm, TextureUsage extraDepthUsage = 0)
-    {
-        CreateColorTexture(device, width, height, colorFormat,
-            out Texture* cTex, out TextureView* cView);
-
-        CreateDepthTexture(device, width, height, extraDepthUsage,
-            out Texture* dTex, out TextureView* dView);
-
-        return new WgpuFramebuffer(device, width, height, colorFormat, extraDepthUsage, cTex, cView, dTex, dView);
-    }
+    private readonly WebGpuDevice _device;
+    private readonly TextureUsage _extraDepthUsage;
+    private readonly bool _hasDepth;
+    private BindGroup* _blitBindGroup;
+    private Sampler* _blitSampler;
+    private bool _disposed;
 
     private WgpuFramebuffer(WebGpuDevice device, uint width, uint height, TextureFormat colorFormat,
         TextureUsage extraDepthUsage, Texture* colorTex, TextureView* colorView,
@@ -78,15 +42,81 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
         DepthView = depthView;
     }
 
+    public Texture* ColorTexture { get; private set; }
+    public TextureView* ColorView { get; private set; }
+
+    public Texture* DepthTexture { get; private set; }
+    public TextureView* DepthView { get; private set; }
+
+    public uint Width { get; private set; }
+    public uint Height { get; private set; }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+
+        var api = _device.Api;
+        ReleaseBlitBindGroup();
+        if (_blitSampler is not null)
+        {
+            api.SamplerRelease(_blitSampler);
+            _blitSampler = null;
+        }
+
+        if (ColorView is not null) api.TextureViewRelease(ColorView);
+        if (DepthView is not null) api.TextureViewRelease(DepthView);
+        if (ColorTexture is not null)
+        {
+            api.TextureDestroy(ColorTexture);
+            api.TextureRelease(ColorTexture);
+        }
+
+        if (DepthTexture is not null)
+        {
+            api.TextureDestroy(DepthTexture);
+            api.TextureRelease(DepthTexture);
+        }
+    }
+
+    /// <summary>Creates a colour-only framebuffer.</summary>
+    public static WgpuFramebuffer CreateColor(WebGpuDevice device, uint width, uint height,
+        TextureFormat format = TextureFormat.Rgba8Unorm)
+    {
+        CreateColorTexture(device, width, height, format,
+            out var cTex, out var cView);
+
+        return new WgpuFramebuffer(device, width, height, format, 0, cTex, cView, null, null);
+    }
+
+    /// <summary>Creates a colour + depth framebuffer.</summary>
+    /// <param name="extraDepthUsage">
+    ///     Additional <see cref="TextureUsage" /> flags for the depth texture beyond
+    ///     <see cref="TextureUsage.RenderAttachment" />, e.g. <see cref="TextureUsage.CopySrc" /> or
+    ///     <see cref="TextureUsage.CopyDst" /> for the cloud-blur depth copy. Preserved across
+    ///     <see cref="ResizeIfNeeded" />.
+    /// </param>
+    public static WgpuFramebuffer CreateColorDepth(WebGpuDevice device, uint width, uint height,
+        TextureFormat colorFormat = TextureFormat.Rgba8Unorm, TextureUsage extraDepthUsage = 0)
+    {
+        CreateColorTexture(device, width, height, colorFormat,
+            out var cTex, out var cView);
+
+        CreateDepthTexture(device, width, height, extraDepthUsage,
+            out var dTex, out var dView);
+
+        return new WgpuFramebuffer(device, width, height, colorFormat, extraDepthUsage, cTex, cView, dTex, dView);
+    }
+
     /// <summary>
     ///     Begins a render pass targeting this framebuffer and returns the pass encoder. The caller
     ///     ends and releases it.
     /// </summary>
     public RenderPassEncoder* BeginPass(CommandEncoder* encoder,
-        Silk.NET.WebGPU.Color clearColor, bool clearColorBuffer = true,
+        Color clearColor, bool clearColorBuffer = true,
         bool clearDepth = true)
     {
-        Silk.NET.WebGPU.WebGPU api = _device.Api;
+        var api = _device.Api;
 
         RenderPassColorAttachment colorAttach = new()
         {
@@ -94,7 +124,7 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
             LoadOp = clearColorBuffer ? LoadOp.Clear : LoadOp.Load,
             StoreOp = StoreOp.Store,
             ClearValue = clearColor,
-            DepthSlice = unchecked((uint)-1),
+            DepthSlice = unchecked((uint)-1)
         };
 
         RenderPassDepthStencilAttachment depthAttach = default;
@@ -110,7 +140,7 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
                 DepthClearValue = 1.0f,
                 DepthReadOnly = false,
                 StencilLoadOp = LoadOp.Undefined,
-                StencilStoreOp = StoreOp.Undefined,
+                StencilStoreOp = StoreOp.Undefined
             };
 
             pDepth = &depthAttach;
@@ -120,7 +150,7 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
         {
             ColorAttachmentCount = 1,
             ColorAttachments = &colorAttach,
-            DepthStencilAttachment = pDepth,
+            DepthStencilAttachment = pDepth
         };
 
         return api.CommandEncoderBeginRenderPass(encoder, in descriptor);
@@ -145,7 +175,7 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
         // immediately regardless of outstanding GPU work; Release() only drops this object's own
         // reference and lets wgpu defer the actual free until nothing still using it, including
         // that in-flight submission, is left holding one.
-        Silk.NET.WebGPU.WebGPU api = device.Api;
+        var api = device.Api;
         if (ColorView is not null) api.TextureViewRelease(ColorView);
         if (DepthView is not null) api.TextureViewRelease(DepthView);
         if (ColorTexture is not null) api.TextureRelease(ColorTexture);
@@ -159,7 +189,7 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
         ReleaseBlitBindGroup();
 
         CreateColorTexture(device, width, height, _colorFormat,
-            out Texture* cTex, out TextureView* cView);
+            out var cTex, out var cView);
 
         // Only for a framebuffer that was built with one — a colour-only framebuffer (WgpuCloudBlurPass's
         // ping-pong buffer, WebGpuGameRenderer's _presentFb) staying colour-only across a resize matters
@@ -194,7 +224,7 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
     {
         if (_blitBindGroup is not null) return _blitBindGroup;
 
-        Silk.NET.WebGPU.WebGPU api = device.Api;
+        var api = device.Api;
 
         if (_blitSampler is null)
         {
@@ -208,27 +238,35 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
                 MipmapFilter = MipmapFilterMode.Nearest,
                 LodMinClamp = 0.0f,
                 LodMaxClamp = 1.0f,
-                MaxAnisotropy = 1,
+                MaxAnisotropy = 1
             };
 
             _blitSampler = api.DeviceCreateSampler(device.Device, in samplerDesc);
         }
 
-        BindGroupEntry* entries = stackalloc BindGroupEntry[2];
-        entries[0] = new BindGroupEntry { Binding = 0, TextureView = ColorView };
-        entries[1] = new BindGroupEntry { Binding = 1, Sampler = _blitSampler };
+        var entries = stackalloc BindGroupEntry[2];
+        entries[0] = new BindGroupEntry
+        {
+            Binding = 0,
+            TextureView = ColorView
+        };
+        entries[1] = new BindGroupEntry
+        {
+            Binding = 1,
+            Sampler = _blitSampler
+        };
 
-        byte* label = (byte*)Silk.NET.Core.Native.SilkMarshal.StringToPtr("Framebuffer.Blit");
+        var label = (byte*)SilkMarshal.StringToPtr("Framebuffer.Blit");
         BindGroupDescriptor desc = new()
         {
             Label = label,
             Layout = layout,
             EntryCount = 2,
-            Entries = entries,
+            Entries = entries
         };
 
         _blitBindGroup = api.DeviceCreateBindGroup(device.Device, in desc);
-        Silk.NET.Core.Native.SilkMarshal.Free((nint)label);
+        SilkMarshal.Free((nint)label);
         return _blitBindGroup;
     }
 
@@ -240,24 +278,10 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
         _blitBindGroup = null;
     }
 
-    public void Dispose()
-    {
-        if (_disposed) return;
-        _disposed = true;
-
-        Silk.NET.WebGPU.WebGPU api = _device.Api;
-        ReleaseBlitBindGroup();
-        if (_blitSampler is not null) { api.SamplerRelease(_blitSampler); _blitSampler = null; }
-        if (ColorView is not null) api.TextureViewRelease(ColorView);
-        if (DepthView is not null) api.TextureViewRelease(DepthView);
-        if (ColorTexture is not null) { api.TextureDestroy(ColorTexture); api.TextureRelease(ColorTexture); }
-        if (DepthTexture is not null) { api.TextureDestroy(DepthTexture); api.TextureRelease(DepthTexture); }
-    }
-
     private static void CreateColorTexture(WebGpuDevice device, uint width, uint height,
         TextureFormat format, out Texture* tex, out TextureView* view)
     {
-        Silk.NET.WebGPU.WebGPU api = device.Api;
+        var api = device.Api;
 
         TextureDescriptor desc = new()
         {
@@ -266,7 +290,7 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
             Size = new Extent3D(width, height, 1),
             Format = format,
             MipLevelCount = 1,
-            SampleCount = 1,
+            SampleCount = 1
         };
 
         tex = api.DeviceCreateTexture(device.Device, in desc);
@@ -277,7 +301,7 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
             Dimension = TextureViewDimension.Dimension2D,
             MipLevelCount = 1,
             ArrayLayerCount = 1,
-            Aspect = TextureAspect.All,
+            Aspect = TextureAspect.All
         };
 
         view = api.TextureCreateView(tex, in viewDesc);
@@ -286,7 +310,7 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
     private static void CreateDepthTexture(WebGpuDevice device, uint width, uint height,
         TextureUsage extraUsage, out Texture* tex, out TextureView* view)
     {
-        Silk.NET.WebGPU.WebGPU api = device.Api;
+        var api = device.Api;
 
         TextureDescriptor desc = new()
         {
@@ -295,7 +319,7 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
             Size = new Extent3D(width, height, 1),
             Format = DepthFormat,
             MipLevelCount = 1,
-            SampleCount = 1,
+            SampleCount = 1
         };
 
         tex = api.DeviceCreateTexture(device.Device, in desc);
@@ -306,7 +330,7 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
             Dimension = TextureViewDimension.Dimension2D,
             MipLevelCount = 1,
             ArrayLayerCount = 1,
-            Aspect = TextureAspect.DepthOnly,
+            Aspect = TextureAspect.DepthOnly
         };
 
         view = api.TextureCreateView(tex, in viewDesc);

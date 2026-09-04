@@ -9,31 +9,31 @@ public static class PathHelper
 
     public static string GetAppDir(string appName)
     {
-        string userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         if (string.IsNullOrEmpty(userHome))
             userHome = ".";
 
         string path;
         if (s_isWindows)
         {
-            string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            path = System.IO.Path.Combine(appData, "." + appName);
+            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            path = Path.Combine(appData, "." + appName);
         }
         else if (s_isMacOs)
         {
-            path = System.IO.Path.Combine(userHome, "Library", "Application Support", appName);
+            path = Path.Combine(userHome, "Library", "Application Support", appName);
         }
         else
         {
-            string? xdgData = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+            var xdgData = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
 
             if (!string.IsNullOrEmpty(xdgData))
             {
-                path = System.IO.Path.Combine(xdgData, appName);
+                path = Path.Combine(xdgData, appName);
             }
             else
             {
-                path = System.IO.Path.Combine(userHome, ".local", "share", appName);
+                path = Path.Combine(userHome, ".local", "share", appName);
             }
 
             MigrateLegacyLinuxDir(userHome, appName, path);
@@ -45,11 +45,11 @@ public static class PathHelper
 
     private static void MigrateLegacyLinuxDir(string userHome, string appName, string newPath)
     {
-        string oldPath = System.IO.Path.Combine(userHome, "." + appName);
+        var oldPath = Path.Combine(userHome, "." + appName);
 
         if (Directory.Exists(oldPath) && !Directory.Exists(newPath))
         {
-            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(newPath)!);
+            Directory.CreateDirectory(Path.GetDirectoryName(newPath)!);
             Directory.Move(oldPath, newPath);
         }
     }

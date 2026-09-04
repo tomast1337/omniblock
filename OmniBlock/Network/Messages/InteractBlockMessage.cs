@@ -15,10 +15,14 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class InteractBlockMessage : Message
 {
-    private readonly IItemRuntimeView? _items;
-    public InteractBlockMessage() { }
-    internal InteractBlockMessage(IItemRuntimeView items) => _items = items;
     public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "interact_block");
+    private readonly IItemRuntimeView? _items;
+
+    public InteractBlockMessage()
+    {
+    }
+
+    internal InteractBlockMessage(IItemRuntimeView items) => _items = items;
     public int X { get; set; }
 
     public byte Y { get; set; }

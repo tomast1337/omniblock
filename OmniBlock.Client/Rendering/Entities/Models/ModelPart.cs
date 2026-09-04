@@ -1,22 +1,48 @@
+using System.Numerics;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.Textures;
-using Silk.NET.Maths;
 using Color = OmniBlock.Client.UI.Colors.Color;
 
 namespace OmniBlock.Client.Rendering.Entities.Models;
 
 public class ModelPart
 {
-    /// <summary>Upper bound on <see cref="LocalSlot"/> per model. Spider uses 11, the current max.</summary>
+    /// <summary>Upper bound on <see cref="LocalSlot" /> per model. Spider uses 11, the current max.</summary>
     public const int MaxPartsPerModel = 16;
 
     private static int s_nextStaticVertexOffset;
 
-    private PositionTextureVertex[] Corners;
-    private Quad[] Faces;
-    private ModelVertexLocal[] _bakedVertices;
+    // Collapses to a point at the view-space origin instead of a zero matrix, which would leave
+    // an undefined w=0 clip-space position.
+    private static readonly Matrix4x4 s_hiddenPose = new(
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 1);
+
     private readonly int TextureOffsetX;
     private readonly int TextureOffsetY;
+    private ModelVertexLocal[] _bakedVertices;
+
+    private string? _name;
+
+    private PositionTextureVertex[] Corners;
+    private Quad[] Faces;
+    public bool Hidden = false;
+    public bool Mirror = false;
+    public float RotateAngleX;
+    public float RotateAngleY;
+    public float RotateAngleZ;
+    public float RotationPointX;
+    public float RotationPointY;
+    public float RotationPointZ;
+    public bool Visible = true;
+
+    public ModelPart(int textureOffsetX, int textureOffsetY)
+    {
+        TextureOffsetX = textureOffsetX;
+        TextureOffsetY = textureOffsetY;
+    }
 
     /// <summary>Vertex offset of this part's baked geometry in the shared static GPU buffer. -1 until baked.</summary>
     public int StaticVertexOffset { get; private set; } = -1;
@@ -25,32 +51,20 @@ public class ModelPart
     public int BakedVertexCount => _bakedVertices?.Length ?? 0;
 
     /// <summary>
-    /// Pose-matrix slot within the owning model's per-instance data. Distinct from the
-    /// symbolic <see cref="Name"/>-derived part id: that one's shared across e.g. every leg of a
-    /// quadruped for the fragment-shader effect hook, but each leg still needs its own pose. -1
-    /// until assigned by <see cref="BbModelEntityModel"/>.
+    ///     Pose-matrix slot within the owning model's per-instance data. Distinct from the
+    ///     symbolic <see cref="Name" />-derived part id: that one's shared across e.g. every leg of a
+    ///     quadruped for the fragment-shader effect hook, but each leg still needs its own pose. -1
+    ///     until assigned by <see cref="BbModelEntityModel" />.
     /// </summary>
     public int LocalSlot { get; set; } = -1;
 
-    /// <summary>The <see cref="Name"/>-derived <see cref="EntityShaderIds.ForPart"/> id.</summary>
-    public uint SymbolicPartId => _partId;
-    public float RotationPointX;
-    public float RotationPointY;
-    public float RotationPointZ;
-    public float RotateAngleX;
-    public float RotateAngleY;
-    public float RotateAngleZ;
-    public bool Mirror = false;
-    public bool Visible = true;
-    public bool Hidden = false;
-
-    private string? _name;
-    private uint _partId;
+    /// <summary>The <see cref="Name" />-derived <see cref="EntityShaderIds.ForPart" /> id.</summary>
+    public uint SymbolicPartId { get; private set; }
 
     /// <summary>
-    /// The bbmodel bone this part was built from. Setting it resolves the symbolic id the shader
-    /// branches on; parts built by hand rather than loaded from a model leave it null and render
-    /// with id 0.
+    ///     The bbmodel bone this part was built from. Setting it resolves the symbolic id the shader
+    ///     branches on; parts built by hand rather than loaded from a model leave it null and render
+    ///     with id 0.
     /// </summary>
     public string? Name
     {
@@ -58,27 +72,24 @@ public class ModelPart
         set
         {
             _name = value;
-            _partId = EntityShaderIds.ForPart(value);
+            SymbolicPartId = EntityShaderIds.ForPart(value);
         }
     }
 
-    public ModelPart(int textureOffsetX, int textureOffsetY)
-    {
-        TextureOffsetX = textureOffsetX;
-        TextureOffsetY = textureOffsetY;
-    }
+    /// <summary>Pose matrix captured by the most recent <see cref="CapturePose" /> call.</summary>
+    internal Matrix4x4 CapturedPose { get; private set; }
 
     public void AddBox(float x, float y, float z, int width, int height, int depth, float inflation)
     {
         Corners = new PositionTextureVertex[8];
         Faces = new Quad[6];
 
-        float minX = x - inflation;
-        float minY = y - inflation;
-        float minZ = z - inflation;
-        float maxX = x + width + inflation;
-        float maxY = y + height + inflation;
-        float maxZ = z + depth + inflation;
+        var minX = x - inflation;
+        var minY = y - inflation;
+        var minZ = z - inflation;
+        var maxX = x + width + inflation;
+        var maxY = y + height + inflation;
+        var maxZ = z + depth + inflation;
 
         if (Mirror)
         {
@@ -106,44 +117,44 @@ public class ModelPart
 
         Faces[0] = new Quad(
             [backTopRight, frontTopRight, frontBottomRight, backBottomRight],
-            this.TextureOffsetX + depth + width,
-            this.TextureOffsetY + depth,
-            this.TextureOffsetX + depth + width + depth,
-            this.TextureOffsetY + depth + height);
+            TextureOffsetX + depth + width,
+            TextureOffsetY + depth,
+            TextureOffsetX + depth + width + depth,
+            TextureOffsetY + depth + height);
         Faces[1] = new Quad(
             [frontTopLeft, backTopLeft, backBottomLeft, frontBottomLeft],
-            this.TextureOffsetX,
-            this.TextureOffsetY + depth,
-            this.TextureOffsetX + depth,
-            this.TextureOffsetY + depth + height);
+            TextureOffsetX,
+            TextureOffsetY + depth,
+            TextureOffsetX + depth,
+            TextureOffsetY + depth + height);
         Faces[2] = new Quad(
             [backTopRight, backTopLeft, frontTopLeft, frontTopRight],
-            this.TextureOffsetX + depth,
-            this.TextureOffsetY,
-            this.TextureOffsetX + depth + width,
-            this.TextureOffsetY + depth);
+            TextureOffsetX + depth,
+            TextureOffsetY,
+            TextureOffsetX + depth + width,
+            TextureOffsetY + depth);
         Faces[3] = new Quad(
             [backBottomRight, backBottomLeft, frontBottomLeft, frontBottomRight],
-            this.TextureOffsetX + depth + width,
-            this.TextureOffsetY,
-            this.TextureOffsetX + depth + width + width,
-            this.TextureOffsetY + depth);
+            TextureOffsetX + depth + width,
+            TextureOffsetY,
+            TextureOffsetX + depth + width + width,
+            TextureOffsetY + depth);
         Faces[4] = new Quad(
             [frontTopRight, frontTopLeft, frontBottomLeft, frontBottomRight],
-            this.TextureOffsetX + depth,
-            this.TextureOffsetY + depth,
-            this.TextureOffsetX + depth + width,
-            this.TextureOffsetY + depth + height);
+            TextureOffsetX + depth,
+            TextureOffsetY + depth,
+            TextureOffsetX + depth + width,
+            TextureOffsetY + depth + height);
         Faces[5] = new Quad(
             [backTopLeft, backTopRight, backBottomRight, backBottomLeft],
-            this.TextureOffsetX + depth + width + depth,
-            this.TextureOffsetY + depth,
-            this.TextureOffsetX + depth + width + depth + width,
-            this.TextureOffsetY + depth + height);
+            TextureOffsetX + depth + width + depth,
+            TextureOffsetY + depth,
+            TextureOffsetX + depth + width + depth + width,
+            TextureOffsetY + depth + height);
 
         if (Mirror)
         {
-            for (int faceIndex = 0; faceIndex < Faces.Length; ++faceIndex)
+            for (var faceIndex = 0; faceIndex < Faces.Length; ++faceIndex)
             {
                 Faces[faceIndex].flipFace();
             }
@@ -162,18 +173,7 @@ public class ModelPart
     /// <summary>Local baked geometry, for the static buffer upload.</summary>
     internal ReadOnlySpan<ModelVertexLocal> GetBakedVertices() => _bakedVertices;
 
-    // Collapses to a point at the view-space origin instead of a zero matrix, which would leave
-    // an undefined w=0 clip-space position.
-    private static readonly System.Numerics.Matrix4x4 s_hiddenPose = new(
-        0, 0, 0, 0,
-        0, 0, 0, 0,
-        0, 0, 0, 0,
-        0, 0, 0, 1);
-
-    /// <summary>Pose matrix captured by the most recent <see cref="CapturePose"/> call.</summary>
-    internal System.Numerics.Matrix4x4 CapturedPose { get; private set; }
-
-    /// <summary>Instanced-path counterpart to <see cref="Render"/>: same matrix stack walk, but captures the pose instead of transforming vertices.</summary>
+    /// <summary>Instanced-path counterpart to <see cref="Render" />: same matrix stack walk, but captures the pose instead of transforming vertices.</summary>
     public void CapturePose(float scale)
     {
         if (Hidden || !Visible)
@@ -219,17 +219,17 @@ public class ModelPart
         }
     }
 
-    private unsafe void CaptureCurrentMatrix(float scale)
+    private void CaptureCurrentMatrix(float scale)
     {
-        Matrix4X4<float> mv = GLManager.ModelView.Top;
-        System.Numerics.Matrix4x4 modelView = new(
+        var mv = GLManager.ModelView.Top;
+        Matrix4x4 modelView = new(
             mv.M11, mv.M12, mv.M13, mv.M14,
             mv.M21, mv.M22, mv.M23, mv.M24,
             mv.M31, mv.M32, mv.M33, mv.M34,
             mv.M41, mv.M42, mv.M43, mv.M44);
 
         // Fold scale in here so the shader never needs its own scale uniform.
-        CapturedPose = System.Numerics.Matrix4x4.CreateScale(scale) * modelView;
+        CapturedPose = Matrix4x4.CreateScale(scale) * modelView;
     }
 
     public void Render(float scale)
@@ -311,7 +311,7 @@ public class ModelPart
     private void BakeLocalVertices()
     {
         _bakedVertices = new ModelVertexLocal[Faces.Length * 6];
-        for (int faceIndex = 0; faceIndex < Faces.Length; ++faceIndex)
+        for (var faceIndex = 0; faceIndex < Faces.Length; ++faceIndex)
         {
             Faces[faceIndex].GetTriangles(_bakedVertices.AsSpan(faceIndex * 6, 6));
         }
@@ -328,63 +328,63 @@ public class ModelPart
     {
         if (_bakedVertices == null || _bakedVertices.Length == 0) return;
 
-        Matrix4X4<float> mv = GLManager.ModelView.Top;
-        System.Numerics.Matrix4x4 modelView = new(
+        var mv = GLManager.ModelView.Top;
+        Matrix4x4 modelView = new(
             mv.M11, mv.M12, mv.M13, mv.M14,
             mv.M21, mv.M22, mv.M23, mv.M24,
             mv.M31, mv.M32, mv.M33, mv.M34,
             mv.M41, mv.M42, mv.M43, mv.M44);
 
-        System.Numerics.Matrix4x4 normalMatrix = ComputeNormalMatrix(modelView);
+        var normalMatrix = ComputeNormalMatrix(modelView);
 
-        Vector4D<float> tintSrc = GLManager.Color;
-        System.Numerics.Vector4 tint = new(tintSrc.X, tintSrc.Y, tintSrc.Z, tintSrc.W);
-        LightingState lightingSrc = GLManager.Lighting;
-        System.Numerics.Vector3 light0Dir = new(lightingSrc.Light0Direction.X, lightingSrc.Light0Direction.Y, lightingSrc.Light0Direction.Z);
-        System.Numerics.Vector3 light0Diffuse = new(lightingSrc.Light0Diffuse.X, lightingSrc.Light0Diffuse.Y, lightingSrc.Light0Diffuse.Z);
-        System.Numerics.Vector3 light1Dir = new(lightingSrc.Light1Direction.X, lightingSrc.Light1Direction.Y, lightingSrc.Light1Direction.Z);
-        System.Numerics.Vector3 light1Diffuse = new(lightingSrc.Light1Diffuse.X, lightingSrc.Light1Diffuse.Y, lightingSrc.Light1Diffuse.Z);
-        System.Numerics.Vector3 ambient = new(lightingSrc.Ambient.X, lightingSrc.Ambient.Y, lightingSrc.Ambient.Z);
-        bool lightingEnabled = GLManager.LightingEnabled;
+        var tintSrc = GLManager.Color;
+        Vector4 tint = new(tintSrc.X, tintSrc.Y, tintSrc.Z, tintSrc.W);
+        var lightingSrc = GLManager.Lighting;
+        Vector3 light0Dir = new(lightingSrc.Light0Direction.X, lightingSrc.Light0Direction.Y, lightingSrc.Light0Direction.Z);
+        Vector3 light0Diffuse = new(lightingSrc.Light0Diffuse.X, lightingSrc.Light0Diffuse.Y, lightingSrc.Light0Diffuse.Z);
+        Vector3 light1Dir = new(lightingSrc.Light1Direction.X, lightingSrc.Light1Direction.Y, lightingSrc.Light1Direction.Z);
+        Vector3 light1Diffuse = new(lightingSrc.Light1Diffuse.X, lightingSrc.Light1Diffuse.Y, lightingSrc.Light1Diffuse.Z);
+        Vector3 ambient = new(lightingSrc.Ambient.X, lightingSrc.Ambient.Y, lightingSrc.Ambient.Z);
+        var lightingEnabled = GLManager.LightingEnabled;
 
-        float a = Math.Clamp(tint.W, 0f, 1f);
+        var a = Math.Clamp(tint.W, 0f, 1f);
 
         Span<EntityVertex> outVerts = stackalloc EntityVertex[_bakedVertices.Length];
 
         // Faces are flat-shaded: each block of 6 shares one normal, so lighting runs once per face.
-        for (int faceStart = 0; faceStart < _bakedVertices.Length; faceStart += 6)
+        for (var faceStart = 0; faceStart < _bakedVertices.Length; faceStart += 6)
         {
-            System.Numerics.Vector3 localNormal = new(
+            Vector3 localNormal = new(
                 _bakedVertices[faceStart].Normal.X, _bakedVertices[faceStart].Normal.Y, _bakedVertices[faceStart].Normal.Z);
-            System.Numerics.Vector3 normal = System.Numerics.Vector3.Normalize(System.Numerics.Vector3.TransformNormal(localNormal, normalMatrix));
+            var normal = Vector3.Normalize(Vector3.TransformNormal(localNormal, normalMatrix));
 
-            System.Numerics.Vector3 lit = lightingEnabled
+            var lit = lightingEnabled
                 ? ambient
-                    + light0Diffuse * MathF.Max(System.Numerics.Vector3.Dot(normal, light0Dir), 0f)
-                    + light1Diffuse * MathF.Max(System.Numerics.Vector3.Dot(normal, light1Dir), 0f)
-                : System.Numerics.Vector3.One;
+                  + light0Diffuse * MathF.Max(Vector3.Dot(normal, light0Dir), 0f)
+                  + light1Diffuse * MathF.Max(Vector3.Dot(normal, light1Dir), 0f)
+                : Vector3.One;
 
-            float r = Math.Clamp(lit.X * tint.X, 0f, 1f);
-            float g = Math.Clamp(lit.Y * tint.Y, 0f, 1f);
-            float b = Math.Clamp(lit.Z * tint.Z, 0f, 1f);
-            uint color = (uint)new Color(r, g, b, a);
+            var r = Math.Clamp(lit.X * tint.X, 0f, 1f);
+            var g = Math.Clamp(lit.Y * tint.Y, 0f, 1f);
+            var b = Math.Clamp(lit.Z * tint.Z, 0f, 1f);
+            var color = (uint)new Color(r, g, b, a);
 
             // Order [0,1,2,2,3,0]: slots 3 and 5 duplicate 2 and 0, so only 4 need transforming.
             int i0 = faceStart, i1 = faceStart + 1, i2 = faceStart + 2, i3 = faceStart + 3, i4 = faceStart + 4, i5 = faceStart + 5;
-            TransformVertex(ref outVerts[i0], in _bakedVertices[i0], scale, modelView, color, _partId);
-            TransformVertex(ref outVerts[i1], in _bakedVertices[i1], scale, modelView, color, _partId);
-            TransformVertex(ref outVerts[i2], in _bakedVertices[i2], scale, modelView, color, _partId);
-            TransformVertex(ref outVerts[i4], in _bakedVertices[i4], scale, modelView, color, _partId);
+            TransformVertex(ref outVerts[i0], in _bakedVertices[i0], scale, modelView, color, SymbolicPartId);
+            TransformVertex(ref outVerts[i1], in _bakedVertices[i1], scale, modelView, color, SymbolicPartId);
+            TransformVertex(ref outVerts[i2], in _bakedVertices[i2], scale, modelView, color, SymbolicPartId);
+            TransformVertex(ref outVerts[i4], in _bakedVertices[i4], scale, modelView, color, SymbolicPartId);
             outVerts[i3] = outVerts[i2];
             outVerts[i5] = outVerts[i0];
         }
 
         EntityBatchRenderer.Instance.SubmitTriangles(outVerts);
 
-        static void TransformVertex(ref EntityVertex dest, in ModelVertexLocal local, float scale, System.Numerics.Matrix4x4 modelView, uint color, uint partId)
+        static void TransformVertex(ref EntityVertex dest, in ModelVertexLocal local, float scale, Matrix4x4 modelView, uint color, uint partId)
         {
-            System.Numerics.Vector3 scaledPos = new System.Numerics.Vector3(local.Position.X, local.Position.Y, local.Position.Z) * scale;
-            System.Numerics.Vector4 worldPos = System.Numerics.Vector4.Transform(scaledPos, modelView);
+            var scaledPos = new Vector3(local.Position.X, local.Position.Y, local.Position.Z) * scale;
+            var worldPos = Vector4.Transform(scaledPos, modelView);
 
             dest.X = worldPos.X;
             dest.Y = worldPos.Y;
@@ -396,13 +396,13 @@ public class ModelPart
         }
     }
 
-    private static System.Numerics.Matrix4x4 ComputeNormalMatrix(System.Numerics.Matrix4x4 modelView)
+    private static Matrix4x4 ComputeNormalMatrix(Matrix4x4 modelView)
     {
-        if (!System.Numerics.Matrix4x4.Invert(modelView, out System.Numerics.Matrix4x4 inverted))
+        if (!Matrix4x4.Invert(modelView, out var inverted))
         {
-            return System.Numerics.Matrix4x4.Identity;
+            return Matrix4x4.Identity;
         }
 
-        return System.Numerics.Matrix4x4.Transpose(inverted);
+        return Matrix4x4.Transpose(inverted);
     }
 }

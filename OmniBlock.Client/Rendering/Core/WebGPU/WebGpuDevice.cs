@@ -1,5 +1,4 @@
 using System.Runtime.InteropServices;
-using OmniBlock.Util;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Core.Contexts;
 using Silk.NET.WebGPU;
@@ -25,25 +24,20 @@ namespace OmniBlock.Client.Rendering.Core.WebGPU;
 public sealed unsafe class WebGpuDevice : IDisposable
 {
     private static readonly ILogger s_logger = Log.Instance.For<WebGpuDevice>();
-
-    public Silk.NET.WebGPU.WebGPU Api { get; }
-    public Instance* Instance { get; }
-    public Surface* Surface { get; }
-    public Adapter* Adapter { get; }
-    public Device* Device { get; }
-    public Queue* Queue { get; }
-
-    /// <summary>The format the surface's textures are in, and so the format every pipeline that draws to the screen must target.</summary>
-    public TextureFormat SurfaceFormat { get; }
-
-    public uint Width { get; private set; }
-    public uint Height { get; private set; }
-
-    private readonly PresentMode _presentMode;
     private readonly CompositeAlphaMode _alphaMode;
 
     /// <summary>Held so the GC cannot collect the thunk while wgpu still holds the pointer.</summary>
     private readonly PfnErrorCallback _errorCallback;
+
+    private readonly PresentMode _presentMode;
+
+    /// <summary>Releases waiting for the frame that may have recorded against them to be submitted.</summary>
+    private readonly List<Action> _retired = [];
+
+    /// <summary>The encoder the current frame is recording into, released when the next one replaces it.</summary>
+    private CommandEncoder* _commandEncoder;
+
+    private bool _disposed;
 
     /// <summary>
     ///     The texture behind the frame currently being drawn, held until it has been presented.
@@ -54,14 +48,6 @@ public sealed unsafe class WebGpuDevice : IDisposable
     ///     validation error at submit rather than at the release that caused it.
     /// </remarks>
     private Texture* _frameTexture;
-
-    /// <summary>The encoder the current frame is recording into, released when the next one replaces it.</summary>
-    private CommandEncoder* _commandEncoder;
-
-    /// <summary>Releases waiting for the frame that may have recorded against them to be submitted.</summary>
-    private readonly List<Action> _retired = [];
-
-    private bool _disposed;
 
     private WebGpuDevice(INativeWindowSource window, uint width, uint height)
     {
@@ -74,7 +60,7 @@ public sealed unsafe class WebGpuDevice : IDisposable
             throw new InvalidOperationException("WebGPU instance creation failed.");
         }
 
-        Surface = WebGPUSurface.CreateWebGPUSurface(window, Api, Instance);
+        Surface = window.CreateWebGPUSurface(Api, Instance);
         if (Surface is null)
         {
             throw new InvalidOperationException(
@@ -98,6 +84,51 @@ public sealed unsafe class WebGpuDevice : IDisposable
         Configure(width, height);
     }
 
+    public Silk.NET.WebGPU.WebGPU Api { get; }
+    public Instance* Instance { get; }
+    public Surface* Surface { get; }
+    public Adapter* Adapter { get; }
+    public Device* Device { get; }
+    public Queue* Queue { get; }
+
+    /// <summary>The format the surface's textures are in, and so the format every pipeline that draws to the screen must target.</summary>
+    public TextureFormat SurfaceFormat { get; }
+
+    public uint Width { get; private set; }
+    public uint Height { get; private set; }
+
+    /// <summary>The device when the backend is WebGPU; null otherwise and during the first frame before creation.</summary>
+    public static WebGpuDevice? Current { get; private set; }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        // Before the flag, so what is waiting still runs: nothing else is going to submit a frame.
+        DrainRetired();
+
+        _disposed = true;
+
+        if (Current == this) Current = null;
+
+        if (_commandEncoder is not null)
+        {
+            Api.CommandEncoderRelease(_commandEncoder);
+            _commandEncoder = null;
+        }
+
+        if (Queue is not null) Api.QueueRelease(Queue);
+        if (Device is not null) Api.DeviceRelease(Device);
+        if (Adapter is not null) Api.AdapterRelease(Adapter);
+        if (Surface is not null) Api.SurfaceRelease(Surface);
+        if (Instance is not null) Api.InstanceRelease(Instance);
+
+        Api.Dispose();
+    }
+
     /// <summary>
     ///     Creates a fresh command encoder for the current frame. The previous encoder is
     ///     released; call this once per frame before encoding commands.
@@ -117,9 +148,6 @@ public sealed unsafe class WebGpuDevice : IDisposable
         _commandEncoder = Api.DeviceCreateCommandEncoder(Device, in descriptor);
         return _commandEncoder;
     }
-
-    /// <summary>The device when the backend is WebGPU; null otherwise and during the first frame before creation.</summary>
-    public static WebGpuDevice? Current { get; private set; }
 
     public static WebGpuDevice Create(INativeWindowSource window, int width, int height)
     {
@@ -142,7 +170,7 @@ public sealed unsafe class WebGpuDevice : IDisposable
             AlphaMode = _alphaMode,
             Width = Width,
             Height = Height,
-            PresentMode = _presentMode,
+            PresentMode = _presentMode
         };
 
         Api.SurfaceConfigure(Surface, in configuration);
@@ -190,7 +218,7 @@ public sealed unsafe class WebGpuDevice : IDisposable
             Dimension = TextureViewDimension.Dimension2D,
             MipLevelCount = 1,
             ArrayLayerCount = 1,
-            Aspect = TextureAspect.All,
+            Aspect = TextureAspect.All
         };
 
         _frameTexture = surfaceTexture.Texture;
@@ -255,7 +283,7 @@ public sealed unsafe class WebGpuDevice : IDisposable
         Action[] releases = [.. _retired];
         _retired.Clear();
 
-        foreach (Action release in releases) release();
+        foreach (var release in releases) release();
     }
 
     private void ReleaseFrameTexture()
@@ -275,7 +303,7 @@ public sealed unsafe class WebGpuDevice : IDisposable
         RequestAdapterOptions options = new()
         {
             CompatibleSurface = Surface,
-            PowerPreference = PowerPreference.HighPerformance,
+            PowerPreference = PowerPreference.HighPerformance
         };
 
         PfnRequestAdapterCallback callback = new((status, result, error, _) =>
@@ -343,8 +371,8 @@ public sealed unsafe class WebGpuDevice : IDisposable
             Span<PresentMode> presentModes = new(capabilities.PresentModes, (int)capabilities.PresentModeCount);
             Span<CompositeAlphaMode> alphaModes = new(capabilities.AlphaModes, (int)capabilities.AlphaModeCount);
 
-            TextureFormat format = TextureFormat.Undefined;
-            foreach (TextureFormat candidate in formats)
+            var format = TextureFormat.Undefined;
+            foreach (var candidate in formats)
             {
                 if (candidate is TextureFormat.Bgra8Unorm or TextureFormat.Rgba8Unorm)
                 {
@@ -361,7 +389,7 @@ public sealed unsafe class WebGpuDevice : IDisposable
             }
 
             // Fifo is the only mode WebGPU guarantees, and is what a vsynced GL swap did anyway.
-            PresentMode presentMode = presentModes.Contains(PresentMode.Fifo) || presentModes.Length == 0
+            var presentMode = presentModes.Contains(PresentMode.Fifo) || presentModes.Length == 0
                 ? PresentMode.Fifo
                 : presentModes[0];
 
@@ -370,9 +398,11 @@ public sealed unsafe class WebGpuDevice : IDisposable
             // less than 1 wherever a cloud fades, see cloud_blur.wgsl — must not be handed to the
             // compositor to blend against the desktop. Driver-reported order isn't Opaque-first on
             // every platform, so picking alphaModes[0] blind can silently pick a mode that does.
-            CompositeAlphaMode alphaMode = alphaModes.Contains(CompositeAlphaMode.Opaque)
+            var alphaMode = alphaModes.Contains(CompositeAlphaMode.Opaque)
                 ? CompositeAlphaMode.Opaque
-                : alphaModes.Length == 0 ? CompositeAlphaMode.Auto : alphaModes[0];
+                : alphaModes.Length == 0
+                    ? CompositeAlphaMode.Auto
+                    : alphaModes[0];
 
             return (format, presentMode, alphaMode);
         }
@@ -384,33 +414,4 @@ public sealed unsafe class WebGpuDevice : IDisposable
 
     private static void OnUncapturedError(ErrorType type, byte* message, void* _) =>
         s_logger.LogError("WebGPU {ErrorType}: {Message}", type, Marshal.PtrToStringUTF8((nint)message));
-
-    public void Dispose()
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-        // Before the flag, so what is waiting still runs: nothing else is going to submit a frame.
-        DrainRetired();
-
-        _disposed = true;
-
-        if (Current == this) Current = null;
-
-        if (_commandEncoder is not null)
-        {
-            Api.CommandEncoderRelease(_commandEncoder);
-            _commandEncoder = null;
-        }
-
-        if (Queue is not null) Api.QueueRelease(Queue);
-        if (Device is not null) Api.DeviceRelease(Device);
-        if (Adapter is not null) Api.AdapterRelease(Adapter);
-        if (Surface is not null) Api.SurfaceRelease(Surface);
-        if (Instance is not null) Api.InstanceRelease(Instance);
-
-        Api.Dispose();
-    }
 }

@@ -1,6 +1,5 @@
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Entities;
-using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock;
@@ -16,9 +15,9 @@ public sealed record CreatureKind(string Category, int MobCap, Material SpawnMat
     public const string CreatureCategory = "creature";
     public const string WaterCreatureCategory = "water_creature";
 
-    public static readonly CreatureKind Monster = new CreatureKind(MonsterCategory, 70, Material.Air, false);
-    public static readonly CreatureKind Creature = new CreatureKind(CreatureCategory, 15, Material.Air, true);
-    public static readonly CreatureKind WaterCreature = new CreatureKind(WaterCreatureCategory, 5, Material.Water, true);
+    public static readonly CreatureKind Monster = new(MonsterCategory, 70, Material.Air, false);
+    public static readonly CreatureKind Creature = new(CreatureCategory, 15, Material.Air, true);
+    public static readonly CreatureKind WaterCreature = new(WaterCreatureCategory, 5, Material.Water, true);
 
     public static readonly CreatureKind[] Values = [Monster, Creature, WaterCreature];
 
@@ -28,10 +27,8 @@ public sealed record CreatureKind(string Category, int MobCap, Material SpawnMat
         {
             return world.GetMaterial(x, y, z).IsFluid && !world.ShouldSuffocate(x, y + 1, z);
         }
-        else
-        {
-            return world.ShouldSuffocate(x, y - 1, z) && !world.ShouldSuffocate(x, y, z) &&
-                   !world.GetMaterial(x, y, z).IsFluid && !world.ShouldSuffocate(x, y + 1, z);
-        }
+
+        return world.ShouldSuffocate(x, y - 1, z) && !world.ShouldSuffocate(x, y, z) &&
+               !world.GetMaterial(x, y, z).IsFluid && !world.ShouldSuffocate(x, y + 1, z);
     }
 }

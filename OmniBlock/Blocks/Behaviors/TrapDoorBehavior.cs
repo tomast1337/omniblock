@@ -11,15 +11,9 @@ internal sealed class TrapDoorBehavior(Material material) : IBlockPhysics, IBloc
 {
     private const float Thickness = 3.0F / 16.0F;
 
-    public bool OnUse(Block block, OnUseEvent ctx)
-    {
-        return ToggleState(block, ctx.World, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
-    }
+    public bool OnUse(Block block, OnUseEvent ctx) => ToggleState(block, ctx.World, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
 
-    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent ctx)
-    {
-        ToggleState(block, ctx.World, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
-    }
+    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent ctx) => ToggleState(block, ctx.World, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
 
     public void OnPlaced(Block block, OnPlacedEvent ctx)
     {
@@ -63,10 +57,7 @@ internal sealed class TrapDoorBehavior(Material material) : IBlockPhysics, IBloc
         }
     }
 
-    public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
-    {
-        ApplyBoundingBox(block, reader.GetBlockMeta(x, y, z));
-    }
+    public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z) => ApplyBoundingBox(block, reader.GetBlockMeta(x, y, z));
 
     public void SetupRenderBoundingBox(Block block)
     {
@@ -134,8 +125,5 @@ internal sealed class TrapDoorBehavior(Material material) : IBlockPhysics, IBloc
         ctx.World.Broadcaster.WorldEvent(1003, x, y, z, 0);
     }
 
-    public static bool IsOpen(int meta)
-    {
-        return (meta & 4) != 0;
-    }
+    public static bool IsOpen(int meta) => (meta & 4) != 0;
 }

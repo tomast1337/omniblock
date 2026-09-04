@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Gen.Chunks;
 using OmniBlock.Worlds.Gen.Flat;
@@ -9,6 +8,8 @@ namespace OmniBlock.Worlds.Dimensions;
 
 internal class OverworldDimension : Dimension
 {
+    public override float CloudHeight => World.Properties.TerrainType == WorldType.Sky ? 8.0F : base.CloudHeight;
+
     public override void InitBiomeSource()
     {
         if (World.Properties.TerrainType == WorldType.Sky)
@@ -16,12 +17,13 @@ internal class OverworldDimension : Dimension
             BiomeSource = new FixedBiomeSource(Biome.Sky, 0.5D, 0.0D);
             return;
         }
+
         base.InitBiomeSource();
     }
 
     public override IChunkSource CreateChunkGenerator()
     {
-        WorldType terrainType = World.Properties.TerrainType;
+        var terrainType = World.Properties.TerrainType;
 
         if (terrainType == WorldType.Flat)
         {
@@ -45,11 +47,11 @@ internal class OverworldDimension : Dimension
 
         if (World.Properties.TerrainType == WorldType.Sky)
         {
-            int topSolidY = World.Reader.GetTopSolidBlockY(x, z);
+            var topSolidY = World.Reader.GetTopSolidBlockY(x, z);
             if (topSolidY <= 0) return false;
-            int blockId = World.Reader.GetBlockId(x, topSolidY - 1, z);
+            var blockId = World.Reader.GetBlockId(x, topSolidY - 1, z);
             return blockId != 0
-                   && World.Content.Blocks.TryGetByProtocolId(blockId, out Block? block)
+                   && World.Content.Blocks.TryGetByProtocolId(blockId, out var block)
                    && block.Material.BlocksMovement;
         }
 
@@ -62,8 +64,7 @@ internal class OverworldDimension : Dimension
         {
             return 0.0F;
         }
+
         return base.GetTimeOfDay(time, partialTicks);
     }
-
-    public override float CloudHeight => World.Properties.TerrainType == WorldType.Sky ? 8.0F : base.CloudHeight;
 }

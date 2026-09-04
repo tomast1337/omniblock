@@ -1,13 +1,13 @@
-using OmniBlock.Stats;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Stats;
 
 namespace OmniBlock.Threading;
 
 internal class ThreadStatSynchronizerSend
 {
     private readonly ILogger<ThreadStatSynchronizerSend> _logger = Log.Instance.For<ThreadStatSynchronizerSend>();
-    private readonly StatsSynchronizer _synchronizer;
     private readonly Dictionary<StatBase, int> _statsMap;
+    private readonly StatsSynchronizer _synchronizer;
 
     public ThreadStatSynchronizerSend(StatsSynchronizer synchronizer, Dictionary<StatBase, int> statsMap)
     {

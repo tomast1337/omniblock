@@ -2,6 +2,9 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Runtime;
 using System.Runtime.InteropServices;
+using Hexa.NET.ImGui;
+using Hexa.NET.ImGui.Backends.GLFW;
+using Microsoft.Extensions.Logging;
 using OmniBlock.Blocks;
 using OmniBlock.Client.Diagnostics;
 using OmniBlock.Client.DynamicTexture;
@@ -18,8 +21,8 @@ using OmniBlock.Client.Rendering.Items;
 using OmniBlock.Client.Rendering.UI;
 using OmniBlock.Client.Resource;
 using OmniBlock.Client.Resource.Pack;
-using OmniBlock.Client.Sound;
 using OmniBlock.Client.Scripting;
+using OmniBlock.Client.Sound;
 using OmniBlock.Client.UI;
 using OmniBlock.Client.UI.Screens;
 using OmniBlock.Client.UI.Screens.InGame;
@@ -29,7 +32,6 @@ using OmniBlock.Client.UI.Screens.Menu.Net;
 using OmniBlock.Client.Worlds;
 using OmniBlock.Diagnostics;
 using OmniBlock.Entities;
-using OmniBlock.Items;
 using OmniBlock.Luau;
 using OmniBlock.Luau.Host;
 using OmniBlock.Profiling;
@@ -44,9 +46,6 @@ using OmniBlock.Worlds.Colors;
 using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Storage;
-using Hexa.NET.ImGui;
-using Hexa.NET.ImGui.Backends.GLFW;
-using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
 
 namespace OmniBlock.Client;
@@ -59,8 +58,8 @@ public partial class OmniBlock :
     IInternalServerHost,
     ISingleplayerHost
 {
-    public ContentRuntime Content { get; private set; }
     private ContentRuntime? _pendingContent;
+    public ContentRuntime Content { get; private set; }
 
     #region Constants & Static Members
 
@@ -97,6 +96,7 @@ public partial class OmniBlock :
     ///     frame instead of waiting for an F3 press.
     /// </summary>
     public bool ForceDebugOnStart { get; set; }
+
     public IWorldStorageSource SaveLoader { get; private set; }
     public InternalServer? InternalServer { get; private set; }
     public RegistryAccess RegistryAccess { get; private set; } = RegistryAccess.Empty;
@@ -125,14 +125,14 @@ public partial class OmniBlock :
     public int DisplayHeight { get; private set; }
 
     /// <summary>
-    /// When the debug viewport is active, the top-left pixel offset of the game viewport
-    /// within the window.
+    ///     When the debug viewport is active, the top-left pixel offset of the game viewport
+    ///     within the window.
     /// </summary>
     public Vector2 DebugViewportOffset { get; private set; }
 
     /// <summary>
-    /// The top-left screen position of the game viewport in ImGui/window pixels.
-    /// Zero when the debug menu is closed.
+    ///     The top-left screen position of the game viewport in ImGui/window pixels.
+    ///     Zero when the debug menu is closed.
     /// </summary>
     public Vector2 DebugViewportScreenPos => _debugWindowManager?.ViewportPos ?? Vector2.Zero;
 
@@ -142,10 +142,10 @@ public partial class OmniBlock :
     public HitResult ObjectMouseOver = new(HitResultType.Miss);
 
     public GameRenderer GameRenderer { get; private set; }
-    private WebGpuGameRenderer _webGpuRenderer;
 
     /// <summary>Reaches the WebGPU renderer for <see cref="LoadingScreenRenderer" /> and <see cref="LoadScreen" />, both of which draw and present frames of their own outside the main game loop.</summary>
-    internal WebGpuGameRenderer WebGpuRenderer => _webGpuRenderer;
+    internal WebGpuGameRenderer WebGpuRenderer { get; private set; }
+
     public WorldRenderer WorldRenderer { get; private set; }
     public TextureManager TextureManager { get; private set; }
     public SkinManager SkinManager { get; private set; }
@@ -195,6 +195,7 @@ public partial class OmniBlock :
     ///     from any script if it didn't.
     /// </summary>
     public UiCommandRegistry UiCommandRegistry { get; } = new();
+
     public UiDomDocument UiDomDocument { get; private set; } = null!;
 
     #endregion
@@ -214,10 +215,9 @@ public partial class OmniBlock :
     private LuauWorldService? _luauWorldService;
     private string? _singleplayerWorldId;
     private bool _luauSchedulerFailed;
-    private string _gameDataDir;
 
     /// <summary>The directory saves, options and screenshots live under.</summary>
-    public string GameDataDir => _gameDataDir;
+    public string GameDataDir { get; private set; }
 
     private bool _fullscreen;
     private bool _prevF11Down;
@@ -249,6 +249,7 @@ public partial class OmniBlock :
         {
             _e2eTestController = new E2ETestController(e2eTest, () => Running = false);
         }
+
         ClientReady += RunStartupScript;
         _loadingScreen = new LoadingScreenRenderer(this);
         _tempDisplayHeight = height;
@@ -284,13 +285,13 @@ public partial class OmniBlock :
     }
 
     /// <summary>
-    /// True after resources are loaded and the initial main menu has been initialized.
+    ///     True after resources are loaded and the initial main menu has been initialized.
     /// </summary>
     public bool IsClientReady => _clientReady.IsReady;
 
     /// <summary>
-    /// Fires at the post-main-menu client-ready boundary. A handler registered after the
-    /// boundary has already been reached runs immediately.
+    ///     Fires at the post-main-menu client-ready boundary. A handler registered after the
+    ///     boundary has already been reached runs immediately.
     /// </summary>
     public event Action ClientReady
     {
@@ -306,7 +307,7 @@ public partial class OmniBlock :
 
     private void RunStartupScript()
     {
-        StartupScript? script = _launchOptions.E2ETest?.Script ?? _launchOptions.StartupScript;
+        var script = _launchOptions.E2ETest?.Script ?? _launchOptions.StartupScript;
         if (script == null)
         {
             return;
@@ -320,9 +321,9 @@ public partial class OmniBlock :
 
         // Startup automation is a scheduler task so the script may use OMNI.wait at its top
         // level without blocking rendering or the fixed-tick game loop.
-        string scheduledSource = $"OMNI.run(function()\n{script.Source}\nend)";
+        var scheduledSource = $"OMNI.run(function()\n{script.Source}\nend)";
         LuauState.ResetInstructionBudget(LuauInstructionBudgetPerTick);
-        if (!LuauState.TryExecute(scheduledSource, out string error))
+        if (!LuauState.TryExecute(scheduledSource, out var error))
         {
             _logger.LogError("Failed to schedule startup script {Path}: {Error}", script.Path, error);
             _e2eTestController?.Fail($"Failed to schedule E2E script: {error}");
@@ -334,8 +335,8 @@ public partial class OmniBlock :
 
     private unsafe void SetupDisplay()
     {
-        int maximumWidth = Display.getDisplayMode().getWidth();
-        int maximumHeight = Display.getDisplayMode().getHeight();
+        var maximumWidth = Display.getDisplayMode().getWidth();
+        var maximumHeight = Display.getDisplayMode().getHeight();
 
         if (_fullscreen)
         {
@@ -354,9 +355,9 @@ public partial class OmniBlock :
 
         Display.setTitle($"OmniBlock {Version} ( a BetaSharp fork )");
 
-        _gameDataDir = OmniBlockDir;
-        SaveLoader = new RegionWorldStorageSource(Path.Combine(_gameDataDir, "saves"));
-        Options = new GameOptions(this, _gameDataDir);
+        GameDataDir = OmniBlockDir;
+        SaveLoader = new RegionWorldStorageSource(Path.Combine(GameDataDir, "saves"));
+        Options = new GameOptions(this, GameDataDir);
         if (ForceDebugOnStart) Options.ShowDebugInfo = true;
         Options.ReloadTextures += () => { TextureManager.Reload(); };
         Options.ReloadChunks += () => { WorldRenderer.ChunkRenderer.MarkAllVisibleChunksDirty(); };
@@ -377,7 +378,7 @@ public partial class OmniBlock :
             WebGpuDevice.Create(Display.getWindow()!,
                 Display.getFramebufferWidth(), Display.getFramebufferHeight());
             GLManager.Init();
-            _webGpuRenderer = new WebGpuGameRenderer(this);
+            WebGpuRenderer = new WebGpuGameRenderer(this);
         }
         catch (Exception ex)
         {
@@ -420,12 +421,12 @@ public partial class OmniBlock :
             LuauLogHost.WriteLine = message => Log.Instance.For("Luau").LogInformation("{Message}", message);
             LuauLogHost.Install(LuauState.Handle);
             LuauState.ResetInstructionBudget(LuauInstructionBudgetPerTick);
-            if (!LuauState.TryExecute(LuauDomHost.Bootstrap, out string domBootstrapError))
+            if (!LuauState.TryExecute(LuauDomHost.Bootstrap, out var domBootstrapError))
             {
                 _logger.LogError("Failed to install the Luau DOM bootstrap: {Error}", domBootstrapError);
             }
 
-            if (!LuauState.TryExecute(LuauScheduler.Bootstrap, out string schedulerBootstrapError))
+            if (!LuauState.TryExecute(LuauScheduler.Bootstrap, out var schedulerBootstrapError))
             {
                 _luauSchedulerFailed = true;
                 _logger.LogError("Failed to install the Luau scheduler bootstrap: {Error}", schedulerBootstrapError);
@@ -435,7 +436,7 @@ public partial class OmniBlock :
             LuauConfigHost.Set = Options.SetScriptConfig;
             LuauConfigHost.Options = Options.GetScriptConfigOptions;
             LuauConfigHost.Install(LuauState.Handle);
-            if (!LuauState.TryExecute(LuauConfigHost.Bootstrap, out string configBootstrapError))
+            if (!LuauState.TryExecute(LuauConfigHost.Bootstrap, out var configBootstrapError))
             {
                 _logger.LogError("Failed to install the Luau configuration bootstrap: {Error}", configBootstrapError);
             }
@@ -446,7 +447,7 @@ public partial class OmniBlock :
                 CurrentScreen is not (LevelLoadingScreen or ConnectingScreen or DownloadingTerrainScreen);
             LuauClientStateHost.WorldId = () => World != null && InternalServer != null ? _singleplayerWorldId : null;
             LuauClientStateHost.Install(LuauState.Handle);
-            if (!LuauState.TryExecute(LuauClientStateHost.Bootstrap, out string clientStateBootstrapError))
+            if (!LuauState.TryExecute(LuauClientStateHost.Bootstrap, out var clientStateBootstrapError))
             {
                 _logger.LogError("Failed to install the Luau client-state bootstrap: {Error}", clientStateBootstrapError);
             }
@@ -456,7 +457,7 @@ public partial class OmniBlock :
                 LuauTestHost.Pass = _e2eTestController.Pass;
                 LuauTestHost.Fail = reason => _e2eTestController.Fail(reason);
                 LuauTestHost.Install(LuauState.Handle);
-                if (!LuauState.TryExecute(LuauTestHost.Bootstrap, out string testBootstrapError))
+                if (!LuauState.TryExecute(LuauTestHost.Bootstrap, out var testBootstrapError))
                 {
                     _logger.LogError("Failed to install the Luau E2E-test bootstrap: {Error}", testBootstrapError);
                     _e2eTestController.Fail($"Failed to install the E2E-test API: {testBootstrapError}");
@@ -469,7 +470,7 @@ public partial class OmniBlock :
             LuauWorldsHost.List = _luauWorldService.List;
             LuauWorldsHost.Load = _luauWorldService.RequestLoad;
             LuauWorldsHost.Install(LuauState.Handle);
-            if (!LuauState.TryExecute(LuauWorldsHost.Bootstrap, out string worldsBootstrapError))
+            if (!LuauState.TryExecute(LuauWorldsHost.Bootstrap, out var worldsBootstrapError))
             {
                 _logger.LogError("Failed to install the Luau worlds bootstrap: {Error}", worldsBootstrapError);
             }
@@ -477,7 +478,7 @@ public partial class OmniBlock :
             LuauUiHost.Dispatch = UiCommandRegistry.Invoke;
             LuauUiHost.Install(LuauState.Handle);
 
-            LuauRegistryHost.RegisterUi = (string name, out int id) =>
+            LuauRegistryHost.RegisterUi = (name, out id) =>
             {
                 // Every exception this could throw — an invalid ResourceLocation from a
                 // malformed name, or UiCommandRegistry's own frozen check — must not propagate
@@ -510,12 +511,12 @@ public partial class OmniBlock :
         // freeze's position then rather than assuming today's placement is final.
         UiCommandRegistry.Freeze();
 
-        TexturePackList = new TexturePacks(this, new DirectoryInfo(_gameDataDir));
+        TexturePackList = new TexturePacks(this, new DirectoryInfo(GameDataDir));
         TextureManager = new TextureManager(this, TexturePackList, Options);
         TextRenderer = new TextRenderer(Options, TextureManager);
 
-        TextureHandle terrainTexture = TextureManager.GetTextureId("/terrain.png");
-        TextureHandle itemsTexture = TextureManager.GetTextureId("/gui/items.png");
+        var terrainTexture = TextureManager.GetTextureId("/terrain.png");
+        var itemsTexture = TextureManager.GetTextureId("/gui/items.png");
 
         BuildBatchRenderer(terrainTexture.Id, itemsTexture.Id);
 
@@ -526,34 +527,34 @@ public partial class OmniBlock :
             TextureManager,
             terrainTexture,
             itemsTexture,
-            playClickSound: () => SoundManager.PlaySoundFX("random.click", 1.0f, 1.0f),
-            displaySize: () => new Vector2D<int>(DisplayWidth, DisplayHeight),
-            inputDisplaySize: () =>
+            () => SoundManager.PlaySoundFX("random.click", 1.0f, 1.0f),
+            () => new Vector2D<int>(DisplayWidth, DisplayHeight),
+            () =>
             {
                 if (!Options.ShowDebugInfo || _debugWindowManager == null)
                 {
                     return new Vector2D<int>(DisplayWidth, DisplayHeight);
                 }
 
-                Vector2 vs = _debugWindowManager.ViewportSize;
+                var vs = _debugWindowManager.ViewportSize;
                 return vs is { X: > 0, Y: > 0 } ? new Vector2D<int>((int)vs.X, (int)vs.Y) : new Vector2D<int>(DisplayWidth, DisplayHeight);
             },
-            controllerState: this,
+            this,
             VirtualCursor,
             Timer,
-            navigator: this,
-            hasWorld: () => World != null,
-            mouseOffset: () => new Vector2D<int>((int)DebugViewportOffset.X, (int)DebugViewportOffset.Y),
-            renderTargetSize: () =>
+            this,
+            () => World != null,
+            () => new Vector2D<int>((int)DebugViewportOffset.X, (int)DebugViewportOffset.Y),
+            () =>
             {
-                if (_webGpuRenderer.FramebufferSize is { Width: > 0, Height: > 0 } size)
+                if (WebGpuRenderer.FramebufferSize is { Width: > 0, Height: > 0 } size)
                 {
                     return new Vector2D<int>((int)size.Width, (int)size.Height);
                 }
 
                 return new Vector2D<int>(Display.getFramebufferWidth(), Display.getFramebufferHeight());
             },
-            content: Content
+            Content
         );
 
         SkinManager = new SkinManager(TextureManager);
@@ -563,7 +564,7 @@ public partial class OmniBlock :
         GameRenderer = new GameRenderer(this);
         EntityRenderDispatcher.Instance.SkinManager = SkinManager;
         EntityRenderDispatcher.Instance.HeldItemRenderer = new HeldItemRenderer(this);
-        StatFileWriter = new StatFileWriter(Session, _gameDataDir);
+        StatFileWriter = new StatFileWriter(Session, GameDataDir);
         /*global::OmniBlock.Achievements.OpenInventory.GetTranslatedDescription = () =>
         {
             return format.formatString(global::OmniBlock.Achievements.OpenInventory.TranslationKey);
@@ -577,7 +578,7 @@ public partial class OmniBlock :
         UiBatchRenderer.RegisterTextureByPath("terrain.png", (uint)terrainTextureId);
         UiBatchRenderer.RegisterTextureByPath("gui/items.png", (uint)itemsTextureId);
 
-        uint fontTexId = TextRenderer.FontTextureId;
+        var fontTexId = TextRenderer.FontTextureId;
         if (fontTexId != 0)
             UiBatchRenderer.RegisterTextureByPath("font/default.png", fontTexId);
 
@@ -593,7 +594,7 @@ public partial class OmniBlock :
 
     private void RegisterCommonTexture(string assetPath)
     {
-        TextureHandle handle = TextureManager.GetTextureId("/" + assetPath);
+        var handle = TextureManager.GetTextureId("/" + assetPath);
         UiBatchRenderer.RegisterTextureByPath(assetPath, (uint)handle.Id);
     }
 
@@ -634,8 +635,8 @@ public partial class OmniBlock :
                     return new Vector2D<int>(Display.getWidth() / 2, Display.getHeight() / 2);
                 }
 
-                Vector2 vp = _debugWindowManager.ViewportPos;
-                Vector2 vs = _debugWindowManager.ViewportSize;
+                var vp = _debugWindowManager.ViewportPos;
+                var vs = _debugWindowManager.ViewportSize;
                 return vs is { X: > 0, Y: > 0 } ? new Vector2D<int>((int)(vp.X + vs.X / 2), (int)(vp.Y + vs.Y / 2)) : new Vector2D<int>(Display.getWidth() / 2, Display.getHeight() / 2);
             }
         };
@@ -680,13 +681,13 @@ public partial class OmniBlock :
         ParticleManager = new ParticleManager(World, TextureManager);
 
         _ = new ResourceManager()
-            .Add(new BetaResourceDownloader(this, _gameDataDir))
-            .Add(new ModernAssetDownloader(this, _gameDataDir,
+            .Add(new BetaResourceDownloader(this, GameDataDir))
+            .Add(new ModernAssetDownloader(this, GameDataDir,
             [
                 "minecraft/sounds/music/menu/moog_city_2.ogg",
                 "minecraft/sounds/music/menu/mutation.ogg",
                 "minecraft/sounds/music/menu/floating_trees.ogg",
-                "minecraft/sounds/music/menu/beginning_2.ogg",
+                "minecraft/sounds/music/menu/beginning_2.ogg"
             ])).LoadAllAsync();
 
         HUD = new HUD(UIContext, new HUDContext(
@@ -699,7 +700,7 @@ public partial class OmniBlock :
             () => _isMainMenuOpen
         ));
 
-        EntityRenderDispatcher.Instance.SkinManager.RequestDownload(Session.username, true);
+        EntityRenderDispatcher.Instance.SkinManager.RequestDownload(Session.username);
     }
 
     private void LoadVersion()
@@ -715,10 +716,7 @@ public partial class OmniBlock :
         }
     }
 
-    private void Shutdown()
-    {
-        Running = false;
-    }
+    private void Shutdown() => Running = false;
 
     private void ShutdownGame()
     {
@@ -739,7 +737,13 @@ public partial class OmniBlock :
 
             _logger.LogInformation("Stopping!");
 
-            try { ChangeWorld(null); } catch (Exception) { }
+            try
+            {
+                ChangeWorld(null);
+            }
+            catch (Exception)
+            {
+            }
 
             // don't bother trying to shutdown imgui because it keeps hanging/crashing
 
@@ -835,12 +839,12 @@ public partial class OmniBlock :
 
         try
         {
-            long lastFpsCheckTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            int frameCounter = 0;
+            var lastFpsCheckTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            var frameCounter = 0;
 
             while (Running)
             {
-                long frameStartNano = Stopwatch.GetTimestamp();
+                var frameStartNano = Stopwatch.GetTimestamp();
 
                 Profiler.Update(Timer.DeltaTime);
 
@@ -860,13 +864,13 @@ public partial class OmniBlock :
 
                     if (IsControllerMode && CurrentScreen != null)
                     {
-                        Vector2D<int> inputSize = UIContext.InputDisplaySize;
+                        var inputSize = UIContext.InputDisplaySize;
                         VirtualCursor.Update(CurrentScreen, Options, inputSize.X, inputSize.Y, Timer.DeltaTime);
                     }
 
                     if (IsGamePaused && World != null)
                     {
-                        float previousRenderPartialTicks = Timer.RenderPartialTicks;
+                        var previousRenderPartialTicks = Timer.RenderPartialTicks;
                         Timer.UpdateTimer();
                         Timer.RenderPartialTicks = previousRenderPartialTicks;
                     }
@@ -875,7 +879,7 @@ public partial class OmniBlock :
                         Timer.UpdateTimer();
                     }
 
-                    bool imguiThisFrame = Options.ShowDebugInfo;
+                    var imguiThisFrame = Options.ShowDebugInfo;
                     if (imguiThisFrame)
                     {
                         ImGuiImplGLFW.NewFrame();
@@ -883,8 +887,8 @@ public partial class OmniBlock :
                         unsafe
                         {
                             ImGuiIO* io = ImGui.GetIO();
-                            int w = Math.Max(1, Display.getWidth());
-                            int h = Math.Max(1, Display.getHeight());
+                            var w = Math.Max(1, Display.getWidth());
+                            var h = Math.Max(1, Display.getHeight());
                             io->DisplaySize = new Vector2(w, h);
                             io->DisplayFramebufferScale = new Vector2(
                                 Display.getFramebufferWidth() / (float)w,
@@ -893,27 +897,27 @@ public partial class OmniBlock :
 
                         ImGui.NewFrame();
                         ImGuiInput.CapturingKeyboard = ImGui.GetIO().WantCaptureKeyboard
-                            && !_debugWindowManager.GameViewportFocused
-                            && !InGameHasFocus
-                            && CurrentScreen == null;
+                                                       && !_debugWindowManager.GameViewportFocused
+                                                       && !InGameHasFocus
+                                                       && CurrentScreen == null;
                     }
                     else
                     {
                         ImGuiInput.CapturingKeyboard = false;
                     }
 
-                    long tickStartTime = Stopwatch.GetTimestamp();
+                    var tickStartTime = Stopwatch.GetTimestamp();
 
                     using (Profiler.Begin("Ticks"))
                     {
-                        for (int tickIndex = 0; tickIndex < Timer.ElapsedTicks; ++tickIndex)
+                        for (var tickIndex = 0; tickIndex < Timer.ElapsedTicks; ++tickIndex)
                         {
                             ++TicksRan;
                             RunTick(Timer.RenderPartialTicks);
                         }
                     }
 
-                    long tickElapsedTime = Stopwatch.GetTimestamp() - tickStartTime;
+                    var tickElapsedTime = Stopwatch.GetTimestamp() - tickStartTime;
 
                     SoundManager.UpdateListener(Player, Timer.RenderPartialTicks);
 
@@ -947,7 +951,7 @@ public partial class OmniBlock :
                     }
                     else
                     {
-                        _webGpuRenderer.ViewportSize = null;
+                        WebGpuRenderer.ViewportSize = null;
                         DebugViewportOffset = Vector2.Zero;
                     }
 
@@ -958,7 +962,7 @@ public partial class OmniBlock :
                     // RenderFrame() has not run yet to produce a fresher one.
                     if (imguiThisFrame)
                     {
-                        _debugWindowManager.ViewportTextureId = _webGpuRenderer.ViewportTextureId;
+                        _debugWindowManager.ViewportTextureId = WebGpuRenderer.ViewportTextureId;
 
                         using (Profiler.Begin("ImguiBuild"))
                         {
@@ -970,11 +974,11 @@ public partial class OmniBlock :
                         // and the draw data ImGui.Render() is about to bake already has an Image
                         // widget sized from it. Same reading, same frame, for both: no lag left for
                         // a drag to fall behind on.
-                        Vector2 vpSize = _debugWindowManager.ViewportSize;
+                        var vpSize = _debugWindowManager.ViewportSize;
                         if (vpSize.X > 0 && vpSize.Y > 0)
                         {
                             int vpW = (int)vpSize.X, vpH = (int)vpSize.Y;
-                            _webGpuRenderer.ViewportSize = ((uint)vpW, (uint)vpH);
+                            WebGpuRenderer.ViewportSize = ((uint)vpW, (uint)vpH);
                             DisplayWidth = vpW;
                             DisplayHeight = vpH;
 
@@ -984,7 +988,7 @@ public partial class OmniBlock :
                         }
                         else
                         {
-                            _webGpuRenderer.ViewportSize = null;
+                            WebGpuRenderer.ViewportSize = null;
                             DebugViewportOffset = Vector2.Zero;
                         }
 
@@ -1002,8 +1006,8 @@ public partial class OmniBlock :
 
                         using (Profiler.Begin("Render"))
                         {
-                            _webGpuRenderer.ImguiOpen = imguiThisFrame;
-                            _webGpuRenderer.RenderFrame(Timer.RenderPartialTicks,
+                            WebGpuRenderer.ImguiOpen = imguiThisFrame;
+                            WebGpuRenderer.RenderFrame(Timer.RenderPartialTicks,
                                 DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
                         }
 
@@ -1094,8 +1098,8 @@ public partial class OmniBlock :
 
     private void ReportFrameTelemetry(long frameStartNano)
     {
-        long frameEndNano = Stopwatch.GetTimestamp();
-        double thisFrameTimeMs = (frameEndNano - frameStartNano) / 1000000.0;
+        var frameEndNano = Stopwatch.GetTimestamp();
+        var thisFrameTimeMs = (frameEndNano - frameStartNano) / 1000000.0;
         _debugTelemetry.RecordFrameTime(thisFrameTimeMs);
         MetricRegistry.Set(ClientMetrics.FrameTimeMs, (float)thisFrameTimeMs);
 
@@ -1110,7 +1114,7 @@ public partial class OmniBlock :
     public void RunTick(float partialTicks)
     {
         CommitPendingContent();
-        using Profiler.ProfilerScope _tick = Profiler.Begin("Tick");
+        using var _tick = Profiler.Begin("Tick");
 
         // Per docs/luau-persistent-lifecycle-plan.md §3/§4: reset the instruction budget and
         // pace GC once per tick, before any Host-phase call this tick would be allowed to run —
@@ -1124,7 +1128,7 @@ public partial class OmniBlock :
                 luauState.ResetInstructionBudget(LuauInstructionBudgetPerTick);
                 luauState.StepGarbageCollector(LuauGcStepKb);
                 if (!_luauSchedulerFailed &&
-                    !LuauScheduler.Tick(luauState, 1.0 / Timer.TicksPerSecond, out string schedulerError))
+                    !LuauScheduler.Tick(luauState, 1.0 / Timer.TicksPerSecond, out var schedulerError))
                 {
                     // A task can consume the shared budget and abort this tick's scheduler call.
                     // The budget is reset above on the next tick, so keep the scheduler alive.
@@ -1140,16 +1144,17 @@ public partial class OmniBlock :
             StatFileWriter.SyncStatsIfReady();
         }
 
-        bool f11Down = Keyboard.isKeyDown(Keyboard.KEY_F11);
+        var f11Down = Keyboard.isKeyDown(Keyboard.KEY_F11);
         if (f11Down && !_prevF11Down)
         {
             ToggleFullscreen();
         }
+
         _prevF11Down = f11Down;
 
         // F3 uses edge detection so it works even when
         // CurrentScreen.HandleInput() has already consumed all keyboard events.
-        bool f3Down = Keyboard.isKeyDown(Keyboard.KEY_F3);
+        var f3Down = Keyboard.isKeyDown(Keyboard.KEY_F3);
         if (f3Down && !_prevF3Down)
         {
             Options.ShowDebugInfo = !Options.ShowDebugInfo;
@@ -1172,6 +1177,7 @@ public partial class OmniBlock :
                 }
             }
         }
+
         _prevF3Down = f3Down;
 
         ControllerManager.UpdateGlobal();
@@ -1287,6 +1293,7 @@ public partial class OmniBlock :
                     {
                         --World.Environment.LightningTicksLeft;
                     }
+
                     // Before the tick, not after: this sets each entity's target for the tick and
                     // TickMovement consumes it during the tick, which is where the animation delta
                     // and the renderer's interpolation interval are both derived from.
@@ -1324,7 +1331,7 @@ public partial class OmniBlock :
 
     private void ProcessPendingLuauWorldLoad()
     {
-        if (_luauWorldService?.TryTakePending(out LuauWorldLoadRequest? request) != true || request == null)
+        if (_luauWorldService?.TryTakePending(out var request) != true || request == null)
             return;
 
         if (World != null || InternalServer != null)
@@ -1345,7 +1352,7 @@ public partial class OmniBlock :
     {
         while (Mouse.next())
         {
-            long timeSinceLastMouseEvent = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - _systemTime;
+            var timeSinceLastMouseEvent = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - _systemTime;
 
             if (Mouse.getEventDX() != 0 || Mouse.getEventDY() != 0)
             {
@@ -1355,16 +1362,16 @@ public partial class OmniBlock :
 
             if (timeSinceLastMouseEvent <= 200L)
             {
-                int mouseWheelDelta = Mouse.getEventDWheel();
+                var mouseWheelDelta = Mouse.getEventDWheel();
                 if (mouseWheelDelta != 0)
                 {
                     IsControllerMode = false;
                     Mouse.setCursorVisible(true);
 
-                    bool zoomHeld = CurrentScreen == null && InGameHasFocus && Keyboard.isKeyDown(Options.KeyBindZoom.ScanCode);
+                    var zoomHeld = CurrentScreen == null && InGameHasFocus && Keyboard.isKeyDown(Options.KeyBindZoom.ScanCode);
                     if (zoomHeld)
                     {
-                        int mouseWheelDirection = mouseWheelDelta > 0 ? 1 : -1;
+                        var mouseWheelDirection = mouseWheelDelta > 0 ? 1 : -1;
                         if (mouseWheelDirection > 0)
                         {
                             Options.ZoomScale *= 1.08F;
@@ -1385,7 +1392,7 @@ public partial class OmniBlock :
                         {
                             if (mouseWheelDelta > 0) mouseWheelDelta = 1;
                             if (mouseWheelDelta < 0) mouseWheelDelta = -1;
-                            Options.AmountScrolled += (float)mouseWheelDelta * 0.25F;
+                            Options.AmountScrolled += mouseWheelDelta * 0.25F;
                         }
                     }
                 }
@@ -1398,7 +1405,7 @@ public partial class OmniBlock :
                         // on the game viewport — re-grabbing on any click would swallow the first
                         // click on every debug widget, and letting it fall through to ClickMouse
                         // would swing the held item at whatever is behind the overlay.
-                        bool clickTargetsGame = !Options.ShowDebugInfo || _debugWindowManager.GameViewportFocused;
+                        var clickTargetsGame = !Options.ShowDebugInfo || _debugWindowManager.GameViewportFocused;
                         if (Mouse.getEventButtonState() && clickTargetsGame)
                         {
                             SetIngameFocus();
@@ -1505,7 +1512,7 @@ public partial class OmniBlock :
                     }
                 }
 
-                for (int slotIndex = 0; slotIndex < 9; ++slotIndex)
+                for (var slotIndex = 0; slotIndex < 9; ++slotIndex)
                 {
                     if (Keyboard.getEventKey() == Keyboard.KEY_1 + slotIndex)
                     {
@@ -1529,13 +1536,13 @@ public partial class OmniBlock :
 
         if (CurrentScreen == null)
         {
-            if (Mouse.isButtonDown(0) && (float)(TicksRan - MouseTicksRan) >= Timer.TicksPerSecond / 4.0F && InGameHasFocus)
+            if (Mouse.isButtonDown(0) && TicksRan - MouseTicksRan >= Timer.TicksPerSecond / 4.0F && InGameHasFocus)
             {
                 ClickMouse(0);
                 MouseTicksRan = TicksRan;
             }
 
-            if (Mouse.isButtonDown(1) && (float)(TicksRan - MouseTicksRan) >= Timer.TicksPerSecond / 4.0F && InGameHasFocus)
+            if (Mouse.isButtonDown(1) && TicksRan - MouseTicksRan >= Timer.TicksPerSecond / 4.0F && InGameHasFocus)
             {
                 ClickMouse(1);
                 MouseTicksRan = TicksRan;
@@ -1554,7 +1561,7 @@ public partial class OmniBlock :
                 Player.SwingHand();
             }
 
-            bool shouldPerformSecondaryAction = true;
+            var shouldPerformSecondaryAction = true;
             if (ObjectMouseOver.Type == HitResultType.Miss)
             {
                 if (mouseButton == 0)
@@ -1576,18 +1583,18 @@ public partial class OmniBlock :
             }
             else if (ObjectMouseOver.Type == HitResultType.Tile)
             {
-                int blockX = ObjectMouseOver.BlockX;
-                int blockY = ObjectMouseOver.BlockY;
-                int blockZ = ObjectMouseOver.BlockZ;
-                int blockSide = ObjectMouseOver.Side;
+                var blockX = ObjectMouseOver.BlockX;
+                var blockY = ObjectMouseOver.BlockY;
+                var blockZ = ObjectMouseOver.BlockZ;
+                var blockSide = ObjectMouseOver.Side;
                 if (mouseButton == 0)
                 {
                     PlayerController.ClickBlock(blockX, blockY, blockZ, ObjectMouseOver.Side);
                 }
                 else
                 {
-                    ItemStack selectedItem = Player.Inventory.ItemInHand;
-                    int itemCountBefore = selectedItem != null ? selectedItem.Count : 0;
+                    var selectedItem = Player.Inventory.ItemInHand;
+                    var itemCountBefore = selectedItem != null ? selectedItem.Count : 0;
                     if (PlayerController.SendPlaceBlock(Player, World, selectedItem, blockX, blockY, blockZ, blockSide))
                     {
                         shouldPerformSecondaryAction = false;
@@ -1612,7 +1619,7 @@ public partial class OmniBlock :
 
             if (shouldPerformSecondaryAction && mouseButton == 1)
             {
-                ItemStack selectedItem = Player.Inventory.ItemInHand;
+                var selectedItem = Player.Inventory.ItemInHand;
                 if (selectedItem != null && PlayerController.SendUseItem(Player, World, selectedItem))
                 {
                     GameRenderer.ItemRenderer.ResetEquippedProgress();
@@ -1625,11 +1632,11 @@ public partial class OmniBlock :
     {
         if (ObjectMouseOver.Type != HitResultType.Miss)
         {
-            int blockId = World.Reader.GetBlockId(ObjectMouseOver.BlockX, ObjectMouseOver.BlockY, ObjectMouseOver.BlockZ);
-            int blockMeta = World.Reader.GetBlockMeta(ObjectMouseOver.BlockX, ObjectMouseOver.BlockY, ObjectMouseOver.BlockZ);
-            Block hitBlock = BlockRegistry.GetByProtocolId(blockId);
+            var blockId = World.Reader.GetBlockId(ObjectMouseOver.BlockX, ObjectMouseOver.BlockY, ObjectMouseOver.BlockZ);
+            var blockMeta = World.Reader.GetBlockMeta(ObjectMouseOver.BlockX, ObjectMouseOver.BlockY, ObjectMouseOver.BlockZ);
+            var hitBlock = BlockRegistry.GetByProtocolId(blockId);
 
-            (int primaryMeta, int backupId, int backupMeta) = hitBlock.GetPickBlockItem(blockMeta);
+            var (primaryMeta, backupId, backupMeta) = hitBlock.GetPickBlockItem(blockMeta);
 
             Player.Inventory.SetCurrentItem(blockId, backupId, primaryMeta, backupMeta);
         }
@@ -1649,9 +1656,9 @@ public partial class OmniBlock :
                 if (isHoldingMouse && ObjectMouseOver.Type != HitResultType.Miss && ObjectMouseOver.Type == HitResultType.Tile &&
                     mouseButton == 0)
                 {
-                    int blockX = ObjectMouseOver.BlockX;
-                    int blockY = ObjectMouseOver.BlockY;
-                    int blockZ = ObjectMouseOver.BlockZ;
+                    var blockX = ObjectMouseOver.BlockX;
+                    var blockY = ObjectMouseOver.BlockY;
+                    var blockZ = ObjectMouseOver.BlockZ;
                     PlayerController.SendBlockRemoving(blockX, blockY, blockZ, ObjectMouseOver.Side);
                     ParticleManager.addBlockHitEffects(blockX, blockY, blockZ, ObjectMouseOver.Side);
                 }
@@ -1758,13 +1765,13 @@ public partial class OmniBlock :
             }
         }
 
-        bool useBedSpawn = respawnPos is not null;
-        Vec3I finalRespawnPos = respawnPos ?? World.Properties.GetSpawnPos();
+        var useBedSpawn = respawnPos is not null;
+        var finalRespawnPos = respawnPos ?? World.Properties.GetSpawnPos();
 
         World.UpdateSpawnPosition();
         World.Entities.UpdateEntityLists();
 
-        int previousPlayerId = 0;
+        var previousPlayerId = 0;
         Holder<GameMode>? previousGameModeHolder = null;
 
         if (Player is not null)
@@ -1834,20 +1841,17 @@ public partial class OmniBlock :
         _singleplayerWorldId = null;
     }
 
-    private bool IsMultiplayerWorld()
-    {
-        return World is { IsRemote: true };
-    }
+    private bool IsMultiplayerWorld() => World is { IsRemote: true };
 
     private void ShowText(string loadingText)
     {
         _loadingScreen.BeginLoading(loadingText);
         _loadingScreen.SetStage("Building terrain");
         short loadingRadius = 128;
-        int loadedChunkCount = 0;
-        int totalChunksToLoad = loadingRadius * 2 / 16 + 1;
+        var loadedChunkCount = 0;
+        var totalChunksToLoad = loadingRadius * 2 / 16 + 1;
         totalChunksToLoad *= totalChunksToLoad;
-        Vec3I centerPos = World.Properties.GetSpawnPos();
+        var centerPos = World.Properties.GetSpawnPos();
 
         if (Player != null)
         {
@@ -1855,9 +1859,9 @@ public partial class OmniBlock :
             centerPos.Z = (int)Player.Z;
         }
 
-        for (int xOffset = -loadingRadius; xOffset <= loadingRadius; xOffset += 16)
+        for (var xOffset = -loadingRadius; xOffset <= loadingRadius; xOffset += 16)
         {
-            for (int zOffset = -loadingRadius; zOffset <= loadingRadius; zOffset += 16)
+            for (var zOffset = -loadingRadius; zOffset <= loadingRadius; zOffset += 16)
             {
                 _loadingScreen.SetProgress(loadedChunkCount++ * 100 / totalChunksToLoad);
                 World.Reader.GetBlockId(centerPos.X + xOffset, 64, centerPos.Z + zOffset);
@@ -1877,7 +1881,7 @@ public partial class OmniBlock :
         Mouse.Flush();
         Keyboard.Flush();
         Controller.ClearEvents();
-        UIScreen? oldScreen = CurrentScreen;
+        var oldScreen = CurrentScreen;
         oldScreen?.Uninit();
 
         if (newScreen is MainMenuScreen)
@@ -1899,7 +1903,7 @@ public partial class OmniBlock :
             }
             else if (Player.Health <= 0)
             {
-                newScreen = new GameOverScreen(UIContext, Player.getScore(), Player.Respawn, canRespawn: Session != null, exitToTitle: () => ChangeWorld(null!));
+                newScreen = new GameOverScreen(UIContext, Player.getScore(), Player.Respawn, Session != null, () => ChangeWorld(null!));
             }
         }
 
@@ -1910,7 +1914,7 @@ public partial class OmniBlock :
 
         if (InternalServer != null)
         {
-            bool shouldPause = newScreen?.PausesGame ?? false;
+            var shouldPause = newScreen?.PausesGame ?? false;
             if (shouldPause || (CurrentScreen?.PausesGame ?? false))
             {
                 InternalServer.Paused = shouldPause;
@@ -1921,7 +1925,7 @@ public partial class OmniBlock :
 
         if (CurrentScreen != null)
         {
-            Vector2D<int> inputSizeForReset = UIContext.InputDisplaySize;
+            var inputSizeForReset = UIContext.InputDisplaySize;
             VirtualCursor.Reset(inputSizeForReset.X, inputSizeForReset.Y);
         }
 
@@ -1945,9 +1949,9 @@ public partial class OmniBlock :
             return;
         }
 
-        bool isMp = IsMultiplayerWorld() && InternalServer == null;
-        string quitText = isMp ? Translations.Get("menu.disconnect") : Translations.Get("menu.saveAndQuitToTitle");
-        int saveStep = 0;
+        var isMp = IsMultiplayerWorld() && InternalServer == null;
+        var quitText = isMp ? Translations.Get("menu.disconnect") : Translations.Get("menu.saveAndQuitToTitle");
+        var saveStep = 0;
         Navigate(new IngameMenuScreen(UIContext, StatFileWriter, SetIngameFocus, quitText, () =>
         {
             if (IsMultiplayerWorld()) World.Disconnect();
@@ -1991,14 +1995,14 @@ public partial class OmniBlock :
     }
 
     private MainMenuScreen CreateMainMenuScreen() => new(UIContext, Session, this, CreateNetworkContext(), TexturePackList, Shutdown);
-    private ClientNetworkContext CreateNetworkContext() => new(this, this, this, Session, StatFileWriter, ParticleManager, HUD.AddChatMessage, this, Path.Combine(_gameDataDir, "chunkcache"), Content, StageContent);
+    private ClientNetworkContext CreateNetworkContext() => new(this, this, this, Session, StatFileWriter, ParticleManager, HUD.AddChatMessage, this, Path.Combine(GameDataDir, "chunkcache"), Content, StageContent);
 
     private void StageContent(ContentRuntime content) =>
         Volatile.Write(ref _pendingContent, content);
 
     private void CommitPendingContent()
     {
-        ContentRuntime? candidate = Interlocked.Exchange(ref _pendingContent, null);
+        var candidate = Interlocked.Exchange(ref _pendingContent, null);
         if (candidate is null) return;
         Content = candidate;
         EntityRenderDispatcher.Instance.ConfigureContent(candidate);
@@ -2047,9 +2051,9 @@ public partial class OmniBlock :
                 if (DisplayHeight <= 0) DisplayHeight = 1;
 
                 // Center the window
-                DisplayMode desktopMode = Display.getDesktopDisplayMode();
-                int centerX = (desktopMode.getWidth() - DisplayWidth) / 2;
-                int centerY = (desktopMode.getHeight() - DisplayHeight) / 2;
+                var desktopMode = Display.getDesktopDisplayMode();
+                var centerX = (desktopMode.getWidth() - DisplayWidth) / 2;
+                var centerY = (desktopMode.getHeight() - DisplayHeight) / 2;
                 Display.setLocation(centerX, centerY);
             }
 
@@ -2071,8 +2075,8 @@ public partial class OmniBlock :
         DisplayHeight = newHeight;
         Mouse.setDisplayDimensions(DisplayWidth, DisplayHeight);
 
-        int framebufferWidth = Display.getFramebufferWidth();
-        int framebufferHeight = Display.getFramebufferHeight();
+        var framebufferWidth = Display.getFramebufferWidth();
+        var framebufferHeight = Display.getFramebufferHeight();
 
         // The surface does not follow the window on its own, and everything the WebGPU renderer
         // sizes — the offscreen target, the projection, the scissor rectangles — reads it.
@@ -2090,7 +2094,7 @@ public partial class OmniBlock :
                 // Picked up by the next RenderFrame call, not this one — see
                 // WebGpuGameRenderer.ScreenshotRequested for why a same-frame capture is not
                 // possible here, and ScreenshotResult below for where the message shows up.
-                _webGpuRenderer.ScreenshotRequested = true;
+                WebGpuRenderer.ScreenshotRequested = true;
             }
         }
         else
@@ -2098,10 +2102,10 @@ public partial class OmniBlock :
             _isTakingScreenshot = false;
         }
 
-        if (_webGpuRenderer.ScreenshotResult is { } webGpuResult)
+        if (WebGpuRenderer.ScreenshotResult is { } webGpuResult)
         {
             HUD.AddChatMessage(webGpuResult);
-            _webGpuRenderer.ScreenshotResult = null;
+            WebGpuRenderer.ScreenshotResult = null;
         }
     }
 
@@ -2121,8 +2125,8 @@ public partial class OmniBlock :
             return;
         }
 
-        int slashIndex = resourcePath.IndexOf("/");
-        string category = resourcePath.Substring(0, slashIndex);
+        var slashIndex = resourcePath.IndexOf("/");
+        var category = resourcePath.Substring(0, slashIndex);
         resourcePath = resourcePath.Substring(slashIndex + 1);
 
         if (category.Equals("sound", StringComparison.OrdinalIgnoreCase))
@@ -2147,8 +2151,8 @@ public partial class OmniBlock :
         }
         else if (category.Equals("custom", StringComparison.OrdinalIgnoreCase))
         {
-            int subSlash = resourcePath.IndexOf("/");
-            string subCategory = resourcePath.Substring(0, subSlash);
+            var subSlash = resourcePath.IndexOf("/");
+            var subCategory = resourcePath.Substring(0, subSlash);
             resourcePath = resourcePath.Substring(subSlash + 1);
 
             if (subCategory.Equals("music", StringComparison.OrdinalIgnoreCase))
@@ -2168,12 +2172,12 @@ public partial class OmniBlock :
         GLManager.ModelView.LoadIdentity();
         GLManager.ModelView.Translate(0.0F, 0.0F, -2000.0F);
 
-        _webGpuRenderer.RenderLoadingFrame(DrawMojangLogo);
+        WebGpuRenderer.RenderLoadingFrame(DrawMojangLogo);
         return;
 
         void DrawMojangLogo()
         {
-            Tessellator tessellator = Tessellator.instance;
+            var tessellator = Tessellator.instance;
             GLManager.LightingEnabled = false;
             GLManager.FogEnabled = false;
 
@@ -2181,7 +2185,7 @@ public partial class OmniBlock :
             // raw display pixels — the old version quaded 0..DisplayWidth/Height, which is a
             // different, usually larger, space than what the projection here maps to the window).
             GLManager.TextureEnabled = false;
-            GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
+            GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
             tessellator.startDrawingQuads();
             tessellator.setColorOpaque_I(0xFFFFFF);
             tessellator.addVertex(0.0D, scaledResolution.ScaledHeight, 0.0D);
@@ -2194,7 +2198,7 @@ public partial class OmniBlock :
             TextureManager.BindTexture(TextureManager.GetTextureId("/title/mojang.png"));
             short logoWidth = 256;
             short logoHeight = 256;
-            GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
+            GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
             tessellator.setColorOpaque_I(0xFFFFFF);
             DrawTextureRegion((scaledResolution.ScaledWidth - logoWidth) / 2, (scaledResolution.ScaledHeight - logoHeight) / 2, 0, 0, logoWidth, logoHeight);
             GLManager.LightingEnabled = false;
@@ -2209,7 +2213,7 @@ public partial class OmniBlock :
         const float uScale = 1 / 256f;
         const float vScale = 1 / 256f;
 
-        Tessellator tess = Tessellator.instance;
+        var tess = Tessellator.instance;
         tess.startDrawingQuads();
         tess.addVertexWithUV(x + 0, y + height, 0, (texX + 0) * uScale, (texY + height) * vScale);
         tess.addVertexWithUV(x + width, y + height, 0, (texX + width) * uScale, (texY + height) * vScale);
@@ -2244,9 +2248,9 @@ public partial class OmniBlock :
 
     public static void Startup(string[] args)
     {
-        ClientLaunchOptions options = ClientLaunchOptions.Parse(args);
+        var options = ClientLaunchOptions.Parse(args);
 
-        ContentRuntime content = Bootstrap.Initialize();
+        var content = Bootstrap.Initialize();
         StartMainThread(options, content);
     }
 
@@ -2254,7 +2258,10 @@ public partial class OmniBlock :
     {
         Thread.CurrentThread.Name = "OmniBlock Main Thread";
 
-        OmniBlock game = new(850, 480, false, options, content) { ForceDebugOnStart = options.Debug };
+        OmniBlock game = new(850, 480, false, options, content)
+        {
+            ForceDebugOnStart = options.Debug
+        };
         game.Session = new Session(options.Username, options.SessionToken);
 
         if (options.SessionToken == "-")

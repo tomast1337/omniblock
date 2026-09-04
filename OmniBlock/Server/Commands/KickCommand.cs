@@ -1,6 +1,6 @@
-using OmniBlock.Entities;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
+using OmniBlock.Entities;
 
 namespace OmniBlock.Server.Commands;
 
@@ -16,7 +16,7 @@ public class KickCommand : Command.Command
 
     private static int Execute(CommandContext<CommandSource> context)
     {
-        ServerPlayerEntity targetPlayer = context.GetArgument<ServerPlayerEntity>("player");
+        var targetPlayer = context.GetArgument<ServerPlayerEntity>("player");
 
         targetPlayer.NetworkHandler.disconnect("Kicked by admin");
         context.Source.LogOp("Kicking " + targetPlayer.Name);

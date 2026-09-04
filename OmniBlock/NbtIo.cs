@@ -5,10 +5,7 @@ namespace OmniBlock;
 
 public static class NbtIo
 {
-    public static void Write(NBTTagCompound tag, Stream output)
-    {
-        NBTBase.WriteTag(tag, output);
-    }
+    public static void Write(NBTTagCompound tag, Stream output) => NBTBase.WriteTag(tag, output);
 
     public static void WriteCompressed(NBTTagCompound tag, Stream output)
     {

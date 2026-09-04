@@ -4,14 +4,10 @@ public record struct MapColor // TODO: Move Color from Client project to Core an
 {
     private static readonly List<MapColor> s_colors = [];
 
-    public static MapColor ById(int id) => s_colors[id];
-
-    public static MapColor Create(uint colorValue)
+    private MapColor(int id, uint colorValue)
     {
-        int id = s_colors.Count;
-        var result = new MapColor(id, colorValue);
-        s_colors.Add(result);
-        return result;
+        Id = id;
+        ColorValue = colorValue;
     }
 
     public static MapColor Air { get; } = Create(0x000000);
@@ -32,9 +28,13 @@ public record struct MapColor // TODO: Move Color from Client project to Core an
     public int Id { get; }
     public uint ColorValue { get; }
 
-    private MapColor(int id, uint colorValue)
+    public static MapColor ById(int id) => s_colors[id];
+
+    public static MapColor Create(uint colorValue)
     {
-        Id = id;
-        ColorValue = colorValue;
+        var id = s_colors.Count;
+        var result = new MapColor(id, colorValue);
+        s_colors.Add(result);
+        return result;
     }
 }

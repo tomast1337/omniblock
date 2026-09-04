@@ -6,9 +6,9 @@ public sealed class StaticItemCatalogAccessTests
     [Fact]
     public void Production_code_cannot_access_legacy_item_catalog_globals()
     {
-        string root = FindRepositoryRoot();
+        var root = FindRepositoryRoot();
         string[] forbidden = ["Item." + "Items", "Item." + "ByName", "Item" + "Lookup"];
-        string[] violations = Directory.EnumerateDirectories(root, "OmniBlock*")
+        var violations = Directory.EnumerateDirectories(root, "OmniBlock*")
             .Where(static directory => !directory.EndsWith(".Tests", StringComparison.Ordinal))
             .SelectMany(static directory => Directory.EnumerateFiles(directory, "*.cs", SearchOption.AllDirectories))
             .Where(static file => !file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}")

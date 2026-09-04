@@ -14,10 +14,7 @@ namespace OmniBlock.Blocks.Behaviors;
 /// </summary>
 internal sealed class MushroomBehavior(Block[] validGround, int spreadChanceOneIn, int maxBrightness) : IBlockTicker, IBlockPhysics
 {
-    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-    {
-        return CanPlantOnTop(@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z));
-    }
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => CanPlantOnTop(@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z));
 
     public bool CanGrow(Block block, OnTickEvent ctx)
     {
@@ -51,8 +48,10 @@ internal sealed class MushroomBehavior(Block[] validGround, int spreadChanceOneI
     private bool CanPlantOnTop(int id)
     {
         foreach (var ground in validGround)
+        {
             if (id == ground.Id)
                 return true;
+        }
 
         return false;
     }

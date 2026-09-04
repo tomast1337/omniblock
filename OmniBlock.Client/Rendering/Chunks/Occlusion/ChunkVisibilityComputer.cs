@@ -11,18 +11,18 @@ public static class ChunkVisibilityComputer
         ChunkVisibilityStore store = new();
 
         // We use a bitset to track visited blocks (4096 bits = 512 bytes)
-        Span<uint> visited = stackalloc uint[(SubChunkRenderer.Size * SubChunkRenderer.Size * SubChunkRenderer.Size) / 32];
+        Span<uint> visited = stackalloc uint[SubChunkRenderer.Size * SubChunkRenderer.Size * SubChunkRenderer.Size / 32];
 
         // Check connectivity from each face
-        for (int f = 0; f < ChunkDirectionExtensions.Count; f++)
+        for (var f = 0; f < ChunkDirectionExtensions.Count; f++)
         {
-            ChunkDirection startFace = (ChunkDirection)f;
+            var startFace = (ChunkDirection)f;
             visited.Clear();
 
-            ChunkDirectionMask reachable = FloodFill(cache, minX, minY, minZ, startFace, visited);
+            var reachable = FloodFill(cache, minX, minY, minZ, startFace, visited);
 
             // For each reachable face, set visibility
-            for (int t = 0; t < ChunkDirectionExtensions.Count; t++)
+            for (var t = 0; t < ChunkDirectionExtensions.Count; t++)
             {
                 if ((reachable & (ChunkDirectionMask)(1 << t)) != 0)
                 {
@@ -40,31 +40,55 @@ public static class ChunkVisibilityComputer
         ChunkDirection startFace,
         Span<uint> visited)
     {
-        ChunkDirectionMask reachable = ChunkDirectionMask.None;
+        var reachable = ChunkDirectionMask.None;
         const int totalBlocks = SubChunkRenderer.Size * SubChunkRenderer.Size * SubChunkRenderer.Size;
 
         Span<ushort> queue = stackalloc ushort[totalBlocks];
         int head = 0, tail = 0;
 
         // Add all air blocks on the start face to the queue
-        for (int i = 0; i < SubChunkRenderer.Size; i++)
+        for (var i = 0; i < SubChunkRenderer.Size; i++)
         {
-            for (int j = 0; j < SubChunkRenderer.Size; j++)
+            for (var j = 0; j < SubChunkRenderer.Size; j++)
             {
                 int lx = 0, ly = 0, lz = 0;
                 switch (startFace)
                 {
-                    case ChunkDirection.Down: lx = i; ly = 0; lz = j; break;
-                    case ChunkDirection.Up: lx = i; ly = SubChunkRenderer.Size - 1; lz = j; break;
-                    case ChunkDirection.North: lx = i; ly = j; lz = 0; break;
-                    case ChunkDirection.South: lx = i; ly = j; lz = SubChunkRenderer.Size - 1; break;
-                    case ChunkDirection.West: lx = 0; ly = i; lz = j; break;
-                    case ChunkDirection.East: lx = SubChunkRenderer.Size - 1; ly = i; lz = j; break;
+                    case ChunkDirection.Down:
+                        lx = i;
+                        ly = 0;
+                        lz = j;
+                        break;
+                    case ChunkDirection.Up:
+                        lx = i;
+                        ly = SubChunkRenderer.Size - 1;
+                        lz = j;
+                        break;
+                    case ChunkDirection.North:
+                        lx = i;
+                        ly = j;
+                        lz = 0;
+                        break;
+                    case ChunkDirection.South:
+                        lx = i;
+                        ly = j;
+                        lz = SubChunkRenderer.Size - 1;
+                        break;
+                    case ChunkDirection.West:
+                        lx = 0;
+                        ly = i;
+                        lz = j;
+                        break;
+                    case ChunkDirection.East:
+                        lx = SubChunkRenderer.Size - 1;
+                        ly = i;
+                        lz = j;
+                        break;
                 }
 
                 if (IsAir(cache, minX + lx, minY + ly, minZ + lz))
                 {
-                    int idx = GetIndex(lx, ly, lz);
+                    var idx = GetIndex(lx, ly, lz);
                     if (!IsVisited(visited, idx))
                     {
                         MarkVisited(visited, idx);
@@ -76,10 +100,10 @@ public static class ChunkVisibilityComputer
 
         while (head < tail)
         {
-            ushort idx = queue[head++];
-            int lx = idx & 0xF;
-            int ly = (idx >> 4) & 0xF;
-            int lz = (idx >> 8) & 0xF;
+            var idx = queue[head++];
+            var lx = idx & 0xF;
+            var ly = (idx >> 4) & 0xF;
+            var lz = (idx >> 8) & 0xF;
 
             // Check if we touched any other face
             if (lx == 0) reachable |= ChunkDirectionMask.West;
@@ -110,7 +134,7 @@ public static class ChunkVisibilityComputer
     {
         if (lx < 0 || lx >= SubChunkRenderer.Size || ly < 0 || ly >= SubChunkRenderer.Size || lz < 0 || lz >= SubChunkRenderer.Size) return;
 
-        int idx = GetIndex(lx, ly, lz);
+        var idx = GetIndex(lx, ly, lz);
         if (IsVisited(visited, idx)) return;
 
         if (IsAir(cache, minX + lx, minY + ly, minZ + lz))
@@ -122,7 +146,7 @@ public static class ChunkVisibilityComputer
 
     private static bool IsAir(WorldRegionSnapshot cache, int x, int y, int z)
     {
-        int id = cache.GetBlockId(x, y, z);
+        var id = cache.GetBlockId(x, y, z);
         if (id <= 0) return true;
         return !BlockRegistry.IsOpaque(id);
     }
@@ -134,5 +158,5 @@ public static class ChunkVisibilityComputer
     private static bool IsVisited(Span<uint> visited, int idx) => (visited[idx >> 5] & (1u << (idx & 31))) != 0;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void MarkVisited(Span<uint> visited, int idx) => visited[idx >> 5] |= (1u << (idx & 31));
+    private static void MarkVisited(Span<uint> visited, int idx) => visited[idx >> 5] |= 1u << (idx & 31);
 }

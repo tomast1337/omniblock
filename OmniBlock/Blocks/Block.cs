@@ -36,10 +36,8 @@ public class Block
     }
 
     protected internal Block(int id, int textureId, Material material, BlockSoundGroup defaultSoundGroup)
-        : this(id, material, defaultSoundGroup)
-    {
+        : this(id, material, defaultSoundGroup) =>
         TextureId = textureId;
-    }
 
     public int Id { get; }
     public Material Material { get; }
@@ -137,15 +135,9 @@ public class Block
         }
     }
 
-    public bool IsFullCube()
-    {
-        return _isFullCube;
-    }
+    public bool IsFullCube() => _isFullCube;
 
-    protected internal void Init()
-    {
-        Lifecycle?.OnInit(this);
-    }
+    protected internal void Init() => Lifecycle?.OnInit(this);
 
     protected internal void SetResistance(float resistance)
     {
@@ -202,15 +194,9 @@ public class Block
         _boundingBox = new Box(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
-    internal void SetRuntimeBoundingBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
-    {
-        SetRuntimeBoundingBox(new Box(minX, minY, minZ, maxX, maxY, maxZ));
-    }
+    internal void SetRuntimeBoundingBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) => SetRuntimeBoundingBox(new Box(minX, minY, minZ, maxX, maxY, maxZ));
 
-    internal void SetRuntimeBoundingBox(Box box)
-    {
-        (s_runtimeBoundingBoxes ??= [])[this] = box;
-    }
+    internal void SetRuntimeBoundingBox(Box box) => (s_runtimeBoundingBoxes ??= [])[this] = box;
 
     public float GetLuminance(ILightProvider? lighting, int x, int y, int z)
     {
@@ -315,35 +301,17 @@ public class Block
         return Physics == null ? defaultShape : Physics.GetCollisionShape(this, world, entities, x, y, z, defaultShape);
     }
 
-    public bool HasCollision(int meta, bool allowLiquids)
-    {
-        return Physics?.HasCollision(this, meta, allowLiquids, HasCollision()) ?? HasCollision();
-    }
+    public bool HasCollision(int meta, bool allowLiquids) => Physics?.HasCollision(this, meta, allowLiquids, HasCollision()) ?? HasCollision();
 
-    private bool HasCollision()
-    {
-        return Physics == null || Physics.HasCollision(this, true);
-    }
+    private bool HasCollision() => Physics == null || Physics.HasCollision(this, true);
 
-    public void OnTick(OnTickEvent e)
-    {
-        Ticker?.OnTick(this, e);
-    }
+    public void OnTick(OnTickEvent e) => Ticker?.OnTick(this, e);
 
-    public void RandomDisplayTick(OnTickEvent e)
-    {
-        Ticker?.RandomDisplayTick(this, e);
-    }
+    public void RandomDisplayTick(OnTickEvent e) => Ticker?.RandomDisplayTick(this, e);
 
-    public void OnMetadataChange(OnMetadataChangeEvent ctx)
-    {
-        Lifecycle?.OnMetadataChange(this, ctx);
-    }
+    public void OnMetadataChange(OnMetadataChangeEvent ctx) => Lifecycle?.OnMetadataChange(this, ctx);
 
-    public void NeighborUpdate(OnTickEvent e)
-    {
-        Physics?.NeighborUpdate(this, e);
-    }
+    public void NeighborUpdate(OnTickEvent e) => Physics?.NeighborUpdate(this, e);
 
     public void OnPlaced(OnPlacedEvent e)
     {
@@ -369,10 +337,7 @@ public class Block
         return Lifecycle?.GetDroppedItemId(this, blockMeta, defaultId) ?? defaultId;
     }
 
-    public float GetHardness(EntityPlayer player)
-    {
-        return Hardness < 0.0F ? 0.0F : !player.CanHarvest(this) ? 1.0F / Hardness / 100.0F : player.GetBlockBreakingSpeed(this) / Hardness / 30.0F;
-    }
+    public float GetHardness(EntityPlayer player) => Hardness < 0.0F ? 0.0F : !player.CanHarvest(this) ? 1.0F / Hardness / 100.0F : player.GetBlockBreakingSpeed(this) / Hardness / 30.0F;
 
     public void DropStacks(OnDropEvent ctx)
     {
@@ -409,10 +374,7 @@ public class Block
         return Lifecycle?.GetDroppedItemMeta(this, blockMeta, defaultMeta) ?? defaultMeta;
     }
 
-    public float GetBlastResistance(Entity entity)
-    {
-        return _resistance / 5.0F;
-    }
+    public float GetBlastResistance(Entity entity) => _resistance / 5.0F;
 
     public HitResult Raycast(IBlockReader world, EntityManager entities, int x, int y, int z, Vec3D startPos, Vec3D endPos)
     {
@@ -428,10 +390,7 @@ public class Block
         return res;
     }
 
-    public void OnDestroyedByExplosion(OnDestroyedByExplosionEvent @event)
-    {
-        Lifecycle?.OnDestroyedByExplosion(this, @event);
-    }
+    public void OnDestroyedByExplosion(OnDestroyedByExplosionEvent @event) => Lifecycle?.OnDestroyedByExplosion(this, @event);
 
     protected internal void SetSlipperiness(float slipperiness)
     {
@@ -446,40 +405,19 @@ public class Block
         return Physics == null ? baseResult : baseResult && Physics.CanPlaceAt(this, evt);
     }
 
-    public bool OnUse(OnUseEvent ctx)
-    {
-        return Interactable?.OnUse(this, ctx) ?? false;
-    }
+    public bool OnUse(OnUseEvent ctx) => Interactable?.OnUse(this, ctx) ?? false;
 
-    public void onSteppedOn(OnEntityStepEvent @event)
-    {
-        Interactable?.OnSteppedOn(this, @event);
-    }
+    public void onSteppedOn(OnEntityStepEvent @event) => Interactable?.OnSteppedOn(this, @event);
 
-    public void OnBlockBreakStart(OnBlockBreakStartEvent @event)
-    {
-        Interactable?.OnBlockBreakStart(this, @event);
-    }
+    public void OnBlockBreakStart(OnBlockBreakStartEvent @event) => Interactable?.OnBlockBreakStart(this, @event);
 
-    public Vec3D ApplyVelocity(OnApplyVelocityEvent @event)
-    {
-        return Physics?.ApplyVelocity(this, @event, Vec3D.Zero) ?? Vec3D.Zero;
-    }
+    public Vec3D ApplyVelocity(OnApplyVelocityEvent @event) => Physics?.ApplyVelocity(this, @event, Vec3D.Zero) ?? Vec3D.Zero;
 
-    public void UpdateBoundingBox(IBlockReader blockReader, int x, int y, int z)
-    {
-        UpdateBoundingBox(blockReader, null, x, y, z);
-    }
+    public void UpdateBoundingBox(IBlockReader blockReader, int x, int y, int z) => UpdateBoundingBox(blockReader, null, x, y, z);
 
-    public void UpdateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
-    {
-        Physics?.UpdateBoundingBox(this, blockReader, entities, x, y, z);
-    }
+    public void UpdateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z) => Physics?.UpdateBoundingBox(this, blockReader, entities, x, y, z);
 
-    public int GetColor(int meta)
-    {
-        return Visuals?.GetColor(this, meta, 0xFFFFFF) ?? 0xFFFFFF;
-    }
+    public int GetColor(int meta) => Visuals?.GetColor(this, meta, 0xFFFFFF) ?? 0xFFFFFF;
 
     public int GetColorForFace(int meta, int face)
     {
@@ -487,10 +425,7 @@ public class Block
         return Visuals?.GetColorForFace(this, meta, face, baseColor) ?? baseColor;
     }
 
-    public int GetColorMultiplier(IBlockReader iBlockReader, int x, int y, int z)
-    {
-        return Visuals?.GetColorMultiplier(this, iBlockReader, x, y, z, 0xFFFFFF) ?? 0xFFFFFF;
-    }
+    public int GetColorMultiplier(IBlockReader iBlockReader, int x, int y, int z) => Visuals?.GetColorMultiplier(this, iBlockReader, x, y, z, 0xFFFFFF) ?? 0xFFFFFF;
 
     public int GetColorMultiplier(IBlockReader iBlockReader, int x, int y, int z, int knownMeta)
     {
@@ -498,35 +433,17 @@ public class Block
         return Visuals?.GetColorMultiplier(this, iBlockReader, x, y, z, knownMeta, baseColor) ?? baseColor;
     }
 
-    public bool IsPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side)
-    {
-        return Redstone != null && Redstone.IsPoweringSide(this, iBlockReader, x, y, z, side);
-    }
+    public bool IsPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side) => Redstone != null && Redstone.IsPoweringSide(this, iBlockReader, x, y, z, side);
 
-    public bool CanEmitRedstonePower()
-    {
-        return Redstone != null && Redstone.CanEmitRedstonePower(this);
-    }
+    public bool CanEmitRedstonePower() => Redstone != null && Redstone.CanEmitRedstonePower(this);
 
-    public bool IsFlammable(IBlockReader iBlockReader, int x, int y, int z)
-    {
-        return Physics != null && Physics.IsFlammable(this, iBlockReader, x, y, z, false);
-    }
+    public bool IsFlammable(IBlockReader iBlockReader, int x, int y, int z) => Physics != null && Physics.IsFlammable(this, iBlockReader, x, y, z, false);
 
-    public void OnEntityCollision(OnEntityCollisionEvent @event)
-    {
-        Interactable?.OnEntityCollision(this, @event);
-    }
+    public void OnEntityCollision(OnEntityCollisionEvent @event) => Interactable?.OnEntityCollision(this, @event);
 
-    public bool IsStrongPoweringSide(IBlockReader world, int x, int y, int z, int side)
-    {
-        return Redstone != null && Redstone.IsStrongPoweringSide(this, world, x, y, z, side);
-    }
+    public bool IsStrongPoweringSide(IBlockReader world, int x, int y, int z, int side) => Redstone != null && Redstone.IsStrongPoweringSide(this, world, x, y, z, side);
 
-    public void SetupRenderBoundingBox()
-    {
-        Physics?.SetupRenderBoundingBox(this);
-    }
+    public void SetupRenderBoundingBox() => Physics?.SetupRenderBoundingBox(this);
 
     public void OnAfterBreak(OnAfterBreakEvent ctx)
     {
@@ -535,20 +452,11 @@ public class Block
         Lifecycle?.OnAfterBreak(this, ctx);
     }
 
-    public bool CanGrow(OnTickEvent ctx)
-    {
-        return Physics == null || Physics.CanGrow(this, ctx);
-    }
+    public bool CanGrow(OnTickEvent ctx) => Physics == null || Physics.CanGrow(this, ctx);
 
-    public string TranslateBlockName()
-    {
-        return Translations.Get($"{BlockName}.name");
-    }
+    public string TranslateBlockName() => Translations.Get($"{BlockName}.name");
 
-    public void OnBlockAction(OnBlockActionEvent ctx)
-    {
-        Lifecycle?.OnBlockAction(this, ctx);
-    }
+    public void OnBlockAction(OnBlockActionEvent ctx) => Lifecycle?.OnBlockAction(this, ctx);
 
     protected internal void SetPistonBehavior(PistonBehavior behavior)
     {
@@ -562,10 +470,7 @@ public class Block
         _blockEntityFactory = factory;
     }
 
-    public BlockEntity? GetBlockEntity()
-    {
-        return _blockEntityFactory?.Invoke();
-    }
+    public BlockEntity? GetBlockEntity() => _blockEntityFactory?.Invoke();
 
     internal void ApplyDraft(BlockDraft draft)
     {
@@ -598,10 +503,7 @@ public class Block
         PreservesMetaOnDrop = draft.PreservesMetaOnDrop;
     }
 
-    internal void Freeze()
-    {
-        IsFrozen = true;
-    }
+    internal void Freeze() => IsFrozen = true;
 
     private void EnsureMutable()
     {

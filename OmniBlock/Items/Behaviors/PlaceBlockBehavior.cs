@@ -6,10 +6,9 @@ namespace OmniBlock.Items.Behaviors;
 
 internal sealed class PlaceBlockBehavior : IItemBehavior
 {
+    internal PlaceBlockBehavior(Block block) => PlacedBlock = block;
     internal Block PlacedBlock { get; }
     private int BlockId => PlacedBlock.Id;
-
-    internal PlaceBlockBehavior(Block block) => PlacedBlock = block;
 
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
@@ -35,7 +34,7 @@ internal sealed class PlaceBlockBehavior : IItemBehavior
             return false;
         }
 
-        Block block = world.Content.Blocks.GetByProtocolId(BlockId);
+        var block = world.Content.Blocks.GetByProtocolId(BlockId);
         if (block.CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
         {
             if (world.Writer.SetBlock(x, y, z, BlockId))

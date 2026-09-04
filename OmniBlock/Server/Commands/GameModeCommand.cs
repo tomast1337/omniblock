@@ -1,9 +1,9 @@
-using OmniBlock.Entities;
-using OmniBlock.Network.Messages;
-using OmniBlock.Registries;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Entities;
+using OmniBlock.Network.Messages;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Server.Commands;
 
@@ -27,8 +27,8 @@ public class GameModeCommand : Command.Command
 
     private static int ListCommands(CommandContext<CommandSource> context)
     {
-        IReadableRegistry<GameMode> registry = context.Source.Server.RegistryAccess.GetOrThrow(RegistryKeys.GameModes);
-        foreach (ResourceLocation key in registry.Keys)
+        var registry = context.Source.Server.RegistryAccess.GetOrThrow(RegistryKeys.GameModes);
+        foreach (var key in registry.Keys)
         {
             context.Source.Output.SendMessage(key.ToString());
         }
@@ -44,21 +44,21 @@ public class GameModeCommand : Command.Command
 
     private static int SetTargetGm(CommandContext<CommandSource> context)
     {
-        ServerPlayerEntity p = context.GetArgument<ServerPlayerEntity>("player");
+        var p = context.GetArgument<ServerPlayerEntity>("player");
         SetGameMode(p, context.GetArgument<string>("gamemode"), context.Source);
         return 1;
     }
 
     private static int ShowGamemode(CommandContext<CommandSource> context)
     {
-        ServerPlayerEntity p = context.Source.Server.playerManager.getPlayer(context.Source.SenderName)!;
+        var p = context.Source.Server.playerManager.getPlayer(context.Source.SenderName)!;
         context.Source.Output.SendMessage(p.GameMode.Name);
         return 1;
     }
 
     private static void SetGameMode(ServerPlayerEntity p, string arg, CommandSource c)
     {
-        if (c.Server.RegistryAccess.GetOrThrow(RegistryKeys.GameModes).AsAssetLoader().TryGetHolderByPrefix(arg, out Holder<GameMode>? holder))
+        if (c.Server.RegistryAccess.GetOrThrow(RegistryKeys.GameModes).AsAssetLoader().TryGetHolderByPrefix(arg, out var holder))
         {
             SetGameMode(p, holder, c);
             return;
@@ -75,7 +75,7 @@ public class GameModeCommand : Command.Command
             GameModeNamespace = holder.Value.Namespace.ToString(),
             GameModeName = holder.Value.Name
         });
-        string s = $"{p.Name} game mode set to {holder.Value.Name}.";
+        var s = $"{p.Name} game mode set to {holder.Value.Name}.";
         s_logger.LogInformation(s);
         c.Output.SendMessage(s);
     }

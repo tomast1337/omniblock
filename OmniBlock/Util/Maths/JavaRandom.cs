@@ -3,30 +3,28 @@ using System.Runtime.CompilerServices;
 namespace OmniBlock.Util.Maths;
 
 /// <summary>
-/// C# port of Java's 48-bit LCG (Linear Congruential Generator) from Random.
-/// Original source: https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/Random.java
-/// Implements the exact algorithm: seed = (seed * 0x5DEECE66DL + 0xBL) &amp; ((1L &lt;&lt; 48) - 1)
+///     C# port of Java's 48-bit LCG (Linear Congruential Generator) from Random.
+///     Original source: https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/Random.java
+///     Implements the exact algorithm: seed = (seed * 0x5DEECE66DL + 0xBL) &amp; ((1L &lt;&lt; 48) - 1)
 /// </summary>
 public class JavaRandom
 {
-    private static long s_seedUniquifier = 8682522807148012L;
-    private bool _haveNextNextGaussian = false;
-    private double _nextNextGaussian;
-
     private const float FloatUnit = 1.0f / (1 << 24);
     private const double DoubleUnit = 1.0 / (1L << 53);
     private const long Multiplier = 0x5DEECE66DL;
     private const long Addend = 0xBL;
     private const long Mask = (1L << 48) - 1;
+    private static long s_seedUniquifier = 8682522807148012L;
+    private bool _haveNextNextGaussian;
+    private double _nextNextGaussian;
 
     private long _seed;
 
-    public JavaRandom(long seed)
-    {
-        SetSeed(seed);
-    }
+    public JavaRandom(long seed) => SetSeed(seed);
 
-    public JavaRandom() : this(SeedUniquifier() ^ DateTime.UtcNow.Ticks) { }
+    public JavaRandom() : this(SeedUniquifier() ^ DateTime.UtcNow.Ticks)
+    {
+    }
 
     public void SetSeed(long seed)
     {
@@ -64,8 +62,8 @@ public class JavaRandom
         if (bound <= 0)
             throw new ArgumentException("bound must be positive");
 
-        int r = Next(31);
-        int m = bound - 1;
+        var r = Next(31);
+        var m = bound - 1;
 
         if ((bound & m) == 0)
         {
@@ -73,7 +71,9 @@ public class JavaRandom
         }
         else
         {
-            for (int u = r; u - (r = u % bound) + m < 0; u = Next(31)) { }
+            for (var u = r; u - (r = u % bound) + m < 0; u = Next(31))
+            {
+            }
         }
 
         return r;
@@ -97,7 +97,7 @@ public class JavaRandom
         } while (s >= 1 || s == 0);
 
         // Math.Log and Math.Sqrt in C# are equivalent to Java's StrictMath
-        double multiplier = Math.Sqrt(-2 * Math.Log(s) / s);
+        var multiplier = Math.Sqrt(-2 * Math.Log(s) / s);
 
         _nextNextGaussian = v2 * multiplier;
         _haveNextNextGaussian = true;

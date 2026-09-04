@@ -8,19 +8,6 @@ namespace OmniBlock.Tests.Blocks;
 
 public sealed class BlockTorchTests
 {
-    private sealed class TestPlayer : EntityPlayer
-    {
-        public TestPlayer(IWorldContext world) : base(world)
-        {
-        }
-
-        public override EntityType Type => TestEntityCatalog.ByName("player");
-
-        public override void Spawn()
-        {
-        }
-    }
-
     [Fact]
     public void GetCollisionShape_ReturnsNull()
     {
@@ -29,22 +16,13 @@ public sealed class BlockTorchTests
     }
 
     [Fact]
-    public void IsOpaque_IsFalse()
-    {
-        Assert.False(TestBlocks.Get("torch").IsOpaque);
-    }
+    public void IsOpaque_IsFalse() => Assert.False(TestBlocks.Get("torch").IsOpaque);
 
     [Fact]
-    public void IsFullCube_IsFalse()
-    {
-        Assert.False(TestBlocks.Get("torch").IsFullCube());
-    }
+    public void IsFullCube_IsFalse() => Assert.False(TestBlocks.Get("torch").IsFullCube());
 
     [Fact]
-    public void GetRenderType_IsTorch()
-    {
-        Assert.Equal(BlockRendererType.Torch, TestBlocks.Get("torch").RenderType);
-    }
+    public void GetRenderType_IsTorch() => Assert.Equal(BlockRendererType.Torch, TestBlocks.Get("torch").RenderType);
 
     [Theory]
     [InlineData(0, 64, 0, 0, 64, -1, true)]
@@ -61,7 +39,7 @@ public sealed class BlockTorchTests
             world.ReaderWriter.SetInitial(sx, sy, sz, TestBlocks.Get("stone").Id);
         }
 
-        bool ok = TestBlocks.Get("torch").CanPlaceAt(new CanPlaceAtContext(world, Side.Up, tx, ty, tz));
+        var ok = TestBlocks.Get("torch").CanPlaceAt(new CanPlaceAtContext(world, Side.Up, tx, ty, tz));
         Assert.Equal(expectTrue, ok);
     }
 
@@ -77,13 +55,13 @@ public sealed class BlockTorchTests
     public void OnPlaced_DownWithCeilingAndTwoSideWalls_SelectsWestWallWhenPlacerEastOfGap()
     {
         FakeWorldContext world = new();
-        int x = 0;
-        int y = 65;
-        int z = 0;
+        var x = 0;
+        var y = 65;
+        var z = 0;
         world.ReaderWriter.SetInitial(x, y + 1, z, TestBlocks.Get("stone").Id);
         world.ReaderWriter.SetInitial(x - 1, y, z, TestBlocks.Get("stone").Id);
         world.ReaderWriter.SetInitial(x + 1, y, z, TestBlocks.Get("stone").Id);
-        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("torch").Id, 0);
+        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("torch").Id);
 
         // Placer east of the cell, looking into the gap (−X): wall torch faces is west (meta 1).
         TestPlayer player = new(world)
@@ -103,13 +81,13 @@ public sealed class BlockTorchTests
     public void OnPlaced_DownWithCeilingAndTwoSideWalls_SelectsEastWallWhenPlacerWestOfGap()
     {
         FakeWorldContext world = new();
-        int x = 0;
-        int y = 65;
-        int z = 0;
+        var x = 0;
+        var y = 65;
+        var z = 0;
         world.ReaderWriter.SetInitial(x, y + 1, z, TestBlocks.Get("stone").Id);
         world.ReaderWriter.SetInitial(x - 1, y, z, TestBlocks.Get("stone").Id);
         world.ReaderWriter.SetInitial(x + 1, y, z, TestBlocks.Get("stone").Id);
-        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("torch").Id, 0);
+        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("torch").Id);
 
         TestPlayer player = new(world)
         {
@@ -128,13 +106,13 @@ public sealed class BlockTorchTests
     public void OnPlaced_DownWithCeilingNorthSouthWalls_PrefersNorthWallWhenPlacerSouthOfGap()
     {
         FakeWorldContext world = new();
-        int x = 0;
-        int y = 65;
-        int z = 0;
+        var x = 0;
+        var y = 65;
+        var z = 0;
         world.ReaderWriter.SetInitial(x, y + 1, z, TestBlocks.Get("stone").Id);
         world.ReaderWriter.SetInitial(x, y, z - 1, TestBlocks.Get("stone").Id);
         world.ReaderWriter.SetInitial(x, y, z + 1, TestBlocks.Get("stone").Id);
-        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("torch").Id, 0);
+        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("torch").Id);
 
         TestPlayer player = new(world)
         {
@@ -153,13 +131,13 @@ public sealed class BlockTorchTests
     public void OnPlaced_DownWithCeilingNorthSouthWalls_PrefersSouthWallWhenPlacerNorthOfGap()
     {
         FakeWorldContext world = new();
-        int x = 0;
-        int y = 65;
-        int z = 0;
+        var x = 0;
+        var y = 65;
+        var z = 0;
         world.ReaderWriter.SetInitial(x, y + 1, z, TestBlocks.Get("stone").Id);
         world.ReaderWriter.SetInitial(x, y, z - 1, TestBlocks.Get("stone").Id);
         world.ReaderWriter.SetInitial(x, y, z + 1, TestBlocks.Get("stone").Id);
-        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("torch").Id, 0);
+        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("torch").Id);
 
         TestPlayer player = new(world)
         {
@@ -178,13 +156,13 @@ public sealed class BlockTorchTests
     public void OnPlaced_DownWithCeilingTwoWalls_NoPlacer_UsesVanillaWestFirst()
     {
         FakeWorldContext world = new();
-        int x = 0;
-        int y = 65;
-        int z = 0;
+        var x = 0;
+        var y = 65;
+        var z = 0;
         world.ReaderWriter.SetInitial(x, y + 1, z, TestBlocks.Get("stone").Id);
         world.ReaderWriter.SetInitial(x - 1, y, z, TestBlocks.Get("stone").Id);
         world.ReaderWriter.SetInitial(x + 1, y, z, TestBlocks.Get("stone").Id);
-        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("torch").Id, 0);
+        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("torch").Id);
 
         TestBlocks.Get("torch").OnPlaced(new OnPlacedEvent(world, null, Side.Down, Side.Down, x, y, z));
 
@@ -192,19 +170,19 @@ public sealed class BlockTorchTests
     }
 
     /// <summary>
-    /// [B][A][B] along X: placer south and centered on X so distance to both side blocks matches — tie-break is vanilla (−X first).
+    ///     [B][A][B] along X: placer south and centered on X so distance to both side blocks matches — tie-break is vanilla (−X first).
     /// </summary>
     [Fact]
     public void OnPlaced_DownEastWestEquidistantPlacer_TieBreaksToWestMeta()
     {
         FakeWorldContext world = new();
-        int x = 0;
-        int y = 65;
-        int z = 0;
+        var x = 0;
+        var y = 65;
+        var z = 0;
         world.ReaderWriter.SetInitial(x, y + 1, z, TestBlocks.Get("stone").Id);
         world.ReaderWriter.SetInitial(x - 1, y, z, TestBlocks.Get("stone").Id);
         world.ReaderWriter.SetInitial(x + 1, y, z, TestBlocks.Get("stone").Id);
-        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("torch").Id, 0);
+        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("torch").Id);
 
         TestPlayer player = new(world)
         {
@@ -223,11 +201,11 @@ public sealed class BlockTorchTests
     public void OnPlaced_UpOnSolidBelow_StillFloorTorch()
     {
         FakeWorldContext world = new();
-        int x = 0;
-        int y = 65;
-        int z = 0;
+        var x = 0;
+        var y = 65;
+        var z = 0;
         world.ReaderWriter.SetInitial(x, y - 1, z, TestBlocks.Get("stone").Id);
-        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("torch").Id, 0);
+        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("torch").Id);
 
         TestBlocks.Get("torch").OnPlaced(new OnPlacedEvent(world, null, Side.Up, Side.Up, x, y, z));
 
@@ -238,7 +216,7 @@ public sealed class BlockTorchTests
     public void OnPlaced_UpWithNoFloorBelow_KeepsMetaZero()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 65, 0, TestBlocks.Get("torch").Id, 0);
+        world.ReaderWriter.SetInitial(0, 65, 0, TestBlocks.Get("torch").Id);
 
         TestBlocks.Get("torch").OnPlaced(new OnPlacedEvent(world, null, Side.Up, Side.Up, 0, 65, 0));
 
@@ -254,7 +232,7 @@ public sealed class BlockTorchTests
     {
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(nx, ny, nz, TestBlocks.Get("stone").Id);
-        world.ReaderWriter.SetInitial(0, 65, 0, TestBlocks.Get("torch").Id, 0);
+        world.ReaderWriter.SetInitial(0, 65, 0, TestBlocks.Get("torch").Id);
 
         TestBlocks.Get("torch").OnPlaced(new OnPlacedEvent(world, null, direction, direction, 0, 65, 0));
 
@@ -266,7 +244,7 @@ public sealed class BlockTorchTests
     {
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(-1, 65, 0, TestBlocks.Get("stone").Id);
-        world.ReaderWriter.SetInitial(0, 65, 0, TestBlocks.Get("torch").Id, 0);
+        world.ReaderWriter.SetInitial(0, 65, 0, TestBlocks.Get("torch").Id);
 
         TestBlocks.Get("torch").OnTick(new OnTickEvent(world, 0, 65, 0, 0, TestBlocks.Get("torch").Id));
 
@@ -277,7 +255,7 @@ public sealed class BlockTorchTests
     public void OnTick_MetaZeroNoSupport_RemovesTorch()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 65, 0, TestBlocks.Get("torch").Id, 0);
+        world.ReaderWriter.SetInitial(0, 65, 0, TestBlocks.Get("torch").Id);
 
         TestBlocks.Get("torch").OnTick(new OnTickEvent(world, 0, 65, 0, 0, TestBlocks.Get("torch").Id));
 
@@ -322,21 +300,21 @@ public sealed class BlockTorchTests
     public void Raycast_SegmentThroughBounds_HitsTorch(int meta)
     {
         FakeWorldContext world = new();
-        int x = 2;
-        int y = 64;
-        int z = 3;
+        var x = 2;
+        var y = 64;
+        var z = 3;
         world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("torch").Id, meta);
 
-        (Vec3D start, Vec3D end) = meta switch
+        var (start, end) = meta switch
         {
             1 => (new Vec3D(x - 0.05, y + 0.5, z + 0.5), new Vec3D(x + 0.2, y + 0.5, z + 0.5)),
             2 => (new Vec3D(x + 1.05, y + 0.5, z + 0.5), new Vec3D(x + 0.85, y + 0.5, z + 0.5)),
             3 => (new Vec3D(x + 0.5, y + 0.5, z - 0.05), new Vec3D(x + 0.5, y + 0.5, z + 0.2)),
             4 => (new Vec3D(x + 0.5, y + 0.5, z + 1.05), new Vec3D(x + 0.5, y + 0.5, z + 0.85)),
-            _ => (new Vec3D(x + 0.5, y + 1.05, z + 0.5), new Vec3D(x + 0.5, y + 0.05, z + 0.5)),
+            _ => (new Vec3D(x + 0.5, y + 1.05, z + 0.5), new Vec3D(x + 0.5, y + 0.05, z + 0.5))
         };
 
-        HitResult hit = TestBlocks.Get("torch").Raycast(world.Reader, world.Entities, x, y, z, start, end);
+        var hit = TestBlocks.Get("torch").Raycast(world.Reader, world.Entities, x, y, z, start, end);
 
         Assert.NotEqual(HitResultType.Miss, hit.Type);
     }
@@ -353,8 +331,21 @@ public sealed class BlockTorchTests
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("torch").Id, meta);
 
-        Exception? ex = Record.Exception(() => TestBlocks.Get("torch").RandomDisplayTick(new OnTickEvent(world, 0, 64, 0, meta, TestBlocks.Get("torch").Id)));
+        var ex = Record.Exception(() => TestBlocks.Get("torch").RandomDisplayTick(new OnTickEvent(world, 0, 64, 0, meta, TestBlocks.Get("torch").Id)));
 
         Assert.Null(ex);
+    }
+
+    private sealed class TestPlayer : EntityPlayer
+    {
+        public TestPlayer(IWorldContext world) : base(world)
+        {
+        }
+
+        public override EntityType Type => TestEntityCatalog.ByName("player");
+
+        public override void Spawn()
+        {
+        }
     }
 }

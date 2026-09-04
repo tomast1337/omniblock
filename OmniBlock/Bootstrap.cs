@@ -13,11 +13,11 @@ public class Bootstrap
         {
             if (ContentRuntime.IsPublished) return ContentRuntime.Current;
 
-            ContentRuntimeBuilder content = ContentRuntimeBuilder.CreateBuiltIns();
+            var content = ContentRuntimeBuilder.CreateBuiltIns();
             try
             {
                 DefaultRegistries.Initialize(content);
-                ContentRuntime runtime = content.Build();
+                var runtime = content.Build();
                 Stats.Stats.InitializeCraftedItemStats(runtime.Items, runtime.Processes);
                 ContentRuntime.Publish(runtime);
                 return runtime;

@@ -34,18 +34,18 @@ internal sealed class PathingCoordinator(IWorldContext world)
         }
 
         PathRequest[] requests = [.. _pendingRequests];
-        PathEntity?[] results = new PathEntity?[requests.Length];
+        var results = new PathEntity?[requests.Length];
 
         Parallel.For(0, requests.Length, i =>
         {
-            PathFinder finder = _threadFinder.Value!;
-            ref readonly PathRequest request = ref requests[i];
+            var finder = _threadFinder.Value!;
+            ref readonly var request = ref requests[i];
             results[i] = finder.CreateEntityPathTo(request.Entity, request.TargetX, request.TargetY, request.TargetZ, request.Range);
         });
 
         // Apply serially: setPathToEntity just writes one field on the target entity,
         // not worth risking two requests racing the same entity in the same batch.
-        for (int i = 0; i < requests.Length; i++)
+        for (var i = 0; i < requests.Length; i++)
         {
             if (requests[i].Entity is EntityCreature creature)
             {

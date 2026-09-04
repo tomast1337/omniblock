@@ -41,13 +41,13 @@ public sealed class EntitySnapshotTests
     {
         PlayerSnapshotStream server = new();
 
-        EntitySnapshotMessage? snapshot = server.Build(Pass((7, At(320, 2048, -64, 12, 3))));
+        var snapshot = server.Build(Pass((7, At(320, 2048, -64, 12, 3))));
 
         Assert.NotNull(snapshot);
         Assert.Equal(0u, snapshot.Baseline);
         Assert.Equal(1u, snapshot.Sequence);
 
-        EntitySnapshotMessage.EntityDelta delta = Assert.Single(snapshot.Deltas);
+        var delta = Assert.Single(snapshot.Deltas);
         Assert.True((delta.Mask & EntitySnapshotMessage.Field.Absolute) != 0);
         Assert.Equal(320, delta.X);
         Assert.Equal(2048, delta.Y);
@@ -67,9 +67,9 @@ public sealed class EntitySnapshotTests
         client.Apply(RoundTrip(server.Build(Pass((7, At(320, 2048, -64))))!));
         server.Acknowledge(client.AppliedSequence);
 
-        EntitySnapshotMessage second = server.Build(Pass((7, At(321, 2048, -64))))!;
+        var second = server.Build(Pass((7, At(321, 2048, -64))))!;
 
-        EntitySnapshotMessage.EntityDelta delta = Assert.Single(second.Deltas);
+        var delta = Assert.Single(second.Deltas);
         Assert.Equal(EntitySnapshotMessage.Field.X, delta.Mask);
         Assert.Equal(1, delta.X);
     }
@@ -100,31 +100,31 @@ public sealed class EntitySnapshotTests
         Dictionary<int, EntitySnapshotState> truth = [];
         Dictionary<int, EntitySnapshotState> received = [];
 
-        for (int tick = 0; tick < 200; tick++)
+        for (var tick = 0; tick < 200; tick++)
         {
             List<KeyValuePair<int, EntitySnapshotState>> pass = [];
 
-            for (int entity = 1; entity <= 12; entity++)
+            for (var entity = 1; entity <= 12; entity++)
             {
                 // Deliberately uneven: some entities stand still, some drift, some spin.
-                EntitySnapshotState state = At(
-                    (tick * entity) % 97,
+                var state = At(
+                    tick * entity % 97,
                     2048 + (entity % 3 == 0 ? 0 : tick % 5),
                     -(tick % 31) * entity,
-                    (byte)((tick * entity) % 256),
+                    (byte)(tick * entity % 256),
                     (byte)(entity % 2 == 0 ? 0 : tick % 256));
 
                 truth[entity] = state;
                 pass.Add(new KeyValuePair<int, EntitySnapshotState>(entity, state));
             }
 
-            EntitySnapshotMessage? snapshot = server.Build(pass);
+            var snapshot = server.Build(pass);
             if (snapshot is null)
             {
                 continue;
             }
 
-            foreach ((int id, EntitySnapshotState state) in client.Apply(RoundTrip(snapshot)))
+            foreach (var (id, state) in client.Apply(RoundTrip(snapshot)))
             {
                 received[id] = state;
             }
@@ -151,15 +151,15 @@ public sealed class EntitySnapshotTests
         server.Acknowledge(client.AppliedSequence);
 
         // Sent, and lost in transit: built, never applied, never acknowledged.
-        EntitySnapshotMessage lost = server.Build(Pass((7, At(32, 2048, 0))))!;
+        var lost = server.Build(Pass((7, At(32, 2048, 0))))!;
         Assert.NotNull(lost);
 
-        EntitySnapshotMessage next = server.Build(Pass((7, At(64, 2048, 0))))!;
+        var next = server.Build(Pass((7, At(64, 2048, 0))))!;
 
         // Measured against sequence 1, the newest the client confirmed — not against the lost one.
         Assert.Equal(1u, next.Baseline);
 
-        EntitySnapshotState state = Assert.Single(client.Apply(RoundTrip(next))).Value;
+        var state = Assert.Single(client.Apply(RoundTrip(next))).Value;
         Assert.Equal(At(64, 2048, 0), state);
         Assert.Equal(0, client.DroppedSnapshots);
     }
@@ -178,7 +178,7 @@ public sealed class EntitySnapshotTests
         {
             Sequence = 900,
             Baseline = 899,
-            Deltas = [new EntitySnapshotMessage.EntityDelta(7, EntitySnapshotMessage.Field.X, 5, 0, 0, 0, 0)],
+            Deltas = [new EntitySnapshotMessage.EntityDelta(7, EntitySnapshotMessage.Field.X, 5, 0, 0, 0, 0)]
         };
 
         Assert.Empty(client.Apply(stray));
@@ -195,9 +195,9 @@ public sealed class EntitySnapshotTests
     {
         PlayerSnapshotStream server = new();
 
-        for (int tick = 0; tick < SnapshotBaseline.MaxStagedSnapshots * 2; tick++)
+        for (var tick = 0; tick < SnapshotBaseline.MaxStagedSnapshots * 2; tick++)
         {
-            EntitySnapshotMessage? snapshot = server.Build(Pass((7, At(tick, 2048, 0))));
+            var snapshot = server.Build(Pass((7, At(tick, 2048, 0))));
             Assert.NotNull(snapshot);
             Assert.True(
                 server.InFlight <= SnapshotBaseline.MaxStagedSnapshots,
@@ -206,7 +206,7 @@ public sealed class EntitySnapshotTests
 
         // Having reset, it is speaking absolutely again — which is decodable by a client that also
         // gave up, and is the only state the two can agree on without one.
-        EntitySnapshotMessage last = server.Build(Pass((7, At(9999, 2048, 0))))!;
+        var last = server.Build(Pass((7, At(9999, 2048, 0))))!;
         Assert.Equal(0u, last.Baseline);
     }
 
@@ -226,8 +226,8 @@ public sealed class EntitySnapshotTests
         server.Forget(7);
         client.Forget(7);
 
-        EntitySnapshotMessage returned = server.Build(Pass((7, At(1024, 2048, 512))))!;
-        EntitySnapshotMessage.EntityDelta delta = Assert.Single(returned.Deltas);
+        var returned = server.Build(Pass((7, At(1024, 2048, 512))))!;
+        var delta = Assert.Single(returned.Deltas);
         Assert.True((delta.Mask & EntitySnapshotMessage.Field.Absolute) != 0);
 
         Assert.Equal(At(1024, 2048, 512), Assert.Single(client.Apply(RoundTrip(returned))).Value);
@@ -266,7 +266,7 @@ public sealed class EntitySnapshotTests
         server.Acknowledge(0);
         Assert.Equal(0u, server.BaselineSequence);
 
-        EntitySnapshotMessage resynchronised = server.Build(Pass((7, At(320, 2048, -64))))!;
+        var resynchronised = server.Build(Pass((7, At(320, 2048, -64))))!;
         Assert.Equal(0u, resynchronised.Baseline);
         Assert.True(
             (Assert.Single(resynchronised.Deltas).Mask & EntitySnapshotMessage.Field.Absolute) != 0);
@@ -310,16 +310,16 @@ public sealed class EntitySnapshotTests
             Deltas =
             [
                 new EntitySnapshotMessage.EntityDelta(
-                    -12345, EntitySnapshotMessage.Field.All, x, y, z, 200, 55),
-            ],
+                    -12345, EntitySnapshotMessage.Field.All, x, y, z, 200, 55)
+            ]
         };
 
-        EntitySnapshotMessage received = RoundTrip(message);
+        var received = RoundTrip(message);
 
         Assert.Equal(42u, received.Sequence);
         Assert.Equal(41u, received.Baseline);
 
-        EntitySnapshotMessage.EntityDelta delta = Assert.Single(received.Deltas);
+        var delta = Assert.Single(received.Deltas);
         Assert.Equal(-12345, delta.EntityId);
         Assert.Equal(x, delta.X);
         Assert.Equal(y, delta.Y);
@@ -352,29 +352,29 @@ public sealed class EntitySnapshotTests
         ClientSnapshotStream client = new();
 
         List<KeyValuePair<int, EntitySnapshotState>> first = [];
-        for (int entity = 1; entity <= 200; entity++)
+        for (var entity = 1; entity <= 200; entity++)
         {
-            first.Add(new KeyValuePair<int, EntitySnapshotState>(entity, At(entity * 32, 2048, entity * 16, 64, 0)));
+            first.Add(new KeyValuePair<int, EntitySnapshotState>(entity, At(entity * 32, 2048, entity * 16, 64)));
         }
 
         client.Apply(server.Build(first)!);
         server.Acknowledge(client.AppliedSequence);
 
         List<KeyValuePair<int, EntitySnapshotState>> second = [];
-        for (int entity = 1; entity <= 200; entity++)
+        for (var entity = 1; entity <= 200; entity++)
         {
             // Everything shuffles along by a fraction of a block and turns slightly, which is what a
             // tick of a populated area looks like.
             second.Add(new KeyValuePair<int, EntitySnapshotState>(
-                entity, At((entity * 32) + 2, 2048, (entity * 16) - 1, 66, 0)));
+                entity, At(entity * 32 + 2, 2048, entity * 16 - 1, 66)));
         }
 
-        int snapshotBytes = server.Build(second)!.Size();
+        var snapshotBytes = server.Build(second)!.Size();
 
         // EntityRotateAndMoveRelativeS2CPacket: one byte of ID, four of entity ID, three of position
         // delta, two of rotation. The comparison is per entity because that is how it is sent.
         const int LegacyBytesPerEntity = 10;
-        int legacyBytes = 200 * LegacyBytesPerEntity;
+        var legacyBytes = 200 * LegacyBytesPerEntity;
 
         Assert.True(
             snapshotBytes < legacyBytes,

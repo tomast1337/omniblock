@@ -1,5 +1,3 @@
-using System.Linq;
-using OmniBlock.Blocks;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.Items;
@@ -8,7 +6,7 @@ using OmniBlock.Worlds.Core.Systems;
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Helpers for entity tests using <see cref="FakeWorldContext"/> (shared with block tests).
+///     Helpers for entity tests using <see cref="FakeWorldContext" /> (shared with block tests).
 /// </summary>
 public static class EntityTestHarness
 {
@@ -18,13 +16,13 @@ public static class EntityTestHarness
     public static int AliveEntityCount(FakeWorldContext world) =>
         world.Entities.Entities.Count(entity => !entity.Dead);
 
-    /// <summary>Fills a horizontal rectangle at <paramref name="floorY"/> with stone so entities have solid ground.</summary>
+    /// <summary>Fills a horizontal rectangle at <paramref name="floorY" /> with stone so entities have solid ground.</summary>
     public static void PlaceStoneFloor(FakeWorldContext world, int minX, int maxX, int minZ, int maxZ, int floorY)
     {
-        int stoneId = TestBlocks.Get("stone").Id;
-        for (int x = minX; x <= maxX; x++)
+        var stoneId = TestBlocks.Get("stone").Id;
+        for (var x = minX; x <= maxX; x++)
         {
-            for (int z = minZ; z <= maxZ; z++)
+            for (var z = minZ; z <= maxZ; z++)
             {
                 world.Writer.SetBlock(x, floorY, z, stoneId);
             }
@@ -34,17 +32,17 @@ public static class EntityTestHarness
     /// <summary>Advances simulated world time and runs the full entity tick pass (same order as the game server).</summary>
     public static void AdvanceGameTicks(FakeWorldContext world, int ticks)
     {
-        for (int i = 0; i < ticks; i++)
+        for (var i = 0; i < ticks; i++)
         {
             world.SimulatedWorldTime++;
             world.Entities.TickEntities();
         }
     }
 
-    /// <summary>Creates an entity from the registry, positions it above the floor, and registers it with <see cref="EntityManager"/>.</summary>
+    /// <summary>Creates an entity from the registry, positions it above the floor, and registers it with <see cref="EntityManager" />.</summary>
     public static Entity CreateSpawned(FakeWorldContext world, EntityType type, double x, double y, double z)
     {
-        Entity entity = type.Create(world);
+        var entity = type.Create(world);
         entity.SetPositionAndAngles(x, y, z, 0f, 0f);
         if (!world.Entities.SpawnEntity(entity))
         {
@@ -54,12 +52,12 @@ public static class EntityTestHarness
         return entity;
     }
 
-    /// <summary>Places flat rails along Z at <paramref name="railY"/> (inclusive X range).</summary>
+    /// <summary>Places flat rails along Z at <paramref name="railY" /> (inclusive X range).</summary>
     public static void PlaceRailRunX(FakeWorldContext world, int x0, int x1, int railY, int z)
     {
-        int railId = TestBlocks.Get("rail").Id;
-        int step = x0 <= x1 ? 1 : -1;
-        for (int x = x0; x != x1 + step; x += step)
+        var railId = TestBlocks.Get("rail").Id;
+        var step = x0 <= x1 ? 1 : -1;
+        for (var x = x0; x != x1 + step; x += step)
         {
             world.Writer.SetBlock(x, railY, z, railId);
         }
@@ -68,8 +66,8 @@ public static class EntityTestHarness
     /// <summary>Fills an inclusive Y column with stationary water (for squid / fluid tests).</summary>
     public static void FillWaterColumn(FakeWorldContext world, int x, int z, int yMin, int yMax)
     {
-        int waterId = TestBlocks.Get("water").Id;
-        for (int y = yMin; y <= yMax; y++)
+        var waterId = TestBlocks.Get("water").Id;
+        for (var y = yMin; y <= yMax; y++)
         {
             world.Writer.SetBlock(x, y, z, waterId);
         }
@@ -78,8 +76,8 @@ public static class EntityTestHarness
     /// <summary>Builds a short stone wall segment used as a painting backing (single-column Kebab-sized).</summary>
     public static void PlaceStoneWallStrip(FakeWorldContext world, int x, int z, int yMin, int yMax)
     {
-        int stoneId = TestBlocks.Get("stone").Id;
-        for (int y = yMin; y <= yMax; y++)
+        var stoneId = TestBlocks.Get("stone").Id;
+        for (var y = yMin; y <= yMax; y++)
         {
             world.Writer.SetBlock(x, y, z, stoneId);
         }
@@ -102,7 +100,7 @@ public static class EntityTestHarness
 
         if (type == TestEntityCatalog.ByName("primedtnt"))
         {
-            Entity primed = type.Create(world);
+            var primed = type.Create(world);
             primed.SetPositionAndAngles(8.5, 66.0, 8.5, 0.0F, 0.0F);
             return primed;
         }
@@ -114,7 +112,7 @@ public static class EntityTestHarness
 
         if (type == TestEntityCatalog.ByName("fallingsand"))
         {
-            Entity sand = type.Create(world);
+            var sand = type.Create(world);
             sand.Behaviors.Find<SettleAsBlockBehavior>()!.SetBlock(sand, TestBlocks.Get("sand").Id);
             sand.SetPositionAndAngles(8.5, 70.0, 8.5, 0.0F, 0.0F);
             return sand;
@@ -125,7 +123,7 @@ public static class EntityTestHarness
             return MinecartBehavior.Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Rideable);
         }
 
-        Entity entity = type.Create(world);
+        var entity = type.Create(world);
         entity.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         return entity;
     }

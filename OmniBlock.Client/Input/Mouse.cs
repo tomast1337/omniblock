@@ -31,7 +31,7 @@ public static class Mouse
 
     private static bool s_isGrabbed;
     private static int s_grab_x, s_grab_y;
-    private static bool s_discardNextMove = false;
+    private static bool s_discardNextMove;
 
     private static int s_displayWidth = 800;
     private static int s_displayHeight = 600;
@@ -51,7 +51,7 @@ public static class Mouse
         s_glfw.SetScrollCallback(s_window, OnScroll);
 
         // Get initial position
-        s_glfw.GetCursorPos(s_window, out double initX, out double initY);
+        s_glfw.GetCursorPos(s_window, out var initX, out var initY);
         s_x = s_last_event_raw_x = (int)initX;
         s_y = s_last_event_raw_y = (int)initY;
 
@@ -73,8 +73,8 @@ public static class Mouse
             return;
         }
 
-        int newX = (int)xpos;
-        int newY = (int)ypos;
+        var newX = (int)xpos;
+        var newY = (int)ypos;
 
         s_dx += newX - s_x;
         s_dy += newY - s_y;
@@ -97,10 +97,10 @@ public static class Mouse
     {
         if (!s_created) return;
 
-        int buttonIndex = (int)button;
-        bool pressed = action == InputAction.Press;
+        var buttonIndex = (int)button;
+        var pressed = action == InputAction.Press;
 
-        s_glfw.GetCursorPos(window, out double xpos, out double ypos);
+        s_glfw.GetCursorPos(window, out var xpos, out var ypos);
 
         // Update button state
         if (buttonIndex >= 0 && buttonIndex < s_buttons.Length)
@@ -124,7 +124,7 @@ public static class Mouse
     {
         if (!s_created) return;
 
-        s_glfw.GetCursorPos(window, out double xpos, out double ypos);
+        s_glfw.GetCursorPos(window, out var xpos, out var ypos);
 
         // Queue scroll event
         s_eventQueue.Enqueue(new MouseEvent
@@ -144,7 +144,7 @@ public static class Mouse
 
         if (s_eventQueue.Count > 0)
         {
-            MouseEvent evt = s_eventQueue.Dequeue();
+            var evt = s_eventQueue.Dequeue();
 
             s_eventButton = evt.Button;
             s_eventState = evt.State;
@@ -163,8 +163,8 @@ public static class Mouse
             else
             {
                 // In non-grabbed mode, report absolute coordinates
-                int new_event_x = evt.X;
-                int new_event_y = evt.Y;
+                var new_event_x = evt.X;
+                var new_event_y = evt.Y;
                 s_event_dx = new_event_x - s_last_event_raw_x;
                 s_event_dy = new_event_y - s_last_event_raw_y;
                 s_event_x = new_event_x;
@@ -199,21 +199,21 @@ public static class Mouse
 
     public static int getDX()
     {
-        int result = s_dx;
+        var result = s_dx;
         s_dx = 0;
         return result;
     }
 
     public static int getDY()
     {
-        int result = s_dy;
+        var result = s_dy;
         s_dy = 0;
         return result;
     }
 
     public static int getDWheel()
     {
-        int result = s_dwheel;
+        var result = s_dwheel;
         s_dwheel = 0;
         return result;
     }
@@ -229,7 +229,7 @@ public static class Mouse
     {
         if (!s_created) return;
 
-        bool wasGrabbed = s_isGrabbed;
+        var wasGrabbed = s_isGrabbed;
         s_isGrabbed = grab;
 
         if (grab && !wasGrabbed)
@@ -245,7 +245,7 @@ public static class Mouse
         }
 
         // Reset state
-        s_glfw.GetCursorPos(s_window, out double xpos, out double ypos);
+        s_glfw.GetCursorPos(s_window, out var xpos, out var ypos);
         s_event_x = s_x = (int)xpos;
         s_event_y = s_y = (int)ypos;
         s_last_event_raw_x = (int)xpos;
@@ -270,7 +270,7 @@ public static class Mouse
 
     public static bool isCreated() => s_created;
 
-    public unsafe static void destroy()
+    public static unsafe void destroy()
     {
         if (!s_created) return;
         s_created = false;
@@ -294,29 +294,15 @@ public static class Mouse
         s_displayHeight = height;
     }
 
-    private static long GetNanos()
-    {
-        return DateTime.UtcNow.Ticks * 100; // Convert to nanoseconds
-    }
+    private static long GetNanos() => DateTime.UtcNow.Ticks * 100; // Convert to nanoseconds
 
-    public unsafe static void SetNormalCursor() {
-        s_glfw.SetCursor(s_window, s_normalCursor);
-    }
+    public static unsafe void SetNormalCursor() => s_glfw.SetCursor(s_window, s_normalCursor);
 
-    public unsafe static void SetClickCursor()
-    {
-        s_glfw.SetCursor(s_window, s_clickCursor);
-    }
+    public static unsafe void SetClickCursor() => s_glfw.SetCursor(s_window, s_clickCursor);
 
-    public unsafe static void SetTextCursor()
-    {
-        s_glfw.SetCursor(s_window, s_textCursor);
-    }
+    public static unsafe void SetTextCursor() => s_glfw.SetCursor(s_window, s_textCursor);
 
-    public unsafe static void SetDisabledCursor()
-    {
-        s_glfw.SetCursor(s_window, s_disabledCursor);
-    }
+    public static unsafe void SetDisabledCursor() => s_glfw.SetCursor(s_window, s_disabledCursor);
 
     private struct MouseEvent
     {

@@ -56,14 +56,14 @@ public sealed class ModelSpider : BbModelEntityModel
         _spiderLeg7.RotateAngleY = -yawSpread * 2.0f;
         _spiderLeg8.RotateAngleY = yawSpread * 2.0f;
 
-        float frontLegSwing = -(MathHelper.Cos(limbSwing * 0.6662f * 2.0f) * 0.4f) * limbSwingAmount;
-        float midFrontLegSwing = -(MathHelper.Cos(limbSwing * 0.6662f * 2.0f + MathF.PI) * 0.4f) * limbSwingAmount;
-        float midBackLegSwing = -(MathHelper.Cos(limbSwing * 0.6662f * 2.0f + MathF.PI * 0.5f) * 0.4f) * limbSwingAmount;
-        float backLegSwing = -(MathHelper.Cos(limbSwing * 0.6662f * 2.0f + MathF.PI * 1.5f) * 0.4f) * limbSwingAmount;
-        float frontLegLift = MathF.Abs(MathHelper.Sin(limbSwing * 0.6662f) * 0.4f) * limbSwingAmount;
-        float midFrontLegLift = MathF.Abs(MathHelper.Sin(limbSwing * 0.6662f + MathF.PI) * 0.4f) * limbSwingAmount;
-        float midBackLegLift = MathF.Abs(MathHelper.Sin(limbSwing * 0.6662f + MathF.PI * 0.5f) * 0.4f) * limbSwingAmount;
-        float backLegLift = MathF.Abs(MathHelper.Sin(limbSwing * 0.6662f + MathF.PI * 1.5f) * 0.4f) * limbSwingAmount;
+        var frontLegSwing = -(MathHelper.Cos(limbSwing * 0.6662f * 2.0f) * 0.4f) * limbSwingAmount;
+        var midFrontLegSwing = -(MathHelper.Cos(limbSwing * 0.6662f * 2.0f + MathF.PI) * 0.4f) * limbSwingAmount;
+        var midBackLegSwing = -(MathHelper.Cos(limbSwing * 0.6662f * 2.0f + MathF.PI * 0.5f) * 0.4f) * limbSwingAmount;
+        var backLegSwing = -(MathHelper.Cos(limbSwing * 0.6662f * 2.0f + MathF.PI * 1.5f) * 0.4f) * limbSwingAmount;
+        var frontLegLift = MathF.Abs(MathHelper.Sin(limbSwing * 0.6662f) * 0.4f) * limbSwingAmount;
+        var midFrontLegLift = MathF.Abs(MathHelper.Sin(limbSwing * 0.6662f + MathF.PI) * 0.4f) * limbSwingAmount;
+        var midBackLegLift = MathF.Abs(MathHelper.Sin(limbSwing * 0.6662f + MathF.PI * 0.5f) * 0.4f) * limbSwingAmount;
+        var backLegLift = MathF.Abs(MathHelper.Sin(limbSwing * 0.6662f + MathF.PI * 1.5f) * 0.4f) * limbSwingAmount;
 
         _spiderLeg1.RotateAngleY += frontLegSwing;
         _spiderLeg2.RotateAngleY += -frontLegSwing;

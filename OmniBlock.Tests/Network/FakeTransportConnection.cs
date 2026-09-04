@@ -17,9 +17,13 @@ namespace OmniBlock.Tests.Network;
 /// </summary>
 internal sealed class FakeTransportConnection : ITransportConnection
 {
+    private readonly Queue<ReceivedDatagram> _inbox = new();
     public List<(byte Channel, DeliveryMode Mode, byte[] Payload)> Sent { get; } = [];
 
-    private readonly Queue<ReceivedDatagram> _inbox = new();
+    public DisconnectReason? ClosedWith { get; private set; }
+
+    /// <summary>Settable, so a test can pose as a transport that is behind without a real link.</summary>
+    public int Pending { get; set; }
 
     public bool IsConnected { get; set; } = true;
 
@@ -27,15 +31,10 @@ internal sealed class FakeTransportConnection : ITransportConnection
 
     public ConnectionStats Stats => new(0, 1200);
 
-    public DisconnectReason? ClosedWith { get; private set; }
-
     public void Send(byte channel, DeliveryMode mode, ReadOnlySpan<byte> payload) =>
         Sent.Add((channel, mode, payload.ToArray()));
 
     public bool TryReceive(out ReceivedDatagram datagram) => _inbox.TryDequeue(out datagram);
-
-    /// <summary>Settable, so a test can pose as a transport that is behind without a real link.</summary>
-    public int Pending { get; set; }
 
     public int PendingPackets(byte channel) => Pending;
 

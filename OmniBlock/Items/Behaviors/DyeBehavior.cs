@@ -29,7 +29,7 @@ internal sealed class DyeBehavior(int[] textures) : IItemBehavior
             return false;
         }
 
-        int blockId = world.Reader.GetBlockId(x, y, z);
+        var blockId = world.Reader.GetBlockId(x, y, z);
         if (blockId == BlockRegistry.Get("sapling").Id)
         {
             if (!world.IsRemote)
@@ -57,13 +57,13 @@ internal sealed class DyeBehavior(int[] textures) : IItemBehavior
             if (!world.IsRemote)
             {
                 itemStack.ConsumeItem(player);
-                for (int attempt = 0; attempt < 128; ++attempt)
+                for (var attempt = 0; attempt < 128; ++attempt)
                 {
-                    int spawnX = x;
-                    int spawnY = y + 1;
-                    int spawnZ = z;
-                    bool validPosition = true;
-                    for (int walkStep = 0; walkStep < attempt / 16 && validPosition; ++walkStep)
+                    var spawnX = x;
+                    var spawnY = y + 1;
+                    var spawnZ = z;
+                    var validPosition = true;
+                    for (var walkStep = 0; walkStep < attempt / 16 && validPosition; ++walkStep)
                     {
                         spawnX += Item.s_itemRand.NextInt(3) - 1;
                         spawnY += (Item.s_itemRand.NextInt(3) - 1) * Item.s_itemRand.NextInt(3) / 2;
@@ -103,7 +103,7 @@ internal sealed class DyeBehavior(int[] textures) : IItemBehavior
         // Dyeable because it has a fleece, not because it is a sheep.
         if (target.Behaviors.Find<WoolBehavior>() is { } wool)
         {
-            int woolColor = ClothVisualBehavior.GetBlockMeta(itemStack.GetDamage());
+            var woolColor = ClothVisualBehavior.GetBlockMeta(itemStack.GetDamage());
             if (!wool.IsShearedOn(target) && wool.ColorOf(target) != woolColor)
             {
                 wool.SetColorOn(target, woolColor);

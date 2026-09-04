@@ -42,9 +42,9 @@ public sealed class HostileMonsterBehavior : IEntityPhysics, IEntityTicker, IEnt
     /// </summary>
     public bool? CanSpawn(EntityLiving self)
     {
-        int x = MathHelper.Floor(self.X);
-        int y = MathHelper.Floor(self.BoundingBox.MinY);
-        int z = MathHelper.Floor(self.Z);
+        var x = MathHelper.Floor(self.X);
+        var y = MathHelper.Floor(self.BoundingBox.MinY);
+        var z = MathHelper.Floor(self.Z);
 
         if (self.World.Lighting.GetBrightness(LightType.Sky, x, y, z) > self.Random.NextInt(32))
         {
@@ -93,9 +93,9 @@ public sealed class HostileMonsterBehavior : IEntityPhysics, IEntityTicker, IEnt
             return self.World.Lighting.GetLightLevel(x, y, z);
         }
 
-        int ambientDarkness = self.World.Environment.AmbientDarkness;
+        var ambientDarkness = self.World.Environment.AmbientDarkness;
         self.World.Environment.AmbientDarkness = 10;
-        int lightLevel = self.World.Lighting.GetLightLevel(x, y, z);
+        var lightLevel = self.World.Lighting.GetLightLevel(x, y, z);
         self.World.Environment.AmbientDarkness = ambientDarkness;
 
         return lightLevel;

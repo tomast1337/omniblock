@@ -18,12 +18,12 @@ public static unsafe class LuauLogHost
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int PrintClosure(IntPtr l)
     {
-        int argumentCount = LuauNative.lua_gettop(l);
+        var argumentCount = LuauNative.lua_gettop(l);
         StringBuilder line = new();
 
-        for (int index = 1; index <= argumentCount; index++)
+        for (var index = 1; index <= argumentCount; index++)
         {
-            IntPtr pointer = LuauNative.luaL_tolstring(l, index, out nuint length);
+            var pointer = LuauNative.luaL_tolstring(l, index, out var length);
             if (index > 1)
             {
                 line.Append('\t');

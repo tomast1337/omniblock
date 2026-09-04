@@ -18,14 +18,14 @@ internal static class WgpuPixelRows
     /// </summary>
     public static ReadOnlySpan<byte> Align(ReadOnlySpan<byte> rgba, uint width, uint height, out uint bytesPerRow)
     {
-        uint tight = width * 4;
+        var tight = width * 4;
         bytesPerRow = height > 1
             ? (tight + Alignment - 1) / Alignment * Alignment
             : tight;
 
         if (bytesPerRow == tight) return rgba;
 
-        byte[] padded = new byte[bytesPerRow * height];
+        var padded = new byte[bytesPerRow * height];
         for (uint row = 0; row < height; row++)
         {
             rgba.Slice((int)(row * tight), (int)tight).CopyTo(padded.AsSpan((int)(row * bytesPerRow)));

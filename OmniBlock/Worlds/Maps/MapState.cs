@@ -33,8 +33,8 @@ public class MapState(string id) : PersistentState(id)
             Scale = 4;
         }
 
-        short nbtWidth = nbt.GetShort("width");
-        short nbtHeight = nbt.GetShort("height");
+        var nbtWidth = nbt.GetShort("width");
+        var nbtHeight = nbt.GetShort("height");
 
         if (nbtWidth == 128 && nbtHeight == 128)
         {
@@ -42,19 +42,19 @@ public class MapState(string id) : PersistentState(id)
         }
         else
         {
-            byte[] rawColors = nbt.GetByteArray("colors");
+            var rawColors = nbt.GetByteArray("colors");
             Colors = new byte[128 * 128];
-            int offsetX = (128 - nbtWidth) / 2;
-            int offsetZ = (128 - nbtHeight) / 2;
+            var offsetX = (128 - nbtWidth) / 2;
+            var offsetZ = (128 - nbtHeight) / 2;
 
-            for (int y = 0; y < nbtHeight; ++y)
+            for (var y = 0; y < nbtHeight; ++y)
             {
-                int targetZ = y + offsetZ;
+                var targetZ = y + offsetZ;
                 if (targetZ >= 0 && targetZ < 128)
                 {
-                    for (int x = 0; x < nbtWidth; ++x)
+                    for (var x = 0; x < nbtWidth; ++x)
                     {
-                        int targetX = x + offsetX;
+                        var targetX = x + offsetX;
                         if (targetX >= 0 && targetX < 128)
                         {
                             Colors[targetX + targetZ * 128] = rawColors[x + y * nbtWidth];
@@ -85,25 +85,25 @@ public class MapState(string id) : PersistentState(id)
 
         Icons.Clear();
 
-        foreach (MapUpdateTracker mapInfo in _updateTrackers.Values.ToList())
+        foreach (var mapInfo in _updateTrackers.Values.ToList())
         {
             if (!mapInfo.Player.Dead && mapInfo.Player.Inventory.Contains(mapItem))
             {
-                float relX = (float)(mapInfo.Player.X - CenterX) / (1 << Scale);
-                float relZ = (float)(mapInfo.Player.Z - CenterZ) / (1 << Scale);
+                var relX = (float)(mapInfo.Player.X - CenterX) / (1 << Scale);
+                var relZ = (float)(mapInfo.Player.Z - CenterZ) / (1 << Scale);
                 byte limitX = 64;
                 byte limitZ = 64;
 
                 if (relX >= -limitX && relZ >= -limitZ && relX <= limitX && relZ <= limitZ)
                 {
                     byte iconType = 0;
-                    byte iconX = (byte)(int)(relX * 2.0F + 0.5D);
-                    byte iconZ = (byte)(int)(relZ * 2.0F + 0.5D);
-                    byte iconRot = (byte)(int)(viewer.Yaw * 16.0F / 360.0F + 0.5D);
+                    var iconX = (byte)(int)(relX * 2.0F + 0.5D);
+                    var iconZ = (byte)(int)(relZ * 2.0F + 0.5D);
+                    var iconRot = (byte)(int)(viewer.Yaw * 16.0F / 360.0F + 0.5D);
 
                     if (Dimension < 0)
                     {
-                        int randomTick = InventoryTicks / 10;
+                        var randomTick = InventoryTicks / 10;
                         iconRot = (byte)(((randomTick * randomTick * 34187121 + randomTick * 121) >> 15) & 15);
                     }
 
@@ -120,16 +120,13 @@ public class MapState(string id) : PersistentState(id)
         }
     }
 
-    public byte[]? GetPlayerMarkerPacket(EntityPlayer player)
-    {
-        return _updateTrackers.GetValueOrDefault(player)?.getUpdateData();
-    }
+    public byte[]? GetPlayerMarkerPacket(EntityPlayer player) => _updateTrackers.GetValueOrDefault(player)?.getUpdateData();
 
     public void MarkDirty(int xColumn, int minZ, int maxZ)
     {
         MarkDirty();
 
-        foreach (MapUpdateTracker mapInfo in _updateTrackers.Values)
+        foreach (var mapInfo in _updateTrackers.Values)
         {
             if (mapInfo.StartZ[xColumn] < 0 || mapInfo.StartZ[xColumn] > minZ)
             {
@@ -147,10 +144,10 @@ public class MapState(string id) : PersistentState(id)
     {
         if (packet[0] == 0)
         {
-            int columnIndex = packet[1] & 255;
-            int startZ = packet[2] & 255;
+            var columnIndex = packet[1] & 255;
+            var startZ = packet[2] & 255;
 
-            for (int i = 0; i < packet.Length - 3; ++i)
+            for (var i = 0; i < packet.Length - 3; ++i)
             {
                 Colors[(i + startZ) * 128 + columnIndex] = packet[i + 3];
             }
@@ -161,12 +158,12 @@ public class MapState(string id) : PersistentState(id)
         {
             Icons.Clear();
 
-            for (int i = 0; i < (packet.Length - 1) / 3; ++i)
+            for (var i = 0; i < (packet.Length - 1) / 3; ++i)
             {
-                byte type = (byte)(packet[i * 3 + 1] % 16);
-                byte x = packet[i * 3 + 2];
-                byte z = packet[i * 3 + 3];
-                byte rot = (byte)(packet[i * 3 + 1] / 16);
+                var type = (byte)(packet[i * 3 + 1] % 16);
+                var x = packet[i * 3 + 2];
+                var z = packet[i * 3 + 3];
+                var rot = (byte)(packet[i * 3 + 1] / 16);
                 Icons.Add(new MapIcon(type, x, z, rot));
             }
         }

@@ -43,7 +43,7 @@ public class SelectWorldTypeScreen(
         Panel buttonPanel = new();
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
-        Button btnDone = CreateButton();
+        var btnDone = CreateButton();
         btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.Width = 100;
         btnDone.Style.SetMargin(2);
@@ -57,7 +57,7 @@ public class SelectWorldTypeScreen(
         };
         buttonPanel.AddChild(btnDone);
 
-        Button btnCancel = CreateButton();
+        var btnCancel = CreateButton();
         btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 100;
         btnCancel.Style.SetMargin(2);
@@ -76,12 +76,12 @@ public class SelectWorldTypeScreen(
     private void PopulateTypeList()
     {
         _listItems.Clear();
-        foreach (WorldType type in _types)
+        foreach (var type in _types)
         {
             type.SetDisplayName(Translations.Get($"selectWorld.type.{type.Name.ToLowerInvariant()}.title"))
                 .SetDescription(Translations.Get($"selectWorld.type.{type.Name.ToLowerInvariant()}.description"));
 
-            int index = _listItems.Count;
+            var index = _listItems.Count;
             SelectWorldTypeListItem item = new(type);
             item.OnClick += e => SelectItem(index);
             _scrollView.AddContent(item);
@@ -92,7 +92,7 @@ public class SelectWorldTypeScreen(
     private void SelectItem(int index)
     {
         _selectedIndex = index;
-        foreach (SelectWorldTypeListItem item in _listItems)
+        foreach (var item in _listItems)
         {
             item.IsSelected = false;
         }

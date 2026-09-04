@@ -20,16 +20,16 @@ internal class WaterSprite() : Rendering.Core.Textures.DynamicTexture(BlockRegis
             return;
         }
 
-        for (int x = 0; x < 16; ++x)
+        for (var x = 0; x < 16; ++x)
         {
-            for (int y = 0; y < 16; ++y)
+            for (var y = 0; y < 16; ++y)
             {
-                float accumulatedFlow = 0.0F;
+                var accumulatedFlow = 0.0F;
 
-                for (int nx = x - 1; nx <= x + 1; ++nx)
+                for (var nx = x - 1; nx <= x + 1; ++nx)
                 {
-                    int sampleX = nx & 15;
-                    int sampleY = y & 15;
+                    var sampleX = nx & 15;
+                    var sampleY = y & 15;
                     accumulatedFlow += _current[sampleX + sampleY * 16];
                 }
 
@@ -37,9 +37,9 @@ internal class WaterSprite() : Rendering.Core.Textures.DynamicTexture(BlockRegis
             }
         }
 
-        for (int x = 0; x < 16; ++x)
+        for (var x = 0; x < 16; ++x)
         {
-            for (int y = 0; y < 16; ++y)
+            for (var y = 0; y < 16; ++y)
             {
                 _heat[x + y * 16] += _heatDelta[x + y * 16] * 0.05F;
 
@@ -59,9 +59,9 @@ internal class WaterSprite() : Rendering.Core.Textures.DynamicTexture(BlockRegis
 
         (_next, _current) = (_current, _next);
 
-        for (int pixelIndex = 0; pixelIndex < 256; ++pixelIndex)
+        for (var pixelIndex = 0; pixelIndex < 256; ++pixelIndex)
         {
-            float intensity = _current[pixelIndex];
+            var intensity = _current[pixelIndex];
 
             if (intensity > 1.0F)
             {
@@ -73,11 +73,11 @@ internal class WaterSprite() : Rendering.Core.Textures.DynamicTexture(BlockRegis
                 intensity = 0.0F;
             }
 
-            float intensitySq = intensity * intensity;
-            int r = (int)(32.0F + intensitySq * 32.0F);
-            int g = (int)(50.0F + intensitySq * 64.0F);
-            int b = 255;
-            int a = (int)(146.0F + intensitySq * 50.0F);
+            var intensitySq = intensity * intensity;
+            var r = (int)(32.0F + intensitySq * 32.0F);
+            var g = (int)(50.0F + intensitySq * 64.0F);
+            var b = 255;
+            var a = (int)(146.0F + intensitySq * 50.0F);
 
             Pixels[pixelIndex * 4 + 0] = (byte)r;
             Pixels[pixelIndex * 4 + 1] = (byte)g;

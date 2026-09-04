@@ -24,7 +24,7 @@ public enum DeliveryMode
     Reliable,
 
     /// <summary>Retransmitted and ordered within its channel. Inventory, chat, commands.</summary>
-    ReliableOrdered,
+    ReliableOrdered
 }
 
 /// <summary>Why a connection ended, as far as the transport can tell.</summary>
@@ -40,7 +40,7 @@ public enum DisconnectReason
     Timeout,
 
     /// <summary>The handshake did not complete.</summary>
-    ConnectionFailed,
+    ConnectionFailed
 }
 
 /// <summary>

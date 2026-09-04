@@ -6,7 +6,7 @@ public class RedstoneEngine(IBlockReader world, IBlockRuntimeView blocks)
 {
     public bool IsStrongPoweringSide(int x, int y, int z, int side)
     {
-        int blockId = world.GetBlockId(x, y, z);
+        var blockId = world.GetBlockId(x, y, z);
         return blockId != 0 && blocks.GetByProtocolId(blockId).IsStrongPoweringSide(world, x, y, z, side);
     }
 
@@ -23,7 +23,7 @@ public class RedstoneEngine(IBlockReader world, IBlockRuntimeView blocks)
     public bool IsPoweringSide(int x, int y, int z, int side)
     {
         if (world.ShouldSuffocate(x, y, z)) return IsStrongPowered(x, y, z);
-        int blockId = world.GetBlockId(x, y, z);
+        var blockId = world.GetBlockId(x, y, z);
         return blockId != 0 && blocks.GetByProtocolId(blockId).IsPoweringSide(world, x, y, z, side);
     }
 

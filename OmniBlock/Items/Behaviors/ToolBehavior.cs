@@ -24,7 +24,7 @@ internal sealed class ToolBehavior : IItemBehavior
 
     public float GetMiningSpeedMultiplier(Item item, ItemStack itemStack, Block block)
     {
-        foreach (Block effective in _effectiveBlocks)
+        foreach (var effective in _effectiveBlocks)
         {
             if (effective == block)
             {

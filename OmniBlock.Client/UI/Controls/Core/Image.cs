@@ -14,7 +14,7 @@ public class Image : UIElement
 
     public override List<string> GetInspectorProperties()
     {
-        List<string> props = base.GetInspectorProperties();
+        var props = base.GetInspectorProperties();
         if (Texture != null)
         {
             props.Add($"Texture:  Id={Texture.Id}  {Texture.Texture?.Source ?? "null"}");

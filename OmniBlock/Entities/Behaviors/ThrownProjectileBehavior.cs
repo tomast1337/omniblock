@@ -102,7 +102,7 @@ public sealed class ThrownProjectileBehavior : IEntityTicker, IEntityPersistence
             return true;
         }
 
-        float horizontalLength = MathHelper.Sqrt(vx * vx + vz * vz);
+        var horizontalLength = MathHelper.Sqrt(vx * vx + vz * vz);
         self.PrevYaw = self.Yaw = (float)(Math.Atan2(vx, vz) * 180.0D / (float)Math.PI);
         self.PrevPitch = self.Pitch = (float)(Math.Atan2(vy, horizontalLength) * 180.0D / (float)Math.PI);
         return true;
@@ -121,7 +121,7 @@ public sealed class ThrownProjectileBehavior : IEntityTicker, IEntityPersistence
 
         if (self.State[_inGround])
         {
-            int blockId = self.World.Reader.GetBlockId(self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
+            var blockId = self.World.Reader.GetBlockId(self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
             if (blockId == self.State[_inTile])
             {
                 ++self.State[_ticksInGround];
@@ -147,7 +147,7 @@ public sealed class ThrownProjectileBehavior : IEntityTicker, IEntityPersistence
 
         Vec3D rayStart = new(self.X, self.Y, self.Z);
         Vec3D rayEnd = new(self.X + self.VelocityX, self.Y + self.VelocityY, self.Z + self.VelocityZ);
-        HitResult hit = self.World.Reader.Raycast(rayStart, rayEnd);
+        var hit = self.World.Reader.Raycast(rayStart, rayEnd);
         rayStart = new Vec3D(self.X, self.Y, self.Z);
         rayEnd = new Vec3D(self.X + self.VelocityX, self.Y + self.VelocityY, self.Z + self.VelocityZ);
         if (hit.Type != HitResultType.Miss)
@@ -157,12 +157,12 @@ public sealed class ThrownProjectileBehavior : IEntityTicker, IEntityPersistence
 
         if (!self.World.IsRemote)
         {
-            EntityLiving? thrower = Thrower(self);
+            var thrower = Thrower(self);
             Entity? hitEntity = null;
-            List<Entity> entities = self.World.Entities.GetEntities(self, self.BoundingBox.Stretch(self.VelocityX, self.VelocityY, self.VelocityZ).Expand(1.0D, 1.0D, 1.0D));
-            double minHitDistance = 0.0D;
+            var entities = self.World.Entities.GetEntities(self, self.BoundingBox.Stretch(self.VelocityX, self.VelocityY, self.VelocityZ).Expand(1.0D, 1.0D, 1.0D));
+            var minHitDistance = 0.0D;
 
-            foreach (Entity entity in entities)
+            foreach (var entity in entities)
             {
                 if (!entity.HasCollision || (Equals(entity, thrower) && self.State[_ticksInAir] < 5))
                 {
@@ -170,14 +170,14 @@ public sealed class ThrownProjectileBehavior : IEntityTicker, IEntityPersistence
                 }
 
                 const float expandAmount = 0.3F;
-                Box expandedBox = entity.BoundingBox.Expand(expandAmount, expandAmount, expandAmount);
-                HitResult entityHit = expandedBox.Raycast(rayStart, rayEnd);
+                var expandedBox = entity.BoundingBox.Expand(expandAmount, expandAmount, expandAmount);
+                var entityHit = expandedBox.Raycast(rayStart, rayEnd);
                 if (entityHit.Type == HitResultType.Miss)
                 {
                     continue;
                 }
 
-                double distance = rayStart.DistanceTo(entityHit.Pos);
+                var distance = rayStart.DistanceTo(entityHit.Pos);
                 if (!(distance < minHitDistance) && minHitDistance != 0.0D)
                 {
                     continue;
@@ -202,7 +202,7 @@ public sealed class ThrownProjectileBehavior : IEntityTicker, IEntityPersistence
         self.X += self.VelocityX;
         self.Y += self.VelocityY;
         self.Z += self.VelocityZ;
-        float horizontalSpeed = MathHelper.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
+        var horizontalSpeed = MathHelper.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
         self.Yaw = (float)(Math.Atan2(self.VelocityX, self.VelocityZ) * 180.0D / Math.PI);
         self.Pitch = (float)(Math.Atan2(self.VelocityY, horizontalSpeed) * 180.0D / Math.PI);
 
@@ -228,11 +228,11 @@ public sealed class ThrownProjectileBehavior : IEntityTicker, IEntityPersistence
 
         self.Pitch = self.PrevPitch + (self.Pitch - self.PrevPitch) * 0.2F;
         self.Yaw = self.PrevYaw + (self.Yaw - self.PrevYaw) * 0.2F;
-        float drag = 0.99F;
+        var drag = 0.99F;
         const float gravity = 0.03F;
         if (self.IsInWater)
         {
-            for (int i = 0; i < 4; ++i)
+            for (var i = 0; i < 4; ++i)
             {
                 const float trailOffset = 0.25F;
                 self.World.Broadcaster.AddParticle("bubble", self.X - self.VelocityX * trailOffset, self.Y - self.VelocityY * trailOffset, self.Z - self.VelocityZ * trailOffset, self.VelocityX, self.VelocityY, self.VelocityZ);
@@ -255,8 +255,8 @@ public sealed class ThrownProjectileBehavior : IEntityTicker, IEntityPersistence
     /// </summary>
     public static Entity Throw(IWorldContext world, string typeName, EntityLiving thrower)
     {
-        Entity projectile = world.Content.EntityTypes.Create(typeName, world);
-        ThrownProjectileBehavior thrown = projectile.Behaviors.Find<ThrownProjectileBehavior>()!;
+        var projectile = world.Content.EntityTypes.Create(typeName, world);
+        var thrown = projectile.Behaviors.Find<ThrownProjectileBehavior>()!;
         projectile.State.SetRef(thrown._thrower, thrower);
         projectile.SetPositionAndAnglesKeepPrevAngles(thrower.X, thrower.Y + thrower.EyeHeight, thrower.Z, thrower.Yaw, thrower.Pitch);
         projectile.X -= MathHelper.Cos(projectile.Yaw / 180.0F * (float)Math.PI) * 0.16F;
@@ -275,7 +275,7 @@ public sealed class ThrownProjectileBehavior : IEntityTicker, IEntityPersistence
 
     public void SetHeading(Entity self, double dirX, double dirY, double dirZ, float speed, float spread)
     {
-        float length = MathHelper.Sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        var length = MathHelper.Sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
         dirX /= length;
         dirY /= length;
         dirZ /= length;
@@ -288,7 +288,7 @@ public sealed class ThrownProjectileBehavior : IEntityTicker, IEntityPersistence
         self.VelocityX = dirX;
         self.VelocityY = dirY;
         self.VelocityZ = dirZ;
-        float horizontalLength = MathHelper.Sqrt(dirX * dirX + dirZ * dirZ);
+        var horizontalLength = MathHelper.Sqrt(dirX * dirX + dirZ * dirZ);
         self.PrevYaw = self.Yaw = (float)(Math.Atan2(dirX, dirZ) * 180.0D / (float)Math.PI);
         self.PrevPitch = self.Pitch = (float)(Math.Atan2(dirY, horizontalLength) * 180.0D / (float)Math.PI);
         self.State[_ticksInGround] = 0;
@@ -302,16 +302,16 @@ public sealed class ThrownProjectileBehavior : IEntityTicker, IEntityPersistence
 
         if (_hatch is { } hatch && !self.World.IsRemote && self.Random.NextInt(hatch.Chance) == 0)
         {
-            int hatchlings = self.Random.NextInt(hatch.BonusChance) == 0 ? hatch.BonusCount : 1;
-            for (int i = 0; i < hatchlings; ++i)
+            var hatchlings = self.Random.NextInt(hatch.BonusChance) == 0 ? hatch.BonusCount : 1;
+            for (var i = 0; i < hatchlings; ++i)
             {
-                Entity hatchling = self.World.Content.EntityTypes.Create(hatch.Entity, self.World);
+                var hatchling = self.World.Content.EntityTypes.Create(hatch.Entity, self.World);
                 hatchling.SetPositionAndAnglesKeepPrevAngles(self.X, self.Y, self.Z, self.Yaw, 0.0F);
                 self.World.SpawnEntity(hatchling);
             }
         }
 
-        for (int i = 0; i < 8; ++i)
+        for (var i = 0; i < 8; ++i)
         {
             self.World.Broadcaster.AddParticle(_impactParticle, self.X, self.Y, self.Z, 0.0D, 0.0D, 0.0D);
         }

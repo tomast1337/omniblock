@@ -1,10 +1,7 @@
+using System.Text.Json;
 using OmniBlock.Blocks;
 using OmniBlock.Items;
-using OmniBlock.NBT;
-using OmniBlock.Registries;
 using OmniBlock.Processes;
-using OmniBlock.Entities;
-using System.Text.Json;
 
 namespace OmniBlock.Tests.Catalog;
 
@@ -13,12 +10,12 @@ public sealed class ContentIdAllocationTests
     [Fact]
     public void Automatic_ids_are_deterministic_and_do_not_displace_explicit_ids()
     {
-        BlockDefinition explicitBlock = Definition("base", 1);
-        BlockDefinition zebra = Definition("zebra");
-        BlockDefinition apple = Definition("apple");
+        var explicitBlock = Definition("base", 1);
+        var zebra = Definition("zebra");
+        var apple = Definition("apple");
 
-        List<BlockDefinition> forward = ContentIdAllocator.AssignBlockIds([explicitBlock, zebra, apple]);
-        List<BlockDefinition> reverse = ContentIdAllocator.AssignBlockIds([apple, zebra, explicitBlock]);
+        var forward = ContentIdAllocator.AssignBlockIds([explicitBlock, zebra, apple]);
+        var reverse = ContentIdAllocator.AssignBlockIds([apple, zebra, explicitBlock]);
 
         Assert.Equal(0, Find(forward, "apple").ProtocolId);
         Assert.Equal(2, Find(forward, "zebra").ProtocolId);
@@ -29,9 +26,9 @@ public sealed class ContentIdAllocationTests
     [Fact]
     public void Saved_manifest_ids_take_priority_for_automatic_entries()
     {
-        ContentCatalogManifest saved = Manifest(("example:apple", 42));
+        var saved = Manifest(("example:apple", 42));
 
-        List<BlockDefinition> assigned = ContentIdAllocator.AssignBlockIds([Definition("apple", ns: "example")], saved);
+        var assigned = ContentIdAllocator.AssignBlockIds([Definition("apple", ns: "example")], saved);
 
         Assert.Equal(42, Assert.Single(assigned).ProtocolId);
     }
@@ -48,9 +45,9 @@ public sealed class ContentIdAllocationTests
     [Fact]
     public void Fingerprints_are_order_independent_and_change_when_ids_change()
     {
-        ContentCatalogManifest first = Manifest(("example:a", 4), ("example:b", 9));
-        ContentCatalogManifest reordered = Manifest(("example:b", 9), ("example:a", 4));
-        ContentCatalogManifest remapped = Manifest(("example:a", 5), ("example:b", 9));
+        var first = Manifest(("example:a", 4), ("example:b", 9));
+        var reordered = Manifest(("example:b", 9), ("example:a", 4));
+        var remapped = Manifest(("example:a", 5), ("example:b", 9));
 
         Assert.Equal(first.Fingerprint, reordered.Fingerprint);
         Assert.NotEqual(first.Fingerprint, remapped.Fingerprint);
@@ -59,13 +56,13 @@ public sealed class ContentIdAllocationTests
     [Fact]
     public void Compatibility_distinguishes_world_loading_from_network_sync()
     {
-        ContentCatalogManifest saved = Manifest(("base:stone", 1), ("mod:machine", 40));
-        ContentCatalogManifest missingMod = Manifest(("base:stone", 1));
-        ContentCatalogManifest withAdditionalMod = Manifest(
+        var saved = Manifest(("base:stone", 1), ("mod:machine", 40));
+        var missingMod = Manifest(("base:stone", 1));
+        var withAdditionalMod = Manifest(
             ("base:stone", 1), ("mod:machine", 40), ("other:new_block", 41));
 
-        CatalogCompatibility missing = missingMod.CompareTo(saved);
-        CatalogCompatibility additional = withAdditionalMod.CompareTo(saved);
+        var missing = missingMod.CompareTo(saved);
+        var additional = withAdditionalMod.CompareTo(saved);
 
         Assert.False(missing.CanLoadWorld);
         Assert.Contains(ResourceLocation.Parse("mod:machine"), missing.MissingEntries);
@@ -86,12 +83,12 @@ public sealed class ContentIdAllocationTests
     [Fact]
     public void Ordinary_items_receive_deterministic_automatic_ids_without_displacing_explicit_ids()
     {
-        ItemDefinition explicitItem = ItemDefinition("base", 256);
-        ItemDefinition zebra = ItemDefinition("zebra");
-        ItemDefinition apple = ItemDefinition("apple");
+        var explicitItem = ItemDefinition("base", 256);
+        var zebra = ItemDefinition("zebra");
+        var apple = ItemDefinition("apple");
 
-        List<ItemDefinition> forward = ContentIdAllocator.AssignItemIds([explicitItem, zebra, apple]);
-        List<ItemDefinition> reverse = ContentIdAllocator.AssignItemIds(
+        var forward = ContentIdAllocator.AssignItemIds([explicitItem, zebra, apple]);
+        var reverse = ContentIdAllocator.AssignItemIds(
             [ItemDefinition("apple"), ItemDefinition("zebra"), ItemDefinition("base", 256)]);
 
         Assert.Equal(257, forward.Single(item => item.Name == "apple").ProtocolId);
@@ -103,9 +100,9 @@ public sealed class ContentIdAllocationTests
     [Fact]
     public void Saved_item_ids_take_priority_and_round_trip_through_world_manifest_nbt()
     {
-        ContentCatalogManifest saved = Manifest([], [("example:wand", 900)]);
-        List<ItemDefinition> assigned = ContentIdAllocator.AssignItemIds([ItemDefinition("wand", ns: "example")], saved);
-        ContentCatalogManifest restored = ContentCatalogManifest.FromNbt(saved.ToNbt());
+        var saved = Manifest([], [("example:wand", 900)]);
+        var assigned = ContentIdAllocator.AssignItemIds([ItemDefinition("wand", ns: "example")], saved);
+        var restored = ContentCatalogManifest.FromNbt(saved.ToNbt());
 
         Assert.Equal(900, Assert.Single(assigned).ProtocolId);
         Assert.Equal(900, restored.ItemIds[ResourceLocation.Parse("example:wand")]);
@@ -115,12 +112,12 @@ public sealed class ContentIdAllocationTests
     [Fact]
     public void Item_changes_affect_fingerprints_and_report_missing_mod_content()
     {
-        ContentCatalogManifest required = Manifest([], [("base:stick", 280), ("example:wand", 900)]);
-        ContentCatalogManifest missingMod = Manifest([], [("base:stick", 280)]);
-        ContentCatalogManifest remapped = Manifest([], [("base:stick", 281), ("example:wand", 900)]);
+        var required = Manifest([], [("base:stick", 280), ("example:wand", 900)]);
+        var missingMod = Manifest([], [("base:stick", 280)]);
+        var remapped = Manifest([], [("base:stick", 281), ("example:wand", 900)]);
 
-        CatalogCompatibility missing = missingMod.CompareTo(required);
-        CatalogCompatibility changed = remapped.CompareTo(required);
+        var missing = missingMod.CompareTo(required);
+        var changed = remapped.CompareTo(required);
 
         Assert.NotEqual(required.Fingerprint, missingMod.Fingerprint);
         Assert.Contains(ResourceLocation.Parse("example:wand"), missing.MissingItems);
@@ -133,11 +130,11 @@ public sealed class ContentIdAllocationTests
     [Fact]
     public void Process_definition_hash_is_canonical_across_whitespace_and_object_property_order()
     {
-        ProcessDefinition first = JsonSerializer.Deserialize<ProcessDefinition>(
+        var first = JsonSerializer.Deserialize<ProcessDefinition>(
             """{"type":"example:crusher","energy":4000,"input":{"count":1,"item":"base:ore"}}""")!;
-        ProcessDefinition reordered = JsonSerializer.Deserialize<ProcessDefinition>(
+        var reordered = JsonSerializer.Deserialize<ProcessDefinition>(
             """{ "input": { "item":"base:ore", "count":1 }, "energy":4000, "type":"example:crusher" }""")!;
-        ProcessDefinition changed = JsonSerializer.Deserialize<ProcessDefinition>(
+        var changed = JsonSerializer.Deserialize<ProcessDefinition>(
             """{"type":"example:crusher","energy":5000,"input":{"count":1,"item":"base:ore"}}""")!;
 
         Assert.Equal(first.ComputeCanonicalHash(), reordered.ComputeCanonicalHash());
@@ -147,13 +144,13 @@ public sealed class ContentIdAllocationTests
     [Fact]
     public void Process_compatibility_reports_missing_provider_and_changed_definition()
     {
-        ContentCatalogManifest required = ProcessManifest(
+        var required = ProcessManifest(
             ("example:crushing", "example:crusher", "hash-a"),
             ("base:smelting", "omniblock:smelting", "hash-b"));
-        ContentCatalogManifest actual = ProcessManifest(
+        var actual = ProcessManifest(
             ("base:smelting", "omniblock:smelting", "hash-c"));
 
-        CatalogCompatibility compatibility = actual.CompareTo(required);
+        var compatibility = actual.CompareTo(required);
 
         Assert.Contains(ResourceLocation.Parse("example:crushing"), compatibility.MissingProcesses);
         Assert.Contains(ResourceLocation.Parse("example:crusher"), compatibility.MissingProcessProviders);
@@ -167,11 +164,11 @@ public sealed class ContentIdAllocationTests
     [Fact]
     public void Process_manifest_round_trips_and_affects_catalog_fingerprint()
     {
-        ContentCatalogManifest withProcess = ProcessManifest(
+        var withProcess = ProcessManifest(
             ("example:crushing", "example:crusher", "hash-a"));
-        ContentCatalogManifest changed = ProcessManifest(
+        var changed = ProcessManifest(
             ("example:crushing", "example:crusher", "hash-b"));
-        ContentCatalogManifest restored = ContentCatalogManifest.FromNbt(withProcess.ToNbt());
+        var restored = ContentCatalogManifest.FromNbt(withProcess.ToNbt());
 
         Assert.Equal(withProcess.Processes, restored.Processes);
         Assert.Equal(withProcess.Fingerprint, restored.Fingerprint);
@@ -181,11 +178,11 @@ public sealed class ContentIdAllocationTests
     [Fact]
     public void Entity_manifest_contains_identity_provider_definition_and_wire_mappings()
     {
-        EntityCatalogEntry zombie = ContentRuntime.Current.Manifest.Entities[
+        var zombie = ContentRuntime.Current.Manifest.Entities[
             ResourceLocation.Parse("omniblock:zombie")];
-        EntityCatalogEntry arrow = ContentRuntime.Current.Manifest.Entities[
+        var arrow = ContentRuntime.Current.Manifest.Entities[
             ResourceLocation.Parse("omniblock:arrow")];
-        EntityCatalogEntry lightning = ContentRuntime.Current.Manifest.Entities[
+        var lightning = ContentRuntime.Current.Manifest.Entities[
             ResourceLocation.Parse("omniblock:lightningbolt")];
 
         Assert.Equal(ResourceLocation.Parse("omniblock:creature"), zombie.ConstructorProviderType);
@@ -198,18 +195,18 @@ public sealed class ContentIdAllocationTests
     [Fact]
     public void Entity_manifest_round_trips_and_reports_missing_or_changed_content()
     {
-        ContentCatalogManifest required = EntityManifest(
+        var required = EntityManifest(
             ("omniblock:zombie", "omniblock:creature", "hash-a", 54, null, null),
             ("example:drone", "example:machine", "hash-b", 90, 72, null));
-        ContentCatalogManifest missingMod = EntityManifest(
+        var missingMod = EntityManifest(
             ("omniblock:zombie", "omniblock:creature", "hash-a", 54, null, null));
-        ContentCatalogManifest remapped = EntityManifest(
+        var remapped = EntityManifest(
             ("omniblock:zombie", "omniblock:creature", "hash-a", 55, null, null),
             ("example:drone", "example:machine", "hash-b", 90, 72, null));
-        ContentCatalogManifest restored = ContentCatalogManifest.FromNbt(required.ToNbt());
+        var restored = ContentCatalogManifest.FromNbt(required.ToNbt());
 
-        CatalogCompatibility missing = missingMod.CompareTo(required);
-        CatalogCompatibility changed = remapped.CompareTo(required);
+        var missing = missingMod.CompareTo(required);
+        var changed = remapped.CompareTo(required);
         Assert.Equal(required.Entities, restored.Entities);
         Assert.Equal(required.Fingerprint, restored.Fingerprint);
         Assert.Contains(ResourceLocation.Parse("example:drone"), missing.MissingEntities);
@@ -249,7 +246,7 @@ public sealed class ContentIdAllocationTests
     private static ContentCatalogManifest EntityManifest(
         params (string Key, string Constructor, string Hash, int Protocol, int? Object, int? Global)[] entities) =>
         new([], [], [], entities.Select(entry => new KeyValuePair<ResourceLocation, EntityCatalogEntry>(
-            ResourceLocation.Parse(entry.Key), new(ResourceLocation.Parse(entry.Constructor), entry.Hash,
+            ResourceLocation.Parse(entry.Key), new EntityCatalogEntry(ResourceLocation.Parse(entry.Constructor), entry.Hash,
                 entry.Protocol, entry.Object, entry.Global))));
 
     private static ItemDefinition ItemDefinition(string name, int id = -1, string ns = "omniblock") => new()

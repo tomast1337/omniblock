@@ -1,4 +1,3 @@
-using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
@@ -28,6 +27,44 @@ namespace OmniBlock.Luau;
 internal static unsafe partial class LuauNative
 {
     private const string LibraryName = "omniblock_luau";
+
+    // LUA_GLOBALSINDEX is a compile-time pseudo-index, not an exported symbol:
+    // `#define LUA_GLOBALSINDEX (-LUAI_MAXCSTACK - 2002)` (lua.h:21), and LUAI_MAXCSTACK
+    // defaults to 8000 (luaconf.h:81) unless overridden at build time. native/luau/CMakeLists.txt
+    // does not override it, so -10002 is correct for the omniblock_luau artifact this project
+    // builds — but this is an ABI constant baked into that specific build, not something Luau
+    // exposes for C# to query. If LUAI_MAXCSTACK is ever overridden in the native build (or the
+    // vendored Luau submodule changes its default), this must be updated to match.
+    internal const int GlobalsIndex = -10002;
+
+    // lua_GCOp (lua.h:275-323) — no conditional-compilation branches inside this enum, unlike
+    // lua_Type, so unlike LUA_TNUMBER/LUA_TSTRING these ordinals are safe to hardcode.
+    internal const int LUA_GCSTEP = 6;
+    internal const int LUA_GCCOUNT = 3;
+
+    // --- Hot path: cached delegate* unmanaged[Cdecl] pointers -----------------------------
+
+    // Registering this resolver here — inside the first static field's initializer — means it
+    // runs before ANY static member of this class is first touched (C# runs a type's static
+    // field initializers as one block before first use), so every [LibraryImport] call above
+    // benefits from it too, not just the manually-loaded handle below.
+    private static readonly IntPtr s_libraryHandle = LoadLibrary();
+
+    internal static readonly delegate* unmanaged[Cdecl]<IntPtr, int, int, int, int> lua_pcall =
+        (delegate* unmanaged[Cdecl]<IntPtr, int, int, int, int>)NativeLibrary.GetExport(s_libraryHandle, "lua_pcall");
+
+    internal static readonly delegate* unmanaged[Cdecl]<IntPtr, int> lua_gettop =
+        (delegate* unmanaged[Cdecl]<IntPtr, int>)NativeLibrary.GetExport(s_libraryHandle, "lua_gettop");
+
+    internal static readonly delegate* unmanaged[Cdecl]<IntPtr, int, void> lua_settop =
+        (delegate* unmanaged[Cdecl]<IntPtr, int, void>)NativeLibrary.GetExport(s_libraryHandle, "lua_settop");
+
+    // Read from inside LuauCallbacks.Interrupt — the highest-frequency call in the whole
+    // system (every loop back-edge/call/ret/gc safepoint) — to fetch the instruction-budget
+    // counter set up via lua_setthreaddata above. Cached rather than LibraryImport'd for
+    // exactly that reason.
+    internal static readonly delegate* unmanaged[Cdecl]<IntPtr, IntPtr> lua_getthreaddata =
+        (delegate* unmanaged[Cdecl]<IntPtr, IntPtr>)NativeLibrary.GetExport(s_libraryHandle, "lua_getthreaddata");
 
     // --- General surface: [LibraryImport], cold/setup-frequency calls only ---------------
 
@@ -67,20 +104,6 @@ internal static unsafe partial class LuauNative
     [LibraryImport(LibraryName)]
     internal static partial int lua_getfield(IntPtr L, int idx, [MarshalUsing(typeof(Utf8StringMarshaller))] string k);
 
-    // LUA_GLOBALSINDEX is a compile-time pseudo-index, not an exported symbol:
-    // `#define LUA_GLOBALSINDEX (-LUAI_MAXCSTACK - 2002)` (lua.h:21), and LUAI_MAXCSTACK
-    // defaults to 8000 (luaconf.h:81) unless overridden at build time. native/luau/CMakeLists.txt
-    // does not override it, so -10002 is correct for the omniblock_luau artifact this project
-    // builds — but this is an ABI constant baked into that specific build, not something Luau
-    // exposes for C# to query. If LUAI_MAXCSTACK is ever overridden in the native build (or the
-    // vendored Luau submodule changes its default), this must be updated to match.
-    internal const int GlobalsIndex = -10002;
-
-    // lua_GCOp (lua.h:275-323) — no conditional-compilation branches inside this enum, unlike
-    // lua_Type, so unlike LUA_TNUMBER/LUA_TSTRING these ordinals are safe to hardcode.
-    internal const int LUA_GCSTEP = 6;
-    internal const int LUA_GCCOUNT = 3;
-
     [LibraryImport(LibraryName)]
     internal static partial int lua_gc(IntPtr L, int what, int data);
 
@@ -97,7 +120,8 @@ internal static unsafe partial class LuauNative
     internal static partial void lua_pushcclosurek(
         IntPtr L,
         delegate* unmanaged[Cdecl]<IntPtr, int> fn,
-        [MarshalUsing(typeof(Utf8StringMarshaller))] string? debugname,
+        [MarshalUsing(typeof(Utf8StringMarshaller))]
+        string? debugname,
         int nup,
         IntPtr cont);
 
@@ -140,7 +164,8 @@ internal static unsafe partial class LuauNative
     [LibraryImport(LibraryName)]
     internal static partial int luau_load(
         IntPtr L,
-        [MarshalUsing(typeof(Utf8StringMarshaller))] string chunkname,
+        [MarshalUsing(typeof(Utf8StringMarshaller))]
+        string chunkname,
         byte* data,
         nuint size,
         int env);
@@ -228,14 +253,6 @@ internal static unsafe partial class LuauNative
     [LibraryImport(LibraryName)]
     internal static partial int luaL_checkinteger(IntPtr L, int numArg);
 
-    // --- Hot path: cached delegate* unmanaged[Cdecl] pointers -----------------------------
-
-    // Registering this resolver here — inside the first static field's initializer — means it
-    // runs before ANY static member of this class is first touched (C# runs a type's static
-    // field initializers as one block before first use), so every [LibraryImport] call above
-    // benefits from it too, not just the manually-loaded handle below.
-    private static readonly IntPtr s_libraryHandle = LoadLibrary();
-
     private static IntPtr LoadLibrary()
     {
         NativeLibrary.SetDllImportResolver(typeof(LuauNative).Assembly, ResolveLibrary);
@@ -256,26 +273,10 @@ internal static unsafe partial class LuauNative
             return IntPtr.Zero;
         }
 
-        string fileName = OperatingSystem.IsWindows() ? "omniblock_luau.dll"
+        var fileName = OperatingSystem.IsWindows() ? "omniblock_luau.dll"
             : OperatingSystem.IsMacOS() ? "libomniblock_luau.dylib"
             : "libomniblock_luau.so";
-        string candidate = Path.Combine(AppContext.BaseDirectory, fileName);
-        return NativeLibrary.TryLoad(candidate, out IntPtr handle) ? handle : IntPtr.Zero;
+        var candidate = Path.Combine(AppContext.BaseDirectory, fileName);
+        return NativeLibrary.TryLoad(candidate, out var handle) ? handle : IntPtr.Zero;
     }
-
-    internal static readonly delegate* unmanaged[Cdecl]<IntPtr, int, int, int, int> lua_pcall =
-        (delegate* unmanaged[Cdecl]<IntPtr, int, int, int, int>)NativeLibrary.GetExport(s_libraryHandle, "lua_pcall");
-
-    internal static readonly delegate* unmanaged[Cdecl]<IntPtr, int> lua_gettop =
-        (delegate* unmanaged[Cdecl]<IntPtr, int>)NativeLibrary.GetExport(s_libraryHandle, "lua_gettop");
-
-    internal static readonly delegate* unmanaged[Cdecl]<IntPtr, int, void> lua_settop =
-        (delegate* unmanaged[Cdecl]<IntPtr, int, void>)NativeLibrary.GetExport(s_libraryHandle, "lua_settop");
-
-    // Read from inside LuauCallbacks.Interrupt — the highest-frequency call in the whole
-    // system (every loop back-edge/call/ret/gc safepoint) — to fetch the instruction-budget
-    // counter set up via lua_setthreaddata above. Cached rather than LibraryImport'd for
-    // exactly that reason.
-    internal static readonly delegate* unmanaged[Cdecl]<IntPtr, IntPtr> lua_getthreaddata =
-        (delegate* unmanaged[Cdecl]<IntPtr, IntPtr>)NativeLibrary.GetExport(s_libraryHandle, "lua_getthreaddata");
 }

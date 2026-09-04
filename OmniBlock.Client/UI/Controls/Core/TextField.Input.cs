@@ -8,11 +8,11 @@ public partial class TextField
     {
         if (!IsFocused || !e.IsDown) return;
 
-        bool control = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_LMETA) || Keyboard.isKeyDown(Keyboard.KEY_RMETA);
-        bool shift = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
+        var control = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_LMETA) || Keyboard.isKeyDown(Keyboard.KEY_RMETA);
+        var shift = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
 
-        string oldText = _buffer.Text;
-        bool handled = false;
+        var oldText = _buffer.Text;
+        var handled = false;
 
         if (control)
         {
@@ -49,7 +49,7 @@ public partial class TextField
                 _buffer.SelectAll();
                 return true;
             case Keyboard.KEY_C:
-                string selectedText = _buffer.SelectedText;
+                var selectedText = _buffer.SelectedText;
                 if (!string.IsNullOrEmpty(selectedText))
                 {
                     Display.SetClipboardString(selectedText);
@@ -66,7 +66,7 @@ public partial class TextField
 
                 return true;
             case Keyboard.KEY_V:
-                string clipboardText = Display.GetClipboardString();
+                var clipboardText = Display.GetClipboardString();
                 if (!string.IsNullOrEmpty(clipboardText))
                 {
                     _buffer.Insert(clipboardText);

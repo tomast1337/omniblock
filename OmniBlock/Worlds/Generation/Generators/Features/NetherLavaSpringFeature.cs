@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core.Systems;
 
@@ -22,7 +21,7 @@ internal class NetherLavaSpringFeature : Feature
             return false;
         }
 
-        int netherrackNeighbors = 0;
+        var netherrackNeighbors = 0;
         if (level.Reader.GetBlockId(x - 1, y, z) == level.Content.Blocks.Get("netherrack").Id)
         {
             ++netherrackNeighbors;
@@ -49,7 +48,7 @@ internal class NetherLavaSpringFeature : Feature
         }
 
 
-        int airNeighbors = 0;
+        var airNeighbors = 0;
         if (level.Reader.IsAir(x - 1, y, z))
         {
             ++airNeighbors;

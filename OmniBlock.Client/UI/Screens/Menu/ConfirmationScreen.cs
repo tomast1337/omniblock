@@ -41,7 +41,7 @@ public class ConfirmationScreen(
         Panel buttonPanel = new();
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
-        Button btnConfirm = CreateButton();
+        var btnConfirm = CreateButton();
         btnConfirm.AutomationId = "confirmation.confirm";
         btnConfirm.Text = confirmText;
         btnConfirm.Style.Width = 100;
@@ -53,7 +53,7 @@ public class ConfirmationScreen(
         };
         buttonPanel.AddChild(btnConfirm);
 
-        Button btnCancel = CreateButton();
+        var btnCancel = CreateButton();
         btnCancel.AutomationId = "confirmation.cancel";
         btnCancel.Text = cancelText;
         btnCancel.Style.Width = 100;

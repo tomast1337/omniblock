@@ -43,18 +43,18 @@ public sealed class ChunkCacheOfferMessage : Message
     {
         Entries.Clear();
 
-        int count = stream.ReadInt();
+        var count = stream.ReadInt();
         if (count is < 0 or > MaxEntries)
         {
             throw new InvalidDataException($"Chunk cache offer declares {count} entries; the limit is {MaxEntries}.");
         }
 
         Entries.Capacity = count;
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            int x = stream.ReadInt();
-            int z = stream.ReadInt();
-            ulong hash = (ulong)stream.ReadLong();
+            var x = stream.ReadInt();
+            var z = stream.ReadInt();
+            var hash = (ulong)stream.ReadLong();
 
             Entries.Add(new KeyValuePair<ChunkPos, ulong>(new ChunkPos(x, z), hash));
         }
@@ -64,7 +64,7 @@ public sealed class ChunkCacheOfferMessage : Message
     {
         stream.WriteInt(Entries.Count);
 
-        foreach ((ChunkPos position, ulong hash) in Entries)
+        foreach (var (position, hash) in Entries)
         {
             stream.WriteInt(position.X);
             stream.WriteInt(position.Z);

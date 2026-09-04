@@ -12,8 +12,8 @@ public sealed class LuauClientStateHostIntegrationTests
         Skip.IfNot(LuauQuickRun.IsAvailable(), "native library not resolvable for this checkout.");
         using LuauState state = new();
         state.ResetInstructionBudget(100_000);
-        bool worldLoaded = false;
-        bool playerReady = false;
+        var worldLoaded = false;
+        var playerReady = false;
         string? worldId = null;
         LuauClientStateHost.WorldLoaded = () => worldLoaded;
         LuauClientStateHost.PlayerReady = () => playerReady;
@@ -21,9 +21,9 @@ public sealed class LuauClientStateHostIntegrationTests
 
         try
         {
-            Assert.True(state.TryExecute(LuauDomHost.Bootstrap, out string omniError), omniError);
+            Assert.True(state.TryExecute(LuauDomHost.Bootstrap, out var omniError), omniError);
             LuauClientStateHost.Install(state.Handle);
-            Assert.True(state.TryExecute(LuauClientStateHost.Bootstrap, out string bootstrapError), bootstrapError);
+            Assert.True(state.TryExecute(LuauClientStateHost.Bootstrap, out var bootstrapError), bootstrapError);
 
             AssertValue(state, "OMNI.client.state.worldLoaded", "false");
             AssertValue(state, "OMNI.client.state.playerReady", "false");
@@ -36,7 +36,7 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.worldLoaded", "true");
             AssertValue(state, "OMNI.client.state.playerReady", "true");
             AssertValue(state, "OMNI.client.state.worldId", "e2e-smoke");
-            Assert.False(state.TryExecute("OMNI.client.state.worldLoaded = false", out string readOnlyError));
+            Assert.False(state.TryExecute("OMNI.client.state.worldLoaded = false", out var readOnlyError));
             Assert.Contains("read-only", readOnlyError);
         }
         finally
@@ -49,7 +49,7 @@ public sealed class LuauClientStateHostIntegrationTests
 
     private static void AssertValue(LuauState state, string expression, string expected)
     {
-        Assert.True(state.TryExecute(expression, out string value), value);
+        Assert.True(state.TryExecute(expression, out var value), value);
         Assert.Equal(expected, value);
     }
 }

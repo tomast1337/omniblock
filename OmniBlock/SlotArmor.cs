@@ -7,10 +7,10 @@ using OmniBlock.Screens.Slots;
 
 namespace OmniBlock;
 
-class SlotArmor : Slot
+internal class SlotArmor : Slot
 {
-    readonly int armorType;
-    readonly PlayerScreenHandler inventory;
+    private readonly int armorType;
+    private readonly PlayerScreenHandler inventory;
 
     public SlotArmor(PlayerScreenHandler screenHandler, IInventory inventory, int slotIndex, int x, int y, int armorType) : base(inventory, slotIndex, x, y)
     {
@@ -19,14 +19,11 @@ class SlotArmor : Slot
     }
 
 
-    public override int getMaxItemCount()
-    {
-        return 1;
-    }
+    public override int getMaxItemCount() => 1;
 
     public override bool canInsert(ItemStack stack)
     {
-        ArmorBehavior? armor = stack.GetItem().GetBehavior<ArmorBehavior>();
+        var armor = stack.GetItem().GetBehavior<ArmorBehavior>();
         return armor != null
             ? armor.ArmorType == armorType
             : stack.GetItem().Id == BlockRegistry.Get("pumpkin").Id && armorType == 0;

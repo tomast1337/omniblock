@@ -48,17 +48,17 @@ public partial class Flex
 
         internal void ResetToDefault()
         {
-            for (int i = 0; i < Position.Length; i++)
+            for (var i = 0; i < Position.Length; i++)
             {
                 Position[i] = 0;
             }
 
-            for (int i = 0; i < Dimensions.Length; i++)
+            for (var i = 0; i < Dimensions.Length; i++)
             {
                 Dimensions[i] = float.NaN;
             }
 
-            for (int i = 0; i < 6; i++)
+            for (var i = 0; i < 6; i++)
             {
                 Margin[i] = 0;
                 Border[i] = 0;
@@ -73,12 +73,12 @@ public partial class Flex
             lastParentDirection = Direction.NeverUsed_1;
             nextCachedMeasurementsIndex = 0;
 
-            foreach (CachedMeasurement cm in cachedMeasurements)
+            foreach (var cm in cachedMeasurements)
             {
                 cm.ResetToDefault();
             }
 
-            for (int i = 0; i < measuredDimensions.Length; i++)
+            for (var i = 0; i < measuredDimensions.Length; i++)
             {
                 measuredDimensions[i] = float.NaN;
             }

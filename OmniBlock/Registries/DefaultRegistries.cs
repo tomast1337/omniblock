@@ -31,9 +31,9 @@ public static class DefaultRegistries
         MaterialRegistry.Initialize();
         SoundGroupRegistry.Initialize();
 
-        var toolMaterialBootLoader = new DataAssetLoader<ToolMaterialDefinition>(RegistryDefinitions.ToolMaterials.AssetPath, LoadLocations.Assets, allowUnhandled: false);
+        var toolMaterialBootLoader = new DataAssetLoader<ToolMaterialDefinition>(RegistryDefinitions.ToolMaterials.AssetPath, LoadLocations.Assets, false);
         toolMaterialBootLoader.LoadFromPaths(null, null, null);
-        var armorMaterialBootLoader = new DataAssetLoader<ArmorMaterialDefinition>(RegistryDefinitions.ArmorMaterials.AssetPath, LoadLocations.Assets, allowUnhandled: false);
+        var armorMaterialBootLoader = new DataAssetLoader<ArmorMaterialDefinition>(RegistryDefinitions.ArmorMaterials.AssetPath, LoadLocations.Assets, false);
         armorMaterialBootLoader.LoadFromPaths(null, null, null);
         if (toolMaterialBootLoader.HasErrors || armorMaterialBootLoader.HasErrors)
         {
@@ -50,7 +50,7 @@ public static class DefaultRegistries
             throw new AssetLoadException(itemBootLoader.FirstErrorMessage ?? "Failed to load item definitions.");
         }
 
-        foreach (ItemDefinition definition in ContentIdAllocator.AssignItemIds(itemBootLoader))
+        foreach (var definition in ContentIdAllocator.AssignItemIds(itemBootLoader))
         {
             content.AddItemDefinition(definition);
         }
@@ -71,7 +71,7 @@ public static class DefaultRegistries
         entityLoader.LoadFromPaths(null, null, null);
         if (entityLoader.HasErrors)
             throw new AssetLoadException(entityLoader.FirstErrorMessage ?? "Failed to load entity definitions.");
-        foreach (EntityDefinition definition in entityLoader) content.AddEntityDefinition(definition);
+        foreach (var definition in entityLoader) content.AddEntityDefinition(definition);
 
         // Blocks and entity definitions now exist, so every item cross-reference can be resolved
         // and the item catalog frozen before entity constructors consume item behaviors.
@@ -80,16 +80,16 @@ public static class DefaultRegistries
 
         // Compile the built-in process catalog as part of the same atomic content snapshot. The
         // legacy dynamic recipe registry remains registered below until its runtime consumers move.
-        var processLoader = new DataAssetLoader<ProcessDefinition>("recipe", LoadLocations.Assets, allowUnhandled: false);
+        var processLoader = new DataAssetLoader<ProcessDefinition>("recipe", LoadLocations.Assets, false);
         processLoader.LoadFromPaths(null, null, null);
         if (processLoader.HasErrors)
             throw new AssetLoadException(processLoader.FirstErrorMessage ?? "Failed to load process definitions.");
-        foreach (ProcessDefinition definition in processLoader) content.AddProcessDefinition(definition);
+        foreach (var definition in processLoader) content.AddProcessDefinition(definition);
 
         Biomes.Bootstrap(typeof(Biome));
 
         // After both registries above: every spawn entry names an entity type that must already exist.
-        var biomeSpawnLoader = new DataAssetLoader<BiomeSpawnDefinition>(RegistryDefinitions.BiomeSpawns.AssetPath, LoadLocations.Assets, allowUnhandled: false);
+        var biomeSpawnLoader = new DataAssetLoader<BiomeSpawnDefinition>(RegistryDefinitions.BiomeSpawns.AssetPath, LoadLocations.Assets, false);
         biomeSpawnLoader.LoadFromPaths(null, null, null);
         if (biomeSpawnLoader.HasErrors)
         {

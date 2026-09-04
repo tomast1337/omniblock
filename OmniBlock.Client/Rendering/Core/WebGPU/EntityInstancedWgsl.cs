@@ -16,51 +16,35 @@ namespace OmniBlock.Client.Rendering.Core.WebGPU;
 [StructLayout(LayoutKind.Explicit, Size = 240)]
 public struct EntityInstancedWgslUniforms
 {
-    [FieldOffset(0)]
-    public Matrix4x4 ProjectionMatrix;
+    [FieldOffset(0)] public Matrix4x4 ProjectionMatrix;
 
-    [FieldOffset(64)]
-    public Matrix4x4 TextureMatrix;
+    [FieldOffset(64)] public Matrix4x4 TextureMatrix;
 
-    [FieldOffset(128)]
-    public Vector3 Ambient;
+    [FieldOffset(128)] public Vector3 Ambient;
 
-    [FieldOffset(140)]
-    public uint LightingEnabled;
+    [FieldOffset(140)] public uint LightingEnabled;
 
-    [FieldOffset(144)]
-    public Vector3 Light0Dir;
+    [FieldOffset(144)] public Vector3 Light0Dir;
 
-    [FieldOffset(156)]
-    public uint UseTexture;
+    [FieldOffset(156)] public uint UseTexture;
 
-    [FieldOffset(160)]
-    public Vector3 Light0Diffuse;
+    [FieldOffset(160)] public Vector3 Light0Diffuse;
 
-    [FieldOffset(172)]
-    public float AlphaThreshold;
+    [FieldOffset(172)] public float AlphaThreshold;
 
-    [FieldOffset(176)]
-    public Vector3 Light1Dir;
+    [FieldOffset(176)] public Vector3 Light1Dir;
 
-    [FieldOffset(188)]
-    public uint FogEnabled;
+    [FieldOffset(188)] public uint FogEnabled;
 
-    [FieldOffset(192)]
-    public Vector3 Light1Diffuse;
+    [FieldOffset(192)] public Vector3 Light1Diffuse;
 
-    [FieldOffset(204)]
-    public int FogMode;
+    [FieldOffset(204)] public int FogMode;
 
-    [FieldOffset(208)]
-    public Vector4 FogColor;
+    [FieldOffset(208)] public Vector4 FogColor;
 
-    [FieldOffset(224)]
-    public float FogStart;
+    [FieldOffset(224)] public float FogStart;
 
-    [FieldOffset(228)]
-    public float FogEnd;
+    [FieldOffset(228)] public float FogEnd;
 
-    [FieldOffset(232)]
-    public float FogDensity;
+    [FieldOffset(232)] public float FogDensity;
 }

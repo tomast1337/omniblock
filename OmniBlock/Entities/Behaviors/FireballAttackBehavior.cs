@@ -1,5 +1,4 @@
 using OmniBlock.Entities.State;
-using OmniBlock.Util.Maths;
 
 namespace OmniBlock.Entities.Behaviors;
 
@@ -52,10 +51,10 @@ public sealed class FireballAttackBehavior : IEntityTicker
 
     public bool OnTickLiving(EntityLiving self)
     {
-        EntityState state = self.State;
+        var state = self.State;
         state[_previousCharge] = state[_charge];
 
-        Entity? target = Reacquire(self);
+        var target = Reacquire(self);
         if (target != null && target.GetSquaredDistance(self) < _attackRange * _attackRange)
         {
             AimAt(self, target);
@@ -86,8 +85,8 @@ public sealed class FireballAttackBehavior : IEntityTicker
     /// </summary>
     private Entity? Reacquire(EntityLiving self)
     {
-        EntityState state = self.State;
-        Entity? target = state.GetRef(_target);
+        var state = self.State;
+        var target = state.GetRef(_target);
 
         if (target is { Dead: true })
         {
@@ -112,9 +111,9 @@ public sealed class FireballAttackBehavior : IEntityTicker
 
     private void AimAt(EntityLiving self, Entity target)
     {
-        double dx = target.X - self.X;
-        double dy = target.BoundingBox.MinY + target.Height / 2.0F - (self.Y + self.Height / 2.0F);
-        double dz = target.Z - self.Z;
+        var dx = target.X - self.X;
+        var dy = target.BoundingBox.MinY + target.Height / 2.0F - (self.Y + self.Height / 2.0F);
+        var dz = target.Z - self.Z;
         self.BodyYaw = self.Yaw = -(float)Math.Atan2(dx, dz) * 180.0F / (float)Math.PI;
 
         if (!self.CanSee(target))
@@ -123,7 +122,7 @@ public sealed class FireballAttackBehavior : IEntityTicker
             return;
         }
 
-        EntityState state = self.State;
+        var state = self.State;
         if (state[_charge] == _chargeTicks / 2)
         {
             PlaySound(self, _chargeSound);
@@ -142,8 +141,8 @@ public sealed class FireballAttackBehavior : IEntityTicker
 
     private void Fire(EntityLiving self, double dx, double dy, double dz)
     {
-        Entity fireball = FireballBehavior.Shoot(self.World, self, dx, dy, dz);
-        Vec3D look = self.GetLook(1.0F);
+        var fireball = FireballBehavior.Shoot(self.World, self, dx, dy, dz);
+        var look = self.GetLook(1.0F);
         fireball.X = self.X + look.X * _spawnOffset;
         fireball.Y = self.Y + self.Height / 2.0F + 0.5D;
         fireball.Z = self.Z + look.Z * _spawnOffset;
@@ -171,8 +170,8 @@ public sealed class FireballAttackBehavior : IEntityTicker
     /// </summary>
     public float ChargeProgress(Entity self, float tickDelta)
     {
-        EntityState state = self.State;
-        float progress = (state[_previousCharge] + (state[_charge] - state[_previousCharge]) * tickDelta) / _chargeTicks;
+        var state = self.State;
+        var progress = (state[_previousCharge] + (state[_charge] - state[_previousCharge]) * tickDelta) / _chargeTicks;
         return progress < 0.0F ? 0.0F : progress;
     }
 }

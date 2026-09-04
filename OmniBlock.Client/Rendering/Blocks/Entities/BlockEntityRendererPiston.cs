@@ -19,11 +19,11 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
             throw new ArgumentException("BlockEntity is not a Piston");
         }
 
-        Block? block = BlockRegistry.GetByProtocolId(piston.PushedBlockId);
+        var block = BlockRegistry.GetByProtocolId(piston.PushedBlockId);
         if (block == null) return;
         if (piston.GetProgress(tickDelta) < 1.0F)
         {
-            Tessellator tess = Tessellator.instance;
+            var tess = Tessellator.instance;
             bindTextureByName("/terrain.png");
             Lighting.turnOff();
 
@@ -32,7 +32,10 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
             // wants, and unlike the enables it replaces it is put back at the end: this used to
             // leave blending on for whatever block entity drew next, so a sign behind a moving
             // piston came out blended and a sign anywhere else did not.
-            GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
+            GLManager.State.Apply(RenderState.Entity with
+            {
+                Blend = BlendMode.Alpha
+            });
 
             GLManager.ShadeModel = ShadeModel.Smooth;
 
@@ -46,7 +49,7 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
             tess.setColorOpaque(1, 1, 1);
 
             var baseCtx = new BlockRenderContext(
-                blockReader: piston.World.Reader,
+                piston.World.Reader,
                 lighting: piston.World.Lighting,
                 tess: tess,
                 renderAllFaces: true,
@@ -57,18 +60,28 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
 
             if (block == BlockRegistry.Get("piston_head") && piston.GetProgress(tickDelta) < 0.5F)
             {
-                var ctx = baseCtx with { CustomFlag = true };
+                var ctx = baseCtx with
+                {
+                    CustomFlag = true
+                };
                 _pistonExtensionRenderer.Draw(block, pos, ref ctx);
             }
             else if (piston.IsSource && !piston.IsExtending)
             {
-                var headCtx = baseCtx with { OverrideTexture = ((PistonBaseBehavior)block.Physics!).GetTopTexture(), CustomFlag = piston.GetProgress(tickDelta) < 0.5F };
+                var headCtx = baseCtx with
+                {
+                    OverrideTexture = ((PistonBaseBehavior)block.Physics!).GetTopTexture(),
+                    CustomFlag = piston.GetProgress(tickDelta) < 0.5F
+                };
 
                 _pistonExtensionRenderer.Draw(BlockRegistry.Get("piston_head"), pos, ref headCtx);
 
                 tess.setTranslationD(x - piston.X, y - piston.Y, z - piston.Z);
 
-                var basePartCtx = baseCtx with { CustomFlag = true };
+                var basePartCtx = baseCtx with
+                {
+                    CustomFlag = true
+                };
                 _pistonBaseRenderer.Draw(block, pos, ref basePartCtx);
             }
             else

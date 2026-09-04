@@ -2,7 +2,6 @@ using OmniBlock.Blocks;
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Entities;
-using OmniBlock.Registries;
 using OmniBlock.Recipes;
 
 namespace OmniBlock.Items;
@@ -70,6 +69,7 @@ public readonly struct ItemBuildContext
     public ArmorMaterial ResolveArmorMaterial(ResourceLocation key) => Resolve(_resolveArmorMaterial, key, "armor material");
     public Material ResolveBlockMaterial(ResourceLocation key) => Resolve(_resolveBlockMaterial, key, "block material");
     public EntityType ResolveEntityType(ResourceLocation key) => Resolve(_resolveEntityType, key, "entity type");
+
     public void ValidateEntityType(ResourceLocation key)
     {
         if (_validateEntityType is null)
@@ -77,17 +77,23 @@ public readonly struct ItemBuildContext
             _ = ResolveEntityType(key);
             return;
         }
-        Action<ResourceLocation> validator = _validateEntityType;
-        ResolveCore(() => { validator(key); return true; }, "entity type", key.ToString());
+
+        var validator = _validateEntityType;
+        ResolveCore(() =>
+        {
+            validator(key);
+            return true;
+        }, "entity type", key.ToString());
     }
+
     public BlockEntityType ResolveBlockEntityType(ResourceLocation key) => Resolve(_resolveBlockEntityType, key, "block-entity type");
     public RecipeDefinition ResolveRecipeDependency(ResourceLocation key) => Resolve(_resolveRecipeDependency, key, "recipe dependency");
     public object ResolveInteractionDependency(ResourceLocation key) => Resolve(_resolveInteractionDependency, key, "interaction dependency");
 
     public int ResolveItemTexture(string key)
     {
-        Func<string, int> resolver = _resolveItemTexture ?? throw Uninitialized();
-        int id = ResolveCore(() => resolver(key), "item texture", key);
+        var resolver = _resolveItemTexture ?? throw Uninitialized();
+        var id = ResolveCore(() => resolver(key), "item texture", key);
         return id >= 0 ? id : throw new KeyNotFoundException($"Unknown item texture '{key}'.");
     }
 

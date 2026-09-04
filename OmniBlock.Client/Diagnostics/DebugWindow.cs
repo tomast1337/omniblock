@@ -22,7 +22,7 @@ internal abstract class DebugWindow
     public virtual void Draw()
     {
         if (!IsVisible) return;
-        bool visible = IsVisible;
+        var visible = IsVisible;
         if (ImGui.Begin(Title, ref visible))
             OnDraw();
         // ImGui.End must always be called, even if Begin returned false (collapsed/clipped).
@@ -30,11 +30,13 @@ internal abstract class DebugWindow
         IsVisible = visible;
     }
 
-    protected virtual void OnDraw() { }
+    protected virtual void OnDraw()
+    {
+    }
 
     /// <summary>
-    /// Renders this window's content inline (no ImGui Begin/End), wrapped in a collapsing header.
-    /// Used when composing multiple windows into a single panel.
+    ///     Renders this window's content inline (no ImGui Begin/End), wrapped in a collapsing header.
+    ///     Used when composing multiple windows into a single panel.
     /// </summary>
     internal void DrawSection()
     {

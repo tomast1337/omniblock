@@ -46,15 +46,9 @@ internal sealed class ChestBehavior(int top, int side, int front, int doubleFron
         return true;
     }
 
-    public void OnPlaced(Block block, OnPlacedEvent @event)
-    {
-        InventoryUtility.OnPlaced(block, @event);
-    }
+    public void OnPlaced(Block block, OnPlacedEvent @event) => InventoryUtility.OnPlaced(block, @event);
 
-    public void OnBreak(Block block, OnBreakEvent @event)
-    {
-        InventoryUtility.OnBreak(block, @event);
-    }
+    public void OnBreak(Block block, OnBreakEvent @event) => InventoryUtility.OnBreak(block, @event);
 
     public bool CanPlaceAt(Block block, CanPlaceAtContext context)
     {

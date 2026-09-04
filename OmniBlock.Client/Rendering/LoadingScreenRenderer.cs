@@ -1,5 +1,4 @@
 using OmniBlock.Client.Rendering.Core;
-using OmniBlock.Client.Rendering.Core.Textures;
 using Color = OmniBlock.Client.UI.Colors.Color;
 
 namespace OmniBlock.Client.Rendering;
@@ -7,40 +6,14 @@ namespace OmniBlock.Client.Rendering;
 public class LoadingScreenRenderer(OmniBlock game) : LoadingDisplay
 {
     private string _currentStage = string.Empty;
-    private string _titleText = string.Empty;
-    private long _lastUpdateMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     private bool _ignoreShutdownCheck;
-
-    public void BeginLoading(string message)
-    {
-        _ignoreShutdownCheck = false;
-        UpdateLoadingTitle(message);
-    }
+    private long _lastUpdateMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    private string _titleText = string.Empty;
 
     public void BeginLoadingPersistent(string message)
     {
         _ignoreShutdownCheck = true;
         UpdateLoadingTitle(_titleText);
-    }
-
-    public void UpdateLoadingTitle(string message)
-    {
-        if (!game.Running && !_ignoreShutdownCheck)
-        {
-            throw new OmniBlockShutdownException();
-        }
-
-        if (game.Running)
-        {
-            _titleText = message;
-
-            ScaledResolution resolution = new(game.Options, game.DisplayWidth, game.DisplayHeight);
-
-            GLManager.Projection.LoadIdentity();
-            GLManager.Projection.Ortho(0.0, resolution.ScaledWidth, resolution.ScaledHeight, 0.0, 100.0, 300.0);
-            GLManager.ModelView.LoadIdentity();
-            GLManager.ModelView.Translate(0.0f, 0.0f, -200.0f);
-        }
     }
 
     public void SetStage(string message)
@@ -68,13 +41,13 @@ public class LoadingScreenRenderer(OmniBlock game) : LoadingDisplay
 
         if (!game.Running) return;
 
-        long currentTimeMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var currentTimeMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         if (currentTimeMs - _lastUpdateMs < 20L) return;
 
         _lastUpdateMs = currentTimeMs;
         ScaledResolution resolution = new(game.Options, game.DisplayWidth, game.DisplayHeight);
-        int width = resolution.ScaledWidth;
-        int height = resolution.ScaledHeight;
+        var width = resolution.ScaledWidth;
+        var height = resolution.ScaledHeight;
 
         GLManager.Projection.LoadIdentity();
         GLManager.Projection.Ortho(0.0, width, height, 0.0, 100.0, 300.0);
@@ -83,11 +56,11 @@ public class LoadingScreenRenderer(OmniBlock game) : LoadingDisplay
 
         void DrawContents()
         {
-            Tessellator tessellator = Tessellator.instance;
-            TextureHandle backgroundHandle = game.TextureManager.GetTextureId("/gui/background.png");
+            var tessellator = Tessellator.instance;
+            var backgroundHandle = game.TextureManager.GetTextureId("/gui/background.png");
             game.TextureManager.BindTexture(backgroundHandle);
 
-            float textureScale = 32.0f;
+            var textureScale = 32.0f;
             tessellator.startDrawingQuads();
             tessellator.setColorOpaque_I(0x404040);
             tessellator.addVertexWithUV(0.0, height, 0.0, 0.0, height / textureScale);
@@ -100,8 +73,8 @@ public class LoadingScreenRenderer(OmniBlock game) : LoadingDisplay
             {
                 const int progressBarWidth = 100;
                 const int progressBarHeight = 2;
-                int x = width / 2 - progressBarWidth / 2;
-                int y = height / 2 + 16;
+                var x = width / 2 - progressBarWidth / 2;
+                var y = height / 2 + 16;
 
                 GLManager.TextureEnabled = false;
                 tessellator.startDrawingQuads();
@@ -120,12 +93,12 @@ public class LoadingScreenRenderer(OmniBlock game) : LoadingDisplay
                 GLManager.TextureEnabled = true;
             }
 
-            int titleX = (width - game.TextRenderer.GetStringWidth(_titleText)) / 2;
-            int titleY = height / 2 - 4 - 16;
+            var titleX = (width - game.TextRenderer.GetStringWidth(_titleText)) / 2;
+            var titleY = height / 2 - 4 - 16;
             game.TextRenderer.DrawStringWithShadow(_titleText, titleX, titleY, Color.White);
 
-            int stageX = (width - game.TextRenderer.GetStringWidth(_currentStage)) / 2;
-            int stageY = height / 2 - 4 + 8;
+            var stageX = (width - game.TextRenderer.GetStringWidth(_currentStage)) / 2;
+            var stageY = height / 2 - 4 + 8;
             game.TextRenderer.DrawStringWithShadow(_currentStage, stageX, stageY, Color.White);
         }
 
@@ -133,5 +106,31 @@ public class LoadingScreenRenderer(OmniBlock game) : LoadingDisplay
 
         Display.update();
         Thread.Yield();
+    }
+
+    public void BeginLoading(string message)
+    {
+        _ignoreShutdownCheck = false;
+        UpdateLoadingTitle(message);
+    }
+
+    public void UpdateLoadingTitle(string message)
+    {
+        if (!game.Running && !_ignoreShutdownCheck)
+        {
+            throw new OmniBlockShutdownException();
+        }
+
+        if (game.Running)
+        {
+            _titleText = message;
+
+            ScaledResolution resolution = new(game.Options, game.DisplayWidth, game.DisplayHeight);
+
+            GLManager.Projection.LoadIdentity();
+            GLManager.Projection.Ortho(0.0, resolution.ScaledWidth, resolution.ScaledHeight, 0.0, 100.0, 300.0);
+            GLManager.ModelView.LoadIdentity();
+            GLManager.ModelView.Translate(0.0f, 0.0f, -200.0f);
+        }
     }
 }

@@ -1,11 +1,11 @@
-using OmniBlock.Entities;
-using OmniBlock.Items;
-using OmniBlock.Util.Maths;
 using Brigadier.NET;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Entities;
+using OmniBlock.Items;
 using OmniBlock.Registries;
+using OmniBlock.Util.Maths;
 
 namespace OmniBlock.Server.Command;
 
@@ -13,27 +13,27 @@ public abstract partial class Command
 {
     private static readonly ILogger s_logger = Log.Instance.For(nameof(Command));
 
-    public virtual string[] Usages { get => [Usage]; }
+    public virtual string[] Usages => [Usage];
     public abstract string Usage { get; }
     public abstract string Description { get; }
     public abstract string[] Names { get; }
 
     /// <summary>
-    /// Required permission for command execution.
+    ///     Required permission for command execution.
     /// </summary>
     /// <remarks>
-    /// Currently, levels of permission are not implemented, but we allow it in command for future use.
-    /// Mojang uses the following naming:<br/>
-    /// 0 - All<br/>
-    /// 1 - Moderator<br/>
-    /// 2 - Admin<br/>
-    /// 3 - Gamemaster<br/>
-    /// 4 - Owner
+    ///     Currently, levels of permission are not implemented, but we allow it in command for future use.
+    ///     Mojang uses the following naming:<br />
+    ///     0 - All<br />
+    ///     1 - Moderator<br />
+    ///     2 - Admin<br />
+    ///     3 - Gamemaster<br />
+    ///     4 - Owner
     /// </remarks>
     public virtual byte PermissionLevel => 2;
 
     /// <summary>
-    /// When true, the command can only be executed on external servers (muliplayer).
+    ///     When true, the command can only be executed on external servers (muliplayer).
     /// </summary>
     public virtual bool DisallowInternalServer => false;
 
@@ -50,9 +50,21 @@ public abstract partial class Command
     protected static RequiredArgumentBuilder<CommandSource, string> ArgumentGreedy(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, Arguments.GreedyString());
     protected static RequiredArgumentBuilder<CommandSource, string> ArgumentString(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, Arguments.Word());
     protected static RequiredArgumentBuilder<CommandSource, ItemStack> ArgumentItemStack(string name, RuntimeItemRegistry items) => RequiredArgumentBuilder<CommandSource, ItemStack>.RequiredArgument(name, new ArgItemStack(items));
+
     protected static RequiredArgumentBuilder<CommandSource, (int id, int meta)> ArgumentBlock(
         string name, RuntimeItemRegistry items, RuntimeBlockRegistry blocks) =>
         RequiredArgumentBuilder<CommandSource, (int id, int meta)>.RequiredArgument(name, new ArgBlock(items, blocks));
+
+    protected static ServerPlayerEntity? GetSenderPlayer(CommandContext<CommandSource> context)
+    {
+        var player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
+        if (player == null)
+        {
+            context.Source.Output.SendMessage("Could not find your player.");
+        }
+
+        return player;
+    }
 
 
     public class CommandSource(ICommandHandler handler, string senderName, ICommandOutput output)
@@ -64,24 +76,13 @@ public abstract partial class Command
         public ICommandOutput Output { get; } = output;
 
         /// <summary>
-        /// Log to all operators and console.
+        ///     Log to all operators and console.
         /// </summary>
         public void LogOp(string message)
         {
-            string logMessage = SenderName + ": " + message;
+            var logMessage = SenderName + ": " + message;
             Server.playerManager.BroadcastOp("§7(" + logMessage + ")");
             s_logger.LogInformation(logMessage);
         }
-    }
-
-    protected static ServerPlayerEntity? GetSenderPlayer(CommandContext<CommandSource> context)
-    {
-        ServerPlayerEntity? player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
-        if (player == null)
-        {
-            context.Source.Output.SendMessage("Could not find your player.");
-        }
-
-        return player;
     }
 }

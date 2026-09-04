@@ -1,7 +1,7 @@
-using OmniBlock.Network.Messages;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Network.Messages;
 
 namespace OmniBlock.Server.Commands;
 
@@ -18,9 +18,12 @@ public class SayCommand : Command.Command
 
     private static int Execute(CommandContext<CommandSource> context)
     {
-        string message = context.GetArgument<string>("message");
+        var message = context.GetArgument<string>("message");
         s_logger.LogInformation("[" + context.Source.SenderName + "] " + message);
-        context.Source.Server.playerManager.sendToAll(new ChatMessage { Text = "§d[Server] " + message });
+        context.Source.Server.playerManager.sendToAll(new ChatMessage
+        {
+            Text = "§d[Server] " + message
+        });
         return 1;
     }
 }

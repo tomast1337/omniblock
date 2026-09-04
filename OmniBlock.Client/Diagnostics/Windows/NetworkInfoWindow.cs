@@ -1,7 +1,7 @@
+using Hexa.NET.ImGui;
 using OmniBlock.Client.Network;
 using OmniBlock.Diagnostics;
 using OmniBlock.Network;
-using Hexa.NET.ImGui;
 
 namespace OmniBlock.Client.Diagnostics.Windows;
 
@@ -32,18 +32,16 @@ namespace OmniBlock.Client.Diagnostics.Windows;
 /// </summary>
 internal sealed class NetworkInfoWindow : DebugWindow
 {
-    private readonly FrameGraph _uploadGraph;
     private readonly FrameGraph _downloadGraph;
 
-    private long _lastUploadBytes;
-    private long _lastDownloadBytes;
-
     private readonly Queue<(float Time, long Upload, long Download, long Processed)> _history = new();
+    private readonly FrameGraph _uploadGraph;
     private float _currentTime;
+    private long _lastDownloadBytes;
 
     private long _lastProcessedPackets;
 
-    public override string Title => "Network Info";
+    private long _lastUploadBytes;
 
     public NetworkInfoWindow()
     {
@@ -51,17 +49,19 @@ internal sealed class NetworkInfoWindow : DebugWindow
         _downloadGraph = new FrameGraph("Download (B/s)", 240);
     }
 
+    public override string Title => "Network Info";
+
     protected override void OnDraw()
     {
-        bool isInternal = MetricRegistry.Get(ClientMetrics.IsInternal);
+        var isInternal = MetricRegistry.Get(ClientMetrics.IsInternal);
 
-        long currentUpload = MetricRegistry.Get(ClientMetrics.UploadBytes);
-        long currentDownload = MetricRegistry.Get(ClientMetrics.DownloadBytes);
-        long currentProcessed = MetricRegistry.Get(ClientMetrics.PacketsProcessed);
+        var currentUpload = MetricRegistry.Get(ClientMetrics.UploadBytes);
+        var currentDownload = MetricRegistry.Get(ClientMetrics.DownloadBytes);
+        var currentProcessed = MetricRegistry.Get(ClientMetrics.PacketsProcessed);
 
-        long uploadDelta = Math.Max(0, currentUpload - _lastUploadBytes);
-        long downloadDelta = Math.Max(0, currentDownload - _lastDownloadBytes);
-        long processedDelta = Math.Max(0, currentProcessed - _lastProcessedPackets);
+        var uploadDelta = Math.Max(0, currentUpload - _lastUploadBytes);
+        var downloadDelta = Math.Max(0, currentDownload - _lastDownloadBytes);
+        var processedDelta = Math.Max(0, currentProcessed - _lastProcessedPackets);
 
         _currentTime += ImGui.GetIO().DeltaTime;
         _history.Enqueue((_currentTime, uploadDelta, downloadDelta, processedDelta));
@@ -75,7 +75,7 @@ internal sealed class NetworkInfoWindow : DebugWindow
         long sumDownload = 0;
         long sumProcessed = 0;
 
-        foreach ((float _, long upload, long download, long processed) in _history)
+        foreach (var (_, upload, download, processed) in _history)
         {
             sumUpload += upload;
             sumDownload += download;
@@ -128,16 +128,16 @@ internal sealed class NetworkInfoWindow : DebugWindow
         // Zero means the peer never declared one. That is either a vanilla server, which gets no
         // extended packets at all, or a build predating the declaration — the two look the same from
         // here, and both explain a clock that never synchronises.
-        long peerProtocol = MetricRegistry.Get(ClientMetrics.PeerProtocolVersion);
+        var peerProtocol = MetricRegistry.Get(ClientMetrics.PeerProtocolVersion);
         ImGuiTextSafe.Text(peerProtocol > 0
             ? $"Protocol: OmniBlock revision {peerProtocol}"
             : "Protocol: vanilla (no OmniBlock declaration)");
 
         ImGui.Spacing();
 
-        long depth = MetricRegistry.Get(ClientMetrics.ReadQueueDepth);
-        long peak = MetricRegistry.Get(ClientMetrics.ReadQueuePeak);
-        long budgetHits = MetricRegistry.Get(ClientMetrics.DrainBudgetHits);
+        var depth = MetricRegistry.Get(ClientMetrics.ReadQueueDepth);
+        var peak = MetricRegistry.Get(ClientMetrics.ReadQueuePeak);
+        var budgetHits = MetricRegistry.Get(ClientMetrics.DrainBudgetHits);
 
         ImGuiTextSafe.Text($"Queue: {depth:N0}, peak {peak:N0}, {processedPerSecond:N0}/s drained");
         ImGuiTextSafe.Text($"Drain: {DrainVerdict(depth, peak, budgetHits, processedPerSecond)}");
@@ -219,7 +219,7 @@ internal sealed class NetworkInfoWindow : DebugWindow
             return;
         }
 
-        bool synced = MetricRegistry.Get(ClientMetrics.ClockSynchronised);
+        var synced = MetricRegistry.Get(ClientMetrics.ClockSynchronised);
 
         if (synced)
         {
@@ -227,8 +227,8 @@ internal sealed class NetworkInfoWindow : DebugWindow
             // the full names do not fit a narrow window, and the histogram below states which
             // statistic each one is.
             ImGuiTextSafe.Text($"RTT {MetricRegistry.Get(ClientMetrics.ClockRttMs)} ms"
-                + $"  jitter {MetricRegistry.Get(ClientMetrics.ClockJitterMs)} ms"
-                + $"  offset {MetricRegistry.Get(ClientMetrics.ClockOffsetMs):+0;-0;0} ms");
+                               + $"  jitter {MetricRegistry.Get(ClientMetrics.ClockJitterMs)} ms"
+                               + $"  offset {MetricRegistry.Get(ClientMetrics.ClockOffsetMs):+0;-0;0} ms");
         }
         else
         {
@@ -255,14 +255,14 @@ internal sealed class NetworkInfoWindow : DebugWindow
     /// </summary>
     private static void DrawSuggestedDelay(bool synced)
     {
-        double suggested = synced
-            ? Math.Clamp(100.0 + (2.0 * MetricRegistry.Get(ClientMetrics.ClockJitterMs)), 100.0, 500.0)
-            : Math.Clamp(100.0 + (2.0 * Math.Max(0.0, MetricRegistry.Get(ClientMetrics.ReadIntervalP95Ms) - 50.0)), 100.0, 500.0);
+        var suggested = synced
+            ? Math.Clamp(100.0 + 2.0 * MetricRegistry.Get(ClientMetrics.ClockJitterMs), 100.0, 500.0)
+            : Math.Clamp(100.0 + 2.0 * Math.Max(0.0, MetricRegistry.Get(ClientMetrics.ReadIntervalP95Ms) - 50.0), 100.0, 500.0);
 
         ImGuiTextSafe.Text($"Suggested interpolation delay: {suggested:F0} ms"
-            + (synced ? string.Empty : "  (from arrival p95)"));
+                           + (synced ? string.Empty : "  (from arrival p95)"));
 
-        long stamps = MetricRegistry.Get(ClientMetrics.TickStampsReceived);
+        var stamps = MetricRegistry.Get(ClientMetrics.TickStampsReceived);
         if (stamps == 0)
         {
             // Distinguishes an unstamped server from a stalled one. Interpolation falls back to the
@@ -275,8 +275,8 @@ internal sealed class NetworkInfoWindow : DebugWindow
         // decides whether the suggestion above is usable at all, and it rides on this line rather
         // than a line of its own: it is true intermittently on a marginal connection, and a verdict
         // that appears and vanishes drags every reading under it up and down while being read.
-        long age = MetricRegistry.Get(ClientMetrics.TickStampAgeMs);
-        string verdict = age > suggested ? "would starve" : "ok";
+        var age = MetricRegistry.Get(ClientMetrics.TickStampAgeMs);
+        var verdict = age > suggested ? "would starve" : "ok";
 
         ImGuiTextSafe.Text($"Stamps: {stamps:N0}, age {age} ms, {verdict}");
     }
@@ -287,8 +287,8 @@ internal sealed class NetworkInfoWindow : DebugWindow
         // Zero means chunks are arriving on the inherited path — a vanilla server, or a client whose
         // message registry never negotiated. On loopback that is correct and deliberate: packets are
         // handed over as objects, so compressing one saves bytes that never exist.
-        long chunks = MetricRegistry.Get(ClientMetrics.ChunksViaMessage);
-        long cached = MetricRegistry.Get(ClientMetrics.ChunksFromCache);
+        var chunks = MetricRegistry.Get(ClientMetrics.ChunksViaMessage);
+        var cached = MetricRegistry.Get(ClientMetrics.ChunksFromCache);
 
         if (!ImGui.CollapsingHeader("World data", ImGuiTreeNodeFlags.DefaultOpen))
         {
@@ -298,7 +298,7 @@ internal sealed class NetworkInfoWindow : DebugWindow
         // Both lines are drawn whether or not their count is non-zero. A first visit has no cache
         // hits and a fully-cached rejoin sends no chunks, so either one alone would come and go as
         // the player moves between explored and new ground.
-        long bytes = MetricRegistry.Get(ClientMetrics.ChunkMessageBytes);
+        var bytes = MetricRegistry.Get(ClientMetrics.ChunkMessageBytes);
         ImGuiTextSafe.Text(chunks > 0
             ? $"Sent:   {chunks:N0}, {FormatMemory(bytes)}, avg {bytes / chunks} B"
             : "Sent:   none");
@@ -307,7 +307,7 @@ internal sealed class NetworkInfoWindow : DebugWindow
         // on a rejoin to somewhere explored it should dominate.
         ImGuiTextSafe.Text(cached > 0
             ? $"Cached: {cached:N0}, {100 * cached / (chunks + cached)}% hit,"
-                + $" ~{FormatMemory(cached * WireBytesPerChunk(chunks))} saved"
+              + $" ~{FormatMemory(cached * WireBytesPerChunk(chunks))} saved"
             : "Cached: none");
     }
 
@@ -332,11 +332,11 @@ internal sealed class NetworkInfoWindow : DebugWindow
 
         // The per-record average is the number to watch: the four position packets this replaces
         // cost 8 to 10 bytes each, so anything at or above that means the deltas are not landing.
-        long records = MetricRegistry.Get(ClientMetrics.SnapshotRecords);
+        var records = MetricRegistry.Get(ClientMetrics.SnapshotRecords);
         if (records > 0)
         {
-            long bytes = MetricRegistry.Get(ClientMetrics.SnapshotBytes);
-            long dropped = MetricRegistry.Get(ClientMetrics.SnapshotsDropped);
+            var bytes = MetricRegistry.Get(ClientMetrics.SnapshotBytes);
+            var dropped = MetricRegistry.Get(ClientMetrics.SnapshotsDropped);
 
             ImGuiTextSafe.Text($"Snapshots: {records:N0} rec, {FormatMemory(bytes)}, avg {bytes / records} B");
 
@@ -363,14 +363,14 @@ internal sealed class NetworkInfoWindow : DebugWindow
     /// </summary>
     private static void DrawInterpolation()
     {
-        EntityInterpolator? interpolator = EntityInterpolator.Current;
+        var interpolator = EntityInterpolator.Current;
         if (interpolator is null)
         {
             ImGuiTextSafe.Text("Interpolation: no active connection.");
             return;
         }
 
-        bool enabled = interpolator.Enabled;
+        var enabled = interpolator.Enabled;
         if (ImGui.Checkbox("Interpolate entities", ref enabled))
         {
             interpolator.Enabled = enabled;
@@ -386,17 +386,17 @@ internal sealed class NetworkInfoWindow : DebugWindow
             return;
         }
 
-        long frozen = MetricRegistry.Get(ClientMetrics.InterpolationFrozen);
+        var frozen = MetricRegistry.Get(ClientMetrics.InterpolationFrozen);
 
         // A range: the delay follows each entity's own update rate, so players and dropped items are
         // legitimately rendered at different depths.
         ImGuiTextSafe.Text($"  delay {MetricRegistry.Get(ClientMetrics.InterpolationDelayMs)}"
-            + $"-{MetricRegistry.Get(ClientMetrics.InterpolationDelayMaxMs)} ms"
-            + $"   {MetricRegistry.Get(ClientMetrics.InterpolationTracked)} tracked");
+                           + $"-{MetricRegistry.Get(ClientMetrics.InterpolationDelayMaxMs)} ms"
+                           + $"   {MetricRegistry.Get(ClientMetrics.InterpolationTracked)} tracked");
 
         ImGuiTextSafe.Text($"  {MetricRegistry.Get(ClientMetrics.InterpolationInterpolated)} interpolated"
-            + $"   {MetricRegistry.Get(ClientMetrics.InterpolationExtrapolated)} extrapolated"
-            + $"   {frozen} frozen");
+                           + $"   {MetricRegistry.Get(ClientMetrics.InterpolationExtrapolated)} extrapolated"
+                           + $"   {frozen} frozen");
 
         // Adjusting: entities mid-ramp between two delays. Steady traffic converges to zero, so a
         // number that stays high says the observed update spacing is unstable rather than that
@@ -411,7 +411,7 @@ internal sealed class NetworkInfoWindow : DebugWindow
         // wrong, which is precisely when a line appearing here would shove the frozen count out from
         // under the cursor.
         ImGuiTextSafe.Text($"  {MetricRegistry.Get(ClientMetrics.InterpolationAdjusting)} adjusting"
-            + $"   {MetricRegistry.Get(ClientMetrics.InterpolationStarvations)} starvations");
+                           + $"   {MetricRegistry.Get(ClientMetrics.InterpolationStarvations)} starvations");
 
         // The delay scales with each entity's own update rate, so a slow tracking frequency is not a
         // reason to starve. What holds is an entity the server has stopped sending updates for at

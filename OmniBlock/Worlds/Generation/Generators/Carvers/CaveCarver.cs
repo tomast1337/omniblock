@@ -1,6 +1,5 @@
 using OmniBlock.Blocks;
 using OmniBlock.Util.Maths;
-using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Worlds.Generation.Generators.Carvers;
@@ -14,30 +13,30 @@ internal class CaveCarver : Carver
     {
         double chunkCenterX = chunkX * 16 + 8;
         double chunkCenterZ = chunkZ * 16 + 8;
-        float yawSpeed = 0.0F;
-        float pitchSpeed = 0.0F;
+        var yawSpeed = 0.0F;
+        var pitchSpeed = 0.0F;
         JavaRandom caveRand = new(Rand.NextLong());
         if (tunnelLength <= 0)
         {
-            int range = Radius * 16 - 16;
+            var range = Radius * 16 - 16;
             tunnelLength = range - caveRand.NextInt(range / 4);
         }
 
-        bool isStartingPoint = false;
+        var isStartingPoint = false;
         if (tunnelStep == -1)
         {
             tunnelStep = tunnelLength / 2;
             isStartingPoint = true;
         }
 
-        int branchStep = caveRand.NextInt(tunnelLength / 2) + tunnelLength / 4;
+        var branchStep = caveRand.NextInt(tunnelLength / 2) + tunnelLength / 4;
 
-        for (bool isLargeRoom = caveRand.NextInt(6) == 0; tunnelStep < tunnelLength; ++tunnelStep)
+        for (var isLargeRoom = caveRand.NextInt(6) == 0; tunnelStep < tunnelLength; ++tunnelStep)
         {
-            double horizontalRadius = 1.5D + MathHelper.Sin(tunnelStep * (float)Math.PI / tunnelLength) * tunnelRadius * 1.0F;
-            double verticalRadius = horizontalRadius * verticalScale;
-            float cosPitch = MathHelper.Cos(pitch);
-            float sinPitch = MathHelper.Sin(pitch);
+            var horizontalRadius = 1.5D + MathHelper.Sin(tunnelStep * (float)Math.PI / tunnelLength) * tunnelRadius * 1.0F;
+            var verticalRadius = horizontalRadius * verticalScale;
+            var cosPitch = MathHelper.Cos(pitch);
+            var sinPitch = MathHelper.Sin(pitch);
             offsetX += MathHelper.Cos(yaw) * cosPitch;
             offsetY += sinPitch;
             offsetZ += MathHelper.Sin(yaw) * cosPitch;
@@ -65,8 +64,8 @@ internal class CaveCarver : Carver
 
             if (isStartingPoint || caveRand.NextInt(4) != 0)
             {
-                double distX = offsetX - chunkCenterX;
-                double distZ = offsetZ - chunkCenterZ;
+                var distX = offsetX - chunkCenterX;
+                var distZ = offsetZ - chunkCenterZ;
                 double stepsRemaining = tunnelLength - tunnelStep;
                 double boundRadius = tunnelRadius + 2.0F + 16.0F;
                 if (distX * distX + distZ * distZ - stepsRemaining * stepsRemaining > boundRadius * boundRadius)
@@ -77,12 +76,12 @@ internal class CaveCarver : Carver
                 if (offsetX >= chunkCenterX - 16.0D - horizontalRadius * 2.0D && offsetZ >= chunkCenterZ - 16.0D - horizontalRadius * 2.0D && offsetX <= chunkCenterX + 16.0D + horizontalRadius * 2.0D &&
                     offsetZ <= chunkCenterZ + 16.0D + horizontalRadius * 2.0D)
                 {
-                    int xMin = MathHelper.Floor(offsetX - horizontalRadius) - chunkX * 16 - 1;
-                    int xMax = MathHelper.Floor(offsetX + horizontalRadius) - chunkX * 16 + 1;
-                    int yMin = MathHelper.Floor(offsetY - verticalRadius) - 1;
-                    int yMax = MathHelper.Floor(offsetY + verticalRadius) + 1;
-                    int zMin = MathHelper.Floor(offsetZ - horizontalRadius) - chunkZ * 16 - 1;
-                    int zMax = MathHelper.Floor(offsetZ + horizontalRadius) - chunkZ * 16 + 1;
+                    var xMin = MathHelper.Floor(offsetX - horizontalRadius) - chunkX * 16 - 1;
+                    var xMax = MathHelper.Floor(offsetX + horizontalRadius) - chunkX * 16 + 1;
+                    var yMin = MathHelper.Floor(offsetY - verticalRadius) - 1;
+                    var yMax = MathHelper.Floor(offsetY + verticalRadius) + 1;
+                    var zMin = MathHelper.Floor(offsetZ - horizontalRadius) - chunkZ * 16 - 1;
+                    var zMax = MathHelper.Floor(offsetZ + horizontalRadius) - chunkZ * 16 + 1;
                     if (xMin < 0)
                     {
                         xMin = 0;
@@ -113,15 +112,15 @@ internal class CaveCarver : Carver
                         zMax = 16;
                     }
 
-                    bool waterIsPresent = false;
+                    var waterIsPresent = false;
 
-                    for (int blockX = xMin; !waterIsPresent && blockX < xMax; ++blockX)
+                    for (var blockX = xMin; !waterIsPresent && blockX < xMax; ++blockX)
                     {
-                        for (int blockZ = zMin; !waterIsPresent && blockZ < zMax; ++blockZ)
+                        for (var blockZ = zMin; !waterIsPresent && blockZ < zMax; ++blockZ)
                         {
-                            for (int blockY = yMax + 1; !waterIsPresent && blockY >= yMin - 1; --blockY)
+                            for (var blockY = yMax + 1; !waterIsPresent && blockY >= yMin - 1; --blockY)
                             {
-                                int blockIndex = (blockX * 16 + blockZ) * 128 + blockY;
+                                var blockIndex = (blockX * 16 + blockZ) * 128 + blockY;
                                 if (blockY >= 0 && blockY < 128)
                                 {
                                     if (blocks[blockIndex] == blocksView.Get("flowing_water").Id || blocks[blockIndex] == blocksView.Get("water").Id)
@@ -140,23 +139,23 @@ internal class CaveCarver : Carver
 
                     if (!waterIsPresent)
                     {
-                        for (int blockX = xMin; blockX < xMax; ++blockX)
+                        for (var blockX = xMin; blockX < xMax; ++blockX)
                         {
-                            double localX = (blockX + chunkX * 16 + 0.5D - offsetX) / horizontalRadius;
+                            var localX = (blockX + chunkX * 16 + 0.5D - offsetX) / horizontalRadius;
 
-                            for (int blockZ = zMin; blockZ < zMax; ++blockZ)
+                            for (var blockZ = zMin; blockZ < zMax; ++blockZ)
                             {
-                                double localZ = (blockZ + chunkZ * 16 + 0.5D - offsetZ) / horizontalRadius;
-                                int blockIndex = (blockX * 16 + blockZ) * 128 + yMax;
-                                bool isGrassBlock = false;
+                                var localZ = (blockZ + chunkZ * 16 + 0.5D - offsetZ) / horizontalRadius;
+                                var blockIndex = (blockX * 16 + blockZ) * 128 + yMax;
+                                var isGrassBlock = false;
                                 if (localX * localX + localZ * localZ < 1.0D)
                                 {
-                                    for (int blockY = yMax - 1; blockY >= yMin; --blockY)
+                                    for (var blockY = yMax - 1; blockY >= yMin; --blockY)
                                     {
-                                        double localY = (blockY + 0.5D - offsetY) / verticalRadius;
+                                        var localY = (blockY + 0.5D - offsetY) / verticalRadius;
                                         if (localY > -0.7D && localX * localX + localY * localY + localZ * localZ < 1.0D)
                                         {
-                                            byte blockType = blocks[blockIndex];
+                                            var blockType = blocks[blockIndex];
                                             if (blockType == blocksView.Get("grass_block").Id)
                                             {
                                                 isGrassBlock = true;
@@ -197,29 +196,29 @@ internal class CaveCarver : Carver
 
     protected override void CarveCaves(IWorldContext world, int chunkX, int chunkZ, int centerChunkX, int centerChunkZ, byte[] blocks)
     {
-        int numCaves = Rand.NextInt(Rand.NextInt(Rand.NextInt(40) + 1) + 1);
+        var numCaves = Rand.NextInt(Rand.NextInt(Rand.NextInt(40) + 1) + 1);
         if (Rand.NextInt(15) != 0)
         {
             numCaves = 0;
         }
 
-        for (int i = 0; i < numCaves; ++i)
+        for (var i = 0; i < numCaves; ++i)
         {
             double caveX = chunkX * 16 + Rand.NextInt(16);
             double caveY = Rand.NextInt(Rand.NextInt(120) + 8);
             double caveZ = chunkZ * 16 + Rand.NextInt(16);
-            int branchCount = 1;
+            var branchCount = 1;
             if (Rand.NextInt(4) == 0)
             {
                 CarveCavesInChunk(centerChunkX, centerChunkZ, blocks, world.Content.Blocks, caveX, caveY, caveZ);
                 branchCount += Rand.NextInt(4);
             }
 
-            for (int branch = 0; branch < branchCount; ++branch)
+            for (var branch = 0; branch < branchCount; ++branch)
             {
-                float yaw = Rand.NextFloat() * (float)Math.PI * 2.0F;
-                float pitch = (Rand.NextFloat() - 0.5F) * 2.0F / 8.0F;
-                float tunnelRadius = Rand.NextFloat() * 2.0F + Rand.NextFloat();
+                var yaw = Rand.NextFloat() * (float)Math.PI * 2.0F;
+                var pitch = (Rand.NextFloat() - 0.5F) * 2.0F / 8.0F;
+                var tunnelRadius = Rand.NextFloat() * 2.0F + Rand.NextFloat();
                 CarveCaves(centerChunkX, centerChunkZ, blocks, world.Content.Blocks, caveX, caveY, caveZ, tunnelRadius, yaw, pitch, 0, 0, 1.0D);
             }
         }

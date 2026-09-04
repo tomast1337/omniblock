@@ -57,7 +57,7 @@ public sealed class ShakeOffWaterBehavior : IEntityPhysics, IEntityTicker, IEnti
     /// <summary>Starts the shake once the mob is soaked, still, and on the ground.</summary>
     public void AfterTickMovement(EntityLiving self)
     {
-        EntityState state = self.State;
+        var state = self.State;
         if (self.InterpolateOnly || !state[_needsShake] || state[_shaking])
         {
             return;
@@ -74,7 +74,7 @@ public sealed class ShakeOffWaterBehavior : IEntityPhysics, IEntityTicker, IEnti
 
     public void OnTickEnd(EntityLiving self)
     {
-        EntityState state = self.State;
+        var state = self.State;
 
         if (self.IsWet)
         {
@@ -117,7 +117,7 @@ public sealed class ShakeOffWaterBehavior : IEntityPhysics, IEntityTicker, IEnti
 
     private void Begin(EntityLiving self)
     {
-        EntityState state = self.State;
+        var state = self.State;
         state[_shaking] = true;
         state[_shakeTime] = 0.0F;
         state[_previousShakeTime] = 0.0F;
@@ -125,13 +125,13 @@ public sealed class ShakeOffWaterBehavior : IEntityPhysics, IEntityTicker, IEnti
 
     private void Spray(EntityLiving self, EntityState state)
     {
-        float groundY = (float)self.BoundingBox.MinY;
-        int count = (int)(MathHelper.Sin((state[_shakeTime] - _sprayStart) * (float)Math.PI) * 7.0F);
+        var groundY = (float)self.BoundingBox.MinY;
+        var count = (int)(MathHelper.Sin((state[_shakeTime] - _sprayStart) * (float)Math.PI) * 7.0F);
 
-        for (int drop = 0; drop < count; ++drop)
+        for (var drop = 0; drop < count; ++drop)
         {
-            float offsetX = (self.Random.NextFloat() * 2.0F - 1.0F) * self.Width * 0.5F;
-            float offsetZ = (self.Random.NextFloat() * 2.0F - 1.0F) * self.Width * 0.5F;
+            var offsetX = (self.Random.NextFloat() * 2.0F - 1.0F) * self.Width * 0.5F;
+            var offsetZ = (self.Random.NextFloat() * 2.0F - 1.0F) * self.Width * 0.5F;
             self.World.Broadcaster.AddParticle(_particle, self.X + offsetX, groundY + 0.8F, self.Z + offsetZ, self.VelocityX, self.VelocityY, self.VelocityZ);
         }
     }
@@ -145,13 +145,13 @@ public sealed class ShakeOffWaterBehavior : IEntityPhysics, IEntityTicker, IEnti
     /// </summary>
     public float ShakeAngle(Entity self, float tickDelta, float offset)
     {
-        float progress = Math.Clamp((Interpolated(self, tickDelta) + offset) / 1.8F, 0.0F, 1.0F);
+        var progress = Math.Clamp((Interpolated(self, tickDelta) + offset) / 1.8F, 0.0F, 1.0F);
         return MathHelper.Sin(progress * (float)Math.PI) * MathHelper.Sin(progress * (float)Math.PI * 11.0F) * 0.15F * (float)Math.PI;
     }
 
     private float Interpolated(Entity self, float tickDelta)
     {
-        EntityState state = self.State;
+        var state = self.State;
         return state[_previousShakeTime] + (state[_shakeTime] - state[_previousShakeTime]) * tickDelta;
     }
 }

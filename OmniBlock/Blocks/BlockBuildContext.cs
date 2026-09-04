@@ -66,8 +66,5 @@ public readonly struct BlockBuildContext
             static key => BlockEntityFactoryRegistry.Get(key.Path));
     }
 
-    private static InvalidOperationException Uninitialized()
-    {
-        return new InvalidOperationException($"{nameof(BlockBuildContext)} must be initialized before resolving dependencies.");
-    }
+    private static InvalidOperationException Uninitialized() => new($"{nameof(BlockBuildContext)} must be initialized before resolving dependencies.");
 }

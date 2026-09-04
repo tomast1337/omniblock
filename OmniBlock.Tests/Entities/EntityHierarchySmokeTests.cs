@@ -40,12 +40,9 @@ public sealed class EntityHierarchySmokeTests
     }
 
     /// <summary>
-    /// The weather-effect base class is gone with the lightning class: a bolt is an EntityObject
-    /// whose behavior is declared, like TNT and falling sand.
+    ///     The weather-effect base class is gone with the lightning class: a bolt is an EntityObject
+    ///     whose behavior is declared, like TNT and falling sand.
     /// </summary>
     [Fact]
-    public void Lightning_is_a_plain_entity_object()
-    {
-        Assert.Equal(typeof(EntityObject), TestEntityCatalog.ByName("lightningbolt").Create(_world).GetType());
-    }
+    public void Lightning_is_a_plain_entity_object() => Assert.Equal(typeof(EntityObject), TestEntityCatalog.ByName("lightningbolt").Create(_world).GetType());
 }

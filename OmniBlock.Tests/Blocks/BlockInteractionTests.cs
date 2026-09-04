@@ -74,7 +74,7 @@ public sealed class BlockInteractionTests
         world.ReaderWriter.SetBlock(0, 64, 0, 0);
 
         // Act 3 + Assert
-        Exception? ex = Record.Exception(() => simulation.AdvanceTime(4));
+        var ex = Record.Exception(() => simulation.AdvanceTime(4));
         Assert.Null(ex);
         Assert.Equal(TestBlocks.Get("tnt").Id, world.Reader.GetBlockId(0, 64, -1)); // never triggered
     }

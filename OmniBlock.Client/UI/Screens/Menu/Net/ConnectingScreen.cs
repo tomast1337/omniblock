@@ -52,7 +52,7 @@ public class ConnectingScreen : UIScreen
             Root.AddChild(lblDetail);
         }
 
-        Button btnCancel = CreateButton();
+        var btnCancel = CreateButton();
         btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.OnClick += e => Cancel();
         Root.AddChild(btnCancel);
@@ -77,7 +77,7 @@ public class ConnectingScreen : UIScreen
 
         if (Root.Children.Count >= 2 && Root.Children[1] is Label lblStatus)
         {
-            string newText = GetStatusText();
+            var newText = GetStatusText();
             if (lblStatus.Text != newText)
             {
                 lblStatus.Text = newText;

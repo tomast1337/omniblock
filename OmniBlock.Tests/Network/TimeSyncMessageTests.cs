@@ -1,4 +1,3 @@
-using OmniBlock.Network;
 using OmniBlock.Network.Messages;
 using OmniBlock.Network.Packets;
 
@@ -33,7 +32,7 @@ public sealed class TimeSyncMessageTests
     /// </summary>
     private static Message? Decode(MessageRegistry registry, OmniMessagePacket envelope)
     {
-        Message? message = registry.Create(envelope.MessageId);
+        var message = registry.Create(envelope.MessageId);
         if (message is null)
         {
             return null;
@@ -42,7 +41,7 @@ public sealed class TimeSyncMessageTests
         message.TransportSentAtMs = envelope.SentAtMs;
         message.TransportReceivedAtMs = envelope.ReceivedAtMs;
 
-        using MemoryStream payload = new(envelope.Payload, writable: false);
+        using MemoryStream payload = new(envelope.Payload, false);
         message.Read(payload);
         return message;
     }
@@ -68,7 +67,7 @@ public sealed class TimeSyncMessageTests
     [Fact]
     public void Both_peers_resolve_every_default_message()
     {
-        (MessageRegistry server, MessageRegistry client) = NegotiatedPair();
+        var (server, client) = NegotiatedPair();
 
         // The keys, not a count. A count has to be edited every time a message is added, which
         // trains you to edit it without looking — and the thing worth catching is one of these
@@ -80,7 +79,7 @@ public sealed class TimeSyncMessageTests
         Assert.Contains(ChunkCacheOfferMessage.Id, server.NegotiatedOrder);
         Assert.Contains(ChunkUnchangedMessage.Id, server.NegotiatedOrder);
 
-        foreach (ResourceLocation key in server.NegotiatedOrder)
+        foreach (var key in server.NegotiatedOrder)
         {
             Assert.NotNull(client.Create(client.GetId(key)));
         }
@@ -89,12 +88,16 @@ public sealed class TimeSyncMessageTests
     [Fact]
     public void A_request_survives_the_envelope_and_the_wire()
     {
-        (MessageRegistry server, MessageRegistry client) = NegotiatedPair();
+        var (server, client) = NegotiatedPair();
 
-        OmniMessagePacket? sent = OmniMessagePacket.For(
-            client, new TimeSyncRequestMessage { Sequence = 7, ClientSendTime = 1234 });
+        var sent = OmniMessagePacket.For(
+            client, new TimeSyncRequestMessage
+            {
+                Sequence = 7,
+                ClientSendTime = 1234
+            });
 
-        TimeSyncRequestMessage received = Assert.IsType<TimeSyncRequestMessage>(
+        var received = Assert.IsType<TimeSyncRequestMessage>(
             Decode(server, OverTheWire(Assert.IsType<OmniMessagePacket>(sent))));
 
         Assert.Equal(7u, received.Sequence);
@@ -109,10 +112,15 @@ public sealed class TimeSyncMessageTests
     [Fact]
     public void A_response_carries_its_send_timestamp_on_the_envelope()
     {
-        (MessageRegistry server, MessageRegistry client) = NegotiatedPair();
+        var (server, client) = NegotiatedPair();
 
-        OmniMessagePacket sent = Assert.IsType<OmniMessagePacket>(OmniMessagePacket.For(
-            server, new TimeSyncResponseMessage { Sequence = 3, ClientSendTime = 10, ServerRecvTime = 20 }));
+        var sent = Assert.IsType<OmniMessagePacket>(OmniMessagePacket.For(
+            server, new TimeSyncResponseMessage
+            {
+                Sequence = 3,
+                ClientSendTime = 10,
+                ServerRecvTime = 20
+            }));
 
         Assert.True(sent.CarriesSendTime);
         Assert.Equal(0, sent.SentAtMs);
@@ -120,12 +128,12 @@ public sealed class TimeSyncMessageTests
         // What Connection.WritePacket does immediately before the bytes reach the socket.
         sent.SentAtMs = 30;
 
-        OmniMessagePacket received = OverTheWire(sent);
+        var received = OverTheWire(sent);
 
         // And what Connection.Reading does on the read thread, before queueing.
         received.ReceivedAtMs = 40;
 
-        TimeSyncResponseMessage message = Assert.IsType<TimeSyncResponseMessage>(Decode(client, received));
+        var message = Assert.IsType<TimeSyncResponseMessage>(Decode(client, received));
 
         Assert.Equal(3u, message.Sequence);
         Assert.Equal(10, message.ClientSendTime);
@@ -141,14 +149,17 @@ public sealed class TimeSyncMessageTests
     [Fact]
     public void An_envelope_without_a_send_timestamp_is_eight_bytes_smaller()
     {
-        (MessageRegistry server, _) = NegotiatedPair();
+        var (server, _) = NegotiatedPair();
 
-        OmniMessagePacket stamp = Assert.IsType<OmniMessagePacket>(
-            OmniMessagePacket.For(server, new TickStampMessage { ServerTimeMs = 99 }));
+        var stamp = Assert.IsType<OmniMessagePacket>(
+            OmniMessagePacket.For(server, new TickStampMessage
+            {
+                ServerTimeMs = 99
+            }));
 
         Assert.False(stamp.CarriesSendTime);
 
-        OmniMessagePacket timed = Assert.IsType<OmniMessagePacket>(
+        var timed = Assert.IsType<OmniMessagePacket>(
             OmniMessagePacket.For(server, new TimeSyncResponseMessage()));
 
         // Both wrap the same eight-byte-plus payload difference aside, the gap is the timestamp.
@@ -158,12 +169,15 @@ public sealed class TimeSyncMessageTests
     [Fact]
     public void A_tick_stamp_survives_the_envelope_and_the_wire()
     {
-        (MessageRegistry server, MessageRegistry client) = NegotiatedPair();
+        var (server, client) = NegotiatedPair();
 
-        OmniMessagePacket sent = Assert.IsType<OmniMessagePacket>(
-            OmniMessagePacket.For(server, new TickStampMessage { ServerTimeMs = 5_000_000_000L }));
+        var sent = Assert.IsType<OmniMessagePacket>(
+            OmniMessagePacket.For(server, new TickStampMessage
+            {
+                ServerTimeMs = 5_000_000_000L
+            }));
 
-        TickStampMessage received = Assert.IsType<TickStampMessage>(Decode(client, OverTheWire(sent)));
+        var received = Assert.IsType<TickStampMessage>(Decode(client, OverTheWire(sent)));
 
         Assert.Equal(5_000_000_000L, received.ServerTimeMs);
     }

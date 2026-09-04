@@ -1,6 +1,5 @@
 using System.Net;
 using OmniBlock.Network.Transport;
-using LiteNetLib;
 using Xunit.Abstractions;
 
 namespace OmniBlock.Tests.Network;
@@ -33,20 +32,20 @@ public sealed class ChunkFragmentationTests(ITestOutputHelper output)
         await using LiteNetLibTransport client = new();
         client.StartClient();
 
-        Task<ITransportConnection> accepting = FirstAsync(server, cancellation.Token);
-        ITransportConnection peer = await client.ConnectAsync(
+        var accepting = FirstAsync(server, cancellation.Token);
+        var peer = await client.ConnectAsync(
             new IPEndPoint(IPAddress.Loopback, server.LocalPort), cancellation.Token);
 
         await accepting;
 
-        int mtu = peer.Stats.Mtu;
+        var mtu = peer.Stats.Mtu;
         Assert.True(mtu > 0, "the peer reported no MTU");
 
-        int fragments = (TypicalChunkBytes + mtu - 1) / mtu;
-        int assumed = (AssumedChunkBytes + mtu - 1) / mtu;
+        var fragments = (TypicalChunkBytes + mtu - 1) / mtu;
+        var assumed = (AssumedChunkBytes + mtu - 1) / mtu;
 
         output.WriteLine($"MTU {mtu}: a {TypicalChunkBytes} byte chunk is {fragments} datagram(s); "
-            + $"the inherited {AssumedChunkBytes} byte form would be {assumed}");
+                         + $"the inherited {AssumedChunkBytes} byte form would be {assumed}");
 
         // The claim the transfer protocol rests on. A lost fragment can only block what is behind it
         // within its own message, so at this depth head-of-line blocking inside one chunk is not a
@@ -59,7 +58,7 @@ public sealed class ChunkFragmentationTests(ITestOutputHelper output)
 
     private static async Task<ITransportConnection> FirstAsync(ITransport transport, CancellationToken token)
     {
-        await foreach (ITransportConnection connection in transport.AcceptAsync(token))
+        await foreach (var connection in transport.AcceptAsync(token))
         {
             return connection;
         }

@@ -43,7 +43,7 @@ public static class TextureFallbackChain
         IReadOnlyDictionary<string, Image<Rgba32>> defaults,
         int fallbackSize)
     {
-        Stream? packStream = openPackOverride(name);
+        var packStream = openPackOverride(name);
         if (packStream != null)
         {
             using (packStream)
@@ -60,7 +60,7 @@ public static class TextureFallbackChain
             }
         }
 
-        if (defaults.TryGetValue(name, out Image<Rgba32>? def))
+        if (defaults.TryGetValue(name, out var def))
         {
             return new ResolvedTexture(TextureSource.Default, def.Clone());
         }

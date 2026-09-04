@@ -39,10 +39,10 @@ public sealed class FlyingWanderBehavior : IEntityTicker
     {
         self.TickDespawn();
 
-        EntityState state = self.State;
-        double dx = state[_waypointX] - self.X;
-        double dy = state[_waypointY] - self.Y;
-        double dz = state[_waypointZ] - self.Z;
+        var state = self.State;
+        var dx = state[_waypointX] - self.X;
+        var dy = state[_waypointY] - self.Y;
+        var dz = state[_waypointZ] - self.Z;
         double distance = MathHelper.Sqrt(dx * dx + dy * dy + dz * dz);
 
         if (distance < 1.0D || distance > _maxDistance)
@@ -80,13 +80,13 @@ public sealed class FlyingWanderBehavior : IEntityTicker
     /// </summary>
     private bool IsCourseTraversable(EntityLiving self, double distance)
     {
-        EntityState state = self.State;
-        double stepX = (state[_waypointX] - self.X) / distance;
-        double stepY = (state[_waypointY] - self.Y) / distance;
-        double stepZ = (state[_waypointZ] - self.Z) / distance;
-        Box box = self.BoundingBox;
+        var state = self.State;
+        var stepX = (state[_waypointX] - self.X) / distance;
+        var stepY = (state[_waypointY] - self.Y) / distance;
+        var stepZ = (state[_waypointZ] - self.Z) / distance;
+        var box = self.BoundingBox;
 
-        for (int step = 1; step < distance; ++step)
+        for (var step = 1; step < distance; ++step)
         {
             box.Translate(stepX, stepY, stepZ);
             if (self.World.Entities.GetEntityCollisionsScratch(self, box).Count > 0)

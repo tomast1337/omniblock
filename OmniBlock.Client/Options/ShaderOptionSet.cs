@@ -6,19 +6,6 @@ namespace OmniBlock.Client.Options;
 
 public class ShaderOptionSet
 {
-    public record OptionDef(
-        string Name,
-        string GlslType,
-        string[] AllowedValues,
-        int DefaultIndex,
-        bool IsRange = false,
-        float RangeMin = 0f,
-        float RangeMax = 1f,
-        int DecimalPlaces = 2,
-        float DefaultFloat = 0f);
-
-    public record PresetDef(string Name, string? Parent, IReadOnlyDictionary<string, string> RawValues);
-
     private static readonly Regex s_optionPattern = new(
         @"^\s*const\s+(int|float)\s+(\w+)\s*=\s*([^;]+);\s*//\s*\[([^\]]+)\]",
         RegexOptions.Multiline | RegexOptions.Compiled);
@@ -35,8 +22,9 @@ public class ShaderOptionSet
         @"(\w+)=([^\s]+)",
         RegexOptions.Compiled);
 
-    private readonly Dictionary<string, int> _indices = new(StringComparer.Ordinal);
     private readonly Dictionary<string, float> _floatValues = new(StringComparer.Ordinal);
+
+    private readonly Dictionary<string, int> _indices = new(StringComparer.Ordinal);
     private readonly List<PresetDef> _presetDefs = [];
 
     public IReadOnlyList<OptionDef> Options { get; private set; } = [];
@@ -48,40 +36,40 @@ public class ShaderOptionSet
         List<OptionDef> defs = [];
         foreach (Match m in s_optionPattern.Matches(source))
         {
-            string type = m.Groups[1].Value;
-            string name = m.Groups[2].Value;
-            string currentValue = m.Groups[3].Value.Trim();
-            string bracket = m.Groups[4].Value.Trim();
+            var type = m.Groups[1].Value;
+            var name = m.Groups[2].Value;
+            var currentValue = m.Groups[3].Value.Trim();
+            var bracket = m.Groups[4].Value.Trim();
 
-            Match rangeMatch = s_rangePattern.Match(bracket);
+            var rangeMatch = s_rangePattern.Match(bracket);
             if (rangeMatch.Success)
             {
-                string minStr = rangeMatch.Groups[1].Value;
-                string maxStr = rangeMatch.Groups[2].Value;
-                float min = float.Parse(minStr, CultureInfo.InvariantCulture);
-                float max = float.Parse(maxStr, CultureInfo.InvariantCulture);
-                float defaultVal = float.TryParse(currentValue, NumberStyles.Float, CultureInfo.InvariantCulture, out float parsed)
+                var minStr = rangeMatch.Groups[1].Value;
+                var maxStr = rangeMatch.Groups[2].Value;
+                var min = float.Parse(minStr, CultureInfo.InvariantCulture);
+                var max = float.Parse(maxStr, CultureInfo.InvariantCulture);
+                var defaultVal = float.TryParse(currentValue, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed)
                     ? parsed
                     : (min + max) / 2f;
 
-                int decimalPlaces = type == "int"
+                var decimalPlaces = type == "int"
                     ? 0
                     : Math.Max(CountDecimalPlaces(minStr), CountDecimalPlaces(maxStr));
 
-                if (_floatValues.TryGetValue(name, out float loaded))
+                if (_floatValues.TryGetValue(name, out var loaded))
                     _floatValues[name] = Math.Clamp(loaded, min, max);
                 else
                     _floatValues[name] = defaultVal;
 
-                defs.Add(new OptionDef(name, type, [], 0, IsRange: true, RangeMin: min, RangeMax: max, DecimalPlaces: decimalPlaces, DefaultFloat: defaultVal));
+                defs.Add(new OptionDef(name, type, [], 0, true, min, max, decimalPlaces, defaultVal));
             }
             else
             {
-                string[] allowed = bracket.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                int defaultIndex = Array.IndexOf(allowed, currentValue);
+                var allowed = bracket.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                var defaultIndex = Array.IndexOf(allowed, currentValue);
                 if (defaultIndex < 0) defaultIndex = 0;
 
-                if (_indices.TryGetValue(name, out int loaded))
+                if (_indices.TryGetValue(name, out var loaded))
                     _indices[name] = Math.Clamp(loaded, 0, allowed.Length - 1);
                 else
                     _indices[name] = defaultIndex;
@@ -95,8 +83,8 @@ public class ShaderOptionSet
         _presetDefs.Clear();
         foreach (Match m in s_presetPattern.Matches(source))
         {
-            string presetName = m.Groups[1].Value;
-            string? parent = m.Groups[2].Success ? m.Groups[2].Value : null;
+            var presetName = m.Groups[1].Value;
+            var parent = m.Groups[2].Success ? m.Groups[2].Value : null;
             Dictionary<string, string> vals = new(StringComparer.Ordinal);
             foreach (Match kv in s_presetKvPattern.Matches(m.Groups[3].Value))
                 vals[kv.Groups[1].Value] = kv.Groups[2].Value;
@@ -105,31 +93,31 @@ public class ShaderOptionSet
     }
 
     public int GetIndex(string name) =>
-        _indices.TryGetValue(name, out int i) ? i : 0;
+        _indices.TryGetValue(name, out var i) ? i : 0;
 
     public void SetIndex(string name, int index)
     {
-        if (_indices.TryGetValue(name, out int cur) && cur == index) return;
+        if (_indices.TryGetValue(name, out var cur) && cur == index) return;
         _indices[name] = index;
         Changed?.Invoke(this);
     }
 
     public float GetFloat(string name, float defaultValue = 0f) =>
-        _floatValues.TryGetValue(name, out float v) ? v : defaultValue;
+        _floatValues.TryGetValue(name, out var v) ? v : defaultValue;
 
     public void SetFloat(string name, float value)
     {
-        if (_floatValues.TryGetValue(name, out float cur) && MathF.Abs(cur - value) < 1e-6f) return;
+        if (_floatValues.TryGetValue(name, out var cur) && MathF.Abs(cur - value) < 1e-6f) return;
         _floatValues[name] = value;
         Changed?.Invoke(this);
     }
 
     public string Inject(string source)
     {
-        foreach (OptionDef opt in Options)
+        foreach (var opt in Options)
         {
-            string value = opt.IsRange
-                ? FormatShaderValue(_floatValues.TryGetValue(opt.Name, out float f) ? f : (opt.RangeMin + opt.RangeMax) / 2f, opt.GlslType, opt.DecimalPlaces)
+            var value = opt.IsRange
+                ? FormatShaderValue(_floatValues.TryGetValue(opt.Name, out var f) ? f : (opt.RangeMin + opt.RangeMax) / 2f, opt.GlslType, opt.DecimalPlaces)
                 : opt.AllowedValues[GetIndex(opt.Name)];
             source = ReplaceConstValue(source, opt.Name, value);
         }
@@ -139,12 +127,12 @@ public class ShaderOptionSet
 
     public IEnumerable<(string Key, string Value)> Save()
     {
-        foreach (OptionDef opt in Options)
+        foreach (var opt in Options)
         {
             if (opt.IsRange)
             {
-                float v = _floatValues.TryGetValue(opt.Name, out float f) ? f : (opt.RangeMin + opt.RangeMax) / 2f;
-                string saved = v.ToString(CultureInfo.InvariantCulture);
+                var v = _floatValues.TryGetValue(opt.Name, out var f) ? f : (opt.RangeMin + opt.RangeMax) / 2f;
+                var saved = v.ToString(CultureInfo.InvariantCulture);
                 if (!saved.Contains('.')) saved += ".0";
                 yield return (opt.Name, saved);
             }
@@ -157,30 +145,30 @@ public class ShaderOptionSet
 
     public IReadOnlyDictionary<string, string> ResolvePreset(string name)
     {
-        PresetDef? preset = _presetDefs.Find(p => p.Name == name);
+        var preset = _presetDefs.Find(p => p.Name == name);
         if (preset is null) return new Dictionary<string, string>(StringComparer.Ordinal);
         if (preset.Parent is null) return preset.RawValues;
 
         Dictionary<string, string> merged = new(ResolvePreset(preset.Parent), StringComparer.Ordinal);
-        foreach ((string k, string v) in preset.RawValues)
+        foreach (var (k, v) in preset.RawValues)
             merged[k] = v;
         return merged;
     }
 
     public void ApplyPreset(string name)
     {
-        IReadOnlyDictionary<string, string> values = ResolvePreset(name);
-        foreach (OptionDef opt in Options)
+        var values = ResolvePreset(name);
+        foreach (var opt in Options)
         {
-            if (!values.TryGetValue(opt.Name, out string? raw)) continue;
+            if (!values.TryGetValue(opt.Name, out var raw)) continue;
             if (opt.IsRange)
             {
-                if (float.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out float f))
+                if (float.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out var f))
                     SetFloat(opt.Name, Math.Clamp(f, opt.RangeMin, opt.RangeMax));
             }
             else
             {
-                int idx = Array.IndexOf(opt.AllowedValues, raw);
+                var idx = Array.IndexOf(opt.AllowedValues, raw);
                 if (idx >= 0) SetIndex(opt.Name, idx);
             }
         }
@@ -188,22 +176,22 @@ public class ShaderOptionSet
 
     public string GetCurrentPresetName()
     {
-        foreach (PresetDef preset in _presetDefs)
+        foreach (var preset in _presetDefs)
         {
-            IReadOnlyDictionary<string, string> resolved = ResolvePreset(preset.Name);
-            bool match = true;
-            foreach (OptionDef opt in Options)
+            var resolved = ResolvePreset(preset.Name);
+            var match = true;
+            foreach (var opt in Options)
             {
-                if (!resolved.TryGetValue(opt.Name, out string? raw)) continue;
+                if (!resolved.TryGetValue(opt.Name, out var raw)) continue;
                 if (opt.IsRange)
                 {
-                    if (!float.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out float presetVal))
+                    if (!float.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out var presetVal))
                     {
                         match = false;
                         break;
                     }
 
-                    float current = _floatValues.TryGetValue(opt.Name, out float f) ? f : opt.DefaultFloat;
+                    var current = _floatValues.TryGetValue(opt.Name, out var f) ? f : opt.DefaultFloat;
                     if (opt.GlslType == "int")
                     {
                         presetVal = MathF.Round(presetVal);
@@ -218,8 +206,8 @@ public class ShaderOptionSet
                 }
                 else
                 {
-                    int presetIdx = Array.IndexOf(opt.AllowedValues, raw);
-                    int currentIdx = _indices.TryGetValue(opt.Name, out int i) ? i : opt.DefaultIndex;
+                    var presetIdx = Array.IndexOf(opt.AllowedValues, raw);
+                    var currentIdx = _indices.TryGetValue(opt.Name, out var i) ? i : opt.DefaultIndex;
                     if (presetIdx != currentIdx)
                     {
                         match = false;
@@ -236,9 +224,9 @@ public class ShaderOptionSet
 
     public void Load(string name, string rawValue)
     {
-        if (rawValue.Contains('.') && float.TryParse(rawValue, NumberStyles.Float, CultureInfo.InvariantCulture, out float f))
+        if (rawValue.Contains('.') && float.TryParse(rawValue, NumberStyles.Float, CultureInfo.InvariantCulture, out var f))
             _floatValues[name] = f;
-        else if (int.TryParse(rawValue, out int idx))
+        else if (int.TryParse(rawValue, out var idx))
             _indices[name] = idx;
     }
 
@@ -249,7 +237,7 @@ public class ShaderOptionSet
 
         if (decimalPlaces <= 0)
         {
-            string s = v.ToString("G6", CultureInfo.InvariantCulture);
+            var s = v.ToString("G6", CultureInfo.InvariantCulture);
             return s.Contains('.') ? s : s + ".0";
         }
 
@@ -259,7 +247,7 @@ public class ShaderOptionSet
     internal static string PrettifyName(string name)
     {
         StringBuilder sb = new();
-        foreach (char c in name)
+        foreach (var c in name)
         {
             if (char.IsUpper(c) && sb.Length > 0)
                 sb.Append(' ');
@@ -271,18 +259,31 @@ public class ShaderOptionSet
 
     private static int CountDecimalPlaces(string numberStr)
     {
-        int dot = numberStr.IndexOf('.');
+        var dot = numberStr.IndexOf('.');
         return dot < 0 ? 0 : numberStr.Length - dot - 1;
     }
 
     private static string ReplaceConstValue(string source, string name, string newValue)
     {
-        string marker = $" {name} = ";
-        int idx = source.IndexOf(marker, StringComparison.Ordinal);
+        var marker = $" {name} = ";
+        var idx = source.IndexOf(marker, StringComparison.Ordinal);
         if (idx < 0) return source;
-        int valueStart = idx + marker.Length;
-        int valueEnd = source.IndexOf(';', valueStart);
+        var valueStart = idx + marker.Length;
+        var valueEnd = source.IndexOf(';', valueStart);
         if (valueEnd < 0) return source;
         return string.Concat(source.AsSpan(0, valueStart), newValue, source.AsSpan(valueEnd));
     }
+
+    public record OptionDef(
+        string Name,
+        string GlslType,
+        string[] AllowedValues,
+        int DefaultIndex,
+        bool IsRange = false,
+        float RangeMin = 0f,
+        float RangeMax = 1f,
+        int DecimalPlaces = 2,
+        float DefaultFloat = 0f);
+
+    public record PresetDef(string Name, string? Parent, IReadOnlyDictionary<string, string> RawValues);
 }

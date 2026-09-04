@@ -3,6 +3,7 @@ using OmniBlock.Client.Rendering.Blocks;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
+using Silk.NET.Maths;
 
 namespace OmniBlock.Client.Rendering.Entities;
 
@@ -23,7 +24,7 @@ public class PrimedBlockEntityRenderer : EntityRenderer
 
     public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
-        int fuse = target.Behaviors.Find<PrimedExplosiveBehavior>()?.FuseTicks(target) ?? 0;
+        var fuse = target.Behaviors.Find<PrimedExplosiveBehavior>()?.FuseTicks(target) ?? 0;
 
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate((float)x, (float)y, (float)z);
@@ -43,7 +44,7 @@ public class PrimedBlockEntityRenderer : EntityRenderer
 
             flashProgress *= flashProgress;
             flashProgress *= flashProgress;
-            float scale = 1.0F + flashProgress * 0.3F;
+            var scale = 1.0F + flashProgress * 0.3F;
             GLManager.ModelView.Scale(scale, scale, scale);
         }
 
@@ -57,14 +58,18 @@ public class PrimedBlockEntityRenderer : EntityRenderer
             // against its own alpha, which is the one place that blend mode is used.
             GLManager.TextureEnabled = false;
             GLManager.LightingEnabled = false;
-            GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.SourceToDestinationAlpha });
-            GLManager.Color = new(1.0F, 1.0F, 1.0F, flashProgress);
+            GLManager.State.Apply(RenderState.Entity with
+            {
+                Blend = BlendMode.SourceToDestinationAlpha
+            });
+            GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, flashProgress);
             BlockRenderer.RenderBlockOnInventory(_block, 0, 1.0F, Tessellator.instance);
-            GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
+            GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
             GLManager.State.Apply(RenderState.Entity);
             GLManager.LightingEnabled = true;
             GLManager.TextureEnabled = true;
         }
+
         GLManager.ModelView.Pop();
     }
 }

@@ -4,20 +4,18 @@ namespace OmniBlock.Client.Resource.Pack;
 
 public class TexturePacks
 {
-    private readonly ILogger _logger = Log.Instance.For<TexturePacks>();
-    private List<TexturePack> _availTexturePacks = [];
     private readonly TexturePack _defaultTexturePack = new BuiltInTexturePack();
-    public TexturePack SelectedTexturePack;
-    private readonly Dictionary<string, TexturePack> _texturePacks = [];
     private readonly OmniBlock _game;
+    private readonly ILogger _logger = Log.Instance.For<TexturePacks>();
     private readonly DirectoryInfo _texturePackDir;
+    private readonly Dictionary<string, TexturePack> _texturePacks = [];
     private string? _currentTexturePack;
-    public List<TexturePack> AvailableTexturePacks => _availTexturePacks;
+    public TexturePack SelectedTexturePack;
 
     public TexturePacks(OmniBlock game, DirectoryInfo texturePackDir)
     {
         _game = game;
-        _texturePackDir = new DirectoryInfo(System.IO.Path.Combine(texturePackDir.FullName, "texturepacks"));
+        _texturePackDir = new DirectoryInfo(Path.Combine(texturePackDir.FullName, "texturepacks"));
         if (!_texturePackDir.Exists)
         {
             _texturePackDir.Create();
@@ -27,6 +25,8 @@ public class TexturePacks
         updateAvaliableTexturePacks();
         SelectedTexturePack.func_6482_a();
     }
+
+    public List<TexturePack> AvailableTexturePacks { get; private set; } = [];
 
     public bool setTexturePack(TexturePack texturePack)
     {
@@ -44,7 +44,6 @@ public class TexturePacks
 
         SelectedTexturePack.func_6482_a();
         return true;
-
     }
 
     public void updateAvaliableTexturePacks()
@@ -55,13 +54,13 @@ public class TexturePacks
 
         if (_texturePackDir.Exists)
         {
-            foreach (FileInfo file in _texturePackDir.GetFiles("*.zip"))
+            foreach (var file in _texturePackDir.GetFiles("*.zip"))
             {
-                string signature = $"{file.Name}:{file.Length}:{file.LastWriteTimeUtc.Ticks}";
+                var signature = $"{file.Name}:{file.Length}:{file.LastWriteTimeUtc.Ticks}";
 
                 try
                 {
-                    if (!_texturePacks.TryGetValue(signature, out TexturePack? cachedPack))
+                    if (!_texturePacks.TryGetValue(signature, out var cachedPack))
                     {
                         ZippedTexturePack newPack = new(file)
                         {
@@ -83,13 +82,12 @@ public class TexturePacks
                 {
                     _logger.LogError(ex, "Failed to load texture pack {File}", file.Name);
                 }
-
             }
         }
 
         SelectedTexturePack ??= _defaultTexturePack;
 
-        foreach (TexturePack oldPack in _availTexturePacks)
+        foreach (var oldPack in AvailableTexturePacks)
         {
             if (!availablePacks.Contains(oldPack))
             {
@@ -101,6 +99,6 @@ public class TexturePacks
             }
         }
 
-        _availTexturePacks = availablePacks;
+        AvailableTexturePacks = availablePacks;
     }
 }

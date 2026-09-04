@@ -1,14 +1,12 @@
-using OmniBlock.Registries;
 using OmniBlock.Registries.Data;
-using Xunit;
 
 namespace OmniBlock.Tests;
 
 [Collection("RegistryAccess")]
 public class AssetLoadErrorTests : IDisposable
 {
-    private readonly string _tempDir;
     private static readonly RegistryKey<TestEnchantment> s_enchKey = new(ResourceLocation.Parse("test:enchantment"));
+    private readonly string _tempDir;
 
     public AssetLoadErrorTests()
     {
@@ -21,12 +19,12 @@ public class AssetLoadErrorTests : IDisposable
     {
         RegistryAccess.ClearDynamicEntries();
         if (Directory.Exists(_tempDir))
-            Directory.Delete(_tempDir, recursive: true);
+            Directory.Delete(_tempDir, true);
     }
 
     private void WriteEnchantment(string name, string content)
     {
-        string dir = Path.Combine(_tempDir, "assets", "enchantment");
+        var dir = Path.Combine(_tempDir, "assets", "enchantment");
         Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, $"{name}.json"), content);
     }
@@ -42,7 +40,7 @@ public class AssetLoadErrorTests : IDisposable
         var def = new RegistryDefinition<TestEnchantment>(s_enchKey, "enchantment", isReloadable: true);
         RegistryAccess.AddDynamic(def);
 
-        Assert.Throws<AssetLoadException>(() => RegistryAccess.Build(basePath: _tempDir));
+        Assert.Throws<AssetLoadException>(() => RegistryAccess.Build(_tempDir));
     }
 
     [Fact]
@@ -52,11 +50,11 @@ public class AssetLoadErrorTests : IDisposable
         var def = new RegistryDefinition<TestEnchantment>(s_enchKey, "enchantment", isReloadable: true);
         RegistryAccess.AddDynamic(def);
 
-        RegistryAccess v1 = RegistryAccess.Build(basePath: _tempDir);
+        var v1 = RegistryAccess.Build(_tempDir);
         Assert.Equal(5, v1.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel);
 
         // Introduce a syntax error in a NEW file
-        WriteEnchantment("broken", "{\"MaxLevel\":10"); 
+        WriteEnchantment("broken", "{\"MaxLevel\":10");
 
         // Rebuild should throw AssetLoadException
         Assert.Throws<AssetLoadException>(() => v1.Rebuild());

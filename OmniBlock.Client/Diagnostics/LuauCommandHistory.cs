@@ -5,10 +5,10 @@ namespace OmniBlock.Client.Diagnostics;
 
 internal sealed class LuauCommandHistory
 {
-    private readonly List<string> _entries = [];
     private readonly int _capacity;
-    private readonly string? _path;
+    private readonly List<string> _entries = [];
     private readonly ILogger _logger = Log.Instance.For<LuauCommandHistory>();
+    private readonly string? _path;
     private string _draft = string.Empty;
     private int _position;
 
@@ -73,7 +73,7 @@ internal sealed class LuauCommandHistory
 
         try
         {
-            foreach (string line in File.ReadLines(_path, Encoding.UTF8))
+            foreach (var line in File.ReadLines(_path, Encoding.UTF8))
                 _entries.Add(Unescape(line));
             TrimToCapacity();
         }
@@ -88,7 +88,7 @@ internal sealed class LuauCommandHistory
         if (_path == null)
             return;
 
-        string temporaryPath = _path + ".tmp";
+        var temporaryPath = _path + ".tmp";
         try
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
@@ -101,7 +101,13 @@ internal sealed class LuauCommandHistory
         }
         finally
         {
-            try { File.Delete(temporaryPath); } catch (Exception) { }
+            try
+            {
+                File.Delete(temporaryPath);
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 
@@ -119,7 +125,7 @@ internal sealed class LuauCommandHistory
     private static string Unescape(string source)
     {
         StringBuilder result = new(source.Length);
-        for (int index = 0; index < source.Length; index++)
+        for (var index = 0; index < source.Length; index++)
         {
             if (source[index] != '\\' || index + 1 >= source.Length)
             {
@@ -132,9 +138,10 @@ internal sealed class LuauCommandHistory
                 'n' => '\n',
                 'r' => '\r',
                 '\\' => '\\',
-                char value => value,
+                char value => value
             });
         }
+
         return result.ToString();
     }
 }

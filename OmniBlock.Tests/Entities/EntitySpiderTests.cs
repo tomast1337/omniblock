@@ -4,16 +4,16 @@ using OmniBlock.Entities.Behaviors;
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Covers the spider, whose remaining overrides were split three ways: wall climbing and its ride
-/// height into Physics, the skeleton jockey into Lifecycle, and daylight disinterest into a
-/// decorator around its real attack.
+///     Covers the spider, whose remaining overrides were split three ways: wall climbing and its ride
+///     height into Physics, the skeleton jockey into Lifecycle, and daylight disinterest into a
+///     decorator around its real attack.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntitySpiderTests
 {
     private static EntityCreature Spider(FakeWorldContext world)
     {
-        EntityCreature spider = (EntityCreature)TestEntityCatalog.ByName("spider").Create(world);
+        var spider = (EntityCreature)TestEntityCatalog.ByName("spider").Create(world);
         spider.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         return spider;
     }
@@ -36,13 +36,13 @@ public sealed class EntitySpiderTests
     public void A_spider_climbs_whatever_it_is_pressed_against()
     {
         FakeWorldContext world = new();
-        EntityCreature spider = Spider(world);
-        WallClimbBehavior climb = spider.Behaviors.Find<WallClimbBehavior>()!;
+        var spider = Spider(world);
+        var climb = spider.Behaviors.Find<WallClimbBehavior>()!;
 
         Assert.False(climb.IsClimbing(spider));
 
         // Walk it into a wall clear of its 1.4-wide box; the collision flag is what it reads.
-        for (int y = 65; y < 68; y++)
+        for (var y = 65; y < 68; y++)
         {
             world.ReaderWriter.SetBlock(11, y, 8, TestBlocks.Get("stone").Id, 0);
         }
@@ -74,12 +74,12 @@ public sealed class EntitySpiderTests
     public void A_spider_sometimes_spawns_a_skeleton_riding_it()
     {
         FakeWorldContext world = new();
-        SpawnRiderBehavior jockey = TestEntityCatalog.ByName("spider").Behaviors.Find<SpawnRiderBehavior>()!;
+        var jockey = TestEntityCatalog.ByName("spider").Behaviors.Find<SpawnRiderBehavior>()!;
 
         // Roll until the one-in-a-hundred fires rather than depending on a particular seed.
-        for (int attempt = 0; attempt < 5000; attempt++)
+        for (var attempt = 0; attempt < 5000; attempt++)
         {
-            EntityCreature spider = Spider(world);
+            var spider = Spider(world);
             jockey.OnPostSpawn(spider);
 
             if (spider.Passenger is null) continue;
@@ -94,7 +94,7 @@ public sealed class EntitySpiderTests
     [Fact]
     public void Daylight_disinterest_wraps_the_real_attack_rather_than_replacing_it()
     {
-        LoseTargetInDaylightBehavior attack =
+        var attack =
             Assert.IsType<LoseTargetInDaylightBehavior>(TestEntityCatalog.ByName("spider").Behaviors.Attack);
 
         Assert.IsType<JumpAttackBehavior>(attack.Inner);
@@ -108,17 +108,20 @@ public sealed class EntitySpiderTests
     public void In_the_dark_a_spider_keeps_its_target_and_attacks()
     {
         FakeWorldContext world = new();
-        EntityCreature spider = Spider(world);
+        var spider = Spider(world);
         Assert.True(world.Entities.SpawnEntity(spider));
 
-        TestEntityPlayer player = new(world) { Name = "tester" };
+        TestEntityPlayer player = new(world)
+        {
+            Name = "tester"
+        };
         player.SetPositionAndAngles(9.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(player));
 
         spider.Target = player;
-        int before = player.Health;
+        var before = player.Health;
 
-        LoseTargetInDaylightBehavior attack = (LoseTargetInDaylightBehavior)spider.Behaviors.Attack!;
+        var attack = (LoseTargetInDaylightBehavior)spider.Behaviors.Attack!;
         attack.AttackEntity(spider, player, 1.0F);
 
         Assert.Same(player, spider.Target);

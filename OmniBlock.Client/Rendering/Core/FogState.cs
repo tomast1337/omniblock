@@ -10,7 +10,7 @@ namespace OmniBlock.Client.Rendering.Core;
 public enum FogCurve
 {
     Linear = 0,
-    Exponential = 1,
+    Exponential = 1
 }
 
 /// <summary>What the distance fog looks like, for the passes that draw under it.</summary>

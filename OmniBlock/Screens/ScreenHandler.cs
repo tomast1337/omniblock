@@ -7,15 +7,14 @@ namespace OmniBlock.Screens;
 
 public abstract class ScreenHandler
 {
-
     public const int NullSlot = -999;
-
-    protected List<ScreenHandlerListener> Listeners { get; private set; } = [];
+    private readonly HashSet<EntityPlayer> _players = new();
     private short _revision;
-    private HashSet<EntityPlayer> _players = new HashSet<EntityPlayer>();
 
-    public List<ItemStack?> TrackedStacks { get; private set; } = [];
-    public List<Slot> Slots { get; private set; } = [];
+    protected List<ScreenHandlerListener> Listeners { get; } = [];
+
+    public List<ItemStack?> TrackedStacks { get; } = [];
+    public List<Slot> Slots { get; } = [];
     public int SyncId { get; set; } = 0;
 
 
@@ -32,37 +31,36 @@ public abstract class ScreenHandler
         {
             throw new ArgumentException("Listener already listening", nameof(listener));
         }
-        else
-        {
-            Listeners.Add(listener);
-            listener.onContentsUpdate(this, GetStacks());
-            SendContentUpdates();
-        }
+
+        Listeners.Add(listener);
+        listener.onContentsUpdate(this, GetStacks());
+        SendContentUpdates();
     }
 
     public List<ItemStack> GetStacks()
     {
-        List<ItemStack> stacks = new List<ItemStack>();
+        var stacks = new List<ItemStack>();
 
-        for (int slotIndex = 0; slotIndex < Slots.Count; slotIndex++)
+        for (var slotIndex = 0; slotIndex < Slots.Count; slotIndex++)
         {
             stacks.Add(Slots[slotIndex].getStack());
         }
+
         return stacks;
     }
 
     public virtual void SendContentUpdates()
     {
-        for (int slotIndex = 0; slotIndex < Slots.Count; ++slotIndex)
+        for (var slotIndex = 0; slotIndex < Slots.Count; ++slotIndex)
         {
-            ItemStack slotStack = Slots[slotIndex].getStack();
-            ItemStack? trackedStack = TrackedStacks[slotIndex];
+            var slotStack = Slots[slotIndex].getStack();
+            var trackedStack = TrackedStacks[slotIndex];
             if (!ItemStack.AreEqual(trackedStack, slotStack))
             {
                 trackedStack = slotStack is null ? null : slotStack.Copy();
                 TrackedStacks[slotIndex] = trackedStack;
 
-                for (int listenerIndex = 0; listenerIndex < Listeners.Count; ++listenerIndex)
+                for (var listenerIndex = 0; listenerIndex < Listeners.Count; ++listenerIndex)
                 {
                     Listeners[listenerIndex].onSlotUpdate(this, slotIndex, trackedStack);
                 }
@@ -72,21 +70,19 @@ public abstract class ScreenHandler
 
     public Slot? GetSlot(IInventory inventory, int index)
     {
-        for (int slotIndex = 0; slotIndex < Slots.Count; slotIndex++)
+        for (var slotIndex = 0; slotIndex < Slots.Count; slotIndex++)
         {
-            Slot slot = Slots[slotIndex];
+            var slot = Slots[slotIndex];
             if (slot.Equals(inventory, index))
             {
                 return slot;
             }
         }
+
         return null;
     }
 
-    public Slot GetSlot(int index)
-    {
-        return Slots[index];
-    }
+    public Slot GetSlot(int index) => Slots[index];
 
     public virtual ItemStack? quickMove(int index)
     {
@@ -101,7 +97,7 @@ public abstract class ScreenHandler
         ItemStack? returnStack = null;
         if (button == 0 || button == 1)
         {
-            InventoryPlayer playerInventory = player.Inventory;
+            var playerInventory = player.Inventory;
             if (index == NullSlot)
             {
                 if (playerInventory.GetCursorStack() is not null)
@@ -129,12 +125,12 @@ public abstract class ScreenHandler
                 int slotItemStackSize;
                 if (shift)
                 {
-                    ItemStack? itemStack = quickMove(index);
+                    var itemStack = quickMove(index);
                     if (itemStack is not null)
                     {
-                        int itemStackSize = itemStack.Count;
+                        var itemStackSize = itemStack.Count;
                         returnStack = itemStack.Copy();
-                        Slot slot = Slots[index];
+                        var slot = Slots[index];
                         if (slot is not null && slot.getStack() is not null)
                         {
                             slotItemStackSize = slot.getStack().Count;
@@ -147,12 +143,12 @@ public abstract class ScreenHandler
                 }
                 else
                 {
-                    Slot slot = Slots[index];
+                    var slot = Slots[index];
                     if (slot is not null)
                     {
                         slot.markDirty();
-                        ItemStack slotStack = slot.getStack();
-                        ItemStack cursorStack = playerInventory.GetCursorStack();
+                        var slotStack = slot.getStack();
+                        var cursorStack = playerInventory.GetCursorStack();
                         if (slotStack is not null)
                         {
                             returnStack = slotStack.Copy();
@@ -178,7 +174,7 @@ public abstract class ScreenHandler
                         else if (cursorStack is null)
                         {
                             slotItemStackSize = button == 0 ? slotStack.Count : (slotStack.Count + 1) / 2;
-                            ItemStack takenStack = slot.takeStack(slotItemStackSize);
+                            var takenStack = slot.takeStack(slotItemStackSize);
                             playerInventory.SetCursorStack(takenStack);
                             if (slotStack.Count == 0)
                             {
@@ -189,7 +185,7 @@ public abstract class ScreenHandler
                         }
                         else if (slot.canInsert(cursorStack))
                         {
-                            if (slotStack.ItemId != cursorStack.ItemId || slotStack.GetHasSubtypes() && slotStack.GetDamage() != cursorStack.GetDamage())
+                            if (slotStack.ItemId != cursorStack.ItemId || (slotStack.GetHasSubtypes() && slotStack.GetDamage() != cursorStack.GetDamage()))
                             {
                                 if (cursorStack.Count <= slot.getMaxItemCount())
                                 {
@@ -238,12 +234,13 @@ public abstract class ScreenHandler
                 }
             }
         }
+
         return returnStack;
     }
 
     public virtual void onClosed(EntityPlayer player)
     {
-        InventoryPlayer playerInventory = player.Inventory;
+        var playerInventory = player.Inventory;
         if (playerInventory.GetCursorStack() is not null)
         {
             if (player.GameMode.CanDrop)
@@ -258,26 +255,18 @@ public abstract class ScreenHandler
                 player.Inventory.AddItemStackToInventoryOrDrop(playerInventory.GetCursorStack());
             }
         }
-
     }
 
-    public virtual void onSlotUpdate(IInventory inventory)
-    {
-        SendContentUpdates();
-    }
+    public virtual void onSlotUpdate(IInventory inventory) => SendContentUpdates();
 
-    public void setStackInSlot(int index, ItemStack stack)
-    {
-        GetSlot(index).setStack(stack);
-    }
+    public void setStackInSlot(int index, ItemStack stack) => GetSlot(index).setStack(stack);
 
     public void updateSlotStacks(ItemStack?[] stacks)
     {
-        for (int index = 0; index < stacks.Length; ++index)
+        for (var index = 0; index < stacks.Length; ++index)
         {
             GetSlot(index).setStack(stacks[index]);
         }
-
     }
 
     public virtual void setProperty(int id, int value)
@@ -298,10 +287,7 @@ public abstract class ScreenHandler
     {
     }
 
-    public bool canOpen(EntityPlayer player)
-    {
-        return !_players.Contains(player);
-    }
+    public bool canOpen(EntityPlayer player) => !_players.Contains(player);
 
     public void updatePlayerList(EntityPlayer player, bool remove)
     {
@@ -319,7 +305,7 @@ public abstract class ScreenHandler
 
     protected void insertItem(ItemStack stack, int start, int end, bool fromLast)
     {
-        int slotIndex = start;
+        var slotIndex = start;
         if (fromLast)
         {
             slotIndex = end - 1;
@@ -329,13 +315,13 @@ public abstract class ScreenHandler
         ItemStack itemStackToInsert;
         if (stack.IsStackable())
         {
-            while (stack.Count > 0 && (!fromLast && slotIndex < end || fromLast && slotIndex >= start))
+            while (stack.Count > 0 && ((!fromLast && slotIndex < end) || (fromLast && slotIndex >= start)))
             {
                 slotToInsertStack = Slots[slotIndex];
                 itemStackToInsert = slotToInsertStack.getStack();
                 if (itemStackToInsert is not null && itemStackToInsert.ItemId == stack.ItemId && (!stack.GetHasSubtypes() || stack.GetDamage() == itemStackToInsert.GetDamage()))
                 {
-                    int newitemStackSize = itemStackToInsert.Count + stack.Count;
+                    var newitemStackSize = itemStackToInsert.Count + stack.Count;
                     if (newitemStackSize <= stack.GetMaxCount())
                     {
                         stack.Count = 0;
@@ -372,7 +358,7 @@ public abstract class ScreenHandler
                 slotIndex = start;
             }
 
-            while (!fromLast && slotIndex < end || fromLast && slotIndex >= start)
+            while ((!fromLast && slotIndex < end) || (fromLast && slotIndex >= start))
             {
                 slotToInsertStack = Slots[slotIndex];
                 itemStackToInsert = slotToInsertStack.getStack();

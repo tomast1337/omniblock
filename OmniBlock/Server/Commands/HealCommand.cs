@@ -1,6 +1,6 @@
-using OmniBlock.Entities;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
+using OmniBlock.Entities;
 
 namespace OmniBlock.Server.Commands;
 
@@ -33,14 +33,14 @@ public class HealCommand : Command.Command
             return 1;
         }
 
-        ServerPlayerEntity? player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
+        var player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
         if (player == null)
         {
             context.Source.Output.SendMessage("Could not find your player.");
             return 1;
         }
 
-        int old = player.Health;
+        var old = player.Health;
         player.Heal(amount);
         context.Source.Output.SendMessage($"Healed for {player.Health - old} health.");
         return 1;
@@ -54,7 +54,7 @@ public class HealCommand : Command.Command
             return 1;
         }
 
-        int old = player.Health;
+        var old = player.Health;
         player.Heal(amount);
         context.Source.Output.SendMessage($"Healed {player.Name} for {player.Health - old} health.");
         return 1;

@@ -1,7 +1,7 @@
-using OmniBlock.Entities;
-using OmniBlock.Util.Maths;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
+using OmniBlock.Entities;
+using OmniBlock.Util.Maths;
 
 namespace OmniBlock.Server.Commands;
 
@@ -21,9 +21,9 @@ public class TeleportCommand : Command.Command
 
     private static int TpPos(CommandContext<CommandSource> context)
     {
-        Vec3D pos = context.GetArgument<Vec3D>("position");
+        var pos = context.GetArgument<Vec3D>("position");
 
-        ServerPlayerEntity? sender = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
+        var sender = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
         if (sender == null)
         {
             context.Source.Output.SendMessage("Could not find your player.");
@@ -38,8 +38,8 @@ public class TeleportCommand : Command.Command
 
     private static int TpPlayerPos(CommandContext<CommandSource> context)
     {
-        ServerPlayerEntity a1 = context.GetArgument<ServerPlayerEntity>("player");
-        Vec3D pos = context.GetArgument<Vec3D>("position");
+        var a1 = context.GetArgument<ServerPlayerEntity>("player");
+        var pos = context.GetArgument<Vec3D>("position");
 
         a1.NetworkHandler.teleport(pos.X, pos.Y, pos.Z, a1.Yaw, a1.Pitch);
         context.Source.Output.SendMessage($"Teleported to {pos}");

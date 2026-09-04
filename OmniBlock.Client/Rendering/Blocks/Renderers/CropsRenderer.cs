@@ -11,10 +11,10 @@ public class CropsRenderer : IBlockRenderer
         ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
         ctx.Tess.setColorOpaque_F(1.0F, 1.0F, 1.0F);
 
-        int metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
+        var metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
 
         // Crops are pushed down slightly into the soil block
-        float yOffset = pos.Y - (1.0f / 16.0f);
+        var yOffset = pos.Y - 1.0f / 16.0f;
 
         RenderCropQuads(block, metadata, pos.X, yOffset, pos.Z, ref ctx);
 
@@ -23,7 +23,7 @@ public class CropsRenderer : IBlockRenderer
 
     private void RenderCropQuads(Block block, int metadata, float x, float y, float z, ref BlockRenderContext ctx)
     {
-        int textureId = block.GetTexture(0, metadata);
+        var textureId = block.GetTexture(0, metadata);
 
         if (ctx.OverrideTexture >= 0)
         {
@@ -37,10 +37,10 @@ public class CropsRenderer : IBlockRenderer
         const float minV = 0.0F;
         const float maxV = 1.0F;
 
-        float minX = x + 0.5f - 0.25f; // Left plane X
-        float maxX = x + 0.5f + 0.25f; // Right plane X
-        float minZ = z + 0.5f - 0.5f; // Front plane Z
-        float maxZ = z + 0.5f + 0.5f; // Back plane Z
+        var minX = x + 0.5f - 0.25f; // Left plane X
+        var maxX = x + 0.5f + 0.25f; // Right plane X
+        var minZ = z + 0.5f - 0.5f; // Front plane Z
+        var maxZ = z + 0.5f + 0.5f; // Back plane Z
 
         // --- Vertical Planes (North-South aligned) ---
         ctx.Tess.addVertexWithUV(minX, y + 1.0D, minZ, minU, minV);

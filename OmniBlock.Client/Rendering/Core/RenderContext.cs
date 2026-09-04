@@ -1,3 +1,4 @@
+using OmniBlock.Client.Rendering.Core.WebGPU;
 using Silk.NET.Maths;
 
 namespace OmniBlock.Client.Rendering.Core;
@@ -24,6 +25,20 @@ namespace OmniBlock.Client.Rendering.Core;
 /// </remarks>
 public sealed class RenderContext
 {
+    /// <summary>
+    ///     The uniform block for the next <see cref="ProgramSlot.Clouds" /> draw on the WebGPU path.
+    /// </summary>
+    /// <inheritdoc cref="SkySlot" />
+    internal CloudWgslUniforms CloudSlot;
+
+    // ── Slot-specific uniform data ─────────────────────────────────────────
+
+    /// <summary>
+    ///     The uniform block for the next <see cref="ProgramSlot.SkyBasic" /> or
+    ///     <see cref="ProgramSlot.SkyTextured" /> draw on the WebGPU path.
+    ///     Set by <see cref="WorldRenderer" /> before the draw call.
+    /// </summary>
+    internal SkyWgslUniforms SkySlot;
     // ── Matrix stacks ──────────────────────────────────────────────────────
 
     /// <inheritdoc cref="GLManager.ModelView" />
@@ -34,24 +49,6 @@ public sealed class RenderContext
 
     /// <inheritdoc cref="ModelView" />
     public MatrixStack TextureMatrix { get; } = new();
-
-    // ── Backend notifications ───────────────────────────────────────────────
-
-    /// <summary>
-    ///     Raised when <see cref="Color" /> changes, for a backend that has to push the value
-    ///     somewhere rather than read it at the draw.
-    /// </summary>
-    public event Action<Vector4D<float>>? ColorChanged;
-
-    /// <summary>Raised when <see cref="Normal" /> changes.</summary>
-    /// <inheritdoc cref="ColorChanged" />
-    public event Action<Vector3D<float>>? NormalChanged;
-
-    /// <summary>
-    ///     Raised just before a change to state that governs how geometry rasterizes, so a renderer
-    ///     holding queued geometry can flush it under the state it was queued with.
-    /// </summary>
-    public event Action? RasterStateChanging;
 
     // ── Per-vertex defaults ─────────────────────────────────────────────────
 
@@ -136,20 +133,23 @@ public sealed class RenderContext
     /// </remarks>
     public ScissorRect? Scissor { get; set; }
 
-    // ── Slot-specific uniform data ─────────────────────────────────────────
+    // ── Backend notifications ───────────────────────────────────────────────
 
     /// <summary>
-    ///     The uniform block for the next <see cref="ProgramSlot.SkyBasic" /> or
-    ///     <see cref="ProgramSlot.SkyTextured" /> draw on the WebGPU path.
-    ///     Set by <see cref="WorldRenderer" /> before the draw call.
+    ///     Raised when <see cref="Color" /> changes, for a backend that has to push the value
+    ///     somewhere rather than read it at the draw.
     /// </summary>
-    internal WebGPU.SkyWgslUniforms SkySlot;
+    public event Action<Vector4D<float>>? ColorChanged;
+
+    /// <summary>Raised when <see cref="Normal" /> changes.</summary>
+    /// <inheritdoc cref="ColorChanged" />
+    public event Action<Vector3D<float>>? NormalChanged;
 
     /// <summary>
-    ///     The uniform block for the next <see cref="ProgramSlot.Clouds" /> draw on the WebGPU path.
+    ///     Raised just before a change to state that governs how geometry rasterizes, so a renderer
+    ///     holding queued geometry can flush it under the state it was queued with.
     /// </summary>
-    /// <inheritdoc cref="SkySlot" />
-    internal WebGPU.CloudWgslUniforms CloudSlot;
+    public event Action? RasterStateChanging;
 }
 
 /// <summary>

@@ -1,6 +1,5 @@
 using System.IO.Compression;
 using OmniBlock.Network.Chunks;
-using OmniBlock.Tests.TestSupport;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Gen.Chunks;
 using Xunit.Abstractions;
@@ -41,12 +40,12 @@ public sealed class ChunkBlobCodecTests(ITestOutputHelper output)
 
     private static void AssertRoundTrips(Chunk chunk)
     {
-        byte[] blob = EncodeOf(chunk);
+        var blob = EncodeOf(chunk);
 
-        byte[] blocks = new byte[chunk.Blocks.Length];
-        byte[] meta = new byte[chunk.Meta.Bytes.Length];
-        byte[] blockLight = new byte[chunk.BlockLight.Bytes.Length];
-        byte[] skyLight = new byte[chunk.SkyLight.Bytes.Length];
+        var blocks = new byte[chunk.Blocks.Length];
+        var meta = new byte[chunk.Meta.Bytes.Length];
+        var blockLight = new byte[chunk.BlockLight.Bytes.Length];
+        var skyLight = new byte[chunk.SkyLight.Bytes.Length];
 
         ChunkBlobCodec.Decode(blob, blocks, meta, blockLight, skyLight);
 
@@ -66,7 +65,7 @@ public sealed class ChunkBlobCodecTests(ITestOutputHelper output)
     [Theory]
     [InlineData(1L, 0, 0)]
     [InlineData(1L, 12, -7)]
-    [InlineData(-4_172_144_997_902_289_642L, 0, 0)]   // the Beta seed with the well-known spawn
+    [InlineData(-4_172_144_997_902_289_642L, 0, 0)] // the Beta seed with the well-known spawn
     [InlineData(987_654_321L, 100, 100)]
     public void Generated_terrain_round_trips_exactly(long seed, int chunkX, int chunkZ) =>
         AssertRoundTrips(Generate(seed, chunkX, chunkZ));
@@ -79,18 +78,18 @@ public sealed class ChunkBlobCodecTests(ITestOutputHelper output)
     [Fact]
     public void An_all_air_chunk_round_trips_and_costs_almost_nothing()
     {
-        byte[] blocks = new byte[ChuckFormat.ChunkSize];
-        byte[] meta = new byte[ChuckFormat.ChunkSize / 2];
-        byte[] blockLight = new byte[ChuckFormat.ChunkSize / 2];
-        byte[] skyLight = new byte[ChuckFormat.ChunkSize / 2];
-        skyLight.AsSpan().Fill(0xFF);   // full sky throughout
+        var blocks = new byte[ChuckFormat.ChunkSize];
+        var meta = new byte[ChuckFormat.ChunkSize / 2];
+        var blockLight = new byte[ChuckFormat.ChunkSize / 2];
+        var skyLight = new byte[ChuckFormat.ChunkSize / 2];
+        skyLight.AsSpan().Fill(0xFF); // full sky throughout
 
-        byte[] blob = ChunkBlobCodec.Encode(blocks, meta, blockLight, skyLight);
+        var blob = ChunkBlobCodec.Encode(blocks, meta, blockLight, skyLight);
 
-        byte[] decodedBlocks = new byte[blocks.Length];
-        byte[] decodedMeta = new byte[meta.Length];
-        byte[] decodedBlockLight = new byte[blockLight.Length];
-        byte[] decodedSkyLight = new byte[skyLight.Length];
+        var decodedBlocks = new byte[blocks.Length];
+        var decodedMeta = new byte[meta.Length];
+        var decodedBlockLight = new byte[blockLight.Length];
+        var decodedSkyLight = new byte[skyLight.Length];
 
         ChunkBlobCodec.Decode(blob, decodedBlocks, decodedMeta, decodedBlockLight, decodedSkyLight);
 
@@ -112,32 +111,32 @@ public sealed class ChunkBlobCodecTests(ITestOutputHelper output)
     [Fact]
     public void A_section_at_the_palette_limit_round_trips()
     {
-        byte[] blocks = new byte[ChuckFormat.ChunkSize];
-        byte[] meta = new byte[ChuckFormat.ChunkSize / 2];
-        byte[] blockLight = new byte[ChuckFormat.ChunkSize / 2];
-        byte[] skyLight = new byte[ChuckFormat.ChunkSize / 2];
+        var blocks = new byte[ChuckFormat.ChunkSize];
+        var meta = new byte[ChuckFormat.ChunkSize / 2];
+        var blockLight = new byte[ChuckFormat.ChunkSize / 2];
+        var skyLight = new byte[ChuckFormat.ChunkSize / 2];
 
         // 256 distinct states across the first section: 16 ids x 16 metadata values.
-        for (int i = 0; i < ChunkBlobCodec.SectionVolume; i++)
+        for (var i = 0; i < ChunkBlobCodec.SectionVolume; i++)
         {
-            int x = (i >> 8) & 15;
-            int z = (i >> 4) & 15;
-            int y = i & 15;
-            int index = ChuckFormat.GetIndex(x, y, z);
+            var x = (i >> 8) & 15;
+            var z = (i >> 4) & 15;
+            var y = i & 15;
+            var index = ChuckFormat.GetIndex(x, y, z);
 
             blocks[index] = (byte)(1 + (i & 15));
-            int nibble = (i >> 4) & 15;
+            var nibble = (i >> 4) & 15;
             meta[index >> 1] = (byte)((index & 1) == 0
                 ? (meta[index >> 1] & 0xF0) | nibble
                 : (meta[index >> 1] & 0x0F) | (nibble << 4));
         }
 
-        byte[] blob = ChunkBlobCodec.Encode(blocks, meta, blockLight, skyLight);
+        var blob = ChunkBlobCodec.Encode(blocks, meta, blockLight, skyLight);
 
-        byte[] decodedBlocks = new byte[blocks.Length];
-        byte[] decodedMeta = new byte[meta.Length];
-        byte[] decodedBlockLight = new byte[blockLight.Length];
-        byte[] decodedSkyLight = new byte[skyLight.Length];
+        var decodedBlocks = new byte[blocks.Length];
+        var decodedMeta = new byte[meta.Length];
+        var decodedBlockLight = new byte[blockLight.Length];
+        var decodedSkyLight = new byte[skyLight.Length];
 
         ChunkBlobCodec.Decode(blob, decodedBlocks, decodedMeta, decodedBlockLight, decodedSkyLight);
 
@@ -153,32 +152,32 @@ public sealed class ChunkBlobCodecTests(ITestOutputHelper output)
     [Fact]
     public void A_section_past_the_palette_limit_falls_back_to_raw_without_loss()
     {
-        byte[] blocks = new byte[ChuckFormat.ChunkSize];
-        byte[] meta = new byte[ChuckFormat.ChunkSize / 2];
-        byte[] blockLight = new byte[ChuckFormat.ChunkSize / 2];
-        byte[] skyLight = new byte[ChuckFormat.ChunkSize / 2];
+        var blocks = new byte[ChuckFormat.ChunkSize];
+        var meta = new byte[ChuckFormat.ChunkSize / 2];
+        var blockLight = new byte[ChuckFormat.ChunkSize / 2];
+        var skyLight = new byte[ChuckFormat.ChunkSize / 2];
 
         // 4,096 distinct states in one section: id and metadata both vary across the whole range.
-        for (int i = 0; i < ChunkBlobCodec.SectionVolume; i++)
+        for (var i = 0; i < ChunkBlobCodec.SectionVolume; i++)
         {
-            int x = (i >> 8) & 15;
-            int z = (i >> 4) & 15;
-            int y = i & 15;
-            int index = ChuckFormat.GetIndex(x, y, z);
+            var x = (i >> 8) & 15;
+            var z = (i >> 4) & 15;
+            var y = i & 15;
+            var index = ChuckFormat.GetIndex(x, y, z);
 
             blocks[index] = (byte)(1 + (i >> 4));
-            int nibble = i & 15;
+            var nibble = i & 15;
             meta[index >> 1] = (byte)((index & 1) == 0
                 ? (meta[index >> 1] & 0xF0) | nibble
                 : (meta[index >> 1] & 0x0F) | (nibble << 4));
         }
 
-        byte[] blob = ChunkBlobCodec.Encode(blocks, meta, blockLight, skyLight);
+        var blob = ChunkBlobCodec.Encode(blocks, meta, blockLight, skyLight);
 
-        byte[] decodedBlocks = new byte[blocks.Length];
-        byte[] decodedMeta = new byte[meta.Length];
-        byte[] decodedBlockLight = new byte[blockLight.Length];
-        byte[] decodedSkyLight = new byte[skyLight.Length];
+        var decodedBlocks = new byte[blocks.Length];
+        var decodedMeta = new byte[meta.Length];
+        var decodedBlockLight = new byte[blockLight.Length];
+        var decodedSkyLight = new byte[skyLight.Length];
 
         ChunkBlobCodec.Decode(blob, decodedBlocks, decodedMeta, decodedBlockLight, decodedSkyLight);
 
@@ -194,7 +193,7 @@ public sealed class ChunkBlobCodecTests(ITestOutputHelper output)
     [Fact]
     public void A_truncated_blob_is_refused_rather_than_read_off_the_end()
     {
-        byte[] blob = EncodeOf(Generate(1L, 0, 0));
+        var blob = EncodeOf(Generate(1L, 0, 0));
 
         Assert.Throws<InvalidDataException>(() => ChunkBlobCodec.Decode(
             blob.AsSpan(0, blob.Length / 2),
@@ -207,7 +206,7 @@ public sealed class ChunkBlobCodecTests(ITestOutputHelper output)
     [Fact]
     public void A_blob_from_another_version_is_refused()
     {
-        byte[] blob = EncodeOf(Generate(1L, 0, 0));
+        var blob = EncodeOf(Generate(1L, 0, 0));
         blob[0] = ChunkBlobCodec.Version + 1;
 
         Assert.Throws<InvalidDataException>(() => ChunkBlobCodec.Decode(
@@ -255,17 +254,17 @@ public sealed class ChunkBlobCodecTests(ITestOutputHelper output)
     public void Generated_terrain_costs_less_on_the_wire_than_the_format_it_replaces(
         long seed, int chunkX, int chunkZ)
     {
-        Chunk chunk = Generate(seed, chunkX, chunkZ);
+        var chunk = Generate(seed, chunkX, chunkZ);
 
-        byte[] raw = new byte[RawChunkBytes];
+        var raw = new byte[RawChunkBytes];
         chunk.ToPacket(raw, 0, 0, 0, 16, ChuckFormat.ChunkHeight, 16, 0);
 
-        int today = Deflated(raw);
-        int replacement = Deflated(EncodeOf(chunk));
+        var today = Deflated(raw);
+        var replacement = Deflated(EncodeOf(chunk));
 
         output.WriteLine(
             $"seed {seed} chunk ({chunkX},{chunkZ}): {today} -> {replacement} bytes on the wire "
-            + $"({100.0 - (100.0 * replacement / today):F1}% smaller)");
+            + $"({100.0 - 100.0 * replacement / today:F1}% smaller)");
 
         Assert.True(
             replacement < today,
@@ -275,7 +274,7 @@ public sealed class ChunkBlobCodecTests(ITestOutputHelper output)
     private static int Deflated(byte[] data)
     {
         MemoryStream output = new();
-        using (ZLibStream compressor = new(output, CompressionLevel.Optimal, leaveOpen: true))
+        using (ZLibStream compressor = new(output, CompressionLevel.Optimal, true))
         {
             compressor.Write(data);
         }

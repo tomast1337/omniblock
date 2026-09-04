@@ -4,17 +4,11 @@ namespace OmniBlock.Client;
 
 public class ScaledResolution
 {
-    public int ScaledWidth { get; private set; }
-    public int ScaledHeight { get; private set; }
-    public double ScaledWidthDouble { get; private set; }
-    public double ScaledHeightDouble { get; private set; }
-    public int ScaleFactor { get; private set; }
-
     public ScaledResolution(GameOptions options, int scaledWidth, int scaledHeight)
     {
         ScaledWidth = scaledWidth;
         ScaledHeight = scaledHeight;
-        int guiScale = options.GuiScale;
+        var guiScale = options.GuiScale;
         ScaleFactor = 1;
 
         if (guiScale == 0)
@@ -30,4 +24,10 @@ public class ScaledResolution
         ScaledWidth = (int)ScaledWidthDouble;
         ScaledHeight = (int)ScaledHeightDouble;
     }
+
+    public int ScaledWidth { get; }
+    public int ScaledHeight { get; }
+    public double ScaledWidthDouble { get; }
+    public double ScaledHeightDouble { get; }
+    public int ScaleFactor { get; }
 }

@@ -1,6 +1,6 @@
-using OmniBlock.Entities;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
+using OmniBlock.Entities;
 
 namespace OmniBlock.Server.Commands;
 
@@ -18,7 +18,7 @@ public class TeleportDimensionCommand : Command.Command
 
     private static int TpdimSelf(CommandContext<CommandSource> context)
     {
-        ServerPlayerEntity? player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
+        var player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
         if (player == null)
         {
             context.Source.Output.SendMessage("Could not find your player.");
@@ -30,13 +30,13 @@ public class TeleportDimensionCommand : Command.Command
 
     private static int TpdimPlayer(CommandContext<CommandSource> context)
     {
-        ServerPlayerEntity player = context.GetArgument<ServerPlayerEntity>("player");
+        var player = context.GetArgument<ServerPlayerEntity>("player");
         return TeleportToDimension(context, player);
     }
 
     private static int TeleportToDimension(CommandContext<CommandSource> context, ServerPlayerEntity player)
     {
-        int dim = context.GetArgument<int>("dim");
+        var dim = context.GetArgument<int>("dim");
 
         if (dim != 0 && dim != -1)
         {

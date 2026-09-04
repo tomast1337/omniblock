@@ -1,4 +1,3 @@
-using System.Text.Json;
 using OmniBlock.Entities.State;
 using OmniBlock.NBT;
 
@@ -34,7 +33,7 @@ public sealed class AngerBehavior : IEntityTicker, IEntityTargetBehavior, IEntit
         _alertRadius = context.Double("alert_radius", 32.0D);
         _calmSpeed = context.Float("calm_speed", 0.5F);
         _angrySpeed = context.Float("angry_speed", 0.95F);
-        _angrySound = context.Json.TryGetProperty("angry_sound", out JsonElement s)
+        _angrySound = context.Json.TryGetProperty("angry_sound", out var s)
             ? s.GetString() ?? ""
             : "";
 
@@ -42,7 +41,7 @@ public sealed class AngerBehavior : IEntityTicker, IEntityTargetBehavior, IEntit
         _soundDelay = context.DeclareInt();
 
         // Whom to hunt once angered is a separate behavior; the anger only gates it.
-        _whenAngry = context.Json.TryGetProperty("when_angry", out JsonElement angry)
+        _whenAngry = context.Json.TryGetProperty("when_angry", out var angry)
             ? (IEntityTargetBehavior)context.Build(angry)
             : new AlwaysHuntTargetBehavior();
     }
@@ -57,7 +56,7 @@ public sealed class AngerBehavior : IEntityTicker, IEntityTargetBehavior, IEntit
             return;
         }
 
-        foreach (Entity nearby in self.World.Entities.GetEntities(self, self.BoundingBox.Expand(_alertRadius, _alertRadius, _alertRadius)))
+        foreach (var nearby in self.World.Entities.GetEntities(self, self.BoundingBox.Expand(_alertRadius, _alertRadius, _alertRadius)))
         {
             // Same behavior instance means same entity type, so only its own kind joins in.
             if (ReferenceEquals(nearby.Behaviors.Find<AngerBehavior>(), this))
@@ -86,7 +85,7 @@ public sealed class AngerBehavior : IEntityTicker, IEntityTargetBehavior, IEntit
 
         creature.MovementSpeed = creature.Target != null ? _angrySpeed : _calmSpeed;
 
-        int delay = self.State[_soundDelay];
+        var delay = self.State[_soundDelay];
         if (delay <= 0 || --self.State[_soundDelay] != 0 || _angrySound.Length == 0)
         {
             return;

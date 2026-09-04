@@ -44,7 +44,7 @@ public class EntityCreature(IWorldContext world, EntityType type) : EntityLiving
         }
         else
         {
-            float distance = Target.GetDistance(this);
+            var distance = Target.GetDistance(this);
             if (CanSee(Target))
             {
                 attackEntity(Target, distance);
@@ -67,9 +67,9 @@ public class EntityCreature(IWorldContext world, EntityType type) : EntityLiving
             World.PathingRequests.RequestPath(this, Target, Range);
         }
 
-        int floorY = MathHelper.Floor(BoundingBox.MinY + 0.5D);
-        bool isInWater = InWater;
-        bool isTouchingLava = IsTouchingLava;
+        var floorY = MathHelper.Floor(BoundingBox.MinY + 0.5D);
+        var isInWater = InWater;
+        var isTouchingLava = IsTouchingLava;
         Pitch = 0.0F;
         if (_pathToEntity != null && Random.NextInt(100) != 0)
         {
@@ -93,11 +93,11 @@ public class EntityCreature(IWorldContext world, EntityType type) : EntityLiving
             Jumping = false;
             if (pos != null)
             {
-                double dx = pos.Value.X - X;
-                double dz = pos.Value.Z - Z;
-                double verticalOffset = pos.Value.Y - floorY;
-                float targetYaw = (float)(Math.Atan2(dz, dx) * 180.0D / (float)Math.PI) - 90.0F;
-                float yawDelta = targetYaw - Yaw;
+                var dx = pos.Value.X - X;
+                var dz = pos.Value.Z - Z;
+                var verticalOffset = pos.Value.Y - floorY;
+                var targetYaw = (float)(Math.Atan2(dz, dx) * 180.0D / (float)Math.PI) - 90.0F;
+                var yawDelta = targetYaw - Yaw;
 
                 for (ForwardSpeed = MovementSpeed; yawDelta < -180.0F; yawDelta += 360.0F)
                 {
@@ -121,9 +121,9 @@ public class EntityCreature(IWorldContext world, EntityType type) : EntityLiving
                 Yaw += yawDelta;
                 if (HasAttacked && Target != null)
                 {
-                    double targetDeltaX = Target.X - X;
-                    double targetDeltaZ = Target.Z - Z;
-                    float previousYaw = Yaw;
+                    var targetDeltaX = Target.X - X;
+                    var targetDeltaZ = Target.Z - Z;
+                    var previousYaw = Yaw;
                     Yaw = (float)(Math.Atan2(targetDeltaZ, targetDeltaX) * 180.0D / (float)Math.PI) - 90.0F;
                     yawDelta = (previousYaw - Yaw + 90.0F) * (float)Math.PI / 180.0F;
                     SidewaysSpeed = -MathHelper.Sin(yawDelta) * ForwardSpeed * 1.0F;
@@ -160,18 +160,18 @@ public class EntityCreature(IWorldContext world, EntityType type) : EntityLiving
 
     private void FindRandomWanderTarget()
     {
-        bool foundWanderTarget = false;
+        var foundWanderTarget = false;
         BlockPos bestTile = new(-1, -1, -1);
-        float bestCost = float.MinValue;
+        var bestCost = float.MinValue;
 
-        for (int _ = 0; _ < 10; ++_)
+        for (var _ = 0; _ < 10; ++_)
         {
             BlockPos tile = new(
                 MathHelper.Floor(X + Random.NextInt(13) - 6.0D),
                 MathHelper.Floor(Y + Random.NextInt(7) - 3.0D),
                 MathHelper.Floor(Z + Random.NextInt(13) - 6.0D)
             );
-            float cost = GetBlockPathWeight(tile.X, tile.Y, tile.Z);
+            var cost = GetBlockPathWeight(tile.X, tile.Y, tile.Z);
             if (cost <= bestCost)
             {
                 continue;

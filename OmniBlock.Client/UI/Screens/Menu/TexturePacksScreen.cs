@@ -1,10 +1,10 @@
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using OmniBlock.Client.Resource.Pack;
 using OmniBlock.Client.UI.Controls;
 using OmniBlock.Client.UI.Controls.Core;
 using OmniBlock.Client.UI.Controls.ListItems;
 using OmniBlock.Client.UI.Layout.Flexbox;
-using Microsoft.Extensions.Logging;
 using Color = OmniBlock.Client.UI.Colors.Color;
 
 namespace OmniBlock.Client.UI.Screens.Menu;
@@ -63,14 +63,14 @@ public class TexturePacksScreen(
         buttonContainer.Style.JustifyContent = Justify.Center;
         buttonContainer.Style.Width = 320;
 
-        Button btnOpen = CreateButton();
+        var btnOpen = CreateButton();
         btnOpen.Text = Translations.Get("texturePack.openFolder");
         btnOpen.Style.Width = 150;
         btnOpen.Style.SetMargin(2);
         btnOpen.OnClick += e => OpenFolder();
         buttonContainer.AddChild(btnOpen);
 
-        Button btnDone = CreateButton();
+        var btnDone = CreateButton();
         btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.Width = 150;
         btnDone.Style.SetMargin(2);
@@ -86,12 +86,12 @@ public class TexturePacksScreen(
         _listItems.Clear();
 
         texturePackList.updateAvaliableTexturePacks();
-        List<TexturePack> packs = texturePackList.AvailableTexturePacks;
-        TexturePack selectedPack = texturePackList.SelectedTexturePack;
+        var packs = texturePackList.AvailableTexturePacks;
+        var selectedPack = texturePackList.SelectedTexturePack;
 
-        for (int i = 0; i < packs.Count; i++)
+        for (var i = 0; i < packs.Count; i++)
         {
-            TexturePack pack = packs[i];
+            var pack = packs[i];
             TexturePackListItem item = new(pack)
             {
                 IsSelected = pack == selectedPack
@@ -104,7 +104,7 @@ public class TexturePacksScreen(
 
     private void SelectPack(TexturePackListItem selectedItem)
     {
-        foreach (TexturePackListItem item in _listItems)
+        foreach (var item in _listItems)
         {
             item.IsSelected = false;
         }
@@ -153,15 +153,15 @@ public class TexturePacksScreen(
 
             texturePackList.updateAvaliableTexturePacks();
 
-            List<TexturePack> packs = texturePackList.AvailableTexturePacks;
+            var packs = texturePackList.AvailableTexturePacks;
             if (packs.Count != _listItems.Count)
             {
                 PopulatePackList();
             }
             else
             {
-                TexturePack selectedPack = texturePackList.SelectedTexturePack;
-                foreach (TexturePackListItem item in _listItems)
+                var selectedPack = texturePackList.SelectedTexturePack;
+                foreach (var item in _listItems)
                 {
                     item.IsSelected = item.Value == selectedPack;
                 }

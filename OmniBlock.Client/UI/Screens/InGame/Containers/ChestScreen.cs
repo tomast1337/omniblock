@@ -33,7 +33,7 @@ public class ChestScreen : ContainerScreen
         base.Init();
 
         // Background Image split into two parts to handle single/double chests
-        int topHeight = _inventoryRows * 18 + 17;
+        var topHeight = _inventoryRows * 18 + 17;
         Image topBg = new()
         {
             Texture = Renderer.TextureManager.GetTextureId("/gui/container.png"),

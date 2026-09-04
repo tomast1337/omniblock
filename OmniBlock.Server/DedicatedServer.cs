@@ -1,9 +1,8 @@
 using System.Net;
-using OmniBlock.Recipes;
+using Microsoft.Extensions.Logging;
 using OmniBlock.Registries;
 using OmniBlock.Server.Network;
 using OmniBlock.Server.Threading;
-using Microsoft.Extensions.Logging;
 using Exception = System.Exception;
 
 namespace OmniBlock.Server;
@@ -14,10 +13,7 @@ internal class DedicatedServer(IServerConfiguration config) : OmniBlockServer(co
 
     public override FileInfo GetFile(string path) => new(Path.Combine(".", path));
 
-    protected override PlayerManager CreatePlayerManager()
-    {
-        return new DedicatedPlayerManager(this);
-    }
+    protected override PlayerManager CreatePlayerManager() => new DedicatedPlayerManager(this);
 
     protected override bool Init()
     {
@@ -25,7 +21,7 @@ internal class DedicatedServer(IServerConfiguration config) : OmniBlockServer(co
 
         s_logger.LogInformation("Starting OmniBlock server version Beta 1.7.3");
 
-        long availableMb = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / (1024L * 1024L);
+        var availableMb = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / (1024L * 1024L);
         if (availableMb < 512)
         {
             s_logger.LogWarning("**** NOT ENOUGH RAM!");
@@ -36,9 +32,9 @@ internal class DedicatedServer(IServerConfiguration config) : OmniBlockServer(co
 
         s_logger.LogInformation("Loading properties");
 
-        string addressInput = config.GetServerIp("");
+        var addressInput = config.GetServerIp("");
 
-        bool dualStack = config.GetDualStack(false);
+        var dualStack = config.GetDualStack(false);
 
         var address = dualStack ? IPAddress.IPv6Any : IPAddress.Any;
 
@@ -47,7 +43,7 @@ internal class DedicatedServer(IServerConfiguration config) : OmniBlockServer(co
             address = Dns.GetHostAddresses(addressInput)[0];
         }
 
-        int port = config.GetServerPort(25565);
+        var port = config.GetServerPort(25565);
         s_logger.LogInformation($"Starting OmniBlock server on {(addressInput.Length == 0 ? "*" : addressInput)}:{port}");
 
         try

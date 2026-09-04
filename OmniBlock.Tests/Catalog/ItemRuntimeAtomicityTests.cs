@@ -12,13 +12,13 @@ public sealed class ItemRuntimeAtomicityTests
     [Fact]
     public void Failed_item_construction_leaves_the_published_runtime_unchanged()
     {
-        ContentRuntime published = ContentRuntime.Current;
-        ResourceLocation missing = ResourceLocation.Parse("example:missing_container");
-        ContentRuntimeBuilder builder = ContentRuntimeBuilder.CreateBuiltIns();
+        var published = ContentRuntime.Current;
+        var missing = ResourceLocation.Parse("example:missing_container");
+        var builder = ContentRuntimeBuilder.CreateBuiltIns();
         builder.AddItemDefinition(ItemDefinition("broken", 31780,
             """{"Type":"food","HealAmount":1,"ReturnItem":"example:missing_container"}"""));
 
-        InvalidOperationException error = Assert.Throws<InvalidOperationException>(() => builder.Build());
+        var error = Assert.Throws<InvalidOperationException>(() => builder.Build());
 
         Assert.Contains("omniblock:broken", error.Message);
         Assert.Contains(missing.ToString(), error.Message);
@@ -29,13 +29,13 @@ public sealed class ItemRuntimeAtomicityTests
     [Fact]
     public void Two_builders_create_independent_item_instances()
     {
-        ContentRuntimeBuilder firstBuilder = ContentRuntimeBuilder.CreateBuiltIns();
-        ContentRuntimeBuilder secondBuilder = ContentRuntimeBuilder.CreateBuiltIns();
+        var firstBuilder = ContentRuntimeBuilder.CreateBuiltIns();
+        var secondBuilder = ContentRuntimeBuilder.CreateBuiltIns();
         firstBuilder.AddItemDefinition(ItemDefinition("isolated", 31781));
         secondBuilder.AddItemDefinition(ItemDefinition("isolated", 31781));
 
-        ContentRuntime first = firstBuilder.Build();
-        ContentRuntime second = secondBuilder.Build();
+        var first = firstBuilder.Build();
+        var second = secondBuilder.Build();
 
         Assert.NotSame(first.Items, second.Items);
         Assert.NotSame(first.Items.Get("omniblock:isolated"), second.Items.Get("omniblock:isolated"));
@@ -44,9 +44,9 @@ public sealed class ItemRuntimeAtomicityTests
     [Fact]
     public void Items_are_immutable_after_runtime_publication()
     {
-        ContentRuntimeBuilder builder = ContentRuntimeBuilder.CreateBuiltIns();
+        var builder = ContentRuntimeBuilder.CreateBuiltIns();
         builder.AddItemDefinition(ItemDefinition("frozen", 31782));
-        Item item = builder.Build().Items.Get("omniblock:frozen");
+        var item = builder.Build().Items.Get("omniblock:frozen");
 
         Assert.True(item.IsFrozen);
         Assert.Throws<InvalidOperationException>(() => item.SetMaxCount(2));
@@ -60,8 +60,12 @@ public sealed class ItemRuntimeAtomicityTests
     [Fact]
     public void Block_items_and_item_behaviors_reference_objects_from_the_same_runtime()
     {
-        ContentRuntimeBuilder builder = ContentRuntimeBuilder.CreateBuiltIns();
-        BlockDefinition blockDefinition = new() { Name = "runtime_block", ProtocolId = 240 };
+        var builder = ContentRuntimeBuilder.CreateBuiltIns();
+        BlockDefinition blockDefinition = new()
+        {
+            Name = "runtime_block",
+            ProtocolId = 240
+        };
         Block block = new(240, 0, MaterialRegistry.Get("stone"), SoundGroupRegistry.Get("stone"));
         builder.AddBlock(blockDefinition, block);
         builder.BuildBlockItems([blockDefinition]);
@@ -71,11 +75,11 @@ public sealed class ItemRuntimeAtomicityTests
         builder.AddItemDefinition(ItemDefinition("food", 31785,
             """{"Type":"food","HealAmount":1,"ReturnItem":"omniblock:container"}"""));
 
-        ContentRuntime runtime = builder.Build();
-        ItemBlock blockItem = Assert.IsType<ItemBlock>(runtime.Items.GetByProtocolId(240));
-        PlaceBlockBehavior placement = Assert.IsType<PlaceBlockBehavior>(
+        var runtime = builder.Build();
+        var blockItem = Assert.IsType<ItemBlock>(runtime.Items.GetByProtocolId(240));
+        var placement = Assert.IsType<PlaceBlockBehavior>(
             runtime.Items.Get("omniblock:placer").GetBehavior<IItemBehavior>());
-        FoodBehavior food = Assert.IsType<FoodBehavior>(
+        var food = Assert.IsType<FoodBehavior>(
             runtime.Items.Get("omniblock:food").GetBehavior<IItemBehavior>());
 
         Assert.Same(runtime.Blocks.Get("omniblock:runtime_block"), blockItem.RuntimeBlock);
@@ -86,7 +90,7 @@ public sealed class ItemRuntimeAtomicityTests
     [Fact]
     public void Failed_drafts_cannot_escape_through_legacy_static_item_storage()
     {
-        FieldInfo[] legacyArrays = typeof(Item).GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+        var legacyArrays = typeof(Item).GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
             .Where(static field => field.FieldType == typeof(Item[]) ||
                                    typeof(IDictionary<string, Item>).IsAssignableFrom(field.FieldType))
             .ToArray();

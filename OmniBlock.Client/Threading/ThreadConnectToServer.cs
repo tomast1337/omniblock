@@ -1,8 +1,8 @@
 using System.Net.Sockets;
+using Microsoft.Extensions.Logging;
 using OmniBlock.Client.Network;
 using OmniBlock.Client.UI.Screens.Menu.Net;
 using OmniBlock.Network.Packets;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Client.Threading;
 

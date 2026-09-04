@@ -11,7 +11,7 @@ namespace OmniBlock.Client.Rendering.Core;
 /// </remarks>
 public class CommonShaderInfo
 {
-    public float Time;
-    public float DeltaTime;
     public float DayTime;
+    public float DeltaTime;
+    public float Time;
 }

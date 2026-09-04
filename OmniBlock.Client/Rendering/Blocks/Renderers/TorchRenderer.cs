@@ -7,7 +7,7 @@ public class TorchRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
+        var metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
 
         if (BlockRegistry.GetLightEmission(block.Id) > 0)
         {
@@ -20,9 +20,9 @@ public class TorchRenderer : IBlockRenderer
 
         ctx.Tess.setColorOpaque_F(1.0F, 1.0F, 1.0F);
 
-        float tiltAmount = 0.4f;
-        float horizontalOffset = 0.5f - tiltAmount;
-        float verticalOffset = 0.2f;
+        var tiltAmount = 0.4f;
+        var horizontalOffset = 0.5f - tiltAmount;
+        var verticalOffset = 0.2f;
 
         if (metadata == 1) // Attached to West wall (pointing East)
         {

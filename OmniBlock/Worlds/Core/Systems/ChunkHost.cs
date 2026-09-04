@@ -25,9 +25,9 @@ public sealed class ChunkHost(IChunkSource chunkSource)
             maxX >>= 4;
             maxZ >>= 4;
 
-            for (int x = minX; x <= maxX; ++x)
+            for (var x = minX; x <= maxX; ++x)
             {
-                for (int z = minZ; z <= maxZ; ++z)
+                for (var z = minZ; z <= maxZ; ++z)
                 {
                     if (!HasChunk(x, z))
                     {
@@ -44,26 +44,26 @@ public sealed class ChunkHost(IChunkSource chunkSource)
 
     public byte[] GetChunkData(int x, int y, int z, int sizeX, int sizeY, int sizeZ)
     {
-        byte[] chunkData = new byte[sizeX * sizeY * sizeZ * 5 / 2];
+        var chunkData = new byte[sizeX * sizeY * sizeZ * 5 / 2];
 
-        int startChunkX = x >> 4;
-        int startChunkZ = z >> 4;
-        int endChunkX = (x + sizeX - 1) >> 4;
-        int endChunkZ = (z + sizeZ - 1) >> 4;
+        var startChunkX = x >> 4;
+        var startChunkZ = z >> 4;
+        var endChunkX = (x + sizeX - 1) >> 4;
+        var endChunkZ = (z + sizeZ - 1) >> 4;
 
-        int currentBufferOffset = 0;
-        int minY = Math.Max(0, y);
-        int maxY = Math.Min(ChuckFormat.WorldHeight, y + sizeY);
+        var currentBufferOffset = 0;
+        var minY = Math.Max(0, y);
+        var maxY = Math.Min(ChuckFormat.WorldHeight, y + sizeY);
 
-        for (int chunkX = startChunkX; chunkX <= endChunkX; chunkX++)
+        for (var chunkX = startChunkX; chunkX <= endChunkX; chunkX++)
         {
-            int localStartX = Math.Max(0, x - chunkX * 16);
-            int localEndX = Math.Min(16, x + sizeX - chunkX * 16);
+            var localStartX = Math.Max(0, x - chunkX * 16);
+            var localEndX = Math.Min(16, x + sizeX - chunkX * 16);
 
-            for (int chunkZ = startChunkZ; chunkZ <= endChunkZ; chunkZ++)
+            for (var chunkZ = startChunkZ; chunkZ <= endChunkZ; chunkZ++)
             {
-                int localStartZ = Math.Max(0, z - chunkZ * 16);
-                int localEndZ = Math.Min(16, z + sizeZ - chunkZ * 16);
+                var localStartZ = Math.Max(0, z - chunkZ * 16);
+                var localEndZ = Math.Min(16, z + sizeZ - chunkZ * 16);
 
                 currentBufferOffset = GetChunk(chunkX, chunkZ).ToPacket(
                     chunkData,

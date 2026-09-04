@@ -1,63 +1,81 @@
 using Microsoft.Extensions.Logging;
+using OmniBlock.Threading;
 
 namespace OmniBlock.Stats;
 
 internal class StatsSynchronizer
 {
     private static readonly ILogger<StatsSynchronizer> s_logger = Log.Instance.For<StatsSynchronizer>();
-
-    private volatile bool _busy;
-    private volatile Dictionary<StatBase, int> _mergedData;
-    private volatile Dictionary<StatBase, int> _downloadedData;
-
-    private readonly StatFileWriter _statFileWriter;
     private readonly Session _session;
 
-    private readonly string _unsentStatsFile;
-    private readonly string _statsFile;
-    private readonly string _tempUnsentStatsFile;
-    private readonly string _tempStatsFile;
-    private readonly string _oldUnsentStatsFile;
-    private readonly string _oldStatsFile;
+    private readonly StatFileWriter _statFileWriter;
+
+    private volatile bool _busy;
+    private volatile Dictionary<StatBase, int> _downloadedData;
+    private volatile Dictionary<StatBase, int> _mergedData;
 
     private int _syncTimeout;
     private int _timeoutCounter;
 
     public StatsSynchronizer(Session session, StatFileWriter statFileWriter, string statsFolder)
     {
-        string usernameLower = session.username.ToLowerInvariant();
+        var usernameLower = session.username.ToLowerInvariant();
 
-        _unsentStatsFile = System.IO.Path.Combine(statsFolder, $"stats_{usernameLower}_unsent.dat");
-        _statsFile = System.IO.Path.Combine(statsFolder, $"stats_{usernameLower}.dat");
-        _oldUnsentStatsFile = System.IO.Path.Combine(statsFolder, $"stats_{usernameLower}_unsent.old");
-        _oldStatsFile = System.IO.Path.Combine(statsFolder, $"stats_{usernameLower}.old");
-        _tempUnsentStatsFile = System.IO.Path.Combine(statsFolder, $"stats_{usernameLower}_unsent.tmp");
-        _tempStatsFile = System.IO.Path.Combine(statsFolder, $"stats_{usernameLower}.tmp");
+        UnsentStatsFile = Path.Combine(statsFolder, $"stats_{usernameLower}_unsent.dat");
+        StatsFile = Path.Combine(statsFolder, $"stats_{usernameLower}.dat");
+        OldUnsentStatsFile = Path.Combine(statsFolder, $"stats_{usernameLower}_unsent.old");
+        OldStatsFile = Path.Combine(statsFolder, $"stats_{usernameLower}.old");
+        TempUnsentStatsFile = Path.Combine(statsFolder, $"stats_{usernameLower}_unsent.tmp");
+        TempStatsFile = Path.Combine(statsFolder, $"stats_{usernameLower}.tmp");
 
         if (usernameLower != session.username)
         {
-            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.username}_unsent.dat", _unsentStatsFile);
-            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.username}.dat", _statsFile);
-            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.username}_unsent.old", _oldUnsentStatsFile);
-            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.username}.old", _oldStatsFile);
-            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.username}_unsent.tmp", _tempUnsentStatsFile);
-            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.username}.tmp", _tempStatsFile);
+            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.username}_unsent.dat", UnsentStatsFile);
+            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.username}.dat", StatsFile);
+            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.username}_unsent.old", OldUnsentStatsFile);
+            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.username}.old", OldStatsFile);
+            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.username}_unsent.tmp", TempUnsentStatsFile);
+            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.username}.tmp", TempStatsFile);
         }
 
         _statFileWriter = statFileWriter;
         _session = session;
 
-        if (File.Exists(_unsentStatsFile))
+        if (File.Exists(UnsentStatsFile))
         {
-            statFileWriter.LoadStats(GetNewestAvailableStats(_unsentStatsFile, _tempUnsentStatsFile, _oldUnsentStatsFile));
+            statFileWriter.LoadStats(GetNewestAvailableStats(UnsentStatsFile, TempUnsentStatsFile, OldUnsentStatsFile));
         }
 
         ReceiveStats();
     }
 
+    internal Dictionary<StatBase, int> MergedData
+    {
+        get => _mergedData;
+        set => _mergedData = value;
+    }
+
+    internal bool Busy
+    {
+        get => _busy;
+        set => _busy = value;
+    }
+
+    internal string StatsFile { get; }
+
+    internal string TempStatsFile { get; }
+
+    internal string OldStatsFile { get; }
+
+    internal string UnsentStatsFile { get; }
+
+    internal string TempUnsentStatsFile { get; }
+
+    internal string OldUnsentStatsFile { get; }
+
     private static void EnsureStatFileIsLowercase(string statsFolder, string fileNameNotLowercase, string targetFile)
     {
-        string otherFile = System.IO.Path.Combine(statsFolder, fileNameNotLowercase);
+        var otherFile = Path.Combine(statsFolder, fileNameNotLowercase);
         if (File.Exists(otherFile) && !File.Exists(targetFile))
         {
             File.Move(otherFile, targetFile);
@@ -76,7 +94,7 @@ internal class StatsSynchronizer
     {
         try
         {
-            string fileContents = File.ReadAllText(filePath);
+            var fileContents = File.ReadAllText(filePath);
             return StatFileWriter.CreateStatsMap(fileContents);
         }
         catch (Exception ex)
@@ -91,7 +109,7 @@ internal class StatsSynchronizer
     {
         try
         {
-            string jsonContent = StatFileWriter.SerializeStats(_session.username, "local", statsMap);
+            var jsonContent = StatFileWriter.SerializeStats(_session.username, "local", statsMap);
             File.WriteAllText(tempUnsentFile, jsonContent);
 
             if (File.Exists(oldUnsentFile))
@@ -122,7 +140,7 @@ internal class StatsSynchronizer
         _syncTimeout = 100;
         _busy = true;
 
-        new Threading.ThreadStatSynchronizerReceive(this).Start();
+        new ThreadStatSynchronizerReceive(this).Start();
     }
 
     public void SendStats(Dictionary<StatBase, int> statsMap)
@@ -135,12 +153,12 @@ internal class StatsSynchronizer
         _syncTimeout = 100;
         _busy = true;
 
-        new Threading.ThreadStatSynchronizerSend(this, statsMap).Start();
+        new ThreadStatSynchronizerSend(this, statsMap).Start();
     }
 
     public void SyncStatsFileWithMap(Dictionary<StatBase, int> statsMap)
     {
-        int waitCycles = 30;
+        var waitCycles = 30;
 
         while (_busy)
         {
@@ -161,7 +179,7 @@ internal class StatsSynchronizer
 
         try
         {
-            SaveStatsToFile(statsMap, _unsentStatsFile, _tempUnsentStatsFile, _oldUnsentStatsFile);
+            SaveStatsToFile(statsMap, UnsentStatsFile, TempUnsentStatsFile, OldUnsentStatsFile);
         }
         finally
         {
@@ -169,10 +187,7 @@ internal class StatsSynchronizer
         }
     }
 
-    public bool IsReadyToSync()
-    {
-        return _syncTimeout <= 0 && !_busy && _downloadedData == null;
-    }
+    public bool IsReadyToSync() => _syncTimeout <= 0 && !_busy && _downloadedData == null;
 
     public void Tick()
     {
@@ -192,27 +207,5 @@ internal class StatsSynchronizer
         }
     }
 
-    internal Dictionary<StatBase, int> MergedData
-    {
-        get => _mergedData;
-        set => _mergedData = value;
-    }
-
-    internal bool Busy
-    {
-        get => _busy;
-        set => _busy = value;
-    }
-
-    internal string StatsFile => _statsFile;
-    internal string TempStatsFile => _tempStatsFile;
-    internal string OldStatsFile => _oldStatsFile;
-    internal string UnsentStatsFile => _unsentStatsFile;
-    internal string TempUnsentStatsFile => _tempUnsentStatsFile;
-    internal string OldUnsentStatsFile => _oldUnsentStatsFile;
-
-    internal Dictionary<StatBase, int> FetchNewestAvailableStats(string unsent, string tempUnsent, string oldUnsent)
-    {
-        return GetNewestAvailableStats(unsent, tempUnsent, oldUnsent);
-    }
+    internal Dictionary<StatBase, int> FetchNewestAvailableStats(string unsent, string tempUnsent, string oldUnsent) => GetNewestAvailableStats(unsent, tempUnsent, oldUnsent);
 }

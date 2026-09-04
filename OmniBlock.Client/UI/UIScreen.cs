@@ -104,14 +104,14 @@ public abstract class UIScreen
     {
         get
         {
-            Vector2D<int> s = Context.InputDisplaySize;
+            var s = Context.InputDisplaySize;
             return new ScaledResolution(Context.Options, s.X, s.Y);
         }
     }
 
     private Vector2D<float> ToScaledCoords(float x, float y, ScaledResolution res)
     {
-        Vector2D<int> s = Context.InputDisplaySize;
+        var s = Context.InputDisplaySize;
         return new Vector2D<float>(x * res.ScaledWidth / s.X, y * res.ScaledHeight / s.Y);
     }
 
@@ -202,16 +202,16 @@ public abstract class UIScreen
             return;
         }
 
-        float ry = Controller.RightStickY;
+        var ry = Controller.RightStickY;
         if (ry == 0f)
         {
             return;
         }
 
-        ScaledResolution res = CurrentScaledResolution;
-        Vector2D<float> scaled = ToScaledCoords(Context.VirtualCursor.X, Context.VirtualCursor.Y, res);
+        var res = CurrentScaledResolution;
+        var scaled = ToScaledCoords(Context.VirtualCursor.X, Context.VirtualCursor.Y, res);
 
-        UIElement? current = Root.HitTest(scaled.X, scaled.Y);
+        var current = Root.HitTest(scaled.X, scaled.Y);
         while (current != null)
         {
             if (current is ScrollView sv && sv.Enabled && sv.MaxScrollY > 0)
@@ -232,10 +232,10 @@ public abstract class UIScreen
             return;
         }
 
-        float step = _editingSlider!.Step;
+        var step = _editingSlider!.Step;
 
         // Left stick: accumulate fractional steps so we always move in whole units
-        float lx = Controller.LeftStickX;
+        var lx = Controller.LeftStickX;
         if (lx != 0f)
         {
             _sliderStickAccumulated += lx * SliderStepsPerSecond / Context.Timer.TicksPerSecond;
@@ -257,9 +257,9 @@ public abstract class UIScreen
         }
 
         // DPad: one step per press with hold-repeat
-        bool dpadLeft = Controller.IsButtonDown(GamepadButton.DPadLeft);
-        bool dpadRight = Controller.IsButtonDown(GamepadButton.DPadRight);
-        int dpadX = dpadRight ? 1 : dpadLeft ? -1 : 0;
+        var dpadLeft = Controller.IsButtonDown(GamepadButton.DPadLeft);
+        var dpadRight = Controller.IsButtonDown(GamepadButton.DPadRight);
+        var dpadX = dpadRight ? 1 : dpadLeft ? -1 : 0;
 
         if (dpadX != _sliderDpadHeldX)
         {
@@ -290,8 +290,8 @@ public abstract class UIScreen
 
     public virtual bool HandleDPadNavigation(int dpadX, int dpadY, ref float cursorX, ref float cursorY)
     {
-        ScaledResolution res = CurrentScaledResolution;
-        Vector2D<float> scaledCursor = ToScaledCoords(cursorX, cursorY, res);
+        var res = CurrentScaledResolution;
+        var scaledCursor = ToScaledCoords(cursorX, cursorY, res);
 
         // While editing a slider, DPad is handled by HandleSliderEditTick — block navigation
         if (_editingSlider != null)
@@ -308,19 +308,19 @@ public abstract class UIScreen
         }
 
         UIElement? best = null;
-        float bestDistSq = float.MaxValue;
+        var bestDistSq = float.MaxValue;
 
         // First pass: nearest element within a 45 cone of the direction
-        foreach (UIElement element in candidates)
+        foreach (var element in candidates)
         {
-            float cx = element.ScreenX + element.ComputedWidth / 2f;
-            float cy = element.ScreenY + element.ComputedHeight / 2f;
+            var cx = element.ScreenX + element.ComputedWidth / 2f;
+            var cy = element.ScreenY + element.ComputedHeight / 2f;
 
-            float dx = cx - scaledCursor.X;
-            float dy = cy - scaledCursor.Y;
+            var dx = cx - scaledCursor.X;
+            var dy = cy - scaledCursor.Y;
 
-            float primary = dpadX != 0 ? dx * dpadX : dy * dpadY;
-            float perp = dpadX != 0 ? Math.Abs(dy) : Math.Abs(dx);
+            var primary = dpadX != 0 ? dx * dpadX : dy * dpadY;
+            var perp = dpadX != 0 ? Math.Abs(dy) : Math.Abs(dx);
 
             if (primary <= 1f)
             {
@@ -332,7 +332,7 @@ public abstract class UIScreen
                 continue; // outside 45° cone
             }
 
-            float distSq = dx * dx + dy * dy;
+            var distSq = dx * dx + dy * dy;
             if (distSq < bestDistSq)
             {
                 bestDistSq = distSq;
@@ -343,21 +343,21 @@ public abstract class UIScreen
         // Second pass: if nothing in cone, take nearest element in the half-plane
         if (best == null)
         {
-            foreach (UIElement element in candidates)
+            foreach (var element in candidates)
             {
-                float cx = element.ScreenX + element.ComputedWidth / 2f;
-                float cy = element.ScreenY + element.ComputedHeight / 2f;
+                var cx = element.ScreenX + element.ComputedWidth / 2f;
+                var cy = element.ScreenY + element.ComputedHeight / 2f;
 
-                float dx = cx - scaledCursor.X;
-                float dy = cy - scaledCursor.Y;
+                var dx = cx - scaledCursor.X;
+                var dy = cy - scaledCursor.Y;
 
-                float primary = dpadX != 0 ? dx * dpadX : dy * dpadY;
+                var primary = dpadX != 0 ? dx * dpadX : dy * dpadY;
                 if (primary <= 1f)
                 {
                     continue;
                 }
 
-                float distSq = dx * dx + dy * dy;
+                var distSq = dx * dx + dy * dy;
                 if (distSq < bestDistSq)
                 {
                     bestDistSq = distSq;
@@ -371,9 +371,9 @@ public abstract class UIScreen
             return false;
         }
 
-        float bestCx = best.ScreenX + best.ComputedWidth / 2f;
-        float bestCy = best.ScreenY + best.ComputedHeight / 2f;
-        Vector2D<int> inputSize = Context.InputDisplaySize;
+        var bestCx = best.ScreenX + best.ComputedWidth / 2f;
+        var bestCy = best.ScreenY + best.ComputedHeight / 2f;
+        var inputSize = Context.InputDisplaySize;
         cursorX = bestCx * inputSize.X / res.ScaledWidth;
         cursorY = bestCy * inputSize.Y / res.ScaledHeight;
         return true;
@@ -391,7 +391,7 @@ public abstract class UIScreen
             CollectNavigable(sv.ContentContainer, result, screenW, screenH);
         }
 
-        foreach (UIElement child in element.Children)
+        foreach (var child in element.Children)
         {
             CollectNavigable(child, result, screenW, screenH);
         }
@@ -417,15 +417,15 @@ public abstract class UIScreen
         }
 
         // Only include elements whose center is within the visible screen
-        float cx = element.ScreenX + element.ComputedWidth / 2f;
-        float cy = element.ScreenY + element.ComputedHeight / 2f;
+        var cx = element.ScreenX + element.ComputedWidth / 2f;
+        var cy = element.ScreenY + element.ComputedHeight / 2f;
         if (cx < 0 || cx > screenW || cy < 0 || cy > screenH)
         {
             return;
         }
 
         // Reject elements clipped by an ancestor ScrollView
-        UIElement? ancestor = element.Parent;
+        var ancestor = element.Parent;
         while (ancestor != null)
         {
             if (ancestor is ScrollView scrollAncestor)
@@ -445,14 +445,14 @@ public abstract class UIScreen
 
     public bool HasInteractiveElementUnderCursor()
     {
-        UIElement? el = _hoveredElement;
+        var el = _hoveredElement;
         return el != null && el.Enabled && el is not ScrollView && (el.OnClick != null || el.OnMouseDown != null);
     }
 
     protected UIElement? GetElementUnderVirtualCursor()
     {
-        ScaledResolution res = CurrentScaledResolution;
-        Vector2D<float> scaled = ToScaledCoords(Context.VirtualCursor.X, Context.VirtualCursor.Y, res);
+        var res = CurrentScaledResolution;
+        var scaled = ToScaledCoords(Context.VirtualCursor.X, Context.VirtualCursor.Y, res);
         return Root.HitTest(scaled.X, scaled.Y);
     }
 
@@ -464,7 +464,7 @@ public abstract class UIScreen
 
     public virtual void Render(int mouseX, int mouseY, float partialTicks)
     {
-        ScaledResolution res = CurrentScaledResolution;
+        var res = CurrentScaledResolution;
 
         Root.Style.Width = res.ScaledWidth;
         Root.Style.Height = res.ScaledHeight;
@@ -493,7 +493,7 @@ public abstract class UIScreen
 
     private void UpdateHovers(float mouseX, float mouseY)
     {
-        UIElement? newHovered = Root.HitTest(mouseX, mouseY);
+        var newHovered = Root.HitTest(mouseX, mouseY);
 
         if (newHovered != _hoveredElement)
         {
@@ -565,11 +565,11 @@ public abstract class UIScreen
 
     public void HandleMouseInput()
     {
-        Vector2D<int> inputSize = Context.InputDisplaySize;
+        var inputSize = Context.InputDisplaySize;
         ScaledResolution res = new(Context.Options, inputSize.X, inputSize.Y);
-        Vector2D<int> offset = Context.MouseOffset;
-        float scaledX = (Mouse.getEventX() - offset.X) * res.ScaledWidth / (float)inputSize.X;
-        float scaledY = res.ScaledHeight - (Mouse.getEventY() - offset.Y) * res.ScaledHeight / (float)inputSize.Y - 1f;
+        var offset = Context.MouseOffset;
+        var scaledX = (Mouse.getEventX() - offset.X) * res.ScaledWidth / (float)inputSize.X;
+        var scaledY = res.ScaledHeight - (Mouse.getEventY() - offset.Y) * res.ScaledHeight / (float)inputSize.Y - 1f;
 
         if (Mouse.getEventButtonState())
         {
@@ -585,8 +585,8 @@ public abstract class UIScreen
 
     private void HandleMouseButtonDown(float scaledX, float scaledY)
     {
-        MouseButton button = ParseMouseButton(Mouse.getEventButton());
-        UIElement? target = Root.HitTest(scaledX, scaledY);
+        var button = ParseMouseButton(Mouse.getEventButton());
+        var target = Root.HitTest(scaledX, scaledY);
 
         FocusedElement = target;
 
@@ -615,11 +615,11 @@ public abstract class UIScreen
 
     private void HandleMouseButtonUpOrMove(float scaledX, float scaledY)
     {
-        int rawButton = Mouse.getEventButton();
+        var rawButton = Mouse.getEventButton();
         if (rawButton != -1) // -1 means moved, not button up
         {
-            MouseButton button = ParseMouseButton(rawButton);
-            UIElement? target = Root.HitTest(scaledX, scaledY);
+            var button = ParseMouseButton(rawButton);
+            var target = Root.HitTest(scaledX, scaledY);
             if (target != null && target.Enabled)
             {
                 UIMouseEvent evt = new()
@@ -649,13 +649,13 @@ public abstract class UIScreen
 
     private void HandleMouseScroll(float scaledX, float scaledY)
     {
-        int dWheel = Mouse.getEventDWheel();
+        var dWheel = Mouse.getEventDWheel();
         if (dWheel == 0)
         {
             return;
         }
 
-        UIElement? target = Root.HitTest(scaledX, scaledY);
+        var target = Root.HitTest(scaledX, scaledY);
         if (target == null)
         {
             return;
@@ -668,7 +668,7 @@ public abstract class UIScreen
             MouseY = (int)scaledY,
             ScrollDelta = dWheel
         };
-        UIElement? current = target;
+        var current = target;
         while (current != null)
         {
             if (current.Enabled)
@@ -723,15 +723,15 @@ public abstract class UIScreen
 
     public virtual void HandleControllerInput()
     {
-        GamepadButton button = (GamepadButton)Controller.GetEventButton();
-        bool isDown = Controller.GetEventButtonState();
+        var button = (GamepadButton)Controller.GetEventButton();
+        var isDown = Controller.GetEventButtonState();
 
         if (button == GamepadButton.A && isDown)
         {
-            ScaledResolution res = CurrentScaledResolution;
-            Vector2D<float> scaled = ToScaledCoords(Context.VirtualCursor.X, Context.VirtualCursor.Y, res);
+            var res = CurrentScaledResolution;
+            var scaled = ToScaledCoords(Context.VirtualCursor.X, Context.VirtualCursor.Y, res);
 
-            UIElement? target = Root.HitTest(scaled.X, scaled.Y);
+            var target = Root.HitTest(scaled.X, scaled.Y);
 
             // Holding A on a slider enters slider-edit mode instead of clicking
             if (target is Slider slider && slider.Enabled)

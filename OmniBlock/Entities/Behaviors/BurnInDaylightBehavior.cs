@@ -15,7 +15,7 @@ public sealed class BurnInDaylightBehavior(int fireTicks = 300) : IEntityTicker
             return;
         }
 
-        float brightness = self.GetBrightnessAtEyes(1.0F);
+        var brightness = self.GetBrightnessAtEyes(1.0F);
         if (brightness > 0.5F
             && self.World.Lighting.HasSkyLight(MathHelper.Floor(self.X), MathHelper.Floor(self.Y), MathHelper.Floor(self.Z))
             && self.Random.NextFloat() * 30.0F < (brightness - 0.4F) * 2.0F)

@@ -31,9 +31,9 @@ public sealed class InterpolationStarvationTests
     private static SnapshotBuffer Moving(long fromMs = 1000, int snapshots = 8)
     {
         SnapshotBuffer buffer = new();
-        for (int i = 0; i < snapshots; i++)
+        for (var i = 0; i < snapshots; i++)
         {
-            long time = fromMs + (i * IntervalMs);
+            var time = fromMs + i * IntervalMs;
             buffer.Push(new Snapshot(time, time / (double)IntervalMs, 0, 0, 0, 0));
         }
 
@@ -48,7 +48,7 @@ public sealed class InterpolationStarvationTests
     ///     entity is blamed on the network rather than on having stopped moving.
     /// </summary>
     private static EntityInterpolator.InterpolationTick Stalled(long serverTimeMs) =>
-        new(serverTimeMs, TickMs, StreamStalled: true);
+        new(serverTimeMs, TickMs, true);
 
     /// <summary>
     ///     Runs the interpolator forward, feeding it nothing. Returns the last sample and kind.
@@ -56,10 +56,10 @@ public sealed class InterpolationStarvationTests
     private static (SampleKind Kind, Snapshot Sample, long ServerTimeMs) Run(
         EntityInterpolator interpolator, SnapshotBuffer buffer, long serverTimeMs, int ticks)
     {
-        SampleKind kind = SampleKind.Empty;
+        var kind = SampleKind.Empty;
         Snapshot sample = default;
 
-        for (int i = 0; i < ticks; i++)
+        for (var i = 0; i < ticks; i++)
         {
             kind = interpolator.Advance(1, buffer, Stalled(serverTimeMs), out sample);
             serverTimeMs += TickMs;
@@ -78,9 +78,9 @@ public sealed class InterpolationStarvationTests
     public void A_stall_past_the_extrapolation_cap_counts_one_starvation_event()
     {
         EntityInterpolator interpolator = new();
-        SnapshotBuffer buffer = Moving();
+        var buffer = Moving();
 
-        (SampleKind kind, _, _) = Run(interpolator, buffer, serverTimeMs: 1800, ticks: 40);
+        var (kind, _, _) = Run(interpolator, buffer, 1800, 40);
 
         Assert.Equal(SampleKind.Frozen, kind);
         Assert.Equal(1, interpolator.StarvationEvents);
@@ -95,9 +95,9 @@ public sealed class InterpolationStarvationTests
     public void A_newly_tracked_entity_is_not_counted_as_starving()
     {
         EntityInterpolator interpolator = new();
-        SnapshotBuffer buffer = Moving(snapshots: 1);
+        var buffer = Moving(snapshots: 1);
 
-        (SampleKind kind, _, _) = Run(interpolator, buffer, serverTimeMs: 5000, ticks: 10);
+        var (kind, _, _) = Run(interpolator, buffer, 5000, 10);
 
         Assert.Equal(SampleKind.Frozen, kind);
         Assert.Equal(0, interpolator.StarvationEvents);
@@ -121,14 +121,14 @@ public sealed class InterpolationStarvationTests
     public void An_entity_that_merely_stopped_moving_earns_no_credit()
     {
         EntityInterpolator interpolator = new();
-        SnapshotBuffer buffer = Moving();
+        var buffer = Moving();
 
         long serverTimeMs = 1800;
-        SampleKind kind = SampleKind.Empty;
+        var kind = SampleKind.Empty;
 
         // Nothing arrives for this entity, but the stream as a whole is healthy: other entities are
         // still being updated, so this one stopped rather than the network.
-        for (int i = 0; i < 40; i++)
+        for (var i = 0; i < 40; i++)
         {
             kind = interpolator.Advance(
                 1, buffer, new EntityInterpolator.InterpolationTick(serverTimeMs, TickMs, false), out _);
@@ -149,7 +149,10 @@ public sealed class InterpolationStarvationTests
     [Fact]
     public void The_stream_is_judged_stalled_only_when_nothing_at_all_has_arrived()
     {
-        EntityInterpolator interpolator = new() { Available = true };
+        EntityInterpolator interpolator = new()
+        {
+            Available = true
+        };
         interpolator.Record(1, 1000, 0, 0, 0, 0, 0);
 
         Assert.False(
@@ -173,12 +176,12 @@ public sealed class InterpolationStarvationTests
     public void A_frozen_entitys_delay_grows_at_the_full_clock_rate()
     {
         EntityInterpolator interpolator = new();
-        SnapshotBuffer buffer = Moving();
+        var buffer = Moving();
 
-        Run(interpolator, buffer, serverTimeMs: 1800, ticks: 10);
+        Run(interpolator, buffer, 1800, 10);
         Assert.Equal(SampleKind.Frozen, interpolator.Advance(1, buffer, Stalled(2300), out _));
 
-        long before = interpolator.AppliedDelayFor(1);
+        var before = interpolator.AppliedDelayFor(1);
         interpolator.Advance(1, buffer, Stalled(2350), out _);
 
         Assert.Equal(before + TickMs, interpolator.AppliedDelayFor(1));
@@ -195,15 +198,15 @@ public sealed class InterpolationStarvationTests
     public void A_frozen_entity_holds_one_position_rather_than_drifting()
     {
         EntityInterpolator interpolator = new();
-        SnapshotBuffer buffer = Moving();
+        var buffer = Moving();
 
-        Run(interpolator, buffer, serverTimeMs: 1800, ticks: 12);
+        Run(interpolator, buffer, 1800, 12);
 
-        (_, Snapshot first, long serverTimeMs) = Run(interpolator, buffer, 2400, ticks: 1);
-        (SampleKind kind, Snapshot later, _) = Run(interpolator, buffer, serverTimeMs, ticks: 20);
+        var (_, first, serverTimeMs) = Run(interpolator, buffer, 2400, 1);
+        var (kind, later, _) = Run(interpolator, buffer, serverTimeMs, 20);
 
         Assert.Equal(SampleKind.Frozen, kind);
-        Assert.Equal(first.X, later.X, precision: 6);
+        Assert.Equal(first.X, later.X, 6);
     }
 
     /// <summary>
@@ -225,15 +228,15 @@ public sealed class InterpolationStarvationTests
     ///     </para>
     /// </summary>
     [Theory]
-    [InlineData(10)]   // half a second
-    [InlineData(20)]   // one second
-    [InlineData(30)]   // one and a half, still inside the twenty updates the ring retains
+    [InlineData(10)] // half a second
+    [InlineData(20)] // one second
+    [InlineData(30)] // one and a half, still inside the twenty updates the ring retains
     public void Recovery_skips_no_more_than_the_extrapolation_cap_however_long_the_stall(int stallTicks)
     {
         EntityInterpolator interpolator = new();
-        SnapshotBuffer buffer = Moving();
+        var buffer = Moving();
 
-        (_, Snapshot frozen, long serverTimeMs) = Run(interpolator, buffer, 1800, ticks: stallTicks);
+        var (_, frozen, serverTimeMs) = Run(interpolator, buffer, 1800, stallTicks);
         Assert.Equal(SampleKind.Frozen, interpolator.Advance(1, buffer, Stalled(serverTimeMs), out frozen));
         serverTimeMs += TickMs;
 
@@ -243,10 +246,10 @@ public sealed class InterpolationStarvationTests
             Push(buffer, time);
         }
 
-        interpolator.Advance(1, buffer, Stalled(serverTimeMs), out Snapshot resumed);
+        interpolator.Advance(1, buffer, Stalled(serverTimeMs), out var resumed);
 
         // X is in units of IntervalMs, so a skip of one X is 100 ms of the entity's own timeline.
-        double skippedMs = (resumed.X - frozen.X) * IntervalMs;
+        var skippedMs = (resumed.X - frozen.X) * IntervalMs;
 
         Assert.True(skippedMs >= 0, $"recovery went backwards by {-skippedMs} ms");
         Assert.True(
@@ -265,9 +268,9 @@ public sealed class InterpolationStarvationTests
     public void A_stall_past_the_bounds_gives_up_and_skips()
     {
         EntityInterpolator interpolator = new();
-        SnapshotBuffer buffer = Moving();
+        var buffer = Moving();
 
-        (_, Snapshot frozen, long serverTimeMs) = Run(interpolator, buffer, 1800, ticks: 120);
+        var (_, frozen, serverTimeMs) = Run(interpolator, buffer, 1800, 120);
         Assert.Equal(EntityInterpolator.MaxDelayMs, interpolator.AppliedDelayFor(1));
 
         for (long time = 1800; time <= serverTimeMs; time += IntervalMs)
@@ -275,7 +278,7 @@ public sealed class InterpolationStarvationTests
             Push(buffer, time);
         }
 
-        interpolator.Advance(1, buffer, Stalled(serverTimeMs), out Snapshot resumed);
+        interpolator.Advance(1, buffer, Stalled(serverTimeMs), out var resumed);
 
         Assert.True(
             (resumed.X - frozen.X) * IntervalMs > SnapshotBuffer.ExtrapolationCapMs,
@@ -291,7 +294,7 @@ public sealed class InterpolationStarvationTests
     [Fact]
     public void Retained_history_is_the_tighter_of_the_two_bounds_for_fast_tracked_entities()
     {
-        long historyMs = SnapshotBuffer.Capacity * IntervalMs;
+        var historyMs = SnapshotBuffer.Capacity * IntervalMs;
 
         Assert.True(
             historyMs < EntityInterpolator.MaxDelayMs,
@@ -307,14 +310,14 @@ public sealed class InterpolationStarvationTests
     public void The_credit_a_stall_bought_is_repaid_once_the_entity_is_fed_again()
     {
         EntityInterpolator interpolator = new();
-        SnapshotBuffer buffer = Moving();
+        var buffer = Moving();
 
-        (_, _, long serverTimeMs) = Run(interpolator, buffer, 1800, ticks: 20);
-        long stalled = interpolator.AppliedDelayFor(1);
+        var (_, _, serverTimeMs) = Run(interpolator, buffer, 1800, 20);
+        var stalled = interpolator.AppliedDelayFor(1);
         Assert.True(stalled > IntervalMs * 2, "the stall should have bought margin over the base delay");
 
         // Feed it steadily again for long enough to unwind, one snapshot per two ticks.
-        for (int tick = 0; tick < 400; tick++)
+        for (var tick = 0; tick < 400; tick++)
         {
             if (tick % 2 == 0)
             {
@@ -339,9 +342,9 @@ public sealed class InterpolationStarvationTests
     public void Starvation_credit_is_bounded_by_the_hard_delay_bound()
     {
         EntityInterpolator interpolator = new();
-        SnapshotBuffer buffer = Moving();
+        var buffer = Moving();
 
-        Run(interpolator, buffer, 1800, ticks: 2000);
+        Run(interpolator, buffer, 1800, 2000);
 
         Assert.Equal(EntityInterpolator.MaxDelayMs, interpolator.AppliedDelayFor(1));
     }
@@ -354,9 +357,9 @@ public sealed class InterpolationStarvationTests
     public void A_clock_step_drops_starvation_credit_with_the_buffers()
     {
         EntityInterpolator interpolator = new();
-        SnapshotBuffer buffer = Moving();
+        var buffer = Moving();
 
-        Run(interpolator, buffer, 1800, ticks: 20);
+        Run(interpolator, buffer, 1800, 20);
         Assert.True(interpolator.AppliedDelayFor(1) > IntervalMs * 2);
 
         interpolator.Clear();
@@ -372,13 +375,13 @@ public sealed class InterpolationStarvationTests
     [Fact]
     public void Freezing_holds_the_extrapolated_position_rather_than_snapping_back()
     {
-        SnapshotBuffer buffer = Moving();
-        long newest = buffer.NewestServerTimeMs;
+        var buffer = Moving();
+        var newest = buffer.NewestServerTimeMs;
 
-        buffer.Sample(newest + SnapshotBuffer.ExtrapolationCapMs, out Snapshot atCap);
-        SampleKind kind = buffer.Sample(newest + SnapshotBuffer.ExtrapolationCapMs + 1, out Snapshot pastCap);
+        buffer.Sample(newest + SnapshotBuffer.ExtrapolationCapMs, out var atCap);
+        var kind = buffer.Sample(newest + SnapshotBuffer.ExtrapolationCapMs + 1, out var pastCap);
 
         Assert.Equal(SampleKind.Frozen, kind);
-        Assert.Equal(atCap.X, pastCap.X, precision: 6);
+        Assert.Equal(atCap.X, pastCap.X, 6);
     }
 }

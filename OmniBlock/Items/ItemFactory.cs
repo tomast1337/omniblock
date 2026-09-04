@@ -1,4 +1,3 @@
-using System.Text.Json;
 using OmniBlock.Items.Behaviors;
 
 namespace OmniBlock.Items;
@@ -12,7 +11,7 @@ public static class ItemFactory
     {
         ArgumentNullException.ThrowIfNull(def);
         ArgumentNullException.ThrowIfNull(behaviorProviders);
-        Item item = CreateDraft(def, context);
+        var item = CreateDraft(def, context);
         AttachBehavior(item, def, context, behaviorProviders);
         return item;
     }
@@ -36,12 +35,11 @@ public static class ItemFactory
         in ItemBuildContext context,
         IItemBehaviorProviderRegistry behaviorProviders)
     {
-        foreach (JsonElement definition in def.Behaviors)
+        foreach (var definition in def.Behaviors)
         {
-            if (!definition.TryGetProperty("Type", out JsonElement typeElement) || typeElement.GetString() is not { } typeName)
+            if (!definition.TryGetProperty("Type", out var typeElement) || typeElement.GetString() is not { } typeName)
                 throw new ArgumentException("Item behavior requires a string 'Type'.");
             item.AddBehavior(behaviorProviders.Build(ResourceLocation.Parse(typeName), definition, context));
         }
     }
-
 }

@@ -10,5 +10,5 @@ public enum LoadLocations : byte
     Resourcepack = 8,
 
     AllInit = Assets | GameDatapack,
-    AllData = AllInit | WorldDatapack,
+    AllData = AllInit | WorldDatapack
 }

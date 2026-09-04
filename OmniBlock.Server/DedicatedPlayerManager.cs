@@ -4,9 +4,9 @@ namespace OmniBlock.Server;
 
 internal class DedicatedPlayerManager : PlayerManager
 {
-    private readonly ILogger<DedicatedPlayerManager> _logger = Log.Instance.For<DedicatedPlayerManager>();
-    private readonly FileInfo _bannedPlayersFile;
     private readonly FileInfo _bannedIpsFile;
+    private readonly FileInfo _bannedPlayersFile;
+    private readonly ILogger<DedicatedPlayerManager> _logger = Log.Instance.For<DedicatedPlayerManager>();
     private readonly FileInfo _operatorsFile;
     private readonly FileInfo _whitelistFile;
 
@@ -49,7 +49,7 @@ internal class DedicatedPlayerManager : PlayerManager
         {
             StreamWriter writer = new(file.Open(FileMode.Create));
 
-            foreach (string whitelistedPlayer in lines)
+            foreach (var whitelistedPlayer in lines)
             {
                 writer.WriteLine(whitelistedPlayer);
             }

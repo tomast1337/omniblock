@@ -30,10 +30,11 @@ public readonly record struct EntityBehaviorContext(JsonElement Json, EntityBeha
 
     /// <summary>Resolves a synced property declared in the entity's JSON to a typed, id-carrying handle.</summary>
     public SyncedHandle<T> Synced<T>(string name) => SyncedPropertyFactory.Resolve<T>(Definition, name);
+
     public object Build(JsonElement definition) => BuildContext.Build(definition);
 
-    public float Float(string name, float fallback) => Json.TryGetProperty(name, out JsonElement v) ? v.GetSingle() : fallback;
-    public double Double(string name, double fallback) => Json.TryGetProperty(name, out JsonElement v) ? v.GetDouble() : fallback;
-    public int Int(string name, int fallback) => Json.TryGetProperty(name, out JsonElement v) ? v.GetInt32() : fallback;
-    public bool Bool(string name, bool fallback) => Json.TryGetProperty(name, out JsonElement v) ? v.GetBoolean() : fallback;
+    public float Float(string name, float fallback) => Json.TryGetProperty(name, out var v) ? v.GetSingle() : fallback;
+    public double Double(string name, double fallback) => Json.TryGetProperty(name, out var v) ? v.GetDouble() : fallback;
+    public int Int(string name, int fallback) => Json.TryGetProperty(name, out var v) ? v.GetInt32() : fallback;
+    public bool Bool(string name, bool fallback) => Json.TryGetProperty(name, out var v) ? v.GetBoolean() : fallback;
 }

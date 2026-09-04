@@ -6,11 +6,10 @@ namespace OmniBlock.Tests.Packets;
 
 public class PacketIdTest : PacketTestBase
 {
-
     [Fact]
     public void VerifyRegistryIds()
     {
-        for (int i = 0; i < Packet.Registry.Count; i++)
+        for (var i = 0; i < Packet.Registry.Count; i++)
         {
             if (Packet.Registry[i] == null) continue;
             Assert.StrictEqual(i, Packet.Registry[i]!.Id);
@@ -20,20 +19,19 @@ public class PacketIdTest : PacketTestBase
     [Fact]
     public void VerifyPacketIdMatchRegistryIds()
     {
-        for (int i = 0; i < Packet.Registry.Count; i++)
+        for (var i = 0; i < Packet.Registry.Count; i++)
         {
             if (Packet.Registry[i] == null) continue;
             Assert.StrictEqual(i, Packet.Registry[i]!.New().Id);
         }
     }
 
-    [Theory, MemberData(nameof(PacketIds))]
-    public void VerifyPacketEnum(PacketId value)
-    {
-        Assert.StrictEqual((int)value, Packet.Registry[(int)value]?.Id);
-    }
+    [Theory]
+    [MemberData(nameof(PacketIds))]
+    public void VerifyPacketEnum(PacketId value) => Assert.StrictEqual((int)value, Packet.Registry[(int)value]?.Id);
 
-    [SkippableTheory, MemberData(nameof(PacketIds))]
+    [SkippableTheory]
+    [MemberData(nameof(PacketIds))]
     public void VerifyPacketGetMethods(PacketId value)
     {
         var t = Packet.Registry[(int)value]!.New().GetType();
@@ -43,9 +41,9 @@ public class PacketIdTest : PacketTestBase
         if (!methods.Any())
             throw new SkipException(t.Name + " has no Get method.");
 
-        foreach (MethodInfo method in methods)
+        foreach (var method in methods)
         {
-            object?[] args = method.GetParameters()
+            var args = method.GetParameters()
                 .Select(p =>
                 {
                     if (p.HasDefaultValue)
@@ -77,7 +75,7 @@ public class PacketIdTest : PacketTestBase
                 })
                 .ToArray();
 
-            object? packet = method.Invoke(null, args);
+            var packet = method.Invoke(null, args);
             Assert.NotNull(packet);
             Assert.StrictEqual((int)value, ((Packet)packet).Id);
         }
@@ -86,9 +84,9 @@ public class PacketIdTest : PacketTestBase
     [Fact]
     public void VerifyPacketCount()
     {
-        int count = 0;
+        var count = 0;
         var registry = Packet.Registry;
-        for (int i = 0; i < registry.Count; i++)
+        for (var i = 0; i < registry.Count; i++)
         {
             if (registry[i] == null) continue;
             count++;

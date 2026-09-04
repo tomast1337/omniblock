@@ -1,6 +1,5 @@
 using OmniBlock.Entities;
 using OmniBlock.NBT;
-using OmniBlock.Registries;
 
 namespace OmniBlock.Tests.Entities;
 
@@ -10,9 +9,9 @@ public sealed class RuntimeEntityTypeRegistryTests
     [Fact]
     public void Frozen_indexes_resolve_all_entity_identity_spaces()
     {
-        RuntimeEntityTypeRegistry entities = ContentRuntime.Current.EntityTypes;
+        var entities = ContentRuntime.Current.EntityTypes;
 
-        EntityType zombie = entities.Get("omniblock:zombie");
+        var zombie = entities.Get("omniblock:zombie");
         Assert.Same(zombie, entities.GetByProtocolId(54));
         Assert.Same(entities.Get("omniblock:arrow"), entities.GetBySpawnObjectId(60));
         Assert.Same(entities.Get("omniblock:lightningbolt"), entities.GetByGlobalSpawnId(1));
@@ -25,7 +24,7 @@ public sealed class RuntimeEntityTypeRegistryTests
     {
         FakeWorldContext world = new(ContentRuntime.Current);
 
-        Entity zombie = world.Content.EntityTypes.Create("omniblock:zombie", world);
+        var zombie = world.Content.EntityTypes.Create("omniblock:zombie", world);
 
         Assert.Same(world.Content.EntityTypes.Get("omniblock:zombie"), zombie.Type);
         Assert.Equal(54, world.Content.EntityTypes.GetProtocolId(zombie));
@@ -36,7 +35,7 @@ public sealed class RuntimeEntityTypeRegistryTests
     public void Nbt_reconstruction_is_an_instance_registry_operation()
     {
         FakeWorldContext sourceWorld = new(ContentRuntime.Current);
-        Entity source = sourceWorld.Content.EntityTypes.Create("omniblock:cow", sourceWorld);
+        var source = sourceWorld.Content.EntityTypes.Create("omniblock:cow", sourceWorld);
         source.SetPositionAndAngles(4.5, 65, 8.5, 0, 0);
         NBTTagCompound nbt = new();
         Assert.True(source.SaveSelfNbt(nbt));
@@ -55,7 +54,7 @@ public sealed class RuntimeEntityTypeRegistryTests
     public void Nbt_uses_the_namespaced_resource_id_instead_of_the_transport_id()
     {
         FakeWorldContext world = new(ContentRuntime.Current);
-        Entity cow = world.Content.EntityTypes.Create("omniblock:cow", world);
+        var cow = world.Content.EntityTypes.Create("omniblock:cow", world);
         NBTTagCompound nbt = new();
 
         Assert.True(cow.SaveSelfNbt(nbt));
@@ -67,13 +66,13 @@ public sealed class RuntimeEntityTypeRegistryTests
     [Fact]
     public void Independently_built_runtimes_have_independent_entity_registries_and_types()
     {
-        ContentRuntimeBuilder firstBuilder = ContentRuntimeBuilder.CreateBuiltIns();
-        ContentRuntimeBuilder secondBuilder = ContentRuntimeBuilder.CreateBuiltIns();
+        var firstBuilder = ContentRuntimeBuilder.CreateBuiltIns();
+        var secondBuilder = ContentRuntimeBuilder.CreateBuiltIns();
         firstBuilder.AddEntityDefinition(Definition("isolated", 20));
         secondBuilder.AddEntityDefinition(Definition("isolated", 20));
 
-        ContentRuntime first = firstBuilder.Build();
-        ContentRuntime second = secondBuilder.Build();
+        var first = firstBuilder.Build();
+        var second = secondBuilder.Build();
 
         Assert.NotSame(first.EntityTypes, second.EntityTypes);
         Assert.NotSame(first.EntityTypes.Get("omniblock:isolated"), second.EntityTypes.Get("omniblock:isolated"));
@@ -82,7 +81,7 @@ public sealed class RuntimeEntityTypeRegistryTests
     [Fact]
     public void Missing_ids_fail_or_try_get_without_constructing_anything()
     {
-        RuntimeEntityTypeRegistry entities = ContentRuntime.Current.EntityTypes;
+        var entities = ContentRuntime.Current.EntityTypes;
         FakeWorldContext world = new();
 
         Assert.False(entities.TryGet("example:missing", out _));
@@ -100,7 +99,7 @@ public sealed class RuntimeEntityTypeRegistryTests
         nbt.SetString("id", "example:missing_mob");
         string? warning = null;
 
-        Entity? loaded = ContentRuntime.Current.EntityTypes.ReadFromNbt(
+        var loaded = ContentRuntime.Current.EntityTypes.ReadFromNbt(
             nbt, new FakeWorldContext(), UnknownEntityLoadPolicy.SkipWithWarning,
             message => warning = message);
 
@@ -115,7 +114,7 @@ public sealed class RuntimeEntityTypeRegistryTests
         NBTTagCompound nbt = new();
         nbt.SetString("id", "example:missing_mob");
 
-        InvalidOperationException error = Assert.Throws<InvalidOperationException>(() =>
+        var error = Assert.Throws<InvalidOperationException>(() =>
             ContentRuntime.Current.EntityTypes.ReadFromNbt(
                 nbt, new FakeWorldContext(), UnknownEntityLoadPolicy.Fail));
 

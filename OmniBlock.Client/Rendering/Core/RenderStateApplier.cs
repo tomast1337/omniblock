@@ -21,11 +21,6 @@ public sealed class RenderStateApplier
     private bool _known;
 
     /// <summary>
-    ///     Forgets what is believed to be set, so the next <see cref="Apply" /> writes every field.
-    /// </summary>
-    public void Invalidate() => _known = false;
-
-    /// <summary>
     ///     The state currently in effect.
     /// </summary>
     /// <remarks>
@@ -39,6 +34,11 @@ public sealed class RenderStateApplier
         ? _current
         : throw new InvalidOperationException(
             "The render state is not known. Something set it outside the applier and invalidated the cache; apply a state before asking what is set.");
+
+    /// <summary>
+    ///     Forgets what is believed to be set, so the next <see cref="Apply" /> writes every field.
+    /// </summary>
+    public void Invalidate() => _known = false;
 
     public void Apply(in RenderState state)
     {

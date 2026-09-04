@@ -46,8 +46,5 @@ public sealed class LootTable
         return _entries[^1].ItemId;
     }
 
-    public int GetPrimaryItemId()
-    {
-        return _entries[0].ItemId;
-    }
+    public int GetPrimaryItemId() => _entries[0].ItemId;
 }

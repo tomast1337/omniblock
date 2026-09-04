@@ -1,4 +1,3 @@
-using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.UI.Rendering;
 using Color = OmniBlock.Client.UI.Colors.Color;
 
@@ -40,7 +39,7 @@ public class Slider : UIElement
 
     public override List<string> GetInspectorProperties()
     {
-        List<string> props = base.GetInspectorProperties();
+        var props = base.GetInspectorProperties();
         props.Add($"Text:     \"{Text}\"");
         props.Add($"Value:    {Value:F3}   Step: {Step:F4}");
         return props;
@@ -54,25 +53,25 @@ public class Slider : UIElement
 
     private void UpdateValueFromMouse(int mouseX)
     {
-        float relativeX = mouseX - ScreenX;
+        var relativeX = mouseX - ScreenX;
         Value = Math.Clamp(relativeX / ComputedWidth, 0f, 1f);
         OnValueChanged?.Invoke(Value);
     }
 
     public override void Render(UIRenderer renderer)
     {
-        TextureHandle texture = renderer.TextureManager.GetTextureId("/gui/gui.png");
+        var texture = renderer.TextureManager.GetTextureId("/gui/gui.png");
 
         renderer.DrawTexturedModalRect(texture, 0, 0, 0, 46, ComputedWidth / 2, ComputedHeight);
         renderer.DrawTexturedModalRect(texture, ComputedWidth / 2, 0, 200 - ComputedWidth / 2, 46, ComputedWidth / 2, ComputedHeight);
 
         const int knobWidth = 8;
-        float knobX = Value * (ComputedWidth - knobWidth);
+        var knobX = Value * (ComputedWidth - knobWidth);
 
         renderer.DrawTexturedModalRect(texture, knobX, 0, 0, 66, knobWidth / 2f, ComputedHeight);
         renderer.DrawTexturedModalRect(texture, knobX + knobWidth / 2f, 0, 200 - knobWidth / 2f, 66, knobWidth / 2f, ComputedHeight);
 
-        Color tColor = IsHovered ? Color.HoverYellow : Color.GrayE0;
+        var tColor = IsHovered ? Color.HoverYellow : Color.GrayE0;
         renderer.DrawScrollingCenteredText(Text, (int)ComputedWidth, (int)ComputedHeight, ComputedHeight / 2 - 4, tColor);
 
         base.Render(renderer);

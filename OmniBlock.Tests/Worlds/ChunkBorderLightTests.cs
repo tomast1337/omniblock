@@ -1,5 +1,3 @@
-using OmniBlock.Blocks;
-using OmniBlock.Tests.TestSupport;
 using OmniBlock.Worlds.Chunks;
 
 namespace OmniBlock.Tests.Worlds;
@@ -18,26 +16,6 @@ public sealed class ChunkBorderLightTests
 {
     private const int RoofY = 70;
 
-    /// <summary>Fills one chunk with a solid roof, leaving everything under it in shadow.</summary>
-    private static void Roofed(Chunk chunk)
-    {
-        int stone = TestBlocks.Get("stone").Id;
-
-        for (int localX = 0; localX < 16; localX++)
-        {
-            for (int localZ = 0; localZ < 16; localZ++)
-            {
-                chunk.Blocks[ChuckFormat.GetIndex(localX, localZ) + RoofY] = (byte)stone;
-            }
-        }
-    }
-
-    /// <summary>
-    ///     Light under the roof, one block in from the border, reached horizontally from the open
-    ///     chunk next door. Full daylight is 15 and one step of travel costs one level.
-    /// </summary>
-    private static int UnderTheRoofAtTheBorder(LightTestWorld world) => world.SkyLightAt(16, RoofY - 1, 8);
-
     /// <summary>
     ///     Every chunk the roofed one needs around it. A light update refuses to touch a cell whose
     ///     chunk does not have all of its own neighbors loaded
@@ -51,12 +29,32 @@ public sealed class ChunkBorderLightTests
         (0, 1), (1, 1), (2, 1)
     ];
 
+    /// <summary>Fills one chunk with a solid roof, leaving everything under it in shadow.</summary>
+    private static void Roofed(Chunk chunk)
+    {
+        var stone = TestBlocks.Get("stone").Id;
+
+        for (var localX = 0; localX < 16; localX++)
+        {
+            for (var localZ = 0; localZ < 16; localZ++)
+            {
+                chunk.Blocks[ChuckFormat.GetIndex(localX, localZ) + RoofY] = (byte)stone;
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Light under the roof, one block in from the border, reached horizontally from the open
+    ///     chunk next door. Full daylight is 15 and one step of travel costs one level.
+    /// </summary>
+    private static int UnderTheRoofAtTheBorder(LightTestWorld world) => world.SkyLightAt(16, RoofY - 1, 8);
+
     [Fact]
     public void Light_crosses_the_border_when_the_open_chunks_load_first()
     {
         LightTestWorld world = new();
 
-        foreach ((int x, int z) in s_neighborhood)
+        foreach (var (x, z) in s_neighborhood)
         {
             world.Chunks.Add(x, z);
         }
@@ -75,13 +73,13 @@ public sealed class ChunkBorderLightTests
     [Fact]
     public void A_light_source_already_in_the_terrain_lights_the_chunk_it_loads_with()
     {
-        int glowstone = TestBlocks.Get("glowstone").Id;
-        int luminance = TestBlocks.GetLightEmission(glowstone);
+        var glowstone = TestBlocks.Get("glowstone").Id;
+        var luminance = TestBlocks.GetLightEmission(glowstone);
         Assert.True(luminance > 0, "test needs an emitting block");
 
         LightTestWorld world = new();
 
-        foreach ((int x, int z) in s_neighborhood)
+        foreach (var (x, z) in s_neighborhood)
         {
             world.Chunks.Add(x, z);
         }
@@ -100,13 +98,13 @@ public sealed class ChunkBorderLightTests
     [Fact]
     public void A_light_source_survives_its_chunk_arriving_before_its_neighbors()
     {
-        int glowstone = TestBlocks.Get("glowstone").Id;
+        var glowstone = TestBlocks.Get("glowstone").Id;
         LightTestWorld world = new();
 
         world.Chunks.Add(1, 0, chunk => chunk.Blocks[ChuckFormat.GetIndex(8, 8) + 40] = (byte)glowstone);
         world.DrainLighting();
 
-        foreach ((int x, int z) in s_neighborhood)
+        foreach (var (x, z) in s_neighborhood)
         {
             world.Chunks.Add(x, z);
             world.DrainLighting();
@@ -127,7 +125,7 @@ public sealed class ChunkBorderLightTests
         world.Chunks.Add(1, 0, Roofed);
         world.DrainLighting();
 
-        foreach ((int x, int z) in s_neighborhood)
+        foreach (var (x, z) in s_neighborhood)
         {
             world.Chunks.Add(x, z);
             world.DrainLighting();
@@ -142,7 +140,7 @@ public sealed class ChunkBorderLightTests
         LightTestWorld world = new();
         world.Chunks.Add(1, 0, Roofed);
 
-        foreach ((int x, int z) in s_neighborhood)
+        foreach (var (x, z) in s_neighborhood)
         {
             world.Chunks.Add(x, z);
         }

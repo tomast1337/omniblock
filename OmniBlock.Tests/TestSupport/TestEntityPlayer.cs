@@ -4,17 +4,17 @@ using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Tests.TestSupport;
 
-/// <summary>Minimal concrete player for tests that need a real <see cref="EntityPlayer"/> in the world (AI, interaction).</summary>
+/// <summary>Minimal concrete player for tests that need a real <see cref="EntityPlayer" /> in the world (AI, interaction).</summary>
 public sealed class TestEntityPlayer : EntityPlayer
 {
+    /// <summary>Stats awarded to this player. The base implementation is a no-op, so tests record them here.</summary>
+    private readonly Dictionary<StatBase, int> _stats = [];
+
     public TestEntityPlayer(IWorldContext world) : base(world)
     {
     }
 
     public override EntityType Type => TestEntityCatalog.ByName("player");
-
-    /// <summary>Stats awarded to this player. The base implementation is a no-op, so tests record them here.</summary>
-    private readonly Dictionary<StatBase, int> _stats = [];
 
     public override void IncreaseStat(StatBase stat, int amount) =>
         _stats[stat] = _stats.GetValueOrDefault(stat) + amount;

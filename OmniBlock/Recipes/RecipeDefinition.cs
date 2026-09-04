@@ -5,16 +5,14 @@ namespace OmniBlock.Recipes;
 
 public class RecipeDefinition : DataAsset
 {
-    [JsonPropertyName("type")]
-    public string Type { get; set; } = "shaped";
+    [JsonPropertyName("type")] public string Type { get; set; } = "shaped";
 
-    [JsonPropertyName("pattern")]
-    public string[]? Pattern { get; set; }
+    [JsonPropertyName("pattern")] public string[]? Pattern { get; set; }
 
     /// <summary>
-    /// Maps pattern characters to ingredient strings.
-    /// Format: "Name" (any damage) or "Name:damage" (specific damage).
-    /// Examples: "IronIngot", "Coal:1" (charcoal), "dye:4" (lapis)
+    ///     Maps pattern characters to ingredient strings.
+    ///     Format: "Name" (any damage) or "Name:damage" (specific damage).
+    ///     Examples: "IronIngot", "Coal:1" (charcoal), "dye:4" (lapis)
     /// </summary>
     [JsonPropertyName("key")]
     public Dictionary<string, string>? Key { get; set; }
@@ -27,8 +25,7 @@ public class RecipeDefinition : DataAsset
     [JsonPropertyName("input")]
     public string? Input { get; set; }
 
-    [JsonPropertyName("result")]
-    public ResultRef Result { get; set; } = new();
+    [JsonPropertyName("result")] public ResultRef Result { get; set; } = new();
 }
 
 public class ResultRef
@@ -37,6 +34,5 @@ public class ResultRef
     [JsonPropertyName("id")]
     public string Id { get; set; } = "";
 
-    [JsonPropertyName("count")]
-    public int Count { get; set; } = 1;
+    [JsonPropertyName("count")] public int Count { get; set; } = 1;
 }

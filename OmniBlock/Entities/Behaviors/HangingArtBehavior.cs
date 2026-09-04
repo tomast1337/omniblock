@@ -1,4 +1,3 @@
-using OmniBlock.Blocks.Materials;
 using OmniBlock.Entities.State;
 using OmniBlock.Items;
 using OmniBlock.NBT;
@@ -121,11 +120,11 @@ public sealed class HangingArtBehavior : IEntityTicker, IEntityLifecycle, IEntit
     /// </summary>
     public static Entity HangAt(IWorldContext world, int x, int y, int z, int direction)
     {
-        Entity painting = Create(world, x, y, z);
-        HangingArtBehavior hanging = painting.Behaviors.Find<HangingArtBehavior>()!;
+        var painting = Create(world, x, y, z);
+        var hanging = painting.Behaviors.Find<HangingArtBehavior>()!;
 
         List<Painting> fits = [];
-        foreach (Painting art in Painting.Values)
+        foreach (var art in Painting.Values)
         {
             painting.State.SetRef(hanging._art, art);
             hanging.SetFacing(painting, direction);
@@ -143,8 +142,8 @@ public sealed class HangingArtBehavior : IEntityTicker, IEntityLifecycle, IEntit
     /// <summary>Hangs a painting wearing a named art, for a saved or network-received one.</summary>
     public static Entity HangAt(IWorldContext world, int x, int y, int z, int direction, string title)
     {
-        Entity painting = Create(world, x, y, z);
-        HangingArtBehavior hanging = painting.Behaviors.Find<HangingArtBehavior>()!;
+        var painting = Create(world, x, y, z);
+        var hanging = painting.Behaviors.Find<HangingArtBehavior>()!;
         painting.State.SetRef(hanging._art, ArtNamed(title));
         hanging.SetFacing(painting, direction);
         return painting;
@@ -152,8 +151,8 @@ public sealed class HangingArtBehavior : IEntityTicker, IEntityLifecycle, IEntit
 
     private static Entity Create(IWorldContext world, int x, int y, int z)
     {
-        Entity painting = world.Content.EntityTypes.Create("omniblock:painting", world);
-        HangingArtBehavior hanging = painting.Behaviors.Find<HangingArtBehavior>()!;
+        var painting = world.Content.EntityTypes.Create("omniblock:painting", world);
+        var hanging = painting.Behaviors.Find<HangingArtBehavior>()!;
         painting.State[hanging._tileX] = x;
         painting.State[hanging._tileY] = y;
         painting.State[hanging._tileZ] = z;
@@ -202,9 +201,9 @@ public sealed class HangingArtBehavior : IEntityTicker, IEntityLifecycle, IEntit
         halfHeight /= 32.0F;
         halfDepth /= 32.0F;
 
-        float centerX = self.State[_tileX] + 0.5F;
-        float centerY = self.State[_tileY] + 0.5F;
-        float centerZ = self.State[_tileZ] + 0.5F;
+        var centerX = self.State[_tileX] + 0.5F;
+        var centerY = self.State[_tileY] + 0.5F;
+        var centerZ = self.State[_tileZ] + 0.5F;
 
         switch (facing)
         {
@@ -229,7 +228,7 @@ public sealed class HangingArtBehavior : IEntityTicker, IEntityLifecycle, IEntit
         centerY += ArtOffset(art.SizeY);
         self.SetPosition(centerX, centerY, centerZ);
 
-        float margin = -(0.1F / 16.0F);
+        var margin = -(0.1F / 16.0F);
         self.BoundingBox = new Box(
             centerX - halfWidth - margin,
             centerY - halfHeight - margin,
@@ -255,11 +254,11 @@ public sealed class HangingArtBehavior : IEntityTicker, IEntityLifecycle, IEntit
 
         if (Art(self) is { } art)
         {
-            int widthInBlocks = art.SizeX / 16;
-            int heightInBlocks = art.SizeY / 16;
-            int direction = self.State[_direction];
-            int startX = self.State[_tileX];
-            int startZ = self.State[_tileZ];
+            var widthInBlocks = art.SizeX / 16;
+            var heightInBlocks = art.SizeY / 16;
+            var direction = self.State[_direction];
+            var startX = self.State[_tileX];
+            var startZ = self.State[_tileZ];
 
             switch (direction)
             {
@@ -273,13 +272,13 @@ public sealed class HangingArtBehavior : IEntityTicker, IEntityLifecycle, IEntit
                     break;
             }
 
-            int startY = MathHelper.Floor(self.Y - art.SizeY / 32.0F);
+            var startY = MathHelper.Floor(self.Y - art.SizeY / 32.0F);
 
-            for (int dx = 0; dx < widthInBlocks; ++dx)
+            for (var dx = 0; dx < widthInBlocks; ++dx)
             {
-                for (int dy = 0; dy < heightInBlocks; ++dy)
+                for (var dy = 0; dy < heightInBlocks; ++dy)
                 {
-                    Material material = direction != 0 && direction != 2
+                    var material = direction != 0 && direction != 2
                         ? self.World.Reader.GetMaterial(self.State[_tileX], startY + dy, startZ + dx)
                         : self.World.Reader.GetMaterial(startX + dx, startY + dy, self.State[_tileZ]);
 
@@ -291,7 +290,7 @@ public sealed class HangingArtBehavior : IEntityTicker, IEntityLifecycle, IEntit
             }
         }
 
-        foreach (Entity entity in self.World.Entities.GetEntities(self, self.BoundingBox))
+        foreach (var entity in self.World.Entities.GetEntities(self, self.BoundingBox))
         {
             if (entity.Behaviors.Find<HangingArtBehavior>() is not null)
             {

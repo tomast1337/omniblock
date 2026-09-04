@@ -4,13 +4,13 @@ using System.Diagnostics.CodeAnalysis;
 namespace OmniBlock.Registries.Data;
 
 /// <summary>
-/// A load-once, process-global map of canonical runtime instances built from data assets.
-/// <para>
-/// Every key resolves to exactly one instance for the lifetime of the process, so callers may
-/// safely compare entries by reference. <see cref="Initialize"/> is idempotent: once loaded,
-/// later calls are ignored — replacing canonical instances would silently break every
-/// reference-equality comparison already handed out.
-/// </para>
+///     A load-once, process-global map of canonical runtime instances built from data assets.
+///     <para>
+///         Every key resolves to exactly one instance for the lifetime of the process, so callers may
+///         safely compare entries by reference. <see cref="Initialize" /> is idempotent: once loaded,
+///         later calls are ignored — replacing canonical instances would silently break every
+///         reference-equality comparison already handed out.
+///     </para>
 /// </summary>
 internal sealed class CanonicalRegistry<T>(string registryName) where T : class
 {
@@ -24,7 +24,7 @@ internal sealed class CanonicalRegistry<T>(string registryName) where T : class
         if (_entries != null) return;
 
         var entries = new Dictionary<string, T>();
-        foreach (TDefinition definition in definitions)
+        foreach (var definition in definitions)
         {
             entries[definition.Name] = convert(definition);
         }
@@ -35,7 +35,7 @@ internal sealed class CanonicalRegistry<T>(string registryName) where T : class
     public T Get(string key)
     {
         if (_entries == null) throw NotInitialized();
-        return _entries.TryGetValue(key, out T? value)
+        return _entries.TryGetValue(key, out var value)
             ? value
             : throw new KeyNotFoundException($"Unknown {registryName} key '{key}'.");
     }
@@ -50,7 +50,7 @@ internal sealed class CanonicalRegistry<T>(string registryName) where T : class
     public string? TryGetKey(T value)
     {
         if (_entries == null) throw NotInitialized();
-        foreach (KeyValuePair<string, T> entry in _entries)
+        foreach (var entry in _entries)
         {
             if (ReferenceEquals(entry.Value, value)) return entry.Key;
         }

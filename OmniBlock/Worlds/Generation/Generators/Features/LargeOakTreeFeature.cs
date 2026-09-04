@@ -28,23 +28,23 @@ internal class LargeOakTreeFeature : Feature
             trunkHeight = height - 1;
         }
 
-        int branchCountTarget = (int)(1.382D + Math.Pow(foliageDensity * height / 13.0D, 2.0D));
+        var branchCountTarget = (int)(1.382D + Math.Pow(foliageDensity * height / 13.0D, 2.0D));
         if (branchCountTarget < 1)
         {
             branchCountTarget = 1;
         }
 
         //int[][] branchCandidates = new int[branchCountTarget * this.field_878_e][4];
-        int[][] branchCandidates = new int[branchCountTarget * height][];
-        for (int i = 0; i < branchCandidates.Length; i++)
+        var branchCandidates = new int[branchCountTarget * height][];
+        for (var i = 0; i < branchCandidates.Length; i++)
         {
             branchCandidates[i] = new int[4];
         }
 
-        int foliageY = origin[1] + height - foliageClusterHeight;
-        int branchCount = 1;
-        int trunkTopY = origin[1] + trunkHeight;
-        int foliageOffset = foliageY - origin[1];
+        var foliageY = origin[1] + height - foliageClusterHeight;
+        var branchCount = 1;
+        var trunkTopY = origin[1] + trunkHeight;
+        var foliageOffset = foliageY - origin[1];
         branchCandidates[0][0] = origin[0];
         branchCandidates[0][1] = foliageY;
         branchCandidates[0][2] = origin[2];
@@ -55,8 +55,8 @@ internal class LargeOakTreeFeature : Feature
         {
             while (foliageOffset >= 0)
             {
-                int attemptIndex = 0;
-                float treeShapeRadius = getTreeShape(foliageOffset);
+                var attemptIndex = 0;
+                var treeShapeRadius = getTreeShape(foliageOffset);
                 if (treeShapeRadius < 0.0F)
                 {
                     --foliageY;
@@ -64,19 +64,19 @@ internal class LargeOakTreeFeature : Feature
                 }
                 else
                 {
-                    for (double coordinateBias = 0.5D; attemptIndex < branchCountTarget; ++attemptIndex)
+                    for (var coordinateBias = 0.5D; attemptIndex < branchCountTarget; ++attemptIndex)
                     {
-                        double branchDistance = branchLengthScale * treeShapeRadius * (Random.Shared.NextSingle() + 0.328D);
-                        double branchAngle = Random.Shared.NextSingle() * 2.0D * 3.14159D;
-                        int branchX = MathHelper.Floor(branchDistance * Math.Sin(branchAngle) + origin[0] + coordinateBias);
-                        int branchZ = MathHelper.Floor(branchDistance * Math.Cos(branchAngle) + origin[2] + coordinateBias);
+                        var branchDistance = branchLengthScale * treeShapeRadius * (Random.Shared.NextSingle() + 0.328D);
+                        var branchAngle = Random.Shared.NextSingle() * 2.0D * 3.14159D;
+                        var branchX = MathHelper.Floor(branchDistance * Math.Sin(branchAngle) + origin[0] + coordinateBias);
+                        var branchZ = MathHelper.Floor(branchDistance * Math.Cos(branchAngle) + origin[2] + coordinateBias);
                         int[] branchBasePos = [branchX, foliageY, branchZ];
                         int[] foliageTopPos = [branchX, foliageY + foliageClusterHeight, branchZ];
                         if (tryBranch(branchBasePos, foliageTopPos) == -1)
                         {
                             int[] trunkAttachPos = [origin[0], origin[1], origin[2]];
-                            double horizontalDistance = Math.Sqrt(Math.Pow(Math.Abs(origin[0] - branchBasePos[0]), 2.0D) + Math.Pow(Math.Abs(origin[2] - branchBasePos[2]), 2.0D));
-                            double verticalOffset = horizontalDistance * branchSlope;
+                            var horizontalDistance = Math.Sqrt(Math.Pow(Math.Abs(origin[0] - branchBasePos[0]), 2.0D) + Math.Pow(Math.Abs(origin[2] - branchBasePos[2]), 2.0D));
+                            var verticalOffset = horizontalDistance * branchSlope;
                             if (branchBasePos[1] - verticalOffset > trunkTopY)
                             {
                                 trunkAttachPos[1] = trunkTopY;
@@ -104,10 +104,11 @@ internal class LargeOakTreeFeature : Feature
 
             //this.field_868_o = new int[branchCount][4];
             branches = new int[branchCount][];
-            for (int i = 0; i < branches.Length; i++)
+            for (var i = 0; i < branches.Length; i++)
             {
                 branches[i] = new int[4];
             }
+
             Array.Copy(branchCandidates, 0, branches, 0, branchCount);
             return;
         }
@@ -115,13 +116,13 @@ internal class LargeOakTreeFeature : Feature
 
     private void placeCluster(int x, int y, int z, float radius, sbyte axis, int blockId)
     {
-        int radiusInt = (int)(radius + 0.618D);
-        sbyte firstMinorAxis = MINOR_AXES[axis];
-        sbyte secondMinorAxis = MINOR_AXES[axis + 3];
+        var radiusInt = (int)(radius + 0.618D);
+        var firstMinorAxis = MINOR_AXES[axis];
+        var secondMinorAxis = MINOR_AXES[axis + 3];
         int[] centerPos = [x, y, z];
         int[] currentPos = [0, 0, 0];
-        int primaryOffset = -radiusInt;
-        int secondaryOffset = -radiusInt;
+        var primaryOffset = -radiusInt;
+        var secondaryOffset = -radiusInt;
 
         for (currentPos[axis] = centerPos[axis]; primaryOffset <= radiusInt; ++primaryOffset)
         {
@@ -130,7 +131,7 @@ internal class LargeOakTreeFeature : Feature
 
             while (secondaryOffset <= radiusInt)
             {
-                double distanceFromCenter = Math.Sqrt(
+                var distanceFromCenter = Math.Sqrt(
                     Math.Pow(Math.Abs(primaryOffset) + 0.5D, 2.0D) +
                     Math.Pow(Math.Abs(secondaryOffset) + 0.5D, 2.0D)
                 );
@@ -142,7 +143,7 @@ internal class LargeOakTreeFeature : Feature
                 }
 
                 currentPos[secondMinorAxis] = centerPos[secondMinorAxis] + secondaryOffset;
-                int currentBlockId = _level.Reader.GetBlockId(currentPos[0], currentPos[1], currentPos[2]);
+                var currentBlockId = _level.Reader.GetBlockId(currentPos[0], currentPos[1], currentPos[2]);
 
                 if (currentBlockId != 0 && currentBlockId != 18)
                 {
@@ -163,8 +164,8 @@ internal class LargeOakTreeFeature : Feature
             return -1.618F;
         }
 
-        float halfHeight = height / 2.0F;
-        float distanceFromCenter = height / 2.0F - foliageOffset;
+        var halfHeight = height / 2.0F;
+        var distanceFromCenter = height / 2.0F - foliageOffset;
         float shapeRadius;
         if (distanceFromCenter == 0.0F)
         {
@@ -187,11 +188,11 @@ internal class LargeOakTreeFeature : Feature
 
     private void placeFoliageCluster(int x, int y, int z)
     {
-        int leafY = y;
+        var leafY = y;
 
-        for (int clusterTopY = y + foliageClusterHeight; leafY < clusterTopY; ++leafY)
+        for (var clusterTopY = y + foliageClusterHeight; leafY < clusterTopY; ++leafY)
         {
-            float clusterRadius = getClusterShape(leafY - y);
+            var clusterRadius = getClusterShape(leafY - y);
             placeCluster(x, leafY, z, clusterRadius, 1, 18);
         }
     }
@@ -213,8 +214,8 @@ internal class LargeOakTreeFeature : Feature
 
         if (delta[dominantAxis] != 0)
         {
-            sbyte firstMinorAxis = MINOR_AXES[dominantAxis];
-            sbyte secondMinorAxis = MINOR_AXES[dominantAxis + 3];
+            var firstMinorAxis = MINOR_AXES[dominantAxis];
+            var secondMinorAxis = MINOR_AXES[dominantAxis + 3];
             sbyte stepDirection;
             if (delta[dominantAxis] > 0)
             {
@@ -225,12 +226,12 @@ internal class LargeOakTreeFeature : Feature
                 stepDirection = -1;
             }
 
-            double firstMinorSlope = delta[firstMinorAxis] / (double)delta[dominantAxis];
-            double secondMinorSlope = delta[secondMinorAxis] / (double)delta[dominantAxis];
+            var firstMinorSlope = delta[firstMinorAxis] / (double)delta[dominantAxis];
+            var secondMinorSlope = delta[secondMinorAxis] / (double)delta[dominantAxis];
             int[] currentPos = [0, 0, 0];
-            int step = 0;
+            var step = 0;
 
-            for (int endStep = delta[dominantAxis] + stepDirection; step != endStep; step += stepDirection)
+            for (var endStep = delta[dominantAxis] + stepDirection; step != endStep; step += stepDirection)
             {
                 currentPos[dominantAxis] = MathHelper.Floor(fromPos[dominantAxis] + step + 0.5D);
                 currentPos[firstMinorAxis] = MathHelper.Floor(fromPos[firstMinorAxis] + step * firstMinorSlope + 0.5D);
@@ -242,13 +243,13 @@ internal class LargeOakTreeFeature : Feature
 
     private void placeFoliage()
     {
-        int branchIndex = 0;
+        var branchIndex = 0;
 
-        for (int branchCount = branches.Length; branchIndex < branchCount; ++branchIndex)
+        for (var branchCount = branches.Length; branchIndex < branchCount; ++branchIndex)
         {
-            int branchX = branches[branchIndex][0];
-            int branchY = branches[branchIndex][1];
-            int branchZ = branches[branchIndex][2];
+            var branchX = branches[branchIndex][0];
+            var branchY = branches[branchIndex][1];
+            var branchZ = branches[branchIndex][2];
             placeFoliageCluster(branchX, branchY, branchZ);
         }
     }
@@ -257,10 +258,10 @@ internal class LargeOakTreeFeature : Feature
 
     private void placeTrunk()
     {
-        int baseX = origin[0];
-        int baseY = origin[1];
-        int topY = origin[1] + trunkHeight;
-        int baseZ = origin[2];
+        var baseX = origin[0];
+        var baseY = origin[1];
+        var topY = origin[1] + trunkHeight;
+        var baseZ = origin[2];
         int[] trunkBase = [baseX, baseY, baseZ];
         int[] trunkTop = [baseX, topY, baseZ];
         placeBranch(trunkBase, trunkTop, 17);
@@ -280,15 +281,15 @@ internal class LargeOakTreeFeature : Feature
 
     private void placeBranches()
     {
-        int branchIndex = 0;
-        int branchCount = branches.Length;
+        var branchIndex = 0;
+        var branchCount = branches.Length;
 
         for (int[] trunkBase = [origin[0], origin[1], origin[2]]; branchIndex < branchCount; ++branchIndex)
         {
-            int[] branchData = branches[branchIndex];
+            var branchData = branches[branchIndex];
             int[] branchBase = [branchData[0], branchData[1], branchData[2]];
             trunkBase[1] = branchData[3];
-            int branchHeight = trunkBase[1] - origin[1];
+            var branchHeight = trunkBase[1] - origin[1];
             if (shouldPlaceBranch(branchHeight))
             {
                 placeBranch(trunkBase, branchBase, 17);
@@ -316,8 +317,8 @@ internal class LargeOakTreeFeature : Feature
             return -1;
         }
 
-        sbyte firstMinorAxis = MINOR_AXES[dominantAxis];
-        sbyte secondMinorAxis = MINOR_AXES[dominantAxis + 3];
+        var firstMinorAxis = MINOR_AXES[dominantAxis];
+        var secondMinorAxis = MINOR_AXES[dominantAxis + 3];
         sbyte stepDirection;
         if (delta[dominantAxis] > 0)
         {
@@ -328,10 +329,10 @@ internal class LargeOakTreeFeature : Feature
             stepDirection = -1;
         }
 
-        double firstMinorSlope = delta[firstMinorAxis] / (double)delta[dominantAxis];
-        double secondMinorSlope = delta[secondMinorAxis] / (double)delta[dominantAxis];
+        var firstMinorSlope = delta[firstMinorAxis] / (double)delta[dominantAxis];
+        var secondMinorSlope = delta[secondMinorAxis] / (double)delta[dominantAxis];
         int[] currentPos = [0, 0, 0];
-        int step = 0;
+        var step = 0;
 
         int endStep;
         for (endStep = delta[dominantAxis] + stepDirection; step != endStep; step += stepDirection)
@@ -339,7 +340,7 @@ internal class LargeOakTreeFeature : Feature
             currentPos[dominantAxis] = fromPos[dominantAxis] + step;
             currentPos[firstMinorAxis] = MathHelper.Floor(fromPos[firstMinorAxis] + step * firstMinorSlope);
             currentPos[secondMinorAxis] = MathHelper.Floor(fromPos[secondMinorAxis] + step * secondMinorSlope);
-            int blockId = _level.Reader.GetBlockId(currentPos[0], currentPos[1], currentPos[2]);
+            var blockId = _level.Reader.GetBlockId(currentPos[0], currentPos[1], currentPos[2]);
             if (blockId != 0 && blockId != 18)
             {
                 break;
@@ -353,13 +354,13 @@ internal class LargeOakTreeFeature : Feature
     {
         int[] basePos = [origin[0], origin[1], origin[2]];
         int[] topPos = [origin[0], origin[1] + height - 1, origin[2]];
-        int soilBlockId = _level.Reader.GetBlockId(origin[0], origin[1] - 1, origin[2]);
+        var soilBlockId = _level.Reader.GetBlockId(origin[0], origin[1] - 1, origin[2]);
         if (soilBlockId != 2 && soilBlockId != 3)
         {
             return false;
         }
 
-        int clearHeight = tryBranch(basePos, topPos);
+        var clearHeight = tryBranch(basePos, topPos);
         if (clearHeight == -1)
         {
             return true;
@@ -389,7 +390,7 @@ internal class LargeOakTreeFeature : Feature
     public override bool Generate(IWorldContext level, JavaRandom rand, int x, int y, int z)
     {
         _level = level;
-        long seed = rand.NextLong();
+        var seed = rand.NextLong();
         rand.SetSeed(seed);
         origin[0] = x;
         origin[1] = y;

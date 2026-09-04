@@ -7,7 +7,6 @@ namespace OmniBlock.Client.Rendering.Blocks.Entities;
 
 public class BlockEntityMobSpawnerRenderer : BlockEntitySpecialRenderer
 {
-
     private readonly Dictionary<string, Entity> _entityDict = [];
 
     public void renderTileEntityMobSpawner(BlockEntityMobSpawner spawner, double x, double y, double z, float tickDelta)
@@ -16,7 +15,7 @@ public class BlockEntityMobSpawnerRenderer : BlockEntitySpecialRenderer
 
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate((float)x + 0.5F, (float)y, (float)z + 0.5F);
-        _entityDict.TryGetValue(spawner.GetSpawnedEntityId(), out Entity? displayEntity);
+        _entityDict.TryGetValue(spawner.GetSpawnedEntityId(), out var displayEntity);
         if (displayEntity == null || !ReferenceEquals(displayEntity.World.Content, world.Content))
         {
             world.Content.EntityTypes.TryCreate(spawner.GetSpawnedEntityId(), world, out displayEntity);
@@ -26,9 +25,9 @@ public class BlockEntityMobSpawnerRenderer : BlockEntitySpecialRenderer
         if (displayEntity != null)
         {
             displayEntity.SetWorld(world);
-            float scale = 7.0F / 16.0F;
+            var scale = 7.0F / 16.0F;
             GLManager.ModelView.Translate(0.0F, 0.4F, 0.0F);
-            GLManager.ModelView.Rotate((float)(spawner.LastRotation + (spawner.Rotation - spawner.LastRotation) * (double)tickDelta) * 10.0F, 0.0F, 1.0F, 0.0F);
+            GLManager.ModelView.Rotate((float)(spawner.LastRotation + (spawner.Rotation - spawner.LastRotation) * tickDelta) * 10.0F, 0.0F, 1.0F, 0.0F);
             GLManager.ModelView.Rotate(-30.0F, 1.0F, 0.0F, 0.0F);
             GLManager.ModelView.Translate(0.0F, -0.4F, 0.0F);
             GLManager.ModelView.Scale(scale, scale, scale);
@@ -39,8 +38,5 @@ public class BlockEntityMobSpawnerRenderer : BlockEntitySpecialRenderer
         GLManager.ModelView.Pop();
     }
 
-    public override void renderTileEntityAt(BlockEntity blockEntity, double x, double y, double z, float tickDelta)
-    {
-        renderTileEntityMobSpawner((BlockEntityMobSpawner)blockEntity, x, y, z, tickDelta);
-    }
+    public override void renderTileEntityAt(BlockEntity blockEntity, double x, double y, double z, float tickDelta) => renderTileEntityMobSpawner((BlockEntityMobSpawner)blockEntity, x, y, z, tickDelta);
 }

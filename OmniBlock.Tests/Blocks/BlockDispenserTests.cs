@@ -10,23 +10,6 @@ namespace OmniBlock.Tests.Blocks;
 
 public sealed class BlockDispenserTests
 {
-    private sealed class CapturingDispenserPlayer : EntityPlayer
-    {
-        public BlockEntityDispenser? LastOpened;
-
-        public CapturingDispenserPlayer(IWorldContext world) : base(world)
-        {
-        }
-
-        public override EntityType Type => TestEntityCatalog.ByName("player");
-
-        public override void Spawn()
-        {
-        }
-
-        public override void openDispenserScreen(BlockEntityDispenser dispenser) => LastOpened = dispenser;
-    }
-
     [Fact]
     public void NeighborUpdate_PoweredByEmitter_SchedulesDispenseTick()
     {
@@ -111,7 +94,7 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(2, 64, 2, TestBlocks.Get("dispenser").Id, 3);
         AttachDispenser(world, 2, 64, 2);
 
-        int entitiesBefore = world.Entities.Entities.Count;
+        var entitiesBefore = world.Entities.Entities.Count;
         TestBlocks.Get("dispenser").OnTick(DispenserTick(world, 2, 64, 2));
 
         Assert.Equal(entitiesBefore, world.Entities.Entities.Count);
@@ -125,7 +108,7 @@ public sealed class BlockDispenserTests
         AttachDispenser(world, 23, 64, 23);
         world.Entities.GetBlockEntity<BlockEntityDispenser>(23, 64, 23)!.SetStack(0, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:arrow"), 1));
 
-        int before = world.Entities.Entities.Count;
+        var before = world.Entities.Entities.Count;
         TestBlocks.Get("dispenser").OnTick(DispenserTick(world, 23, 64, 23));
 
         Assert.Equal(before, world.Entities.Entities.Count);
@@ -240,23 +223,17 @@ public sealed class BlockDispenserTests
     }
 
     [Fact]
-    public void GetDroppedItemId_ReturnsDispenserBlock()
-    {
-        Assert.Equal(TestBlocks.Get("dispenser").Id, TestBlocks.Get("dispenser").GetDroppedItemId(0));
-    }
+    public void GetDroppedItemId_ReturnsDispenserBlock() => Assert.Equal(TestBlocks.Get("dispenser").Id, TestBlocks.Get("dispenser").GetDroppedItemId(0));
 
     [Fact]
-    public void GetTickRate_IsFour()
-    {
-        Assert.Equal(4, TestBlocks.Get("dispenser").TickRate);
-    }
+    public void GetTickRate_IsFour() => Assert.Equal(4, TestBlocks.Get("dispenser").TickRate);
 
     [Fact]
     public void GetTexture_TopBottom_AndSouthFace_Vary()
     {
-        int top = TestBlocks.Get("dispenser").GetTexture(Side.Up);
-        int south = TestBlocks.Get("dispenser").GetTexture(Side.South);
-        int north = TestBlocks.Get("dispenser").GetTexture(Side.North);
+        var top = TestBlocks.Get("dispenser").GetTexture(Side.Up);
+        var south = TestBlocks.Get("dispenser").GetTexture(Side.South);
+        var north = TestBlocks.Get("dispenser").GetTexture(Side.North);
         Assert.Equal(Atlases.Terrain.IndexOf("furnace_top"), top);
         Assert.Equal(Atlases.Terrain.IndexOf("dispenser_front"), south);
         Assert.Equal(TestBlocks.Get("dispenser").TextureId, north);
@@ -268,8 +245,8 @@ public sealed class BlockDispenserTests
         FakeWorldContext world = new();
         int x = 40, y = 64, z = 40;
         world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("dispenser").Id, 3);
-        int meta = world.Reader.GetBlockMeta(x, y, z);
-        Side facing = meta.ToSide();
+        var meta = world.Reader.GetBlockMeta(x, y, z);
+        var facing = meta.ToSide();
 
         Assert.Equal(Atlases.Terrain.IndexOf("furnace_top"), TestBlocks.Get("dispenser").GetTextureId(world.Reader, x, y, z, Side.Up));
         Assert.Equal(Atlases.Terrain.IndexOf("furnace_top"), TestBlocks.Get("dispenser").GetTextureId(world.Reader, x, y, z, Side.Down));
@@ -286,7 +263,7 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(x, y, z + 1, 0);
         world.ReaderWriter.SetInitial(x - 1, y, z, 0);
         world.ReaderWriter.SetInitial(x + 1, y, z, 0);
-        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("dispenser").Id, 0);
+        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("dispenser").Id);
 
         TestBlocks.Get("dispenser").OnPlaced(new OnPlacedEvent(world, null, Side.Up, Side.Up, x, y, z));
 
@@ -302,7 +279,7 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(x, y, z + 1, TestBlocks.Get("stone").Id);
         world.ReaderWriter.SetInitial(x - 1, y, z, 0);
         world.ReaderWriter.SetInitial(x + 1, y, z, 0);
-        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("dispenser").Id, 0);
+        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("dispenser").Id);
 
         TestBlocks.Get("dispenser").OnPlaced(new OnPlacedEvent(world, null, Side.Up, Side.Up, x, y, z));
 
@@ -318,7 +295,7 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(x, y, z + 1, 0);
         world.ReaderWriter.SetInitial(x - 1, y, z, TestBlocks.Get("stone").Id);
         world.ReaderWriter.SetInitial(x + 1, y, z, 0);
-        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("dispenser").Id, 0);
+        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("dispenser").Id);
 
         TestBlocks.Get("dispenser").OnPlaced(new OnPlacedEvent(world, null, Side.Up, Side.Up, x, y, z));
 
@@ -334,7 +311,7 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(x, y, z + 1, 0);
         world.ReaderWriter.SetInitial(x - 1, y, z, 0);
         world.ReaderWriter.SetInitial(x + 1, y, z, TestBlocks.Get("stone").Id);
-        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("dispenser").Id, 0);
+        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("dispenser").Id);
 
         TestBlocks.Get("dispenser").OnPlaced(new OnPlacedEvent(world, null, Side.Up, Side.Up, x, y, z));
 
@@ -360,9 +337,12 @@ public sealed class BlockDispenserTests
     {
         FakeWorldContext world = new();
         int x = 60, y = 64, z = 60;
-        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("dispenser").Id, 0);
+        world.ReaderWriter.SetInitial(x, y, z, TestBlocks.Get("dispenser").Id);
 
-        CapturingDispenserPlayer placer = new(world) { Yaw = 90f };
+        CapturingDispenserPlayer placer = new(world)
+        {
+            Yaw = 90f
+        };
         TestBlocks.Get("dispenser").OnPlaced(new OnPlacedEvent(world, placer, Side.Up, Side.Up, x, y, z));
 
         Assert.Equal(Side.East.ToInt(), world.Reader.GetBlockMeta(x, y, z));
@@ -377,7 +357,7 @@ public sealed class BlockDispenserTests
         AttachDispenser(world, 70, 64, 70);
         CapturingDispenserPlayer player = new(world);
 
-        bool result = TestBlocks.Get("dispenser").OnUse(new OnUseEvent(world, player, 70, 64, 70));
+        var result = TestBlocks.Get("dispenser").OnUse(new OnUseEvent(world, player, 70, 64, 70));
 
         Assert.True(result);
         Assert.Null(player.LastOpened);
@@ -389,10 +369,10 @@ public sealed class BlockDispenserTests
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(71, 64, 71, TestBlocks.Get("dispenser").Id, 3);
         AttachDispenser(world, 71, 64, 71);
-        BlockEntityDispenser be = world.Entities.GetBlockEntity<BlockEntityDispenser>(71, 64, 71)!;
+        var be = world.Entities.GetBlockEntity<BlockEntityDispenser>(71, 64, 71)!;
         CapturingDispenserPlayer player = new(world);
 
-        bool result = TestBlocks.Get("dispenser").OnUse(new OnUseEvent(world, player, 71, 64, 71));
+        var result = TestBlocks.Get("dispenser").OnUse(new OnUseEvent(world, player, 71, 64, 71));
 
         Assert.True(result);
         Assert.Same(be, player.LastOpened);
@@ -405,10 +385,10 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(72, 64, 72, TestBlocks.Get("dispenser").Id, 3);
         CapturingDispenserPlayer player = new(world);
 
-        bool result = TestBlocks.Get("dispenser").OnUse(new OnUseEvent(world, player, 72, 64, 72));
+        var result = TestBlocks.Get("dispenser").OnUse(new OnUseEvent(world, player, 72, 64, 72));
 
         Assert.True(result);
-        BlockEntityDispenser? be = world.Entities.GetBlockEntity<BlockEntityDispenser>(72, 64, 72);
+        var be = world.Entities.GetBlockEntity<BlockEntityDispenser>(72, 64, 72);
         Assert.NotNull(be);
         Assert.Same(be, player.LastOpened);
     }
@@ -425,5 +405,22 @@ public sealed class BlockDispenserTests
         TestBlocks.Get("dispenser").OnBreak(new OnBreakEvent(world, null, x, y, z));
 
         Assert.Contains(world.Entities.Entities, EntityTestHarness.IsDroppedItem);
+    }
+
+    private sealed class CapturingDispenserPlayer : EntityPlayer
+    {
+        public BlockEntityDispenser? LastOpened;
+
+        public CapturingDispenserPlayer(IWorldContext world) : base(world)
+        {
+        }
+
+        public override EntityType Type => TestEntityCatalog.ByName("player");
+
+        public override void Spawn()
+        {
+        }
+
+        public override void openDispenserScreen(BlockEntityDispenser dispenser) => LastOpened = dispenser;
     }
 }

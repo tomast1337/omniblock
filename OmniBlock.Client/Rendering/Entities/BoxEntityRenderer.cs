@@ -6,7 +6,6 @@ namespace OmniBlock.Client.Rendering.Entities;
 
 public class BoxEntityRenderer : EntityRenderer
 {
-
     public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
         GLManager.ModelView.Push();

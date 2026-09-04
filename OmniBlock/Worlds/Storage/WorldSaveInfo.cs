@@ -24,7 +24,7 @@ public class WorldSaveInfo : IComparable<WorldSaveInfo>
             return 1;
         }
 
-        int timeComparison = other.LastPlayed.CompareTo(LastPlayed);
+        var timeComparison = other.LastPlayed.CompareTo(LastPlayed);
         if (timeComparison != 0)
         {
             return timeComparison;

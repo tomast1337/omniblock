@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using OmniBlock.Client.Rendering.Core.WebGPU;
 using OmniBlock.Util;
 using Color = OmniBlock.Client.UI.Colors.Color;
 
@@ -67,6 +68,7 @@ public struct ChunkVertex
     ///     read as the first component of a Uint8x2 attribute (the pad supplies the second).
     /// </remarks>
     [FieldOffset(18)] public byte ArrayLayer;
+
     [FieldOffset(19)] public byte PadTail; // 4-byte-stride alignment
 }
 
@@ -111,10 +113,7 @@ public static class ChunkVertexHelper
     public static byte ToQuarterLevels(float level) =>
         (byte)Math.Clamp((int)MathF.Round(level * 4.0f), 0, 60);
 
-    public static short FloatToShortPosition(float position)
-    {
-        return (short)System.Math.Round(position * POSITION_SCALE);
-    }
+    public static short FloatToShortPosition(float position) => (short)Math.Round(position * POSITION_SCALE);
 
     /// <summary>
     ///     A texture coordinate within its own array layer as the fixed point a vertex holds, where
@@ -126,11 +125,7 @@ public static class ChunkVertexHelper
     ///     texture's edge, so a neighbouring cell is no longer somewhere a coordinate can slip into.
     ///     Bleeding is what the bias existed to hide.
     /// </remarks>
-    public static ushort FloatToShortUV(float uv)
-    {
-        return (ushort)Math.Clamp((int)MathF.Round(uv * UV_SCALE), 0, ushort.MaxValue);
-    }
-
+    public static ushort FloatToShortUV(float uv) => (ushort)Math.Clamp((int)MathF.Round(uv * UV_SCALE), 0, ushort.MaxValue);
 }
 
 public enum TesselatorCaptureVertexFormat
@@ -147,12 +142,6 @@ public class Tessellator
     /// </summary>
     public const int NoArrayLayer = -1;
 
-    /// <summary>
-    ///     The packed light a vertex carries when its draw sets none: no sky, full block. Through the
-    ///     block channel so it stays bright after dark, which is what text and inventory items want.
-    /// </summary>
-    public static readonly int FullBrightLight = ChunkVertexHelper.ToQuarterLevels(15.0f) << 8;
-
     /// <summary>Ints per vertex in the capture scratch buffer: x, y, z, u, v, colour, normal, light, array layer.</summary>
     private const int ScratchVertexInts = 9;
 
@@ -162,36 +151,41 @@ public class Tessellator
     /// <summary>The scratch buffer holds exactly one quad, which is emitted as two triangles once full.</summary>
     private const int ScratchQuadInts = ScratchVertexInts * 4;
 
+    /// <summary>
+    ///     The packed light a vertex carries when its draw sets none: no sky, full block. Through the
+    ///     block channel so it stays bright after dark, which is what text and inventory items want.
+    /// </summary>
+    public static readonly int FullBrightLight = ChunkVertexHelper.ToQuarterLevels(15.0f) << 8;
+
     private static readonly bool convertQuadsToTriangles = true;
+    public static readonly Tessellator instance = new(2097152);
+    private readonly int bufferSize;
     private readonly int[] rawBuffer;
-    private int vertexCount;
+    private int addedVertices;
+    private int arrayLayer = NoArrayLayer;
+    private byte blockLight;
+    private PooledList<ChunkVertex> capturedChunkVertices;
+    private PooledList<Vertex> capturedVertices;
+    private int color;
+    private int drawMode;
+    private bool hasColor;
+    private bool hasLight;
+    private bool hasNormals;
+    private bool hasTexture;
+    private bool isCaptureMode;
+    private bool isColorDisabled;
+    private int normal;
+    private int rawBufferIndex;
+    private int[] scratchBuffer;
+    private int scratchBufferIndex;
+    private byte skyLight;
     private double textureU;
     private double textureV;
-    private int color;
-    private bool hasColor;
-    private bool hasTexture;
-    private bool hasNormals;
-    private byte skyLight;
-    private byte blockLight;
-    private bool hasLight;
-    private int rawBufferIndex;
-    private int addedVertices;
-    private bool isColorDisabled;
-    private int drawMode;
+    private int vertexCount;
+    private TesselatorCaptureVertexFormat vertexFormat;
     private double xOffset;
     private double yOffset;
     private double zOffset;
-    private int normal;
-    private int arrayLayer = NoArrayLayer;
-    public static readonly Tessellator instance = new(2097152);
-    public bool IsDrawing { get; private set; }
-    private readonly int bufferSize;
-    private bool isCaptureMode;
-    private PooledList<Vertex> capturedVertices;
-    private PooledList<ChunkVertex> capturedChunkVertices;
-    private int[] scratchBuffer;
-    private int scratchBufferIndex;
-    private TesselatorCaptureVertexFormat vertexFormat;
 
     private Tessellator(int bufferSize)
     {
@@ -202,6 +196,46 @@ public class Tessellator
     public Tessellator()
     {
     }
+
+    public bool IsDrawing { get; private set; }
+
+    /// <summary>
+    ///     The primitive the accumulated vertices are actually submitted as.
+    /// </summary>
+    /// <remarks>
+    ///     Quads are expanded into triangles as vertices are added, so the recorded draw mode is not
+    ///     what gets drawn. The numbers are OpenGL's, because <see cref="startDrawing" /> takes them
+    ///     from callers that have always spelled them that way.
+    /// </remarks>
+    private DrawTopology SubmittedTopology
+    {
+        get
+        {
+            if (drawMode == 7 && convertQuadsToTriangles)
+            {
+                return DrawTopology.Triangles;
+            }
+
+            return drawMode switch
+            {
+                0 => DrawTopology.Points,
+                1 => DrawTopology.Lines,
+                3 => DrawTopology.LineStrip,
+                4 => DrawTopology.Triangles,
+                5 => DrawTopology.TriangleStrip,
+                6 => DrawTopology.TriangleFan,
+                _ => throw new InvalidOperationException($"No topology for draw mode {drawMode}.")
+            };
+        }
+    }
+
+    private VertexChannels Channels =>
+        (hasTexture ? VertexChannels.Texture : VertexChannels.None)
+        | (hasColor ? VertexChannels.Color : VertexChannels.None)
+        | (hasNormals ? VertexChannels.Normal : VertexChannels.None);
+
+    /// <summary>The light the vertices from here on carry, or full brightness if none was set.</summary>
+    private int PackedLight => hasLight ? skyLight | (blockLight << 8) : FullBrightLight;
 
     public void startCapture(TesselatorCaptureVertexFormat format)
     {
@@ -218,11 +252,11 @@ public class Tessellator
 
         if (format == TesselatorCaptureVertexFormat.Default)
         {
-            capturedVertices = new();
+            capturedVertices = new PooledList<Vertex>();
         }
         else
         {
-            capturedChunkVertices = new();
+            capturedChunkVertices = new PooledList<ChunkVertex>();
         }
 
         scratchBuffer = new int[ScratchQuadInts];
@@ -263,7 +297,7 @@ public class Tessellator
     ///     The caller owns the returned mesh and must dispose it. The mesh is created with
     ///     <see cref="PrimitiveTopology.TriangleList" /> and the stride the chunk WGSL pipeline expects.
     /// </remarks>
-    public WebGPU.WgpuMesh EndCaptureChunkMesh(WebGPU.WebGpuDevice device)
+    public WgpuMesh EndCaptureChunkMesh(WebGpuDevice device)
     {
         if (!isCaptureMode || vertexFormat != TesselatorCaptureVertexFormat.Chunk)
         {
@@ -271,10 +305,10 @@ public class Tessellator
         }
 
         isCaptureMode = false;
-        PooledList<ChunkVertex> verts = capturedChunkVertices;
+        var verts = capturedChunkVertices;
         CleanupCapture();
 
-        return WebGPU.WgpuMesh.FromChunkVertices(device, verts.Span);
+        return WgpuMesh.FromChunkVertices(device, verts.Span);
     }
 
     private void CleanupCapture()
@@ -341,43 +375,8 @@ public class Tessellator
         VertexCount = vertexCount,
         Topology = SubmittedTopology,
         Channels = Channels,
-        Slot = slot,
+        Slot = slot
     };
-
-    /// <summary>
-    ///     The primitive the accumulated vertices are actually submitted as.
-    /// </summary>
-    /// <remarks>
-    ///     Quads are expanded into triangles as vertices are added, so the recorded draw mode is not
-    ///     what gets drawn. The numbers are OpenGL's, because <see cref="startDrawing" /> takes them
-    ///     from callers that have always spelled them that way.
-    /// </remarks>
-    private DrawTopology SubmittedTopology
-    {
-        get
-        {
-            if (drawMode == 7 && convertQuadsToTriangles)
-            {
-                return DrawTopology.Triangles;
-            }
-
-            return drawMode switch
-            {
-                0 => DrawTopology.Points,
-                1 => DrawTopology.Lines,
-                3 => DrawTopology.LineStrip,
-                4 => DrawTopology.Triangles,
-                5 => DrawTopology.TriangleStrip,
-                6 => DrawTopology.TriangleFan,
-                _ => throw new InvalidOperationException($"No topology for draw mode {drawMode}."),
-            };
-        }
-    }
-
-    private VertexChannels Channels =>
-        (hasTexture ? VertexChannels.Texture : VertexChannels.None)
-        | (hasColor ? VertexChannels.Color : VertexChannels.None)
-        | (hasNormals ? VertexChannels.Normal : VertexChannels.None);
 
     /// <summary>
     ///     Ends the batch by handing its vertices to a buffer that outlives the frame, instead of
@@ -397,7 +396,7 @@ public class Tessellator
 
         IsDrawing = false;
 
-        IStaticMesh mesh = GLManager.DrawTarget.Capture(BuildCommand(null));
+        var mesh = GLManager.DrawTarget.Capture(BuildCommand(null));
         reset();
         return mesh;
     }
@@ -410,10 +409,7 @@ public class Tessellator
         addedVertices = 0;
     }
 
-    public void startDrawingQuads()
-    {
-        startDrawing(7);
-    }
+    public void startDrawingQuads() => startDrawing(7);
 
     public void startDrawing(int mode)
     {
@@ -421,16 +417,14 @@ public class Tessellator
         {
             throw new InvalidOperationException("Already tesselating!");
         }
-        else
-        {
-            IsDrawing = true;
-            reset();
-            drawMode = mode;
-            hasNormals = false;
-            hasColor = false;
-            hasTexture = false;
-            isColorDisabled = false;
-        }
+
+        IsDrawing = true;
+        reset();
+        drawMode = mode;
+        hasNormals = false;
+        hasColor = false;
+        hasTexture = false;
+        isColorDisabled = false;
     }
 
     public void setTextureUV(double u, double v)
@@ -448,31 +442,16 @@ public class Tessellator
     ///     A layer rather than a texture name because the caller is usually resolving a legacy
     ///     <c>TextureId</c>: see <see cref="Textures.AtlasTileMap.LayerOfGridIndex" />.
     /// </remarks>
-    public void setArrayLayer(int layer)
-    {
-        arrayLayer = layer;
-    }
+    public void setArrayLayer(int layer) => arrayLayer = layer;
 
     /// <summary>Goes back to sampling the plain 2D texture bound to unit 0.</summary>
-    public void clearArrayLayer()
-    {
-        arrayLayer = NoArrayLayer;
-    }
+    public void clearArrayLayer() => arrayLayer = NoArrayLayer;
 
-    public void setColorOpaque_F(float red, float green, float blue)
-    {
-        setColorOpaque((int)(red * 255.0F), (int)(green * 255.0F), (int)(blue * 255.0F));
-    }
+    public void setColorOpaque_F(float red, float green, float blue) => setColorOpaque((int)(red * 255.0F), (int)(green * 255.0F), (int)(blue * 255.0F));
 
-    public void setColorRGBA_F(float red, float green, float blue, float alpha)
-    {
-        setColorRGBA((int)(red * 255.0F), (int)(green * 255.0F), (int)(blue * 255.0F), (int)(alpha * 255.0F));
-    }
+    public void setColorRGBA_F(float red, float green, float blue, float alpha) => setColorRGBA((int)(red * 255.0F), (int)(green * 255.0F), (int)(blue * 255.0F), (int)(alpha * 255.0F));
 
-    public void setColorOpaque(int red, int green, int blue)
-    {
-        setColorRGBA(red, green, blue, 255);
-    }
+    public void setColorOpaque(int red, int green, int blue) => setColorRGBA(red, green, blue, 255);
 
     public void setColorRGBA(int red, int green, int blue, int alpha)
     {
@@ -521,13 +500,12 @@ public class Tessellator
             hasColor = true;
             if (BitConverter.IsLittleEndian)
             {
-                color = alpha << 24 | blue << 16 | green << 8 | red;
+                color = (alpha << 24) | (blue << 16) | (green << 8) | red;
             }
             else
             {
-                color = red << 24 | green << 16 | blue << 8 | alpha;
+                color = (red << 24) | (green << 16) | (blue << 8) | alpha;
             }
-
         }
     }
 
@@ -542,6 +520,7 @@ public class Tessellator
         {
             color = ((int)c << 8) | 255;
         }
+
         hasColor = true;
     }
 
@@ -554,9 +533,10 @@ public class Tessellator
         }
         else
         {
-            int v = (int)c;
+            var v = (int)c;
             color = (v << 8) | (v >> 24);
         }
+
         hasColor = true;
     }
 
@@ -596,7 +576,7 @@ public class Tessellator
 
             if (hasLight)
             {
-                scratchBuffer[scratchBufferIndex + 7] = skyLight | blockLight << 8;
+                scratchBuffer[scratchBufferIndex + 7] = skyLight | (blockLight << 8);
             }
 
             scratchBuffer[scratchBufferIndex + 8] = arrayLayer;
@@ -615,17 +595,15 @@ public class Tessellator
 
                 scratchBufferIndex = 0;
             }
-
-            return;
         }
         else
         {
             ++addedVertices;
             if (drawMode == 7 && convertQuadsToTriangles && addedVertices % 4 == 0)
             {
-                for (int triangleCopyIndex = 0; triangleCopyIndex < 2; ++triangleCopyIndex)
+                for (var triangleCopyIndex = 0; triangleCopyIndex < 2; ++triangleCopyIndex)
                 {
-                    int copyOffset = RawVertexInts * (3 - triangleCopyIndex);
+                    var copyOffset = RawVertexInts * (3 - triangleCopyIndex);
                     if (hasTexture)
                     {
                         rawBuffer[rawBufferIndex + 3] = rawBuffer[rawBufferIndex - copyOffset + 3];
@@ -672,7 +650,7 @@ public class Tessellator
             rawBufferIndex += RawVertexInts;
             ++vertexCount;
 
-            if (vertexCount % 4 == 0 && rawBufferIndex >= bufferSize - (RawVertexInts * 4))
+            if (vertexCount % 4 == 0 && rawBufferIndex >= bufferSize - RawVertexInts * 4)
             {
                 // In capture mode this draws nothing — it recycles the scratch buffer so a chunk
                 // mesh larger than the buffer can keep accumulating, which is the only way a batch
@@ -693,17 +671,17 @@ public class Tessellator
 
     private void EmitVertexFromScratch(int baseIndex)
     {
-        float x = BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 0]);
-        float y = BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 1]);
-        float z = BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 2]);
+        var x = BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 0]);
+        var y = BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 1]);
+        var z = BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 2]);
 
         if (vertexFormat == TesselatorCaptureVertexFormat.Chunk)
         {
-            int col = hasColor ? scratchBuffer[baseIndex + 5] : unchecked((int)0xFFFFFFFF);
-            int light = hasLight ? scratchBuffer[baseIndex + 7] : 0;
+            var col = hasColor ? scratchBuffer[baseIndex + 5] : unchecked((int)0xFFFFFFFF);
+            var light = hasLight ? scratchBuffer[baseIndex + 7] : 0;
 
-            float u = BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 3]);
-            float v = BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 4]);
+            var u = BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 3]);
+            var v = BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 4]);
 
             capturedChunkVertices.Add(
                 ChunkVertexHelper.Create(
@@ -718,10 +696,10 @@ public class Tessellator
         }
         else
         {
-            float u = hasTexture ? BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 3]) : 0f;
-            float v = hasTexture ? BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 4]) : 0f;
-            int col = hasColor ? scratchBuffer[baseIndex + 5] : 0;
-            int norm = hasNormals ? scratchBuffer[baseIndex + 6] : 0;
+            var u = hasTexture ? BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 3]) : 0f;
+            var v = hasTexture ? BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 4]) : 0f;
+            var col = hasColor ? scratchBuffer[baseIndex + 5] : 0;
+            var norm = hasNormals ? scratchBuffer[baseIndex + 6] : 0;
 
             capturedVertices.Add(new Vertex(x, y, z, u, v, col, norm)
             {
@@ -734,32 +712,29 @@ public class Tessellator
 
     public void setColorOpaque_I(int color)
     {
-        int red = color >> 16 & 255;
-        int green = color >> 8 & 255;
-        int blue = color & 255;
+        var red = (color >> 16) & 255;
+        var green = (color >> 8) & 255;
+        var blue = color & 255;
         setColorOpaque(red, green, blue);
     }
 
     public void setColorRGBA_I(int color, int alpha)
     {
-        int red = color >> 16 & 255;
-        int green = color >> 8 & 255;
-        int blue = color & 255;
+        var red = (color >> 16) & 255;
+        var green = (color >> 8) & 255;
+        var blue = color & 255;
         setColorRGBA(red, green, blue, alpha);
     }
 
-    public void disableColor()
-    {
-        isColorDisabled = true;
-    }
+    public void disableColor() => isColorDisabled = true;
 
     public void setNormal(float x, float y, float z)
     {
         hasNormals = true;
-        byte packedX = (byte)(int)(x * 128.0F);
-        byte packedY = (byte)(int)(y * 127.0F);
-        byte packedZ = (byte)(int)(z * 127.0F);
-        normal = packedX | packedY << 8 | packedZ << 16;
+        var packedX = (byte)(int)(x * 128.0F);
+        var packedY = (byte)(int)(y * 127.0F);
+        var packedZ = (byte)(int)(z * 127.0F);
+        normal = packedX | (packedY << 8) | (packedZ << 16);
     }
 
     /// <summary>
@@ -775,9 +750,6 @@ public class Tessellator
         blockLight = ChunkVertexHelper.ToQuarterLevels(block);
         hasLight = true;
     }
-
-    /// <summary>The light the vertices from here on carry, or full brightness if none was set.</summary>
-    private int PackedLight => hasLight ? skyLight | blockLight << 8 : FullBrightLight;
 
     public void setTranslationD(double x, double y, double z)
     {

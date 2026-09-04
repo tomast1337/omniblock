@@ -5,15 +5,18 @@ using OmniBlock.Items;
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Covers the Interactable capability slot: right-click and walk-into behavior declared in
-/// <c>assets/entity/*.json</c> instead of overridden on a subclass.
+///     Covers the Interactable capability slot: right-click and walk-into behavior declared in
+///     <c>assets/entity/*.json</c> instead of overridden on a subclass.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityInteractableTests
 {
     private static TestEntityPlayer Player(FakeWorldContext world, Item? holding = null)
     {
-        TestEntityPlayer player = new(world) { Name = "tester" };
+        TestEntityPlayer player = new(world)
+        {
+            Name = "tester"
+        };
         player.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         if (holding is not null)
         {
@@ -27,8 +30,8 @@ public sealed class EntityInteractableTests
     public void Milking_a_cow_swaps_the_bucket_for_milk()
     {
         FakeWorldContext world = new();
-        EntityCreature cow = (EntityCreature)TestEntityCatalog.ByName("cow").Create(world);
-        TestEntityPlayer player = Player(world, ContentRuntime.Current.Items.Get("omniblock:bucket"));
+        var cow = (EntityCreature)TestEntityCatalog.ByName("cow").Create(world);
+        var player = Player(world, ContentRuntime.Current.Items.Get("omniblock:bucket"));
 
         Assert.True(cow.Interact(player));
         Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:milk").Id, player.Inventory.ItemInHand!.ItemId);
@@ -38,7 +41,7 @@ public sealed class EntityInteractableTests
     public void Milking_needs_the_right_item_in_hand()
     {
         FakeWorldContext world = new();
-        EntityCreature cow = (EntityCreature)TestEntityCatalog.ByName("cow").Create(world);
+        var cow = (EntityCreature)TestEntityCatalog.ByName("cow").Create(world);
 
         Assert.False(cow.Interact(Player(world)));
         Assert.False(cow.Interact(Player(world, ContentRuntime.Current.Items.Get("omniblock:stick"))));
@@ -48,8 +51,8 @@ public sealed class EntityInteractableTests
     public void An_unsaddled_pig_cannot_be_ridden()
     {
         FakeWorldContext world = new();
-        EntityCreature pig = (EntityCreature)TestEntityCatalog.ByName("pig").Create(world);
-        TestEntityPlayer player = Player(world);
+        var pig = (EntityCreature)TestEntityCatalog.ByName("pig").Create(world);
+        var player = Player(world);
 
         Assert.False(pig.Interact(player));
         Assert.Null(player.Vehicle);
@@ -59,10 +62,10 @@ public sealed class EntityInteractableTests
     public void A_saddled_pig_carries_the_player()
     {
         FakeWorldContext world = new();
-        EntityCreature pig = (EntityCreature)TestEntityCatalog.ByName("pig").Create(world);
+        var pig = (EntityCreature)TestEntityCatalog.ByName("pig").Create(world);
         pig.Synced<bool>("saddled")!.Value = true;
         pig.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
-        TestEntityPlayer player = Player(world);
+        var player = Player(world);
 
         Assert.True(pig.Interact(player));
         Assert.Same(pig, player.Vehicle);
@@ -72,7 +75,7 @@ public sealed class EntityInteractableTests
     public void A_saddled_pig_refuses_a_second_rider()
     {
         FakeWorldContext world = new();
-        EntityCreature pig = (EntityCreature)TestEntityCatalog.ByName("pig").Create(world);
+        var pig = (EntityCreature)TestEntityCatalog.ByName("pig").Create(world);
         pig.Synced<bool>("saddled")!.Value = true;
         pig.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
@@ -84,11 +87,11 @@ public sealed class EntityInteractableTests
     public void Only_a_large_slime_hurts_the_player_it_touches()
     {
         FakeWorldContext world = new();
-        EntityLiving slime = (EntityLiving)TestEntityCatalog.ByName("slime").Create(world);
+        var slime = (EntityLiving)TestEntityCatalog.ByName("slime").Create(world);
         slime.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
-        SizedBodyBehavior body = slime.Behaviors.Find<SizedBodyBehavior>()!;
-        TestEntityPlayer player = Player(world);
-        int before = player.Health;
+        var body = slime.Behaviors.Find<SizedBodyBehavior>()!;
+        var player = Player(world);
+        var before = player.Health;
 
         body.SetSize(slime, 1);
         slime.OnPlayerInteraction(player);

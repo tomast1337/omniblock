@@ -8,19 +8,19 @@ namespace OmniBlock.Client.Entities.FX;
 
 public class EntityFX : Entity
 {
-    protected int particleTextureIndex;
-    protected float particleTextureJitterX;
-    protected float particleTextureJitterY;
-    protected int particleAge;
-    protected int particleMaxAge;
-    protected float particleScale;
-    protected float particleGravity;
-    protected float particleRed;
-    protected float particleGreen;
-    protected float particleBlue;
     public static double interpPosX;
     public static double interpPosY;
     public static double interpPosZ;
+    protected int particleAge;
+    protected float particleBlue;
+    protected float particleGravity;
+    protected float particleGreen;
+    protected int particleMaxAge;
+    protected float particleRed;
+    protected float particleScale;
+    protected int particleTextureIndex;
+    protected float particleTextureJitterX;
+    protected float particleTextureJitterY;
 
     public EntityFX(IWorldContext world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) : base(world, null)
     {
@@ -28,14 +28,14 @@ public class EntityFX : Entity
         StandingEyeHeight = Height / 2.0F;
         SetPosition(x, y, z);
         particleRed = particleGreen = particleBlue = 1.0F;
-        base.VelocityX = velocityX + (double)((float)(System.Random.Shared.NextDouble() * 2.0D - 1.0D) * 0.4F);
-        base.VelocityY = velocityY + (double)((float)(System.Random.Shared.NextDouble() * 2.0D - 1.0D) * 0.4F);
-        base.VelocityZ = velocityZ + (double)((float)(System.Random.Shared.NextDouble() * 2.0D - 1.0D) * 0.4F);
-        float velocityScale = (float)(System.Random.Shared.NextDouble() + System.Random.Shared.NextDouble() + 1.0D) * 0.15F;
-        float speed = MathHelper.Sqrt(base.VelocityX * base.VelocityX + base.VelocityY * base.VelocityY + base.VelocityZ * base.VelocityZ);
-        base.VelocityX = base.VelocityX / (double)speed * (double)velocityScale * (double)0.4F;
-        base.VelocityY = base.VelocityY / (double)speed * (double)velocityScale * (double)0.4F + (double)0.1F;
-        base.VelocityZ = base.VelocityZ / (double)speed * (double)velocityScale * (double)0.4F;
+        VelocityX = velocityX + (float)(System.Random.Shared.NextDouble() * 2.0D - 1.0D) * 0.4F;
+        VelocityY = velocityY + (float)(System.Random.Shared.NextDouble() * 2.0D - 1.0D) * 0.4F;
+        VelocityZ = velocityZ + (float)(System.Random.Shared.NextDouble() * 2.0D - 1.0D) * 0.4F;
+        var velocityScale = (float)(System.Random.Shared.NextDouble() + System.Random.Shared.NextDouble() + 1.0D) * 0.15F;
+        var speed = MathHelper.Sqrt(VelocityX * VelocityX + VelocityY * VelocityY + VelocityZ * VelocityZ);
+        VelocityX = VelocityX / speed * velocityScale * 0.4F;
+        VelocityY = VelocityY / speed * velocityScale * 0.4F + 0.1F;
+        VelocityZ = VelocityZ / speed * velocityScale * 0.4F;
         particleTextureJitterX = Random.NextFloat() * 3.0F;
         particleTextureJitterY = Random.NextFloat() * 3.0F;
         particleScale = (Random.NextFloat() * 0.5F + 0.5F) * 2.0F;
@@ -45,9 +45,9 @@ public class EntityFX : Entity
 
     public EntityFX scaleVelocity(float multiplier)
     {
-        VelocityX *= (double)multiplier;
-        VelocityY = (VelocityY - (double)0.1F) * (double)multiplier + (double)0.1F;
-        VelocityZ *= (double)multiplier;
+        VelocityX *= multiplier;
+        VelocityY = (VelocityY - 0.1F) * multiplier + 0.1F;
+        VelocityZ *= multiplier;
         return this;
     }
 
@@ -58,10 +58,7 @@ public class EntityFX : Entity
         return this;
     }
 
-    protected override bool BypassesSteppingEffects()
-    {
-        return false;
-    }
+    protected override bool BypassesSteppingEffects() => false;
 
     public override void Tick()
     {
@@ -73,41 +70,37 @@ public class EntityFX : Entity
             MarkDead();
         }
 
-        VelocityY -= 0.04D * (double)particleGravity;
+        VelocityY -= 0.04D * particleGravity;
         Move(VelocityX, VelocityY, VelocityZ);
-        VelocityX *= (double)0.98F;
-        VelocityY *= (double)0.98F;
-        VelocityZ *= (double)0.98F;
+        VelocityX *= 0.98F;
+        VelocityY *= 0.98F;
+        VelocityZ *= 0.98F;
         if (OnGround)
         {
-            VelocityX *= (double)0.7F;
-            VelocityZ *= (double)0.7F;
+            VelocityX *= 0.7F;
+            VelocityZ *= 0.7F;
         }
-
     }
 
     public virtual void renderParticle(Tessellator t, float partialTick, float rotX, float rotY, float rotZ, float upX, float upZ)
     {
-        float minU = (float)(particleTextureIndex % 16) / 16.0F;
-        float maxU = minU + 0.999F / 16.0F;
-        float minV = (float)(particleTextureIndex / 16) / 16.0F;
-        float maxV = minV + 0.999F / 16.0F;
-        float size = 0.1F * particleScale;
-        float x = (float)(PrevX + (base.X - PrevX) * (double)partialTick - interpPosX);
-        float y = (float)(PrevY + (base.Y - PrevY) * (double)partialTick - interpPosY);
-        float z = (float)(PrevZ + (base.Z - PrevZ) * (double)partialTick - interpPosZ);
-        float brightness = GetBrightnessAtEyes(partialTick);
+        var minU = particleTextureIndex % 16 / 16.0F;
+        var maxU = minU + 0.999F / 16.0F;
+        var minV = particleTextureIndex / 16 / 16.0F;
+        var maxV = minV + 0.999F / 16.0F;
+        var size = 0.1F * particleScale;
+        var x = (float)(PrevX + (X - PrevX) * partialTick - interpPosX);
+        var y = (float)(PrevY + (Y - PrevY) * partialTick - interpPosY);
+        var z = (float)(PrevZ + (Z - PrevZ) * partialTick - interpPosZ);
+        var brightness = GetBrightnessAtEyes(partialTick);
         t.setColorOpaque_F(particleRed * brightness, particleGreen * brightness, particleBlue * brightness);
-        t.addVertexWithUV((double)(x - rotX * size - upX * size), (double)(y - rotY * size), (double)(z - rotZ * size - upZ * size), (double)maxU, (double)maxV);
-        t.addVertexWithUV((double)(x - rotX * size + upX * size), (double)(y + rotY * size), (double)(z - rotZ * size + upZ * size), (double)maxU, (double)minV);
-        t.addVertexWithUV((double)(x + rotX * size + upX * size), (double)(y + rotY * size), (double)(z + rotZ * size + upZ * size), (double)minU, (double)minV);
-        t.addVertexWithUV((double)(x + rotX * size - upX * size), (double)(y - rotY * size), (double)(z + rotZ * size - upZ * size), (double)minU, (double)maxV);
+        t.addVertexWithUV(x - rotX * size - upX * size, y - rotY * size, z - rotZ * size - upZ * size, maxU, maxV);
+        t.addVertexWithUV(x - rotX * size + upX * size, y + rotY * size, z - rotZ * size + upZ * size, maxU, minV);
+        t.addVertexWithUV(x + rotX * size + upX * size, y + rotY * size, z + rotZ * size + upZ * size, minU, minV);
+        t.addVertexWithUV(x + rotX * size - upX * size, y - rotY * size, z + rotZ * size - upZ * size, minU, maxV);
     }
 
-    public virtual int getFXLayer()
-    {
-        return 0;
-    }
+    public virtual int getFXLayer() => 0;
 
     protected override void WriteNbt(NBTTagCompound nbt)
     {

@@ -1,10 +1,9 @@
 using System.Buffers;
+using Microsoft.Extensions.Logging;
 using OmniBlock.Client.Options;
 using OmniBlock.Client.Rendering.Core.Textures.Atlas;
 using OmniBlock.Client.Resource.Pack;
-using OmniBlock.Registries.Data;
 using OmniBlock.Textures;
-using Microsoft.Extensions.Logging;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
@@ -16,22 +15,22 @@ namespace OmniBlock.Client.Rendering.Core.Textures;
 
 public class TextureManager : IDisposable
 {
-    private readonly ILogger _logger = Log.Instance.For<TextureManager>();
-    private readonly Dictionary<string, TextureHandle> _textures = [];
-    private readonly Dictionary<string, int[]> _colors = [];
-    private readonly Dictionary<uint, (Image<Rgba32> Image, TextureHandle Handle)> _images = [];
-    private readonly List<DynamicTexture> _dynamicTextures = [];
     private readonly Dictionary<string, int> _atlasTileSizes = [];
-    private TextureHandle? _terrainHandle;
+    private readonly Dictionary<string, int[]> _colors = [];
+    private readonly List<DynamicTexture> _dynamicTextures = [];
+    private readonly OmniBlock _game;
+    private readonly GameOptions _gameOptions;
+    private readonly Dictionary<uint, (Image<Rgba32> Image, TextureHandle Handle)> _images = [];
+    private readonly ILogger _logger = Log.Instance.For<TextureManager>();
+    private readonly Image<Rgba32> _missingTextureImage = new(256, 256);
+    private readonly TexturePacks _texturePacks;
+    private readonly Dictionary<string, TextureHandle> _textures = [];
+    private bool _blur;
+    private bool _clamp;
+    private NamedTextureArray? _itemsArray;
     private TextureHandle? _itemsHandle;
     private NamedTextureArray? _terrainArray;
-    private NamedTextureArray? _itemsArray;
-    private readonly GameOptions _gameOptions;
-    private bool _clamp;
-    private bool _blur;
-    private readonly TexturePacks _texturePacks;
-    private readonly OmniBlock _game;
-    private readonly Image<Rgba32> _missingTextureImage = new(256, 256);
+    private TextureHandle? _terrainHandle;
 
     public TextureManager(OmniBlock game, TexturePacks texturePacks, GameOptions options)
     {
@@ -57,6 +56,33 @@ public class TextureManager : IDisposable
     /// <summary>The item icons as a texture array addressed by name, built on first use.</summary>
     public NamedTextureArray ItemsArray => _itemsArray ??= BuildArray("items", Atlases.Items, "/gui/items.png");
 
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+
+        foreach (var handle in _textures.Values)
+        {
+            handle.Texture?.Dispose();
+        }
+
+        _textures.Clear();
+
+        foreach (var entry in _images.Values)
+        {
+            entry.Handle.Texture?.Dispose();
+            entry.Image.Dispose();
+        }
+
+        _images.Clear();
+
+        _terrainArray?.Dispose();
+        _itemsArray?.Dispose();
+
+        _missingTextureImage.Dispose();
+        _colors.Clear();
+        _dynamicTextures.Clear();
+    }
+
     private NamedTextureArray BuildArray(string domain, AtlasTileMap tileMap, string defaultGridPath)
     {
         NamedTextureArray array = new(
@@ -71,27 +97,26 @@ public class TextureManager : IDisposable
 
     public int[] GetColors(string path)
     {
-        if (_colors.TryGetValue(path, out int[]? cachedColors)) return cachedColors;
+        if (_colors.TryGetValue(path, out var cachedColors)) return cachedColors;
         try
         {
-            using Image<Rgba32> img = LoadImageFromResource(path);
-            int[] result = ReadColorsFromImage(img);
+            using var img = LoadImageFromResource(path);
+            var result = ReadColorsFromImage(img);
             _colors[path] = result;
             return result;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to get colors from image {Path}", path);
-            int[] fallback = ReadColorsFromImage(_missingTextureImage);
+            var fallback = ReadColorsFromImage(_missingTextureImage);
             _colors[path] = fallback;
             return fallback;
         }
-
     }
 
     public int GetAtlasTileSize(string path)
     {
-        if (_atlasTileSizes.TryGetValue(path, out int size)) return size;
+        if (_atlasTileSizes.TryGetValue(path, out var size)) return size;
         return 16;
     }
 
@@ -106,7 +131,7 @@ public class TextureManager : IDisposable
 
     public TextureHandle GetTextureId(string path)
     {
-        if (_textures.TryGetValue(path, out TextureHandle? handle)) return handle;
+        if (_textures.TryGetValue(path, out var handle)) return handle;
 
         var texture = new Texture2D(path);
         handle = new TextureHandle(texture);
@@ -114,7 +139,7 @@ public class TextureManager : IDisposable
 
         try
         {
-            using Image<Rgba32> img = LoadImageFromResource(path);
+            using var img = LoadImageFromResource(path);
 
             _atlasTileSizes[path] = img.Width / 16;
 
@@ -127,7 +152,6 @@ public class TextureManager : IDisposable
             Load(_missingTextureImage, texture, false);
             return handle;
         }
-
     }
 
     public unsafe void Load(Image<Rgba32> image, Texture2D texture, bool isTerrain)
@@ -136,26 +160,27 @@ public class TextureManager : IDisposable
 
         if (isTerrain)
         {
-            int tileSize = image.Width / 16;
-            Image<Rgba32>[] mips = GenerateMipmaps(image, tileSize);
-            int mipCount = _gameOptions.UseMipmaps ? mips.Length : 1;
+            var tileSize = image.Width / 16;
+            var mips = GenerateMipmaps(image, tileSize);
+            var mipCount = _gameOptions.UseMipmaps ? mips.Length : 1;
 
-            for (int level = 0; level < mipCount; level++)
+            for (var level = 0; level < mipCount; level++)
             {
-                Image<Rgba32> mip = mips[level];
-                byte[] pixels = new byte[mip.Width * mip.Height * 4];
+                var mip = mips[level];
+                var pixels = new byte[mip.Width * mip.Height * 4];
                 mip.CopyPixelDataTo(pixels);
                 fixed (byte* ptr = pixels)
                 {
                     texture.Upload(mip.Width, mip.Height, ptr, level, PixelFormat.Rgba, InternalFormat.Rgba8);
                 }
+
                 if (level > 0) mip.Dispose();
             }
 
             texture.SetFilter(_gameOptions.UseMipmaps ? TextureMinFilter.NearestMipmapNearest : TextureMinFilter.Nearest, TextureMagFilter.Nearest);
             texture.SetMaxLevel(mipCount - 1);
 
-            float aniso = _gameOptions.AnisotropicLevel == 0 ? 1.0f : (float)Math.Pow(2, _gameOptions.AnisotropicLevel);
+            var aniso = _gameOptions.AnisotropicLevel == 0 ? 1.0f : (float)Math.Pow(2, _gameOptions.AnisotropicLevel);
             aniso = Math.Clamp(aniso, 1.0f, GameOptions.MaxAnisotropy);
 
             texture.SetAnisotropicFilter(aniso);
@@ -166,32 +191,29 @@ public class TextureManager : IDisposable
         texture.SetFilter(_blur ? TextureMinFilter.Linear : TextureMinFilter.Nearest, _blur ? TextureMagFilter.Linear : TextureMagFilter.Nearest);
         texture.SetWrap(_clamp ? TextureWrapMode.ClampToEdge : TextureWrapMode.Repeat, _clamp ? TextureWrapMode.ClampToEdge : TextureWrapMode.Repeat);
 
-        byte[] rawPixels = new byte[image.Width * image.Height * 4];
+        var rawPixels = new byte[image.Width * image.Height * 4];
         image.CopyPixelDataTo(rawPixels);
         fixed (byte* ptr = rawPixels)
         {
-            texture.Upload(image.Width, image.Height, ptr, 0, PixelFormat.Rgba, InternalFormat.Rgba);
+            texture.Upload(image.Width, image.Height, ptr);
         }
 
         _clamp = false;
         _blur = false;
     }
 
-    public void BindTexture(TextureHandle? handle)
-    {
-        handle?.Bind();
-    }
+    public void BindTexture(TextureHandle? handle) => handle?.Bind();
 
     private Image<Rgba32> Rescale(Image<Rgba32> image)
     {
-        int scale = image.Width / 16;
+        var scale = image.Width / 16;
         var rescaled = new Image<Rgba32>(16, image.Height * scale);
         rescaled.Mutate(ctx =>
         {
-            for (int i = 0; i < scale; i++)
+            for (var i = 0; i < scale; i++)
             {
-                using Image<Rgba32> frame = image.Clone(x => x.Crop(new SixLabors.ImageSharp.Rectangle(i * 16, 0, 16, image.Height)));
-                ctx.DrawImage(frame, new SixLabors.ImageSharp.Point(0, i * image.Height), 1f);
+                using var frame = image.Clone(x => x.Crop(new Rectangle(i * 16, 0, 16, image.Height)));
+                ctx.DrawImage(frame, new Point(0, i * image.Height), 1f);
             }
         });
         return rescaled;
@@ -199,15 +221,15 @@ public class TextureManager : IDisposable
 
     private int[] ReadColorsFromImage(Image<Rgba32> image)
     {
-        int[] argb = new int[image.Width * image.Height];
+        var argb = new int[image.Width * image.Height];
         image.ProcessPixelRows(accessor =>
         {
-            for (int y = 0; y < accessor.Height; y++)
+            for (var y = 0; y < accessor.Height; y++)
             {
-                Span<Rgba32> row = accessor.GetRowSpan(y);
-                for (int x = 0; x < accessor.Width; x++)
+                var row = accessor.GetRowSpan(y);
+                for (var x = 0; x < accessor.Width; x++)
                 {
-                    Rgba32 p = row[x];
+                    var p = row[x];
                     argb[y * accessor.Width + x] = (p.A << 24) | (p.R << 16) | (p.G << 8) | p.B;
                 }
             }
@@ -218,24 +240,32 @@ public class TextureManager : IDisposable
 
     private Image<Rgba32> LoadImageFromResource(string path)
     {
-        TexturePack pack = _texturePacks.SelectedTexturePack;
+        var pack = _texturePacks.SelectedTexturePack;
 
         if (path.StartsWith("##"))
         {
-            using Stream? s = pack.GetResourceAsStream(path[2..]);
+            using var s = pack.GetResourceAsStream(path[2..]);
             return s == null ? _missingTextureImage.Clone() : Rescale(Image.Load<Rgba32>(s));
         }
 
-        string cleanPath = path;
+        var cleanPath = path;
         while (true)
         {
-            if (cleanPath.StartsWith("%clamp%")) { _clamp = true; cleanPath = cleanPath[7..]; }
-            else if (cleanPath.StartsWith("%blur%")) { _blur = true; cleanPath = cleanPath[6..]; }
+            if (cleanPath.StartsWith("%clamp%"))
+            {
+                _clamp = true;
+                cleanPath = cleanPath[7..];
+            }
+            else if (cleanPath.StartsWith("%blur%"))
+            {
+                _blur = true;
+                cleanPath = cleanPath[6..];
+            }
             else break;
         }
 
-        using Stream? stream = pack.GetResourceAsStream(cleanPath);
-        Image<Rgba32> img = stream == null ? _missingTextureImage.Clone() : Image.Load<Rgba32>(stream);
+        using var stream = pack.GetResourceAsStream(cleanPath);
+        var img = stream == null ? _missingTextureImage.Clone() : Image.Load<Rgba32>(stream);
 
         return img;
     }
@@ -250,14 +280,14 @@ public class TextureManager : IDisposable
         texture.SetFilter(_blur ? TextureMinFilter.Linear : TextureMinFilter.Nearest, _blur ? TextureMagFilter.Linear : TextureMagFilter.Nearest);
         texture.SetWrap(_clamp ? TextureWrapMode.ClampToEdge : TextureWrapMode.Repeat, _clamp ? TextureWrapMode.ClampToEdge : TextureWrapMode.Repeat);
 
-        byte[] unpackedRGBA = new byte[width * height * 4];
+        var unpackedRGBA = new byte[width * height * 4];
 
-        for (int i = 0; i < packedARGB.Length; ++i)
+        for (var i = 0; i < packedARGB.Length; ++i)
         {
-            int a = packedARGB[i] >> 24 & 255;
-            int r = packedARGB[i] >> 16 & 255;
-            int g = packedARGB[i] >> 8 & 255;
-            int b = packedARGB[i] & 255;
+            var a = (packedARGB[i] >> 24) & 255;
+            var r = (packedARGB[i] >> 16) & 255;
+            var g = (packedARGB[i] >> 8) & 255;
+            var b = packedARGB[i] & 255;
 
             unpackedRGBA[i * 4 + 0] = (byte)r;
             unpackedRGBA[i * 4 + 1] = (byte)g;
@@ -267,13 +297,13 @@ public class TextureManager : IDisposable
 
         fixed (byte* ptr = unpackedRGBA)
         {
-            texture.UploadSubImage(0, 0, width, height, ptr, 0, PixelFormat.Rgba);
+            texture.UploadSubImage(0, 0, width, height, ptr);
         }
     }
 
     public void Delete(Texture2D texture)
     {
-        KeyValuePair<string, TextureHandle> textureEntry = _textures.FirstOrDefault(x => x.Value.Texture == texture);
+        var textureEntry = _textures.FirstOrDefault(x => x.Value.Texture == texture);
         if (textureEntry.Key != null) _textures.Remove(textureEntry.Key);
 
         _images.Remove(texture.Id);
@@ -299,7 +329,7 @@ public class TextureManager : IDisposable
     public void Reload()
     {
         _atlasTileSizes.Clear();
-        foreach (KeyValuePair<string, TextureHandle> entry in _textures)
+        foreach (var entry in _textures)
         {
             entry.Value.Texture?.Dispose();
 
@@ -308,7 +338,7 @@ public class TextureManager : IDisposable
 
             try
             {
-                using Image<Rgba32> img = LoadImageFromResource(entry.Key);
+                using var img = LoadImageFromResource(entry.Key);
                 _atlasTileSizes[entry.Key] = img.Width / 16;
                 Load(img, newTexture, entry.Key.Contains("terrain.png"));
             }
@@ -322,7 +352,7 @@ public class TextureManager : IDisposable
 
         var oldImages = new Dictionary<uint, (Image<Rgba32> Image, TextureHandle Handle)>(_images);
         _images.Clear();
-        foreach (KeyValuePair<uint, (Image<Rgba32> Image, TextureHandle Handle)> entry in oldImages)
+        foreach (var entry in oldImages)
         {
             entry.Value.Handle.Texture?.Dispose();
 
@@ -332,9 +362,9 @@ public class TextureManager : IDisposable
             _images[newTexture.Id] = entry.Value;
         }
 
-        foreach (string key in new List<string>(_colors.Keys)) GetColors(key);
+        foreach (var key in new List<string>(_colors.Keys)) GetColors(key);
 
-        foreach (DynamicTexture dynamicTexture in _dynamicTextures)
+        foreach (var dynamicTexture in _dynamicTextures)
         {
             dynamicTexture.Setup(_game);
         }
@@ -355,28 +385,28 @@ public class TextureManager : IDisposable
         _itemsHandle ??= _textures.FirstOrDefault(x => x.Key.EndsWith("/gui/items.png")).Value
                          ?? GetTextureId("/gui/items.png");
 
-        foreach (DynamicTexture texture in _dynamicTextures)
+        foreach (var texture in _dynamicTextures)
         {
             texture.tick();
 
-            TextureHandle atlasHandle = texture.Atlas == DynamicTexture.FxImage.Terrain
+            var atlasHandle = texture.Atlas == DynamicTexture.FxImage.Terrain
                 ? _terrainHandle
                 : _itemsHandle;
 
-            Texture2D? atlasTexture = atlasHandle?.Texture;
+            var atlasTexture = atlasHandle?.Texture;
             if (atlasTexture == null) continue;
 
-            int targetTileSize = atlasTexture.Width / 16;
+            var targetTileSize = atlasTexture.Width / 16;
 
-            int tileX = (texture.Sprite % 16) * targetTileSize;
-            int tileY = (texture.Sprite / 16) * targetTileSize;
+            var tileX = texture.Sprite % 16 * targetTileSize;
+            var tileY = texture.Sprite / 16 * targetTileSize;
 
-            int fxSize = (int)Math.Sqrt(texture.Pixels.Length / 4);
-            int scale = targetTileSize / fxSize;
+            var fxSize = (int)Math.Sqrt(texture.Pixels.Length / 4);
+            var scale = targetTileSize / fxSize;
             if (scale < 1) scale = 1;
 
-            byte[] uploadPixels = texture.Pixels;
-            int uploadSize = fxSize;
+            var uploadPixels = texture.Pixels;
+            var uploadSize = fxSize;
             byte[]? rentedArray = null;
 
             try
@@ -384,34 +414,34 @@ public class TextureManager : IDisposable
                 if (scale > 1)
                 {
                     uploadSize = fxSize * scale;
-                    rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(uploadSize * uploadSize * 4);
+                    rentedArray = ArrayPool<byte>.Shared.Rent(uploadSize * uploadSize * 4);
                     UpscaleNearestNeighbor(texture.Pixels, rentedArray, fxSize, uploadSize, scale);
                     uploadPixels = rentedArray;
                 }
 
-                int finalReplicate = texture.Replicate;
+                var finalReplicate = texture.Replicate;
 
                 fixed (byte* ptr = uploadPixels)
                 {
-                    for (int x = 0; x < finalReplicate; x++)
+                    for (var x = 0; x < finalReplicate; x++)
                     {
-                        for (int y = 0; y < finalReplicate; y++)
+                        for (var y = 0; y < finalReplicate; y++)
                         {
                             atlasTexture.UploadSubImage(
-                               tileX + (x * uploadSize),
-                               tileY + (y * uploadSize),
-                               uploadSize, uploadSize, ptr, 0, PixelFormat.Rgba);
+                                tileX + x * uploadSize,
+                                tileY + y * uploadSize,
+                                uploadSize, uploadSize, ptr);
                         }
                     }
                 }
 
                 if (texture.Atlas == DynamicTexture.FxImage.Terrain && _gameOptions.UseMipmaps)
                 {
-                    for (int x = 0; x < finalReplicate; x++)
+                    for (var x = 0; x < finalReplicate; x++)
                     {
-                        for (int y = 0; y < finalReplicate; y++)
+                        for (var y = 0; y < finalReplicate; y++)
                         {
-                            UpdateTileMipmaps(tileX + (x * uploadSize), tileY + (y * uploadSize), uploadSize, targetTileSize, uploadPixels, atlasTexture);
+                            UpdateTileMipmaps(tileX + x * uploadSize, tileY + y * uploadSize, uploadSize, targetTileSize, uploadPixels, atlasTexture);
                         }
                     }
                 }
@@ -422,7 +452,7 @@ public class TextureManager : IDisposable
             {
                 if (rentedArray != null)
                 {
-                    System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+                    ArrayPool<byte>.Shared.Return(rentedArray);
                 }
             }
         }
@@ -439,18 +469,18 @@ public class TextureManager : IDisposable
     /// </remarks>
     private unsafe void UploadAnimatedLayer(DynamicTexture texture, int fxSize)
     {
-        bool isTerrain = texture.Atlas == DynamicTexture.FxImage.Terrain;
-        NamedTextureArray array = isTerrain ? TerrainArray : ItemsArray;
-        AtlasTileMap tileMap = isTerrain ? Atlases.Terrain : Atlases.Items;
+        var isTerrain = texture.Atlas == DynamicTexture.FxImage.Terrain;
+        var array = isTerrain ? TerrainArray : ItemsArray;
+        var tileMap = isTerrain ? Atlases.Terrain : Atlases.Items;
 
-        int layer = tileMap.LayerOfGridIndex(texture.Sprite);
+        var layer = tileMap.LayerOfGridIndex(texture.Sprite);
         if (layer == AtlasTileMap.MissingLayer || array.Texture == null) return;
 
-        int scale = Math.Max(1, array.LayerSize / fxSize);
-        int size = fxSize * scale;
+        var scale = Math.Max(1, array.LayerSize / fxSize);
+        var size = fxSize * scale;
 
         byte[]? rented = null;
-        byte[] pixels = texture.Pixels;
+        var pixels = texture.Pixels;
 
         try
         {
@@ -477,14 +507,14 @@ public class TextureManager : IDisposable
         ReadOnlySpan<byte> srcSpan = src;
         Span<byte> dstSpan = dst;
 
-        for (int y = 0; y < dstSize; y++)
+        for (var y = 0; y < dstSize; y++)
         {
-            int srcY = y / scale;
-            for (int x = 0; x < dstSize; x++)
+            var srcY = y / scale;
+            for (var x = 0; x < dstSize; x++)
             {
-                int srcX = x / scale;
-                int srcIdx = (srcY * srcSize + srcX) * 4;
-                int dstIdx = (y * dstSize + x) * 4;
+                var srcX = x / scale;
+                var srcIdx = (srcY * srcSize + srcX) * 4;
+                var dstIdx = (y * dstSize + x) * 4;
 
                 dstSpan[dstIdx] = srcSpan[srcIdx];
                 dstSpan[dstIdx + 1] = srcSpan[srcIdx + 1];
@@ -496,31 +526,31 @@ public class TextureManager : IDisposable
 
     private unsafe void UpdateTileMipmaps(int baseX, int baseY, int dataSize, int targetTileSize, byte[] tileData, Texture2D texture)
     {
-        int maxMipLevels = (int)Math.Log2(targetTileSize) + 1;
-        byte[] currentData = tileData;
-        int currentSize = dataSize;
+        var maxMipLevels = (int)Math.Log2(targetTileSize) + 1;
+        var currentData = tileData;
+        var currentSize = dataSize;
 
-        for (int mipLevel = 1; mipLevel < maxMipLevels; mipLevel++)
+        for (var mipLevel = 1; mipLevel < maxMipLevels; mipLevel++)
         {
-            int newSize = currentSize >> 1;
+            var newSize = currentSize >> 1;
             if (newSize < 1) newSize = 1;
 
-            byte[] downsampled = ArrayPool<byte>.Shared.Rent(newSize * newSize * 4);
+            var downsampled = ArrayPool<byte>.Shared.Rent(newSize * newSize * 4);
 
             try
             {
                 if (currentSize > 1)
                 {
-                    for (int y = 0; y < newSize; y++)
+                    for (var y = 0; y < newSize; y++)
                     {
-                        for (int x = 0; x < newSize; x++)
+                        for (var x = 0; x < newSize; x++)
                         {
-                            int src0 = ((y * 2) * currentSize + (x * 2)) * 4;
-                            int src1 = ((y * 2) * currentSize + (x * 2 + 1)) * 4;
-                            int src2 = ((y * 2 + 1) * currentSize + (x * 2)) * 4;
-                            int src3 = ((y * 2 + 1) * currentSize + (x * 2 + 1)) * 4;
+                            var src0 = (y * 2 * currentSize + x * 2) * 4;
+                            var src1 = (y * 2 * currentSize + x * 2 + 1) * 4;
+                            var src2 = ((y * 2 + 1) * currentSize + x * 2) * 4;
+                            var src3 = ((y * 2 + 1) * currentSize + x * 2 + 1) * 4;
 
-                            int dst = (y * newSize + x) * 4;
+                            var dst = (y * newSize + x) * 4;
 
                             downsampled[dst] = (byte)((currentData[src0] + currentData[src1] + currentData[src2] + currentData[src3]) >> 2);
                             downsampled[dst + 1] = (byte)((currentData[src0 + 1] + currentData[src1 + 1] + currentData[src2 + 1] + currentData[src3 + 1]) >> 2);
@@ -531,15 +561,15 @@ public class TextureManager : IDisposable
                 }
                 else
                 {
-                    for (int i = 0; i < 4; i++) downsampled[i] = currentData[i];
+                    for (var i = 0; i < 4; i++) downsampled[i] = currentData[i];
                 }
 
-                int mipX = baseX >> mipLevel;
-                int mipY = baseY >> mipLevel;
+                var mipX = baseX >> mipLevel;
+                var mipY = baseY >> mipLevel;
 
                 fixed (byte* ptr = downsampled)
                 {
-                    texture.UploadSubImage(mipX, mipY, newSize, newSize, ptr, mipLevel, PixelFormat.Rgba);
+                    texture.UploadSubImage(mipX, mipY, newSize, newSize, ptr, mipLevel);
                 }
 
                 if (mipLevel > 1)
@@ -561,30 +591,5 @@ public class TextureManager : IDisposable
         {
             ArrayPool<byte>.Shared.Return(currentData);
         }
-    }
-
-    public void Dispose()
-    {
-        GC.SuppressFinalize(this);
-
-        foreach (TextureHandle handle in _textures.Values)
-        {
-            handle.Texture?.Dispose();
-        }
-        _textures.Clear();
-
-        foreach ((Image<Rgba32> Image, TextureHandle Handle) entry in _images.Values)
-        {
-            entry.Handle.Texture?.Dispose();
-            entry.Image.Dispose();
-        }
-        _images.Clear();
-
-        _terrainArray?.Dispose();
-        _itemsArray?.Dispose();
-
-        _missingTextureImage.Dispose();
-        _colors.Clear();
-        _dynamicTextures.Clear();
     }
 }

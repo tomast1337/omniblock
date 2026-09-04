@@ -7,16 +7,16 @@ namespace OmniBlock.Client.Network;
 
 public class OtherPlayerEntity : EntityPlayer
 {
+    private double lerpPitch;
     private int lerpSteps;
     private double lerpX;
     private double lerpY;
-    private double lerpZ;
     private double lerpYaw;
-    private double lerpPitch;
+    private double lerpZ;
 
     public OtherPlayerEntity(World world, string name) : base(world)
     {
-        base.Name = name;
+        Name = name;
         StandingEyeHeight = 0.0F;
         StepHeight = 0.0F;
         NoClip = true;
@@ -24,15 +24,9 @@ public class OtherPlayerEntity : EntityPlayer
         RenderDistanceWeight = 10.0D;
     }
 
-    protected override void resetEyeHeight()
-    {
-        StandingEyeHeight = 0.0F;
-    }
+    protected override void resetEyeHeight() => StandingEyeHeight = 0.0F;
 
-    public override bool Damage(Entity? ent, int amount)
-    {
-        return true;
-    }
+    public override bool Damage(Entity? ent, int amount) => true;
 
     public override void SetPositionAndAnglesAvoidEntities(double lerpX, double lerpY, double lerpZ, float lerpYaw, float lerpPitch, int lerpSteps)
     {
@@ -49,9 +43,9 @@ public class OtherPlayerEntity : EntityPlayer
         SleepOffsetY = 0.0F;
         base.Tick();
         LastWalkAnimationSpeed = WalkAnimationSpeed;
-        double dx = X - PrevX;
-        double dz = Z - PrevZ;
-        float horizontalDistance = MathHelper.Sqrt(dx * dx + dz * dz) * 4.0F;
+        var dx = X - PrevX;
+        var dz = Z - PrevZ;
+        var horizontalDistance = MathHelper.Sqrt(dx * dx + dz * dz) * 4.0F;
         if (horizontalDistance > 1.0F)
         {
             horizontalDistance = 1.0F;
@@ -61,19 +55,16 @@ public class OtherPlayerEntity : EntityPlayer
         AnimationPhase += WalkAnimationSpeed;
     }
 
-    public override float GetShadowRadius()
-    {
-        return 0.0F;
-    }
+    public override float GetShadowRadius() => 0.0F;
 
     protected override void TickMovement()
     {
         base.TickLiving();
         if (lerpSteps > 0)
         {
-            double newX = X + (lerpX - X) / lerpSteps;
-            double newY = Y + (lerpY - Y) / lerpSteps;
-            double newZ = Z + (lerpZ - Z) / lerpSteps;
+            var newX = X + (lerpX - X) / lerpSteps;
+            var newY = Y + (lerpY - Y) / lerpSteps;
+            var newZ = Z + (lerpZ - Z) / lerpSteps;
 
             double dYaw;
             for (dYaw = lerpYaw - Yaw; dYaw < -180.0D; dYaw += 360.0D)
@@ -93,8 +84,8 @@ public class OtherPlayerEntity : EntityPlayer
         }
 
         PrevStepBobbingAmount = StepBobbingAmount;
-        float horizontalSpeed = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
-        float tiltAmount = (float)Math.Atan(-VelocityY * (double)0.2F) * 15.0F;
+        var horizontalSpeed = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
+        var tiltAmount = (float)Math.Atan(-VelocityY * 0.2F) * 15.0F;
         if (horizontalSpeed > 0.1F)
         {
             horizontalSpeed = 0.1F;
@@ -130,7 +121,6 @@ public class OtherPlayerEntity : EntityPlayer
         {
             Inventory.Armor[slotIndex - 1] = itemStack;
         }
-
     }
 
     public override void Spawn()

@@ -6,10 +6,10 @@ public sealed class ModelSquid : BbModelEntityModel
 
     public ModelSquid() : base("squid")
     {
-        for (int i = 0; i < _tentacles.Length; i++)
+        for (var i = 0; i < _tentacles.Length; i++)
         {
             _tentacles[i] = GetPart($"tentacle{i}");
-            double angle = i * Math.PI * -2.0 / 8 + Math.PI * 0.5;
+            var angle = i * Math.PI * -2.0 / 8 + Math.PI * 0.5;
             _tentacles[i].RotateAngleY = (float)angle;
         }
     }

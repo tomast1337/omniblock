@@ -1,7 +1,6 @@
 using OmniBlock.Blocks;
 using OmniBlock.Entities;
 using OmniBlock.Util.Maths;
-using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Worlds.Mechanics;
@@ -30,7 +29,7 @@ public class Explosion
 
     public void doExplosionA()
     {
-        float originalExplosionSize = explosionSize;
+        var originalExplosionSize = explosionSize;
         byte rayResolution = 16;
 
         int rayX;
@@ -50,21 +49,21 @@ public class Explosion
                         double rayDirX = rayX / (rayResolution - 1.0F) * 2.0F - 1.0F;
                         double rayDirY = rayY / (rayResolution - 1.0F) * 2.0F - 1.0F;
                         double rayDirZ = rayZ / (rayResolution - 1.0F) * 2.0F - 1.0F;
-                        double rayDirLength = Math.Sqrt(rayDirX * rayDirX + rayDirY * rayDirY + rayDirZ * rayDirZ);
+                        var rayDirLength = Math.Sqrt(rayDirX * rayDirX + rayDirY * rayDirY + rayDirZ * rayDirZ);
                         rayDirX /= rayDirLength;
                         rayDirY /= rayDirLength;
                         rayDirZ /= rayDirLength;
-                        float blastPower = explosionSize * (0.7F + _level.Random.NextFloat() * 0.6F);
+                        var blastPower = explosionSize * (0.7F + _level.Random.NextFloat() * 0.6F);
                         sampleX = explosionX;
                         sampleY = explosionY;
                         sampleZ = explosionZ;
 
-                        for (float stepSize = 0.3F; blastPower > 0.0F; blastPower -= stepSize * (12.0F / 16.0F))
+                        for (var stepSize = 0.3F; blastPower > 0.0F; blastPower -= stepSize * (12.0F / 16.0F))
                         {
-                            int blockX = MathHelper.Floor(sampleX);
-                            int blockY = MathHelper.Floor(sampleY);
-                            int blockZ = MathHelper.Floor(sampleZ);
-                            int blockId = _level.Reader.GetBlockId(blockX, blockY, blockZ);
+                            var blockX = MathHelper.Floor(sampleX);
+                            var blockY = MathHelper.Floor(sampleY);
+                            var blockZ = MathHelper.Floor(sampleZ);
+                            var blockId = _level.Reader.GetBlockId(blockX, blockY, blockZ);
                             if (blockId > 0)
                             {
                                 blastPower -= (_level.Content.Blocks.GetByProtocolId(blockId).GetBlastResistance(exploder) + 0.3F) * stepSize;
@@ -88,16 +87,16 @@ public class Explosion
         rayX = MathHelper.Floor(explosionX - explosionSize - 1.0D);
         rayY = MathHelper.Floor(explosionX + explosionSize + 1.0D);
         rayZ = MathHelper.Floor(explosionY - explosionSize - 1.0D);
-        int maxY = MathHelper.Floor(explosionY + explosionSize + 1.0D);
-        int minZ = MathHelper.Floor(explosionZ - explosionSize - 1.0D);
-        int maxZ = MathHelper.Floor(explosionZ + explosionSize + 1.0D);
-        List<Entity> affectedEntities = _level.Entities.GetEntities(exploder, new Box(rayX, rayZ, minZ, rayY, maxY, maxZ));
+        var maxY = MathHelper.Floor(explosionY + explosionSize + 1.0D);
+        var minZ = MathHelper.Floor(explosionZ - explosionSize - 1.0D);
+        var maxZ = MathHelper.Floor(explosionZ + explosionSize + 1.0D);
+        var affectedEntities = _level.Entities.GetEntities(exploder, new Box(rayX, rayZ, minZ, rayY, maxY, maxZ));
         Vec3D explosionCenter = new(explosionX, explosionY, explosionZ);
 
-        for (int entityIndex = 0; entityIndex < affectedEntities.Count; ++entityIndex)
+        for (var entityIndex = 0; entityIndex < affectedEntities.Count; ++entityIndex)
         {
-            Entity entity = affectedEntities[entityIndex];
-            double normalizedDistance = entity.GetDistance(explosionX, explosionY, explosionZ) / explosionSize;
+            var entity = affectedEntities[entityIndex];
+            var normalizedDistance = entity.GetDistance(explosionX, explosionY, explosionZ) / explosionSize;
             if (normalizedDistance <= 1.0D)
             {
                 sampleX = entity.X - explosionX;
@@ -108,7 +107,7 @@ public class Explosion
                 sampleY /= distanceToExplosion;
                 sampleZ /= distanceToExplosion;
                 double visibilityRatio = _level.Reader.GetVisibilityRatio(explosionCenter, entity.BoundingBox);
-                double impact = (1.0D - normalizedDistance) * visibilityRatio;
+                var impact = (1.0D - normalizedDistance) * visibilityRatio;
                 entity.Damage(exploder, (int)((impact * impact + impact) / 2.0D * 8.0D * explosionSize + 1.0D));
                 entity.VelocityX += sampleX * impact;
                 entity.VelocityY += sampleY * impact;
@@ -120,14 +119,14 @@ public class Explosion
         List<BlockPos> destroyedPositions = new(destroyedBlockPositions);
         if (!isFlaming) return;
 
-        for (int positionIndex = destroyedPositions.Count - 1; positionIndex >= 0; --positionIndex)
+        for (var positionIndex = destroyedPositions.Count - 1; positionIndex >= 0; --positionIndex)
         {
-            BlockPos blockPos = destroyedPositions[positionIndex];
-            int x = blockPos.X;
-            int y = blockPos.Y;
-            int z = blockPos.Z;
-            int blockIdAtPos = _level.Reader.GetBlockId(x, y, z);
-            int belowBlockId = _level.Reader.GetBlockId(x, y - 1, z);
+            var blockPos = destroyedPositions[positionIndex];
+            var x = blockPos.X;
+            var y = blockPos.Y;
+            var z = blockPos.Z;
+            var blockIdAtPos = _level.Reader.GetBlockId(x, y, z);
+            var belowBlockId = _level.Reader.GetBlockId(x, y - 1, z);
             if (blockIdAtPos == 0 && _level.Content.Blocks.IsOpaque(belowBlockId) && ExplosionRNG.NextInt(3) == 0)
             {
                 _level.Writer.SetBlock(x, y, z, _level.Content.Blocks.Get("omniblock:fire").Id);
@@ -140,26 +139,26 @@ public class Explosion
         _level.Broadcaster.PlaySoundAtPos(explosionX, explosionY, explosionZ, "random.explode", 4.0F, (1.0F + (_level.Random.NextFloat() - _level.Random.NextFloat()) * 0.2F) * 0.7F);
         List<BlockPos> destroyedPositions = new(destroyedBlockPositions);
 
-        for (int positionIndex = destroyedPositions.Count - 1; positionIndex >= 0; --positionIndex)
+        for (var positionIndex = destroyedPositions.Count - 1; positionIndex >= 0; --positionIndex)
         {
-            BlockPos blockPos = destroyedPositions[positionIndex];
-            int x = blockPos.X;
-            int y = blockPos.Y;
-            int z = blockPos.Z;
-            int blockId = _level.Reader.GetBlockId(x, y, z);
+            var blockPos = destroyedPositions[positionIndex];
+            var x = blockPos.X;
+            var y = blockPos.Y;
+            var z = blockPos.Z;
+            var blockId = _level.Reader.GetBlockId(x, y, z);
             if (spawnParticles)
             {
                 double particleX = x + _level.Random.NextFloat();
                 double particleY = y + _level.Random.NextFloat();
                 double particleZ = z + _level.Random.NextFloat();
-                double particleVelocityX = particleX - explosionX;
-                double particleVelocityY = particleY - explosionY;
-                double particleVelocityZ = particleZ - explosionZ;
+                var particleVelocityX = particleX - explosionX;
+                var particleVelocityY = particleY - explosionY;
+                var particleVelocityZ = particleZ - explosionZ;
                 double distance = MathHelper.Sqrt(particleVelocityX * particleVelocityX + particleVelocityY * particleVelocityY + particleVelocityZ * particleVelocityZ);
                 particleVelocityX /= distance;
                 particleVelocityY /= distance;
                 particleVelocityZ /= distance;
-                double velocityScale = 0.5D / (distance / explosionSize + 0.1D);
+                var velocityScale = 0.5D / (distance / explosionSize + 0.1D);
                 velocityScale *= _level.Random.NextFloat() * _level.Random.NextFloat() + 0.3F;
                 particleVelocityX *= velocityScale;
                 particleVelocityY *= velocityScale;
@@ -170,7 +169,7 @@ public class Explosion
 
             if (blockId > 0)
             {
-                Block block = _level.Content.Blocks.GetByProtocolId(blockId);
+                var block = _level.Content.Blocks.GetByProtocolId(blockId);
                 block.DropStacks(new OnDropEvent(_level, x, y, z, _level.Reader.GetBlockMeta(x, y, z), 0.3F));
                 _level.Writer.SetBlock(x, y, z, 0);
                 block.OnDestroyedByExplosion(new OnDestroyedByExplosionEvent(_level, x, y, z));

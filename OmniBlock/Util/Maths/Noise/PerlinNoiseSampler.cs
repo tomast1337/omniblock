@@ -7,7 +7,7 @@ internal class PerlinNoiseSampler : NoiseSampler
     private readonly double _yCoord;
     private readonly double _zCoord;
 
-    public PerlinNoiseSampler() : this(new())
+    public PerlinNoiseSampler() : this(new JavaRandom())
     {
     }
 
@@ -18,18 +18,17 @@ internal class PerlinNoiseSampler : NoiseSampler
         _yCoord = rand.NextDouble() * 256.0D;
         _zCoord = rand.NextDouble() * 256.0D;
 
-        for (int i = 0; i < 256; i++)
+        for (var i = 0; i < 256; i++)
         {
             _permutations[i] = i;
         }
 
-        for (int i = 0; i < 256; ++i)
+        for (var i = 0; i < 256; ++i)
         {
-            int j = rand.NextInt(256 - i) + i;
+            var j = rand.NextInt(256 - i) + i;
             (_permutations[i], _permutations[j]) = (_permutations[j], _permutations[i]);
             _permutations[i + 256] = _permutations[i];
         }
-
     }
 
     private double GenerateNoise(double x, double y, double z)
@@ -37,9 +36,9 @@ internal class PerlinNoiseSampler : NoiseSampler
         x += _xCoord;
         y += _yCoord;
         z += _zCoord;
-        int xInt = (int)x;
-        int yInt = (int)y;
-        int zInt = (int)z;
+        var xInt = (int)x;
+        var yInt = (int)y;
+        var zInt = (int)z;
         if (x < xInt)
         {
             --xInt;
@@ -55,56 +54,50 @@ internal class PerlinNoiseSampler : NoiseSampler
             --zInt;
         }
 
-        int xMod255 = xInt & 255;
-        int yMod255 = yInt & 255;
-        int zMod255 = zInt & 255;
+        var xMod255 = xInt & 255;
+        var yMod255 = yInt & 255;
+        var zMod255 = zInt & 255;
         x -= xInt;
         y -= yInt;
         z -= zInt;
-        double sX = x * x * x * (x * (x * 6.0D - 15.0D) + 10.0D);
-        double sY = y * y * y * (y * (y * 6.0D - 15.0D) + 10.0D);
-        double sZ = z * z * z * (z * (z * 6.0D - 15.0D) + 10.0D);
-        int a = _permutations[xMod255] + yMod255;
-        int aa = _permutations[a] + zMod255;
-        int ab = _permutations[a + 1] + zMod255;
-        int b = _permutations[xMod255 + 1] + yMod255;
-        int ba = _permutations[b] + zMod255;
-        int bb = _permutations[b + 1] + zMod255;
+        var sX = x * x * x * (x * (x * 6.0D - 15.0D) + 10.0D);
+        var sY = y * y * y * (y * (y * 6.0D - 15.0D) + 10.0D);
+        var sZ = z * z * z * (z * (z * 6.0D - 15.0D) + 10.0D);
+        var a = _permutations[xMod255] + yMod255;
+        var aa = _permutations[a] + zMod255;
+        var ab = _permutations[a + 1] + zMod255;
+        var b = _permutations[xMod255 + 1] + yMod255;
+        var ba = _permutations[b] + zMod255;
+        var bb = _permutations[b + 1] + zMod255;
         return Lerp(sZ, Lerp(sY, Lerp(sX, Grad(_permutations[aa], x, y, z),
-                                                Grad(_permutations[ba], x - 1, y, z)),
-                                    Lerp(sX, Grad(_permutations[ab], x, y - 1, z),
-                                                Grad(_permutations[bb], x - 1, y - 1, z))),
-                        Lerp(sY, Lerp(sX, Grad(_permutations[aa + 1], x, y, z - 1),
-                                                Grad(_permutations[ba + 1], x - 1, y, z - 1)),
-                                    Lerp(sX, Grad(_permutations[ab + 1], x, y - 1, z - 1),
-                                                Grad(_permutations[bb + 1], x - 1, y - 1, z - 1))));
+                    Grad(_permutations[ba], x - 1, y, z)),
+                Lerp(sX, Grad(_permutations[ab], x, y - 1, z),
+                    Grad(_permutations[bb], x - 1, y - 1, z))),
+            Lerp(sY, Lerp(sX, Grad(_permutations[aa + 1], x, y, z - 1),
+                    Grad(_permutations[ba + 1], x - 1, y, z - 1)),
+                Lerp(sX, Grad(_permutations[ab + 1], x, y - 1, z - 1),
+                    Grad(_permutations[bb + 1], x - 1, y - 1, z - 1))));
     }
 
-    private static double Lerp(double t, double a, double b)
-    {
-        return a + t * (b - a);
-    }
+    private static double Lerp(double t, double a, double b) => a + t * (b - a);
 
     private static double Grad(int hash, double x, double y)
     {
-        int h = hash & 15;
-        double u = (1 - ((h & 8) >> 3)) * x;
-        double v = h < 4 ? 0.0D : h != 12 && h != 14 ? y : x;
+        var h = hash & 15;
+        var u = (1 - ((h & 8) >> 3)) * x;
+        var v = h < 4 ? 0.0D : h != 12 && h != 14 ? y : x;
         return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
     }
 
     private static double Grad(int hash, double x, double y, double z)
     {
-        int h = hash & 15;
-        double u = h < 8 ? x : y;
-        double v = h < 4 ? y : h != 12 && h != 14 ? z : x;
+        var h = hash & 15;
+        var u = h < 8 ? x : y;
+        var v = h < 4 ? y : h != 12 && h != 14 ? z : x;
         return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
     }
 
-    public double GenerateNoise(double x, double y)
-    {
-        return GenerateNoise(x, y, 0.0D);
-    }
+    public double GenerateNoise(double x, double y) => GenerateNoise(x, y, 0.0D);
 
     public void Sample(double[] buffer,
         double xStart,
@@ -118,135 +111,133 @@ internal class PerlinNoiseSampler : NoiseSampler
         double zFrequency,
         double inverseAmplitude)
     {
-        int counter = 0;
-        double amplitude = 1.0D / inverseAmplitude;
+        var counter = 0;
+        var amplitude = 1.0D / inverseAmplitude;
 
         if (ySize == 1) // 2d (xz)
         {
-            for (int x = 0; x < xSize; ++x)
+            for (var x = 0; x < xSize; ++x)
             {
-                double xCoord = (xStart + x) * xFrequency + _xCoord;
-                int xCoordInt = (int)xCoord;
+                var xCoord = (xStart + x) * xFrequency + _xCoord;
+                var xCoordInt = (int)xCoord;
                 if (xCoord < xCoordInt)
                 {
                     --xCoordInt;
                 }
 
-                int xMod255 = xCoordInt & 255;
+                var xMod255 = xCoordInt & 255;
                 xCoord -= xCoordInt;
 
-                double xFinal = xCoord * xCoord * xCoord * (xCoord * (xCoord * 6.0D - 15.0D) + 10.0D);
+                var xFinal = xCoord * xCoord * xCoord * (xCoord * (xCoord * 6.0D - 15.0D) + 10.0D);
 
-                for (int z = 0; z < zSize; ++z)
+                for (var z = 0; z < zSize; ++z)
                 {
-                    double zCoord = (zStart + z) * zFrequency + _zCoord;
-                    int zCoordInt = (int)zCoord;
+                    var zCoord = (zStart + z) * zFrequency + _zCoord;
+                    var zCoordInt = (int)zCoord;
                     if (zCoord < zCoordInt)
                     {
                         --zCoordInt;
                     }
 
-                    int zMod255 = zCoordInt & 255;
+                    var zMod255 = zCoordInt & 255;
                     zCoord -= zCoordInt;
 
-                    double zFinal = zCoord * zCoord * zCoord * (zCoord * (zCoord * 6.0D - 15.0D) + 10.0D);
+                    var zFinal = zCoord * zCoord * zCoord * (zCoord * (zCoord * 6.0D - 15.0D) + 10.0D);
 
-                    int aa = _permutations[xMod255];
-                    int ab = _permutations[aa] + zMod255;
-                    int ba = _permutations[xMod255 + 1];
-                    int bb = _permutations[ba] + zMod255;
-                    double xLerpZ0 = Lerp(xFinal, Grad(_permutations[ab], xCoord, zCoord),
-                                                    Grad(_permutations[bb], xCoord - 1, 0, zCoord));
-                    double xLerpZ1 = Lerp(xFinal, Grad(_permutations[ab + 1], xCoord, 0, zCoord - 1),
-                                                    Grad(_permutations[bb + 1], xCoord - 1, 0, zCoord - 1));
-                    double finalNoise = Lerp(zFinal, xLerpZ0, xLerpZ1);
+                    var aa = _permutations[xMod255];
+                    var ab = _permutations[aa] + zMod255;
+                    var ba = _permutations[xMod255 + 1];
+                    var bb = _permutations[ba] + zMod255;
+                    var xLerpZ0 = Lerp(xFinal, Grad(_permutations[ab], xCoord, zCoord),
+                        Grad(_permutations[bb], xCoord - 1, 0, zCoord));
+                    var xLerpZ1 = Lerp(xFinal, Grad(_permutations[ab + 1], xCoord, 0, zCoord - 1),
+                        Grad(_permutations[bb + 1], xCoord - 1, 0, zCoord - 1));
+                    var finalNoise = Lerp(zFinal, xLerpZ0, xLerpZ1);
                     buffer[counter++] += finalNoise * amplitude;
                 }
             }
-
         }
         else
         {
-            int oldY = -1;
+            var oldY = -1;
             // Don't move these inside the loop
-            double xLerpY0Z0 = 0.0D;
-            double xLerpY1Z0 = 0.0D;
-            double xLerpY0Z1 = 0.0D;
-            double xLerpY1Z1 = 0.0D;
+            var xLerpY0Z0 = 0.0D;
+            var xLerpY1Z0 = 0.0D;
+            var xLerpY0Z1 = 0.0D;
+            var xLerpY1Z1 = 0.0D;
 
-            for (int x = 0; x < xSize; ++x)
+            for (var x = 0; x < xSize; ++x)
             {
-                double xCoord = (xStart + x) * xFrequency + _xCoord;
-                int xCoordInt = (int)xCoord;
+                var xCoord = (xStart + x) * xFrequency + _xCoord;
+                var xCoordInt = (int)xCoord;
                 if (xCoord < xCoordInt)
                 {
                     --xCoordInt;
                 }
 
-                int xMod255 = xCoordInt & 255;
+                var xMod255 = xCoordInt & 255;
                 xCoord -= xCoordInt;
 
-                double xFinal = xCoord * xCoord * xCoord * (xCoord * (xCoord * 6.0D - 15.0D) + 10.0D);
+                var xFinal = xCoord * xCoord * xCoord * (xCoord * (xCoord * 6.0D - 15.0D) + 10.0D);
 
-                for (int z = 0; z < zSize; ++z)
+                for (var z = 0; z < zSize; ++z)
                 {
-                    double zCoord = (zStart + z) * zFrequency + _zCoord;
-                    int zCoordInt = (int)zCoord;
+                    var zCoord = (zStart + z) * zFrequency + _zCoord;
+                    var zCoordInt = (int)zCoord;
                     if (zCoord < zCoordInt)
                     {
                         --zCoordInt;
                     }
 
-                    int zMod255 = zCoordInt & 255;
+                    var zMod255 = zCoordInt & 255;
                     zCoord -= zCoordInt;
 
-                    double zFinal = zCoord * zCoord * zCoord * (zCoord * (zCoord * 6.0D - 15.0D) + 10.0D);
+                    var zFinal = zCoord * zCoord * zCoord * (zCoord * (zCoord * 6.0D - 15.0D) + 10.0D);
 
-                    for (int y = 0; y < ySize; ++y)
+                    for (var y = 0; y < ySize; ++y)
                     {
-                        double yCoord = (yStart + y) * yFrequency + _yCoord;
-                        int yCoordInt = (int)yCoord;
+                        var yCoord = (yStart + y) * yFrequency + _yCoord;
+                        var yCoordInt = (int)yCoord;
                         if (yCoord < yCoordInt)
                         {
                             --yCoordInt;
                         }
 
-                        int yMod255 = yCoordInt & 255;
+                        var yMod255 = yCoordInt & 255;
                         yCoord -= yCoordInt;
 
-                        double yFinal = yCoord * yCoord * yCoord * (yCoord * (yCoord * 6.0D - 15.0D) + 10.0D);
+                        var yFinal = yCoord * yCoord * yCoord * (yCoord * (yCoord * 6.0D - 15.0D) + 10.0D);
 
                         if (y == 0 || yMod255 != oldY)
                         {
                             oldY = yMod255;
-                            int a = _permutations[xMod255] + yMod255;
-                            int aa = _permutations[a] + zMod255;
-                            int ab = _permutations[a + 1] + zMod255;
-                            int b = _permutations[xMod255 + 1] + yMod255;
-                            int ba = _permutations[b] + zMod255;
-                            int bb = _permutations[b + 1] + zMod255;
+                            var a = _permutations[xMod255] + yMod255;
+                            var aa = _permutations[a] + zMod255;
+                            var ab = _permutations[a + 1] + zMod255;
+                            var b = _permutations[xMod255 + 1] + yMod255;
+                            var ba = _permutations[b] + zMod255;
+                            var bb = _permutations[b + 1] + zMod255;
                             xLerpY0Z0 = Lerp(xFinal,
-                                        Grad(_permutations[aa], xCoord, yCoord, zCoord),
-                                        Grad(_permutations[ba], xCoord - 1, yCoord, zCoord));
+                                Grad(_permutations[aa], xCoord, yCoord, zCoord),
+                                Grad(_permutations[ba], xCoord - 1, yCoord, zCoord));
                             xLerpY1Z0 = Lerp(xFinal,
-                                        Grad(_permutations[ab], xCoord, yCoord - 1, zCoord),
-                                        Grad(_permutations[bb], xCoord - 1, yCoord - 1, zCoord));
+                                Grad(_permutations[ab], xCoord, yCoord - 1, zCoord),
+                                Grad(_permutations[bb], xCoord - 1, yCoord - 1, zCoord));
                             xLerpY0Z1 = Lerp(xFinal,
-                                        Grad(_permutations[aa + 1], xCoord, yCoord, zCoord - 1),
-                                        Grad(_permutations[ba + 1], xCoord - 1, yCoord, zCoord - 1));
+                                Grad(_permutations[aa + 1], xCoord, yCoord, zCoord - 1),
+                                Grad(_permutations[ba + 1], xCoord - 1, yCoord, zCoord - 1));
                             xLerpY1Z1 = Lerp(xFinal,
-                                        Grad(_permutations[ab + 1], xCoord, yCoord - 1, zCoord - 1),
-                                        Grad(_permutations[bb + 1], xCoord - 1, yCoord - 1, zCoord - 1));
+                                Grad(_permutations[ab + 1], xCoord, yCoord - 1, zCoord - 1),
+                                Grad(_permutations[bb + 1], xCoord - 1, yCoord - 1, zCoord - 1));
                         }
 
-                        double yLerpZ0 = Lerp(yFinal, xLerpY0Z0, xLerpY1Z0);
-                        double yLerpZ1 = Lerp(yFinal, xLerpY0Z1, xLerpY1Z1);
-                        double finalNoise = Lerp(zFinal, yLerpZ0, yLerpZ1);
+                        var yLerpZ0 = Lerp(yFinal, xLerpY0Z0, xLerpY1Z0);
+                        var yLerpZ1 = Lerp(yFinal, xLerpY0Z1, xLerpY1Z1);
+                        var finalNoise = Lerp(zFinal, yLerpZ0, yLerpZ1);
                         buffer[counter++] += finalNoise * amplitude;
                     }
                 }
             }
-
         }
     }
 }

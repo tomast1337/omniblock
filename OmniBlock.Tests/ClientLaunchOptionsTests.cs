@@ -7,7 +7,7 @@ public sealed class ClientLaunchOptionsTests
     [Fact]
     public void Parse_preservesExistingClientArguments()
     {
-        ClientLaunchOptions options = ClientLaunchOptions.Parse(
+        var options = ClientLaunchOptions.Parse(
             ["--username", "TestPlayer", "--token", "session-token", "--debug"]);
 
         Assert.Equal("TestPlayer", options.Username);
@@ -20,14 +20,14 @@ public sealed class ClientLaunchOptionsTests
     [Fact]
     public void Parse_loadsStartupScriptFromAnAbsolutePath()
     {
-        string directory = Directory.CreateTempSubdirectory("omniblock-startup-script-").FullName;
-        string path = Path.Combine(directory, "smoke.luau");
+        var directory = Directory.CreateTempSubdirectory("omniblock-startup-script-").FullName;
+        var path = Path.Combine(directory, "smoke.luau");
 
         try
         {
             File.WriteAllText(path, "print('ready')");
 
-            ClientLaunchOptions options = ClientLaunchOptions.Parse(
+            var options = ClientLaunchOptions.Parse(
                 ["--username", "TestPlayer", "--startup-script", path]);
 
             Assert.NotNull(options.StartupScript);
@@ -49,7 +49,7 @@ public sealed class ClientLaunchOptionsTests
     [InlineData("--e2e-artifacts")]
     public void Parse_rejectsAnOptionWithoutAValue(string option)
     {
-        ArgumentException error = Assert.Throws<ArgumentException>(() => ClientLaunchOptions.Parse([option]));
+        var error = Assert.Throws<ArgumentException>(() => ClientLaunchOptions.Parse([option]));
 
         Assert.Contains("requires a value", error.Message);
     }
@@ -57,15 +57,15 @@ public sealed class ClientLaunchOptionsTests
     [Fact]
     public void Parse_loadsE2EScriptTimeoutAndArtifacts()
     {
-        string directory = Directory.CreateTempSubdirectory("omniblock-e2e-options-").FullName;
-        string script = Path.Combine(directory, "smoke.luau");
-        string artifacts = Path.Combine(directory, "artifacts");
+        var directory = Directory.CreateTempSubdirectory("omniblock-e2e-options-").FullName;
+        var script = Path.Combine(directory, "smoke.luau");
+        var artifacts = Path.Combine(directory, "artifacts");
 
         try
         {
             File.WriteAllText(script, "OMNI.test.pass()");
 
-            ClientLaunchOptions options = ClientLaunchOptions.Parse(
+            var options = ClientLaunchOptions.Parse(
                 ["--username", "TestPlayer", "--e2e-script", script, "--e2e-timeout", "12.5", "--e2e-artifacts", artifacts]);
 
             Assert.NotNull(options.E2ETest);
@@ -83,7 +83,7 @@ public sealed class ClientLaunchOptionsTests
     [Fact]
     public void Parse_rejectsCombiningStartupAndE2EScripts()
     {
-        string path = Path.GetTempFileName();
+        var path = Path.GetTempFileName();
         try
         {
             Assert.Throws<ArgumentException>(() => ClientLaunchOptions.Parse(
@@ -98,9 +98,9 @@ public sealed class ClientLaunchOptionsTests
     [Fact]
     public void Parse_reportsAMissingStartupScript()
     {
-        string path = Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}.luau");
+        var path = Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}.luau");
 
-        ArgumentException error = Assert.Throws<ArgumentException>(() =>
+        var error = Assert.Throws<ArgumentException>(() =>
             ClientLaunchOptions.Parse(["--username", "TestPlayer", "--startup-script", path]));
 
         Assert.Contains("Could not load startup script", error.Message);

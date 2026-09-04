@@ -26,7 +26,7 @@ public sealed class ServerStatusMessageTests
     [Fact]
     public void Carries_every_field_the_panel_shows()
     {
-        ServerStatusMessage read = RoundTrip(new ServerStatusMessage
+        var read = RoundTrip(new ServerStatusMessage
         {
             Tps = 19.75f,
             Mspt = 42.5f,
@@ -47,7 +47,7 @@ public sealed class ServerStatusMessageTests
     [Fact]
     public void Survives_a_server_that_is_not_keeping_up()
     {
-        ServerStatusMessage read = RoundTrip(new ServerStatusMessage
+        var read = RoundTrip(new ServerStatusMessage
         {
             Tps = 0.0f,
             Mspt = 2000.0f,
@@ -66,10 +66,7 @@ public sealed class ServerStatusMessageTests
     ///     longer than the overlay's staleness window.
     /// </summary>
     [Fact]
-    public void Is_not_held_behind_the_chunk_stream()
-    {
-        Assert.Equal(SendPriority.High, new ServerStatusMessage().Priority);
-    }
+    public void Is_not_held_behind_the_chunk_stream() => Assert.Equal(SendPriority.High, new ServerStatusMessage().Priority);
 
     [Fact]
     public void Is_registered_so_both_peers_agree_on_its_id()
@@ -78,7 +75,7 @@ public sealed class ServerStatusMessageTests
         DefaultMessages.RegisterAll(registry, ContentRuntime.Current.Items);
         registry.NegotiateAsServer();
 
-        int id = registry.GetId(new ServerStatusMessage().Key);
+        var id = registry.GetId(new ServerStatusMessage().Key);
 
         Assert.True(id >= 0);
         Assert.IsType<ServerStatusMessage>(registry.Create(id));

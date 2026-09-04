@@ -64,7 +64,7 @@ public class EditServerScreen(
         Panel buttonPanel = new();
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
-        Button btnDone = CreateButton();
+        var btnDone = CreateButton();
         btnDone.AutomationId = "server.edit.done";
         btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.Width = 100;
@@ -78,7 +78,7 @@ public class EditServerScreen(
         };
         buttonPanel.AddChild(btnDone);
 
-        Button btnCancel = CreateButton();
+        var btnCancel = CreateButton();
         btnCancel.AutomationId = "server.edit.cancel";
         btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 100;

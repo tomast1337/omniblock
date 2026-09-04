@@ -1,7 +1,6 @@
 using OmniBlock.Client.Entities;
 using OmniBlock.Client.Input;
 using OmniBlock.Client.Network;
-using OmniBlock.Client.UI.Controls.Core;
 using OmniBlock.Client.UI.Layout.Flexbox;
 using OmniBlock.Network.Messages;
 using Color = OmniBlock.Client.UI.Colors.Color;
@@ -19,7 +18,7 @@ public class SleepScreen(UIContext context, ClientPlayerEntity player) : UIScree
         Root.Style.JustifyContent = Justify.FlexEnd;
         Root.Style.PaddingBottom = 40;
 
-        Button btnStopSleep = CreateButton();
+        var btnStopSleep = CreateButton();
         btnStopSleep.Text = Translations.Get("multiplayer.stopSleeping");
         btnStopSleep.Style.Width = 200;
         btnStopSleep.OnClick += _ => SendStopSleepingCommand();
@@ -29,7 +28,7 @@ public class SleepScreen(UIContext context, ClientPlayerEntity player) : UIScree
 
     public override void Render(int mouseX, int mouseY, float partialTicks)
     {
-        int alpha = (int)((1 - player.SleepAmount) * 255 + 0.5f);
+        var alpha = (int)((1 - player.SleepAmount) * 255 + 0.5f);
         if (alpha > 0)
         {
             Renderer.Begin();

@@ -1,4 +1,3 @@
-using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.UI.Rendering;
 
 namespace OmniBlock.Client.UI.Controls.MainMenu;
@@ -16,7 +15,7 @@ public class MainMenuLogo : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        TextureHandle logoTexture = renderer.TextureManager.GetTextureId("/title/mclogo.png");
+        var logoTexture = renderer.TextureManager.GetTextureId("/title/mclogo.png");
 
         // Match legacy rendering logic (split into two textured quads)
         renderer.DrawTexturedModalRect(logoTexture, 0, 0, 0, 0, 155, 44);

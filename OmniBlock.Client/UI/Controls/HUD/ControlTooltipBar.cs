@@ -1,6 +1,5 @@
 using OmniBlock.Client.Options;
 using OmniBlock.Client.Rendering;
-using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.UI.Rendering;
 using Color = OmniBlock.Client.UI.Colors.Color;
 
@@ -51,7 +50,7 @@ public class ControlTooltipBar : UIElement
 
         if (_screen == null)
         {
-            InGameTipContext? ctx = _inGameSource?.Invoke();
+            var ctx = _inGameSource?.Invoke();
             if (ctx == null)
             {
                 base.Render(renderer);
@@ -72,12 +71,12 @@ public class ControlTooltipBar : UIElement
         }
 
         float x = 0;
-        foreach (ActionTip tip in _tips)
+        foreach (var tip in _tips)
         {
-            string? assetPath = ControlTooltip.GetAssetPath(tip.Icon);
+            var assetPath = ControlTooltip.GetAssetPath(tip.Icon);
             if (assetPath != null)
             {
-                TextureHandle texture = renderer.TextureManager.GetTextureId(assetPath);
+                var texture = renderer.TextureManager.GetTextureId(assetPath);
                 renderer.DrawTexture(texture, x, 0, IconSize, IconSize);
                 x += IconSize + 4;
             }

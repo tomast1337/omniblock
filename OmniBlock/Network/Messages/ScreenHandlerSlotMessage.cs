@@ -9,10 +9,14 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class ScreenHandlerSlotMessage : Message
 {
-    private readonly IItemRuntimeView? _items;
-    public ScreenHandlerSlotMessage() { }
-    internal ScreenHandlerSlotMessage(IItemRuntimeView items) => _items = items;
     public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "screen_slot");
+    private readonly IItemRuntimeView? _items;
+
+    public ScreenHandlerSlotMessage()
+    {
+    }
+
+    internal ScreenHandlerSlotMessage(IItemRuntimeView items) => _items = items;
 
     /// <summary>-1 with slot -1 addresses the cursor stack rather than a screen.</summary>
     public sbyte SyncId { get; set; }

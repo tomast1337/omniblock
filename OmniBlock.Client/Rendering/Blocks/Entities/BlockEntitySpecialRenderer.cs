@@ -1,8 +1,6 @@
 using OmniBlock.Blocks.Entities;
-using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.Rendering.Entities;
 using OmniBlock.Worlds.Core;
-using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Client.Rendering.Blocks.Entities;
 
@@ -24,25 +22,19 @@ public abstract class BlockEntitySpecialRenderer
     /// </remarks>
     protected void bindTextureByName(string texturePath)
     {
-        TextureManager textureManager = tileEntityRenderer.TextureManager;
-        TextureHandle handle = textureManager.GetTextureId(texturePath);
+        var textureManager = tileEntityRenderer.TextureManager;
+        var handle = textureManager.GetTextureId(texturePath);
 
         EntityBatchRenderer.Instance.RegisterTextureByPath(texturePath, (uint)handle.Id);
         EntityBatchRenderer.Instance.SetTexture((uint)handle.Id);
         textureManager.BindTexture(handle);
     }
 
-    public void setTileEntityRenderer(BlockEntityRenderer renderer)
-    {
-        tileEntityRenderer = renderer;
-    }
+    public void setTileEntityRenderer(BlockEntityRenderer renderer) => tileEntityRenderer = renderer;
 
     public virtual void func_31069_a(World world)
     {
     }
 
-    public TextRenderer getFontRenderer()
-    {
-        return tileEntityRenderer.GetFontRenderer();
-    }
+    public TextRenderer getFontRenderer() => tileEntityRenderer.GetFontRenderer();
 }

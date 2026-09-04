@@ -6,10 +6,12 @@ namespace OmniBlock.Worlds.Core.Systems;
 public class WorldTickScheduler
 {
     private readonly IWorldContext _context;
+    private readonly HashSet<ScheduledBlockTick> _pendingScheduledKeys = new();
 
     private readonly Lock _queueLock = new();
     private readonly PriorityQueue<BlockUpdate, (long, long)> _scheduledUpdates = new();
-    private readonly HashSet<ScheduledBlockTick> _pendingScheduledKeys = new();
+
+    public WorldTickScheduler(IWorldContext context) => _context = context;
 
     public long Count
     {
@@ -22,9 +24,6 @@ public class WorldTickScheduler
         }
     }
 
-    private readonly record struct ScheduledBlockTick(int X, int Y, int Z, int BlockId);
-
-    public WorldTickScheduler(IWorldContext context) => _context = context;
     public void Tick(bool forceFlush = false) => ProcessScheduledTicks(forceFlush);
 
     /// <summary>
@@ -41,7 +40,7 @@ public class WorldTickScheduler
             if (!_pendingScheduledKeys.Add(key))
                 return;
 
-            long scheduledTime = _context.GetTime() + tickRate;
+            var scheduledTime = _context.GetTime() + tickRate;
             BlockUpdate blockUpdate = new(x, y, z, blockId, scheduledTime);
             _scheduledUpdates.Enqueue(blockUpdate, (blockUpdate.ScheduledTime, blockUpdate.ScheduledOrder));
         }
@@ -50,8 +49,8 @@ public class WorldTickScheduler
     public virtual void ScheduleBlockUpdate(int x, int y, int z, int blockId, int tickRate, bool instantBlockUpdateEnabled = false)
     {
         const byte loadRadius = 8;
-        int minY = Math.Max(0, y - loadRadius);
-        int maxY = Math.Min(ChuckFormat.WorldHeight -1, y + loadRadius);
+        var minY = Math.Max(0, y - loadRadius);
+        var maxY = Math.Min(ChuckFormat.WorldHeight - 1, y + loadRadius);
 
         if (!_context.ChunkHost.IsPosLoaded(x - loadRadius, minY, z - loadRadius) ||
             !_context.ChunkHost.IsPosLoaded(x + loadRadius, maxY, z + loadRadius))
@@ -59,10 +58,10 @@ public class WorldTickScheduler
 
         if (instantBlockUpdateEnabled)
         {
-            int currentBlockId = _context.Reader.GetBlockId(x, y, z);
+            var currentBlockId = _context.Reader.GetBlockId(x, y, z);
             if (currentBlockId == blockId && currentBlockId > 0)
             {
-                int meta = _context.Reader.GetBlockMeta(x, y, z);
+                var meta = _context.Reader.GetBlockMeta(x, y, z);
                 _context.Content.Blocks.GetByProtocolId(currentBlockId).OnTick(new OnTickEvent(_context, x, y, z, meta, currentBlockId));
             }
         }
@@ -75,7 +74,7 @@ public class WorldTickScheduler
                 if (!_pendingScheduledKeys.Add(key))
                     return;
 
-                long executionTime = _context.GetTime() + tickRate;
+                var executionTime = _context.GetTime() + tickRate;
                 BlockUpdate blockUpdate = new(x, y, z, blockId, executionTime);
                 _scheduledUpdates.Enqueue(blockUpdate, (blockUpdate.ScheduledTime, blockUpdate.ScheduledOrder));
             }
@@ -96,23 +95,23 @@ public class WorldTickScheduler
     {
         if (_context.IsRemote) return;
 
-        long currentTime = _context.GetTime();
+        var currentTime = _context.GetTime();
 
         List<BlockUpdate> readyToExecute = new();
         List<BlockUpdate> deferredTicks = new();
 
         lock (_queueLock)
         {
-            int proportionalLimit = Math.Clamp(_scheduledUpdates.Count / 10, 1000, 8192);
-            int maxTicksPerFrame = forceFlush ? _scheduledUpdates.Count : proportionalLimit;
-            int h = ChuckFormat.WorldHeight - 1;
+            var proportionalLimit = Math.Clamp(_scheduledUpdates.Count / 10, 1000, 8192);
+            var maxTicksPerFrame = forceFlush ? _scheduledUpdates.Count : proportionalLimit;
+            var h = ChuckFormat.WorldHeight - 1;
 
-            for (int i = 0; i < maxTicksPerFrame; ++i)
+            for (var i = 0; i < maxTicksPerFrame; ++i)
             {
                 if (_scheduledUpdates.Count == 0) break;
                 if (!forceFlush && _scheduledUpdates.Peek().ScheduledTime > currentTime) break;
 
-                BlockUpdate blockUpdate = _scheduledUpdates.Dequeue();
+                var blockUpdate = _scheduledUpdates.Dequeue();
                 var key = new ScheduledBlockTick(blockUpdate.X, blockUpdate.Y, blockUpdate.Z, blockUpdate.BlockId);
                 _pendingScheduledKeys.Remove(key);
 
@@ -122,16 +121,16 @@ public class WorldTickScheduler
                     continue;
                 }
 
-                int currentBlockId = _context.Reader.GetBlockId(blockUpdate.X, blockUpdate.Y, blockUpdate.Z);
+                var currentBlockId = _context.Reader.GetBlockId(blockUpdate.X, blockUpdate.Y, blockUpdate.Z);
                 if (currentBlockId != blockUpdate.BlockId || currentBlockId <= 0)
                     continue;
 
                 const byte loadRadius = 8;
-                int minY = Math.Max(0, blockUpdate.Y - loadRadius);
-                int maxY = Math.Min(h, blockUpdate.Y + loadRadius);
+                var minY = Math.Max(0, blockUpdate.Y - loadRadius);
+                var maxY = Math.Min(h, blockUpdate.Y + loadRadius);
 
-                bool posLoaded = _context.Reader.IsPosLoaded(blockUpdate.X - loadRadius, minY, blockUpdate.Z - loadRadius) &&
-                                 _context.Reader.IsPosLoaded(blockUpdate.X + loadRadius, maxY, blockUpdate.Z + loadRadius);
+                var posLoaded = _context.Reader.IsPosLoaded(blockUpdate.X - loadRadius, minY, blockUpdate.Z - loadRadius) &&
+                                _context.Reader.IsPosLoaded(blockUpdate.X + loadRadius, maxY, blockUpdate.Z + loadRadius);
 
                 if (!posLoaded)
                 {
@@ -152,14 +151,14 @@ public class WorldTickScheduler
 
         foreach (var blockUpdate in readyToExecute)
         {
-            int meta = _context.Reader.GetBlockMeta(blockUpdate.X, blockUpdate.Y, blockUpdate.Z);
+            var meta = _context.Reader.GetBlockMeta(blockUpdate.X, blockUpdate.Y, blockUpdate.Z);
             _context.Content.Blocks.GetByProtocolId(blockUpdate.BlockId).OnTick(new OnTickEvent(_context, blockUpdate.X, blockUpdate.Y, blockUpdate.Z, meta, blockUpdate.BlockId));
         }
     }
 
     public void TriggerInstantTick(int x, int y, int z, int blockId)
     {
-        int meta = _context.Reader.GetBlockMeta(x, y, z);
+        var meta = _context.Reader.GetBlockMeta(x, y, z);
         _context.Content.Blocks.GetByProtocolId(blockId).OnTick(new OnTickEvent(_context, x, y, z, meta, blockId));
     }
 
@@ -169,16 +168,16 @@ public class WorldTickScheduler
     /// </summary>
     public IEnumerable<(int X, int Y, int Z, int BlockId, long ScheduledTime, long ScheduledOrder)> GetPendingTicksInChunk(int chunkX, int chunkZ)
     {
-        int minX = chunkX * 16;
-        int maxX = minX + 15;
-        int minZ = chunkZ * 16;
-        int maxZ = minZ + 15;
+        var minX = chunkX * 16;
+        var maxX = minX + 15;
+        var minZ = chunkZ * 16;
+        var maxZ = minZ + 15;
 
         List<(int X, int Y, int Z, int BlockId, long ScheduledTime, long ScheduledOrder)> pending = [];
 
         lock (_queueLock)
         {
-            foreach ((BlockUpdate blockUpdate, (long, long) _) in _scheduledUpdates.UnorderedItems)
+            foreach (var (blockUpdate, _) in _scheduledUpdates.UnorderedItems)
             {
                 if (blockUpdate.X >= minX && blockUpdate.X <= maxX && blockUpdate.Z >= minZ && blockUpdate.Z <= maxZ)
                 {
@@ -189,4 +188,6 @@ public class WorldTickScheduler
 
         return pending;
     }
+
+    private readonly record struct ScheduledBlockTick(int X, int Y, int Z, int BlockId);
 }

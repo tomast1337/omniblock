@@ -57,9 +57,9 @@ public readonly record struct EntityBehaviorBuildContext(
 
     public object Build(JsonElement definition)
     {
-        string name = definition.GetProperty("Type").GetString()
-                      ?? throw new ArgumentException("Entity behavior entry has a null 'Type'.");
-        ResourceLocation type = name.Contains(':')
+        var name = definition.GetProperty("Type").GetString()
+                   ?? throw new ArgumentException("Entity behavior entry has a null 'Type'.");
+        var type = name.Contains(':')
             ? ResourceLocation.Parse(name)
             : new ResourceLocation(Namespace.OmniBlock, name);
         return Providers.Build(type, definition, this);

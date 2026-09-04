@@ -2,31 +2,31 @@ using OmniBlock.Blocks;
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Entities.Models;
+using Silk.NET.Maths;
 using Color = OmniBlock.Client.UI.Colors.Color;
 
 namespace OmniBlock.Client.Rendering.Blocks.Entities;
 
 public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
 {
-
     private readonly ModelSign _modelSign = new();
 
     public void renderTileEntitySignAt(BlockEntitySign sign, double x, double y, double z, float tickDelta)
     {
-        Block signBlock = sign.GetBlock();
+        var signBlock = sign.GetBlock();
         GLManager.ModelView.Push();
-        float modelScale = 2.0F / 3.0F;
+        var modelScale = 2.0F / 3.0F;
         float rotationYaw;
         if (signBlock == BlockRegistry.Get("sign"))
         {
             GLManager.ModelView.Translate((float)x + 0.5F, (float)y + 12.0F / 16.0F * modelScale, (float)z + 0.5F);
-            float rotationDegrees = sign.PushedBlockData * 360 / 16.0F;
+            var rotationDegrees = sign.PushedBlockData * 360 / 16.0F;
             GLManager.ModelView.Rotate(-rotationDegrees, 0.0F, 1.0F, 0.0F);
             _modelSign.SignStick.Visible = true;
         }
         else
         {
-            int wallFacing = sign.PushedBlockData;
+            var wallFacing = sign.PushedBlockData;
             rotationYaw = 0.0F;
             if (wallFacing == 2)
             {
@@ -56,20 +56,23 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
         _modelSign.Render();
 
         GLManager.ModelView.Pop();
-        TextRenderer fontRenderer = getFontRenderer();
+        var fontRenderer = getFontRenderer();
         rotationYaw = (float)(1.0D / 60.0D) * modelScale;
         GLManager.ModelView.Translate(0.0F, 0.5F * modelScale, 0.07F * modelScale);
         GLManager.ModelView.Scale(rotationYaw, -rotationYaw, rotationYaw);
-        GLManager.Normal = new(0.0F, 0.0F, -1.0F * rotationYaw);
+        GLManager.Normal = new Vector3D<float>(0.0F, 0.0F, -1.0F * rotationYaw);
 
         // The text sits a hair in front of the board and still writes to the same depth values
         // once rounded, so it is depth tested — a block in front of the sign still hides it — but
         // not depth written.
-        GLManager.State.Apply(RenderState.Entity with { DepthWrite = false });
-
-        for (int lineIndex = 0; lineIndex < sign.Texts.Length; ++lineIndex)
+        GLManager.State.Apply(RenderState.Entity with
         {
-            string lineText = sign.Texts[lineIndex];
+            DepthWrite = false
+        });
+
+        for (var lineIndex = 0; lineIndex < sign.Texts.Length; ++lineIndex)
+        {
+            var lineText = sign.Texts[lineIndex];
             if (lineIndex == sign.CurrentRow)
             {
                 lineText = "> " + lineText + " <";
@@ -82,12 +85,9 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
         }
 
         GLManager.State.Apply(RenderState.Entity);
-        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
         GLManager.ModelView.Pop();
     }
 
-    public override void renderTileEntityAt(BlockEntity blockEntity, double x, double y, double z, float tickDelta)
-    {
-        renderTileEntitySignAt((BlockEntitySign)blockEntity, x, y, z, tickDelta);
-    }
+    public override void renderTileEntityAt(BlockEntity blockEntity, double x, double y, double z, float tickDelta) => renderTileEntitySignAt((BlockEntitySign)blockEntity, x, y, z, tickDelta);
 }

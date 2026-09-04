@@ -20,20 +20,11 @@ internal sealed class CactusBehavior(Block stem, Block soil, int maxHeight, int 
 {
     private const float EdgeInset = 1.0F / 16.0F;
 
-    public void OnEntityCollision(Block block, OnEntityCollisionEvent @event)
-    {
-        @event.Entity.Damage(null, 1);
-    }
+    public void OnEntityCollision(Block block, OnEntityCollisionEvent @event) => @event.Entity.Damage(null, 1);
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-    {
-        return CanGrowAt(@event.World.Reader, @event.X, @event.Y, @event.Z);
-    }
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => CanGrowAt(@event.World.Reader, @event.X, @event.Y, @event.Z);
 
-    public bool CanGrow(Block block, OnTickEvent @event)
-    {
-        return CanGrowAt(@event.World.Reader, @event.X, @event.Y, @event.Z);
-    }
+    public bool CanGrow(Block block, OnTickEvent @event) => CanGrowAt(@event.World.Reader, @event.X, @event.Y, @event.Z);
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
@@ -43,10 +34,7 @@ internal sealed class CactusBehavior(Block stem, Block soil, int maxHeight, int 
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
     }
 
-    public Box? GetCollisionShape(Block block, IBlockReader reader, EntityManager entities, int x, int y, int z, Box? defaultShape)
-    {
-        return new Box(x + EdgeInset, y, z + EdgeInset, x + 1 - EdgeInset, y + 1 - EdgeInset, z + 1 - EdgeInset);
-    }
+    public Box? GetCollisionShape(Block block, IBlockReader reader, EntityManager entities, int x, int y, int z, Box? defaultShape) => new Box(x + EdgeInset, y, z + EdgeInset, x + 1 - EdgeInset, y + 1 - EdgeInset, z + 1 - EdgeInset);
 
     public void OnTick(Block block, OnTickEvent @event)
     {

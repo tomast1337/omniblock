@@ -4,8 +4,8 @@ namespace OmniBlock.Client.Input;
 
 public class ControllerListener
 {
-    private Action<GamepadButton>? _callback;
     private readonly bool[] _snapshot = new bool[15];
+    private Action<GamepadButton>? _callback;
 
     public bool IsListening { get; private set; }
 
@@ -15,7 +15,7 @@ public class ControllerListener
         IsListening = true;
 
         // Take initial snapshot to ignore buttons already held down
-        for (int i = 0; i < _snapshot.Length; i++)
+        for (var i = 0; i < _snapshot.Length; i++)
         {
             _snapshot[i] = Controller.IsButtonDown((GamepadButton)i);
         }
@@ -31,14 +31,14 @@ public class ControllerListener
     {
         if (!IsListening) return;
 
-        for (int i = 0; i < _snapshot.Length; i++)
+        for (var i = 0; i < _snapshot.Length; i++)
         {
-            bool isDown = Controller.IsButtonDown((GamepadButton)i);
+            var isDown = Controller.IsButtonDown((GamepadButton)i);
 
             // Check for new press
             if (isDown && !_snapshot[i])
             {
-                GamepadButton pressed = (GamepadButton)i;
+                var pressed = (GamepadButton)i;
 
                 // Allow callback to handle or ignore specific buttons
                 IsListening = false;

@@ -3,16 +3,14 @@ using OmniBlock.Blocks.Entities;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Entities;
 using OmniBlock.Items;
-using OmniBlock.Recipes;
 using OmniBlock.Processes;
 using OmniBlock.Rules;
 using OmniBlock.Worlds.Generation.Biomes;
 
-
 namespace OmniBlock.Registries;
 
 /// <summary>
-/// Well-known <see cref="RegistryKey{T}"/> constants for all built-in registry types.
+///     Well-known <see cref="RegistryKey{T}" /> constants for all built-in registry types.
 /// </summary>
 public static class RegistryKeys
 {

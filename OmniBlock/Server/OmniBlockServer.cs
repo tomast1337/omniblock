@@ -1,22 +1,20 @@
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using OmniBlock.Diagnostics;
 using OmniBlock.Network.Messages;
 using OmniBlock.Network.Packets;
 using OmniBlock.Profiling;
 using OmniBlock.Registries;
-using OmniBlock.Registries.Data;
 using OmniBlock.Server.Command;
 using OmniBlock.Server.Entities;
 using OmniBlock.Server.Internal;
 using OmniBlock.Server.Network;
 using OmniBlock.Server.Worlds;
 using OmniBlock.Util;
-using OmniBlock.Util.Maths;
 using OmniBlock.Worlds;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Storage;
-using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
 using ServerWorld = OmniBlock.Worlds.Core.ServerWorld;
 
@@ -24,6 +22,61 @@ namespace OmniBlock.Server;
 
 public abstract class OmniBlockServer : ICommandOutput
 {
+    private readonly ILogger<OmniBlockServer> _logger = Log.Instance.For<OmniBlockServer>();
+    private readonly Queue<PendingCommand> _pendingCommands = new();
+    private readonly object _pendingCommandsLock = new();
+
+    private readonly List<IRegistryReloadListener> _reloadListeners = [];
+    private readonly object _tpsLock = new();
+    private long _accumulatedTime;
+
+    /// <summary>
+    ///     The value last broadcast, so a fixed tick with no simulation between it and the
+    ///     previous one does not re-announce a stamp the client already has.
+    /// </summary>
+    private long _broadcastSimulationTimeMs;
+
+    private ServerCommandHandler _commandHandler;
+    private float _currentTps;
+
+    private volatile bool _isPaused;
+    private long _lastTpsTime;
+    private ContentRuntime? _pendingContent;
+
+    /// <summary>
+    ///     <see cref="MonotonicClock" /> reading at the start of the most recent simulation tick.
+    ///     This is the instant that every entity position set during that tick describes, and it is
+    ///     what <see cref="TickStampMessage" /> carries — see that message for why it is not the
+    ///     send time.
+    /// </summary>
+    private long _simulationTimeMs;
+
+    private long _tickLength = 50L;
+    private int _ticks;
+    private int _ticksThisSecond;
+    public IServerConfiguration config;
+    public ConnectionListener connections;
+    public EntityTracker[] entityTrackers = new EntityTracker[2];
+    public bool flightEnabled;
+
+    public Dictionary<string, int> GIVE_COMMANDS_COOLDOWNS = [];
+    protected bool logHelp = true;
+    public bool onlineMode;
+    public PlayerManager playerManager;
+    public int progress;
+    public string? progressMessage;
+    public bool pvpEnabled;
+    public bool running = true;
+    public bool spawnAnimals;
+    public bool stopped;
+    public ServerWorld[] worlds;
+
+    protected OmniBlockServer(IServerConfiguration config)
+    {
+        this.config = config;
+        Content = ContentRuntime.Current;
+    }
+
     public ContentRuntime Content { get; private set; }
     public RegistryAccess RegistryAccess { get; set; } = RegistryAccess.Empty;
 
@@ -41,31 +94,6 @@ public abstract class OmniBlockServer : ICommandOutput
 
     public Holder<GameMode> DefaultGameMode { get; set; } = new(new GameMode());
 
-    private readonly List<IRegistryReloadListener> _reloadListeners = [];
-
-    public Dictionary<string, int> GIVE_COMMANDS_COOLDOWNS = [];
-    public ConnectionListener connections;
-    public IServerConfiguration config;
-    public ServerWorld[] worlds;
-    public PlayerManager playerManager;
-    private ServerCommandHandler _commandHandler;
-    public bool running = true;
-    public bool stopped;
-    private int _ticks;
-    public string? progressMessage;
-    public int progress;
-    private readonly Queue<PendingCommand> _pendingCommands = new();
-    private readonly object _pendingCommandsLock = new();
-    public EntityTracker[] entityTrackers = new EntityTracker[2];
-
-    /// <summary>
-    ///     <see cref="MonotonicClock" /> reading at the start of the most recent simulation tick.
-    ///     This is the instant that every entity position set during that tick describes, and it is
-    ///     what <see cref="TickStampMessage" /> carries — see that message for why it is not the
-    ///     send time.
-    /// </summary>
-    private long _simulationTimeMs;
-
     /// <summary>
     ///     The same instant, for anything that has to place a client's statement about the past on
     ///     the server's own timeline — <see cref="EntityPositionHistory" /> and the rewind that reads
@@ -73,27 +101,6 @@ public abstract class OmniBlockServer : ICommandOutput
     ///     handling a packet is a different instant from the one the positions describe.
     /// </summary>
     public long SimulationTimeMs => _simulationTimeMs;
-
-    /// <summary>The value last broadcast, so a fixed tick with no simulation between it and the
-    ///     previous one does not re-announce a stamp the client already has.</summary>
-    private long _broadcastSimulationTimeMs;
-    public bool onlineMode;
-    public bool spawnAnimals;
-    public bool pvpEnabled;
-    public bool flightEnabled;
-    protected bool logHelp = true;
-
-    private readonly ILogger<OmniBlockServer> _logger = Log.Instance.For<OmniBlockServer>();
-    private readonly object _tpsLock = new();
-    private long _lastTpsTime;
-    private int _ticksThisSecond;
-    private float _currentTps;
-
-    private volatile bool _isPaused;
-    private ContentRuntime? _pendingContent;
-
-    private long _tickLength = 50L;
-    private long _accumulatedTime;
 
     public float Tps
     {
@@ -108,7 +115,7 @@ public abstract class OmniBlockServer : ICommandOutput
 
     public int TickRate
     {
-        get => (1000 / (int)_tickLength);
+        get => 1000 / (int)_tickLength;
         set
         {
             _tickLength = 1000 / value;
@@ -116,13 +123,16 @@ public abstract class OmniBlockServer : ICommandOutput
         }
     }
 
-    public bool Paused { get => _isPaused; set => _isPaused = value; }
-
-    protected OmniBlockServer(IServerConfiguration config)
+    public bool Paused
     {
-        this.config = config;
-        Content = ContentRuntime.Current;
+        get => _isPaused;
+        set => _isPaused = value;
     }
+
+    public void SendMessage(string message) => _logger.LogInformation(message);
+
+    public string Name => "CONSOLE";
+    public byte PermissionLevel => 255;
 
     protected virtual bool Init()
     {
@@ -149,17 +159,17 @@ public abstract class OmniBlockServer : ICommandOutput
 
         var startupSw = Stopwatch.StartNew();
 
-        string worldName = config.GetLevelName("world");
-        string seedString = config.GetLevelSeed("");
-        long seed = Random.Shared.NextInt64();
+        var worldName = config.GetLevelName("world");
+        var seedString = config.GetLevelSeed("");
+        var seed = Random.Shared.NextInt64();
 
         if (!string.IsNullOrEmpty(seedString))
         {
             if (!long.TryParse(seedString, out seed))
             {
                 // Java-compatible String.hashCode() behavior
-                int hash = 0;
-                foreach (char c in seedString)
+                var hash = 0;
+                foreach (var c in seedString)
                 {
                     hash = 31 * hash + c;
                 }
@@ -168,17 +178,18 @@ public abstract class OmniBlockServer : ICommandOutput
             }
         }
 
-        string typeString = config.GetLevelType("DEFAULT");
-        WorldType worldType = WorldType.ParseWorldType(typeString) ?? WorldType.Default;
-        string optionsString = config.GetLevelOptions("");
+        var typeString = config.GetLevelType("DEFAULT");
+        var worldType = WorldType.ParseWorldType(typeString) ?? WorldType.Default;
+        var optionsString = config.GetLevelOptions("");
 
         _logger.LogInformation("Preparing level \"{WorldName}\"", worldName);
         loadWorld(worldName, new WorldSettings(seed, worldType, optionsString));
 
-        foreach (IRegistryReloadListener listener in _reloadListeners)
+        foreach (var listener in _reloadListeners)
         {
             listener.OnRegistriesRebuilt(RegistryAccess);
         }
+
         CommitPendingContent();
 
         if (logHelp)
@@ -198,7 +209,7 @@ public abstract class OmniBlockServer : ICommandOutput
         RegionWorldStorage worldStorage = new(dir, true);
         RegistryAccess = RegistryAccess.WithWorldDatapacks(dir.FullName);
 
-        for (int i = 0; i < worlds.Length; i++)
+        for (var i = 0; i < worlds.Length; i++)
         {
             if (i == 0)
             {
@@ -215,10 +226,10 @@ public abstract class OmniBlockServer : ICommandOutput
             playerManager.saveAllPlayers(worlds);
         }
 
-        int startRegionSize = config.GetSpawnRegionSize(196);
-        long lastTimeLogged = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var startRegionSize = config.GetSpawnRegionSize(196);
+        var lastTimeLogged = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-        for (int i = 0; i < worlds.Length; i++)
+        for (var i = 0; i < worlds.Length; i++)
         {
             _logger.LogInformation("Preparing start region for level {Level}", i);
 
@@ -227,25 +238,25 @@ public abstract class OmniBlockServer : ICommandOutput
             // there is fine and avoids the 40+ second lava-sea light propagation cost.
             if (i == 0)
             {
-                ServerWorld world = worlds[i];
-                Vec3I spawnPos = world.Properties.GetSpawnPos();
+                var world = worlds[i];
+                var spawnPos = world.Properties.GetSpawnPos();
 
                 var chunkList = new List<Vector2D<int>>();
-                for (int x = -startRegionSize; x <= startRegionSize; x += 16)
+                for (var x = -startRegionSize; x <= startRegionSize; x += 16)
                 {
-                    for (int z = -startRegionSize; z <= startRegionSize; z += 16)
+                    for (var z = -startRegionSize; z <= startRegionSize; z += 16)
                     {
                         chunkList.Add(new Vector2D<int>((spawnPos.X + x) >> 4, (spawnPos.Z + z) >> 4));
                     }
                 }
 
-                int totalChunks = chunkList.Count;
+                var totalChunks = chunkList.Count;
                 var preGenerated = new Chunk[totalChunks];
 
                 // Terrain, in parallel. Generation reads no neighbours, so it is the only stage
                 // that can be.
                 var sw1 = Stopwatch.StartNew();
-                var threadLocalGen = new ThreadLocal<IChunkSource>(world.ChunkCache.CreateParallelGenerator, trackAllValues: false);
+                var threadLocalGen = new ThreadLocal<IChunkSource>(world.ChunkCache.CreateParallelGenerator, false);
                 Parallel.For(0, totalChunks, idx =>
                 {
                     if (!running)
@@ -253,7 +264,7 @@ public abstract class OmniBlockServer : ICommandOutput
                         return;
                     }
 
-                    Vector2D<int> chunkPos = chunkList[idx];
+                    var chunkPos = chunkList[idx];
                     preGenerated[idx] = threadLocalGen.Value!.GetChunk(chunkPos.X, chunkPos.Y);
                 });
 
@@ -264,16 +275,16 @@ public abstract class OmniBlockServer : ICommandOutput
                 // Insert before decorating, all of them: decoration writes into neighbours, and a
                 // neighbour not yet inserted reads back as EmptyChunk.
                 var sw2 = Stopwatch.StartNew();
-                for (int idx = 0; idx < totalChunks && running; idx++)
+                for (var idx = 0; idx < totalChunks && running; idx++)
                 {
-                    long currentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    var currentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                     if (currentTime > lastTimeLogged + 1000L)
                     {
                         logProgress(Translations.Get("loading.preparingSpawnArea"), (idx + 1) * 100 / totalChunks);
                         lastTimeLogged = currentTime;
                     }
 
-                    Vector2D<int> chunkPos = chunkList[idx];
+                    var chunkPos = chunkList[idx];
                     world.ChunkCache.InsertPreGeneratedChunk(chunkPos.X, chunkPos.Y, preGenerated[idx]);
                     world.ChunkCache.DecorateIfReady(chunkPos.X, chunkPos.Y);
                 }
@@ -284,7 +295,10 @@ public abstract class OmniBlockServer : ICommandOutput
                 // Lighting last, in one drain. Every neighbour is loaded by now, so sky light
                 // propagates across borders once instead of being re-queued at each edge.
                 var sw3 = Stopwatch.StartNew();
-                while (world.Lighting.DoLightingUpdates() && running) { }
+                while (world.Lighting.DoLightingUpdates() && running)
+                {
+                }
+
                 sw3.Stop();
                 _logger.LogInformation("  Level {Level} lighting: {ElapsedMs}ms", i, sw3.ElapsedMilliseconds);
             }
@@ -310,7 +324,7 @@ public abstract class OmniBlockServer : ICommandOutput
     {
         _logger.LogInformation("Saving chunks");
 
-        foreach (ServerWorld world in worlds)
+        foreach (var world in worlds)
         {
             world.SaveWithLoadingDisplay(true, null);
             world.forceSave();
@@ -333,7 +347,7 @@ public abstract class OmniBlockServer : ICommandOutput
 
         playerManager?.savePlayers();
 
-        foreach (ServerWorld world in worlds)
+        foreach (var world in worlds)
         {
             if (world != null)
             {
@@ -348,10 +362,7 @@ public abstract class OmniBlockServer : ICommandOutput
         }
     }
 
-    public void Stop()
-    {
-        running = false;
-    }
+    public void Stop() => running = false;
 
     public void RunThreaded(string threadName)
     {
@@ -369,8 +380,8 @@ public abstract class OmniBlockServer : ICommandOutput
         {
             if (Init())
             {
-                long lastTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                long accumulatedFixedTime = 0L;
+                var lastTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                var accumulatedFixedTime = 0L;
                 _lastTpsTime = lastTime;
                 _ticksThisSecond = 0;
                 var tickStopwatch = new Stopwatch();
@@ -378,8 +389,8 @@ public abstract class OmniBlockServer : ICommandOutput
 
                 while (running)
                 {
-                    long currentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                    long tickLength = currentTime - lastTime;
+                    var currentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    var tickLength = currentTime - lastTime;
                     if (tickLength > 2000L)
                     {
                         _logger.LogWarning("Can't keep up! Did the system time change, or is the server overloaded?");
@@ -412,6 +423,7 @@ public abstract class OmniBlockServer : ICommandOutput
                         {
                             _currentTps = 0.0f;
                         }
+
                         MetricRegistry.Set(ServerMetrics.Tps, 0.0f);
                         Thread.Sleep(50);
                         continue;
@@ -427,18 +439,19 @@ public abstract class OmniBlockServer : ICommandOutput
                         _ticksThisSecond++;
                     }
 
-                    long tpsNow = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                    long tpsElapsed = tpsNow - _lastTpsTime;
+                    var tpsNow = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    var tpsElapsed = tpsNow - _lastTpsTime;
                     if (tpsElapsed >= 1000L)
                     {
                         lock (_tpsLock)
                         {
                             _currentTps = _ticksThisSecond * 1000.0f / tpsElapsed;
                         }
+
                         _ticksThisSecond = 0;
                         _lastTpsTime = tpsNow;
-                        int playerCount = playerManager.players.Count;
-                        int entityCount = worlds[0].Entities.Entities.Count;
+                        var playerCount = playerManager.players.Count;
+                        var entityCount = worlds[0].Entities.Entities.Count;
 
                         MetricRegistry.Set(ServerMetrics.Tps, _currentTps);
                         MetricRegistry.Set(ServerMetrics.PlayerCount, playerCount);
@@ -522,7 +535,7 @@ public abstract class OmniBlockServer : ICommandOutput
         var keysSnapshot = new List<string>(GIVE_COMMANDS_COOLDOWNS.Keys);
         foreach (var key in keysSnapshot)
         {
-            if (GIVE_COMMANDS_COOLDOWNS.TryGetValue(key, out int cooldown))
+            if (GIVE_COMMANDS_COOLDOWNS.TryGetValue(key, out var cooldown))
             {
                 if (cooldown > 0)
                     GIVE_COMMANDS_COOLDOWNS[key] = cooldown - 1;
@@ -551,8 +564,11 @@ public abstract class OmniBlockServer : ICommandOutput
         {
             _broadcastSimulationTimeMs = _simulationTimeMs;
 
-            OmniMessagePacket? stamp = OmniMessagePacket.For(
-                Messages, new TickStampMessage { ServerTimeMs = _simulationTimeMs });
+            var stamp = OmniMessagePacket.For(
+                Messages, new TickStampMessage
+                {
+                    ServerTimeMs = _simulationTimeMs
+                });
 
             if (stamp is not null)
             {
@@ -560,7 +576,7 @@ public abstract class OmniBlockServer : ICommandOutput
             }
         }
 
-        foreach (EntityTracker t in entityTrackers)
+        foreach (var t in entityTrackers)
         {
             t.tick();
         }
@@ -575,14 +591,17 @@ public abstract class OmniBlockServer : ICommandOutput
         // instant, whenever the tracker gets around to broadcasting it.
         _simulationTimeMs = MonotonicClock.NowMs();
 
-        for (int i = 0; i < worlds.Length; i++)
+        for (var i = 0; i < worlds.Length; i++)
         {
             if (i == 0 || config.GetAllowNether(true))
             {
-                ServerWorld world = worlds[i];
+                var world = worlds[i];
                 if (_ticks % 20 == 0)
                 {
-                    playerManager.sendToDimension(new WorldTimeUpdateMessage { Time = world.GetTime() }, world.Dimension.Id);
+                    playerManager.sendToDimension(new WorldTimeUpdateMessage
+                    {
+                        Time = world.GetTime()
+                    }, world.Dimension.Id);
                 }
 
                 world.Tick();
@@ -610,11 +629,11 @@ public abstract class OmniBlockServer : ICommandOutput
 
     private void CommitPendingContent()
     {
-        ContentRuntime? candidate = Interlocked.Exchange(ref _pendingContent, null);
+        var candidate = Interlocked.Exchange(ref _pendingContent, null);
         if (candidate is null) return;
         Content = candidate;
         if (worlds is null) return;
-        foreach (ServerWorld world in worlds)
+        foreach (var world in worlds)
             world?.ReplaceContent(candidate);
     }
 
@@ -636,49 +655,30 @@ public abstract class OmniBlockServer : ICommandOutput
                 if (_pendingCommands.Count == 0) break;
                 cmd = _pendingCommands.Dequeue();
             }
+
             _commandHandler.ExecuteCommand(cmd);
         }
     }
 
     public abstract FileInfo GetFile(string path);
 
-    public void SendMessage(string message)
-    {
-        _logger.LogInformation(message);
-    }
+    public void Warn(string message) => _logger.LogWarning(message);
 
-    public void Warn(string message)
-    {
-        _logger.LogWarning(message);
-    }
+    public ServerWorld getWorld(int dimensionId) => dimensionId == -1 ? worlds[1] : worlds[0];
 
-    public string Name => "CONSOLE";
-    public byte PermissionLevel => 255;
+    public EntityTracker getEntityTracker(int dimensionId) => dimensionId == -1 ? entityTrackers[1] : entityTrackers[0];
 
-    public ServerWorld getWorld(int dimensionId)
-    {
-        return dimensionId == -1 ? worlds[1] : worlds[0];
-    }
-
-    public EntityTracker getEntityTracker(int dimensionId)
-    {
-        return dimensionId == -1 ? entityTrackers[1] : entityTrackers[0];
-    }
-
-    protected virtual PlayerManager CreatePlayerManager()
-    {
-        return new PlayerManager(this);
-    }
+    protected virtual PlayerManager CreatePlayerManager() => new(this);
 
     /// <summary>
-    /// Registers a listener that will be notified whenever datapacks are reloaded.
-    /// Use this to refresh any data cached from registry lookups.
+    ///     Registers a listener that will be notified whenever datapacks are reloaded.
+    ///     Use this to refresh any data cached from registry lookups.
     /// </summary>
     public void RegisterReloadListener(IRegistryReloadListener listener)
         => _reloadListeners.Add(listener);
 
     /// <summary>
-    /// Sends all reloadable registry data messages followed by <see cref="FinishConfigurationMessage"/>
+    ///     Sends all reloadable registry data messages followed by <see cref="FinishConfigurationMessage" />
     /// </summary>
     public void SendConfigurationTo(Action<Packet> send)
     {
@@ -687,7 +687,7 @@ public abstract class OmniBlockServer : ICommandOutput
         // it is an ExtendedProtocolPacket.
         send(MessageRegistrySyncS2CPacket.Get(Messages.NegotiatedOrder, Content.Manifest));
 
-        foreach (RegistryDataMessage message in RegistryAccess.BuildSyncMessages())
+        foreach (var message in RegistryAccess.BuildSyncMessages())
         {
             send(OmniMessagePacket.For(Messages, message)!);
         }
@@ -696,24 +696,30 @@ public abstract class OmniBlockServer : ICommandOutput
     }
 
     /// <summary>
-    /// Reloads all data-driven content from disk. Re-reads base assets, global datapacks, and
-    /// world datapacks, then broadcasts a status message to all connected players.
+    ///     Reloads all data-driven content from disk. Re-reads base assets, global datapacks, and
+    ///     world datapacks, then broadcasts a status message to all connected players.
     /// </summary>
     public void ReloadDatapacks()
     {
         _logger.LogInformation("Reloading datapacks...");
-        playerManager.sendToAll(new ChatMessage { Text = "§eReloading datapacks..." });
+        playerManager.sendToAll(new ChatMessage
+        {
+            Text = "§eReloading datapacks..."
+        });
         try
         {
-            RegistryAccess candidateRegistries = RegistryAccess.Rebuild();
-            foreach (IRegistryReloadListener listener in _reloadListeners)
+            var candidateRegistries = RegistryAccess.Rebuild();
+            foreach (var listener in _reloadListeners)
                 listener.OnRegistriesRebuilt(candidateRegistries);
 
             RegistryReloadPipeline.SyncToPlayers(candidateRegistries, _reloadListeners, playerManager.players);
             RegistryAccess = candidateRegistries;
 
             _logger.LogInformation("Datapacks reloaded.");
-            playerManager.sendToAll(new ChatMessage { Text = "§aDatapacks reloaded." });
+            playerManager.sendToAll(new ChatMessage
+            {
+                Text = "§aDatapacks reloaded."
+            });
         }
         catch (Exception ex)
         {
@@ -722,7 +728,10 @@ public abstract class OmniBlockServer : ICommandOutput
 
             if (this is InternalServer)
             {
-                playerManager.sendToAll(new ChatMessage { Text = $"§cReload failed! See console for details." });
+                playerManager.sendToAll(new ChatMessage
+                {
+                    Text = "§cReload failed! See console for details."
+                });
             }
         }
     }

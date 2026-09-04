@@ -1,6 +1,4 @@
 using OmniBlock.Items;
-using OmniBlock.Items.Behaviors;
-using OmniBlock.Registries;
 
 namespace OmniBlock.Tests.Items;
 
@@ -9,7 +7,7 @@ public sealed class ItemRegistryTests
     [Fact]
     public void Apple_RegistersUnderExpectedResourceLocation()
     {
-        ItemDefinition definition = Assert.Single(TestItemCatalog.LoadDefinitions(),
+        var definition = Assert.Single(TestItemCatalog.LoadDefinitions(),
             static definition => definition.Name == "apple");
 
         Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:apple").Id, definition.ProtocolId);
@@ -21,9 +19,9 @@ public sealed class ItemRegistryTests
     {
         // Both records share the translation key "record"; the first declared keeps the plain
         // name and the second is disambiguated with its protocol ID suffix.
-        IReadOnlyList<ItemDefinition> definitions = TestItemCatalog.LoadDefinitions();
-        ItemDefinition thirteen = Assert.Single(definitions, static definition => definition.Name == "record");
-        ItemDefinition cat = Assert.Single(definitions, static definition => definition.Name == "record_2257");
+        var definitions = TestItemCatalog.LoadDefinitions();
+        var thirteen = Assert.Single(definitions, static definition => definition.Name == "record");
+        var cat = Assert.Single(definitions, static definition => definition.Name == "record_2257");
 
         Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:record").Id, thirteen.ProtocolId);
         Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:record_2257").Id, cat.ProtocolId);
@@ -40,7 +38,7 @@ public sealed class ItemRegistryTests
     [Fact]
     public void CraftingReturnItems_AreWiredAfterBoot()
     {
-        Item bucket = ContentRuntime.Current.Items.Get("omniblock:bucket");
+        var bucket = ContentRuntime.Current.Items.Get("omniblock:bucket");
 
         Assert.Same(bucket, ContentRuntime.Current.Items.Get("omniblock:bucket_water").GetContainerItem());
         Assert.Same(bucket, ContentRuntime.Current.Items.Get("omniblock:bucket_lava").GetContainerItem());
@@ -58,18 +56,18 @@ public sealed class ItemRegistryTests
             Name = "test_filled_container",
             ProtocolId = 31900,
             MaxStackSize = 1,
-            CraftingReturnItemProtocolId = 31901,
+            CraftingReturnItemProtocolId = 31901
         };
         var target = new ItemDefinition
         {
             Name = "test_empty_container",
-            ProtocolId = 31901,
+            ProtocolId = 31901
         };
 
-        ContentRuntimeBuilder builder = ContentRuntimeBuilder.CreateBuiltIns();
+        var builder = ContentRuntimeBuilder.CreateBuiltIns();
         builder.AddItemDefinition(referencing);
         builder.AddItemDefinition(target);
-        ContentRuntime runtime = builder.Build();
+        var runtime = builder.Build();
 
         Assert.Same(runtime.Items.GetByProtocolId(31901), runtime.Items.GetByProtocolId(31900).GetContainerItem());
     }

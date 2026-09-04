@@ -1,33 +1,33 @@
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Security.Cryptography;
 using OmniBlock.Registries.Data;
 
 namespace OmniBlock.Processes;
 
 /// <summary>
-/// Common process envelope. All fields other than identity and provider type remain opaque to the
-/// engine and are deserialized by the selected provider into its own schema.
+///     Common process envelope. All fields other than identity and provider type remain opaque to the
+///     engine and are deserialized by the selected provider into its own schema.
 /// </summary>
 public sealed class ProcessDefinition : DataAsset
 {
-    [JsonPropertyName("id")]
-    public string? DeclaredId { get; init; }
+    [JsonPropertyName("id")] public string? DeclaredId { get; init; }
 
-    [JsonPropertyName("type")]
-    public string Type { get; init; } = "";
+    [JsonPropertyName("type")] public string Type { get; init; } = "";
 
-    [JsonExtensionData]
-    public Dictionary<string, JsonElement> ProviderData { get; init; } = [];
+    [JsonExtensionData] public Dictionary<string, JsonElement> ProviderData { get; init; } = [];
 
     public ResourceLocation GetProcessId()
     {
         if (string.IsNullOrWhiteSpace(DeclaredId)) return new ResourceLocation(Namespace, Name);
 
-        ResourceLocation declared = ResourceLocation.Parse(DeclaredId);
+        var declared = ResourceLocation.Parse(DeclaredId);
         if (Name.Length != 0 && declared != new ResourceLocation(Namespace, Name))
+        {
             throw new InvalidOperationException(
                 $"Process asset '{new ResourceLocation(Namespace, Name)}' declares conflicting id '{declared}'.");
+        }
+
         return declared;
     }
 
@@ -55,16 +55,17 @@ public sealed class ProcessDefinition : DataAsset
         {
             case JsonValueKind.Object:
                 writer.WriteStartObject();
-                foreach (JsonProperty property in value.EnumerateObject().OrderBy(p => p.Name, StringComparer.Ordinal))
+                foreach (var property in value.EnumerateObject().OrderBy(p => p.Name, StringComparer.Ordinal))
                 {
                     writer.WritePropertyName(property.Name);
                     WriteCanonical(writer, property.Value);
                 }
+
                 writer.WriteEndObject();
                 break;
             case JsonValueKind.Array:
                 writer.WriteStartArray();
-                foreach (JsonElement element in value.EnumerateArray()) WriteCanonical(writer, element);
+                foreach (var element in value.EnumerateArray()) WriteCanonical(writer, element);
                 writer.WriteEndArray();
                 break;
             default:

@@ -23,18 +23,18 @@ public sealed class SplitOnDeathBehavior(int childCount = 4) : IEntityLifecycle
             return;
         }
 
-        int size = body.Size(self);
+        var size = body.Size(self);
         if (size <= 1)
         {
             return;
         }
 
-        for (int i = 0; i < childCount; ++i)
+        for (var i = 0; i < childCount; ++i)
         {
-            float offsetX = (i % 2 - 0.5F) * size / 4.0F;
-            float offsetZ = (i * 0.5F - 0.5F) * size / 4.0F;
+            var offsetX = (i % 2 - 0.5F) * size / 4.0F;
+            var offsetZ = (i * 0.5F - 0.5F) * size / 4.0F;
 
-            EntityLiving child = (EntityLiving)self.Type!.Create(self.World);
+            var child = (EntityLiving)self.Type!.Create(self.World);
             body.SetSize(child, size / 2);
             child.SetPositionAndAnglesKeepPrevAngles(self.X + offsetX, self.Y + 0.5D, self.Z + offsetZ, self.Random.NextFloat() * 360.0F, 0.0F);
             self.World.SpawnEntity(child);

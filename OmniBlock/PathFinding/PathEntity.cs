@@ -16,11 +16,11 @@ internal class PathEntity(PathPoint[] points)
 
     public Vec3D GetPosition(Entity entity)
     {
-        PathPoint currentPoint = points[_pathIndex];
+        var currentPoint = points[_pathIndex];
 
-        double x = currentPoint.X + (int)(entity.Width + 1.0f) * 0.5;
+        var x = currentPoint.X + (int)(entity.Width + 1.0f) * 0.5;
         double y = currentPoint.Y;
-        double z = currentPoint.Z + (int)(entity.Width + 1.0f) * 0.5;
+        var z = currentPoint.Z + (int)(entity.Width + 1.0f) * 0.5;
 
         return new Vec3D(x, y, z);
     }

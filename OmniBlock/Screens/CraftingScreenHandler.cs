@@ -9,13 +9,13 @@ namespace OmniBlock.Screens;
 
 public class CraftingScreenHandler : ScreenHandler
 {
+    private readonly IWorldContext world;
+    private readonly int x;
+    private readonly int y;
+    private readonly int z;
 
     public InventoryCrafting input;
     public IInventory result = new InventoryCraftResult();
-    private IWorldContext world;
-    private int x;
-    private int y;
-    private int z;
 
     public CraftingScreenHandler(InventoryPlayer playerInventory, IWorldContext world, int x, int y, int z)
     {
@@ -52,40 +52,33 @@ public class CraftingScreenHandler : ScreenHandler
         onSlotUpdate(input);
     }
 
-    public override void onSlotUpdate(IInventory inv)
-    {
-        result.SetStack(0, world.Content.Processes.Crafting.Craft(input));
-    }
+    public override void onSlotUpdate(IInventory inv) => result.SetStack(0, world.Content.Processes.Crafting.Craft(input));
 
     public override void onClosed(EntityPlayer player)
     {
         base.onClosed(player);
         if (!world.IsRemote)
         {
-            for (int i = 0; i < 9; ++i)
+            for (var i = 0; i < 9; ++i)
             {
-                ItemStack itemStack = input.GetStack(i);
+                var itemStack = input.GetStack(i);
                 if (itemStack != null)
                 {
                     player.Inventory.AddItemStackToInventoryOrDrop(itemStack);
                 }
             }
-
         }
     }
 
-    public override bool canUse(EntityPlayer player)
-    {
-        return world.Reader.GetBlockId(x, y, z) != BlockRegistry.Get("crafting_table").Id ? false : player.GetSquaredDistance(x + 0.5D, y + 0.5D, z + 0.5D) <= 64.0D;
-    }
+    public override bool canUse(EntityPlayer player) => world.Reader.GetBlockId(x, y, z) != BlockRegistry.Get("crafting_table").Id ? false : player.GetSquaredDistance(x + 0.5D, y + 0.5D, z + 0.5D) <= 64.0D;
 
     public override ItemStack quickMove(int slotNumber)
     {
         ItemStack movedStack = null;
-        Slot slot = Slots[slotNumber];
+        var slot = Slots[slotNumber];
         if (slot != null && slot.hasStack())
         {
-            ItemStack slotStack = slot.getStack();
+            var slotStack = slot.getStack();
             movedStack = slotStack.Copy();
             if (slotNumber == 0)
             {

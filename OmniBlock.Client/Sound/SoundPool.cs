@@ -4,17 +4,17 @@ namespace OmniBlock.Client.Sound;
 
 public class SoundPool
 {
-    public bool IsRandom { get; set; } = true;
-    private readonly JavaRandom _rand = new();
-    public int LoadedSoundCount => _allLoadedSounds.Count;
-    private readonly Dictionary<string, List<SoundPoolEntry>> _weightedSoundSet = [];
     private readonly List<SoundPoolEntry> _allLoadedSounds = [];
+    private readonly JavaRandom _rand = new();
+    private readonly Dictionary<string, List<SoundPoolEntry>> _weightedSoundSet = [];
+    public bool IsRandom { get; set; } = true;
+    public int LoadedSoundCount => _allLoadedSounds.Count;
 
 
     public SoundPoolEntry AddSound(string soundPath, FileInfo fileInfo)
     {
-        string soundKey = soundPath;
-        int dotIndex = soundKey.IndexOf('.');
+        var soundKey = soundPath;
+        var dotIndex = soundKey.IndexOf('.');
 
         if (dotIndex != -1)
         {
@@ -31,7 +31,7 @@ public class SoundPool
 
         soundKey = soundKey.Replace('/', '.');
 
-        if (!_weightedSoundSet.TryGetValue(soundKey, out List<SoundPoolEntry>? variations))
+        if (!_weightedSoundSet.TryGetValue(soundKey, out var variations))
         {
             variations = [];
             _weightedSoundSet[soundKey] = variations;
@@ -47,7 +47,7 @@ public class SoundPool
 
     public SoundPoolEntry? GetRandomSoundFromSoundPool(string soundKey)
     {
-        if (_weightedSoundSet.TryGetValue(soundKey, out List<SoundPoolEntry>? variations) && variations.Count > 0)
+        if (_weightedSoundSet.TryGetValue(soundKey, out var variations) && variations.Count > 0)
         {
             return variations[_rand.NextInt(variations.Count)];
         }
@@ -55,8 +55,5 @@ public class SoundPool
         return null;
     }
 
-    public SoundPoolEntry? GetRandomSound()
-    {
-        return _allLoadedSounds.Count == 0 ? null : _allLoadedSounds[_rand.NextInt(_allLoadedSounds.Count)];
-    }
+    public SoundPoolEntry? GetRandomSound() => _allLoadedSounds.Count == 0 ? null : _allLoadedSounds[_rand.NextInt(_allLoadedSounds.Count)];
 }

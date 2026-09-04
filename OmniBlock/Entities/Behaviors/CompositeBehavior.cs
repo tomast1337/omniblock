@@ -1,4 +1,3 @@
-using System.Text.Json;
 using OmniBlock.NBT;
 
 namespace OmniBlock.Entities.Behaviors;
@@ -27,7 +26,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
     public CompositeBehavior(in EntityBehaviorContext context)
     {
         List<object> children = [];
-        foreach (JsonElement entry in context.Json.GetProperty("behaviors").EnumerateArray())
+        foreach (var entry in context.Json.GetProperty("behaviors").EnumerateArray())
         {
             children.Add(context.Build(entry));
         }
@@ -44,7 +43,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public void AttackEntity(EntityCreature self, Entity target, float distance)
     {
-        foreach (IEntityAttackBehavior attack in _attacks)
+        foreach (var attack in _attacks)
         {
             attack.AttackEntity(self, target, distance);
         }
@@ -52,7 +51,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public void AttackBlockedEntity(EntityCreature self, Entity target, float distance)
     {
-        foreach (IEntityAttackBehavior attack in _attacks)
+        foreach (var attack in _attacks)
         {
             attack.AttackBlockedEntity(self, target, distance);
         }
@@ -63,7 +62,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
     /// <summary>A right-click is consumed once, by the first child to handle it.</summary>
     public bool OnInteract(Entity self, EntityPlayer player)
     {
-        foreach (IEntityInteractable interactable in _interactables)
+        foreach (var interactable in _interactables)
         {
             if (interactable.OnInteract(self, player))
             {
@@ -76,7 +75,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public void OnPlayerCollision(Entity self, EntityPlayer player)
     {
-        foreach (IEntityInteractable interactable in _interactables)
+        foreach (var interactable in _interactables)
         {
             interactable.OnPlayerCollision(self, player);
         }
@@ -84,8 +83,8 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public bool OnAnimateHurt(Entity self)
     {
-        bool handled = false;
-        foreach (IEntityLifecycle lifecycle in _lifecycles)
+        var handled = false;
+        foreach (var lifecycle in _lifecycles)
         {
             handled |= lifecycle.OnAnimateHurt(self);
         }
@@ -95,7 +94,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public void OnRemoved(Entity self)
     {
-        foreach (IEntityLifecycle lifecycle in _lifecycles)
+        foreach (var lifecycle in _lifecycles)
         {
             lifecycle.OnRemoved(self);
         }
@@ -103,7 +102,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public void OnCreated(Entity self)
     {
-        foreach (IEntityLifecycle lifecycle in _lifecycles)
+        foreach (var lifecycle in _lifecycles)
         {
             lifecycle.OnCreated(self);
         }
@@ -111,7 +110,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public void OnMarkDead(EntityLiving self)
     {
-        foreach (IEntityLifecycle lifecycle in _lifecycles)
+        foreach (var lifecycle in _lifecycles)
         {
             lifecycle.OnMarkDead(self);
         }
@@ -119,7 +118,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public void OnDamaged(EntityLiving self, Entity? attacker, int amount)
     {
-        foreach (IEntityLifecycle lifecycle in _lifecycles)
+        foreach (var lifecycle in _lifecycles)
         {
             lifecycle.OnDamaged(self, attacker, amount);
         }
@@ -128,7 +127,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
     /// <summary>Each child adjusts what the one before it left, so resistances compound.</summary>
     public int ModifyDamage(EntityLiving self, Entity? attacker, int amount)
     {
-        foreach (IEntityLifecycle lifecycle in _lifecycles)
+        foreach (var lifecycle in _lifecycles)
         {
             amount = lifecycle.ModifyDamage(self, attacker, amount);
         }
@@ -138,7 +137,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public void OnDamageApplied(EntityLiving self, Entity? attacker, int amount)
     {
-        foreach (IEntityLifecycle lifecycle in _lifecycles)
+        foreach (var lifecycle in _lifecycles)
         {
             lifecycle.OnDamageApplied(self, attacker, amount);
         }
@@ -147,7 +146,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
     /// <summary>The first child that recognises the status byte consumes it.</summary>
     public bool OnEntityStatus(EntityLiving self, sbyte status)
     {
-        foreach (IEntityLifecycle lifecycle in _lifecycles)
+        foreach (var lifecycle in _lifecycles)
         {
             if (lifecycle.OnEntityStatus(self, status))
             {
@@ -160,7 +159,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public void OnPostSpawn(EntityLiving self)
     {
-        foreach (IEntityLifecycle lifecycle in _lifecycles)
+        foreach (var lifecycle in _lifecycles)
         {
             lifecycle.OnPostSpawn(self);
         }
@@ -171,7 +170,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
     /// <summary>The first child that handles the strike has handled it.</summary>
     public bool OnStruckByLightning(EntityLiving self, Entity bolt)
     {
-        foreach (IEntityLifecycle lifecycle in _lifecycles)
+        foreach (var lifecycle in _lifecycles)
         {
             if (lifecycle.OnStruckByLightning(self, bolt))
             {
@@ -184,7 +183,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public void OnWriteNbt(Entity self, NBTTagCompound nbt)
     {
-        foreach (IEntityPersistence persistence in _persistence)
+        foreach (var persistence in _persistence)
         {
             persistence.OnWriteNbt(self, nbt);
         }
@@ -192,7 +191,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public void OnReadNbt(Entity self, NBTTagCompound nbt)
     {
-        foreach (IEntityPersistence persistence in _persistence)
+        foreach (var persistence in _persistence)
         {
             persistence.OnReadNbt(self, nbt);
         }
@@ -202,7 +201,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public void AfterTickMovement(EntityLiving self)
     {
-        foreach (IEntityPhysics physics in _physics)
+        foreach (var physics in _physics)
         {
             physics.AfterTickMovement(self);
         }
@@ -210,8 +209,8 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public bool OnLanding(EntityLiving self, float fallDistance)
     {
-        bool handled = false;
-        foreach (IEntityPhysics physics in _physics)
+        var handled = false;
+        foreach (var physics in _physics)
         {
             handled |= physics.OnLanding(self, fallDistance);
         }
@@ -222,7 +221,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
     /// <summary>One move per tick: the first child that moves the mob has moved it.</summary>
     public bool Travel(EntityLiving self, float strafe, float forward)
     {
-        foreach (IEntityPhysics physics in _physics)
+        foreach (var physics in _physics)
         {
             if (physics.Travel(self, strafe, forward))
             {
@@ -251,7 +250,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public bool OnVelocityFromServer(Entity self, double vx, double vy, double vz)
     {
-        foreach (IEntityPhysics physics in _physics)
+        foreach (var physics in _physics)
         {
             if (physics.OnVelocityFromServer(self, vx, vy, vz))
             {
@@ -264,7 +263,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public bool OnMove(Entity self, double dx, double dy, double dz)
     {
-        foreach (IEntityPhysics physics in _physics)
+        foreach (var physics in _physics)
         {
             if (physics.OnMove(self, dx, dy, dz))
             {
@@ -277,7 +276,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public bool OnAddVelocity(Entity self, double dx, double dy, double dz)
     {
-        foreach (IEntityPhysics physics in _physics)
+        foreach (var physics in _physics)
         {
             if (physics.OnAddVelocity(self, dx, dy, dz))
             {
@@ -290,7 +289,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public bool OnPositionSync(Entity self, double x, double y, double z, float yaw, float pitch, int steps)
     {
-        foreach (IEntityPhysics physics in _physics)
+        foreach (var physics in _physics)
         {
             if (physics.OnPositionSync(self, x, y, z, yaw, pitch, steps))
             {
@@ -303,7 +302,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public bool OnUpdatePassengerPosition(Entity self)
     {
-        foreach (IEntityPhysics physics in _physics)
+        foreach (var physics in _physics)
         {
             if (physics.OnUpdatePassengerPosition(self))
             {
@@ -316,7 +315,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public bool OnCollision(Entity self, Entity other)
     {
-        foreach (IEntityPhysics physics in _physics)
+        foreach (var physics in _physics)
         {
             if (physics.OnCollision(self, other))
             {
@@ -330,7 +329,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
     /// <summary>One target at a time: the first child that names one wins.</summary>
     public Entity? FindPlayerToAttack(EntityCreature self)
     {
-        foreach (IEntityTargetBehavior targeting in _targeting)
+        foreach (var targeting in _targeting)
         {
             if (targeting.FindPlayerToAttack(self) is { } target)
             {
@@ -343,7 +342,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public void OnTick(Entity self)
     {
-        foreach (IEntityTicker ticker in _tickers)
+        foreach (var ticker in _tickers)
         {
             ticker.OnTick(self);
         }
@@ -355,8 +354,8 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
     /// </summary>
     public bool OnTickEntity(Entity self)
     {
-        bool replacesTick = false;
-        foreach (IEntityTicker ticker in _tickers)
+        var replacesTick = false;
+        foreach (var ticker in _tickers)
         {
             replacesTick |= ticker.OnTickEntity(self);
         }
@@ -366,7 +365,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public void OnTickMovement(EntityLiving self)
     {
-        foreach (IEntityTicker ticker in _tickers)
+        foreach (var ticker in _tickers)
         {
             ticker.OnTickMovement(self);
         }
@@ -378,8 +377,8 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
     /// </summary>
     public bool OnTickLiving(EntityLiving self)
     {
-        bool replacesAi = false;
-        foreach (IEntityTicker ticker in _tickers)
+        var replacesAi = false;
+        foreach (var ticker in _tickers)
         {
             replacesAi |= ticker.OnTickLiving(self);
         }
@@ -389,7 +388,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public void AfterTickLiving(EntityLiving self)
     {
-        foreach (IEntityTicker ticker in _tickers)
+        foreach (var ticker in _tickers)
         {
             ticker.AfterTickLiving(self);
         }
@@ -397,7 +396,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public void OnTickEnd(EntityLiving self)
     {
-        foreach (IEntityTicker ticker in _tickers)
+        foreach (var ticker in _tickers)
         {
             ticker.OnTickEnd(self);
         }
@@ -406,7 +405,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
     /// <summary>One sound at a time: the first child with something to say says it.</summary>
     public string? LivingSound(EntityLiving self)
     {
-        foreach (IEntityTicker ticker in _tickers)
+        foreach (var ticker in _tickers)
         {
             if (ticker.LivingSound(self) is { } sound)
             {
@@ -420,7 +419,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
     /// <summary>The first child with an opinion answers; the rest are not consulted.</summary>
     private static TAnswer? First<TChild, TAnswer>(TChild[] children, Func<TChild, TAnswer?> ask) where TAnswer : struct
     {
-        foreach (TChild child in children)
+        foreach (var child in children)
         {
             if (ask(child) is { } answer)
             {

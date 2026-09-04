@@ -26,22 +26,13 @@ public interface IBlockLifecycle
     }
 
     /// <summary>Overrides which item id this block drops for the given metadata.</summary>
-    int GetDroppedItemId(Block block, int blockMeta, int defaultItemId)
-    {
-        return defaultItemId;
-    }
+    int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => defaultItemId;
 
     /// <summary>Overrides how many items this block drops (independent of the meta-driven id).</summary>
-    int GetDroppedItemCount(Block block, int defaultCount)
-    {
-        return defaultCount;
-    }
+    int GetDroppedItemCount(Block block, int defaultCount) => defaultCount;
 
     /// <summary>Overrides the metadata/damage value stamped onto the dropped item stack.</summary>
-    int GetDroppedItemMeta(Block block, int blockMeta, int defaultMeta)
-    {
-        return defaultMeta;
-    }
+    int GetDroppedItemMeta(Block block, int blockMeta, int defaultMeta) => defaultMeta;
 
     /// <summary>
     ///     Overrides middle-click "pick block": <c>primaryMeta</c> is the meta used to match/give the
@@ -51,10 +42,7 @@ public interface IBlockLifecycle
     ///     placed block's meta carries decay/persistent flag bits alongside the wood-type variant, so
     ///     even matching/giving the raw leaves block needs those bits masked out.
     /// </summary>
-    (int primaryMeta, int backupItemId, int backupMeta) GetPickBlockItem(Block block, int blockMeta, int defaultBackupId, int defaultBackupMeta)
-    {
-        return (blockMeta, defaultBackupId, defaultBackupMeta);
-    }
+    (int primaryMeta, int backupItemId, int backupMeta) GetPickBlockItem(Block block, int blockMeta, int defaultBackupId, int defaultBackupMeta) => (blockMeta, defaultBackupId, defaultBackupMeta);
 
     /// <summary>
     ///     Called once per block, after every block's static field has been assigned (see

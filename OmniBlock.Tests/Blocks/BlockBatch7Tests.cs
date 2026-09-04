@@ -1,5 +1,4 @@
 using System.Text.Json;
-using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
 
 namespace OmniBlock.Tests.Blocks;
@@ -17,21 +16,21 @@ public sealed class BlockBatch7Tests
     public void PortalBehavior_Create_ConfiguredBlocks_BuildsPortalInFrame()
     {
         FakeWorldContext world = new();
-        Block obsidian = TestBlocks.Get("obsidian");
-        Block fire = TestBlocks.Get("fire");
-        Block netherPortal = TestBlocks.Get("nether_portal");
+        var obsidian = TestBlocks.Get("obsidian");
+        var fire = TestBlocks.Get("fire");
+        var netherPortal = TestBlocks.Get("nether_portal");
 
         // 4-wide, 5-tall obsidian frame enclosing a 2x3 empty interior at x=1..2, y=1..3.
-        for (int x = 0; x <= 3; x++)
+        for (var x = 0; x <= 3; x++)
         {
-            for (int y = 0; y <= 4; y++)
+            for (var y = 0; y <= 4; y++)
             {
-                bool isFrame = x == 0 || x == 3 || y == 0 || y == 4;
+                var isFrame = x == 0 || x == 3 || y == 0 || y == 4;
                 if (isFrame) world.ReaderWriter.SetInitial(x, y, 0, obsidian.Id);
             }
         }
 
-        bool created = PortalBehavior.Create(world.Reader, world.Writer, 1, 1, 0, obsidian, fire, netherPortal);
+        var created = PortalBehavior.Create(world.Reader, world.Writer, 1, 1, 0, obsidian, fire, netherPortal);
 
         Assert.True(created);
         Assert.Equal(netherPortal.Id, world.Reader.GetBlockId(1, 1, 0));
@@ -42,9 +41,9 @@ public sealed class BlockBatch7Tests
     public void PortalBehavior_Create_NoObsidianFrame_ReturnsFalse()
     {
         FakeWorldContext world = new();
-        Block obsidian = TestBlocks.Get("obsidian");
-        Block fire = TestBlocks.Get("fire");
-        Block netherPortal = TestBlocks.Get("nether_portal");
+        var obsidian = TestBlocks.Get("obsidian");
+        var fire = TestBlocks.Get("fire");
+        var netherPortal = TestBlocks.Get("nether_portal");
 
         Assert.False(PortalBehavior.Create(world.Reader, world.Writer, 1, 1, 0, obsidian, fire, netherPortal));
     }
@@ -53,14 +52,14 @@ public sealed class BlockBatch7Tests
     public void RedstoneWireBehavior_IsPowerProviderOrWire_ConfiguredConductor_ReturnsTrue()
     {
         FakeWorldContext world = new();
-        Block wire = TestBlocks.Get("redstone_wire");
-        Block customConductor = TestBlocks.Get("torch");
-        Block repeater = TestBlocks.Get("repeater");
-        Block poweredRepeater = TestBlocks.Get("powered_repeater");
+        var wire = TestBlocks.Get("redstone_wire");
+        var customConductor = TestBlocks.Get("torch");
+        var repeater = TestBlocks.Get("repeater");
+        var poweredRepeater = TestBlocks.Get("powered_repeater");
         world.ReaderWriter.SetInitial(0, 64, 0, customConductor.Id);
 
         RedstoneWireBehavior behavior = new(wire, [customConductor], repeater, poweredRepeater);
-        behavior.BindRuntime(OmniBlock.Registries.ContentRuntime.Current.Blocks);
+        behavior.BindRuntime(ContentRuntime.Current.Blocks);
 
         Assert.True(behavior.IsPowerProviderOrWire(world.Reader, 0, 64, 0, -1));
     }
@@ -69,14 +68,14 @@ public sealed class BlockBatch7Tests
     public void RedstoneWireBehavior_IsPowerProviderOrWire_VanillaLeverNotInCustomConfig_ChecksCanEmitInstead()
     {
         FakeWorldContext world = new();
-        Block wire = TestBlocks.Get("redstone_wire");
-        Block customConductor = TestBlocks.Get("torch");
-        Block repeater = TestBlocks.Get("repeater");
-        Block poweredRepeater = TestBlocks.Get("powered_repeater");
+        var wire = TestBlocks.Get("redstone_wire");
+        var customConductor = TestBlocks.Get("torch");
+        var repeater = TestBlocks.Get("repeater");
+        var poweredRepeater = TestBlocks.Get("powered_repeater");
         world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("lever").Id);
 
         RedstoneWireBehavior behavior = new(wire, [customConductor], repeater, poweredRepeater);
-        behavior.BindRuntime(OmniBlock.Registries.ContentRuntime.Current.Blocks);
+        behavior.BindRuntime(ContentRuntime.Current.Blocks);
 
         // Lever isn't in the custom conductor list, but it still falls through to
         // Blocks.GetByProtocolId(id).canEmitRedstonePower(), which is independently true for levers.
@@ -91,7 +90,7 @@ public sealed class BlockBatch7Tests
     [InlineData("snow", """{"Type":"snow"}""")]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws(string type, string json)
     {
-        using JsonDocument doc = JsonDocument.Parse(json);
+        using var doc = JsonDocument.Parse(json);
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build(type, doc.RootElement));
     }
 
@@ -101,7 +100,7 @@ public sealed class BlockBatch7Tests
     [InlineData("redstone_wire", """{"Type":"redstone_wire","wire":"omniblock:redstone_wire","conductors":["omniblock:button"],"repeater":"not_a_real_block","powered_repeater":"omniblock:powered_repeater"}""")]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws(string type, string json)
     {
-        using JsonDocument doc = JsonDocument.Parse(json);
+        using var doc = JsonDocument.Parse(json);
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build(type, doc.RootElement));
     }
 
@@ -113,7 +112,7 @@ public sealed class BlockBatch7Tests
     [InlineData("snow", """{"Type":"snow","drop_item":"not_a_real_item"}""")]
     public void BehaviorRegistry_Build_UnknownItemName_Throws(string type, string json)
     {
-        using JsonDocument doc = JsonDocument.Parse(json);
+        using var doc = JsonDocument.Parse(json);
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build(type, doc.RootElement));
     }
 }

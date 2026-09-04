@@ -103,14 +103,6 @@ public readonly record struct DepthBias(float SlopeScale, float Constant)
 /// </remarks>
 public readonly record struct RenderState
 {
-    public BlendMode Blend { get; init; }
-    public bool DepthTest { get; init; }
-    public bool DepthWrite { get; init; }
-    public DepthCompare DepthCompare { get; init; }
-    public CullMode Cull { get; init; }
-    public bool ColorWrite { get; init; }
-    public DepthBias DepthBias { get; init; }
-
     /// <summary>Solid geometry: depth tested and written, backs discarded, no blending.</summary>
     public static readonly RenderState Opaque = new()
     {
@@ -133,7 +125,10 @@ public readonly record struct RenderState
     };
 
     /// <summary>Glows, drawn over the scene without occluding it.</summary>
-    public static readonly RenderState Additive = Translucent with { Blend = BlendMode.Additive };
+    public static readonly RenderState Additive = Translucent with
+    {
+        Blend = BlendMode.Additive
+    };
 
     /// <summary>
     ///     Entity models, drawn without culling.
@@ -152,7 +147,10 @@ public readonly record struct RenderState
     ///         faces, wrongly left off only draws ones that were already there.
     ///     </para>
     /// </remarks>
-    public static readonly RenderState Entity = Opaque with { Cull = CullMode.None };
+    public static readonly RenderState Entity = Opaque with
+    {
+        Cull = CullMode.None
+    };
 
     /// <summary>
     ///     A full-screen pass over an already-rendered image: a blit, a blur, a tone map.
@@ -183,4 +181,12 @@ public readonly record struct RenderState
         Cull = CullMode.None,
         ColorWrite = true
     };
+
+    public BlendMode Blend { get; init; }
+    public bool DepthTest { get; init; }
+    public bool DepthWrite { get; init; }
+    public DepthCompare DepthCompare { get; init; }
+    public CullMode Cull { get; init; }
+    public bool ColorWrite { get; init; }
+    public DepthBias DepthBias { get; init; }
 }

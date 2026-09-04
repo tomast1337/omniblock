@@ -13,8 +13,8 @@ public class FlatGeneratorInfo
 
     public void UpdateLayerHeights()
     {
-        int totalHeight = 0;
-        foreach (FlatLayerInfo layer in FlatLayers)
+        var totalHeight = 0;
+        foreach (var layer in FlatLayers)
         {
             layer.MinY = totalHeight;
             totalHeight += layer.LayerCount;
@@ -27,10 +27,10 @@ public class FlatGeneratorInfo
         sb.Append(2); // Version 2
         sb.Append(";");
 
-        for (int i = 0; i < FlatLayers.Count; ++i)
+        for (var i = 0; i < FlatLayers.Count; ++i)
         {
             if (i > 0) sb.Append(",");
-            sb.Append(FlatLayers[i].ToString());
+            sb.Append(FlatLayers[i]);
         }
 
         sb.Append(";");
@@ -39,8 +39,8 @@ public class FlatGeneratorInfo
         if (WorldFeatures.Count > 0)
         {
             sb.Append(";");
-            int i = 0;
-            foreach (KeyValuePair<string, Dictionary<string, string>> feature in WorldFeatures)
+            var i = 0;
+            foreach (var feature in WorldFeatures)
             {
                 if (i++ > 0) sb.Append(",");
                 sb.Append(feature.Key.ToLower());
@@ -48,14 +48,15 @@ public class FlatGeneratorInfo
                 if (feature.Value.Count > 0)
                 {
                     sb.Append("(");
-                    int j = 0;
-                    foreach (KeyValuePair<string, string> param in feature.Value)
+                    var j = 0;
+                    foreach (var param in feature.Value)
                     {
                         if (j++ > 0) sb.Append(" ");
                         sb.Append(param.Key);
                         sb.Append("=");
                         sb.Append(param.Value);
                     }
+
                     sb.Append(")");
                 }
             }
@@ -70,9 +71,9 @@ public class FlatGeneratorInfo
 
     private static FlatLayerInfo? ParseLayer(string input, int minY, IBlockRuntimeView blocks)
     {
-        string[] parts = input.Split('x');
-        int count = 1;
-        int meta = 0;
+        var parts = input.Split('x');
+        var count = 1;
+        var meta = 0;
 
         int blockId;
         try
@@ -82,8 +83,8 @@ public class FlatGeneratorInfo
                 count = int.Parse(parts[0]);
             }
 
-            string blockData = parts[^1];
-            string[] blockParts = blockData.Split(':');
+            var blockData = parts[^1];
+            var blockParts = blockData.Split(':');
             blockId = int.Parse(blockParts[0]);
 
             if (blockParts.Length > 1)
@@ -104,7 +105,10 @@ public class FlatGeneratorInfo
             return null;
         }
 
-        return new FlatLayerInfo(count, blockId, meta) { MinY = minY };
+        return new FlatLayerInfo(count, blockId, meta)
+        {
+            MinY = minY
+        };
     }
 
     public static FlatGeneratorInfo CreateFromString(string input) =>
@@ -117,19 +121,19 @@ public class FlatGeneratorInfo
             return GetDefault(blocks);
         }
 
-        string[] parts = input.Split(';');
-        int version = parts.Length > 0 ? int.Parse(parts[0]) : 0;
+        var parts = input.Split(';');
+        var version = parts.Length > 0 ? int.Parse(parts[0]) : 0;
 
         FlatGeneratorInfo info = new();
-        int partIndex = parts.Length == 1 ? 0 : 1;
+        var partIndex = parts.Length == 1 ? 0 : 1;
 
         if (parts.Length > partIndex)
         {
-            string[] layers = parts[partIndex++].Split(',');
-            int currentY = 0;
-            foreach (string layerStr in layers)
+            var layers = parts[partIndex++].Split(',');
+            var currentY = 0;
+            foreach (var layerStr in layers)
             {
-                FlatLayerInfo? layer = ParseLayer(layerStr, currentY, blocks);
+                var layer = ParseLayer(layerStr, currentY, blocks);
                 if (layer != null)
                 {
                     info.FlatLayers.Add(layer);
@@ -145,11 +149,11 @@ public class FlatGeneratorInfo
 
         if (version > 0 && parts.Length > partIndex)
         {
-            string[] features = parts[partIndex++].ToLower().Split(',');
-            foreach (string featureStr in features)
+            var features = parts[partIndex++].ToLower().Split(',');
+            foreach (var featureStr in features)
             {
-                string[] featureParts = featureStr.Split('(');
-                string featureName = featureParts[0];
+                var featureParts = featureStr.Split('(');
+                var featureName = featureParts[0];
                 if (string.IsNullOrEmpty(featureName)) continue;
 
                 var featureParams = new Dictionary<string, string>();
@@ -157,11 +161,11 @@ public class FlatGeneratorInfo
 
                 if (featureParts.Length > 1 && featureParts[1].EndsWith(")"))
                 {
-                    string paramsStr = featureParts[1][..^1];
-                    string[] paramPairs = paramsStr.Split(' ');
-                    foreach (string pair in paramPairs)
+                    var paramsStr = featureParts[1][..^1];
+                    var paramPairs = paramsStr.Split(' ');
+                    foreach (var pair in paramPairs)
                     {
-                        string[] kv = pair.Split('=');
+                        var kv = pair.Split('=');
                         if (kv.Length == 2)
                         {
                             featureParams[kv[0]] = kv[1];

@@ -1,5 +1,3 @@
-using OmniBlock.Entities;
-using OmniBlock.Items;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 
@@ -16,15 +14,15 @@ public class ClearCommand : Command.Command
 
     private static int Execute(CommandContext<CommandSource> context)
     {
-        ServerPlayerEntity? player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
+        var player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
         if (player == null)
         {
             context.Source.Output.SendMessage("Could not find your player.");
             return 1;
         }
 
-        ItemStack?[] inventory = player.Inventory.Main;
-        for (int i = 0; i < inventory.Length; i++)
+        var inventory = player.Inventory.Main;
+        for (var i = 0; i < inventory.Length; i++)
         {
             inventory[i] = null;
         }

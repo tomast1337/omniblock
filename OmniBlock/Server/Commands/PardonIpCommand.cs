@@ -15,7 +15,7 @@ public class PardonIpCommand : Command.Command
 
     private static int Execute(CommandContext<CommandSource> context)
     {
-        string ip = context.GetArgument<string>("ip");
+        var ip = context.GetArgument<string>("ip");
         context.Source.Server.playerManager.unbanIp(ip);
         context.Source.LogOp("Pardoning ip " + ip);
         return 1;

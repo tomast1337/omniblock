@@ -9,7 +9,7 @@ public static class PathMoverUpdater
     /// </summary>
     public static void Tick(PathMoverBuffer buf)
     {
-        int count = buf.Count;
+        var count = buf.Count;
         if (count == 0)
         {
             return;
@@ -19,7 +19,7 @@ public static class PathMoverUpdater
         Array.Copy(buf.Y, buf.PrevY, count);
         Array.Copy(buf.Z, buf.PrevZ, count);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             buf.Progress[i] += buf.ProgressPerTick[i];
             if (buf.Progress[i] >= 1f)
@@ -28,13 +28,13 @@ public static class PathMoverUpdater
                 continue;
             }
 
-            float t = buf.Progress[i];
+            var t = buf.Progress[i];
             buf.X[i] = buf.StartX[i] + (buf.EndX[i] - buf.StartX[i]) * t;
             buf.Y[i] = buf.StartY[i] + (buf.EndY[i] - buf.StartY[i]) * t;
             buf.Z[i] = buf.StartZ[i] + (buf.EndZ[i] - buf.StartZ[i]) * t;
         }
 
-        for (int i = buf.Count - 1; i >= 0; i--)
+        for (var i = buf.Count - 1; i >= 0; i--)
         {
             if (buf.Dead[i]) buf.SwapRemove(i);
         }

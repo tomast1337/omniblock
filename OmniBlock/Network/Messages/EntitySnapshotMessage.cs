@@ -90,7 +90,7 @@ public sealed class EntitySnapshotMessage : Message
         Sequence = (uint)stream.ReadVarInt();
         Baseline = (uint)stream.ReadVarInt();
 
-        int count = stream.ReadVarInt();
+        var count = stream.ReadVarInt();
         if (count < 0 || count > MaxRecords)
         {
             throw new InvalidDataException($"Entity snapshot declares {count} records.");
@@ -98,19 +98,19 @@ public sealed class EntitySnapshotMessage : Message
 
         Deltas = new List<EntityDelta>(count);
 
-        int previousId = 0;
-        for (int i = 0; i < count; i++)
+        var previousId = 0;
+        for (var i = 0; i < count; i++)
         {
-            int entityId = previousId + stream.ReadZigZag();
+            var entityId = previousId + stream.ReadZigZag();
             previousId = entityId;
 
-            Field mask = (Field)stream.ReadByte();
+            var mask = (Field)stream.ReadByte();
 
-            int x = (mask & Field.X) != 0 ? stream.ReadZigZag() : 0;
-            int y = (mask & Field.Y) != 0 ? stream.ReadZigZag() : 0;
-            int z = (mask & Field.Z) != 0 ? stream.ReadZigZag() : 0;
-            byte yaw = (mask & Field.Yaw) != 0 ? (byte)stream.ReadByte() : (byte)0;
-            byte pitch = (mask & Field.Pitch) != 0 ? (byte)stream.ReadByte() : (byte)0;
+            var x = (mask & Field.X) != 0 ? stream.ReadZigZag() : 0;
+            var y = (mask & Field.Y) != 0 ? stream.ReadZigZag() : 0;
+            var z = (mask & Field.Z) != 0 ? stream.ReadZigZag() : 0;
+            var yaw = (mask & Field.Yaw) != 0 ? (byte)stream.ReadByte() : (byte)0;
+            var pitch = (mask & Field.Pitch) != 0 ? (byte)stream.ReadByte() : (byte)0;
 
             Deltas.Add(new EntityDelta(entityId, mask, x, y, z, yaw, pitch));
         }
@@ -122,8 +122,8 @@ public sealed class EntitySnapshotMessage : Message
         stream.WriteVarInt((int)Baseline);
         stream.WriteVarInt(Deltas.Count);
 
-        int previousId = 0;
-        foreach (EntityDelta delta in Deltas)
+        var previousId = 0;
+        foreach (var delta in Deltas)
         {
             // Gap from the previous record's ID rather than the ID itself. Entity IDs come from one
             // increasing counter, so a pass over sorted IDs is a run of small gaps — one byte each
@@ -162,12 +162,12 @@ public sealed class EntitySnapshotMessage : Message
 
     public override int Size()
     {
-        int size = StreamExtensions.VarIntSize((int)Sequence)
+        var size = StreamExtensions.VarIntSize((int)Sequence)
                    + StreamExtensions.VarIntSize((int)Baseline)
                    + StreamExtensions.VarIntSize(Deltas.Count);
 
-        int previousId = 0;
-        foreach (EntityDelta delta in Deltas)
+        var previousId = 0;
+        foreach (var delta in Deltas)
         {
             size += StreamExtensions.ZigZagSize(delta.EntityId - previousId) + 1;
             previousId = delta.EntityId;
@@ -214,13 +214,13 @@ public sealed class EntitySnapshotMessage : Message
     {
         ArgumentNullException.ThrowIfNull(baseline);
 
-        if (!baseline.TryGet(entityId, out EntitySnapshotState previous))
+        if (!baseline.TryGet(entityId, out var previous))
         {
             return new EntityDelta(
                 entityId, Field.All | Field.Absolute, state.X, state.Y, state.Z, state.Yaw, state.Pitch);
         }
 
-        Field mask = Field.None;
+        var mask = Field.None;
 
         if (state.X != previous.X)
         {
@@ -275,7 +275,7 @@ public sealed class EntitySnapshotMessage : Message
             return new EntitySnapshotState(delta.X, delta.Y, delta.Z, delta.Yaw, delta.Pitch);
         }
 
-        baseline.TryGet(delta.EntityId, out EntitySnapshotState previous);
+        baseline.TryGet(delta.EntityId, out var previous);
 
         return new EntitySnapshotState(
             (delta.Mask & Field.X) != 0 ? previous.X + delta.X : previous.X,

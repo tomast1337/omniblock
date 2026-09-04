@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core.Systems;
 
@@ -21,18 +20,18 @@ internal class GlowstoneClusterFeatureRare : Feature
 
         level.Writer.SetBlock(x, y, z, level.Content.Blocks.Get("glowstone").Id, 0, false);
 
-        for (int i = 0; i < 1500; ++i)
+        for (var i = 0; i < 1500; ++i)
         {
-            int genX = x + rand.NextInt(8) - rand.NextInt(8);
-            int genY = y - rand.NextInt(12);
-            int genZ = z + rand.NextInt(8) - rand.NextInt(8);
+            var genX = x + rand.NextInt(8) - rand.NextInt(8);
+            var genY = y - rand.NextInt(12);
+            var genZ = z + rand.NextInt(8) - rand.NextInt(8);
             if (level.Reader.GetBlockId(genX, genY, genZ) == 0)
             {
-                int GlowstoneNeighbors = 0;
+                var GlowstoneNeighbors = 0;
 
-                for (int j = 0; j < 6; ++j)
+                for (var j = 0; j < 6; ++j)
                 {
-                    int blockId = 0;
+                    var blockId = 0;
                     if (j == 0)
                     {
                         blockId = level.Reader.GetBlockId(genX - 1, genY, genZ);

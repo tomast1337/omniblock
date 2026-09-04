@@ -23,7 +23,7 @@ public sealed class EntityPositionHistoryTests
     {
         EntityPositionHistory history = new();
 
-        Assert.False(history.Sample(1000, out double x, out double y, out double z));
+        Assert.False(history.Sample(1000, out var x, out var y, out var z));
         Assert.Equal(0.0, x);
         Assert.Equal(0.0, y);
         Assert.Equal(0.0, z);
@@ -36,7 +36,7 @@ public sealed class EntityPositionHistoryTests
         history.Record(1000, 0.0, 64.0, 0.0);
         history.Record(1000 + TickMs, 4.0, 64.0, 0.0);
 
-        Assert.True(history.Sample(1000 + (TickMs / 2), out double x, out double y, out double z));
+        Assert.True(history.Sample(1000 + TickMs / 2, out var x, out var y, out var z));
         Assert.Equal(2.0, x, 6);
         Assert.Equal(64.0, y, 6);
         Assert.Equal(0.0, z, 6);
@@ -49,7 +49,7 @@ public sealed class EntityPositionHistoryTests
         history.Record(1000, 0.0, 64.0, 0.0);
         history.Record(1050, 4.0, 64.0, 0.0);
 
-        Assert.True(history.Sample(9999, out double x, out _, out _));
+        Assert.True(history.Sample(9999, out var x, out _, out _));
         Assert.Equal(4.0, x, 6);
     }
 
@@ -60,7 +60,7 @@ public sealed class EntityPositionHistoryTests
         history.Record(1000, 7.0, 64.0, 0.0);
         history.Record(1050, 8.0, 64.0, 0.0);
 
-        Assert.True(history.Sample(0, out double x, out _, out _));
+        Assert.True(history.Sample(0, out var x, out _, out _));
         Assert.Equal(7.0, x, 6);
     }
 
@@ -74,19 +74,19 @@ public sealed class EntityPositionHistoryTests
     {
         EntityPositionHistory history = new();
 
-        for (int tick = 0; tick < EntityPositionHistory.Capacity * 2; tick++)
+        for (var tick = 0; tick < EntityPositionHistory.Capacity * 2; tick++)
         {
-            history.Record(1000 + (tick * TickMs), tick, 64.0, 0.0);
+            history.Record(1000 + tick * TickMs, tick, 64.0, 0.0);
         }
 
         Assert.Equal(EntityPositionHistory.Capacity, history.Count);
 
-        long newestStamp = 1000 + (((EntityPositionHistory.Capacity * 2) - 1) * TickMs);
-        Assert.True(history.Sample(newestStamp, out double x, out _, out _));
-        Assert.Equal((EntityPositionHistory.Capacity * 2) - 1, x, 6);
+        var newestStamp = 1000 + (EntityPositionHistory.Capacity * 2 - 1) * TickMs;
+        Assert.True(history.Sample(newestStamp, out var x, out _, out _));
+        Assert.Equal(EntityPositionHistory.Capacity * 2 - 1, x, 6);
 
         // Asking further back than the ring holds clamps to its oldest retained tick, not to zero.
-        Assert.True(history.Sample(0, out double oldestX, out _, out _));
+        Assert.True(history.Sample(0, out var oldestX, out _, out _));
         Assert.Equal(EntityPositionHistory.Capacity, oldestX, 6);
     }
 
@@ -103,15 +103,15 @@ public sealed class EntityPositionHistoryTests
         history.Record(1000, 2.0, 64.0, 0.0);
 
         Assert.Equal(1, history.Count);
-        Assert.True(history.Sample(1000, out double x, out _, out _));
+        Assert.True(history.Sample(1000, out var x, out _, out _));
         Assert.Equal(2.0, x, 6);
     }
 
     [Fact]
     public void No_rewind_information_means_the_present()
     {
-        Assert.Equal(5000, EntityPositionHistory.ClampRewind(requestedMs: 0, nowMs: 5000));
-        Assert.Equal(5000, EntityPositionHistory.ClampRewind(requestedMs: -1, nowMs: 5000));
+        Assert.Equal(5000, EntityPositionHistory.ClampRewind(0, 5000));
+        Assert.Equal(5000, EntityPositionHistory.ClampRewind(-1, 5000));
     }
 
     /// <summary>
@@ -131,10 +131,7 @@ public sealed class EntityPositionHistoryTests
 
     /// <summary>A client claiming the future gets the present; time does not run forward for it.</summary>
     [Fact]
-    public void A_rewind_into_the_future_is_pulled_back_to_now()
-    {
-        Assert.Equal(5000, EntityPositionHistory.ClampRewind(requestedMs: 9000, nowMs: 5000));
-    }
+    public void A_rewind_into_the_future_is_pulled_back_to_now() => Assert.Equal(5000, EntityPositionHistory.ClampRewind(9000, 5000));
 
     /// <summary>
     ///     What the whole mechanism is for, stated as the reach check it changes.
@@ -148,7 +145,7 @@ public sealed class EntityPositionHistoryTests
     [Fact]
     public void A_target_walking_away_is_still_within_reach_where_the_attacker_saw_it()
     {
-        const double SpeedPerTick = 0.215;   // blocks per tick, roughly Beta walking pace
+        const double SpeedPerTick = 0.215; // blocks per tick, roughly Beta walking pace
         const double Reach = 4.0;
 
         EntityPositionHistory history = new();
@@ -158,18 +155,18 @@ public sealed class EntityPositionHistoryTests
         const long SeenTicksAgo = 8;
 
         long now = 10_000;
-        for (int tick = -EntityPositionHistory.Capacity + 1; tick <= 0; tick++)
+        for (var tick = -EntityPositionHistory.Capacity + 1; tick <= 0; tick++)
         {
-            history.Record(now + (tick * TickMs), 3.0 + ((tick + SeenTicksAgo) * SpeedPerTick), 64.0, 0.0);
+            history.Record(now + tick * TickMs, 3.0 + (tick + SeenTicksAgo) * SpeedPerTick, 64.0, 0.0);
         }
 
         // Where the server holds the target when the attack lands: past reach.
-        Assert.True(history.Sample(now, out double presentX, out _, out _));
+        Assert.True(history.Sample(now, out var presentX, out _, out _));
         Assert.True(presentX > Reach, $"fixture is wrong: target is at {presentX}, still in reach");
 
         // Where the attacker actually saw it: 300 ms of interpolation delay plus 100 ms in flight.
-        long rewind = EntityPositionHistory.ClampRewind(now - 400, now);
-        Assert.True(history.Sample(rewind, out double seenX, out _, out _));
+        var rewind = EntityPositionHistory.ClampRewind(now - 400, now);
+        Assert.True(history.Sample(rewind, out var seenX, out _, out _));
         Assert.True(seenX < Reach, $"rewound to {seenX}, which is still out of reach");
     }
 
@@ -185,20 +182,25 @@ public sealed class EntityPositionHistoryTests
         EntityPositionHistory history = new();
         long now = 10_000;
 
-        for (int tick = -EntityPositionHistory.Capacity + 1; tick <= 0; tick++)
+        for (var tick = -EntityPositionHistory.Capacity + 1; tick <= 0; tick++)
         {
-            history.Record(now + (tick * TickMs), 20.0, 64.0, 0.0);
+            history.Record(now + tick * TickMs, 20.0, 64.0, 0.0);
         }
 
-        long rewind = EntityPositionHistory.ClampRewind(now - EntityPositionHistory.MaxRewindMs, now);
-        Assert.True(history.Sample(rewind, out double x, out _, out _));
+        var rewind = EntityPositionHistory.ClampRewind(now - EntityPositionHistory.MaxRewindMs, now);
+        Assert.True(history.Sample(rewind, out var x, out _, out _));
         Assert.True(x > Reach);
     }
 
     [Fact]
     public void The_interact_message_round_trips()
     {
-        InteractEntityMessage sent = new() { EntityId = -4271, Action = 1, RenderTimeMs = 1_234_567_890L };
+        InteractEntityMessage sent = new()
+        {
+            EntityId = -4271,
+            Action = 1,
+            RenderTimeMs = 1_234_567_890L
+        };
 
         using MemoryStream buffer = new();
         sent.Write(buffer);

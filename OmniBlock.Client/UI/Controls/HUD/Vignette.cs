@@ -13,10 +13,10 @@ public class Vignette(Func<ClientPlayerEntity?> getPlayer) : FullscreenElement
     {
         base.Update(partialTicks);
 
-        ClientPlayerEntity? player = getPlayer();
+        var player = getPlayer();
         if (player == null) return;
 
-        float darkness = player.GetBrightnessAtEyes(partialTicks);
+        var darkness = player.GetBrightnessAtEyes(partialTicks);
         darkness = 1.0f - darkness;
         if (darkness < 0.0f) darkness = 0.0f;
         if (darkness > 1.0f) darkness = 1.0f;

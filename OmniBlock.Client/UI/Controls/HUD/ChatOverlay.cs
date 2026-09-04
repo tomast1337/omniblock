@@ -40,16 +40,16 @@ public class ChatOverlay : UIElement
         _chatWidth = (int)(320 * _scale) & ~1;
         _lineHeight = _chatWidth / 35;
         Style.Width = _chatWidth;
-        float extraWidth = _widthFunc() * 32;
+        var extraWidth = _widthFunc() * 32;
         _chatWidth += (int)(extraWidth * 5);
         _charactersPerLine = 64 + (int)extraWidth;
 
         // trim messages if needed
         if (_lastCharactersPerLine > _charactersPerLine)
         {
-            foreach (ChatLine m in _messages)
+            foreach (var m in _messages)
             {
-                int c = m.Message.Where(t => t == '§').Sum(_ => 2);
+                var c = m.Message.Where(t => t == '§').Sum(_ => 2);
 
                 c = _charactersPerLine - c;
                 if (m.Message.Length > c)
@@ -64,16 +64,16 @@ public class ChatOverlay : UIElement
 
     public void AddMessage(string message)
     {
-        string currentColor = "";
+        var currentColor = "";
         StringBuilder currentLine = new();
-        int visibleLength = 0;
+        var visibleLength = 0;
 
         // Split while preserving spaces
-        string[] words = Regex.Split(message, @"(\s+)");
+        var words = Regex.Split(message, @"(\s+)");
 
-        foreach (string word in words)
+        foreach (var word in words)
         {
-            int wordVisibleLength = GetVisibleLength(word);
+            var wordVisibleLength = GetVisibleLength(word);
 
             // Wrap before adding the word
             if (visibleLength > 0 &&
@@ -93,9 +93,9 @@ public class ChatOverlay : UIElement
             }
 
             // Append word while tracking colors
-            for (int i = 0; i < word.Length; i++)
+            for (var i = 0; i < word.Length; i++)
             {
-                char c = word[i];
+                var c = word[i];
 
                 // Color code (§x)
                 if (c == '§' && i + 1 < word.Length)
@@ -126,9 +126,9 @@ public class ChatOverlay : UIElement
 
     private int GetVisibleLength(string text)
     {
-        int length = 0;
+        var length = 0;
 
-        for (int i = 0; i < text.Length; i++)
+        for (var i = 0; i < text.Length; i++)
         {
             if (text[i] == '§' && i + 1 < text.Length)
             {
@@ -158,7 +158,7 @@ public class ChatOverlay : UIElement
             ScrollOffset = 0;
         }
 
-        int maxScroll = Math.Max(0, _messages.Count - MaxHistoryLines);
+        var maxScroll = Math.Max(0, _messages.Count - MaxHistoryLines);
         if (ScrollOffset > maxScroll)
         {
             ScrollOffset = maxScroll;
@@ -168,7 +168,7 @@ public class ChatOverlay : UIElement
     public override void Update(float partialTicks)
     {
         base.Update(partialTicks);
-        foreach (ChatLine msg in _messages)
+        foreach (var msg in _messages)
         {
             msg.UpdateCounter++;
         }
@@ -202,14 +202,14 @@ public class ChatOverlay : UIElement
 
     private void RenderFading(UIRenderer renderer)
     {
-        int yOffset = 0;
-        for (int i = 0; i < _messages.Count && i < 10; i++)
+        var yOffset = 0;
+        for (var i = 0; i < _messages.Count && i < 10; i++)
         {
-            ChatLine msg = _messages[i];
+            var msg = _messages[i];
             if (msg.UpdateCounter < 200)
             {
-                float progress = msg.UpdateCounter / 200.0f;
-                float alpha = Math.Clamp((1.0f - progress) * 10.0f, 0, 1);
+                var progress = msg.UpdateCounter / 200.0f;
+                var alpha = Math.Clamp((1.0f - progress) * 10.0f, 0, 1);
                 alpha *= alpha; // Non-linear fade out
 
                 renderer.DrawRect(0, yOffset - _lineHeight, _chatWidth, _lineHeight, new Color(0, 0, 0, (byte)(100 * alpha)));
@@ -221,15 +221,15 @@ public class ChatOverlay : UIElement
 
     private void RenderHistory(UIRenderer renderer)
     {
-        int visibleCount = Math.Min(MaxHistoryLines, _messages.Count - ScrollOffset);
+        var visibleCount = Math.Min(MaxHistoryLines, _messages.Count - ScrollOffset);
         if (visibleCount <= 0)
         {
             return;
         }
 
         // Render messages bottom-up
-        int yOffset = 0;
-        for (int i = ScrollOffset; i < ScrollOffset + visibleCount; i++)
+        var yOffset = 0;
+        for (var i = ScrollOffset; i < ScrollOffset + visibleCount; i++)
         {
             renderer.DrawRect(0, yOffset - _lineHeight, _chatWidth, _lineHeight, new Color(0, 0, 0, 100));
             renderer.DrawText(_messages[i].Message, 0, yOffset - _lineHeight, Color.White, _scale);

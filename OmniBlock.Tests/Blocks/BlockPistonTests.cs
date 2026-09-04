@@ -11,7 +11,7 @@ public sealed class BlockPistonTests
     {
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("piston").Id, 5); // facing +X
-        for (int x = 1; x <= 12; x++)
+        for (var x = 1; x <= 12; x++)
         {
             world.ReaderWriter.SetInitial(x, 64, 0, TestBlocks.Get("stone").Id);
         }
@@ -71,7 +71,7 @@ public sealed class BlockPistonTests
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("moving_piston").Id);
 
-        bool handled = TestBlocks.Get("moving_piston").OnUse(new OnUseEvent(world, null!, 0, 64, 0));
+        var handled = TestBlocks.Get("moving_piston").OnUse(new OnUseEvent(world, null!, 0, 64, 0));
 
         Assert.True(handled);
         Assert.Equal(0, world.Reader.GetBlockId(0, 64, 0));
@@ -91,7 +91,7 @@ public sealed class BlockPistonTests
         Assert.Equal(0, world.Reader.GetBlockId(2, 64, 0)); // source cleared
         Assert.Equal(TestBlocks.Get("moving_piston").Id, world.Reader.GetBlockId(1, 64, 0)); // pulled block now moving at head
 
-        BlockEntityPiston? pulled = world.Entities.GetBlockEntity<BlockEntityPiston>(1, 64, 0);
+        var pulled = world.Entities.GetBlockEntity<BlockEntityPiston>(1, 64, 0);
         Assert.NotNull(pulled);
         Assert.Equal(TestBlocks.Get("stone").Id, pulled.PushedBlockId);
         Assert.False(pulled.IsExtending);
@@ -147,7 +147,7 @@ public sealed class BlockPistonTests
     {
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("piston").Id, 5); // facing +X
-        for (int x = 1; x <= 13; x++)
+        for (var x = 1; x <= 13; x++)
         {
             world.ReaderWriter.SetInitial(x, 64, 0, TestBlocks.Get("stone").Id);
         }
@@ -201,9 +201,9 @@ public sealed class BlockPistonTests
         world.ReaderWriter.SetInitial(0, 66, 0, TestBlocks.Get("lit_redstone_torch").Id);
         world.ReaderWriter.SetInitial(2, 66, 0, TestBlocks.Get("lit_redstone_torch").Id);
 
-        Exception? ex = Record.Exception(() =>
+        var ex = Record.Exception(() =>
         {
-            for (int i = 0; i < 50; i++)
+            for (var i = 0; i < 50; i++)
             {
                 TestBlocks.Get("piston").NeighborUpdate(new OnTickEvent(world, 0, 64, 0, world.Reader.GetBlockMeta(0, 64, 0), TestBlocks.Get("stone").Id));
                 TestBlocks.Get("piston").NeighborUpdate(new OnTickEvent(world, 2, 64, 0, world.Reader.GetBlockMeta(2, 64, 0), TestBlocks.Get("stone").Id));

@@ -29,32 +29,63 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 {
     private const int CloudsRenderDistance = 128;
 
-    public int CountEntitiesTotal { get; private set; }
-    public int CountEntitiesRendered { get; private set; }
-    public int CountEntitiesHidden { get; private set; }
-    public ChunkRenderer ChunkRenderer { get; private set; }
-    public float DamagePartialTime { get; set; }
-
-    private World _world;
-    private readonly TextureManager _textureManager;
+    private const uint SkyUniformSize = 192;
+    private const uint CloudUniformSize = 256;
     private readonly OmniBlock _game;
-    private int _cloudOffsetX;
-    private readonly IStaticMesh _stars;
     private readonly IStaticMesh _skyAbove;
     private readonly IStaticMesh _skyBelow;
+    private readonly IStaticMesh _stars;
+    private readonly TextureManager _textureManager;
+    private int _cloudOffsetX;
 
     /// <summary>
     ///     One mesh for the shader-based clouds, four for the legacy ones (bottom, top, and the two
     ///     side faces), rebuilt whenever the clouds quality option changes.
     /// </summary>
     private IStaticMesh[] _clouds = [];
+
+    private int _cloudsQuality = -1;
+    private Vector3D<float> _fogColor;
     private int _renderDistance = -1;
     private int _renderEntitiesStartupCounter = 2;
-    private Vector3D<float> _fogColor;
-    private int _cloudsQuality = -1;
 
-    private const uint SkyUniformSize = 192;
-    private const uint CloudUniformSize = 256;
+    private World _world;
+
+    public WorldRenderer(OmniBlock gameInstance, TextureManager textureManager)
+    {
+        _game = gameInstance;
+        _textureManager = textureManager;
+
+        _stars = BuildStars();
+
+        ChunkRenderer = new ChunkRenderer(gameInstance.World, _game.Options);
+        EntityBatchRenderer.Initialize(_game.Options);
+
+        OnCloudsQualityChanged();
+
+        _skyAbove = BuildSkyPlane(16.0F, true);
+        _skyBelow = BuildSkyPlane(-16.0F, false);
+
+        // The sky and cloud geometry above is backend-agnostic — it goes through the draw-command
+        // seam. Registrations rather than a lazy build, because the sky and cloud shaders are not
+        // built from GL state (unlike gbuffers, which vary by RenderState). One pipeline per slot —
+        // the draw target matches the slot it was given, so each pipeline is built once.
+        if (GLManager.DrawTargetOrNull is WebGpuDrawTarget wgpuTarget)
+        {
+            wgpuTarget.RegisterSlotPipeline(ProgramSlot.SkyBasic, "shaders/sky.wgsl",
+                SkyUniformSize, true);
+            wgpuTarget.RegisterSlotPipeline(ProgramSlot.SkyTextured, "shaders/sky.wgsl",
+                SkyUniformSize, true);
+            wgpuTarget.RegisterSlotPipeline(ProgramSlot.Clouds, "shaders/cloud.wgsl",
+                CloudUniformSize, true);
+        }
+    }
+
+    public int CountEntitiesTotal { get; private set; }
+    public int CountEntitiesRendered { get; private set; }
+    public int CountEntitiesHidden { get; private set; }
+    public ChunkRenderer ChunkRenderer { get; private set; }
+    public float DamagePartialTime { get; set; }
 
     /// <summary>Whether the draw target has slot pipelines registered for the sky.</summary>
     private bool HasSkySlotPipeline =>
@@ -66,34 +97,176 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         GLManager.DrawTargetOrNull is WebGpuDrawTarget t
         && t.HasSlotPipeline(ProgramSlot.Clouds);
 
-    public WorldRenderer(OmniBlock gameInstance, TextureManager textureManager)
+    public void Dispose()
     {
-        _game = gameInstance;
-        _textureManager = textureManager;
+        ChunkRenderer?.Dispose();
 
-        _stars = BuildStars();
+        _stars.Dispose();
+        _skyAbove.Dispose();
+        _skyBelow.Dispose();
 
-        ChunkRenderer = new(gameInstance.World, _game.Options);
-        EntityBatchRenderer.Initialize(_game.Options);
-
-        OnCloudsQualityChanged();
-
-        _skyAbove = BuildSkyPlane(16.0F, facingUp: true);
-        _skyBelow = BuildSkyPlane(-16.0F, facingUp: false);
-
-        // The sky and cloud geometry above is backend-agnostic — it goes through the draw-command
-        // seam. Registrations rather than a lazy build, because the sky and cloud shaders are not
-        // built from GL state (unlike gbuffers, which vary by RenderState). One pipeline per slot —
-        // the draw target matches the slot it was given, so each pipeline is built once.
-        if (GLManager.DrawTargetOrNull is WebGpuDrawTarget wgpuTarget)
+        foreach (var mesh in _clouds)
         {
-            wgpuTarget.RegisterSlotPipeline(ProgramSlot.SkyBasic, "shaders/sky.wgsl",
-                SkyUniformSize, textured: true);
-            wgpuTarget.RegisterSlotPipeline(ProgramSlot.SkyTextured, "shaders/sky.wgsl",
-                SkyUniformSize, textured: true);
-            wgpuTarget.RegisterSlotPipeline(ProgramSlot.Clouds, "shaders/cloud.wgsl",
-                CloudUniformSize, textured: true);
+            mesh.Dispose();
         }
+
+        _clouds = [];
+    }
+
+    public void BlockUpdate(int x, int y, int z) => MarkBlocksDirty(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1);
+
+    public void SetBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
+    {
+        if (!_world.BlockHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
+        {
+            return;
+        }
+
+        MarkBlocksDirty(minX - 1, minY - 1, minZ - 1, maxX + 1, maxY + 1, maxZ + 1);
+    }
+
+    public void PlayStreaming(string soundName, int x, int y, int z)
+    {
+        if (soundName != null)
+        {
+            _game.HUD.Chat.SetRecordPlaying(soundName);
+        }
+
+        _game.SoundManager.PlayStreaming(soundName, x, y, z, 1.0F, 1.0F);
+    }
+
+    public void PlaySound(string soundName, double x, double y, double z, float volume, float pitch)
+    {
+        var maxDistance = 16.0F;
+        if (volume > 1.0F)
+        {
+            maxDistance *= volume;
+        }
+
+        if (_game.Camera.GetSquaredDistance(x, y, z) < maxDistance * maxDistance)
+        {
+            _game.SoundManager.PlaySound(soundName, (float)x, (float)y, (float)z, volume, pitch);
+        }
+    }
+
+    public void SpawnParticle(string particleName, double x, double y, double z, double velocityX, double velocityY, double velocityZ)
+    {
+        if (_game != null && _game.Camera != null && _game.ParticleManager != null)
+        {
+            var cameraDx = _game.Camera.X - x;
+            var cameraDy = _game.Camera.Y - y;
+            var cameraDz = _game.Camera.Z - z;
+            var maxDistance = 16.0D;
+            if (cameraDx * cameraDx + cameraDy * cameraDy + cameraDz * cameraDz <= maxDistance * maxDistance)
+            {
+                var pm = _game.ParticleManager;
+                switch (particleName)
+                {
+                    case "bubble": pm.AddBubble(x, y, z, velocityX, velocityY, velocityZ); break;
+                    case "smoke": pm.AddSmoke(x, y, z, velocityX, velocityY, velocityZ); break;
+                    case "note": pm.AddNote(x, y, z, velocityX, velocityY, velocityZ); break;
+                    case "portal": pm.AddPortal(x, y, z, velocityX, velocityY, velocityZ); break;
+                    case "explode": pm.AddExplode(x, y, z, velocityX, velocityY, velocityZ); break;
+                    case "flame": pm.AddFlame(x, y, z, velocityX, velocityY, velocityZ); break;
+                    case "lava": pm.AddLava(x, y, z); break;
+                    case "footstep": pm.AddSpecialParticle(new LegacyParticleAdapter(new EntityFootStepFX(_textureManager, _world, x, y, z))); break;
+                    case "splash": pm.AddSplash(x, y, z, velocityX, velocityY, velocityZ); break;
+                    case "largesmoke": pm.AddSmoke(x, y, z, velocityX, velocityY, velocityZ, 2.5f); break;
+                    case "reddust": pm.AddReddust(x, y, z, (float)velocityX, (float)velocityY, (float)velocityZ); break;
+                    case "snowballpoof": pm.AddSlime(x, y, z, _world.Content.Items.Get("omniblock:snowball")); break;
+                    case "snowshovel": pm.AddSnowShovel(x, y, z, velocityX, velocityY, velocityZ); break;
+                    case "slime": pm.AddSlime(x, y, z, _world.Content.Items.Get("omniblock:slimeball")); break;
+                    case "heart": pm.AddHeart(x, y, z, velocityX, velocityY, velocityZ); break;
+                }
+            }
+        }
+    }
+
+    public void NotifyEntityAdded(Entity entity)
+    {
+        entity.UpdateCloak();
+        EntityRenderDispatcher.Instance.SkinManager.RequestDownload((entity as EntityPlayer)?.Name);
+    }
+
+    public void NotifyEntityRemoved(Entity entity)
+    {
+    }
+
+    public void NotifyAmbientDarknessChanged() => ChunkRenderer.UpdateAllRenderers();
+
+    public void UpdateBlockEntity(int x, int y, int z, BlockEntity blockEntity)
+    {
+    }
+
+    public void WorldEvent(EntityPlayer? player, int eventId, int x, int y, int z, int data)
+    {
+        var random = _world.Random;
+        int blockId;
+        switch (eventId)
+        {
+            case 1000:
+                _game.SoundManager.PlaySound("random.click", x, y, z, 1.0F, 1.0F);
+                break;
+            case 1001:
+                _game.SoundManager.PlaySound("random.click", x, y, z, 1.0F, 1.2F);
+                break;
+            case 1002:
+                _game.SoundManager.PlaySound("random.bow", x, y, z, 1.0F, 1.2F);
+                break;
+            case 1003:
+                _game.SoundManager.PlayDoorSound(x, y, z);
+                break;
+            case 1004:
+                _game.SoundManager.PlaySound("random.fizz", x + 0.5F, y + 0.5F, z + 0.5F, 0.5F, 2.6F + (random.NextFloat() - random.NextFloat()) * 0.8F);
+                for (var particleIndex = 0; particleIndex < Random.Shared.Next(8, 12); ++particleIndex)
+                {
+                    _world.Broadcaster.AddParticle("largesmoke", x + random.NextDouble(), y + 1.2D, z + random.NextDouble(), 0.0D, 0.0D, 0.0D);
+                }
+
+                break;
+            case 1005:
+                if (_world.Content.Items.TryGetByProtocolId(data, out var item) && item?.GetBehavior<RecordBehavior>() is { } record)
+                {
+                    _game.SoundManager.PlayStreaming(record.RecordName, x, y, z, 1.0F, 1.0F);
+                }
+                else
+                {
+                    _game.SoundManager.PlayStreaming(null, x, y, z, 1.0F, 1.0F);
+                }
+
+                break;
+            case 2000:
+                var offsetX = data % 3 - 1;
+                var offsetZ = data / 3 % 3 - 1;
+                var particleX = x + offsetX * 0.6D + 0.5D;
+                var particleY = y + 0.5D;
+                var particleZ = z + offsetZ * 0.6D + 0.5D;
+
+                for (blockId = 0; blockId < 10; ++blockId)
+                {
+                    var speed = random.NextDouble() * 0.2D + 0.01D;
+                    var smokeX = particleX + offsetX * 0.01D + (random.NextDouble() - 0.5D) * offsetZ * 0.5D;
+                    var smokeY = particleY + (random.NextDouble() - 0.5D) * 0.5D;
+                    var smokeZ = particleZ + offsetZ * 0.01D + (random.NextDouble() - 0.5D) * offsetX * 0.5D;
+                    var velocityX = offsetX * speed + random.NextGaussian() * 0.01D;
+                    var velocityY = -0.03D + random.NextGaussian() * 0.01D;
+                    var velocityZ = offsetZ * speed + random.NextGaussian() * 0.01D;
+                    SpawnParticle("smoke", smokeX, smokeY, smokeZ, velocityX, velocityY, velocityZ);
+                }
+
+                return;
+            case 2001: // This is for breaking a block
+                WorldEventBreak(data & 255, (data >> 8) & 255, x, y, z);
+                break;
+        }
+    }
+
+    public void PlayNote(int x, int y, int z, int soundType, int pitch)
+    {
+    }
+
+    public void BroadcastEntityEvent(Entity entity, byte @event)
+    {
     }
 
     private void OnCloudsQualityChanged()
@@ -103,7 +276,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         {
             // The meshes belong to whichever quality built them, so the old set goes before the new
             // one is built rather than leaking a buffer on every change.
-            foreach (IStaticMesh mesh in _clouds)
+            foreach (var mesh in _clouds)
             {
                 mesh.Dispose();
             }
@@ -117,7 +290,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         _cloudsQuality = _game.Options.CloudsQuality;
     }
 
-    public void SetFogColor(float r, float g, float b) => _fogColor = new(r, g, b);
+    public void SetFogColor(float r, float g, float b) => _fogColor = new Vector3D<float>(r, g, b);
 
     /// <summary>
     ///     The flat sheet of quads the sky colour is painted onto, at <paramref name="y" />.
@@ -133,12 +306,12 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         const int step = 64;
         const int radius = 256 / step + 2;
 
-        Tessellator tessellator = Tessellator.instance;
+        var tessellator = Tessellator.instance;
         tessellator.startDrawingQuads();
 
-        for (int x = -step * radius; x <= step * radius; x += step)
+        for (var x = -step * radius; x <= step * radius; x += step)
         {
-            for (int z = -step * radius; z <= step * radius; z += step)
+            for (var z = -step * radius; z <= step * radius; z += step)
             {
                 if (facingUp)
                 {
@@ -163,46 +336,46 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     private static IStaticMesh BuildStars()
     {
         Random random = new(10842);
-        Tessellator tessellator = Tessellator.instance;
+        var tessellator = Tessellator.instance;
         tessellator.startDrawingQuads();
 
-        for (int starIndex = 0; starIndex < 1500; ++starIndex)
+        for (var starIndex = 0; starIndex < 1500; ++starIndex)
         {
-            double dirX = random.NextDouble() * 2.0 - 1.0;
-            double dirY = random.NextDouble() * 2.0 - 1.0;
-            double dirZ = random.NextDouble() * 2.0 - 1.0;
-            double starSize = (0.25 + random.NextDouble() * 0.25);
-            double dirLengthSq = dirX * dirX + dirY * dirY + dirZ * dirZ;
+            var dirX = random.NextDouble() * 2.0 - 1.0;
+            var dirY = random.NextDouble() * 2.0 - 1.0;
+            var dirZ = random.NextDouble() * 2.0 - 1.0;
+            var starSize = 0.25 + random.NextDouble() * 0.25;
+            var dirLengthSq = dirX * dirX + dirY * dirY + dirZ * dirZ;
             if (dirLengthSq < 1.0 && dirLengthSq > 0.01)
             {
                 dirLengthSq = 1.0 / Math.Sqrt(dirLengthSq);
                 dirX *= dirLengthSq;
                 dirY *= dirLengthSq;
                 dirZ *= dirLengthSq;
-                double starX = dirX * 100.0;
-                double starY = dirY * 100.0;
-                double starZ = dirZ * 100.0;
-                double yaw = Math.Atan2(dirX, dirZ);
-                double sinYaw = Math.Sin(yaw);
-                double cosYaw = Math.Cos(yaw);
-                double pitch = Math.Atan2(Math.Sqrt(dirX * dirX + dirZ * dirZ), dirY);
-                double sinPitch = Math.Sin(pitch);
-                double cosPitch = Math.Cos(pitch);
-                double roll = random.NextDouble() * Math.PI * 2.0;
-                double sinRoll = Math.Sin(roll);
-                double cosRoll = Math.Cos(roll);
+                var starX = dirX * 100.0;
+                var starY = dirY * 100.0;
+                var starZ = dirZ * 100.0;
+                var yaw = Math.Atan2(dirX, dirZ);
+                var sinYaw = Math.Sin(yaw);
+                var cosYaw = Math.Cos(yaw);
+                var pitch = Math.Atan2(Math.Sqrt(dirX * dirX + dirZ * dirZ), dirY);
+                var sinPitch = Math.Sin(pitch);
+                var cosPitch = Math.Cos(pitch);
+                var roll = random.NextDouble() * Math.PI * 2.0;
+                var sinRoll = Math.Sin(roll);
+                var cosRoll = Math.Cos(roll);
 
-                for (int cornerIndex = 0; cornerIndex < 4; ++cornerIndex)
+                for (var cornerIndex = 0; cornerIndex < 4; ++cornerIndex)
                 {
-                    double cornerY = 0.0D;
-                    double cornerX = ((cornerIndex & 2) - 1) * starSize;
-                    double cornerZ = ((cornerIndex + 1 & 2) - 1) * starSize;
-                    double rotatedCornerX = cornerX * cosRoll - cornerZ * sinRoll;
-                    double rotatedCornerZ = cornerZ * cosRoll + cornerX * sinRoll;
-                    double pitchedCornerY = rotatedCornerX * sinPitch + cornerY * cosPitch;
-                    double pitchedCornerX = cornerY * sinPitch - rotatedCornerX * cosPitch;
-                    double finalX = pitchedCornerX * sinYaw - rotatedCornerZ * cosYaw;
-                    double finalZ = rotatedCornerZ * sinYaw + pitchedCornerX * cosYaw;
+                    var cornerY = 0.0D;
+                    var cornerX = ((cornerIndex & 2) - 1) * starSize;
+                    var cornerZ = (((cornerIndex + 1) & 2) - 1) * starSize;
+                    var rotatedCornerX = cornerX * cosRoll - cornerZ * sinRoll;
+                    var rotatedCornerZ = cornerZ * cosRoll + cornerX * sinRoll;
+                    var pitchedCornerY = rotatedCornerX * sinPitch + cornerY * cosPitch;
+                    var pitchedCornerX = cornerY * sinPitch - rotatedCornerX * cosPitch;
+                    var finalX = pitchedCornerX * sinYaw - rotatedCornerZ * cosYaw;
+                    var finalZ = rotatedCornerZ * sinYaw + pitchedCornerX * cosYaw;
                     tessellator.addVertex(starX + finalX, starY + pitchedCornerY, starZ + finalZ);
                 }
             }
@@ -232,26 +405,10 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         }
 
         OnCloudsQualityChanged();
-        double viewX = view.LastTickX + (view.X - view.LastTickX) * partialTicks;
-        double viewY = view.LastTickY + (view.Y - view.LastTickY) * partialTicks;
-        double viewZ = view.LastTickZ + (view.Z - view.LastTickZ) * partialTicks;
-        ChunkRenderer.Tick(new(viewX, viewY, viewZ));
-    }
-
-    public void Dispose()
-    {
-        ChunkRenderer?.Dispose();
-
-        _stars.Dispose();
-        _skyAbove.Dispose();
-        _skyBelow.Dispose();
-
-        foreach (IStaticMesh mesh in _clouds)
-        {
-            mesh.Dispose();
-        }
-
-        _clouds = [];
+        var viewX = view.LastTickX + (view.X - view.LastTickX) * partialTicks;
+        var viewY = view.LastTickY + (view.Y - view.LastTickY) * partialTicks;
+        var viewZ = view.LastTickZ + (view.Z - view.LastTickZ) * partialTicks;
+        ChunkRenderer.Tick(new Vector3D<double>(viewX, viewY, viewZ));
     }
 
     public void LoadRenderers()
@@ -260,7 +417,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         _renderDistance = _game.Options.RenderDistance;
 
         ChunkRenderer?.Dispose();
-        ChunkRenderer = new(_world, _game.Options);
+        ChunkRenderer = new ChunkRenderer(_world, _game.Options);
         ChunkMeshVersion.ClearPool();
 
         _renderEntitiesStartupCounter = 2;
@@ -282,14 +439,14 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             CountEntitiesTotal = 0;
             CountEntitiesRendered = 0;
             CountEntitiesHidden = 0;
-            EntityLiving camera = _game.Camera;
+            var camera = _game.Camera;
             EntityRenderDispatcher.OffsetX = camera.LastTickX + (camera.X - camera.LastTickX) * partialTicks;
             EntityRenderDispatcher.OffsetY = camera.LastTickY + (camera.Y - camera.LastTickY) * partialTicks;
             EntityRenderDispatcher.OffsetZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * partialTicks;
             BlockEntityRenderer.StaticPlayerX = camera.LastTickX + (camera.X - camera.LastTickX) * partialTicks;
             BlockEntityRenderer.StaticPlayerY = camera.LastTickY + (camera.Y - camera.LastTickY) * partialTicks;
             BlockEntityRenderer.StaticPlayerZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * partialTicks;
-            List<Entity> entities = _world.Entities.Entities;
+            var entities = _world.Entities.Entities;
             CountEntitiesTotal = entities.Count;
 
             int index;
@@ -326,7 +483,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
                 if (entity.ShouldRender(cameraPos) && (entity.IgnoreFrustumCheck || culler.IsBoundingBoxInFrustum(entity.BoundingBox)) && (entity != _game.Camera || _game.Options.CameraMode != CameraMode.FirstPerson || _game.Camera.IsSleeping))
                 {
-                    int yFloor = MathHelper.Floor(entity.Y);
+                    var yFloor = MathHelper.Floor(entity.Y);
                     if (yFloor < 0)
                     {
                         yFloor = 0;
@@ -346,7 +503,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
             for (index = 0; index < _world.Entities.BlockEntities.Count; ++index)
             {
-                BlockEntity blockEntity = _world.Entities.BlockEntities[index];
+                var blockEntity = _world.Entities.BlockEntities[index];
                 if (!blockEntity.IsRemoved() && culler.IsBoundingBoxInFrustum(new Box(blockEntity.X, blockEntity.Y, blockEntity.Z, blockEntity.X + 1, blockEntity.Y + 1, blockEntity.Z + 1)))
                 {
                     BlockEntityRenderer.Instance.RenderTileEntity(blockEntity, partialTicks);
@@ -365,9 +522,9 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             LoadRenderers();
         }
 
-        double viewX = camera.LastTickX + (camera.X - camera.LastTickX) * partialTicks;
-        double viewY = camera.LastTickY + (camera.Y - camera.LastTickY) * partialTicks;
-        double viewZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * partialTicks;
+        var viewX = camera.LastTickX + (camera.X - camera.LastTickX) * partialTicks;
+        var viewY = camera.LastTickY + (camera.Y - camera.LastTickY) * partialTicks;
+        var viewZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * partialTicks;
 
         Lighting.turnOff();
 
@@ -395,10 +552,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         return 0;
     }
 
-    public void UpdateClouds()
-    {
-        ++_cloudOffsetX;
-    }
+    public void UpdateClouds() => ++_cloudOffsetX;
 
     public void RenderSky(float tickDelta)
     {
@@ -409,16 +563,16 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             return;
         }
 
-        Vector3D<double> skyColorVec = _world.Environment.GetSkyColor(_game.Camera, tickDelta);
-        float skyRed = (float)skyColorVec.X;
-        float skyGreen = (float)skyColorVec.Y;
-        float skyBlue = (float)skyColorVec.Z;
+        var skyColorVec = _world.Environment.GetSkyColor(_game.Camera, tickDelta);
+        var skyRed = (float)skyColorVec.X;
+        var skyGreen = (float)skyColorVec.Y;
+        var skyBlue = (float)skyColorVec.Z;
 
-        float groundR = _world.Dimension.HasGround ? skyRed * 0.2F + 0.04F : skyRed;
-        float groundG = _world.Dimension.HasGround ? skyGreen * 0.2F + 0.04F : skyGreen;
-        float groundB = _world.Dimension.HasGround ? skyBlue * 0.6F + 0.1F : skyBlue;
+        var groundR = _world.Dimension.HasGround ? skyRed * 0.2F + 0.04F : skyRed;
+        var groundG = _world.Dimension.HasGround ? skyGreen * 0.2F + 0.04F : skyGreen;
+        var groundB = _world.Dimension.HasGround ? skyBlue * 0.6F + 0.1F : skyBlue;
 
-        Tessellator tessellator = Tessellator.instance;
+        var tessellator = Tessellator.instance;
 
         // The sky is drawn after the world, not before it, so it has to be depth tested — terrain
         // already in the buffer covers it — while writing no depth of its own, or a dome at
@@ -428,7 +582,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         // Sky dome (top + bottom) — angle-based gradient
         SetSkyUniforms(SkyGradient(skyRed, skyGreen, skyBlue, groundR, groundG, groundB));
-        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
         DrawSkyMesh(_skyAbove, ProgramSlot.SkyBasic);
         DrawSkyMesh(_skyBelow, ProgramSlot.SkyBasic);
 
@@ -440,14 +594,17 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         // Sun and Moon (textured)
         // Sun, moon and the stars after them only ever brighten what is behind them, faded in by
         // their own alpha so the rain gradient can dim them.
-        GLManager.State.Apply(RenderState.Translucent with { Blend = BlendMode.AdditiveByAlpha });
+        GLManager.State.Apply(RenderState.Translucent with
+        {
+            Blend = BlendMode.AdditiveByAlpha
+        });
         GLManager.ModelView.Push();
-        float rainFade = 1.0F - _world.Environment.GetRainGradient(tickDelta);
-        GLManager.Color = new(1.0F, 1.0F, 1.0F, rainFade);
+        var rainFade = 1.0F - _world.Environment.GetRainGradient(tickDelta);
+        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, rainFade);
         GLManager.ModelView.Rotate(_world.GetTime(tickDelta) * 360.0F, 1.0F, 0.0F, 0.0F);
         RefreshSkyModelView();
         SetSkyUniforms(SkyTextured(rainFade));
-        float sunQuadSize = 30.0F;
+        var sunQuadSize = 30.0F;
         _textureManager.BindTexture(_textureManager.GetTextureId("/terrain/sun.png"));
         tessellator.startDrawingQuads();
         tessellator.addVertexWithUV(-sunQuadSize, 100.0D, -sunQuadSize, 0.0D, 0.0D);
@@ -465,15 +622,15 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         DrawSkyTessellator(ProgramSlot.SkyTextured);
 
         // Stars
-        float starBrightness = _world.CalculateSkyLightIntensity(tickDelta) * rainFade;
+        var starBrightness = _world.CalculateSkyLightIntensity(tickDelta) * rainFade;
         if (starBrightness > 0.0F)
         {
             SetSkyUniforms(SkyStars(starBrightness));
-            GLManager.Color = new(starBrightness, starBrightness, starBrightness, starBrightness);
+            GLManager.Color = new Vector4D<float>(starBrightness, starBrightness, starBrightness, starBrightness);
             DrawSkyMesh(_stars, ProgramSlot.SkyBasic);
         }
 
-        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
         GLManager.AlphaTestEnabled = true;
         GLManager.ModelView.Pop();
 
@@ -501,7 +658,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     {
         if (!HasSkySlotPipeline) return;
 
-        SkyWgslUniforms u = GLManager.Context.SkySlot;
+        var u = GLManager.Context.SkySlot;
         u.ModelViewMatrix = WebGpuDrawTarget.ToNumerics(GLManager.ModelView.Top);
         GLManager.Context.SkySlot = u;
     }
@@ -521,16 +678,16 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     private static SkyWgslUniforms SkyGradient(float skyR, float skyG, float skyB,
         float groundR, float groundG, float groundB)
     {
-        FogState fog = GLManager.Fog;
-        return new()
+        var fog = GLManager.Fog;
+        return new SkyWgslUniforms
         {
-            SkyColor = new(skyR, skyG, skyB),
-            GroundColor = new(groundR, groundG, groundB),
+            SkyColor = new Vector3(skyR, skyG, skyB),
+            GroundColor = new Vector3(groundR, groundG, groundB),
             FogStart = fog.Start,
             FogEnd = fog.End,
             GradientMode = 1,
             UseTexture = 0,
-            UseVertexColor = 0,
+            UseVertexColor = 0
         };
     }
 
@@ -539,15 +696,15 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     /// </summary>
     private static SkyWgslUniforms SkyTextured(float alpha)
     {
-        FogState fog = GLManager.Fog;
-        return new()
+        var fog = GLManager.Fog;
+        return new SkyWgslUniforms
         {
-            Tint = new(1, 1, 1, alpha),
+            Tint = new Vector4(1, 1, 1, alpha),
             FogStart = fog.Start,
             FogEnd = fog.End,
             GradientMode = 0,
             UseTexture = 1,
-            UseVertexColor = 0,
+            UseVertexColor = 0
         };
     }
 
@@ -557,15 +714,15 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     /// </summary>
     private static SkyWgslUniforms SkyUntextured()
     {
-        FogState fog = GLManager.Fog;
-        return new()
+        var fog = GLManager.Fog;
+        return new SkyWgslUniforms
         {
             Tint = Vector4.One,
             FogStart = fog.Start,
             FogEnd = fog.End,
             GradientMode = 0,
             UseTexture = 0,
-            UseVertexColor = 1,
+            UseVertexColor = 1
         };
     }
 
@@ -575,15 +732,15 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     /// </summary>
     private static SkyWgslUniforms SkyStars(float brightness)
     {
-        FogState fog = GLManager.Fog;
-        return new()
+        var fog = GLManager.Fog;
+        return new SkyWgslUniforms
         {
-            Tint = new(brightness, brightness, brightness, brightness),
+            Tint = new Vector4(brightness, brightness, brightness, brightness),
             FogStart = fog.Start,
             FogEnd = fog.End,
             GradientMode = 0,
             UseTexture = 0,
-            UseVertexColor = 0,
+            UseVertexColor = 0
         };
     }
 
@@ -595,19 +752,19 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     {
         if (!HasCloudSlotPipeline) return;
 
-        FogState fog = GLManager.Fog;
+        var fog = GLManager.Fog;
         GLManager.Context.CloudSlot = new CloudWgslUniforms
         {
             ModelViewMatrix = WebGpuDrawTarget.ToNumerics(GLManager.ModelView.Top),
             ProjectionMatrix =
                 WebGpuDrawTarget.ToNumerics(WgpuClip.FromGl(GLManager.Projection.Top)),
             TextureMatrix = WebGpuDrawTarget.ToNumerics(GLManager.TextureMatrix.Top),
-            CloudOffset = new(offsetX, offsetY, offsetZ),
+            CloudOffset = new Vector3(offsetX, offsetY, offsetZ),
             CloudScale = scale,
             FogStart = fog.Start,
             FogEnd = fog.End,
-            Tint = new(tintR, tintG, tintB, tintA),
-            LightDir = lightDir,
+            Tint = new Vector4(tintR, tintG, tintB, tintA),
+            LightDir = lightDir
         };
     }
 
@@ -618,7 +775,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     /// </summary>
     private Vector3 GetCelestialLightDir(float tickDelta)
     {
-        float theta = _world.GetTime(tickDelta) * MathF.PI * 2.0F;
+        var theta = _world.GetTime(tickDelta) * MathF.PI * 2.0F;
         return new Vector3(0.0F, MathF.Cos(theta), MathF.Sin(theta));
     }
 
@@ -652,12 +809,12 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     private static IStaticMesh BuildCloudMesh()
     {
-        Tessellator tessellator = Tessellator.instance;
+        var tessellator = Tessellator.instance;
 
         tessellator.startDrawingQuads();
-        float uvScale = 1.0F / 256.0F;
+        var uvScale = 1.0F / 256.0F;
         byte tileSize = CloudsRenderDistance;
-        float tile = tileSize * uvScale;
+        var tile = tileSize * uvScale;
 
         // Both cloud.frag and cloud.wgsl multiply the sampled texel by the captured vertex colour
         // unconditionally. Without this, the tessellator never touches the colour slot for this
@@ -676,29 +833,29 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     /// <summary>Bottom, top, and the two side faces, in the order the draw path expects them.</summary>
     private static IStaticMesh[] BuildLegacyCloudMeshes()
     {
-        Tessellator tessellator = Tessellator.instance;
-        IStaticMesh[] meshes = new IStaticMesh[4];
+        var tessellator = Tessellator.instance;
+        var meshes = new IStaticMesh[4];
 
-        for (int i = 0; i < 4; ++i)
+        for (var i = 0; i < 4; ++i)
         {
             tessellator.startDrawingQuads();
             // See BuildCloudMesh: without an explicit colour, the captured mesh's tint comes from
             // whatever the shared tessellator buffer last held for unrelated geometry.
             tessellator.setColorRGBA_F(1.0F, 1.0F, 1.0F, 1.0F);
-            float cloudHeight = 4.0F;
-            float uvScale = 1.0F / 256.0F;
-            float edgeInset = 1.0F / 1024.0F;
+            var cloudHeight = 4.0F;
+            var uvScale = 1.0F / 256.0F;
+            var edgeInset = 1.0F / 1024.0F;
             byte tileSize = 8;
             byte cloudRadius = 3;
 
-            for (int tileX = -cloudRadius + 1; tileX <= cloudRadius; ++tileX)
+            for (var tileX = -cloudRadius + 1; tileX <= cloudRadius; ++tileX)
             {
-                for (int tileZ = -cloudRadius + 1; tileZ <= cloudRadius; ++tileZ)
+                for (var tileZ = -cloudRadius + 1; tileZ <= cloudRadius; ++tileZ)
                 {
                     float uvX = tileX * tileSize;
                     float uvZ = tileZ * tileSize;
-                    float x = uvX;
-                    float z = uvZ;
+                    var x = uvX;
+                    var z = uvZ;
 
                     if (i == 0)
                     {
@@ -723,7 +880,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                         if (tileX > -1)
                         {
                             tessellator.setNormal(-1.0F, 0.0F, 0.0F);
-                            for (int edgeSlice = 0; edgeSlice < tileSize; ++edgeSlice)
+                            for (var edgeSlice = 0; edgeSlice < tileSize; ++edgeSlice)
                             {
                                 tessellator.addVertexWithUV(x + edgeSlice, 0.0, z + tileSize, (uvX + edgeSlice + 0.5F) * uvScale, (uvZ + tileSize) * uvScale);
                                 tessellator.addVertexWithUV(x + edgeSlice, cloudHeight, z + tileSize, (uvX + edgeSlice + 0.5F) * uvScale, (uvZ + tileSize) * uvScale);
@@ -735,7 +892,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                         if (tileX <= 1)
                         {
                             tessellator.setNormal(1.0F, 0.0F, 0.0F);
-                            for (int edgeSlice = 0; edgeSlice < tileSize; ++edgeSlice)
+                            for (var edgeSlice = 0; edgeSlice < tileSize; ++edgeSlice)
                             {
                                 tessellator.addVertexWithUV(x + edgeSlice + 1.0F - edgeInset, 0.0, z + tileSize, (uvX + edgeSlice + 0.5F) * uvScale, (uvZ + tileSize) * uvScale);
                                 tessellator.addVertexWithUV(x + edgeSlice + 1.0F - edgeInset, cloudHeight, z + tileSize, (uvX + edgeSlice + 0.5F) * uvScale, (uvZ + tileSize) * uvScale);
@@ -750,7 +907,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                         if (tileZ > -1)
                         {
                             tessellator.setNormal(0.0F, 0.0F, -1.0F);
-                            for (int edgeSlice = 0; edgeSlice < tileSize; ++edgeSlice)
+                            for (var edgeSlice = 0; edgeSlice < tileSize; ++edgeSlice)
                             {
                                 tessellator.addVertexWithUV(x + 0.0F, cloudHeight, z + edgeSlice + 0.0F, uvX * uvScale, (uvZ + edgeSlice + 0.5F) * uvScale);
                                 tessellator.addVertexWithUV(x + tileSize, cloudHeight, z + edgeSlice + 0.0F, (uvX + tileSize) * uvScale, (uvZ + edgeSlice + 0.5F) * uvScale);
@@ -762,7 +919,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                         if (tileZ <= 1)
                         {
                             tessellator.setNormal(0.0F, 0.0F, 1.0F);
-                            for (int edgeSlice = 0; edgeSlice < tileSize; ++edgeSlice)
+                            for (var edgeSlice = 0; edgeSlice < tileSize; ++edgeSlice)
                             {
                                 tessellator.addVertexWithUV(x + 0.0F, cloudHeight, z + edgeSlice + 1.0F - edgeInset, uvX * uvScale, (uvZ + edgeSlice + 0.5F) * uvScale);
                                 tessellator.addVertexWithUV(x + tileSize, cloudHeight, z + edgeSlice + 1.0F - edgeInset, (uvX + tileSize) * uvScale, (uvZ + edgeSlice + 0.5F) * uvScale);
@@ -782,31 +939,34 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     private void RenderCloudsFancy(float tickDelta)
     {
-        float cameraY = (float)(_game.Camera.LastTickY + (_game.Camera.Y - _game.Camera.LastTickY) * tickDelta);
+        var cameraY = (float)(_game.Camera.LastTickY + (_game.Camera.Y - _game.Camera.LastTickY) * tickDelta);
         const float cloudScale = 12.0F;
-        double cloudOffsetX = (_game.Camera.PrevX + (_game.Camera.X - _game.Camera.PrevX) * tickDelta + ((_cloudOffsetX + tickDelta) * 0.03F)) / cloudScale;
-        double cloudOffsetZ = (_game.Camera.PrevZ + (_game.Camera.Z - _game.Camera.PrevZ) * tickDelta) / cloudScale + 0.33F;
-        float cloudY = _world.Dimension.CloudHeight - cameraY + 0.33F;
-        int cloudChunkX = MathHelper.Floor(cloudOffsetX / 2048.0D);
-        int cloudChunkZ = MathHelper.Floor(cloudOffsetZ / 2048.0D);
+        var cloudOffsetX = (_game.Camera.PrevX + (_game.Camera.X - _game.Camera.PrevX) * tickDelta + (_cloudOffsetX + tickDelta) * 0.03F) / cloudScale;
+        var cloudOffsetZ = (_game.Camera.PrevZ + (_game.Camera.Z - _game.Camera.PrevZ) * tickDelta) / cloudScale + 0.33F;
+        var cloudY = _world.Dimension.CloudHeight - cameraY + 0.33F;
+        var cloudChunkX = MathHelper.Floor(cloudOffsetX / 2048.0D);
+        var cloudChunkZ = MathHelper.Floor(cloudOffsetZ / 2048.0D);
         cloudOffsetX -= cloudChunkX * 2048;
         cloudOffsetZ -= cloudChunkZ * 2048;
         _textureManager.BindTexture(_textureManager.GetTextureId("/environment/clouds.png"));
 
         // Culling off because the cloud sheet is a single plane seen from either side, depending
         // on whether the camera is above or below the cloud layer.
-        GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
+        GLManager.State.Apply(RenderState.Entity with
+        {
+            Blend = BlendMode.Alpha
+        });
 
-        Vector3D<double> cloudColor = _world.Environment.GetCloudColor(tickDelta);
-        float cloudRed = (float)cloudColor.X;
-        float cloudGreen = (float)cloudColor.Y;
-        float cloudBlue = (float)cloudColor.Z;
+        var cloudColor = _world.Environment.GetCloudColor(tickDelta);
+        var cloudRed = (float)cloudColor.X;
+        var cloudGreen = (float)cloudColor.Y;
+        var cloudBlue = (float)cloudColor.Z;
 
         const float textureScale = 1 / 256f;
-        float textureOffsetU = MathHelper.Floor(cloudOffsetX) * textureScale;
-        float textureOffsetV = MathHelper.Floor(cloudOffsetZ) * textureScale;
-        float subCloudOffsetX = (float)(cloudOffsetX - MathHelper.Floor(cloudOffsetX)) + (CloudsRenderDistance / 2);
-        float subCloudOffsetZ = (float)(cloudOffsetZ - MathHelper.Floor(cloudOffsetZ)) + (CloudsRenderDistance / 2);
+        var textureOffsetU = MathHelper.Floor(cloudOffsetX) * textureScale;
+        var textureOffsetV = MathHelper.Floor(cloudOffsetZ) * textureScale;
+        var subCloudOffsetX = (float)(cloudOffsetX - MathHelper.Floor(cloudOffsetX)) + CloudsRenderDistance / 2;
+        var subCloudOffsetZ = (float)(cloudOffsetZ - MathHelper.Floor(cloudOffsetZ)) + CloudsRenderDistance / 2;
 
         GLManager.ModelView.Scale(cloudScale, 1.0F, cloudScale);
         GLManager.ModelView.Push();
@@ -815,7 +975,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         GLManager.TextureMatrix.Push();
         GLManager.TextureMatrix.Translate(textureOffsetU, textureOffsetV, 0.0F);
 
-        GLManager.Color = new(cloudRed, cloudGreen, cloudBlue, 0.8F);
+        GLManager.Color = new Vector4D<float>(cloudRed, cloudGreen, cloudBlue, 0.8F);
         SetCloudUniforms(-subCloudOffsetX, cloudY, -subCloudOffsetZ, cloudScale / 2f,
             textureOffsetU, textureOffsetV, cloudRed, cloudGreen, cloudBlue, 0.8F,
             GetCelestialLightDir(tickDelta));
@@ -825,7 +985,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         GLManager.ModelView.Pop();
 
-        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
 
         // This used to put culling back and leave blending on, so the first-person hand pass drew
         // blended or not depending on whether clouds were enabled and the camera was in the Nether.
@@ -834,41 +994,47 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     private void RenderLegacyCloudsFancy(float tickDelta)
     {
-        float cameraY = (float)(_game.Camera.LastTickY + (_game.Camera.Y - _game.Camera.LastTickY) * tickDelta);
+        var cameraY = (float)(_game.Camera.LastTickY + (_game.Camera.Y - _game.Camera.LastTickY) * tickDelta);
         const float cloudScale = 12.0F;
         const float cloudHeight = 4.0F;
-        double cloudOffsetX = (_game.Camera.PrevX + (_game.Camera.X - _game.Camera.PrevX) * tickDelta + ((_cloudOffsetX + tickDelta) * 0.03F)) / cloudScale;
-        double cloudOffsetZ = (_game.Camera.PrevZ + (_game.Camera.Z - _game.Camera.PrevZ) * tickDelta) / cloudScale + 0.33F;
-        float cloudY = _world.Dimension.CloudHeight - cameraY + 0.33F;
-        int cloudChunkX = MathHelper.Floor(cloudOffsetX / 2048.0D);
-        int cloudChunkZ = MathHelper.Floor(cloudOffsetZ / 2048.0D);
+        var cloudOffsetX = (_game.Camera.PrevX + (_game.Camera.X - _game.Camera.PrevX) * tickDelta + (_cloudOffsetX + tickDelta) * 0.03F) / cloudScale;
+        var cloudOffsetZ = (_game.Camera.PrevZ + (_game.Camera.Z - _game.Camera.PrevZ) * tickDelta) / cloudScale + 0.33F;
+        var cloudY = _world.Dimension.CloudHeight - cameraY + 0.33F;
+        var cloudChunkX = MathHelper.Floor(cloudOffsetX / 2048.0D);
+        var cloudChunkZ = MathHelper.Floor(cloudOffsetZ / 2048.0D);
         cloudOffsetX -= cloudChunkX * 2048;
         cloudOffsetZ -= cloudChunkZ * 2048;
         _textureManager.BindTexture(_textureManager.GetTextureId("/environment/clouds.png"));
 
         // Culling off because these are boxes seen from inside as often as outside — the camera
         // can sit within the cloud layer.
-        RenderState cloudState = RenderState.Entity with { Blend = BlendMode.Alpha };
+        var cloudState = RenderState.Entity with
+        {
+            Blend = BlendMode.Alpha
+        };
 
-        Vector3D<double> cloudColor = _world.Environment.GetCloudColor(tickDelta);
-        float cloudRed = (float)cloudColor.X;
-        float cloudGreen = (float)cloudColor.Y;
-        float cloudBlue = (float)cloudColor.Z;
+        var cloudColor = _world.Environment.GetCloudColor(tickDelta);
+        var cloudRed = (float)cloudColor.X;
+        var cloudGreen = (float)cloudColor.Y;
+        var cloudBlue = (float)cloudColor.Z;
 
         const float textureScale = 1 / 256f;
-        float textureOffsetU = MathHelper.Floor(cloudOffsetX) * textureScale;
-        float textureOffsetV = MathHelper.Floor(cloudOffsetZ) * textureScale;
-        float subCloudOffsetX = (float)(cloudOffsetX - MathHelper.Floor(cloudOffsetX));
-        float subCloudOffsetZ = (float)(cloudOffsetZ - MathHelper.Floor(cloudOffsetZ));
+        var textureOffsetU = MathHelper.Floor(cloudOffsetX) * textureScale;
+        var textureOffsetV = MathHelper.Floor(cloudOffsetZ) * textureScale;
+        var subCloudOffsetX = (float)(cloudOffsetX - MathHelper.Floor(cloudOffsetX));
+        var subCloudOffsetZ = (float)(cloudOffsetZ - MathHelper.Floor(cloudOffsetZ));
 
         GLManager.ModelView.Scale(cloudScale, 1.0F, cloudScale);
 
-        for (int passIndex = 0; passIndex < 2; ++passIndex)
+        for (var passIndex = 0; passIndex < 2; ++passIndex)
         {
             // Pass 0 writes only depth. With culling off, a box's near and far faces would both
             // blend into the same pixel and come out twice as opaque; laying depth down first
             // leaves pass 1 blending each surface exactly once.
-            GLManager.State.Apply(cloudState with { ColorWrite = passIndex != 0 });
+            GLManager.State.Apply(cloudState with
+            {
+                ColorWrite = passIndex != 0
+            });
 
             GLManager.ModelView.Push();
             GLManager.ModelView.Translate(-subCloudOffsetX, cloudY, -subCloudOffsetZ);
@@ -878,20 +1044,20 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
             if (cloudY > -cloudHeight - 1.0F)
             {
-                GLManager.Color = new(cloudRed * 0.7F, cloudGreen * 0.7F, cloudBlue * 0.7F, 0.8F);
+                GLManager.Color = new Vector4D<float>(cloudRed * 0.7F, cloudGreen * 0.7F, cloudBlue * 0.7F, 0.8F);
                 _clouds[0].DrawWithBoundProgram(); // Bottom
             }
 
             if (cloudY <= cloudHeight + 1.0F)
             {
-                GLManager.Color = new(cloudRed, cloudGreen, cloudBlue, 0.8F);
+                GLManager.Color = new Vector4D<float>(cloudRed, cloudGreen, cloudBlue, 0.8F);
                 _clouds[1].DrawWithBoundProgram(); // Top
             }
 
-            GLManager.Color = new(cloudRed * 0.9F, cloudGreen * 0.9F, cloudBlue * 0.9F, 0.8F);
+            GLManager.Color = new Vector4D<float>(cloudRed * 0.9F, cloudGreen * 0.9F, cloudBlue * 0.9F, 0.8F);
             _clouds[2].DrawWithBoundProgram(); // Side X
 
-            GLManager.Color = new(cloudRed * 0.8F, cloudGreen * 0.8F, cloudBlue * 0.8F, 0.8F);
+            GLManager.Color = new Vector4D<float>(cloudRed * 0.8F, cloudGreen * 0.8F, cloudBlue * 0.8F, 0.8F);
             _clouds[3].DrawWithBoundProgram(); // Side Z
 
             GLManager.TextureMatrix.Pop();
@@ -899,7 +1065,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             GLManager.ModelView.Pop();
         }
 
-        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
         GLManager.State.Apply(RenderState.Opaque);
     }
 
@@ -907,7 +1073,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     {
         if (DamagePartialTime <= 0.0F) return;
 
-        Tessellator tessellator = Tessellator.instance;
+        var tessellator = Tessellator.instance;
 
         GLManager.ModelView.Push();
         GLManager.AlphaTestEnabled = true;
@@ -922,16 +1088,16 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             Blend = BlendMode.Multiply,
             DepthBias = DepthBias.Decal
         });
-        GLManager.Color = new(1.0F, 1.0F, 1.0F, 0.5F);
+        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 0.5F);
 
         _textureManager.BindTexture(_textureManager.GetTextureId("/terrain.png"));
 
-        int targetBlockId = _world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
-        Block targetBlock = targetBlockId > 0 ? BlockRegistry.GetByProtocolId(targetBlockId) : BlockRegistry.Get("stone");
+        var targetBlockId = _world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
+        var targetBlock = targetBlockId > 0 ? BlockRegistry.GetByProtocolId(targetBlockId) : BlockRegistry.Get("stone");
 
-        double renderX = entityPlayer.LastTickX + (entityPlayer.X - entityPlayer.LastTickX) * tickDelta;
-        double renderY = entityPlayer.LastTickY + (entityPlayer.Y - entityPlayer.LastTickY) * tickDelta;
-        double renderZ = entityPlayer.LastTickZ + (entityPlayer.Z - entityPlayer.LastTickZ) * tickDelta;
+        var renderX = entityPlayer.LastTickX + (entityPlayer.X - entityPlayer.LastTickX) * tickDelta;
+        var renderY = entityPlayer.LastTickY + (entityPlayer.Y - entityPlayer.LastTickY) * tickDelta;
+        var renderZ = entityPlayer.LastTickZ + (entityPlayer.Z - entityPlayer.LastTickZ) * tickDelta;
 
         tessellator.startDrawingQuads();
         tessellator.setTranslationD(-renderX, -renderY, -renderZ);
@@ -941,7 +1107,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         tessellator.draw(ProgramSlot.DamagedBlock);
 
         tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
-        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
 
         GLManager.AlphaTestEnabled = false;
 
@@ -958,16 +1124,16 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             // pair — tested, so the outline is hidden by blocks in front of the target, but not
             // written, so a line lying exactly on a block face does not fight with it.
             GLManager.State.Apply(RenderState.Translucent);
-            GLManager.Color = new(0.0F, 0.0F, 0.0F, 0.4F);
+            GLManager.Color = new Vector4D<float>(0.0F, 0.0F, 0.0F, 0.4F);
             GLManager.TextureEnabled = false;
-            float outlinePadding = 0.002F;
-            int blockId = _world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
+            var outlinePadding = 0.002F;
+            var blockId = _world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
             if (blockId > 0)
             {
                 BlockRegistry.GetByProtocolId(blockId).UpdateBoundingBox(_world.Reader, hit.BlockX, hit.BlockY, hit.BlockZ);
-                double renderX = player.LastTickX + (player.X - player.LastTickX) * tickDelta;
-                double renderY = player.LastTickY + (player.Y - player.LastTickY) * tickDelta;
-                double renderZ = player.LastTickZ + (player.Z - player.LastTickZ) * tickDelta;
+                var renderX = player.LastTickX + (player.X - player.LastTickX) * tickDelta;
+                var renderY = player.LastTickY + (player.Y - player.LastTickY) * tickDelta;
+                var renderZ = player.LastTickZ + (player.Z - player.LastTickZ) * tickDelta;
                 DrawOutlinedBoundingBox(BlockRegistry.GetByProtocolId(blockId).GetBoundingBox(_world.Reader, _world.Entities, hit.BlockX, hit.BlockY, hit.BlockZ).Expand(outlinePadding, outlinePadding, outlinePadding).Offset(-renderX, -renderY, -renderZ));
             }
 
@@ -978,7 +1144,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     private static void DrawOutlinedBoundingBox(Box box)
     {
-        Tessellator tessellator = Tessellator.instance;
+        var tessellator = Tessellator.instance;
         tessellator.startDrawing(3);
         tessellator.addVertex(box.MinX, box.MinY, box.MinZ);
         tessellator.addVertex(box.MaxX, box.MinY, box.MinZ);
@@ -1007,18 +1173,18 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void MarkBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
-        int xStart = (int)Math.Floor((double)minX / SubChunkRenderer.Size);
-        int yStart = (int)Math.Floor((double)minY / SubChunkRenderer.Size);
-        int zStart = (int)Math.Floor((double)minZ / SubChunkRenderer.Size);
-        int xEnd = (int)Math.Ceiling((double)maxX / SubChunkRenderer.Size);
-        int yEnd = (int)Math.Ceiling((double)maxY / SubChunkRenderer.Size);
-        int zEnd = (int)Math.Ceiling((double)maxZ / SubChunkRenderer.Size);
+        var xStart = (int)Math.Floor((double)minX / SubChunkRenderer.Size);
+        var yStart = (int)Math.Floor((double)minY / SubChunkRenderer.Size);
+        var zStart = (int)Math.Floor((double)minZ / SubChunkRenderer.Size);
+        var xEnd = (int)Math.Ceiling((double)maxX / SubChunkRenderer.Size);
+        var yEnd = (int)Math.Ceiling((double)maxY / SubChunkRenderer.Size);
+        var zEnd = (int)Math.Ceiling((double)maxZ / SubChunkRenderer.Size);
 
-        for (int x = xStart; x <= xEnd; x++)
+        for (var x = xStart; x <= xEnd; x++)
         {
-            for (int y = yStart; y <= yEnd; y++)
+            for (var y = yStart; y <= yEnd; y++)
             {
-                for (int z = zStart; z <= zEnd; z++)
+                for (var z = zStart; z <= zEnd; z++)
                 {
                     ChunkRenderer.MarkDirty(new Vector3D<int>(x, y, z) * SubChunkRenderer.Size, true);
                 }
@@ -1026,160 +1192,10 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         }
     }
 
-    public void BlockUpdate(int x, int y, int z)
-    {
-        MarkBlocksDirty(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1);
-    }
-
-    public void SetBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
-    {
-        if (!_world.BlockHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
-        {
-            return;
-        }
-
-        MarkBlocksDirty(minX - 1, minY - 1, minZ - 1, maxX + 1, maxY + 1, maxZ + 1);
-    }
-
-    public void PlayStreaming(string soundName, int x, int y, int z)
-    {
-        if (soundName != null)
-        {
-            _game.HUD.Chat.SetRecordPlaying(soundName);
-        }
-
-        _game.SoundManager.PlayStreaming(soundName, x, y, z, 1.0F, 1.0F);
-    }
-
-    public void PlaySound(string soundName, double x, double y, double z, float volume, float pitch)
-    {
-        float maxDistance = 16.0F;
-        if (volume > 1.0F)
-        {
-            maxDistance *= volume;
-        }
-
-        if (_game.Camera.GetSquaredDistance(x, y, z) < maxDistance * maxDistance)
-        {
-            _game.SoundManager.PlaySound(soundName, (float)x, (float)y, (float)z, volume, pitch);
-        }
-    }
-
-    public void SpawnParticle(string particleName, double x, double y, double z, double velocityX, double velocityY, double velocityZ)
-    {
-        if (_game != null && _game.Camera != null && _game.ParticleManager != null)
-        {
-            double cameraDx = _game.Camera.X - x;
-            double cameraDy = _game.Camera.Y - y;
-            double cameraDz = _game.Camera.Z - z;
-            double maxDistance = 16.0D;
-            if (cameraDx * cameraDx + cameraDy * cameraDy + cameraDz * cameraDz <= maxDistance * maxDistance)
-            {
-                ParticleManager pm = _game.ParticleManager;
-                switch (particleName)
-                {
-                    case "bubble": pm.AddBubble(x, y, z, velocityX, velocityY, velocityZ); break;
-                    case "smoke": pm.AddSmoke(x, y, z, velocityX, velocityY, velocityZ); break;
-                    case "note": pm.AddNote(x, y, z, velocityX, velocityY, velocityZ); break;
-                    case "portal": pm.AddPortal(x, y, z, velocityX, velocityY, velocityZ); break;
-                    case "explode": pm.AddExplode(x, y, z, velocityX, velocityY, velocityZ); break;
-                    case "flame": pm.AddFlame(x, y, z, velocityX, velocityY, velocityZ); break;
-                    case "lava": pm.AddLava(x, y, z); break;
-                    case "footstep": pm.AddSpecialParticle(new LegacyParticleAdapter(new EntityFootStepFX(_textureManager, _world, x, y, z))); break;
-                    case "splash": pm.AddSplash(x, y, z, velocityX, velocityY, velocityZ); break;
-                    case "largesmoke": pm.AddSmoke(x, y, z, velocityX, velocityY, velocityZ, 2.5f); break;
-                    case "reddust": pm.AddReddust(x, y, z, (float)velocityX, (float)velocityY, (float)velocityZ); break;
-                    case "snowballpoof": pm.AddSlime(x, y, z, _world.Content.Items.Get("omniblock:snowball")); break;
-                    case "snowshovel": pm.AddSnowShovel(x, y, z, velocityX, velocityY, velocityZ); break;
-                    case "slime": pm.AddSlime(x, y, z, _world.Content.Items.Get("omniblock:slimeball")); break;
-                    case "heart": pm.AddHeart(x, y, z, velocityX, velocityY, velocityZ); break;
-                }
-            }
-        }
-    }
-
-    public void NotifyEntityAdded(Entity entity)
-    {
-        entity.UpdateCloak();
-        EntityRenderDispatcher.Instance.SkinManager.RequestDownload((entity as EntityPlayer)?.Name);
-    }
-
-    public void NotifyEntityRemoved(Entity entity) { }
-
-    public void NotifyAmbientDarknessChanged()
-    {
-        ChunkRenderer.UpdateAllRenderers();
-    }
-
-    public void UpdateBlockEntity(int x, int y, int z, BlockEntity blockEntity) { }
-
-    public void WorldEvent(EntityPlayer? player, int eventId, int x, int y, int z, int data)
-    {
-        JavaRandom random = _world.Random;
-        int blockId;
-        switch (eventId)
-        {
-            case 1000:
-                _game.SoundManager.PlaySound("random.click", x, y, z, 1.0F, 1.0F);
-                break;
-            case 1001:
-                _game.SoundManager.PlaySound("random.click", x, y, z, 1.0F, 1.2F);
-                break;
-            case 1002:
-                _game.SoundManager.PlaySound("random.bow", x, y, z, 1.0F, 1.2F);
-                break;
-            case 1003:
-                _game.SoundManager.PlayDoorSound(x, y, z);
-                break;
-            case 1004:
-                _game.SoundManager.PlaySound("random.fizz", x + 0.5F, y + 0.5F, z + 0.5F, 0.5F, 2.6F + (random.NextFloat() - random.NextFloat()) * 0.8F);
-                for (int particleIndex = 0; particleIndex < Random.Shared.Next(8, 12); ++particleIndex)
-                {
-                    _world.Broadcaster.AddParticle("largesmoke", x + random.NextDouble(), y + 1.2D, z + random.NextDouble(), 0.0D, 0.0D, 0.0D);
-                }
-
-                break;
-            case 1005:
-                if (_world.Content.Items.TryGetByProtocolId(data, out Item? item) && item?.GetBehavior<RecordBehavior>() is { } record)
-                {
-                    _game.SoundManager.PlayStreaming(record.RecordName, x, y, z, 1.0F, 1.0F);
-                }
-                else
-                {
-                    _game.SoundManager.PlayStreaming(null, x, y, z, 1.0F, 1.0F);
-                }
-
-                break;
-            case 2000:
-                int offsetX = data % 3 - 1;
-                int offsetZ = data / 3 % 3 - 1;
-                double particleX = x + offsetX * 0.6D + 0.5D;
-                double particleY = y + 0.5D;
-                double particleZ = z + offsetZ * 0.6D + 0.5D;
-
-                for (blockId = 0; blockId < 10; ++blockId)
-                {
-                    double speed = random.NextDouble() * 0.2D + 0.01D;
-                    double smokeX = particleX + offsetX * 0.01D + (random.NextDouble() - 0.5D) * offsetZ * 0.5D;
-                    double smokeY = particleY + (random.NextDouble() - 0.5D) * 0.5D;
-                    double smokeZ = particleZ + offsetZ * 0.01D + (random.NextDouble() - 0.5D) * offsetX * 0.5D;
-                    double velocityX = offsetX * speed + random.NextGaussian() * 0.01D;
-                    double velocityY = -0.03D + random.NextGaussian() * 0.01D;
-                    double velocityZ = offsetZ * speed + random.NextGaussian() * 0.01D;
-                    SpawnParticle("smoke", smokeX, smokeY, smokeZ, velocityX, velocityY, velocityZ);
-                }
-
-                return;
-            case 2001: // This is for breaking a block
-                WorldEventBreak(data & 255, (data >> 8) & 255, x, y, z);
-                break;
-        }
-    }
-
     public void WorldEventBreak(int blockId, int meta, int x, int y, int z)
     {
         if (blockId == 0) return;
-        Block block = BlockRegistry.GetByProtocolId(blockId);
+        var block = BlockRegistry.GetByProtocolId(blockId);
         WorldEventBreak(block, meta, x, y, z);
     }
 
@@ -1188,7 +1204,4 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         _game.SoundManager.PlayBreakSound(block.SoundGroup, x, y, z);
         _game.ParticleManager.AddBlockDestroyEffects(x, y, z, block, meta);
     }
-
-    public void PlayNote(int x, int y, int z, int soundType, int pitch) { }
-    public void BroadcastEntityEvent(Entity entity, byte @event) { }
 }

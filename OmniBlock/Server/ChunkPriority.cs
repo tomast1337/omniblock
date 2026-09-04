@@ -9,18 +9,15 @@ internal readonly struct ChunkPriority(int ring, double directionPenalty, long s
     public double DirectionPenalty { get; } = directionPenalty;
     public long Sequence { get; } = sequence;
 
-    public int CompareTo(ChunkPriority other)
-    {
-        return (Ring, DirectionPenalty, Sequence).CompareTo((other.Ring, other.DirectionPenalty, other.Sequence));
-    }
+    public int CompareTo(ChunkPriority other) => (Ring, DirectionPenalty, Sequence).CompareTo((other.Ring, other.DirectionPenalty, other.Sequence));
 }
 
 internal sealed class PlayerChunkSendQueue
 {
     private readonly Dictionary<ChunkPos, QueueEntry> _entries = [];
     private readonly List<QueueEntry> _orderedEntries = [];
-    private long _nextSequence;
     private bool _dirty = true;
+    private long _nextSequence;
 
     public int Count => _entries.Count;
 
@@ -33,7 +30,7 @@ internal sealed class PlayerChunkSendQueue
 
     public void EnqueueOrPromote(ServerPlayerEntity player, ChunkPos chunkPos)
     {
-        if (_entries.TryGetValue(chunkPos, out QueueEntry? entry))
+        if (_entries.TryGetValue(chunkPos, out var entry))
         {
             entry.Priority = player.GetChunkPriority(chunkPos, entry.Sequence);
         }
@@ -62,7 +59,7 @@ internal sealed class PlayerChunkSendQueue
             return;
         }
 
-        foreach (QueueEntry entry in _entries.Values)
+        foreach (var entry in _entries.Values)
         {
             entry.Priority = player.GetChunkPriority(entry.ChunkPos, entry.Sequence);
         }
@@ -80,8 +77,8 @@ internal sealed class PlayerChunkSendQueue
             return false;
         }
 
-        int lastIndex = _orderedEntries.Count - 1;
-        QueueEntry entry = _orderedEntries[lastIndex];
+        var lastIndex = _orderedEntries.Count - 1;
+        var entry = _orderedEntries[lastIndex];
         _orderedEntries.RemoveAt(lastIndex);
         _entries.Remove(entry.ChunkPos);
         chunkPos = entry.ChunkPos;

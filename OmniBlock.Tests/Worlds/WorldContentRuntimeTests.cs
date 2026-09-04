@@ -1,7 +1,4 @@
-using OmniBlock.Tests.TestSupport;
-using OmniBlock.Blocks;
 using OmniBlock.Worlds.Chunks;
-using OmniBlock.Worlds.Lighting;
 
 namespace OmniBlock.Tests.Worlds;
 
@@ -13,7 +10,7 @@ public sealed class WorldContentRuntimeTests
         LightTestWorld world = new();
         var emptyChunk = world.Chunks.Add(0, 0, populateLight: false);
 
-        Exception? error = Record.Exception(() => world.RandomTickBlock(emptyChunk, 0, 64, 0, 0, 0));
+        var error = Record.Exception(() => world.RandomTickBlock(emptyChunk, 0, 64, 0, 0, 0));
 
         Assert.Null(error);
     }
@@ -22,13 +19,13 @@ public sealed class WorldContentRuntimeTests
     public void Lighting_queue_deduplicates_repeated_single_cell_updates()
     {
         LightTestWorld world = new();
-        int stoneId = world.Content.Blocks.Get("stone").Id;
+        var stoneId = world.Content.Blocks.Get("stone").Id;
         world.Chunks.Add(0, 0,
             chunk => chunk.Blocks[ChuckFormat.GetIndex(1, 1) + 64] = (byte)stoneId,
-            populateLight: false);
+            false);
 
-        for (int i = 0; i < 10_000; i++)
-            world.Lighting.QueueLightUpdate(LightType.Block, 1, 64, 1, 1, 64, 1, attemptMerge: false);
+        for (var i = 0; i < 10_000; i++)
+            world.Lighting.QueueLightUpdate(LightType.Block, 1, 64, 1, 1, 64, 1, false);
 
         Assert.Equal(1, world.Lighting.PendingUpdateCount);
     }

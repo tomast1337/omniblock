@@ -36,11 +36,11 @@ public sealed class GeneratedMessageTests
     [Fact]
     public void Every_registered_message_reports_the_size_it_writes()
     {
-        MessageRegistry registry = Negotiated();
+        var registry = Negotiated();
 
-        for (int id = 0; id < registry.Count; id++)
+        for (var id = 0; id < registry.Count; id++)
         {
-            Message message = registry.Create(id)!;
+            var message = registry.Create(id)!;
 
             Assert.Equal(Serialise(message).Length, message.Size());
         }
@@ -49,15 +49,15 @@ public sealed class GeneratedMessageTests
     [Fact]
     public void Every_registered_message_round_trips()
     {
-        MessageRegistry registry = Negotiated();
+        var registry = Negotiated();
 
-        for (int id = 0; id < registry.Count; id++)
+        for (var id = 0; id < registry.Count; id++)
         {
-            Message written = registry.Create(id)!;
-            byte[] bytes = Serialise(written);
+            var written = registry.Create(id)!;
+            var bytes = Serialise(written);
 
-            Message read = registry.Create(id)!;
-            read.Read(new MemoryStream(bytes, writable: false));
+            var read = registry.Create(id)!;
+            read.Read(new MemoryStream(bytes, false));
 
             // Re-serialising is the check rather than comparing properties: it catches a field that
             // Read skipped as surely as one it decoded wrongly, without the test needing to know
@@ -69,12 +69,12 @@ public sealed class GeneratedMessageTests
     [Fact]
     public void Reading_a_message_consumes_exactly_what_writing_produced()
     {
-        MessageRegistry registry = Negotiated();
+        var registry = Negotiated();
 
-        for (int id = 0; id < registry.Count; id++)
+        for (var id = 0; id < registry.Count; id++)
         {
-            byte[] bytes = Serialise(registry.Create(id)!);
-            MemoryStream stream = new(bytes, writable: false);
+            var bytes = Serialise(registry.Create(id)!);
+            MemoryStream stream = new(bytes, false);
 
             registry.Create(id)!.Read(stream);
 
@@ -88,50 +88,18 @@ public sealed class GeneratedMessageTests
     [Fact]
     public void The_registration_list_covers_every_wire_message()
     {
-        MessageRegistry registry = Negotiated();
+        var registry = Negotiated();
 
         // Named individually rather than counted, so that a message dropped from
         // MessageRegistrations fails here instead of being absorbed by a total that happens to
         // still match.
-        foreach (ResourceLocation key in new[]
-        {
-            TimeSyncRequestMessage.Id,
-            TimeSyncResponseMessage.Id,
-            TickStampMessage.Id,
-            ChunkDataMessage.Id,
-            ChunkUnchangedMessage.Id,
-            InteractEntityMessage.Id,
-            SnapshotAckMessage.Id,
-            PlayerActionMessage.Id,
-            InteractBlockMessage.Id,
-            SelectedSlotMessage.Id,
-            ClientCommandMessage.Id,
-            PlayerInputMessage.Id,
-            ClickSlotMessage.Id,
-            EntityMoveMessage.Id,
-            EntityTeleportMessage.Id,
-            EntityDestroyMessage.Id,
-            EntityStatusMessage.Id,
-            EntityVelocityMessage.Id,
-            EntityVehicleMessage.Id,
-            EntityDataMessage.Id,
-            EntityEquipmentMessage.Id,
-            EntityAnimationMessage.Id,
-            ItemPickupMessage.Id,
-            EntitySpawnMessage.Id,
-            ItemEntitySpawnMessage.Id,
-            LivingEntitySpawnMessage.Id,
-            GlobalEntitySpawnMessage.Id,
-            PaintingSpawnMessage.Id,
-            PlayerSpawnMessage.Id,
-            InventoryMessage.Id,
-            ScreenHandlerSlotMessage.Id,
-            ScreenHandlerPropertyMessage.Id,
-            ScreenHandlerAckMessage.Id,
-            OpenScreenMessage.Id,
-            CloseScreenMessage.Id,
-            UpdateSignMessage.Id,
-        })
+        foreach (var key in new[]
+                 {
+                     TimeSyncRequestMessage.Id, TimeSyncResponseMessage.Id, TickStampMessage.Id, ChunkDataMessage.Id, ChunkUnchangedMessage.Id, InteractEntityMessage.Id, SnapshotAckMessage.Id, PlayerActionMessage.Id, InteractBlockMessage.Id,
+                     SelectedSlotMessage.Id, ClientCommandMessage.Id, PlayerInputMessage.Id, ClickSlotMessage.Id, EntityMoveMessage.Id, EntityTeleportMessage.Id, EntityDestroyMessage.Id, EntityStatusMessage.Id, EntityVelocityMessage.Id,
+                     EntityVehicleMessage.Id, EntityDataMessage.Id, EntityEquipmentMessage.Id, EntityAnimationMessage.Id, ItemPickupMessage.Id, EntitySpawnMessage.Id, ItemEntitySpawnMessage.Id, LivingEntitySpawnMessage.Id, GlobalEntitySpawnMessage.Id,
+                     PaintingSpawnMessage.Id, PlayerSpawnMessage.Id, InventoryMessage.Id, ScreenHandlerSlotMessage.Id, ScreenHandlerPropertyMessage.Id, ScreenHandlerAckMessage.Id, OpenScreenMessage.Id, CloseScreenMessage.Id, UpdateSignMessage.Id
+                 })
         {
             Assert.True(registry.GetId(key) >= 0, $"{key} is not registered.");
         }
@@ -146,7 +114,7 @@ public sealed class GeneratedMessageTests
         {
             Sequence = 0xDEADBEEF,
             ClientSendTime = 1_234_567_890_123L,
-            ServerRecvTime = -42L,
+            ServerRecvTime = -42L
         };
 
         TimeSyncResponseMessage read = new();
@@ -160,7 +128,12 @@ public sealed class GeneratedMessageTests
     [Fact]
     public void A_populated_interact_round_trips_every_field()
     {
-        InteractEntityMessage written = new() { EntityId = -77, Action = 1, RenderTimeMs = 987_654_321L };
+        InteractEntityMessage written = new()
+        {
+            EntityId = -77,
+            Action = 1,
+            RenderTimeMs = 987_654_321L
+        };
 
         InteractEntityMessage read = new();
         read.Read(new MemoryStream(Serialise(written)));
@@ -174,9 +147,14 @@ public sealed class GeneratedMessageTests
     public void A_populated_chunk_message_round_trips_its_blob()
     {
         byte[] blob = [.. Enumerable.Range(0, 5000).Select(i => (byte)(i * 31))];
-        ChunkDataMessage written = new() { ChunkX = -1024, ChunkZ = 2048, Compressed = blob };
+        ChunkDataMessage written = new()
+        {
+            ChunkX = -1024,
+            ChunkZ = 2048,
+            Compressed = blob
+        };
 
-        byte[] bytes = Serialise(written);
+        var bytes = Serialise(written);
         Assert.Equal(bytes.Length, written.Size());
 
         ChunkDataMessage read = new();
@@ -216,10 +194,10 @@ public sealed class GeneratedMessageTests
             Button = 1,
             ActionType = 42,
             HoldingShift = true,
-            Stack = new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 7, 2),
+            Stack = new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 7, 2)
         };
 
-        byte[] bytes = Serialise(written);
+        var bytes = Serialise(written);
         Assert.Equal(bytes.Length, written.Size());
 
         ClickSlotMessage read = new(ContentRuntime.Current.Items);
@@ -245,7 +223,10 @@ public sealed class GeneratedMessageTests
     public void An_empty_slot_costs_three_bytes_less_than_a_filled_one()
     {
         ClickSlotMessage empty = new();
-        ClickSlotMessage filled = new() { Stack = new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 1, 0) };
+        ClickSlotMessage filled = new()
+        {
+            Stack = new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 1, 0)
+        };
 
         Assert.Equal(Serialise(empty).Length, empty.Size());
         Assert.Equal(Serialise(filled).Length, filled.Size());
@@ -265,10 +246,10 @@ public sealed class GeneratedMessageTests
             DeltaY = 1,
             DeltaZ = 127,
             Yaw = -128,
-            Pitch = 64,
+            Pitch = 64
         };
 
-        byte[] bytes = Serialise(written);
+        var bytes = Serialise(written);
         Assert.Equal(bytes.Length, written.Size());
 
         EntityMoveMessage read = new();
@@ -289,8 +270,14 @@ public sealed class GeneratedMessageTests
     [Fact]
     public void A_move_with_no_mask_stays_unflagged()
     {
-        EntityMoveMessage read = new() { Mask = EntityMoveMessage.Field.Moved };
-        read.Read(new MemoryStream(Serialise(new EntityMoveMessage { EntityId = 7 })));
+        EntityMoveMessage read = new()
+        {
+            Mask = EntityMoveMessage.Field.Moved
+        };
+        read.Read(new MemoryStream(Serialise(new EntityMoveMessage
+        {
+            EntityId = 7
+        })));
 
         Assert.Equal(EntityMoveMessage.Field.None, read.Mask);
         Assert.Equal(7, read.EntityId);
@@ -309,8 +296,18 @@ public sealed class GeneratedMessageTests
     [Fact]
     public void An_object_spawn_is_the_same_size_with_and_without_entity_data()
     {
-        EntitySpawnMessage plain = new() { EntityId = 1, EntityType = 10 };
-        EntitySpawnMessage owned = new() { EntityId = 1, EntityType = 60, EntityData = 77, VelocityX = 400 };
+        EntitySpawnMessage plain = new()
+        {
+            EntityId = 1,
+            EntityType = 10
+        };
+        EntitySpawnMessage owned = new()
+        {
+            EntityId = 1,
+            EntityType = 60,
+            EntityData = 77,
+            VelocityX = 400
+        };
 
         Assert.Equal(Serialise(plain).Length, plain.Size());
         Assert.Equal(Serialise(owned).Length, owned.Size());
@@ -329,10 +326,10 @@ public sealed class GeneratedMessageTests
             Z = 96,
             Yaw = -64,
             Pitch = 32,
-            CurrentItem = 280,
+            CurrentItem = 280
         };
 
-        byte[] bytes = Serialise(written);
+        var bytes = Serialise(written);
         Assert.Equal(bytes.Length, written.Size());
 
         PlayerSpawnMessage read = new();
@@ -380,7 +377,10 @@ public sealed class GeneratedMessageTests
     public void A_living_spawn_sizes_its_data_rather_than_assuming_it_is_absent()
     {
         LivingEntitySpawnMessage empty = new();
-        LivingEntitySpawnMessage populated = new() { Data = [1, 2, 3, 4, 5] };
+        LivingEntitySpawnMessage populated = new()
+        {
+            Data = [1, 2, 3, 4, 5]
+        };
 
         Assert.Equal(Serialise(empty).Length, empty.Size());
         Assert.Equal(Serialise(populated).Length, populated.Size());
@@ -390,8 +390,12 @@ public sealed class GeneratedMessageTests
     // ---- screens ----
 
     /// <summary>
-    ///     <c>InventoryS2CPacket</c> charged five bytes for every slot — <c>3 + Contents.Length *
-    ///     5</c> — while an empty one writes two. A player's inventory is mostly empty, so the
+    ///     <c>InventoryS2CPacket</c> charged five bytes for every slot —
+    ///     <c>
+    ///         3 + Contents.Length *
+    ///         5
+    ///     </c>
+    ///     — while an empty one writes two. A player's inventory is mostly empty, so the
     ///     declared size was wrong on essentially every send, and wrong by more the emptier it got.
     /// </summary>
     [Fact]
@@ -400,10 +404,10 @@ public sealed class GeneratedMessageTests
         InventoryMessage message = new()
         {
             SyncId = 0,
-            Contents = [new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 64, 0), null, null, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:bucket"), 1, 0)],
+            Contents = [new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 64, 0), null, null, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:bucket"), 1, 0)]
         };
 
-        byte[] bytes = Serialise(message);
+        var bytes = Serialise(message);
 
         Assert.Equal(bytes.Length, message.Size());
 
@@ -417,7 +421,7 @@ public sealed class GeneratedMessageTests
         InventoryMessage written = new()
         {
             SyncId = 3,
-            Contents = [null, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 7, 2), null],
+            Contents = [null, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 7, 2), null]
         };
 
         InventoryMessage read = new(ContentRuntime.Current.Items);
@@ -451,7 +455,10 @@ public sealed class GeneratedMessageTests
     [Fact]
     public void A_sign_is_always_four_lines()
     {
-        UpdateSignMessage message = new() { Lines = ["only", "two"] };
+        UpdateSignMessage message = new()
+        {
+            Lines = ["only", "two"]
+        };
 
         Assert.Equal(["only", "two", string.Empty, string.Empty], message.Lines);
 
@@ -483,7 +490,10 @@ public sealed class GeneratedMessageTests
         uint seen = 0;
         dispatcher.On<SnapshotAckMessage>(ack => seen = ack.Sequence);
 
-        Assert.True(dispatcher.Dispatch(new SnapshotAckMessage { Sequence = 9 }));
+        Assert.True(dispatcher.Dispatch(new SnapshotAckMessage
+        {
+            Sequence = 9
+        }));
         Assert.Equal(9u, seen);
     }
 
@@ -509,7 +519,10 @@ public sealed class GeneratedMessageTests
     [Fact]
     public void A_small_sequence_costs_one_byte()
     {
-        SnapshotAckMessage message = new() { Sequence = 7 };
+        SnapshotAckMessage message = new()
+        {
+            Sequence = 7
+        };
 
         Assert.Single(Serialise(message));
         Assert.Equal(1, message.Size());
@@ -520,7 +533,10 @@ public sealed class GeneratedMessageTests
     {
         // uint is the sequence type precisely because it wraps, so the encoding has to carry the
         // top bit rather than widening through a signed intermediate.
-        SnapshotAckMessage written = new() { Sequence = uint.MaxValue };
+        SnapshotAckMessage written = new()
+        {
+            Sequence = uint.MaxValue
+        };
 
         SnapshotAckMessage read = new();
         read.Read(new MemoryStream(Serialise(written)));

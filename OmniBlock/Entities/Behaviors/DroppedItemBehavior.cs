@@ -61,7 +61,7 @@ public sealed class DroppedItemBehavior : IEntityTicker, IEntityLifecycle, IEnti
             return;
         }
 
-        foreach ((int itemId, Achievement achievement) in _pickupAchievements)
+        foreach (var (itemId, achievement) in _pickupAchievements)
         {
             if (stack.ItemId == itemId)
             {
@@ -143,11 +143,11 @@ public sealed class DroppedItemBehavior : IEntityTicker, IEntityLifecycle, IEnti
 
         self.PushOutOfBlocks(self.X, (self.BoundingBox.MinY + self.BoundingBox.MaxY) / 2.0D, self.Z);
         self.Move(self.VelocityX, self.VelocityY, self.VelocityZ);
-        float friction = 0.98F;
+        var friction = 0.98F;
         if (self.OnGround)
         {
             friction = 0.1F * 0.1F * 58.8F;
-            int groundBlockId = self.World.Reader.GetBlockId(MathHelper.Floor(self.X), MathHelper.Floor(self.BoundingBox.MinY) - 1, MathHelper.Floor(self.Z));
+            var groundBlockId = self.World.Reader.GetBlockId(MathHelper.Floor(self.X), MathHelper.Floor(self.BoundingBox.MinY) - 1, MathHelper.Floor(self.Z));
             if (groundBlockId > 0)
             {
                 friction = BlockRegistry.GetByProtocolId(groundBlockId).Slipperiness * 0.98F;
@@ -176,8 +176,8 @@ public sealed class DroppedItemBehavior : IEntityTicker, IEntityLifecycle, IEnti
     /// </summary>
     public static Entity Create(IWorldContext world, double x, double y, double z, ItemStack stack, int pickupDelay = 0)
     {
-        Entity item = world.Content.EntityTypes.Create("omniblock:item", world);
-        DroppedItemBehavior dropped = item.Behaviors.Find<DroppedItemBehavior>()!;
+        var item = world.Content.EntityTypes.Create("omniblock:item", world);
+        var dropped = item.Behaviors.Find<DroppedItemBehavior>()!;
         dropped.SetStack(item, stack);
         dropped.SetPickupDelay(item, pickupDelay);
         item.SetPositionAndAngles(x, y, z, item.Yaw, 0.0F);

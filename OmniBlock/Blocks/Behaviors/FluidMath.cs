@@ -122,10 +122,7 @@ public static class FluidMath
         Fizz(broadcaster, x, y, z);
     }
 
-    public static int GetTexture(Side side, int still, int flowing)
-    {
-        return side != Side.Down && side != Side.Up ? flowing : still;
-    }
+    public static int GetTexture(Side side, int still, int flowing) => side != Side.Down && side != Side.Up ? flowing : still;
 
     public static bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
     {
@@ -169,6 +166,7 @@ public static class FluidMath
         {
             var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
             if (meta is > 0 and < 8)
+            {
                 @event.World.Broadcaster.PlaySoundAtPos(
                     @event.X + 0.5F,
                     @event.Y + 0.5F,
@@ -177,6 +175,7 @@ public static class FluidMath
                     Random.Shared.NextSingle() * 0.25F + 12.0F / 16.0F,
                     Random.Shared.NextSingle() * 1.0F + 0.5F
                 );
+            }
         }
 
         if (block.Material != Material.Lava ||

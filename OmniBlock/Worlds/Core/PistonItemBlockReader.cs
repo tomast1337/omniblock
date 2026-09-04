@@ -1,4 +1,3 @@
-using System;
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Entities;
@@ -26,8 +25,6 @@ public sealed class PistonItemBlockReader : IBlockReader
 
     public int GetBlockId(int x, int y, int z) => x == 0 && y == 0 && z == 0 ? _blockId : 0;
 
-    public static BlockEntity? GetBlockEntity(int x, int y, int z) => null;
-
     public bool IsOpaque(int x, int y, int z) => false;
 
     public bool ShouldSuffocate(int x, int y, int z) => false;
@@ -48,6 +45,8 @@ public sealed class PistonItemBlockReader : IBlockReader
     public bool IsMaterialInBox(Box area, Func<Material, bool> predicate) => throw new NotImplementedException();
     public bool UpdateMovementInFluid(Box entityBox, Material fluidMaterial, Entity entity) => throw new NotImplementedException();
     public bool IsPosLoaded(int x, int y, int z) => throw new NotImplementedException();
+
+    public static BlockEntity? GetBlockEntity(int x, int y, int z) => null;
 
     public static float GetNaturalBrightness(int x, int y, int z, int blockLight) => 1.0f;
 

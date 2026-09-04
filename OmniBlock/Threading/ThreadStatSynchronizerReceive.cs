@@ -1,5 +1,5 @@
-using OmniBlock.Stats;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Stats;
 
 namespace OmniBlock.Threading;
 
@@ -8,10 +8,7 @@ internal class ThreadStatSynchronizerReceive
     private readonly ILogger<ThreadStatSynchronizerReceive> _logger = Log.Instance.For<ThreadStatSynchronizerReceive>();
     private readonly StatsSynchronizer _synchronizer;
 
-    public ThreadStatSynchronizerReceive(StatsSynchronizer synchronizer)
-    {
-        _synchronizer = synchronizer;
-    }
+    public ThreadStatSynchronizerReceive(StatsSynchronizer synchronizer) => _synchronizer = synchronizer;
 
     public void Start()
     {

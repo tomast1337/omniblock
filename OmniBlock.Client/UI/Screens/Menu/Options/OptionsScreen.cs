@@ -1,4 +1,3 @@
-using OmniBlock.Client.Options;
 using OmniBlock.Client.Resource.Pack;
 using OmniBlock.Client.UI.Controls.Core;
 using Color = OmniBlock.Client.UI.Colors.Color;
@@ -14,12 +13,12 @@ public class OptionsScreen(
 
     protected override UIElement CreateContent()
     {
-        Panel list = CreateTwoColumnList();
+        var list = CreateTwoColumnList();
 
         // Main options list
-        foreach (GameOption option in Options.MainScreenOptions)
+        foreach (var option in Options.MainScreenOptions)
         {
-            UIElement control = CreateControlForOption(option);
+            var control = CreateControlForOption(option);
             control.Style.MarginTop = 2;
             control.Style.MarginBottom = 2;
             control.Style.MarginLeft = 4;
@@ -40,7 +39,7 @@ public class OptionsScreen(
         // Sub-menu buttons
         void AddSubButton(string id, string key, Action onClick)
         {
-            Button btn = CreateButton();
+            var btn = CreateButton();
             btn.AutomationId = $"options.{id}";
             btn.Text = Translations.Get(key);
             btn.Style.MarginTop = 2;

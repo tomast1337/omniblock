@@ -33,8 +33,9 @@ public sealed class SnapshotBaseline
     /// </summary>
     public const int MaxStagedSnapshots = 64;
 
-    private readonly Dictionary<int, EntitySnapshotState> _states = [];
     private readonly Queue<Staged> _staged = new();
+
+    private readonly Dictionary<int, EntitySnapshotState> _states = [];
 
     /// <summary>
     ///     The snapshot this baseline reflects. Zero means nothing has been confirmed and the next
@@ -96,9 +97,9 @@ public sealed class SnapshotBaseline
 
         while (_staged.Count > 0 && !Before(sequence, _staged.Peek().Sequence))
         {
-            Staged staged = _staged.Dequeue();
+            var staged = _staged.Dequeue();
 
-            foreach ((int entityId, EntitySnapshotState state) in staged.Changes)
+            foreach (var (entityId, state) in staged.Changes)
             {
                 _states[entityId] = state;
             }
@@ -123,11 +124,14 @@ public sealed class SnapshotBaseline
             return;
         }
 
-        Staged[] retained = [.. _staged.Select(s => new Staged(
-            s.Sequence, [.. s.Changes.Where(c => c.Key != entityId)]))];
+        Staged[] retained =
+        [
+            .. _staged.Select(s => new Staged(
+                s.Sequence, [.. s.Changes.Where(c => c.Key != entityId)]))
+        ];
 
         _staged.Clear();
-        foreach (Staged staged in retained)
+        foreach (var staged in retained)
         {
             _staged.Enqueue(staged);
         }

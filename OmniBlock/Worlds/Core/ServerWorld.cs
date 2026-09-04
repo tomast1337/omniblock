@@ -1,6 +1,7 @@
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Entities;
 using OmniBlock.Network.Messages;
+using OmniBlock.Registries;
 using OmniBlock.Server;
 using OmniBlock.Server.Internal;
 using OmniBlock.Server.Worlds;
@@ -10,8 +11,6 @@ using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Dimensions;
 using OmniBlock.Worlds.Mechanics;
 using OmniBlock.Worlds.Storage;
-using OmniBlock.Worlds.Storage.RegionFormat;
-using OmniBlock.Registries;
 
 namespace OmniBlock.Worlds.Core;
 
@@ -19,7 +18,6 @@ public class ServerWorld : World
 {
     private readonly Dictionary<int, Entity> entitiesById = [];
     private readonly OmniBlockServer server;
-    public bool BypassSpawnProtection { get; }
     public ServerChunkCache ChunkCache;
     internal ChunkMap ChunkMap;
     public bool savingDisabled;
@@ -38,9 +36,11 @@ public class ServerWorld : World
         Entities.OnGlobalEntityAdded += HandleGlobalEntityAdded;
     }
 
+    public bool BypassSpawnProtection { get; }
+
     protected override IChunkSource CreateChunkCache()
     {
-        IChunkStorage? chunkStorage = Storage.GetChunkStorage(Dimension);
+        var chunkStorage = Storage.GetChunkStorage(Dimension);
         ChunkCache = new ServerChunkCache(this, chunkStorage, Dimension.CreateChunkGenerator());
         return ChunkCache;
     }
@@ -64,7 +64,7 @@ public class ServerWorld : World
                     : (byte)0,
                 X = MathHelper.Floor(entity.X * 32.0),
                 Y = MathHelper.Floor(entity.Y * 32.0),
-                Z = MathHelper.Floor(entity.Z * 32.0),
+                Z = MathHelper.Floor(entity.Z * 32.0)
             });
 
     private bool HandleEntityUpdating(Entity entity)
@@ -89,7 +89,7 @@ public class ServerWorld : World
 
     public Entity? getEntity(int id)
     {
-        entitiesById.TryGetValue(id, out Entity? entity);
+        entitiesById.TryGetValue(id, out var entity);
         return entity;
     }
 
@@ -100,8 +100,8 @@ public class ServerWorld : World
 
     public override bool CanInteract(EntityPlayer player, int x, int y, int z)
     {
-        int absX = Math.Abs(x - Properties.SpawnX);
-        int absZ = Math.Abs(z - Properties.SpawnZ);
+        var absX = Math.Abs(x - Properties.SpawnX);
+        var absZ = Math.Abs(z - Properties.SpawnZ);
         return absX > 16 || absZ > 16 || server.playerManager.isOperator(player.Name) || server is InternalServer;
     }
 
@@ -130,10 +130,16 @@ public class ServerWorld : World
     private void HandleWeatherChanged(bool isRaining)
     {
         server.playerManager.sendToAll(
-            new GameStateChangeMessage { Reason = isRaining ? (sbyte)1 : (sbyte)2 }
+            new GameStateChangeMessage
+            {
+                Reason = isRaining ? (sbyte)1 : (sbyte)2
+            }
         );
 
-        bool isThundering = Properties.IsThundering;
-        server.playerManager.sendToAll(new GameStateChangeMessage { Reason = (sbyte)(isThundering ? 7 : 8) });
+        var isThundering = Properties.IsThundering;
+        server.playerManager.sendToAll(new GameStateChangeMessage
+        {
+            Reason = (sbyte)(isThundering ? 7 : 8)
+        });
     }
 }

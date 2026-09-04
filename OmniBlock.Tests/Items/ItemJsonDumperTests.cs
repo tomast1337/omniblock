@@ -1,13 +1,16 @@
 using System.Text.Json;
 using OmniBlock.Items;
-using OmniBlock.Registries;
 using OmniBlock.Registries.Data;
 
 namespace OmniBlock.Tests.Items;
 
 public sealed class ItemJsonDumperTests
 {
-    private static readonly JsonSerializerOptions s_options = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions s_options = new()
+    {
+        WriteIndented = true
+    };
+
     private static readonly HashSet<string> s_alwaysKeepFields = ["ProtocolId", "TextureId"];
 
     [Fact]
@@ -20,22 +23,25 @@ public sealed class ItemJsonDumperTests
 
         _ = ContentRuntime.Current.Items.Get("omniblock:stick").Id;
 
-        string outDir = Path.Combine(FindRepoRoot(), "OmniBlock", "assets", "item");
+        var outDir = Path.Combine(FindRepoRoot(), "OmniBlock", "assets", "item");
         Directory.CreateDirectory(outDir);
 
-        JsonElement fullDefaults = JsonSerializer.SerializeToElement(new ItemDefinition { ProtocolId = 0 }, s_options);
-        JsonElement defaults = StripAlwaysKeepFields(fullDefaults);
+        var fullDefaults = JsonSerializer.SerializeToElement(new ItemDefinition
+        {
+            ProtocolId = 0
+        }, s_options);
+        var defaults = StripAlwaysKeepFields(fullDefaults);
         File.WriteAllText(Path.Combine(outDir, "_defaults.json"), JsonSerializer.Serialize(defaults, s_options));
 
-        int count = 0;
-        foreach (ItemDefinition definition in TestItemCatalog.LoadDefinitions())
+        var count = 0;
+        foreach (var definition in TestItemCatalog.LoadDefinitions())
         {
             ResourceLocation location = new(definition.Namespace, definition.Name);
 
-            JsonElement full = JsonSerializer.SerializeToElement(definition, s_options);
-            JsonElement minimal = JsonMerge.StripDefaults(full, defaults, s_options, s_alwaysKeepFields);
+            var full = JsonSerializer.SerializeToElement(definition, s_options);
+            var minimal = JsonMerge.StripDefaults(full, defaults, s_options, s_alwaysKeepFields);
 
-            string path = Path.Combine(outDir, $"{location.Path}.json");
+            var path = Path.Combine(outDir, $"{location.Path}.json");
             File.WriteAllText(path, JsonSerializer.Serialize(minimal, s_options));
             count++;
         }
@@ -46,7 +52,7 @@ public sealed class ItemJsonDumperTests
     private static JsonElement StripAlwaysKeepFields(JsonElement full)
     {
         var kept = new Dictionary<string, JsonElement>();
-        foreach (JsonProperty property in full.EnumerateObject())
+        foreach (var property in full.EnumerateObject())
         {
             if (!s_alwaysKeepFields.Contains(property.Name))
             {

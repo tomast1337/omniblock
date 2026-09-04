@@ -14,8 +14,8 @@ internal static class StreamExtensions
     /// </summary>
     public static int VarIntSize(int value)
     {
-        uint remaining = (uint)value;
-        int bytes = 1;
+        var remaining = (uint)value;
+        var bytes = 1;
 
         while (remaining >= 0x80)
         {
@@ -42,8 +42,8 @@ internal static class StreamExtensions
     /// <summary>Bytes <see cref="Stream.WriteZigZag" /> will emit, for computing a size without serialising.</summary>
     public static int ZigZagSize(int value)
     {
-        uint remaining = ZigZag(value);
-        int bytes = 1;
+        var remaining = ZigZag(value);
+        var bytes = 1;
 
         while (remaining >= 0x80)
         {
@@ -103,9 +103,9 @@ internal static class StreamExtensions
     /// </summary>
     public static int ItemStacksSize(ItemStack?[] value)
     {
-        int size = VarIntSize(value.Length);
+        var size = VarIntSize(value.Length);
 
-        foreach (ItemStack? stack in value)
+        foreach (var stack in value)
         {
             size += ItemStackSize(stack);
         }
@@ -115,10 +115,7 @@ internal static class StreamExtensions
 
     extension(Stream stream)
     {
-        public void WriteBoolean(bool value)
-        {
-            stream.WriteByte((byte)(value ? 1 : 0));
-        }
+        public void WriteBoolean(bool value) => stream.WriteByte((byte)(value ? 1 : 0));
 
         public void WriteShort(short value)
         {
@@ -163,18 +160,18 @@ internal static class StreamExtensions
         }
 
         /// <summary>
-        /// Write as fixed length UTF-8 string
+        ///     Write as fixed length UTF-8 string
         /// </summary>
         public void WriteString(string value)
         {
-            byte[] buffer = ModifiedUtf8.GetBytes(value);
+            var buffer = ModifiedUtf8.GetBytes(value);
 
             stream.WriteUShort((ushort)buffer.Length);
             stream.Write(buffer);
         }
 
         /// <summary>
-        /// Write as fixed length UTF-16 string
+        ///     Write as fixed length UTF-16 string
         /// </summary>
         public void WriteLongString(string value)
         {
@@ -182,10 +179,7 @@ internal static class StreamExtensions
             stream.Write(Encoding.BigEndianUnicode.GetBytes(value));
         }
 
-        public bool ReadBoolean()
-        {
-            return stream.ReadByte() > 0;
-        }
+        public bool ReadBoolean() => stream.ReadByte() > 0;
 
         public short ReadShort()
         {
@@ -245,7 +239,7 @@ internal static class StreamExtensions
         /// </summary>
         public string ReadString(int maximumBytes = ushort.MaxValue)
         {
-            ushort length = stream.ReadUShort();
+            var length = stream.ReadUShort();
 
             if (length > maximumBytes)
             {
@@ -253,7 +247,7 @@ internal static class StreamExtensions
                     $"String declares {length} bytes; the limit is {maximumBytes}.");
             }
 
-            byte[] buffer = new byte[length];
+            var buffer = new byte[length];
 
             stream.ReadExactly(buffer);
 
@@ -261,11 +255,11 @@ internal static class StreamExtensions
         }
 
         /// <summary>
-        /// Read fixed length UTF-16 string
+        ///     Read fixed length UTF-16 string
         /// </summary>
         public string ReadLongString(ushort maximumLength = ushort.MaxValue)
         {
-            ushort length = stream.ReadUShort();
+            var length = stream.ReadUShort();
 
             // Before the allocation, not after it. The peer supplies this count and it sizes the
             // buffer, so checking it afterwards means the memory the check exists to refuse has
@@ -276,7 +270,7 @@ internal static class StreamExtensions
                     $"Received string of {length} characters; the maximum allowed is {maximumLength}.");
             }
 
-            byte[] buffer = new byte[length * 2];
+            var buffer = new byte[length * 2];
             stream.ReadExactly(buffer);
 
             return Encoding.BigEndianUnicode.GetString(buffer);
@@ -284,24 +278,24 @@ internal static class StreamExtensions
 
         public string ReadAscii256()
         {
-            int length = stream.ReadByte();
-            byte[] buffer = new byte[length];
+            var length = stream.ReadByte();
+            var buffer = new byte[length];
             stream.ReadExactly(buffer);
             return Encoding.ASCII.GetString(buffer);
         }
 
         public void WriteAscii256(string value)
         {
-            byte[] buffer = Encoding.ASCII.GetBytes(value);
+            var buffer = Encoding.ASCII.GetBytes(value);
             stream.WriteByte((byte)buffer.Length);
             stream.Write(buffer);
         }
 
         public Namespace ReadNamespace()
         {
-            int length = stream.ReadByte();
+            var length = stream.ReadByte();
             if (length == 128) return Namespace.OmniBlock;
-            byte[] buffer = new byte[length];
+            var buffer = new byte[length];
             stream.ReadExactly(buffer);
             return Namespace.Get(Encoding.ASCII.GetString(buffer));
         }
@@ -312,10 +306,7 @@ internal static class StreamExtensions
             else stream.WriteAscii256(ns.ToString());
         }
 
-        public ResourceLocation ReadResourceLocation()
-        {
-            return new ResourceLocation(ReadNamespace(stream), stream.ReadAscii256());
-        }
+        public ResourceLocation ReadResourceLocation() => new(stream.ReadNamespace(), stream.ReadAscii256());
 
         public void WriteResourceLocation(ResourceLocation resourceLocation)
         {
@@ -335,7 +326,7 @@ internal static class StreamExtensions
         /// </summary>
         public void WriteVarInt(int value)
         {
-            uint remaining = (uint)value;
+            var remaining = (uint)value;
 
             while (remaining >= 0x80)
             {
@@ -358,12 +349,12 @@ internal static class StreamExtensions
         /// <exception cref="EndOfStreamException">The stream ends mid-value.</exception>
         public int ReadVarInt()
         {
-            int result = 0;
-            int shift = 0;
+            var result = 0;
+            var shift = 0;
 
             while (true)
             {
-                int read = stream.ReadByte();
+                var read = stream.ReadByte();
                 if (read < 0)
                 {
                     throw new EndOfStreamException("Unexpected end of stream while reading a VarInt.");
@@ -390,7 +381,7 @@ internal static class StreamExtensions
         /// </summary>
         public void WriteZigZag(int value)
         {
-            uint remaining = ZigZag(value);
+            var remaining = ZigZag(value);
 
             while (remaining >= 0x80)
             {
@@ -445,7 +436,7 @@ internal static class StreamExtensions
 
             stream.WriteVarInt(value.Length);
 
-            foreach (ItemStack? stack in value)
+            foreach (var stack in value)
             {
                 stream.WriteItemStack(stack);
             }
@@ -461,7 +452,7 @@ internal static class StreamExtensions
         /// </summary>
         public ItemStack?[] ReadItemStacks(IItemRuntimeView items, int maximumCount = ushort.MaxValue)
         {
-            int count = stream.ReadVarInt();
+            var count = stream.ReadVarInt();
 
             if (count < 0 || count > maximumCount)
             {
@@ -469,9 +460,9 @@ internal static class StreamExtensions
                     $"Slot run declares {count} entries; the accepted range is 0 to {maximumCount}.");
             }
 
-            ItemStack?[] stacks = new ItemStack?[count];
+            var stacks = new ItemStack?[count];
 
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 stacks[i] = stream.ReadItemStack(items);
             }
@@ -482,14 +473,14 @@ internal static class StreamExtensions
         /// <summary>Reads a slot written by <see cref="WriteItemStack" />; null for an empty one.</summary>
         public ItemStack? ReadItemStack(IItemRuntimeView items)
         {
-            short itemId = stream.ReadShort();
+            var itemId = stream.ReadShort();
             if (itemId < 0)
             {
                 return null;
             }
 
-            sbyte count = (sbyte)stream.ReadByte();
-            short damage = stream.ReadShort();
+            var count = (sbyte)stream.ReadByte();
+            var damage = stream.ReadShort();
 
             return new ItemStack(items, itemId, count, damage);
         }
@@ -505,7 +496,7 @@ internal static class StreamExtensions
         /// </summary>
         public byte[] ReadByteArray(int maximumLength = int.MaxValue)
         {
-            int length = stream.ReadVarInt();
+            var length = stream.ReadVarInt();
 
             if (length < 0 || length > maximumLength)
             {
@@ -513,7 +504,7 @@ internal static class StreamExtensions
                     $"Blob declares {length} bytes; the accepted range is 0 to {maximumLength}.");
             }
 
-            byte[] buffer = new byte[length];
+            var buffer = new byte[length];
             stream.ReadExactly(buffer);
 
             return buffer;
@@ -525,7 +516,7 @@ internal static class StreamExtensions
 
             while (true)
             {
-                int b = stream.ReadByte();
+                var b = stream.ReadByte();
                 if (b < 0)
                 {
                     throw new EndOfStreamException("Unexpected end of stream while reading until terminator " + terminator);

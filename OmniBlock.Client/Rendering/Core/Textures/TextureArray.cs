@@ -1,5 +1,5 @@
-using OmniBlock.Client.Rendering.Core.WebGPU;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Client.Rendering.Core.WebGPU;
 using Silk.NET.OpenGL;
 using AddressMode = Silk.NET.WebGPU.AddressMode;
 using FilterMode = Silk.NET.WebGPU.FilterMode;
@@ -23,6 +23,15 @@ public sealed class TextureArray : IDisposable
     private static readonly Dictionary<uint, (string Source, DateTime CreatedAt)> s_activeTextures = [];
     private static uint s_nextWebGpuId;
 
+    private WgpuSamplerDescription _sampler = WgpuSamplerDescription.Nearest;
+
+    public TextureArray(string source)
+    {
+        Source = source;
+        Id = ++s_nextWebGpuId;
+        s_activeTextures.Add(Id, (source, DateTime.Now));
+    }
+
     public uint Id { get; private set; }
     public string Source { get; }
     public int Width { get; private set; }
@@ -33,13 +42,17 @@ public sealed class TextureArray : IDisposable
     /// <summary>The WebGPU array, once an upload has given it a size.</summary>
     public WgpuTextureArray? Wgpu { get; private set; }
 
-    private WgpuSamplerDescription _sampler = WgpuSamplerDescription.Nearest;
-
-    public TextureArray(string source)
+    public void Dispose()
     {
-        Source = source;
-        Id = ++s_nextWebGpuId;
-        s_activeTextures.Add(Id, (source, DateTime.Now));
+        GC.SuppressFinalize(this);
+
+        if (Id == 0) return;
+
+        Wgpu?.Dispose();
+        Wgpu = null;
+
+        s_activeTextures.Remove(Id, out _);
+        Id = 0;
     }
 
     public void Bind()
@@ -62,19 +75,20 @@ public sealed class TextureArray : IDisposable
             Mag = mag == TextureMagFilter.Linear ? FilterMode.Linear : FilterMode.Nearest,
             Mipmap = min is TextureMinFilter.LinearMipmapLinear or TextureMinFilter.NearestMipmapLinear
                 ? MipmapFilterMode.Linear
-                : MipmapFilterMode.Nearest,
+                : MipmapFilterMode.Nearest
         });
     }
 
-    public void SetWrap(TextureWrapMode s, TextureWrapMode t)
+    public void SetWrap(TextureWrapMode s, TextureWrapMode t) => UpdateSampler(_sampler with
     {
-        UpdateSampler(_sampler with { AddressU = ToAddressMode(s), AddressV = ToAddressMode(t) });
-    }
+        AddressU = ToAddressMode(s),
+        AddressV = ToAddressMode(t)
+    });
 
-    public void SetMaxLevel(int level)
+    public void SetMaxLevel(int level) => UpdateSampler(_sampler with
     {
-        UpdateSampler(_sampler with { LodMaxClamp = level });
-    }
+        LodMaxClamp = level
+    });
 
     /// <summary>
     ///     (Re)allocates the whole array at <paramref name="width" />x<paramref name="height" /> with
@@ -102,10 +116,10 @@ public sealed class TextureArray : IDisposable
         Materialize();
         if (Wgpu is null) return;
 
-        int layerBytes = width * height * 4;
-        for (int layer = 0; layer < layerCount; layer++)
+        var layerBytes = width * height * 4;
+        for (var layer = 0; layer < layerCount; layer++)
         {
-            Wgpu.UploadLayer((uint)layer, new ReadOnlySpan<byte>(ptr + (layer * layerBytes), layerBytes));
+            Wgpu.UploadLayer((uint)layer, new ReadOnlySpan<byte>(ptr + layer * layerBytes, layerBytes));
         }
     }
 
@@ -118,25 +132,12 @@ public sealed class TextureArray : IDisposable
             new ReadOnlySpan<byte>(ptr, width * height * 4));
     }
 
-    public void Dispose()
-    {
-        GC.SuppressFinalize(this);
-
-        if (Id == 0) return;
-
-        Wgpu?.Dispose();
-        Wgpu = null;
-
-        s_activeTextures.Remove(Id, out _);
-        Id = 0;
-    }
-
     public static void LogLeakReport()
     {
         if (s_activeTextures.Count == 0) return;
 
         s_logger.LogWarning("Found {Count} leaked texture arrays on shutdown!", s_activeTextures.Count);
-        foreach (KeyValuePair<uint, (string Source, DateTime CreatedAt)> entry in s_activeTextures)
+        foreach (var entry in s_activeTextures)
         {
             s_logger.LogWarning("Leaked Texture Array ID: {Id}, Source: {Source}, Created At: {CreatedAt}", entry.Key, entry.Value.Source, entry.Value.CreatedAt);
         }
@@ -160,6 +161,6 @@ public sealed class TextureArray : IDisposable
     {
         TextureWrapMode.ClampToEdge or TextureWrapMode.ClampToBorder => AddressMode.ClampToEdge,
         TextureWrapMode.MirroredRepeat => AddressMode.MirrorRepeat,
-        _ => AddressMode.Repeat,
+        _ => AddressMode.Repeat
     };
 }

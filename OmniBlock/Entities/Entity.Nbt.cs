@@ -29,9 +29,9 @@ public abstract partial class Entity
 
     public void Read(NBTTagCompound nbt)
     {
-        NBTTagList pos = nbt.GetTagList("Pos");
-        NBTTagList mot = nbt.GetTagList("Motion");
-        NBTTagList rot = nbt.GetTagList("Rotation");
+        var pos = nbt.GetTagList("Pos");
+        var mot = nbt.GetTagList("Motion");
+        var rot = nbt.GetTagList("Rotation");
 
         VelocityX = ((NBTTagDouble)mot.TagAt(0)).Value;
         VelocityY = ((NBTTagDouble)mot.TagAt(1)).Value;
@@ -77,7 +77,7 @@ public abstract partial class Entity
 
     public bool SaveSelfNbt(NBTTagCompound nbt)
     {
-        string? id = GetRegistryEntry();
+        var id = GetRegistryEntry();
         if (Dead || id == null)
         {
             return false;
@@ -97,7 +97,7 @@ public abstract partial class Entity
     private static NBTTagList newDoubleNbtList(params double[] arr)
     {
         NBTTagList nbt = new();
-        foreach (double t in arr)
+        foreach (var t in arr)
         {
             nbt.SetTag(new NBTTagDouble(t));
         }
@@ -108,7 +108,7 @@ public abstract partial class Entity
     private static NBTTagList newFloatNbtList(params float[] arr)
     {
         NBTTagList nbt = new();
-        foreach (float t in arr)
+        foreach (var t in arr)
         {
             nbt.SetTag(new NBTTagFloat(t));
         }

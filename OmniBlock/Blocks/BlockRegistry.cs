@@ -45,46 +45,22 @@ public static class BlockRegistry
         return false;
     }
 
-    public static bool IsOpaque(int protocolId)
-    {
-        return TryGetByProtocolId(protocolId, out var block) && block.IsOpaque;
-    }
+    public static bool IsOpaque(int protocolId) => TryGetByProtocolId(protocolId, out var block) && block.IsOpaque;
 
-    public static int GetOpacity(int protocolId)
-    {
-        return TryGetByProtocolId(protocolId, out var block) ? block.Opacity : 0;
-    }
+    public static int GetOpacity(int protocolId) => TryGetByProtocolId(protocolId, out var block) ? block.Opacity : 0;
 
-    public static int GetLightEmission(int protocolId)
-    {
-        return TryGetByProtocolId(protocolId, out var block) ? block.LightEmission : 0;
-    }
+    public static int GetLightEmission(int protocolId) => TryGetByProtocolId(protocolId, out var block) ? block.LightEmission : 0;
 
-    public static bool AllowsVision(int protocolId)
-    {
-        return !TryGetByProtocolId(protocolId, out var block) || block.AllowsVision;
-    }
+    public static bool AllowsVision(int protocolId) => !TryGetByProtocolId(protocolId, out var block) || block.AllowsVision;
 
-    public static bool HasBlockEntity(int protocolId)
-    {
-        return TryGetByProtocolId(protocolId, out var block) && block.HasBlockEntity;
-    }
+    public static bool HasBlockEntity(int protocolId) => TryGetByProtocolId(protocolId, out var block) && block.HasBlockEntity;
 
-    public static bool TicksRandomly(int protocolId)
-    {
-        return TryGetByProtocolId(protocolId, out var block) && block.TickRandomly;
-    }
+    public static bool TicksRandomly(int protocolId) => TryGetByProtocolId(protocolId, out var block) && block.TickRandomly;
 
-    public static bool IgnoresMetaUpdates(int protocolId)
-    {
-        return TryGetByProtocolId(protocolId, out var block) && block.IgnoreMetaUpdates;
-    }
+    public static bool IgnoresMetaUpdates(int protocolId) => TryGetByProtocolId(protocolId, out var block) && block.IgnoreMetaUpdates;
 
     /// <summary>Reverse lookup: the registry name a block was defined under, given its protocol id.</summary>
-    public static string? TryGetName(int protocolId)
-    {
-        return s_idToName.GetValueOrDefault(protocolId);
-    }
+    public static string? TryGetName(int protocolId) => s_idToName.GetValueOrDefault(protocolId);
 
     internal static void Initialize(ContentRuntimeBuilder content)
     {

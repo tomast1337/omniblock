@@ -39,15 +39,9 @@ public sealed class RedstoneTorchBehavior(
         NotifyAllNeighbors(@event.World, @event.X, @event.Y, @event.Z, block.Id);
     }
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-    {
-        return torchPhysics.CanPlaceAt(block, @event);
-    }
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => torchPhysics.CanPlaceAt(block, @event);
 
-    public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
-    {
-        torchPhysics.UpdateBoundingBox(block, reader, x, y, z);
-    }
+    public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z) => torchPhysics.UpdateBoundingBox(block, reader, x, y, z);
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
@@ -122,15 +116,9 @@ public sealed class RedstoneTorchBehavior(
         }
     }
 
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
-    {
-        return side == Side.Up ? redstoneWire.GetTexture(side, meta) : defaultTexture;
-    }
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => side == Side.Up ? redstoneWire.GetTexture(side, meta) : defaultTexture;
 
-    public bool CanEmitRedstonePower(Block block)
-    {
-        return true;
-    }
+    public bool CanEmitRedstonePower(Block block) => true;
 
     public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
     {
@@ -139,20 +127,11 @@ public sealed class RedstoneTorchBehavior(
         return (meta != 5 || side != 1) && (meta != 3 || side != 3) && (meta != 4 || side != 2) && (meta != 1 || side != 5) && (meta != 2 || side != 4);
     }
 
-    public bool IsStrongPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
-    {
-        return side == 0 && IsPoweringSide(block, reader, x, y, z, side);
-    }
+    public bool IsStrongPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => side == 0 && IsPoweringSide(block, reader, x, y, z, side);
 
-    protected override void OnRuntimeBound(IBlockRuntimeView blocks)
-    {
-        torchPhysics.BindRuntime(blocks);
-    }
+    protected override void OnRuntimeBound(IBlockRuntimeView blocks) => torchPhysics.BindRuntime(blocks);
 
-    private bool IsLit(Block block)
-    {
-        return block.Id == litRedstoneTorch.Id;
-    }
+    private bool IsLit(Block block) => block.Id == litRedstoneTorch.Id;
 
     private bool IsBurnedOut(OnTickEvent ctx, bool recordUpdate, long currentTime)
     {

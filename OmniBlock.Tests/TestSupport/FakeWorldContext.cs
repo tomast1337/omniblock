@@ -16,7 +16,6 @@ using OmniBlock.Worlds.Dimensions;
 using OmniBlock.Worlds.Mechanics;
 using OmniBlock.Worlds.Storage;
 using OmniBlock.Worlds.Storage.RegionFormat;
-using OmniBlock.Registries;
 
 namespace OmniBlock.Tests.TestSupport;
 
@@ -50,9 +49,12 @@ public sealed class FakeWorldContext : IWorldContext
     }
 
     public FakeBlockGrid ReaderWriter { get; }
-    public ContentRuntime Content { get; private set; }
-    public void ReplaceContent(ContentRuntime content) => Content = content;
     public RecordingTickScheduler TickSchedulerSpy { get; }
+
+    /// <summary>Returned by <see cref="GetTime" /> for tests that need advancing world time (e.g. torch burnout history pruning).</summary>
+    public long SimulatedWorldTime { get; set; }
+
+    public ContentRuntime Content { get; private set; }
 
     public IBlockReader Reader => ReaderWriter;
     public IBlockWriter Writer => ReaderWriter;
@@ -70,19 +72,46 @@ public sealed class FakeWorldContext : IWorldContext
     public PersistentStateManager StateManager => throw new NotSupportedException();
     public int Difficulty { get; set; } = 1;
 
-    /// <summary>Minimal spawn for code paths that need <see cref="EntityPlayer"/> (e.g. dispenser <c>onUse</c> tests).</summary>
-    public WorldProperties Properties { get; } = new WorldProperties(0L, "test")
+    /// <summary>Minimal spawn for code paths that need <see cref="EntityPlayer" /> (e.g. dispenser <c>onUse</c> tests).</summary>
+    public WorldProperties Properties { get; } = new(0L, "test")
     {
         SpawnX = 0,
         SpawnY = 64,
         SpawnZ = 0
     };
+
     public JavaRandom Random { get; } = new(1234L);
     PathFinder IWorldContext.Pathing => _pathFinder;
     PathingCoordinator IWorldContext.PathingRequests => _pathingRequests;
 
-    /// <summary>Returned by <see cref="GetTime"/> for tests that need advancing world time (e.g. torch burnout history pruning).</summary>
-    public long SimulatedWorldTime { get; set; }
+    public void SetDifficulty(int difficulty) => throw new NotSupportedException();
+    public long GetTime() => SimulatedWorldTime;
+    public int GetSpawnBlockId(int x, int z) => 0;
+
+    /// <summary>
+    ///     Delegates to the real <see cref="EntityManager" /> so entities spawned from inside game logic
+    ///     (mob loot drops, slime splitting, pig-to-pigman conversion) are observable by tests.
+    /// </summary>
+    public bool SpawnEntity(Entity entity) => Entities.SpawnEntity(entity);
+
+    public bool SpawnItemDrop(double x, double y, double z, ItemStack itemStack) => true;
+    public bool CanInteract(EntityPlayer player, int x, int y, int z) => true;
+
+    public Explosion CreateExplosion(Entity? source, double x, double y, double z, float power) =>
+        CreateExplosion(source, x, y, z, power, false);
+
+    public Explosion CreateExplosion(Entity? source, double x, double y, double z, float power, bool fire)
+    {
+        Explosion explosion = new(this, source, x, y, z, power)
+        {
+            isFlaming = fire
+        };
+        explosion.doExplosionA();
+        explosion.doExplosionB(true);
+        return explosion;
+    }
+
+    public void ReplaceContent(ContentRuntime content) => Content = content;
 
     /// <summary>
     ///     Lights the world. The default is pitch dark, which is what mob AI tests have always
@@ -94,27 +123,6 @@ public sealed class FakeWorldContext : IWorldContext
         _chunkSource.SetLightLevel(skyLight, blockLight);
         ReaderWriter.Brightness = skyLight;
     }
-
-    public void SetDifficulty(int difficulty) => throw new NotSupportedException();
-    public long GetTime() => SimulatedWorldTime;
-    public int GetSpawnBlockId(int x, int z) => 0;
-    /// <summary>
-    /// Delegates to the real <see cref="EntityManager"/> so entities spawned from inside game logic
-    /// (mob loot drops, slime splitting, pig-to-pigman conversion) are observable by tests.
-    /// </summary>
-    public bool SpawnEntity(Entity entity) => Entities.SpawnEntity(entity);
-    public bool SpawnItemDrop(double x, double y, double z, ItemStack itemStack) => true;
-    public bool CanInteract(EntityPlayer player, int x, int y, int z) => true;
-    public Explosion CreateExplosion(Entity? source, double x, double y, double z, float power) =>
-        CreateExplosion(source, x, y, z, power, false);
-
-    public Explosion CreateExplosion(Entity? source, double x, double y, double z, float power, bool fire)
-    {
-        Explosion explosion = new(this, source, x, y, z, power) { isFlaming = fire };
-        explosion.doExplosionA();
-        explosion.doExplosionB(true);
-        return explosion;
-    }
 }
 
 public sealed class FakeChunkSource(IWorldContext world) : IChunkSource
@@ -123,31 +131,14 @@ public sealed class FakeChunkSource(IWorldContext world) : IChunkSource
 
     /// <summary>Light level stamped into every chunk, including ones created after it is set.</summary>
     public int SkyLight { get; private set; }
+
     public int BlockLight { get; private set; }
-
-    public void SetLightLevel(int skyLight, int blockLight)
-    {
-        SkyLight = skyLight;
-        BlockLight = blockLight;
-
-        foreach (Chunk chunk in _chunks.Values) Fill(chunk);
-    }
-
-    /// <summary>
-    ///     Writes the level into both nibbles of every byte at once. A chunk holds 32768 cells per
-    ///     light array, so filling them one <c>SetNibble</c> at a time would dominate test time.
-    /// </summary>
-    private void Fill(Chunk chunk)
-    {
-        Array.Fill(chunk.SkyLight.Bytes, (byte)(SkyLight * 0x11));
-        Array.Fill(chunk.BlockLight.Bytes, (byte)(BlockLight * 0x11));
-    }
 
     public bool IsChunkLoaded(int x, int z) => true;
 
     public Chunk GetChunk(int x, int z)
     {
-        if (_chunks.TryGetValue((x, z), out Chunk? chunk))
+        if (_chunks.TryGetValue((x, z), out var chunk))
         {
             return chunk;
         }
@@ -174,6 +165,24 @@ public sealed class FakeChunkSource(IWorldContext world) : IChunkSource
     public bool Tick() => false;
     public bool CanSave() => false;
     public string GetDebugInfo() => "FakeChunkSource";
+
+    public void SetLightLevel(int skyLight, int blockLight)
+    {
+        SkyLight = skyLight;
+        BlockLight = blockLight;
+
+        foreach (var chunk in _chunks.Values) Fill(chunk);
+    }
+
+    /// <summary>
+    ///     Writes the level into both nibbles of every byte at once. A chunk holds 32768 cells per
+    ///     light array, so filling them one <c>SetNibble</c> at a time would dominate test time.
+    /// </summary>
+    private void Fill(Chunk chunk)
+    {
+        Array.Fill(chunk.SkyLight.Bytes, (byte)(SkyLight * 0x11));
+        Array.Fill(chunk.BlockLight.Bytes, (byte)(BlockLight * 0x11));
+    }
 }
 
 public sealed class RecordingTickScheduler(IWorldContext context) : WorldTickScheduler(context)
@@ -187,7 +196,7 @@ public sealed class TestWorldEventBroadcaster(IWorldContext ctx, World world) : 
 {
     public override void PlayNote(int x, int y, int z, int soundType, int pitch)
     {
-        int blockId = ctx.Reader.GetBlockId(x, y, z);
+        var blockId = ctx.Reader.GetBlockId(x, y, z);
         if (blockId > 0)
         {
             TestBlocks.GetByProtocolId(blockId).OnBlockAction(new OnBlockActionEvent(ctx, soundType, pitch, x, y, z));
@@ -212,7 +221,7 @@ sealed file class StubChunkSource(IWorldContext world) : IChunkSource
 
     public Chunk GetChunk(int x, int z)
     {
-        if (_chunks.TryGetValue((x, z), out Chunk? chunk))
+        if (_chunks.TryGetValue((x, z), out var chunk))
         {
             return chunk;
         }
@@ -273,34 +282,43 @@ public sealed class FakeBlockGrid : IBlockReader, IBlockWriter
     public readonly List<(int X, int Y, int Z, int BlockId, int Meta)> SetBlockCalls = [];
     public readonly List<(int X, int Y, int Z, int Meta)> SetMetaCalls = [];
 
-    public int GetBlockId(int x, int y, int z) => _cells.TryGetValue((x, y, z), out (int BlockId, int Meta) state) ? state.BlockId : 0;
-    public int GetBlockMeta(int x, int y, int z) => _cells.TryGetValue((x, y, z), out (int BlockId, int Meta) state) ? state.Meta : 0;
+    /// <summary>
+    ///     Sky brightness reported for every position. Defaults to pitch dark; raise it through
+    ///     <see cref="FakeWorldContext.SetLightLevel" /> so the grid and the chunk light arrays agree.
+    /// </summary>
+    public int Brightness { get; set; }
+
+    /// <summary>
+    ///     Set by <see cref="FakeWorldContext" /> once its entity manager exists, so raycasts can
+    ///     reach block shapes that consult entities.
+    /// </summary>
+    public EntityManager? Entities { get; set; }
+
+    public IBlockRuntimeView ContentBlocks { get; set; } = null!;
+
+    public int GetBlockId(int x, int y, int z) => _cells.TryGetValue((x, y, z), out var state) ? state.BlockId : 0;
+    public int GetBlockMeta(int x, int y, int z) => _cells.TryGetValue((x, y, z), out var state) ? state.Meta : 0;
 
     public Material GetMaterial(int x, int y, int z)
     {
-        int id = GetBlockId(x, y, z);
+        var id = GetBlockId(x, y, z);
         return id == 0 ? Material.Air : TestBlocks.GetByProtocolId(id).Material;
     }
 
     public bool IsOpaque(int x, int y, int z)
     {
-        int id = GetBlockId(x, y, z);
+        var id = GetBlockId(x, y, z);
         return id != 0 && TestBlocks.IsOpaque(id);
     }
 
     public bool ShouldSuffocate(int x, int y, int z)
     {
-        int id = GetBlockId(x, y, z);
+        var id = GetBlockId(x, y, z);
         return id != 0 && TestBlocks.IsOpaque(id);
     }
 
     public BiomeSource GetBiomeSource() => throw new NotSupportedException();
     public bool IsAir(int x, int y, int z) => GetBlockId(x, y, z) == 0;
-    /// <summary>
-    ///     Sky brightness reported for every position. Defaults to pitch dark; raise it through
-    ///     <see cref="FakeWorldContext.SetLightLevel"/> so the grid and the chunk light arrays agree.
-    /// </summary>
-    public int Brightness { get; set; }
 
     public int GetBrightness(int x, int y, int z) => Brightness;
     public bool IsTopY(int x, int y, int z) => false;
@@ -315,34 +333,28 @@ public sealed class FakeBlockGrid : IBlockReader, IBlockWriter
     public float GetVisibilityRatio(Vec3D sourcePosition, Box targetBox) => 0F;
 
     /// <summary>
-    ///     Set by <see cref="FakeWorldContext"/> once its entity manager exists, so raycasts can
-    ///     reach block shapes that consult entities.
-    /// </summary>
-    public EntityManager? Entities { get; set; }
-    public IBlockRuntimeView ContentBlocks { get; set; } = null!;
-
-    /// <summary>
     ///     Runs the production traversal over this grid rather than reporting a blanket miss, so
     ///     line-of-sight checks (<c>CanSee</c>, mob targeting) see real walls.
     /// </summary>
     public HitResult Raycast(Vec3D start, Vec3D end, bool includeFluids = false, bool ignoreNonSolid = false) =>
         BlockRaycaster.Cast(this, Entities!, ContentBlocks, start, end, includeFluids, ignoreNonSolid);
+
     public bool IsPosLoaded(int x, int y, int z) => true;
 
     public bool IsMaterialInBox(Box area, Func<Material, bool> predicate)
     {
-        int minX = MathHelper.Floor(area.MinX);
-        int maxX = MathHelper.Floor(area.MaxX);
-        int minY = MathHelper.Floor(area.MinY);
-        int maxY = MathHelper.Floor(area.MaxY);
-        int minZ = MathHelper.Floor(area.MinZ);
-        int maxZ = MathHelper.Floor(area.MaxZ);
+        var minX = MathHelper.Floor(area.MinX);
+        var maxX = MathHelper.Floor(area.MaxX);
+        var minY = MathHelper.Floor(area.MinY);
+        var maxY = MathHelper.Floor(area.MaxY);
+        var minZ = MathHelper.Floor(area.MinZ);
+        var maxZ = MathHelper.Floor(area.MaxZ);
 
-        for (int x = minX; x <= maxX; x++)
+        for (var x = minX; x <= maxX; x++)
         {
-            for (int y = minY; y <= maxY; y++)
+            for (var y = minY; y <= maxY; y++)
             {
-                for (int z = minZ; z <= maxZ; z++)
+                for (var z = minZ; z <= maxZ; z++)
                 {
                     if (predicate(GetMaterial(x, y, z)))
                     {
@@ -368,8 +380,8 @@ public sealed class FakeBlockGrid : IBlockReader, IBlockWriter
 
     public bool SetBlock(int x, int y, int z, int blockId, int meta, bool doUpdate)
     {
-        int previousBlockId = GetBlockId(x, y, z);
-        int previousMeta = GetBlockMeta(x, y, z);
+        var previousBlockId = GetBlockId(x, y, z);
+        var previousMeta = GetBlockMeta(x, y, z);
         _cells[(x, y, z)] = (blockId, meta);
         SetBlockCalls.Add((x, y, z, blockId, meta));
         OnBlockChangedWithPrev?.Invoke(x, y, z, previousBlockId, previousMeta, blockId, meta);
@@ -379,7 +391,7 @@ public sealed class FakeBlockGrid : IBlockReader, IBlockWriter
 
     public void SetBlockMeta(int x, int y, int z, int meta)
     {
-        int blockId = WriteMetaCell(x, y, z, meta);
+        var blockId = WriteMetaCell(x, y, z, meta);
 
         if (TestBlocks.IgnoresMetaUpdates(blockId & 255))
         {
@@ -389,14 +401,6 @@ public sealed class FakeBlockGrid : IBlockReader, IBlockWriter
         {
             OnNeighborsShouldUpdate?.Invoke(x, y, z, blockId);
         }
-    }
-
-    private int WriteMetaCell(int x, int y, int z, int meta)
-    {
-        int blockId = GetBlockId(x, y, z);
-        _cells[(x, y, z)] = (blockId, meta);
-        SetMetaCalls.Add((x, y, z, meta));
-        return blockId;
     }
 
     public bool SetBlockWithoutCallingOnPlaced(int x, int y, int z, int blockId, int meta) => SetBlock(x, y, z, blockId, meta, true);
@@ -412,6 +416,14 @@ public sealed class FakeBlockGrid : IBlockReader, IBlockWriter
     }
 
     public bool SetBlockInternal(int x, int y, int z, int id, int meta = 0) => SetBlock(x, y, z, id, meta, false);
+
+    private int WriteMetaCell(int x, int y, int z, int meta)
+    {
+        var blockId = GetBlockId(x, y, z);
+        _cells[(x, y, z)] = (blockId, meta);
+        SetMetaCalls.Add((x, y, z, meta));
+        return blockId;
+    }
 
     public void SetInitial(int x, int y, int z, int blockId, int meta = 0) => _cells[(x, y, z)] = (blockId, meta);
 }

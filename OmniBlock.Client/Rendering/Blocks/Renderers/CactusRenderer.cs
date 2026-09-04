@@ -11,8 +11,8 @@ public class CactusRenderer : IBlockRenderer
         // because that is where a cactus hurts you, and rendering through it drew the sides a pixel
         // thin and left the full-width top and bottom overhanging them. A cactus is inset by moving
         // each side face inward below, and by nothing else.
-        Box bounds = ctx.OverrideBounds ?? new Box(0.0, 0.0, 0.0, 1.0, 1.0, 1.0);
-        bool hasRendered = false;
+        var bounds = ctx.OverrideBounds ?? new Box(0.0, 0.0, 0.0, 1.0, 1.0, 1.0);
+        var hasRendered = false;
 
         // Force the helper to use flat shading so it doesn't override our colors with the dummy struct
         var flatCtx = ctx with
@@ -22,10 +22,10 @@ public class CactusRenderer : IBlockRenderer
         };
 
         // 1. Calculate the specific biome/tint color for this cactus
-        int colorMultiplier = block.GetColorMultiplier(ctx.BlockReader, pos.X, pos.Y, pos.Z);
-        float red = (colorMultiplier >> 16 & 255) / 255.0F;
-        float green = (colorMultiplier >> 8 & 255) / 255.0F;
-        float blue = (colorMultiplier & 255) / 255.0F;
+        var colorMultiplier = block.GetColorMultiplier(ctx.BlockReader, pos.X, pos.Y, pos.Z);
+        var red = ((colorMultiplier >> 16) & 255) / 255.0F;
+        var green = ((colorMultiplier >> 8) & 255) / 255.0F;
+        var blue = (colorMultiplier & 255) / 255.0F;
 
         // 2. Base directional lighting multipliers
         const float lightBottom = 0.5F;
@@ -40,7 +40,7 @@ public class CactusRenderer : IBlockRenderer
         float rX = lightX * red, gX = lightX * green, bX = lightX * blue;
 
         // 1/16th of a block = exactly 1 pixel width in a standard 16x16 texture
-        float inset = 1.0F / 16.0F;
+        var inset = 1.0F / 16.0F;
 
 
         FaceColors dummyColors = new();
@@ -51,7 +51,7 @@ public class CactusRenderer : IBlockRenderer
             ctx.SetLightAt(block, pos.X, pos.Y - 1, pos.Z);
             ctx.Tess.setColorOpaque_F(rBottom, gBottom, bBottom);
 
-            int tex = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, 0);
+            var tex = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, 0);
             flatCtx.DrawBottomFace(block, new Vec3D(pos.X, pos.Y, pos.Z), dummyColors, tex);
             hasRendered = true;
         }
@@ -70,7 +70,7 @@ public class CactusRenderer : IBlockRenderer
 
             ctx.Tess.setColorOpaque_F(rTop, gTop, bTop);
 
-            int tex = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.Up);
+            var tex = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.Up);
             flatCtx.DrawTopFace(block, new Vec3D(pos.X, pos.Y, pos.Z), dummyColors, tex);
             hasRendered = true;
         }
@@ -78,14 +78,20 @@ public class CactusRenderer : IBlockRenderer
         // --- East Face (Z - 1) ---
         if (flatCtx.RenderAllFaces || bounds.MinZ > 0.0D || block.IsSideVisible(ctx.BlockReader, pos.X, pos.Y, pos.Z - 1, Side.North))
         {
-            if (bounds.MinZ > 0.0D) { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z); }
-            else { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z - 1); }
+            if (bounds.MinZ > 0.0D)
+            {
+                ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
+            }
+            else
+            {
+                ctx.SetLightAt(block, pos.X, pos.Y, pos.Z - 1);
+            }
 
             ctx.Tess.setColorOpaque_F(rZ, gZ, bZ);
 
             ctx.Tess.setTranslationF(0.0F, 0.0F, inset);
 
-            int tex = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.North);
+            var tex = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.North);
             flatCtx.DrawEastFace(block, new Vec3D(pos.X, pos.Y, pos.Z), dummyColors, tex);
 
             ctx.Tess.setTranslationF(0.0F, 0.0F, -inset);
@@ -95,14 +101,20 @@ public class CactusRenderer : IBlockRenderer
         // --- West Face (Z + 1) ---
         if (flatCtx.RenderAllFaces || bounds.MaxZ < 1.0D || block.IsSideVisible(ctx.BlockReader, pos.X, pos.Y, pos.Z + 1, Side.South))
         {
-            if (bounds.MaxZ < 1.0D) { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z); }
-            else { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z + 1); }
+            if (bounds.MaxZ < 1.0D)
+            {
+                ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
+            }
+            else
+            {
+                ctx.SetLightAt(block, pos.X, pos.Y, pos.Z + 1);
+            }
 
             ctx.Tess.setColorOpaque_F(rZ, gZ, bZ);
 
             ctx.Tess.setTranslationF(0.0F, 0.0F, -inset);
 
-            int tex = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.South);
+            var tex = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.South);
             flatCtx.DrawWestFace(block, new Vec3D(pos.X, pos.Y, pos.Z), dummyColors, tex);
 
             ctx.Tess.setTranslationF(0.0F, 0.0F, inset);
@@ -112,14 +124,20 @@ public class CactusRenderer : IBlockRenderer
         // --- North Face (X - 1) ---
         if (flatCtx.RenderAllFaces || bounds.MinX > 0.0D || block.IsSideVisible(ctx.BlockReader, pos.X - 1, pos.Y, pos.Z, Side.West))
         {
-            if (bounds.MinX > 0.0D) { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z); }
-            else { ctx.SetLightAt(block, pos.X - 1, pos.Y, pos.Z); }
+            if (bounds.MinX > 0.0D)
+            {
+                ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
+            }
+            else
+            {
+                ctx.SetLightAt(block, pos.X - 1, pos.Y, pos.Z);
+            }
 
             ctx.Tess.setColorOpaque_F(rX, gX, bX);
 
             ctx.Tess.setTranslationF(inset, 0.0F, 0.0F);
 
-            int tex = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.West);
+            var tex = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.West);
             flatCtx.DrawNorthFace(block, new Vec3D(pos.X, pos.Y, pos.Z), dummyColors, tex);
 
             ctx.Tess.setTranslationF(-inset, 0.0F, 0.0F);
@@ -129,14 +147,20 @@ public class CactusRenderer : IBlockRenderer
         // --- South Face (X + 1) ---
         if (flatCtx.RenderAllFaces || bounds.MaxX < 1.0D || block.IsSideVisible(ctx.BlockReader, pos.X + 1, pos.Y, pos.Z, Side.East))
         {
-            if (bounds.MaxX < 1.0D) { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z); }
-            else { ctx.SetLightAt(block, pos.X + 1, pos.Y, pos.Z); }
+            if (bounds.MaxX < 1.0D)
+            {
+                ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
+            }
+            else
+            {
+                ctx.SetLightAt(block, pos.X + 1, pos.Y, pos.Z);
+            }
 
             ctx.Tess.setColorOpaque_F(rX, gX, bX);
 
             ctx.Tess.setTranslationF(-inset, 0.0F, 0.0F);
 
-            int tex = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.East);
+            var tex = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.East);
             flatCtx.DrawSouthFace(block, new Vec3D(pos.X, pos.Y, pos.Z), dummyColors, tex);
 
             ctx.Tess.setTranslationF(inset, 0.0F, 0.0F);

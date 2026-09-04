@@ -11,30 +11,18 @@ public class BlockEntityMobSpawner : BlockEntity
     private readonly ILogger<BlockEntityMobSpawner> _logger = Log.Instance.For<BlockEntityMobSpawner>();
     private string _spawnedEntityId = "Pig";
 
-    public BlockEntityMobSpawner()
-    {
-        SpawnDelay = 20;
-    }
+    public BlockEntityMobSpawner() => SpawnDelay = 20;
 
     protected override BlockEntityType Type => MobSpawner;
     public int SpawnDelay { get; set; } = -1;
     public double Rotation { get; set; }
     public double LastRotation { get; set; }
 
-    public string GetSpawnedEntityId()
-    {
-        return _spawnedEntityId;
-    }
+    public string GetSpawnedEntityId() => _spawnedEntityId;
 
-    public void SetSpawnedEntityId(string spawnedEntityId)
-    {
-        _spawnedEntityId = spawnedEntityId;
-    }
+    public void SetSpawnedEntityId(string spawnedEntityId) => _spawnedEntityId = spawnedEntityId;
 
-    private bool IsPlayerInRange()
-    {
-        return World!.Entities.GetClosestPlayer(X + 0.5D, Y + 0.5D, Z + 0.5D, 16.0D) != null;
-    }
+    private bool IsPlayerInRange() => World!.Entities.GetClosestPlayer(X + 0.5D, Y + 0.5D, Z + 0.5D, 16.0D) != null;
 
     public override void Tick(EntityManager entities)
     {
@@ -63,8 +51,10 @@ public class BlockEntityMobSpawner : BlockEntity
 
             for (var spawnAttempt = 0; spawnAttempt < max; ++spawnAttempt)
             {
-                EntityLiving? entityLiving = World.Content.EntityTypes.TryCreate(
-                    _spawnedEntityId, World, out Entity? spawned) ? spawned as EntityLiving : null;
+                var entityLiving = World.Content.EntityTypes.TryCreate(
+                    _spawnedEntityId, World, out var spawned)
+                    ? spawned as EntityLiving
+                    : null;
                 if (entityLiving == null) return;
 
                 var count = World!.Entities

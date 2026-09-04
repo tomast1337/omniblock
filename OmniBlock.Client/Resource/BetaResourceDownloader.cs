@@ -9,17 +9,17 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
     private const string RESOURCE_URL = "http://s3.amazonaws.com/MinecraftResources/";
     private const string BETACRAFT_PROXY_HOST = "betacraft.uk";
     private const int BETACRAFT_PROXY_PORT = 11705;
+    private readonly OmniBlock _game;
+    private readonly HttpClient _httpClient;
 
     private readonly ILogger<BetaResourceDownloader> _logger = Log.Instance.For<BetaResourceDownloader>();
-    private readonly HttpClient _httpClient;
     private readonly string _resourcesDirectory;
-    private readonly OmniBlock _game;
     private bool _cancelled;
 
     public BetaResourceDownloader(OmniBlock game, string baseDirectory)
     {
         _game = game;
-        _resourcesDirectory = System.IO.Path.Combine(baseDirectory, "resources");
+        _resourcesDirectory = Path.Combine(baseDirectory, "resources");
         Directory.CreateDirectory(_resourcesDirectory);
 
         var handler = new HttpClientHandler
@@ -34,40 +34,15 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
         };
     }
 
-    private bool DoManifestStuff(string manifestFilePath)
+    public void Dispose()
     {
-        if (File.Exists(manifestFilePath))
-        {
-            string[] lines = File.ReadAllLines(manifestFilePath);
-            int loaded = 0;
-
-            foreach (string line in lines)
-            {
-                string localFile = System.IO.Path.Combine(_resourcesDirectory, line);
-                if (File.Exists(localFile))
-                {
-                    loaded++;
-                    _game.InstallResource(line, new FileInfo(localFile));
-                }
-            }
-
-            if (lines.Length == loaded)
-            {
-                _logger.LogInformation($"{loaded} resources");
-                return true;
-            }
-            else
-            {
-                _logger.LogError($"resource count mismatch, expected {lines.Length}, loaded {loaded}");
-            }
-        }
-
-        return false;
+        GC.SuppressFinalize(this);
+        _httpClient?.Dispose();
     }
 
     public async Task LoadAsync()
     {
-        string manifestFilePath = System.IO.Path.Combine(_resourcesDirectory, "resourceManifest.txt");
+        var manifestFilePath = Path.Combine(_resourcesDirectory, "resourceManifest.txt");
 
         if (DoManifestStuff(manifestFilePath))
         {
@@ -78,16 +53,16 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
         {
             _logger.LogInformation("Fetching resource list...");
 
-            HttpResponseMessage response = await _httpClient.GetAsync(RESOURCE_URL);
+            var response = await _httpClient.GetAsync(RESOURCE_URL);
             response.EnsureSuccessStatusCode();
 
-            string xmlContent = await response.Content.ReadAsStringAsync();
+            var xmlContent = await response.Content.ReadAsStringAsync();
 
-            List<ResourceEntry> resources = ParseResourceXml(xmlContent);
+            var resources = ParseResourceXml(xmlContent);
 
             List<string> resourceFileNames = [];
 
-            foreach (ResourceEntry resource in resources)
+            foreach (var resource in resources)
             {
                 resourceFileNames.Add(resource.Key);
             }
@@ -96,9 +71,9 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
 
             _logger.LogInformation($"Found {resources.Count} resources to download");
 
-            for (int pass = 0; pass < 2; pass++)
+            for (var pass = 0; pass < 2; pass++)
             {
-                foreach (ResourceEntry resource in resources)
+                foreach (var resource in resources)
                 {
                     if (_cancelled) return;
 
@@ -112,13 +87,42 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
         }
     }
 
+    private bool DoManifestStuff(string manifestFilePath)
+    {
+        if (File.Exists(manifestFilePath))
+        {
+            var lines = File.ReadAllLines(manifestFilePath);
+            var loaded = 0;
+
+            foreach (var line in lines)
+            {
+                var localFile = Path.Combine(_resourcesDirectory, line);
+                if (File.Exists(localFile))
+                {
+                    loaded++;
+                    _game.InstallResource(line, new FileInfo(localFile));
+                }
+            }
+
+            if (lines.Length == loaded)
+            {
+                _logger.LogInformation($"{loaded} resources");
+                return true;
+            }
+
+            _logger.LogError($"resource count mismatch, expected {lines.Length}, loaded {loaded}");
+        }
+
+        return false;
+    }
+
     private static List<ResourceEntry> ParseResourceXml(string xmlContent)
     {
         var resources = new List<ResourceEntry>();
         var doc = new XmlDocument();
         doc.LoadXml(xmlContent);
 
-        XmlNodeList contents = doc.GetElementsByTagName("Contents");
+        var contents = doc.GetElementsByTagName("Contents");
 
         foreach (XmlNode node in contents)
         {
@@ -126,15 +130,19 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
             {
                 var element = (XmlElement)node;
 
-                XmlNode? keyNode = element.GetElementsByTagName("Key")[0];
-                XmlNode? sizeNode = element.GetElementsByTagName("Size")[0];
+                var keyNode = element.GetElementsByTagName("Key")[0];
+                var sizeNode = element.GetElementsByTagName("Size")[0];
 
-                string key = keyNode!.InnerText;
-                long size = long.Parse(sizeNode!.InnerText);
+                var key = keyNode!.InnerText;
+                var size = long.Parse(sizeNode!.InnerText);
 
                 if (size > 0)
                 {
-                    resources.Add(new ResourceEntry { Key = key, Size = size });
+                    resources.Add(new ResourceEntry
+                    {
+                        Key = key,
+                        Size = size
+                    });
                 }
             }
         }
@@ -146,17 +154,17 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
     {
         try
         {
-            int slashIndex = path.IndexOf('/');
+            var slashIndex = path.IndexOf('/');
             if (slashIndex < 0) return;
 
-            string category = path.Substring(0, slashIndex);
+            var category = path.Substring(0, slashIndex);
 
-            bool isSoundFile = category == "sound" || category == "newsound";
+            var isSoundFile = category == "sound" || category == "newsound";
 
             if (isSoundFile && pass != 0) return;
             if (!isSoundFile && pass != 1) return;
 
-            var localFile = new FileInfo(System.IO.Path.Combine(_resourcesDirectory, path));
+            var localFile = new FileInfo(Path.Combine(_resourcesDirectory, path));
 
             if (localFile.Exists && localFile.Length == size)
             {
@@ -166,8 +174,8 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
 
             localFile.Directory?.Create();
 
-            string urlPath = path.Replace(" ", "%20");
-            string fullUrl = RESOURCE_URL + urlPath;
+            var urlPath = path.Replace(" ", "%20");
+            var fullUrl = RESOURCE_URL + urlPath;
 
             await DownloadFile(fullUrl, localFile.FullName);
 
@@ -184,12 +192,12 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
 
     private async Task DownloadFile(string url, string destinationPath)
     {
-        HttpResponseMessage response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+        var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
         response.EnsureSuccessStatusCode();
 
-        using Stream stream = await response.Content.ReadAsStreamAsync();
+        using var stream = await response.Content.ReadAsStreamAsync();
         using var fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None);
-        byte[] buffer = new byte[4096];
+        var buffer = new byte[4096];
         int bytesRead;
 
         while ((bytesRead = await stream.ReadAsync(buffer)) > 0)
@@ -200,16 +208,7 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
         }
     }
 
-    public void Cancel()
-    {
-        _cancelled = true;
-    }
-
-    public void Dispose()
-    {
-        GC.SuppressFinalize(this);
-        _httpClient?.Dispose();
-    }
+    public void Cancel() => _cancelled = true;
 
     private class ResourceEntry
     {

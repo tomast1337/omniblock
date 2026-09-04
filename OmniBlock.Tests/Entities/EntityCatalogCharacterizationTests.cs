@@ -1,12 +1,12 @@
 using OmniBlock.Entities;
 using OmniBlock.Entities.State;
-using OmniBlock.Registries;
+using Xunit.Sdk;
 
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Public catalog contract to preserve while entity ownership moves into ContentRuntime.
-/// It intentionally observes registered values and construction results, not registry internals.
+///     Public catalog contract to preserve while entity ownership moves into ContentRuntime.
+///     It intentionally observes registered values and construction results, not registry internals.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityCatalogCharacterizationTests
@@ -49,9 +49,9 @@ public sealed class EntityCatalogCharacterizationTests
             ContentRuntime.Current.EntityTypes.Keys.Select(key => key.Path).OrderBy(NameOrder));
 
         FakeWorldContext world = new();
-        foreach ((string name, int protocolId, int objectId, int globalId, Type runtimeType) in s_catalog)
+        foreach (var (name, protocolId, objectId, globalId, runtimeType) in s_catalog)
         {
-            EntityType type = TestEntityCatalog.ByName(name);
+            var type = TestEntityCatalog.ByName(name);
             Assert.Equal(protocolId, ContentRuntime.Current.EntityTypes.GetProtocolId(type));
             Assert.Equal(runtimeType, type.BaseType);
 
@@ -64,9 +64,9 @@ public sealed class EntityCatalogCharacterizationTests
     [Fact]
     public void Every_non_player_definition_keeps_core_physical_and_tracking_configuration()
     {
-        foreach ((string name, _, _, _, _) in s_catalog.Where(row => row.Name != "player"))
+        foreach (var (name, _, _, _, _) in s_catalog.Where(row => row.Name != "player"))
         {
-            EntityDefinition definition = TestEntityCatalog.ByName(name).RequireDefinition();
+            var definition = TestEntityCatalog.ByName(name).RequireDefinition();
             Assert.True(definition.Width > 0, name);
             Assert.True(definition.Height > 0, name);
             Assert.True(definition.Health > 0, name);
@@ -75,9 +75,9 @@ public sealed class EntityCatalogCharacterizationTests
             Assert.Equal(name, definition.Name);
         }
 
-        AssertDefinition("boat", 1.5f, 0.6f, tracksVelocity: true, collidable: true);
-        AssertDefinition("arrow", 0.5f, 0.5f, tracksVelocity: true, collidable: false);
-        AssertDefinition("ghast", 4f, 4f, tracksVelocity: false, collidable: false);
+        AssertDefinition("boat", 1.5f, 0.6f, true, true);
+        AssertDefinition("arrow", 0.5f, 0.5f, true, false);
+        AssertDefinition("ghast", 4f, 4f, false, false);
         Assert.True(TestEntityCatalog.ByName("ghast").RequireDefinition().FireImmune);
         Assert.True(TestEntityCatalog.ByName("squid").RequireDefinition().BreathesUnderwater);
         Assert.True(TestEntityCatalog.ByName("fishhook").RequireDefinition().IgnoreFrustumCheck);
@@ -100,10 +100,10 @@ public sealed class EntityCatalogCharacterizationTests
     [Fact]
     public void Every_declared_behavior_slot_is_attached_to_the_compiled_type()
     {
-        foreach ((string name, _, _, _, _) in s_catalog.Where(row => row.Name != "player"))
+        foreach (var (name, _, _, _, _) in s_catalog.Where(row => row.Name != "player"))
         {
-            EntityType type = TestEntityCatalog.ByName(name);
-            foreach (string slot in type.RequireDefinition().Behaviors
+            var type = TestEntityCatalog.ByName(name);
+            foreach (var slot in type.RequireDefinition().Behaviors
                          .SelectMany(entry => entry.GetProperty("Slots").EnumerateArray())
                          .Select(entry => entry.GetString()!).Distinct())
                 Assert.NotNull(Slot(type.Behaviors, slot));
@@ -114,7 +114,7 @@ public sealed class EntityCatalogCharacterizationTests
 
     private static void AssertDefinition(string name, float width, float height, bool tracksVelocity, bool collidable)
     {
-        EntityDefinition definition = TestEntityCatalog.ByName(name).RequireDefinition();
+        var definition = TestEntityCatalog.ByName(name).RequireDefinition();
         Assert.Equal(width, definition.Width);
         Assert.Equal(height, definition.Height);
         Assert.Equal(tracksVelocity, definition.TracksVelocity);
@@ -125,9 +125,9 @@ public sealed class EntityCatalogCharacterizationTests
         string name,
         params (string Name, int Id, SyncedValueKind Kind, double Default, string? DefaultString)[] expected)
     {
-        SyncedPropertyDefinition[] actual = TestEntityCatalog.ByName(name).RequireDefinition().SyncedProperties;
+        var actual = TestEntityCatalog.ByName(name).RequireDefinition().SyncedProperties;
         Assert.Equal(expected.Length, actual.Length);
-        for (int i = 0; i < expected.Length; i++)
+        for (var i = 0; i < expected.Length; i++)
         {
             Assert.Equal(expected[i].Name, actual[i].Name);
             Assert.Equal(expected[i].Id, actual[i].Id);
@@ -147,6 +147,6 @@ public sealed class EntityCatalogCharacterizationTests
         "Persistence" => set.Persistence,
         "Interactable" => set.Interactable,
         "Physics" => set.Physics,
-        _ => throw new Xunit.Sdk.XunitException($"Unknown shipped entity behavior slot '{slot}'.")
+        _ => throw new XunitException($"Unknown shipped entity behavior slot '{slot}'.")
     };
 }

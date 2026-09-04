@@ -27,7 +27,7 @@ public class Link : Label
 
     public override void Render(UIRenderer renderer)
     {
-        Color color = _isHovered ? HoverColor : TextColor;
+        var color = _isHovered ? HoverColor : TextColor;
 
         if (Centered)
         {
@@ -38,7 +38,7 @@ public class Link : Label
             renderer.DrawText(Text, 0, 0, color, Scale, HasShadow);
         }
 
-        foreach (UIElement child in Children)
+        foreach (var child in Children)
         {
             renderer.PushTranslate(child.ComputedX, child.ComputedY);
             child.Render(renderer);

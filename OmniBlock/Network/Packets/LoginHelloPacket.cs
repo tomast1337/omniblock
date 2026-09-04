@@ -12,11 +12,12 @@ public class LoginHelloPacket() : Packet(PacketId.LoginHello)
     ///     rather than sent as its own packet.
     /// </summary>
     public long WorldSeed { get; private set; }
+
     public sbyte DimensionId { get; private set; }
 
     public static LoginHelloPacket Get(string username, int protocolVersion, long worldSeed, sbyte dimensionId)
     {
-        LoginHelloPacket p = Get<LoginHelloPacket>(PacketId.LoginHello);
+        var p = Get<LoginHelloPacket>(PacketId.LoginHello);
         p.Username = username;
         p.ProtocolVersion = protocolVersion;
         p.WorldSeed = worldSeed;

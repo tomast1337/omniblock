@@ -1,5 +1,5 @@
-using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using OmniBlock.Luau;
 
 namespace OmniBlock.Tests.Luau;
@@ -24,13 +24,13 @@ public sealed unsafe class LuauExecutionTests
         Skip.IfNot(IsNativeLibraryAvailable(),
             "native/luau/build-local.sh hasn't been run for this checkout — omniblock_luau isn't resolvable.");
 
-        IntPtr allocFn = (IntPtr)(delegate* unmanaged[Cdecl]<void*, void*, nuint, nuint, void*>)&LuauCallbacks.Allocate;
-        IntPtr L = LuauNative.lua_newstate(allocFn, IntPtr.Zero);
+        var allocFn = (IntPtr)(delegate* unmanaged[Cdecl]<void*, void*, nuint, nuint, void*>)&LuauCallbacks.Allocate;
+        var L = LuauNative.lua_newstate(allocFn, IntPtr.Zero);
         Assert.NotEqual(IntPtr.Zero, L);
 
         try
         {
-            byte[] source = System.Text.Encoding.UTF8.GetBytes("return 10 + 32");
+            var source = Encoding.UTF8.GetBytes("return 10 + 32");
             byte* bytecode;
             nuint bytecodeSize;
             fixed (byte* sourcePtr = source)
@@ -40,10 +40,10 @@ public sealed unsafe class LuauExecutionTests
 
             Assert.True(bytecode != null);
 
-            int loadResult = LuauNative.luau_load(L, "=execution_test", bytecode, bytecodeSize, 0);
+            var loadResult = LuauNative.luau_load(L, "=execution_test", bytecode, bytecodeSize, 0);
             Assert.Equal(0, loadResult);
 
-            int pcallResult = LuauNative.lua_pcall(L, 0, -1, 0);
+            var pcallResult = LuauNative.lua_pcall(L, 0, -1, 0);
             Assert.Equal(0, pcallResult);
 
             Assert.Equal(1, LuauNative.lua_gettop(L));
@@ -62,7 +62,7 @@ public sealed unsafe class LuauExecutionTests
             return true;
         }
 
-        string fileName = OperatingSystem.IsWindows() ? "omniblock_luau.dll"
+        var fileName = OperatingSystem.IsWindows() ? "omniblock_luau.dll"
             : OperatingSystem.IsMacOS() ? "libomniblock_luau.dylib"
             : "libomniblock_luau.so";
         return NativeLibrary.TryLoad(Path.Combine(AppContext.BaseDirectory, fileName), out _);

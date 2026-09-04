@@ -1,6 +1,5 @@
 using OmniBlock.Blocks;
 using OmniBlock.Entities;
-using OmniBlock.Tests.TestSupport;
 
 namespace OmniBlock.Tests;
 
@@ -16,7 +15,7 @@ public sealed class GameEventsTests
         GameEvents.BlockPlaced += handler;
         try
         {
-            world.ReaderWriter.SetInitial(101, 64, 202, TestBlocks.Get("stone").Id, meta: 5);
+            world.ReaderWriter.SetInitial(101, 64, 202, TestBlocks.Get("stone").Id, 5);
             TestBlocks.Get("stone").OnPlaced(new OnPlacedEvent(world, null, Side.Up, Side.Up, 101, 64, 202));
 
             Assert.Contains(captured, e => e is { X: 101, Y: 64, Z: 202, Meta: 5 } && e.BlockId == TestBlocks.Get("stone").Id);
@@ -51,8 +50,8 @@ public sealed class GameEventsTests
     public void BlockPlaced_supports_multiple_independent_subscribers()
     {
         FakeWorldContext world = new();
-        int firstCount = 0;
-        int secondCount = 0;
+        var firstCount = 0;
+        var secondCount = 0;
         Action<BlockPlacedEvent> first = _ => firstCount++;
         Action<BlockPlacedEvent> second = _ => secondCount++;
         GameEvents.BlockPlaced += first;
@@ -76,11 +75,14 @@ public sealed class GameEventsTests
     public void EntityHurt_publishes_entity_attacker_and_amount()
     {
         FakeWorldContext world = new();
-        EntityCreature wolf = (EntityCreature)TestEntityCatalog.ByName("wolf").Create(world);
+        var wolf = (EntityCreature)TestEntityCatalog.ByName("wolf").Create(world);
         wolf.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(wolf));
 
-        var player = new TestEntityPlayer(world) { Name = "hurt-tester" };
+        var player = new TestEntityPlayer(world)
+        {
+            Name = "hurt-tester"
+        };
         player.SetPositionAndAngles(9.0, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(player));
 
@@ -103,7 +105,7 @@ public sealed class GameEventsTests
     public void EntityHurt_reports_null_attacker_for_environmental_damage()
     {
         FakeWorldContext world = new();
-        EntityCreature wolf = (EntityCreature)TestEntityCatalog.ByName("wolf").Create(world);
+        var wolf = (EntityCreature)TestEntityCatalog.ByName("wolf").Create(world);
         wolf.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(wolf));
 

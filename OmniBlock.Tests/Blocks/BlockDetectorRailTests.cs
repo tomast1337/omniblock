@@ -1,5 +1,4 @@
 using OmniBlock.Blocks;
-using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 
 namespace OmniBlock.Tests.Blocks;
@@ -27,9 +26,9 @@ public sealed class BlockDetectorRailTests
     {
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(8, 63, 8, TestBlocks.Get("stone").Id);
-        world.ReaderWriter.SetInitial(8, 64, 8, TestBlocks.Get("detector_rail").Id, 0);
+        world.ReaderWriter.SetInitial(8, 64, 8, TestBlocks.Get("detector_rail").Id);
 
-        Entity cart = MinecartBehavior.Place(world, 8.5D, 64.0D, 8.5D, MinecartBehavior.Rideable);
+        var cart = MinecartBehavior.Place(world, 8.5D, 64.0D, 8.5D, MinecartBehavior.Rideable);
         world.Entities.SpawnEntity(cart);
 
         TestBlocks.Get("detector_rail").OnEntityCollision(new OnEntityCollisionEvent(world, cart, 8, 64, 8));

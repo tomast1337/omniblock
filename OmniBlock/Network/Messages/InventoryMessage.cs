@@ -13,9 +13,6 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class InventoryMessage : Message
 {
-    private readonly IItemRuntimeView? _items;
-    public InventoryMessage() { }
-    internal InventoryMessage(IItemRuntimeView items) => _items = items;
     /// <summary>
     ///     Far above the largest screen the game opens, and finite, which is the part that matters:
     ///     the count decides an array allocation.
@@ -23,6 +20,13 @@ public sealed class InventoryMessage : Message
     public const int MaxSlots = 1024;
 
     public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "inventory");
+    private readonly IItemRuntimeView? _items;
+
+    public InventoryMessage()
+    {
+    }
+
+    internal InventoryMessage(IItemRuntimeView items) => _items = items;
 
     /// <summary>-1 addresses the player's own inventory rather than an open screen.</summary>
     public sbyte SyncId { get; set; }

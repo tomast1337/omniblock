@@ -1,8 +1,8 @@
+using System.IO.Compression;
 using OmniBlock.Network;
 using OmniBlock.Network.Chunks;
 using OmniBlock.Network.Messages;
 using OmniBlock.Network.Packets;
-using OmniBlock.Tests.TestSupport;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Gen.Chunks;
@@ -52,28 +52,28 @@ public sealed class ChunkDataMessageTests
         DefaultMessages.RegisterAll(client, ContentRuntime.Current.Items);
         client.AdoptOrdering(server.NegotiatedOrder);
 
-        Chunk chunk = Generate(seed, chunkX, chunkZ);
+        var chunk = Generate(seed, chunkX, chunkZ);
 
-        OmniMessagePacket? envelope = OmniMessagePacket.For(server, MessageFor(chunk));
+        var envelope = OmniMessagePacket.For(server, MessageFor(chunk));
         Assert.NotNull(envelope);
 
         MemoryStream wire = new();
         Packet.Write(envelope, wire);
         wire.Position = 0;
 
-        OmniMessagePacket received = Assert.IsType<OmniMessagePacket>(Packet.Read(wire, server: false));
-        ChunkDataMessage decoded = Assert.IsType<ChunkDataMessage>(client.Create(received.MessageId));
+        var received = Assert.IsType<OmniMessagePacket>(Packet.Read(wire, false));
+        var decoded = Assert.IsType<ChunkDataMessage>(client.Create(received.MessageId));
 
-        using MemoryStream payload = new(received.Payload, writable: false);
+        using MemoryStream payload = new(received.Payload, false);
         decoded.Read(payload);
 
         Assert.Equal(chunkX, decoded.ChunkX);
         Assert.Equal(chunkZ, decoded.ChunkZ);
 
-        byte[] blocks = new byte[chunk.Blocks.Length];
-        byte[] meta = new byte[chunk.Meta.Bytes.Length];
-        byte[] blockLight = new byte[chunk.BlockLight.Bytes.Length];
-        byte[] skyLight = new byte[chunk.SkyLight.Bytes.Length];
+        var blocks = new byte[chunk.Blocks.Length];
+        var meta = new byte[chunk.Meta.Bytes.Length];
+        var blockLight = new byte[chunk.BlockLight.Bytes.Length];
+        var skyLight = new byte[chunk.SkyLight.Bytes.Length];
 
         ChunkBlobCodec.Decode(decoded.Decompress(), blocks, meta, blockLight, skyLight);
 
@@ -94,12 +94,12 @@ public sealed class ChunkDataMessageTests
     [InlineData(987_654_321L, 100, 100)]
     public void Both_ends_derive_the_same_hash_without_it_crossing_the_wire(long seed, int x, int z)
     {
-        Chunk chunk = Generate(seed, x, z);
+        var chunk = Generate(seed, x, z);
 
-        ulong sent = ChunkHash.Of(ChunkBlobCodec.Encode(
+        var sent = ChunkHash.Of(ChunkBlobCodec.Encode(
             chunk.Blocks, chunk.Meta.Bytes, chunk.BlockLight.Bytes, chunk.SkyLight.Bytes));
 
-        ulong received = ChunkHash.Of(MessageFor(chunk).Decompress());
+        var received = ChunkHash.Of(MessageFor(chunk).Decompress());
 
         Assert.Equal(sent, received);
         Assert.NotEqual(0ul, sent);
@@ -112,14 +112,14 @@ public sealed class ChunkDataMessageTests
     [Fact]
     public void Changing_one_block_changes_the_hash()
     {
-        Chunk chunk = Generate();
+        var chunk = Generate();
 
-        ulong before = ChunkHash.Of(ChunkBlobCodec.Encode(
+        var before = ChunkHash.Of(ChunkBlobCodec.Encode(
             chunk.Blocks, chunk.Meta.Bytes, chunk.BlockLight.Bytes, chunk.SkyLight.Bytes));
 
         chunk.Blocks[ChuckFormat.GetIndex(3, 40, 9)] ^= 0x1;
 
-        ulong after = ChunkHash.Of(ChunkBlobCodec.Encode(
+        var after = ChunkHash.Of(ChunkBlobCodec.Encode(
             chunk.Blocks, chunk.Meta.Bytes, chunk.BlockLight.Bytes, chunk.SkyLight.Bytes));
 
         Assert.NotEqual(before, after);
@@ -133,7 +133,7 @@ public sealed class ChunkDataMessageTests
     public void A_cache_offer_round_trips()
     {
         ChunkCacheOfferMessage sent = new();
-        for (int i = 0; i < 100; i++)
+        for (var i = 0; i < 100; i++)
         {
             sent.Entries.Add(new KeyValuePair<ChunkPos, ulong>(new ChunkPos(i, -i), (ulong)(i * 0x123456789ABCDEF)));
         }
@@ -166,7 +166,11 @@ public sealed class ChunkDataMessageTests
     [Fact]
     public void An_unchanged_notice_round_trips()
     {
-        ChunkUnchangedMessage sent = new() { ChunkX = -12, ChunkZ = 34 };
+        ChunkUnchangedMessage sent = new()
+        {
+            ChunkX = -12,
+            ChunkZ = 34
+        };
 
         MemoryStream wire = new();
         sent.Write(wire);
@@ -186,7 +190,7 @@ public sealed class ChunkDataMessageTests
     [Fact]
     public void Size_matches_what_is_actually_written()
     {
-        ChunkDataMessage message = MessageFor(Generate());
+        var message = MessageFor(Generate());
 
         MemoryStream written = new();
         message.Write(written);
@@ -215,14 +219,17 @@ public sealed class ChunkDataMessageTests
     public void A_payload_that_expands_without_bound_is_refused()
     {
         MemoryStream compressed = new();
-        using (System.IO.Compression.ZLibStream compressor = new(
-                   compressed, System.IO.Compression.CompressionLevel.Optimal, leaveOpen: true))
+        using (ZLibStream compressor = new(
+                   compressed, CompressionLevel.Optimal, true))
         {
             // Highly compressible and far past anything a chunk can hold.
             compressor.Write(new byte[ChunkDataMessage.MaxDecodedBytes * 4]);
         }
 
-        ChunkDataMessage message = new() { Compressed = compressed.ToArray() };
+        ChunkDataMessage message = new()
+        {
+            Compressed = compressed.ToArray()
+        };
 
         Assert.True(
             message.Compressed.Length < 4096,

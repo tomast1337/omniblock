@@ -20,15 +20,12 @@ namespace OmniBlock.Client.Rendering.Core.Textures.Atlas;
 /// </remarks>
 public sealed class NamedTextureArray : IDisposable
 {
-    private readonly string _domain;
-    private readonly AtlasTileMap _tileMap;
-    private readonly Func<Image<Rgba32>> _loadDefaultGridImage;
     private readonly Func<TexturePack> _activePack;
+    private readonly string _domain;
+    private readonly Func<Image<Rgba32>> _loadDefaultGridImage;
 
     private readonly Dictionary<string, TextureSource> _sourceByName = [];
-
-    public TextureArray? Texture { get; private set; }
-    public int LayerSize { get; private set; }
+    private readonly AtlasTileMap _tileMap;
 
     public NamedTextureArray(string domain, AtlasTileMap tileMap, Func<Image<Rgba32>> loadDefaultGridImage, Func<TexturePack> activePack)
     {
@@ -38,25 +35,34 @@ public sealed class NamedTextureArray : IDisposable
         _activePack = activePack;
     }
 
+    public TextureArray? Texture { get; private set; }
+    public int LayerSize { get; private set; }
+
+    // ---- Inspector API ----
+
+    public IReadOnlyList<string> Names => [.. _tileMap.Tiles.Select(t => t.Name)];
+
+    public void Dispose() => Texture?.Dispose();
+
     /// <summary>
     ///     Re-resolves every name and re-uploads the array. Called once at startup and again whenever
     ///     the active texture pack changes.
     /// </summary>
     public unsafe void Rebuild()
     {
-        using Image<Rgba32> defaultGrid = _loadDefaultGridImage();
-        Dictionary<string, Image<Rgba32>> defaults = AtlasSlicer.Slice(defaultGrid, _tileMap);
-        TexturePack pack = _activePack();
+        using var defaultGrid = _loadDefaultGridImage();
+        var defaults = AtlasSlicer.Slice(defaultGrid, _tileMap);
+        var pack = _activePack();
 
         var resolved = new ResolvedTexture[_tileMap.LayerCount];
-        int targetSize = _tileMap.TileSize;
+        var targetSize = _tileMap.TileSize;
 
         resolved[AtlasTileMap.MissingLayer] = new ResolvedTexture(
             TextureSource.Fallback, MissingTextureImage.Generate(_tileMap.TileSize));
 
-        for (int layer = 1; layer < resolved.Length; layer++)
+        for (var layer = 1; layer < resolved.Length; layer++)
         {
-            string name = _tileMap.Tiles[layer - 1].Name;
+            var name = _tileMap.Tiles[layer - 1].Name;
             resolved[layer] = TextureFallbackChain.Resolve(
                 name,
                 n => pack.GetResourceAsStream($"textures/{_domain}/{n}.png"),
@@ -68,12 +74,12 @@ public sealed class NamedTextureArray : IDisposable
         try
         {
             LayerSize = targetSize;
-            int layerBytes = targetSize * targetSize * 4;
-            byte[] packed = new byte[layerBytes * resolved.Length];
+            var layerBytes = targetSize * targetSize * 4;
+            var packed = new byte[layerBytes * resolved.Length];
 
-            for (int i = 0; i < resolved.Length; i++)
+            for (var i = 0; i < resolved.Length; i++)
             {
-                using Image<Rgba32> layer = ResizeToTarget(resolved[i].Image, targetSize);
+                using var layer = ResizeToTarget(resolved[i].Image, targetSize);
                 layer.CopyPixelDataTo(packed.AsSpan(i * layerBytes, layerBytes));
                 if (i != AtlasTileMap.MissingLayer) _sourceByName[_tileMap.Tiles[i - 1].Name] = resolved[i].Source;
             }
@@ -83,6 +89,7 @@ public sealed class NamedTextureArray : IDisposable
             {
                 Texture.Upload(targetSize, targetSize, resolved.Length, ptr);
             }
+
             Texture.SetFilter(TextureMinFilter.Nearest, TextureMagFilter.Nearest);
 
             // Repeat rather than clamp, for the one caller that runs past a layer's edge: flowing
@@ -93,8 +100,8 @@ public sealed class NamedTextureArray : IDisposable
         }
         finally
         {
-            foreach (ResolvedTexture r in resolved) r.Image.Dispose();
-            foreach (Image<Rgba32> d in defaults.Values) d.Dispose();
+            foreach (var r in resolved) r.Image.Dispose();
+            foreach (var d in defaults.Values) d.Dispose();
         }
     }
 
@@ -113,14 +120,8 @@ public sealed class NamedTextureArray : IDisposable
         }));
     }
 
-    // ---- Inspector API ----
-
-    public IReadOnlyList<string> Names => [.. _tileMap.Tiles.Select(t => t.Name)];
-
-    public TextureSource GetSource(string name) => _sourceByName.TryGetValue(name, out TextureSource source) ? source : TextureSource.Fallback;
+    public TextureSource GetSource(string name) => _sourceByName.TryGetValue(name, out var source) ? source : TextureSource.Fallback;
 
     public IEnumerable<string> Search(string substring) =>
         _tileMap.Tiles.Select(t => t.Name).Where(n => n.Contains(substring, StringComparison.OrdinalIgnoreCase));
-
-    public void Dispose() => Texture?.Dispose();
 }

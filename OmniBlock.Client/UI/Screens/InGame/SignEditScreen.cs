@@ -38,7 +38,7 @@ public class SignEditScreen(UIContext context, BlockEntitySign sign, Action? edi
         preview.Style.MarginBottom = 40;
         Root.AddChild(preview);
 
-        Button btnDone = CreateButton();
+        var btnDone = CreateButton();
         btnDone.Text = Translations.Get("sign.done");
         btnDone.Style.Width = 200;
         btnDone.OnClick += _ => CloseAndSave();

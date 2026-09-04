@@ -4,8 +4,5 @@ public class BlockEntityType(Func<BlockEntity> factory, string id)
 {
     public string Id { get; } = id;
 
-    public BlockEntity Create()
-    {
-        return factory();
-    }
+    public BlockEntity Create() => factory();
 }

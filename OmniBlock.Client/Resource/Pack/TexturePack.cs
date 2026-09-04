@@ -4,10 +4,10 @@ namespace OmniBlock.Client.Resource.Pack;
 
 public abstract class TexturePack
 {
-    public string? TexturePackFileName;
     public string? FirstDescriptionLine;
     public string? SecondDescriptionLine;
     public string? Signature;
+    public string? TexturePackFileName;
 
     public virtual void func_6482_a()
     {
@@ -25,16 +25,13 @@ public abstract class TexturePack
     {
     }
 
-    public virtual TextureHandle GetThumbnailTexture(TextureManager textureManager)
-    {
-        return textureManager.GetTextureId("/gui/unknown_pack.png");
-    }
+    public virtual TextureHandle GetThumbnailTexture(TextureManager textureManager) => textureManager.GetTextureId("/gui/unknown_pack.png");
 
     public virtual Stream? GetResourceAsStream(string path)
     {
         try
         {
-            AssetManager.Asset asset = AssetManager.Instance.GetAsset(path);
+            var asset = AssetManager.Instance.GetAsset(path);
             if (asset == null) return null;
             return new MemoryStream(asset.GetBinaryContent());
         }

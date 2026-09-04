@@ -12,17 +12,11 @@ public enum Side : byte
 
 public static class SideExtensions
 {
-    public static Side ToSide(this int v)
-    {
-        return ((Side)v).IsValidSide() ? (Side)v : throw new ArgumentException("Invalid side");
-    }
+    public static Side ToSide(this int v) => ((Side)v).IsValidSide() ? (Side)v : throw new ArgumentException("Invalid side");
 
     extension(Side s)
     {
-        public int ToInt()
-        {
-            return (int)s;
-        }
+        public int ToInt() => (int)s;
 
         public Side OppositeFace()
         {
@@ -38,9 +32,6 @@ public static class SideExtensions
             };
         }
 
-        public bool IsValidSide()
-        {
-            return (byte)s <= 5;
-        }
+        public bool IsValidSide() => (byte)s <= 5;
     }
 }

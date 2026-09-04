@@ -32,7 +32,7 @@ internal static class EntityModelRegistry
     };
 
     public static ModelBase Create(string name) =>
-        s_factories.TryGetValue(name, out Func<ModelBase>? factory)
+        s_factories.TryGetValue(name, out var factory)
             ? factory()
             : throw new ArgumentException($"Unknown entity model '{name}'.", nameof(name));
 }

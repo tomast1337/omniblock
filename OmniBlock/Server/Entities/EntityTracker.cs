@@ -8,9 +8,6 @@ namespace OmniBlock.Server.Entities;
 
 public class EntityTracker
 {
-    private HashSet<EntityTrackerEntry> entries = [];
-    private Dictionary<int, EntityTrackerEntry> entriesById = new();
-
     /// <summary>
     ///     Scratch for <see cref="broadcastSnapshots" />: this pass's states, grouped by recipient.
     ///     A field rather than a local so the dictionary's buckets survive between ticks; the lists
@@ -18,9 +15,12 @@ public class EntityTracker
     /// </summary>
     private readonly Dictionary<ServerPlayerEntity, List<KeyValuePair<int, EntitySnapshotState>>> _snapshotStates = [];
 
-    private OmniBlockServer world;
-    private int viewDistance;
-    private int dimensionId;
+    private readonly int dimensionId;
+    private readonly HashSet<EntityTrackerEntry> entries = [];
+    private readonly Dictionary<int, EntityTrackerEntry> entriesById = new();
+    private readonly int viewDistance;
+
+    private readonly OmniBlockServer world;
 
     public EntityTracker(OmniBlockServer server, int dimensionId)
     {
@@ -35,7 +35,7 @@ public class EntityTracker
         {
             startTracking(entity, 512, 2);
 
-            foreach (EntityTrackerEntry tracker in entries)
+            foreach (var tracker in entries)
             {
                 if (tracker.currentTrackedEntity != player)
                 {
@@ -70,28 +70,26 @@ public class EntityTracker
         {
             throw new InvalidOperationException("Entity is already tracked!");
         }
-        else
-        {
-            EntityTrackerEntry trackerEntry = new(entity, trackedDistance, tracingFrequency, alwaysUpdateVelocity);
-            entries.Add(trackerEntry);
-            entriesById[entity.ID] = trackerEntry;
-            trackerEntry.updateListeners(world.getWorld(dimensionId).Entities.Players.Cast<ServerPlayerEntity>());
-        }
+
+        EntityTrackerEntry trackerEntry = new(entity, trackedDistance, tracingFrequency, alwaysUpdateVelocity);
+        entries.Add(trackerEntry);
+        entriesById[entity.ID] = trackerEntry;
+        trackerEntry.updateListeners(world.getWorld(dimensionId).Entities.Players.Cast<ServerPlayerEntity>());
     }
 
     public void onEntityRemoved(Entity entity)
     {
         if (entity is ServerPlayerEntity)
         {
-            ServerPlayerEntity playerEntity = (ServerPlayerEntity)entity;
+            var playerEntity = (ServerPlayerEntity)entity;
 
-            foreach (EntityTrackerEntry trackerEntry in entries)
+            foreach (var trackerEntry in entries)
             {
                 trackerEntry.notifyEntityRemoved(playerEntity);
             }
         }
 
-        if (entriesById.Remove(entity.ID, out EntityTrackerEntry ent))
+        if (entriesById.Remove(entity.ID, out var ent))
         {
             entries.Remove(ent);
             ent.notifyEntityRemoved();
@@ -103,14 +101,14 @@ public class EntityTracker
     ///     <see cref="EntityPositionHistory" /> for what reads it.
     /// </summary>
     public EntityPositionHistory? HistoryFor(int entityId) =>
-        entriesById.TryGetValue(entityId, out EntityTrackerEntry entry) ? entry.History : null;
+        entriesById.TryGetValue(entityId, out var entry) ? entry.History : null;
 
     public void tick()
     {
         List<ServerPlayerEntity> players = [];
-        long simulationTimeMs = world.SimulationTimeMs;
+        var simulationTimeMs = world.SimulationTimeMs;
 
-        foreach (EntityTrackerEntry tracker in entries)
+        foreach (var tracker in entries)
         {
             tracker.notifyNewLocation(world.getWorld(dimensionId).Entities.Players.Cast<ServerPlayerEntity>(), simulationTimeMs);
             if (tracker.newPlayerDataUpdated && tracker.currentTrackedEntity is ServerPlayerEntity player)
@@ -121,7 +119,7 @@ public class EntityTracker
 
         foreach (var player in players)
         {
-            foreach (EntityTrackerEntry tracker in entries)
+            foreach (var tracker in entries)
             {
                 if (tracker.currentTrackedEntity != player)
                 {
@@ -152,24 +150,24 @@ public class EntityTracker
     {
         _snapshotStates.Clear();
 
-        foreach (EntityTrackerEntry entry in entries)
+        foreach (var entry in entries)
         {
             if (!entry.OfferedThisTick)
             {
                 continue;
             }
 
-            int entityId = entry.currentTrackedEntity.ID;
-            EntitySnapshotState state = entry.SnapshotState;
+            var entityId = entry.currentTrackedEntity.ID;
+            var state = entry.SnapshotState;
 
-            foreach (ServerPlayerEntity listener in entry.listeners)
+            foreach (var listener in entry.listeners)
             {
                 if (listener.NetworkHandler is not { WantsCompactPayloads: true })
                 {
                     continue;
                 }
 
-                if (!_snapshotStates.TryGetValue(listener, out List<KeyValuePair<int, EntitySnapshotState>>? states))
+                if (!_snapshotStates.TryGetValue(listener, out var states))
                 {
                     states = [];
                     _snapshotStates[listener] = states;
@@ -179,9 +177,9 @@ public class EntityTracker
             }
         }
 
-        foreach ((ServerPlayerEntity player, List<KeyValuePair<int, EntitySnapshotState>> states) in _snapshotStates)
+        foreach (var (player, states) in _snapshotStates)
         {
-            EntitySnapshotMessage? snapshot = player.SnapshotStream.Build(states);
+            var snapshot = player.SnapshotStream.Build(states);
             if (snapshot is not null)
             {
                 player.NetworkHandler?.SendMessage(snapshot);
@@ -191,7 +189,7 @@ public class EntityTracker
 
     public void sendToListeners(Entity entity, Packet packet)
     {
-        if (entriesById.TryGetValue(entity.ID, out EntityTrackerEntry ent))
+        if (entriesById.TryGetValue(entity.ID, out var ent))
         {
             ent.sendToListeners(packet);
         }
@@ -199,7 +197,7 @@ public class EntityTracker
 
     public void sendToAround(Entity entity, Packet packet)
     {
-        if (entriesById.TryGetValue(entity.ID, out EntityTrackerEntry ent))
+        if (entriesById.TryGetValue(entity.ID, out var ent))
         {
             ent.sendToAround(packet);
         }
@@ -207,7 +205,7 @@ public class EntityTracker
 
     public void sendToListeners(Entity entity, Message message)
     {
-        if (entriesById.TryGetValue(entity.ID, out EntityTrackerEntry ent))
+        if (entriesById.TryGetValue(entity.ID, out var ent))
         {
             ent.sendToListeners(message);
         }
@@ -215,7 +213,7 @@ public class EntityTracker
 
     public void sendToAround(Entity entity, Message message)
     {
-        if (entriesById.TryGetValue(entity.ID, out EntityTrackerEntry ent))
+        if (entriesById.TryGetValue(entity.ID, out var ent))
         {
             ent.sendToAround(message);
         }
@@ -223,9 +221,9 @@ public class EntityTracker
 
     public void updateListenerForChunk(ServerPlayerEntity player, int chunkX, int chunkZ)
     {
-        foreach (EntityTrackerEntry tracker in entries)
+        foreach (var tracker in entries)
         {
-            Entity entity = tracker.currentTrackedEntity;
+            var entity = tracker.currentTrackedEntity;
             if (entity != player
                 && !entity.Dead
                 && MathHelper.Floor(entity.X / 16.0) == chunkX
@@ -238,7 +236,7 @@ public class EntityTracker
 
     public void removeListener(ServerPlayerEntity player)
     {
-        foreach (EntityTrackerEntry trackerEntry in entries)
+        foreach (var trackerEntry in entries)
         {
             trackerEntry.removeListener(player);
         }

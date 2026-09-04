@@ -5,18 +5,15 @@ namespace OmniBlock.Client.Input;
 
 public class MovementInputFromOptions : MovementInput
 {
-
-    private readonly bool[] _movementKeyStates = new bool[10];
     private readonly GameOptions _gameSettings;
 
-    public MovementInputFromOptions(GameOptions options)
-    {
-        _gameSettings = options;
-    }
+    private readonly bool[] _movementKeyStates = new bool[10];
+
+    public MovementInputFromOptions(GameOptions options) => _gameSettings = options;
 
     public override void checkKeyForMovementInput(int scanCode, bool isPressed)
     {
-        int movementIndex = -1;
+        var movementIndex = -1;
         if (scanCode == _gameSettings.KeyBindForward.ScanCode)
         {
             movementIndex = 0;
@@ -51,15 +48,15 @@ public class MovementInputFromOptions : MovementInput
         {
             _movementKeyStates[movementIndex] = isPressed;
         }
-
     }
 
     public override void resetKeyState()
     {
-        for (int keyIndex = 0; keyIndex < 10; ++keyIndex)
+        for (var keyIndex = 0; keyIndex < 10; ++keyIndex)
         {
             _movementKeyStates[keyIndex] = false;
         }
+
         ControllerManager.SneakToggle = false;
     }
 
@@ -93,8 +90,8 @@ public class MovementInputFromOptions : MovementInput
         sneak = _movementKeyStates[5] || ControllerManager.SneakToggle;
         if (sneak)
         {
-            moveStrafe = (float)((double)moveStrafe * 0.3D);
-            moveForward = (float)((double)moveForward * 0.3D);
+            moveStrafe = (float)(moveStrafe * 0.3D);
+            moveForward = (float)(moveForward * 0.3D);
         }
     }
 }

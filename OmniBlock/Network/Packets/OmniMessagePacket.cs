@@ -89,7 +89,7 @@ public class OmniMessagePacket() : ExtendedProtocolPacket(PacketId.OmniMessage)
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        OmniMessagePacket p = Get<OmniMessagePacket>(PacketId.OmniMessage);
+        var p = Get<OmniMessagePacket>(PacketId.OmniMessage);
         p.MessageId = -1;
         p.Payload = [];
         p.CarriesSendTime = false;
@@ -110,7 +110,7 @@ public class OmniMessagePacket() : ExtendedProtocolPacket(PacketId.OmniMessage)
         ArgumentOutOfRangeException.ThrowIfNegative(messageId);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(payload.Length, MaxPayloadBytes);
 
-        OmniMessagePacket p = Get<OmniMessagePacket>(PacketId.OmniMessage);
+        var p = Get<OmniMessagePacket>(PacketId.OmniMessage);
         p.MessageId = messageId;
         p.Payload = payload;
         p.CarriesSendTime = carriesSendTime;
@@ -131,7 +131,7 @@ public class OmniMessagePacket() : ExtendedProtocolPacket(PacketId.OmniMessage)
         ArgumentNullException.ThrowIfNull(registry);
         ArgumentNullException.ThrowIfNull(message);
 
-        int id = registry.GetId(message.Key);
+        var id = registry.GetId(message.Key);
         if (id < 0)
         {
             return null;
@@ -147,11 +147,11 @@ public class OmniMessagePacket() : ExtendedProtocolPacket(PacketId.OmniMessage)
     {
         MessageId = stream.ReadVarInt();
 
-        byte flags = (byte)stream.ReadByte();
+        var flags = (byte)stream.ReadByte();
         CarriesSendTime = (flags & SendTimestampFlag) != 0;
         SentAtMs = CarriesSendTime ? stream.ReadLong() : 0;
 
-        int length = stream.ReadVarInt();
+        var length = stream.ReadVarInt();
         if (length < 0 || length > MaxPayloadBytes)
         {
             throw new InvalidDataException(
@@ -186,8 +186,8 @@ public class OmniMessagePacket() : ExtendedProtocolPacket(PacketId.OmniMessage)
         Carried is not null
             ? Carried.Size()
             : StreamExtensions.VarIntSize(MessageId)
-            + sizeof(byte)
-            + (CarriesSendTime ? sizeof(long) : 0)
-            + StreamExtensions.VarIntSize(Payload.Length)
-            + Payload.Length;
+              + sizeof(byte)
+              + (CarriesSendTime ? sizeof(long) : 0)
+              + StreamExtensions.VarIntSize(Payload.Length)
+              + Payload.Length;
 }

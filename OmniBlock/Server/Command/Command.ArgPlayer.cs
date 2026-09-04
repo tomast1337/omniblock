@@ -1,8 +1,8 @@
-using OmniBlock.Entities;
 using Brigadier.NET;
 using Brigadier.NET.ArgumentTypes;
 using Brigadier.NET.Context;
 using Brigadier.NET.Suggestion;
+using OmniBlock.Entities;
 using StringReader = Brigadier.NET.StringReader;
 
 namespace OmniBlock.Server.Command;
@@ -15,7 +15,7 @@ public abstract partial class Command
 
         public ServerPlayerEntity Parse<T>(StringReader reader, T source)
         {
-            Entity[] e = ArgTargets.Parse(reader, source, true, 1);
+            var e = ArgTargets.Parse(reader, source, true, 1);
             if (e.Length < 1) throw ArgTargets.PlayerNotFound.CreateWithContext(reader);
             var p = e[0] as ServerPlayerEntity;
             if (p == null) throw ArgTargets.PlayerNotFound.CreateWithContext(reader);

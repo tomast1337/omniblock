@@ -2,7 +2,6 @@ using System.Text.Json;
 using OmniBlock.Blocks;
 using OmniBlock.Items;
 using OmniBlock.Processes;
-using OmniBlock.Registries;
 
 namespace OmniBlock.Tests.Recipes;
 
@@ -19,14 +18,14 @@ public sealed class ProcessProviderRegistryTests
     [Fact]
     public void Registry_dispatches_exact_namespaced_type_and_passes_id_json_and_context()
     {
-        Item expectedItem = ContentRuntime.Current.Items.Get("omniblock:stick");
-        Block expectedBlock = ContentRuntime.Current.Blocks.Get("omniblock:stone");
+        var expectedItem = ContentRuntime.Current.Items.Get("omniblock:stick");
+        var expectedBlock = ContentRuntime.Current.Blocks.Get("omniblock:stone");
         var provider = new RecordingProvider();
         var registry = Registry(("example:crusher", provider));
         var context = new ProcessBuildContext(ContentRuntime.Current.Items, ContentRuntime.Current.Blocks);
-        JsonElement definition = Json("""{"energy":4000}""");
+        var definition = Json("""{"energy":4000}""");
 
-        ICompiledProcess compiled = registry.Build(
+        var compiled = registry.Build(
             "example:crusher", "example:crushed_iron", definition, context);
 
         Assert.Equal("example:crushed_iron", compiled.Id.ToString());
@@ -43,7 +42,7 @@ public sealed class ProcessProviderRegistryTests
         var registry = Registry(("omniblock:smelting", provider));
         var context = new ProcessBuildContext(ContentRuntime.Current.Items, ContentRuntime.Current.Blocks);
 
-        ArgumentException error = Assert.Throws<ArgumentException>(() => registry.Build(
+        var error = Assert.Throws<ArgumentException>(() => registry.Build(
             "example:smelting", "example:test", Json("{}"), context));
 
         Assert.Contains("example:test", error.Message);
@@ -54,7 +53,7 @@ public sealed class ProcessProviderRegistryTests
     [Fact]
     public void Duplicate_provider_types_are_rejected()
     {
-        ArgumentException error = Assert.Throws<ArgumentException>(() => Registry(
+        var error = Assert.Throws<ArgumentException>(() => Registry(
             ("example:crusher", new RecordingProvider()),
             ("example:crusher", new RecordingProvider())));
 
@@ -67,7 +66,7 @@ public sealed class ProcessProviderRegistryTests
         var registry = Registry(("example:crusher", new ThrowingProvider()));
         var context = new ProcessBuildContext(ContentRuntime.Current.Items, ContentRuntime.Current.Blocks);
 
-        InvalidOperationException error = Assert.Throws<InvalidOperationException>(() => registry.Build(
+        var error = Assert.Throws<InvalidOperationException>(() => registry.Build(
             "example:crusher", "example:bad_recipe", Json("{}"), context));
 
         Assert.Contains("example:bad_recipe", error.Message);
@@ -81,7 +80,7 @@ public sealed class ProcessProviderRegistryTests
         var registry = Registry(("example:crusher", new WrongIdentityProvider()));
         var context = new ProcessBuildContext(ContentRuntime.Current.Items, ContentRuntime.Current.Blocks);
 
-        InvalidOperationException error = Assert.Throws<InvalidOperationException>(() => registry.Build(
+        var error = Assert.Throws<InvalidOperationException>(() => registry.Build(
             "example:crusher", "example:expected", Json("{}"), context));
 
         Assert.Contains("example:other", error.Message);
@@ -93,10 +92,8 @@ public sealed class ProcessProviderRegistryTests
     {
         ProcessBuildContext context = default;
 
-        InvalidOperationException itemError = Assert.Throws<InvalidOperationException>(
-            () => context.ResolveItem("omniblock:stick"));
-        InvalidOperationException blockError = Assert.Throws<InvalidOperationException>(
-            () => context.ResolveBlock("omniblock:stone"));
+        var itemError = Assert.Throws<InvalidOperationException>(() => context.ResolveItem("omniblock:stick"));
+        var blockError = Assert.Throws<InvalidOperationException>(() => context.ResolveBlock("omniblock:stone"));
 
         Assert.Contains(nameof(ProcessBuildContext.Items), itemError.Message);
         Assert.Contains(nameof(ProcessBuildContext.Blocks), blockError.Message);

@@ -10,16 +10,16 @@ namespace OmniBlock.PathFinding;
 
 internal class PathFinder
 {
+    private readonly IBlockRuntimeView _blocks;
+    private readonly int _ironDoorId;
     private readonly Path _path = new();
     private readonly PathPoint[] _pathOptions = new PathPoint[32];
     private readonly PathPoint[] _pointMap = new PathPoint[1024];
 
     private readonly PathPoint[] _pointPool = new PathPoint[4096];
+    private readonly int _woodenDoorId;
     private int _poolIndex;
     private IBlockReader _worldMap;
-    private readonly IBlockRuntimeView _blocks;
-    private readonly int _ironDoorId;
-    private readonly int _woodenDoorId;
 
     public PathFinder(IWorldContext world)
     {
@@ -27,7 +27,7 @@ internal class PathFinder
         _blocks = world.Content.Blocks;
         _ironDoorId = _blocks.Get("omniblock:iron_door").Id;
         _woodenDoorId = _blocks.Get("omniblock:door").Id;
-        for (int i = 0; i < _pointPool.Length; i++)
+        for (var i = 0; i < _pointPool.Length; i++)
         {
             _pointPool[i] = new PathPoint(0, 0, 0);
         }
@@ -70,9 +70,9 @@ internal class PathFinder
 
         _poolIndex = 0;
 
-        PathPoint startPoint = OpenPoint(MathHelper.Floor(entity.BoundingBox.MinX),
+        var startPoint = OpenPoint(MathHelper.Floor(entity.BoundingBox.MinX),
             MathHelper.Floor(entity.BoundingBox.MinY), MathHelper.Floor(entity.BoundingBox.MinZ));
-        PathPoint targetPoint = OpenPoint(MathHelper.Floor(targetX - entity.Width / 2.0f), MathHelper.Floor(targetY),
+        var targetPoint = OpenPoint(MathHelper.Floor(targetX - entity.Width / 2.0f), MathHelper.Floor(targetY),
             MathHelper.Floor(targetZ - entity.Width / 2.0f));
 
         PathPoint sizePoint = new(MathHelper.Floor(entity.Width + 1.0f), MathHelper.Floor(entity.Height + 1.0f),
@@ -90,10 +90,10 @@ internal class PathFinder
         _path.ClearPath();
         _path.AddPoint(start);
 
-        PathPoint closestPoint = start;
+        var closestPoint = start;
 
-        int iterations = 0;
-        int iterationLimit = 4096;
+        var iterations = 0;
+        var iterationLimit = 4096;
 
         while (!_path.IsPathEmpty())
         {
@@ -102,7 +102,7 @@ internal class PathFinder
                 break;
             }
 
-            PathPoint current = _path.Dequeue();
+            var current = _path.Dequeue();
 
             if (current.Equals(target))
             {
@@ -115,12 +115,12 @@ internal class PathFinder
             }
 
             current.IsFirst = true;
-            int optionCount = FindPathOptions(entity, current, size, target, maxDistance);
+            var optionCount = FindPathOptions(entity, current, size, target, maxDistance);
 
-            for (int i = 0; i < optionCount; ++i)
+            for (var i = 0; i < optionCount; ++i)
             {
-                PathPoint option = _pathOptions[i];
-                float totalDistance = current.TotalPathDistance + current.DistanceTo(option);
+                var option = _pathOptions[i];
+                var totalDistance = current.TotalPathDistance + current.DistanceTo(option);
 
                 if (!option.IsAssigned() || totalDistance < option.TotalPathDistance)
                 {
@@ -146,7 +146,7 @@ internal class PathFinder
 
     private int FindPathOptions(Entity entity, PathPoint current, PathPoint size, PathPoint target, float maxDistance)
     {
-        int optionCount = 0;
+        var optionCount = 0;
         byte stepUp = 0;
 
         if (GetVerticalOffset(entity, current.X, current.Y + 1, current.Z, size) == 1)
@@ -154,10 +154,10 @@ internal class PathFinder
             stepUp = 1;
         }
 
-        PathPoint? pointSouth = GetSafePoint(entity, current.X, current.Y, current.Z + 1, size, stepUp);
-        PathPoint? pointWest = GetSafePoint(entity, current.X - 1, current.Y, current.Z, size, stepUp);
-        PathPoint? pointEast = GetSafePoint(entity, current.X + 1, current.Y, current.Z, size, stepUp);
-        PathPoint? pointNorth = GetSafePoint(entity, current.X, current.Y, current.Z - 1, size, stepUp);
+        var pointSouth = GetSafePoint(entity, current.X, current.Y, current.Z + 1, size, stepUp);
+        var pointWest = GetSafePoint(entity, current.X - 1, current.Y, current.Z, size, stepUp);
+        var pointEast = GetSafePoint(entity, current.X + 1, current.Y, current.Z, size, stepUp);
+        var pointNorth = GetSafePoint(entity, current.X, current.Y, current.Z - 1, size, stepUp);
 
         if (pointSouth is { IsFirst: false } && pointSouth.DistanceTo(target) < maxDistance)
         {
@@ -199,8 +199,8 @@ internal class PathFinder
 
         if (safePoint != null)
         {
-            int fallDistance = 0;
-            int offsetStatus = 0;
+            var fallDistance = 0;
+            var offsetStatus = 0;
 
             while (y > 0)
             {
@@ -234,10 +234,10 @@ internal class PathFinder
 
     private PathPoint OpenPoint(int x, int y, int z)
     {
-        int hash = PathPoint.CalculateHash(x, y, z);
-        int mapIndex = hash & int.MaxValue & 1023;
+        var hash = PathPoint.CalculateHash(x, y, z);
+        var mapIndex = hash & int.MaxValue & 1023;
 
-        PathPoint? point = _pointMap[mapIndex];
+        var point = _pointMap[mapIndex];
         while (point != null)
         {
             if (point.X == x && point.Y == y && point.Z == z)
@@ -266,11 +266,11 @@ internal class PathFinder
 
     private int GetVerticalOffset(Entity entity, int x, int y, int z, PathPoint size)
     {
-        for (int ix = x; ix < x + size.X; ++ix)
+        for (var ix = x; ix < x + size.X; ++ix)
         {
-            for (int iy = y; iy < y + size.Y; ++iy)
+            for (var iy = y; iy < y + size.Y; ++iy)
             {
-                for (int iz = z; iz < z + size.Z; ++iz)
+                for (var iz = z; iz < z + size.Z; ++iz)
                 {
                     // Fail closed on unloaded chunks instead of reading through them: GetBlockId
                     // would force-load the chunk, which mutates ServerChunkCache's plain
@@ -280,7 +280,7 @@ internal class PathFinder
                         return 0;
                     }
 
-                    int blockId = _worldMap.GetBlockId(ix, iy, iz);
+                    var blockId = _worldMap.GetBlockId(ix, iy, iz);
                     if (blockId <= 0)
                     {
                         continue;
@@ -288,7 +288,7 @@ internal class PathFinder
 
                     if (blockId != _ironDoorId && blockId != _woodenDoorId)
                     {
-                        Material material = _blocks.GetByProtocolId(blockId).Material;
+                        var material = _blocks.GetByProtocolId(blockId).Material;
                         if (material.BlocksMovement)
                         {
                             return 0;
@@ -306,7 +306,7 @@ internal class PathFinder
                     }
                     else
                     {
-                        int meta = _worldMap.GetBlockMeta(ix, iy, iz);
+                        var meta = _worldMap.GetBlockMeta(ix, iy, iz);
                         if (!DoorBehavior.IsOpen(meta))
                         {
                             return 0;
@@ -321,8 +321,8 @@ internal class PathFinder
 
     private static PathEntity CreateEntityPath(PathPoint start, PathPoint end)
     {
-        int length = 1;
-        PathPoint current = end;
+        var length = 1;
+        var current = end;
 
         while (current.Previous != null)
         {
@@ -330,7 +330,7 @@ internal class PathFinder
             current = current.Previous;
         }
 
-        PathPoint[] pathPoints = new PathPoint[length];
+        var pathPoints = new PathPoint[length];
         current = end;
         length--;
 

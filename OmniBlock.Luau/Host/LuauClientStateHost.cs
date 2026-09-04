@@ -6,6 +6,21 @@ namespace OmniBlock.Luau.Host;
 /// <summary>Read-only FFI facade for client readiness observed by automation scripts.</summary>
 public static unsafe class LuauClientStateHost
 {
+    public const string Bootstrap = """
+                                    OMNI.client = OMNI.client or {}
+                                    OMNI.client.state = setmetatable({}, {
+                                        __index = function(_, key)
+                                            if key == "worldLoaded" then return __ClientState.worldLoaded() end
+                                            if key == "playerReady" then return __ClientState.playerReady() end
+                                            if key == "worldId" then return __ClientState.worldId() end
+                                            return nil
+                                        end,
+                                        __newindex = function()
+                                            error("OMNI.client.state is read-only", 2)
+                                        end,
+                                    })
+                                    """;
+
     public static Func<bool>? WorldLoaded;
     public static Func<bool>? PlayerReady;
     public static Func<string?>? WorldId;
@@ -52,7 +67,8 @@ public static unsafe class LuauClientStateHost
             // Managed exceptions must never cross an unmanaged Luau callback boundary.
         }
 
-        if (id == null) LuauNative.lua_pushnil(l); else LuauNative.lua_pushstring(l, id);
+        if (id == null) LuauNative.lua_pushnil(l);
+        else LuauNative.lua_pushstring(l, id);
         return 1;
     }
 
@@ -68,19 +84,4 @@ public static unsafe class LuauClientStateHost
             return false;
         }
     }
-
-    public const string Bootstrap = """
-OMNI.client = OMNI.client or {}
-OMNI.client.state = setmetatable({}, {
-    __index = function(_, key)
-        if key == "worldLoaded" then return __ClientState.worldLoaded() end
-        if key == "playerReady" then return __ClientState.playerReady() end
-        if key == "worldId" then return __ClientState.worldId() end
-        return nil
-    end,
-    __newindex = function()
-        error("OMNI.client.state is read-only", 2)
-    end,
-})
-""";
 }

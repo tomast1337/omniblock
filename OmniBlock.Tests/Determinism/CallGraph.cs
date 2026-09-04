@@ -25,8 +25,8 @@ internal sealed class CallGraph
 {
     /// <summary>Fully qualified, no parameters: <c>OmniBlock.Entities.Entity.Move</c>.</summary>
     private static readonly SymbolDisplayFormat s_nameFormat = new(
-        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
-        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+        SymbolDisplayGlobalNamespaceStyle.Omitted,
+        SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
         memberOptions: SymbolDisplayMemberOptions.IncludeContainingType);
 
     private static readonly Lazy<CallGraph> s_instance = new(Build, LazyThreadSafetyMode.ExecutionAndPublication);
@@ -90,7 +90,7 @@ internal sealed class CallGraph
         HashSet<string> cutAt = [];
         Queue<IMethodSymbol> queue = new();
 
-        foreach (IMethodSymbol root in roots)
+        foreach (var root in roots)
         {
             if (discoveredBy.TryAdd(root, null))
             {
@@ -100,10 +100,10 @@ internal sealed class CallGraph
 
         while (queue.Count > 0)
         {
-            IMethodSymbol current = queue.Dequeue();
+            var current = queue.Dequeue();
 
-            string currentName = NameOf(current);
-            StepFrontier.CutPoint? cut = StepFrontier.CutPoints.Cast<StepFrontier.CutPoint?>()
+            var currentName = NameOf(current);
+            var cut = StepFrontier.CutPoints.Cast<StepFrontier.CutPoint?>()
                 .FirstOrDefault(c => c!.Value.Matches(currentName));
 
             if (cut is not null)
@@ -113,12 +113,12 @@ internal sealed class CallGraph
                 continue;
             }
 
-            if (!_edges.TryGetValue(current, out List<Edge>? outgoing))
+            if (!_edges.TryGetValue(current, out var outgoing))
             {
                 continue;
             }
 
-            foreach (Edge edge in outgoing)
+            foreach (var edge in outgoing)
             {
                 if (discoveredBy.TryAdd(edge.Target, edge))
                 {
@@ -132,14 +132,14 @@ internal sealed class CallGraph
 
     private static CallGraph Build()
     {
-        CSharpCompilation compilation = CompileOmniBlock(out ImmutableArray<string> errors);
+        var compilation = CompileOmniBlock(out var errors);
 
         ImmutableArray<INamedTypeSymbol> allTypes = [.. EnumerateTypes(compilation.Assembly.GlobalNamespace)];
         ImmutableArray<IMethodSymbol> allMethods =
         [
             .. allTypes
                 .SelectMany(t => t.GetMembers().OfType<IMethodSymbol>())
-                .Select(m => (IMethodSymbol)m.OriginalDefinition)
+                .Select(m => m.OriginalDefinition)
                 .Distinct<IMethodSymbol>(SymbolEqualityComparer.Default)
         ];
 
@@ -148,24 +148,24 @@ internal sealed class CallGraph
 
         void AddEdge(IMethodSymbol from, IMethodSymbol to, EdgeKind kind, Location? at)
         {
-            if (!edges.TryGetValue(from, out List<Edge>? list))
+            if (!edges.TryGetValue(from, out var list))
             {
                 edges[from] = list = [];
             }
 
-            list.Add(new Edge(from, (IMethodSymbol)to.OriginalDefinition, kind, at));
+            list.Add(new Edge(from, to.OriginalDefinition, kind, at));
         }
 
         // --- Virtual dispatch: a call to a base or interface member reaches every implementation.
-        foreach (INamedTypeSymbol type in allTypes)
+        foreach (var type in allTypes)
         {
-            foreach (IMethodSymbol method in type.GetMembers().OfType<IMethodSymbol>())
+            foreach (var method in type.GetMembers().OfType<IMethodSymbol>())
             {
-                for (IMethodSymbol? overridden = method.OverriddenMethod;
+                for (var overridden = method.OverriddenMethod;
                      overridden is not null;
                      overridden = overridden.OverriddenMethod)
                 {
-                    AddEdge((IMethodSymbol)overridden.OriginalDefinition, method, EdgeKind.Override, null);
+                    AddEdge(overridden.OriginalDefinition, method, EdgeKind.Override, null);
                 }
             }
 
@@ -174,9 +174,9 @@ internal sealed class CallGraph
                 continue;
             }
 
-            foreach (INamedTypeSymbol iface in type.AllInterfaces)
+            foreach (var iface in type.AllInterfaces)
             {
-                foreach (ISymbol member in iface.GetMembers())
+                foreach (var member in iface.GetMembers())
                 {
                     if (member is not IMethodSymbol interfaceMethod)
                     {
@@ -185,30 +185,30 @@ internal sealed class CallGraph
 
                     if (type.FindImplementationForInterfaceMember(interfaceMethod) is IMethodSymbol impl)
                     {
-                        AddEdge((IMethodSymbol)interfaceMethod.OriginalDefinition, impl, EdgeKind.InterfaceImpl, null);
+                        AddEdge(interfaceMethod.OriginalDefinition, impl, EdgeKind.InterfaceImpl, null);
                     }
                 }
             }
         }
 
         // --- Direct calls, plus every symbol referenced in each body (for banned-symbol matching).
-        int unresolved = 0;
-        int total = 0;
+        var unresolved = 0;
+        var total = 0;
 
-        foreach (SyntaxTree tree in compilation.SyntaxTrees)
+        foreach (var tree in compilation.SyntaxTrees)
         {
-            SemanticModel model = compilation.GetSemanticModel(tree);
+            var model = compilation.GetSemanticModel(tree);
 
-            foreach (SyntaxNode node in tree.GetRoot().DescendantNodes())
+            foreach (var node in tree.GetRoot().DescendantNodes())
             {
                 if (BodyOf(node) is not { } body || DeclaredMethod(model, node) is not { } owner)
                 {
                     continue;
                 }
 
-                IMethodSymbol from = (IMethodSymbol)owner.OriginalDefinition;
+                var from = owner.OriginalDefinition;
 
-                foreach (SyntaxNode inner in body.DescendantNodesAndSelf())
+                foreach (var inner in body.DescendantNodesAndSelf())
                 {
                     if (inner is not (InvocationExpressionSyntax or ObjectCreationExpressionSyntax
                         or MemberAccessExpressionSyntax or IdentifierNameSyntax
@@ -217,7 +217,7 @@ internal sealed class CallGraph
                         continue;
                     }
 
-                    bool isCall = inner is InvocationExpressionSyntax
+                    var isCall = inner is InvocationExpressionSyntax
                         or ObjectCreationExpressionSyntax
                         or ImplicitObjectCreationExpressionSyntax;
 
@@ -226,8 +226,8 @@ internal sealed class CallGraph
                         total++;
                     }
 
-                    SymbolInfo info = model.GetSymbolInfo(inner);
-                    ISymbol? symbol = info.Symbol ?? info.CandidateSymbols.FirstOrDefault();
+                    var info = model.GetSymbolInfo(inner);
+                    var symbol = info.Symbol ?? info.CandidateSymbols.FirstOrDefault();
 
                     if (symbol is null)
                     {
@@ -243,7 +243,7 @@ internal sealed class CallGraph
                     // Entity.Random and World.Broadcaster, which are not invocations.
                     if (symbol is IMethodSymbol or IPropertySymbol or IFieldSymbol)
                     {
-                        if (!references.TryGetValue(from, out List<Reference>? refs))
+                        if (!references.TryGetValue(from, out var refs))
                         {
                             references[from] = refs = [];
                         }
@@ -280,12 +280,12 @@ internal sealed class CallGraph
 
     private static CSharpCompilation CompileOmniBlock(out ImmutableArray<string> errors)
     {
-        string sourceRoot = Path.Combine(RepoRoot(), "OmniBlock");
+        var sourceRoot = Path.Combine(RepoRoot(), "OmniBlock");
 
         CSharpParseOptions parseOptions = new(LanguageVersion.Preview);
 
         List<SyntaxTree> trees = [];
-        foreach (string file in Directory.EnumerateFiles(sourceRoot, "*.cs", SearchOption.AllDirectories))
+        foreach (var file in Directory.EnumerateFiles(sourceRoot, "*.cs", SearchOption.AllDirectories))
         {
             if (file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
                 || file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
@@ -293,7 +293,7 @@ internal sealed class CallGraph
                 continue;
             }
 
-            using FileStream stream = File.OpenRead(file);
+            using var stream = File.OpenRead(file);
             trees.Add(CSharpSyntaxTree.ParseText(SourceText.From(stream), parseOptions, file));
         }
 
@@ -315,7 +315,7 @@ internal sealed class CallGraph
         // The test host already has every OmniBlock package dependency loaded, so its trusted
         // platform assemblies are the reference set. OmniBlock's own output is excluded: its types
         // come from the sources above, and referencing both would make every one ambiguous.
-        string trusted = (string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") ?? string.Empty;
+        var trusted = (string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") ?? string.Empty;
         List<MetadataReference> references =
         [
             .. trusted
@@ -325,7 +325,7 @@ internal sealed class CallGraph
                 .Select(p => (MetadataReference)MetadataReference.CreateFromFile(p))
         ];
 
-        CSharpCompilation compilation = CSharpCompilation.Create(
+        var compilation = CSharpCompilation.Create(
             "OmniBlock.DeterminismAnalysis",
             trees,
             references,
@@ -359,7 +359,7 @@ internal sealed class CallGraph
         AccessorDeclarationSyntax a => a.Body ?? (SyntaxNode?)a.ExpressionBody,
         LocalFunctionStatementSyntax f => f.Body ?? (SyntaxNode?)f.ExpressionBody,
         PropertyDeclarationSyntax p => p.ExpressionBody,
-        _ => null,
+        _ => null
     };
 
     private static IMethodSymbol? DeclaredMethod(SemanticModel model, SyntaxNode node) =>
@@ -367,17 +367,17 @@ internal sealed class CallGraph
         {
             // An expression-bodied property declares a property; its body is the getter.
             PropertyDeclarationSyntax => (model.GetDeclaredSymbol(node) as IPropertySymbol)?.GetMethod,
-            _ => model.GetDeclaredSymbol(node) as IMethodSymbol,
+            _ => model.GetDeclaredSymbol(node) as IMethodSymbol
         };
 
     private static IEnumerable<INamedTypeSymbol> EnumerateTypes(INamespaceOrTypeSymbol root)
     {
-        foreach (ISymbol member in root.GetMembers())
+        foreach (var member in root.GetMembers())
         {
             switch (member)
             {
                 case INamespaceSymbol ns:
-                    foreach (INamedTypeSymbol nested in EnumerateTypes(ns))
+                    foreach (var nested in EnumerateTypes(ns))
                     {
                         yield return nested;
                     }
@@ -387,7 +387,7 @@ internal sealed class CallGraph
                 case INamedTypeSymbol type:
                     yield return type;
 
-                    foreach (INamedTypeSymbol nested in EnumerateTypes(type))
+                    foreach (var nested in EnumerateTypes(type))
                     {
                         yield return nested;
                     }
@@ -403,7 +403,7 @@ internal sealed class CallGraph
         PropertyGet,
         PropertySet,
         Override,
-        InterfaceImpl,
+        InterfaceImpl
     }
 
     internal readonly record struct Edge(IMethodSymbol From, IMethodSymbol Target, EdgeKind Kind, Location? At);
@@ -412,7 +412,7 @@ internal sealed class CallGraph
 
     /// <summary>Result of a <see cref="Walk" />: the reachable set plus how each was reached.</summary>
     internal sealed class Reachability(
-        Dictionary<IMethodSymbol, CallGraph.Edge?> discoveredBy,
+        Dictionary<IMethodSymbol, Edge?> discoveredBy,
         Dictionary<IMethodSymbol, List<Reference>> references,
         HashSet<string> cutPointsHit)
     {
@@ -424,7 +424,7 @@ internal sealed class CallGraph
         public IReadOnlySet<string> CutPointsHit => cutPointsHit;
 
         public IReadOnlyList<Reference> ReferencesFrom(IMethodSymbol method) =>
-            references.TryGetValue(method, out List<Reference>? refs) ? refs : [];
+            references.TryGetValue(method, out var refs) ? refs : [];
 
         /// <summary>
         ///     Call path from a root down to <paramref name="method" />, root first. This is what
@@ -434,9 +434,9 @@ internal sealed class CallGraph
         public string DescribePath(IMethodSymbol method)
         {
             List<string> path = [];
-            IMethodSymbol? current = method;
+            var current = method;
 
-            while (current is not null && discoveredBy.TryGetValue(current, out CallGraph.Edge? edge))
+            while (current is not null && discoveredBy.TryGetValue(current, out var edge))
             {
                 path.Add(edge is null
                     ? $"{NameOf(current)}  [root]"
@@ -456,7 +456,7 @@ internal sealed class CallGraph
                 return string.Empty;
             }
 
-            FileLinePositionSpan span = location.GetLineSpan();
+            var span = location.GetLineSpan();
             return $" at {Path.GetFileName(span.Path)}:{span.StartLinePosition.Line + 1}";
         }
     }

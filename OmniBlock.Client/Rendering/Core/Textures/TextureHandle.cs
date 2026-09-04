@@ -2,21 +2,11 @@ namespace OmniBlock.Client.Rendering.Core.Textures;
 
 public class TextureHandle
 {
+    internal TextureHandle(Texture2D? texture) => Texture = texture;
     public Texture2D? Texture { get; internal set; }
     public int Id => (int)(Texture?.Id ?? 0u);
 
-    internal TextureHandle(Texture2D? texture)
-    {
-        Texture = texture;
-    }
+    public void Bind() => Texture?.Bind();
 
-    public void Bind()
-    {
-        Texture?.Bind();
-    }
-
-    public override string ToString()
-    {
-        return $"TextureHandle(Id={Id}, Source={Texture?.Source ?? "null"})";
-    }
+    public override string ToString() => $"TextureHandle(Id={Id}, Source={Texture?.Source ?? "null"})";
 }

@@ -6,60 +6,48 @@ using OmniBlock.Worlds.Maps;
 namespace OmniBlock.Tests;
 
 /// <summary>
-/// Pins the data-driven <see cref="Material"/> and <see cref="BlockSoundGroup"/> registries
-/// against the pre-migration hardcoded values, so a JSON typo cannot silently change physics.
+///     Pins the data-driven <see cref="Material" /> and <see cref="BlockSoundGroup" /> registries
+///     against the pre-migration hardcoded values, so a JSON typo cannot silently change physics.
 /// </summary>
 public class MaterialRegistryTests
 {
-    private sealed record ExpectedMaterial(
-        MapColor MapColor,
-        bool IsFluid = false,
-        bool IsSolid = true,
-        bool BlocksVision = true,
-        bool BlocksMovement = true,
-        bool IsBurnable = false,
-        bool IsReplaceable = false,
-        bool IsHandHarvestable = true,
-        bool IsTransparent = false,
-        PistonBehavior PistonBehavior = PistonBehavior.Normal);
-
     // Source of truth: the static singletons the data-driven migration deleted.
     private static readonly Dictionary<string, ExpectedMaterial> s_expected = new()
     {
-        ["air"] = new(MapColor.Air, IsSolid: false, BlocksVision: false, BlocksMovement: false, IsReplaceable: true),
-        ["solid_organic"] = new(MapColor.Grass),
-        ["soil"] = new(MapColor.Dirt),
-        ["wood"] = new(MapColor.Wood, IsBurnable: true),
-        ["stone"] = new(MapColor.Stone, IsHandHarvestable: false),
-        ["metal"] = new(MapColor.Iron, IsHandHarvestable: false),
-        ["water"] = new(MapColor.Water, IsFluid: true, IsSolid: false, BlocksMovement: false, IsReplaceable: true, PistonBehavior: PistonBehavior.Destroy),
-        ["lava"] = new(MapColor.TNT, IsFluid: true, IsSolid: false, BlocksMovement: false, IsReplaceable: true, PistonBehavior: PistonBehavior.Destroy),
-        ["leaves"] = new(MapColor.Foliage, IsBurnable: true, IsTransparent: true, PistonBehavior: PistonBehavior.Destroy),
-        ["plant"] = new(MapColor.Foliage, IsSolid: false, BlocksVision: false, BlocksMovement: false, PistonBehavior: PistonBehavior.Destroy),
-        ["sponge"] = new(MapColor.Cloth),
-        ["wool"] = new(MapColor.Cloth, IsBurnable: true),
-        ["fire"] = new(MapColor.Air, IsSolid: false, BlocksVision: false, BlocksMovement: false, IsReplaceable: true, PistonBehavior: PistonBehavior.Destroy),
-        ["sand"] = new(MapColor.Sand),
-        ["piston_breakable"] = new(MapColor.Air, IsSolid: false, BlocksVision: false, BlocksMovement: false, PistonBehavior: PistonBehavior.Destroy),
-        ["glass"] = new(MapColor.Air, IsTransparent: true),
-        ["tnt"] = new(MapColor.TNT, IsBurnable: true, IsTransparent: true),
-        ["foliage"] = new(MapColor.Foliage, PistonBehavior: PistonBehavior.Destroy),
-        ["ice"] = new(MapColor.Ice, IsTransparent: true),
-        ["snow_layer"] = new(MapColor.Snow, IsSolid: false, BlocksVision: false, BlocksMovement: false, IsReplaceable: true, IsHandHarvestable: false, IsTransparent: true, PistonBehavior: PistonBehavior.Destroy),
-        ["snow_block"] = new(MapColor.Snow, IsHandHarvestable: false),
-        ["cactus"] = new(MapColor.Foliage, IsTransparent: true, PistonBehavior: PistonBehavior.Destroy),
-        ["clay"] = new(MapColor.Clay),
-        ["pumpkin"] = new(MapColor.Foliage, PistonBehavior: PistonBehavior.Destroy),
-        ["nether_portal"] = new(MapColor.Air, IsSolid: false, BlocksVision: false, BlocksMovement: false, PistonBehavior: PistonBehavior.Unpushable),
-        ["cake"] = new(MapColor.Air, PistonBehavior: PistonBehavior.Destroy),
-        ["cobweb"] = new(MapColor.Cloth, IsHandHarvestable: false, PistonBehavior: PistonBehavior.Destroy),
-        ["piston"] = new(MapColor.Stone, PistonBehavior: PistonBehavior.Unpushable),
+        ["air"] = new ExpectedMaterial(MapColor.Air, IsSolid: false, BlocksVision: false, BlocksMovement: false, IsReplaceable: true),
+        ["solid_organic"] = new ExpectedMaterial(MapColor.Grass),
+        ["soil"] = new ExpectedMaterial(MapColor.Dirt),
+        ["wood"] = new ExpectedMaterial(MapColor.Wood, IsBurnable: true),
+        ["stone"] = new ExpectedMaterial(MapColor.Stone, IsHandHarvestable: false),
+        ["metal"] = new ExpectedMaterial(MapColor.Iron, IsHandHarvestable: false),
+        ["water"] = new ExpectedMaterial(MapColor.Water, true, false, BlocksMovement: false, IsReplaceable: true, PistonBehavior: PistonBehavior.Destroy),
+        ["lava"] = new ExpectedMaterial(MapColor.TNT, true, false, BlocksMovement: false, IsReplaceable: true, PistonBehavior: PistonBehavior.Destroy),
+        ["leaves"] = new ExpectedMaterial(MapColor.Foliage, IsBurnable: true, IsTransparent: true, PistonBehavior: PistonBehavior.Destroy),
+        ["plant"] = new ExpectedMaterial(MapColor.Foliage, IsSolid: false, BlocksVision: false, BlocksMovement: false, PistonBehavior: PistonBehavior.Destroy),
+        ["sponge"] = new ExpectedMaterial(MapColor.Cloth),
+        ["wool"] = new ExpectedMaterial(MapColor.Cloth, IsBurnable: true),
+        ["fire"] = new ExpectedMaterial(MapColor.Air, IsSolid: false, BlocksVision: false, BlocksMovement: false, IsReplaceable: true, PistonBehavior: PistonBehavior.Destroy),
+        ["sand"] = new ExpectedMaterial(MapColor.Sand),
+        ["piston_breakable"] = new ExpectedMaterial(MapColor.Air, IsSolid: false, BlocksVision: false, BlocksMovement: false, PistonBehavior: PistonBehavior.Destroy),
+        ["glass"] = new ExpectedMaterial(MapColor.Air, IsTransparent: true),
+        ["tnt"] = new ExpectedMaterial(MapColor.TNT, IsBurnable: true, IsTransparent: true),
+        ["foliage"] = new ExpectedMaterial(MapColor.Foliage, PistonBehavior: PistonBehavior.Destroy),
+        ["ice"] = new ExpectedMaterial(MapColor.Ice, IsTransparent: true),
+        ["snow_layer"] = new ExpectedMaterial(MapColor.Snow, IsSolid: false, BlocksVision: false, BlocksMovement: false, IsReplaceable: true, IsHandHarvestable: false, IsTransparent: true, PistonBehavior: PistonBehavior.Destroy),
+        ["snow_block"] = new ExpectedMaterial(MapColor.Snow, IsHandHarvestable: false),
+        ["cactus"] = new ExpectedMaterial(MapColor.Foliage, IsTransparent: true, PistonBehavior: PistonBehavior.Destroy),
+        ["clay"] = new ExpectedMaterial(MapColor.Clay),
+        ["pumpkin"] = new ExpectedMaterial(MapColor.Foliage, PistonBehavior: PistonBehavior.Destroy),
+        ["nether_portal"] = new ExpectedMaterial(MapColor.Air, IsSolid: false, BlocksVision: false, BlocksMovement: false, PistonBehavior: PistonBehavior.Unpushable),
+        ["cake"] = new ExpectedMaterial(MapColor.Air, PistonBehavior: PistonBehavior.Destroy),
+        ["cobweb"] = new ExpectedMaterial(MapColor.Cloth, IsHandHarvestable: false, PistonBehavior: PistonBehavior.Destroy),
+        ["piston"] = new ExpectedMaterial(MapColor.Stone, PistonBehavior: PistonBehavior.Unpushable)
     };
 
     public static TheoryData<string> MaterialKeys()
     {
         var data = new TheoryData<string>();
-        foreach (string key in s_expected.Keys) data.Add(key);
+        foreach (var key in s_expected.Keys) data.Add(key);
         return data;
     }
 
@@ -67,8 +55,8 @@ public class MaterialRegistryTests
     [MemberData(nameof(MaterialKeys))]
     public void LoadedFlags_MatchPreMigrationValues(string key)
     {
-        ExpectedMaterial expected = s_expected[key];
-        Material actual = MaterialRegistry.Get(key);
+        var expected = s_expected[key];
+        var actual = MaterialRegistry.Get(key);
 
         Assert.Equal(expected.MapColor, actual.MapColor);
         Assert.Equal(expected.IsFluid, actual.IsFluid);
@@ -102,8 +90,8 @@ public class MaterialRegistryTests
     public void Suffocates_IsPureFunctionOfTransparencyAndMovement()
     {
         Assert.True(Material.Stone.Suffocates);
-        Assert.False(Material.Glass.Suffocates);   // transparent
-        Assert.False(Material.Plant.Suffocates);   // doesn't block movement
+        Assert.False(Material.Glass.Suffocates); // transparent
+        Assert.False(Material.Plant.Suffocates); // doesn't block movement
     }
 
     [Fact]
@@ -119,7 +107,7 @@ public class MaterialRegistryTests
         // Guard logic verified on a fresh instance: the process-global registries are
         // already initialized by the assembly bootstrap and must never be reset.
         var registry = new CanonicalRegistry<Material>("material");
-        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => registry.Get("water"));
+        var ex = Assert.Throws<InvalidOperationException>(() => registry.Get("water"));
         Assert.Contains("Bootstrap.Initialize", ex.Message);
     }
 
@@ -145,4 +133,16 @@ public class MaterialRegistryTests
         Assert.Equal("random.glass", SoundGroupRegistry.Get("glass").BreakSound);
         Assert.Equal("step.gravel", SoundGroupRegistry.Get("sand").BreakSound);
     }
+
+    private sealed record ExpectedMaterial(
+        MapColor MapColor,
+        bool IsFluid = false,
+        bool IsSolid = true,
+        bool BlocksVision = true,
+        bool BlocksMovement = true,
+        bool IsBurnable = false,
+        bool IsReplaceable = false,
+        bool IsHandHarvestable = true,
+        bool IsTransparent = false,
+        PistonBehavior PistonBehavior = PistonBehavior.Normal);
 }

@@ -1,18 +1,14 @@
-using OmniBlock.Blocks;
-using OmniBlock.Blocks.Entities;
-using OmniBlock.Entities;
-using OmniBlock.Items;
-using OmniBlock.Util.Maths;
-using OmniBlock.Worlds.Core.Systems;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
+using OmniBlock.Blocks.Entities;
 using OmniBlock.Registries;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Server.Commands;
 
 public class BlockCommand(RuntimeItemRegistry items, RuntimeBlockRegistry blocks) : Command.Command
 {
-
     public override string Usage => "block get [position]";
     public override string Description => "Get block info at position (default: block under player)";
     public override string[] Names => ["block"];
@@ -28,7 +24,7 @@ public class BlockCommand(RuntimeItemRegistry items, RuntimeBlockRegistry blocks
 
     private static int BlockGet(CommandContext<CommandSource> context)
     {
-        ServerPlayerEntity? player = GetSenderPlayer(context);
+        var player = GetSenderPlayer(context);
         if (player == null)
         {
             return 1;
@@ -39,7 +35,7 @@ public class BlockCommand(RuntimeItemRegistry items, RuntimeBlockRegistry blocks
 
     private static int BlockGet(CommandContext<CommandSource> context, Vec3D p)
     {
-        ServerPlayerEntity? player = GetSenderPlayer(context);
+        var player = GetSenderPlayer(context);
         if (player == null)
         {
             return 1;
@@ -50,11 +46,11 @@ public class BlockCommand(RuntimeItemRegistry items, RuntimeBlockRegistry blocks
 
     private static int BlockGet(CommandContext<CommandSource> context, IWorldContext world, Vec3I p)
     {
-        int id = world.Reader.GetBlockId(p.X, p.Y, p.Z);
-        int meta = world.Reader.GetBlockMeta(p.X, p.Y, p.Z);
-        BlockEntity? blockEntity = world.Entities.GetBlockEntity<BlockEntity>(p.X, p.Y, p.Z);
+        var id = world.Reader.GetBlockId(p.X, p.Y, p.Z);
+        var meta = world.Reader.GetBlockMeta(p.X, p.Y, p.Z);
+        var blockEntity = world.Entities.GetBlockEntity<BlockEntity>(p.X, p.Y, p.Z);
 
-        if (!world.Content.Blocks.TryGetByProtocolId(id, out Block? block))
+        if (!world.Content.Blocks.TryGetByProtocolId(id, out var block))
         {
             context.Source.Output.SendMessage($"Block at {p.X} {p.Y} {p.Z} -> {id}:{meta}");
         }
@@ -73,7 +69,7 @@ public class BlockCommand(RuntimeItemRegistry items, RuntimeBlockRegistry blocks
 
     private static int BlockSet(CommandContext<CommandSource> context, (int id, int meta) block)
     {
-        ServerPlayerEntity? player = GetSenderPlayer(context);
+        var player = GetSenderPlayer(context);
         if (player == null)
         {
             return 1;
@@ -84,7 +80,7 @@ public class BlockCommand(RuntimeItemRegistry items, RuntimeBlockRegistry blocks
 
     private static int BlockSet(CommandContext<CommandSource> context, (int id, int meta) block, Vec3D p)
     {
-        ServerPlayerEntity? player = GetSenderPlayer(context);
+        var player = GetSenderPlayer(context);
         if (player == null)
         {
             return 1;

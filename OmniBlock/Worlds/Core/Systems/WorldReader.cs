@@ -47,14 +47,11 @@ public class WorldReader : IBlockReader
 
     public Material GetMaterial(int x, int y, int z)
     {
-        int blockId = GetBlockId(x, y, z);
+        var blockId = GetBlockId(x, y, z);
         return blockId == 0 ? Material.Air : _context.Content.Blocks.GetByProtocolId(blockId).Material;
     }
 
-    public bool IsOpaque(int x, int y, int z)
-    {
-        return _context.Content.Blocks.TryGetByProtocolId(GetBlockId(x, y, z), out Block? block) && block.IsOpaque;
-    }
+    public bool IsOpaque(int x, int y, int z) => _context.Content.Blocks.TryGetByProtocolId(GetBlockId(x, y, z), out var block) && block.IsOpaque;
 
     public bool ShouldSuffocate(int x, int y, int z)
     {
@@ -63,7 +60,7 @@ public class WorldReader : IBlockReader
             return false;
         }
 
-        return _context.Content.Blocks.TryGetByProtocolId(GetBlockId(x, y, z), out Block? block)
+        return _context.Content.Blocks.TryGetByProtocolId(GetBlockId(x, y, z), out var block)
                && block.Material.Suffocates && block.IsFullCube();
     }
 
@@ -105,7 +102,7 @@ public class WorldReader : IBlockReader
             return false;
         }
 
-        Chunk chunk = _context.ChunkHost.GetChunk(x >> 4, z >> 4);
+        var chunk = _context.ChunkHost.GetChunk(x >> 4, z >> 4);
         return chunk.IsAboveMaxHeight(x & 15, y, z & 15);
     }
 
@@ -113,30 +110,29 @@ public class WorldReader : IBlockReader
     {
         if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000) return 0;
 
-        int chunkX = x >> 4;
-        int chunkZ = z >> 4;
+        var chunkX = x >> 4;
+        var chunkZ = z >> 4;
 
         if (!_context.ChunkHost.HasChunk(chunkX, chunkZ))
         {
             return 0;
         }
 
-        Chunk chunk = _context.ChunkHost.GetChunk(chunkX, chunkZ);
+        var chunk = _context.ChunkHost.GetChunk(chunkX, chunkZ);
         return chunk.GetHeight(x & 15, z & 15);
-
     }
 
     public int GetTopSolidBlockY(int x, int z)
     {
-        Chunk chunk = _context.ChunkHost.GetChunkFromPos(x, z);
-        int currentY = ChuckFormat.WorldHeight - 1;
-        int localX = x & 15;
-        int localZ = z & 15;
+        var chunk = _context.ChunkHost.GetChunkFromPos(x, z);
+        var currentY = ChuckFormat.WorldHeight - 1;
+        var localX = x & 15;
+        var localZ = z & 15;
 
         for (; currentY > 0; --currentY)
         {
-            int blockId = chunk.GetBlockId(localX, currentY, localZ);
-            Material material = blockId == 0 ? Material.Air : _context.Content.Blocks.GetByProtocolId(blockId).Material;
+            var blockId = chunk.GetBlockId(localX, currentY, localZ);
+            var material = blockId == 0 ? Material.Air : _context.Content.Blocks.GetByProtocolId(blockId).Material;
 
             if (material.BlocksMovement || material.IsFluid)
             {
@@ -149,14 +145,14 @@ public class WorldReader : IBlockReader
 
     public int GetSpawnPositionValidityY(int x, int z)
     {
-        Chunk chunk = _context.ChunkHost.GetChunkFromPos(x, z);
-        int currentY = ChuckFormat.WorldHeight - 1;
-        int localX = x & 15;
-        int localZ = z & 15;
+        var chunk = _context.ChunkHost.GetChunkFromPos(x, z);
+        var currentY = ChuckFormat.WorldHeight - 1;
+        var localX = x & 15;
+        var localZ = z & 15;
 
         for (; currentY > 0; currentY--)
         {
-            int blockId = chunk.GetBlockId(localX, currentY, localZ);
+            var blockId = chunk.GetBlockId(localX, currentY, localZ);
             if (blockId != 0 && _context.Content.Blocks.GetByProtocolId(blockId).Material.BlocksMovement)
             {
                 return currentY + 1;
@@ -171,22 +167,22 @@ public class WorldReader : IBlockReader
 
     public float GetVisibilityRatio(Vec3D sourcePosition, Box targetBox)
     {
-        double stepSizeX = 1.0D / ((targetBox.MaxX - targetBox.MinX) * 2.0D + 1.0D);
-        double stepSizeY = 1.0D / ((targetBox.MaxY - targetBox.MinY) * 2.0D + 1.0D);
-        double stepSizeZ = 1.0D / ((targetBox.MaxZ - targetBox.MinZ) * 2.0D + 1.0D);
+        var stepSizeX = 1.0D / ((targetBox.MaxX - targetBox.MinX) * 2.0D + 1.0D);
+        var stepSizeY = 1.0D / ((targetBox.MaxY - targetBox.MinY) * 2.0D + 1.0D);
+        var stepSizeZ = 1.0D / ((targetBox.MaxZ - targetBox.MinZ) * 2.0D + 1.0D);
 
-        int visiblePoints = 0;
-        int totalPoints = 0;
+        var visiblePoints = 0;
+        var totalPoints = 0;
 
-        for (float progressX = 0.0F; progressX <= 1.0F; progressX = (float)(progressX + stepSizeX))
+        for (var progressX = 0.0F; progressX <= 1.0F; progressX = (float)(progressX + stepSizeX))
         {
-            for (float progressY = 0.0F; progressY <= 1.0F; progressY = (float)(progressY + stepSizeY))
+            for (var progressY = 0.0F; progressY <= 1.0F; progressY = (float)(progressY + stepSizeY))
             {
-                for (float progressZ = 0.0F; progressZ <= 1.0F; progressZ = (float)(progressZ + stepSizeZ))
+                for (var progressZ = 0.0F; progressZ <= 1.0F; progressZ = (float)(progressZ + stepSizeZ))
                 {
-                    double sampleX = targetBox.MinX + (targetBox.MaxX - targetBox.MinX) * progressX;
-                    double sampleY = targetBox.MinY + (targetBox.MaxY - targetBox.MinY) * progressY;
-                    double sampleZ = targetBox.MinZ + (targetBox.MaxZ - targetBox.MinZ) * progressZ;
+                    var sampleX = targetBox.MinX + (targetBox.MaxX - targetBox.MinX) * progressX;
+                    var sampleY = targetBox.MinY + (targetBox.MaxY - targetBox.MinY) * progressY;
+                    var sampleZ = targetBox.MinZ + (targetBox.MaxZ - targetBox.MinZ) * progressZ;
                     if (Raycast(new Vec3D(sampleX, sampleY, sampleZ), sourcePosition).Type == HitResultType.Miss)
                     {
                         visiblePoints++;
@@ -202,12 +198,12 @@ public class WorldReader : IBlockReader
 
     public bool IsMaterialInBox(Box area, Func<Material, bool> predicate)
     {
-        int minX = MathHelper.Floor(area.MinX);
-        int maxX = MathHelper.Floor(area.MaxX + 1.0D);
-        int minY = MathHelper.Floor(area.MinY);
-        int maxY = MathHelper.Floor(area.MaxY + 1.0D);
-        int minZ = MathHelper.Floor(area.MinZ);
-        int maxZ = MathHelper.Floor(area.MaxZ + 1.0D);
+        var minX = MathHelper.Floor(area.MinX);
+        var maxX = MathHelper.Floor(area.MaxX + 1.0D);
+        var minY = MathHelper.Floor(area.MinY);
+        var maxY = MathHelper.Floor(area.MaxY + 1.0D);
+        var minZ = MathHelper.Floor(area.MinZ);
+        var maxZ = MathHelper.Floor(area.MaxZ + 1.0D);
 
         if (area.MinX < 0.0D)
         {
@@ -224,11 +220,11 @@ public class WorldReader : IBlockReader
             minZ--;
         }
 
-        for (int x = minX; x < maxX; ++x)
+        for (var x = minX; x < maxX; ++x)
         {
-            for (int y = minY; y < maxY; ++y)
+            for (var y = minY; y < maxY; ++y)
             {
-                for (int z = minZ; z < maxZ; ++z)
+                for (var z = minZ; z < maxZ; ++z)
                 {
                     if (predicate(GetMaterial(x, y, z)))
                     {
@@ -243,28 +239,28 @@ public class WorldReader : IBlockReader
 
     public bool UpdateMovementInFluid(Box entityBox, Material fluidMaterial, Entity entity)
     {
-        int minX = MathHelper.Floor(entityBox.MinX);
-        int maxX = MathHelper.Floor(entityBox.MaxX + 1.0D);
-        int minY = MathHelper.Floor(entityBox.MinY);
-        int maxY = MathHelper.Floor(entityBox.MaxY + 1.0D);
-        int minZ = MathHelper.Floor(entityBox.MinZ);
-        int maxZ = MathHelper.Floor(entityBox.MaxZ + 1.0D);
+        var minX = MathHelper.Floor(entityBox.MinX);
+        var maxX = MathHelper.Floor(entityBox.MaxX + 1.0D);
+        var minY = MathHelper.Floor(entityBox.MinY);
+        var maxY = MathHelper.Floor(entityBox.MaxY + 1.0D);
+        var minZ = MathHelper.Floor(entityBox.MinZ);
+        var maxZ = MathHelper.Floor(entityBox.MaxZ + 1.0D);
 
         if (!_context.ChunkHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
         {
             return false;
         }
 
-        bool isSubmerged = false;
+        var isSubmerged = false;
         Vec3D flowVector = new(0.0D, 0.0D, 0.0D);
 
-        for (int x = minX; x < maxX; ++x)
+        for (var x = minX; x < maxX; ++x)
         {
-            for (int y = minY; y < maxY; ++y)
+            for (var y = minY; y < maxY; ++y)
             {
-                for (int z = minZ; z < maxZ; ++z)
+                for (var z = minZ; z < maxZ; ++z)
                 {
-                    if (_context.Content.Blocks.TryGetByProtocolId(GetBlockId(x, y, z), out Block? block)
+                    if (_context.Content.Blocks.TryGetByProtocolId(GetBlockId(x, y, z), out var block)
                         && block.Material == fluidMaterial)
                     {
                         double fluidSurfaceY = y + 1 - FluidMath.GetFluidHeightFromMeta(GetBlockMeta(x, y, z));
@@ -272,7 +268,7 @@ public class WorldReader : IBlockReader
                         if (maxY >= fluidSurfaceY)
                         {
                             isSubmerged = true;
-                            Vec3D blockFlow = block.ApplyVelocity(new OnApplyVelocityEvent(_context, entity, x, y, z));
+                            var blockFlow = block.ApplyVelocity(new OnApplyVelocityEvent(_context, entity, x, y, z));
                             flowVector.X += blockFlow.X;
                             flowVector.Y += blockFlow.Y;
                             flowVector.Z += blockFlow.Z;

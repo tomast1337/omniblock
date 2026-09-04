@@ -1,4 +1,3 @@
-using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 
 namespace OmniBlock.Loot;

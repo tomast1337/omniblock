@@ -12,10 +12,7 @@ internal class BlockEntityChest : BlockEntity, IInventory
 
     public int Size => 27;
 
-    public ItemStack? GetStack(int stackIndex)
-    {
-        return _inventory[stackIndex];
-    }
+    public ItemStack? GetStack(int stackIndex) => _inventory[stackIndex];
 
     public ItemStack? RemoveStack(int slot, int amount)
     {
@@ -52,10 +49,7 @@ internal class BlockEntityChest : BlockEntity, IInventory
 
     public int MaxCountPerStack => 64;
 
-    public bool CanPlayerUse(EntityPlayer player)
-    {
-        return World!.Entities.GetBlockEntity<BlockEntityChest>(X, Y, Z) == this && player.GetSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
-    }
+    public bool CanPlayerUse(EntityPlayer player) => World!.Entities.GetBlockEntity<BlockEntityChest>(X, Y, Z) == this && player.GetSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
 
     protected override void ReadNbt(NBTTagCompound nbt)
     {

@@ -24,10 +24,7 @@ internal sealed class PortalBehavior(Block portalBase) : IBlockPhysics, IBlockVi
         if (@event.Entity.Vehicle == null && @event.Entity.Passenger == null) @event.Entity.TickPortalCooldown();
     }
 
-    public Box? GetCollisionShape(Block block, IBlockReader reader, EntityManager entities, int x, int y, int z, Box? defaultShape)
-    {
-        return null;
-    }
+    public Box? GetCollisionShape(Block block, IBlockReader reader, EntityManager entities, int x, int y, int z, Box? defaultShape) => null;
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
     {

@@ -26,10 +26,7 @@ namespace OmniBlock.Blocks.Behaviors;
 /// </summary>
 internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item seeds, float dropSpread, int seedScatterChanceBound, int growthChanceDenominator, int[] stages) : IBlockTicker, IBlockPhysics, IBlockLifecycle, IBlockVisuals
 {
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId)
-    {
-        return blockMeta == 7 ? matureCropItem.Id : -1;
-    }
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => blockMeta == 7 ? matureCropItem.Id : -1;
 
     public void OnDropStacks(Block block, OnDropEvent @event)
     {
@@ -49,10 +46,7 @@ internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item
         }
     }
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-    {
-        return @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == requiredSoil.Id;
-    }
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == requiredSoil.Id;
 
     public bool CanGrow(Block block, OnTickEvent ctx)
     {
@@ -60,10 +54,7 @@ internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item
                && ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z) == requiredSoil.Id;
     }
 
-    public void NeighborUpdate(Block block, OnTickEvent @event)
-    {
-        BreakIfCannotSurvive(block, @event.World, @event.X, @event.Y, @event.Z);
-    }
+    public void NeighborUpdate(Block block, OnTickEvent @event) => BreakIfCannotSurvive(block, @event.World, @event.X, @event.Y, @event.Z);
 
     public void OnTick(Block block, OnTickEvent @event)
     {
@@ -82,10 +73,7 @@ internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item
     }
 
     // A negative age means "fully grown" to the item renderer, which has no crop to measure.
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
-    {
-        return meta < 0 ? stages[^1] : stages[meta];
-    }
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => meta < 0 ? stages[^1] : stages[meta];
 
     private float GetAvailableMoisture(Block block, IBlockReader read, int x, int y, int z)
     {
@@ -124,10 +112,7 @@ internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item
     }
 
     /// <summary>Instant full-growth for bone meal (<c>ItemDye</c>).</summary>
-    public static void ApplyFullGrowth(IWorldContext world, int x, int y, int z)
-    {
-        world.Writer.SetBlockMeta(x, y, z, 7);
-    }
+    public static void ApplyFullGrowth(IWorldContext world, int x, int y, int z) => world.Writer.SetBlockMeta(x, y, z, 7);
 
     private static void BreakIfCannotSurvive(Block block, IWorldContext level, int x, int y, int z)
     {

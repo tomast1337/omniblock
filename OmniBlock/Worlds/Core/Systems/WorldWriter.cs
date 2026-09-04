@@ -9,9 +9,9 @@ namespace OmniBlock.Worlds.Core.Systems;
 /// </summary>
 public sealed class WorldWriter : IBlockWriter
 {
+    private readonly IBlockRuntimeView _blocks;
     private readonly ChunkHost _host;
     private readonly IBlockReader _reader;
-    private readonly IBlockRuntimeView _blocks;
 
     public WorldWriter(ChunkHost host, IBlockReader reader, IBlockRuntimeView blocks)
     {
@@ -25,8 +25,8 @@ public sealed class WorldWriter : IBlockWriter
 
     public bool SetBlock(int x, int y, int z, int blockId)
     {
-        int prevId = _reader.GetBlockId(x, y, z);
-        int prevMeta = _reader.GetBlockMeta(x, y, z);
+        var prevId = _reader.GetBlockId(x, y, z);
+        var prevMeta = _reader.GetBlockMeta(x, y, z);
         if (SetBlockWithoutNotifyingNeighbors(x, y, z, blockId))
         {
             OnBlockChanged?.Invoke(x, y, z, blockId);
@@ -41,9 +41,9 @@ public sealed class WorldWriter : IBlockWriter
 
     public bool SetBlockWithoutCallingOnPlaced(int x, int y, int z, int blockId, int meta)
     {
-        int prevId = _reader.GetBlockId(x, y, z);
-        int prevMeta = _reader.GetBlockMeta(x, y, z);
-        if (SetBlockWithoutNotifyingNeighbors(x, y, z, blockId, meta, notifyBlockPlaced: false))
+        var prevId = _reader.GetBlockId(x, y, z);
+        var prevMeta = _reader.GetBlockMeta(x, y, z);
+        if (SetBlockWithoutNotifyingNeighbors(x, y, z, blockId, meta, false))
         {
             OnBlockChanged?.Invoke(x, y, z, blockId);
             OnBlockChangedWithPrev?.Invoke(x, y, z, prevId, prevMeta, blockId, meta);
@@ -57,8 +57,8 @@ public sealed class WorldWriter : IBlockWriter
     {
         if (!SetBlockMetaWithoutNotifyingNeighbors(x, y, z, meta)) return;
 
-        int blockId = _reader.GetBlockId(x, y, z);
-        if (_blocks.TryGetByProtocolId(blockId & 255, out Block? block) && block.IgnoreMetaUpdates)
+        var blockId = _reader.GetBlockId(x, y, z);
+        if (_blocks.TryGetByProtocolId(blockId & 255, out var block) && block.IgnoreMetaUpdates)
         {
             OnBlockChanged?.Invoke(x, y, z, blockId);
         }
@@ -83,8 +83,8 @@ public sealed class WorldWriter : IBlockWriter
 
     public bool SetBlock(int x, int y, int z, int blockId, int meta, bool doUpdate)
     {
-        int prevId = _reader.GetBlockId(x, y, z);
-        int prevMeta = _reader.GetBlockMeta(x, y, z);
+        var prevId = _reader.GetBlockId(x, y, z);
+        var prevMeta = _reader.GetBlockMeta(x, y, z);
         if (!SetBlockWithoutNotifyingNeighbors(x, y, z, blockId, meta, doUpdate)) return false;
 
         if (doUpdate)
@@ -94,7 +94,6 @@ public sealed class WorldWriter : IBlockWriter
         }
 
         return true;
-
     }
 
     public bool SetBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId, int meta) => SetBlockWithoutNotifyingNeighbors(x, y, z, blockId, meta, true);
@@ -103,11 +102,11 @@ public sealed class WorldWriter : IBlockWriter
     {
         if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= ChuckFormat.WorldHeight) return false;
 
-        int chunkX = x >> 4;
-        int chunkZ = z >> 4;
+        var chunkX = x >> 4;
+        var chunkZ = z >> 4;
 
         var chunk = _host.GetChunk(chunkX, chunkZ);
-        bool changed = chunk.SetBlock(x & 15, y, z & 15, blockId, meta, notifyBlockPlaced);
+        var changed = chunk.SetBlock(x & 15, y, z & 15, blockId, meta, notifyBlockPlaced);
 
         if (!changed || chunk.World is not ServerWorld serverWorld || serverWorld.IsRemote) return changed;
 
@@ -125,11 +124,11 @@ public sealed class WorldWriter : IBlockWriter
     {
         if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= ChuckFormat.WorldHeight) return false;
 
-        int chunkX = x >> 4;
-        int chunkZ = z >> 4;
+        var chunkX = x >> 4;
+        var chunkZ = z >> 4;
 
         var chunk = _host.GetChunk(chunkX, chunkZ);
-        bool changed = chunk.SetBlock(x & 15, y, z & 15, blockId, notifyBlockPlaced);
+        var changed = chunk.SetBlock(x & 15, y, z & 15, blockId, notifyBlockPlaced);
 
         if (!changed || chunk.World is not ServerWorld serverWorld || serverWorld.IsRemote) return changed;
 
@@ -139,7 +138,6 @@ public sealed class WorldWriter : IBlockWriter
         }
 
         return changed;
-
     }
 
     public bool SetBlockMetaWithoutNotifyingNeighbors(int x, int y, int z, int meta)

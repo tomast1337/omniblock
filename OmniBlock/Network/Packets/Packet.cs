@@ -1,5 +1,5 @@
-using OmniBlock.Util;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Util;
 
 namespace OmniBlock.Network.Packets;
 
@@ -8,23 +8,25 @@ public abstract class Packet
     public static readonly ObjectFactory<Packet, PacketRegisterItem> Registry = new(256);
     private static readonly ILogger<Packet> s_logger = Log.Instance.For<Packet>();
 
-    public long CreationTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
     public readonly byte Id;
 
-    protected Packet(byte id)
-    {
-        Id = id;
-    }
+    public long CreationTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-    protected Packet(PacketId id)
-    {
-        Id = (byte)id;
-    }
+    static Packet() =>
+        Registry.Register([
+            New(PacketId.LoginHello, true, true, () => new LoginHelloPacket()),
+            New(PacketId.Handshake, true, true, () => new HandshakePacket()),
+            New(PacketId.MessageRegistrySyncS2C, true, false, () => new MessageRegistrySyncS2CPacket()),
+            New(PacketId.OmniMessage, true, true, () => new OmniMessagePacket())
+        ]);
+
+    protected Packet(byte id) => Id = id;
+
+    protected Packet(PacketId id) => Id = (byte)id;
 
     public static T Get<T>(PacketId id) where T : Packet
     {
-        Packet p = Get((byte)id);
+        var p = Get((byte)id);
         if (p is T p2)
         {
             return p2;
@@ -37,7 +39,7 @@ public abstract class Packet
 
     public static Packet Get(byte id)
     {
-        if (!Registry.TryGet(id, out PacketRegisterItem? packetR))
+        if (!Registry.TryGet(id, out var packetR))
         {
             throw new Exception("Unable to get packet id " + id);
         }
@@ -57,7 +59,7 @@ public abstract class Packet
                 return null;
             }
 
-            if (!Registry.TryGet(rawId, out PacketRegisterItem? packetR))
+            if (!Registry.TryGet(rawId, out var packetR))
             {
                 throw new IOException("Bad packet id " + rawId);
             }
@@ -104,20 +106,12 @@ public abstract class Packet
 
     public abstract int Size();
 
-    static Packet() =>
-        Registry.Register([
-            New(PacketId.LoginHello, true, true, () => new LoginHelloPacket()),
-            New(PacketId.Handshake, true, true, () => new HandshakePacket()),
-            New(PacketId.MessageRegistrySyncS2C, true, false, () => new MessageRegistrySyncS2CPacket()),
-            New(PacketId.OmniMessage, true, true, () => new OmniMessagePacket())
-        ]);
+    private static PacketRegisterItem New(PacketId rawId, bool clientBound, bool serverBound, Func<Packet> factory) =>
+        new((byte)rawId, clientBound, serverBound, factory);
 
     public class PacketRegisterItem(byte rawId, bool clientBound, bool serverBound, Func<Packet> factory) : FactoryItem<Packet>(rawId, factory)
     {
         public readonly bool ClientBound = clientBound;
         public readonly bool ServerBound = serverBound;
     }
-
-    private static PacketRegisterItem New(PacketId rawId, bool clientBound, bool serverBound, Func<Packet> factory) =>
-        new((byte)rawId, clientBound, serverBound, factory);
 }

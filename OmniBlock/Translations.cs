@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
-using Hexa.NET.ImGui.Backends.Vulkan;
 
 namespace OmniBlock;
 
 public class Translations
 {
+    private Translations()
+    {
+    }
+
     /// <summary>
     ///     The loaded translations, or an empty set before <see cref="Init" /> has run.
     /// </summary>
@@ -21,10 +20,22 @@ public class Translations
     /// </remarks>
     public static Translations Instance { get; private set; } = new();
 
-    public SortedDictionary<string, Language> Languages { get; private set; } = new SortedDictionary<string, Language>();
+    public SortedDictionary<string, Language> Languages { get; } = new();
     public Language? CurrentLanguage { get; private set; }
     public Language? DefaultLanguage { get; private set; }
-    private Translations() { }
+
+    public string this[string key]
+    {
+        get
+        {
+            if (CurrentLanguage is null)
+            {
+                return DefaultLanguage is null ? key : DefaultLanguage.Get(key);
+            }
+
+            return CurrentLanguage.Get(key);
+        }
+    }
 
     public static event Action? LanguageChanged;
 
@@ -36,22 +47,22 @@ public class Translations
         var element = json.RootElement;
         foreach (var item in element.EnumerateObject())
         {
-            string code = item.Name;
+            var code = item.Name;
             var value = item.Value;
 
             // A JSON null for either reads back as null. Neither is worth refusing to start over:
             // the code itself names the language well enough, and the credit is decoration.
-            string name = value.GetProperty("name").GetString() ?? code;
-            string author = value.GetProperty("author").GetString() ?? string.Empty;
+            var name = value.GetProperty("name").GetString() ?? code;
+            var author = value.GetProperty("author").GetString() ?? string.Empty;
 
             Languages.Add(code, new Language(code, name, author));
 
-            if (value.TryGetProperty("unifont", out JsonElement propertyValue))
+            if (value.TryGetProperty("unifont", out var propertyValue))
             {
                 Languages[code].Unifont = propertyValue.GetBoolean();
             }
 
-            if (value.TryGetProperty("sevenish", out JsonElement sevenishValue))
+            if (value.TryGetProperty("sevenish", out var sevenishValue))
             {
                 Languages[code].Sevenish = sevenishValue.GetBoolean();
             }
@@ -68,26 +79,13 @@ public class Translations
         Instance.LoadLanguages();
     }
 
-    public string this[string key]
-    {
-        get
-        {
-            if (CurrentLanguage is null)
-            {
-                return DefaultLanguage is null ? key : DefaultLanguage.Get(key);
-            }
-
-            return CurrentLanguage.Get(key);
-        }
-    }
-
     public static string Get(string key) => Instance[key];
 
     public static string GetFormat(string key, params object[] values)
     {
-        string str = Get(key);
+        var str = Get(key);
 
-        for (int i = 0; i < values.Length; i++)
+        for (var i = 0; i < values.Length; i++)
         {
             str = str.Replace($"%{i + 1}$s", values[i]?.ToString() ?? string.Empty);
         }
@@ -95,14 +93,11 @@ public class Translations
         return str;
     }
 
-    public static string GetNamed(string key)
-    {
-        return Get($"{key}.name");
-    }
+    public static string GetNamed(string key) => Get($"{key}.name");
 
     public static void SwitchLanguage(string lang)
     {
-        if (!Instance.Languages.TryGetValue(lang, out Language? language)) return;
+        if (!Instance.Languages.TryGetValue(lang, out var language)) return;
 
         Instance.CurrentLanguage = language;
         LanguageChanged?.Invoke();

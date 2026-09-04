@@ -8,7 +8,7 @@ public class ShaderOptionsRegistry
 
     public ShaderOptionSet GetOrCreate(string name)
     {
-        if (!_sets.TryGetValue(name, out ShaderOptionSet? set))
+        if (!_sets.TryGetValue(name, out var set))
             _sets[name] = set = new ShaderOptionSet();
         return set;
     }
@@ -18,8 +18,8 @@ public class ShaderOptionsRegistry
 
     public IEnumerable<(string Key, string Value)> Save()
     {
-        foreach ((string name, ShaderOptionSet set) in _sets)
-            foreach ((string optKey, string val) in set.Save())
-                yield return ($"shaderOpt_{name}.{optKey}", val);
+        foreach (var (name, set) in _sets)
+        foreach (var (optKey, val) in set.Save())
+            yield return ($"shaderOpt_{name}.{optKey}", val);
     }
 }

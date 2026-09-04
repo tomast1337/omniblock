@@ -1,8 +1,8 @@
 using System.Net;
+using Microsoft.Extensions.Logging;
 using OmniBlock.Network.Packets;
 using OmniBlock.Network.Transport;
 using OmniBlock.Util;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Network;
 
@@ -46,12 +46,26 @@ public sealed class UdpConnection : Connection
     /// </summary>
     public const byte StateChannel = 1;
 
-    private static readonly ILogger<UdpConnection> s_logger = Log.Instance.For<UdpConnection>();
+    /// <summary>
+    ///     Everything is <see cref="DeliveryMode.ReliableOrdered" />, which is a starting position
+    ///     and not the end state.
+    ///     <para>
+    ///         The tempting move is to send entity updates <see cref="DeliveryMode.UnreliableSequenced" />,
+    ///         since a superseded position is worthless. It would be wrong today: sequenced means
+    ///         only the newest payload <em>on that channel</em> survives, so one entity's update
+    ///         would discard another's, and spawns and destroys would be dropped outright. That mode
+    ///         becomes correct once snapshots are per-entity delta-compressed against a client ack,
+    ///         and not before.
+    ///     </para>
+    /// </summary>
+    private const DeliveryMode Mode = DeliveryMode.ReliableOrdered;
 
-    private readonly ITransportConnection _transport;
+    private static readonly ILogger<UdpConnection> s_logger = Log.Instance.For<UdpConnection>();
 
     /// <summary>Reused across sends; the transport copies before returning.</summary>
     private readonly MemoryStream _sendBuffer = new(1024);
+
+    private readonly ITransportConnection _transport;
 
     public UdpConnection(ITransportConnection transport, NetHandler? handler = null)
         : base(transport.RemoteEndPoint)
@@ -77,20 +91,6 @@ public sealed class UdpConnection : Connection
     /// </summary>
     public static byte ChannelFor(Packet packet) =>
         PacketPriorities.Of(packet) == SendPriority.High ? StateChannel : OrderedChannel;
-
-    /// <summary>
-    ///     Everything is <see cref="DeliveryMode.ReliableOrdered" />, which is a starting position
-    ///     and not the end state.
-    ///     <para>
-    ///         The tempting move is to send entity updates <see cref="DeliveryMode.UnreliableSequenced" />,
-    ///         since a superseded position is worthless. It would be wrong today: sequenced means
-    ///         only the newest payload <em>on that channel</em> survives, so one entity's update
-    ///         would discard another's, and spawns and destroys would be dropped outright. That mode
-    ///         becomes correct once snapshots are per-entity delta-compressed against a client ack,
-    ///         and not before.
-    ///     </para>
-    /// </summary>
-    private const DeliveryMode Mode = DeliveryMode.ReliableOrdered;
 
     public override void sendPacket(Packet packet)
     {
@@ -158,13 +158,13 @@ public sealed class UdpConnection : Connection
 
     private void Receive()
     {
-        while (_transport.TryReceive(out ReceivedDatagram datagram))
+        while (_transport.TryReceive(out var datagram))
         {
             try
             {
-                using MemoryStream stream = new(datagram.Payload, writable: false);
+                using MemoryStream stream = new(datagram.Payload, false);
 
-                Packet? packet = Packet.Read(stream, netHandler?.isServerSide() ?? false);
+                var packet = Packet.Read(stream, netHandler?.isServerSide() ?? false);
                 if (packet is null)
                 {
                     continue;
@@ -184,7 +184,7 @@ public sealed class UdpConnection : Connection
 
     public override void disconnect(string disconnectedReason, params object[] disconnectReasonArgs)
     {
-        bool wasOpen = open;
+        var wasOpen = open;
 
         base.disconnect(disconnectedReason, disconnectReasonArgs);
 

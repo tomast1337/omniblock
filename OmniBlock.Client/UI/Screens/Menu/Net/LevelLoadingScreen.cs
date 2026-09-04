@@ -1,12 +1,11 @@
+using Microsoft.Extensions.Logging;
 using OmniBlock.Client.Network;
 using OmniBlock.Client.UI.Controls;
 using OmniBlock.Client.UI.Controls.Core;
 using OmniBlock.Client.UI.Layout.Flexbox;
 using OmniBlock.Network;
 using OmniBlock.Network.Packets;
-using OmniBlock.Server.Internal;
 using OmniBlock.Worlds.Core.Systems;
-using Microsoft.Extensions.Logging;
 using Color = OmniBlock.Client.UI.Colors.Color;
 
 namespace OmniBlock.Client.UI.Screens.Menu.Net;
@@ -59,7 +58,7 @@ public class LevelLoadingScreen(
     {
         base.Update(partialTicks);
 
-        InternalServer? server = serverHost.InternalServer;
+        var server = serverHost.InternalServer;
         if (server != null)
         {
             if (server.stopped)
@@ -68,8 +67,8 @@ public class LevelLoadingScreen(
                 return;
             }
 
-            string progressMsg = server.progressMessage ?? Translations.Get("loading.startingServer");
-            int progress = server.progress;
+            var progressMsg = server.progressMessage ?? Translations.Get("loading.startingServer");
+            var progress = server.progress;
             _lblProgress.Text = $"{progressMsg} ({progress}%)";
 
             if (server.isReady)

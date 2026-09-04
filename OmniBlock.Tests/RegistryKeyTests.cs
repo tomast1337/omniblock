@@ -1,4 +1,3 @@
-using OmniBlock.Registries;
 using OmniBlock.Registries.Data;
 
 namespace OmniBlock.Tests;
@@ -61,7 +60,7 @@ public class RegistryKeyTests
         var key = new RegistryKey<GameMode>(ResourceLocation.Parse("omniblock:game_mode"));
         var def = new RegistryDefinition<GameMode>(key, "gamemode");
 
-        DataAssetLoader<GameMode> loader = (DataAssetLoader<GameMode>)def.CreateLoader();
+        var loader = (DataAssetLoader<GameMode>)def.CreateLoader();
 
         // Loader should load from all data locations (Assets | GameDatapack | WorldDatapack)
         Assert.NotNull(loader);
@@ -73,7 +72,7 @@ public class RegistryKeyTests
         var key = new RegistryKey<GameMode>(ResourceLocation.Parse("omniblock:game_mode"));
         var def = new RegistryDefinition<GameMode>(key, "gamemode", LoadLocations.Assets);
 
-        DataAssetLoader<GameMode> loader = (DataAssetLoader<GameMode>)def.CreateLoader();
+        var loader = (DataAssetLoader<GameMode>)def.CreateLoader();
 
         Assert.NotNull(loader);
     }
@@ -81,14 +80,8 @@ public class RegistryKeyTests
     // ---- Well-known RegistryKeys constants ----
 
     [Fact]
-    public void RegistryKeys_GameModes_has_expected_location()
-    {
-        Assert.Equal("omniblock:game_mode", RegistryKeys.GameModes.ToString());
-    }
+    public void RegistryKeys_GameModes_has_expected_location() => Assert.Equal("omniblock:game_mode", RegistryKeys.GameModes.ToString());
 
     [Fact]
-    public void RegistryKeys_GameModesDefinition_matches_GameModes_key()
-    {
-        Assert.Equal(RegistryKeys.GameModes, RegistryDefinitions.GameModes.Key);
-    }
+    public void RegistryKeys_GameModesDefinition_matches_GameModes_key() => Assert.Equal(RegistryKeys.GameModes, RegistryDefinitions.GameModes.Key);
 }

@@ -45,15 +45,15 @@ public static class ControlTooltip
         tips.Add(new ActionTip(ControlIcon.Y, "Inventory"));
 
         string? useAction = null;
-        ItemStack held = context.HeldItem;
-        HitResult hit = context.ObjectMouseOver;
+        var held = context.HeldItem;
+        var hit = context.ObjectMouseOver;
 
         if (hit.Type == HitResultType.Tile)
         {
-            int blockX = hit.BlockX;
-            int blockY = hit.BlockY;
-            int blockZ = hit.BlockZ;
-            int blockId = context.WorldReader.GetBlockId(blockX, blockY, blockZ);
+            var blockX = hit.BlockX;
+            var blockY = hit.BlockY;
+            var blockZ = hit.BlockZ;
+            var blockId = context.WorldReader.GetBlockId(blockX, blockY, blockZ);
 
             if (blockId == BlockRegistry.Get("chest").Id || blockId == BlockRegistry.Get("furnace").Id || blockId == BlockRegistry.Get("lit_furnace").Id || blockId == BlockRegistry.Get("crafting_table").Id ||
                 blockId == BlockRegistry.Get("dispenser").Id)
@@ -97,7 +97,7 @@ public static class ControlTooltip
             }
             else if (IsItemUsable(held))
             {
-                string label = GetItemActionLabel(held);
+                var label = GetItemActionLabel(held);
                 if (label != "Place")
                 {
                     useAction = label;
@@ -106,7 +106,7 @@ public static class ControlTooltip
         }
         else if (IsItemUsable(held))
         {
-            string label = GetItemActionLabel(held);
+            var label = GetItemActionLabel(held);
             if (label != "Place")
             {
                 useAction = label;
@@ -120,7 +120,7 @@ public static class ControlTooltip
 
         if (hit.Type != HitResultType.Miss)
         {
-            string attackAction = hit.Type == HitResultType.Entity ? "Attack" : "Mine";
+            var attackAction = hit.Type == HitResultType.Entity ? "Attack" : "Mine";
             tips.Add(new ActionTip(ControlIcon.Rt, attackAction));
         }
 
@@ -144,7 +144,7 @@ public static class ControlTooltip
 
     internal static string? GetAssetPath(ControlIcon icon)
     {
-        string iconName = icon switch
+        var iconName = icon switch
         {
             ControlIcon.A => "down_button",
             ControlIcon.B => "right_button",
@@ -183,20 +183,20 @@ public static class ControlTooltip
             return true;
         }
 
-        if (s_usabilityCache.TryGetValue(stack.ItemId, out bool usable))
+        if (s_usabilityCache.TryGetValue(stack.ItemId, out var usable))
         {
             return usable;
         }
 
-        Item item = stack.GetItem();
+        var item = stack.GetItem();
         if (item == null)
         {
             return false;
         }
 
-        Type type = item.GetType();
-        MethodInfo[] methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        foreach (MethodInfo method in methods)
+        var type = item.GetType();
+        var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        foreach (var method in methods)
         {
             if ((method.Name == "use" || method.Name == "useOnBlock") && method.DeclaringType != typeof(Item))
             {
@@ -221,13 +221,13 @@ public static class ControlTooltip
             return "Place";
         }
 
-        Item item = stack.GetItem();
+        var item = stack.GetItem();
         if (item == null)
         {
             return "Use";
         }
 
-        string typeName = item.GetType().Name;
+        var typeName = item.GetType().Name;
         if (typeName.Contains("Food") || typeName.Contains("Soup") || typeName.Contains("MushroomStew"))
         {
             return "Eat";

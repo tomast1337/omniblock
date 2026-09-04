@@ -7,7 +7,10 @@ public class TextBufferTests
     [Fact]
     public void Insert_AtEnd_IncreasesLengthAndMovesCursor()
     {
-        var buffer = new TextBuffer { MaxLength = 10 };
+        var buffer = new TextBuffer
+        {
+            MaxLength = 10
+        };
         buffer.Insert("abc");
 
         Assert.Equal("abc", buffer.Text);
@@ -18,7 +21,10 @@ public class TextBufferTests
     [Fact]
     public void Insert_InMiddle_CorrectlyPlacesText()
     {
-        var buffer = new TextBuffer { MaxLength = 10 };
+        var buffer = new TextBuffer
+        {
+            MaxLength = 10
+        };
         buffer.Text = "ac";
         buffer.CursorPosition = 1;
         buffer.SelectionStart = 1;
@@ -32,7 +38,10 @@ public class TextBufferTests
     [Fact]
     public void Insert_RespectsMaxLength()
     {
-        var buffer = new TextBuffer { MaxLength = 3 };
+        var buffer = new TextBuffer
+        {
+            MaxLength = 3
+        };
         buffer.Insert("abcd");
 
         Assert.Equal("abc", buffer.Text);
@@ -42,7 +51,10 @@ public class TextBufferTests
     [Fact]
     public void Backspace_AtEnd_RemovesLastCharacter()
     {
-        var buffer = new TextBuffer { Text = "abc" };
+        var buffer = new TextBuffer
+        {
+            Text = "abc"
+        };
         buffer.CursorPosition = 3;
         buffer.SelectionStart = 3;
 
@@ -55,7 +67,10 @@ public class TextBufferTests
     [Fact]
     public void Backspace_WithSelection_DeletesOnlySelectedRange()
     {
-        var buffer = new TextBuffer { Text = "abcdef" };
+        var buffer = new TextBuffer
+        {
+            Text = "abcdef"
+        };
         buffer.SelectionStart = 1;
         buffer.CursorPosition = 4; // "bcd" selected
 
@@ -69,7 +84,10 @@ public class TextBufferTests
     [Fact]
     public void Delete_WithSelection_DeletesSelectedRange()
     {
-        var buffer = new TextBuffer { Text = "abcdef" };
+        var buffer = new TextBuffer
+        {
+            Text = "abcdef"
+        };
         buffer.SelectionStart = 4;
         buffer.CursorPosition = 1; // "bcd" selected
 
@@ -82,7 +100,10 @@ public class TextBufferTests
     [Fact]
     public void MoveCursor_WithShift_CreatesSelection()
     {
-        var buffer = new TextBuffer { Text = "abcde" };
+        var buffer = new TextBuffer
+        {
+            Text = "abcde"
+        };
         buffer.CursorPosition = 2;
         buffer.SelectionStart = 2;
 
@@ -96,7 +117,10 @@ public class TextBufferTests
     [Fact]
     public void SelectAll_SetsCorrectRange()
     {
-        var buffer = new TextBuffer { Text = "hello" };
+        var buffer = new TextBuffer
+        {
+            Text = "hello"
+        };
         buffer.SelectAll();
 
         Assert.Equal(0, buffer.SelectionStart);
@@ -107,7 +131,10 @@ public class TextBufferTests
     [Fact]
     public void TextSetter_ClampsCursorAndSelection()
     {
-        var buffer = new TextBuffer { Text = "verylongtext" };
+        var buffer = new TextBuffer
+        {
+            Text = "verylongtext"
+        };
         buffer.CursorPosition = 10;
         buffer.SelectionStart = 10;
 

@@ -31,8 +31,5 @@ public sealed class LogBehavior(Block canopy, int searchRadius, int top, int[] s
 
     // Four sides for two metadata bits: the species field can hold a value no tree grows, and the
     // list has to answer for it rather than fall back to a species chosen in C#.
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
-    {
-        return side is Side.Up or Side.Down ? top : sides[meta & 3];
-    }
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => side is Side.Up or Side.Down ? top : sides[meta & 3];
 }

@@ -1,5 +1,4 @@
 using OmniBlock.Client.Rendering.Core;
-using Xunit;
 
 namespace OmniBlock.Tests.Rendering;
 
@@ -10,7 +9,7 @@ public class ProgramSlotTests
     {
         // Also the only thing that runs ProgramSlots' own validation, which is what catches a new
         // enum member nobody gave a parent.
-        foreach (ProgramSlot slot in Enum.GetValues<ProgramSlot>())
+        foreach (var slot in Enum.GetValues<ProgramSlot>())
         {
             Assert.Equal(ProgramSlot.Basic, ProgramSlots.ResolutionChain(slot).Last());
         }
@@ -26,7 +25,7 @@ public class ProgramSlotTests
     [Fact]
     public void AChainVisitsEachSlotOnceAndStartsWithTheSlotAsked()
     {
-        foreach (ProgramSlot slot in Enum.GetValues<ProgramSlot>())
+        foreach (var slot in Enum.GetValues<ProgramSlot>())
         {
             ProgramSlot[] chain = [.. ProgramSlots.ResolutionChain(slot)];
 
@@ -44,7 +43,7 @@ public class ProgramSlotTests
                 ProgramSlot.Terrain,
                 ProgramSlot.TexturedLit,
                 ProgramSlot.Textured,
-                ProgramSlot.Basic,
+                ProgramSlot.Basic
             ],
             ProgramSlots.ResolutionChain(ProgramSlot.DamagedBlock));
     }
@@ -60,7 +59,7 @@ public class ProgramSlotTests
             [
                 ProgramSlot.Gui,
                 ProgramSlot.Textured,
-                ProgramSlot.Basic,
+                ProgramSlot.Basic
             ],
             ProgramSlots.ResolutionChain(ProgramSlot.Gui));
     }
@@ -68,9 +67,9 @@ public class ProgramSlotTests
     [Fact]
     public void PackNamesRoundTrip()
     {
-        foreach (ProgramSlot slot in Enum.GetValues<ProgramSlot>())
+        foreach (var slot in Enum.GetValues<ProgramSlot>())
         {
-            Assert.True(ProgramSlots.TryParsePackName(ProgramSlots.PackName(slot), out ProgramSlot parsed));
+            Assert.True(ProgramSlots.TryParsePackName(ProgramSlots.PackName(slot), out var parsed));
             Assert.Equal(slot, parsed);
         }
     }

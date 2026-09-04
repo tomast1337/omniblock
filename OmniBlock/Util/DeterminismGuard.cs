@@ -20,11 +20,9 @@ namespace OmniBlock.Util;
 /// </summary>
 public static class DeterminismGuard
 {
-    [ThreadStatic]
-    private static int s_depth;
+    [ThreadStatic] private static int s_depth;
 
-    [ThreadStatic]
-    private static List<string>? s_violations;
+    [ThreadStatic] private static List<string>? s_violations;
 
     /// <summary>
     ///     True while the calling thread is inside a region declared deterministic. Always false
@@ -84,7 +82,7 @@ public static class DeterminismGuard
             return;
         }
 
-        string message =
+        var message =
             $"Impure operation '{operation}' executed inside a deterministic region. "
             + "Movement code must not mutate ambient state or emit side effects directly; "
             + "route effects through StepEffects and randomness through the injected generator.";
@@ -107,7 +105,7 @@ public static class DeterminismGuard
     /// </summary>
     public static IReadOnlyList<string> DrainViolations()
     {
-        List<string>? collected = s_violations;
+        var collected = s_violations;
         s_violations = null;
         return collected ?? (IReadOnlyList<string>)[];
     }
@@ -136,7 +134,7 @@ public enum DeterminismGuardMode
     Throw,
 
     /// <summary>Record and continue, so one run yields the full list. For soak runs.</summary>
-    Collect,
+    Collect
 }
 
 public sealed class DeterminismViolationException(string message) : Exception(message);

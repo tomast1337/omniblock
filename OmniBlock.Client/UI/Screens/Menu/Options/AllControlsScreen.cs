@@ -1,5 +1,3 @@
-using OmniBlock.Client.UI.Controls.Core;
-
 namespace OmniBlock.Client.UI.Screens.Menu.Options;
 
 public class AllControlsScreen : BaseOptionsScreen
@@ -12,16 +10,16 @@ public class AllControlsScreen : BaseOptionsScreen
 
     protected override UIElement CreateContent()
     {
-        Panel list = CreateTwoColumnList();
+        var list = CreateTwoColumnList();
 
-        Button btnKeyboard = CreateButton();
+        var btnKeyboard = CreateButton();
         btnKeyboard.Text = Translations.Get("options.keyboardControls");
         btnKeyboard.Style.Width = TwoButtonSize;
         btnKeyboard.Style.MarginBottom = 4;
         btnKeyboard.OnClick += e => { Context.Navigator.Navigate(new ControlsScreen(Context, this)); };
         list.AddChild(btnKeyboard);
 
-        Button btnController = CreateButton();
+        var btnController = CreateButton();
         btnController.Text = Translations.Get("options.controllerSettings");
         btnController.Style.Width = TwoButtonSize;
         btnController.OnClick += e => { Context.Navigator.Navigate(new ControllerControlsScreen(Context, this)); };

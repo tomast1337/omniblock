@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Text.Json;
 using OmniBlock.Entities;
 using OmniBlock.Registries.Data;
@@ -6,15 +5,19 @@ using OmniBlock.Registries.Data;
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// One-shot generator for <c>OmniBlock/assets/entity/*.json</c>, mirroring
-/// <c>ItemJsonDumperTests</c>. Env-var gated and a no-op in normal runs; exists so the files are
-/// generated from live data rather than transcribed by hand.
-/// Run with <c>DUMP_ENTITY_JSON=1 dotnet test --filter FullyQualifiedName~EntityJsonDumperTests</c>.
+///     One-shot generator for <c>OmniBlock/assets/entity/*.json</c>, mirroring
+///     <c>ItemJsonDumperTests</c>. Env-var gated and a no-op in normal runs; exists so the files are
+///     generated from live data rather than transcribed by hand.
+///     Run with <c>DUMP_ENTITY_JSON=1 dotnet test --filter FullyQualifiedName~EntityJsonDumperTests</c>.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityJsonDumperTests
 {
-    private static readonly JsonSerializerOptions s_options = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions s_options = new()
+    {
+        WriteIndented = true
+    };
+
     private static readonly HashSet<string> s_alwaysKeepFields = ["ProtocolId"];
 
     [Fact]
@@ -25,19 +28,19 @@ public sealed class EntityJsonDumperTests
             return;
         }
 
-        string outDir = Path.Combine(FindRepoRoot(), "OmniBlock", "assets", "entity");
+        var outDir = Path.Combine(FindRepoRoot(), "OmniBlock", "assets", "entity");
         Directory.CreateDirectory(outDir);
 
-        JsonElement fullDefaults = JsonSerializer.SerializeToElement(EntityDefinition.Default, s_options);
-        JsonElement defaults = StripAlwaysKeepFields(fullDefaults);
+        var fullDefaults = JsonSerializer.SerializeToElement(EntityDefinition.Default, s_options);
+        var defaults = StripAlwaysKeepFields(fullDefaults);
         File.WriteAllText(Path.Combine(outDir, "_defaults.json"), JsonSerializer.Serialize(defaults, s_options));
 
-        int count = 0;
-        foreach (EntityType type in EntityRegistryDefinitionTests.MobTypes)
+        var count = 0;
+        foreach (var type in EntityRegistryDefinitionTests.MobTypes)
         {
-            EntityDefinition definition = type.RequireDefinition();
-            JsonElement full = JsonSerializer.SerializeToElement(definition, s_options);
-            JsonElement minimal = JsonMerge.StripDefaults(full, defaults, s_options, s_alwaysKeepFields);
+            var definition = type.RequireDefinition();
+            var full = JsonSerializer.SerializeToElement(definition, s_options);
+            var minimal = JsonMerge.StripDefaults(full, defaults, s_options, s_alwaysKeepFields);
 
             File.WriteAllText(Path.Combine(outDir, $"{type.Id.ToLowerInvariant()}.json"), JsonSerializer.Serialize(minimal, s_options));
             count++;
@@ -49,7 +52,7 @@ public sealed class EntityJsonDumperTests
     private static JsonElement StripAlwaysKeepFields(JsonElement full)
     {
         Dictionary<string, JsonElement> kept = [];
-        foreach (JsonProperty property in full.EnumerateObject())
+        foreach (var property in full.EnumerateObject())
         {
             if (!s_alwaysKeepFields.Contains(property.Name))
             {

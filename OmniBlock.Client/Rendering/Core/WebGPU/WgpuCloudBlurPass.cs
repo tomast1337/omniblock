@@ -1,3 +1,4 @@
+using System.Numerics;
 using Silk.NET.WebGPU;
 
 namespace OmniBlock.Client.Rendering.Core.WebGPU;
@@ -19,36 +20,17 @@ namespace OmniBlock.Client.Rendering.Core.WebGPU;
 public sealed unsafe class WgpuCloudBlurPass : ICloudBlurPass, IDisposable
 {
     private const uint QuadStride = 20;
+    private readonly WgpuFramebuffer _cloudFb;
 
     private readonly WebGpuDevice _device;
     private readonly WebGpuDrawTarget _drawTarget;
-    private readonly WgpuFramebuffer _offscreenFb;
-    private readonly WgpuFramebuffer _cloudFb;
-    private readonly WgpuFramebuffer _pingPongFb;
     private readonly WgpuPipeline _horizontalPipeline;
-    private readonly WgpuPipeline _verticalPipeline;
+    private readonly WgpuFramebuffer _offscreenFb;
+    private readonly WgpuFramebuffer _pingPongFb;
     private readonly WgpuMesh _quad;
+    private readonly WgpuPipeline _verticalPipeline;
     private RenderPassEncoder* _cloudPass;
     private bool _disposed;
-
-    /// <summary>
-    ///     The command encoder the currently open frame is recording into. Set by
-    ///     <see cref="WebGpuGameRenderer" /> once per frame, before <c>DrawWorld</c> runs.
-    /// </summary>
-    public CommandEncoder* Encoder { get; set; }
-
-    /// <summary>
-    ///     The current fog/sky colour, RGB only — alpha is forced to 0 when this is used to clear
-    ///     <see cref="_cloudFb" />. Set by <see cref="WebGpuGameRenderer" /> once per frame, mirroring
-    ///     GL's <c>ClearColor(fogR, fogG, fogB, 0)</c> call that <c>FramebufferManager.BeginCloudPass</c>
-    ///     inherits (<c>GameRenderer.cs</c>'s fog-colour update, ~line 1052). It has to be the sky
-    ///     colour and not black: the blur samples with linear filtering, which blends RGB and alpha
-    ///     independently, so a fully-transparent texel's stored RGB still bleeds into a bilinearly
-    ///     filtered sample right at a cloud's silhouette edge even though the shader premultiplies by
-    ///     alpha afterwards. A black background leaks black into that edge; the sky colour leaks the
-    ///     colour a fading cloud edge is supposed to blend into.
-    /// </summary>
-    public System.Numerics.Vector3 FogColor { get; set; }
 
     public WgpuCloudBlurPass(WebGpuDevice device, WebGpuDrawTarget drawTarget,
         WgpuFramebuffer offscreenFb, WgpuMesh quad)
@@ -67,60 +49,77 @@ public sealed unsafe class WgpuCloudBlurPass : ICloudBlurPass, IDisposable
         // copy; the offscreen framebuffer's own depth texture needs the matching CopySrc, set where
         // WebGpuGameRenderer creates it.
         _cloudFb = WgpuFramebuffer.CreateColorDepth(device, offscreenFb.Width, offscreenFb.Height,
-            device.SurfaceFormat, extraDepthUsage: TextureUsage.CopyDst);
+            device.SurfaceFormat, TextureUsage.CopyDst);
 
         // Colour-only scratch buffer for the horizontal pass: nothing outside this class ever draws
         // into it, so it does not need to match anything and stays the default format.
         _pingPongFb = WgpuFramebuffer.CreateColor(device, offscreenFb.Width, offscreenFb.Height);
 
-        string wgsl = AssetManager.Instance.GetAsset("shaders/cloud_blur.wgsl").GetTextContent();
+        var wgsl = AssetManager.Instance.GetAsset("shaders/cloud_blur.wgsl").GetTextContent();
 
         BindGroupLayoutEntry[] uniformEntries =
         [
-            new BindGroupLayoutEntry
+            new()
             {
                 Binding = 0,
                 Visibility = ShaderStage.Fragment,
-                Buffer = new BufferBindingLayout { Type = BufferBindingType.Uniform, MinBindingSize = 4 },
-            },
+                Buffer = new BufferBindingLayout
+                {
+                    Type = BufferBindingType.Uniform,
+                    MinBindingSize = 4
+                }
+            }
         ];
 
         BindGroupLayoutEntry[] textureEntries =
         [
-            new BindGroupLayoutEntry
+            new()
             {
                 Binding = 0,
                 Visibility = ShaderStage.Fragment,
                 Texture = new TextureBindingLayout
                 {
                     SampleType = TextureSampleType.Float,
-                    ViewDimension = TextureViewDimension.Dimension2D,
-                },
+                    ViewDimension = TextureViewDimension.Dimension2D
+                }
             },
-            new BindGroupLayoutEntry
+            new()
             {
                 Binding = 1,
                 Visibility = ShaderStage.Fragment,
-                Sampler = new SamplerBindingLayout { Type = SamplerBindingType.Filtering },
-            },
+                Sampler = new SamplerBindingLayout
+                {
+                    Type = SamplerBindingType.Filtering
+                }
+            }
         ];
 
-        VertexAttribute* attrs = stackalloc VertexAttribute[2];
-        attrs[0] = new VertexAttribute { Format = VertexFormat.Float32x3, Offset = 0, ShaderLocation = 0 };
-        attrs[1] = new VertexAttribute { Format = VertexFormat.Float32x2, Offset = 12, ShaderLocation = 1 };
+        var attrs = stackalloc VertexAttribute[2];
+        attrs[0] = new VertexAttribute
+        {
+            Format = VertexFormat.Float32x3,
+            Offset = 0,
+            ShaderLocation = 0
+        };
+        attrs[1] = new VertexAttribute
+        {
+            Format = VertexFormat.Float32x2,
+            Offset = 12,
+            ShaderLocation = 1
+        };
 
         VertexBufferLayout quadLayout = new()
         {
             ArrayStride = QuadStride,
             StepMode = VertexStepMode.Vertex,
             AttributeCount = 2,
-            Attributes = attrs,
+            Attributes = attrs
         };
 
         // Colour-only, no depth attachment: the horizontal pass just accumulates into a scratch
         // buffer, nothing occludes it.
         _horizontalPipeline = new WgpuPipeline(
-            device, wgsl, "vs_main", uniformSize: 4,
+            device, wgsl, "vs_main", 4,
             uniformEntries, textureEntries, &quadLayout, 1,
             RenderState.PostProcess, TextureFormat.Rgba8Unorm,
             label: "CloudBlur.Horizontal");
@@ -128,48 +127,74 @@ public sealed unsafe class WgpuCloudBlurPass : ICloudBlurPass, IDisposable
         // Targets the offscreen framebuffer itself, alpha-blended and depth tested against what
         // DrawWorld already drew, so terrain in front of a distant cloud still occludes its glow.
         _verticalPipeline = new WgpuPipeline(
-            device, wgsl, "vs_main", uniformSize: 4,
+            device, wgsl, "vs_main", 4,
             uniformEntries, textureEntries, &quadLayout, 1,
-            RenderState.PostProcess with { Blend = BlendMode.Alpha, DepthTest = true },
+            RenderState.PostProcess with
+            {
+                Blend = BlendMode.Alpha,
+                DepthTest = true
+            },
             device.SurfaceFormat, WgpuFramebuffer.DepthFormat,
             label: "CloudBlur.Vertical");
     }
 
-    /// <summary>Resizes the capture buffers in lockstep with the offscreen framebuffer.</summary>
-    public void Resize(WebGpuDevice device, uint width, uint height)
-    {
-        _cloudFb.ResizeIfNeeded(device, width, height);
-        _pingPongFb.ResizeIfNeeded(device, width, height);
-    }
+    /// <summary>
+    ///     The command encoder the currently open frame is recording into. Set by
+    ///     <see cref="WebGpuGameRenderer" /> once per frame, before <c>DrawWorld</c> runs.
+    /// </summary>
+    public CommandEncoder* Encoder { get; set; }
+
+    /// <summary>
+    ///     The current fog/sky colour, RGB only — alpha is forced to 0 when this is used to clear
+    ///     <see cref="_cloudFb" />. Set by <see cref="WebGpuGameRenderer" /> once per frame, mirroring
+    ///     GL's <c>ClearColor(fogR, fogG, fogB, 0)</c> call that <c>FramebufferManager.BeginCloudPass</c>
+    ///     inherits (<c>GameRenderer.cs</c>'s fog-colour update, ~line 1052). It has to be the sky
+    ///     colour and not black: the blur samples with linear filtering, which blends RGB and alpha
+    ///     independently, so a fully-transparent texel's stored RGB still bleeds into a bilinearly
+    ///     filtered sample right at a cloud's silhouette edge even though the shader premultiplies by
+    ///     alpha afterwards. A black background leaks black into that edge; the sky colour leaks the
+    ///     colour a fading cloud edge is supposed to blend into.
+    /// </summary>
+    public Vector3 FogColor { get; set; }
 
     public void Begin()
     {
-        Silk.NET.WebGPU.WebGPU api = _device.Api;
+        var api = _device.Api;
 
         // Ends whatever pass DrawWorld's earlier draws landed in — this is always the world pass
         // itself, opened by WebGpuGameRenderer.RenderFrame just before DrawWorld ran, since nothing
         // else in DrawWorld brackets a pass boundary before the cloud draw.
-        RenderPassEncoder* worldPass = _drawTarget.CurrentPass;
+        var worldPass = _drawTarget.CurrentPass;
         _drawTarget.EndPass();
         api.RenderPassEncoderEnd(worldPass);
         api.RenderPassEncoderRelease(worldPass);
 
         ImageCopyTexture copySrc = new()
-        { Texture = _offscreenFb.DepthTexture, MipLevel = 0, Origin = default, Aspect = TextureAspect.DepthOnly };
+        {
+            Texture = _offscreenFb.DepthTexture,
+            MipLevel = 0,
+            Origin = default,
+            Aspect = TextureAspect.DepthOnly
+        };
         ImageCopyTexture copyDst = new()
-        { Texture = _cloudFb.DepthTexture, MipLevel = 0, Origin = default, Aspect = TextureAspect.DepthOnly };
+        {
+            Texture = _cloudFb.DepthTexture,
+            MipLevel = 0,
+            Origin = default,
+            Aspect = TextureAspect.DepthOnly
+        };
         Extent3D copySize = new(_offscreenFb.Width, _offscreenFb.Height, 1);
         api.CommandEncoderCopyTextureToTexture(Encoder, in copySrc, in copyDst, in copySize);
 
         _cloudPass = _cloudFb.BeginPass(Encoder,
-            new Silk.NET.WebGPU.Color(FogColor.X, FogColor.Y, FogColor.Z, 0.0),
-            clearColorBuffer: true, clearDepth: false);
+            new Color(FogColor.X, FogColor.Y, FogColor.Z, 0.0),
+            true, false);
         _drawTarget.BeginPass(_cloudPass, _cloudFb.Width, _cloudFb.Height);
     }
 
     public void End()
     {
-        Silk.NET.WebGPU.WebGPU api = _device.Api;
+        var api = _device.Api;
 
         _drawTarget.EndPass();
         api.RenderPassEncoderEnd(_cloudPass);
@@ -177,7 +202,7 @@ public sealed unsafe class WgpuCloudBlurPass : ICloudBlurPass, IDisposable
         _cloudPass = null;
 
         // Horizontal blur: cloud capture -> ping-pong, premultiplying alpha as it accumulates.
-        RenderPassEncoder* hPass = _pingPongFb.BeginPass(Encoder, default);
+        var hPass = _pingPongFb.BeginPass(Encoder, default);
         api.RenderPassEncoderSetPipeline(hPass, _horizontalPipeline.Pipeline);
         _horizontalPipeline.UploadUniforms(1u);
         _horizontalPipeline.BindUniformGroup(hPass);
@@ -190,8 +215,8 @@ public sealed unsafe class WgpuCloudBlurPass : ICloudBlurPass, IDisposable
         // Vertical blur, composited straight onto the world framebuffer: LoadOp.Load on both colour
         // and depth so everything DrawWorld drew before clouds survives, and the scene's own depth
         // decides how much of the glow shows through in front of nearer terrain.
-        RenderPassEncoder* vPass = _offscreenFb.BeginPass(Encoder, default,
-            clearColorBuffer: false, clearDepth: false);
+        var vPass = _offscreenFb.BeginPass(Encoder, default,
+            false, false);
         api.RenderPassEncoderSetPipeline(vPass, _verticalPipeline.Pipeline);
         _verticalPipeline.UploadUniforms(0u);
         _verticalPipeline.BindUniformGroup(vPass);
@@ -215,5 +240,12 @@ public sealed unsafe class WgpuCloudBlurPass : ICloudBlurPass, IDisposable
         _pingPongFb.Dispose();
         _horizontalPipeline.Dispose();
         _verticalPipeline.Dispose();
+    }
+
+    /// <summary>Resizes the capture buffers in lockstep with the offscreen framebuffer.</summary>
+    public void Resize(WebGpuDevice device, uint width, uint height)
+    {
+        _cloudFb.ResizeIfNeeded(device, width, height);
+        _pingPongFb.ResizeIfNeeded(device, width, height);
     }
 }

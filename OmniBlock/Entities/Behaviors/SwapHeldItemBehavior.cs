@@ -10,7 +10,7 @@ public sealed class SwapHeldItemBehavior(Item required, Item result) : IEntityIn
 {
     public bool OnInteract(Entity self, EntityPlayer player)
     {
-        ItemStack? held = player.Inventory.ItemInHand;
+        var held = player.Inventory.ItemInHand;
         if (held == null || held.ItemId != required.Id)
         {
             return false;

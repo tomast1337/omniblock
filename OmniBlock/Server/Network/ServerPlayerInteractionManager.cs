@@ -15,40 +15,37 @@ namespace OmniBlock.Server.Network;
  */
 
 /// <summary>
-/// Handles mining, placing, opening doors, and so on.
+///     Handles mining, placing, opening doors, and so on.
 /// </summary>
 public class ServerPlayerInteractionManager
 {
     private readonly ServerWorld world;
-    public EntityPlayer player;
     private int failedMiningStartTime;
     private int failedMiningX;
     private int failedMiningY;
     private int failedMiningZ;
-    private int tickCounter;
     private bool mining;
+    private float miningProgress = -1;
     private int miningX;
     private int miningY;
     private int miningZ;
+    public EntityPlayer player;
     private int startMiningTime;
-    private float miningProgress = -1;
+    private int tickCounter;
 
-    public ServerPlayerInteractionManager(ServerWorld world)
-    {
-        this.world = world;
-    }
+    public ServerPlayerInteractionManager(ServerWorld world) => this.world = world;
 
     public void update()
     {
         tickCounter++;
         if (mining)
         {
-            int miningTicks = tickCounter - startMiningTime;
-            int blockId = world.Reader.GetBlockId(miningX, miningY, miningZ);
+            var miningTicks = tickCounter - startMiningTime;
+            var blockId = world.Reader.GetBlockId(miningX, miningY, miningZ);
             if (blockId != 0)
             {
-                Block block = world.Content.Blocks.GetByProtocolId(blockId);
-                float breakProgress = block.GetHardness(player) * (miningTicks + 1);
+                var block = world.Content.Blocks.GetByProtocolId(blockId);
+                var breakProgress = block.GetHardness(player) * (miningTicks + 1);
                 if (breakProgress >= player.GameMode.BreakSpeed)
                 {
                     mining = false;
@@ -70,8 +67,9 @@ public class ServerPlayerInteractionManager
         {
             world.ExtinguishFire(null, x, y, z, direction);
         }
+
         failedMiningStartTime = tickCounter;
-        int blockId = world.Reader.GetBlockId(x, y, z);
+        var blockId = world.Reader.GetBlockId(x, y, z);
         if (blockId > 0 && player.GameMode.CanInteract)
         {
             world.Content.Blocks.GetByProtocolId(blockId).OnBlockBreakStart(new OnBlockBreakStartEvent(world, player, x, y, z));
@@ -96,12 +94,12 @@ public class ServerPlayerInteractionManager
     {
         if (x == failedMiningX && y == failedMiningY && z == failedMiningZ)
         {
-            int ticksSinceFailedStart = tickCounter - failedMiningStartTime;
-            int blockId = world.Reader.GetBlockId(x, y, z);
+            var ticksSinceFailedStart = tickCounter - failedMiningStartTime;
+            var blockId = world.Reader.GetBlockId(x, y, z);
             if (blockId != 0)
             {
-                Block block = world.Content.Blocks.GetByProtocolId(blockId);
-                float breakProgress = block.GetHardness(player) * (ticksSinceFailedStart + 1) + miningProgress;
+                var block = world.Content.Blocks.GetByProtocolId(blockId);
+                var breakProgress = block.GetHardness(player) * (ticksSinceFailedStart + 1) + miningProgress;
                 if (breakProgress >= player.GameMode.BreakSpeed)
                 {
                     tryBreakBlock(x, y, z);
@@ -123,9 +121,9 @@ public class ServerPlayerInteractionManager
 
     public bool finishMining(int x, int y, int z)
     {
-        Block block = world.Content.Blocks.GetByProtocolId(world.Reader.GetBlockId(x, y, z));
-        int blockMeta = world.Reader.GetBlockMeta(x, y, z);
-        bool success = world.Writer.SetBlock(x, y, z, 0);
+        var block = world.Content.Blocks.GetByProtocolId(world.Reader.GetBlockId(x, y, z));
+        var blockMeta = world.Reader.GetBlockMeta(x, y, z);
+        var success = world.Writer.SetBlock(x, y, z, 0);
         if (block != null && success)
         {
             block.OnMetadataChange(new OnMetadataChangeEvent(world, x, y, z, blockMeta));
@@ -138,16 +136,16 @@ public class ServerPlayerInteractionManager
     public void UpdateMiningTool()
     {
         if (miningProgress is < 0F or >= 1F) return;
-        int blockId = world.Reader.GetBlockId(failedMiningX, failedMiningY, failedMiningZ);
+        var blockId = world.Reader.GetBlockId(failedMiningX, failedMiningY, failedMiningZ);
         if (blockId == 0)
         {
             miningProgress = -1;
             return;
         }
 
-        int ticksSinceFailedStart = tickCounter - failedMiningStartTime;
+        var ticksSinceFailedStart = tickCounter - failedMiningStartTime;
         failedMiningStartTime = tickCounter;
-        Block block = world.Content.Blocks.GetByProtocolId(blockId);
+        var block = world.Content.Blocks.GetByProtocolId(blockId);
         miningProgress += block.GetHardness(player) * ticksSinceFailedStart;
     }
 
@@ -155,12 +153,12 @@ public class ServerPlayerInteractionManager
     {
         if (!player.GameMode.CanBreak) return false;
 
-        int blockId = world.Reader.GetBlockId(x, y, z);
-        int blockMeta = world.Reader.GetBlockMeta(x, y, z);
+        var blockId = world.Reader.GetBlockId(x, y, z);
+        var blockMeta = world.Reader.GetBlockMeta(x, y, z);
         world.Broadcaster.WorldEvent(player, 2001, x, y, z, blockId + blockMeta * 256);
 
-        world.Content.Blocks.TryGetByProtocolId(blockId, out Block? block);
-        bool success = world.Writer.SetBlock(x, y, z, 0);
+        world.Content.Blocks.TryGetByProtocolId(blockId, out var block);
+        var success = world.Writer.SetBlock(x, y, z, 0);
         if (block != null && success)
         {
             block.OnMetadataChange(new OnMetadataChangeEvent(world, x, y, z, blockMeta));
@@ -179,7 +177,7 @@ public class ServerPlayerInteractionManager
             }
         }
 
-        ItemStack? itemStack = player.GetHand();
+        var itemStack = player.GetHand();
         if (itemStack != null)
         {
             itemStack.PostMine(blockId, x, y, z, player);
@@ -195,9 +193,9 @@ public class ServerPlayerInteractionManager
 
     public bool interactItem(EntityPlayer player, IWorldContext world, ItemStack stack)
     {
-        int count = stack.Count;
-        ItemStack itemStack = stack.Use(world, player);
-        if (itemStack != stack || itemStack != null && itemStack.Count != count)
+        var count = stack.Count;
+        var itemStack = stack.Use(world, player);
+        if (itemStack != stack || (itemStack != null && itemStack.Count != count))
         {
             player.Inventory.Main[player.Inventory.SelectedSlot] = itemStack;
             if (itemStack.Count == 0)
@@ -209,10 +207,8 @@ public class ServerPlayerInteractionManager
 
             return true;
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 
     public bool interactBlock(EntityPlayer player, World world, ItemStack? stack, int x, int y, int z, int side)
@@ -220,7 +216,7 @@ public class ServerPlayerInteractionManager
         if (!player.IsSneaking())
         {
             if (!player.GameMode.CanInteract) return false;
-            int blockId = world.Reader.GetBlockId(x, y, z);
+            var blockId = world.Reader.GetBlockId(x, y, z);
             if (blockId > 0 && world.Content.Blocks.GetByProtocolId(blockId).OnUse(new OnUseEvent(world, player, x, y, z)))
             {
                 miningProgress = -1;

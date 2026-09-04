@@ -7,10 +7,10 @@ namespace OmniBlock.Client.Entities.FX;
 
 public class EntityFootStepFX : EntityFX
 {
-
-    private int localAge;
     private readonly int maxAge;
     private readonly TextureManager textureManager;
+
+    private int localAge;
 
     public EntityFootStepFX(TextureManager textureManager, World world, double x, double y, double z) : base(world, x, y, z, 0.0D, 0.0D, 0.0D)
     {
@@ -21,9 +21,9 @@ public class EntityFootStepFX : EntityFX
 
     public override void renderParticle(Tessellator t, float partialTick, float rotX, float rotY, float rotZ, float upX, float upZ)
     {
-        float lifeProgress = ((float)localAge + partialTick) / (float)maxAge;
+        var lifeProgress = (localAge + partialTick) / maxAge;
         lifeProgress *= lifeProgress;
-        float alpha = 2.0F - lifeProgress * 2.0F;
+        var alpha = 2.0F - lifeProgress * 2.0F;
         if (alpha > 1.0F)
         {
             alpha = 1.0F;
@@ -31,19 +31,22 @@ public class EntityFootStepFX : EntityFX
 
         alpha *= 0.2F;
         GLManager.LightingEnabled = false;
-        float footprintSize = 2.0F / 16.0F;
-        float renderX = (float)(X - interpPosX);
-        float renderY = (float)(Y - interpPosY);
-        float renderZ = (float)(Z - interpPosZ);
-        float brightness = World.Lighting.GetLuminance(MathHelper.Floor(X), MathHelper.Floor(Y), MathHelper.Floor(Z));
+        var footprintSize = 2.0F / 16.0F;
+        var renderX = (float)(X - interpPosX);
+        var renderY = (float)(Y - interpPosY);
+        var renderZ = (float)(Z - interpPosZ);
+        var brightness = World.Lighting.GetLuminance(MathHelper.Floor(X), MathHelper.Floor(Y), MathHelper.Floor(Z));
         textureManager.BindTexture(textureManager.GetTextureId("/misc/footprint.png"));
-        GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
+        GLManager.State.Apply(RenderState.Entity with
+        {
+            Blend = BlendMode.Alpha
+        });
         t.startDrawingQuads();
         t.setColorRGBA_F(brightness, brightness, brightness, alpha);
-        t.addVertexWithUV((double)(renderX - footprintSize), (double)renderY, (double)(renderZ + footprintSize), 0.0D, 1.0D);
-        t.addVertexWithUV((double)(renderX + footprintSize), (double)renderY, (double)(renderZ + footprintSize), 1.0D, 1.0D);
-        t.addVertexWithUV((double)(renderX + footprintSize), (double)renderY, (double)(renderZ - footprintSize), 1.0D, 0.0D);
-        t.addVertexWithUV((double)(renderX - footprintSize), (double)renderY, (double)(renderZ - footprintSize), 0.0D, 0.0D);
+        t.addVertexWithUV(renderX - footprintSize, renderY, renderZ + footprintSize, 0.0D, 1.0D);
+        t.addVertexWithUV(renderX + footprintSize, renderY, renderZ + footprintSize, 1.0D, 1.0D);
+        t.addVertexWithUV(renderX + footprintSize, renderY, renderZ - footprintSize, 1.0D, 0.0D);
+        t.addVertexWithUV(renderX - footprintSize, renderY, renderZ - footprintSize, 0.0D, 0.0D);
         t.draw(ProgramSlot.Entities);
         GLManager.State.Apply(RenderState.Entity);
         GLManager.LightingEnabled = true;
@@ -56,11 +59,7 @@ public class EntityFootStepFX : EntityFX
         {
             MarkDead();
         }
-
     }
 
-    public override int getFXLayer()
-    {
-        return 3;
-    }
+    public override int getFXLayer() => 3;
 }

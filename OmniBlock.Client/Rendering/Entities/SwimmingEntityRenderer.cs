@@ -18,7 +18,7 @@ public sealed class SwimmingEntityRenderer(ModelBase main, float shadowRadius) :
 
     protected override void RotateCorpse(EntityLiving entity, float deathTime, float bodyYaw, float tickDelta)
     {
-        JetSwimBehavior? swim = entity.Behaviors.Find<JetSwimBehavior>();
+        var swim = entity.Behaviors.Find<JetSwimBehavior>();
         if (swim is null) return;
 
         GLManager.ModelView.Translate(0.0F, 0.5F, 0.0F);

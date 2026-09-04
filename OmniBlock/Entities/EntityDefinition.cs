@@ -1,7 +1,6 @@
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Security.Cryptography;
-using OmniBlock.Entities.Behaviors;
 using OmniBlock.Entities.State;
 using OmniBlock.Registries.Data;
 
@@ -200,9 +199,15 @@ public sealed record EntityDefinition : IDataAsset
     /// </summary>
     public JsonElement[] Behaviors { get; init; } = [];
 
+    /// <summary>Set by the loader from the JSON filename.</summary>
+    [JsonIgnore]
+    public string Name { get; set; } = "";
+
+    [JsonIgnore] public Namespace Namespace { get; set; } = Namespace.OmniBlock;
+
     public string ComputeCanonicalHash()
     {
-        JsonElement value = JsonSerializer.SerializeToElement(this);
+        var value = JsonSerializer.SerializeToElement(this);
         using MemoryStream stream = new();
         using (var writer = new Utf8JsonWriter(stream)) WriteCanonical(writer, value);
         return Convert.ToHexStringLower(SHA256.HashData(stream.ToArray()));
@@ -213,16 +218,17 @@ public sealed record EntityDefinition : IDataAsset
             {
                 case JsonValueKind.Object:
                     writer.WriteStartObject();
-                    foreach (JsonProperty property in element.EnumerateObject().OrderBy(p => p.Name, StringComparer.Ordinal))
+                    foreach (var property in element.EnumerateObject().OrderBy(p => p.Name, StringComparer.Ordinal))
                     {
                         writer.WritePropertyName(property.Name);
                         WriteCanonical(writer, property.Value);
                     }
+
                     writer.WriteEndObject();
                     break;
                 case JsonValueKind.Array:
                     writer.WriteStartArray();
-                    foreach (JsonElement child in element.EnumerateArray()) WriteCanonical(writer, child);
+                    foreach (var child in element.EnumerateArray()) WriteCanonical(writer, child);
                     writer.WriteEndArray();
                     break;
                 default:
@@ -231,10 +237,4 @@ public sealed record EntityDefinition : IDataAsset
             }
         }
     }
-
-    /// <summary>Set by the loader from the JSON filename.</summary>
-    [JsonIgnore]
-    public string Name { get; set; } = "";
-
-    [JsonIgnore] public Namespace Namespace { get; set; } = Namespace.OmniBlock;
 }

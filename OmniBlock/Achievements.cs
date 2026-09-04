@@ -1,6 +1,6 @@
-using OmniBlock.Blocks;
-using OmniBlock.Items;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Items;
+using OmniBlock.Registries;
 
 namespace OmniBlock;
 
@@ -11,7 +11,7 @@ public class Achievements
     public static int maxColumn;
     public static int maxRow;
 
-    public readonly static List<Achievement> AllAchievements = [];
+    public static readonly List<Achievement> AllAchievements = [];
     public static Achievement OpenInventory { get; private set; } = null!;
     public static Achievement MineWood { get; private set; } = null!;
     public static Achievement BuildWorkbench { get; private set; } = null!;
@@ -29,7 +29,7 @@ public class Achievements
     public static Achievement KillCow { get; private set; } = null!;
     public static Achievement KillPig { get; private set; } = null!;
 
-    public static void Initialize(Registries.ContentRuntimeBuilder content)
+    public static void Initialize(ContentRuntimeBuilder content)
     {
         Item Item(string name) => content.Get(new ResourceLocation(Namespace.OmniBlock, name));
         Item BlockItem(string name) => content.GetByProtocolId(content.GetBlock(new ResourceLocation(Namespace.OmniBlock, name)).Id);
@@ -51,5 +51,4 @@ public class Achievements
         KillPig = new Achievement(15, "flyPig", 8, -4, Item("saddle"), KillCow).challenge().registerAchievement();
         Log.Instance.For<Achievements>().LogInformation("{Count} achievements", AllAchievements.Count);
     }
-
 }

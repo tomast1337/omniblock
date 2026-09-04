@@ -7,24 +7,27 @@ public class FenceRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        bool hasRendered = true;
+        var hasRendered = true;
 
         // 1. Render the central vertical post
-        float postMin = 6.0F / 16.0F;
-        float postMax = 10.0F / 16.0F;
+        var postMin = 6.0F / 16.0F;
+        var postMax = 10.0F / 16.0F;
 
         // Clone the context and apply the new bounding box for the post
-        var postCtx = ctx with { OverrideBounds = new Box(postMin, 0.0F, postMin, postMax, 1.0F, postMax) };
+        var postCtx = ctx with
+        {
+            OverrideBounds = new Box(postMin, 0.0F, postMin, postMax, 1.0F, postMax)
+        };
         postCtx.DrawBlock(block, pos);
 
         // Check for adjacent fences using 'ctx.World' and 'pos'
-        bool connectsWest = ctx.BlockReader.GetBlockId(pos.X - 1, pos.Y, pos.Z) == block.Id;
-        bool connectsEast = ctx.BlockReader.GetBlockId(pos.X + 1, pos.Y, pos.Z) == block.Id;
-        bool connectsNorth = ctx.BlockReader.GetBlockId(pos.X, pos.Y, pos.Z - 1) == block.Id;
-        bool connectsSouth = ctx.BlockReader.GetBlockId(pos.X, pos.Y, pos.Z + 1) == block.Id;
+        var connectsWest = ctx.BlockReader.GetBlockId(pos.X - 1, pos.Y, pos.Z) == block.Id;
+        var connectsEast = ctx.BlockReader.GetBlockId(pos.X + 1, pos.Y, pos.Z) == block.Id;
+        var connectsNorth = ctx.BlockReader.GetBlockId(pos.X, pos.Y, pos.Z - 1) == block.Id;
+        var connectsSouth = ctx.BlockReader.GetBlockId(pos.X, pos.Y, pos.Z + 1) == block.Id;
 
-        bool connectsX = connectsWest || connectsEast;
-        bool connectsZ = connectsNorth || connectsSouth;
+        var connectsX = connectsWest || connectsEast;
+        var connectsZ = connectsNorth || connectsSouth;
 
         // If the fence is completely isolated, default to drawing small stubs along the X-axis
         if (!connectsX && !connectsZ)
@@ -33,18 +36,18 @@ public class FenceRenderer : IBlockRenderer
         }
 
         // Base depth/thickness for the horizontal connecting bars
-        float barDepthMin = 7.0F / 16.0F;
-        float barDepthMax = 9.0F / 16.0F;
+        var barDepthMin = 7.0F / 16.0F;
+        var barDepthMax = 9.0F / 16.0F;
 
         // Determine how far the bars extend based on neighbor connections
-        float barMinX = connectsWest ? 0.0F : barDepthMin;
-        float barMaxX = connectsEast ? 1.0F : barDepthMax;
-        float barMinZ = connectsNorth ? 0.0F : barDepthMin;
-        float barMaxZ = connectsSouth ? 1.0F : barDepthMax;
+        var barMinX = connectsWest ? 0.0F : barDepthMin;
+        var barMaxX = connectsEast ? 1.0F : barDepthMax;
+        var barMinZ = connectsNorth ? 0.0F : barDepthMin;
+        var barMaxZ = connectsSouth ? 1.0F : barDepthMax;
 
         // 2. Render Top Connecting Bars
-        float topBarMinY = 12.0F / 16.0F;
-        float topBarMaxY = 15.0F / 16.0F;
+        var topBarMinY = 12.0F / 16.0F;
+        var topBarMaxY = 15.0F / 16.0F;
 
         if (connectsX)
         {
@@ -65,8 +68,8 @@ public class FenceRenderer : IBlockRenderer
         }
 
         // 3. Render Bottom Connecting Bars
-        float bottomBarMinY = 6.0F / 16.0F;
-        float bottomBarMaxY = 9.0F / 16.0F;
+        var bottomBarMinY = 6.0F / 16.0F;
+        var bottomBarMaxY = 9.0F / 16.0F;
 
         if (connectsX)
         {
@@ -85,6 +88,7 @@ public class FenceRenderer : IBlockRenderer
             };
             bottomZCtx.DrawBlock(block, pos);
         }
+
         return hasRendered;
     }
 }

@@ -17,8 +17,5 @@ public struct HitResult(int blockX, int blockY, int blockZ, int side, Vec3D pos,
     {
     }
 
-    public HitResult(Entity entity) : this(0, 0, 0, 0, new Vec3D(entity.X, entity.Y, entity.Z), HitResultType.Entity)
-    {
-        Entity = entity;
-    }
+    public HitResult(Entity entity) : this(0, 0, 0, 0, new Vec3D(entity.X, entity.Y, entity.Z), HitResultType.Entity) => Entity = entity;
 }

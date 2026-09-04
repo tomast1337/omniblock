@@ -1,10 +1,8 @@
+using System.Numerics;
 using System.Runtime.InteropServices;
-using OmniBlock.Client.Rendering.Chunks;
-using OmniBlock.Client.Rendering.Entities;
-using OmniBlock.Client.Rendering.Core.Textures;
-using OmniBlock.Entities;
 using Hexa.NET.ImGui;
-using Silk.NET.Maths;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Client.Rendering.Entities;
 using Silk.NET.WebGPU;
 using WgpuBuffer = Silk.NET.WebGPU.Buffer;
 
@@ -16,16 +14,30 @@ namespace OmniBlock.Client.Rendering.Core.WebGPU;
 /// </summary>
 public sealed unsafe class WebGpuGameRenderer : IDisposable
 {
+    /// <summary>Position (3 floats) then texcoord (2 floats), as blit.wgsl declares them.</summary>
+    private const uint BlitQuadStride = 20;
+
+    private readonly WebGpuDrawTarget _drawTarget;
     private readonly OmniBlock _game;
-    private WgpuFramebuffer? _offscreenFb;
-    private WgpuFramebuffer? _presentFb;
+    private readonly Dictionary<Texture2D, (WgpuTexture Texture, ulong ImGuiId)> _imguiTextures = [];
     private WgpuPipeline? _blitPipeline;
     private WgpuMesh? _blitQuad;
     private WgpuCloudBlurPass? _cloudBlurPass;
-    private readonly WebGpuDrawTarget _drawTarget;
-    private ImGuiWgpuBackend? _imguiWgpu;
-    private readonly Dictionary<Texture2D, (WgpuTexture Texture, ulong ImGuiId)> _imguiTextures = [];
     private bool _disposed;
+    private ImGuiWgpuBackend? _imguiWgpu;
+    private WgpuFramebuffer? _offscreenFb;
+    private WgpuFramebuffer? _presentFb;
+
+    public WebGpuGameRenderer(OmniBlock game)
+    {
+        _game = game;
+
+        // Installed here rather than at the first frame because the sky, stars and clouds are built
+        // during startup, and capturing them needs a target even though drawing them needs a pass.
+        var device = WebGpuDevice.Current!;
+        _drawTarget = new WebGpuDrawTarget(device, device.SurfaceFormat, TextureFormat.Depth32float);
+        GLManager.DrawTargetOrNull = _drawTarget;
+    }
 
     /// <summary>
     ///     Set by the caller from the F3 debug viewport's content size, in pixels; null when that
@@ -40,30 +52,6 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     ///     is set. Zero otherwise.
     /// </summary>
     public ulong ViewportTextureId { get; private set; }
-
-    /// <summary>
-    /// Returns an ImGui texture id for an engine texture. <see cref="Texture2D.Id"/> is only a
-    /// renderer batching key and must never be passed to ImGui directly.
-    /// </summary>
-    internal ulong GetImGuiTextureId(TextureHandle handle)
-    {
-        WgpuTexture? texture = handle.Texture?.Wgpu;
-        if (texture is null || _imguiWgpu is null) return 0;
-
-        if (_imguiTextures.TryGetValue(handle.Texture!, out var registered))
-        {
-            if (!ReferenceEquals(registered.Texture, texture))
-            {
-                _imguiWgpu.UpdateExternalTexture(registered.ImGuiId, texture.View);
-                _imguiTextures[handle.Texture!] = (texture, registered.ImGuiId);
-            }
-            return registered.ImGuiId;
-        }
-
-        ulong id = _imguiWgpu.RegisterExternalTexture(texture.View);
-        _imguiTextures.Add(handle.Texture!, (texture, id));
-        return id;
-    }
 
     /// <summary>
     ///     Set by the caller to whether the debug UI is open this frame. ImGui only calls
@@ -103,26 +91,54 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     /// </summary>
     public (uint Width, uint Height) FramebufferSize => (_offscreenFb?.Width ?? 0, _offscreenFb?.Height ?? 0);
 
-    public WebGpuGameRenderer(OmniBlock game)
+    public void Dispose()
     {
-        _game = game;
+        if (_disposed) return;
+        _disposed = true;
 
-        // Installed here rather than at the first frame because the sky, stars and clouds are built
-        // during startup, and capturing them needs a target even though drawing them needs a pass.
-        WebGpuDevice device = WebGpuDevice.Current!;
-        _drawTarget = new WebGpuDrawTarget(device, device.SurfaceFormat, TextureFormat.Depth32float);
-        GLManager.DrawTargetOrNull = _drawTarget;
+        _offscreenFb?.Dispose();
+        _presentFb?.Dispose();
+        _blitPipeline?.Dispose();
+        _blitQuad?.Dispose();
+        _cloudBlurPass?.Dispose();
+        _drawTarget.Dispose();
+        _imguiWgpu?.Dispose();
+    }
+
+    /// <summary>
+    ///     Returns an ImGui texture id for an engine texture. <see cref="Texture2D.Id" /> is only a
+    ///     renderer batching key and must never be passed to ImGui directly.
+    /// </summary>
+    internal ulong GetImGuiTextureId(TextureHandle handle)
+    {
+        var texture = handle.Texture?.Wgpu;
+        if (texture is null || _imguiWgpu is null) return 0;
+
+        if (_imguiTextures.TryGetValue(handle.Texture!, out var registered))
+        {
+            if (!ReferenceEquals(registered.Texture, texture))
+            {
+                _imguiWgpu.UpdateExternalTexture(registered.ImGuiId, texture.View);
+                _imguiTextures[handle.Texture!] = (texture, registered.ImGuiId);
+            }
+
+            return registered.ImGuiId;
+        }
+
+        var id = _imguiWgpu.RegisterExternalTexture(texture.View);
+        _imguiTextures.Add(handle.Texture!, (texture, id));
+        return id;
     }
 
     public void RenderFrame(float tickDelta, long time)
     {
-        WebGpuDevice device = WebGpuDevice.Current!;
-        Silk.NET.WebGPU.WebGPU api = device.Api;
+        var device = WebGpuDevice.Current!;
+        var api = device.Api;
 
-        TextureView* swapView = device.AcquireFrame();
+        var swapView = device.AcquireFrame();
         if (swapView == null) return;
 
-        CommandEncoder* encoder = device.CreateCommandEncoder();
+        var encoder = device.CreateCommandEncoder();
         EnsureResources(device);
 
         // Every pass below records into that one encoder and is submitted together, which is what
@@ -133,14 +149,14 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
 
         // Null until the pack has been read and the array uploaded, which the first world load
         // does. Restated per frame because a pack switch replaces the array outright.
-        WgpuTextureArray? terrain = _game.TextureManager.TerrainArray.Texture?.Wgpu;
+        var terrain = _game.TextureManager.TerrainArray.Texture?.Wgpu;
         _drawTarget.TerrainArray = terrain;
 
         (uint Width, uint Height)? viewport = ViewportSize is { Width: > 0, Height: > 0 } vp ? vp : null;
-        uint width = viewport?.Width ?? device.Width;
-        uint height = viewport?.Height ?? device.Height;
+        var width = viewport?.Width ?? device.Width;
+        var height = viewport?.Height ?? device.Height;
 
-        bool resized = _offscreenFb!.ResizeIfNeeded(device, width, height);
+        var resized = _offscreenFb!.ResizeIfNeeded(device, width, height);
         _presentFb!.ResizeIfNeeded(device, width, height);
         _cloudBlurPass!.Resize(device, width, height);
         _cloudBlurPass.Encoder = encoder;
@@ -177,27 +193,27 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         // How a block-shaped draw is lit, this frame. Default with no world, so the menus do not
         // inherit the last one's nightfall. Read by everything that builds a uniform block below.
         GLManager.WorldLight = _game.World is { } lit
-            ? new WorldLightState((float)lit.Environment.AmbientDarkness, lit.Dimension.LightLevelToLuminance[0])
+            ? new WorldLightState(lit.Environment.AmbientDarkness, lit.Dimension.LightLevelToLuminance[0])
             : WorldLightState.Default;
 
         // Null in the menus, before a world is loaded — the frame still runs, so the clear, the
         // blit and the ImGui overlay are drawn; only the world is not. Drawing the world without
         // the terrain array would sample nothing, so that is waited on too.
-        bool drawWorld = _game.World is not null && _game.Camera is not null && terrain is not null;
+        var drawWorld = _game.World is not null && _game.Camera is not null && terrain is not null;
 
         // Settled before the pass opens, because WebGPU clears as part of beginning one rather than
         // with a call inside it.
-        Silk.NET.WebGPU.Color clear = new(0.7, 0.8, 1.0, 1.0);
+        Color clear = new(0.7, 0.8, 1.0, 1.0);
         if (drawWorld)
         {
             _game.GameRenderer.BeginWorldFrame(tickDelta, _game.World!.GetTime());
-            Vector4D<float> fog = _game.GameRenderer.WorldClearColor;
-            clear = new Silk.NET.WebGPU.Color(fog.X, fog.Y, fog.Z, 1.0);
-            _cloudBlurPass!.FogColor = new System.Numerics.Vector3(fog.X, fog.Y, fog.Z);
+            var fog = _game.GameRenderer.WorldClearColor;
+            clear = new Color(fog.X, fog.Y, fog.Z, 1.0);
+            _cloudBlurPass!.FogColor = new Vector3(fog.X, fog.Y, fog.Z);
         }
 
         // --- Offscreen pass: the world ---
-        RenderPassEncoder* worldPass = _offscreenFb.BeginPass(encoder, clear);
+        var worldPass = _offscreenFb.BeginPass(encoder, clear);
 
         // Everything drawn through the Tessellator belongs in this pass, so the target is only open
         // for its length — a draw outside it has nowhere to go and says so. The chunk meshes record
@@ -209,7 +225,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             if (drawWorld)
             {
                 // The hand is drawn in a pass of its own below, not here — see RenderFirstPersonHand.
-                _game.GameRenderer.DrawWorld(tickDelta, includeHand: false);
+                _game.GameRenderer.DrawWorld(tickDelta, false);
             }
         }
         finally
@@ -257,10 +273,14 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
                 View = swapView,
                 LoadOp = LoadOp.Clear,
                 StoreOp = StoreOp.Store,
-                ClearValue = new Silk.NET.WebGPU.Color(0, 0, 0, 1),
+                ClearValue = new Color(0, 0, 0, 1)
             };
-            RenderPassDescriptor swapDesc = new() { ColorAttachmentCount = 1, ColorAttachments = &colorAttach };
-            RenderPassEncoder* swapPass = api.CommandEncoderBeginRenderPass(encoder, in swapDesc);
+            RenderPassDescriptor swapDesc = new()
+            {
+                ColorAttachmentCount = 1,
+                ColorAttachments = &colorAttach
+            };
+            var swapPass = api.CommandEncoderBeginRenderPass(encoder, in swapDesc);
             api.RenderPassEncoderEnd(swapPass);
             api.RenderPassEncoderRelease(swapPass);
         }
@@ -268,10 +288,10 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         // --- Present pass: the same gamma-corrected frame again, into the texture ImGui shows
         // while the F3 debug viewport is open, or a screenshot capture reads from — both need a
         // texture created with CopySrc, which the swapchain's own is not guaranteed to carry.
-        bool capturing = ScreenshotRequested;
+        var capturing = ScreenshotRequested;
         if (viewport is not null || capturing)
         {
-            RenderPassEncoder* presentPass = BeginSwapPass(api, encoder, _presentFb!.ColorView, null);
+            var presentPass = BeginSwapPass(api, encoder, _presentFb!.ColorView, null);
             api.RenderPassEncoderSetPipeline(presentPass, _blitPipeline!.Pipeline);
             _blitPipeline.BindUniformGroup(presentPass);
             api.RenderPassEncoderSetBindGroup(presentPass, 1,
@@ -289,10 +309,10 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         // GetDrawData() keeps returning the last-built draw data on every frame the debug UI is
         // closed, since NewFrame()/Render() are not called at all while it is, and drawing that
         // forever after close is exactly the bug this guards against.
-        ImDrawDataPtr drawData = ImGui.GetDrawData();
+        var drawData = ImGui.GetDrawData();
         if (ImguiOpen && drawData.Handle is not null)
         {
-            RenderPassEncoder* overlayPass = BeginSwapPass(api, encoder, swapView, null);
+            var overlayPass = BeginSwapPass(api, encoder, swapView, null);
             _imguiWgpu!.RenderDrawData(drawData, overlayPass);
             api.RenderPassEncoderEnd(overlayPass);
             api.RenderPassEncoderRelease(overlayPass);
@@ -313,7 +333,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             BufferDescriptor screenshotBufferDesc = new()
             {
                 Usage = BufferUsage.CopyDst | BufferUsage.MapRead,
-                Size = screenshotBytesPerRow * screenshotHeight,
+                Size = screenshotBytesPerRow * screenshotHeight
             };
             screenshotBuffer = api.DeviceCreateBuffer(device.Device, in screenshotBufferDesc);
 
@@ -322,7 +342,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
                 Texture = _presentFb.ColorTexture,
                 MipLevel = 0,
                 Origin = default,
-                Aspect = TextureAspect.All,
+                Aspect = TextureAspect.All
             };
             ImageCopyBuffer copyDst = new()
             {
@@ -331,14 +351,14 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
                 {
                     Offset = 0,
                     BytesPerRow = screenshotBytesPerRow,
-                    RowsPerImage = screenshotHeight,
-                },
+                    RowsPerImage = screenshotHeight
+                }
             };
             Extent3D copySize = new(screenshotWidth, screenshotHeight, 1);
             api.CommandEncoderCopyTextureToBuffer(encoder, in copySrc, in copyDst, in copySize);
         }
 
-        CommandBuffer* cmdBuf = api.CommandEncoderFinish(encoder, null);
+        var cmdBuf = api.CommandEncoderFinish(encoder, null);
         api.QueueSubmit(device.Queue, 1, &cmdBuf);
         api.CommandBufferRelease(cmdBuf);
 
@@ -386,19 +406,19 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     /// </remarks>
     public void RenderLoadingFrame(Action draw)
     {
-        WebGpuDevice device = WebGpuDevice.Current!;
-        Silk.NET.WebGPU.WebGPU api = device.Api;
+        var device = WebGpuDevice.Current!;
+        var api = device.Api;
 
-        TextureView* swapView = device.AcquireFrame();
+        var swapView = device.AcquireFrame();
         if (swapView == null) return;
 
-        CommandEncoder* encoder = device.CreateCommandEncoder();
+        var encoder = device.CreateCommandEncoder();
         EnsureResources(device);
 
         _drawTarget.BeginFrame();
         _offscreenFb!.ResizeIfNeeded(device, device.Width, device.Height);
 
-        RenderPassEncoder* pass = _offscreenFb.BeginPass(encoder, new Silk.NET.WebGPU.Color(0, 0, 0, 1));
+        var pass = _offscreenFb.BeginPass(encoder, new Color(0, 0, 0, 1));
         _drawTarget.BeginPass(pass, _offscreenFb.Width, _offscreenFb.Height);
         GLManager.State.Apply(RenderState.Interface);
 
@@ -415,16 +435,16 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
 
         BlitToSwapchain(device, encoder, swapView);
 
-        ImDrawDataPtr drawData = ImGui.GetDrawData();
+        var drawData = ImGui.GetDrawData();
         if (ImguiOpen && drawData.Handle is not null)
         {
-            RenderPassEncoder* overlayPass = BeginSwapPass(api, encoder, swapView, null);
+            var overlayPass = BeginSwapPass(api, encoder, swapView, null);
             _imguiWgpu!.RenderDrawData(drawData, overlayPass);
             api.RenderPassEncoderEnd(overlayPass);
             api.RenderPassEncoderRelease(overlayPass);
         }
 
-        CommandBuffer* cmdBuf = api.CommandEncoderFinish(encoder, null);
+        var cmdBuf = api.CommandEncoderFinish(encoder, null);
         api.QueueSubmit(device.Queue, 1, &cmdBuf);
         api.CommandBufferRelease(cmdBuf);
 
@@ -439,9 +459,9 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     /// </summary>
     private void BlitToSwapchain(WebGpuDevice device, CommandEncoder* encoder, TextureView* swapView)
     {
-        Silk.NET.WebGPU.WebGPU api = device.Api;
+        var api = device.Api;
 
-        float gammaSlider = _game.Options.Gamma / 100.0f;
+        var gammaSlider = _game.Options.Gamma / 100.0f;
         _blitPipeline!.UploadUniforms(0.25f + gammaSlider * 1.5f);
 
         RenderPassColorAttachment colorAttach = new()
@@ -449,16 +469,16 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             View = swapView,
             LoadOp = LoadOp.Clear,
             StoreOp = StoreOp.Store,
-            ClearValue = new Silk.NET.WebGPU.Color(0, 0, 0, 1),
+            ClearValue = new Color(0, 0, 0, 1)
         };
 
         RenderPassDescriptor swapDesc = new()
         {
             ColorAttachmentCount = 1,
-            ColorAttachments = &colorAttach,
+            ColorAttachments = &colorAttach
         };
 
-        RenderPassEncoder* swapPass = api.CommandEncoderBeginRenderPass(encoder, in swapDesc);
+        var swapPass = api.CommandEncoderBeginRenderPass(encoder, in swapDesc);
 
         // blit.wgsl reads a quad from a vertex buffer and declares the texture and sampler in
         // group 1, behind the uniform group every pipeline here carries at group 0.
@@ -489,19 +509,19 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     private string ReadBackScreenshot(WebGpuDevice device, WgpuBuffer* buffer,
         uint width, uint height, uint bytesPerRow)
     {
-        Silk.NET.WebGPU.WebGPU api = device.Api;
+        var api = device.Api;
 
-        bool mapped = false;
-        BufferMapAsyncStatus status = BufferMapAsyncStatus.Unknown;
+        var mapped = false;
+        var status = BufferMapAsyncStatus.Unknown;
         PfnBufferMapCallback callback = new((mapStatus, _) =>
         {
             status = mapStatus;
             mapped = true;
         });
 
-        api.BufferMapAsync(buffer, MapMode.Read, 0, (nuint)(bytesPerRow * height), callback, null);
+        api.BufferMapAsync(buffer, MapMode.Read, 0, bytesPerRow * height, callback, null);
 
-        for (int i = 0; !mapped && i < 10000; i++)
+        for (var i = 0; !mapped && i < 10000; i++)
         {
             device.Poll();
         }
@@ -511,27 +531,27 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             return $"Failed to save: GPU readback did not complete ({status})";
         }
 
-        void* mappedPtr = api.BufferGetConstMappedRange(buffer, 0, (nuint)(bytesPerRow * height));
+        var mappedPtr = api.BufferGetConstMappedRange(buffer, 0, bytesPerRow * height);
         ReadOnlySpan<byte> padded = new(mappedPtr, (int)(bytesPerRow * height));
 
         // _presentFb is always Bgra8Unorm or Rgba8Unorm (WebGpuDevice.ChooseSurfaceConfiguration
         // only ever picks one of those two) — everything else about the row is identical between
         // them, just the first and third byte swapped.
-        bool bgra = device.SurfaceFormat == TextureFormat.Bgra8Unorm;
-        byte[] rgb = new byte[width * height * 3];
-        for (int y = 0; y < height; y++)
+        var bgra = device.SurfaceFormat == TextureFormat.Bgra8Unorm;
+        var rgb = new byte[width * height * 3];
+        for (var y = 0; y < height; y++)
         {
             // WebGPU texture row 0 is the top of the image (blit.wgsl's quad maps texcoord v=0 to
             // clip-space +1), the opposite of GL's bottom-to-top rows that ScreenShotHelper expects
             // and flips back — so rows land reversed here to cancel that flip out correctly.
-            int dstRow = (int)height - 1 - y;
-            ReadOnlySpan<byte> srcRow = padded.Slice(y * (int)bytesPerRow, (int)width * 4);
-            for (int x = 0; x < width; x++)
+            var dstRow = (int)height - 1 - y;
+            var srcRow = padded.Slice(y * (int)bytesPerRow, (int)width * 4);
+            for (var x = 0; x < width; x++)
             {
-                byte c0 = srcRow[x * 4];
-                byte c1 = srcRow[x * 4 + 1];
-                byte c2 = srcRow[x * 4 + 2];
-                int dst = (dstRow * (int)width + x) * 3;
+                var c0 = srcRow[x * 4];
+                var c1 = srcRow[x * 4 + 1];
+                var c2 = srcRow[x * 4 + 2];
+                var dst = (dstRow * (int)width + x) * 3;
                 if (bgra)
                 {
                     rgb[dst] = c2;
@@ -563,8 +583,8 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     /// </remarks>
     private void RenderInterfacePass(WebGpuDevice device, CommandEncoder* encoder, float tickDelta)
     {
-        Silk.NET.WebGPU.WebGPU api = device.Api;
-        RenderPassEncoder* pass = BeginSwapPass(api, encoder, _offscreenFb!.ColorView, _offscreenFb.DepthView);
+        var api = device.Api;
+        var pass = BeginSwapPass(api, encoder, _offscreenFb!.ColorView, _offscreenFb.DepthView);
 
         // The inventory's mob preview and the held item render through the entity dispatcher, which
         // reads the camera, the world and the font from here. WorldRenderer's frame is what normally
@@ -601,10 +621,10 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     /// </remarks>
     private void RenderFirstPersonHand(WgpuFramebuffer offscreenFb, CommandEncoder* encoder, float tickDelta)
     {
-        Silk.NET.WebGPU.WebGPU api = WebGpuDevice.Current!.Api;
+        var api = WebGpuDevice.Current!.Api;
 
-        RenderPassEncoder* handPass = offscreenFb.BeginPass(encoder, default,
-            clearColorBuffer: false, clearDepth: true);
+        var handPass = offscreenFb.BeginPass(encoder, default,
+            false);
         _drawTarget.BeginPass(handPass, offscreenFb.Width, offscreenFb.Height);
 
         try
@@ -632,7 +652,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             View = swapView,
             LoadOp = LoadOp.Load,
             StoreOp = StoreOp.Store,
-            DepthSlice = unchecked((uint)-1),
+            DepthSlice = unchecked((uint)-1)
         };
 
         RenderPassDepthStencilAttachment depthAttach = new()
@@ -642,14 +662,14 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             DepthStoreOp = StoreOp.Store,
             DepthClearValue = 1.0f,
             StencilLoadOp = LoadOp.Undefined,
-            StencilStoreOp = StoreOp.Undefined,
+            StencilStoreOp = StoreOp.Undefined
         };
 
         RenderPassDescriptor descriptor = new()
         {
             ColorAttachmentCount = 1,
             ColorAttachments = &colorAttach,
-            DepthStencilAttachment = depthView is null ? null : &depthAttach,
+            DepthStencilAttachment = depthView is null ? null : &depthAttach
         };
 
         return api.CommandEncoderBeginRenderPass(encoder, in descriptor);
@@ -662,62 +682,75 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             // CopySrc on the depth texture: WgpuCloudBlurPass copies it into its own capture buffer
             // so clouds draw depth-tested against terrain already in this frame.
             _offscreenFb = WgpuFramebuffer.CreateColorDepth(device,
-                device.Width, device.Height, device.SurfaceFormat, extraDepthUsage: TextureUsage.CopySrc);
+                device.Width, device.Height, device.SurfaceFormat, TextureUsage.CopySrc);
         }
 
         if (_blitPipeline == null)
         {
-            string blitWgsl = AssetManager.Instance.GetAsset("shaders/blit.wgsl").GetTextContent();
+            var blitWgsl = AssetManager.Instance.GetAsset("shaders/blit.wgsl").GetTextContent();
 
             BindGroupLayoutEntry[] blitUniformEntries =
             [
-                new BindGroupLayoutEntry
+                new()
                 {
                     Binding = 0,
                     Visibility = ShaderStage.Fragment,
                     Buffer = new BufferBindingLayout
                     {
                         Type = BufferBindingType.Uniform,
-                        MinBindingSize = 64,
-                    },
-                },
+                        MinBindingSize = 64
+                    }
+                }
             ];
 
             BindGroupLayoutEntry[] blitTextureEntries =
             [
-                new BindGroupLayoutEntry
+                new()
                 {
                     Binding = 0,
                     Visibility = ShaderStage.Fragment,
                     Texture = new TextureBindingLayout
                     {
                         SampleType = TextureSampleType.Float,
-                        ViewDimension = TextureViewDimension.Dimension2D,
-                    },
+                        ViewDimension = TextureViewDimension.Dimension2D
+                    }
                 },
-                new BindGroupLayoutEntry
+                new()
                 {
                     Binding = 1,
                     Visibility = ShaderStage.Fragment,
-                    Sampler = new SamplerBindingLayout { Type = SamplerBindingType.Filtering },
-                },
+                    Sampler = new SamplerBindingLayout
+                    {
+                        Type = SamplerBindingType.Filtering
+                    }
+                }
             ];
 
-            VertexAttribute* blitAttrs = stackalloc VertexAttribute[2];
-            blitAttrs[0] = new VertexAttribute { Format = VertexFormat.Float32x3, Offset = 0, ShaderLocation = 0 };
-            blitAttrs[1] = new VertexAttribute { Format = VertexFormat.Float32x2, Offset = 12, ShaderLocation = 1 };
+            var blitAttrs = stackalloc VertexAttribute[2];
+            blitAttrs[0] = new VertexAttribute
+            {
+                Format = VertexFormat.Float32x3,
+                Offset = 0,
+                ShaderLocation = 0
+            };
+            blitAttrs[1] = new VertexAttribute
+            {
+                Format = VertexFormat.Float32x2,
+                Offset = 12,
+                ShaderLocation = 1
+            };
 
             VertexBufferLayout blitLayout = new()
             {
                 ArrayStride = BlitQuadStride,
                 StepMode = VertexStepMode.Vertex,
                 AttributeCount = 2,
-                Attributes = blitAttrs,
+                Attributes = blitAttrs
             };
 
             _blitPipeline = new WgpuPipeline(
                 device, blitWgsl, "vs_main",
-                uniformSize: 64,
+                64,
                 blitUniformEntries,
                 blitTextureEntries,
                 &blitLayout, 1,
@@ -748,9 +781,6 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         }
     }
 
-    /// <summary>Position (3 floats) then texcoord (2 floats), as blit.wgsl declares them.</summary>
-    private const uint BlitQuadStride = 20;
-
     /// <summary>
     ///     The screen-covering quad the offscreen colour texture is sampled onto, in clip space.
     /// </summary>
@@ -759,27 +789,13 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         float[] vertices =
         [
             -1, -1, 0, 0, 1,
-             1, -1, 0, 1, 1,
-             1,  1, 0, 1, 0,
-             1,  1, 0, 1, 0,
-            -1,  1, 0, 0, 0,
-            -1, -1, 0, 0, 1,
+            1, -1, 0, 1, 1,
+            1, 1, 0, 1, 0,
+            1, 1, 0, 1, 0,
+            -1, 1, 0, 0, 0,
+            -1, -1, 0, 0, 1
         ];
 
         return new WgpuMesh(device, MemoryMarshal.AsBytes(vertices.AsSpan()), BlitQuadStride);
-    }
-
-    public void Dispose()
-    {
-        if (_disposed) return;
-        _disposed = true;
-
-        _offscreenFb?.Dispose();
-        _presentFb?.Dispose();
-        _blitPipeline?.Dispose();
-        _blitQuad?.Dispose();
-        _cloudBlurPass?.Dispose();
-        _drawTarget.Dispose();
-        _imguiWgpu?.Dispose();
     }
 }

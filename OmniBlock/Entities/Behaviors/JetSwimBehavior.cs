@@ -70,7 +70,7 @@ public sealed class JetSwimBehavior : IEntityPhysics, IEntityTicker
 
     public void AfterTickMovement(EntityLiving self)
     {
-        EntityState state = self.State;
+        var state = self.State;
         state[_previousTiltAngle] = state[_tiltAngle];
         state[_previousTentaclePhase] = state[_tentaclePhase];
         state[_previousTentacleSpread] = state[_tentacleSpread];
@@ -90,13 +90,13 @@ public sealed class JetSwimBehavior : IEntityPhysics, IEntityTicker
     /// <summary>Re-aims every so often, and always when stalled or out of water.</summary>
     public bool OnTickLiving(EntityLiving self)
     {
-        EntityState state = self.State;
-        bool stalled = state[_headingX] == 0.0F && state[_headingY] == 0.0F && state[_headingZ] == 0.0F;
+        var state = self.State;
+        var stalled = state[_headingX] == 0.0F && state[_headingY] == 0.0F && state[_headingZ] == 0.0F;
 
         // The plain flag, not the probing one: re-aiming must not push the mob.
         if (self.Random.NextInt(_rerollChanceOneIn) == 0 || !self.InWater || stalled)
         {
-            float angle = self.Random.NextFloat() * (float)Math.PI * 2.0F;
+            var angle = self.Random.NextFloat() * (float)Math.PI * 2.0F;
             state[_headingX] = MathHelper.Cos(angle) * _jetStrength;
             state[_headingY] = -_jetStrength / 2.0F + self.Random.NextFloat() * _jetStrength;
             state[_headingZ] = MathHelper.Sin(angle) * _jetStrength;
@@ -202,7 +202,7 @@ public sealed class JetSwimBehavior : IEntityPhysics, IEntityTicker
 
     private static float Interpolate(Entity self, StateHandle<float> previous, StateHandle<float> current, float tickDelta)
     {
-        EntityState state = self.State;
+        var state = self.State;
         return state[previous] + (state[current] - state[previous]) * tickDelta;
     }
 }

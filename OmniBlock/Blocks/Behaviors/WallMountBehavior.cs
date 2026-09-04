@@ -30,10 +30,12 @@ public sealed class WallMountBehavior(bool isLadder) : BlockRuntimeBehavior, IBl
         int x = @event.X, y = @event.Y, z = @event.Z;
 
         if (isLadder)
+        {
             return reader.ShouldSuffocate(x - 1, y, z) ||
                    reader.ShouldSuffocate(x + 1, y, z) ||
                    reader.ShouldSuffocate(x, y, z - 1) ||
                    reader.ShouldSuffocate(x, y, z + 1);
+        }
 
         return reader.ShouldSuffocate(x - 1, y, z) ||
                reader.ShouldSuffocate(x + 1, y, z) ||
@@ -98,10 +100,7 @@ public sealed class WallMountBehavior(bool isLadder) : BlockRuntimeBehavior, IBl
         }
     }
 
-    private bool CanPlaceOnGround(IBlockReader world, int x, int y, int z)
-    {
-        return world.ShouldSuffocate(x, y, z) || world.GetBlockId(x, y, z) == Blocks.Get("fence").Id;
-    }
+    private bool CanPlaceOnGround(IBlockReader world, int x, int y, int z) => world.ShouldSuffocate(x, y, z) || world.GetBlockId(x, y, z) == Blocks.Get("fence").Id;
 
     private static void OnLadderPlaced(OnPlacedEvent ctx)
     {
@@ -140,12 +139,12 @@ public sealed class WallMountBehavior(bool isLadder) : BlockRuntimeBehavior, IBl
                 meta = 1;
                 break;
             case Side.Down:
-            {
-                var resolved = TryResolveTorchMetaForDownPlacement(reader, @event.X, @event.Y, @event.Z, @event.Placer);
-                if (resolved.HasValue) meta = resolved.Value;
+                {
+                    var resolved = TryResolveTorchMetaForDownPlacement(reader, @event.X, @event.Y, @event.Z, @event.Placer);
+                    if (resolved.HasValue) meta = resolved.Value;
 
-                break;
-            }
+                    break;
+                }
         }
 
         @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);

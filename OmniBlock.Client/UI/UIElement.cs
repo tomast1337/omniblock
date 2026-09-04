@@ -4,12 +4,6 @@ namespace OmniBlock.Client.UI;
 
 public class UIElement
 {
-    /// <summary>
-    /// Stable, untranslated identifier used by UI automation. The stored value excludes the
-    /// selector's leading '#', for example <c>main.singleplayer</c>.
-    /// </summary>
-    public string? AutomationId { get; set; }
-
     public Action<UIMouseEvent>? OnClick;
     public Action<UIKeyEvent>? OnKeyDown;
 
@@ -20,6 +14,13 @@ public class UIElement
     public Action<UIMouseEvent>? OnMouseMove;
     public Action<UIMouseEvent>? OnMouseScroll;
     public Action<UIMouseEvent>? OnMouseUp;
+
+    /// <summary>
+    ///     Stable, untranslated identifier used by UI automation. The stored value excludes the
+    ///     selector's leading '#', for example <c>main.singleplayer</c>.
+    /// </summary>
+    public string? AutomationId { get; set; }
+
     public UIElement? Parent { get; set; }
     public List<UIElement> Children { get; } = [];
 
@@ -82,7 +83,7 @@ public class UIElement
 
     public virtual void Update(float partialTicks)
     {
-        foreach (UIElement child in Children)
+        foreach (var child in Children)
         {
             child.Update(partialTicks);
         }
@@ -95,7 +96,7 @@ public class UIElement
             renderer.DrawRect(0, 0, ComputedWidth, ComputedHeight, bg);
         }
 
-        foreach (UIElement child in Children)
+        foreach (var child in Children)
         {
             renderer.PushTranslate(child.ComputedX, child.ComputedY);
             child.Render(renderer);
@@ -120,9 +121,9 @@ public class UIElement
             return null;
         }
 
-        for (int i = Children.Count - 1; i >= 0; i--)
+        for (var i = Children.Count - 1; i >= 0; i--)
         {
-            UIElement? hit = Children[i].HitTest(screenX, screenY);
+            var hit = Children[i].HitTest(screenX, screenY);
             if (hit != null)
             {
                 return hit;
@@ -152,8 +153,8 @@ public class UIElement
 
     public bool ContainsPoint(float screenX, float screenY)
     {
-        float sx = ScreenX;
-        float sy = ScreenY;
+        var sx = ScreenX;
+        var sy = ScreenY;
         return screenX >= sx && screenX < sx + ComputedWidth &&
                screenY >= sy && screenY < sy + ComputedHeight;
     }

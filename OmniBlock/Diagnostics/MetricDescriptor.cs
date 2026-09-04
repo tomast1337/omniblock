@@ -1,14 +1,14 @@
 namespace OmniBlock.Diagnostics;
 
 /// <summary>
-/// Descriptor for a metric.
+///     Descriptor for a metric.
 /// </summary>
 public sealed class MetricDescriptor
 {
     public required ResourceLocation Key { get; init; }
 
     /// <summary>
-    /// Type this metric's value should be.
+    ///     Type this metric's value should be.
     /// </summary>
     public required Type ValueType { get; init; }
 
@@ -16,7 +16,7 @@ public sealed class MetricDescriptor
     internal Func<string> ValueString { get; init; } = null!;
 
     /// <summary>
-    /// Gets the string representation of this metric's value.
+    ///     Gets the string representation of this metric's value.
     /// </summary>
     public string Value => ValueString();
 }

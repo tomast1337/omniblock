@@ -5,14 +5,14 @@ namespace OmniBlock.Client.Rendering.Entities.Models;
 public class ModelBiped : BbModelEntityModel
 {
     public readonly ModelPart BipedBody;
+    public readonly ModelPart BipedCloak;
+    public readonly ModelPart BipedEars;
     public readonly ModelPart BipedHead;
     public readonly ModelPart BipedHeadwear;
     public readonly ModelPart BipedLeftArm;
     public readonly ModelPart BipedLeftLeg;
     public readonly ModelPart BipedRightArm;
     public readonly ModelPart BipedRightLeg;
-    public readonly ModelPart BipedEars;
-    public readonly ModelPart BipedCloak;
     public bool Field1278I;
     public bool Field1279H;
 
@@ -31,10 +31,16 @@ public class ModelBiped : BbModelEntityModel
         BipedLeftArm = GetPart("bipedLeftArm");
         BipedRightLeg = GetPart("bipedRightLeg");
         BipedLeftLeg = GetPart("bipedLeftLeg");
-        BipedEars = new ModelPart(24, 0) { Name = "bipedEars" };
+        BipedEars = new ModelPart(24, 0)
+        {
+            Name = "bipedEars"
+        };
         BipedEars.AddBox(-3.0f, -6.0f, -1.0f, 6, 6, 1, inflationOffset);
         RegisterExtraPart(BipedEars);
-        BipedCloak = new ModelPart(0, 0) { Name = "bipedCloak" };
+        BipedCloak = new ModelPart(0, 0)
+        {
+            Name = "bipedCloak"
+        };
         BipedCloak.AddBox(-5.0f, 0.0f, -1.0f, 10, 16, 1, inflationOffset);
         RegisterExtraPart(BipedCloak);
     }
@@ -48,12 +54,9 @@ public class ModelBiped : BbModelEntityModel
         BipedEars.Render(scale);
     }
 
-    public void RenderCloak(float scale)
-    {
-        BipedCloak.Render(scale);
-    }
+    public void RenderCloak(float scale) => BipedCloak.Render(scale);
 
-    public override void SetRotationAngles( float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)
+    public override void SetRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)
     {
         BipedHead.RotateAngleY = netHeadYaw / (180.0f / MathF.PI);
         BipedHead.RotateAngleX = headPitch / (180.0f / MathF.PI);
@@ -93,7 +96,7 @@ public class ModelBiped : BbModelEntityModel
 
         if (OnGround > -9990.0f)
         {
-            float swingProgress = OnGround;
+            var swingProgress = OnGround;
             BipedBody.RotateAngleY = MathHelper.Sin(MathHelper.Sqrt(swingProgress) * MathF.PI * 2.0f) * 0.2f;
             BipedRightArm.RotationPointZ = MathHelper.Sin(BipedBody.RotateAngleY) * 5.0f;
             BipedRightArm.RotationPointX = -MathHelper.Cos(BipedBody.RotateAngleY) * 5.0f;
@@ -106,8 +109,8 @@ public class ModelBiped : BbModelEntityModel
             swingProgress *= swingProgress;
             swingProgress *= swingProgress;
             swingProgress = 1.0f - swingProgress;
-            float attackSwing = MathHelper.Sin(swingProgress * MathF.PI);
-            float headOffset = MathHelper.Sin(OnGround * MathF.PI) * -(BipedHead.RotateAngleX - 0.7f) * (12.0f / 16.0f);
+            var attackSwing = MathHelper.Sin(swingProgress * MathF.PI);
+            var headOffset = MathHelper.Sin(OnGround * MathF.PI) * -(BipedHead.RotateAngleX - 0.7f) * (12.0f / 16.0f);
             BipedRightArm.RotateAngleX -= (float)(attackSwing * 1.2d + headOffset);
             BipedRightArm.RotateAngleY += BipedBody.RotateAngleY * 2.0f;
             BipedRightArm.RotateAngleZ = MathHelper.Sin(OnGround * MathF.PI) * -0.4f;

@@ -21,13 +21,13 @@ internal class LavaSprite() : Rendering.Core.Textures.DynamicTexture(BlockRegist
             return;
         }
 
-        for (int x = 0; x < 16; ++x)
+        for (var x = 0; x < 16; ++x)
         {
-            for (int y = 0; y < 16; ++y)
+            for (var y = 0; y < 16; ++y)
             {
-                float accumulatedHeat = 0.0F;
-                int distortX = (int)(MathHelper.Sin(y * (float)Math.PI * 2.0F / 16.0F) * 1.2F);
-                int distortY = (int)(MathHelper.Sin(x * (float)Math.PI * 2.0F / 16.0F) * 1.2F);
+                var accumulatedHeat = 0.0F;
+                var distortX = (int)(MathHelper.Sin(y * (float)Math.PI * 2.0F / 16.0F) * 1.2F);
+                var distortY = (int)(MathHelper.Sin(x * (float)Math.PI * 2.0F / 16.0F) * 1.2F);
 
                 int nx;
                 for (nx = x - 1; nx <= x + 1; ++nx)
@@ -35,8 +35,8 @@ internal class LavaSprite() : Rendering.Core.Textures.DynamicTexture(BlockRegist
                     int ny;
                     for (ny = y - 1; ny <= y + 1; ++ny)
                     {
-                        int sampleX = (nx + distortX) & 15;
-                        int sampleY = (ny + distortY) & 15;
+                        var sampleX = (nx + distortX) & 15;
+                        var sampleY = (ny + distortY) & 15;
                         accumulatedHeat += _current[sampleX + sampleY * 16];
                     }
                 }
@@ -61,9 +61,9 @@ internal class LavaSprite() : Rendering.Core.Textures.DynamicTexture(BlockRegist
 
         (_next, _current) = (_current, _next);
 
-        for (int pixelIndex = 0; pixelIndex < 256; ++pixelIndex)
+        for (var pixelIndex = 0; pixelIndex < 256; ++pixelIndex)
         {
-            float intensity = _current[pixelIndex] * 2.0F;
+            var intensity = _current[pixelIndex] * 2.0F;
 
             if (intensity > 1.0F)
             {
@@ -75,9 +75,9 @@ internal class LavaSprite() : Rendering.Core.Textures.DynamicTexture(BlockRegist
                 intensity = 0.0F;
             }
 
-            int r = (int)(intensity * 100.0F + 155.0F);
-            int g = (int)(intensity * intensity * 255.0F);
-            int b = (int)(intensity * intensity * intensity * intensity * 128.0F);
+            var r = (int)(intensity * 100.0F + 155.0F);
+            var g = (int)(intensity * intensity * 255.0F);
+            var b = (int)(intensity * intensity * intensity * intensity * 128.0F);
 
             Pixels[pixelIndex * 4 + 0] = (byte)r;
             Pixels[pixelIndex * 4 + 1] = (byte)g;

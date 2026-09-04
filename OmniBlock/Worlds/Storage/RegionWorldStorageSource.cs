@@ -1,7 +1,7 @@
+using Microsoft.Extensions.Logging;
 using OmniBlock.NBT;
 using OmniBlock.Worlds.Chunks.Storage;
 using OmniBlock.Worlds.Core.Systems;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Worlds.Storage;
 
@@ -30,15 +30,15 @@ public class RegionWorldStorageSource : IWorldStorageSource
             return saves;
         }
 
-        foreach (DirectoryInfo subDir in BaseDir.GetDirectories())
+        foreach (var subDir in BaseDir.GetDirectories())
         {
-            string folderName = subDir.Name;
-            WorldProperties? props = GetProperties(folderName);
+            var folderName = subDir.Name;
+            var props = GetProperties(folderName);
 
             if (props != null)
             {
-                bool requiresConversion = props.SaveVersion != 19132;
-                string displayName = string.IsNullOrEmpty(props.LevelName) ? folderName : props.LevelName;
+                var requiresConversion = props.SaveVersion != 19132;
+                var displayName = string.IsNullOrEmpty(props.LevelName) ? folderName : props.LevelName;
 
                 saves.Add(new WorldSaveInfo(
                     folderName,
@@ -66,7 +66,7 @@ public class RegionWorldStorageSource : IWorldStorageSource
 
         string[] searchFiles = { "level.dat", "level.dat_old" };
 
-        foreach (string fileName in searchFiles)
+        foreach (var fileName in searchFiles)
         {
             FileInfo file = new(Path.Combine(worldDir.FullName, fileName));
             if (!file.Exists)
@@ -76,9 +76,9 @@ public class RegionWorldStorageSource : IWorldStorageSource
 
             try
             {
-                using FileStream stream = file.OpenRead();
-                NBTTagCompound root = NbtIo.ReadCompressed(stream);
-                NBTTagCompound data = root.GetCompoundTag("Data");
+                using var stream = file.OpenRead();
+                var root = NbtIo.ReadCompressed(stream);
+                var data = root.GetCompoundTag("Data");
 
                 WorldProperties properties = new(data)
                 {
@@ -106,7 +106,7 @@ public class RegionWorldStorageSource : IWorldStorageSource
         try
         {
             NBTTagCompound root;
-            using (FileStream readStream = file.OpenRead())
+            using (var readStream = file.OpenRead())
             {
                 root = NbtIo.ReadCompressed(readStream);
             }
@@ -136,12 +136,12 @@ public class RegionWorldStorageSource : IWorldStorageSource
     private static long GetFolderSize(DirectoryInfo folder)
     {
         long size = 0;
-        foreach (FileInfo file in folder.GetFiles())
+        foreach (var file in folder.GetFiles())
         {
             size += file.Length;
         }
 
-        foreach (DirectoryInfo subDir in folder.GetDirectories())
+        foreach (var subDir in folder.GetDirectories())
         {
             size += GetFolderSize(subDir);
         }

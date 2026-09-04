@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 
 namespace OmniBlock.Client;
@@ -16,14 +17,14 @@ internal sealed record ClientLaunchOptions(
 
         string? username = null;
         string? token = null;
-        bool debug = false;
+        var debug = false;
         string? startupScriptPath = null;
         string? e2eScriptPath = null;
         double e2eTimeoutSeconds = 60;
-        bool e2eTimeoutSpecified = false;
+        var e2eTimeoutSpecified = false;
         string? e2eArtifactsPath = null;
 
-        for (int i = 0; i < args.Length; i++)
+        for (var i = 0; i < args.Length; i++)
         {
             switch (args[i])
             {
@@ -41,13 +42,14 @@ internal sealed record ClientLaunchOptions(
                     break;
                 case "--e2e-timeout":
                     e2eTimeoutSpecified = true;
-                    string timeout = ReadValue(args, ref i, "--e2e-timeout");
-                    if (!double.TryParse(timeout, System.Globalization.NumberStyles.Float,
-                            System.Globalization.CultureInfo.InvariantCulture, out e2eTimeoutSeconds) ||
+                    var timeout = ReadValue(args, ref i, "--e2e-timeout");
+                    if (!double.TryParse(timeout, NumberStyles.Float,
+                            CultureInfo.InvariantCulture, out e2eTimeoutSeconds) ||
                         !double.IsFinite(e2eTimeoutSeconds) || e2eTimeoutSeconds <= 0 || e2eTimeoutSeconds > 86_400)
                     {
                         throw new ArgumentException("--e2e-timeout requires a finite number greater than zero and no more than 86400.", nameof(args));
                     }
+
                     break;
                 case "--e2e-artifacts":
                     e2eArtifactsPath = ReadValue(args, ref i, "--e2e-artifacts");
@@ -72,11 +74,11 @@ internal sealed record ClientLaunchOptions(
             throw new ArgumentException("--e2e-timeout and --e2e-artifacts require --e2e-script.", nameof(args));
         }
 
-        StartupScript? startupScript = startupScriptPath == null
+        var startupScript = startupScriptPath == null
             ? null
             : LoadStartupScript(startupScriptPath);
 
-        E2ETestLaunchOptions? e2eTest = e2eScriptPath == null
+        var e2eTest = e2eScriptPath == null
             ? null
             : new E2ETestLaunchOptions(
                 LoadStartupScript(e2eScriptPath),
@@ -98,7 +100,7 @@ internal sealed record ClientLaunchOptions(
 
     private static StartupScript LoadStartupScript(string path)
     {
-        string fullPath = Path.GetFullPath(path);
+        var fullPath = Path.GetFullPath(path);
 
         try
         {

@@ -1,10 +1,11 @@
+using System.Numerics;
+using Hexa.NET.ImGui;
 using OmniBlock.Blocks;
 using OmniBlock.Diagnostics;
 using OmniBlock.Util.Hit;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
-using Hexa.NET.ImGui;
 
 namespace OmniBlock.Client.Diagnostics.Windows;
 
@@ -52,7 +53,7 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
     /// </remarks>
     private void DrawTargetedBlockSection()
     {
-        HitResult hit = ctx.ObjectMouseOver;
+        var hit = ctx.ObjectMouseOver;
 
         if (hit.Type != HitResultType.Tile || ctx.World == null)
         {
@@ -61,7 +62,7 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
         }
 
         int x = hit.BlockX, y = hit.BlockY, z = hit.BlockZ;
-        World world = ctx.World;
+        var world = ctx.World;
 
         ImGuiTextSafe.Text($"Pos:   {x}, {y}, {z}");
         ImGuiTextSafe.Text($"Id:    {world.Reader.GetBlockId(x, y, z)}  meta {world.Reader.GetBlockMeta(x, y, z)}");
@@ -85,7 +86,7 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
             ImGuiTextSafe.Text($"Height:  {world.BlockHost.GetChunk(x >> 4, z >> 4).GetHeight(x & 15, z & 15)}");
         }
 
-        if (ctx.ChunkRenderer != null && ctx.ChunkRenderer.TryGetMeshState(x, y, z, out (long Epoch, long LastMeshed, long Pending) state, out bool hasRenderer))
+        if (ctx.ChunkRenderer != null && ctx.ChunkRenderer.TryGetMeshState(x, y, z, out var state, out var hasRenderer))
         {
             ImGuiTextSafe.Text($"Mesh:  epoch {state.Epoch}  meshed {state.LastMeshed}  pending {state.Pending}");
             ImGuiTextSafe.Text($"       renderer {(hasRenderer ? "yes" : "no")}");
@@ -93,7 +94,7 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
             if (state.Epoch != state.LastMeshed && state.Pending == -1)
             {
                 ImGuiTextSafe.TextColored(
-                    new(1.0f, 0.4f, 0.4f, 1.0f),
+                    new Vector4(1.0f, 0.4f, 0.4f, 1.0f),
                     "       dirty with nothing queued: the screen is behind the world");
             }
         }
@@ -111,9 +112,9 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
     /// </remarks>
     private static void DrawCell(string label, World world, int x, int y, int z)
     {
-        int id = world.Reader.GetBlockId(x, y, z);
-        LightLevels levels = StoredLight(world, x, y, z);
-        bool opaque = !BlockRegistry.AllowsVision(id);
+        var id = world.Reader.GetBlockId(x, y, z);
+        var levels = StoredLight(world, x, y, z);
+        var opaque = !BlockRegistry.AllowsVision(id);
 
         ImGuiTextSafe.Text($"{label} id {id,3}  {(opaque ? "opaque" : "see-thru")}  sky {levels.Sky,2}  block {levels.Block,2}");
     }
@@ -132,7 +133,7 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
             return default;
         }
 
-        byte packed = world.BlockHost.GetChunk(x >> 4, z >> 4).GetPackedLight(x & 15, y, z & 15);
+        var packed = world.BlockHost.GetChunk(x >> 4, z >> 4).GetPackedLight(x & 15, y, z & 15);
         return LightLevels.Of((packed >> 4) & 0xF, packed & 0xF);
     }
 
@@ -150,7 +151,7 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
         ImGui.Spacing();
         if (ctx.ChunkRenderer is { } chunkRenderer)
         {
-            bool wireframe = chunkRenderer.WireframeEnabled;
+            var wireframe = chunkRenderer.WireframeEnabled;
             if (ImGui.Checkbox("Wireframe", ref wireframe))
             {
                 chunkRenderer.WireframeEnabled = wireframe;

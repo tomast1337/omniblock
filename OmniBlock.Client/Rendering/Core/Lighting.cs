@@ -5,10 +5,7 @@ namespace OmniBlock.Client.Rendering.Core;
 
 public class Lighting
 {
-    public static void turnOff()
-    {
-        GLManager.LightingEnabled = false;
-    }
+    public static void turnOff() => GLManager.LightingEnabled = false;
 
     public static void turnOnGui()
     {
@@ -22,14 +19,14 @@ public class Lighting
     {
         const float ambient = 0.4F;
         const float diffuse = 0.6F;
-        float mx = mirrored ? -1.0f : 1.0f;
+        var mx = mirrored ? -1.0f : 1.0f;
 
         GLManager.LightingEnabled = true;
         GLManager.ShadeModel = ShadeModel.Flat;
         GLManager.Lighting = new LightingState(
-            EyeSpace(new Vec3D((double)(0.2F * mx), 1.0D, (double)-0.7F)),
+            EyeSpace(new Vec3D(0.2F * mx, 1.0D, -0.7F)),
             new Vector3D<float>(diffuse, diffuse, diffuse),
-            EyeSpace(new Vec3D((double)(-0.2F * mx), 1.0D, (double)0.7F)),
+            EyeSpace(new Vec3D(-0.2F * mx, 1.0D, 0.7F)),
             new Vector3D<float>(diffuse, diffuse, diffuse),
             new Vector3D<float>(ambient, ambient, ambient));
     }
@@ -45,16 +42,16 @@ public class Lighting
     /// </remarks>
     private static Vector3D<float> EyeSpace(Vec3D direction)
     {
-        Vec3D unit = direction.Normalize();
+        var unit = direction.Normalize();
         float x = (float)unit.X, y = (float)unit.Y, z = (float)unit.Z;
 
-        Matrix4X4<float> mv = GLManager.ModelView.Top;
+        var mv = GLManager.ModelView.Top;
         Vector3D<float> eye = new(
             x * mv.M11 + y * mv.M21 + z * mv.M31,
             x * mv.M12 + y * mv.M22 + z * mv.M32,
             x * mv.M13 + y * mv.M23 + z * mv.M33);
 
-        float length = MathF.Sqrt(eye.X * eye.X + eye.Y * eye.Y + eye.Z * eye.Z);
+        var length = MathF.Sqrt(eye.X * eye.X + eye.Y * eye.Y + eye.Z * eye.Z);
         return length > 0 ? eye / length : eye;
     }
 }

@@ -2,6 +2,7 @@ using OmniBlock.Client.Chunks;
 using OmniBlock.Client.Network;
 using OmniBlock.Entities;
 using OmniBlock.Network.Messages;
+using OmniBlock.Registries;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds;
 using OmniBlock.Worlds.Chunks;
@@ -9,25 +10,20 @@ using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Dimensions;
 using OmniBlock.Worlds.Storage;
-using OmniBlock.Registries;
 
 namespace OmniBlock.Client.Worlds;
 
 public class ClientWorld : World
 {
     private readonly List<BlockReset> _blockResets = [];
-    private readonly ClientNetworkHandler _networkHandler;
-
-    /// <summary>The connection feeding this world. Exposed for the renderer's per-frame
-    ///     interpolation sample, which has no other route to it.</summary>
-    public ClientNetworkHandler NetworkHandler => _networkHandler;
-    private MultiplayerChunkCache _chunkCache;
     private readonly HashSet<Entity> forcedEntities = [];
     private readonly HashSet<Entity> pendingEntities = [];
+    private MultiplayerChunkCache _chunkCache;
 
-    public ClientWorld(ClientNetworkHandler netHandler, long seed, int dimId, ContentRuntime? content = null) : base(new EmptyWorldStorage(), "MpServer", new WorldSettings(seed, WorldType.Default, ""), Dimension.FromId(dimId), content ?? ContentRuntime.Current)
+    public ClientWorld(ClientNetworkHandler netHandler, long seed, int dimId, ContentRuntime? content = null) : base(new EmptyWorldStorage(), "MpServer", new WorldSettings(seed, WorldType.Default), Dimension.FromId(dimId),
+        content ?? ContentRuntime.Current)
     {
-        _networkHandler = netHandler;
+        NetworkHandler = netHandler;
         SetSpawnPos(new Vec3I(8, 64, 8));
 
         StateManager = netHandler.ClientPersistentStateManager;
@@ -36,22 +32,28 @@ public class ClientWorld : World
         Writer.OnBlockChangedWithPrev += HandleBlockChanged;
     }
 
+    /// <summary>
+    ///     The connection feeding this world. Exposed for the renderer's per-frame
+    ///     interpolation sample, which has no other route to it.
+    /// </summary>
+    public ClientNetworkHandler NetworkHandler { get; }
+
     public override void Tick()
     {
         SetTime(GetTime() + 1L);
 
         Environment.UpdateWeatherCycles();
 
-        int ambient = Environment.GetAmbientDarkness(1.0F);
+        var ambient = Environment.GetAmbientDarkness(1.0F);
         if (ambient != Environment.AmbientDarkness)
         {
             Environment.AmbientDarkness = ambient;
             Broadcaster.NotifyAmbientDarknessChanged();
         }
 
-        for (int i = 0; i < 10 && pendingEntities.Count > 0; ++i)
+        for (var i = 0; i < 10 && pendingEntities.Count > 0; ++i)
         {
-            Entity entity = pendingEntities.First();
+            var entity = pendingEntities.First();
             if (!Entities.Entities.Contains(entity))
             {
                 SpawnOrQueueEntity(entity);
@@ -62,11 +64,11 @@ public class ClientWorld : World
             }
         }
 
-        _networkHandler.Tick();
+        NetworkHandler.Tick();
 
-        for (int i = 0; i < _blockResets.Count; ++i)
+        for (var i = 0; i < _blockResets.Count; ++i)
         {
-            BlockReset blockReset = _blockResets[i];
+            var blockReset = _blockResets[i];
             if (--blockReset.Delay == 0)
             {
                 Writer.OnBlockChangedWithPrev -= HandleBlockChanged;
@@ -83,9 +85,9 @@ public class ClientWorld : World
 
     public void ClearBlockResets(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
-        for (int i = 0; i < _blockResets.Count; ++i)
+        for (var i = 0; i < _blockResets.Count; ++i)
         {
-            BlockReset br = _blockResets[i];
+            var br = _blockResets[i];
             if (br.X >= minX && br.Y >= minY && br.Z >= minZ &&
                 br.X <= maxX && br.Y <= maxY && br.Z <= maxZ)
             {
@@ -135,7 +137,7 @@ public class ClientWorld : World
     /// </remarks>
     private bool SpawnOrQueueEntity(Entity entity)
     {
-        bool spawned = Entities.SpawnEntity(entity);
+        var spawned = Entities.SpawnEntity(entity);
         forcedEntities.Add(entity);
         if (!spawned)
         {
@@ -167,14 +169,11 @@ public class ClientWorld : World
         }
     }
 
-    private void HandleBlockChanged(int x, int y, int z, int previousId, int previousMeta, int newId, int newMeta)
-    {
-        _blockResets.Add(new BlockReset(this, x, y, z, previousId, previousMeta));
-    }
+    private void HandleBlockChanged(int x, int y, int z, int previousId, int previousMeta, int newId, int newMeta) => _blockResets.Add(new BlockReset(this, x, y, z, previousId, previousMeta));
 
     public void ForceEntity(int networkId, Entity ent)
     {
-        Entity? existingEnt = GetEntity(networkId);
+        var existingEnt = GetEntity(networkId);
         if (existingEnt != null)
         {
             forcedEntities.Remove(existingEnt);
@@ -190,14 +189,11 @@ public class ClientWorld : World
         }
     }
 
-    public Entity? GetEntity(int networkId)
-    {
-        return Entities.GetEntityByID(networkId);
-    }
+    public Entity? GetEntity(int networkId) => Entities.GetEntityByID(networkId);
 
     public Entity? RemoveEntityFromWorld(int networkId)
     {
-        Entity? ent = GetEntity(networkId);
+        var ent = GetEntity(networkId);
         if (ent != null)
         {
             forcedEntities.Remove(ent);
@@ -232,7 +228,10 @@ public class ClientWorld : World
 
     public override void Disconnect()
     {
-        _networkHandler.SendMessage(new DisconnectMessage { Reason = "Quitting" });
-        _networkHandler.Disconnect();
+        NetworkHandler.SendMessage(new DisconnectMessage
+        {
+            Reason = "Quitting"
+        });
+        NetworkHandler.Disconnect();
     }
 }

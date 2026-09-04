@@ -33,15 +33,15 @@ public sealed class LuauConfigHostIntegrationTests
         try
         {
             // The UI bootstrap owns the top-level client environment; config augments it.
-            Assert.True(state.TryExecute(LuauDomHost.Bootstrap, out string omniError), omniError);
+            Assert.True(state.TryExecute(LuauDomHost.Bootstrap, out var omniError), omniError);
             LuauConfigHost.Install(state.Handle);
-            Assert.True(state.TryExecute(LuauConfigHost.Bootstrap, out string configError), configError);
+            Assert.True(state.TryExecute(LuauConfigHost.Bootstrap, out var configError), configError);
 
-            Assert.True(state.TryExecute("OMNI.config.music = 0.25", out string setMusic), setMusic);
-            Assert.True(state.TryExecute("OMNI.config.vsync = true", out string setVsync), setVsync);
-            Assert.True(state.TryExecute("OMNI.config.language = \"pt_br\"", out string setLanguage), setLanguage);
-            Assert.True(state.TryExecute("OMNI.config.music", out string music), music);
-            Assert.True(state.TryExecute("table.concat(OMNI.config.options(\"language\"), \",\")", out string languages), languages);
+            Assert.True(state.TryExecute("OMNI.config.music = 0.25", out var setMusic), setMusic);
+            Assert.True(state.TryExecute("OMNI.config.vsync = true", out var setVsync), setVsync);
+            Assert.True(state.TryExecute("OMNI.config.language = \"pt_br\"", out var setLanguage), setLanguage);
+            Assert.True(state.TryExecute("OMNI.config.music", out var music), music);
+            Assert.True(state.TryExecute("table.concat(OMNI.config.options(\"language\"), \",\")", out var languages), languages);
 
             Assert.Equal(0.25, values["music"].Number);
             Assert.True(values["vsync"].Boolean);

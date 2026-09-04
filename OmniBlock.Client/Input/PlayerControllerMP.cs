@@ -13,19 +13,16 @@ namespace OmniBlock.Client.Input;
 
 public class PlayerControllerMP : PlayerController
 {
-    private Vec3I _targetBlockPos = new();
-    private float _curBlockDamageMp;
-    private float _prevBlockDamageMp;
-    private byte _mineSoundTimer;
-    private int _blockHitDelay;
-    private bool _isHittingBlock;
     private readonly ClientNetworkHandler _netClientHandler;
+    private int _blockHitDelay;
+    private float _curBlockDamageMp;
     private int _currentPlayerItem;
+    private bool _isHittingBlock;
+    private byte _mineSoundTimer;
+    private float _prevBlockDamageMp;
+    private Vec3I _targetBlockPos;
 
-    public PlayerControllerMP(OmniBlock game, ClientNetworkHandler networkHandler) : base(game)
-    {
-        _netClientHandler = networkHandler;
-    }
+    public PlayerControllerMP(OmniBlock game, ClientNetworkHandler networkHandler) : base(game) => _netClientHandler = networkHandler;
 
     public override void FlipPlayer(EntityPlayer playerEntity)
     {
@@ -37,9 +34,9 @@ public class PlayerControllerMP : PlayerController
     {
         if (!Game.Player.GameMode.CanBreak) return false;
 
-        int blockId = Game.World.Reader.GetBlockId(x, y, z);
-        bool blockRemoved = base.SendBlockRemoved(x, y, z, direction);
-        ItemStack? hand = Game.Player.GetHand();
+        var blockId = Game.World.Reader.GetBlockId(x, y, z);
+        var blockRemoved = base.SendBlockRemoved(x, y, z, direction);
+        var hand = Game.Player.GetHand();
         if (hand != null)
         {
             hand.PostMine(blockId, x, y, z, Game.Player);
@@ -58,7 +55,7 @@ public class PlayerControllerMP : PlayerController
         if (!_isHittingBlock || x != _targetBlockPos.X || y != _targetBlockPos.Y || z != _targetBlockPos.Z)
         {
             _netClientHandler.SendMessage(PlayerAction(PlayerActionMessage.Actions.BlockClick, x, y, z, direction));
-            int blockId = Game.World.Reader.GetBlockId(x, y, z);
+            var blockId = Game.World.Reader.GetBlockId(x, y, z);
             if (blockId > 0 && _curBlockDamageMp == 0.0F && Game.Player.GameMode.CanInteract)
             {
                 BlockRegistry.GetByProtocolId(blockId).OnBlockBreakStart(new OnBlockBreakStartEvent(Game.World, Game.Player, x, y, z));
@@ -68,7 +65,7 @@ public class PlayerControllerMP : PlayerController
 
             if (blockId > 0 && BlockRegistry.GetByProtocolId(blockId).GetHardness(Game.Player) >= Game.Player.GameMode.BreakSpeed)
             {
-                int meta = Game.World.Reader.GetBlockMeta(x, y, z);
+                var meta = Game.World.Reader.GetBlockMeta(x, y, z);
                 if (SendBlockRemoved(x, y, z, direction))
                 {
                     Game.WorldRenderer.WorldEventBreak(blockId, meta, x, y, z);
@@ -106,14 +103,14 @@ public class PlayerControllerMP : PlayerController
                 {
                     if (!Game.Player.GameMode.CanBreak) return;
 
-                    int blockId = Game.World.Reader.GetBlockId(x, y, z);
+                    var blockId = Game.World.Reader.GetBlockId(x, y, z);
                     if (blockId == 0)
                     {
                         _isHittingBlock = false;
                         return;
                     }
 
-                    Block? block = BlockRegistry.GetByProtocolId(blockId);
+                    var block = BlockRegistry.GetByProtocolId(blockId);
 
                     // If it's an unknown block id, break behavior will be handled on server.
                     if (block == null)
@@ -163,7 +160,7 @@ public class PlayerControllerMP : PlayerController
         }
         else
         {
-            float partialDamage = _prevBlockDamageMp + (_curBlockDamageMp - _prevBlockDamageMp) * tickDelta;
+            var partialDamage = _prevBlockDamageMp + (_curBlockDamageMp - _prevBlockDamageMp) * tickDelta;
             Game.WorldRenderer.DamagePartialTime = partialDamage;
         }
     }
@@ -177,11 +174,14 @@ public class PlayerControllerMP : PlayerController
 
     private void SyncCurrentPlayItem()
     {
-        int selectedSlot = Game.Player.Inventory.SelectedSlot;
+        var selectedSlot = Game.Player.Inventory.SelectedSlot;
         if (selectedSlot != _currentPlayerItem)
         {
             _currentPlayerItem = selectedSlot;
-            _netClientHandler.SendMessage(new SelectedSlotMessage { Slot = (short)_currentPlayerItem });
+            _netClientHandler.SendMessage(new SelectedSlotMessage
+            {
+                Slot = (short)_currentPlayerItem
+            });
         }
     }
 
@@ -197,7 +197,7 @@ public class PlayerControllerMP : PlayerController
     {
         SyncCurrentPlayItem();
         _netClientHandler.SendMessage(InteractBlock(blockX, blockY, blockZ, blockSide, player.Inventory.ItemInHand));
-        bool placed = base.SendPlaceBlock(player, world, selectedItem, blockX, blockY, blockZ, blockSide);
+        var placed = base.SendPlaceBlock(player, world, selectedItem, blockX, blockY, blockZ, blockSide);
         return placed;
     }
 
@@ -205,7 +205,7 @@ public class PlayerControllerMP : PlayerController
     {
         SyncCurrentPlayItem();
         _netClientHandler.SendMessage(InteractBlock(-1, -1, -1, 255, player.Inventory.ItemInHand));
-        bool usedItem = base.SendUseItem(player, world, stack);
+        var usedItem = base.SendUseItem(player, world, stack);
         return usedItem;
     }
 
@@ -228,8 +228,8 @@ public class PlayerControllerMP : PlayerController
 
     public override ItemStack OnSlotClick(int windowId, int slotIndex, int mouseButton, bool shiftClick, EntityPlayer player)
     {
-        short revision = player.CurrentScreenHandler.nextRevision(player.Inventory);
-        ItemStack resultStack = base.OnSlotClick(windowId, slotIndex, mouseButton, shiftClick, player);
+        var revision = player.CurrentScreenHandler.nextRevision(player.Inventory);
+        var resultStack = base.OnSlotClick(windowId, slotIndex, mouseButton, shiftClick, player);
         _netClientHandler.SendMessage(new ClickSlotMessage
         {
             SyncId = (sbyte)windowId,
@@ -237,14 +237,16 @@ public class PlayerControllerMP : PlayerController
             Button = (sbyte)mouseButton,
             ActionType = revision,
             HoldingShift = shiftClick,
-            Stack = resultStack,
+            Stack = resultStack
         });
         return resultStack;
     }
 
     public override void OnGuiClosed(int windowId, EntityPlayer player)
     {
-        if (windowId != -9999) { }
+        if (windowId != -9999)
+        {
+        }
     }
 
     /// <summary>
@@ -254,13 +256,13 @@ public class PlayerControllerMP : PlayerController
     /// </summary>
     private static PlayerActionMessage PlayerAction(
         PlayerActionMessage.Actions action, int x, int y, int z, int direction) => new()
-        {
-            Action = (byte)action,
-            X = x,
-            Y = (byte)y,
-            Z = z,
-            Direction = (byte)direction,
-        };
+    {
+        Action = (byte)action,
+        X = x,
+        Y = (byte)y,
+        Z = z,
+        Direction = (byte)direction
+    };
 
     /// <summary>Side 255 with x, y and z at -1 is the "used an item with no block in front" case.</summary>
     private static InteractBlockMessage InteractBlock(int x, int y, int z, int side, ItemStack? stack) => new()
@@ -269,6 +271,6 @@ public class PlayerControllerMP : PlayerController
         Y = (byte)y,
         Z = z,
         Side = (byte)side,
-        Stack = stack,
+        Stack = stack
     };
 }

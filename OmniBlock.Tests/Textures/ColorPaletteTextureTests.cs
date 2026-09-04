@@ -30,9 +30,9 @@ public sealed class ColorPaletteTextureTests
     [Fact]
     public void Wool_texture_per_block_meta_matches_the_legacy_palette_walk()
     {
-        Block wool = TestBlocks.Get("wool");
+        var wool = TestBlocks.Get("wool");
 
-        for (int meta = 0; meta < 16; meta++)
+        for (var meta = 0; meta < 16; meta++)
         {
             Assert.Equal(Atlases.Terrain.IndexOf(s_woolByBlockMeta[meta]), wool.GetTexture(Side.North, meta));
         }
@@ -41,9 +41,9 @@ public sealed class ColorPaletteTextureTests
     [Fact]
     public void Dye_texture_per_damage_matches_the_legacy_palette_walk()
     {
-        Item dye = ContentRuntime.Current.Items.Get("omniblock:dye_powder");
+        var dye = ContentRuntime.Current.Items.Get("omniblock:dye_powder");
 
-        for (int damage = 0; damage < 16; damage++)
+        for (var damage = 0; damage < 16; damage++)
         {
             Assert.Equal(Atlases.Items.IndexOf(s_dyeByDamage[damage]), dye.GetTextureId(damage));
         }
@@ -63,10 +63,10 @@ public sealed class ColorPaletteTextureTests
             "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
         ];
 
-        Item dye = ContentRuntime.Current.Items.Get("omniblock:dye_powder");
-        int inkSac = Atlases.Items.IndexOf("ink_sac");
+        var dye = ContentRuntime.Current.Items.Get("omniblock:dye_powder");
+        var inkSac = Atlases.Items.IndexOf("ink_sac");
 
-        for (int damage = 0; damage < 16; damage++)
+        for (var damage = 0; damage < 16; damage++)
         {
             Assert.Equal(inkSac + damage % 8 * 16 + damage / 8, dye.GetTextureId(damage));
             Assert.EndsWith("." + expected[damage], dye.GetItemNameIs(new ItemStack(dye, 1, damage)), StringComparison.Ordinal);

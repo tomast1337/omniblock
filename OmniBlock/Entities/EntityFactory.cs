@@ -1,6 +1,5 @@
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.Entities.State;
-using System.Text.Json;
 
 namespace OmniBlock.Entities;
 
@@ -28,12 +27,12 @@ internal static class EntityFactory
         EntityBehaviorBuildContext context = new(
             definition, layout, dependencies.Blocks, dependencies.Items, dependencies.EntityTypes, providers);
 
-        foreach (JsonElement entry in definition.Behaviors)
+        foreach (var entry in definition.Behaviors)
         {
-            string providerName = entry.TryGetProperty("Type", out JsonElement typeElement)
+            var providerName = entry.TryGetProperty("Type", out var typeElement)
                 ? typeElement.GetString() ?? "<null>"
                 : "<missing>";
-            ResourceLocation? providerType = ResourceLocation.TryParse(providerName, out ResourceLocation? parsed)
+            var providerType = ResourceLocation.TryParse(providerName, out var parsed)
                 ? parsed
                 : null;
             if (providerType is not null && !providerName.Contains(':'))
@@ -47,20 +46,20 @@ internal static class EntityFactory
             }
             catch (Exception ex)
             {
-                string owner = new ResourceLocation(definition.Namespace, definition.Name).ToString();
+                var owner = new ResourceLocation(definition.Namespace, definition.Name).ToString();
                 throw new ArgumentException(
                     $"Entity '{owner}' behavior '{providerType?.ToString() ?? providerName}': {ex.Message}", ex);
             }
 
-            if (!entry.TryGetProperty("Slots", out JsonElement slots) || slots.GetArrayLength() == 0)
+            if (!entry.TryGetProperty("Slots", out var slots) || slots.GetArrayLength() == 0)
             {
                 throw new ArgumentException($"Behavior {entry} on '{definition.Name}' names no slots.");
             }
 
-            foreach (JsonElement slotElement in slots.EnumerateArray())
+            foreach (var slotElement in slots.EnumerateArray())
             {
-                string slot = slotElement.GetString()
-                              ?? throw new ArgumentException($"Behavior on '{definition.Name}' has a null slot.");
+                var slot = slotElement.GetString()
+                           ?? throw new ArgumentException($"Behavior on '{definition.Name}' has a null slot.");
                 if (!occupiedSlots.Add(slot))
                     throw new ArgumentException($"Entity '{definition.Name}' declares duplicate behavior slot '{slot}'.");
                 Attach(set, definition, entityType, slot, behavior);

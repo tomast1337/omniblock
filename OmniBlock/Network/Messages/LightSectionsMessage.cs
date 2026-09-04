@@ -64,10 +64,10 @@ public sealed class LightSectionsMessage : Message
     {
         ArgumentNullException.ThrowIfNull(chunk);
 
-        byte[] raw = new byte[BitOperations.PopCount(sections) * Chunk.LightSectionPayloadBytes];
-        int offset = 0;
+        var raw = new byte[BitOperations.PopCount(sections) * Chunk.LightSectionPayloadBytes];
+        var offset = 0;
 
-        for (int section = 0; section < Chunk.LightSectionCount; section++)
+        for (var section = 0; section < Chunk.LightSectionCount; section++)
         {
             if ((sections & (1u << section)) == 0)
             {
@@ -105,8 +105,8 @@ public sealed class LightSectionsMessage : Message
     {
         ArgumentNullException.ThrowIfNull(chunk);
 
-        byte[] raw = Decompress();
-        int expected = BitOperations.PopCount(Sections & SectionMask) * Chunk.LightSectionPayloadBytes;
+        var raw = Decompress();
+        var expected = BitOperations.PopCount(Sections & SectionMask) * Chunk.LightSectionPayloadBytes;
 
         if (raw.Length != expected)
         {
@@ -114,9 +114,9 @@ public sealed class LightSectionsMessage : Message
                 $"Light payload is {raw.Length} bytes for a mask naming {expected}; refusing to apply.");
         }
 
-        int offset = 0;
+        var offset = 0;
 
-        for (int section = 0; section < Chunk.LightSectionCount; section++)
+        for (var section = 0; section < Chunk.LightSectionCount; section++)
         {
             if ((Sections & (1u << section)) == 0)
             {
@@ -130,13 +130,13 @@ public sealed class LightSectionsMessage : Message
 
     private byte[] Decompress()
     {
-        int limit = MaxDecodedBytes;
+        var limit = MaxDecodedBytes;
 
         using MemoryStream input = new(Compressed, false);
         using ZLibStream decompressor = new(input, CompressionMode.Decompress);
 
         MemoryStream output = new(Math.Min(limit, Compressed.Length * 8));
-        byte[] buffer = new byte[8192];
+        var buffer = new byte[8192];
         int read;
 
         while ((read = decompressor.Read(buffer, 0, buffer.Length)) > 0)

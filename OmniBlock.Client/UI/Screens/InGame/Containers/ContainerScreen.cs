@@ -3,9 +3,7 @@ using OmniBlock.Client.Input;
 using OmniBlock.Client.UI.Controls;
 using OmniBlock.Client.UI.Controls.Core;
 using OmniBlock.Client.UI.Layout.Flexbox;
-using OmniBlock.Items;
 using OmniBlock.Screens;
-using OmniBlock.Screens.Slots;
 using Silk.NET.GLFW;
 using Color = OmniBlock.Client.UI.Colors.Color;
 
@@ -44,7 +42,7 @@ public abstract class ContainerScreen(
 
     protected void AddSlots()
     {
-        foreach (Slot slot in InventorySlots.Slots)
+        foreach (var slot in InventorySlots.Slots)
         {
             UISlot uiSlot = new(slot);
             uiSlot.Style.Position = PositionType.Absolute;
@@ -57,9 +55,9 @@ public abstract class ContainerScreen(
 
     private void OnSlotClick(UISlot? uiSlot, MouseButton button)
     {
-        int slotId = uiSlot == null ? ScreenHandler.NullSlot : uiSlot.Slot.id;
-        bool isShiftClick = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
-        int mouseBtn = button == MouseButton.Right ? 1 : 0;
+        var slotId = uiSlot == null ? ScreenHandler.NullSlot : uiSlot.Slot.id;
+        var isShiftClick = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
+        var mouseBtn = button == MouseButton.Right ? 1 : 0;
 
         playerController.OnSlotClick(InventorySlots.SyncId, slotId, mouseBtn, isShiftClick, player);
     }
@@ -78,7 +76,7 @@ public abstract class ContainerScreen(
         base.Render(mouseX, mouseY, partialTicks);
 
         // Render held item on top of everything
-        ItemStack cursorStack = player.Inventory.GetCursorStack();
+        var cursorStack = player.Inventory.GetCursorStack();
         if (cursorStack != null)
         {
             Renderer.Begin();
@@ -91,15 +89,15 @@ public abstract class ContainerScreen(
         // Tooltip rendering
         if (Root.HitTest(MouseX, MouseY) is UISlot hoveredSlot && cursorStack == null)
         {
-            ItemStack stack = hoveredSlot.Slot.getStack();
+            var stack = hoveredSlot.Slot.getStack();
             if (stack != null)
             {
-                string itemName = ("" + Translations.GetNamed(stack.GetItemName())).Trim();
+                var itemName = ("" + Translations.GetNamed(stack.GetItemName())).Trim();
                 if (itemName.Length > 0)
                 {
-                    int textWidth = Context.TextRenderer.GetStringWidth(itemName);
-                    float tx = MouseX + 12;
-                    float ty = MouseY - 12;
+                    var textWidth = Context.TextRenderer.GetStringWidth(itemName);
+                    var tx = MouseX + 12;
+                    var ty = MouseY - 12;
 
                     Renderer.Begin();
                     Renderer.DrawGradientRect(tx - 3, ty - 3, textWidth + 6, 14, Color.BlackAlphaC0, Color.BlackAlphaC0);
@@ -112,11 +110,11 @@ public abstract class ContainerScreen(
 
     public override void GetTooltips(List<ActionTip> tips)
     {
-        ItemStack cursorStack = player.Inventory.GetCursorStack();
+        var cursorStack = player.Inventory.GetCursorStack();
 
         if (Root.HitTest(MouseX, MouseY) is UISlot hoveredSlot)
         {
-            ItemStack slotStack = hoveredSlot.Slot.getStack();
+            var slotStack = hoveredSlot.Slot.getStack();
 
             if (cursorStack == null && slotStack != null)
             {
@@ -137,14 +135,14 @@ public abstract class ContainerScreen(
 
     public override void HandleControllerInput()
     {
-        GamepadButton button = (GamepadButton)Controller.GetEventButton();
-        bool isDown = Controller.GetEventButtonState();
+        var button = (GamepadButton)Controller.GetEventButton();
+        var isDown = Controller.GetEventButtonState();
 
         if (isDown && (button == GamepadButton.X || button == GamepadButton.Y))
         {
             if (GetElementUnderVirtualCursor() is UISlot uiSlot)
             {
-                int slotId = uiSlot.Slot.id;
+                var slotId = uiSlot.Slot.id;
                 if (button == GamepadButton.Y)
                 {
                     playerController.OnSlotClick(InventorySlots.SyncId, slotId, 0, true, player);

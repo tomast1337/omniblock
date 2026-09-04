@@ -1,7 +1,5 @@
 using System.Text.Json;
 using OmniBlock.Items;
-using OmniBlock.Items.Behaviors;
-using OmniBlock.Registries;
 
 namespace OmniBlock.Tests.Catalog;
 
@@ -10,7 +8,7 @@ public sealed class BuilderOwnedItemTests
     [Fact]
     public void Builder_constructs_all_item_drafts_before_resolving_forward_references()
     {
-        ContentRuntimeBuilder builder = ContentRuntimeBuilder.CreateBuiltIns();
+        var builder = ContentRuntimeBuilder.CreateBuiltIns();
         builder.AddItemDefinition(new ItemDefinition
         {
             Name = "filled",
@@ -26,9 +24,9 @@ public sealed class BuilderOwnedItemTests
             ProtocolId = 31801
         });
 
-        ContentRuntime runtime = builder.Build();
-        Item filled = runtime.Items.Get("omniblock:filled");
-        Item empty = runtime.Items.Get("example:empty");
+        var runtime = builder.Build();
+        var filled = runtime.Items.Get("omniblock:filled");
+        var empty = runtime.Items.Get("example:empty");
 
         Assert.Same(empty, filled.GetContainerItem());
         Assert.True(filled.IsFrozen);
@@ -40,9 +38,13 @@ public sealed class BuilderOwnedItemTests
     [Fact]
     public void Finalized_runtime_items_reject_definition_mutation()
     {
-        ContentRuntimeBuilder builder = ContentRuntimeBuilder.CreateBuiltIns();
-        builder.AddItemDefinition(new ItemDefinition { Name = "immutable", ProtocolId = 31802 });
-        Item item = builder.Build().Items.Get("omniblock:immutable");
+        var builder = ContentRuntimeBuilder.CreateBuiltIns();
+        builder.AddItemDefinition(new ItemDefinition
+        {
+            Name = "immutable",
+            ProtocolId = 31802
+        });
+        var item = builder.Build().Items.Get("omniblock:immutable");
 
         Assert.Throws<InvalidOperationException>(() => item.SetMaxCount(2));
         Assert.Throws<InvalidOperationException>(() => item.SetTextureId(3));
@@ -54,7 +56,7 @@ public sealed class BuilderOwnedItemTests
     [Fact]
     public void Failed_cross_reference_validation_exposes_no_partial_items()
     {
-        ContentRuntimeBuilder builder = ContentRuntimeBuilder.CreateBuiltIns();
+        var builder = ContentRuntimeBuilder.CreateBuiltIns();
         builder.AddItemDefinition(new ItemDefinition
         {
             Name = "broken",
@@ -63,7 +65,7 @@ public sealed class BuilderOwnedItemTests
             CraftingReturnItemProtocolId = 31804
         });
 
-        InvalidOperationException error = Assert.Throws<InvalidOperationException>(() => builder.Build());
+        var error = Assert.Throws<InvalidOperationException>(() => builder.Build());
 
         Assert.Contains("omniblock:broken", error.Message);
         Assert.Contains("31804", error.Message);
@@ -73,13 +75,21 @@ public sealed class BuilderOwnedItemTests
     [Fact]
     public void Independently_built_runtimes_do_not_share_item_instances()
     {
-        ContentRuntimeBuilder first = ContentRuntimeBuilder.CreateBuiltIns();
-        ContentRuntimeBuilder second = ContentRuntimeBuilder.CreateBuiltIns();
-        first.AddItemDefinition(new ItemDefinition { Name = "isolated", ProtocolId = 31805 });
-        second.AddItemDefinition(new ItemDefinition { Name = "isolated", ProtocolId = 31805 });
+        var first = ContentRuntimeBuilder.CreateBuiltIns();
+        var second = ContentRuntimeBuilder.CreateBuiltIns();
+        first.AddItemDefinition(new ItemDefinition
+        {
+            Name = "isolated",
+            ProtocolId = 31805
+        });
+        second.AddItemDefinition(new ItemDefinition
+        {
+            Name = "isolated",
+            ProtocolId = 31805
+        });
 
-        Item firstItem = first.Build().Items.Get("omniblock:isolated");
-        Item secondItem = second.Build().Items.Get("omniblock:isolated");
+        var firstItem = first.Build().Items.Get("omniblock:isolated");
+        var secondItem = second.Build().Items.Get("omniblock:isolated");
 
         Assert.NotSame(firstItem, secondItem);
     }

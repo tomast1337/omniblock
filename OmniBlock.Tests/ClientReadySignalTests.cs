@@ -8,7 +8,7 @@ public sealed class ClientReadySignalTests
     public void Signal_marksReadyAndRunsRegisteredCallbacksOnce()
     {
         ClientReadySignal signal = new();
-        int calls = 0;
+        var calls = 0;
         signal.WhenReady(() => calls++);
 
         signal.Signal();
@@ -23,7 +23,7 @@ public sealed class ClientReadySignalTests
     {
         ClientReadySignal signal = new();
         signal.Signal();
-        bool called = false;
+        var called = false;
 
         signal.WhenReady(() => called = true);
 
@@ -42,7 +42,7 @@ public sealed class ClientReadySignalTests
     public void Remove_preventsARegisteredCallbackFromRunning()
     {
         ClientReadySignal signal = new();
-        int calls = 0;
+        var calls = 0;
         void Callback() => calls++;
         signal.WhenReady(Callback);
 

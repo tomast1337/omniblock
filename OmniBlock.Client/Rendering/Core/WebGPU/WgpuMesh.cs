@@ -15,7 +15,7 @@ namespace OmniBlock.Client.Rendering.Core.WebGPU;
 ///     passes a size to <c>SetVertexBuffer</c> or <c>SetIndexBuffer</c> must either know the
 ///     exact byte count or pass this sentinel.
 /// </remarks>
-file static class WgpuWholeSize
+static file class WgpuWholeSize
 {
     public const ulong Value = ulong.MaxValue;
 }
@@ -30,22 +30,10 @@ file static class WgpuWholeSize
 /// </remarks>
 public sealed unsafe class WgpuMesh : IDisposable
 {
+    /// <summary>The stride of a <see cref="ChunkVertex" />, in bytes.</summary>
+    public const uint ChunkVertexStride = 20;
+
     private readonly WebGpuDevice _device;
-
-    public WgpuBuffer* VertexBuffer { get; }
-    public WgpuBuffer* IndexBuffer { get; }
-
-    /// <summary>How many vertices to draw when <see cref="IndexBuffer" /> is null.</summary>
-    public uint VertexCount { get; }
-
-    /// <summary>How many indices to draw when <see cref="IndexBuffer" /> is set.</summary>
-    public uint IndexCount { get; }
-
-    /// <summary>The type of each index in <see cref="IndexBuffer" />.</summary>
-    public IndexFormat IndexFormat { get; }
-
-    /// <summary>The primitive topology, so the caller does not have to remember.</summary>
-    public PrimitiveTopology Topology { get; }
 
     private bool _disposed;
 
@@ -79,23 +67,53 @@ public sealed unsafe class WgpuMesh : IDisposable
         IndexBuffer = CreateBuffer(device, indexData, BufferUsage.Index | BufferUsage.CopyDst);
     }
 
+    public WgpuBuffer* VertexBuffer { get; }
+    public WgpuBuffer* IndexBuffer { get; }
+
+    /// <summary>How many vertices to draw when <see cref="IndexBuffer" /> is null.</summary>
+    public uint VertexCount { get; }
+
+    /// <summary>How many indices to draw when <see cref="IndexBuffer" /> is set.</summary>
+    public uint IndexCount { get; }
+
+    /// <summary>The type of each index in <see cref="IndexBuffer" />.</summary>
+    public IndexFormat IndexFormat { get; }
+
+    /// <summary>The primitive topology, so the caller does not have to remember.</summary>
+    public PrimitiveTopology Topology { get; }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+
+        var api = _device.Api;
+
+        if (VertexBuffer is not null)
+        {
+            api.BufferDestroy(VertexBuffer);
+            api.BufferRelease(VertexBuffer);
+        }
+
+        if (IndexBuffer is not null)
+        {
+            api.BufferDestroy(IndexBuffer);
+            api.BufferRelease(IndexBuffer);
+        }
+    }
+
     /// <summary>
     ///     Creates a vertex buffer from a span of <see cref="ChunkVertex" /> structs, using the
     ///     stride the chunk pipeline expects.
     /// </summary>
     public static WgpuMesh FromChunkVertices(WebGpuDevice device, ReadOnlySpan<ChunkVertex> vertices,
-        PrimitiveTopology topology = PrimitiveTopology.TriangleList)
-    {
-        return new WgpuMesh(device, MemoryMarshal.AsBytes(vertices), ChunkVertexStride, topology);
-    }
-
-    /// <summary>The stride of a <see cref="ChunkVertex" />, in bytes.</summary>
-    public const uint ChunkVertexStride = 20;
+        PrimitiveTopology topology = PrimitiveTopology.TriangleList) =>
+        new(device, MemoryMarshal.AsBytes(vertices), ChunkVertexStride, topology);
 
     /// <summary>Records the draw command on the current render pass.</summary>
     public void Draw(RenderPassEncoder* pass, uint instanceCount = 1)
     {
-        Silk.NET.WebGPU.WebGPU api = _device.Api;
+        var api = _device.Api;
 
         api.RenderPassEncoderSetVertexBuffer(pass, 0, VertexBuffer, 0, WgpuWholeSize.Value);
 
@@ -125,10 +143,10 @@ public sealed unsafe class WgpuMesh : IDisposable
         BufferDescriptor descriptor = new()
         {
             Usage = usage,
-            Size = (ulong)data.Length,
+            Size = (ulong)data.Length
         };
 
-        WgpuBuffer* buffer = device.Api.DeviceCreateBuffer(device.Device, in descriptor);
+        var buffer = device.Api.DeviceCreateBuffer(device.Device, in descriptor);
 
         fixed (byte* p = data)
         {
@@ -142,26 +160,6 @@ public sealed unsafe class WgpuMesh : IDisposable
     {
         IndexFormat.Uint16 => 2,
         IndexFormat.Uint32 => 4,
-        _ => 2,
+        _ => 2
     };
-
-    public void Dispose()
-    {
-        if (_disposed) return;
-        _disposed = true;
-
-        Silk.NET.WebGPU.WebGPU api = _device.Api;
-
-        if (VertexBuffer is not null)
-        {
-            api.BufferDestroy(VertexBuffer);
-            api.BufferRelease(VertexBuffer);
-        }
-
-        if (IndexBuffer is not null)
-        {
-            api.BufferDestroy(IndexBuffer);
-            api.BufferRelease(IndexBuffer);
-        }
-    }
 }

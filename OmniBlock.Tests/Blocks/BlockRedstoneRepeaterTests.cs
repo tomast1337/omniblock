@@ -6,8 +6,8 @@ public sealed class BlockRedstoneRepeaterTests
 {
     private static OnTickEvent RepeaterEvent(FakeWorldContext world, int x = 0, int y = 64, int z = 0)
     {
-        int meta = world.Reader.GetBlockMeta(x, y, z);
-        int blockId = world.Reader.GetBlockId(x, y, z);
+        var meta = world.Reader.GetBlockMeta(x, y, z);
+        var blockId = world.Reader.GetBlockId(x, y, z);
         return new OnTickEvent(world, x, y, z, meta, blockId);
     }
 

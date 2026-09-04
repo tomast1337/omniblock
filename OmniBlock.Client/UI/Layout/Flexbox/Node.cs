@@ -63,7 +63,7 @@ public partial class Node
 
     internal float LayoutGetX()
     {
-        float x = nodeLayout.Position[(int)Edge.Left];
+        var x = nodeLayout.Position[(int)Edge.Left];
         if (Parent != null)
         {
             x += Parent.LayoutGetX();
@@ -74,7 +74,7 @@ public partial class Node
 
     internal float LayoutGetY()
     {
-        float y = nodeLayout.Position[(int)Edge.Top];
+        var y = nodeLayout.Position[(int)Edge.Top];
         if (Parent != null)
         {
             y += Parent.LayoutGetY();

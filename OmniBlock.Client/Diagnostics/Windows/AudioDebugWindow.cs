@@ -1,5 +1,5 @@
-using OmniBlock.Client.Sound;
 using Hexa.NET.ImGui;
+using OmniBlock.Client.Sound;
 
 namespace OmniBlock.Client.Diagnostics.Windows;
 
@@ -10,7 +10,7 @@ internal sealed class AudioDebugWindow(DebugWindowContext ctx) : DebugWindow
 
     protected override void OnDraw()
     {
-        SoundManager sm = ctx.SoundManager;
+        var sm = ctx.SoundManager;
 
         if (ImGui.CollapsingHeader("Channels", ImGuiTreeNodeFlags.DefaultOpen))
         {
@@ -33,10 +33,7 @@ internal sealed class AudioDebugWindow(DebugWindowContext ctx) : DebugWindow
         }
     }
 
-    private static void DrawChannelsSection(SoundManager sm)
-    {
-        ImGuiTextSafe.Text($"Active: {sm.ActiveChannelCount} / 32");
-    }
+    private static void DrawChannelsSection(SoundManager sm) => ImGuiTextSafe.Text($"Active: {sm.ActiveChannelCount} / 32");
 
     private static void DrawActionSoundsSection(SoundManager sm)
     {
@@ -48,15 +45,15 @@ internal sealed class AudioDebugWindow(DebugWindowContext ctx) : DebugWindow
     {
         ImGuiTextSafe.Text($"Files loaded: {sm.LoadedStreamingFileCount}");
 
-        string status = sm.IsStreamingPlaying ? "Playing" : "Idle";
+        var status = sm.IsStreamingPlaying ? "Playing" : "Idle";
         ImGuiTextSafe.Text($"Status:       {status}");
         ImGuiTextSafe.Text($"Track:        {sm.CurrentStreamingName ?? "none"}");
     }
 
     private static void DrawMusicSection(SoundManager sm)
     {
-        string activeCategory = sm.ActiveCategory != null ? sm.ActiveCategory.ToString() : "none";
-        string musicStatus = sm.IsMusicPlaying ? "Playing" : "Idle";
+        var activeCategory = sm.ActiveCategory != null ? sm.ActiveCategory.ToString() : "none";
+        var musicStatus = sm.IsMusicPlaying ? "Playing" : "Idle";
 
         ImGuiTextSafe.Text($"Status:   {musicStatus}");
         ImGuiTextSafe.Text($"Track:    {sm.CurrentMusicName ?? "none"}");
@@ -64,7 +61,7 @@ internal sealed class AudioDebugWindow(DebugWindowContext ctx) : DebugWindow
 
         ImGui.Spacing();
 
-        foreach ((ResourceLocation name, MusicCategory cat) in sm.MusicCategories)
+        foreach (var (name, cat) in sm.MusicCategories)
         {
             ImGui.Separator();
             ImGuiTextSafe.Text($"[{name}]");

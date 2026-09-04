@@ -1,5 +1,4 @@
 using OmniBlock.Client.Input;
-using OmniBlock.Client.Options;
 using OmniBlock.Client.UI.Controls.Core;
 using OmniBlock.Client.UI.Layout.Flexbox;
 using Button = OmniBlock.Client.UI.Controls.Core.Button;
@@ -20,17 +19,17 @@ public class ControlsScreen : BaseOptionsScreen
 
     protected override UIElement CreateContent()
     {
-        Panel list = CreateTwoColumnList();
+        var list = CreateTwoColumnList();
 
         // Mouse Settings at top
-        UIElement sensitivity = CreateControlForOption(Options.MouseSensitivityOption);
+        var sensitivity = CreateControlForOption(Options.MouseSensitivityOption);
         sensitivity.Style.Width = ButtonSize;
         sensitivity.Style.MarginLeft = ButtonPadding;
         sensitivity.Style.MarginRight = ButtonPadding;
         sensitivity.Style.MarginBottom = 10;
         list.AddChild(sensitivity);
 
-        UIElement invert = CreateControlForOption(Options.InvertMouseOption);
+        var invert = CreateControlForOption(Options.InvertMouseOption);
         invert.Style.Width = ButtonSize;
         invert.Style.MarginLeft = ButtonPadding;
         invert.Style.MarginRight = ButtonPadding;
@@ -38,12 +37,12 @@ public class ControlsScreen : BaseOptionsScreen
         list.AddChild(invert);
 
         // Keybinds List
-        bool first = true;
-        foreach (GameOptions.KeyBindingGroup group in Options.KeyBindingGroups)
+        var first = true;
+        foreach (var group in Options.KeyBindingGroups)
         {
             list.AddChild(CreateSectionHeader(group.Title, first));
 
-            foreach (KeyBinding bind in group.Bindings)
+            foreach (var bind in group.Bindings)
             {
                 Panel row = new()
                 {
@@ -66,13 +65,13 @@ public class ControlsScreen : BaseOptionsScreen
                 };
                 row.AddChild(label);
 
-                Button btn = CreateButton();
+                var btn = CreateButton();
                 btn.Text = Options.GetOptionDisplayString(bind);
                 btn.Style.Width = 80;
-                KeyBinding bind1 = bind;
+                var bind1 = bind;
                 btn.OnClick += e =>
                 {
-                    Button button = (e.Target as Button)!;
+                    var button = (e.Target as Button)!;
                     // If seek key is down, reset.
                     if (Keyboard.isKeyDown(Options.KeyBindSneak.ScanCode))
                     {
@@ -102,7 +101,7 @@ public class ControlsScreen : BaseOptionsScreen
         if (_selectedKey.HasValue)
         {
             // If escape is pressed, set the key to none.
-            int keyToSet = key;
+            var keyToSet = key;
             if (key == Keyboard.KEY_ESCAPE)
             {
                 keyToSet = Keyboard.KEY_NONE;

@@ -37,7 +37,7 @@ public sealed class SettleAsBlockBehavior : IEntityTicker, IEntityPersistence
 
     public bool OnTickEntity(Entity self)
     {
-        int blockId = self.State[_blockId];
+        var blockId = self.State[_blockId];
         if (blockId == 0)
         {
             self.MarkDead();
@@ -53,9 +53,9 @@ public sealed class SettleAsBlockBehavior : IEntityTicker, IEntityPersistence
         self.VelocityX *= 0.98F;
         self.VelocityY *= 0.98F;
         self.VelocityZ *= 0.98F;
-        int floorX = MathHelper.Floor(self.X);
-        int floorY = MathHelper.Floor(self.Y);
-        int floorZ = MathHelper.Floor(self.Z);
+        var floorX = MathHelper.Floor(self.X);
+        var floorY = MathHelper.Floor(self.Y);
+        var floorZ = MathHelper.Floor(self.Z);
         if (self.World.Reader.GetBlockId(floorX, floorY, floorZ) == blockId)
         {
             self.World.Writer.SetBlock(floorX, floorY, floorZ, 0);
@@ -67,8 +67,8 @@ public sealed class SettleAsBlockBehavior : IEntityTicker, IEntityPersistence
             self.VelocityZ *= 0.7F;
             self.VelocityY *= -0.5D;
             self.MarkDead();
-            bool canFallThrough = BlockRegistry.GetByProtocolId(blockId).Physics is FallingBlockBehavior fallingBlockPhysics
-                                  && fallingBlockPhysics.CanFallThrough(new OnTickEvent(self.World, floorX, floorY - 1, floorZ, 0, blockId));
+            var canFallThrough = BlockRegistry.GetByProtocolId(blockId).Physics is FallingBlockBehavior fallingBlockPhysics
+                                 && fallingBlockPhysics.CanFallThrough(new OnTickEvent(self.World, floorX, floorY - 1, floorZ, 0, blockId));
             if ((!BlockRegistry.GetByProtocolId(blockId).CanPlaceAt(new CanPlaceAtContext(self.World, 0, floorX, floorY, floorZ)) || canFallThrough ||
                  !self.World.Writer.SetBlock(floorX, floorY, floorZ, blockId)) && !self.World.IsRemote)
             {
@@ -91,8 +91,8 @@ public sealed class SettleAsBlockBehavior : IEntityTicker, IEntityPersistence
     /// <summary>The object-spawn id announcing this instance, decided by which block it carries.</summary>
     public int SpawnObjectId(Entity self)
     {
-        int blockId = BlockId(self);
-        foreach ((int candidate, int wireId) in _wireIds)
+        var blockId = BlockId(self);
+        foreach (var (candidate, wireId) in _wireIds)
         {
             if (candidate == blockId)
             {
@@ -106,7 +106,7 @@ public sealed class SettleAsBlockBehavior : IEntityTicker, IEntityPersistence
     /// <summary>The block a received object-spawn id stands for, or <c>null</c> if none declared here.</summary>
     public int? BlockForSpawnObjectId(int spawnObjectId)
     {
-        foreach ((int blockId, int wireId) in _wireIds)
+        foreach (var (blockId, wireId) in _wireIds)
         {
             if (wireId == spawnObjectId)
             {

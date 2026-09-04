@@ -7,6 +7,42 @@ namespace OmniBlock.Luau.Host;
 /// <summary>Generic Luau facade for a client-owned DOM handle table.</summary>
 public static unsafe class LuauDomHost
 {
+    public const string Bootstrap = """
+                                    local Node = {}
+                                    local function wrap(handle)
+                                        if handle == 0 then return nil end
+                                        return setmetatable({ __handle = handle }, Node)
+                                    end
+                                    Node.__index = function(self, key)
+                                        if key == "parent" then return wrap(__Dom.parent(self.__handle)) end
+                                        if key == "childCount" then return __Dom.childCount(self.__handle) end
+                                        if key == "type" or key == "id" or key == "text" then return __Dom.getString(self.__handle, key) end
+                                        if key == "visible" or key == "enabled" or key == "hitTestVisible" then return __Dom.getBool(self.__handle, key) end
+                                        return Node[key]
+                                    end
+                                    Node.__newindex = function(self, key, value)
+                                        if key == "text" then __Dom.setString(self.__handle, key, value); return end
+                                        if key == "visible" or key == "enabled" or key == "hitTestVisible" then __Dom.setBool(self.__handle, key, value); return end
+                                        rawset(self, key, value)
+                                    end
+                                    function Node:child(index) return wrap(__Dom.child(self.__handle, index - 1)) end
+                                    function Node:click() return __Dom.click(self.__handle) end
+                                    local ui = setmetatable({ querySelector = function(selector) return wrap(__Dom.query(selector)) end }, {
+                                        __index = function(_, key)
+                                            if key == "root" then return wrap(__Dom.query("#root")) end
+                                            if key == "hud" then return wrap(__Dom.query("#hud")) end
+                                            if key == "screen" then return __Dom.screen() end
+                                        end
+                                    })
+                                    OMNI = {
+                                        environment = "client",
+                                        has = function(capability)
+                                            return capability == "ui" or capability == "config" or capability == "worlds"
+                                        end,
+                                        ui = ui,
+                                    }
+                                    """;
+
     public static Func<string, int>? Query;
     public static Func<int, int>? Parent;
     public static Func<int, int>? ChildCount;
@@ -42,23 +78,31 @@ public static unsafe class LuauDomHost
 
     private static string? ReadString(IntPtr l, int index)
     {
-        IntPtr pointer = LuauNative.lua_tolstring(l, index, out nuint length);
+        var pointer = LuauNative.lua_tolstring(l, index, out var length);
         return pointer == IntPtr.Zero ? null : Encoding.UTF8.GetString((byte*)pointer, (int)length);
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int QueryClosure(IntPtr l)
     {
-        string? selector = ReadString(l, 1);
+        var selector = ReadString(l, 1);
         LuauNative.lua_pushinteger(l, selector == null ? 0 : Query?.Invoke(selector) ?? 0);
         return 1;
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int ParentClosure(IntPtr l) { LuauNative.lua_pushinteger(l, Parent?.Invoke(LuauNative.luaL_checkinteger(l, 1)) ?? 0); return 1; }
+    private static int ParentClosure(IntPtr l)
+    {
+        LuauNative.lua_pushinteger(l, Parent?.Invoke(LuauNative.luaL_checkinteger(l, 1)) ?? 0);
+        return 1;
+    }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int ChildCountClosure(IntPtr l) { LuauNative.lua_pushinteger(l, ChildCount?.Invoke(LuauNative.luaL_checkinteger(l, 1)) ?? 0); return 1; }
+    private static int ChildCountClosure(IntPtr l)
+    {
+        LuauNative.lua_pushinteger(l, ChildCount?.Invoke(LuauNative.luaL_checkinteger(l, 1)) ?? 0);
+        return 1;
+    }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int ChildClosure(IntPtr l)
@@ -70,18 +114,19 @@ public static unsafe class LuauDomHost
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int GetStringClosure(IntPtr l)
     {
-        string? property = ReadString(l, 2);
-        string? value = property == null ? null : GetString?.Invoke(LuauNative.luaL_checkinteger(l, 1), property);
-        if (value == null) LuauNative.lua_pushnil(l); else LuauNative.lua_pushstring(l, value);
+        var property = ReadString(l, 2);
+        var value = property == null ? null : GetString?.Invoke(LuauNative.luaL_checkinteger(l, 1), property);
+        if (value == null) LuauNative.lua_pushnil(l);
+        else LuauNative.lua_pushstring(l, value);
         return 1;
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int SetStringClosure(IntPtr l)
     {
-        string? property = ReadString(l, 2);
-        string? value = ReadString(l, 3);
-        bool success = property != null && value != null && SetString?.Invoke(LuauNative.luaL_checkinteger(l, 1), property, value) == true;
+        var property = ReadString(l, 2);
+        var value = ReadString(l, 3);
+        var success = property != null && value != null && SetString?.Invoke(LuauNative.luaL_checkinteger(l, 1), property, value) == true;
         LuauNative.lua_pushboolean(l, success ? 1 : 0);
         return 1;
     }
@@ -89,17 +134,18 @@ public static unsafe class LuauDomHost
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int GetBoolClosure(IntPtr l)
     {
-        string? property = ReadString(l, 2);
-        bool? value = property == null ? null : GetBool?.Invoke(LuauNative.luaL_checkinteger(l, 1), property);
-        if (value == null) LuauNative.lua_pushnil(l); else LuauNative.lua_pushboolean(l, value.Value ? 1 : 0);
+        var property = ReadString(l, 2);
+        var value = property == null ? null : GetBool?.Invoke(LuauNative.luaL_checkinteger(l, 1), property);
+        if (value == null) LuauNative.lua_pushnil(l);
+        else LuauNative.lua_pushboolean(l, value.Value ? 1 : 0);
         return 1;
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int SetBoolClosure(IntPtr l)
     {
-        string? property = ReadString(l, 2);
-        bool success = property != null && SetBool?.Invoke(LuauNative.luaL_checkinteger(l, 1), property, LuauNative.lua_toboolean(l, 3) != 0) == true;
+        var property = ReadString(l, 2);
+        var success = property != null && SetBool?.Invoke(LuauNative.luaL_checkinteger(l, 1), property, LuauNative.lua_toboolean(l, 3) != 0) == true;
         LuauNative.lua_pushboolean(l, success ? 1 : 0);
         return 1;
     }
@@ -136,43 +182,8 @@ public static unsafe class LuauDomHost
             screen = null;
         }
 
-        if (screen == null) LuauNative.lua_pushnil(l); else LuauNative.lua_pushstring(l, screen);
+        if (screen == null) LuauNative.lua_pushnil(l);
+        else LuauNative.lua_pushstring(l, screen);
         return 1;
     }
-
-    public const string Bootstrap = """
-local Node = {}
-local function wrap(handle)
-    if handle == 0 then return nil end
-    return setmetatable({ __handle = handle }, Node)
-end
-Node.__index = function(self, key)
-    if key == "parent" then return wrap(__Dom.parent(self.__handle)) end
-    if key == "childCount" then return __Dom.childCount(self.__handle) end
-    if key == "type" or key == "id" or key == "text" then return __Dom.getString(self.__handle, key) end
-    if key == "visible" or key == "enabled" or key == "hitTestVisible" then return __Dom.getBool(self.__handle, key) end
-    return Node[key]
-end
-Node.__newindex = function(self, key, value)
-    if key == "text" then __Dom.setString(self.__handle, key, value); return end
-    if key == "visible" or key == "enabled" or key == "hitTestVisible" then __Dom.setBool(self.__handle, key, value); return end
-    rawset(self, key, value)
-end
-function Node:child(index) return wrap(__Dom.child(self.__handle, index - 1)) end
-function Node:click() return __Dom.click(self.__handle) end
-local ui = setmetatable({ querySelector = function(selector) return wrap(__Dom.query(selector)) end }, {
-    __index = function(_, key)
-        if key == "root" then return wrap(__Dom.query("#root")) end
-        if key == "hud" then return wrap(__Dom.query("#hud")) end
-        if key == "screen" then return __Dom.screen() end
-    end
-})
-OMNI = {
-    environment = "client",
-    has = function(capability)
-        return capability == "ui" or capability == "config" or capability == "worlds"
-    end,
-    ui = ui,
-}
-""";
 }

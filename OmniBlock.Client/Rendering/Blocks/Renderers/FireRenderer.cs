@@ -11,7 +11,7 @@ public class FireRenderer : IBlockRenderer
 
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int textureId = block.GetTexture(0);
+        var textureId = block.GetTexture(0);
         if (ctx.OverrideTexture >= 0) textureId = ctx.OverrideTexture;
 
         ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
@@ -19,31 +19,31 @@ public class FireRenderer : IBlockRenderer
 
         // Fire is drawn as a crossed pair of quads alternating between two tiles. An override --
         // the block-breaking overlay -- has only the one texture to give, so both alternate to it.
-        int firstFrame = Atlases.Terrain.LayerOfGridIndex(textureId);
-        int secondFrame = ctx.OverrideTexture >= 0 ? firstFrame : s_secondFrameLayer;
+        var firstFrame = Atlases.Terrain.LayerOfGridIndex(textureId);
+        var secondFrame = ctx.OverrideTexture >= 0 ? firstFrame : s_secondFrameLayer;
 
         ctx.Tess.setArrayLayer(firstFrame);
 
-        float minU = 0.0F;
-        float maxU = 1.0F;
+        var minU = 0.0F;
+        var maxU = 1.0F;
         const float minV = 0.0F;
         const float maxV = 1.0F;
 
-        float fireHeight = 1.4F;
+        var fireHeight = 1.4F;
 
         // If not on a solid/flammable floor, render climbing flames on walls
         if (!ctx.BlockReader.ShouldSuffocate(pos.X, pos.Y - 1, pos.Z) && !BlockRegistry.Get("fire").IsFlammable(ctx.BlockReader, pos.X, pos.Y - 1, pos.Z))
         {
-            float sideInset = 0.2F;
-            float yOffset = 1.0F / 16.0F;
+            var sideInset = 0.2F;
+            var yOffset = 1.0F / 16.0F;
 
             // Variation: Flip texture or use second fire frame based on position
-            if ((pos.X + pos.Y + pos.Z & 1) == 1)
+            if (((pos.X + pos.Y + pos.Z) & 1) == 1)
             {
                 ctx.Tess.setArrayLayer(secondFrame);
             }
 
-            if ((pos.X / 2 + pos.Y / 2 + pos.Z / 2 & 1) == 1)
+            if (((pos.X / 2 + pos.Y / 2 + pos.Z / 2) & 1) == 1)
             {
                 (minU, maxU) = (maxU, minU);
             }
@@ -114,10 +114,10 @@ public class FireRenderer : IBlockRenderer
                 minU = 0.0F;
                 maxU = 1.0F;
 
-                int ceilY = pos.Y + 1;
-                float ceilOffset = -0.2F;
+                var ceilY = pos.Y + 1;
+                var ceilOffset = -0.2F;
 
-                if ((pos.X + ceilY + pos.Z & 1) == 0)
+                if (((pos.X + ceilY + pos.Z) & 1) == 0)
                 {
                     ctx.Tess.addVertexWithUV(xMin, ceilY + ceilOffset, pos.Z, maxU, minV);
                     ctx.Tess.addVertexWithUV(xMax, ceilY, pos.Z, maxU, maxV);

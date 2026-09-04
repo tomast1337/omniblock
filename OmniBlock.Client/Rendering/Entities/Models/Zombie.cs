@@ -16,8 +16,8 @@ public class Zombie : ModelBiped
     {
         base.SetRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale);
 
-        float swingProgress = MathHelper.Sin(OnGround * MathF.PI);
-        float attackSwing = MathHelper.Sin((1.0f - (1.0f - OnGround) * (1.0f - OnGround)) * MathF.PI);
+        var swingProgress = MathHelper.Sin(OnGround * MathF.PI);
+        var attackSwing = MathHelper.Sin((1.0f - (1.0f - OnGround) * (1.0f - OnGround)) * MathF.PI);
 
         BipedRightArm.RotateAngleZ = 0.0f;
         BipedLeftArm.RotateAngleZ = 0.0f;

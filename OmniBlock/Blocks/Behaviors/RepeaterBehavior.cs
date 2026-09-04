@@ -61,15 +61,9 @@ public sealed class RepeaterBehavior(
         if (!@event.World.IsRemote) NotifyTargetNeighbors(block, @event.World, @event.X, @event.Y, @event.Z, meta);
     }
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext context)
-    {
-        return context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z);
-    }
+    public bool CanPlaceAt(Block block, CanPlaceAtContext context) => context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z);
 
-    public bool CanGrow(Block block, OnTickEvent @event)
-    {
-        return @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
-    }
+    public bool CanGrow(Block block, OnTickEvent @event) => @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
@@ -98,17 +92,17 @@ public sealed class RepeaterBehavior(
                 @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, repeater.Id, meta);
                 break;
             case false:
-            {
-                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, poweredRepeater.Id, meta);
-
-                if (!powered)
                 {
-                    var delaySetting = (meta & 12) >> 2;
-                    @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, poweredRepeater.Id, s_delay[delaySetting] * 2);
-                }
+                    @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, poweredRepeater.Id, meta);
 
-                break;
-            }
+                    if (!powered)
+                    {
+                        var delaySetting = (meta & 12) >> 2;
+                        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, poweredRepeater.Id, s_delay[delaySetting] * 2);
+                    }
+
+                    break;
+                }
         }
     }
 
@@ -163,25 +157,13 @@ public sealed class RepeaterBehavior(
         ctx.World.Broadcaster.AddParticle("reddust", particleX + offsetX, particleY, particleZ + offsetY, 0.0D, 0.0D, 0.0D);
     }
 
-    public int GetTexture(Block block, Side side, int defaultTexture)
-    {
-        return TextureFor(block, side);
-    }
+    public int GetTexture(Block block, Side side, int defaultTexture) => TextureFor(block, side);
 
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
-    {
-        return TextureFor(block, side);
-    }
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => TextureFor(block, side);
 
-    public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
-    {
-        return side != Side.Down && side != Side.Up;
-    }
+    public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility) => side != Side.Down && side != Side.Up;
 
-    public bool IsStrongPoweringSide(Block block, IBlockReader world, int x, int y, int z, int side)
-    {
-        return IsPoweringSide(block, world, x, y, z, side);
-    }
+    public bool IsStrongPoweringSide(Block block, IBlockReader world, int x, int y, int z, int side) => IsPoweringSide(block, world, x, y, z, side);
 
     public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
     {
@@ -194,15 +176,9 @@ public sealed class RepeaterBehavior(
                (facing == 3 && side == 5);
     }
 
-    public bool CanEmitRedstonePower(Block block)
-    {
-        return true;
-    }
+    public bool CanEmitRedstonePower(Block block) => true;
 
-    private bool IsLit(Block block)
-    {
-        return block.Id == poweredRepeater.Id;
-    }
+    private bool IsLit(Block block) => block.Id == poweredRepeater.Id;
 
     private int TextureFor(Block block, Side renderSide)
     {

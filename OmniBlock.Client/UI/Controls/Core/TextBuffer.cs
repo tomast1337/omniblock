@@ -32,8 +32,8 @@ public class TextBuffer
         {
             if (!HasSelection) return "";
 
-            int start = Math.Min(SelectionStart, CursorPosition);
-            int length = Math.Abs(SelectionStart - CursorPosition);
+            var start = Math.Min(SelectionStart, CursorPosition);
+            var length = Math.Abs(SelectionStart - CursorPosition);
             return _text.Substring(start, length);
         }
     }
@@ -42,7 +42,7 @@ public class TextBuffer
     {
         DeleteSelection();
 
-        int remainingSpace = MaxLength - _text.Length;
+        var remainingSpace = MaxLength - _text.Length;
         if (remainingSpace <= 0) return;
 
         if (input.Length > remainingSpace)
@@ -59,8 +59,8 @@ public class TextBuffer
     {
         if (!HasSelection) return;
 
-        int start = Math.Min(SelectionStart, CursorPosition);
-        int length = Math.Max(SelectionStart, CursorPosition) - start;
+        var start = Math.Min(SelectionStart, CursorPosition);
+        var length = Math.Max(SelectionStart, CursorPosition) - start;
 
         _text = _text.Remove(start, length);
         CursorPosition = start;

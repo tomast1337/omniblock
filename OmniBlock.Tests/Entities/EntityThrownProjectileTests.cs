@@ -1,14 +1,13 @@
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.NBT;
-using OmniBlock.Tests.TestSupport;
 
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Covers the thrown projectiles, the fifth and sixth non-living entities to lose their classes —
-/// and the first pair to share one behavior: the snowball and the egg were the same flight verbatim,
-/// so ThrownProjectileBehavior flies both and the egg's hatch roll is declared as data.
+///     Covers the thrown projectiles, the fifth and sixth non-living entities to lose their classes —
+///     and the first pair to share one behavior: the snowball and the egg were the same flight verbatim,
+///     so ThrownProjectileBehavior flies both and the egg's hatch roll is declared as data.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityThrownProjectileTests
@@ -18,7 +17,10 @@ public sealed class EntityThrownProjectileTests
 
     private static TestEntityPlayer Player(FakeWorldContext world)
     {
-        TestEntityPlayer player = new(world) { Name = "thrower" };
+        TestEntityPlayer player = new(world)
+        {
+            Name = "thrower"
+        };
         player.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(player));
         return player;
@@ -38,9 +40,9 @@ public sealed class EntityThrownProjectileTests
     public void A_throw_launches_from_the_throwers_eyes_and_remembers_them()
     {
         FakeWorldContext world = new();
-        TestEntityPlayer player = Player(world);
+        var player = Player(world);
 
-        Entity snowball = ThrownProjectileBehavior.Throw(world, "snowball", player);
+        var snowball = ThrownProjectileBehavior.Throw(world, "snowball", player);
 
         Assert.Same(player, Thrown("snowball").Thrower(snowball));
         Assert.True(Math.Abs(snowball.Y - (player.Y + player.EyeHeight - 0.1)) < 0.01);
@@ -51,12 +53,12 @@ public sealed class EntityThrownProjectileTests
     public void A_projectile_arcs_under_gravity_in_flight()
     {
         FakeWorldContext world = new();
-        Entity snowball = TestEntityCatalog.ByName("snowball").Create(world);
+        var snowball = TestEntityCatalog.ByName("snowball").Create(world);
         snowball.SetPositionAndAngles(8.5, 80.0, 8.5, 0f, 0f);
         snowball.VelocityX = 0.2;
         Assert.True(world.Entities.SpawnEntity(snowball));
 
-        double velocityBefore = snowball.VelocityY;
+        var velocityBefore = snowball.VelocityY;
         snowball.Tick();
 
         Assert.True(snowball.VelocityY < velocityBefore);
@@ -68,12 +70,12 @@ public sealed class EntityThrownProjectileTests
     {
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 15, 0, 15, 63);
-        Entity snowball = TestEntityCatalog.ByName("snowball").Create(world);
+        var snowball = TestEntityCatalog.ByName("snowball").Create(world);
         snowball.SetPositionAndAngles(8.5, 66.0, 8.5, 0f, 0f);
         snowball.VelocityY = -0.4;
         Assert.True(world.Entities.SpawnEntity(snowball));
 
-        for (int tick = 0; tick < 50 && !snowball.Dead; tick++) snowball.Tick();
+        for (var tick = 0; tick < 50 && !snowball.Dead; tick++) snowball.Tick();
 
         Assert.True(snowball.Dead);
     }
@@ -82,16 +84,16 @@ public sealed class EntityThrownProjectileTests
     public void A_projectile_pops_when_it_hits_an_entity()
     {
         FakeWorldContext world = new();
-        Entity pig = TestEntityCatalog.ByName("pig").Create(world);
+        var pig = TestEntityCatalog.ByName("pig").Create(world);
         pig.SetPositionAndAngles(8.5, 64.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(pig));
 
-        Entity snowball = TestEntityCatalog.ByName("snowball").Create(world);
+        var snowball = TestEntityCatalog.ByName("snowball").Create(world);
         snowball.SetPositionAndAngles(8.5, 64.5, 6.5, 0f, 0f);
         snowball.VelocityZ = 0.5;
         Assert.True(world.Entities.SpawnEntity(snowball));
 
-        for (int tick = 0; tick < 20 && !snowball.Dead; tick++) snowball.Tick();
+        for (var tick = 0; tick < 20 && !snowball.Dead; tick++) snowball.Tick();
 
         Assert.True(snowball.Dead);
     }
@@ -103,13 +105,13 @@ public sealed class EntityThrownProjectileTests
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 15, 0, 15, 63);
 
-        for (int i = 0; i < 200; i++)
+        for (var i = 0; i < 200; i++)
         {
-            Entity egg = TestEntityCatalog.ByName("egg").Create(world);
+            var egg = TestEntityCatalog.ByName("egg").Create(world);
             egg.SetPositionAndAngles(8.5, 66.0, 8.5, 0f, 0f);
             egg.VelocityY = -0.4;
             Assert.True(world.Entities.SpawnEntity(egg));
-            for (int tick = 0; tick < 50 && !egg.Dead; tick++) egg.Tick();
+            for (var tick = 0; tick < 50 && !egg.Dead; tick++) egg.Tick();
             Assert.True(egg.Dead);
         }
 
@@ -120,7 +122,7 @@ public sealed class EntityThrownProjectileTests
     public void Flight_state_survives_an_nbt_round_trip()
     {
         FakeWorldContext world = new();
-        Entity snowball = TestEntityCatalog.ByName("snowball").Create(world);
+        var snowball = TestEntityCatalog.ByName("snowball").Create(world);
         snowball.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
         NBTTagCompound nbt = new();
@@ -128,11 +130,11 @@ public sealed class EntityThrownProjectileTests
         nbt.SetShort("xTile", 3);
         nbt.SetShort("yTile", 64);
         nbt.SetShort("zTile", 7);
-        nbt.SetByte("inTile", (sbyte)1);
-        nbt.SetByte("shake", (sbyte)5);
+        nbt.SetByte("inTile", 1);
+        nbt.SetByte("shake", 5);
         nbt.SetByte("inGround", 1);
 
-        Entity restored = TestEntityCatalog.ByName("snowball").Create(world);
+        var restored = TestEntityCatalog.ByName("snowball").Create(world);
         restored.Read(nbt);
         NBTTagCompound written = new();
         restored.Write(written);
@@ -148,8 +150,8 @@ public sealed class EntityThrownProjectileTests
     [Fact]
     public void Protocol_facts_are_pinned()
     {
-        EntityDefinition snowball = TestEntityCatalog.ByName("snowball").RequireDefinition();
-        EntityDefinition egg = TestEntityCatalog.ByName("egg").RequireDefinition();
+        var snowball = TestEntityCatalog.ByName("snowball").RequireDefinition();
+        var egg = TestEntityCatalog.ByName("egg").RequireDefinition();
 
         Assert.Equal(11, snowball.ProtocolId);
         Assert.Equal(61, snowball.SpawnObjectId);

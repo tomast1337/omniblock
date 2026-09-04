@@ -1,5 +1,4 @@
 using OmniBlock.Network;
-using OmniBlock.Network.Transport;
 using OmniBlock.Server;
 
 namespace OmniBlock.Tests.Network;
@@ -23,7 +22,7 @@ public sealed class ChunkSendPacerTests
         ChunkSendPacer pacer = new();
         pacer.BeginTick();
 
-        Assert.True(pacer.CanSend(pendingPackets: 0));
+        Assert.True(pacer.CanSend(0));
         Assert.False(pacer.Backpressured);
     }
 
@@ -52,8 +51,8 @@ public sealed class ChunkSendPacerTests
         ChunkSendPacer pacer = new();
         pacer.BeginTick();
 
-        int sent = 0;
-        while (pacer.CanSend(pendingPackets: 0))
+        var sent = 0;
+        while (pacer.CanSend(0))
         {
             pacer.Record(ChunkBytes);
             sent++;
@@ -75,10 +74,10 @@ public sealed class ChunkSendPacerTests
 
         pacer.BeginTick();
         pacer.Record(ChunkSendPacer.MaxBytesPerTick);
-        Assert.False(pacer.CanSend(pendingPackets: 0));
+        Assert.False(pacer.CanSend(0));
 
         pacer.BeginTick();
-        Assert.True(pacer.CanSend(pendingPackets: 0));
+        Assert.True(pacer.CanSend(0));
     }
 
     /// <summary>
@@ -92,10 +91,10 @@ public sealed class ChunkSendPacerTests
         ChunkSendPacer pacer = new();
         pacer.BeginTick();
 
-        int sent = 0;
-        while (pacer.CanSend(pendingPackets: 0) && sent < 100_000)
+        var sent = 0;
+        while (pacer.CanSend(0) && sent < 100_000)
         {
-            pacer.Record(8);   // ChunkUnchangedMessage
+            pacer.Record(8); // ChunkUnchangedMessage
             sent++;
         }
 
@@ -124,7 +123,10 @@ public sealed class ChunkSendPacerTests
     [Fact]
     public void The_connection_reports_the_transports_real_queue_depth()
     {
-        FakeTransportConnection transport = new() { Pending = 17 };
+        FakeTransportConnection transport = new()
+        {
+            Pending = 17
+        };
         UdpConnection connection = new(transport);
 
         Assert.Equal(17, connection.getWorldPacketBacklog());

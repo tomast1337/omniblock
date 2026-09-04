@@ -15,7 +15,7 @@ public class BanIpCommand : Command.Command
 
     private static int Execute(CommandContext<CommandSource> context)
     {
-        string ip = context.GetArgument<string>("ip");
+        var ip = context.GetArgument<string>("ip");
         context.Source.Server.playerManager.banIp(ip);
         context.Source.LogOp("Banning ip " + ip);
         return 1;

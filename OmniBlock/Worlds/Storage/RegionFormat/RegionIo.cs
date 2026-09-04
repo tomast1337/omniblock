@@ -16,11 +16,11 @@ internal static class RegionIo
 
         lock (gate)
         {
-            string regionDir = Path.Combine(worldDir, "region");
-            string regionFileName = $"r.{chunkX >> 5}.{chunkZ >> 5}.mcr";
-            string regionPath = Path.Combine(regionDir, regionFileName);
+            var regionDir = Path.Combine(worldDir, "region");
+            var regionFileName = $"r.{chunkX >> 5}.{chunkZ >> 5}.mcr";
+            var regionPath = Path.Combine(regionDir, regionFileName);
 
-            if (cache.TryGetValue(regionPath, out RegionFile? region))
+            if (cache.TryGetValue(regionPath, out var region))
             {
                 return region;
             }
@@ -45,7 +45,7 @@ internal static class RegionIo
     {
         lock (gate)
         {
-            foreach (RegionFile regionFile in cache.Values)
+            foreach (var regionFile in cache.Values)
             {
                 regionFile.Flush();
             }
@@ -56,19 +56,19 @@ internal static class RegionIo
 
     public static int GetSizeDelta(string worldDir, int chunkX, int chunkZ)
     {
-        RegionFile regionFile = CreateRegionFile(worldDir, chunkX, chunkZ);
+        var regionFile = CreateRegionFile(worldDir, chunkX, chunkZ);
         return regionFile.func_22209_a();
     }
 
     public static ChunkDataStream? GetChunkInputStream(string worldDir, int chunkX, int chunkZ)
     {
-        RegionFile regionFile = CreateRegionFile(worldDir, chunkX, chunkZ);
+        var regionFile = CreateRegionFile(worldDir, chunkX, chunkZ);
         return regionFile.GetChunkDataInputStream(chunkX & 31, chunkZ & 31);
     }
 
     public static Stream? GetChunkOutputStream(string worldDir, int chunkX, int chunkZ)
     {
-        RegionFile regionFile = CreateRegionFile(worldDir, chunkX, chunkZ);
+        var regionFile = CreateRegionFile(worldDir, chunkX, chunkZ);
         return regionFile.GetChunkDataOutputStream(chunkX & 31, chunkZ & 31);
     }
 }

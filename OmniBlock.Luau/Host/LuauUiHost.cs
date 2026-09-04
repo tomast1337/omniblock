@@ -5,8 +5,12 @@ namespace OmniBlock.Luau.Host;
 
 /// <summary>
 ///     The Host Facade for UI commands (docs/luau-ui-host-api-plan.md §3): the one
-///     <c>[UnmanagedCallersOnly]</c> entry point a script's <c>Host.openScreen(id, arg0, arg1,
-///     arg2)</c> call actually lands on, and <see cref="Install" />, which pushes it into a
+///     <c>[UnmanagedCallersOnly]</c> entry point a script's
+///     <c>
+///         Host.openScreen(id, arg0, arg1,
+///         arg2)
+///     </c>
+///     call actually lands on, and <see cref="Install" />, which pushes it into a
 ///     <see cref="LuauState" />'s VM as a global <c>Host</c> table — the same
 ///     <c>lua_pushcclosurek</c>-at-setup pattern <see cref="LuauCallbacks" />'s allocator/interrupt
 ///     already use, just invoked by <c>LuauState</c>'s owner instead of <c>LuauState</c> itself
@@ -14,8 +18,12 @@ namespace OmniBlock.Luau.Host;
 ///     <para>
 ///         This class deliberately knows nothing about <c>UIScreen</c> types, <c>ResourceLocation</c>,
 ///         or which command ID means what — it only knows how to pull four ints off the Luau stack
-///         and hand them to <see cref="Dispatch" />. <b>OmniBlock.Luau has no project reference to
-///         OmniBlock.Client or core OmniBlock</b> (by design — see
+///         and hand them to <see cref="Dispatch" />.
+///         <b>
+///             OmniBlock.Luau has no project reference to
+///             OmniBlock.Client or core OmniBlock
+///         </b>
+///         (by design — see
 ///         docs/luau-ffi-embedding-plan.md), so the actual command registry
 ///         (<c>OmniBlock.Client.UI.UiCommandRegistry</c>) can't be called directly from here; the
 ///         owning client wires <see cref="Dispatch" /> to <c>UiCommandRegistry.Invoke</c> once at
@@ -27,8 +35,12 @@ namespace OmniBlock.Luau.Host;
 public static unsafe class LuauUiHost
 {
     /// <summary>
-    ///     Set exactly once by the owning client, e.g. right after <c>LuauState = new
-    ///     LuauState()</c> in <c>OmniBlock.cs</c>'s <c>SetupCoreSystems</c>, to
+    ///     Set exactly once by the owning client, e.g. right after
+    ///     <c>
+    ///         LuauState = new
+    ///         LuauState()
+    ///     </c>
+    ///     in <c>OmniBlock.cs</c>'s <c>SetupCoreSystems</c>, to
     ///     <c>UiCommandRegistry.Invoke</c>. Left null this is a safe no-op (see
     ///     <see cref="OpenScreen" />), not a crash — matters for tests and any build where the
     ///     client-side registry hasn't been wired up yet.
@@ -68,10 +80,10 @@ public static unsafe class LuauUiHost
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int OpenScreen(IntPtr l)
     {
-        int commandId = LuauNative.luaL_checkinteger(l, 1);
-        int arg0 = LuauNative.luaL_checkinteger(l, 2);
-        int arg1 = LuauNative.luaL_checkinteger(l, 3);
-        int arg2 = LuauNative.luaL_checkinteger(l, 4);
+        var commandId = LuauNative.luaL_checkinteger(l, 1);
+        var arg0 = LuauNative.luaL_checkinteger(l, 2);
+        var arg1 = LuauNative.luaL_checkinteger(l, 3);
+        var arg2 = LuauNative.luaL_checkinteger(l, 4);
 
         Dispatch?.Invoke(commandId, arg0, arg1, arg2);
         return 0;

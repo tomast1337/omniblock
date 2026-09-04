@@ -56,7 +56,7 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
         Root.AddChild(_contentPanel);
 
         // Done button
-        Button btnDone = CreateButton();
+        var btnDone = CreateButton();
         btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.MarginTop = 10;
         btnDone.Style.MarginBottom = 20;
@@ -69,7 +69,7 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
 
     private Button CreateTabButton(string text, Tab tab)
     {
-        Button btn = CreateButton();
+        var btn = CreateButton();
         btn.Text = text;
         btn.Style.Width = 100;
         btn.Style.MarginLeft = 4;
@@ -117,12 +117,12 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
 
     private void PopulateGeneralStats(Panel list)
     {
-        List<StatBase> stats = Stats.Stats.GeneralStats;
-        for (int i = 0; i < stats.Count; i++)
+        var stats = Stats.Stats.GeneralStats;
+        for (var i = 0; i < stats.Count; i++)
         {
-            StatBase stat = stats[i];
-            int value = _stats.GetStatValue(stat);
-            string formatted = stat.Format(value);
+            var stat = stats[i];
+            var value = _stats.GetStatValue(stat);
+            var formatted = stat.Format(value);
 
             Panel row = new();
             row.Style.FlexDirection = FlexDirection.Row;
@@ -154,7 +154,7 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
     {
         AddHeaderRow(list, Translations.Get("stats.blocks.mined"), Translations.Get("stats.blocks.crafted"), Translations.Get("stats.blocks.used"));
 
-        List<StatCrafting> blockStats = Stats.Stats.BlocksMinedStats
+        var blockStats = Stats.Stats.BlocksMinedStats
             .OfType<StatCrafting>()
             .Where(stat =>
                 _stats.GetStatValue(stat) > 0 ||
@@ -162,14 +162,14 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
                 (Stats.Stats.Crafted[stat.ItemId] is StatCrafting crafted && _stats.GetStatValue(crafted) > 0))
             .ToList();
 
-        for (int i = 0; i < blockStats.Count; i++)
+        for (var i = 0; i < blockStats.Count; i++)
         {
-            StatCrafting minedStat = blockStats[i];
-            int id = minedStat.ItemId;
+            var minedStat = blockStats[i];
+            var id = minedStat.ItemId;
 
-            string v1 = minedStat.Format(_stats.GetStatValue(minedStat));
-            string v2 = Stats.Stats.Crafted[id] is StatCrafting craftedStat ? craftedStat.Format(_stats.GetStatValue(craftedStat)) : "0";
-            string v3 = Stats.Stats.Used[id] is StatCrafting usedStat ? usedStat.Format(_stats.GetStatValue(usedStat)) : "0";
+            var v1 = minedStat.Format(_stats.GetStatValue(minedStat));
+            var v2 = Stats.Stats.Crafted[id] is StatCrafting craftedStat ? craftedStat.Format(_stats.GetStatValue(craftedStat)) : "0";
+            var v3 = Stats.Stats.Used[id] is StatCrafting usedStat ? usedStat.Format(_stats.GetStatValue(usedStat)) : "0";
 
             list.AddChild(new StatItemRow(id, v1, v2, v3, i % 2 == 1));
         }
@@ -179,7 +179,7 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
     {
         AddHeaderRow(list, Translations.Get("stats.items.broken"), Translations.Get("stats.items.crafted"), Translations.Get("stats.items.used"));
 
-        List<StatCrafting> itemStats = Stats.Stats.ItemStats
+        var itemStats = Stats.Stats.ItemStats
             .OfType<StatCrafting>()
             .Where(stat =>
                 _stats.GetStatValue(stat) > 0 ||
@@ -187,14 +187,14 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
                 (Stats.Stats.Crafted[stat.ItemId] is StatCrafting crafted && _stats.GetStatValue(crafted) > 0))
             .ToList();
 
-        for (int i = 0; i < itemStats.Count; i++)
+        for (var i = 0; i < itemStats.Count; i++)
         {
-            StatCrafting brokenStat = itemStats[i];
-            int id = brokenStat.ItemId;
+            var brokenStat = itemStats[i];
+            var id = brokenStat.ItemId;
 
-            string v1 = brokenStat.Format(_stats.GetStatValue(brokenStat));
-            string v2 = Stats.Stats.Crafted[id] is StatCrafting craftedStat ? craftedStat.Format(_stats.GetStatValue(craftedStat)) : "0";
-            string v3 = Stats.Stats.Used[id] is StatCrafting usedStat ? usedStat.Format(_stats.GetStatValue(usedStat)) : "0";
+            var v1 = brokenStat.Format(_stats.GetStatValue(brokenStat));
+            var v2 = Stats.Stats.Crafted[id] is StatCrafting craftedStat ? craftedStat.Format(_stats.GetStatValue(craftedStat)) : "0";
+            var v3 = Stats.Stats.Used[id] is StatCrafting usedStat ? usedStat.Format(_stats.GetStatValue(usedStat)) : "0";
 
             list.AddChild(new StatItemRow(id, v1, v2, v3, i % 2 == 1));
         }

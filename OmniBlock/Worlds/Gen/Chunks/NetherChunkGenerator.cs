@@ -1,6 +1,4 @@
-using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
-using OmniBlock.Util.Maths;
 using OmniBlock.Util.Maths.Noise;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core.Systems;
@@ -54,7 +52,7 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
     public Chunk GetChunk(int chunkX, int chunkZ)
     {
         _random.SetSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
-        byte[] blocks = new byte[ChuckFormat.ChunkSize];
+        var blocks = new byte[ChuckFormat.ChunkSize];
         BuildTerrain(chunkX, chunkZ, blocks);
         BuildSurfaces(chunkX, chunkZ, blocks);
         _cave.carve(this, _world, chunkX, chunkZ, blocks);
@@ -67,8 +65,8 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
     public void DecorateTerrain(IChunkSource source, int x, int z)
     {
         FallingBlockBehavior.FallInstantly = true;
-        int blockX = x * 16;
-        int blockZ = z * 16;
+        var blockX = x * 16;
+        var blockZ = z * 16;
 
         int numIterations;
         int featureX;
@@ -149,46 +147,46 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
     {
         byte horiScale = 4;
         byte lavaLevel = 32;
-        int xMax = horiScale + 1;
+        var xMax = horiScale + 1;
         byte yMax = 17;
-        int zMax = horiScale + 1;
+        var zMax = horiScale + 1;
 
         _heightMap = GenerateHeightMap(_heightMap, chunkX * horiScale, 0, chunkZ * horiScale, xMax, yMax, zMax);
 
-        for (int sampleX = 0; sampleX < horiScale; ++sampleX)
+        for (var sampleX = 0; sampleX < horiScale; ++sampleX)
         {
-            for (int sampleZ = 0; sampleZ < horiScale; ++sampleZ)
+            for (var sampleZ = 0; sampleZ < horiScale; ++sampleZ)
             {
-                for (int sampleY = 0; sampleY < 16; ++sampleY)
+                for (var sampleY = 0; sampleY < 16; ++sampleY)
                 {
-                    double verticalLerpStep = 0.125D;
-                    double corner000 = _heightMap[((sampleX + 0) * zMax + sampleZ + 0) * yMax + sampleY + 0];
-                    double corner010 = _heightMap[((sampleX + 0) * zMax + sampleZ + 1) * yMax + sampleY + 0];
-                    double corner100 = _heightMap[((sampleX + 1) * zMax + sampleZ + 0) * yMax + sampleY + 0];
-                    double corner110 = _heightMap[((sampleX + 1) * zMax + sampleZ + 1) * yMax + sampleY + 0];
-                    double corner001 = (_heightMap[((sampleX + 0) * zMax + sampleZ + 0) * yMax + sampleY + 1] - corner000) * verticalLerpStep;
-                    double corner011 = (_heightMap[((sampleX + 0) * zMax + sampleZ + 1) * yMax + sampleY + 1] - corner010) * verticalLerpStep;
-                    double corner101 = (_heightMap[((sampleX + 1) * zMax + sampleZ + 0) * yMax + sampleY + 1] - corner100) * verticalLerpStep;
-                    double corner111 = (_heightMap[((sampleX + 1) * zMax + sampleZ + 1) * yMax + sampleY + 1] - corner110) * verticalLerpStep;
+                    var verticalLerpStep = 0.125D;
+                    var corner000 = _heightMap[((sampleX + 0) * zMax + sampleZ + 0) * yMax + sampleY + 0];
+                    var corner010 = _heightMap[((sampleX + 0) * zMax + sampleZ + 1) * yMax + sampleY + 0];
+                    var corner100 = _heightMap[((sampleX + 1) * zMax + sampleZ + 0) * yMax + sampleY + 0];
+                    var corner110 = _heightMap[((sampleX + 1) * zMax + sampleZ + 1) * yMax + sampleY + 0];
+                    var corner001 = (_heightMap[((sampleX + 0) * zMax + sampleZ + 0) * yMax + sampleY + 1] - corner000) * verticalLerpStep;
+                    var corner011 = (_heightMap[((sampleX + 0) * zMax + sampleZ + 1) * yMax + sampleY + 1] - corner010) * verticalLerpStep;
+                    var corner101 = (_heightMap[((sampleX + 1) * zMax + sampleZ + 0) * yMax + sampleY + 1] - corner100) * verticalLerpStep;
+                    var corner111 = (_heightMap[((sampleX + 1) * zMax + sampleZ + 1) * yMax + sampleY + 1] - corner110) * verticalLerpStep;
 
-                    for (int subY = 0; subY < 8; ++subY)
+                    for (var subY = 0; subY < 8; ++subY)
                     {
-                        double horizontalLerpStep = 0.25D;
-                        double terrainX0 = corner000;
-                        double terrainX1 = corner010;
-                        double terrainStepX0 = (corner100 - corner000) * horizontalLerpStep;
-                        double terrainStepX1 = (corner110 - corner010) * horizontalLerpStep;
+                        var horizontalLerpStep = 0.25D;
+                        var terrainX0 = corner000;
+                        var terrainX1 = corner010;
+                        var terrainStepX0 = (corner100 - corner000) * horizontalLerpStep;
+                        var terrainStepX1 = (corner110 - corner010) * horizontalLerpStep;
 
-                        for (int subX = 0; subX < 4; ++subX)
+                        for (var subX = 0; subX < 4; ++subX)
                         {
-                            int blockIndex = ChuckFormat.GetIndex(subX + sampleX * 4, sampleY * 8 + subY, sampleZ * 4);
-                            double horizontalLerpStepZ = 0.25D;
-                            double terrainDensity = terrainX0;
-                            double densityStepZ = (terrainX1 - terrainX0) * horizontalLerpStepZ;
+                            var blockIndex = ChuckFormat.GetIndex(subX + sampleX * 4, sampleY * 8 + subY, sampleZ * 4);
+                            var horizontalLerpStepZ = 0.25D;
+                            var terrainDensity = terrainX0;
+                            var densityStepZ = (terrainX1 - terrainX0) * horizontalLerpStepZ;
 
-                            for (int subZ = 0; subZ < 4; ++subZ)
+                            for (var subZ = 0; subZ < 4; ++subZ)
                             {
-                                int blockType = 0;
+                                var blockType = 0;
                                 if (sampleY * 8 + subY < lavaLevel)
                                 {
                                     blockType = _world.Content.Blocks.Get("lava").Id;
@@ -221,25 +219,25 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
     public void BuildSurfaces(int chunkX, int chunkZ, byte[] blocks)
     {
         byte seaLevel = 64;
-        double noiseScale = 1.0D / 32.0D;
+        var noiseScale = 1.0D / 32.0D;
         _sandBuffer = _perlinNoise2.Create(_sandBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, noiseScale, noiseScale, 1.0D);
         _gravelBuffer = _perlinNoise2.Create(_gravelBuffer, chunkX * 16, 109.0134D, chunkZ * 16, 16, 1, 16, noiseScale, 1.0D, noiseScale);
         _depthBuffer = _perlinNoise3.Create(_depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, noiseScale * 2.0D, noiseScale * 2.0D, noiseScale * 2.0D);
 
-        for (int localX = 0; localX < 16; ++localX)
+        for (var localX = 0; localX < 16; ++localX)
         {
-            for (int localZ = 0; localZ < 16; ++localZ)
+            for (var localZ = 0; localZ < 16; ++localZ)
             {
-                bool isSoulsand = _sandBuffer[localX + localZ * 16] + _random.NextDouble() * 0.2D > 0.0D;
-                bool isGravel = _gravelBuffer[localX + localZ * 16] + _random.NextDouble() * 0.2D > 0.0D;
-                int surfaceDepth = (int)(_depthBuffer[localX + localZ * 16] / 3.0D + 3.0D + _random.NextDouble() * 0.25D);
-                int currentDepth = -1;
-                byte topBlock = (byte)_world.Content.Blocks.Get("netherrack").Id;
-                byte soilBlock = (byte)_world.Content.Blocks.Get("netherrack").Id;
+                var isSoulsand = _sandBuffer[localX + localZ * 16] + _random.NextDouble() * 0.2D > 0.0D;
+                var isGravel = _gravelBuffer[localX + localZ * 16] + _random.NextDouble() * 0.2D > 0.0D;
+                var surfaceDepth = (int)(_depthBuffer[localX + localZ * 16] / 3.0D + 3.0D + _random.NextDouble() * 0.25D);
+                var currentDepth = -1;
+                var topBlock = (byte)_world.Content.Blocks.Get("netherrack").Id;
+                var soilBlock = (byte)_world.Content.Blocks.Get("netherrack").Id;
 
-                for (int blockY = 127; blockY >= 0; --blockY)
+                for (var blockY = 127; blockY >= 0; --blockY)
                 {
-                    int blockIndex = (localZ * 16 + localX) * 128 + blockY;
+                    var blockIndex = (localZ * 16 + localX) * 128 + blockY;
                     if (blockY >= 127 - _random.NextInt(5))
                     {
                         blocks[blockIndex] = (byte)_world.Content.Blocks.Get("bedrock").Id;
@@ -250,7 +248,7 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
                     }
                     else
                     {
-                        byte currentBlock = blocks[blockIndex];
+                        var currentBlock = blocks[blockIndex];
                         if (currentBlock == 0)
                         {
                             currentDepth = -1;
@@ -323,16 +321,16 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
             heightMap = new double[sizeX * sizeY * sizeZ];
         }
 
-        double horizontalScale = 684.412D;
-        double verticalScale = 2053.236D;
+        var horizontalScale = 684.412D;
+        var verticalScale = 2053.236D;
         _scaleNoiseBuffer = _scaleNoise.Create(_scaleNoiseBuffer, x, y, z, sizeX, 1, sizeZ, 1.0D, 0.0D, 1.0D);
         _depthNoiseBuffer = _depthNoise.Create(_depthNoiseBuffer, x, y, z, sizeX, 1, sizeZ, 100.0D, 0.0D, 100.0D);
         _perlinNoiseBuffer = _perlinNoise1.Create(_perlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale / 80.0D, verticalScale / 60.0D, horizontalScale / 80.0D);
         _minLimitPerlinNoiseBuffer = _minLimitPerlinNoise.Create(_minLimitPerlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale, verticalScale, horizontalScale);
         _maxLimitPerlinNoiseBuffer = _maxLimitPerlinNoise.Create(_maxLimitPerlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale, verticalScale, horizontalScale);
-        int xyzIndex = 0;
-        int xzIndex = 0;
-        double[] heightModifiers = new double[sizeY];
+        var xyzIndex = 0;
+        var xzIndex = 0;
+        var heightModifiers = new double[sizeY];
 
         int iY;
         for (iY = 0; iY < sizeY; ++iY)
@@ -351,18 +349,18 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
             }
         }
 
-        for (int iX = 0; iX < sizeX; ++iX)
+        for (var iX = 0; iX < sizeX; ++iX)
         {
-            for (int iZ = 0; iZ < sizeZ; ++iZ)
+            for (var iZ = 0; iZ < sizeZ; ++iZ)
             {
-                double scaleNoiseSample = (_scaleNoiseBuffer[xzIndex] + 256.0D) / 512.0D;
+                var scaleNoiseSample = (_scaleNoiseBuffer[xzIndex] + 256.0D) / 512.0D;
                 if (scaleNoiseSample > 1.0D)
                 {
                     scaleNoiseSample = 1.0D;
                 }
 
-                double densityOffset = 0.0D;
-                double depthNoiseSample = _depthNoiseBuffer[xzIndex] / 8000.0D;
+                var densityOffset = 0.0D;
+                var depthNoiseSample = _depthNoiseBuffer[xzIndex] / 8000.0D;
                 if (depthNoiseSample < 0.0D)
                 {
                     depthNoiseSample = -depthNoiseSample;
@@ -397,11 +395,11 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
 
                 for (iY = 0; iY < sizeY; ++iY)
                 {
-                    double terrainDensity = 0.0D;
-                    double shapeModifier = heightModifiers[iY];
-                    double lowNoiseSample = _minLimitPerlinNoiseBuffer[xyzIndex] / 512.0D;
-                    double highNoiseSample = _maxLimitPerlinNoiseBuffer[xyzIndex] / 512.0D;
-                    double selectorNoiseSample = (_perlinNoiseBuffer[xyzIndex] / 10.0D + 1.0D) / 2.0D;
+                    var terrainDensity = 0.0D;
+                    var shapeModifier = heightModifiers[iY];
+                    var lowNoiseSample = _minLimitPerlinNoiseBuffer[xyzIndex] / 512.0D;
+                    var highNoiseSample = _maxLimitPerlinNoiseBuffer[xyzIndex] / 512.0D;
+                    var selectorNoiseSample = (_perlinNoiseBuffer[xyzIndex] / 10.0D + 1.0D) / 2.0D;
                     if (selectorNoiseSample < 0.0D)
                     {
                         terrainDensity = lowNoiseSample;

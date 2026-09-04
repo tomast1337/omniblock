@@ -3,7 +3,6 @@ using OmniBlock.Client.Rendering.Items;
 using OmniBlock.Client.UI.Controls.Core;
 using OmniBlock.Client.UI.Rendering;
 using OmniBlock.Client.UI.Screens.Menu.World;
-using OmniBlock.Items;
 using Color = OmniBlock.Client.UI.Colors.Color;
 
 namespace OmniBlock.Client.UI.Controls.ListItems;
@@ -21,18 +20,18 @@ public class FlatPresetListItem(FlatPresetsScreen.PresetItem preset) : ListItem<
 
         if (Value.IconId < 256)
         {
-            Block block = BlockRegistry.GetByProtocolId(Value.IconId);
+            var block = BlockRegistry.GetByProtocolId(Value.IconId);
             if (block != null)
             {
-                int textureId = block.GetTexture(Side.Up);
+                var textureId = block.GetTexture(Side.Up);
                 renderer.DrawItemIntoGui(s_itemRenderer, Value.IconId, Value.IconMeta, textureId, 5, 5);
             }
         }
         else
         {
-            if (renderer.Context.Content.Items.TryGetByProtocolId(Value.IconId, out Item? item) && item is not null)
+            if (renderer.Context.Content.Items.TryGetByProtocolId(Value.IconId, out var item) && item is not null)
             {
-                int textureId = item.GetTextureId(Value.IconMeta);
+                var textureId = item.GetTextureId(Value.IconMeta);
                 renderer.DrawItemIntoGui(s_itemRenderer, Value.IconId, Value.IconMeta, textureId, 5, 5);
             }
         }

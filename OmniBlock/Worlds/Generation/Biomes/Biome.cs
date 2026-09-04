@@ -25,11 +25,17 @@ public class Biome
     public static readonly Biome Sky = Register(12, "sky", new BiomeGenSky().SetColor(0x8080FF).SetName("Sky").DisableRain());
 
     private static readonly Biome[] s_biomes = new Biome[4096];
+    public byte SoilBlockId = (byte)BlockRegistry.Get("dirt").Id;
+    public byte TopBlockId = (byte)BlockRegistry.Get("grass_block").Id;
+
+    static Biome() => Init();
+
+    protected Biome()
+    {
+    }
 
     public string Name { get; private set; } = "";
     public int GrassColor { get; private set; }
-    public byte TopBlockId = (byte)BlockRegistry.Get("grass_block").Id;
-    public byte SoilBlockId = (byte)BlockRegistry.Get("dirt").Id;
     public int FoliageColor { get; private set; } = 0x4EE031;
     protected WeightedRandomSelector<SpawnListEntry> MonsterList { get; } = new();
     protected WeightedRandomSelector<SpawnListEntry> CreatureList { get; } = new();
@@ -37,10 +43,6 @@ public class Biome
 
     public bool HasSnow { get; private set; }
     public bool HasRain { get; private set; } = true;
-
-    protected Biome()
-    {
-    }
 
     /// <summary>
     ///     Fills every registered biome's spawn lists from <c>assets/biome_spawn/*.json</c>. Runs
@@ -51,16 +53,16 @@ public class Biome
         IEnumerable<BiomeSpawnDefinition> definitions,
         IEntityTypeBuildView entityTypes)
     {
-        Dictionary<string, BiomeSpawnDefinition> byName = definitions.ToDictionary(d => d.Name);
+        var byName = definitions.ToDictionary(d => d.Name);
 
-        foreach (ResourceLocation key in s_registry.Keys)
+        foreach (var key in s_registry.Keys)
         {
-            Biome biome = s_registry.GetOrThrow(key);
+            var biome = s_registry.GetOrThrow(key);
             biome.MonsterList.Clear();
             biome.CreatureList.Clear();
             biome.WaterCreatureList.Clear();
 
-            if (!byName.TryGetValue(key.Path, out BiomeSpawnDefinition? definition)) continue;
+            if (!byName.TryGetValue(key.Path, out var definition)) continue;
 
             Fill(biome.MonsterList, definition.Monsters, entityTypes);
             Fill(biome.CreatureList, definition.Creatures, entityTypes);
@@ -73,10 +75,10 @@ public class Biome
         BiomeSpawnEntry[] entries,
         IEntityTypeBuildView entityTypes)
     {
-        foreach (BiomeSpawnEntry entry in entries)
+        foreach (var entry in entries)
         {
-            ResourceLocation key = ResourceLocation.Parse(entry.Entity);
-            if (!entityTypes.TryGet(key, out EntityType? type))
+            var key = ResourceLocation.Parse(entry.Entity);
+            if (!entityTypes.TryGet(key, out var type))
             {
                 throw new ArgumentException($"Biome spawn list references unknown entity '{entry.Entity}'.");
             }
@@ -91,17 +93,41 @@ public class Biome
         return biome;
     }
 
-    protected Biome DisableRain() { HasRain = false; return this; }
-    protected Biome EnableSnow() { HasSnow = true; return this; }
-    protected Biome SetName(string name) { Name = name; return this; }
-    protected Biome SetFoliageColor(int color) { FoliageColor = color; return this; }
-    protected Biome SetColor(int color) { GrassColor = color; return this; }
+    protected Biome DisableRain()
+    {
+        HasRain = false;
+        return this;
+    }
+
+    protected Biome EnableSnow()
+    {
+        HasSnow = true;
+        return this;
+    }
+
+    protected Biome SetName(string name)
+    {
+        Name = name;
+        return this;
+    }
+
+    protected Biome SetFoliageColor(int color)
+    {
+        FoliageColor = color;
+        return this;
+    }
+
+    protected Biome SetColor(int color)
+    {
+        GrassColor = color;
+        return this;
+    }
 
     public static void Init()
     {
-        for (int i = 0; i < 64; ++i)
+        for (var i = 0; i < 64; ++i)
         {
-            for (int j = 0; j < 64; ++j)
+            for (var j = 0; j < 64; ++j)
             {
                 s_biomes[i + j * 64] = LocateBiome(i / 63.0F, j / 63.0F);
             }
@@ -111,16 +137,13 @@ public class Biome
         IceDesert.TopBlockId = IceDesert.SoilBlockId = (byte)BlockRegistry.Get("sand").Id;
     }
 
-    public virtual Feature GetRandomWorldGenForTrees(JavaRandom rand)
-    {
-        return rand.NextInt(10) == 0 ? new LargeOakTreeFeature() : new OakTreeFeature();
-    }
+    public virtual Feature GetRandomWorldGenForTrees(JavaRandom rand) => rand.NextInt(10) == 0 ? new LargeOakTreeFeature() : new OakTreeFeature();
 
 
     public static Biome GetBiome(double temp, double downfall)
     {
-        int x = (int)(temp * 63.0D);
-        int y = (int)(downfall * 63.0D);
+        var x = (int)(temp * 63.0D);
+        var y = (int)(downfall * 63.0D);
         return s_biomes[x + y * 64];
     }
 
@@ -133,6 +156,7 @@ public class Biome
             if (temperature < 0.5f) return Tundra;
             return temperature < 0.95f ? Savanna : Desert;
         }
+
         if (downfall > 0.5f && temperature < 0.7f) return Swampland;
         if (temperature < 0.5f) return Taiga;
         if (temperature < 0.97f) return downfall < 0.35f ? Shrubland : Forest;
@@ -160,15 +184,15 @@ public class Biome
     {
         if (saturation == 0f)
         {
-            int gray = (int)(brightness * 255f + 0.5f);
+            var gray = (int)(brightness * 255f + 0.5f);
             return (gray, gray, gray);
         }
 
-        float h = (hue - MathF.Floor(hue)) * 6f;
-        float f = h - MathF.Floor(h);
-        float p = brightness * (1f - saturation);
-        float q = brightness * (1f - saturation * f);
-        float t = brightness * (1f - saturation * (1f - f));
+        var h = (hue - MathF.Floor(hue)) * 6f;
+        var f = h - MathF.Floor(h);
+        var p = brightness * (1f - saturation);
+        var q = brightness * (1f - saturation * f);
+        var t = brightness * (1f - saturation * (1f - f));
 
         return (int)h switch
         {
@@ -177,7 +201,7 @@ public class Biome
             2 => ToRgb(p, brightness, t),
             3 => ToRgb(p, q, brightness),
             4 => ToRgb(t, p, brightness),
-            _ => ToRgb(brightness, p, q),
+            _ => ToRgb(brightness, p, q)
         };
 
         static (int, int, int) ToRgb(float r, float g, float b) =>
@@ -186,7 +210,7 @@ public class Biome
 
     public static int ToRgb(float hue, float saturation, float brightness)
     {
-        (int r, int g, int b) = FromHsbColor(hue, saturation, brightness);
+        var (r, g, b) = FromHsbColor(hue, saturation, brightness);
         return (255 << 24) | (r << 16) | (g << 8) | b;
     }
 
@@ -198,12 +222,7 @@ public class Biome
         throw new ArgumentException("Invalid creature kind: " + kind);
     }
 
-    public bool GetEnableSnow()
-    {
-        return HasSnow;
-    }
+    public bool GetEnableSnow() => HasSnow;
 
     public bool CanSpawnLightningBolt() => !HasSnow && HasRain;
-
-    static Biome() => Init();
 }

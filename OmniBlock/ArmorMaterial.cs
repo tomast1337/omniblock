@@ -9,7 +9,7 @@ public static class ArmorMaterialRegistry
     internal static void LoadFrom(IEnumerable<ArmorMaterialDefinition> definitions)
     {
         s_materials.Clear();
-        foreach (ArmorMaterialDefinition def in definitions)
+        foreach (var def in definitions)
         {
             s_materials[def.Name] = new ArmorMaterial(def.Name, def.ArmorLevel, def.TexturePrefix);
         }

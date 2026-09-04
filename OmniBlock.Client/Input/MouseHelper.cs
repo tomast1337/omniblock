@@ -8,7 +8,7 @@ public class MouseHelper
     public int DeltaY { get; private set; }
 
     /// <summary>
-    /// Returns the window pixel position the cursor should warp to when ungrabbed.
+    ///     Returns the window pixel position the cursor should warp to when ungrabbed.
     /// </summary>
     public required Func<Vector2D<int>> GetUngrabCenter { get; set; }
 
@@ -22,7 +22,7 @@ public class MouseHelper
     public void UngrabMouseCursor()
     {
         Mouse.setGrabbed(false);
-        Vector2D<int> center = GetUngrabCenter();
+        var center = GetUngrabCenter();
         Mouse.setCursorPosition(center.X, center.Y);
     }
 

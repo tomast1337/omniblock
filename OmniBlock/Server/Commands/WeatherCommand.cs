@@ -1,4 +1,3 @@
-using OmniBlock.Worlds.Core;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 
@@ -18,7 +17,7 @@ public class WeatherCommand : Command.Command
 
     private static int SetClear(CommandContext<CommandSource> context)
     {
-        foreach (ServerWorld world in context.Source.Server.worlds)
+        foreach (var world in context.Source.Server.worlds)
         {
             world.Entities.GlobalEntities.Clear();
             world.Properties.IsRaining = false;
@@ -31,7 +30,7 @@ public class WeatherCommand : Command.Command
 
     private static int SetRain(CommandContext<CommandSource> context)
     {
-        foreach (ServerWorld world in context.Source.Server.worlds)
+        foreach (var world in context.Source.Server.worlds)
         {
             world.Properties.IsRaining = true;
             world.Properties.IsThundering = false;
@@ -43,7 +42,7 @@ public class WeatherCommand : Command.Command
 
     private static int SetStorm(CommandContext<CommandSource> context)
     {
-        foreach (ServerWorld world in context.Source.Server.worlds)
+        foreach (var world in context.Source.Server.worlds)
         {
             world.Properties.IsRaining = true;
             world.Properties.IsThundering = true;

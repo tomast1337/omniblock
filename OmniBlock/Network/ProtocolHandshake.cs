@@ -56,7 +56,7 @@ public static class ProtocolHandshake
     /// </summary>
     public static bool TryDecode(long value, out int version)
     {
-        if ((value >>> 32) != Magic)
+        if (value >>> 32 != Magic)
         {
             version = 0;
             return false;

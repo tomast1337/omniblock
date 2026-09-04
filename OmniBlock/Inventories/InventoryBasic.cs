@@ -11,7 +11,7 @@ public class InventoryBasic(string inventoryTitle, int slotsCount) : IInventory
 
     public ItemStack? RemoveStack(int slotIndex, int amount)
     {
-        ItemStack? inSlot = _inventoryContents[slotIndex];
+        var inSlot = _inventoryContents[slotIndex];
 
         if (inSlot == null) return null;
 
@@ -32,7 +32,6 @@ public class InventoryBasic(string inventoryTitle, int slotsCount) : IInventory
 
         MarkDirty();
         return removeStack;
-
     }
 
     public void SetStack(int slotIndex, ItemStack? itemStack)

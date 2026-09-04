@@ -118,7 +118,7 @@ public partial class TextField : UIElement
 
             if (IsFocused && _cursorCounter / 10 % 2 == 0)
             {
-                int cursorX =
+                var cursorX =
                     4 + renderer.TextRenderer.GetStringWidth(Text[.._buffer.CursorPosition]);
                 renderer.DrawRect(cursorX, ComputedHeight / 2 - 5, 1, 10, Color.White);
             }
@@ -129,7 +129,7 @@ public partial class TextField : UIElement
 
     public override List<string> GetInspectorProperties()
     {
-        List<string> props = base.GetInspectorProperties();
+        var props = base.GetInspectorProperties();
         props.Add($"Text:     \"{_buffer.Text}\"");
         props.Add($"Placeholder: \"{Placeholder}\"");
         props.Add($"MaxLength: {MaxLength}   Cursor: {CursorPosition}  SelectionStart: {_buffer.SelectionStart}");
@@ -140,7 +140,7 @@ public partial class TextField : UIElement
     {
         renderer.DrawRect(0, 0, ComputedWidth, ComputedHeight, Color.Black);
 
-        Color borderColor = IsFocused ? Color.White : IsHovered ? Color.GrayCC : Color.GrayA0;
+        var borderColor = IsFocused ? Color.White : IsHovered ? Color.GrayCC : Color.GrayA0;
         renderer.DrawRect(0, 0, ComputedWidth, 1, borderColor);
         renderer.DrawRect(0, ComputedHeight - 1, ComputedWidth, 1, borderColor);
         renderer.DrawRect(0, 0, 1, ComputedHeight, borderColor);
@@ -149,10 +149,10 @@ public partial class TextField : UIElement
 
     private void DrawSelectionHighlight(UIRenderer renderer)
     {
-        int start = Math.Min(_buffer.SelectionStart, _buffer.CursorPosition);
-        int end = Math.Max(_buffer.SelectionStart, _buffer.CursorPosition);
-        int x1 = 4 + renderer.TextRenderer.GetStringWidth(Text[..start]);
-        int x2 = 4 + renderer.TextRenderer.GetStringWidth(Text[..end]);
+        var start = Math.Min(_buffer.SelectionStart, _buffer.CursorPosition);
+        var end = Math.Max(_buffer.SelectionStart, _buffer.CursorPosition);
+        var x1 = 4 + renderer.TextRenderer.GetStringWidth(Text[..start]);
+        var x2 = 4 + renderer.TextRenderer.GetStringWidth(Text[..end]);
         renderer.DrawRect(x1, ComputedHeight / 2 - 5, x2 - x1, 10, new Color(0, 0, 255, 128));
     }
 
@@ -166,13 +166,13 @@ public partial class TextField : UIElement
         const float xOffset = 4; // Padding
         if (string.IsNullOrEmpty(Text)) return 0;
 
-        int bestIndex = 0;
-        float bestDist = float.MaxValue;
+        var bestIndex = 0;
+        var bestDist = float.MaxValue;
 
-        for (int i = 0; i <= Text.Length; i++)
+        for (var i = 0; i <= Text.Length; i++)
         {
             float width = _textRenderer.GetStringWidth(Text[..i]);
-            float dist = MathF.Abs(xOffset + width - localX);
+            var dist = MathF.Abs(xOffset + width - localX);
             if (!(dist < bestDist)) continue;
 
             bestDist = dist;

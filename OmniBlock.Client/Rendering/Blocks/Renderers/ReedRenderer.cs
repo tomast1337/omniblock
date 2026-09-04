@@ -9,10 +9,10 @@ public class ReedRenderer : IBlockRenderer
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
         ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
-        int colorMultiplier = block.GetColorMultiplier(ctx.BlockReader, pos.X, pos.Y, pos.Z);
-        float r = (colorMultiplier >> 16 & 255) / 255.0F;
-        float g = (colorMultiplier >> 8 & 255) / 255.0F;
-        float b = (colorMultiplier & 255) / 255.0F;
+        var colorMultiplier = block.GetColorMultiplier(ctx.BlockReader, pos.X, pos.Y, pos.Z);
+        var r = ((colorMultiplier >> 16) & 255) / 255.0F;
+        var g = ((colorMultiplier >> 8) & 255) / 255.0F;
+        var b = (colorMultiplier & 255) / 255.0F;
 
         ctx.Tess.setColorOpaque_F(r, g, b);
 
@@ -23,12 +23,12 @@ public class ReedRenderer : IBlockRenderer
         // Apply random organic offset for grass so it doesn't look grid-aligned
         if (block == BlockRegistry.Get("grass")) // Assuming Block.TallGrass or equivalent
         {
-            long hash = pos.X * 3129871L ^ pos.Z * 116129781L ^ pos.Y;
+            var hash = (pos.X * 3129871L) ^ (pos.Z * 116129781L) ^ pos.Y;
             hash = hash * hash * 42317861L + hash * 11L;
 
-            renderX += (((hash >> 16 & 15L) / 15.0F) - 0.5F) * 0.5F;
-            renderY += (((hash >> 20 & 15L) / 15.0F) - 1.0F) * 0.2F;
-            renderZ += (((hash >> 24 & 15L) / 15.0F) - 0.5F) * 0.5F;
+            renderX += (((hash >> 16) & 15L) / 15.0F - 0.5F) * 0.5F;
+            renderY += (((hash >> 20) & 15L) / 15.0F - 1.0F) * 0.2F;
+            renderZ += (((hash >> 24) & 15L) / 15.0F - 0.5F) * 0.5F;
         }
 
         RenderCrossedSquares(block, ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z), renderX, renderY, renderZ, ref ctx);
@@ -38,7 +38,7 @@ public class ReedRenderer : IBlockRenderer
     private void RenderCrossedSquares(Block block, int metadata, float x, float y, float z,
         ref BlockRenderContext ctx)
     {
-        int textureId = block.GetTexture(0, metadata);
+        var textureId = block.GetTexture(0, metadata);
         if (ctx.OverrideTexture >= 0)
         {
             textureId = ctx.OverrideTexture;
@@ -54,13 +54,13 @@ public class ReedRenderer : IBlockRenderer
 
         // Magic number 0.45 means the planes stretch from 0.05 to 0.95 within the block.
         // This slight inset prevents Z-fighting (flickering) if the plant touches an adjacent solid block.
-        float minOffset = 0.5F - 0.45F; // 0.05
-        float maxOffset = 0.5F + 0.45F; // 0.95
+        var minOffset = 0.5F - 0.45F; // 0.05
+        var maxOffset = 0.5F + 0.45F; // 0.95
 
-        float minX = x + minOffset;
-        float maxX = x + maxOffset;
-        float minZ = z + minOffset;
-        float maxZ = z + maxOffset;
+        var minX = x + minOffset;
+        var maxX = x + maxOffset;
+        var minZ = z + minOffset;
+        var maxZ = z + maxOffset;
 
         // --- First Diagonal Plane (Bottom-Left to Top-Right across the X/Z grid) ---
 

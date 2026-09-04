@@ -1,60 +1,52 @@
 using System.Numerics;
+using Hexa.NET.ImGui;
 using OmniBlock.Blocks;
 using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Items;
-using OmniBlock.Registries;
-using OmniBlock.Util.Maths;
-using Hexa.NET.ImGui;
 
 namespace OmniBlock.Client.Diagnostics.Windows;
 
 /// <summary>
-/// A quick NEI-style browser over every registered item and block: search, inspect the basics,
-/// give one to the local player. Recipes and any kind of editing are out of scope for now — this
-/// is read-only.
+///     A quick NEI-style browser over every registered item and block: search, inspect the basics,
+///     give one to the local player. Recipes and any kind of editing are out of scope for now — this
+///     is read-only.
 /// </summary>
 internal sealed class ItemBlockBrowserWindow : DebugWindow
 {
-    private readonly record struct BrowserEntry(
-        ResourceLocation Key, string DisplayName, int ProtocolId, bool IsBlock,
-        TextureHandle AtlasTexture, Item Item, Block? Block);
-
-    private enum Filter { All, Items, Blocks }
-
-    public override string Title => "Item & Block Browser";
-
     private readonly DebugWindowContext _ctx;
     private readonly List<BrowserEntry> _entries = [];
-    private string _search = string.Empty;
     private Filter _filter = Filter.All;
     private int _giveCount = 1;
     private int _metadata;
+    private string _search = string.Empty;
     private BrowserEntry? _selected;
 
     public ItemBlockBrowserWindow(DebugWindowContext ctx)
     {
         _ctx = ctx;
 
-        TextureHandle itemsTexture = ctx.TextureManager.GetTextureId("/gui/items.png");
-        TextureHandle terrainTexture = ctx.TextureManager.GetTextureId("/terrain.png");
+        var itemsTexture = ctx.TextureManager.GetTextureId("/gui/items.png");
+        var terrainTexture = ctx.TextureManager.GetTextureId("/terrain.png");
 
-        foreach ((ResourceLocation location, int protocolId) in ctx.Content.Manifest.ItemIds)
+        foreach (var (location, protocolId) in ctx.Content.Manifest.ItemIds)
         {
-            if (!ctx.Content.Items.TryGetByProtocolId(protocolId, out Item? item) || item is null) continue;
+            if (!ctx.Content.Items.TryGetByProtocolId(protocolId, out var item) || item is null) continue;
 
             _entries.Add(new BrowserEntry(location, item.GetStatName(), protocolId, false, itemsTexture, item, null));
         }
 
-        foreach (ResourceLocation location in ctx.Content.Blocks.Keys)
+        foreach (var location in ctx.Content.Blocks.Keys)
         {
-            Block block = ctx.Content.Blocks.Get(location);
-            if (!ctx.Content.Items.TryGetByProtocolId(block.Id, out Item? item) || item is null) continue;
+            var block = ctx.Content.Blocks.Get(location);
+            if (!ctx.Content.Items.TryGetByProtocolId(block.Id, out var item) || item is null) continue;
 
             _entries.Add(new BrowserEntry(location, block.TranslateBlockName(), block.Id, true, terrainTexture, item, block));
         }
 
         _entries.Sort((a, b) => string.Compare(a.Key.ToString(), b.Key.ToString(), StringComparison.OrdinalIgnoreCase));
     }
+
+    public override string Title => "Item & Block Browser";
 
     protected override void OnDraw()
     {
@@ -73,11 +65,11 @@ internal sealed class ItemBlockBrowserWindow : DebugWindow
 
         ImGui.Separator();
 
-        bool canGive = _ctx.Player is not null;
-        List<BrowserEntry> visible = _entries.Where(IsVisible).ToList();
+        var canGive = _ctx.Player is not null;
+        var visible = _entries.Where(IsVisible).ToList();
         ImGuiTextSafe.TextDisabled($"{visible.Count} of {_entries.Count} entries · click an icon to inspect");
 
-        float inspectorWidth = Math.Clamp(ImGui.GetContentRegionAvail().X * 0.34f, 230f, 330f);
+        var inspectorWidth = Math.Clamp(ImGui.GetContentRegionAvail().X * 0.34f, 230f, 330f);
         if (ImGui.BeginChild("ItemBlockCatalog", new Vector2(-inspectorWidth - 8, 0)))
         {
             const float iconSize = 32f;
@@ -86,10 +78,10 @@ internal sealed class ItemBlockBrowserWindow : DebugWindow
 
             ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(cellPadding, cellPadding + 8));
 
-            int columns = Math.Max(1, (int)(ImGui.GetContentRegionAvail().X / cellSize));
-            int column = 0;
+            var columns = Math.Max(1, (int)(ImGui.GetContentRegionAvail().X / cellSize));
+            var column = 0;
 
-            foreach (BrowserEntry entry in visible)
+            foreach (var entry in visible)
             {
                 if (column > 0) ImGui.SameLine();
                 DrawCell(entry, iconSize);
@@ -118,7 +110,7 @@ internal sealed class ItemBlockBrowserWindow : DebugWindow
         if (_filter == Filter.Blocks && !entry.IsBlock) return false;
         if (string.IsNullOrWhiteSpace(_search)) return true;
 
-        string query = _search.Trim();
+        var query = _search.Trim();
         return entry.Key.ToString().Contains(query, StringComparison.OrdinalIgnoreCase) ||
                entry.Key.Path.Contains(query, StringComparison.OrdinalIgnoreCase) ||
                entry.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase) ||
@@ -127,13 +119,13 @@ internal sealed class ItemBlockBrowserWindow : DebugWindow
 
     private void DrawCell(BrowserEntry entry, float iconSize)
     {
-        string id = (entry.IsBlock ? "block_" : "item_") + entry.Key;
-        int textureIndex = entry.Block?.GetTexture(2.ToSide()) ?? entry.Item.GetTextureId(_metadata);
+        var id = (entry.IsBlock ? "block_" : "item_") + entry.Key;
+        var textureIndex = entry.Block?.GetTexture(2.ToSide()) ?? entry.Item.GetTextureId(_metadata);
         Vector2 uv0 = new(textureIndex % 16 / 16f, textureIndex / 16 / 16f);
-        Vector2 uv1 = uv0 + new Vector2(1 / 16f, 1 / 16f);
+        var uv1 = uv0 + new Vector2(1 / 16f, 1 / 16f);
 
         bool clicked;
-        ulong textureId = _ctx.GetImGuiTextureId(entry.AtlasTexture);
+        var textureId = _ctx.GetImGuiTextureId(entry.AtlasTexture);
         unsafe
         {
             clicked = textureId != 0 && ImGui.ImageButton(id, new ImTextureRef(null, new ImTextureID(textureId)), new Vector2(iconSize, iconSize), uv0, uv1);
@@ -163,15 +155,16 @@ internal sealed class ItemBlockBrowserWindow : DebugWindow
             return;
         }
 
-        int textureIndex = entry.Block?.GetTexture(2.ToSide()) ?? entry.Item.GetTextureId(_metadata);
+        var textureIndex = entry.Block?.GetTexture(2.ToSide()) ?? entry.Item.GetTextureId(_metadata);
         Vector2 uv0 = new(textureIndex % 16 / 16f, textureIndex / 16 / 16f);
-        Vector2 uv1 = uv0 + new Vector2(1 / 16f, 1 / 16f);
-        ulong textureId = _ctx.GetImGuiTextureId(entry.AtlasTexture);
+        var uv1 = uv0 + new Vector2(1 / 16f, 1 / 16f);
+        var textureId = _ctx.GetImGuiTextureId(entry.AtlasTexture);
         unsafe
         {
             if (textureId != 0)
                 ImGui.Image(new ImTextureRef(null, new ImTextureID(textureId)), new Vector2(64), uv0, uv1);
         }
+
         ImGuiTextSafe.Text(entry.DisplayName);
         ImGuiTextSafe.TextDisabled(entry.Key.ToString());
         ImGui.Separator();
@@ -207,9 +200,10 @@ internal sealed class ItemBlockBrowserWindow : DebugWindow
         if (!canGive) ImGui.BeginDisabled();
         if (ImGui.Button("Give to player"))
         {
-            string itemArgument = _metadata == 0 ? entry.Key.ToString() : $"{entry.Key}:{_metadata}";
+            var itemArgument = _metadata == 0 ? entry.Key.ToString() : $"{entry.Key}:{_metadata}";
             _ctx.Player?.SendChatMessage($"/give {itemArgument} {_giveCount}");
         }
+
         if (!canGive) ImGui.EndDisabled();
         if (!canGive) ImGuiTextSafe.TextDisabled("Join a world to use /give.");
     }
@@ -219,5 +213,21 @@ internal sealed class ItemBlockBrowserWindow : DebugWindow
         ImGuiTextSafe.TextDisabled(label);
         ImGui.SameLine(105);
         ImGuiTextSafe.Text(value);
+    }
+
+    private readonly record struct BrowserEntry(
+        ResourceLocation Key,
+        string DisplayName,
+        int ProtocolId,
+        bool IsBlock,
+        TextureHandle AtlasTexture,
+        Item Item,
+        Block? Block);
+
+    private enum Filter
+    {
+        All,
+        Items,
+        Blocks
     }
 }

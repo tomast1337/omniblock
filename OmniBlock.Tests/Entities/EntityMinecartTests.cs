@@ -1,15 +1,15 @@
-using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.Items;
 using OmniBlock.NBT;
+
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Covers the minecart, the last non-living entity to lose its class: rails, the three cart kinds,
-/// collisions, NBT and the client branch. The three kinds are one entity type separated by a stored
-/// number, so the wire ids that used to be a class check are declared data like falling sand's.
+///     Covers the minecart, the last non-living entity to lose its class: rails, the three cart kinds,
+///     collisions, NBT and the client branch. The three kinds are one entity type separated by a stored
+///     number, so the wire ids that used to be a class check are declared data like falling sand's.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityMinecartTests
@@ -30,7 +30,7 @@ public sealed class EntityMinecartTests
         world.Writer.SetBlock(x, y, z, railBlockId, meta);
     }
 
-    /// <summary>Opaque neighbor required for slope rails to stay valid (see <see cref="RailBehavior.NeighborUpdate"/>).</summary>
+    /// <summary>Opaque neighbor required for slope rails to stay valid (see <see cref="RailBehavior.NeighborUpdate" />).</summary>
     private static void PlaceSlopeSupport(FakeWorldContext world, int x, int railY, int z, int slopeMeta)
     {
         switch (slopeMeta)
@@ -54,7 +54,7 @@ public sealed class EntityMinecartTests
     public void A_minecart_has_no_class_of_its_own()
     {
         FakeWorldContext world = new();
-        Entity cart = Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Rideable);
+        var cart = Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Rideable);
 
         Assert.Equal(typeof(EntityObject), cart.GetType());
         Assert.True(MinecartBehavior.IsMinecart(cart));
@@ -88,7 +88,7 @@ public sealed class EntityMinecartTests
         Assert.Null(Cart.Cargo(Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Rideable)));
         Assert.Null(Cart.Cargo(Place(world, 8.5, 65.0, 9.5, MinecartBehavior.Furnace)));
 
-        MinecartCargo cargo = Cart.Cargo(Place(world, 8.5, 65.0, 10.5, MinecartBehavior.Chest))!;
+        var cargo = Cart.Cargo(Place(world, 8.5, 65.0, 10.5, MinecartBehavior.Chest))!;
         Assert.Equal(27, cargo.Size);
         Assert.Equal(64, cargo.MaxCountPerStack);
         Assert.Equal("Minecart", cargo.Name);
@@ -101,7 +101,7 @@ public sealed class EntityMinecartTests
         PlaceRailWithFloor(world, 8, 64, 8, TestBlocks.Get("rail").Id, 0);
         PlaceRailWithFloor(world, 12, 64, 8, TestBlocks.Get("rail").Id, 1);
 
-        Entity cart = Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Rideable);
+        var cart = Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Rideable);
         Assert.NotNull(Cart.GetTrackPosition(cart, 8.5, 65.0, 8.5));
         Assert.NotNull(Cart.GetTrackPositionOffset(cart, 8.5, 65.0, 8.5, 0.1));
 
@@ -119,16 +119,16 @@ public sealed class EntityMinecartTests
         PlaceRailWithFloor(world, 12, 64, 12, TestBlocks.Get("rail").Id, 1);
         PlaceRailWithFloor(world, 12, 64, 13, TestBlocks.Get("rail").Id, 1);
 
-        Entity cart0 = Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Rideable);
+        var cart0 = Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Rideable);
         cart0.VelocityZ = 0.15;
         Assert.True(world.Entities.SpawnEntity(cart0));
 
-        Entity cart1 = Place(world, 12.5, 65.0, 12.5, MinecartBehavior.Rideable);
+        var cart1 = Place(world, 12.5, 65.0, 12.5, MinecartBehavior.Rideable);
         cart1.VelocityX = 0.15;
         Assert.True(world.Entities.SpawnEntity(cart1));
 
-        double startSpeed0 = EntityTestHarness.HorizontalSpeed(cart0);
-        double startSpeed1 = EntityTestHarness.HorizontalSpeed(cart1);
+        var startSpeed0 = EntityTestHarness.HorizontalSpeed(cart0);
+        var startSpeed1 = EntityTestHarness.HorizontalSpeed(cart1);
         EntityTestHarness.AdvanceGameTicks(world, 80);
 
         Assert.True(EntityTestHarness.HorizontalSpeed(cart0) > 0.0);
@@ -145,16 +145,16 @@ public sealed class EntityMinecartTests
     public void Ticks_on_slope_rail_meta(int slopeMeta)
     {
         FakeWorldContext world = new();
-        int x = 16 + slopeMeta;
-        int z = 8;
+        var x = 16 + slopeMeta;
+        var z = 8;
         PlaceRailWithFloor(world, x, 64, z, TestBlocks.Get("rail").Id, slopeMeta);
         PlaceSlopeSupport(world, x, 64, z, slopeMeta);
 
-        Entity cart = Place(world, x + 0.5, 65.0, z + 0.5, MinecartBehavior.Rideable);
+        var cart = Place(world, x + 0.5, 65.0, z + 0.5, MinecartBehavior.Rideable);
         cart.VelocityX = 0.05;
         cart.VelocityZ = 0.05;
         Assert.True(world.Entities.SpawnEntity(cart));
-        double startY = cart.Y;
+        var startY = cart.Y;
         EntityTestHarness.AdvanceGameTicks(world, 60);
         Assert.NotEqual(startY, cart.Y);
     }
@@ -166,22 +166,22 @@ public sealed class EntityMinecartTests
         EntityTestHarness.PlaceStoneFloor(world, 0, 31, 0, 15, 63);
 
         PlaceRailWithFloor(world, 8, 64, 8, TestBlocks.Get("powered_rail").Id, 0 | 8);
-        Entity boosted = Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Rideable);
+        var boosted = Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Rideable);
         boosted.VelocityZ = 0.02;
         Assert.True(world.Entities.SpawnEntity(boosted));
 
         PlaceRailWithFloor(world, 10, 64, 8, TestBlocks.Get("powered_rail").Id, 0);
-        Entity braking = Place(world, 10.5, 65.0, 8.5, MinecartBehavior.Rideable);
+        var braking = Place(world, 10.5, 65.0, 8.5, MinecartBehavior.Rideable);
         braking.VelocityZ = 0.15;
         Assert.True(world.Entities.SpawnEntity(braking));
 
         PlaceRailWithFloor(world, 12, 64, 8, TestBlocks.Get("detector_rail").Id, 0);
-        Entity detector = Place(world, 12.5, 65.0, 8.5, MinecartBehavior.Rideable);
+        var detector = Place(world, 12.5, 65.0, 8.5, MinecartBehavior.Rideable);
         detector.VelocityZ = 0.1;
         Assert.True(world.Entities.SpawnEntity(detector));
 
-        double boostedBefore = EntityTestHarness.HorizontalSpeed(boosted);
-        double brakingBefore = EntityTestHarness.HorizontalSpeed(braking);
+        var boostedBefore = EntityTestHarness.HorizontalSpeed(boosted);
+        var brakingBefore = EntityTestHarness.HorizontalSpeed(braking);
 
         EntityTestHarness.AdvanceGameTicks(world, 40);
 
@@ -195,13 +195,13 @@ public sealed class EntityMinecartTests
     {
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 31, 0, 15, 63);
-        int x = 20;
-        int z = 8;
+        var x = 20;
+        var z = 8;
         PlaceRailWithFloor(world, x, 64, z, TestBlocks.Get("powered_rail").Id, 0 | 8);
         world.Writer.SetBlock(x, 64, z - 1, TestBlocks.Get("stone").Id);
         world.Writer.SetBlock(x, 64, z + 1, TestBlocks.Get("stone").Id);
 
-        Entity cart = Place(world, x + 0.5, 65.0, z + 0.5, MinecartBehavior.Rideable);
+        var cart = Place(world, x + 0.5, 65.0, z + 0.5, MinecartBehavior.Rideable);
         Assert.True(world.Entities.SpawnEntity(cart));
         EntityTestHarness.AdvanceGameTicks(world, 8);
         Assert.True(EntityTestHarness.HorizontalSpeed(cart) > 0.0);
@@ -212,13 +212,13 @@ public sealed class EntityMinecartTests
     {
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 31, 0, 15, 63);
-        int x = 22;
-        int z = 8;
+        var x = 22;
+        var z = 8;
         PlaceRailWithFloor(world, x, 64, z, TestBlocks.Get("powered_rail").Id, 1 | 8);
         world.Writer.SetBlock(x - 1, 64, z, TestBlocks.Get("stone").Id);
         world.Writer.SetBlock(x + 1, 64, z, TestBlocks.Get("stone").Id);
 
-        Entity cart = Place(world, x + 0.5, 65.0, z + 0.5, MinecartBehavior.Rideable);
+        var cart = Place(world, x + 0.5, 65.0, z + 0.5, MinecartBehavior.Rideable);
         Assert.True(world.Entities.SpawnEntity(cart));
         EntityTestHarness.AdvanceGameTicks(world, 8);
         Assert.True(EntityTestHarness.HorizontalSpeed(cart) > 0.0);
@@ -229,16 +229,16 @@ public sealed class EntityMinecartTests
     {
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 40, 0, 15, 63);
-        for (int m = 6; m <= 9; m++)
+        for (var m = 6; m <= 9; m++)
         {
-            int x = 8 + m;
+            var x = 8 + m;
             PlaceRailWithFloor(world, x, 64, 8, TestBlocks.Get("rail").Id, m);
         }
 
-        Entity cart = Place(world, 14.5, 65.0, 8.5, MinecartBehavior.Rideable);
+        var cart = Place(world, 14.5, 65.0, 8.5, MinecartBehavior.Rideable);
         cart.VelocityX = 0.12;
         Assert.True(world.Entities.SpawnEntity(cart));
-        double startX = cart.X;
+        var startX = cart.X;
         EntityTestHarness.AdvanceGameTicks(world, 120);
         Assert.NotEqual(startX, cart.X);
     }
@@ -249,11 +249,11 @@ public sealed class EntityMinecartTests
         FakeWorldContext world = new();
         EntityTestHarness.PlaceRailRunX(world, 4, 20, 64, 8);
 
-        Entity slow = Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Rideable);
+        var slow = Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Rideable);
         slow.VelocityX = 0.2;
         Assert.True(world.Entities.SpawnEntity(slow));
 
-        Entity furnace = Place(world, 10.5, 65.0, 8.5, MinecartBehavior.Furnace);
+        var furnace = Place(world, 10.5, 65.0, 8.5, MinecartBehavior.Furnace);
         furnace.VelocityX = -0.15;
         Assert.True(world.Entities.SpawnEntity(furnace));
 
@@ -267,7 +267,7 @@ public sealed class EntityMinecartTests
     {
         FakeWorldContext world = new();
         EntityTestHarness.PlaceRailRunX(world, 6, 14, 64, 10);
-        Entity cart = Place(world, 10.5, 65.0, 10.5, MinecartBehavior.Furnace);
+        var cart = Place(world, 10.5, 65.0, 10.5, MinecartBehavior.Furnace);
         Assert.True(world.Entities.SpawnEntity(cart));
 
         var player = new TestEntityPlayer(world);
@@ -276,7 +276,7 @@ public sealed class EntityMinecartTests
         player.Inventory.SetStack(0, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:coal"), 16));
         player.Inventory.SelectedSlot = 0;
 
-        bool interacted = cart.Interact(player);
+        var interacted = cart.Interact(player);
         Assert.True(interacted);
         Assert.NotNull(player.Inventory.GetStack(0));
         Assert.Equal(15, player.Inventory.GetStack(0)!.Count);
@@ -293,14 +293,14 @@ public sealed class EntityMinecartTests
     {
         FakeWorldContext world = new();
         EntityTestHarness.PlaceRailRunX(world, 4, 12, 64, 6);
-        Entity cart = Place(world, 8.5, 65.0, 6.5, MinecartBehavior.Rideable);
+        var cart = Place(world, 8.5, 65.0, 6.5, MinecartBehavior.Rideable);
         Assert.True(world.Entities.SpawnEntity(cart));
 
         var player = new TestEntityPlayer(world);
         player.SetPosition(8.5, 65.0, 6.5);
         Assert.True(world.Entities.SpawnEntity(player));
 
-        bool interacted = cart.Interact(player);
+        var interacted = cart.Interact(player);
         EntityTestHarness.AdvanceGameTicks(world, 20);
         Assert.True(interacted);
         Assert.Same(cart, player.Vehicle);
@@ -312,8 +312,8 @@ public sealed class EntityMinecartTests
     {
         FakeWorldContext world = new();
         EntityTestHarness.PlaceRailRunX(world, 4, 10, 64, 4);
-        Entity cart = Place(world, 8.5, 65.0, 4.5, MinecartBehavior.Chest);
-        MinecartCargo cargo = Cart.Cargo(cart)!;
+        var cart = Place(world, 8.5, 65.0, 4.5, MinecartBehavior.Chest);
+        var cargo = Cart.Cargo(cart)!;
         cargo.SetStack(3, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 4));
         Assert.Equal(2, cargo.RemoveStack(3, 2)!.Count);
         cargo.SetStack(3, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 4));
@@ -323,7 +323,7 @@ public sealed class EntityMinecartTests
         var player = new TestEntityPlayer(world);
         player.SetPosition(8.5, 65.0, 4.5);
         Assert.True(world.Entities.SpawnEntity(player));
-        bool interacted = cart.Interact(player);
+        var interacted = cart.Interact(player);
 
         Assert.True(cart.Damage(null, 10));
         Assert.True(interacted);
@@ -338,20 +338,23 @@ public sealed class EntityMinecartTests
     public void Breaking_a_cart_drops_the_pieces_that_built_it(int cartType, string expectedDrop)
     {
         FakeWorldContext world = new();
-        Entity cart = Place(world, 8.5, 65.0, 8.5, cartType);
+        var cart = Place(world, 8.5, 65.0, 8.5, cartType);
         Assert.True(world.Entities.SpawnEntity(cart));
 
         Assert.True(cart.Damage(null, 5));
 
         Assert.True(cart.Dead);
-        Assert.True(ContentRuntime.Current.Items.TryParse(expectedDrop, out ItemStack? expected));
-        Assert.True(ContentRuntime.Current.Items.TryParse("minecart", out ItemStack? minecart));
-        int expectedId = expected.ItemId;
-        int minecartId = minecart.ItemId;
-        List<int> dropped = [.. world.Entities.Entities
-            .Select(EntityTestHarness.DroppedStack)
-            .Where(stack => stack is not null)
-            .Select(stack => stack!.ItemId)];
+        Assert.True(ContentRuntime.Current.Items.TryParse(expectedDrop, out var expected));
+        Assert.True(ContentRuntime.Current.Items.TryParse("minecart", out var minecart));
+        var expectedId = expected.ItemId;
+        var minecartId = minecart.ItemId;
+        List<int> dropped =
+        [
+            .. world.Entities.Entities
+                .Select(EntityTestHarness.DroppedStack)
+                .Where(stack => stack is not null)
+                .Select(stack => stack!.ItemId)
+        ];
 
         Assert.Contains(minecartId, dropped);
         Assert.Contains(expectedId, dropped);
@@ -361,10 +364,10 @@ public sealed class EntityMinecartTests
     public void Empty_cart_damage_breaks_and_AnimateHurt()
     {
         FakeWorldContext world = new();
-        Entity cart = Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Rideable);
+        var cart = Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Rideable);
         Assert.True(world.Entities.SpawnEntity(cart));
 
-        int restingDirection = Cart.RockDirection(cart);
+        var restingDirection = Cart.RockDirection(cart);
         cart.AnimateHurt();
         Assert.Equal(-restingDirection, Cart.RockDirection(cart));
         Assert.Equal(10, Cart.TimeSinceHit(cart));
@@ -379,12 +382,12 @@ public sealed class EntityMinecartTests
         FakeWorldContext world = new();
         world.IsRemote = true;
 
-        Entity cart = Place(world, 8.0, 65.0, 8.0, MinecartBehavior.Rideable);
+        var cart = Place(world, 8.0, 65.0, 8.0, MinecartBehavior.Rideable);
         cart.SetPositionAndAnglesAvoidEntities(9.0, 65.5, 9.0, 45f, 0f, 4);
         Assert.True(world.Entities.SpawnEntity(cart));
         EntityTestHarness.AdvanceGameTicks(world, 6);
 
-        Entity cart2 = Place(world, 12.0, 65.0, 12.0, MinecartBehavior.Rideable);
+        var cart2 = Place(world, 12.0, 65.0, 12.0, MinecartBehavior.Rideable);
         Assert.True(world.Entities.SpawnEntity(cart2));
         EntityTestHarness.AdvanceGameTicks(world, 2);
         Assert.True(cart.X > 8.0);
@@ -396,7 +399,7 @@ public sealed class EntityMinecartTests
     {
         FakeWorldContext world = new();
         world.IsRemote = true;
-        Entity cart = Place(world, 8.0, 65.0, 8.0, MinecartBehavior.Rideable);
+        var cart = Place(world, 8.0, 65.0, 8.0, MinecartBehavior.Rideable);
         cart.SetVelocityClient(0.1, 0.0, -0.05);
         Assert.True(world.Entities.SpawnEntity(cart));
         EntityTestHarness.AdvanceGameTicks(world, 2);
@@ -409,7 +412,7 @@ public sealed class EntityMinecartTests
     {
         FakeWorldContext worldA = new();
         EntityTestHarness.PlaceStoneFloor(worldA, 0, 15, 0, 15, 63);
-        Entity original = Place(worldA, 8.5, 65.0, 8.5, MinecartBehavior.Chest);
+        var original = Place(worldA, 8.5, 65.0, 8.5, MinecartBehavior.Chest);
         Cart.Cargo(original)!.SetStack(5, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 3));
 
         var nbt = new NBTTagCompound();
@@ -417,12 +420,12 @@ public sealed class EntityMinecartTests
 
         FakeWorldContext worldB = new();
         EntityTestHarness.PlaceStoneFloor(worldB, 0, 15, 0, 15, 63);
-        Entity? loaded = TestEntityCatalog.GetEntityFromNbt(nbt, worldB);
+        var loaded = TestEntityCatalog.GetEntityFromNbt(nbt, worldB);
         Assert.NotNull(loaded);
         Assert.Equal(typeof(EntityObject), loaded.GetType());
         Assert.Equal(MinecartBehavior.Chest, Cart.Type(loaded));
 
-        MinecartCargo cargo = Cart.Cargo(loaded)!;
+        var cargo = Cart.Cargo(loaded)!;
         Assert.NotNull(cargo.GetStack(5));
         Assert.Equal(3, cargo.GetStack(5)!.Count);
     }
@@ -431,7 +434,7 @@ public sealed class EntityMinecartTests
     public void OnCollision_empty_cart_pushes_pig_when_fast()
     {
         FakeWorldContext world = new();
-        Entity cart = Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Rideable);
+        var cart = Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Rideable);
         cart.VelocityX = 0.15;
         cart.VelocityZ = 0.12;
         Assert.True(world.Entities.SpawnEntity(cart));
@@ -440,7 +443,7 @@ public sealed class EntityMinecartTests
         pig.SetPosition(9.2, 65.0, 8.6);
         Assert.True(world.Entities.SpawnEntity(pig));
 
-        double pigSpeedBefore = EntityTestHarness.HorizontalSpeed(pig);
+        var pigSpeedBefore = EntityTestHarness.HorizontalSpeed(pig);
         cart.OnCollision(pig);
         Assert.True(EntityTestHarness.HorizontalSpeed(pig) > pigSpeedBefore);
     }
@@ -449,12 +452,12 @@ public sealed class EntityMinecartTests
     public void OnCollision_two_furnace_carts_averages_velocity()
     {
         FakeWorldContext world = new();
-        Entity a = Place(world, 8.0, 65.0, 8.0, MinecartBehavior.Furnace);
+        var a = Place(world, 8.0, 65.0, 8.0, MinecartBehavior.Furnace);
         a.VelocityX = 0.12;
         a.VelocityZ = 0.05;
         Assert.True(world.Entities.SpawnEntity(a));
 
-        Entity b = Place(world, 8.3, 65.0, 8.2, MinecartBehavior.Furnace);
+        var b = Place(world, 8.3, 65.0, 8.2, MinecartBehavior.Furnace);
         b.VelocityX = -0.1;
         b.VelocityZ = 0.04;
         Assert.True(world.Entities.SpawnEntity(b));
@@ -469,7 +472,7 @@ public sealed class EntityMinecartTests
     public void MarkDead_chest_cart_spills_inventory_without_Damage()
     {
         FakeWorldContext world = new();
-        Entity cart = Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Chest);
+        var cart = Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Chest);
         Cart.Cargo(cart)!.SetStack(0, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 24));
         Assert.True(world.Entities.SpawnEntity(cart));
 
@@ -487,14 +490,14 @@ public sealed class EntityMinecartTests
     {
         FakeWorldContext worldA = new();
         EntityTestHarness.PlaceStoneFloor(worldA, 0, 15, 0, 15, 63);
-        Entity original = Place(worldA, 8.5, 65.0, 8.5, MinecartBehavior.Furnace);
+        var original = Place(worldA, 8.5, 65.0, 8.5, MinecartBehavior.Furnace);
 
         var nbt = new NBTTagCompound();
         Assert.True(original.SaveSelfNbt(nbt));
 
         FakeWorldContext worldB = new();
         EntityTestHarness.PlaceStoneFloor(worldB, 0, 15, 0, 15, 63);
-        Entity? loaded = TestEntityCatalog.GetEntityFromNbt(nbt, worldB);
+        var loaded = TestEntityCatalog.GetEntityFromNbt(nbt, worldB);
         Assert.NotNull(loaded);
         Assert.Equal(MinecartBehavior.Furnace, Cart.Type(loaded));
     }
@@ -502,7 +505,7 @@ public sealed class EntityMinecartTests
     [Fact]
     public void Protocol_facts_are_pinned()
     {
-        EntityDefinition minecart = TestEntityCatalog.ByName("minecart").RequireDefinition();
+        var minecart = TestEntityCatalog.ByName("minecart").RequireDefinition();
 
         Assert.Equal(40, minecart.ProtocolId);
         Assert.Equal(0, minecart.SpawnObjectId);

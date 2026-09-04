@@ -15,14 +15,14 @@ public class FlatLayerListItem(FlatLayerInfo layer) : ListItem<FlatLayerInfo>(la
     {
         base.Render(renderer);
 
-        Block block = BlockRegistry.GetByProtocolId(Value.FillBlock);
-        string blockName = block?.TranslateBlockName() ?? Translations.Get("newWorld.customize.unknown");
+        var block = BlockRegistry.GetByProtocolId(Value.FillBlock);
+        var blockName = block?.TranslateBlockName() ?? Translations.Get("newWorld.customize.unknown");
 
         renderer.DrawRect(4, 4, 18, 18, Color.BackgroundBlackAlpha);
 
         if (block != null)
         {
-            int textureId = block.GetTexture(Side.Up);
+            var textureId = block.GetTexture(Side.Up);
             renderer.DrawItemIntoGui(s_itemRenderer, Value.FillBlock, Value.FillBlockMeta, textureId, 5, 5);
         }
 

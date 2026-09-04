@@ -15,7 +15,7 @@ public class DeopCommand : Command.Command
 
     private static int Execute(CommandContext<CommandSource> context)
     {
-        string target = context.GetArgument<string>("player");
+        var target = context.GetArgument<string>("player");
         context.Source.Server.playerManager.removeFromOperators(target);
         context.Source.Server.playerManager.messagePlayer(target, "§eYou are no longer op!");
         context.Source.LogOp("De-opping " + target);

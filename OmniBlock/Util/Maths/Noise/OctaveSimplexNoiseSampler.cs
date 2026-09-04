@@ -2,25 +2,21 @@ namespace OmniBlock.Util.Maths.Noise;
 
 internal class OctaveSimplexNoiseSampler : NoiseSampler
 {
-    private readonly SimplexNoiseSampler[] _octaves;
     private readonly int _octaveCount;
+    private readonly SimplexNoiseSampler[] _octaves;
 
     public OctaveSimplexNoiseSampler(JavaRandom rand, int octaveCount)
     {
         _octaveCount = octaveCount;
         _octaves = new SimplexNoiseSampler[octaveCount];
 
-        for (int i = 0; i < octaveCount; ++i)
+        for (var i = 0; i < octaveCount; ++i)
         {
             _octaves[i] = new SimplexNoiseSampler(rand);
         }
-
     }
 
-    public double[] Sample(double[] buffer, double x, double z, int width, int depth, double xFrequency, double zFrequency, double frequencyScaler)
-    {
-        return Sample(buffer, x, z, width, depth, xFrequency, zFrequency, frequencyScaler, 0.5D);
-    }
+    public double[] Sample(double[] buffer, double x, double z, int width, int depth, double xFrequency, double zFrequency, double frequencyScaler) => Sample(buffer, x, z, width, depth, xFrequency, zFrequency, frequencyScaler, 0.5D);
 
     private double[] Sample(double[] buffer, double x, double z, int width, int depth, double xFrequency, double zFrequency, double frequencyScaler, double amplitudeScaler)
     {
@@ -28,7 +24,7 @@ internal class OctaveSimplexNoiseSampler : NoiseSampler
         zFrequency /= 1.5D;
         if (buffer != null && buffer.Length >= width * depth)
         {
-            for (int i = 0; i < buffer.Length; ++i)
+            for (var i = 0; i < buffer.Length; ++i)
             {
                 buffer[i] = 0.0D;
             }
@@ -38,10 +34,10 @@ internal class OctaveSimplexNoiseSampler : NoiseSampler
             buffer = new double[width * depth];
         }
 
-        double amplitudeDivisor = 1.0D;
-        double frequencyMultiplier = 1.0D;
+        var amplitudeDivisor = 1.0D;
+        var frequencyMultiplier = 1.0D;
 
-        for (int i = 0; i < _octaveCount; ++i)
+        for (var i = 0; i < _octaveCount; ++i)
         {
             _octaves[i].Sample(buffer,
                 x, z, width, depth,

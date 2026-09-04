@@ -20,35 +20,17 @@ public class GenericBlockEntity : BlockEntity
 
     public int InventorySize => _inventory.Length;
 
-    public int GetInt(string key)
-    {
-        return _integers.TryGetValue(key, out var value) ? value : 0;
-    }
+    public int GetInt(string key) => _integers.TryGetValue(key, out var value) ? value : 0;
 
-    public void SetInt(string key, int value)
-    {
-        _integers[key] = value;
-    }
+    public void SetInt(string key, int value) => _integers[key] = value;
 
-    public float GetFloat(string key)
-    {
-        return _floats.TryGetValue(key, out var value) ? value : 0f;
-    }
+    public float GetFloat(string key) => _floats.TryGetValue(key, out var value) ? value : 0f;
 
-    public void SetFloat(string key, float value)
-    {
-        _floats[key] = value;
-    }
+    public void SetFloat(string key, float value) => _floats[key] = value;
 
-    public string GetString(string key)
-    {
-        return _strings.TryGetValue(key, out var value) ? value : string.Empty;
-    }
+    public string GetString(string key) => _strings.TryGetValue(key, out var value) ? value : string.Empty;
 
-    public void SetString(string key, string value)
-    {
-        _strings[key] = value;
-    }
+    public void SetString(string key, string value) => _strings[key] = value;
 
     public void SetInventorySize(int size)
     {
@@ -59,10 +41,7 @@ public class GenericBlockEntity : BlockEntity
         _inventory = resized;
     }
 
-    public ItemStack? GetStack(int slot)
-    {
-        return _inventory[slot];
-    }
+    public ItemStack? GetStack(int slot) => _inventory[slot];
 
     public void SetStack(int slot, ItemStack? stack)
     {

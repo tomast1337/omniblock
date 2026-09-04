@@ -2,7 +2,6 @@ using System.Text.Json;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.Entities.State;
-using OmniBlock.Registries;
 
 namespace OmniBlock.Tests.Entities;
 
@@ -15,8 +14,12 @@ public sealed class EntityBehaviorProviderRegistryTests
         var provider = new CapturingProvider();
         var providers = new EntityBehaviorProviderRegistry();
         providers.Register("example:custom", provider);
-        EntityDefinition owner = new() { ProtocolId = 20, Name = "owner" };
-        JsonElement json = JsonSerializer.Deserialize<JsonElement>(
+        EntityDefinition owner = new()
+        {
+            ProtocolId = 20,
+            Name = "owner"
+        };
+        var json = JsonSerializer.Deserialize<JsonElement>(
             """{"Type":"example:custom","value":42}""");
         var context = new EntityBehaviorBuildContext(
             owner,
@@ -26,7 +29,7 @@ public sealed class EntityBehaviorProviderRegistryTests
             new RegistryEntityTypeView(),
             providers);
 
-        object result = context.Build(json);
+        var result = context.Build(json);
 
         Assert.Same(provider.Result, result);
         Assert.Equal(ResourceLocation.Parse("example:custom"), provider.Type);
@@ -56,9 +59,8 @@ public sealed class EntityBehaviorProviderRegistryTests
         var provider = new CapturingProvider();
         providers.Register("example:custom", provider);
 
-        ArgumentException duplicate = Assert.Throws<ArgumentException>(
-            () => providers.Register("example:custom", provider));
-        ArgumentException unknown = Assert.Throws<ArgumentException>(() => Context(providers).Build(
+        var duplicate = Assert.Throws<ArgumentException>(() => providers.Register("example:custom", provider));
+        var unknown = Assert.Throws<ArgumentException>(() => Context(providers).Build(
             JsonSerializer.Deserialize<JsonElement>("""{"Type":"example:missing"}""")));
 
         Assert.Contains("example:custom", duplicate.Message);
@@ -66,7 +68,11 @@ public sealed class EntityBehaviorProviderRegistryTests
     }
 
     private static EntityBehaviorBuildContext Context(IEntityBehaviorProviderRegistry providers) => new(
-        new EntityDefinition { ProtocolId = 20, Name = "owner" },
+        new EntityDefinition
+        {
+            ProtocolId = 20,
+            Name = "owner"
+        },
         new EntityStateLayout(),
         ContentRuntime.Current.Blocks,
         ContentRuntime.Current.Items,

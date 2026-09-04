@@ -21,7 +21,7 @@ public sealed unsafe class LuauCallbacksTests
     [Fact]
     public void Allocate_growingFromNull_returnsWritableMemory()
     {
-        void* ptr = s_allocate(null, null, 0, 64);
+        var ptr = s_allocate(null, null, 0, 64);
 
         Assert.True(ptr != null);
         new Span<byte>(ptr, 64).Fill(0xAB);
@@ -33,14 +33,14 @@ public sealed unsafe class LuauCallbacksTests
     [Fact]
     public void Allocate_growingExisting_preservesLeadingBytes()
     {
-        void* small = s_allocate(null, null, 0, 32);
+        var small = s_allocate(null, null, 0, 32);
         new Span<byte>(small, 32).Fill(0x42);
 
-        void* grown = s_allocate(null, small, 32, 128);
+        var grown = s_allocate(null, small, 32, 128);
 
         Assert.True(grown != null);
         Span<byte> data = new(grown, 128);
-        for (int i = 0; i < 32; i++)
+        for (var i = 0; i < 32; i++)
         {
             Assert.Equal(0x42, data[i]);
         }
@@ -51,9 +51,9 @@ public sealed unsafe class LuauCallbacksTests
     [Fact]
     public void Allocate_shrinkingToZero_freesAndReturnsNull()
     {
-        void* ptr = s_allocate(null, null, 0, 16);
+        var ptr = s_allocate(null, null, 0, 16);
 
-        void* result = s_allocate(null, ptr, 16, 0);
+        var result = s_allocate(null, ptr, 16, 0);
 
         Assert.True(result == null);
     }
@@ -61,7 +61,7 @@ public sealed unsafe class LuauCallbacksTests
     [Fact]
     public void Allocate_freeingNull_isNoOp()
     {
-        void* result = s_allocate(null, null, 0, 0);
+        var result = s_allocate(null, null, 0, 0);
 
         Assert.True(result == null);
     }

@@ -23,12 +23,12 @@ internal sealed class LuauWorldService(IWorldStorageSource storage, Func<bool> c
     {
         if (_pending != null || !canLoad() || string.IsNullOrWhiteSpace(id)) return false;
 
-        WorldSaveInfo? world = storage.GetAll()
+        var world = storage.GetAll()
             .FirstOrDefault(candidate => string.Equals(candidate.FileName, id, StringComparison.Ordinal));
         if (world == null || world.IsUnsupported) return false;
 
-        WorldProperties? properties = storage.GetProperties(world.FileName);
-        WorldSettings settings = properties == null
+        var properties = storage.GetProperties(world.FileName);
+        var settings = properties == null
             ? new WorldSettings(0L, WorldType.Default)
             : new WorldSettings(properties.RandomSeed, properties.TerrainType, properties.GeneratorOptions);
 

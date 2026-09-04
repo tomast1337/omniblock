@@ -39,7 +39,7 @@ public sealed class PacketArrivalHistogram
     {
         get
         {
-            long count = Count;
+            var count = Count;
             return count == 0 ? 0.0 : Volatile.Read(ref _totalMs) / count;
         }
     }
@@ -58,8 +58,8 @@ public sealed class PacketArrivalHistogram
             return;
         }
 
-        int bucket = s_upperBounds.Length - 1;
-        for (int i = 0; i < s_upperBounds.Length; i++)
+        var bucket = s_upperBounds.Length - 1;
+        for (var i = 0; i < s_upperBounds.Length; i++)
         {
             if (intervalMs <= s_upperBounds[i])
             {
@@ -94,16 +94,16 @@ public sealed class PacketArrivalHistogram
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(percentile);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(percentile, 100.0);
 
-        long total = Count;
+        var total = Count;
         if (total == 0)
         {
             return 0.0;
         }
 
-        long target = (long)Math.Ceiling(total * percentile / 100.0);
+        var target = (long)Math.Ceiling(total * percentile / 100.0);
         long seen = 0;
 
-        for (int i = 0; i < _buckets.Length; i++)
+        for (var i = 0; i < _buckets.Length; i++)
         {
             seen += Interlocked.Read(ref _buckets[i]);
             if (seen >= target)
@@ -118,8 +118,8 @@ public sealed class PacketArrivalHistogram
     /// <summary>Bucket counts, aligned with <see cref="UpperBounds" />.</summary>
     public long[] Snapshot()
     {
-        long[] copy = new long[_buckets.Length];
-        for (int i = 0; i < _buckets.Length; i++)
+        var copy = new long[_buckets.Length];
+        for (var i = 0; i < _buckets.Length; i++)
         {
             copy[i] = Interlocked.Read(ref _buckets[i]);
         }
@@ -129,7 +129,7 @@ public sealed class PacketArrivalHistogram
 
     public void Reset()
     {
-        for (int i = 0; i < _buckets.Length; i++)
+        for (var i = 0; i < _buckets.Length; i++)
         {
             Interlocked.Exchange(ref _buckets[i], 0);
         }

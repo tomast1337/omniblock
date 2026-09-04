@@ -75,7 +75,7 @@ public static unsafe class LuauRegistryHost
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int RegisterUiClosure(IntPtr l)
     {
-        IntPtr ptr = LuauNative.lua_tolstring(l, 1, out nuint len);
+        var ptr = LuauNative.lua_tolstring(l, 1, out var len);
         if (ptr == IntPtr.Zero)
         {
             LuauNative.luaL_errorL(l, "Registry.registerUi expects a string argument");
@@ -88,9 +88,9 @@ public static unsafe class LuauRegistryHost
         // exactly the "managed exception crosses the boundary" case this method must not allow.
         // Encoding.UTF8 (the static property, not a throwing UTF8Encoding) replaces malformed
         // sequences instead of throwing, so this call itself cannot throw either.
-        string name = Encoding.UTF8.GetString(new ReadOnlySpan<byte>((byte*)ptr, (int)len));
+        var name = Encoding.UTF8.GetString(new ReadOnlySpan<byte>((byte*)ptr, (int)len));
 
-        if (RegisterUi is not { } registerUi || !registerUi(name, out int id))
+        if (RegisterUi is not { } registerUi || !registerUi(name, out var id))
         {
             // Covers both realistic causes with one message: called after Freeze(), or 'name'
             // failed ResourceLocation validation (bad characters, missing namespace on a

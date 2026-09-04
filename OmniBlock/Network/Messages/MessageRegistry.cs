@@ -92,10 +92,10 @@ public sealed class MessageRegistry
         _negotiatedOrder = [.. ordering];
         _byId = new Registration?[ordering.Count];
 
-        int known = 0;
-        for (int id = 0; id < ordering.Count; id++)
+        var known = 0;
+        for (var id = 0; id < ordering.Count; id++)
         {
-            if (!_byKey.TryGetValue(ordering[id], out Registration? registration))
+            if (!_byKey.TryGetValue(ordering[id], out var registration))
             {
                 continue;
             }
@@ -106,8 +106,8 @@ public sealed class MessageRegistry
 
         Negotiated = true;
 
-        int unknown = ordering.Count - known;
-        int unsent = _byKey.Count - known;
+        var unknown = ordering.Count - known;
+        var unsent = _byKey.Count - known;
 
         if (unknown > 0 || unsent > 0)
         {
@@ -142,7 +142,7 @@ public sealed class MessageRegistry
         id >= 0 && id < _negotiatedOrder.Length ? _negotiatedOrder[id] : null;
 
     public int GetSchemaVersion(ResourceLocation key) =>
-        _byKey.TryGetValue(key, out Registration? registration) ? registration.SchemaVersion : -1;
+        _byKey.TryGetValue(key, out var registration) ? registration.SchemaVersion : -1;
 
     private sealed record Registration(ResourceLocation Key, int SchemaVersion, Func<Message> Factory);
 }

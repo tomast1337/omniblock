@@ -6,7 +6,7 @@ public class HandshakePacket() : Packet(PacketId.Handshake)
 
     public static HandshakePacket Get(string username)
     {
-        HandshakePacket p = Get<HandshakePacket>(PacketId.Handshake);
+        var p = Get<HandshakePacket>(PacketId.Handshake);
         p.Username = username;
         return p;
     }

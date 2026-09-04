@@ -13,10 +13,7 @@ public class IndexedRegistry<T>(ResourceLocation registryKey) : IRegistry<T> whe
     public ResourceLocation RegistryKey { get; } = registryKey;
     public bool IsFrozen { get; private set; }
 
-    public void Register(ResourceLocation key, T value)
-    {
-        Register(-1, key, value);
-    }
+    public void Register(ResourceLocation key, T value) => Register(-1, key, value);
 
     public void Register(int id, ResourceLocation key, T value)
     {
@@ -69,40 +66,31 @@ public class IndexedRegistry<T>(ResourceLocation registryKey) : IRegistry<T> whe
         if (value == null) return null;
 
         _holderCache ??= [];
-        if (!_holderCache.TryGetValue(key, out Holder<T>? holder))
+        if (!_holderCache.TryGetValue(key, out var holder))
         {
-            holder = new(value);
+            holder = new Holder<T>(value);
             _holderCache[key] = holder;
         }
 
         return holder;
     }
 
-    public int GetId(T value)
-    {
-        return _toId.TryGetValue(value, out int id) ? id : -1;
-    }
+    public int GetId(T value) => _toId.TryGetValue(value, out var id) ? id : -1;
 
     public ResourceLocation? GetKey(T value)
     {
-        _toLocation.TryGetValue(value, out ResourceLocation? key);
+        _toLocation.TryGetValue(value, out var key);
         return key;
     }
 
     public bool ContainsKey(ResourceLocation key) => _byLocation.ContainsKey(key);
-    public bool ContainsId(int id) => id >= 0 && id < _byId.Count && _byId[id] != null;
 
     public IEnumerable<ResourceLocation> Keys => _byLocation.Keys;
 
-    public void Freeze()
-    {
-        IsFrozen = true;
-    }
+    public void Freeze() => IsFrozen = true;
 
-    public IEnumerator<T> GetEnumerator()
-    {
-        return _byId.Where(x => x != null).GetEnumerator()!;
-    }
+    public IEnumerator<T> GetEnumerator() => _byId.Where(x => x != null).GetEnumerator()!;
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    public bool ContainsId(int id) => id >= 0 && id < _byId.Count && _byId[id] != null;
 }

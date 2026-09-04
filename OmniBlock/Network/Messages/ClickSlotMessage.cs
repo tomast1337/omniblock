@@ -13,10 +13,14 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class ClickSlotMessage : Message
 {
-    private readonly IItemRuntimeView? _items;
-    public ClickSlotMessage() { }
-    internal ClickSlotMessage(IItemRuntimeView items) => _items = items;
     public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "click_slot");
+    private readonly IItemRuntimeView? _items;
+
+    public ClickSlotMessage()
+    {
+    }
+
+    internal ClickSlotMessage(IItemRuntimeView items) => _items = items;
     public sbyte SyncId { get; set; }
 
     public short Slot { get; set; }

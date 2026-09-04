@@ -16,7 +16,7 @@ internal sealed class FishingRodBehavior(int cast) : IItemBehavior
     {
         if (player.FishHook is { } bobber)
         {
-            int durabilityLoss = bobber.Behaviors.Find<FishingBobberBehavior>()!.Reel(bobber);
+            var durabilityLoss = bobber.Behaviors.Find<FishingBobberBehavior>()!.Reel(bobber);
             itemStack.DamageItem(durabilityLoss, player);
             player.SwingHand();
         }

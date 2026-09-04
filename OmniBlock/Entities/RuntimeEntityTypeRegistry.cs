@@ -1,8 +1,8 @@
 using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 using OmniBlock.NBT;
 using OmniBlock.Worlds.Core.Systems;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Entities;
 
@@ -10,10 +10,10 @@ namespace OmniBlock.Entities;
 public sealed class RuntimeEntityTypeRegistry : IEntityTypeBuildView
 {
     private static readonly ILogger s_logger = Log.Instance.For<RuntimeEntityTypeRegistry>();
+    private readonly FrozenDictionary<int, EntityType> _byGlobalSpawnId;
     private readonly FrozenDictionary<ResourceLocation, EntityType> _byKey;
     private readonly FrozenDictionary<int, EntityType> _byProtocolId;
     private readonly FrozenDictionary<int, EntityType> _bySpawnObjectId;
-    private readonly FrozenDictionary<int, EntityType> _byGlobalSpawnId;
     private readonly FrozenDictionary<EntityType, ResourceLocation> _keysByType;
     private readonly FrozenDictionary<EntityType, int> _protocolIdsByType;
 
@@ -27,7 +27,7 @@ public sealed class RuntimeEntityTypeRegistry : IEntityTypeBuildView
         var keysByType = new Dictionary<EntityType, ResourceLocation>();
         var protocolIdsByType = new Dictionary<EntityType, int>();
 
-        foreach ((ResourceLocation key, int protocolId, EntityType type) in entries)
+        foreach (var (key, protocolId, type) in entries)
         {
             if (!byKey.TryAdd(key, type)) throw new ArgumentException($"Duplicate entity key '{key}'.");
             if (!byProtocolId.TryAdd(protocolId, type))
@@ -37,7 +37,6 @@ public sealed class RuntimeEntityTypeRegistry : IEntityTypeBuildView
 
             AddOptional(bySpawnObjectId, type.Definition?.SpawnObjectId ?? 0, "object-spawn", key, type);
             AddOptional(byGlobalSpawnId, type.Definition?.GlobalSpawnId ?? 0, "global-spawn", key, type);
-
         }
 
         _byKey = byKey.ToFrozenDictionary();
@@ -52,13 +51,18 @@ public sealed class RuntimeEntityTypeRegistry : IEntityTypeBuildView
     public IEnumerable<ResourceLocation> Keys => _byKey.Keys;
     public IEnumerable<EntityType> Values => _byKey.Values;
 
-    public EntityType Get(ResourceLocation key) => _byKey.TryGetValue(key, out EntityType? type)
-        ? type : throw new KeyNotFoundException($"Unknown entity type '{key}'.");
-    public EntityType Get(string key) => Get(ParseKey(key));
+    public EntityType Get(ResourceLocation key) => _byKey.TryGetValue(key, out var type)
+        ? type
+        : throw new KeyNotFoundException($"Unknown entity type '{key}'.");
+
     public bool TryGet(ResourceLocation key, [NotNullWhen(true)] out EntityType? type) => _byKey.TryGetValue(key, out type);
+    public EntityType Get(string key) => Get(ParseKey(key));
     public bool TryGet(string key, [NotNullWhen(true)] out EntityType? type) => TryGet(ParseKey(key), out type);
-    public EntityType GetByProtocolId(int id) => _byProtocolId.TryGetValue(id, out EntityType? type)
-        ? type : throw new KeyNotFoundException($"Unknown entity protocol id {id}.");
+
+    public EntityType GetByProtocolId(int id) => _byProtocolId.TryGetValue(id, out var type)
+        ? type
+        : throw new KeyNotFoundException($"Unknown entity protocol id {id}.");
+
     public bool TryGetByProtocolId(int id, [NotNullWhen(true)] out EntityType? type) => _byProtocolId.TryGetValue(id, out type);
     public EntityType? GetBySpawnObjectId(int id) => _bySpawnObjectId.GetValueOrDefault(id);
     public EntityType? GetByGlobalSpawnId(int id) => _byGlobalSpawnId.GetValueOrDefault(id);
@@ -66,31 +70,36 @@ public sealed class RuntimeEntityTypeRegistry : IEntityTypeBuildView
     public Entity Create(ResourceLocation key, IWorldContext world) => Get(key).Create(world);
     public Entity Create(string key, IWorldContext world) => Create(ParseKey(key), world);
     public Entity CreateByProtocolId(int protocolId, IWorldContext world) => GetByProtocolId(protocolId).Create(world);
+
     public bool TryCreate(string key, IWorldContext world, [MaybeNullWhen(false)] out Entity entity, EntityType? skip = null)
     {
-        if (!TryGet(key, out EntityType? type) || ReferenceEquals(type, skip))
+        if (!TryGet(key, out var type) || ReferenceEquals(type, skip))
         {
             entity = null;
             return false;
         }
+
         entity = type.Create(world);
         return true;
     }
 
     public bool TryCreate(int protocolId, IWorldContext world, [MaybeNullWhen(false)] out Entity entity)
     {
-        if (!TryGetByProtocolId(protocolId, out EntityType? type))
+        if (!TryGetByProtocolId(protocolId, out var type))
         {
             entity = null;
             return false;
         }
+
         entity = type.Create(world);
         return true;
     }
 
     public int GetProtocolId(Entity entity) =>
-        entity.Type is { } type && _protocolIdsByType.TryGetValue(type, out int id) ? id : -1;
-    public int GetProtocolId(EntityType type) => _protocolIdsByType.TryGetValue(type, out int id) ? id : -1;
+        entity.Type is { } type && _protocolIdsByType.TryGetValue(type, out var id) ? id : -1;
+
+    public int GetProtocolId(EntityType type) => _protocolIdsByType.TryGetValue(type, out var id) ? id : -1;
+
     public ResourceLocation? GetKey(Entity entity) =>
         entity.Type is { } type ? _keysByType.GetValueOrDefault(type) : null;
 
@@ -100,7 +109,7 @@ public sealed class RuntimeEntityTypeRegistry : IEntityTypeBuildView
         UnknownEntityLoadPolicy unknownPolicy = UnknownEntityLoadPolicy.SkipWithWarning,
         Action<string>? reportWarning = null)
     {
-        string persistedId = nbt.GetString("id");
+        var persistedId = nbt.GetString("id");
         EntityType? type = null;
         try
         {
@@ -110,17 +119,19 @@ public sealed class RuntimeEntityTypeRegistry : IEntityTypeBuildView
         {
             // Invalid resource names follow the same policy as names whose defining mod is absent.
         }
+
         if (type is null)
         {
-            string diagnostic =
+            var diagnostic =
                 $"Cannot load persisted entity type '{persistedId}': it is not present in the content catalog; the defining mod may be missing.";
             if (unknownPolicy == UnknownEntityLoadPolicy.Fail)
                 throw new InvalidOperationException(diagnostic);
             (reportWarning ?? (message => s_logger.LogWarning(message)))(diagnostic);
             return null;
         }
+
         if (ReferenceEquals(type, Get("omniblock:player"))) return null;
-        Entity entity = type.Create(world);
+        var entity = type.Create(world);
         entity.Read(nbt);
         return entity;
     }

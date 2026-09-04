@@ -1,4 +1,3 @@
-using OmniBlock.Worlds.Core;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 
@@ -26,12 +25,12 @@ public class TimeCommand : Command.Command
 
     private static int TimeSet(CommandContext<CommandSource> context, int time)
     {
-        foreach (ServerWorld world in context.Source.Server.worlds)
+        foreach (var world in context.Source.Server.worlds)
         {
             world.SetTime(time);
         }
 
-        string msg = $"Set time to {time}";
+        var msg = $"Set time to {time}";
         context.Source.Output.SendMessage(msg);
         context.Source.LogOp(msg);
         return 1;
@@ -40,12 +39,12 @@ public class TimeCommand : Command.Command
 
     private static int TimeAdd(CommandContext<CommandSource> context, int time)
     {
-        foreach (ServerWorld world in context.Source.Server.worlds)
+        foreach (var world in context.Source.Server.worlds)
         {
             world.SetTime(world.GetTime() + time);
         }
 
-        string msg = $"Added {time} to time";
+        var msg = $"Added {time} to time";
         context.Source.Output.SendMessage(msg);
         context.Source.LogOp(msg);
         return 1;

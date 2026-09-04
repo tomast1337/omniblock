@@ -4,14 +4,6 @@ namespace OmniBlock.Client.Input;
 
 public class ControllerBinding
 {
-    public string ActionKey { get; }
-
-    public string Description { get; }
-
-    public GamepadButton Button { get; set; }
-
-    public GamepadButton DefaultButton { get; }
-
     public ControllerBinding(string actionKey, string description, GamepadButton defaultButton)
     {
         ActionKey = actionKey;
@@ -19,6 +11,14 @@ public class ControllerBinding
         DefaultButton = defaultButton;
         Button = defaultButton;
     }
+
+    public string ActionKey { get; }
+
+    public string Description { get; }
+
+    public GamepadButton Button { get; set; }
+
+    public GamepadButton DefaultButton { get; }
 
     public string GetButtonName() => Button switch
     {

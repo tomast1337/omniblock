@@ -1,4 +1,3 @@
-using System.Text.Json;
 using OmniBlock.Entities.State;
 using OmniBlock.NBT;
 
@@ -25,7 +24,7 @@ public sealed class SizedBodyBehavior : IEntityLifecycle, IEntityPersistence
     public SizedBodyBehavior(in EntityBehaviorContext context)
     {
         List<int> choices = [];
-        foreach (JsonElement choice in context.Json.GetProperty("sizes").EnumerateArray())
+        foreach (var choice in context.Json.GetProperty("sizes").EnumerateArray())
         {
             choices.Add(choice.GetInt32());
         }

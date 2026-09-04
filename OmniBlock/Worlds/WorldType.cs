@@ -8,12 +8,6 @@ public class WorldType
     public static readonly WorldType Flat = new WorldType(1, "flat", "/gui/world_types/flat.png").SetCanBeCreated();
     public static readonly WorldType Sky = new WorldType(2, "sky", "/gui/world_types/sky.png").SetCanBeCreated();
 
-    public string Name { get; }
-    public string DisplayName { get; private set; }
-    public string Description { get; private set; }
-    public string IconPath { get; }
-    public bool CanBeCreated { get; private set; }
-
     private WorldType(int id, string name, string iconPath = "")
     {
         Name = name;
@@ -24,10 +18,13 @@ public class WorldType
         WorldTypes[id] = this;
     }
 
-    public string GetTranslateName()
-    {
-        return $"generator.{Name}";
-    }
+    public string Name { get; }
+    public string DisplayName { get; private set; }
+    public string Description { get; private set; }
+    public string IconPath { get; }
+    public bool CanBeCreated { get; private set; }
+
+    public string GetTranslateName() => $"generator.{Name}";
 
     public WorldType SetCanBeCreated(bool val = true)
     {
@@ -49,7 +46,7 @@ public class WorldType
 
     public static WorldType ParseWorldType(string name)
     {
-        foreach (WorldType type in WorldTypes)
+        foreach (var type in WorldTypes)
         {
             if (type != null && type.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
             {

@@ -1,4 +1,3 @@
-using OmniBlock.Registries;
 using OmniBlock.Registries.Data;
 
 namespace OmniBlock.Tests;
@@ -30,21 +29,21 @@ public class GameModePersistenceTests : IDisposable
         GC.Collect();
         GC.WaitForPendingFinalizers();
         if (Directory.Exists(_tempDir))
-            Directory.Delete(_tempDir, recursive: true);
+            Directory.Delete(_tempDir, true);
 
         GC.SuppressFinalize(this);
     }
 
     private DataAssetLoader<GameMode> BuildWithGameModes(params string[] names)
     {
-        string dir = Path.Combine(_tempDir, "assets", "gamemode");
+        var dir = Path.Combine(_tempDir, "assets", "gamemode");
         Directory.CreateDirectory(dir);
-        foreach (string name in names)
+        foreach (var name in names)
         {
             File.WriteAllText(Path.Combine(dir, $"{name}.json"), "{}");
         }
 
-        return RegistryAccess.Build(basePath: _tempDir).GetOrThrow(RegistryKeys.GameModes).AsAssetLoader();
+        return RegistryAccess.Build(_tempDir).GetOrThrow(RegistryKeys.GameModes).AsAssetLoader();
     }
 
     [Theory]
@@ -54,15 +53,15 @@ public class GameModePersistenceTests : IDisposable
     [InlineData("spectator")]
     public void The_written_name_resolves_back_to_the_same_game_mode(string name)
     {
-        DataAssetLoader<GameMode> loader = BuildWithGameModes("survival", "creative", "adventure", "spectator");
+        var loader = BuildWithGameModes("survival", "creative", "adventure", "spectator");
 
-        Assert.True(loader.TryGetHolder(name, out Holder<GameMode>? original));
+        Assert.True(loader.TryGetHolder(name, out var original));
 
         // Exactly what WriteNbt stores and ReadNbt looks up.
-        string written = original.Value.ToString();
+        var written = original.Value.ToString();
 
         Assert.True(
-            loader.TryGetHolder(written, out Holder<GameMode>? restored),
+            loader.TryGetHolder(written, out var restored),
             $"'{written}' did not resolve; a player saved in {name} would load as the server default.");
         Assert.Same(original.Value, restored.Value);
     }
@@ -75,9 +74,9 @@ public class GameModePersistenceTests : IDisposable
     [Fact]
     public void The_written_name_is_namespace_qualified()
     {
-        DataAssetLoader<GameMode> loader = BuildWithGameModes("creative");
+        var loader = BuildWithGameModes("creative");
 
-        Assert.True(loader.TryGetHolder("creative", out Holder<GameMode>? creative));
+        Assert.True(loader.TryGetHolder("creative", out var creative));
 
         Assert.Equal("omniblock:creative", creative.Value.ToString());
     }

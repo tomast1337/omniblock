@@ -31,7 +31,7 @@ public sealed class ChunkDeltaUpdateMessage : Message
     {
         X = stream.ReadInt();
         Z = stream.ReadInt();
-        int count = stream.ReadShort() & 0xffff;
+        var count = stream.ReadShort() & 0xffff;
         if (count is < 0 or > MaxCount)
         {
             throw new InvalidDataException(
@@ -42,7 +42,7 @@ public sealed class ChunkDeltaUpdateMessage : Message
         BlockRawIds = new byte[count];
         BlockMetadata = new byte[count];
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             Positions[i] = stream.ReadShort();
         }
@@ -57,7 +57,7 @@ public sealed class ChunkDeltaUpdateMessage : Message
         stream.WriteInt(Z);
         stream.WriteShort((short)Positions.Length);
 
-        foreach (short t in Positions)
+        foreach (var t in Positions)
         {
             stream.WriteShort(t);
         }

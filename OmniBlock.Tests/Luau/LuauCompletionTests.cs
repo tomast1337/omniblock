@@ -28,7 +28,7 @@ public sealed class LuauCompletionTests
     {
         LuauCompletion completion = new();
 
-        CompletionEdit edit = completion.Complete(source, source.Length);
+        var edit = completion.Complete(source, source.Length);
 
         Assert.Contains(expected, edit.Matches);
         Assert.Equal(expected, edit.Replacement);
@@ -37,7 +37,7 @@ public sealed class LuauCompletionTests
     [Fact]
     public void CompletesToSharedPrefixWhenSeveralNamesMatch()
     {
-        CompletionEdit edit = new LuauCompletion().Complete("OMNI.ui.root.hit", 16);
+        var edit = new LuauCompletion().Complete("OMNI.ui.root.hit", 16);
 
         Assert.Equal("hitTestVisible", edit.Replacement);
     }

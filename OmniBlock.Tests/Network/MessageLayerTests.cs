@@ -1,4 +1,3 @@
-using OmniBlock;
 using OmniBlock.Network.Messages;
 using OmniBlock.Network.Packets;
 
@@ -142,8 +141,7 @@ public sealed class MessageLayerTests
         MessageRegistry registry = new();
         registry.Register(s_alpha, 1, () => new StubMessage(s_alpha));
 
-        Assert.Throws<InvalidOperationException>(
-            () => registry.Register(s_alpha, 1, () => new StubMessage(s_alpha)));
+        Assert.Throws<InvalidOperationException>(() => registry.Register(s_alpha, 1, () => new StubMessage(s_alpha)));
     }
 
     [Fact]
@@ -184,8 +182,7 @@ public sealed class MessageLayerTests
         registry.Register(s_alpha, 1, () => new StubMessage(s_alpha));
         registry.NegotiateAsServer();
 
-        Assert.Throws<InvalidOperationException>(
-            () => registry.Register(s_beta, 1, () => new StubMessage(s_beta)));
+        Assert.Throws<InvalidOperationException>(() => registry.Register(s_beta, 1, () => new StubMessage(s_beta)));
     }
 
     // ---------------------------------------------------------------------------------------
@@ -196,15 +193,15 @@ public sealed class MessageLayerTests
     public void Envelope_round_trips_through_the_packet_framing()
     {
         byte[] payload = [1, 2, 3, 4, 5];
-        OmniMessagePacket sent = OmniMessagePacket.Get(7, payload);
+        var sent = OmniMessagePacket.Get(7, payload);
 
         MemoryStream stream = new();
         Packet.Write(sent, stream);
         stream.Position = 0;
 
-        Packet? received = Packet.Read(stream, server: true);
+        var received = Packet.Read(stream, true);
 
-        OmniMessagePacket envelope = Assert.IsType<OmniMessagePacket>(received);
+        var envelope = Assert.IsType<OmniMessagePacket>(received);
         Assert.Equal(7, envelope.MessageId);
         Assert.Equal(payload, envelope.Payload);
     }
@@ -214,7 +211,7 @@ public sealed class MessageLayerTests
     {
         // Size() and Write() disagreeing is the classic hand-rolled-serialiser bug, and here it
         // would corrupt byte accounting rather than the stream, making it hard to notice.
-        OmniMessagePacket packet = OmniMessagePacket.Get(300, new byte[1000]);
+        var packet = OmniMessagePacket.Get(300, new byte[1000]);
 
         MemoryStream stream = new();
         packet.Write(stream);
@@ -232,10 +229,10 @@ public sealed class MessageLayerTests
         Packet.Write(OmniMessagePacket.Get(1, [0x42]), stream);
         stream.Position = 0;
 
-        OmniMessagePacket unknown = Assert.IsType<OmniMessagePacket>(Packet.Read(stream, server: true));
+        var unknown = Assert.IsType<OmniMessagePacket>(Packet.Read(stream, true));
         Assert.Equal(9999, unknown.MessageId);
 
-        OmniMessagePacket next = Assert.IsType<OmniMessagePacket>(Packet.Read(stream, server: true));
+        var next = Assert.IsType<OmniMessagePacket>(Packet.Read(stream, true));
         Assert.Equal(1, next.MessageId);
         Assert.Equal([0x42], next.Payload);
     }
@@ -264,22 +261,22 @@ public sealed class MessageLayerTests
         server.Register(s_modded, 1, () => new StubMessage(s_modded));
         server.Register(s_alpha, 1, () => new StubMessage(s_alpha));
 
-        MessageRegistrySyncS2CPacket sent = MessageRegistrySyncS2CPacket.Get(server.NegotiateAsServer());
+        var sent = MessageRegistrySyncS2CPacket.Get(server.NegotiateAsServer());
 
         MemoryStream stream = new();
         Packet.Write(sent, stream);
         stream.Position = 0;
 
-        Packet? received = Packet.Read(stream, server: false);
+        var received = Packet.Read(stream, false);
 
-        MessageRegistrySyncS2CPacket sync = Assert.IsType<MessageRegistrySyncS2CPacket>(received);
+        var sync = Assert.IsType<MessageRegistrySyncS2CPacket>(received);
         Assert.Equal(sent.Keys, sync.Keys);
     }
 
     [Fact]
     public void Registry_sync_size_matches_the_bytes_written()
     {
-        MessageRegistrySyncS2CPacket packet = MessageRegistrySyncS2CPacket.Get([s_alpha, s_beta, s_modded]);
+        var packet = MessageRegistrySyncS2CPacket.Get([s_alpha, s_beta, s_modded]);
 
         MemoryStream stream = new();
         packet.Write(stream);
@@ -299,20 +296,23 @@ public sealed class MessageLayerTests
         client.Register(s_beta, 1, () => new StubMessage(s_beta));
         client.AdoptOrdering(server.NegotiateAsServer());
 
-        StubMessage outgoing = new(s_beta) { Value = 0xBEEF };
+        StubMessage outgoing = new(s_beta)
+        {
+            Value = 0xBEEF
+        };
         MemoryStream body = new();
         outgoing.Write(body);
 
-        OmniMessagePacket envelope = OmniMessagePacket.Get(server.GetId(s_beta), body.ToArray());
+        var envelope = OmniMessagePacket.Get(server.GetId(s_beta), body.ToArray());
 
         MemoryStream wire = new();
         Packet.Write(envelope, wire);
         wire.Position = 0;
 
-        OmniMessagePacket received = Assert.IsType<OmniMessagePacket>(Packet.Read(wire, server: false));
-        Message? decoded = client.Create(received.MessageId);
+        var received = Assert.IsType<OmniMessagePacket>(Packet.Read(wire, false));
+        var decoded = client.Create(received.MessageId);
 
-        StubMessage stub = Assert.IsType<StubMessage>(decoded);
+        var stub = Assert.IsType<StubMessage>(decoded);
         stub.Read(new MemoryStream(received.Payload));
 
         Assert.Equal(s_beta, stub.Key);

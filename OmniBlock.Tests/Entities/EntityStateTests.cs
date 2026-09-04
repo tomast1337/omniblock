@@ -1,4 +1,3 @@
-using System.IO;
 using OmniBlock.Entities;
 using OmniBlock.Entities.State;
 using OmniBlock.Util;
@@ -6,9 +5,9 @@ using OmniBlock.Util;
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Covers the per-entity state foundation that lets behaviors be shared per entity type instead of
-/// held as fields on a subclass: typed <see cref="StateHandle{T}"/> slots for unsynced state, and
-/// JSON-declared synced properties whose wire ids come from data.
+///     Covers the per-entity state foundation that lets behaviors be shared per entity type instead of
+///     held as fields on a subclass: typed <see cref="StateHandle{T}" /> slots for unsynced state, and
+///     JSON-declared synced properties whose wire ids come from data.
 /// </summary>
 public sealed class EntityStateTests
 {
@@ -16,12 +15,12 @@ public sealed class EntityStateTests
     public void Handles_round_trip_each_primitive_kind_independently()
     {
         EntityStateLayout layout = new();
-        StateHandle<int> ticks = layout.DeclareInt();
-        StateHandle<float> tilt = layout.DeclareFloat();
-        StateHandle<double> waypoint = layout.DeclareDouble();
-        StateHandle<bool> shaking = layout.DeclareBool();
+        var ticks = layout.DeclareInt();
+        var tilt = layout.DeclareFloat();
+        var waypoint = layout.DeclareDouble();
+        var shaking = layout.DeclareBool();
 
-        EntityState state = layout.Create();
+        var state = layout.Create();
         state[ticks] = 30;
         state[tilt] = 0.25F;
         state[waypoint] = -12.5D;
@@ -37,10 +36,10 @@ public sealed class EntityStateTests
     public void Declared_defaults_apply_to_every_new_instance()
     {
         EntityStateLayout layout = new();
-        StateHandle<int> fuse = layout.DeclareInt(30);
-        StateHandle<bool> armed = layout.DeclareBool(true);
+        var fuse = layout.DeclareInt(30);
+        var armed = layout.DeclareBool(true);
 
-        foreach (EntityState state in new[] { layout.Create(), layout.Create() })
+        foreach (var state in new[] { layout.Create(), layout.Create() })
         {
             Assert.Equal(30, state[fuse]);
             Assert.True(state[armed]);
@@ -51,10 +50,10 @@ public sealed class EntityStateTests
     public void Instances_from_one_layout_do_not_share_storage()
     {
         EntityStateLayout layout = new();
-        StateHandle<int> counter = layout.DeclareInt();
+        var counter = layout.DeclareInt();
 
-        EntityState first = layout.Create();
-        EntityState second = layout.Create();
+        var first = layout.Create();
+        var second = layout.Create();
         first[counter] = 7;
 
         // This is what makes a shared, stateless behavior safe across many entities.
@@ -66,9 +65,9 @@ public sealed class EntityStateTests
     public void Reference_slots_keep_their_declared_type()
     {
         EntityStateLayout layout = new();
-        StateHandle<string> owner = layout.DeclareRef<string>();
+        var owner = layout.DeclareRef<string>();
 
-        EntityState state = layout.Create();
+        var state = layout.Create();
         Assert.Null(state.GetRef(owner));
 
         state.SetRef(owner, "tester");
@@ -109,11 +108,11 @@ public sealed class EntityStateTests
     {
         DataSynchronizer sync = new(ContentRuntime.Current.Items);
 
-        ArgumentException flags = Assert.Throws<ArgumentException>(() => SyncedPropertyFactory.Declare(
+        var flags = Assert.Throws<ArgumentException>(() => SyncedPropertyFactory.Declare(
             sync, [new SyncedPropertyDefinition("bad", 0, SyncedValueKind.Bool)], "test"));
         Assert.Contains("reserved", flags.Message);
 
-        ArgumentException tooBig = Assert.Throws<ArgumentException>(() => SyncedPropertyFactory.Declare(
+        var tooBig = Assert.Throws<ArgumentException>(() => SyncedPropertyFactory.Declare(
             sync, [new SyncedPropertyDefinition("bad", 32, SyncedValueKind.Bool)], "test"));
         Assert.Contains("32", tooBig.Message);
     }
@@ -131,12 +130,10 @@ public sealed class EntityStateTests
         Assert.Equal(17, SyncedPropertyFactory.Resolve<bool>(definition, "powered").Id);
 
         // A behavior asking for the wrong type is a load-time failure, not a runtime cast error.
-        ArgumentException wrongType = Assert.Throws<ArgumentException>(
-            () => SyncedPropertyFactory.Resolve<int>(definition, "powered"));
+        var wrongType = Assert.Throws<ArgumentException>(() => SyncedPropertyFactory.Resolve<int>(definition, "powered"));
         Assert.Contains("Bool", wrongType.Message);
 
-        ArgumentException missing = Assert.Throws<ArgumentException>(
-            () => SyncedPropertyFactory.Resolve<bool>(definition, "nope"));
+        var missing = Assert.Throws<ArgumentException>(() => SyncedPropertyFactory.Resolve<bool>(definition, "nope"));
         Assert.Contains("nope", missing.Message);
     }
 

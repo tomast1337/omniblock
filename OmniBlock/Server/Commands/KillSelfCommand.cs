@@ -1,6 +1,6 @@
-using OmniBlock.Entities;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
+using OmniBlock.Entities;
 
 namespace OmniBlock.Server.Commands;
 
@@ -15,7 +15,7 @@ public class KillSelfCommand : Command.Command
 
     private static int Execute(CommandContext<CommandSource> context)
     {
-        ServerPlayerEntity? player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
+        var player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
         if (player == null)
         {
             context.Source.Output.SendMessage("Could not find your player.");
@@ -28,11 +28,11 @@ public class KillSelfCommand : Command.Command
 
     private static int ExecuteOther(CommandContext<CommandSource> context)
     {
-        Entity[] entities = context.GetArgument<Entity[]>("targets");
+        var entities = context.GetArgument<Entity[]>("targets");
         if (entities.Length == 0) context.Source.Output.SendMessage("Could not find target.");
         else
         {
-            foreach (Entity entity in entities)
+            foreach (var entity in entities)
             {
                 entity.Damage(null, 1000);
             }

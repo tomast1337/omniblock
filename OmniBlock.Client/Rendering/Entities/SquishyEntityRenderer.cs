@@ -2,6 +2,7 @@ using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Entities.Models;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
+using Silk.NET.Maths;
 
 namespace OmniBlock.Client.Rendering.Entities;
 
@@ -16,10 +17,10 @@ public sealed class SquishyEntityRenderer(ModelBase main, ModelBase shell, float
     protected override void PreRenderCallback(EntityLiving entity, float tickDelta)
     {
         int size = entity.Synced<byte>("size")?.Value ?? 1;
-        float squish = (entity.Behaviors.Find<HoppingBehavior>()?.Squish(entity, tickDelta) ?? 0.0F) / (size * 0.5F + 1.0F);
+        var squish = (entity.Behaviors.Find<HoppingBehavior>()?.Squish(entity, tickDelta) ?? 0.0F) / (size * 0.5F + 1.0F);
 
         // Squashing flattens and widens by the same factor, so the mob keeps its volume as it lands.
-        float widen = 1.0F / (squish + 1.0F);
+        var widen = 1.0F / (squish + 1.0F);
         GLManager.ModelView.Scale(widen * size, 1.0F / widen * size, widen * size);
     }
 
@@ -37,14 +38,17 @@ public sealed class SquishyEntityRenderer(ModelBase main, ModelBase shell, float
             // a choice made here, and it is not RenderState.Translucent, which does not. The shell
             // is submitted under this state and drawn under it, which it was not until instances
             // started carrying the state they were posed with.
-            GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
+            GLManager.State.Apply(RenderState.Entity with
+            {
+                Blend = BlendMode.Alpha
+            });
             return true;
         }
 
         if (renderPass == 1)
         {
             GLManager.State.Apply(RenderState.Entity);
-            GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
+            GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
         }
 
         return false;

@@ -1,10 +1,8 @@
-using System.Text.Json;
 using OmniBlock.Entities.State;
 using OmniBlock.Items;
 using OmniBlock.Items.Behaviors;
 using OmniBlock.NBT;
 using OmniBlock.Network.Messages;
-using OmniBlock.Util;
 
 namespace OmniBlock.Entities.Behaviors;
 
@@ -62,7 +60,7 @@ public sealed class TameableBehavior : IEntityInteractable, IEntityPersistence, 
         _owner = context.Synced<string?>("owner");
         _shownHealth = context.Synced<int>("shown_health");
 
-        _whenAngry = context.Json.TryGetProperty("when_angry", out JsonElement angry)
+        _whenAngry = context.Json.TryGetProperty("when_angry", out var angry)
             ? (IEntityTargetBehavior)context.Build(angry)
             : new AlwaysHuntTargetBehavior();
     }
@@ -138,7 +136,7 @@ public sealed class TameableBehavior : IEntityInteractable, IEntityPersistence, 
         SetSitting(self, nbt.GetBoolean("Sitting"));
 
         // An owner name on disk is the only record that the mob was ever tamed.
-        string owner = nbt.GetString("Owner");
+        var owner = nbt.GetString("Owner");
         if (owner.Length <= 0)
         {
             return;
@@ -198,7 +196,7 @@ public sealed class TameableBehavior : IEntityInteractable, IEntityPersistence, 
 
     private void SetFlag(Entity self, byte bit, bool on)
     {
-        SyncedProperty<byte> flags = self.DataSynchronizer.Get<byte>(_flags.Id);
+        var flags = self.DataSynchronizer.Get<byte>(_flags.Id);
         flags.Value = on ? (byte)(flags.Value | bit) : (byte)(flags.Value & ~bit);
     }
 
@@ -225,7 +223,7 @@ public sealed class TameableBehavior : IEntityInteractable, IEntityPersistence, 
     /// </summary>
     private void RousePack(EntityCreature self, Entity? attacker)
     {
-        bool byTargetablePlayer = attacker is EntityPlayer { GameMode.CanBeTargeted: true };
+        var byTargetablePlayer = attacker is EntityPlayer { GameMode.CanBeTargeted: true };
         if (byTargetablePlayer)
         {
             SetAngry(self, true);
@@ -244,7 +242,7 @@ public sealed class TameableBehavior : IEntityInteractable, IEntityPersistence, 
 
         // Not excluding self: an untargetable attacker leaves this mob without a target, and the
         // loop below is what gives it one.
-        foreach (Entity nearby in self.World.Entities.GetEntities(null, self.BoundingBox.Expand(_packRadius, 4.0D, _packRadius)))
+        foreach (var nearby in self.World.Entities.GetEntities(null, self.BoundingBox.Expand(_packRadius, 4.0D, _packRadius)))
         {
             // Same behavior instance means same entity type, so only its own kind joins in.
             if (nearby is not EntityCreature pack || !ReferenceEquals(pack.Behaviors.Find<TameableBehavior>(), this))
@@ -278,7 +276,7 @@ public sealed class TameableBehavior : IEntityInteractable, IEntityPersistence, 
 
     private bool TryTame(EntityCreature self, EntityPlayer player)
     {
-        ItemStack? held = player.Inventory.ItemInHand;
+        var held = player.Inventory.ItemInHand;
         if (held == null || held.ItemId != _tamingItem.Id || IsAngry(self))
         {
             return false;
@@ -309,7 +307,7 @@ public sealed class TameableBehavior : IEntityInteractable, IEntityPersistence, 
 
     private bool InteractWithPet(EntityCreature self, EntityPlayer player)
     {
-        ItemStack? held = player.Inventory.ItemInHand;
+        var held = player.Inventory.ItemInHand;
         if (held != null
             && held.GetItem().GetBehavior<FoodBehavior>() is { IsMeat: true }
             && ShownHealth(self) < _tamedHealth)
@@ -347,11 +345,11 @@ public sealed class TameableBehavior : IEntityInteractable, IEntityPersistence, 
 
     private static void ShowParticles(Entity self, string particle)
     {
-        for (int i = 0; i < 7; ++i)
+        for (var i = 0; i < 7; ++i)
         {
-            double driftX = self.Random.NextGaussian() * 0.02D;
-            double driftY = self.Random.NextGaussian() * 0.02D;
-            double driftZ = self.Random.NextGaussian() * 0.02D;
+            var driftX = self.Random.NextGaussian() * 0.02D;
+            var driftY = self.Random.NextGaussian() * 0.02D;
+            var driftZ = self.Random.NextGaussian() * 0.02D;
             self.World.Broadcaster.AddParticle(
                 particle,
                 self.X + self.Random.NextFloat() * self.Width * 2.0F - self.Width,

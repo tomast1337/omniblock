@@ -4,17 +4,17 @@ namespace OmniBlock.Client.Options;
 
 public class FloatOption : GameOption
 {
-    public float Value { get; set; }
-    public float DefaultValue { get; }
-    public Func<float, string>? Formatter { get; init; }
-    public Action<float>? OnChanged { get; init; }
-    public int? Steps { get; init; }
-
     public FloatOption(string translationKey, string saveKey, float defaultValue = 0f) : base(translationKey, saveKey)
     {
         Value = defaultValue;
         DefaultValue = defaultValue;
     }
+
+    public float Value { get; set; }
+    public float DefaultValue { get; }
+    public Func<float, string>? Formatter { get; init; }
+    public Action<float>? OnChanged { get; init; }
+    public int? Steps { get; init; }
 
     public override void Reset() => Set(DefaultValue);
 

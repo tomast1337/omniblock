@@ -3,8 +3,8 @@ using OmniBlock.Client.Options;
 using OmniBlock.Client.Rendering;
 using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.Rendering.UI;
-using OmniBlock.Registries;
 using OmniBlock.Client.UI.Screens;
+using OmniBlock.Registries;
 using Silk.NET.Maths;
 
 namespace OmniBlock.Client.UI;

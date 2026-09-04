@@ -1,6 +1,5 @@
 using OmniBlock.Blocks;
 using OmniBlock.Worlds.Chunks;
-using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Worlds.Lighting;
@@ -32,10 +31,10 @@ internal struct LightUpdate
 
     public void UpdateLight(IBlockReader reader, ChunkHost host, LightingEngine lighting, IBlockRuntimeView blocks)
     {
-        int sizeX = MaxX - MinX + 1;
-        int sizeY = MaxY - MinY + 1;
-        int sizeZ = MaxZ - MinZ + 1;
-        int updateVolume = sizeX * sizeY * sizeZ;
+        var sizeX = MaxX - MinX + 1;
+        var sizeY = MaxY - MinY + 1;
+        var sizeZ = MaxZ - MinZ + 1;
+        var updateVolume = sizeX * sizeY * sizeZ;
 
         if (updateVolume > -short.MinValue)
         {
@@ -43,20 +42,20 @@ internal struct LightUpdate
             return;
         }
 
-        int startY = MinY < 0 ? 0 : MinY;
-        int endY = MaxY >= ChuckFormat.WorldHeight ? ChuckFormat.WorldHeight - 1 : MaxY;
+        var startY = MinY < 0 ? 0 : MinY;
+        var endY = MaxY >= ChuckFormat.WorldHeight ? ChuckFormat.WorldHeight - 1 : MaxY;
 
-        int cachedChunkX = 0;
-        int cachedChunkZ = 0;
-        bool isCacheValid = false;
-        bool isCachedChunkLoaded = false;
+        var cachedChunkX = 0;
+        var cachedChunkZ = 0;
+        var isCacheValid = false;
+        var isCachedChunkLoaded = false;
 
-        for (int x = MinX; x <= MaxX; ++x)
+        for (var x = MinX; x <= MaxX; ++x)
         {
-            for (int z = MinZ; z <= MaxZ; ++z)
+            for (var z = MinZ; z <= MaxZ; ++z)
             {
-                int chunkX = x >> 4;
-                int chunkZ = z >> 4;
+                var chunkX = x >> 4;
+                var chunkZ = z >> 4;
                 bool isChunkLoaded;
 
                 if (isCacheValid && chunkX == cachedChunkX && chunkZ == cachedChunkZ)
@@ -68,7 +67,7 @@ internal struct LightUpdate
                     isChunkLoaded = host.IsRegionLoaded(x, 0, z, 1);
                     if (isChunkLoaded)
                     {
-                        Chunk chunk = host.GetChunk(chunkX, chunkZ);
+                        var chunk = host.GetChunk(chunkX, chunkZ);
                         if (chunk.IsEmpty())
                         {
                             isChunkLoaded = false;
@@ -83,18 +82,18 @@ internal struct LightUpdate
 
                 if (isChunkLoaded)
                 {
-                    for (int y = startY; y <= endY; ++y)
+                    for (var y = startY; y <= endY; ++y)
                     {
-                        int currentLight = lighting.GetBrightness(LightType, x, y, z);
-                        int blockId = reader.GetBlockId(x, y, z);
+                        var currentLight = lighting.GetBrightness(LightType, x, y, z);
+                        var blockId = reader.GetBlockId(x, y, z);
 
-                        int opacity = blocks.GetOpacity(blockId);
+                        var opacity = blocks.GetOpacity(blockId);
                         if (opacity == 0)
                         {
                             opacity = 1;
                         }
 
-                        int emittedLight = 0;
+                        var emittedLight = 0;
                         if (LightType == LightType.Sky)
                         {
                             if (reader.IsTopY(x, y, z))
@@ -114,12 +113,12 @@ internal struct LightUpdate
                         }
                         else
                         {
-                            int westLight = lighting.GetBrightness(LightType, x - 1, y, z);
-                            int eastLight = lighting.GetBrightness(LightType, x + 1, y, z);
-                            int downLight = lighting.GetBrightness(LightType, x, y - 1, z);
-                            int upLight = lighting.GetBrightness(LightType, x, y + 1, z);
-                            int northLight = lighting.GetBrightness(LightType, x, y, z - 1);
-                            int southLight = lighting.GetBrightness(LightType, x, y, z + 1);
+                            var westLight = lighting.GetBrightness(LightType, x - 1, y, z);
+                            var eastLight = lighting.GetBrightness(LightType, x + 1, y, z);
+                            var downLight = lighting.GetBrightness(LightType, x, y - 1, z);
+                            var upLight = lighting.GetBrightness(LightType, x, y + 1, z);
+                            var northLight = lighting.GetBrightness(LightType, x, y, z - 1);
+                            var southLight = lighting.GetBrightness(LightType, x, y, z + 1);
 
                             targetLight = westLight;
                             if (eastLight > targetLight)
@@ -163,7 +162,7 @@ internal struct LightUpdate
                         {
                             lighting.SetLight(LightType, x, y, z, targetLight);
 
-                            int prop = targetLight - 1;
+                            var prop = targetLight - 1;
                             if (prop < 0)
                             {
                                 prop = 0;
@@ -207,23 +206,23 @@ internal struct LightUpdate
         if (reqMinX >= MinX - expandTolerance && reqMinY >= MinY - expandTolerance && reqMinZ >= MinZ - expandTolerance &&
             reqMaxX <= MaxX + expandTolerance && reqMaxY <= MaxY + expandTolerance && reqMaxZ <= MaxZ + expandTolerance)
         {
-            int oldVolumeX = MaxX - MinX;
-            int oldVolumeY = MaxY - MinY;
-            int oldVolumeZ = MaxZ - MinZ;
+            var oldVolumeX = MaxX - MinX;
+            var oldVolumeY = MaxY - MinY;
+            var oldVolumeZ = MaxZ - MinZ;
 
-            int newMinX = reqMinX > MinX ? MinX : reqMinX;
-            int newMinY = reqMinY > MinY ? MinY : reqMinY;
-            int newMinZ = reqMinZ > MinZ ? MinZ : reqMinZ;
-            int newMaxX = reqMaxX < MaxX ? MaxX : reqMaxX;
-            int newMaxY = reqMaxY < MaxY ? MaxY : reqMaxY;
-            int newMaxZ = reqMaxZ < MaxZ ? MaxZ : reqMaxZ;
+            var newMinX = reqMinX > MinX ? MinX : reqMinX;
+            var newMinY = reqMinY > MinY ? MinY : reqMinY;
+            var newMinZ = reqMinZ > MinZ ? MinZ : reqMinZ;
+            var newMaxX = reqMaxX < MaxX ? MaxX : reqMaxX;
+            var newMaxY = reqMaxY < MaxY ? MaxY : reqMaxY;
+            var newMaxZ = reqMaxZ < MaxZ ? MaxZ : reqMaxZ;
 
-            int newVolumeX = newMaxX - newMinX;
-            int newVolumeY = newMaxY - newMinY;
-            int newVolumeZ = newMaxZ - newMinZ;
+            var newVolumeX = newMaxX - newMinX;
+            var newVolumeY = newMaxY - newMinY;
+            var newVolumeZ = newMaxZ - newMinZ;
 
-            int oldVolume = oldVolumeX * oldVolumeY * oldVolumeZ;
-            int newVolume = newVolumeX * newVolumeY * newVolumeZ;
+            var oldVolume = oldVolumeX * oldVolumeY * oldVolumeZ;
+            var newVolume = newVolumeX * newVolumeY * newVolumeZ;
 
             if (newVolume - oldVolume <= 2)
             {

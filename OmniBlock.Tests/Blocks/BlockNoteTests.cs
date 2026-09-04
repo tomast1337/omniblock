@@ -15,7 +15,7 @@ public sealed class BlockNoteTests
         BlockEntityNote noteEntity = new();
         world.Entities.SetBlockEntity(0, 64, 0, noteEntity);
 
-        bool handled = TestBlocks.Get("noteblock").OnUse(new OnUseEvent(world, null!, 0, 64, 0));
+        var handled = TestBlocks.Get("noteblock").OnUse(new OnUseEvent(world, null!, 0, 64, 0));
 
         Assert.True(handled);
         Assert.Equal(1, noteEntity.note);
@@ -33,10 +33,10 @@ public sealed class BlockNoteTests
         world.Entities.SetBlockEntity(0, 64, 0, noteEntity);
 
         TestBlocks.Get("noteblock").NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 0, TestBlocks.Get("lit_redstone_torch").Id));
-        bool poweredAfterRisingEdge = noteEntity.powered;
+        var poweredAfterRisingEdge = noteEntity.powered;
 
         TestBlocks.Get("noteblock").NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 0, TestBlocks.Get("lit_redstone_torch").Id));
-        bool poweredAfterSteadySignal = noteEntity.powered;
+        var poweredAfterSteadySignal = noteEntity.powered;
 
         Assert.True(poweredAfterRisingEdge);
         Assert.True(poweredAfterSteadySignal);

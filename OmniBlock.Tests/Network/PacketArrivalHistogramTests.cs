@@ -24,7 +24,7 @@ public sealed class PacketArrivalHistogramTests
     {
         // 100 samples at 3 ms all land in the (2, 5] bucket, so every percentile is that edge.
         PacketArrivalHistogram histogram = new();
-        for (int i = 0; i < 100; i++)
+        for (var i = 0; i < 100; i++)
         {
             histogram.Record(3.0);
         }
@@ -41,14 +41,14 @@ public sealed class PacketArrivalHistogramTests
         // occasionally. Sizing the delay off the mean would miss it entirely.
         PacketArrivalHistogram histogram = new();
 
-        for (int i = 0; i < 980; i++)
+        for (var i = 0; i < 980; i++)
         {
-            histogram.Record(15.0);      // (10, 20]
+            histogram.Record(15.0); // (10, 20]
         }
 
-        for (int i = 0; i < 20; i++)
+        for (var i = 0; i < 20; i++)
         {
-            histogram.Record(450.0);     // (300, 500]  -- a 2% tail
+            histogram.Record(450.0); // (300, 500]  -- a 2% tail
         }
 
         Assert.Equal(20.0, histogram.PercentileMs(50));
@@ -64,12 +64,12 @@ public sealed class PacketArrivalHistogramTests
         // pinning: the off-by-one here is the difference between a 20 ms and a 500 ms delay.
         PacketArrivalHistogram histogram = new();
 
-        for (int i = 0; i < 990; i++)
+        for (var i = 0; i < 990; i++)
         {
             histogram.Record(15.0);
         }
 
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
         {
             histogram.Record(450.0);
         }
@@ -82,7 +82,7 @@ public sealed class PacketArrivalHistogramTests
     public void Percentiles_are_monotonic_across_a_spread_distribution()
     {
         PacketArrivalHistogram histogram = new();
-        for (int i = 1; i <= 1000; i++)
+        for (var i = 1; i <= 1000; i++)
         {
             histogram.Record(i % 600);
         }
@@ -112,7 +112,7 @@ public sealed class PacketArrivalHistogramTests
         histogram.Record(60.0);
 
         Assert.Equal(3, histogram.Count);
-        Assert.Equal(30.0, histogram.MeanMs, precision: 6);
+        Assert.Equal(30.0, histogram.MeanMs, 6);
         Assert.Equal(60.0, histogram.MaxMs);
     }
 
@@ -136,7 +136,7 @@ public sealed class PacketArrivalHistogramTests
         histogram.Record(30.0);
         histogram.Record(900.0);
 
-        long[] buckets = histogram.Snapshot();
+        var buckets = histogram.Snapshot();
 
         Assert.Equal(PacketArrivalHistogram.UpperBounds.Count, buckets.Length);
         Assert.Equal(histogram.Count, buckets.Sum());
@@ -164,7 +164,7 @@ public sealed class PacketArrivalHistogramTests
 
         Parallel.For(0, 8, _ =>
         {
-            for (int i = 0; i < 1000; i++)
+            for (var i = 0; i < 1000; i++)
             {
                 histogram.Record(25.0);
             }

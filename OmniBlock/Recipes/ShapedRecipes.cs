@@ -6,16 +6,13 @@ namespace OmniBlock.Recipes;
 internal class ShapedRecipes(int width, int height, ItemStack?[] items, ItemStack output)
     : IRecipe
 {
-    public ItemStack GetRecipeOutput()
-    {
-        return output;
-    }
+    public ItemStack GetRecipeOutput() => output;
 
     public bool Matches(InventoryCrafting craftingInventory)
     {
-        for (int offsetX = 0; offsetX <= 3 - width; ++offsetX)
+        for (var offsetX = 0; offsetX <= 3 - width; ++offsetX)
         {
-            for (int offsetY = 0; offsetY <= 3 - height; ++offsetY)
+            for (var offsetY = 0; offsetY <= 3 - height; ++offsetY)
             {
                 if (matchesAtOffset(craftingInventory, offsetX, offsetY, true))
                     return true;
@@ -27,27 +24,31 @@ internal class ShapedRecipes(int width, int height, ItemStack?[] items, ItemStac
         return false;
     }
 
+    public ItemStack GetCraftingResult(InventoryCrafting craftingInventory) => new(output.GetItem(), output.Count, output.GetDamage());
+
+    public int GetRecipeSize() => width * height;
+
     private bool matchesAtOffset(InventoryCrafting craftingInventory, int offsetX, int offsetY, bool mirrored)
     {
-        for (int gridX = 0; gridX < 3; ++gridX)
+        for (var gridX = 0; gridX < 3; ++gridX)
         {
-            for (int gridY = 0; gridY < 3; ++gridY)
+            for (var gridY = 0; gridY < 3; ++gridY)
             {
-                int recipeX = gridX - offsetX;
-                int recipeY = gridY - offsetY;
+                var recipeX = gridX - offsetX;
+                var recipeY = gridY - offsetY;
                 ItemStack? expected = null;
                 if (recipeX >= 0 && recipeY >= 0 && recipeX < width && recipeY < height)
                 {
                     expected = mirrored ? items[width - recipeX - 1 + recipeY * width] : items[recipeX + recipeY * width];
                 }
 
-                ItemStack actual = craftingInventory.GetStackAt(gridX, gridY);
+                var actual = craftingInventory.GetStackAt(gridX, gridY);
                 if (actual == null && expected == null)
                 {
                     continue;
                 }
 
-                if (actual == null && expected != null || actual != null && expected == null)
+                if ((actual == null && expected != null) || (actual != null && expected == null))
                 {
                     return false;
                 }
@@ -67,21 +68,11 @@ internal class ShapedRecipes(int width, int height, ItemStack?[] items, ItemStac
         return true;
     }
 
-    public ItemStack GetCraftingResult(InventoryCrafting craftingInventory)
-    {
-        return new ItemStack(output.GetItem(), output.Count, output.GetDamage());
-    }
-
-    public int GetRecipeSize()
-    {
-        return width * height;
-    }
-
     public override int GetHashCode()
     {
-        int hash = 0;
+        var hash = 0;
 
-        for (int i = 0; i < items.Length; i++)
+        for (var i = 0; i < items.Length; i++)
         {
             if (items[i] != null)
                 hash += (items[i].ItemId + (items[i].GetDamage() << 8)) * (i + 1);

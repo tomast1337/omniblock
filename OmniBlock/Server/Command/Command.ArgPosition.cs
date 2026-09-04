@@ -1,8 +1,7 @@
-using OmniBlock.Entities;
-using OmniBlock.Util.Maths;
 using Brigadier.NET;
 using Brigadier.NET.ArgumentTypes;
 using Brigadier.NET.Exceptions;
+using OmniBlock.Util.Maths;
 using StringReader = Brigadier.NET.StringReader;
 
 namespace OmniBlock.Server.Command;
@@ -23,7 +22,7 @@ public abstract partial class Command
             if (!reader.CanRead()) throw CommandSyntaxException.BuiltInExceptions.DispatcherUnknownArgument().CreateWithContext(reader);
 
             // Get pos of target
-            char p = reader.Peek();
+            var p = reader.Peek();
             if ((p < '0' || p > '9') && p != '~' && p != '-')
             {
                 return ArgTarget.ParseStatic(reader, source).Position;

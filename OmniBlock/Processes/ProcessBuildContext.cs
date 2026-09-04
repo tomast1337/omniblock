@@ -18,7 +18,7 @@ public readonly record struct ProcessBuildContext(
     public ItemStack ResolveItemStack(string reference, int count = 1, int defaultMeta = 0)
     {
         if (Items is null) throw MissingContext(nameof(Items));
-        if (Items.TryParse(reference, out ItemStack? stack, count, defaultMeta)) return stack;
+        if (Items.TryParse(reference, out var stack, count, defaultMeta)) return stack;
         throw new KeyNotFoundException($"Unknown process item/block reference '{reference}'.");
     }
 

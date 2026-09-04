@@ -15,7 +15,7 @@ public class OpCommand : Command.Command
 
     private static int Execute(CommandContext<CommandSource> context)
     {
-        string target = context.GetArgument<string>("player");
+        var target = context.GetArgument<string>("player");
         context.Source.Server.playerManager.addToOperators(target);
         context.Source.LogOp("Opping " + target);
         context.Source.Server.playerManager.messagePlayer(target, "§eYou are now op!");

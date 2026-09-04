@@ -1,7 +1,6 @@
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Client.Entities;
 using OmniBlock.Client.Input;
-using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.UI.Controls.Core;
 using OmniBlock.Client.UI.Layout.Flexbox;
 using OmniBlock.Client.UI.Rendering;
@@ -89,8 +88,8 @@ public class FurnaceFireProgress(BlockEntityFurnace furnace) : UIElement
     {
         if (furnace.IsBurning)
         {
-            int progress = furnace.GetFuelTimeDelta(12);
-            TextureHandle texture = renderer.TextureManager.GetTextureId("/gui/furnace.png");
+            var progress = furnace.GetFuelTimeDelta(12);
+            var texture = renderer.TextureManager.GetTextureId("/gui/furnace.png");
             renderer.DrawTexturedModalRect(texture, 0, 12 - progress, 176, 12 - progress, 14, progress + 2);
         }
 
@@ -102,8 +101,8 @@ public class FurnaceSmeltProgress(BlockEntityFurnace furnace) : UIElement
 {
     public override void Render(UIRenderer renderer)
     {
-        int progress = furnace.GetCookTimeDelta(24);
-        TextureHandle texture = renderer.TextureManager.GetTextureId("/gui/furnace.png");
+        var progress = furnace.GetCookTimeDelta(24);
+        var texture = renderer.TextureManager.GetTextureId("/gui/furnace.png");
         renderer.DrawTexturedModalRect(texture, 0, 0, 176, 14, progress + 1, 16);
         base.Render(renderer);
     }

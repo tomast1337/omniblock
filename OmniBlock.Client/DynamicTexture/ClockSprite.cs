@@ -1,5 +1,3 @@
-using OmniBlock.Client.Rendering.Core.Textures;
-using OmniBlock.Items;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -27,10 +25,10 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
     public override void Setup(OmniBlock game)
     {
         _game = game;
-        TextureManager tm = game.TextureManager;
-        string atlasPath = "/gui/items.png";
+        var tm = game.TextureManager;
+        var atlasPath = "/gui/items.png";
 
-        TextureHandle handle = tm.GetTextureId(atlasPath);
+        var handle = tm.GetTextureId(atlasPath);
         if (handle.Texture != null)
         {
             _resolution = handle.Texture.Width / 16;
@@ -40,7 +38,7 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
             _resolution = 16;
         }
 
-        int pixelCount = _resolution * _resolution;
+        var pixelCount = _resolution * _resolution;
         if (_clock.Length != pixelCount)
         {
             _clock = new int[pixelCount];
@@ -50,44 +48,44 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
 
         try
         {
-            using Stream? stream = game.TexturePackList.SelectedTexturePack.GetResourceAsStream("gui/items.png");
+            using var stream = game.TexturePackList.SelectedTexturePack.GetResourceAsStream("gui/items.png");
             if (stream != null)
             {
-                using Image<Rgba32> atlasImage = Image.Load<Rgba32>(stream);
-                int atlasResolution = atlasImage.Width / 16;
-                int sourceX = (Sprite % 16) * atlasResolution;
-                int sourceY = (Sprite / 16) * atlasResolution;
+                using var atlasImage = Image.Load<Rgba32>(stream);
+                var atlasResolution = atlasImage.Width / 16;
+                var sourceX = Sprite % 16 * atlasResolution;
+                var sourceY = Sprite / 16 * atlasResolution;
 
-                for (int y = 0; y < _resolution; y++)
+                for (var y = 0; y < _resolution; y++)
                 {
-                    for (int x = 0; x < _resolution; x++)
+                    for (var x = 0; x < _resolution; x++)
                     {
-                        int srcX = sourceX + (x * atlasResolution / _resolution);
-                        int srcY = sourceY + (y * atlasResolution / _resolution);
+                        var srcX = sourceX + x * atlasResolution / _resolution;
+                        var srcY = sourceY + y * atlasResolution / _resolution;
 
-                        Rgba32 pixel = atlasImage[srcX, srcY];
+                        var pixel = atlasImage[srcX, srcY];
                         _clock[y * _resolution + x] = (pixel.A << 24) | (pixel.R << 16) | (pixel.G << 8) | pixel.B;
                     }
                 }
             }
 
-            using Stream? dialStream = game.TexturePackList.SelectedTexturePack.GetResourceAsStream("misc/dial.png");
+            using var dialStream = game.TexturePackList.SelectedTexturePack.GetResourceAsStream("misc/dial.png");
             if (dialStream != null)
             {
-                using Image<Rgba32> dialImage = Image.Load<Rgba32>(dialStream);
+                using var dialImage = Image.Load<Rgba32>(dialStream);
                 _dialResolution = dialImage.Width;
-                int dialPixelCount = _dialResolution * _dialResolution;
+                var dialPixelCount = _dialResolution * _dialResolution;
 
                 if (_dial.Length != dialPixelCount)
                 {
                     _dial = new int[dialPixelCount];
                 }
 
-                for (int y = 0; y < _dialResolution; y++)
+                for (var y = 0; y < _dialResolution; y++)
                 {
-                    for (int x = 0; x < _dialResolution; x++)
+                    for (var x = 0; x < _dialResolution; x++)
                     {
-                        Rgba32 pixel = dialImage[x, y];
+                        var pixel = dialImage[x, y];
                         _dial[y * _dialResolution + x] = (pixel.A << 24) | (pixel.R << 16) | (pixel.G << 8) | pixel.B;
                     }
                 }
@@ -101,10 +99,10 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
 
     public override void tick()
     {
-        double targetAngle = 0.0D;
+        var targetAngle = 0.0D;
         if (_game.World != null && _game.Player != null)
         {
-            float worldTime = _game.World.GetTime(1.0F);
+            var worldTime = _game.World.GetTime(1.0F);
             targetAngle = -worldTime * (float)Math.PI * 2.0F;
             if (_game.World.Dimension.IsNether)
             {
@@ -112,7 +110,7 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
             }
         }
 
-        double angleDifference = Math.Atan2(Math.Sin(targetAngle - _angle), Math.Cos(targetAngle - _angle));
+        var angleDifference = Math.Atan2(Math.Sin(targetAngle - _angle), Math.Cos(targetAngle - _angle));
 
         while (angleDifference >= Math.PI)
         {
@@ -133,30 +131,30 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
         _angleDelta *= 0.8D;
         _angle += _angleDelta;
 
-        double sinAngle = Math.Sin(_angle);
-        double cosAngle = Math.Cos(_angle);
+        var sinAngle = Math.Sin(_angle);
+        var cosAngle = Math.Cos(_angle);
 
-        int pixelCount = _resolution * _resolution;
-        float invResMinus1 = 1.0f / (_resolution - 1);
+        var pixelCount = _resolution * _resolution;
+        var invResMinus1 = 1.0f / (_resolution - 1);
 
-        for (int pixelIdx = 0; pixelIdx < pixelCount; ++pixelIdx)
+        for (var pixelIdx = 0; pixelIdx < pixelCount; ++pixelIdx)
         {
-            int alpha = (_clock[pixelIdx] >> 24) & 255;
-            int red = (_clock[pixelIdx] >> 16) & 255;
-            int green = (_clock[pixelIdx] >> 8) & 255;
-            int blue = (_clock[pixelIdx] >> 0) & 255;
+            var alpha = (_clock[pixelIdx] >> 24) & 255;
+            var red = (_clock[pixelIdx] >> 16) & 255;
+            var green = (_clock[pixelIdx] >> 8) & 255;
+            var blue = (_clock[pixelIdx] >> 0) & 255;
 
             // Logic to detect the "clock face" area (looks for specific bluish-gray tint)
             if (Math.Abs(red - blue) < 10 && green < 40 && red > 100)
             {
-                double relX = -(pixelIdx % _resolution * invResMinus1 - 0.5D);
-                double relY = pixelIdx / _resolution * invResMinus1 - 0.5D;
-                int origRed = red;
+                var relX = -(pixelIdx % _resolution * invResMinus1 - 0.5D);
+                var relY = pixelIdx / _resolution * invResMinus1 - 0.5D;
+                var origRed = red;
 
-                int dialX = (int)((relX * cosAngle + relY * sinAngle + 0.5D) * _dialResolution);
-                int dialY = (int)((relY * cosAngle - relX * sinAngle + 0.5D) * _dialResolution);
+                var dialX = (int)((relX * cosAngle + relY * sinAngle + 0.5D) * _dialResolution);
+                var dialY = (int)((relY * cosAngle - relX * sinAngle + 0.5D) * _dialResolution);
 
-                int dialIdx = (dialX & (_dialResolution - 1)) + (dialY & (_dialResolution - 1)) * _dialResolution;
+                var dialIdx = (dialX & (_dialResolution - 1)) + (dialY & (_dialResolution - 1)) * _dialResolution;
 
                 alpha = (_dial[dialIdx] >> 24) & 255;
                 red = ((_dial[dialIdx] >> 16) & 255) * red / 255;

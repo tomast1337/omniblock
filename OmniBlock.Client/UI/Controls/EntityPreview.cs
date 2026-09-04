@@ -18,7 +18,7 @@ public class EntityPreview(Func<UIScreen?> getScreen) : UIElement
 
             if (LookAtCursor)
             {
-                UIScreen? screen = getScreen();
+                var screen = getScreen();
                 if (screen != null)
                 {
                     mouseX = screen.MouseX;

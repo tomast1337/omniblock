@@ -1,16 +1,12 @@
-using System.Linq;
-using OmniBlock;
-using OmniBlock.Entities;
-using OmniBlock.Registries;
-using OmniBlock.Worlds.Generation.Biomes;
 using OmniBlock.Registries.Data;
+using OmniBlock.Worlds.Generation.Biomes;
 
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Equivalence proof for moving biome spawn lists out of C# constructors and into
-/// <c>assets/biome_spawn/*.json</c>: the expected values here are transcribed from the hardcoded
-/// lists that <c>Biome</c> and its subclasses used to build.
+///     Equivalence proof for moving biome spawn lists out of C# constructors and into
+///     <c>assets/biome_spawn/*.json</c>: the expected values here are transcribed from the hardcoded
+///     lists that <c>Biome</c> and its subclasses used to build.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class BiomeSpawnListTests
@@ -57,45 +53,33 @@ public sealed class BiomeSpawnListTests
     [InlineData("plains")]
     [InlineData("ice_desert")]
     [InlineData("tundra")]
-    public void Ordinary_biomes_keep_the_shared_spawn_list(string biomeName)
-    {
-        AssertLists(Get(biomeName), s_baseMonsters, s_baseCreatures, s_baseWater);
-    }
+    public void Ordinary_biomes_keep_the_shared_spawn_list(string biomeName) => AssertLists(Get(biomeName), s_baseMonsters, s_baseCreatures, s_baseWater);
 
     [Theory]
     [InlineData("forest")]
     [InlineData("taiga")]
-    public void Wolf_biomes_add_a_wolf_to_the_shared_creature_list(string biomeName)
-    {
-        AssertLists(Get(biomeName), s_baseMonsters, [.. s_baseCreatures, ("wolf", 2)], s_baseWater);
-    }
+    public void Wolf_biomes_add_a_wolf_to_the_shared_creature_list(string biomeName) => AssertLists(Get(biomeName), s_baseMonsters, [.. s_baseCreatures, ("wolf", 2)], s_baseWater);
 
     [Fact]
-    public void Sky_spawns_only_chickens()
-    {
-        AssertLists(Get("sky"), [], [("chicken", 10)], []);
-    }
+    public void Sky_spawns_only_chickens() => AssertLists(Get("sky"), [], [("chicken", 10)], []);
 
     [Fact]
-    public void Hell_spawns_only_ghasts_and_zombie_pigmen()
-    {
-        AssertLists(Get("hell"), [("ghast", 10), ("pigzombie", 10)], [], []);
-    }
+    public void Hell_spawns_only_ghasts_and_zombie_pigmen() => AssertLists(Get("hell"), [("ghast", 10), ("pigzombie", 10)], [], []);
 
     [Fact]
     public void Every_spawned_mob_belongs_to_the_list_it_was_declared_in()
     {
         FakeWorldContext world = new();
 
-        foreach (ResourceLocation key in OmniBlock.Registries.DefaultRegistries.Biomes.Keys)
+        foreach (var key in DefaultRegistries.Biomes.Keys)
         {
-            Biome biome = OmniBlock.Registries.DefaultRegistries.Biomes.GetOrThrow(key);
+            var biome = DefaultRegistries.Biomes.GetOrThrow(key);
 
-            foreach (CreatureKind kind in CreatureKind.Values)
+            foreach (var kind in CreatureKind.Values)
             {
-                foreach ((SpawnListEntry entry, int _) in biome.GetSpawnableList(kind).Entries)
+                foreach (var (entry, _) in biome.GetSpawnableList(kind).Entries)
                 {
-                    EntityLiving mob = entry.Factory(world);
+                    var mob = entry.Factory(world);
                     Assert.Equal(kind.Category, mob.Definition.SpawnCategory);
                 }
             }
@@ -113,14 +97,14 @@ public sealed class BiomeSpawnListTests
 
         try
         {
-            ArgumentException error = Assert.Throws<ArgumentException>(() =>
+            var error = Assert.Throws<ArgumentException>(() =>
                 Biome.LoadSpawnLists([invalid], ContentRuntime.Current.EntityTypes));
             Assert.Contains("example:missing_mob", error.Message);
         }
         finally
         {
             var shipped = new DataAssetLoader<BiomeSpawnDefinition>(
-                RegistryDefinitions.BiomeSpawns.AssetPath, LoadLocations.Assets, allowUnhandled: false);
+                RegistryDefinitions.BiomeSpawns.AssetPath, LoadLocations.Assets, false);
             shipped.LoadFromPaths(null, null, null);
             Assert.False(shipped.HasErrors, shipped.FirstErrorMessage);
             Biome.LoadSpawnLists(shipped, ContentRuntime.Current.EntityTypes);
@@ -128,5 +112,5 @@ public sealed class BiomeSpawnListTests
     }
 
     private static Biome Get(string name) =>
-        OmniBlock.Registries.DefaultRegistries.Biomes.GetOrThrow(ResourceLocation.Parse(name));
+        DefaultRegistries.Biomes.GetOrThrow(ResourceLocation.Parse(name));
 }

@@ -1,14 +1,13 @@
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.NBT;
-using OmniBlock.Tests.TestSupport;
 
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Covers the fireball, the seventh non-living entity to lose its class. Its flight is powered —
-/// a constant acceleration vector instead of gravity — and its damage response is the deflection
-/// that makes the ghast duel work: a punch re-aims it along the attacker's look vector.
+///     Covers the fireball, the seventh non-living entity to lose its class. Its flight is powered —
+///     a constant acceleration vector instead of gravity — and its damage response is the deflection
+///     that makes the ghast duel work: a punch re-aims it along the attacker's look vector.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityFireballTests
@@ -17,7 +16,7 @@ public sealed class EntityFireballTests
 
     private static EntityLiving Ghast(FakeWorldContext world)
     {
-        EntityLiving ghast = (EntityLiving)TestEntityCatalog.ByName("ghast").Create(world);
+        var ghast = (EntityLiving)TestEntityCatalog.ByName("ghast").Create(world);
         ghast.SetPositionAndAngles(8.5, 70.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(ghast));
         return ghast;
@@ -27,7 +26,7 @@ public sealed class EntityFireballTests
     public void A_fireball_has_no_class_of_its_own()
     {
         FakeWorldContext world = new();
-        Entity fireball = TestEntityCatalog.ByName("fireball").Create(world);
+        var fireball = TestEntityCatalog.ByName("fireball").Create(world);
 
         Assert.Equal(typeof(EntityObject), fireball.GetType());
         Assert.Equal(1.0F, fireball.TargetingMargin);
@@ -38,12 +37,12 @@ public sealed class EntityFireballTests
     public void A_shot_starts_on_the_shooter_with_a_normalised_power_vector()
     {
         FakeWorldContext world = new();
-        EntityLiving ghast = Ghast(world);
+        var ghast = Ghast(world);
 
-        Entity fireball = FireballBehavior.Shoot(world, ghast, 10.0, 0.0, 0.0);
+        var fireball = FireballBehavior.Shoot(world, ghast, 10.0, 0.0, 0.0);
 
         Assert.Same(ghast, Flight.Owner(fireball));
-        double power = Math.Sqrt(
+        var power = Math.Sqrt(
             Flight.PowerX(fireball) * Flight.PowerX(fireball) +
             Flight.PowerY(fireball) * Flight.PowerY(fireball) +
             Flight.PowerZ(fireball) * Flight.PowerZ(fireball));
@@ -55,13 +54,13 @@ public sealed class EntityFireballTests
     public void A_fireball_accelerates_along_its_power_and_burns()
     {
         FakeWorldContext world = new();
-        Entity fireball = TestEntityCatalog.ByName("fireball").Create(world);
+        var fireball = TestEntityCatalog.ByName("fireball").Create(world);
         fireball.SetPositionAndAngles(8.5, 80.0, 8.5, 0f, 0f);
         Flight.SetDirection(fireball, 1.0, 0.0, 0.0);
         Assert.True(world.Entities.SpawnEntity(fireball));
 
         fireball.Tick();
-        double speedAfterOne = fireball.VelocityX;
+        var speedAfterOne = fireball.VelocityX;
         fireball.Tick();
 
         Assert.True(speedAfterOne > 0.0);
@@ -74,12 +73,12 @@ public sealed class EntityFireballTests
     {
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 15, 0, 15, 63);
-        Entity fireball = TestEntityCatalog.ByName("fireball").Create(world);
+        var fireball = TestEntityCatalog.ByName("fireball").Create(world);
         fireball.SetPositionAndAngles(8.5, 70.0, 8.5, 0f, 0f);
         Flight.SetDirection(fireball, 0.0, -1.0, 0.0);
         Assert.True(world.Entities.SpawnEntity(fireball));
 
-        for (int tick = 0; tick < 100 && !fireball.Dead; tick++) fireball.Tick();
+        for (var tick = 0; tick < 100 && !fireball.Dead; tick++) fireball.Tick();
 
         Assert.True(fireball.Dead);
     }
@@ -89,11 +88,14 @@ public sealed class EntityFireballTests
     public void A_punch_deflects_the_fireball_along_the_attackers_look()
     {
         FakeWorldContext world = new();
-        TestEntityPlayer player = new(world) { Name = "deflector" };
+        TestEntityPlayer player = new(world)
+        {
+            Name = "deflector"
+        };
         player.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(player));
 
-        Entity fireball = TestEntityCatalog.ByName("fireball").Create(world);
+        var fireball = TestEntityCatalog.ByName("fireball").Create(world);
         fireball.SetPositionAndAngles(8.5, 65.0, 10.5, 0f, 0f);
         Flight.SetDirection(fireball, 0.0, 0.0, -1.0);
         Assert.True(world.Entities.SpawnEntity(fireball));
@@ -110,16 +112,16 @@ public sealed class EntityFireballTests
     public void Flight_state_survives_an_nbt_round_trip()
     {
         FakeWorldContext world = new();
-        Entity fireball = TestEntityCatalog.ByName("fireball").Create(world);
+        var fireball = TestEntityCatalog.ByName("fireball").Create(world);
         fireball.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
         NBTTagCompound nbt = new();
         fireball.Write(nbt);
         nbt.SetShort("xTile", 3);
-        nbt.SetByte("inTile", (sbyte)4);
+        nbt.SetByte("inTile", 4);
         nbt.SetByte("inGround", 1);
 
-        Entity restored = TestEntityCatalog.ByName("fireball").Create(world);
+        var restored = TestEntityCatalog.ByName("fireball").Create(world);
         restored.Read(nbt);
         NBTTagCompound written = new();
         restored.Write(written);
@@ -132,7 +134,7 @@ public sealed class EntityFireballTests
     [Fact]
     public void Protocol_facts_are_pinned()
     {
-        EntityDefinition fireball = TestEntityCatalog.ByName("fireball").RequireDefinition();
+        var fireball = TestEntityCatalog.ByName("fireball").RequireDefinition();
 
         Assert.Equal(63, fireball.ProtocolId);
         Assert.Equal(63, fireball.SpawnObjectId);

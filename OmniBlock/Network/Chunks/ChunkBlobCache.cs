@@ -1,5 +1,5 @@
-using OmniBlock.Util.Maths;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Util.Maths;
 
 namespace OmniBlock.Network.Chunks;
 
@@ -52,10 +52,10 @@ public sealed class ChunkBlobCache : IDisposable
     ///     Chunk coordinates, hash, and where the payload lives. Sixteen bytes of header plus the
     ///     four-byte length precede every payload on disk.
     /// </summary>
-    private const int RecordHeaderBytes = (sizeof(int) * 2) + sizeof(ulong) + sizeof(int);
+    private const int RecordHeaderBytes = sizeof(int) * 2 + sizeof(ulong) + sizeof(int);
 
     /// <summary>Identifies the file, so a foreign or older one is discarded rather than parsed.</summary>
-    private const uint Magic = 0x4F42_4348;   // "OBCH"
+    private const uint Magic = 0x4F42_4348; // "OBCH"
 
     /// <summary>
     ///     Bumped to 2 when records changed from decoded blobs to the compressed bytes as received.
@@ -66,7 +66,26 @@ public sealed class ChunkBlobCache : IDisposable
     /// <summary>
     ///     Magic, version, three reserved bytes, then the chunk coordinates the player was last at.
     /// </summary>
-    private const int FileHeaderBytes = sizeof(uint) + 1 + 3 + (sizeof(int) * 2);
+    private const int FileHeaderBytes = sizeof(uint) + 1 + 3 + sizeof(int) * 2;
+
+    /// <summary>
+    ///     Compact once superseded bytes exceed live bytes. Below that the wasted space is bounded by
+    ///     a factor of two, which for a cache measured in tens of megabytes is not worth the rewrite.
+    /// </summary>
+    private const double CompactionRatio = 1.0;
+
+    /// <summary>How many stored chunks between flushes. See <see cref="Write" />.</summary>
+    private const int WritesPerFlush = 64;
+
+    private static readonly ILogger<ChunkBlobCache> s_logger = Log.Instance.For<ChunkBlobCache>();
+    private readonly Dictionary<ChunkPos, Entry> _index = [];
+
+    private readonly string _path;
+    private long _deadBytes;
+    private FileStream? _file;
+    private int _writesSinceFlush;
+
+    private ChunkBlobCache(string path) => _path = path;
 
     /// <summary>
     ///     Where the player was when this cache was last written, in chunk coordinates.
@@ -80,32 +99,22 @@ public sealed class ChunkBlobCache : IDisposable
     /// </summary>
     public ChunkPos LastCentre { get; set; }
 
-    /// <summary>
-    ///     Compact once superseded bytes exceed live bytes. Below that the wasted space is bounded by
-    ///     a factor of two, which for a cache measured in tens of megabytes is not worth the rewrite.
-    /// </summary>
-    private const double CompactionRatio = 1.0;
-
-    private static readonly ILogger<ChunkBlobCache> s_logger = Log.Instance.For<ChunkBlobCache>();
-
-    private readonly string _path;
-    private readonly Dictionary<ChunkPos, Entry> _index = [];
-    private FileStream? _file;
-    private long _deadBytes;
-    private int _writesSinceFlush;
-
-    /// <summary>How many stored chunks between flushes. See <see cref="Write" />.</summary>
-    private const int WritesPerFlush = 64;
-
-    private readonly record struct Entry(ulong Hash, long Offset, int Length);
-
     /// <summary>Chunks currently held.</summary>
     public int Count => _index.Count;
 
     /// <summary>True when the store could not be opened, in which case every operation is a no-op.</summary>
     public bool Disabled => _file is null;
 
-    private ChunkBlobCache(string path) => _path = path;
+    /// <summary>Every chunk held, with its hash. This is what gets advertised to a server.</summary>
+    public IEnumerable<KeyValuePair<ChunkPos, ulong>> Entries =>
+        _index.Select(pair => new KeyValuePair<ChunkPos, ulong>(pair.Key, pair.Value.Hash));
+
+    public void Dispose()
+    {
+        Flush();
+        _file?.Dispose();
+        _file = null;
+    }
 
     /// <summary>
     ///     Opens, or returns a disabled cache when it cannot. A client that cannot write to its own
@@ -117,7 +126,7 @@ public sealed class ChunkBlobCache : IDisposable
 
         try
         {
-            string? directory = Path.GetDirectoryName(path);
+            var directory = Path.GetDirectoryName(path);
             if (!string.IsNullOrEmpty(directory))
             {
                 Directory.CreateDirectory(directory);
@@ -138,11 +147,7 @@ public sealed class ChunkBlobCache : IDisposable
 
     /// <summary>The hash held for a chunk, or null.</summary>
     public ulong? HashOf(ChunkPos position) =>
-        _index.TryGetValue(position, out Entry entry) ? entry.Hash : null;
-
-    /// <summary>Every chunk held, with its hash. This is what gets advertised to a server.</summary>
-    public IEnumerable<KeyValuePair<ChunkPos, ulong>> Entries =>
-        _index.Select(pair => new KeyValuePair<ChunkPos, ulong>(pair.Key, pair.Value.Hash));
+        _index.TryGetValue(position, out var entry) ? entry.Hash : null;
 
     /// <summary>
     ///     The stored blob for a chunk, or null when it is absent or unreadable. A read failure
@@ -151,14 +156,14 @@ public sealed class ChunkBlobCache : IDisposable
     /// </summary>
     public byte[]? Read(ChunkPos position)
     {
-        if (_file is null || !_index.TryGetValue(position, out Entry entry))
+        if (_file is null || !_index.TryGetValue(position, out var entry))
         {
             return null;
         }
 
         try
         {
-            byte[] blob = new byte[entry.Length];
+            var blob = new byte[entry.Length];
             _file.Position = entry.Offset;
             _file.ReadExactly(blob);
             return blob;
@@ -185,13 +190,13 @@ public sealed class ChunkBlobCache : IDisposable
 
         try
         {
-            if (_index.TryGetValue(position, out Entry previous))
+            if (_index.TryGetValue(position, out var previous))
             {
                 _deadBytes += RecordHeaderBytes + previous.Length;
             }
 
             _file.Position = _file.Length;
-            long recordStart = _file.Position;
+            var recordStart = _file.Position;
 
             Span<byte> header = stackalloc byte[RecordHeaderBytes];
             WriteInt(header[..4], position.X);
@@ -233,7 +238,7 @@ public sealed class ChunkBlobCache : IDisposable
 
         try
         {
-            long live = LiveBytes();
+            var live = LiveBytes();
 
             if (live > MaxLiveBytes)
             {
@@ -256,13 +261,6 @@ public sealed class ChunkBlobCache : IDisposable
         }
     }
 
-    public void Dispose()
-    {
-        Flush();
-        _file?.Dispose();
-        _file = null;
-    }
-
     // ---- internals ----
 
     /// <summary>
@@ -275,7 +273,7 @@ public sealed class ChunkBlobCache : IDisposable
     /// </summary>
     private void EvictFurthest(long live)
     {
-        foreach ((ChunkPos position, Entry entry) in _index
+        foreach (var (position, entry) in _index
                      .OrderByDescending(pair => Math.Max(
                          Math.Abs(pair.Key.X - LastCentre.X),
                          Math.Abs(pair.Key.Z - LastCentre.Z)))
@@ -297,7 +295,7 @@ public sealed class ChunkBlobCache : IDisposable
     private long LiveBytes()
     {
         long total = 0;
-        foreach (Entry entry in _index.Values)
+        foreach (var entry in _index.Values)
         {
             total += RecordHeaderBytes + entry.Length;
         }
@@ -324,7 +322,7 @@ public sealed class ChunkBlobCache : IDisposable
         _index.Clear();
         _deadBytes = 0;
 
-        long length = _file.Length;
+        var length = _file.Length;
         if (!ReadFileHeader(length))
         {
             // A file we did not write, or one from an older format. Discarding it is always safe:
@@ -345,10 +343,10 @@ public sealed class ChunkBlobCache : IDisposable
                 break;
             }
 
-            int x = ReadInt(header[..4]);
-            int z = ReadInt(header[4..8]);
-            ulong hash = ReadULong(header[8..16]);
-            int blobLength = ReadInt(header[16..20]);
+            var x = ReadInt(header[..4]);
+            var z = ReadInt(header[4..8]);
+            var hash = ReadULong(header[8..16]);
+            var blobLength = ReadInt(header[16..20]);
 
             if (blobLength < 0 || blobLength > MaxBlobBytes ||
                 offset + RecordHeaderBytes + blobLength > length)
@@ -357,7 +355,7 @@ public sealed class ChunkBlobCache : IDisposable
             }
 
             ChunkPos position = new(x, z);
-            if (_index.TryGetValue(position, out Entry previous))
+            if (_index.TryGetValue(position, out var previous))
             {
                 _deadBytes += RecordHeaderBytes + previous.Length;
             }
@@ -387,7 +385,7 @@ public sealed class ChunkBlobCache : IDisposable
             return;
         }
 
-        string temporary = _path + ".compacting";
+        var temporary = _path + ".compacting";
 
         try
         {
@@ -402,9 +400,9 @@ public sealed class ChunkBlobCache : IDisposable
 
                 Span<byte> header = stackalloc byte[RecordHeaderBytes];
 
-                foreach ((ChunkPos position, Entry entry) in _index)
+                foreach (var (position, entry) in _index)
                 {
-                    byte[] blob = new byte[entry.Length];
+                    var blob = new byte[entry.Length];
                     _file.Position = entry.Offset;
                     _file.ReadExactly(blob);
 
@@ -419,7 +417,7 @@ public sealed class ChunkBlobCache : IDisposable
             }
 
             _file.Dispose();
-            File.Move(temporary, _path, overwrite: true);
+            File.Move(temporary, _path, true);
 
             _file = new FileStream(_path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
             BuildIndex();
@@ -518,20 +516,22 @@ public sealed class ChunkBlobCache : IDisposable
 
     private static void WriteULong(Span<byte> destination, ulong value)
     {
-        for (int i = 0; i < sizeof(ulong); i++)
+        for (var i = 0; i < sizeof(ulong); i++)
         {
-            destination[i] = (byte)(value >> (56 - (i * 8)));
+            destination[i] = (byte)(value >> (56 - i * 8));
         }
     }
 
     private static ulong ReadULong(ReadOnlySpan<byte> source)
     {
         ulong value = 0;
-        for (int i = 0; i < sizeof(ulong); i++)
+        for (var i = 0; i < sizeof(ulong); i++)
         {
             value = (value << 8) | source[i];
         }
 
         return value;
     }
+
+    private readonly record struct Entry(ulong Hash, long Offset, int Length);
 }

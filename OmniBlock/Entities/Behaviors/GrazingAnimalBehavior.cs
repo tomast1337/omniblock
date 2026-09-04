@@ -14,9 +14,9 @@ public sealed class GrazingAnimalBehavior : IEntityPhysics
 
     public bool? CanSpawn(EntityLiving self)
     {
-        int x = MathHelper.Floor(self.X);
-        int y = MathHelper.Floor(self.BoundingBox.MinY);
-        int z = MathHelper.Floor(self.Z);
+        var x = MathHelper.Floor(self.X);
+        var y = MathHelper.Floor(self.BoundingBox.MinY);
+        var z = MathHelper.Floor(self.Z);
 
         // The path-weight floor the creature spawn rule also applies is not repeated: grass scores
         // 10, so anything reaching this point already clears it.

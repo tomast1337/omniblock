@@ -1,6 +1,7 @@
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Entities.Models;
 using OmniBlock.Entities;
+using Silk.NET.Maths;
 
 namespace OmniBlock.Client.Rendering.Entities;
 
@@ -11,8 +12,8 @@ namespace OmniBlock.Client.Rendering.Entities;
 /// </summary>
 public sealed class GlowingEyesEntityRenderer : LivingEntityRenderer
 {
-    private readonly string _texture;
     private readonly float _deathRotation;
+    private readonly string _texture;
 
     public GlowingEyesEntityRenderer(ModelBase main, ModelBase overlay, float shadowRadius, string texture, float deathRotation)
         : base(main, shadowRadius)
@@ -29,12 +30,15 @@ public sealed class GlowingEyesEntityRenderer : LivingEntityRenderer
         if (renderPass != 0) return false;
 
         loadTexture(_texture);
-        float alpha = (1.0F - entity.GetBrightnessAtEyes(1.0F)) * 0.5F;
+        var alpha = (1.0F - entity.GetBrightnessAtEyes(1.0F)) * 0.5F;
         // The alpha test is a shader uniform rather than pipeline state, so it stays a separate
         // call. Depth writing stays on, as it was before: the overlay sits on the model it covers.
         GLManager.AlphaTestEnabled = false;
-        GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
-        GLManager.Color = new(1.0F, 1.0F, 1.0F, alpha);
+        GLManager.State.Apply(RenderState.Entity with
+        {
+            Blend = BlendMode.Alpha
+        });
+        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, alpha);
         return true;
     }
 }

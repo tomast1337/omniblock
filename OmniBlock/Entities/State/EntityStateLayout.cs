@@ -68,22 +68,22 @@ public sealed class EntityStateLayout
     {
         EntityState state = new(_ints, _longs, _floats, _doubles, _bools, _refs);
 
-        foreach ((int index, int value) in _intDefaults)
+        foreach (var (index, value) in _intDefaults)
         {
             state.SetIntRaw(index, value);
         }
 
-        foreach ((int index, float value) in _floatDefaults)
+        foreach (var (index, value) in _floatDefaults)
         {
             state.SetFloatRaw(index, value);
         }
 
-        foreach ((int index, double value) in _doubleDefaults)
+        foreach (var (index, value) in _doubleDefaults)
         {
             state.SetDoubleRaw(index, value);
         }
 
-        foreach ((int index, bool value) in _boolDefaults)
+        foreach (var (index, value) in _boolDefaults)
         {
             state.SetBoolRaw(index, value);
         }

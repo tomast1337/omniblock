@@ -8,11 +8,11 @@ namespace OmniBlock.Screens;
 
 public class PlayerScreenHandler : ScreenHandler
 {
+    private readonly EntityPlayer _player;
 
     public InventoryCrafting craftingInput;
     public IInventory craftingResult;
     public bool isLocal;
-    private readonly EntityPlayer _player;
 
     public PlayerScreenHandler(InventoryPlayer inventoryPlayer) : this(inventoryPlayer, true)
     {
@@ -37,7 +37,7 @@ public class PlayerScreenHandler : ScreenHandler
             }
         }
 
-        for (int armorSlot = 0; armorSlot < 4; ++armorSlot)
+        for (var armorSlot = 0; armorSlot < 4; ++armorSlot)
         {
             AddSlot(new SlotArmor(this, inventoryPlayer, inventoryPlayer.Size - 1 - armorSlot, 8, 8 + armorSlot * 18, armorSlot));
         }
@@ -50,7 +50,7 @@ public class PlayerScreenHandler : ScreenHandler
             }
         }
 
-        for (int hotbarSlot = 0; hotbarSlot < 9; ++hotbarSlot)
+        for (var hotbarSlot = 0; hotbarSlot < 9; ++hotbarSlot)
         {
             AddSlot(new Slot(inventoryPlayer, hotbarSlot, 8 + hotbarSlot * 18, 142));
         }
@@ -58,39 +58,32 @@ public class PlayerScreenHandler : ScreenHandler
         onSlotUpdate(craftingInput);
     }
 
-    public override void onSlotUpdate(IInventory inv)
-    {
-        craftingResult.SetStack(0, _player.World.Content.Processes.Crafting.Craft(craftingInput));
-    }
+    public override void onSlotUpdate(IInventory inv) => craftingResult.SetStack(0, _player.World.Content.Processes.Crafting.Craft(craftingInput));
 
     public override void onClosed(EntityPlayer player)
     {
         base.onClosed(player);
 
-        for (int slotIndex = 0; slotIndex < 4; ++slotIndex)
+        for (var slotIndex = 0; slotIndex < 4; ++slotIndex)
         {
-            ItemStack craftingStack = craftingInput.GetStack(slotIndex);
+            var craftingStack = craftingInput.GetStack(slotIndex);
             if (craftingStack != null)
             {
                 player.Inventory.AddItemStackToInventory(craftingStack);
                 craftingInput.SetStack(slotIndex, null);
             }
         }
-
     }
 
-    public override bool canUse(EntityPlayer player)
-    {
-        return true;
-    }
+    public override bool canUse(EntityPlayer player) => true;
 
     public override ItemStack quickMove(int slotNumber)
     {
         ItemStack movedStack = null;
-        Slot slot = Slots[slotNumber];
+        var slot = Slots[slotNumber];
         if (slot != null && slot.hasStack())
         {
-            ItemStack slotStack = slot.getStack();
+            var slotStack = slot.getStack();
             movedStack = slotStack.Copy();
             if (slotNumber == 0)
             {
@@ -104,8 +97,8 @@ public class PlayerScreenHandler : ScreenHandler
             {
                 if (slotStack.GetItem().GetBehavior<ArmorBehavior>() is { } armor)
                 {
-                    int targetSlot = 5 + armor.ArmorType;
-                    int countBefore = slotStack.Count;
+                    var targetSlot = 5 + armor.ArmorType;
+                    var countBefore = slotStack.Count;
                     insertItem(slotStack, targetSlot, targetSlot + 1, false);
                     if (slotStack.Count == countBefore)
                     {

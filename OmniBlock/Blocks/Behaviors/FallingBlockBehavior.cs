@@ -1,5 +1,4 @@
 using OmniBlock.Blocks.Materials;
-using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 
 namespace OmniBlock.Blocks.Behaviors;
@@ -29,20 +28,11 @@ public class FallingBlockBehavior(Block[] passable, int regionLoadCheckRadius) :
         set => s_fallInstantly.Value = value;
     }
 
-    public void OnPlaced(Block block, OnPlacedEvent @event)
-    {
-        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
-    }
+    public void OnPlaced(Block block, OnPlacedEvent @event) => @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
 
-    public void NeighborUpdate(Block block, OnTickEvent @event)
-    {
-        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
-    }
+    public void NeighborUpdate(Block block, OnTickEvent @event) => @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
 
-    public void OnTick(Block block, OnTickEvent @event)
-    {
-        ProcessFall(block, @event);
-    }
+    public void OnTick(Block block, OnTickEvent @event) => ProcessFall(block, @event);
 
     private void ProcessFall(Block block, OnTickEvent @event)
     {
@@ -51,7 +41,7 @@ public class FallingBlockBehavior(Block[] passable, int regionLoadCheckRadius) :
 
         if (!FallInstantly && @event.World.ChunkHost.IsRegionLoaded(x - regionLoadCheckRadius, y - regionLoadCheckRadius, z - regionLoadCheckRadius, x + regionLoadCheckRadius, y + regionLoadCheckRadius, z + regionLoadCheckRadius))
         {
-            Entity fallingSand = @event.World.Content.EntityTypes.Create("omniblock:fallingsand", @event.World);
+            var fallingSand = @event.World.Content.EntityTypes.Create("omniblock:fallingsand", @event.World);
             fallingSand.Behaviors.Find<SettleAsBlockBehavior>()!.SetBlock(fallingSand, block.Id);
             fallingSand.SetPositionAndAngles(x + 0.5F, y + 0.5F, z + 0.5F, 0.0F, 0.0F);
             @event.World.Entities.SpawnEntity(fallingSand);
@@ -72,8 +62,10 @@ public class FallingBlockBehavior(Block[] passable, int regionLoadCheckRadius) :
         if (blockId == 0) return true;
 
         foreach (var obstacle in passable)
+        {
             if (blockId == obstacle.Id)
                 return true;
+        }
 
         var material = Blocks.GetByProtocolId(blockId).Material;
         return material == Material.Water || material == Material.Lava;

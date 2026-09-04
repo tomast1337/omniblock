@@ -52,9 +52,9 @@ public sealed class RegistryDataMessage : Message
         where T : class, IDataAsset
     {
         List<Entry> entries = new();
-        foreach (ResourceLocation entryKey in registry.Keys)
+        foreach (var entryKey in registry.Keys)
         {
-            T? value = registry.GetValue(entryKey);
+            var value = registry.GetValue(entryKey);
             if (value is null)
             {
                 continue;
@@ -75,7 +75,7 @@ public sealed class RegistryDataMessage : Message
     {
         RegistryId = stream.ReadResourceLocation();
 
-        int count = stream.ReadVarInt();
+        var count = stream.ReadVarInt();
         if (count < 0 || count > MaxEntries)
         {
             throw new InvalidDataException(
@@ -84,10 +84,10 @@ public sealed class RegistryDataMessage : Message
 
         Entries.Clear();
         Entries.Capacity = count;
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ResourceLocation key = stream.ReadResourceLocation();
-            string? json = stream.ReadBoolean() ? stream.ReadString() : null;
+            var key = stream.ReadResourceLocation();
+            var json = stream.ReadBoolean() ? stream.ReadString() : null;
             Entries.Add(new Entry(key, json));
         }
     }
@@ -96,7 +96,7 @@ public sealed class RegistryDataMessage : Message
     {
         stream.WriteResourceLocation(RegistryId);
         stream.WriteVarInt(Entries.Count);
-        foreach (Entry entry in Entries)
+        foreach (var entry in Entries)
         {
             stream.WriteResourceLocation(entry.Key);
             stream.WriteBoolean(entry.JsonData is not null);
@@ -109,9 +109,9 @@ public sealed class RegistryDataMessage : Message
 
     public override int Size()
     {
-        int size = StreamExtensions.ResourceLocationSize(RegistryId)
+        var size = StreamExtensions.ResourceLocationSize(RegistryId)
                    + StreamExtensions.VarIntSize(Entries.Count);
-        foreach (Entry entry in Entries)
+        foreach (var entry in Entries)
         {
             size += StreamExtensions.ResourceLocationSize(entry.Key)
                     + 1

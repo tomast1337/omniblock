@@ -1,8 +1,8 @@
 namespace OmniBlock.Registries;
 
 /// <summary>
-/// A typed key that identifies a registry. The type parameter <typeparamref name="T"/>
-/// constrains what <see cref="IReadableRegistry{T}"/> can be stored under this key.
+///     A typed key that identifies a registry. The type parameter <typeparamref name="T" />
+///     constrains what <see cref="IReadableRegistry{T}" /> can be stored under this key.
 /// </summary>
 public sealed class RegistryKey<T>(ResourceLocation location) where T : class
 {

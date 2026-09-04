@@ -1,5 +1,3 @@
-using OmniBlock.Blocks;
-
 namespace OmniBlock.Tests.Blocks;
 
 // Regression for BlockFactory.AttachBehaviors' array-based schema: BlockDefinition.Behaviors is
@@ -16,42 +14,42 @@ public sealed class BlockFactoryArrayTests
     [Fact]
     public void Leaves_MultiSlotEntry_SharesSameInstanceAcrossAllListedSlots()
     {
-        Block leaves = TestBlocks.Get("leaves");
-        Assert.Same((object?)leaves.Ticker, (object?)leaves.Lifecycle);
-        Assert.Same((object?)leaves.Ticker, (object?)leaves.Visuals);
+        var leaves = TestBlocks.Get("leaves");
+        Assert.Same(leaves.Ticker, leaves.Lifecycle);
+        Assert.Same(leaves.Ticker, leaves.Visuals);
     }
 
     [Fact]
     public void Log_MultiSlotEntry_SharesSameInstanceAcrossAllListedSlots()
     {
-        Block log = TestBlocks.Get("log");
-        Assert.Same((object?)log.Visuals, (object?)log.Lifecycle);
+        var log = TestBlocks.Get("log");
+        Assert.Same(log.Visuals, log.Lifecycle);
     }
 
     [Fact]
     public void Fire_MultiSlotEntry_SharesSameInstanceAcrossAllListedSlots()
     {
-        Block fire = TestBlocks.Get("fire");
-        Assert.Same((object?)fire.Ticker, (object?)fire.Physics);
-        Assert.Same((object?)fire.Ticker, (object?)fire.Lifecycle);
+        var fire = TestBlocks.Get("fire");
+        Assert.Same(fire.Ticker, fire.Physics);
+        Assert.Same(fire.Ticker, fire.Lifecycle);
     }
 
     [Fact]
     public void Wheat_MultiSlotEntry_SharesSameInstanceAcrossAllListedSlots()
     {
-        Block wheat = TestBlocks.Get("wheat");
-        Assert.Same((object?)wheat.Ticker, (object?)wheat.Physics);
-        Assert.Same((object?)wheat.Ticker, (object?)wheat.Lifecycle);
-        Assert.Same((object?)wheat.Ticker, (object?)wheat.Visuals);
+        var wheat = TestBlocks.Get("wheat");
+        Assert.Same(wheat.Ticker, wheat.Physics);
+        Assert.Same(wheat.Ticker, wheat.Lifecycle);
+        Assert.Same(wheat.Ticker, wheat.Visuals);
     }
 
     [Fact]
     public void Farmland_MultiSlotEntry_SharesSameInstanceAcrossAllListedSlots()
     {
-        Block farmland = TestBlocks.Get("farmland");
-        Assert.Same((object?)farmland.Ticker, (object?)farmland.Physics);
-        Assert.Same((object?)farmland.Ticker, (object?)farmland.Interactable);
-        Assert.Same((object?)farmland.Ticker, (object?)farmland.Lifecycle);
-        Assert.Same((object?)farmland.Ticker, (object?)farmland.Visuals);
+        var farmland = TestBlocks.Get("farmland");
+        Assert.Same(farmland.Ticker, farmland.Physics);
+        Assert.Same(farmland.Ticker, farmland.Interactable);
+        Assert.Same(farmland.Ticker, farmland.Lifecycle);
+        Assert.Same(farmland.Ticker, farmland.Visuals);
     }
 }

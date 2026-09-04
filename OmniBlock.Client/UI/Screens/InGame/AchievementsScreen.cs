@@ -34,9 +34,9 @@ public class AchievementsScreen(
         AddTitleSpacer();
 
         // Stats summary
-        int total = Achievements.AllAchievements.Count;
-        int unlockedCount = Achievements.AllAchievements.Count(a => stats.HasAchievementUnlocked(a));
-        float progress = (float)unlockedCount / total;
+        var total = Achievements.AllAchievements.Count;
+        var unlockedCount = Achievements.AllAchievements.Count(a => stats.HasAchievementUnlocked(a));
+        var progress = (float)unlockedCount / total;
 
         Label progressLabel = new()
         {
@@ -81,7 +81,7 @@ public class AchievementsScreen(
 
         PopulateAchievementList(cardList);
 
-        Button btnDone = CreateButton();
+        var btnDone = CreateButton();
         btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.MarginTop = 10;
         btnDone.Style.MarginBottom = 20;
@@ -92,10 +92,10 @@ public class AchievementsScreen(
 
     private void PopulateAchievementList(Panel list)
     {
-        List<Achievement> all = Achievements.AllAchievements;
+        var all = Achievements.AllAchievements;
 
-        List<Achievement> roots = all.Where(a => a.parent == null).ToList();
-        foreach (Achievement? root in roots)
+        var roots = all.Where(a => a.parent == null).ToList();
+        foreach (var root in roots)
         {
             AddAchievementRecursively(list, root, 0);
         }
@@ -107,8 +107,8 @@ public class AchievementsScreen(
         card.Style.MarginLeft = indent;
         list.AddChild(card);
 
-        List<Achievement> children = Achievements.AllAchievements.Where(a => a.parent == ach).ToList();
-        foreach (Achievement? child in children)
+        var children = Achievements.AllAchievements.Where(a => a.parent == ach).ToList();
+        foreach (var child in children)
         {
             AddAchievementRecursively(list, child, indent + 16);
         }

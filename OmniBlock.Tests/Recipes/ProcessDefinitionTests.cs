@@ -1,7 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using OmniBlock.Processes;
-using OmniBlock.Registries;
 using OmniBlock.Registries.Data;
 
 namespace OmniBlock.Tests.Recipes;
@@ -11,18 +10,18 @@ public sealed class ProcessDefinitionTests
     [Fact]
     public void Envelope_preserves_custom_provider_schema_without_knowing_its_fields()
     {
-        ProcessDefinition envelope = DeserializeEnvelope("""
-            {
-              "id":"example:crushed_iron",
-              "type":"example:crusher",
-              "input":{"item":"omniblock:iron_ore","count":1},
-              "output":{"item":"example:iron_dust","count":2},
-              "energy":4000,
-              "chance":0.75
-            }
-            """);
+        var envelope = DeserializeEnvelope("""
+                                           {
+                                             "id":"example:crushed_iron",
+                                             "type":"example:crusher",
+                                             "input":{"item":"omniblock:iron_ore","count":1},
+                                             "output":{"item":"example:iron_dust","count":2},
+                                             "energy":4000,
+                                             "chance":0.75
+                                           }
+                                           """);
 
-        CrusherDefinition providerDefinition = envelope.GetProviderDefinition()
+        var providerDefinition = envelope.GetProviderDefinition()
             .Deserialize<CrusherDefinition>()!;
 
         Assert.Equal("example:crushed_iron", envelope.GetProcessId().ToString());
@@ -42,7 +41,7 @@ public sealed class ProcessDefinitionTests
     [InlineData("example:chemical_reactor", "example:chemical_reactor")]
     public void Envelope_maps_legacy_types_at_the_boundary_only(string source, string expected)
     {
-        ProcessDefinition envelope = DeserializeEnvelope($$"""{"type":"{{source}}"}""");
+        var envelope = DeserializeEnvelope($$"""{"type":"{{source}}"}""");
 
         Assert.Equal(expected, envelope.GetProviderType().ToString());
     }
@@ -50,7 +49,7 @@ public sealed class ProcessDefinitionTests
     [Fact]
     public void Asset_identity_is_used_when_json_omits_id()
     {
-        ProcessDefinition envelope = DeserializeEnvelope("""{"type":"omniblock:smelting"}""");
+        var envelope = DeserializeEnvelope("""{"type":"omniblock:smelting"}""");
         envelope.Namespace = Namespace.Get("example");
         envelope.Name = "iron_dust";
 
@@ -60,12 +59,12 @@ public sealed class ProcessDefinitionTests
     [Fact]
     public void Conflicting_declared_and_asset_ids_are_rejected()
     {
-        ProcessDefinition envelope = DeserializeEnvelope(
+        var envelope = DeserializeEnvelope(
             """{"id":"other:dust","type":"example:crusher"}""");
         envelope.Namespace = Namespace.Get("example");
         envelope.Name = "dust";
 
-        InvalidOperationException error = Assert.Throws<InvalidOperationException>(envelope.GetProcessId);
+        var error = Assert.Throws<InvalidOperationException>(envelope.GetProcessId);
 
         Assert.Contains("example:dust", error.Message);
         Assert.Contains("other:dust", error.Message);
@@ -84,17 +83,17 @@ public sealed class ProcessDefinitionTests
     [Fact]
     public void Every_shipped_definition_deserializes_through_its_provider_owned_schema()
     {
-        var loader = new DataAssetLoader<ProcessDefinition>("recipe", LoadLocations.Assets, allowUnhandled: false);
+        var loader = new DataAssetLoader<ProcessDefinition>("recipe", LoadLocations.Assets, false);
         loader.LoadFromPaths(null, null, null);
         Assert.False(loader.HasErrors, loader.FirstErrorMessage);
         IReadableRegistry<ProcessDefinition> catalog = loader;
 
         var counts = new Dictionary<ResourceLocation, int>();
-        foreach (ResourceLocation key in catalog.Keys)
+        foreach (var key in catalog.Keys)
         {
-            ProcessDefinition envelope = catalog.GetOrThrow(key);
-            ResourceLocation providerType = envelope.GetProviderType();
-            JsonElement json = envelope.GetProviderDefinition();
+            var envelope = catalog.GetOrThrow(key);
+            var providerType = envelope.GetProviderType();
+            var json = envelope.GetProviderDefinition();
             object schema = providerType == ProcessTypes.CraftingShaped
                 ? json.Deserialize<ShapedCraftingDefinition>()!
                 : providerType == ProcessTypes.CraftingShapeless
@@ -121,21 +120,19 @@ public sealed class ProcessDefinitionTests
 
     private sealed class CrusherDefinition
     {
-        [JsonPropertyName("input")]
-        public ProcessResourceStack Input { get; init; } = new();
-        [JsonPropertyName("output")]
-        public ProcessResourceStack Output { get; init; } = new();
-        [JsonPropertyName("energy")]
-        public int Energy { get; init; }
-        [JsonPropertyName("chance")]
-        public double Chance { get; init; }
+        [JsonPropertyName("input")] public ProcessResourceStack Input { get; init; } = new();
+
+        [JsonPropertyName("output")] public ProcessResourceStack Output { get; init; } = new();
+
+        [JsonPropertyName("energy")] public int Energy { get; init; }
+
+        [JsonPropertyName("chance")] public double Chance { get; init; }
     }
 
     private sealed class ProcessResourceStack
     {
-        [JsonPropertyName("item")]
-        public string Item { get; init; } = "";
-        [JsonPropertyName("count")]
-        public int Count { get; init; }
+        [JsonPropertyName("item")] public string Item { get; } = "";
+
+        [JsonPropertyName("count")] public int Count { get; init; }
     }
 }

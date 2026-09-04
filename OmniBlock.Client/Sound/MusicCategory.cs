@@ -4,12 +4,6 @@ namespace OmniBlock.Client.Sound;
 
 public class MusicCategory
 {
-    public ResourceLocation Name { get; }
-    public SoundPool Pool { get; } = new();
-    public int MinDelayTicks { get; }
-    public int MaxDelayTicks { get; }
-    public int TicksBeforeNext { get; set; }
-
     private readonly JavaRandom _rand = new();
 
     public MusicCategory(ResourceLocation name, int minDelayTicks, int maxDelayTicks)
@@ -20,8 +14,11 @@ public class MusicCategory
         TicksBeforeNext = _rand.NextInt(minDelayTicks);
     }
 
-    public void ResetDelay()
-    {
-        TicksBeforeNext = _rand.NextInt(MinDelayTicks) + MaxDelayTicks - MinDelayTicks;
-    }
+    public ResourceLocation Name { get; }
+    public SoundPool Pool { get; } = new();
+    public int MinDelayTicks { get; }
+    public int MaxDelayTicks { get; }
+    public int TicksBeforeNext { get; set; }
+
+    public void ResetDelay() => TicksBeforeNext = _rand.NextInt(MinDelayTicks) + MaxDelayTicks - MinDelayTicks;
 }

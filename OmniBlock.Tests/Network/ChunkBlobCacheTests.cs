@@ -17,13 +17,13 @@ public sealed class ChunkBlobCacheTests : IDisposable
     private readonly string _directory = Path.Combine(
         Path.GetTempPath(), "omniblock-cache-tests", Guid.NewGuid().ToString("N"));
 
-    private string Path_ => System.IO.Path.Combine(_directory, "chunks.bin");
+    private string Path_ => Path.Combine(_directory, "chunks.bin");
 
     public void Dispose()
     {
         try
         {
-            Directory.Delete(_directory, recursive: true);
+            Directory.Delete(_directory, true);
         }
         catch (IOException)
         {
@@ -33,7 +33,7 @@ public sealed class ChunkBlobCacheTests : IDisposable
 
     private static byte[] Blob(int seed, int length = 512)
     {
-        byte[] blob = new byte[length];
+        var blob = new byte[length];
         new Random(seed).NextBytes(blob);
         return blob;
     }
@@ -41,8 +41,8 @@ public sealed class ChunkBlobCacheTests : IDisposable
     [Fact]
     public void A_stored_chunk_comes_back()
     {
-        using ChunkBlobCache cache = ChunkBlobCache.Open(Path_);
-        byte[] blob = Blob(1);
+        using var cache = ChunkBlobCache.Open(Path_);
+        var blob = Blob(1);
 
         cache.Write(new ChunkPos(3, -7), 0xDEADBEEFCAFEF00D, blob);
 
@@ -53,7 +53,7 @@ public sealed class ChunkBlobCacheTests : IDisposable
     [Fact]
     public void An_absent_chunk_reads_as_nothing_rather_than_throwing()
     {
-        using ChunkBlobCache cache = ChunkBlobCache.Open(Path_);
+        using var cache = ChunkBlobCache.Open(Path_);
 
         Assert.Null(cache.HashOf(new ChunkPos(0, 0)));
         Assert.Null(cache.Read(new ChunkPos(0, 0)));
@@ -66,7 +66,7 @@ public sealed class ChunkBlobCacheTests : IDisposable
     [Fact]
     public void Rewriting_a_chunk_supersedes_the_previous_copy()
     {
-        using ChunkBlobCache cache = ChunkBlobCache.Open(Path_);
+        using var cache = ChunkBlobCache.Open(Path_);
         ChunkPos position = new(1, 1);
 
         cache.Write(position, 1, Blob(1));
@@ -80,18 +80,18 @@ public sealed class ChunkBlobCacheTests : IDisposable
     [Fact]
     public void Everything_survives_being_closed_and_reopened()
     {
-        using (ChunkBlobCache cache = ChunkBlobCache.Open(Path_))
+        using (var cache = ChunkBlobCache.Open(Path_))
         {
-            for (int i = 0; i < 50; i++)
+            for (var i = 0; i < 50; i++)
             {
                 cache.Write(new ChunkPos(i, -i), (ulong)i, Blob(i));
             }
         }
 
-        using ChunkBlobCache reopened = ChunkBlobCache.Open(Path_);
+        using var reopened = ChunkBlobCache.Open(Path_);
 
         Assert.Equal(50, reopened.Count);
-        for (int i = 0; i < 50; i++)
+        for (var i = 0; i < 50; i++)
         {
             Assert.Equal((ulong)i, reopened.HashOf(new ChunkPos(i, -i)));
             Assert.Equal(Blob(i), reopened.Read(new ChunkPos(i, -i)));
@@ -106,7 +106,7 @@ public sealed class ChunkBlobCacheTests : IDisposable
     [Fact]
     public void A_write_interrupted_mid_record_costs_only_that_record()
     {
-        using (ChunkBlobCache cache = ChunkBlobCache.Open(Path_))
+        using (var cache = ChunkBlobCache.Open(Path_))
         {
             cache.Write(new ChunkPos(0, 0), 10, Blob(1));
             cache.Write(new ChunkPos(1, 0), 20, Blob(2));
@@ -118,7 +118,7 @@ public sealed class ChunkBlobCacheTests : IDisposable
             file.Write(new byte[] { 0, 0, 0, 5, 0, 0, 0, 5, 1, 2, 3, 4, 5, 6, 7, 8, 0, 0, 4, 0 });
         }
 
-        using ChunkBlobCache reopened = ChunkBlobCache.Open(Path_);
+        using var reopened = ChunkBlobCache.Open(Path_);
 
         Assert.Equal(2, reopened.Count);
         Assert.Equal(Blob(1), reopened.Read(new ChunkPos(0, 0)));
@@ -140,17 +140,17 @@ public sealed class ChunkBlobCacheTests : IDisposable
         ChunkPos churned = new(0, 0);
         ChunkPos stable = new(1, 1);
 
-        using ChunkBlobCache cache = ChunkBlobCache.Open(Path_);
+        using var cache = ChunkBlobCache.Open(Path_);
 
         cache.Write(stable, 99, Blob(99));
-        for (int i = 0; i < 20; i++)
+        for (var i = 0; i < 20; i++)
         {
             cache.Write(churned, (ulong)i, Blob(i));
         }
 
-        long before = new FileInfo(Path_).Length;
+        var before = new FileInfo(Path_).Length;
         cache.Flush();
-        long after = new FileInfo(Path_).Length;
+        var after = new FileInfo(Path_).Length;
 
         Assert.True(after < before, $"compaction did not shrink the file: {before} -> {after}");
 
@@ -168,7 +168,7 @@ public sealed class ChunkBlobCacheTests : IDisposable
     [Fact]
     public void An_oversized_blob_is_not_stored()
     {
-        using ChunkBlobCache cache = ChunkBlobCache.Open(Path_);
+        using var cache = ChunkBlobCache.Open(Path_);
 
         cache.Write(new ChunkPos(0, 0), 1, new byte[ChunkBlobCache.MaxBlobBytes + 1]);
 
@@ -186,7 +186,7 @@ public sealed class ChunkBlobCacheTests : IDisposable
         // A directory where the file should be: creating the file cannot succeed.
         Directory.CreateDirectory(Path_);
 
-        using ChunkBlobCache cache = ChunkBlobCache.Open(Path_);
+        using var cache = ChunkBlobCache.Open(Path_);
 
         Assert.True(cache.Disabled);
         Assert.Equal(0, cache.Count);
@@ -204,13 +204,13 @@ public sealed class ChunkBlobCacheTests : IDisposable
     [Fact]
     public void The_last_centre_survives_a_reopen()
     {
-        using (ChunkBlobCache cache = ChunkBlobCache.Open(Path_))
+        using (var cache = ChunkBlobCache.Open(Path_))
         {
             cache.Write(new ChunkPos(0, 0), 1, Blob(1));
             cache.LastCentre = new ChunkPos(-341, 78);
         }
 
-        using ChunkBlobCache reopened = ChunkBlobCache.Open(Path_);
+        using var reopened = ChunkBlobCache.Open(Path_);
 
         Assert.Equal(new ChunkPos(-341, 78), reopened.LastCentre);
         Assert.Equal(1, reopened.Count);
@@ -219,10 +219,10 @@ public sealed class ChunkBlobCacheTests : IDisposable
     [Fact]
     public void The_last_centre_survives_compaction()
     {
-        using ChunkBlobCache cache = ChunkBlobCache.Open(Path_);
+        using var cache = ChunkBlobCache.Open(Path_);
         cache.LastCentre = new ChunkPos(12, -34);
 
-        for (int i = 0; i < 20; i++)
+        for (var i = 0; i < 20; i++)
         {
             cache.Write(new ChunkPos(0, 0), (ulong)i, Blob(i));
         }
@@ -244,7 +244,7 @@ public sealed class ChunkBlobCacheTests : IDisposable
         Directory.CreateDirectory(_directory);
         File.WriteAllBytes(Path_, Enumerable.Range(0, 4096).Select(i => (byte)i).ToArray());
 
-        using ChunkBlobCache cache = ChunkBlobCache.Open(Path_);
+        using var cache = ChunkBlobCache.Open(Path_);
 
         Assert.False(cache.Disabled);
         Assert.Equal(0, cache.Count);
@@ -264,21 +264,21 @@ public sealed class ChunkBlobCacheTests : IDisposable
     public void Chunks_reach_disk_without_a_clean_shutdown()
     {
         // Deliberately not disposed: this models the process going away.
-        ChunkBlobCache cache = ChunkBlobCache.Open(Path_);
+        var cache = ChunkBlobCache.Open(Path_);
 
-        for (int i = 0; i < 200; i++)
+        for (var i = 0; i < 200; i++)
         {
             cache.Write(new ChunkPos(i, 0), (ulong)i, Blob(i));
         }
 
-        long onDisk = new FileInfo(Path_).Length;
+        var onDisk = new FileInfo(Path_).Length;
         Assert.True(onDisk > 0, "nothing was flushed");
 
         // The handle has to go before another opener can have it, which is the same exclusivity that
         // made the missing teardown visible in the first place.
         cache.Dispose();
 
-        using ChunkBlobCache reopened = ChunkBlobCache.Open(Path_);
+        using var reopened = ChunkBlobCache.Open(Path_);
         Assert.Equal(200, reopened.Count);
     }
 
@@ -289,14 +289,14 @@ public sealed class ChunkBlobCacheTests : IDisposable
     [Fact]
     public void The_cache_is_trimmed_to_its_size_bound()
     {
-        using ChunkBlobCache cache = ChunkBlobCache.Open(Path_);
+        using var cache = ChunkBlobCache.Open(Path_);
         cache.LastCentre = new ChunkPos(0, 0);
 
         // Deliberately over the bound, using large records so the count stays manageable.
         const int recordBytes = ChunkBlobCache.MaxBlobBytes;
-        int needed = (int)(ChunkBlobCache.MaxLiveBytes / recordBytes) + 8;
+        var needed = (int)(ChunkBlobCache.MaxLiveBytes / recordBytes) + 8;
 
-        for (int i = 0; i < needed; i++)
+        for (var i = 0; i < needed; i++)
         {
             cache.Write(new ChunkPos(i, 0), (ulong)i, new byte[recordBytes]);
         }
@@ -314,12 +314,12 @@ public sealed class ChunkBlobCacheTests : IDisposable
     [Fact]
     public void Entries_lists_everything_held_for_advertising()
     {
-        using ChunkBlobCache cache = ChunkBlobCache.Open(Path_);
+        using var cache = ChunkBlobCache.Open(Path_);
 
         cache.Write(new ChunkPos(0, 0), 7, Blob(1));
         cache.Write(new ChunkPos(4, 5), 8, Blob(2));
 
-        Dictionary<ChunkPos, ulong> entries = cache.Entries.ToDictionary(e => e.Key, e => e.Value);
+        var entries = cache.Entries.ToDictionary(e => e.Key, e => e.Value);
 
         Assert.Equal(2, entries.Count);
         Assert.Equal(7ul, entries[new ChunkPos(0, 0)]);

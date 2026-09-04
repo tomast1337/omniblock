@@ -12,22 +12,22 @@ public sealed class LuauTestHostIntegrationTests
         Skip.IfNot(LuauQuickRun.IsAvailable(), "native library not resolvable for this checkout.");
         using LuauState state = new();
         state.ResetInstructionBudget(100_000);
-        int passes = 0;
+        var passes = 0;
         string? failure = null;
         LuauTestHost.Pass = () => passes++;
         LuauTestHost.Fail = reason => failure = reason;
 
         try
         {
-            Assert.True(state.TryExecute(LuauDomHost.Bootstrap, out string omniError), omniError);
-            Assert.True(state.TryExecute("OMNI.test == nil", out string initiallyMissing), initiallyMissing);
+            Assert.True(state.TryExecute(LuauDomHost.Bootstrap, out var omniError), omniError);
+            Assert.True(state.TryExecute("OMNI.test == nil", out var initiallyMissing), initiallyMissing);
             Assert.Equal("true", initiallyMissing);
 
             LuauTestHost.Install(state.Handle);
-            Assert.True(state.TryExecute(LuauTestHost.Bootstrap, out string bootstrapError), bootstrapError);
+            Assert.True(state.TryExecute(LuauTestHost.Bootstrap, out var bootstrapError), bootstrapError);
             Assert.True(state.TryExecute(
                 "OMNI.test.pass(); OMNI.test.fail('broken'); return OMNI.has('test')",
-                out string hasTest), hasTest);
+                out var hasTest), hasTest);
 
             Assert.Equal(1, passes);
             Assert.Equal("broken", failure);

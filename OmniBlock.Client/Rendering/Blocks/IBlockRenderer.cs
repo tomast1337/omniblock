@@ -1,7 +1,5 @@
 using OmniBlock.Blocks;
-using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Util.Maths;
-using OmniBlock.Worlds;
 
 namespace OmniBlock.Client.Rendering.Blocks;
 

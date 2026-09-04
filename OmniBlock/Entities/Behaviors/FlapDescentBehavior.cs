@@ -35,7 +35,7 @@ public sealed class FlapDescentBehavior : IEntityPhysics
 
     public void AfterTickMovement(EntityLiving self)
     {
-        EntityState state = self.State;
+        var state = self.State;
 
         if (self.World.IsRemote)
         {
@@ -45,7 +45,7 @@ public sealed class FlapDescentBehavior : IEntityPhysics
         state[_previousFlapProgress] = state[_flapProgress];
         state[_previousWingExtension] = state[_wingExtension];
 
-        float extension = (float)(state[_wingExtension] + (self.OnGround ? -1 : 4) * 0.3D);
+        var extension = (float)(state[_wingExtension] + (self.OnGround ? -1 : 4) * 0.3D);
         state[_wingExtension] = Math.Clamp(extension, 0.0F, 1.0F);
 
         if (!self.OnGround && state[_flapSpeed] < 1.0F)
@@ -69,9 +69,9 @@ public sealed class FlapDescentBehavior : IEntityPhysics
     /// </summary>
     public float WingRotation(Entity self, float tickDelta)
     {
-        EntityState state = self.State;
-        float flap = state[_previousFlapProgress] + (state[_flapProgress] - state[_previousFlapProgress]) * tickDelta;
-        float extension = state[_previousWingExtension] + (state[_wingExtension] - state[_previousWingExtension]) * tickDelta;
+        var state = self.State;
+        var flap = state[_previousFlapProgress] + (state[_flapProgress] - state[_previousFlapProgress]) * tickDelta;
+        var extension = state[_previousWingExtension] + (state[_wingExtension] - state[_previousWingExtension]) * tickDelta;
         return (MathHelper.Sin(flap) + 1.0F) * extension;
     }
 }

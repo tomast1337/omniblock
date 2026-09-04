@@ -18,13 +18,13 @@ public sealed class RangedAttackBehavior(float range = 10.0F, int cooldownTicks 
             return;
         }
 
-        double dx = target.X - self.X;
-        double dy = target.Z - self.Z;
+        var dx = target.X - self.X;
+        var dy = target.Z - self.Z;
         if (self.AttackTime == 0)
         {
-            Entity arrow = ArrowBehavior.Shoot(self.World, self);
-            double targetHeightOffset = target.Y + target.EyeHeight - 0.2F - arrow.Y;
-            float distanceFactor = MathHelper.Sqrt(dx * dx + dy * dy) * 0.2F;
+            var arrow = ArrowBehavior.Shoot(self.World, self);
+            var targetHeightOffset = target.Y + target.EyeHeight - 0.2F - arrow.Y;
+            var distanceFactor = MathHelper.Sqrt(dx * dx + dy * dy) * 0.2F;
             self.World.Broadcaster.PlaySoundAtEntity(self, "random.bow", 1.0F, 1.0F / (self.Random.NextFloat() * 0.4F + 0.8F));
             self.World.SpawnEntity(arrow);
             arrow.Behaviors.Find<ArrowBehavior>()!.SetHeading(arrow, dx, targetHeightOffset + distanceFactor, dy, 0.6F, 12.0F);

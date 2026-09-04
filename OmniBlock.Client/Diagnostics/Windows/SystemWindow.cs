@@ -9,7 +9,7 @@ internal sealed class SystemWindow(DebugWindowContext ctx) : DebugWindow
 
     protected override void OnDraw()
     {
-        DebugSystemSnapshot s = ctx.DebugSystemSnapshot;
+        var s = ctx.DebugSystemSnapshot;
 
         ImGuiTextSafe.Text("Build: " + OmniBlock.Version);
         ImGuiTextSafe.Text($"OS:     {s.OsDescription}");

@@ -10,18 +10,14 @@ namespace OmniBlock.Client.Rendering.Core.WebGPU;
 [StructLayout(LayoutKind.Explicit, Size = 160)]
 public struct ParticleWgslUniforms
 {
-    [FieldOffset(0)]
-    public Matrix4x4 ModelViewMatrix;
+    [FieldOffset(0)] public Matrix4x4 ModelViewMatrix;
 
-    [FieldOffset(64)]
-    public Matrix4x4 ProjectionMatrix;
+    [FieldOffset(64)] public Matrix4x4 ProjectionMatrix;
 
-    [FieldOffset(128)]
-    public Vector3 Right;
+    [FieldOffset(128)] public Vector3 Right;
     // 4 bytes padding — the next field is another vec3, which itself needs 16-byte alignment
 
-    [FieldOffset(144)]
-    public Vector3 Up;
+    [FieldOffset(144)] public Vector3 Up;
     // 4 bytes trailing padding — struct size must stay a multiple of 16 for a uniform buffer.
 }
 
@@ -32,18 +28,13 @@ public struct ParticleWgslUniforms
 [StructLayout(LayoutKind.Explicit, Size = 48)]
 public struct ParticleInstance
 {
-    [FieldOffset(0)]
-    public Vector3 Pos;
+    [FieldOffset(0)] public Vector3 Pos;
 
-    [FieldOffset(12)]
-    public float Size;
+    [FieldOffset(12)] public float Size;
 
-    [FieldOffset(16)]
-    public Vector4 Color;
+    [FieldOffset(16)] public Vector4 Color;
 
-    [FieldOffset(32)]
-    public Vector2 UvMin;
+    [FieldOffset(32)] public Vector2 UvMin;
 
-    [FieldOffset(40)]
-    public Vector2 UvMax;
+    [FieldOffset(40)] public Vector2 UvMax;
 }

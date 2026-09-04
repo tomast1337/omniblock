@@ -152,8 +152,8 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
             return true;
         }
 
-        double xOffset = Math.Cos(self.Yaw * Math.PI / 180.0D) * 0.4D;
-        double zOffset = Math.Sin(self.Yaw * Math.PI / 180.0D) * 0.4D;
+        var xOffset = Math.Cos(self.Yaw * Math.PI / 180.0D) * 0.4D;
+        var zOffset = Math.Sin(self.Yaw * Math.PI / 180.0D) * 0.4D;
         passenger.SetPosition(self.X + xOffset, self.Y + PassengerRidingHeight(self) + passenger.StandingEyeHeight, self.Z + zOffset);
         return true;
     }
@@ -176,7 +176,7 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
         self.PrevY = self.Y;
         self.PrevZ = self.Z;
 
-        double waterSubmersion = MeasureSubmersion(self);
+        var waterSubmersion = MeasureSubmersion(self);
 
         if (self.World.IsRemote)
         {
@@ -196,7 +196,7 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
     /// </summary>
     public static Entity Launch(IWorldContext world, double x, double y, double z)
     {
-        Entity boat = world.Content.EntityTypes.Create("omniblock:boat", world);
+        var boat = world.Content.EntityTypes.Create("omniblock:boat", world);
         boat.SetPosition(x, y + boat.StandingEyeHeight, z);
         boat.VelocityX = boat.VelocityY = boat.VelocityZ = 0.0D;
         boat.PrevX = x;
@@ -221,9 +221,9 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
     private void BreakApart(Entity self)
     {
         self.MarkDead();
-        foreach ((int itemId, int count) in _wreckage)
+        foreach (var (itemId, count) in _wreckage)
         {
-            for (int i = 0; i < count; ++i)
+            for (var i = 0; i < count; ++i)
             {
                 self.DropItem(itemId, 1, 0.0F);
             }
@@ -239,12 +239,12 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
     private static double MeasureSubmersion(Entity self)
     {
         const int waterSliceCount = 5;
-        double submersion = 0.0D;
+        var submersion = 0.0D;
 
-        for (int i = 0; i < waterSliceCount; ++i)
+        for (var i = 0; i < waterSliceCount; ++i)
         {
-            double sliceMinY = self.BoundingBox.MinY + (self.BoundingBox.MaxY - self.BoundingBox.MinY) * i / waterSliceCount - 0.125D;
-            double sliceMaxY = self.BoundingBox.MinY + (self.BoundingBox.MaxY - self.BoundingBox.MinY) * (i + 1) / waterSliceCount - 0.125D;
+            var sliceMinY = self.BoundingBox.MinY + (self.BoundingBox.MaxY - self.BoundingBox.MinY) * i / waterSliceCount - 0.125D;
+            var sliceMaxY = self.BoundingBox.MinY + (self.BoundingBox.MaxY - self.BoundingBox.MinY) * (i + 1) / waterSliceCount - 0.125D;
             Box sliceBox = new(self.BoundingBox.MinX, sliceMinY, self.BoundingBox.MinZ, self.BoundingBox.MaxX, sliceMaxY, self.BoundingBox.MaxZ);
 
             if (self.World.Reader.IsMaterialInBox(sliceBox, m => m == Material.Water))
@@ -260,12 +260,12 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
     {
         if (self.State[_lerpSteps] > 0)
         {
-            int steps = self.State[_lerpSteps];
-            double nextX = self.X + (self.State[_targetX] - self.X) / steps;
-            double nextY = self.Y + (self.State[_targetY] - self.Y) / steps;
-            double nextZ = self.Z + (self.State[_targetZ] - self.Z) / steps;
+            var steps = self.State[_lerpSteps];
+            var nextX = self.X + (self.State[_targetX] - self.X) / steps;
+            var nextY = self.Y + (self.State[_targetY] - self.Y) / steps;
+            var nextZ = self.Z + (self.State[_targetZ] - self.Z) / steps;
 
-            double yawDelta = WrapDegrees(self.State[_targetYaw] - self.Yaw);
+            var yawDelta = WrapDegrees(self.State[_targetYaw] - self.Yaw);
             self.Yaw = (float)(self.Yaw + yawDelta / steps);
             self.Pitch = (float)(self.Pitch + (self.State[_targetPitch] - self.Pitch) / steps);
 
@@ -296,7 +296,7 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
     {
         if (waterSubmersion < 1.0D)
         {
-            double buoyancyFactor = waterSubmersion * 2.0D - 1.0D;
+            var buoyancyFactor = waterSubmersion * 2.0D - 1.0D;
             self.VelocityY += 0.04D * buoyancyFactor;
         }
         else
@@ -323,7 +323,7 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
 
         self.Move(self.VelocityX, self.VelocityY, self.VelocityZ);
 
-        double horizontalSpeed = Math.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
+        var horizontalSpeed = Math.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
         if (horizontalSpeed > 0.15D)
         {
             SpawnSplashParticles(self, horizontalSpeed);
@@ -347,7 +347,7 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
         self.Pitch = 0.0F;
         PointAlongTravel(self);
 
-        foreach (Entity entity in self.World.Entities.GetEntities(self, self.BoundingBox.Expand(0.2D, 0.0D, 0.2D)))
+        foreach (var entity in self.World.Entities.GetEntities(self, self.BoundingBox.Expand(0.2D, 0.0D, 0.2D)))
         {
             if (!Equals(entity, self.Passenger) && entity.IsPushable && entity.Behaviors.Find<BoatBehavior>() is not null)
             {
@@ -374,26 +374,26 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
         self.VelocityX += rider.VelocityX * RiderInputAcceleration;
         self.VelocityZ += rider.VelocityZ * RiderInputAcceleration;
 
-        double riderInputSpeedSq = rider.VelocityX * rider.VelocityX + rider.VelocityZ * rider.VelocityZ;
+        var riderInputSpeedSq = rider.VelocityX * rider.VelocityX + rider.VelocityZ * rider.VelocityZ;
         if (riderInputSpeedSq <= 1.0E-4D)
         {
             return;
         }
 
-        double speed = Math.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
+        var speed = Math.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
         if (speed <= 0.01D)
         {
             return;
         }
 
-        double riderInputSpeed = Math.Sqrt(riderInputSpeedSq);
-        double targetVelocityX = rider.VelocityX / riderInputSpeed * speed;
-        double targetVelocityZ = rider.VelocityZ / riderInputSpeed * speed;
+        var riderInputSpeed = Math.Sqrt(riderInputSpeedSq);
+        var targetVelocityX = rider.VelocityX / riderInputSpeed * speed;
+        var targetVelocityZ = rider.VelocityZ / riderInputSpeed * speed;
 
         self.VelocityX += (targetVelocityX - self.VelocityX) * RiderTurnVelocityBlend;
         self.VelocityZ += (targetVelocityZ - self.VelocityZ) * RiderTurnVelocityBlend;
 
-        double desiredYaw = Math.Atan2(-targetVelocityZ, -targetVelocityX) * 180.0D / Math.PI;
+        var desiredYaw = Math.Atan2(-targetVelocityZ, -targetVelocityX) * 180.0D / Math.PI;
         self.Yaw = (float)(self.Yaw + WrapDegrees(desiredYaw - self.Yaw) * YawSmoothing);
     }
 
@@ -401,8 +401,8 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
     private static void PointAlongTravel(Entity self)
     {
         double desiredYaw = self.Yaw;
-        double motionX = self.PrevX - self.X;
-        double motionZ = self.PrevZ - self.Z;
+        var motionX = self.PrevX - self.X;
+        var motionZ = self.PrevZ - self.Z;
 
         if (motionX * motionX + motionZ * motionZ > 0.001D)
         {
@@ -416,12 +416,12 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
     /// <summary>A boat ploughs a channel through snow instead of riding over it.</summary>
     private static void ClearSnowUnderfoot(Entity self)
     {
-        int snowId = BlockRegistry.Get("snow").Id;
-        for (int i = 0; i < 4; ++i)
+        var snowId = BlockRegistry.Get("snow").Id;
+        for (var i = 0; i < 4; ++i)
         {
-            int snowX = MathHelper.Floor(self.X + (i % 2 - 0.5D) * 0.8D);
-            int snowY = MathHelper.Floor(self.Y);
-            int snowZ = MathHelper.Floor(self.Z + (i * 0.5F - 0.5D) * 0.8D);
+            var snowX = MathHelper.Floor(self.X + (i % 2 - 0.5D) * 0.8D);
+            var snowY = MathHelper.Floor(self.Y);
+            var snowZ = MathHelper.Floor(self.Z + (i * 0.5F - 0.5D) * 0.8D);
 
             if (self.World.Reader.GetBlockId(snowX, snowY, snowZ) == snowId)
             {
@@ -432,13 +432,13 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
 
     private static void SpawnSplashParticles(Entity self, double horizontalSpeed)
     {
-        double yawCos = Math.Cos(self.Yaw * Math.PI / 180.0D);
-        double yawSin = Math.Sin(self.Yaw * Math.PI / 180.0D);
+        var yawCos = Math.Cos(self.Yaw * Math.PI / 180.0D);
+        var yawSin = Math.Sin(self.Yaw * Math.PI / 180.0D);
 
-        for (int i = 0; i < 1.0D + horizontalSpeed * 60.0D; ++i)
+        for (var i = 0; i < 1.0D + horizontalSpeed * 60.0D; ++i)
         {
             double randomOffset = self.Random.NextFloat() * 2.0F - 1.0F;
-            double sideOffset = (self.Random.NextInt(2) * 2 - 1) * 0.7D;
+            var sideOffset = (self.Random.NextInt(2) * 2 - 1) * 0.7D;
 
             double particleX;
             double particleZ;

@@ -52,7 +52,7 @@ public sealed class MessageDispatcher
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        if (!_handlers.TryGetValue(message.GetType(), out Action<Message>? handler))
+        if (!_handlers.TryGetValue(message.GetType(), out var handler))
         {
             return false;
         }

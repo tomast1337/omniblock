@@ -35,7 +35,7 @@ public class TranslationsCreditsScreen(UIContext context, UIScreen parent) : UIS
 
         Root.AddChild(scroll);
 
-        Button btnDone = CreateButton();
+        var btnDone = CreateButton();
         btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.MarginBottom = 20;
         btnDone.OnClick += e => Context.Navigator.Navigate(parent);
@@ -56,7 +56,7 @@ public class TranslationsCreditsScreen(UIContext context, UIScreen parent) : UIS
         image.Style.MarginBottom = 10;
         scroll.AddContent(image);
 
-        foreach (Language lang in Translations.Instance.Languages.Values)
+        foreach (var lang in Translations.Instance.Languages.Values)
         {
             Label lbl = new()
             {

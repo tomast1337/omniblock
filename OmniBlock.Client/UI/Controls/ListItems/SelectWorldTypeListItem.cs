@@ -1,4 +1,3 @@
-using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.UI.Controls.Core;
 using OmniBlock.Client.UI.Rendering;
 using OmniBlock.Worlds;
@@ -14,7 +13,7 @@ public class SelectWorldTypeListItem(WorldType type) : ListItem<WorldType>(type)
 
         if (!string.IsNullOrEmpty(Value.IconPath))
         {
-            TextureHandle texture = renderer.TextureManager.GetTextureId(Value.IconPath);
+            var texture = renderer.TextureManager.GetTextureId(Value.IconPath);
             renderer.DrawTexture(texture, 4, 4, 24, 24);
         }
         else

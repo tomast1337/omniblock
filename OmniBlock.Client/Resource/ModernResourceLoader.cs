@@ -9,23 +9,34 @@ public class ModernAssetDownloader : IResourceLoader, IDisposable
     private const string ASSET_BASE_URL = "https://resources.download.minecraft.net/";
     private const string OUTPUT_FOLDER = "custom";
 
-    private readonly ILogger<ModernAssetDownloader> _logger = Log.Instance.For<ModernAssetDownloader>();
-    private readonly HttpClient _httpClient;
-    private readonly string _resourcesDirectory;
-    private readonly OmniBlock _game;
-    private bool _cancelled;
-    private readonly IEnumerable<string> _wantedAssets;
     private static readonly Dictionary<string, string> ExtensionToFolder = new()
     {
         { ".ogg", "music" }
     };
 
+    private readonly OmniBlock _game;
+    private readonly HttpClient _httpClient;
+
+    private readonly ILogger<ModernAssetDownloader> _logger = Log.Instance.For<ModernAssetDownloader>();
+    private readonly string _resourcesDirectory;
+    private readonly IEnumerable<string> _wantedAssets;
+    private bool _cancelled;
+
     public ModernAssetDownloader(OmniBlock game, string baseDirectory, IEnumerable<string> wantedAssets)
     {
         _wantedAssets = wantedAssets;
         _game = game;
-        _resourcesDirectory = System.IO.Path.Combine(baseDirectory, "resources");
-        _httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
+        _resourcesDirectory = Path.Combine(baseDirectory, "resources");
+        _httpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromMinutes(10)
+        };
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _httpClient?.Dispose();
     }
 
     public async Task LoadAsync() => await DownloadAssetsAsync(_wantedAssets);
@@ -34,32 +45,32 @@ public class ModernAssetDownloader : IResourceLoader, IDisposable
     {
         try
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(ASSET_INDEX_URL);
+            var response = await _httpClient.GetAsync(ASSET_INDEX_URL);
             response.EnsureSuccessStatusCode();
 
-            string json = await response.Content.ReadAsStringAsync();
-            Dictionary<string, AssetEntry> index = ParseAssetIndex(json);
+            var json = await response.Content.ReadAsStringAsync();
+            var index = ParseAssetIndex(json);
 
-            foreach (string assetName in wantedAssets)
+            foreach (var assetName in wantedAssets)
             {
                 if (_cancelled) return;
 
-                if (!index.TryGetValue(assetName, out AssetEntry? entry))
+                if (!index.TryGetValue(assetName, out var entry))
                 {
                     continue;
                 }
 
-                string fileName = System.IO.Path.GetFileName(assetName);
-                string extension = System.IO.Path.GetExtension(assetName).ToLowerInvariant();
+                var fileName = Path.GetFileName(assetName);
+                var extension = Path.GetExtension(assetName).ToLowerInvariant();
 
-                if (!ExtensionToFolder.TryGetValue(extension, out string? subFolder))
+                if (!ExtensionToFolder.TryGetValue(extension, out var subFolder))
                 {
                     _logger.LogError($"No folder mapping for extension {extension}, skipping {fileName}");
                     continue;
                 }
 
-                string outputKey = System.IO.Path.Combine(OUTPUT_FOLDER, subFolder, fileName).Replace('\\', '/');
-                var localFile = new FileInfo(System.IO.Path.Combine(_resourcesDirectory, OUTPUT_FOLDER, subFolder, fileName));
+                var outputKey = Path.Combine(OUTPUT_FOLDER, subFolder, fileName).Replace('\\', '/');
+                var localFile = new FileInfo(Path.Combine(_resourcesDirectory, OUTPUT_FOLDER, subFolder, fileName));
 
                 if (localFile.Exists && localFile.Length == entry.Size)
                 {
@@ -69,8 +80,8 @@ public class ModernAssetDownloader : IResourceLoader, IDisposable
 
                 localFile.Directory?.Create();
 
-                string hash = entry.Hash;
-                string url = ASSET_BASE_URL + hash[..2] + "/" + hash;
+                var hash = entry.Hash;
+                var url = ASSET_BASE_URL + hash[..2] + "/" + hash;
 
                 await DownloadFile(url, localFile.FullName);
 
@@ -89,15 +100,19 @@ public class ModernAssetDownloader : IResourceLoader, IDisposable
     private static Dictionary<string, AssetEntry> ParseAssetIndex(string json)
     {
         var result = new Dictionary<string, AssetEntry>();
-        using JsonDocument doc = JsonDocument.Parse(json);
+        using var doc = JsonDocument.Parse(json);
 
-        JsonElement objects = doc.RootElement.GetProperty("objects");
+        var objects = doc.RootElement.GetProperty("objects");
 
-        foreach (JsonProperty prop in objects.EnumerateObject())
+        foreach (var prop in objects.EnumerateObject())
         {
-            string hash = prop.Value.GetProperty("hash").GetString()!;
-            long size = prop.Value.GetProperty("size").GetInt64();
-            result[prop.Name] = new AssetEntry { Hash = hash, Size = size };
+            var hash = prop.Value.GetProperty("hash").GetString()!;
+            var size = prop.Value.GetProperty("size").GetInt64();
+            result[prop.Name] = new AssetEntry
+            {
+                Hash = hash,
+                Size = size
+            };
         }
 
         return result;
@@ -105,12 +120,12 @@ public class ModernAssetDownloader : IResourceLoader, IDisposable
 
     private async Task DownloadFile(string url, string destinationPath)
     {
-        HttpResponseMessage response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+        var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
         response.EnsureSuccessStatusCode();
 
-        using Stream stream = await response.Content.ReadAsStreamAsync();
+        using var stream = await response.Content.ReadAsStreamAsync();
         using var fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None);
-        byte[] buffer = new byte[4096];
+        var buffer = new byte[4096];
         int bytesRead;
 
         while ((bytesRead = await stream.ReadAsync(buffer)) > 0)
@@ -121,12 +136,6 @@ public class ModernAssetDownloader : IResourceLoader, IDisposable
     }
 
     public void Cancel() => _cancelled = true;
-
-    public void Dispose()
-    {
-        GC.SuppressFinalize(this);
-        _httpClient?.Dispose();
-    }
 
     private class AssetEntry
     {

@@ -8,7 +8,7 @@ public sealed class LootTableTests
     public void SingleEntry_AlwaysRollsThatItem()
     {
         LootTable table = new(new LootEntry(() => 42));
-        for (int i = 0; i < 20; i++)
+        for (var i = 0; i < 20; i++)
         {
             Assert.Equal(42, table.Roll(Random.Shared));
         }
@@ -17,8 +17,8 @@ public sealed class LootTableTests
     [Fact]
     public void ZeroWeightEntry_NeverRolled()
     {
-        LootTable table = new(new LootEntry(() => 1, weight: 0), new LootEntry(() => 2, weight: 1));
-        for (int i = 0; i < 50; i++)
+        LootTable table = new(new LootEntry(() => 1, 0), new LootEntry(() => 2));
+        for (var i = 0; i < 50; i++)
         {
             Assert.Equal(2, table.Roll(Random.Shared));
         }
@@ -27,12 +27,12 @@ public sealed class LootTableTests
     [Fact]
     public void WeightedEntries_BothOutcomesReachable()
     {
-        LootTable table = new(new LootEntry(() => 1, weight: 9), new LootEntry(() => 2, weight: 1));
-        bool sawFirst = false;
-        bool sawSecond = false;
-        for (int i = 0; i < 200; i++)
+        LootTable table = new(new LootEntry(() => 1, 9), new LootEntry(() => 2));
+        var sawFirst = false;
+        var sawSecond = false;
+        for (var i = 0; i < 200; i++)
         {
-            int rolled = table.Roll(Random.Shared);
+            var rolled = table.Roll(Random.Shared);
             sawFirst |= rolled == 1;
             sawSecond |= rolled == 2;
         }
@@ -44,7 +44,7 @@ public sealed class LootTableTests
     [Fact]
     public void ItemIdProvider_IsInvokedLazily()
     {
-        int callCount = 0;
+        var callCount = 0;
         LootTable table = new(new LootEntry(() =>
         {
             callCount++;
@@ -66,7 +66,7 @@ public sealed class LootTableTests
     [Fact]
     public void GetPrimaryItemId_WeightedEntries_ReturnsHighestWeight()
     {
-        LootTable table = new(new LootEntry(() => 1, weight: 9), new LootEntry(() => 2, weight: 1));
+        LootTable table = new(new LootEntry(() => 1, 9), new LootEntry(() => 2));
         Assert.Equal(1, table.GetPrimaryItemId());
     }
 }

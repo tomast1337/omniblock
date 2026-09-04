@@ -1,6 +1,5 @@
 using OmniBlock.Blocks;
 using OmniBlock.Entities;
-using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core.Systems;
 
@@ -9,14 +8,15 @@ namespace OmniBlock.Items;
 internal class ItemBlock : Item
 {
     protected readonly Block Block;
-    internal Block RuntimeBlock => Block;
-    private int BlockId => Block.Id;
 
     public ItemBlock(Block block) : base(block.Id - 256)
     {
         Block = block;
         SetTextureId(block.GetTexture(2.ToSide()));
     }
+
+    internal Block RuntimeBlock => Block;
+    private int BlockId => Block.Id;
 
     public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
@@ -54,7 +54,7 @@ internal class ItemBlock : Item
             return false;
         }
 
-        int existingBlockId = world.Reader.GetBlockId(x, y, z);
+        var existingBlockId = world.Reader.GetBlockId(x, y, z);
         if (existingBlockId != 0 && !world.Content.Blocks.GetByProtocolId(existingBlockId).Material.IsReplaceable)
         {
             return false;
@@ -65,12 +65,12 @@ internal class ItemBlock : Item
             return false;
         }
 
-        Block block = world.Content.Blocks.GetByProtocolId(BlockId);
-        Box? collisionBox = block.GetCollisionShape(world.Reader, world.Entities, x, y, z);
+        var block = world.Content.Blocks.GetByProtocolId(BlockId);
+        var collisionBox = block.GetCollisionShape(world.Reader, world.Entities, x, y, z);
         if (collisionBox is { } box)
         {
-            List<Entity> entitiesInBox = world.Entities.CollectEntitiesOfType<Entity>(box);
-            bool hasBlockingEntity = entitiesInBox.Any(entity => entity.PreventEntitySpawning);
+            var entitiesInBox = world.Entities.CollectEntitiesOfType<Entity>(box);
+            var hasBlockingEntity = entitiesInBox.Any(entity => entity.PreventEntitySpawning);
             if (hasBlockingEntity)
             {
                 return false;
@@ -82,7 +82,7 @@ internal class ItemBlock : Item
             return false;
         }
 
-        int placementMeta = GetPlacementMetadata(itemStack.GetDamage());
+        var placementMeta = GetPlacementMetadata(itemStack.GetDamage());
         if (!world.Writer.SetBlockWithoutCallingOnPlaced(x, y, z, BlockId, placementMeta))
         {
             return true;
@@ -93,7 +93,6 @@ internal class ItemBlock : Item
         itemStack.ConsumeItem(entityPlayer);
 
         return true;
-
     }
 
     public override string GetItemNameIs(ItemStack itemStack) => Block.BlockName;

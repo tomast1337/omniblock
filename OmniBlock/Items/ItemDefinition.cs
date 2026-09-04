@@ -15,6 +15,7 @@ public sealed class ItemDefinition : DataAsset
     public bool HasSubtypes { get; init; }
     public int? CraftingReturnItemProtocolId { get; init; }
     public string[] RepairIngredients { get; init; } = [];
+
     /// <summary>Ordered behavior definitions built by namespaced providers.</summary>
     public JsonElement[] Behaviors { get; init; } = [];
 }

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using OmniBlock.Blocks;
 using OmniBlock.Client.Options;
 using OmniBlock.Client.Rendering.Core;
@@ -5,27 +6,43 @@ using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.Rendering.Entities.Models;
 using OmniBlock.Client.Rendering.Items;
 using OmniBlock.Entities;
-using OmniBlock.Items;
 using OmniBlock.Registries;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core;
-using Microsoft.Extensions.Logging;
+using Silk.NET.Maths;
 
 namespace OmniBlock.Client.Rendering.Entities;
 
 public class EntityRenderDispatcher
 {
     private static readonly ILogger s_logger = Log.Instance.For<EntityRenderDispatcher>();
+    public static readonly EntityRenderDispatcher Instance = new();
+    private readonly Dictionary<EntityType, EntityRenderer> _declaredRenderMap = [];
+
+    private readonly Dictionary<Type, EntityRenderer> _entityRenderMap = [];
+    private readonly ClientEntityRendererRegistry _rendererRegistry = new();
 
     /// <summary>Renderer types already reported as unported, so the same one is not logged every frame.</summary>
     private readonly HashSet<Type> _reportedUnported = [];
 
-    private readonly Dictionary<Type, EntityRenderer> _entityRenderMap = [];
-    private readonly Dictionary<EntityType, EntityRenderer> _declaredRenderMap = [];
-    private readonly ClientEntityRendererRegistry _rendererRegistry = new();
     private ContentRuntime? _declaredRendererContent;
-    public static readonly EntityRenderDispatcher Instance = new();
     private TextRenderer _fontRenderer;
+    private double _x;
+    private double _y;
+    private double _z;
+
+    private EntityRenderDispatcher()
+    {
+        RegisterRenderer(typeof(EntityPlayer), new PlayerEntityRenderer());
+        RegisterRenderer(typeof(EntityLiving), new LivingEntityRenderer(new ModelBiped(), 0.5F));
+        RegisterRenderer(typeof(Entity), new BoxEntityRenderer());
+
+        foreach (var render in _entityRenderMap.Values)
+        {
+            render.Dispatcher = this;
+        }
+    }
+
     public static double OffsetX { get; set; }
     public static double OffsetY { get; set; }
     public static double OffsetZ { get; set; }
@@ -37,21 +54,6 @@ public class EntityRenderDispatcher
     public float PlayerViewY { get; set; }
     public float PlayerViewX { get; private set; }
     public GameOptions Options { get; private set; }
-    private double _x;
-    private double _y;
-    private double _z;
-
-    private EntityRenderDispatcher()
-    {
-        RegisterRenderer(typeof(EntityPlayer), new PlayerEntityRenderer());
-        RegisterRenderer(typeof(EntityLiving), new LivingEntityRenderer(new ModelBiped(), 0.5F));
-        RegisterRenderer(typeof(Entity), new BoxEntityRenderer());
-
-        foreach (EntityRenderer render in _entityRenderMap.Values)
-        {
-            render.Dispatcher = this;
-        }
-    }
 
     /// <summary>
     ///     Builds a renderer for every registered type whose definition declares one. These take
@@ -63,22 +65,20 @@ public class EntityRenderDispatcher
         if (ReferenceEquals(_declaredRendererContent, content)) return;
         var renderers = _rendererRegistry.Build(content);
         _declaredRenderMap.Clear();
-        foreach ((EntityType type, EntityRenderer renderer) in renderers)
+        foreach (var (type, renderer) in renderers)
         {
             renderer.Dispatcher = this;
             _declaredRenderMap[type] = renderer;
         }
+
         _declaredRendererContent = content;
     }
 
-    private void RegisterRenderer(Type type, EntityRenderer render)
-    {
-        _entityRenderMap[type] = render;
-    }
+    private void RegisterRenderer(Type type, EntityRenderer render) => _entityRenderMap[type] = render;
 
     public EntityRenderer GetEntityClassRenderObject(Type type)
     {
-        if (!_entityRenderMap.TryGetValue(type, out EntityRenderer? entityRenderer) && type != typeof(Entity))
+        if (!_entityRenderMap.TryGetValue(type, out var entityRenderer) && type != typeof(Entity))
         {
             entityRenderer = GetEntityClassRenderObject(type.BaseType);
             RegisterRenderer(type, entityRenderer);
@@ -89,7 +89,7 @@ public class EntityRenderDispatcher
 
     public EntityRenderer GetEntityRenderObject(Entity entity)
     {
-        if (entity.Type is { } type && _declaredRenderMap.TryGetValue(type, out EntityRenderer? declared))
+        if (entity.Type is { } type && _declaredRenderMap.TryGetValue(type, out var declared))
         {
             return declared;
         }
@@ -107,11 +107,11 @@ public class EntityRenderDispatcher
         _fontRenderer = textRenderer;
         if (camera.IsSleeping)
         {
-            int blockId = world.Reader.GetBlockId(MathHelper.Floor(camera.X), MathHelper.Floor(camera.Y), MathHelper.Floor(camera.Z));
+            var blockId = world.Reader.GetBlockId(MathHelper.Floor(camera.X), MathHelper.Floor(camera.Y), MathHelper.Floor(camera.Z));
             if (blockId == BlockRegistry.Get("bed").Id)
             {
-                int bedMeta = world.Reader.GetBlockMeta(MathHelper.Floor(camera.X), MathHelper.Floor(camera.Y), MathHelper.Floor(camera.Z));
-                int bedFacing = bedMeta & 3;
+                var bedMeta = world.Reader.GetBlockMeta(MathHelper.Floor(camera.X), MathHelper.Floor(camera.Y), MathHelper.Floor(camera.Z));
+                var bedFacing = bedMeta & 3;
                 PlayerViewY = bedFacing * 90 + 180;
                 PlayerViewX = 0.0F;
             }
@@ -122,25 +122,25 @@ public class EntityRenderDispatcher
             PlayerViewX = camera.PrevPitch + (camera.Pitch - camera.PrevPitch) * tickDelta;
         }
 
-        _x = camera.LastTickX + (camera.X - camera.LastTickX) * (double)tickDelta;
-        _y = camera.LastTickY + (camera.Y - camera.LastTickY) * (double)tickDelta;
-        _z = camera.LastTickZ + (camera.Z - camera.LastTickZ) * (double)tickDelta;
+        _x = camera.LastTickX + (camera.X - camera.LastTickX) * tickDelta;
+        _y = camera.LastTickY + (camera.Y - camera.LastTickY) * tickDelta;
+        _z = camera.LastTickZ + (camera.Z - camera.LastTickZ) * tickDelta;
     }
 
     public void RenderEntity(Entity target, float tickDelta)
     {
-        double x = target.LastTickX + (target.X - target.LastTickX) * (double)tickDelta;
-        double y = target.LastTickY + (target.Y - target.LastTickY) * (double)tickDelta;
-        double z = target.LastTickZ + (target.Z - target.LastTickZ) * (double)tickDelta;
-        float yaw = target.PrevYaw + (target.Yaw - target.PrevYaw) * tickDelta;
-        float brightness = target.GetBrightnessAtEyes(tickDelta);
-        GLManager.Color = new(brightness, brightness, brightness, 1.0F);
+        var x = target.LastTickX + (target.X - target.LastTickX) * tickDelta;
+        var y = target.LastTickY + (target.Y - target.LastTickY) * tickDelta;
+        var z = target.LastTickZ + (target.Z - target.LastTickZ) * tickDelta;
+        var yaw = target.PrevYaw + (target.Yaw - target.PrevYaw) * tickDelta;
+        var brightness = target.GetBrightnessAtEyes(tickDelta);
+        GLManager.Color = new Vector4D<float>(brightness, brightness, brightness, 1.0F);
         RenderEntityWithPosYaw(target, x - OffsetX, y - OffsetY, z - OffsetZ, yaw, tickDelta);
     }
 
     public void RenderEntityWithPosYaw(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
-        EntityRenderer entityRenderer = GetEntityRenderObject(target);
+        var entityRenderer = GetEntityRenderObject(target);
         if (entityRenderer == null) return;
 
         // A renderer not yet ported to the active backend throws rather than silently drawing
@@ -166,14 +166,11 @@ public class EntityRenderDispatcher
 
     public double GetSquareDistanceTo(double x, double y, double z)
     {
-        double xDelta = x - _x;
-        double yDelta = y - _y;
-        double zDelta = z - _z;
+        var xDelta = x - _x;
+        var yDelta = y - _y;
+        var zDelta = z - _z;
         return xDelta * xDelta + yDelta * yDelta + zDelta * zDelta;
     }
 
-    public TextRenderer getTextRenderer()
-    {
-        return _fontRenderer;
-    }
+    public TextRenderer getTextRenderer() => _fontRenderer;
 }

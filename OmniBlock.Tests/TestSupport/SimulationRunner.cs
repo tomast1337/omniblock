@@ -28,7 +28,7 @@ public class SimulationRunner
 
     public void ScheduleUpdate(int x, int y, int z, int blockId, int delay)
     {
-        long target = CurrentWorldTime + delay;
+        var target = CurrentWorldTime + delay;
         _scheduledQueue.Enqueue(
             new ScheduledTick(x, y, z, blockId, target),
             (target, _sequenceCounter++)
@@ -43,8 +43,8 @@ public class SimulationRunner
 
     public void AdvanceTime(long ticks)
     {
-        long targetTime = CurrentWorldTime + ticks;
-        int scheduledExecutions = 0;
+        var targetTime = CurrentWorldTime + ticks;
+        var scheduledExecutions = 0;
 
         while (CurrentWorldTime <= targetTime)
         {
@@ -52,21 +52,21 @@ public class SimulationRunner
             DrainInstantUpdates();
             PullScheduledTicksFromWorldSpy();
 
-            while (_scheduledQueue.TryPeek(out _, out (long targetTick, long sequence) priority) && priority.targetTick == CurrentWorldTime)
+            while (_scheduledQueue.TryPeek(out _, out var priority) && priority.targetTick == CurrentWorldTime)
             {
                 if (++scheduledExecutions > MaxScheduledExecutionsPerAdvance)
                 {
                     throw new InvalidOperationException($"Simulation trapped in scheduled update loop. Exceeded {MaxScheduledExecutionsPerAdvance} executions.");
                 }
 
-                ScheduledTick tick = _scheduledQueue.Dequeue();
-                int blockId = _world.Reader.GetBlockId(tick.X, tick.Y, tick.Z);
+                var tick = _scheduledQueue.Dequeue();
+                var blockId = _world.Reader.GetBlockId(tick.X, tick.Y, tick.Z);
                 if (blockId <= 0 || blockId != tick.BlockId)
                 {
                     continue;
                 }
 
-                int meta = _world.Reader.GetBlockMeta(tick.X, tick.Y, tick.Z);
+                var meta = _world.Reader.GetBlockMeta(tick.X, tick.Y, tick.Z);
                 TestBlocks.GetByProtocolId(blockId).OnTick(new OnTickEvent(_world, tick.X, tick.Y, tick.Z, meta, blockId));
 
                 PullScheduledTicksFromWorldSpy();
@@ -80,10 +80,10 @@ public class SimulationRunner
 
     private void DrainInstantUpdates()
     {
-        int instantExecutions = 0;
+        var instantExecutions = 0;
         HashSet<UpdateKey> processedThisPhase = new();
 
-        while (_instantQueue.TryDequeue(out InstantUpdate? update))
+        while (_instantQueue.TryDequeue(out var update))
         {
             if (++instantExecutions > MaxInstantUpdatesPerTick)
             {
@@ -98,13 +98,13 @@ public class SimulationRunner
                 continue;
             }
 
-            int blockId = _world.Reader.GetBlockId(update.X, update.Y, update.Z);
+            var blockId = _world.Reader.GetBlockId(update.X, update.Y, update.Z);
             if (blockId <= 0)
             {
                 continue;
             }
 
-            int meta = _world.Reader.GetBlockMeta(update.X, update.Y, update.Z);
+            var meta = _world.Reader.GetBlockMeta(update.X, update.Y, update.Z);
             TestBlocks.GetByProtocolId(blockId).NeighborUpdate(new OnTickEvent(_world, update.X, update.Y, update.Z, meta, update.BlockId));
         }
     }
@@ -114,7 +114,7 @@ public class SimulationRunner
         IReadOnlyList<(int X, int Y, int Z, int BlockId, int TickRate)> scheduled = _world.TickSchedulerSpy.ScheduledTicks;
         while (_importedScheduledCount < scheduled.Count)
         {
-            (int x, int y, int z, int blockId, int delay) = scheduled[_importedScheduledCount++];
+            var (x, y, z, blockId, delay) = scheduled[_importedScheduledCount++];
             ScheduleUpdate(x, y, z, blockId, delay);
         }
     }

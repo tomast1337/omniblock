@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Biomes.Source;
 using OmniBlock.Worlds.Chunks;
@@ -33,11 +32,11 @@ public abstract class Dimension
 
     protected virtual void InitBrightnessTable()
     {
-        float offset = 0.05F;
+        var offset = 0.05F;
 
-        for (int i = 0; i <= 15; ++i)
+        for (var i = 0; i <= 15; ++i)
         {
-            float factor = 1.0F - i / 15.0F;
+            var factor = 1.0F - i / 15.0F;
             LightLevelToLuminance[i] = (1.0F - factor) / (factor * 3.0F + 1.0F) * (1.0F - offset) + offset;
         }
     }
@@ -48,18 +47,18 @@ public abstract class Dimension
 
     public virtual bool IsValidSpawnPoint(int x, int z)
     {
-        int y = World.Reader.GetTopY(x, z);
-        int topBlockId = World.Reader.GetBlockId(x, y, z);
+        var y = World.Reader.GetTopY(x, z);
+        var topBlockId = World.Reader.GetBlockId(x, y, z);
 
         return topBlockId != 0
-               && World.Content.Blocks.TryGetByProtocolId(topBlockId, out Block? block)
+               && World.Content.Blocks.TryGetByProtocolId(topBlockId, out var block)
                && block.Material.BlocksMovement;
     }
 
     public virtual float GetTimeOfDay(long time, float tickDelta)
     {
-        int ticks = (int)(time % 24000L);
-        float phase = (ticks + tickDelta) / 24000.0F - 0.25F;
+        var ticks = (int)(time % 24000L);
+        var phase = (ticks + tickDelta) / 24000.0F - 0.25F;
 
         if (phase < 0.0F)
         {
@@ -71,7 +70,7 @@ public abstract class Dimension
             phase--;
         }
 
-        float phaseCopy = phase;
+        var phaseCopy = phase;
 
         phase = 1.0F - (float)((Math.Cos(phase * Math.PI) + 1.0D) / 2.0D);
         phase = phaseCopy + (phase - phaseCopy) / 3.0F;
@@ -81,13 +80,13 @@ public abstract class Dimension
 
     public virtual float[]? GetBackgroundColor(float celestialAngle, float partialTicks)
     {
-        float offset = 0.4F;
-        float cosAngle = MathHelper.Cos(celestialAngle * (float)Math.PI * 2.0F);
+        var offset = 0.4F;
+        var cosAngle = MathHelper.Cos(celestialAngle * (float)Math.PI * 2.0F);
 
         if (cosAngle is >= -0.4F and <= 0.4F)
         {
-            float fade = cosAngle / offset * 0.5F + 0.5F;
-            float multiplier = 1.0F - (1.0F - MathHelper.Sin(fade * (float)Math.PI)) * 0.99F;
+            var fade = cosAngle / offset * 0.5F + 0.5F;
+            var multiplier = 1.0F - (1.0F - MathHelper.Sin(fade * (float)Math.PI)) * 0.99F;
             multiplier *= multiplier;
 
             _backgroundColor[0] = fade * 0.3F + 0.7F;
@@ -103,13 +102,13 @@ public abstract class Dimension
 
     public virtual Vector3D<double> GetFogColor(float celestialAngle, float partialTicks)
     {
-        float cosAngle = MathHelper.Cos(celestialAngle * (float)Math.PI * 2.0F) * 2.0F + 0.5F;
+        var cosAngle = MathHelper.Cos(celestialAngle * (float)Math.PI * 2.0F) * 2.0F + 0.5F;
 
         cosAngle = Math.Clamp(cosAngle, 0.0F, 1.0F);
 
-        float r = 192.0F / 255.0F;
-        float g = 216.0F / 255.0F;
-        float b = 1.0F;
+        var r = 192.0F / 255.0F;
+        var g = 216.0F / 255.0F;
+        var b = 1.0F;
 
         r *= cosAngle * 0.94F + 0.06F;
         g *= cosAngle * 0.94F + 0.06F;

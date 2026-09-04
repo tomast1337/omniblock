@@ -1,17 +1,19 @@
 using OmniBlock.Blocks;
-using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.Inventories;
 using OmniBlock.Items;
+using OmniBlock.Items.Behaviors;
 using OmniBlock.NBT;
 using OmniBlock.Registries;
 using OmniBlock.Screens;
 using OmniBlock.Stats;
 using OmniBlock.Util.Maths;
-using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core.Systems;
+using BedBehavior = OmniBlock.Blocks.Behaviors.BedBehavior;
+using BoatBehavior = OmniBlock.Entities.Behaviors.BoatBehavior;
+using MinecartBehavior = OmniBlock.Entities.Behaviors.MinecartBehavior;
 
 namespace OmniBlock.Entities;
 
@@ -58,7 +60,7 @@ public abstract class EntityPlayer : EntityLiving
         PlayerScreenHandler = new PlayerScreenHandler(Inventory, !world.IsRemote);
         CurrentScreenHandler = PlayerScreenHandler;
         StandingEyeHeight = 1.62F - 0.5F;
-        Vec3I spawnPos = world.Properties.GetSpawnPos();
+        var spawnPos = world.Properties.GetSpawnPos();
         SetPositionAndAnglesKeepPrevAngles(spawnPos.X + 0.5D, spawnPos.Y + 1, spawnPos.Z + 0.5D, 0.0F, 0.0F);
         Health = 20;
         ModelName = "humanoid";
@@ -176,9 +178,9 @@ public abstract class EntityPlayer : EntityLiving
     {
         PrevCapePos = CapePos;
 
-        double deltaX = X - CapePos.X;
-        double deltaY = Y - CapePos.Y;
-        double deltaZ = Z - CapePos.Z;
+        var deltaX = X - CapePos.X;
+        var deltaY = Y - CapePos.Y;
+        var deltaZ = Z - CapePos.Z;
         const double teleportThreshold = 10.0D;
         if (Math.Abs(deltaX) > teleportThreshold ||
             Math.Abs(deltaY) > teleportThreshold ||
@@ -216,9 +218,9 @@ public abstract class EntityPlayer : EntityLiving
             return;
         }
 
-        List<Entity> entities = World.Entities.GetEntities(this, BoundingBox.Expand(1.0D, 0.0D, 1.0D));
+        var entities = World.Entities.GetEntities(this, BoundingBox.Expand(1.0D, 0.0D, 1.0D));
 
-        foreach (Entity entity in entities)
+        foreach (var entity in entities)
         {
             if (!entity.Dead)
             {
@@ -241,9 +243,9 @@ public abstract class EntityPlayer : EntityLiving
 
     public override void TickRiding()
     {
-        double x = X;
-        double y = Y;
-        double z = Z;
+        var x = X;
+        var y = Y;
+        var z = Z;
         base.TickRiding();
         PrevStepBobbingAmount = StepBobbingAmount;
         StepBobbingAmount = 0.0F;
@@ -283,8 +285,8 @@ public abstract class EntityPlayer : EntityLiving
         PickupAndInventorySubtick();
         PrevStepBobbingAmount = StepBobbingAmount;
         base.TickMovement();
-        float horizontalSpeed = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
-        float tiltTarget = (float)Math.Atan(-VelocityY * 0.2F) * 15.0F;
+        var horizontalSpeed = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
+        var tiltTarget = (float)Math.Atan(-VelocityY * 0.2F) * 15.0F;
         if (horizontalSpeed > 0.1F)
         {
             horizontalSpeed = 0.1F;
@@ -365,19 +367,19 @@ public abstract class EntityPlayer : EntityLiving
             return true;
         }
 
-        Entity itemEntity = DroppedItemBehavior.Create(World, X, Y - 0.3F + EyeHeight, Z, stack, 40);
+        var itemEntity = DroppedItemBehavior.Create(World, X, Y - 0.3F + EyeHeight, Z, stack, 40);
         if (throwRandomly)
         {
-            float randomSpeed = Random.NextFloat() * 0.5F;
-            float randomAngle = Random.NextFloat() * (float)Math.PI * 2.0F;
+            var randomSpeed = Random.NextFloat() * 0.5F;
+            var randomAngle = Random.NextFloat() * (float)Math.PI * 2.0F;
             itemEntity.VelocityX = -MathHelper.Sin(randomAngle) * randomSpeed;
             itemEntity.VelocityZ = MathHelper.Cos(randomAngle) * randomSpeed;
             itemEntity.VelocityY = 0.2F;
         }
         else
         {
-            float baseSpeed = 0.3F;
-            float randomSpeed = Random.NextFloat() * (float)Math.PI * 2.0F;
+            var baseSpeed = 0.3F;
+            var randomSpeed = Random.NextFloat() * (float)Math.PI * 2.0F;
 
             itemEntity.VelocityX = -MathHelper.Sin(Yaw / 180.0F * (float)Math.PI) * MathHelper.Cos(Pitch / 180.0F * (float)Math.PI) * baseSpeed;
             itemEntity.VelocityZ = MathHelper.Cos(Yaw / 180.0F * (float)Math.PI) * MathHelper.Cos(Pitch / 180.0F * (float)Math.PI) * baseSpeed;
@@ -401,7 +403,7 @@ public abstract class EntityPlayer : EntityLiving
 
     public float GetBlockBreakingSpeed(Block block)
     {
-        float breakingSpeed = Inventory.GetStrVsBlock(block);
+        var breakingSpeed = Inventory.GetStrVsBlock(block);
         if (IsInFluid(Material.Water))
         {
             breakingSpeed /= 5.0F;
@@ -420,7 +422,7 @@ public abstract class EntityPlayer : EntityLiving
     protected override void ReadNbt(NBTTagCompound nbt)
     {
         base.ReadNbt(nbt);
-        NBTTagList inventoryTagList = nbt.GetTagList("Inventory");
+        var inventoryTagList = nbt.GetTagList("Inventory");
         Inventory.ReadFromNBT(inventoryTagList);
         DimensionId = nbt.GetInteger("Dimension");
         Sleeping = nbt.GetBoolean("Sleeping");
@@ -535,9 +537,9 @@ public abstract class EntityPlayer : EntityLiving
             return;
         }
 
-        List<EntityCreature> nearby = World.Entities.CollectEntitiesOfType<EntityCreature>(new Box(X, Y, Z, X + 1.0D, Y + 1.0D, Z + 1.0D).Expand(16.0D, 4.0D, 16.0D));
+        var nearby = World.Entities.CollectEntitiesOfType<EntityCreature>(new Box(X, Y, Z, X + 1.0D, Y + 1.0D, Z + 1.0D).Expand(16.0D, 4.0D, 16.0D));
 
-        foreach (EntityCreature pet in nearby)
+        foreach (var pet in nearby)
         {
             if (pet.Behaviors.Find<TameableBehavior>() is not { } tame)
             {
@@ -571,8 +573,8 @@ public abstract class EntityPlayer : EntityLiving
 
     protected override void ApplyDamage(int amount)
     {
-        int armorReduction = 25 - Inventory.GetTotalArmorValue();
-        int scaledDamage = amount * armorReduction + _damageSpill;
+        var armorReduction = 25 - Inventory.GetTotalArmorValue();
+        var scaledDamage = amount * armorReduction + _damageSpill;
         Inventory.DamageArmor(amount);
         amount = scaledDamage / 25;
         _damageSpill = scaledDamage % 25;
@@ -603,7 +605,7 @@ public abstract class EntityPlayer : EntityLiving
             return;
         }
 
-        ItemStack? itemStackInHand = GetHand();
+        var itemStackInHand = GetHand();
         if (itemStackInHand == null || entity is not EntityLiving living)
         {
             return;
@@ -636,7 +638,7 @@ public abstract class EntityPlayer : EntityLiving
             return;
         }
 
-        int damage = Inventory.GetDamageVsEntity(target);
+        var damage = Inventory.GetDamageVsEntity(target);
         if (damage <= 0)
         {
             return;
@@ -653,7 +655,7 @@ public abstract class EntityPlayer : EntityLiving
             return;
         }
 
-        ItemStack? itemStackInHand = GetHand();
+        var itemStackInHand = GetHand();
         if (itemStackInHand != null)
         {
             itemStackInHand.PostHit(living, this);
@@ -720,10 +722,10 @@ public abstract class EntityPlayer : EntityLiving
         StandingEyeHeight = 0.2F;
         if (World.Reader.IsPosLoaded(x, y, z))
         {
-            int bedMeta = World.Reader.GetBlockMeta(x, y, z);
-            int bedDirection = BedBehavior.GetDirection(bedMeta);
-            float sleepX = 0.5F;
-            float sleepZ = 0.5F;
+            var bedMeta = World.Reader.GetBlockMeta(x, y, z);
+            var bedDirection = BedBehavior.GetDirection(bedMeta);
+            var sleepX = 0.5F;
+            var sleepZ = 0.5F;
             switch (bedDirection)
             {
                 case 0:
@@ -785,10 +787,10 @@ public abstract class EntityPlayer : EntityLiving
     {
         SetBoundingBoxSpacing(0.6F, 1.8F);
         resetEyeHeight();
-        Vec3I? bedPos = SleepingPos;
+        var bedPos = SleepingPos;
         if (bedPos is var (x, y, z) && World.Reader.GetBlockId(x, y, z) == BlockRegistry.Get("bed").Id)
         {
-            int bedMeta = World.Reader.GetBlockMeta(x, y, z);
+            var bedMeta = World.Reader.GetBlockMeta(x, y, z);
             BedBehavior.UpdateState(World.Writer, x, y, z, bedMeta, false);
             Vec3I? wakeUpPos = BedBehavior.FindWakeUpPosition(World.Reader, x, y, z, 0) ?? new Vec3I(x, y + 1, z);
             SetPosition(wakeUpPos.Value.X + 0.5F, wakeUpPos.Value.Y + StandingEyeHeight + 0.1F, wakeUpPos.Value.Z + 0.5F);
@@ -817,7 +819,7 @@ public abstract class EntityPlayer : EntityLiving
             return null;
         }
 
-        IChunkSource chunkSource = world.ChunkHost.ChunkSource;
+        var chunkSource = world.ChunkHost.ChunkSource;
 
         chunkSource.LoadChunk((x - 3) >> 4, (z - 3) >> 4);
         chunkSource.LoadChunk((x + 3) >> 4, (z - 3) >> 4);
@@ -834,8 +836,8 @@ public abstract class EntityPlayer : EntityLiving
             return 0.0F;
         }
 
-        int blockMeta = World.Reader.GetBlockMeta(SleepingPos.Value.X, SleepingPos.Value.Y, SleepingPos.Value.Z);
-        int direction = BedBehavior.GetDirection(blockMeta);
+        var blockMeta = World.Reader.GetBlockMeta(SleepingPos.Value.X, SleepingPos.Value.Y, SleepingPos.Value.Z);
+        var direction = BedBehavior.GetDirection(blockMeta);
         return direction switch
         {
             0 => 90.0F,
@@ -880,9 +882,9 @@ public abstract class EntityPlayer : EntityLiving
 
     protected override void Travel(float x, float z)
     {
-        double startX = X;
-        double startY = Y;
-        double startZ = Z;
+        var startX = X;
+        var startY = Y;
+        var startZ = Z;
         base.Travel(x, z);
         UpdateMovementStat(X - startX, Y - startY, Z - startZ);
     }
@@ -943,7 +945,7 @@ public abstract class EntityPlayer : EntityLiving
             return;
         }
 
-        int distanceScaled = (int)Math.Round(Math.Sqrt(x * x + y * y + z * z) * 100.0);
+        var distanceScaled = (int)Math.Round(Math.Sqrt(x * x + y * y + z * z) * 100.0);
 
         if (distanceScaled <= 0)
         {
@@ -955,9 +957,9 @@ public abstract class EntityPlayer : EntityLiving
             case { } cart when MinecartBehavior.IsMinecart(cart):
                 IncreaseStat(Stats.Stats.DistanceByMinecartStat, distanceScaled);
 
-                int currentX = MathHelper.Floor(X);
-                int currentY = MathHelper.Floor(Y);
-                int currentZ = MathHelper.Floor(Z);
+                var currentX = MathHelper.Floor(X);
+                var currentY = MathHelper.Floor(Y);
+                var currentZ = MathHelper.Floor(Z);
 
                 if (_startMinecartRidingCoordinate is null)
                 {
@@ -1003,7 +1005,7 @@ public abstract class EntityPlayer : EntityLiving
     {
         // Asked of the behavior rather than of the one rod in the registry, so a second rod holds
         // its own cast icon instead of being compared against this one by id.
-        if (FishHook != null && stack.GetItem().GetBehavior<Items.Behaviors.FishingRodBehavior>() is { } rod)
+        if (FishHook != null && stack.GetItem().GetBehavior<FishingRodBehavior>() is { } rod)
         {
             return rod.CastTextureId;
         }

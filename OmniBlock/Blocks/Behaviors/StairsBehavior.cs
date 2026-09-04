@@ -32,10 +32,7 @@ internal sealed class StairsBehavior(Func<Block> baseBlock) : IBlockPhysics, IBl
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, block.Id);
     }
 
-    public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
-    {
-        block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-    }
+    public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z) => block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
 
     public void AddCollisionBoxes(Block block, IBlockReader reader, int x, int y, int z, Box queryBox, List<Box> results)
     {
@@ -82,18 +79,9 @@ internal sealed class StairsBehavior(Func<Block> baseBlock) : IBlockPhysics, IBl
         if (queryBox.Intersects(upperOffset)) results.Add(upperOffset);
     }
 
-    public int GetTexture(Block block, Side side, int defaultTexture)
-    {
-        return baseBlock().GetTexture(side);
-    }
+    public int GetTexture(Block block, Side side, int defaultTexture) => baseBlock().GetTexture(side);
 
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
-    {
-        return baseBlock().GetTexture(side, meta);
-    }
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => baseBlock().GetTexture(side, meta);
 
-    public int GetTextureId(Block block, IBlockReader reader, int x, int y, int z, Side side, int defaultTexture)
-    {
-        return baseBlock().GetTextureId(reader, x, y, z, side);
-    }
+    public int GetTextureId(Block block, IBlockReader reader, int x, int y, int z, Side side, int defaultTexture) => baseBlock().GetTextureId(reader, x, y, z, side);
 }

@@ -1,28 +1,29 @@
-using System.Linq;
-using OmniBlock.Blocks;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Covers the ghast, the first mob to lose both its class and its abstract base. Flight moved into
-/// Physics, the AI it used to replace wholesale into a Ticker composite, and its rare spawn onto the
-/// same spawn behavior the zombie pigman already used.
+///     Covers the ghast, the first mob to lose both its class and its abstract base. Flight moved into
+///     Physics, the AI it used to replace wholesale into a Ticker composite, and its rare spawn onto the
+///     same spawn behavior the zombie pigman already used.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityGhastTests
 {
     private static EntityLiving Ghast(FakeWorldContext world, double x = 8.5, double z = 8.5)
     {
-        EntityLiving ghast = (EntityLiving)TestEntityCatalog.ByName("ghast").Create(world);
+        var ghast = (EntityLiving)TestEntityCatalog.ByName("ghast").Create(world);
         ghast.SetPositionAndAngles(x, 65.0, z, 0f, 0f);
         return ghast;
     }
 
     private static TestEntityPlayer Player(FakeWorldContext world, double x, double z)
     {
-        TestEntityPlayer player = new(world) { Name = "tester" };
+        TestEntityPlayer player = new(world)
+        {
+            Name = "tester"
+        };
         player.SetPositionAndAngles(x, 65.0, z, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(player));
         return player;
@@ -45,7 +46,7 @@ public sealed class EntityGhastTests
     [Fact]
     public void Behaviors_nested_in_a_composite_are_still_found_by_capability()
     {
-        EntityBehaviorSet behaviors = TestEntityCatalog.ByName("ghast").Behaviors;
+        var behaviors = TestEntityCatalog.ByName("ghast").Behaviors;
 
         Assert.NotNull(behaviors.Find<FlyingMovementBehavior>());
         Assert.NotNull(behaviors.Find<FlyingWanderBehavior>());
@@ -62,7 +63,7 @@ public sealed class EntityGhastTests
     public void A_ghast_is_damped_rather_than_pulled_down()
     {
         FakeWorldContext world = new();
-        EntityLiving ghast = Ghast(world);
+        var ghast = Ghast(world);
         ghast.VelocityY = 1.0D;
 
         Assert.True(ghast.Behaviors.Physics!.Travel(ghast, 0.0F, 0.0F));
@@ -73,7 +74,7 @@ public sealed class EntityGhastTests
     public void A_ghast_never_takes_a_landing_and_never_climbs()
     {
         FakeWorldContext world = new();
-        EntityLiving ghast = Ghast(world);
+        var ghast = Ghast(world);
 
         Assert.True(ghast.Behaviors.Physics!.OnLanding(ghast, 100.0F));
         Assert.False(ghast.Behaviors.Physics.IsClimbing(ghast));
@@ -87,12 +88,12 @@ public sealed class EntityGhastTests
     public void Wandering_replaces_the_default_ai_and_steers()
     {
         FakeWorldContext world = new();
-        EntityLiving ghast = Ghast(world);
+        var ghast = Ghast(world);
         Assert.True(world.Entities.SpawnEntity(ghast));
 
         Assert.True(ghast.Behaviors.Ticker!.OnTickLiving(ghast));
 
-        double speed = Math.Abs(ghast.VelocityX) + Math.Abs(ghast.VelocityY) + Math.Abs(ghast.VelocityZ);
+        var speed = Math.Abs(ghast.VelocityX) + Math.Abs(ghast.VelocityY) + Math.Abs(ghast.VelocityZ);
         Assert.True(speed > 0.0D, "A ghast that has just picked a waypoint should be moving towards it.");
     }
 
@@ -100,21 +101,21 @@ public sealed class EntityGhastTests
     public void A_ghast_charges_up_and_fires_at_a_player_it_can_see()
     {
         FakeWorldContext world = new();
-        EntityLiving ghast = Ghast(world);
+        var ghast = Ghast(world);
         Assert.True(world.Entities.SpawnEntity(ghast));
         Player(world, 20.5, 8.5);
 
-        FireballAttackBehavior attack = ghast.Behaviors.Find<FireballAttackBehavior>()!;
+        var attack = ghast.Behaviors.Find<FireballAttackBehavior>()!;
 
         // Halfway through the wind-up the mob is visibly charging, and swaps to the lit texture.
-        for (int tick = 0; tick < 11; tick++) attack.OnTickLiving(ghast);
+        for (var tick = 0; tick < 11; tick++) attack.OnTickLiving(ghast);
         attack.OnTickEnd(ghast);
 
         Assert.True(ghast.Synced<bool>("charging")!.Value);
         Assert.Equal("/mob/ghast_fire.png", ghast.GetTexture());
         Assert.DoesNotContain(world.Entities.Entities, e => e.Behaviors.Find<FireballBehavior>() is not null);
 
-        for (int tick = 11; tick < 20; tick++) attack.OnTickLiving(ghast);
+        for (var tick = 11; tick < 20; tick++) attack.OnTickLiving(ghast);
 
         Assert.Single(world.Entities.Entities, e => e.Behaviors.Find<FireballBehavior>() is not null);
 
@@ -129,15 +130,15 @@ public sealed class EntityGhastTests
     public void A_ghast_hidden_behind_a_wall_never_charges()
     {
         FakeWorldContext world = new();
-        EntityLiving ghast = Ghast(world);
+        var ghast = Ghast(world);
         Assert.True(world.Entities.SpawnEntity(ghast));
         Player(world, 20.5, 8.5);
 
-        int stone = TestBlocks.Get("stone").Id;
-        for (int y = 60; y < 72; y++) world.ReaderWriter.SetBlock(14, y, 8, stone, 0);
+        var stone = TestBlocks.Get("stone").Id;
+        for (var y = 60; y < 72; y++) world.ReaderWriter.SetBlock(14, y, 8, stone, 0);
 
-        FireballAttackBehavior attack = ghast.Behaviors.Find<FireballAttackBehavior>()!;
-        for (int tick = 0; tick < 40; tick++) attack.OnTickLiving(ghast);
+        var attack = ghast.Behaviors.Find<FireballAttackBehavior>()!;
+        for (var tick = 0; tick < 40; tick++) attack.OnTickLiving(ghast);
 
         Assert.DoesNotContain(world.Entities.Entities, e => e.Behaviors.Find<FireballBehavior>() is not null);
         Assert.False(ghast.Synced<bool>("charging")!.Value);
@@ -147,7 +148,7 @@ public sealed class EntityGhastTests
     public void A_ghast_is_removed_when_the_world_turns_peaceful()
     {
         FakeWorldContext world = new();
-        EntityLiving ghast = Ghast(world);
+        var ghast = Ghast(world);
         Assert.True(world.Entities.SpawnEntity(ghast));
 
         ghast.Behaviors.Ticker!.OnTickLiving(ghast);
@@ -166,15 +167,18 @@ public sealed class EntityGhastTests
     [Fact]
     public void A_ghast_spawns_rarely_and_not_on_peaceful()
     {
-        FakeWorldContext world = new() { Difficulty = 0 };
-        EntityLiving peaceful = Ghast(world, 40.5, 40.5);
+        FakeWorldContext world = new()
+        {
+            Difficulty = 0
+        };
+        var peaceful = Ghast(world, 40.5, 40.5);
 
-        for (int attempt = 0; attempt < 200; attempt++) Assert.False(peaceful.CanSpawn());
+        for (var attempt = 0; attempt < 200; attempt++) Assert.False(peaceful.CanSpawn());
 
         FakeWorldContext dangerous = new();
-        EntityLiving ghast = Ghast(dangerous, 40.5, 40.5);
-        int allowed = 0;
-        for (int attempt = 0; attempt < 2000; attempt++)
+        var ghast = Ghast(dangerous, 40.5, 40.5);
+        var allowed = 0;
+        for (var attempt = 0; attempt < 2000; attempt++)
         {
             if (ghast.CanSpawn()) allowed++;
         }

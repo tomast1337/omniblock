@@ -76,10 +76,7 @@ public readonly struct BehaviorBuildContext
 
     public IBlockRuntimeView Blocks { get; }
 
-    internal BehaviorBuildContext WithContent(IBlockRuntimeView blocks, Func<ResourceLocation, Item> resolveItem)
-    {
-        return new BehaviorBuildContext(blocks.Get, resolveItem, _resolveMaterial, _resolveTerrainTexture, blocks);
-    }
+    internal BehaviorBuildContext WithContent(IBlockRuntimeView blocks, Func<ResourceLocation, Item> resolveItem) => new(blocks.Get, resolveItem, _resolveMaterial, _resolveTerrainTexture, blocks);
 
     internal static BehaviorBuildContext BuiltIns { get; } = new(
         static key => throw new InvalidOperationException("The block builder has not supplied its staged block view."),
@@ -87,26 +84,14 @@ public readonly struct BehaviorBuildContext
         static key => MaterialRegistry.Get(key.Path),
         static key => Atlases.Terrain.IndexOf(key));
 
-    private static InvalidOperationException Uninitialized()
-    {
-        return new InvalidOperationException($"{nameof(BehaviorBuildContext)} must be initialized before resolving dependencies.");
-    }
+    private static InvalidOperationException Uninitialized() => new($"{nameof(BehaviorBuildContext)} must be initialized before resolving dependencies.");
 
     private sealed class DelegateBlockRuntimeView(Func<ResourceLocation, Block> resolveBlock) : IBlockRuntimeView
     {
-        public Block Get(ResourceLocation key)
-        {
-            return resolveBlock(key);
-        }
+        public Block Get(ResourceLocation key) => resolveBlock(key);
 
-        public Block GetByProtocolId(int protocolId)
-        {
-            return BlockRegistry.GetByProtocolId(protocolId);
-        }
+        public Block GetByProtocolId(int protocolId) => BlockRegistry.GetByProtocolId(protocolId);
 
-        public bool TryGetByProtocolId(int protocolId, out Block? block)
-        {
-            return BlockRegistry.TryGetByProtocolId(protocolId, out block);
-        }
+        public bool TryGetByProtocolId(int protocolId, out Block? block) => BlockRegistry.TryGetByProtocolId(protocolId, out block);
     }
 }

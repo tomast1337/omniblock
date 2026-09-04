@@ -15,7 +15,7 @@ public class PardonCommand : Command.Command
 
     private static int Execute(CommandContext<CommandSource> context)
     {
-        string target = context.GetArgument<string>("player");
+        var target = context.GetArgument<string>("player");
         context.Source.Server.playerManager.unbanPlayer(target);
         context.Source.LogOp("Pardoning " + target);
         return 1;

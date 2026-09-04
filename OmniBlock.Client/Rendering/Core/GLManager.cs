@@ -4,6 +4,8 @@ namespace OmniBlock.Client.Rendering.Core;
 
 public class GLManager
 {
+    static GLManager() => Context.RasterStateChanging += OnRasterStateChanging;
+
     /// <summary>
     ///     The values a draw is made under, which both backends read. Held apart from
     ///     <see cref="GL" /> because none of it is OpenGL — see <see cref="RenderContext" />.
@@ -33,11 +35,6 @@ public class GLManager
     ///     cloud rendering without knowing which.
     /// </summary>
     public static ICloudBlurPass? CloudBlurPassOrNull { get; set; }
-
-    static GLManager()
-    {
-        Context.RasterStateChanging += OnRasterStateChanging;
-    }
 
     /// <summary>The model-view transform stack.</summary>
     /// <remarks>

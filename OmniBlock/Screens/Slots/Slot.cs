@@ -5,8 +5,8 @@ namespace OmniBlock.Screens.Slots;
 
 public class Slot
 {
-    private readonly int slotIndex;
     private readonly IInventory inventory;
+    private readonly int slotIndex;
     public int id;
     public int xDisplayPosition;
     public int yDisplayPosition;
@@ -19,25 +19,13 @@ public class Slot
         yDisplayPosition = y;
     }
 
-    public virtual void onTakeItem(ItemStack stack)
-    {
-        markDirty();
-    }
+    public virtual void onTakeItem(ItemStack stack) => markDirty();
 
-    public virtual bool canInsert(ItemStack stack)
-    {
-        return true;
-    }
+    public virtual bool canInsert(ItemStack stack) => true;
 
-    public ItemStack? getStack()
-    {
-        return inventory.GetStack(slotIndex);
-    }
+    public ItemStack? getStack() => inventory.GetStack(slotIndex);
 
-    public bool hasStack()
-    {
-        return getStack() != null;
-    }
+    public bool hasStack() => getStack() != null;
 
     public void setStack(ItemStack? stack)
     {
@@ -45,28 +33,13 @@ public class Slot
         markDirty();
     }
 
-    public void markDirty()
-    {
-        inventory.MarkDirty();
-    }
+    public void markDirty() => inventory.MarkDirty();
 
-    public virtual int getMaxItemCount()
-    {
-        return inventory.MaxCountPerStack;
-    }
+    public virtual int getMaxItemCount() => inventory.MaxCountPerStack;
 
-    public static int getBackgroundTextureId()
-    {
-        return -1;
-    }
+    public static int getBackgroundTextureId() => -1;
 
-    public ItemStack? takeStack(int amount)
-    {
-        return inventory.RemoveStack(slotIndex, amount);
-    }
+    public ItemStack? takeStack(int amount) => inventory.RemoveStack(slotIndex, amount);
 
-    public bool Equals(IInventory inventory, int index)
-    {
-        return inventory == this.inventory && index == slotIndex;
-    }
+    public bool Equals(IInventory inventory, int index) => inventory == this.inventory && index == slotIndex;
 }

@@ -1,26 +1,24 @@
 using Microsoft.Extensions.Logging;
-using OmniBlock.Entities;
 using OmniBlock.Network;
 using OmniBlock.Network.Messages;
 using OmniBlock.Network.Packets;
 using OmniBlock.Util.Maths;
-using OmniBlock.Worlds.Core;
 using Exception = System.Exception;
 
 namespace OmniBlock.Server.Network;
 
 public class ServerLoginNetworkHandler : NetHandler
 {
-    private static JavaRandom random = new();
-    public Connection connection;
-    public bool closed;
-    private OmniBlockServer server;
-    private int loginTicks;
-    private string username;
-    private LoginHelloPacket loginPacket;
-    private string serverId = "";
+    private static readonly JavaRandom random = new();
 
     private readonly ILogger<ServerLoginNetworkHandler> _logger = Log.Instance.For<ServerLoginNetworkHandler>();
+    private readonly OmniBlockServer server;
+    public bool closed;
+    public Connection connection;
+    private LoginHelloPacket loginPacket;
+    private int loginTicks;
+    private string serverId = "";
+    private string username;
 
     public ServerLoginNetworkHandler(OmniBlockServer server, Connection connection)
     {
@@ -78,7 +76,7 @@ public class ServerLoginNetworkHandler : NetHandler
     {
         // A vanilla client declares nothing here and stays connectable; extended packets are simply
         // never sent to it.
-        if (ProtocolHandshake.TryDecode(packet.WorldSeed, out int clientProtocol))
+        if (ProtocolHandshake.TryDecode(packet.WorldSeed, out var clientProtocol))
         {
             connection.NotePeerProtocol(clientProtocol);
         }
@@ -123,15 +121,15 @@ public class ServerLoginNetworkHandler : NetHandler
             return;
         }
 
-        ServerPlayerEntity? ent = server.playerManager.connectPlayer(this, packet.Username);
+        var ent = server.playerManager.connectPlayer(this, packet.Username);
         if (ent != null)
         {
             server.playerManager.loadPlayerData(ent);
             ent.SetWorld(server.getWorld(ent.DimensionId));
             _logger.LogInformation($"{getConnectionInfo()} logged in with entity id {ent.ID} at ({ent.X}, {ent.Y}, {ent.Z})");
-            ServerWorld playerWorld = server.getWorld(ent.DimensionId);
-            Vec3I spawnPos = playerWorld.Properties.GetSpawnPos();
-            ServerPlayNetworkHandler handler = new ServerPlayNetworkHandler(server, connection, ent);
+            var playerWorld = server.getWorld(ent.DimensionId);
+            var spawnPos = playerWorld.Properties.GetSpawnPos();
+            var handler = new ServerPlayNetworkHandler(server, connection, ent);
             handler.SendPacket(LoginHelloPacket.Get("", ent.ID, playerWorld.Seed, (sbyte)playerWorld.Dimension.Id));
             server.SendConfigurationTo(handler.SendPacket);
             handler.SendMessage(new PlayerGameModeUpdateMessage
@@ -152,11 +150,17 @@ public class ServerLoginNetworkHandler : NetHandler
                 Type = PlayerConnectionUpdateMessage.UpdateType.Join,
                 Name = ent.Name
             });
-            server.playerManager.sendToAll(new ChatMessage { Text = "§e" + ent.Name + " joined the game." });
+            server.playerManager.sendToAll(new ChatMessage
+            {
+                Text = "§e" + ent.Name + " joined the game."
+            });
             server.playerManager.addPlayer(ent);
             handler.teleport(ent.X, ent.Y, ent.Z, ent.Yaw, ent.Pitch);
             server.connections.AddConnection(handler);
-            handler.SendMessage(new WorldTimeUpdateMessage { Time = playerWorld.GetTime() });
+            handler.SendMessage(new WorldTimeUpdateMessage
+            {
+                Time = playerWorld.GetTime()
+            });
             ent.initScreenHandler();
         }
 
@@ -169,10 +173,7 @@ public class ServerLoginNetworkHandler : NetHandler
         closed = true;
     }
 
-    public override void handle(Packet packet)
-    {
-        disconnect("Protocol error");
-    }
+    public override void handle(Packet packet) => disconnect("Protocol error");
 
     public string getConnectionInfo()
     {
@@ -183,8 +184,5 @@ public class ServerLoginNetworkHandler : NetHandler
         return !string.IsNullOrWhiteSpace(username) ? username : endPoint.ToString();
     }
 
-    public override bool isServerSide()
-    {
-        return true;
-    }
+    public override bool isServerSide() => true;
 }

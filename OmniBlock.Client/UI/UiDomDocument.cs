@@ -10,21 +10,21 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
 {
     private readonly Dictionary<int, UIElement> _elements = [];
     private readonly Dictionary<UIElement, int> _handles = new(ReferenceEqualityComparer.Instance);
-    private UIElement? _lastScreenRoot;
     private UIElement? _lastHudRoot;
+    private UIElement? _lastScreenRoot;
     private int _nextHandle = 1;
 
     public int Query(string selector)
     {
         RefreshRoots();
-        UIElement? element = selector.ToLowerInvariant() switch
+        var element = selector.ToLowerInvariant() switch
         {
             "#root" or "#screen" => _lastScreenRoot ?? _lastHudRoot,
             "#hud" => _lastHudRoot,
             _ when selector.StartsWith('#') =>
                 FindByAutomationId(_lastScreenRoot, selector[1..]) ??
                 FindByAutomationId(_lastHudRoot, selector[1..]),
-            _ => FindByType(_lastScreenRoot, selector) ?? FindByType(_lastHudRoot, selector),
+            _ => FindByType(_lastScreenRoot, selector) ?? FindByType(_lastHudRoot, selector)
         };
         return GetHandle(element);
     }
@@ -34,8 +34,8 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
 
     public int GetChild(int handle, int index)
     {
-        UIElement? element = Resolve(handle);
-        IReadOnlyList<UIElement>? children = element == null ? null : LogicalChildren(element);
+        var element = Resolve(handle);
+        var children = element == null ? null : LogicalChildren(element);
         return children != null && (uint)index < (uint)children.Count
             ? GetHandle(children[index])
             : 0;
@@ -49,7 +49,7 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
             "text" when element is Label label => label.Text,
             "text" when element is Button button => button.Text,
             "text" when element is TextField textField => textField.Text,
-            _ => null,
+            _ => null
         }
         : null;
 
@@ -83,7 +83,7 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
             "visible" => element.Visible,
             "enabled" => element.Enabled,
             "hittestvisible" => element.IsHitTestVisible,
-            _ => null,
+            _ => null
         }
         : null;
 
@@ -96,9 +96,15 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
 
         switch (property.ToLowerInvariant())
         {
-            case "visible": element.Visible = value; return true;
-            case "enabled": element.Enabled = value; return true;
-            case "hittestvisible": element.IsHitTestVisible = value; return true;
+            case "visible":
+                element.Visible = value;
+                return true;
+            case "enabled":
+                element.Enabled = value;
+                return true;
+            case "hittestvisible":
+                element.IsHitTestVisible = value;
+                return true;
             default: return false;
         }
     }
@@ -117,7 +123,7 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
             Target = element,
             MouseX = (int)(element.ScreenX + element.ComputedWidth / 2),
             MouseY = (int)(element.ScreenY + element.ComputedHeight / 2),
-            Button = MouseButton.Left,
+            Button = MouseButton.Left
         };
         element.OnMouseDown?.Invoke(mouseEvent);
         element.OnMouseUp?.Invoke(mouseEvent);
@@ -128,7 +134,7 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
     private UIElement? Resolve(int handle)
     {
         RefreshRoots();
-        UIElement? element = _elements.GetValueOrDefault(handle);
+        var element = _elements.GetValueOrDefault(handle);
         if (element == null || !IsInLiveTree(element))
         {
             return null;
@@ -144,7 +150,7 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
             return 0;
         }
 
-        if (_handles.TryGetValue(element, out int handle))
+        if (_handles.TryGetValue(element, out var handle))
         {
             return handle;
         }
@@ -157,8 +163,8 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
 
     private void RefreshRoots()
     {
-        UIElement? currentScreenRoot = screenRoot();
-        UIElement? currentHudRoot = hudRoot();
+        var currentScreenRoot = screenRoot();
+        var currentHudRoot = hudRoot();
         if (ReferenceEquals(currentScreenRoot, _lastScreenRoot) && ReferenceEquals(currentHudRoot, _lastHudRoot))
         {
             return;
@@ -182,7 +188,7 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
             return root;
         }
 
-        foreach (UIElement child in LogicalChildren(root))
+        foreach (var child in LogicalChildren(root))
         {
             if (FindByType(child, selector) is { } match)
             {
@@ -205,7 +211,7 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
             return root;
         }
 
-        foreach (UIElement child in LogicalChildren(root))
+        foreach (var child in LogicalChildren(root))
         {
             if (FindByAutomationId(child, id) is { } match)
             {
@@ -218,7 +224,7 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
 
     private bool IsInLiveTree(UIElement element)
     {
-        UIElement root = element;
+        var root = element;
         while (root.Parent is { } parent)
         {
             // Some existing screens rebuild lists with Children.Clear(), which does not reset
@@ -237,7 +243,7 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
 
     private static bool IsInteractable(UIElement element)
     {
-        for (UIElement? current = element; current != null; current = current.Parent)
+        for (var current = element; current != null; current = current.Parent)
         {
             if (!current.Visible || !current.Enabled || !current.IsHitTestVisible)
             {

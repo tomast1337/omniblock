@@ -13,7 +13,7 @@ public sealed class SpawnRiderBehavior(string rider, int chanceOneIn) : IEntityL
             return;
         }
 
-        Entity mount = self.World.Content.EntityTypes.Create(rider, self.World);
+        var mount = self.World.Content.EntityTypes.Create(rider, self.World);
         mount.SetPositionAndAnglesKeepPrevAngles(self.X, self.Y, self.Z, self.Yaw, 0.0F);
         self.World.SpawnEntity(mount);
         mount.SetVehicle(self);

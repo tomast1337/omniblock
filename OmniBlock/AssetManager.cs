@@ -6,90 +6,28 @@ namespace OmniBlock;
 
 public class AssetManager
 {
-    public enum AssetType
-    {
-        Binary,
-        Text
-    }
-
     public enum AssetProfile
     {
         Full,
         Headless
     }
 
-    public class Asset
+    public enum AssetType
     {
-        private readonly AssetType _type;
-        private readonly byte[]? _binaryContent;
-        private readonly string? _textContent;
-
-        public Asset(byte[] binary)
-        {
-            _type = AssetType.Binary;
-            _binaryContent = binary;
-        }
-
-        public Asset(string text)
-        {
-            _type = AssetType.Text;
-            _textContent = text;
-        }
-
-        public AssetType GetAssetType() => _type;
-
-        public byte[] GetBinaryContent()
-        {
-            if (_binaryContent == null || _type != AssetType.Binary)
-            {
-                throw new Exception("Attempted to get binary content from a non binary asset");
-            }
-
-            return _binaryContent;
-        }
-
-        public string GetTextContent()
-        {
-            if (_textContent == null || _type != AssetType.Text)
-            {
-                throw new Exception("Attempted to get text content from a non text asset");
-            }
-
-            return _textContent;
-        }
+        Binary,
+        Text
     }
 
     private static readonly object s_instanceLock = new();
     private static AssetManager? s_instance;
     private static AssetProfile? s_configuredProfile;
-
-    public static AssetManager Instance => s_instance ?? throw new InvalidOperationException("AssetManager was not initialized.");
-
-    public static void Initialize(AssetProfile profile)
-    {
-        lock (s_instanceLock)
-        {
-            if (s_instance != null)
-            {
-                if (s_instance._assetProfile != profile)
-                {
-                    throw new InvalidOperationException($"AssetManager already initialized with profile {s_instance._assetProfile}, cannot reinitialize with {profile}.");
-                }
-
-                return;
-            }
-
-            s_configuredProfile = profile;
-            s_instance = new AssetManager(profile);
-        }
-    }
+    private readonly HashSet<string> _assetDirectories = [];
+    private readonly AssetProfile _assetProfile;
 
     private readonly Dictionary<string, AssetType> _assetsToLoad = [];
     private readonly Dictionary<string, Asset> _loadedAssets = [];
-    private readonly HashSet<string> _assetDirectories = [];
-    private int _embeddedAssetsLoaded;
-    private readonly AssetProfile _assetProfile;
     private readonly ILogger<AssetManager> _logger = Log.Instance.For<AssetManager>();
+    private int _embeddedAssetsLoaded;
 
     private AssetManager(AssetProfile assetProfile)
     {
@@ -112,9 +50,30 @@ public class AssetManager
         _logger.LogInformation($"Loaded {_embeddedAssetsLoaded} embedded assets");
     }
 
+    public static AssetManager Instance => s_instance ?? throw new InvalidOperationException("AssetManager was not initialized.");
+
+    public static void Initialize(AssetProfile profile)
+    {
+        lock (s_instanceLock)
+        {
+            if (s_instance != null)
+            {
+                if (s_instance._assetProfile != profile)
+                {
+                    throw new InvalidOperationException($"AssetManager already initialized with profile {s_instance._assetProfile}, cannot reinitialize with {profile}.");
+                }
+
+                return;
+            }
+
+            s_configuredProfile = profile;
+            s_instance = new AssetManager(profile);
+        }
+    }
+
     private void LoadLanguages()
     {
-        string langPath = Path.Combine("assets", "lang");
+        var langPath = Path.Combine("assets", "lang");
 
         try
         {
@@ -122,21 +81,21 @@ public class AssetManager
             {
                 var langFiles = Directory.EnumerateFiles(langPath, "*.json");
 
-                foreach (string file in langFiles)
+                foreach (var file in langFiles)
                 {
                     if (file == "assets/lang/lang.json")
                     {
                         continue;
                     }
 
-                    string fileName = Path.GetFileName(file);
+                    var fileName = Path.GetFileName(file);
 
-                    DefineAsset("lang/" + fileName, AssetType.Text);
+                    DefineAsset($"lang/" + fileName, AssetType.Text);
                 }
             }
             else
             {
-                Console.WriteLine($"No languages folder!");
+                Console.WriteLine("No languages folder!");
             }
         }
         catch (IOException ex)
@@ -145,10 +104,7 @@ public class AssetManager
         }
     }
 
-    private void DefineHeadlessAssets()
-    {
-        DefineAsset("achievement/map.txt", AssetType.Text);
-    }
+    private void DefineHeadlessAssets() => DefineAsset("achievement/map.txt", AssetType.Text);
 
     private void DefineFullAssets()
     {
@@ -197,7 +153,8 @@ public class AssetManager
 
         DefineAsset("gui/Logo.png", AssetType.Binary);
 
-        string[] controllerIcons = [
+        string[] controllerIcons =
+        [
             "back_button", "back_button_pressed", "down_button", "down_button_pressed",
             "dpad_down", "dpad_down_pressed", "dpad_left", "dpad_left_pressed",
             "dpad_right", "dpad_right_pressed", "dpad_up", "dpad_up_pressed",
@@ -213,9 +170,9 @@ public class AssetManager
             "up_button_pressed"
         ];
 
-        foreach (string platform in ControllerType.ControllerTypes.Select(x => x.Key))
+        foreach (var platform in ControllerType.ControllerTypes.Select(x => x.Key))
         {
-            foreach (string icon in controllerIcons)
+            foreach (var icon in controllerIcons)
             {
                 DefineAsset($"gui/controls/{platform}/{icon}.png", AssetType.Binary);
             }
@@ -327,24 +284,24 @@ public class AssetManager
     public Asset GetAsset(string assetPath)
     {
         if (assetPath.StartsWith('/')) assetPath = assetPath[1..];
-        return _loadedAssets.TryGetValue(assetPath, out Asset? asset) ? asset : throw new Exception($"Unknown asset: {assetPath}");
+        return _loadedAssets.TryGetValue(assetPath, out var asset) ? asset : throw new Exception($"Unknown asset: {assetPath}");
     }
 
     private void ExtractNeccessaryAssets()
     {
         Directory.CreateDirectory("assets");
 
-        using ZipArchive archive = ZipFile.OpenRead("b1.7.3.jar");
+        using var archive = ZipFile.OpenRead("b1.7.3.jar");
         Dictionary<string, ZipArchiveEntry> entries = [];
-        foreach (ZipArchiveEntry entry in archive.Entries)
+        foreach (var entry in archive.Entries)
         {
             entries[entry.FullName] = entry;
         }
 
-        foreach (string assetPath in _assetsToLoad.Keys)
+        foreach (var assetPath in _assetsToLoad.Keys)
         {
-            string fsAssetPath = Path.Combine("assets", assetPath);
-            string? directory = Path.GetDirectoryName(fsAssetPath);
+            var fsAssetPath = Path.Combine("assets", assetPath);
+            var directory = Path.GetDirectoryName(fsAssetPath);
             if (!string.IsNullOrEmpty(directory))
             {
                 Directory.CreateDirectory(directory);
@@ -352,7 +309,7 @@ public class AssetManager
 
             if (File.Exists(fsAssetPath)) continue;
 
-            if (entries.TryGetValue(assetPath, out ZipArchiveEntry? entry))
+            if (entries.TryGetValue(assetPath, out var entry))
             {
                 entry.ExtractToFile(fsAssetPath);
             }
@@ -369,17 +326,17 @@ public class AssetManager
 
     private void LoadAssets()
     {
-        foreach (KeyValuePair<string, AssetType> kvp in _assetsToLoad)
+        foreach (var kvp in _assetsToLoad)
         {
-            string assetPath = kvp.Key;
-            AssetType type = kvp.Value;
+            var assetPath = kvp.Key;
+            var type = kvp.Value;
 
             switch (type)
             {
                 case AssetType.Binary:
                     try
                     {
-                        _loadedAssets[assetPath] = new(File.ReadAllBytes("assets/" + assetPath));
+                        _loadedAssets[assetPath] = new Asset(File.ReadAllBytes("assets/" + assetPath));
                     }
                     catch (Exception e)
                     {
@@ -390,7 +347,7 @@ public class AssetManager
                 case AssetType.Text:
                     try
                     {
-                        _loadedAssets[assetPath] = new(File.ReadAllText("assets/" + assetPath));
+                        _loadedAssets[assetPath] = new Asset(File.ReadAllText("assets/" + assetPath));
                     }
                     catch (Exception e)
                     {
@@ -410,30 +367,30 @@ public class AssetManager
     {
         _assetsToLoad[assetPath] = type;
 
-        int idx = assetPath.IndexOf('/');
+        var idx = assetPath.IndexOf('/');
         if (idx == -1) return;
 
-        string directory = assetPath[..idx];
+        var directory = assetPath[..idx];
         _assetDirectories.Add(directory);
     }
 
     private void DefineEmbeddedAsset(string embeddedAssetPath, AssetType type)
     {
-        string embeddedAssetPathForPath = embeddedAssetPath.Replace('/', '.');
+        var embeddedAssetPathForPath = embeddedAssetPath.Replace('/', '.');
 
         try
         {
             var assembly = Assembly.GetExecutingAssembly();
-            string resourceName = $"{nameof(OmniBlock)}." + embeddedAssetPathForPath;
+            var resourceName = $"{nameof(OmniBlock)}." + embeddedAssetPathForPath;
 
-            using Stream? stream = assembly.GetManifestResourceStream(resourceName) ?? throw new Exception("Embedded resource not found: " + resourceName);
+            using var stream = assembly.GetManifestResourceStream(resourceName) ?? throw new Exception("Embedded resource not found: " + resourceName);
             switch (type)
             {
                 case AssetType.Text:
                     {
                         using var reader = new StreamReader(stream);
-                        string text = reader.ReadToEnd();
-                        _loadedAssets[embeddedAssetPath] = new(text);
+                        var text = reader.ReadToEnd();
+                        _loadedAssets[embeddedAssetPath] = new Asset(text);
                         _embeddedAssetsLoaded++;
                         break;
                     }
@@ -442,7 +399,7 @@ public class AssetManager
                     {
                         using var ms = new MemoryStream();
                         stream.CopyTo(ms);
-                        _loadedAssets[embeddedAssetPath] = new(ms.ToArray());
+                        _loadedAssets[embeddedAssetPath] = new Asset(ms.ToArray());
                         _embeddedAssetsLoaded++;
                         break;
                     }
@@ -451,6 +408,47 @@ public class AssetManager
         catch (Exception e)
         {
             _logger.LogError($"Exception while loading embedded asset: {e}");
+        }
+    }
+
+    public class Asset
+    {
+        private readonly byte[]? _binaryContent;
+        private readonly string? _textContent;
+        private readonly AssetType _type;
+
+        public Asset(byte[] binary)
+        {
+            _type = AssetType.Binary;
+            _binaryContent = binary;
+        }
+
+        public Asset(string text)
+        {
+            _type = AssetType.Text;
+            _textContent = text;
+        }
+
+        public AssetType GetAssetType() => _type;
+
+        public byte[] GetBinaryContent()
+        {
+            if (_binaryContent == null || _type != AssetType.Binary)
+            {
+                throw new Exception("Attempted to get binary content from a non binary asset");
+            }
+
+            return _binaryContent;
+        }
+
+        public string GetTextContent()
+        {
+            if (_textContent == null || _type != AssetType.Text)
+            {
+                throw new Exception("Attempted to get text content from a non text asset");
+            }
+
+            return _textContent;
         }
     }
 }

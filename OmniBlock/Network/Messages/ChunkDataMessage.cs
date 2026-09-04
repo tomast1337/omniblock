@@ -109,7 +109,7 @@ public sealed class ChunkDataMessage : Message
         using ZLibStream decompressor = new(input, CompressionMode.Decompress);
 
         MemoryStream output = new(compressed.Length * 4);
-        byte[] buffer = new byte[8192];
+        var buffer = new byte[8192];
         int read;
 
         while ((read = decompressor.Read(buffer, 0, buffer.Length)) > 0)

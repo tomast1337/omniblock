@@ -1,6 +1,6 @@
-using System.Runtime.InteropServices;
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
+using Buffer = System.Buffer;
 using WgpuBuffer = Silk.NET.WebGPU.Buffer;
 
 namespace OmniBlock.Client.Rendering.Core.WebGPU;
@@ -20,42 +20,13 @@ namespace OmniBlock.Client.Rendering.Core.WebGPU;
 /// </remarks>
 public sealed unsafe class WgpuPipeline : IDisposable
 {
-    public ShaderModule* Module { get; }
-    /// <summary>The uniform bind group layout (group 0).</summary>
-    public BindGroupLayout* BindGroupLayout { get; }
-
-    /// <summary>The texture bind group layout (group 1), or null for untextured pipelines.</summary>
-    public BindGroupLayout* TextureBindGroupLayout { get; }
-
     /// <summary>
-    ///     The texture-array bind group layout (group 2), or null when the shader samples no array.
+    ///     WebGPU's guaranteed baseline for <c>minUniformBufferOffsetAlignment</c> — every conformant
+    ///     adapter supports at least this without querying device limits.
     /// </summary>
-    /// <remarks>
-    ///     A group of its own rather than more bindings in group 1 because the two textures have
-    ///     different owners and different lifetimes: the 2D one changes with every bind, while the
-    ///     array is rebuilt only when the pack is.
-    /// </remarks>
-    public BindGroupLayout* TextureArrayBindGroupLayout { get; }
-
-    public PipelineLayout* Layout { get; }
-    public RenderPipeline* Pipeline { get; }
-
-    /// <summary>The uniform buffer, large enough for the full <c>Uniforms</c> struct.</summary>
-    public WgpuBuffer* UniformBuffer { get; }
-
-    /// <summary>The per-frame bind group binding the uniform buffer to the layout (group 0).</summary>
-    public BindGroup* UniformBindGroup { get; }
+    private const uint DynamicUniformAlignment = 256;
 
     private readonly WebGpuDevice _device;
-
-    /// <summary>
-    ///     Spare uniform buffers and their bind groups, handed out one per draw by
-    ///     <see cref="BindNextUniforms{T}" /> and reused from the top of the next frame.
-    /// </summary>
-    private readonly List<(nint Buffer, nint Group)> _uniformPool = [];
-    private int _uniformPoolNext;
-    private readonly uint _uniformSize;
-    private bool _disposed;
 
     /// <summary>
     ///     Whether the group-0 layout declared its uniform binding with a dynamic offset — set from
@@ -65,25 +36,26 @@ public sealed unsafe class WgpuPipeline : IDisposable
     private readonly bool _dynamicUniformLayout;
 
     /// <summary>
+    ///     Spare uniform buffers and their bind groups, handed out one per draw by
+    ///     <see cref="BindNextUniforms{T}" /> and reused from the top of the next frame.
+    /// </summary>
+    private readonly List<(nint Buffer, nint Group)> _uniformPool = [];
+
+    private readonly uint _uniformSize;
+    private bool _disposed;
+    private BindGroup* _dynamicUniformBindGroup;
+
+    /// <summary>
     ///     One GPU buffer holding every draw's uniforms for the frame, written with a single
     ///     <c>QueueWriteBuffer</c> call and read back per draw via a dynamic offset — the batched
     ///     alternative to <see cref="_uniformPool" />'s one-buffer-per-draw approach, for call sites
     ///     with too many draws per frame for a write-per-draw to be free.
     /// </summary>
     private WgpuBuffer* _dynamicUniformBuffer;
-    private BindGroup* _dynamicUniformBindGroup;
+
     private int _dynamicUniformCapacity;
     private byte[] _dynamicUniformStaging = [];
-
-    /// <summary>
-    ///     WebGPU's guaranteed baseline for <c>minUniformBufferOffsetAlignment</c> — every conformant
-    ///     adapter supports at least this without querying device limits.
-    /// </summary>
-    private const uint DynamicUniformAlignment = 256;
-
-    private uint DynamicUniformStride => AlignUp(_uniformSize, DynamicUniformAlignment);
-
-    private static uint AlignUp(uint value, uint align) => (value + align - 1) / align * align;
+    private int _uniformPoolNext;
 
     /// <summary>
     ///     Wraps an already-built pipeline.
@@ -112,13 +84,13 @@ public sealed unsafe class WgpuPipeline : IDisposable
 
     /// <summary>
     ///     Builds a shader module from WGSL source, creates the bind-group layouts from
-    ///     <paramref name="uniformEntries"/> and optional <paramref name="textureEntries"/>,
-    ///     and creates a pipeline matching <paramref name="state"/>, the vertex
-    ///     <paramref name="buffers"/>, and the colour format.
+    ///     <paramref name="uniformEntries" /> and optional <paramref name="textureEntries" />,
+    ///     and creates a pipeline matching <paramref name="state" />, the vertex
+    ///     <paramref name="buffers" />, and the colour format.
     /// </summary>
     /// <param name="depthFormat">
     ///     The depth texture format, or <c>TextureFormat.Undefined</c> when the pass has no depth
-    ///     attachment. Must match what <see cref="WgpuFramebuffer.BeginPass"/> attaches.
+    ///     attachment. Must match what <see cref="WgpuFramebuffer.BeginPass" /> attaches.
     /// </param>
     public WgpuPipeline(
         WebGpuDevice device,
@@ -139,7 +111,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
     {
         _device = device;
         _uniformSize = Math.Max(uniformSize, 64u);
-        Silk.NET.WebGPU.WebGPU api = device.Api;
+        var api = device.Api;
 
         Module = CreateShaderModule(api, device.Device, wgslSource);
         BindGroupLayout = CreateBindGroupLayout(api, device.Device, uniformEntries);
@@ -152,22 +124,90 @@ public sealed unsafe class WgpuPipeline : IDisposable
         Layout = CreatePipelineLayout(api, device.Device,
             BindGroupLayout, TextureBindGroupLayout, TextureArrayBindGroupLayout);
         Pipeline = CreateRenderPipeline(api, device.Device, Module, entryPoint, fragmentEntryPoint, Layout, buffers, bufferCount, state, colorFormat, depthFormat, topology, label);
-        CreateUniforms(api, device.Device, BindGroupLayout, uniformSize, out WgpuBuffer* ub, out BindGroup* ug);
+        CreateUniforms(api, device.Device, BindGroupLayout, uniformSize, out var ub, out var ug);
         UniformBuffer = ub;
         UniformBindGroup = ug;
 
         _dynamicUniformLayout = uniformEntries.Length > 0 && uniformEntries[0].Buffer.HasDynamicOffset;
     }
 
+    public ShaderModule* Module { get; }
+
+    /// <summary>The uniform bind group layout (group 0).</summary>
+    public BindGroupLayout* BindGroupLayout { get; }
+
+    /// <summary>The texture bind group layout (group 1), or null for untextured pipelines.</summary>
+    public BindGroupLayout* TextureBindGroupLayout { get; }
+
+    /// <summary>
+    ///     The texture-array bind group layout (group 2), or null when the shader samples no array.
+    /// </summary>
+    /// <remarks>
+    ///     A group of its own rather than more bindings in group 1 because the two textures have
+    ///     different owners and different lifetimes: the 2D one changes with every bind, while the
+    ///     array is rebuilt only when the pack is.
+    /// </remarks>
+    public BindGroupLayout* TextureArrayBindGroupLayout { get; }
+
+    public PipelineLayout* Layout { get; }
+    public RenderPipeline* Pipeline { get; }
+
+    /// <summary>The uniform buffer, large enough for the full <c>Uniforms</c> struct.</summary>
+    public WgpuBuffer* UniformBuffer { get; }
+
+    /// <summary>The per-frame bind group binding the uniform buffer to the layout (group 0).</summary>
+    public BindGroup* UniformBindGroup { get; }
+
+    private uint DynamicUniformStride => AlignUp(_uniformSize, DynamicUniformAlignment);
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+
+        var api = _device.Api;
+
+        foreach (var (buffer, group) in _uniformPool)
+        {
+            api.BindGroupRelease((BindGroup*)group);
+            api.BufferDestroy((WgpuBuffer*)buffer);
+            api.BufferRelease((WgpuBuffer*)buffer);
+        }
+
+        _uniformPool.Clear();
+
+        if (_dynamicUniformBindGroup is not null) api.BindGroupRelease(_dynamicUniformBindGroup);
+        if (_dynamicUniformBuffer is not null)
+        {
+            api.BufferDestroy(_dynamicUniformBuffer);
+            api.BufferRelease(_dynamicUniformBuffer);
+        }
+
+        if (UniformBindGroup is not null) api.BindGroupRelease(UniformBindGroup);
+        if (UniformBuffer is not null) api.BufferDestroy(UniformBuffer);
+        if (UniformBuffer is not null) api.BufferRelease(UniformBuffer);
+        if (Pipeline is not null) api.RenderPipelineRelease(Pipeline);
+        if (Layout is not null) api.PipelineLayoutRelease(Layout);
+        if (TextureArrayBindGroupLayout is not null) api.BindGroupLayoutRelease(TextureArrayBindGroupLayout);
+        if (TextureBindGroupLayout is not null) api.BindGroupLayoutRelease(TextureBindGroupLayout);
+        if (BindGroupLayout is not null) api.BindGroupLayoutRelease(BindGroupLayout);
+        if (Module is not null) api.ShaderModuleRelease(Module);
+    }
+
+    private static uint AlignUp(uint value, uint align) => (value + align - 1) / align * align;
+
     private static ShaderModule* CreateShaderModule(Silk.NET.WebGPU.WebGPU api, Device* device, string source)
     {
-        byte* code = (byte*)SilkMarshal.StringToPtr(source);
+        var code = (byte*)SilkMarshal.StringToPtr(source);
         try
         {
             ShaderModuleWGSLDescriptor wgsl = new()
             {
-                Chain = new ChainedStruct { SType = SType.ShaderModuleWgslDescriptor },
-                Code = code,
+                Chain = new ChainedStruct
+                {
+                    SType = SType.ShaderModuleWgslDescriptor
+                },
+                Code = code
             };
 
             ShaderModuleDescriptor descriptor = default;
@@ -188,7 +228,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
             BindGroupLayoutDescriptor descriptor = new()
             {
                 EntryCount = (nuint)entries.Length,
-                Entries = entriesPtr,
+                Entries = entriesPtr
             };
 
             return api.DeviceCreateBindGroupLayout(device, in descriptor);
@@ -201,19 +241,21 @@ public sealed unsafe class WgpuPipeline : IDisposable
         BindGroupLayout* textureArrayBindGroupLayout)
     {
         // Consecutive from group 0, so a null texture group means there is no array group either.
-        BindGroupLayout** layouts = stackalloc BindGroupLayout*[3];
+        var layouts = stackalloc BindGroupLayout*[3];
         layouts[0] = bindGroupLayout;
         layouts[1] = textureBindGroupLayout;
         layouts[2] = textureArrayBindGroupLayout;
 
         nuint count = textureBindGroupLayout is null
             ? 1u
-            : textureArrayBindGroupLayout is null ? 2u : 3u;
+            : textureArrayBindGroupLayout is null
+                ? 2u
+                : 3u;
 
         PipelineLayoutDescriptor descriptor = new()
         {
             BindGroupLayoutCount = count,
-            BindGroupLayouts = layouts,
+            BindGroupLayouts = layouts
         };
 
         return api.DeviceCreatePipelineLayout(device, in descriptor);
@@ -234,29 +276,33 @@ public sealed unsafe class WgpuPipeline : IDisposable
         PrimitiveTopology topology,
         string? label = null)
     {
-        byte* vertexEntry = (byte*)SilkMarshal.StringToPtr(entryPoint);
-        byte* fragmentEntry = (byte*)SilkMarshal.StringToPtr(fragmentEntryPoint);
-        byte* labelPtr = label is null ? null : (byte*)SilkMarshal.StringToPtr(label);
+        var vertexEntry = (byte*)SilkMarshal.StringToPtr(entryPoint);
+        var fragmentEntry = (byte*)SilkMarshal.StringToPtr(fragmentEntryPoint);
+        var labelPtr = label is null ? null : (byte*)SilkMarshal.StringToPtr(label);
 
         try
         {
-            BlendComponent colorBlend = BlendFor(state.Blend);
-            BlendComponent alphaBlend = AlphaBlendFor(state.Blend);
+            var colorBlend = BlendFor(state.Blend);
+            var alphaBlend = AlphaBlendFor(state.Blend);
 
-            BlendState blend = new() { Color = colorBlend, Alpha = alphaBlend };
+            BlendState blend = new()
+            {
+                Color = colorBlend,
+                Alpha = alphaBlend
+            };
 
             ColorTargetState target = new()
             {
                 Format = colorFormat,
                 Blend = &blend,
-                WriteMask = state.ColorWrite ? ColorWriteMask.All : ColorWriteMask.None,
+                WriteMask = state.ColorWrite ? ColorWriteMask.All : ColorWriteMask.None
             };
 
-            Silk.NET.WebGPU.CullMode cullMode = state.Cull switch
+            var cullMode = state.Cull switch
             {
                 CullMode.None => Silk.NET.WebGPU.CullMode.None,
                 CullMode.Back => Silk.NET.WebGPU.CullMode.Back,
-                _ => Silk.NET.WebGPU.CullMode.Back,
+                _ => Silk.NET.WebGPU.CullMode.Back
             };
 
             DepthStencilState depthStencil = default;
@@ -277,13 +323,25 @@ public sealed unsafe class WgpuPipeline : IDisposable
                         : state.DepthCompare switch
                         {
                             DepthCompare.Equal => CompareFunction.Equal,
-                            _ => CompareFunction.LessEqual,
+                            _ => CompareFunction.LessEqual
                         },
                     DepthBias = (int)state.DepthBias.Constant,
                     DepthBiasSlopeScale = state.DepthBias.SlopeScale,
                     DepthBiasClamp = 0.0f,
-                    StencilFront = new StencilFaceState { Compare = CompareFunction.Always, FailOp = StencilOperation.Keep, DepthFailOp = StencilOperation.Keep, PassOp = StencilOperation.Keep },
-                    StencilBack = new StencilFaceState { Compare = CompareFunction.Always, FailOp = StencilOperation.Keep, DepthFailOp = StencilOperation.Keep, PassOp = StencilOperation.Keep },
+                    StencilFront = new StencilFaceState
+                    {
+                        Compare = CompareFunction.Always,
+                        FailOp = StencilOperation.Keep,
+                        DepthFailOp = StencilOperation.Keep,
+                        PassOp = StencilOperation.Keep
+                    },
+                    StencilBack = new StencilFaceState
+                    {
+                        Compare = CompareFunction.Always,
+                        FailOp = StencilOperation.Keep,
+                        DepthFailOp = StencilOperation.Keep,
+                        PassOp = StencilOperation.Keep
+                    }
                 };
 
                 pDepthStencil = &depthStencil;
@@ -294,7 +352,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
                 Module = module,
                 EntryPoint = fragmentEntry,
                 TargetCount = 1,
-                Targets = &target,
+                Targets = &target
             };
 
             RenderPipelineDescriptor descriptor = new()
@@ -306,18 +364,22 @@ public sealed unsafe class WgpuPipeline : IDisposable
                     Module = module,
                     EntryPoint = vertexEntry,
                     BufferCount = bufferCount,
-                    Buffers = buffers,
+                    Buffers = buffers
                 },
                 Primitive = new PrimitiveState
                 {
                     Topology = topology,
                     StripIndexFormat = IndexFormat.Undefined,
                     FrontFace = FrontFace.Ccw,
-                    CullMode = cullMode,
+                    CullMode = cullMode
                 },
                 DepthStencil = pDepthStencil,
-                Multisample = new MultisampleState { Count = 1, Mask = uint.MaxValue },
-                Fragment = &fragment,
+                Multisample = new MultisampleState
+                {
+                    Count = 1,
+                    Mask = uint.MaxValue
+                },
+                Fragment = &fragment
             };
 
             return api.DeviceCreateRenderPipeline(device, in descriptor);
@@ -337,26 +399,26 @@ public sealed unsafe class WgpuPipeline : IDisposable
         BufferDescriptor bufferDescriptor = new()
         {
             Usage = BufferUsage.Uniform | BufferUsage.CopyDst,
-            Size = Math.Max(size, 64u),
+            Size = Math.Max(size, 64u)
         };
 
-        WgpuBuffer* b = api.DeviceCreateBuffer(device, in bufferDescriptor);
+        var b = api.DeviceCreateBuffer(device, in bufferDescriptor);
 
         BindGroupEntry entry = new()
         {
             Binding = 0,
             Buffer = b,
             Offset = 0,
-            Size = bufferDescriptor.Size,
+            Size = bufferDescriptor.Size
         };
 
-        byte* label = (byte*)SilkMarshal.StringToPtr("Pipeline.StaticUniform");
+        var label = (byte*)SilkMarshal.StringToPtr("Pipeline.StaticUniform");
         BindGroupDescriptor descriptor = new()
         {
             Label = label,
             Layout = layout,
             EntryCount = 1,
-            Entries = &entry,
+            Entries = &entry
         };
 
         buffer = b;
@@ -364,7 +426,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
         SilkMarshal.Free((nint)label);
     }
 
-    /// <summary>Writes <paramref name="data"/> to the uniform buffer through the queue.</summary>
+    /// <summary>Writes <paramref name="data" /> to the uniform buffer through the queue.</summary>
     public void UploadUniforms<T>(T data) where T : unmanaged =>
         _device.Api.QueueWriteBuffer(_device.Queue, UniformBuffer, 0, in data, (nuint)sizeof(T));
 
@@ -401,7 +463,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
             _uniformPool.Add(AllocateUniforms());
         }
 
-        (nint bufferHandle, nint groupHandle) = _uniformPool[_uniformPoolNext++];
+        var (bufferHandle, groupHandle) = _uniformPool[_uniformPoolNext++];
 
         _device.Api.QueueWriteBuffer(
             _device.Queue, (WgpuBuffer*)bufferHandle, 0, in data, (nuint)sizeof(T));
@@ -441,13 +503,13 @@ public sealed unsafe class WgpuPipeline : IDisposable
     /// </remarks>
     public void WriteDynamicUniforms<T>(ReadOnlySpan<T> data) where T : unmanaged
     {
-        int count = data.Length;
+        var count = data.Length;
         if (count == 0) return;
 
-        uint stride = DynamicUniformStride;
+        var stride = DynamicUniformStride;
         EnsureDynamicUniformCapacity(count, stride);
 
-        int neededBytes = count * (int)stride;
+        var neededBytes = count * (int)stride;
         if (_dynamicUniformStaging.Length < neededBytes)
         {
             _dynamicUniformStaging = new byte[neededBytes];
@@ -456,9 +518,9 @@ public sealed unsafe class WgpuPipeline : IDisposable
         fixed (byte* dstBase = _dynamicUniformStaging)
         fixed (T* src = data)
         {
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
-                System.Buffer.MemoryCopy(src + i, dstBase + (nint)(i * stride), stride, (uint)sizeof(T));
+                Buffer.MemoryCopy(src + i, dstBase + (nint)(i * stride), stride, (uint)sizeof(T));
             }
 
             _device.Api.QueueWriteBuffer(_device.Queue, _dynamicUniformBuffer, 0, dstBase, (nuint)neededBytes);
@@ -471,7 +533,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
     /// </summary>
     public void BindDynamicUniforms(RenderPassEncoder* pass, int index)
     {
-        uint offset = (uint)index * DynamicUniformStride;
+        var offset = (uint)index * DynamicUniformStride;
         _device.Api.RenderPassEncoderSetBindGroup(pass, 0, _dynamicUniformBindGroup, 1, &offset);
     }
 
@@ -486,13 +548,13 @@ public sealed unsafe class WgpuPipeline : IDisposable
             _device.Api.BufferRelease(_dynamicUniformBuffer);
         }
 
-        int newCapacity = Math.Max(count, Math.Max(_dynamicUniformCapacity * 2, 256));
-        ulong bufferSize = (ulong)newCapacity * stride;
+        var newCapacity = Math.Max(count, Math.Max(_dynamicUniformCapacity * 2, 256));
+        var bufferSize = (ulong)newCapacity * stride;
 
         BufferDescriptor bufferDescriptor = new()
         {
             Usage = BufferUsage.Uniform | BufferUsage.CopyDst,
-            Size = bufferSize,
+            Size = bufferSize
         };
 
         _dynamicUniformBuffer = _device.Api.DeviceCreateBuffer(_device.Device, in bufferDescriptor);
@@ -502,14 +564,14 @@ public sealed unsafe class WgpuPipeline : IDisposable
             Binding = 0,
             Buffer = _dynamicUniformBuffer,
             Offset = 0,
-            Size = _uniformSize,
+            Size = _uniformSize
         };
 
         BindGroupDescriptor descriptor = new()
         {
             Layout = BindGroupLayout,
             EntryCount = 1,
-            Entries = &entry,
+            Entries = &entry
         };
 
         _dynamicUniformBindGroup = _device.Api.DeviceCreateBindGroup(_device.Device, in descriptor);
@@ -519,12 +581,12 @@ public sealed unsafe class WgpuPipeline : IDisposable
     private (nint Buffer, nint Group) AllocateUniforms()
     {
         CreateUniforms(_device.Api, _device.Device, BindGroupLayout, _uniformSize,
-            out WgpuBuffer* buffer, out BindGroup* group);
+            out var buffer, out var group);
 
         return ((nint)buffer, (nint)group);
     }
 
-    /// <summary>Binds an external bind group (textures, etc.) at <paramref name="groupIndex"/>.</summary>
+    /// <summary>Binds an external bind group (textures, etc.) at <paramref name="groupIndex" />.</summary>
     public static void BindGroup(RenderPassEncoder* pass, uint groupIndex, BindGroup* group, Silk.NET.WebGPU.WebGPU api) =>
         api.RenderPassEncoderSetBindGroup(pass, groupIndex, group, 0, null);
 
@@ -534,7 +596,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
         {
             Operation = BlendOperation.Add,
             SrcFactor = BlendFactor.One,
-            DstFactor = BlendFactor.Zero,
+            DstFactor = BlendFactor.Zero
         },
         BlendMode.Alpha => Alpha(),
         BlendMode.Additive => Add(),
@@ -542,33 +604,33 @@ public sealed unsafe class WgpuPipeline : IDisposable
         {
             Operation = BlendOperation.Add,
             SrcFactor = BlendFactor.SrcAlpha,
-            DstFactor = BlendFactor.One,
+            DstFactor = BlendFactor.One
         },
         BlendMode.SourceToDestinationAlpha => new BlendComponent
         {
             Operation = BlendOperation.Add,
             SrcFactor = BlendFactor.SrcAlpha,
-            DstFactor = BlendFactor.DstAlpha,
+            DstFactor = BlendFactor.DstAlpha
         },
         BlendMode.Multiply => new BlendComponent
         {
             Operation = BlendOperation.Add,
             SrcFactor = BlendFactor.Dst,
-            DstFactor = BlendFactor.Src,
+            DstFactor = BlendFactor.Src
         },
         BlendMode.Invert => new BlendComponent
         {
             Operation = BlendOperation.Add,
             SrcFactor = BlendFactor.OneMinusDst,
-            DstFactor = BlendFactor.OneMinusSrc,
+            DstFactor = BlendFactor.OneMinusSrc
         },
         BlendMode.Darken => new BlendComponent
         {
             Operation = BlendOperation.Add,
             SrcFactor = BlendFactor.Zero,
-            DstFactor = BlendFactor.OneMinusSrc,
+            DstFactor = BlendFactor.OneMinusSrc
         },
-        _ => Alpha(),
+        _ => Alpha()
     };
 
     private static BlendComponent AlphaBlendFor(BlendMode mode) => mode switch
@@ -577,7 +639,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
         {
             Operation = BlendOperation.Add,
             SrcFactor = BlendFactor.One,
-            DstFactor = BlendFactor.Zero,
+            DstFactor = BlendFactor.Zero
         },
         BlendMode.Alpha => Alpha(),
         BlendMode.Additive => Add(),
@@ -586,56 +648,22 @@ public sealed unsafe class WgpuPipeline : IDisposable
         BlendMode.Multiply => Add(),
         BlendMode.Invert => Alpha(),
         BlendMode.Darken => Alpha(),
-        _ => Alpha(),
+        _ => Alpha()
     };
 
     private static BlendComponent Alpha() => new()
     {
         Operation = BlendOperation.Add,
         SrcFactor = BlendFactor.SrcAlpha,
-        DstFactor = BlendFactor.OneMinusSrcAlpha,
+        DstFactor = BlendFactor.OneMinusSrcAlpha
     };
 
     private static BlendComponent Add() => new()
     {
         Operation = BlendOperation.Add,
         SrcFactor = BlendFactor.One,
-        DstFactor = BlendFactor.One,
+        DstFactor = BlendFactor.One
     };
 
     private static bool BlendIsIdentity(BlendMode mode) => mode == BlendMode.None;
-
-    public void Dispose()
-    {
-        if (_disposed) return;
-        _disposed = true;
-
-        Silk.NET.WebGPU.WebGPU api = _device.Api;
-
-        foreach ((nint buffer, nint group) in _uniformPool)
-        {
-            api.BindGroupRelease((BindGroup*)group);
-            api.BufferDestroy((WgpuBuffer*)buffer);
-            api.BufferRelease((WgpuBuffer*)buffer);
-        }
-
-        _uniformPool.Clear();
-
-        if (_dynamicUniformBindGroup is not null) api.BindGroupRelease(_dynamicUniformBindGroup);
-        if (_dynamicUniformBuffer is not null)
-        {
-            api.BufferDestroy(_dynamicUniformBuffer);
-            api.BufferRelease(_dynamicUniformBuffer);
-        }
-
-        if (UniformBindGroup is not null) api.BindGroupRelease(UniformBindGroup);
-        if (UniformBuffer is not null) api.BufferDestroy(UniformBuffer);
-        if (UniformBuffer is not null) api.BufferRelease(UniformBuffer);
-        if (Pipeline is not null) api.RenderPipelineRelease(Pipeline);
-        if (Layout is not null) api.PipelineLayoutRelease(Layout);
-        if (TextureArrayBindGroupLayout is not null) api.BindGroupLayoutRelease(TextureArrayBindGroupLayout);
-        if (TextureBindGroupLayout is not null) api.BindGroupLayoutRelease(TextureBindGroupLayout);
-        if (BindGroupLayout is not null) api.BindGroupLayoutRelease(BindGroupLayout);
-        if (Module is not null) api.ShaderModuleRelease(Module);
-    }
 }

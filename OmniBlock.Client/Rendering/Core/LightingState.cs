@@ -10,7 +10,7 @@ namespace OmniBlock.Client.Rendering.Core;
 public enum ShadeModel
 {
     Flat = 0,
-    Smooth = 1,
+    Smooth = 1
 }
 
 /// <summary>The two directional lights and the ambient term everything shaded is lit by.</summary>

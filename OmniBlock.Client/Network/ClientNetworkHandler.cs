@@ -1,9 +1,8 @@
 using System.Net;
 using System.Net.Sockets;
-using OmniBlock.Blocks;
+using Microsoft.Extensions.Logging;
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Client.Diagnostics;
-using OmniBlock.Client.Entities;
 using OmniBlock.Client.Entities.FX;
 using OmniBlock.Client.Rendering.Entities;
 using OmniBlock.Client.Rendering.Particles;
@@ -22,33 +21,112 @@ using OmniBlock.Network.Snapshots;
 using OmniBlock.Network.Transport;
 using OmniBlock.Registries;
 using OmniBlock.Screens;
-using OmniBlock.Stats;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Mechanics;
 using OmniBlock.Worlds.Storage;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Client.Network;
 
 public class ClientNetworkHandler : NetHandler
 {
-    private readonly ILogger<ClientNetworkHandler> _logger = Log.Instance.For<ClientNetworkHandler>();
+    /// <summary>
+    ///     How long to wait for the UDP handshake. Longer than a round trip on any plausible link,
+    ///     and short enough that a wrong address or a closed port reports rather than hangs. UDP has
+    ///     no equivalent of a TCP connection refusal, so an unreachable peer can only present as a
+    ///     timeout.
+    /// </summary>
+    private static readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(15);
 
-    public bool Disconnected { get; private set; }
-    private readonly Connection _netManager;
-    public string StatusMessage;
-    private readonly ClientNetworkContext _context;
-    private ClientWorld _worldClient;
-    private bool _terrainLoaded;
-    public PersistentStateManager ClientPersistentStateManager { get; } = new(null);
-    private readonly JavaRandom _rand = new();
-
-    private int _ticks;
-    private int _lastKeepAliveTime;
+    /// <summary>
+    ///     Identifies the server for cache-file naming, or null on a loopback connection, which does
+    ///     not cache. Address and port only — the world seed and dimension are appended once known.
+    /// </summary>
+    private readonly string? _cacheKey;
 
     private readonly ClientRegistryAccess _clientRegistries;
+    private readonly ClientNetworkContext _context;
+    private readonly ILogger<ClientNetworkHandler> _logger = Log.Instance.For<ClientNetworkHandler>();
+    private readonly Connection _netManager;
+    private readonly JavaRandom _rand = new();
+
+    /// <summary>
+    ///     The transport, kept so it can be shut down with the connection. One instance is one
+    ///     socket, and a client's serves exactly this peer.
+    /// </summary>
+    private readonly LiteNetLibTransport? _transport;
+
+
+    /// <summary>Whether the cache for the current world has been advertised yet.</summary>
+    private bool _cacheOffered;
+
+    private long _chunkBytesSaved;
+
+    private ChunkBlobCache? _chunkCache;
+
+    private long _chunkMessageBytes;
+
+    private long _chunksFromCache;
+
+    /// <summary>Session totals behind the chunk metrics, which are gauges rather than counters.</summary>
+    private long _chunksViaMessage;
+
+    private int _lastKeepAliveTime;
+    private string _serverCatalogFingerprint = "";
+    private long _snapshotBytes;
+
+    private long _snapshotRecords;
+    private bool _terrainLoaded;
+
+    private int _ticks;
+    private ClientWorld _worldClient;
+    public string StatusMessage;
+
+    public ClientNetworkHandler(ClientNetworkContext context, string address, int port)
+    {
+        _context = context;
+        _clientRegistries = new ClientRegistryAccess(context.Content, context.StageContent);
+        Messages = BuildMessageRegistry(context.Content.Items);
+
+        var addresses = Dns.GetHostAddresses(address);
+        IPEndPoint endPoint = new(
+            addresses.FirstOrDefault(a => a.AddressFamily is AddressFamily.InterNetwork) ?? addresses.First(),
+            port);
+
+        _transport = new LiteNetLibTransport();
+        _transport.StartClient();
+
+        // Blocking, because this constructor already runs on ThreadConnectToServer rather than on
+        // the game thread, and the connecting screen is driven by that thread finishing. The wait
+        // is bounded so a black hole of an address fails rather than hanging the screen forever.
+        using CancellationTokenSource timeout = new(ConnectTimeout);
+        var peer = _transport
+            .ConnectAsync(endPoint, timeout.Token)
+            .AsTask()
+            .GetAwaiter()
+            .GetResult();
+
+        _netManager = new UdpConnection(peer, this);
+        _cacheKey = $"{address}_{port}";
+
+        Clock = new ServerClock();
+
+        RegisterMessageHandlers();
+    }
+
+    public ClientNetworkHandler(ClientNetworkContext context, Connection connection)
+    {
+        _context = context;
+        _clientRegistries = new ClientRegistryAccess(context.Content, context.StageContent);
+        Messages = BuildMessageRegistry(context.Content.Items);
+        _netManager = connection;
+
+        RegisterMessageHandlers();
+    }
+
+    public bool Disconnected { get; private set; }
+    public PersistentStateManager ClientPersistentStateManager { get; } = new(null);
 
     /// <summary>
     ///     This connection's message table. Populated locally at construction, then re-ordered to
@@ -56,19 +134,6 @@ public class ClientNetworkHandler : NetHandler
     ///     Per-connection rather than static, since two servers may advertise different tables.
     /// </summary>
     public override MessageRegistry? Messages { get; }
-
-    /// <summary>
-    ///     Registers the same set the server does. Both sides go through
-    ///     <see cref="DefaultMessages" /> rather than keeping two lists, because a divergence is
-    ///     silent in both directions — a key the server advertises and this peer lacks becomes a
-    ///     hole and its messages are dropped, and a key registered only here can never be sent.
-    /// </summary>
-    private static MessageRegistry BuildMessageRegistry(IItemRuntimeView items)
-    {
-        MessageRegistry registry = new();
-        DefaultMessages.RegisterAll(registry, items);
-        return registry;
-    }
 
     /// <summary>
     ///     Synchronised server clock. Null for the loopback path (<see cref="InternalConnection" />),
@@ -99,59 +164,31 @@ public class ClientNetworkHandler : NetHandler
         Clock is { Synchronised: true } && CurrentBatchServerTimeMs != 0;
 
     /// <summary>
-    ///     The transport, kept so it can be shut down with the connection. One instance is one
-    ///     socket, and a client's serves exactly this peer.
+    ///     Server-clock instant of the most recent <see cref="TickStampMessage" />, or 0 if the
+    ///     stream has never been stamped. Zero is the signal that this server does not stamp — an
+    ///     older OmniBlock build, or the loopback path — and that interpolation must fall back to
+    ///     the move-toward-target behaviour rather than interpolate against a timeline that does
+    ///     not exist.
     /// </summary>
-    private readonly LiteNetLibTransport? _transport;
-
-    public ClientNetworkHandler(ClientNetworkContext context, string address, int port)
-    {
-        _context = context;
-        _clientRegistries = new ClientRegistryAccess(context.Content, context.StageContent);
-        Messages = BuildMessageRegistry(context.Content.Items);
-
-        IPAddress[] addresses = Dns.GetHostAddresses(address);
-        IPEndPoint endPoint = new(
-            addresses.FirstOrDefault(a => a.AddressFamily is AddressFamily.InterNetwork) ?? addresses.First(),
-            port);
-
-        _transport = new LiteNetLibTransport();
-        _transport.StartClient();
-
-        // Blocking, because this constructor already runs on ThreadConnectToServer rather than on
-        // the game thread, and the connecting screen is driven by that thread finishing. The wait
-        // is bounded so a black hole of an address fails rather than hanging the screen forever.
-        using CancellationTokenSource timeout = new(ConnectTimeout);
-        ITransportConnection peer = _transport
-            .ConnectAsync(endPoint, timeout.Token)
-            .AsTask()
-            .GetAwaiter()
-            .GetResult();
-
-        _netManager = new UdpConnection(peer, this);
-        _cacheKey = $"{address}_{port}";
-
-        Clock = new ServerClock();
-
-        RegisterMessageHandlers();
-    }
+    public long CurrentBatchServerTimeMs { get; private set; }
 
     /// <summary>
-    ///     How long to wait for the UDP handshake. Longer than a round trip on any plausible link,
-    ///     and short enough that a wrong address or a closed port reports rather than hangs. UDP has
-    ///     no equivalent of a TCP connection refusal, so an unreachable peer can only present as a
-    ///     timeout.
+    ///     Count of stamps seen, for the overlay. Also distinguishes "not stamped" from
+    ///     "stamped once, long ago".
     /// </summary>
-    private static readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(15);
+    public long TickStampsReceived { get; private set; }
 
-    public ClientNetworkHandler(ClientNetworkContext context, Connection connection)
+    /// <summary>
+    ///     Registers the same set the server does. Both sides go through
+    ///     <see cref="DefaultMessages" /> rather than keeping two lists, because a divergence is
+    ///     silent in both directions — a key the server advertises and this peer lacks becomes a
+    ///     hole and its messages are dropped, and a key registered only here can never be sent.
+    /// </summary>
+    private static MessageRegistry BuildMessageRegistry(IItemRuntimeView items)
     {
-        _context = context;
-        _clientRegistries = new ClientRegistryAccess(context.Content, context.StageContent);
-        Messages = BuildMessageRegistry(context.Content.Items);
-        _netManager = connection;
-
-        RegisterMessageHandlers();
+        MessageRegistry registry = new();
+        DefaultMessages.RegisterAll(registry, items);
+        return registry;
     }
 
     public void Tick()
@@ -172,7 +209,7 @@ public class ClientNetworkHandler : NetHandler
             MetricRegistry.Set(ClientMetrics.ServerAddress, _netManager.getAddress()?.ToString() ?? "Unknown");
             MetricRegistry.Set(ClientMetrics.PeerProtocolVersion, _netManager.PeerProtocolVersion);
 
-            PacketArrivalHistogram arrivals = _netManager.ReadIntervals;
+            var arrivals = _netManager.ReadIntervals;
             MetricRegistry.Set(ClientMetrics.ReadIntervalSamples, arrivals.Count);
             MetricRegistry.Set(ClientMetrics.ReadIntervalMeanMs, arrivals.MeanMs);
             MetricRegistry.Set(ClientMetrics.ReadIntervalP50Ms, arrivals.PercentileMs(50));
@@ -270,13 +307,13 @@ public class ClientNetworkHandler : NetHandler
             return;
         }
 
-        (uint Sequence, long ClientSendTime)? probe = Clock.Poll();
+        var probe = Clock.Poll();
         if (probe is not null)
         {
             SendMessage(new TimeSyncRequestMessage
             {
                 Sequence = probe.Value.Sequence,
-                ClientSendTime = probe.Value.ClientSendTime,
+                ClientSendTime = probe.Value.ClientSendTime
             });
         }
     }
@@ -302,7 +339,7 @@ public class ClientNetworkHandler : NetHandler
         // the server reads as "no rewind" rather than as the epoch. That is the honest answer: with
         // no synchronised clock there is no instant to name, and judging such a click against the
         // present is what every click got before the rewind existed.
-        long renderTimeMs = Clock is { Synchronised: true } && Interpolation.IsInterpolating(entityId)
+        var renderTimeMs = Clock is { Synchronised: true } && Interpolation.IsInterpolating(entityId)
             ? Clock.ServerTimeMs - Interpolation.AppliedDelayFor(entityId)
             : 0;
 
@@ -310,7 +347,7 @@ public class ClientNetworkHandler : NetHandler
         {
             EntityId = entityId,
             Action = action,
-            RenderTimeMs = renderTimeMs,
+            RenderTimeMs = renderTimeMs
         });
     }
 
@@ -329,7 +366,10 @@ public class ClientNetworkHandler : NetHandler
             return;
         }
 
-        SendMessage(new SnapshotAckMessage { Sequence = Snapshots.AppliedSequence });
+        SendMessage(new SnapshotAckMessage
+        {
+            Sequence = Snapshots.AppliedSequence
+        });
     }
 
     /// <summary>
@@ -346,10 +386,10 @@ public class ClientNetworkHandler : NetHandler
         _snapshotBytes += message.Size();
         MetricRegistry.Set(ClientMetrics.SnapshotBytes, _snapshotBytes);
 
-        foreach ((int entityId, EntitySnapshotState state) in Snapshots.Apply(message))
+        foreach (var (entityId, state) in Snapshots.Apply(message))
         {
             _snapshotRecords++;
-            Entity? entity = GetEntityById(entityId);
+            var entity = GetEntityById(entityId);
             if (entity is null)
             {
                 continue;
@@ -366,17 +406,13 @@ public class ClientNetworkHandler : NetHandler
         MetricRegistry.Set(ClientMetrics.SnapshotsDropped, Snapshots.DroppedSnapshots);
     }
 
-    private long _snapshotRecords;
-    private long _snapshotBytes;
-    private string _serverCatalogFingerprint = "";
-
     /// <summary>
     ///     Sends a message, or drops it when the server never advertised the key — the designed
     ///     outcome for a peer that does not implement it, not an error.
     /// </summary>
     public void SendMessage(Message message)
     {
-        MessageRegistry? registry = Messages;
+        var registry = Messages;
         if (registry is null || !registry.Negotiated)
         {
             return;
@@ -489,7 +525,7 @@ public class ClientNetworkHandler : NetHandler
     /// </summary>
     private void onChunkUnchanged(ChunkUnchangedMessage message)
     {
-        byte[]? stored = _chunkCache?.Read(new ChunkPos(message.ChunkX, message.ChunkZ));
+        var stored = _chunkCache?.Read(new ChunkPos(message.ChunkX, message.ChunkZ));
         byte[]? blob = null;
 
         if (stored is not null)
@@ -515,8 +551,8 @@ public class ClientNetworkHandler : NetHandler
             return;
         }
 
-        int worldX = message.ChunkX * 16;
-        int worldZ = message.ChunkZ * 16;
+        var worldX = message.ChunkX * 16;
+        var worldZ = message.ChunkZ * 16;
         _worldClient.ClearBlockResets(
             worldX, 0, worldZ, worldX + 15, ChuckFormat.WorldHeight - 1, worldZ + 15);
 
@@ -535,8 +571,8 @@ public class ClientNetworkHandler : NetHandler
     /// </summary>
     private void onChunkData(ChunkDataMessage message)
     {
-        int worldX = message.ChunkX * 16;
-        int worldZ = message.ChunkZ * 16;
+        var worldX = message.ChunkX * 16;
+        var worldZ = message.ChunkZ * 16;
 
         // Pending single-block corrections for this chunk are superseded by a full send, exactly as
         // they are on the legacy path. Leaving them would re-apply a change the chunk already
@@ -545,7 +581,7 @@ public class ClientNetworkHandler : NetHandler
             worldX, 0, worldZ,
             worldX + 15, ChuckFormat.WorldHeight - 1, worldZ + 15);
 
-        byte[] blob = message.Decompress();
+        var blob = message.Decompress();
         _worldClient.ApplyChunkBlob(message.ChunkX, message.ChunkZ, blob);
 
         // Stored compressed, exactly as it arrived. The blob is six times larger and we already
@@ -562,15 +598,6 @@ public class ClientNetworkHandler : NetHandler
         MetricRegistry.Set(ClientMetrics.ChunksViaMessage, _chunksViaMessage);
         MetricRegistry.Set(ClientMetrics.ChunkMessageBytes, _chunkMessageBytes);
     }
-
-    /// <summary>Session totals behind the chunk metrics, which are gauges rather than counters.</summary>
-    private long _chunksViaMessage;
-
-    private long _chunkMessageBytes;
-
-    private long _chunksFromCache;
-
-    private long _chunkBytesSaved;
 
     private void onTimeSyncResponse(TimeSyncResponseMessage response)
     {
@@ -610,31 +637,6 @@ public class ClientNetworkHandler : NetHandler
     }
 
     /// <summary>
-    ///     Server-clock instant of the most recent <see cref="TickStampMessage" />, or 0 if the
-    ///     stream has never been stamped. Zero is the signal that this server does not stamp — an
-    ///     older OmniBlock build, or the loopback path — and that interpolation must fall back to
-    ///     the move-toward-target behaviour rather than interpolate against a timeline that does
-    ///     not exist.
-    /// </summary>
-    public long CurrentBatchServerTimeMs { get; private set; }
-
-    /// <summary>Count of stamps seen, for the overlay. Also distinguishes "not stamped" from
-    ///     "stamped once, long ago".</summary>
-    public long TickStampsReceived { get; private set; }
-
-    /// <summary>
-    ///     Identifies the server for cache-file naming, or null on a loopback connection, which does
-    ///     not cache. Address and port only — the world seed and dimension are appended once known.
-    /// </summary>
-    private readonly string? _cacheKey;
-
-    private ChunkBlobCache? _chunkCache;
-
-
-    /// <summary>Whether the cache for the current world has been advertised yet.</summary>
-    private bool _cacheOffered;
-
-    /// <summary>
     ///     Opens the chunk cache for the world just joined, keyed so that two worlds cannot be
     ///     confused for one another.
     ///     <para>
@@ -655,8 +657,8 @@ public class ClientNetworkHandler : NetHandler
             return;
         }
 
-        string safeKey = string.Concat(_cacheKey.Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));
-        string path = Path.Combine(
+        var safeKey = string.Concat(_cacheKey.Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));
+        var path = Path.Combine(
             _context.ChunkCacheDirectory, safeKey, $"{worldSeed:X16}_dim{dimensionId}.bin");
 
         _chunkCache = ChunkBlobCache.Open(path);
@@ -696,8 +698,8 @@ public class ClientNetworkHandler : NetHandler
             return;
         }
 
-        int centreX = _chunkCache.LastCentre.X;
-        int centreZ = _chunkCache.LastCentre.Z;
+        var centreX = _chunkCache.LastCentre.X;
+        var centreZ = _chunkCache.LastCentre.Z;
 
         // Nearest first, then take as many as the message allows.
         //
@@ -744,10 +746,10 @@ public class ClientNetworkHandler : NetHandler
 
     private void onItemEntitySpawn(ItemEntitySpawnMessage packet)
     {
-        double x = packet.X / 32.0D;
-        double y = packet.Y / 32.0D;
-        double z = packet.Z / 32.0D;
-        Entity entityItem = DroppedItemBehavior.Create(_worldClient, x, y, z, new ItemStack(_worldClient.Content.Items, packet.ItemRawId, packet.ItemCount, packet.ItemDamage));
+        var x = packet.X / 32.0D;
+        var y = packet.Y / 32.0D;
+        var z = packet.Z / 32.0D;
+        var entityItem = DroppedItemBehavior.Create(_worldClient, x, y, z, new ItemStack(_worldClient.Content.Items, packet.ItemRawId, packet.ItemCount, packet.ItemDamage));
         entityItem.VelocityX = packet.VelocityX / 128.0D;
         entityItem.VelocityY = packet.VelocityY / 128.0D;
         entityItem.VelocityZ = packet.VelocityZ / 128.0D;
@@ -759,9 +761,9 @@ public class ClientNetworkHandler : NetHandler
 
     private void onEntitySpawn(EntitySpawnMessage packet)
     {
-        double x = packet.X / 32.0D;
-        double y = packet.Y / 32.0D;
-        double z = packet.Z / 32.0D;
+        var x = packet.X / 32.0D;
+        var y = packet.Y / 32.0D;
+        var z = packet.Z / 32.0D;
         Entity? entity = null;
         if (packet.EntityType == 63)
         {
@@ -783,9 +785,9 @@ public class ClientNetworkHandler : NetHandler
         // behavior's declared wire ids say which block this spawn carries.
         if (entity == null)
         {
-            foreach (ResourceLocation key in _worldClient.Content.EntityTypes.Keys)
+            foreach (var key in _worldClient.Content.EntityTypes.Keys)
             {
-                EntityType candidate = _worldClient.Content.EntityTypes.Get(key);
+                var candidate = _worldClient.Content.EntityTypes.Get(key);
                 if (candidate.Behaviors.Find<SettleAsBlockBehavior>() is not { } settle) continue;
                 if (settle.BlockForSpawnObjectId(packet.EntityType) is not { } carriedBlockId) continue;
 
@@ -799,9 +801,9 @@ public class ClientNetworkHandler : NetHandler
         // Minecarts do the same across their three kinds, and the kind decides how they are drawn.
         if (entity == null)
         {
-            foreach (ResourceLocation key in _worldClient.Content.EntityTypes.Keys)
+            foreach (var key in _worldClient.Content.EntityTypes.Keys)
             {
-                EntityType candidate = _worldClient.Content.EntityTypes.Get(key);
+                var candidate = _worldClient.Content.EntityTypes.Get(key);
                 if (candidate.Behaviors.Find<MinecartBehavior>() is not { } cart) continue;
                 if (cart.TypeForSpawnObjectId(packet.EntityType) is not { } cartType) continue;
 
@@ -829,14 +831,13 @@ public class ClientNetworkHandler : NetHandler
                 entity.SetVelocityClient(packet.VelocityX / 8000.0D, packet.VelocityY / 8000.0D, packet.VelocityZ / 8000.0D);
             }
         }
-
     }
 
     private void onGlobalEntitySpawn(GlobalEntitySpawnMessage packet)
     {
-        double x = packet.X / 32.0D;
-        double y = packet.Y / 32.0D;
-        double z = packet.Z / 32.0D;
+        var x = packet.X / 32.0D;
+        var y = packet.Y / 32.0D;
+        var z = packet.Z / 32.0D;
         Entity? ent = null;
         if (_worldClient.Content.EntityTypes.GetByGlobalSpawnId(packet.Type) is { } globalType)
         {
@@ -854,24 +855,23 @@ public class ClientNetworkHandler : NetHandler
             ent.ID = packet.EntityId;
             _worldClient.Entities.SpawnGlobalEntity(ent);
         }
-
     }
 
     private void onPaintingSpawn(PaintingSpawnMessage packet)
     {
-        Entity ent = HangingArtBehavior.HangAt(_worldClient, packet.X, packet.Y, packet.Z, packet.Direction, packet.Title);
+        var ent = HangingArtBehavior.HangAt(_worldClient, packet.X, packet.Y, packet.Z, packet.Direction, packet.Title);
         _worldClient.ForceEntity(packet.EntityId, ent);
     }
 
     private void onEntityVelocity(EntityVelocityMessage packet)
     {
-        Entity? ent = GetEntityById(packet.EntityId);
+        var ent = GetEntityById(packet.EntityId);
         ent?.SetVelocityClient(packet.MotionX / 8000.0D, packet.MotionY / 8000.0D, packet.MotionZ / 8000.0D);
     }
 
     private void onEntityData(EntityDataMessage packet)
     {
-        Entity? ent = GetEntityById(packet.EntityId);
+        var ent = GetEntityById(packet.EntityId);
         if (ent == null || packet.Data.Length == 0)
         {
             return;
@@ -882,11 +882,11 @@ public class ClientNetworkHandler : NetHandler
 
     private void onPlayerSpawn(PlayerSpawnMessage packet)
     {
-        double x = packet.X / 32.0D;
-        double y = packet.Y / 32.0D;
-        double z = packet.Z / 32.0D;
-        float rotation = packet.Yaw * 360 / 256.0F;
-        float pitch = packet.Pitch * 360 / 256.0F;
+        var x = packet.X / 32.0D;
+        var y = packet.Y / 32.0D;
+        var z = packet.Z / 32.0D;
+        var rotation = packet.Yaw * 360 / 256.0F;
+        var pitch = packet.Pitch * 360 / 256.0F;
         OtherPlayerEntity ent = new(_context.WorldHost.World, packet.Name);
         ent.PrevX = ent.LastTickX = ent.TrackedPosX = packet.X;
         ent.PrevY = ent.LastTickY = ent.TrackedPosY = packet.Y;
@@ -907,14 +907,14 @@ public class ClientNetworkHandler : NetHandler
 
     private void onEntityTeleport(EntityTeleportMessage packet)
     {
-        Entity? ent = GetEntityById(packet.EntityId);
+        var ent = GetEntityById(packet.EntityId);
         if (ent != null)
         {
             ent.TrackedPosX = packet.X;
             ent.TrackedPosY = packet.Y;
             ent.TrackedPosZ = packet.Z;
-            float yaw = packet.Yaw * 360 / 256.0F;
-            float pitch = packet.Pitch * 360 / 256.0F;
+            var yaw = packet.Yaw * 360 / 256.0F;
+            var pitch = packet.Pitch * 360 / 256.0F;
             RetargetEntity(ent, yaw, pitch);
         }
     }
@@ -954,7 +954,7 @@ public class ClientNetworkHandler : NetHandler
     /// </summary>
     private void onEntityMove(EntityMoveMessage packet)
     {
-        Entity? ent = GetEntityById(packet.EntityId);
+        var ent = GetEntityById(packet.EntityId);
         if (ent is null)
         {
             return;
@@ -969,8 +969,8 @@ public class ClientNetworkHandler : NetHandler
 
         // An unrotated update keeps whatever angle the entity already had, which is what the two
         // position-only packets did by having no rotation field to read.
-        float yaw = packet.Mask.HasFlag(EntityMoveMessage.Field.Rotated) ? packet.Yaw * 360 / 256.0F : ent.Yaw;
-        float pitch = packet.Mask.HasFlag(EntityMoveMessage.Field.Rotated) ? packet.Pitch * 360 / 256.0F : ent.Pitch;
+        var yaw = packet.Mask.HasFlag(EntityMoveMessage.Field.Rotated) ? packet.Yaw * 360 / 256.0F : ent.Yaw;
+        var pitch = packet.Mask.HasFlag(EntityMoveMessage.Field.Rotated) ? packet.Pitch * 360 / 256.0F : ent.Pitch;
 
         RetargetEntity(ent, yaw, pitch);
     }
@@ -991,7 +991,7 @@ public class ClientNetworkHandler : NetHandler
     {
         // Previously this called ent.SetPositionAndAngles(x, y, z, yaw, pitch);
 
-        ClientPlayerEntity? ent = _context.PlayerHost.Player;
+        var ent = _context.PlayerHost.Player;
         if (ent == null) return;
 
         ent.CameraOffset = 0.0F;
@@ -1025,34 +1025,29 @@ public class ClientNetworkHandler : NetHandler
             _terrainLoaded = true;
             _context.Navigator.Navigate(null);
         }
-
     }
 
-    private void onChunkStatusUpdate(ChunkStatusUpdateMessage packet)
-    {
-        _worldClient.UpdateChunk(packet.X, packet.Z, packet.Loaded);
-    }
+    private void onChunkStatusUpdate(ChunkStatusUpdateMessage packet) => _worldClient.UpdateChunk(packet.X, packet.Z, packet.Loaded);
 
     private void onChunkDeltaUpdate(ChunkDeltaUpdateMessage packet)
     {
-        Chunk chunk = _worldClient.BlockHost.GetChunk(packet.X, packet.Z);
-        int x = packet.X * 16;
-        int y = packet.Z * 16;
+        var chunk = _worldClient.BlockHost.GetChunk(packet.X, packet.Z);
+        var x = packet.X * 16;
+        var y = packet.Z * 16;
 
-        for (int i = 0; i < packet.Positions.Length; ++i)
+        for (var i = 0; i < packet.Positions.Length; ++i)
         {
-            short positions = packet.Positions[i];
-            int blockRawId = packet.BlockRawIds[i] & 255;
-            byte metadata = packet.BlockMetadata[i];
-            int blockX = positions >> 12 & 15;
-            int blockZ = positions >> 8 & 15;
-            int blockY = positions & 255;
+            var positions = packet.Positions[i];
+            var blockRawId = packet.BlockRawIds[i] & 255;
+            var metadata = packet.BlockMetadata[i];
+            var blockX = (positions >> 12) & 15;
+            var blockZ = (positions >> 8) & 15;
+            var blockY = positions & 255;
             chunk.SetBlock(blockX, blockY, blockZ, blockRawId, metadata);
 
             _worldClient.ClearBlockResets(blockX + x, blockY, blockZ + y, blockX + x, blockY, blockZ + y);
             _worldClient.setBlocksDirty(blockX + x, blockY, blockZ + y, blockX + x, blockY, blockZ + y);
         }
-
     }
 
     private void onRegionData(RegionDataMessage message)
@@ -1061,10 +1056,7 @@ public class ClientNetworkHandler : NetHandler
         _worldClient.HandleChunkDataUpdate(message.X, message.Y, message.Z, message.SizeX, message.SizeY, message.SizeZ, message.Decompress());
     }
 
-    private void onBlockUpdate(BlockUpdateMessage packet)
-    {
-        _worldClient.SetBlockWithMetaFromPacket(packet.X, packet.Y, packet.Z, packet.BlockRawId, packet.BlockMetadata);
-    }
+    private void onBlockUpdate(BlockUpdateMessage packet) => _worldClient.SetBlockWithMetaFromPacket(packet.X, packet.Y, packet.Z, packet.BlockRawId, packet.BlockMetadata);
 
     /// <summary>
     ///     Overwrites whole sections of a chunk's light with the server's copy.
@@ -1123,14 +1115,11 @@ public class ClientNetworkHandler : NetHandler
         }
     }
 
-    public void AddToSendQueue(Packet packet)
-    {
-        SendPacket(packet);
-    }
+    public void AddToSendQueue(Packet packet) => SendPacket(packet);
 
     private void onItemPickup(ItemPickupMessage packet)
     {
-        Entity? ent = GetEntityById(packet.EntityId);
+        var ent = GetEntityById(packet.EntityId);
         Entity collector = GetEntityById(packet.CollectorEntityId) as EntityLiving ?? _context.PlayerHost.Player;
 
         if (ent != null && collector != null)
@@ -1139,17 +1128,13 @@ public class ClientNetworkHandler : NetHandler
             _context.ParticleManager.AddSpecialParticle(new LegacyParticleAdapter(new EntityPickupFX(_context.WorldHost.World, ent, collector, -0.5F)));
             _worldClient.RemoveEntityFromWorld(packet.EntityId);
         }
-
     }
 
-    private void onChatMessage(ChatMessage packet)
-    {
-        _context.AddChatMessage(packet.Text);
-    }
+    private void onChatMessage(ChatMessage packet) => _context.AddChatMessage(packet.Text);
 
     private void onEntityAnimation(EntityAnimationMessage packet)
     {
-        Entity? ent = GetEntityById(packet.EntityId);
+        var ent = GetEntityById(packet.EntityId);
         if (ent != null)
         {
             if (packet.AnimationId == 1)
@@ -1171,20 +1156,18 @@ public class ClientNetworkHandler : NetHandler
                 if (ent is EntityPlayer player)
                     player.Spawn();
             }
-
         }
     }
 
     private void onPlayerSleepUpdate(PlayerSleepUpdateMessage packet)
     {
-        Entity? ent = GetEntityById(packet.PlayerId);
+        var ent = GetEntityById(packet.PlayerId);
         if (ent is EntityPlayer player)
         {
             if (packet.Status == 0)
             {
                 player.TrySleep(packet.X, packet.Y, packet.Z);
             }
-
         }
     }
 
@@ -1229,12 +1212,12 @@ public class ClientNetworkHandler : NetHandler
 
     private void onLivingEntitySpawn(LivingEntitySpawnMessage packet)
     {
-        double x = packet.X / 32.0D;
-        double y = packet.Y / 32.0D;
-        double z = packet.Z / 32.0D;
-        float yaw = packet.Yaw * 360 / 256.0F;
-        float pitch = packet.Pitch * 360 / 256.0F;
-        EntityLiving ent = (EntityLiving)_context.WorldHost.World.Content.EntityTypes
+        var x = packet.X / 32.0D;
+        var y = packet.Y / 32.0D;
+        var z = packet.Z / 32.0D;
+        var yaw = packet.Yaw * 360 / 256.0F;
+        var pitch = packet.Pitch * 360 / 256.0F;
+        var ent = (EntityLiving)_context.WorldHost.World.Content.EntityTypes
             .CreateByProtocolId(packet.Type, _context.WorldHost.World);
         ent.TrackedPosX = packet.X;
         ent.TrackedPosY = packet.Y;
@@ -1249,10 +1232,7 @@ public class ClientNetworkHandler : NetHandler
         ent.DataSynchronizer.ApplyChanges(new MemoryStream(packet.Data));
     }
 
-    private void onWorldTimeUpdate(WorldTimeUpdateMessage packet)
-    {
-        _context.WorldHost.World?.SetTime(packet.Time);
-    }
+    private void onWorldTimeUpdate(WorldTimeUpdateMessage packet) => _context.WorldHost.World?.SetTime(packet.Time);
 
     private void onPlayerSpawnPosition(PlayerSpawnPositionMessage packet)
     {
@@ -1263,7 +1243,7 @@ public class ClientNetworkHandler : NetHandler
     private void onEntityVehicle(EntityVehicleMessage packet)
     {
         object? rider = GetEntityById(packet.EntityId);
-        Entity? ent = GetEntityById(packet.VehicleEntityId);
+        var ent = GetEntityById(packet.VehicleEntityId);
         if (packet.EntityId == _context.PlayerHost.Player.ID)
         {
             rider = _context.PlayerHost.Player;
@@ -1277,9 +1257,8 @@ public class ClientNetworkHandler : NetHandler
 
     private void onEntityStatus(EntityStatusMessage packet)
     {
-        Entity? ent = GetEntityById(packet.EntityId);
+        var ent = GetEntityById(packet.EntityId);
         ent?.ProcessServerEntityStatus(packet.Status);
-
     }
 
     private Entity? GetEntityById(int entityId)
@@ -1292,10 +1271,7 @@ public class ClientNetworkHandler : NetHandler
         return entityId == _context.PlayerHost.Player.ID ? _context.PlayerHost.Player : _worldClient.GetEntity(entityId);
     }
 
-    private void onHealthUpdate(HealthUpdateMessage packet)
-    {
-        _context.PlayerHost.Player.setHealth(packet.HealthMp);
-    }
+    private void onHealthUpdate(HealthUpdateMessage packet) => _context.PlayerHost.Player.setHealth(packet.HealthMp);
 
     private void onPlayerRespawn(PlayerRespawnMessage packet)
     {
@@ -1330,7 +1306,7 @@ public class ClientNetworkHandler : NetHandler
 
     private void onOpenScreen(OpenScreenMessage packet)
     {
-        ClientPlayerEntity player = _context.PlayerHost.Player;
+        var player = _context.PlayerHost.Player;
         if (!player.GameMode.CanInteract) return;
 
         if (packet.ScreenHandlerId == 0)
@@ -1356,19 +1332,18 @@ public class ClientNetworkHandler : NetHandler
             player.openCraftingScreen(MathHelper.Floor(player.X), MathHelper.Floor(player.Y), MathHelper.Floor(player.Z));
             player.CurrentScreenHandler.SyncId = packet.SyncId;
         }
-
     }
 
     private void onScreenHandlerSlot(ScreenHandlerSlotMessage packet)
     {
-        ClientPlayerEntity? player = _context.PlayerHost.Player;
+        var player = _context.PlayerHost.Player;
         if (packet.SyncId == -1)
         {
             player.Inventory.SetCursorStack(packet.Stack);
         }
         else if (packet.SyncId == 0 && packet.Slot >= 36 && packet.Slot < 45)
         {
-            ItemStack? itemStack = player.PlayerScreenHandler.GetSlot(packet.Slot).getStack();
+            var itemStack = player.PlayerScreenHandler.GetSlot(packet.Slot).getStack();
             if (packet.Stack != null && (itemStack == null || itemStack.Count < packet.Stack.Count))
             {
                 packet.Stack.AnimationTime = 5;
@@ -1380,12 +1355,11 @@ public class ClientNetworkHandler : NetHandler
         {
             player.CurrentScreenHandler.setStackInSlot(packet.Slot, packet.Stack);
         }
-
     }
 
     private void onScreenHandlerAck(ScreenHandlerAckMessage packet)
     {
-        ClientPlayerEntity player = _context.PlayerHost.Player;
+        var player = _context.PlayerHost.Player;
         ScreenHandler? screenHandler = null;
         if (packet.SyncId == 0)
         {
@@ -1409,16 +1383,15 @@ public class ClientNetworkHandler : NetHandler
                 {
                     SyncId = packet.SyncId,
                     ActionType = packet.ActionType,
-                    Accepted = true,
+                    Accepted = true
                 });
             }
         }
-
     }
 
     private void onInventory(InventoryMessage packet)
     {
-        ClientPlayerEntity? player = _context.PlayerHost.Player;
+        var player = _context.PlayerHost.Player;
         if (packet.SyncId == 0)
         {
             player.PlayerScreenHandler.updateSlotStacks(packet.Contents);
@@ -1427,18 +1400,17 @@ public class ClientNetworkHandler : NetHandler
         {
             player.CurrentScreenHandler.updateSlotStacks(packet.Contents);
         }
-
     }
 
     private void onUpdateSign(UpdateSignMessage packet)
     {
         if (_context.WorldHost.World.BlockHost.IsPosLoaded(packet.X, packet.Y, packet.Z))
         {
-            BlockEntitySign? signEntity = _context.WorldHost.World.Entities.GetBlockEntity<BlockEntitySign>(packet.X, packet.Y, packet.Z);
+            var signEntity = _context.WorldHost.World.Entities.GetBlockEntity<BlockEntitySign>(packet.X, packet.Y, packet.Z);
 
             if (signEntity != null)
             {
-                for (int i = 0; i < 4; ++i)
+                for (var i = 0; i < 4; ++i)
                 {
                     signEntity.Texts[i] = packet.Lines[i];
                 }
@@ -1450,25 +1422,20 @@ public class ClientNetworkHandler : NetHandler
 
     private void onScreenHandlerProperty(ScreenHandlerPropertyMessage packet)
     {
-        ClientPlayerEntity player = _context.PlayerHost.Player;
+        var player = _context.PlayerHost.Player;
         if (player.CurrentScreenHandler != null && player.CurrentScreenHandler.SyncId == packet.SyncId)
         {
             player.CurrentScreenHandler.setProperty(packet.PropertyId, packet.Value);
         }
-
     }
 
     private void onEntityEquipment(EntityEquipmentMessage packet)
     {
-        Entity? ent = GetEntityById(packet.EntityId);
+        var ent = GetEntityById(packet.EntityId);
         ent?.SetEquipmentStack(packet.Slot, packet.ItemRawId, packet.ItemDamage);
-
     }
 
-    private void onPlayNoteSound(PlayNoteSoundMessage packet)
-    {
-        _context.WorldHost.World?.Broadcaster.PlayNote(packet.X, packet.Y, packet.Z, packet.Instrument, packet.Pitch);
-    }
+    private void onPlayNoteSound(PlayNoteSoundMessage packet) => _context.WorldHost.World?.Broadcaster.PlayNote(packet.X, packet.Y, packet.Z, packet.Instrument, packet.Pitch);
 
     private void onGameStateChange(GameStateChangeMessage packet)
     {
@@ -1510,19 +1477,15 @@ public class ClientNetworkHandler : NetHandler
         {
             _logger.LogInformation($"Unknown itemid: {packet.MapId}");
         }
-
     }
 
-    private void onWorldEvent(WorldEventMessage packet)
-    {
-        _context.WorldHost.World?.Broadcaster.WorldEvent(packet.EventId, packet.X, packet.Y, packet.Z, packet.Data);
-    }
+    private void onWorldEvent(WorldEventMessage packet) => _context.WorldHost.World?.Broadcaster.WorldEvent(packet.EventId, packet.X, packet.Y, packet.Z, packet.Data);
 
     private void onIncreaseStat(IncreaseStatMessage packet)
     {
         try
         {
-            StatBase stat = Stats.Stats.GetStatById(packet.StatId);
+            var stat = Stats.Stats.GetStatById(packet.StatId);
             ((EntityClientPlayerMP)_context.PlayerHost.Player).IncreaseRemoteStat(stat, packet.Amount);
         }
         catch (KeyNotFoundException ex)
@@ -1535,15 +1498,12 @@ public class ClientNetworkHandler : NetHandler
     {
         if (packet.Type == PlayerConnectionUpdateMessage.UpdateType.Leave)
         {
-            Entity? ent = _worldClient.GetEntity(packet.EntityId);
+            var ent = _worldClient.GetEntity(packet.EntityId);
             EntityRenderDispatcher.Instance.SkinManager?.Release(packet.Name);
         }
     }
 
-    private void onRegistryData(RegistryDataMessage packet)
-    {
-        _clientRegistries.Accumulate(packet);
-    }
+    private void onRegistryData(RegistryDataMessage packet) => _clientRegistries.Accumulate(packet);
 
     private void onFinishConfiguration(FinishConfigurationMessage packet)
     {
@@ -1557,6 +1517,7 @@ public class ClientNetworkHandler : NetHandler
             _netManager.disconnect("disconnect.catalog_mismatch");
             return;
         }
+
         _logger.LogInformation("Configuration finished");
 
         // After registry negotiation and before the server queues a single chunk. See OfferChunkCache.
@@ -1565,7 +1526,7 @@ public class ClientNetworkHandler : NetHandler
 
     private void onPlayerGameModeUpdate(PlayerGameModeUpdateMessage packet)
     {
-        Holder<GameMode>? gameMode = _clientRegistries.Get(RegistryKeys.GameModes,
+        var gameMode = _clientRegistries.Get(RegistryKeys.GameModes,
             new ResourceLocation(packet.GameModeNamespace, packet.GameModeName));
         if (gameMode is not null && _context.PlayerHost.Player is { } player)
         {
@@ -1577,8 +1538,5 @@ public class ClientNetworkHandler : NetHandler
         }
     }
 
-    public override bool isServerSide()
-    {
-        return false;
-    }
+    public override bool isServerSide() => false;
 }

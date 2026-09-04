@@ -115,6 +115,7 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
     {
         var meta = reader.GetBlockMeta(x, y, z);
         if (IsExtended(meta))
+        {
             switch (GetFacing(meta))
             {
                 case 0: block.SetRuntimeBoundingBox(0.0F, 0.25F, 0.0F, 1.0F, 1.0F, 1.0F); break;
@@ -124,14 +125,12 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
                 case 4: block.SetRuntimeBoundingBox(0.25F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F); break;
                 case 5: block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 12.0F / 16.0F, 1.0F, 1.0F); break;
             }
+        }
         else
             block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    public void SetupRenderBoundingBox(Block block)
-    {
-        block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-    }
+    public void SetupRenderBoundingBox(Block block) => block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
@@ -159,28 +158,21 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
         if (facing > Side.East) return block.TextureId;
 
         if (renderSide == facing)
+        {
             return !IsExtended(meta) &&
                    block.BoundingBox is { MinX: <= 0.0D, MinY: <= 0.0D, MinZ: <= 0.0D, MaxX: >= 1.0D, MaxY: >= 1.0D, MaxZ: >= 1.0D }
                 ? block.TextureId
                 : extensionSide;
+        }
 
         return renderSide == facing.OppositeFace() ? bottom : side;
     }
 
-    public static int GetFacing(int meta)
-    {
-        return meta & 7;
-    }
+    public static int GetFacing(int meta) => meta & 7;
 
-    public static bool IsExtended(int meta)
-    {
-        return (meta & 8) != 0;
-    }
+    public static bool IsExtended(int meta) => (meta & 8) != 0;
 
-    public int GetTopTexture()
-    {
-        return top;
-    }
+    public int GetTopTexture() => top;
 
     private void CheckExtended(IWorldContext ctx, int x, int y, int z)
     {

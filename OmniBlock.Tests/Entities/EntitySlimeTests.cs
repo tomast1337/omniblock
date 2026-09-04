@@ -1,4 +1,3 @@
-using System.Linq;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.NBT;
@@ -6,9 +5,9 @@ using OmniBlock.NBT;
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Covers the slime, the last mob whose size other code had to know it by. Size is now a declared
-/// synced property, so contact damage, loot and splitting all read it without a cast — and the
-/// behaviors that do are no longer slime-specific at all.
+///     Covers the slime, the last mob whose size other code had to know it by. Size is now a declared
+///     synced property, so contact damage, loot and splitting all read it without a cast — and the
+///     behaviors that do are no longer slime-specific at all.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntitySlimeTests
@@ -17,7 +16,7 @@ public sealed class EntitySlimeTests
 
     private static EntityLiving Slime(FakeWorldContext world, int size, double x = 8.5, double z = 8.5)
     {
-        EntityLiving slime = (EntityLiving)TestEntityCatalog.ByName("slime").Create(world);
+        var slime = (EntityLiving)TestEntityCatalog.ByName("slime").Create(world);
         Body.SetSize(slime, size);
         slime.SetPositionAndAngles(x, 65.0, z, 0f, 0f);
         return slime;
@@ -39,7 +38,7 @@ public sealed class EntitySlimeTests
     public void Size_decides_the_box_and_the_health()
     {
         FakeWorldContext world = new();
-        EntityLiving slime = Slime(world, 4);
+        var slime = Slime(world, 4);
 
         Assert.Equal(16, slime.Health);
         Assert.Equal(2.4F, slime.Width, 5);
@@ -58,7 +57,7 @@ public sealed class EntitySlimeTests
     public void Size_is_readable_as_a_plain_synced_property()
     {
         FakeWorldContext world = new();
-        EntityLiving slime = Slime(world, 2);
+        var slime = Slime(world, 2);
 
         Assert.Equal(2, slime.Synced<byte>("size")!.Value);
         Assert.Null(TestEntityCatalog.ByName("zombie").Create(world).Synced<byte>("size"));
@@ -71,10 +70,10 @@ public sealed class EntitySlimeTests
         FakeWorldContext world = new();
         HashSet<int> seen = [];
 
-        for (int attempt = 0; attempt < 200; attempt++)
+        for (var attempt = 0; attempt < 200; attempt++)
         {
-            EntityLiving slime = (EntityLiving)TestEntityCatalog.ByName("slime").Create(world);
-            int size = Body.Size(slime);
+            var slime = (EntityLiving)TestEntityCatalog.ByName("slime").Create(world);
+            var size = Body.Size(slime);
 
             Assert.Contains(size, new[] { 1, 2, 4 });
             Assert.Equal(size * size, slime.Health);
@@ -93,7 +92,7 @@ public sealed class EntitySlimeTests
     public void Size_round_trips_through_nbt_and_wins_over_the_saved_health()
     {
         FakeWorldContext world = new();
-        EntityLiving slime = Slime(world, 4);
+        var slime = Slime(world, 4);
         slime.Health = 3;
 
         NBTTagCompound nbt = new();
@@ -101,7 +100,7 @@ public sealed class EntitySlimeTests
 
         Assert.Equal(3, nbt.GetInteger("Size"));
 
-        EntityLiving loaded = (EntityLiving)TestEntityCatalog.ByName("slime").Create(world);
+        var loaded = (EntityLiving)TestEntityCatalog.ByName("slime").Create(world);
         loaded.Read(nbt);
 
         Assert.Equal(4, Body.Size(loaded));
@@ -116,13 +115,13 @@ public sealed class EntitySlimeTests
     public void A_dying_slime_splits_into_four_half_sized_copies()
     {
         FakeWorldContext world = new();
-        EntityLiving slime = Slime(world, 4);
+        var slime = Slime(world, 4);
         Assert.True(world.Entities.SpawnEntity(slime));
         slime.Health = 0;
 
         slime.MarkDead();
 
-        List<EntityLiving> children = world.Entities.Entities
+        var children = world.Entities.Entities
             .OfType<EntityLiving>()
             .Where(entity => !ReferenceEquals(entity, slime))
             .ToList();
@@ -138,11 +137,11 @@ public sealed class EntitySlimeTests
     public void A_grounded_slime_eventually_hops()
     {
         FakeWorldContext world = new();
-        EntityLiving slime = Slime(world, 2);
+        var slime = Slime(world, 2);
         Assert.True(world.Entities.SpawnEntity(slime));
         slime.OnGround = true;
 
-        for (int tick = 0; tick < 100; tick++)
+        for (var tick = 0; tick < 100; tick++)
         {
             Assert.True(slime.Behaviors.Ticker!.OnTickLiving(slime));
             if (!slime.Jumping) continue;
@@ -159,11 +158,11 @@ public sealed class EntitySlimeTests
     public void A_slime_in_the_air_never_hops()
     {
         FakeWorldContext world = new();
-        EntityLiving slime = Slime(world, 2);
+        var slime = Slime(world, 2);
         Assert.True(world.Entities.SpawnEntity(slime));
         slime.OnGround = false;
 
-        for (int tick = 0; tick < 100; tick++)
+        for (var tick = 0; tick < 100; tick++)
         {
             slime.Behaviors.Ticker!.OnTickLiving(slime);
             Assert.False(slime.Jumping);
@@ -175,9 +174,9 @@ public sealed class EntitySlimeTests
     public void Landing_squashes_the_slime_and_the_squash_relaxes()
     {
         FakeWorldContext world = new();
-        EntityLiving slime = Slime(world, 2);
+        var slime = Slime(world, 2);
         Assert.True(world.Entities.SpawnEntity(slime));
-        HoppingBehavior hop = slime.Behaviors.Find<HoppingBehavior>()!;
+        var hop = slime.Behaviors.Find<HoppingBehavior>()!;
 
         // Airborne, then touching down: the ticker compares the two.
         slime.OnGround = false;
@@ -185,7 +184,7 @@ public sealed class EntitySlimeTests
         slime.OnGround = true;
         hop.OnTickEnd(slime);
 
-        float squashed = hop.Squish(slime, 1.0F);
+        var squashed = hop.Squish(slime, 1.0F);
         Assert.True(squashed < 0.0F, "Landing should squash the slime.");
 
         hop.OnTick(slime);
@@ -199,14 +198,17 @@ public sealed class EntitySlimeTests
     public void Contact_damage_reads_the_size_without_knowing_what_a_slime_is()
     {
         FakeWorldContext world = new();
-        EntityLiving slime = Slime(world, 4);
+        var slime = Slime(world, 4);
         Assert.True(world.Entities.SpawnEntity(slime));
 
-        TestEntityPlayer player = new(world) { Name = "tester" };
+        TestEntityPlayer player = new(world)
+        {
+            Name = "tester"
+        };
         player.SetPositionAndAngles(9.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(player));
 
-        int before = player.Health;
+        var before = player.Health;
         Body.SetSize(slime, 1);
         slime.OnPlayerInteraction(player);
         Assert.Equal(before, player.Health);

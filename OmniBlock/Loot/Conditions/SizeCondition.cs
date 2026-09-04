@@ -1,5 +1,3 @@
-using OmniBlock.Entities;
-
 namespace OmniBlock.Loot.Conditions;
 
 /// <summary>

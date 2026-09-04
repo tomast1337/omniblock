@@ -1,19 +1,16 @@
-using System.Collections.Generic;
-using System.Linq;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
-using OmniBlock.Registries;
 
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Covers how a mob's configuration is reached: through <see cref="EntityType.Definition"/> rather
-/// than a static field, with protocol ids inside the signed byte the spawn packets transmit.
+///     Covers how a mob's configuration is reached: through <see cref="EntityType.Definition" /> rather
+///     than a static field, with protocol ids inside the signed byte the spawn packets transmit.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityRegistryDefinitionTests
 {
-    /// <summary>Shared with <see cref="EntityJsonDumperTests"/>, which dumps exactly these.</summary>
+    /// <summary>Shared with <see cref="EntityJsonDumperTests" />, which dumps exactly these.</summary>
     internal static readonly EntityType[] MobTypes =
     [
         TestEntityCatalog.ByName("creeper"), TestEntityCatalog.ByName("skeleton"), TestEntityCatalog.ByName("spider"), TestEntityCatalog.ByName("giant"),
@@ -23,9 +20,9 @@ public sealed class EntityRegistryDefinitionTests
     ];
 
     /// <summary>
-    /// Non-living entities that are nevertheless fully described by a JSON definition. They carry a
-    /// definition but no spawn category, so they are excluded from the mob-only assertions (living
-    /// base class, spawn budgets).
+    ///     Non-living entities that are nevertheless fully described by a JSON definition. They carry a
+    ///     definition but no spawn category, so they are excluded from the mob-only assertions (living
+    ///     base class, spawn budgets).
     /// </summary>
     private static readonly EntityType[] s_definedObjectTypes =
     [
@@ -42,14 +39,11 @@ public sealed class EntityRegistryDefinitionTests
     ];
 
     [Fact]
-    public void Every_mob_type_carries_a_definition()
-    {
-        Assert.All(MobTypes, type => Assert.NotNull(type.Definition));
-    }
+    public void Every_mob_type_carries_a_definition() => Assert.All(MobTypes, type => Assert.NotNull(type.Definition));
 
     /// <summary>
-    /// Defined objects are the same deal without a living body: configuration and behaviors from
-    /// JSON, no spawn category (nothing spawns them naturally), and no mob class.
+    ///     Defined objects are the same deal without a living body: configuration and behaviors from
+    ///     JSON, no spawn category (nothing spawns them naturally), and no mob class.
     /// </summary>
     [Fact]
     public void Defined_object_types_carry_a_definition_but_no_spawn_category()
@@ -66,7 +60,7 @@ public sealed class EntityRegistryDefinitionTests
     {
         Assert.All(s_nonMobTypes, type => Assert.Null(type.Definition));
 
-        InvalidOperationException error = Assert.Throws<InvalidOperationException>(() => TestEntityCatalog.ByName("player").RequireDefinition());
+        var error = Assert.Throws<InvalidOperationException>(() => TestEntityCatalog.ByName("player").RequireDefinition());
         Assert.Contains("Player", error.Message);
     }
 
@@ -84,40 +78,40 @@ public sealed class EntityRegistryDefinitionTests
     }
 
     /// <summary>
-    /// Biome spawn lists reference entities too.
-    /// <c>Biome</c>'s spawn lists and <c>NaturalSpawner.Monsters</c> construct mobs through raw
-    /// <c>w =&gt; new EntityXxx(w)</c> lambdas that never touch <see cref="TestEntityCatalog"/>, so they
-    /// would not surface a broken definition lookup as a compile error. This exercises that same
-    /// direct-construction path for every mob and asserts it resolves the registered definition.
+    ///     Biome spawn lists reference entities too.
+    ///     <c>Biome</c>'s spawn lists and <c>NaturalSpawner.Monsters</c> construct mobs through raw
+    ///     <c>w =&gt; new EntityXxx(w)</c> lambdas that never touch <see cref="TestEntityCatalog" />, so they
+    ///     would not surface a broken definition lookup as a compile error. This exercises that same
+    ///     direct-construction path for every mob and asserts it resolves the registered definition.
     /// </summary>
     [Fact]
     public void Direct_construction_resolves_definitions_for_every_mob()
     {
         FakeWorldContext world = new();
 
-        foreach (EntityType type in MobTypes)
+        foreach (var type in MobTypes)
         {
-            Entity entity = type.Create(world);
-            EntityLiving mob = Assert.IsAssignableFrom<EntityLiving>(entity);
+            var entity = type.Create(world);
+            var mob = Assert.IsAssignableFrom<EntityLiving>(entity);
             Assert.Same(type.Definition, mob.Definition);
         }
     }
 
     /// <summary>
-    /// Spawn category is declared, not inherited: no class in the hierarchy names one any more, so
-    /// the only thing left to check it against is what the mob is composed of. A farm animal carries
-    /// the grazing rules and a monster the hostile ones, and each must agree with the category its
-    /// JSON declares. The squid is checked by name because nothing but its definition says it lives
-    /// in water.
+    ///     Spawn category is declared, not inherited: no class in the hierarchy names one any more, so
+    ///     the only thing left to check it against is what the mob is composed of. A farm animal carries
+    ///     the grazing rules and a monster the hostile ones, and each must agree with the category its
+    ///     JSON declares. The squid is checked by name because nothing but its definition says it lives
+    ///     in water.
     /// </summary>
     [Fact]
     public void Spawn_category_agrees_with_the_behaviors_a_mob_carries()
     {
         string[] known = [CreatureKind.MonsterCategory, CreatureKind.CreatureCategory, CreatureKind.WaterCreatureCategory];
 
-        foreach (EntityType type in MobTypes)
+        foreach (var type in MobTypes)
         {
-            string category = type.RequireDefinition().SpawnCategory;
+            var category = type.RequireDefinition().SpawnCategory;
             Assert.Contains(category, known);
 
             if (type.Behaviors.Find<GrazingAnimalBehavior>() is not null)
@@ -138,9 +132,9 @@ public sealed class EntityRegistryDefinitionTests
     public void Category_counting_matches_counting_by_type()
     {
         FakeWorldContext world = new();
-        foreach (EntityType type in MobTypes)
+        foreach (var type in MobTypes)
         {
-            Entity entity = type.Create(world);
+            var entity = type.Create(world);
             entity.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
             Assert.True(world.Entities.SpawnEntity(entity));
         }
@@ -148,7 +142,7 @@ public sealed class EntityRegistryDefinitionTests
         // No class left to count by, so every category is counted against what the definitions
         // declare, which is what proves the manager buckets a mob by its own category rather than by
         // anything it inherits.
-        foreach (string category in new[] { CreatureKind.CreatureCategory, CreatureKind.MonsterCategory, CreatureKind.WaterCreatureCategory })
+        foreach (var category in new[] { CreatureKind.CreatureCategory, CreatureKind.MonsterCategory, CreatureKind.WaterCreatureCategory })
         {
             Assert.Equal(
                 MobTypes.Count(type => type.RequireDefinition().SpawnCategory == category),
@@ -159,11 +153,11 @@ public sealed class EntityRegistryDefinitionTests
     [Fact]
     public void Every_registered_protocol_id_fits_in_a_signed_byte()
     {
-        RuntimeEntityTypeRegistry registry = ContentRuntime.Current.EntityTypes;
+        var registry = ContentRuntime.Current.EntityTypes;
 
-        foreach (EntityType type in MobTypes.Concat(s_definedObjectTypes).Concat(s_nonMobTypes))
+        foreach (var type in MobTypes.Concat(s_definedObjectTypes).Concat(s_nonMobTypes))
         {
-            int rawId = registry.GetProtocolId(type);
+            var rawId = registry.GetProtocolId(type);
             Assert.InRange(rawId, sbyte.MinValue, sbyte.MaxValue);
             Assert.Equal(rawId, (sbyte)rawId);
         }
@@ -172,7 +166,7 @@ public sealed class EntityRegistryDefinitionTests
     [Fact]
     public void Protocol_ids_keep_their_vanilla_values()
     {
-        RuntimeEntityTypeRegistry registry = ContentRuntime.Current.EntityTypes;
+        var registry = ContentRuntime.Current.EntityTypes;
         Dictionary<EntityType, int> expected = new()
         {
             [TestEntityCatalog.ByName("creeper")] = 50,
@@ -191,7 +185,7 @@ public sealed class EntityRegistryDefinitionTests
             [TestEntityCatalog.ByName("wolf")] = 95
         };
 
-        foreach ((EntityType type, int rawId) in expected)
+        foreach (var (type, rawId) in expected)
         {
             Assert.Equal(rawId, registry.GetProtocolId(type));
         }
@@ -202,8 +196,8 @@ public sealed class EntityRegistryDefinitionTests
     {
         FakeWorldContext world = new();
 
-        Assert.True(TestEntityCatalog.TryCreate("zombie", world, out Entity byName));
-        Assert.True(TestEntityCatalog.TryCreate(54, world, out Entity byRawId));
+        Assert.True(TestEntityCatalog.TryCreate("zombie", world, out var byName));
+        Assert.True(TestEntityCatalog.TryCreate(54, world, out var byRawId));
 
         // Both routes land on the same registered type, though neither has a class of its own.
         Assert.Same(TestEntityCatalog.ByName("zombie"), byName.Type);

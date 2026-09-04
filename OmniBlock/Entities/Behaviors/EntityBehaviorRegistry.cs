@@ -1,5 +1,5 @@
 using System.Text.Json;
-using OmniBlock.Items;
+using System.Text.Json.Serialization;
 using OmniBlock.Loot;
 
 namespace OmniBlock.Entities.Behaviors;
@@ -13,7 +13,6 @@ public sealed class EntityBehaviorProviderRegistry : IEntityBehaviorProviderRegi
 {
     public delegate object BehaviorFactory(in EntityBehaviorContext context);
 
-    private readonly Dictionary<ResourceLocation, IEntityBehaviorProvider> _providers = [];
     private readonly Dictionary<string, BehaviorFactory> _builtIns = new(StringComparer.Ordinal)
     {
         // Attack
@@ -27,7 +26,7 @@ public sealed class EntityBehaviorProviderRegistry : IEntityBehaviorProviderRegi
             c.Float("min_range", 2.0F),
             c.Float("max_range", 6.0F),
             c.Int("chance_one_in", 10),
-            c.Json.TryGetProperty("fallback", out JsonElement fallback)
+            c.Json.TryGetProperty("fallback", out var fallback)
                 ? (IEntityAttackBehavior)c.Build(fallback)
                 : null),
 
@@ -52,7 +51,7 @@ public sealed class EntityBehaviorProviderRegistry : IEntityBehaviorProviderRegi
         ["contact_damage"] = (in c) => new ContactDamageBehavior(
             c.Double("reach_per_size", 0.6D),
             c.Int("minimum_size", 2),
-            c.Json.TryGetProperty("sound", out JsonElement s) ? s.GetString() ?? "" : ""),
+            c.Json.TryGetProperty("sound", out var s) ? s.GetString() ?? "" : ""),
 
         // Attack + Ticker + Lifecycle, all moving one countdown
         ["fuse"] = (in c) => new FuseBehavior(c),
@@ -64,7 +63,7 @@ public sealed class EntityBehaviorProviderRegistry : IEntityBehaviorProviderRegi
         ["light_seeking_path"] = (in c) => new LightSeekingPathBehavior(),
         ["wall_climb"] = (in c) => new WallClimbBehavior(),
         ["spawn_ignoring_light"] = (in c) => new SpawnIgnoringLightBehavior(
-            !c.Json.TryGetProperty("requires_difficulty", out JsonElement d) || d.GetBoolean(),
+            !c.Json.TryGetProperty("requires_difficulty", out var d) || d.GetBoolean(),
             c.Int("chance_one_in", 1)),
         ["flying_movement"] = (in c) => new FlyingMovementBehavior(),
         ["spawn_in_fluid"] = (in c) => new SpawnInFluidBehavior(),
@@ -121,27 +120,11 @@ public sealed class EntityBehaviorProviderRegistry : IEntityBehaviorProviderRegi
         ["lightning_conversion"] = (in c) => new LightningConversionBehavior(ValidateEntity(c, "becomes"))
     };
 
-    /// <summary>
-    ///     Resolves an achievement by its short key (<c>"flyPig"</c>). Achievements have no registry
-    ///     of their own, so this matches on the translation key they are all built from.
-    /// </summary>
-    internal static Achievement Achievement(string key) =>
-        Achievements.AllAchievements.Find(a => a.TranslationKey == "achievement." + key)
-        ?? throw new ArgumentException($"Unknown achievement '{key}'.", nameof(key));
-
-    private static string ValidateEntity(in EntityBehaviorContext context, string property)
-    {
-        string name = context.Json.GetProperty(property).GetString()
-                      ?? throw new ArgumentException($"Entity reference '{property}' is null.");
-        ResourceLocation key = ResourceLocation.Parse(name);
-        if (!context.EntityTypes.TryGet(key, out _))
-            throw new KeyNotFoundException($"Unknown entity type '{key}'.");
-        return key.ToString();
-    }
+    private readonly Dictionary<ResourceLocation, IEntityBehaviorProvider> _providers = [];
 
     public EntityBehaviorProviderRegistry()
     {
-        foreach (string name in _builtIns.Keys)
+        foreach (var name in _builtIns.Keys)
             Register(new ResourceLocation(Namespace.OmniBlock, name), new BuiltInProvider(this, name));
 
         RegisterTyped<PrimedExplosiveDefinition>("primed_explosive");
@@ -165,9 +148,27 @@ public sealed class EntityBehaviorProviderRegistry : IEntityBehaviorProviderRegi
     }
 
     public object Build(ResourceLocation type, JsonElement definition, in EntityBehaviorBuildContext context) =>
-        _providers.TryGetValue(type, out IEntityBehaviorProvider? provider)
+        _providers.TryGetValue(type, out var provider)
             ? provider.Build(type, definition, context)
             : throw new ArgumentException($"Unknown entity behavior provider '{type}'.");
+
+    /// <summary>
+    ///     Resolves an achievement by its short key (<c>"flyPig"</c>). Achievements have no registry
+    ///     of their own, so this matches on the translation key they are all built from.
+    /// </summary>
+    internal static Achievement Achievement(string key) =>
+        Achievements.AllAchievements.Find(a => a.TranslationKey == "achievement." + key)
+        ?? throw new ArgumentException($"Unknown achievement '{key}'.", nameof(key));
+
+    private static string ValidateEntity(in EntityBehaviorContext context, string property)
+    {
+        var name = context.Json.GetProperty(property).GetString()
+                   ?? throw new ArgumentException($"Entity reference '{property}' is null.");
+        var key = ResourceLocation.Parse(name);
+        if (!context.EntityTypes.TryGet(key, out _))
+            throw new KeyNotFoundException($"Unknown entity type '{key}'.");
+        return key.ToString();
+    }
 
     private void RegisterTyped<T>(string name) where T : EntityBehaviorDefinition
     {
@@ -178,7 +179,7 @@ public sealed class EntityBehaviorProviderRegistry : IEntityBehaviorProviderRegi
     private object BuildBuiltIn(string name, JsonElement definition, in EntityBehaviorBuildContext context)
     {
         var legacyContext = new EntityBehaviorContext(definition, context);
-        return _builtIns.TryGetValue(name, out BehaviorFactory? factory)
+        return _builtIns.TryGetValue(name, out var factory)
             ? factory(legacyContext)
             : throw new ArgumentException($"Unknown entity behavior provider 'omniblock:{name}'.");
     }
@@ -194,13 +195,16 @@ public sealed class EntityBehaviorProviderRegistry : IEntityBehaviorProviderRegi
         private static readonly JsonSerializerOptions s_options = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-            Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+            Converters =
+            {
+                new JsonStringEnumConverter()
+            }
         };
 
         public object Build(ResourceLocation type, JsonElement definition, in EntityBehaviorBuildContext context)
         {
-            T parsed = definition.Deserialize<T>(s_options)
-                       ?? throw new ArgumentException($"Entity behavior '{type}' deserialized to null.");
+            var parsed = definition.Deserialize<T>(s_options)
+                         ?? throw new ArgumentException($"Entity behavior '{type}' deserialized to null.");
             return parsed.Build(context);
         }
     }

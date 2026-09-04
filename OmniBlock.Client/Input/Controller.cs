@@ -18,7 +18,17 @@ public static class Controller
     private static readonly bool[] s_lastButtons = new bool[15];
 
     private static readonly Queue<ControllerEvent> s_eventQueue = new();
-    private static ControllerEvent s_current_event = new();
+    private static ControllerEvent s_current_event;
+
+    public static float LeftStickX => GetAxis(0);
+    public static float LeftStickY => GetAxis(1);
+    public static float RightStickX => GetAxis(2);
+    public static float RightStickY => GetAxis(3);
+    public static float LeftTrigger => (GetAxis(4) + 1.0f) / 2.0f;
+    public static float RightTrigger => (GetAxis(5) + 1.0f) / 2.0f;
+
+    public static float LeftStickDeadzone => 0.1f;
+    public static float RightStickDeadzone => 0.1f;
 
     public static unsafe void Create(Glfw glfwApi, WindowHandle* windowHandle)
     {
@@ -27,12 +37,12 @@ public static class Controller
         s_window = windowHandle;
         s_created = true;
 
-        for (int i = 0; i < 16; i++)
+        for (var i = 0; i < 16; i++)
         {
             if (s_glfw.JoystickPresent(i))
             {
-                bool isGamepad = s_glfw.JoystickIsGamepad(i);
-                string name = s_glfw.GetJoystickName(i);
+                var isGamepad = s_glfw.JoystickIsGamepad(i);
+                var name = s_glfw.GetJoystickName(i);
 
                 if (isGamepad)
                 {
@@ -60,21 +70,21 @@ public static class Controller
             return;
         }
 
-        bool success = s_glfw.GetGamepadState(s_gamepadJoystickIndex, out GamepadState state);
+        var success = s_glfw.GetGamepadState(s_gamepadJoystickIndex, out var state);
         if (!success)
         {
             return;
         }
 
-        for (int i = 0; i < 6; i++)
+        for (var i = 0; i < 6; i++)
         {
             s_axes[i] = state.Axes[i];
         }
 
-        for (int i = 0; i < 15; i++)
+        for (var i = 0; i < 15; i++)
         {
             s_lastButtons[i] = s_buttons[i];
-            bool isDown = state.Buttons[i] == 1;
+            var isDown = state.Buttons[i] == 1;
             s_buttons[i] = isDown;
 
             if (isDown != s_lastButtons[i])
@@ -113,7 +123,7 @@ public static class Controller
 
     public static bool IsButtonDown(GamepadButton button)
     {
-        int btnIdx = (int)button;
+        var btnIdx = (int)button;
         if (!s_created || btnIdx < 0 || btnIdx >= 15) return false;
         return s_buttons[btnIdx];
     }
@@ -122,7 +132,7 @@ public static class Controller
     {
         if (!s_created || axisIdx < 0 || axisIdx >= 6) return 0f;
 
-        float axisValue = s_axes[axisIdx];
+        var axisValue = s_axes[axisIdx];
 
         if (axisIdx == 0 || axisIdx == 1)
         {
@@ -146,28 +156,18 @@ public static class Controller
         return 0.0f;
     }
 
-    public static float LeftStickX => GetAxis(0);
-    public static float LeftStickY => GetAxis(1);
-    public static float RightStickX => GetAxis(2);
-    public static float RightStickY => GetAxis(3);
-    public static float LeftTrigger => (GetAxis(4) + 1.0f) / 2.0f;
-    public static float RightTrigger => (GetAxis(5) + 1.0f) / 2.0f;
-
-    public static float LeftStickDeadzone => 0.1f;
-    public static float RightStickDeadzone => 0.1f;
-
     public static bool IsActive()
     {
         if (!IsGamepadConnected()) return false;
 
-        float deadzone = 0.2f;
+        var deadzone = 0.2f;
         if (Math.Abs(GetAxis(0)) > deadzone || Math.Abs(GetAxis(1)) > deadzone ||
             Math.Abs(GetAxis(2)) > deadzone || Math.Abs(GetAxis(3)) > deadzone)
         {
             return true;
         }
 
-        for (int i = 0; i < 15; i++)
+        for (var i = 0; i < 15; i++)
         {
             if (s_buttons[i]) return true;
         }

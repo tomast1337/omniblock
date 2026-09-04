@@ -2,8 +2,6 @@ using System.Collections.Frozen;
 using System.Text.Json;
 using OmniBlock.Blocks;
 using OmniBlock.Blocks.Materials;
-using OmniBlock.Entities;
-using OmniBlock.Entities.Behaviors;
 
 namespace OmniBlock.Items.Behaviors;
 
@@ -11,16 +9,19 @@ namespace OmniBlock.Items.Behaviors;
 public sealed class ItemBehaviorProviderRegistry : IItemBehaviorProviderRegistry
 {
     public delegate IItemBehavior BehaviorFactory(JsonElement definition, ItemBuildContext context);
+
     private readonly FrozenDictionary<ResourceLocation, BehaviorFactory> _factories;
 
-    public ItemBehaviorProviderRegistry() : this(BuiltInFactories()) { }
+    public ItemBehaviorProviderRegistry() : this(BuiltInFactories())
+    {
+    }
 
     public ItemBehaviorProviderRegistry(IEnumerable<KeyValuePair<ResourceLocation, BehaviorFactory>> factories) =>
         _factories = factories.ToFrozenDictionary();
 
     public IItemBehavior Build(ResourceLocation type, JsonElement definition, in ItemBuildContext context)
     {
-        if (!_factories.TryGetValue(type, out BehaviorFactory? factory))
+        if (!_factories.TryGetValue(type, out var factory))
             throw new ArgumentException($"Unknown item behavior type '{type}'.");
         return factory(definition, context);
     }
@@ -39,21 +40,25 @@ public sealed class ItemBehaviorProviderRegistry : IItemBehaviorProviderRegistry
         [Key("bow")] = static (_, c) => new BowBehavior(c.ResolveItem(Key("arrow"))),
         [Key("bucket")] = static (j, c) => BuildBucket(j, c),
         [Key("minecart")] = static (j, _) => new MinecartBehavior(Int(j, "CartType")),
-        [Key("boat")] = static (_, _) => new BoatBehavior(), [Key("bed")] = static (_, _) => new BedBehavior(),
+        [Key("boat")] = static (_, _) => new BoatBehavior(),
+        [Key("bed")] = static (_, _) => new BedBehavior(),
         [Key("door")] = static (j, c) => new DoorBehavior(c.ResolveBlockMaterial(String(j, "DoorMaterial", "wood") == "iron" ? "omniblock:metal" : "omniblock:wood")),
         [Key("seeds")] = static (j, c) => BuildSeeds(j, c),
         [Key("place_block")] = static (j, c) => BuildPlaceBlock(j, c),
         [Key("throwable")] = static (j, c) => BuildThrowable(j, c),
         [Key("dye")] = static (j, c) => new DyeBehavior([.. j.GetProperty("Textures").EnumerateArray().Select(value => c.ResolveItemTexture(value.GetString()!))]),
-        [Key("coal")] = static (_, _) => new CoalBehavior(), [Key("record")] = static (j, _) => new RecordBehavior(String(j, "RecordName")),
-        [Key("redstone")] = static (_, _) => new RedstoneBehavior(), [Key("sign")] = static (_, _) => new SignBehavior(),
-        [Key("painting")] = static (_, _) => new PaintingBehavior(), [Key("saddle")] = static (_, _) => new SaddleBehavior(),
+        [Key("coal")] = static (_, _) => new CoalBehavior(),
+        [Key("record")] = static (j, _) => new RecordBehavior(String(j, "RecordName")),
+        [Key("redstone")] = static (_, _) => new RedstoneBehavior(),
+        [Key("sign")] = static (_, _) => new SignBehavior(),
+        [Key("painting")] = static (_, _) => new PaintingBehavior(),
+        [Key("saddle")] = static (_, _) => new SaddleBehavior(),
         [Key("map")] = static (_, _) => new MapBehavior()
     };
 
     private static IItemBehavior BuildTool(JsonElement json, ItemBuildContext context)
     {
-        ToolMaterial material = context.ResolveToolMaterial(ResourceLocation.Parse(String(json, "Material")));
+        var material = context.ResolveToolMaterial(ResourceLocation.Parse(String(json, "Material")));
         return String(json, "Kind", "shovel") switch
         {
             "pickaxe" => BuildPickaxe(material, context),
@@ -66,7 +71,7 @@ public sealed class ItemBehaviorProviderRegistry : IItemBehaviorProviderRegistry
 
     private static IItemBehavior BuildBucket(JsonElement json, ItemBuildContext context)
     {
-        int liquid = String(json, "Liquid", "empty") switch
+        var liquid = String(json, "Liquid", "empty") switch
         {
             "water" => context.ResolveBlock("omniblock:flowing_water").Id,
             "lava" => context.ResolveBlock("omniblock:flowing_lava").Id,
@@ -82,38 +87,38 @@ public sealed class ItemBehaviorProviderRegistry : IItemBehaviorProviderRegistry
 
     private static IItemBehavior BuildSeeds(JsonElement json, ItemBuildContext context)
     {
-        Block block = context.ResolveBlock(ResourceLocation.Parse(String(json, "PlacesBlock")));
+        var block = context.ResolveBlock(ResourceLocation.Parse(String(json, "PlacesBlock")));
         return new SeedsBehavior(() => block.Id);
     }
 
     private static IItemBehavior BuildPlaceBlock(JsonElement json, ItemBuildContext context)
     {
-        Block block = context.ResolveBlock(ResourceLocation.Parse(String(json, "PlacesBlock")));
+        var block = context.ResolveBlock(ResourceLocation.Parse(String(json, "PlacesBlock")));
         return new PlaceBlockBehavior(block);
     }
 
     private static IItemBehavior BuildThrowable(JsonElement json, ItemBuildContext context)
     {
-        ResourceLocation key = ResourceLocation.Parse(String(json, "ProjectileType", "snowball"));
+        var key = ResourceLocation.Parse(String(json, "ProjectileType", "snowball"));
         context.ValidateEntityType(key);
         return new ThrowableBehavior((world, _) => context.ResolveEntityType(key).Create(world));
     }
 
     private static IItemBehavior BuildShovel(ToolMaterial material, ItemBuildContext context)
     {
-        Block snow = context.ResolveBlock("omniblock:snow");
-        Block snowBlock = context.ResolveBlock("omniblock:snow_block");
+        var snow = context.ResolveBlock("omniblock:snow");
+        var snowBlock = context.ResolveBlock("omniblock:snow_block");
         return new ToolBehavior(material, 1, ResolveBlocks(context,
-            "grass_block", "dirt", "sand", "gravel", "snow", "snow_block", "clay", "farmland"),
+                "grass_block", "dirt", "sand", "gravel", "snow", "snow_block", "clay", "farmland"),
             block => block == snow || block == snowBlock);
     }
 
     private static IItemBehavior BuildPickaxe(ToolMaterial material, ItemBuildContext context)
     {
-        Block obsidian = context.ResolveBlock("omniblock:obsidian");
-        Block[] levelTwo = ResolveBlocks(context, "diamond_block", "diamond_ore", "gold_block", "gold_ore", "redstone_ore", "lit_redstone_ore");
-        Block[] levelOne = ResolveBlocks(context, "iron_block", "iron_ore", "lapis_block", "lapis_ore");
-        Block[] effective = ResolveBlocks(context, "cobblestone", "double_slab", "slab", "stone", "sandstone",
+        var obsidian = context.ResolveBlock("omniblock:obsidian");
+        var levelTwo = ResolveBlocks(context, "diamond_block", "diamond_ore", "gold_block", "gold_ore", "redstone_ore", "lit_redstone_ore");
+        var levelOne = ResolveBlocks(context, "iron_block", "iron_ore", "lapis_block", "lapis_ore");
+        var effective = ResolveBlocks(context, "cobblestone", "double_slab", "slab", "stone", "sandstone",
             "mossy_cobblestone", "iron_ore", "iron_block", "coal_ore", "gold_block", "gold_ore", "diamond_ore",
             "diamond_block", "ice", "netherrack", "lapis_ore", "lapis_block", "redstone_ore", "cobblestone_stairs");
         return new ToolBehavior(material, 2, effective, block =>
@@ -127,10 +132,13 @@ public sealed class ItemBehaviorProviderRegistry : IItemBehaviorProviderRegistry
         [.. names.Select(name => context.ResolveBlock(new ResourceLocation(Namespace.OmniBlock, name)))];
 
     private static ResourceLocation Key(string path) => new(Namespace.OmniBlock, path);
+
     private static string String(JsonElement json, string property, string? fallback = null) =>
-        json.TryGetProperty(property, out JsonElement value) ? value.GetString()! : fallback ?? throw new ArgumentException($"Item behavior requires '{property}'.");
+        json.TryGetProperty(property, out var value) ? value.GetString()! : fallback ?? throw new ArgumentException($"Item behavior requires '{property}'.");
+
     private static string? OptionalString(JsonElement json, string property) =>
-        json.TryGetProperty(property, out JsonElement value) && value.ValueKind != JsonValueKind.Null ? value.GetString() : null;
+        json.TryGetProperty(property, out var value) && value.ValueKind != JsonValueKind.Null ? value.GetString() : null;
+
     private static int Int(JsonElement json, string property) => json.GetProperty(property).GetInt32();
-    private static bool Bool(JsonElement json, string property) => json.TryGetProperty(property, out JsonElement value) && value.GetBoolean();
+    private static bool Bool(JsonElement json, string property) => json.TryGetProperty(property, out var value) && value.GetBoolean();
 }

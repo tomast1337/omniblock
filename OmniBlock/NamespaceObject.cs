@@ -22,7 +22,7 @@ public partial class Namespace
 
     public static explicit operator Namespace?(string n)
     {
-        TryGetValue(n, out Namespace? asset);
+        TryGetValue(n, out var asset);
         return asset;
     }
 }

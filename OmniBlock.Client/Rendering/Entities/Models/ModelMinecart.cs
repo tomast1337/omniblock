@@ -14,8 +14,5 @@ public sealed class ModelMinecart : BbModelEntityModel
         GetPart("back").RotateAngleY = MathF.PI;
     }
 
-    public override void SetRotationAngles(float limbSwing, float limbSwingAmount, float animationProgress, float netHeadYaw, float headPitch, float scale)
-    {
-        _floor.RotationPointY = 4f - animationProgress;
-    }
+    public override void SetRotationAngles(float limbSwing, float limbSwingAmount, float animationProgress, float netHeadYaw, float headPitch, float scale) => _floor.RotationPointY = 4f - animationProgress;
 }

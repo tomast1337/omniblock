@@ -39,10 +39,7 @@ public sealed class PressurePlateBehavior(PressurePlateActiviationRule activatio
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.Id);
     }
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext context)
-    {
-        return context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z);
-    }
+    public bool CanPlaceAt(Block block, CanPlaceAtContext context) => context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z);
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
@@ -63,10 +60,7 @@ public sealed class PressurePlateBehavior(PressurePlateActiviationRule activatio
             block.SetRuntimeBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, 1.0F / 16.0F, 1.0F - EdgeInset);
     }
 
-    public void SetupRenderBoundingBox(Block block)
-    {
-        block.SetRuntimeBoundingBox(0.5F - HalfWidth, 0.5F - HalfHeight, 0.5F - HalfDepth, 0.5F + HalfWidth, 0.5F + HalfHeight, 0.5F + HalfDepth);
-    }
+    public void SetupRenderBoundingBox(Block block) => block.SetRuntimeBoundingBox(0.5F - HalfWidth, 0.5F - HalfHeight, 0.5F - HalfDepth, 0.5F + HalfWidth, 0.5F + HalfHeight, 0.5F + HalfDepth);
 
     public void OnTick(Block block, OnTickEvent @event)
     {
@@ -74,20 +68,11 @@ public sealed class PressurePlateBehavior(PressurePlateActiviationRule activatio
         if (wasPressed) UpdatePlateState(block, @event.World, @event.X, @event.Y, @event.Z, wasPressed);
     }
 
-    public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
-    {
-        return reader.GetBlockMeta(x, y, z) > 0;
-    }
+    public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => reader.GetBlockMeta(x, y, z) > 0;
 
-    public bool IsStrongPoweringSide(Block block, IBlockReader world, int x, int y, int z, int side)
-    {
-        return world.GetBlockMeta(x, y, z) != 0 && side == 1;
-    }
+    public bool IsStrongPoweringSide(Block block, IBlockReader world, int x, int y, int z, int side) => world.GetBlockMeta(x, y, z) != 0 && side == 1;
 
-    public bool CanEmitRedstonePower(Block block)
-    {
-        return true;
-    }
+    public bool CanEmitRedstonePower(Block block) => true;
 
     private void UpdatePlateState(Block block, IWorldContext ctx, int x, int y, int z, bool wasPressed)
     {

@@ -23,5 +23,7 @@ internal static class RenderMetrics
     public static readonly MetricHandle<int> EntitiesTotal = MetricRegistry.Register<int>("render:entities.total");
     public static readonly MetricHandle<int> ParticlesActive = MetricRegistry.Register<int>("render:particles.active");
 
-    static RenderMetrics() { }
+    static RenderMetrics()
+    {
+    }
 }

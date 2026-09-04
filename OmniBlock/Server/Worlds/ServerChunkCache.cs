@@ -1,22 +1,22 @@
+using Microsoft.Extensions.Logging;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Storage.RegionFormat;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Server.Worlds;
 
 public class ServerChunkCache : IChunkSource
 {
-    private readonly ILogger<ServerChunkCache> _logger = Log.Instance.For<ServerChunkCache>();
+    private readonly List<Chunk> _chunks = [];
+    private readonly Dictionary<int, Chunk> _chunksByPos = [];
     private readonly HashSet<int> _chunksToUnload = [];
     private readonly Chunk _empty;
     private readonly IChunkSource _generator;
+    private readonly ILogger<ServerChunkCache> _logger = Log.Instance.For<ServerChunkCache>();
     private readonly IChunkStorage _storage;
-    private int _generationScopes;
-    private readonly Dictionary<int, Chunk> _chunksByPos = [];
-    private readonly List<Chunk> _chunks = [];
     private readonly ServerWorld _world;
+    private int _generationScopes;
 
     public ServerChunkCache(ServerWorld world, IChunkStorage storage, IChunkSource generator)
     {
@@ -27,29 +27,14 @@ public class ServerChunkCache : IChunkSource
     }
 
 
-    public bool IsChunkLoaded(int x, int z)
-    {
-        return _chunksByPos.ContainsKey(ChunkPos.GetHashCode(x, z));
-    }
-
-    public void isLoaded(int chunkX, int chunkZ)
-    {
-        Vec3I spawnPos = _world.Properties.GetSpawnPos();
-        int deltaX = chunkX * 16 + 8 - spawnPos.X;
-        int deltaZ = chunkZ * 16 + 8 - spawnPos.Z;
-        short spawnRadius = 128;
-        if (deltaX < -spawnRadius || deltaX > spawnRadius || deltaZ < -spawnRadius || deltaZ > spawnRadius)
-        {
-            _chunksToUnload.Add(ChunkPos.GetHashCode(chunkX, chunkZ));
-        }
-    }
+    public bool IsChunkLoaded(int x, int z) => _chunksByPos.ContainsKey(ChunkPos.GetHashCode(x, z));
 
 
     public Chunk LoadChunk(int chunkX, int chunkZ)
     {
-        int hash = ChunkPos.GetHashCode(chunkX, chunkZ);
+        var hash = ChunkPos.GetHashCode(chunkX, chunkZ);
         _chunksToUnload.Remove(hash);
-        _chunksByPos.TryGetValue(hash, out Chunk? chunk);
+        _chunksByPos.TryGetValue(hash, out var chunk);
         if (chunk == null)
         {
             chunk = LoadChunkFromStorage(chunkX, chunkZ);
@@ -115,7 +100,7 @@ public class ServerChunkCache : IChunkSource
 
     public Chunk GetChunk(int chunkX, int chunkZ)
     {
-        _chunksByPos.TryGetValue(ChunkPos.GetHashCode(chunkX, chunkZ), out Chunk? chunk);
+        _chunksByPos.TryGetValue(ChunkPos.GetHashCode(chunkX, chunkZ), out var chunk);
         if (chunk == null)
         {
             return !_world.IsFindingSpawnPoint && _generationScopes == 0 ? _empty : LoadChunk(chunkX, chunkZ);
@@ -124,64 +109,10 @@ public class ServerChunkCache : IChunkSource
         return chunk;
     }
 
-    private Chunk? LoadChunkFromStorage(int chunkX, int chunkZ)
-    {
-        if (_storage == null)
-        {
-            return null;
-        }
-        else
-        {
-            try
-            {
-                Chunk loadedChunk = _storage.LoadChunk(_world, chunkX, chunkZ);
-                loadedChunk?.LastSaveTime = _world.GetTime();
-
-                return loadedChunk;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Exception");
-                return null;
-            }
-        }
-    }
-
-    private void saveEntities(Chunk chunk)
-    {
-        if (_storage != null)
-        {
-            try
-            {
-                _storage.SaveEntities(_world, chunk);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Exception");
-            }
-        }
-    }
-
-    private void saveChunk(Chunk chunk)
-    {
-        if (_storage != null)
-        {
-            try
-            {
-                chunk.LastSaveTime = _world.GetTime();
-                _storage.SaveChunk(_world, chunk, null, -1);
-            }
-            catch (IOException ex)
-            {
-                _logger.LogError(ex, "Exception");
-            }
-        }
-    }
-
 
     public void DecorateTerrain(IChunkSource source, int x, int z)
     {
-        Chunk chunk = GetChunk(x, z);
+        var chunk = GetChunk(x, z);
         if (!chunk.TerrainPopulated)
         {
             chunk.TerrainPopulated = true;
@@ -196,11 +127,11 @@ public class ServerChunkCache : IChunkSource
 
     public bool Save(bool saveEntities, LoadingDisplay display)
     {
-        int savedChunkCount = 0;
+        var savedChunkCount = 0;
 
-        for (int chunkIndex = 0; chunkIndex < _chunks.Count; chunkIndex++)
+        for (var chunkIndex = 0; chunkIndex < _chunks.Count; chunkIndex++)
         {
-            Chunk chunk = _chunks[chunkIndex];
+            var chunk = _chunks[chunkIndex];
             if (saveEntities && !chunk.IsEmpty())
             {
                 this.saveEntities(chunk);
@@ -235,12 +166,12 @@ public class ServerChunkCache : IChunkSource
     {
         if (!_world.savingDisabled)
         {
-            for (int unloadIndex = 0; unloadIndex < 100; unloadIndex++)
+            for (var unloadIndex = 0; unloadIndex < 100; unloadIndex++)
             {
                 if (_chunksToUnload.Count > 0)
                 {
-                    int chunkHash = _chunksToUnload.First();
-                    Chunk chunk = _chunksByPos[chunkHash];
+                    var chunkHash = _chunksToUnload.First();
+                    var chunk = _chunksByPos[chunkHash];
                     chunk.Unload();
                     saveChunk(chunk);
                     saveEntities(chunk);
@@ -257,14 +188,72 @@ public class ServerChunkCache : IChunkSource
     }
 
 
-    public bool CanSave()
+    public bool CanSave() => !_world.savingDisabled;
+
+    public string GetDebugInfo() => "NOP";
+
+    public void isLoaded(int chunkX, int chunkZ)
     {
-        return !_world.savingDisabled;
+        var spawnPos = _world.Properties.GetSpawnPos();
+        var deltaX = chunkX * 16 + 8 - spawnPos.X;
+        var deltaZ = chunkZ * 16 + 8 - spawnPos.Z;
+        short spawnRadius = 128;
+        if (deltaX < -spawnRadius || deltaX > spawnRadius || deltaZ < -spawnRadius || deltaZ > spawnRadius)
+        {
+            _chunksToUnload.Add(ChunkPos.GetHashCode(chunkX, chunkZ));
+        }
     }
 
-    public string GetDebugInfo()
+    private Chunk? LoadChunkFromStorage(int chunkX, int chunkZ)
     {
-        return "NOP";
+        if (_storage == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            var loadedChunk = _storage.LoadChunk(_world, chunkX, chunkZ);
+            loadedChunk?.LastSaveTime = _world.GetTime();
+
+            return loadedChunk;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception");
+            return null;
+        }
+    }
+
+    private void saveEntities(Chunk chunk)
+    {
+        if (_storage != null)
+        {
+            try
+            {
+                _storage.SaveEntities(_world, chunk);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception");
+            }
+        }
+    }
+
+    private void saveChunk(Chunk chunk)
+    {
+        if (_storage != null)
+        {
+            try
+            {
+                chunk.LastSaveTime = _world.GetTime();
+                _storage.SaveChunk(_world, chunk, null, -1);
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "Exception");
+            }
+        }
     }
 
     /// Creates a parallel-safe generator instance for off-thread terrain generation.
@@ -274,22 +263,22 @@ public class ServerChunkCache : IChunkSource
     /// <summary>
     ///     Loads from storage or generates a chunk without touching any cache state, so it is
     ///     safe to call from a worker thread given a per-thread generator from
-    ///     <see cref="CreateParallelGenerator"/>. Pair with <see cref="InsertLoadedChunk"/> on
-    ///     the tick thread to apply the result — mirrors <see cref="LoadChunk"/>'s split into a
+    ///     <see cref="CreateParallelGenerator" />. Pair with <see cref="InsertLoadedChunk" /> on
+    ///     the tick thread to apply the result — mirrors <see cref="LoadChunk" />'s split into a
     ///     produce step and an apply step, the same split the spawn-region pregen path already
-    ///     relies on via <see cref="InsertPreGeneratedChunk"/>.
+    ///     relies on via <see cref="InsertPreGeneratedChunk" />.
     /// </summary>
     public Chunk LoadOrGenerateChunkOffThread(int chunkX, int chunkZ, IChunkSource? generator) =>
         LoadChunkFromStorage(chunkX, chunkZ) ?? generator?.GetChunk(chunkX, chunkZ) ?? _empty;
 
     /// <summary>
-    ///     Inserts a chunk produced by <see cref="LoadOrGenerateChunkOffThread"/>, running the
-    ///     same post-load bookkeeping <see cref="LoadChunk"/> does inline for an already-produced
+    ///     Inserts a chunk produced by <see cref="LoadOrGenerateChunkOffThread" />, running the
+    ///     same post-load bookkeeping <see cref="LoadChunk" /> does inline for an already-produced
     ///     chunk: cache insert, light populate, and the 4-neighbour decoration cascade.
     /// </summary>
     public void InsertLoadedChunk(int chunkX, int chunkZ, Chunk chunk)
     {
-        int hash = ChunkPos.GetHashCode(chunkX, chunkZ);
+        var hash = ChunkPos.GetHashCode(chunkX, chunkZ);
         if (_chunksByPos.ContainsKey(hash))
         {
             return;
@@ -307,10 +296,10 @@ public class ServerChunkCache : IChunkSource
     // Checks storage first so that saved data is used correctly on server restart.
     public void InsertPreGeneratedChunk(int chunkX, int chunkZ, Chunk generatedChunk)
     {
-        int key = ChunkPos.GetHashCode(chunkX, chunkZ);
+        var key = ChunkPos.GetHashCode(chunkX, chunkZ);
         _chunksToUnload.Remove(key);
         if (_chunksByPos.ContainsKey(key)) return;
-        Chunk chunk = LoadChunkFromStorage(chunkX, chunkZ) ?? generatedChunk;
+        var chunk = LoadChunkFromStorage(chunkX, chunkZ) ?? generatedChunk;
         _chunksByPos.Add(key, chunk);
         _chunks.Add(chunk);
         chunk.PopulateBlockLight();

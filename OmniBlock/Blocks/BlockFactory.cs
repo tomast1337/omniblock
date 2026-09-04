@@ -39,8 +39,10 @@ internal static class BlockFactory
         else draft.Opacity = draft.IsOpaque ? 255 : 0;
         if (def.SoundGroup is { } sg) draft.SoundGroup = context.ResolveSoundGroup(ResourceLocation.Parse(sg));
         if (def.FaceTextures is { } faces)
+        {
             foreach (var (sideName, faceTextureId) in faces)
                 block.SetFaceTexture(Enum.Parse<Side>(sideName, true), context.Behaviors.ResolveTerrainTexture(faceTextureId));
+        }
 
         block.SetSlipperiness(def.Slipperiness);
         if (def.NotFullCube) block.SetNotFullCube();

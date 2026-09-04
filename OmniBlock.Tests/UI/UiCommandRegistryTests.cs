@@ -34,8 +34,8 @@ public sealed class UiCommandRegistryTests
     {
         UiCommandRegistry registry = new();
 
-        int first = registry.ResolveOrCreate("omniblock:inventory.open");
-        int second = registry.ResolveOrCreate("omniblock:inventory.open");
+        var first = registry.ResolveOrCreate("omniblock:inventory.open");
+        var second = registry.ResolveOrCreate("omniblock:inventory.open");
 
         Assert.Equal(first, second);
     }
@@ -44,7 +44,7 @@ public sealed class UiCommandRegistryTests
     public void Freeze_doesNotChangeWhatAnAlreadyIssuedIdMapsTo()
     {
         UiCommandRegistry registry = new();
-        int invokedWith = -1;
+        var invokedWith = -1;
 
         // "zz.last" would sort after every other key a real mod set might register — the exact
         // shape that would get silently reassigned to a different ID under the old sorted-freeze
@@ -52,7 +52,7 @@ public sealed class UiCommandRegistryTests
         // before Freeze() (the only time it's legal to call ResolveOrCreate/Register at all) must
         // find it still means the same thing afterward.
         registry.Register("omniblock:zz.last", (a, _, _) => invokedWith = a);
-        int id = registry.ResolveOrCreate("omniblock:zz.last");
+        var id = registry.ResolveOrCreate("omniblock:zz.last");
         registry.Freeze();
 
         registry.Invoke(id, 42, 0, 0);
@@ -66,7 +66,7 @@ public sealed class UiCommandRegistryTests
         UiCommandRegistry registry = new();
         registry.Register("omniblock:inventory.open", (_, _, _) => { });
 
-        int id = registry.ResolveOrCreate("omniblock:inventory.open");
+        var id = registry.ResolveOrCreate("omniblock:inventory.open");
 
         Assert.Equal(0, id);
     }
@@ -75,9 +75,9 @@ public sealed class UiCommandRegistryTests
     public void Invoke_onAResolveOrCreateIdWithNoHandler_isNoOp()
     {
         UiCommandRegistry registry = new();
-        int id = registry.ResolveOrCreate("omniblock:mymod.reserved");
+        var id = registry.ResolveOrCreate("omniblock:mymod.reserved");
 
-        Exception? ex = Record.Exception(() => registry.Invoke(id, 0, 0, 0));
+        var ex = Record.Exception(() => registry.Invoke(id, 0, 0, 0));
 
         Assert.Null(ex);
     }
@@ -102,7 +102,7 @@ public sealed class UiCommandRegistryTests
         UiCommandRegistry registry = new();
         registry.Freeze();
 
-        Exception? ex = Record.Exception(() => registry.Invoke(999, 0, 0, 0));
+        var ex = Record.Exception(() => registry.Invoke(999, 0, 0, 0));
 
         Assert.Null(ex);
     }
@@ -113,8 +113,7 @@ public sealed class UiCommandRegistryTests
         UiCommandRegistry registry = new();
         registry.Register("omniblock:inventory.open", (_, _, _) => { });
 
-        Assert.Throws<InvalidOperationException>(
-            () => registry.Register("omniblock:inventory.open", (_, _, _) => { }));
+        Assert.Throws<InvalidOperationException>(() => registry.Register("omniblock:inventory.open", (_, _, _) => { }));
     }
 
     [Fact]
@@ -123,8 +122,7 @@ public sealed class UiCommandRegistryTests
         UiCommandRegistry registry = new();
         registry.Freeze();
 
-        Assert.Throws<InvalidOperationException>(
-            () => registry.Register("omniblock:inventory.open", (_, _, _) => { }));
+        Assert.Throws<InvalidOperationException>(() => registry.Register("omniblock:inventory.open", (_, _, _) => { }));
     }
 
     [Fact]
@@ -133,8 +131,7 @@ public sealed class UiCommandRegistryTests
         UiCommandRegistry registry = new();
         registry.Freeze();
 
-        Assert.Throws<InvalidOperationException>(
-            () => registry.ResolveOrCreate("omniblock:inventory.open"));
+        Assert.Throws<InvalidOperationException>(() => registry.ResolveOrCreate("omniblock:inventory.open"));
     }
 
     [Fact]

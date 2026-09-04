@@ -61,7 +61,7 @@ public abstract partial class Entity
 
     public void UpdateBoundingBox()
     {
-        float halfWidth = Width / 2.0F;
+        var halfWidth = Width / 2.0F;
         BoundingBox = new Box(X - halfWidth, Y - StandingEyeHeight + CameraOffset, Z - halfWidth, X + halfWidth, Y - StandingEyeHeight + CameraOffset + Height, Z + halfWidth);
     }
 
@@ -77,8 +77,8 @@ public abstract partial class Entity
     /// </summary>
     public void ChangeLookDirection(float yaw, float pitch)
     {
-        float oldPitch = Pitch;
-        float oldYaw = Yaw;
+        var oldPitch = Pitch;
+        var oldYaw = Yaw;
         Yaw = (float)(Yaw + yaw * 0.15D);
         Pitch = (float)(Pitch - pitch * 0.15D);
         if (Pitch < -90.0F)
@@ -97,8 +97,8 @@ public abstract partial class Entity
 
     protected bool GetEntitiesInside(double x, double y, double z)
     {
-        Box box = BoundingBox.Offset(x, y, z);
-        List<Box> entitiesInbound = World.Entities.GetEntityCollisionsScratch(this, box);
+        var box = BoundingBox.Offset(x, y, z);
+        var entitiesInbound = World.Entities.GetEntityCollisionsScratch(this, box);
         return entitiesInbound.Count <= 0 && !World.Reader.IsMaterialInBox(box, m => m.IsFluid);
     }
 
@@ -133,8 +133,8 @@ public abstract partial class Entity
 
         CameraOffset *= 0.4F;
 
-        double startX = X;
-        double startZ = Z;
+        var startX = X;
+        var startZ = Z;
 
         if (Slowed)
         {
@@ -147,8 +147,8 @@ public abstract partial class Entity
             VelocityZ = 0.0D;
         }
 
-        Box boxBeforeMove = BoundingBox;
-        bool sneakingOnGround = OnGround && IsSneaking();
+        var boxBeforeMove = BoundingBox;
+        var sneakingOnGround = OnGround && IsSneaking();
         if (sneakingOnGround)
         {
             dx = ShortenStepOverLedge(dx, true);
@@ -156,15 +156,15 @@ public abstract partial class Entity
         }
 
         // What was asked for, against which the resolved step is compared to detect a collision.
-        double requestedX = dx;
-        double requestedY = dy;
-        double requestedZ = dz;
+        var requestedX = dx;
+        var requestedY = dy;
+        var requestedZ = dz;
 
-        List<Box> colliders = World.Entities.GetEntityCollisionsScratch(this, BoundingBox.Stretch(dx, dy, dz));
+        var colliders = World.Entities.GetEntityCollisionsScratch(this, BoundingBox.Stretch(dx, dy, dz));
         ResolveCollisions(colliders, ref dx, ref dy, ref dz);
 
         // Standing on something, or having just landed on it, is what allows a step up.
-        bool canStepUp = OnGround || (requestedY != dy && requestedY < 0.0D);
+        var canStepUp = OnGround || (requestedY != dy && requestedY < 0.0D);
         if (StepHeight > 0.0F
             && canStepUp
             && (sneakingOnGround || CameraOffset < 0.05F)
@@ -208,14 +208,14 @@ public abstract partial class Entity
     /// <summary>Whether every chunk this entity's box overlaps is loaded.</summary>
     private bool IsFootprintLoaded()
     {
-        int minChunkX = MathHelper.Floor(BoundingBox.MinX) >> 4;
-        int maxChunkX = MathHelper.Floor(BoundingBox.MaxX) >> 4;
-        int minChunkZ = MathHelper.Floor(BoundingBox.MinZ) >> 4;
-        int maxChunkZ = MathHelper.Floor(BoundingBox.MaxZ) >> 4;
+        var minChunkX = MathHelper.Floor(BoundingBox.MinX) >> 4;
+        var maxChunkX = MathHelper.Floor(BoundingBox.MaxX) >> 4;
+        var minChunkZ = MathHelper.Floor(BoundingBox.MinZ) >> 4;
+        var maxChunkZ = MathHelper.Floor(BoundingBox.MaxZ) >> 4;
 
-        for (int chunkX = minChunkX; chunkX <= maxChunkX; ++chunkX)
+        for (var chunkX = minChunkX; chunkX <= maxChunkX; ++chunkX)
         {
-            for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; ++chunkZ)
+            for (var chunkZ = minChunkZ; chunkZ <= maxChunkZ; ++chunkZ)
             {
                 if (!World.ChunkHost.GetChunk(chunkX, chunkZ).Loaded)
                 {
@@ -273,21 +273,21 @@ public abstract partial class Entity
     /// </summary>
     private void ResolveCollisions(List<Box> colliders, ref double dx, ref double dy, ref double dz)
     {
-        for (int i = 0; i < colliders.Count; ++i)
+        for (var i = 0; i < colliders.Count; ++i)
         {
             dy = colliders[i].GetYOffset(BoundingBox, dy);
         }
 
         BoundingBox.Translate(0.0D, dy, 0.0D);
 
-        for (int i = 0; i < colliders.Count; ++i)
+        for (var i = 0; i < colliders.Count; ++i)
         {
             dx = colliders[i].GetXOffset(BoundingBox, dx);
         }
 
         BoundingBox.Translate(dx, 0.0D, 0.0D);
 
-        for (int i = 0; i < colliders.Count; ++i)
+        for (var i = 0; i < colliders.Count; ++i)
         {
             dz = colliders[i].GetZOffset(BoundingBox, dz);
         }
@@ -302,22 +302,22 @@ public abstract partial class Entity
     /// </summary>
     private void TryStepUp(Box boxBeforeMove, double requestedX, double requestedZ, ref double dx, ref double dy, ref double dz)
     {
-        double flatX = dx;
-        double flatY = dy;
-        double flatZ = dz;
-        Box boxAfterFlatMove = BoundingBox;
+        var flatX = dx;
+        var flatY = dy;
+        var flatZ = dz;
+        var boxAfterFlatMove = BoundingBox;
 
         dx = requestedX;
         dy = StepHeight;
         dz = requestedZ;
         BoundingBox = boxBeforeMove;
 
-        List<Box> colliders = World.Entities.GetEntityCollisionsScratch(this, BoundingBox.Stretch(requestedX, dy, requestedZ));
+        var colliders = World.Entities.GetEntityCollisionsScratch(this, BoundingBox.Stretch(requestedX, dy, requestedZ));
         ResolveCollisions(colliders, ref dx, ref dy, ref dz);
 
         dy = -StepHeight;
 
-        for (int i = 0; i < colliders.Count; ++i)
+        for (var i = 0; i < colliders.Count; ++i)
         {
             dy = colliders[i].GetYOffset(BoundingBox, dy);
         }
@@ -334,7 +334,7 @@ public abstract partial class Entity
         }
 
         // Climbing snaps the body up a whole step; the camera is left behind and eases back up.
-        double riseIntoBlock = BoundingBox.MinY - (int)BoundingBox.MinY;
+        var riseIntoBlock = BoundingBox.MinY - (int)BoundingBox.MinY;
         if (riseIntoBlock > 0.0D)
         {
             CameraOffset = (float)(CameraOffset + riseIntoBlock + 0.01D);
@@ -355,10 +355,10 @@ public abstract partial class Entity
             return;
         }
 
-        int blockX = MathHelper.Floor(X);
-        int blockY = MathHelper.Floor(Y - 0.2F - StandingEyeHeight);
-        int blockZ = MathHelper.Floor(Z);
-        int blockId = World.Reader.GetBlockId(blockX, blockY, blockZ);
+        var blockX = MathHelper.Floor(X);
+        var blockY = MathHelper.Floor(Y - 0.2F - StandingEyeHeight);
+        var blockZ = MathHelper.Floor(Z);
+        var blockId = World.Reader.GetBlockId(blockX, blockY, blockZ);
 
         if (World.Reader.GetBlockId(blockX, blockY - 1, blockZ) == BlockRegistry.Get("fence").Id)
         {
@@ -371,7 +371,7 @@ public abstract partial class Entity
         }
 
         _nextStepSoundDistance = (int)HorizontalSpeed + 1;
-        BlockSoundGroup soundGroup = BlockRegistry.GetByProtocolId(blockId).SoundGroup;
+        var soundGroup = BlockRegistry.GetByProtocolId(blockId).SoundGroup;
 
         if (World.Reader.GetBlockId(blockX, blockY + 1, blockZ) == BlockRegistry.Get("snow").Id)
         {
@@ -389,25 +389,25 @@ public abstract partial class Entity
     /// <summary>Tells every block the box now overlaps that something is standing in it.</summary>
     private void NotifyBlocksOfCollision()
     {
-        int minX = MathHelper.Floor(BoundingBox.MinX + 0.001D);
-        int minY = MathHelper.Floor(BoundingBox.MinY + 0.001D);
-        int minZ = MathHelper.Floor(BoundingBox.MinZ + 0.001D);
-        int maxX = MathHelper.Floor(BoundingBox.MaxX - 0.001D);
-        int maxY = MathHelper.Floor(BoundingBox.MaxY - 0.001D);
-        int maxZ = MathHelper.Floor(BoundingBox.MaxZ - 0.001D);
+        var minX = MathHelper.Floor(BoundingBox.MinX + 0.001D);
+        var minY = MathHelper.Floor(BoundingBox.MinY + 0.001D);
+        var minZ = MathHelper.Floor(BoundingBox.MinZ + 0.001D);
+        var maxX = MathHelper.Floor(BoundingBox.MaxX - 0.001D);
+        var maxY = MathHelper.Floor(BoundingBox.MaxY - 0.001D);
+        var maxZ = MathHelper.Floor(BoundingBox.MaxZ - 0.001D);
 
         if (!World.ChunkHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
         {
             return;
         }
 
-        for (int x = minX; x <= maxX; ++x)
+        for (var x = minX; x <= maxX; ++x)
         {
-            for (int y = minY; y <= maxY; ++y)
+            for (var y = minY; y <= maxY; ++y)
             {
-                for (int z = minZ; z <= maxZ; ++z)
+                for (var z = minZ; z <= maxZ; ++z)
                 {
-                    int blockId = World.Reader.GetBlockId(x, y, z);
+                    var blockId = World.Reader.GetBlockId(x, y, z);
                     if (blockId > 0)
                     {
                         BlockRegistry.GetByProtocolId(blockId).OnEntityCollision(new OnEntityCollisionEvent(World, this, x, y, z));
@@ -420,7 +420,7 @@ public abstract partial class Entity
     /// <summary>Standing in fire or lava burns; being wet puts it out with a fizz.</summary>
     private void ApplyFireAndWater()
     {
-        bool wet = IsWet;
+        var wet = IsWet;
 
         if (World.Reader.IsMaterialInBox(BoundingBox.Contract(0.001D, 0.001D, 0.001D), m => m == Material.Fire || m == Material.Lava))
         {
@@ -478,15 +478,15 @@ public abstract partial class Entity
 
     public bool IsInFluid(Material mat)
     {
-        double eyeY = Y + EyeHeight;
-        int floorX = MathHelper.Floor(X);
-        int floorEyeY = MathHelper.Floor(MathHelper.Floor(eyeY));
-        int floorZ = MathHelper.Floor(Z);
-        int id = World.Reader.GetBlockId(floorX, floorEyeY, floorZ);
+        var eyeY = Y + EyeHeight;
+        var floorX = MathHelper.Floor(X);
+        var floorEyeY = MathHelper.Floor(MathHelper.Floor(eyeY));
+        var floorZ = MathHelper.Floor(Z);
+        var id = World.Reader.GetBlockId(floorX, floorEyeY, floorZ);
         if (id != 0 && BlockRegistry.GetByProtocolId(id).Material == mat)
         {
-            float fluidHeight = FluidMath.GetFluidHeightFromMeta(World.Reader.GetBlockMeta(floorX, floorEyeY, floorZ)) - 1.0F / 9.0F;
-            float fluidSurfaceY = floorEyeY + 1 - fluidHeight;
+            var fluidHeight = FluidMath.GetFluidHeightFromMeta(World.Reader.GetBlockMeta(floorX, floorEyeY, floorZ)) - 1.0F / 9.0F;
+            var fluidSurfaceY = floorEyeY + 1 - fluidHeight;
             return eyeY < fluidSurfaceY;
         }
 
@@ -495,7 +495,7 @@ public abstract partial class Entity
 
     protected internal void MoveNonSolid(float strafe, float forward, float speed)
     {
-        float inputLength = MathHelper.Sqrt(strafe * strafe + forward * forward);
+        var inputLength = MathHelper.Sqrt(strafe * strafe + forward * forward);
         if (!(inputLength >= 0.01F))
         {
             return;
@@ -509,8 +509,8 @@ public abstract partial class Entity
         inputLength = speed / inputLength;
         strafe *= inputLength;
         forward *= inputLength;
-        float sinYaw = MathHelper.Sin(Yaw * (float)Math.PI / 180.0F);
-        float cosYaw = MathHelper.Cos(Yaw * (float)Math.PI / 180.0F);
+        var sinYaw = MathHelper.Sin(Yaw * (float)Math.PI / 180.0F);
+        var cosYaw = MathHelper.Cos(Yaw * (float)Math.PI / 180.0F);
         VelocityX += strafe * cosYaw - forward * sinYaw;
         VelocityZ += forward * cosYaw + strafe * sinYaw;
     }
@@ -550,9 +550,9 @@ public abstract partial class Entity
 
     public double GetSquaredDistance(double x, double y, double z)
     {
-        double diffX = X - x;
-        double diffY = Y - y;
-        double diffZ = Z - z;
+        var diffX = X - x;
+        var diffY = Y - y;
+        var diffZ = Z - z;
         return diffX * diffX + diffY * diffY + diffZ * diffZ;
     }
 
@@ -569,9 +569,9 @@ public abstract partial class Entity
             return;
         }
 
-        double diffX = entity.X - X;
-        double diffY = entity.Z - Z;
-        double max = Math.Max(Math.Abs(diffX), Math.Abs(diffY));
+        var diffX = entity.X - X;
+        var diffY = entity.Z - Z;
+        var max = Math.Max(Math.Abs(diffX), Math.Abs(diffY));
         if (!(max >= 0.01F))
         {
             return;
@@ -580,7 +580,7 @@ public abstract partial class Entity
         max = MathHelper.Sqrt(max);
         diffX /= max;
         diffY /= max;
-        double maxMulInverse = 1.0D / max;
+        var maxMulInverse = 1.0D / max;
         if (maxMulInverse > 1.0D)
         {
             maxMulInverse = 1.0D;
@@ -615,7 +615,7 @@ public abstract partial class Entity
         double impulseMag = MathHelper.Sqrt(diffX * diffX + diffY * diffY);
         if (impulseMag > maxHorizontalImpulsePerCollision)
         {
-            double s = maxHorizontalImpulsePerCollision / impulseMag;
+            var s = maxHorizontalImpulsePerCollision / impulseMag;
             diffX *= s;
             diffY *= s;
         }
@@ -626,7 +626,7 @@ public abstract partial class Entity
         double speedThis = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
         if (speedThis > maxHorizontalSpeed)
         {
-            double s = maxHorizontalSpeed / speedThis;
+            var s = maxHorizontalSpeed / speedThis;
             VelocityX *= s;
             VelocityZ *= s;
         }
@@ -634,7 +634,7 @@ public abstract partial class Entity
         double speedOther = MathHelper.Sqrt(entity.VelocityX * entity.VelocityX + entity.VelocityZ * entity.VelocityZ);
         if (speedOther > maxHorizontalSpeed)
         {
-            double s = maxHorizontalSpeed / speedOther;
+            var s = maxHorizontalSpeed / speedOther;
             entity.VelocityX *= s;
             entity.VelocityZ *= s;
         }
@@ -651,14 +651,14 @@ public abstract partial class Entity
 
     public virtual bool IsInsideWall()
     {
-        for (int i = 0; i < 8; ++i)
+        for (var i = 0; i < 8; ++i)
         {
-            float offsetX = ((i >> 0) % 2 - 0.5F) * Width * 0.9F;
-            float offsetY = ((i >> 1) % 2 - 0.5F) * 0.1F;
-            float offsetZ = ((i >> 2) % 2 - 0.5F) * Width * 0.9F;
-            int x = MathHelper.Floor(X + offsetX);
-            int y = MathHelper.Floor(Y + EyeHeight + offsetY);
-            int z = MathHelper.Floor(Z + offsetZ);
+            var offsetX = ((i >> 0) % 2 - 0.5F) * Width * 0.9F;
+            var offsetY = ((i >> 1) % 2 - 0.5F) * 0.1F;
+            var offsetZ = ((i >> 2) % 2 - 0.5F) * Width * 0.9F;
+            var x = MathHelper.Floor(X + offsetX);
+            var y = MathHelper.Floor(Y + EyeHeight + offsetY);
+            var z = MathHelper.Floor(Z + offsetZ);
             if (World.Reader.ShouldSuffocate(x, y, z))
             {
                 return true;
@@ -674,9 +674,9 @@ public abstract partial class Entity
 
     public void SetPositionAndAnglesAvoidEntities(float yaw, float pitch, int newPosRotationIncrements)
     {
-        double posX = TrackedPosX / 32.0D;
-        double posY = TrackedPosY / 32.0D;
-        double posZ = TrackedPosZ / 32.0D;
+        var posX = TrackedPosX / 32.0D;
+        var posY = TrackedPosY / 32.0D;
+        var posZ = TrackedPosZ / 32.0D;
         SetPositionAndAnglesAvoidEntities(posX, posY, posZ, yaw, pitch, newPosRotationIncrements);
     }
 
@@ -687,7 +687,7 @@ public abstract partial class Entity
         SetPosition(x, y, z);
         SetRotation(yaw, pitch);
         const double bound = 1.0D / 32.0D;
-        double maxY = World.Entities.GetMaxYEntityCollision(this, BoundingBox.Contract(bound, 0.0D, bound));
+        var maxY = World.Entities.GetMaxYEntityCollision(this, BoundingBox.Contract(bound, 0.0D, bound));
         if (maxY <= 0)
         {
             return;
@@ -712,25 +712,25 @@ public abstract partial class Entity
             return false;
         }
 
-        int floorX = MathHelper.Floor(x);
-        int floorY = MathHelper.Floor(y);
-        int floorZ = MathHelper.Floor(z);
-        double fracX = x - floorX;
-        double fracY = y - floorY;
-        double fracZ = z - floorZ;
+        var floorX = MathHelper.Floor(x);
+        var floorY = MathHelper.Floor(y);
+        var floorZ = MathHelper.Floor(z);
+        var fracX = x - floorX;
+        var fracY = y - floorY;
+        var fracZ = z - floorZ;
         if (!World.Reader.ShouldSuffocate(floorX, floorY, floorZ))
         {
             return false;
         }
 
-        bool canPushWest = !World.Reader.ShouldSuffocate(floorX - 1, floorY, floorZ);
-        bool canPushEast = !World.Reader.ShouldSuffocate(floorX + 1, floorY, floorZ);
-        bool canPushDown = !World.Reader.ShouldSuffocate(floorX, floorY - 1, floorZ);
-        bool canPushUp = !World.Reader.ShouldSuffocate(floorX, floorY + 1, floorZ);
-        bool canPushNorth = !World.Reader.ShouldSuffocate(floorX, floorY, floorZ - 1);
-        bool canPushSouth = !World.Reader.ShouldSuffocate(floorX, floorY, floorZ + 1);
-        int pushDirection = -1;
-        double closestEdgeDistance = double.MaxValue;
+        var canPushWest = !World.Reader.ShouldSuffocate(floorX - 1, floorY, floorZ);
+        var canPushEast = !World.Reader.ShouldSuffocate(floorX + 1, floorY, floorZ);
+        var canPushDown = !World.Reader.ShouldSuffocate(floorX, floorY - 1, floorZ);
+        var canPushUp = !World.Reader.ShouldSuffocate(floorX, floorY + 1, floorZ);
+        var canPushNorth = !World.Reader.ShouldSuffocate(floorX, floorY, floorZ - 1);
+        var canPushSouth = !World.Reader.ShouldSuffocate(floorX, floorY, floorZ + 1);
+        var pushDirection = -1;
+        var closestEdgeDistance = double.MaxValue;
         if (canPushWest && fracX < closestEdgeDistance)
         {
             closestEdgeDistance = fracX;
@@ -766,7 +766,7 @@ public abstract partial class Entity
             pushDirection = 5;
         }
 
-        float pushStrength = Random.NextFloat() * 0.2F + 0.1F;
+        var pushStrength = Random.NextFloat() * 0.2F + 0.1F;
         switch (pushDirection)
         {
             case 0:

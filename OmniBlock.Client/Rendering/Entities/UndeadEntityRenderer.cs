@@ -3,23 +3,18 @@ using OmniBlock.Client.Rendering.Blocks;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Entities.Models;
 using OmniBlock.Entities;
-using OmniBlock.Items;
 
 namespace OmniBlock.Client.Rendering.Entities;
 
 public class UndeadEntityRenderer : LivingEntityRenderer
 {
-
     protected ModelBiped ModelBipedMain;
 
-    public UndeadEntityRenderer(ModelBiped main, float shadowRadius) : base(main, shadowRadius)
-    {
-        ModelBipedMain = main;
-    }
+    public UndeadEntityRenderer(ModelBiped main, float shadowRadius) : base(main, shadowRadius) => ModelBipedMain = main;
 
     protected override void RenderMore(EntityLiving entity, float tickDelta)
     {
-        ItemStack heldItem = entity.HeldItem;
+        var heldItem = entity.HeldItem;
         if (heldItem != null)
         {
             GLManager.ModelView.Push();
@@ -56,6 +51,5 @@ public class UndeadEntityRenderer : LivingEntityRenderer
             Dispatcher.HeldItemRenderer.renderItem(entity, heldItem);
             GLManager.ModelView.Pop();
         }
-
     }
 }

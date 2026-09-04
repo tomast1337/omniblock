@@ -1,21 +1,19 @@
-using OmniBlock.Registries;
 using OmniBlock.Registries.Data;
 
 namespace OmniBlock.Tests.Items;
 
 /// <summary>
-/// Verifies tool/armor materials load through the stock <see cref="DataAssetLoader{T}"/> with the
-/// same base + global-datapack + world-datapack layering as GameModes/Recipes/Items. Does not touch
-/// the boot-time <see cref="ToolMaterialRegistry"/>/<see cref="ArmorMaterialRegistry"/> — items
-/// capture their materials at construction, deliberately out of scope (same decision as Item.ITEMS[]).
+///     Verifies tool/armor materials load through the stock <see cref="DataAssetLoader{T}" /> with the
+///     same base + global-datapack + world-datapack layering as GameModes/Recipes/Items. Does not touch
+///     the boot-time <see cref="ToolMaterialRegistry" />/<see cref="ArmorMaterialRegistry" /> — items
+///     capture their materials at construction, deliberately out of scope (same decision as Item.ITEMS[]).
 /// </summary>
 [Collection("RegistryAccess")]
 public sealed class MaterialDatapackTests : IDisposable
 {
-    private readonly string _tempDir;
-
     private static readonly RegistryKey<ToolMaterialDefinition> s_toolKey = new(ResourceLocation.Parse("test:item_material"));
     private static readonly RegistryKey<ArmorMaterialDefinition> s_armorKey = new(ResourceLocation.Parse("test:armor_material"));
+    private readonly string _tempDir;
 
     public MaterialDatapackTests()
     {
@@ -30,12 +28,12 @@ public sealed class MaterialDatapackTests : IDisposable
         GC.Collect();
         GC.WaitForPendingFinalizers();
         if (Directory.Exists(_tempDir))
-            Directory.Delete(_tempDir, recursive: true);
+            Directory.Delete(_tempDir, true);
     }
 
     private void WriteMaterial(string relativeDir, string name, string json)
     {
-        string dir = Path.Combine(_tempDir, relativeDir);
+        var dir = Path.Combine(_tempDir, relativeDir);
         Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, $"{name}.json"), json);
     }
@@ -47,9 +45,9 @@ public sealed class MaterialDatapackTests : IDisposable
             """{"MaxUses": 100, "Efficiency": 3.5, "DamageBonus": 1, "HarvestLevel": 1}""");
         RegistryAccess.AddDynamic(new RegistryDefinition<ToolMaterialDefinition>(s_toolKey, "item_material"));
 
-        RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
+        var ra = RegistryAccess.Build(_tempDir);
 
-        ToolMaterialDefinition? def = ra.GetOrThrow(s_toolKey).GetValue(ResourceLocation.Parse("omniblock:copper"));
+        var def = ra.GetOrThrow(s_toolKey).GetValue(ResourceLocation.Parse("omniblock:copper"));
         Assert.NotNull(def);
         Assert.Equal(100, def.MaxUses);
         Assert.Equal(3.5f, def.Efficiency);
@@ -64,12 +62,12 @@ public sealed class MaterialDatapackTests : IDisposable
             """{"MaxUses": 500}""");
         RegistryAccess.AddDynamic(new RegistryDefinition<ToolMaterialDefinition>(s_toolKey, "item_material"));
 
-        RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir, datapackPath: _tempDir);
+        var ra = RegistryAccess.Build(_tempDir, _tempDir);
 
-        ToolMaterialDefinition? def = ra.GetOrThrow(s_toolKey).GetValue(ResourceLocation.Parse("omniblock:copper"));
+        var def = ra.GetOrThrow(s_toolKey).GetValue(ResourceLocation.Parse("omniblock:copper"));
         Assert.NotNull(def);
-        Assert.Equal(500, def.MaxUses);          // overridden by the datapack
-        Assert.Equal(3.5f, def.Efficiency);      // merged from the base file
+        Assert.Equal(500, def.MaxUses); // overridden by the datapack
+        Assert.Equal(3.5f, def.Efficiency); // merged from the base file
     }
 
     [Fact]
@@ -81,12 +79,12 @@ public sealed class MaterialDatapackTests : IDisposable
             """{"ArmorLevel": 4, "TexturePrefix": "emerald"}""");
         RegistryAccess.AddDynamic(new RegistryDefinition<ArmorMaterialDefinition>(s_armorKey, "armor_material"));
 
-        RegistryAccess server = RegistryAccess.Build(basePath: _tempDir);
-        RegistryAccess withWorld = server.WithWorldDatapacks(Path.Combine(_tempDir, "world"));
+        var server = RegistryAccess.Build(_tempDir);
+        var withWorld = server.WithWorldDatapacks(Path.Combine(_tempDir, "world"));
 
         Assert.Null(server.GetOrThrow(s_armorKey).GetValue(ResourceLocation.Parse("omniblock:emerald")));
 
-        ArmorMaterialDefinition? emerald = withWorld.GetOrThrow(s_armorKey).GetValue(ResourceLocation.Parse("omniblock:emerald"));
+        var emerald = withWorld.GetOrThrow(s_armorKey).GetValue(ResourceLocation.Parse("omniblock:emerald"));
         Assert.NotNull(emerald);
         Assert.Equal(4, emerald.ArmorLevel);
     }

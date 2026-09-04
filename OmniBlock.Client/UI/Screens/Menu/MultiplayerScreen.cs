@@ -38,7 +38,10 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
         Root.AddChild(title);
         AddTitleSpacer();
 
-        _scrollView = new ScrollView { AutomationId = "multiplayer.list" };
+        _scrollView = new ScrollView
+        {
+            AutomationId = "multiplayer.list"
+        };
         _scrollView.Style.Width = 300;
         _scrollView.Style.FlexGrow = 1;
         _scrollView.Style.MaxHeight = 200;
@@ -66,7 +69,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
         _btnJoin.OnClick += e => ConnectSelected();
         row1.AddChild(_btnJoin);
 
-        Button btnDirect = CreateButton();
+        var btnDirect = CreateButton();
         btnDirect.AutomationId = "multiplayer.direct";
         btnDirect.Text = Translations.Get("gui.directConnect");
         btnDirect.Style.Width = 100;
@@ -74,7 +77,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
         btnDirect.OnClick += e => Context.Navigator.Navigate(new DirectConnectScreen(Context, this, new ServerData(Translations.Get("multiplayer.betasharpServer"), ""), networkContext));
         row1.AddChild(btnDirect);
 
-        Button btnAdd = CreateButton();
+        var btnAdd = CreateButton();
         btnAdd.AutomationId = "multiplayer.add";
         btnAdd.Text = Translations.Get("gui.addServer");
         btnAdd.Style.Width = 100;
@@ -104,7 +107,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
         _btnDelete.OnClick += e => DeleteSelected();
         row2.AddChild(_btnDelete);
 
-        Button btnRefresh = CreateButton();
+        var btnRefresh = CreateButton();
         btnRefresh.AutomationId = "multiplayer.refresh";
         btnRefresh.Text = Translations.Get("gui.refresh");
         btnRefresh.Style.Width = 75;
@@ -116,7 +119,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
         };
         row2.AddChild(btnRefresh);
 
-        Button btnCancel = CreateButton();
+        var btnCancel = CreateButton();
         btnCancel.AutomationId = "multiplayer.cancel";
         btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 75;
@@ -134,18 +137,18 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
     {
         try
         {
-            string path = Path.Combine(OmniBlock.OmniBlockDir, "servers.dat");
+            var path = Path.Combine(OmniBlock.OmniBlockDir, "servers.dat");
             if (!File.Exists(path))
             {
                 return;
             }
 
-            using FileStream stream = File.OpenRead(path);
-            NBTTagCompound tag = NbtIo.ReadCompressed(stream);
+            using var stream = File.OpenRead(path);
+            var tag = NbtIo.ReadCompressed(stream);
 
-            NBTTagList list = tag.GetTagList("servers");
+            var list = tag.GetTagList("servers");
             _serverList.Clear();
-            for (int i = 0; i < list.TagCount(); ++i)
+            for (var i = 0; i < list.TagCount(); ++i)
             {
                 _serverList.Add(ServerData.FromNBT((NBTTagCompound)list.TagAt(i)));
             }
@@ -160,7 +163,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
         try
         {
             NBTTagList list = new();
-            foreach (ServerData server in _serverList)
+            foreach (var server in _serverList)
             {
                 list.SetTag(server.ToNBT());
             }
@@ -168,8 +171,8 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
             NBTTagCompound tag = new();
             tag.SetTag("servers", list);
 
-            string path = Path.Combine(OmniBlock.OmniBlockDir, "servers.dat");
-            using FileStream stream = File.Create(path);
+            var path = Path.Combine(OmniBlock.OmniBlockDir, "servers.dat");
+            using var stream = File.Create(path);
             NbtIo.WriteCompressed(tag, stream);
         }
         catch
@@ -183,9 +186,9 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
         _listItems.Clear();
         _selectedServerIndex = -1;
 
-        for (int i = 0; i < _serverList.Count; i++)
+        for (var i = 0; i < _serverList.Count; i++)
         {
-            int index = i;
+            var index = i;
             ServerListItem item = new(_serverList[i]);
             item.AutomationId = $"multiplayer.item.{i}";
             item.OnClick += e => SelectServer(index);
@@ -197,7 +200,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
     private void SelectServer(int index)
     {
         _selectedServerIndex = index;
-        foreach (ServerListItem item in _listItems)
+        foreach (var item in _listItems)
         {
             item.IsSelected = false;
         }
@@ -212,7 +215,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
 
     private void UpdateButtons()
     {
-        bool hasSelection = _selectedServerIndex >= 0;
+        var hasSelection = _selectedServerIndex >= 0;
         _btnJoin.Enabled = hasSelection;
         _btnEdit.Enabled = hasSelection;
         _btnDelete.Enabled = hasSelection;
@@ -225,7 +228,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
             return;
         }
 
-        ServerData data = _serverList[_selectedServerIndex];
+        var data = _serverList[_selectedServerIndex];
         ConnectToServer(data.Ip);
     }
 
@@ -236,7 +239,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
             return;
         }
 
-        ServerData original = _serverList[_selectedServerIndex];
+        var original = _serverList[_selectedServerIndex];
         ServerData temp = new(original.Name, original.Ip);
         Context.Navigator.Navigate(new EditServerScreen(Context, this, temp, true));
     }
@@ -268,9 +271,9 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
             return;
         }
 
-        ServerData server = _serverList[_selectedServerIndex];
-        string q = Translations.Get("multiplayer.deleteQuestion");
-        string w = "'" + server.Name + "' " + Translations.Get("multiplayer.deleteWarning");
+        var server = _serverList[_selectedServerIndex];
+        var q = Translations.Get("multiplayer.deleteQuestion");
+        var w = "'" + server.Name + "' " + Translations.Get("multiplayer.deleteWarning");
 
         Context.Navigator.Navigate(new ConfirmationScreen(Context, this, q, w, Translations.Get("gui.delete"), Translations.Get("gui.cancel"), result =>
         {
@@ -286,9 +289,9 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
 
     private void ConnectToServer(string ip)
     {
-        string[] parts = ip.Split(':');
-        string host = parts[0];
-        int portNum = 25565;
+        var parts = ip.Split(':');
+        var host = parts[0];
+        var portNum = 25565;
         if (parts.Length > 1)
         {
             int.TryParse(parts[1], out portNum);

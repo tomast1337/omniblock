@@ -29,20 +29,11 @@ public sealed class DetectorRailBehavior : IRedstoneComponent, IBlockInteractabl
         if ((meta & 8) != 0) UpdatePoweredStatus(block, @event.World, @event.X, @event.Y, @event.Z, meta);
     }
 
-    public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
-    {
-        return (reader.GetBlockMeta(x, y, z) & 8) != 0;
-    }
+    public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => (reader.GetBlockMeta(x, y, z) & 8) != 0;
 
-    public bool IsStrongPoweringSide(Block block, IBlockReader world, int x, int y, int z, int side)
-    {
-        return (world.GetBlockMeta(x, y, z) & 8) != 0 && side == 1;
-    }
+    public bool IsStrongPoweringSide(Block block, IBlockReader world, int x, int y, int z, int side) => (world.GetBlockMeta(x, y, z) & 8) != 0 && side == 1;
 
-    public bool CanEmitRedstonePower(Block block)
-    {
-        return true;
-    }
+    public bool CanEmitRedstonePower(Block block) => true;
 
     private static void UpdatePoweredStatus(Block block, IWorldContext context, int x, int y, int z, int meta)
     {

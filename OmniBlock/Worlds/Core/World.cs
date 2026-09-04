@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using OmniBlock.Blocks;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Entities;
@@ -6,6 +7,7 @@ using OmniBlock.Items;
 using OmniBlock.NBT;
 using OmniBlock.PathFinding;
 using OmniBlock.Profiling;
+using OmniBlock.Registries;
 using OmniBlock.Rules;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Biomes.Source;
@@ -14,9 +16,7 @@ using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Dimensions;
 using OmniBlock.Worlds.Mechanics;
 using OmniBlock.Worlds.Storage;
-using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
-using OmniBlock.Registries;
 
 namespace OmniBlock.Worlds.Core;
 
@@ -35,18 +35,6 @@ public abstract class World : IWorldContext
     private bool _spawnPeacefulMobs = true;
 
     protected int AutosavePeriod = s_autosavePeriod;
-    /// <summary>
-    ///     Whether this world is currently searching for its spawn point, during which reading a
-    ///     chunk is allowed to generate it.
-    /// </summary>
-    /// <remarks>
-    ///     Normally a read of an absent chunk yields an empty one rather than generating it, so that
-    ///     lighting, entity AI and block queries near a border cannot pull new terrain into
-    ///     existence just by looking at it — anything that genuinely wants a chunk asks
-    ///     <c>LoadChunk</c> for one. The spawn search is the exception: it probes candidate
-    ///     positions and has nothing else to ask.
-    /// </remarks>
-    public bool IsFindingSpawnPoint { get; private set; }
     public bool IsNewWorld;
 
     protected World(IWorldStorage worldStorage, string levelName, WorldSettings settings, Dimension? dim,
@@ -57,15 +45,16 @@ public abstract class World : IWorldContext
         Storage = worldStorage;
         StateManager = new PersistentStateManager(worldStorage);
 
-        WorldProperties? loadedProperties = worldStorage.LoadProperties();
-        bool shouldInitializeSpawn = loadedProperties == null;
+        var loadedProperties = worldStorage.LoadProperties();
+        var shouldInitializeSpawn = loadedProperties == null;
         Properties = loadedProperties ?? new WorldProperties(settings, levelName);
         if (Properties.ContentManifest is { } savedManifest)
         {
-            CatalogCompatibility compatibility = Content.Manifest.CompareTo(savedManifest);
+            var compatibility = Content.Manifest.CompareTo(savedManifest);
             if (!compatibility.CanLoadWorld)
                 throw new InvalidOperationException($"World content catalog is incompatible: {compatibility.Diagnostic}");
         }
+
         Properties.ContentManifest = Content.Manifest;
 
         if (dim != null)
@@ -91,7 +80,7 @@ public abstract class World : IWorldContext
 
         Dimension.SetWorld(this);
 
-        IChunkSource chunkSource = CreateChunkCache();
+        var chunkSource = CreateChunkCache();
 
         Random = new JavaRandom();
         Rules = Properties.RulesTag != null
@@ -103,7 +92,7 @@ public abstract class World : IWorldContext
         // Constructed here, not with Pathing above: PathFinder captures world.Reader once at
         // construction and (unlike Pathing) is never re-primed via SetWorld before use, so it
         // needs Reader to already be assigned.
-        PathingRequests = new PathFinding.PathingCoordinator(this);
+        PathingRequests = new PathingCoordinator(this);
         Writer = new WorldWriter(BlockHost, Reader, Content.Blocks);
         Writer.OnBlockChanged += BlockUpdate;
 
@@ -125,14 +114,14 @@ public abstract class World : IWorldContext
 
         Entities.OnEntityAdded += ent =>
         {
-            for (int i = 0; i < EventListeners.Count; ++i)
+            for (var i = 0; i < EventListeners.Count; ++i)
             {
                 EventListeners[i].NotifyEntityAdded(ent);
             }
         };
         Entities.OnEntityRemoved += ent =>
         {
-            for (int i = 0; i < EventListeners.Count; ++i)
+            for (var i = 0; i < EventListeners.Count; ++i)
             {
                 EventListeners[i].NotifyEntityRemoved(ent);
             }
@@ -145,12 +134,20 @@ public abstract class World : IWorldContext
         }
     }
 
+    /// <summary>
+    ///     Whether this world is currently searching for its spawn point, during which reading a
+    ///     chunk is allowed to generate it.
+    /// </summary>
+    /// <remarks>
+    ///     Normally a read of an absent chunk yields an empty one rather than generating it, so that
+    ///     lighting, entity AI and block queries near a border cannot pull new terrain into
+    ///     existence just by looking at it — anything that genuinely wants a chunk asks
+    ///     <c>LoadChunk</c> for one. The spawn search is the exception: it probes candidate
+    ///     positions and has nothing else to ask.
+    /// </remarks>
+    public bool IsFindingSpawnPoint { get; private set; }
+
     public ChunkHost BlockHost { get; }
-    public ContentRuntime Content { get; private set; }
-    public void ReplaceContent(ContentRuntime content) =>
-        Content = content ?? throw new ArgumentNullException(nameof(content));
-    public IBlockReader Reader { get; }
-    public IBlockWriter Writer { get; }
     public WorldEventBroadcaster Broadcaster { get; }
 
     public EntityManager Entities { get; }
@@ -160,17 +157,20 @@ public abstract class World : IWorldContext
     public LightingEngine Lighting { get; }
 
     private PathFinder Pathing { get; }
-    private PathFinding.PathingCoordinator PathingRequests { get; }
+    private PathingCoordinator PathingRequests { get; }
     private RedstoneEngine Redstone { get; }
     protected IWorldStorage Storage { get; }
     public long Seed => Properties.RandomSeed;
+    public ContentRuntime Content { get; private set; }
+    public IBlockReader Reader { get; }
+    public IBlockWriter Writer { get; }
     public WorldTickScheduler TickScheduler { get; }
     public int Difficulty { get; private set; }
 
     public PersistentStateManager StateManager { get; protected init; }
 
     public WorldProperties Properties { get; protected init; }
-    public bool IsRemote { init; get; }
+    public bool IsRemote { get; init; }
     public JavaRandom Random { get; }
 
     ChunkHost IWorldContext.ChunkHost => BlockHost;
@@ -182,7 +182,7 @@ public abstract class World : IWorldContext
     Dimension IWorldContext.Dimension => Dimension;
     long IWorldContext.Seed => Properties.RandomSeed;
     PathFinder IWorldContext.Pathing => Pathing;
-    PathFinding.PathingCoordinator IWorldContext.PathingRequests => PathingRequests;
+    PathingCoordinator IWorldContext.PathingRequests => PathingRequests;
 
     public RuleSet Rules { get; protected set; }
 
@@ -204,7 +204,7 @@ public abstract class World : IWorldContext
 
     public bool SpawnItemDrop(double x, double y, double z, ItemStack itemStack)
     {
-        Entity droppedItem = DroppedItemBehavior.Create(this, x, y, z, itemStack, pickupDelay: 10);
+        var droppedItem = DroppedItemBehavior.Create(this, x, y, z, itemStack, 10);
         return Entities.SpawnEntity(droppedItem);
     }
 
@@ -227,6 +227,19 @@ public abstract class World : IWorldContext
 
     public virtual bool CanInteract(EntityPlayer player, int x, int y, int z) => true;
 
+    public int GetSpawnBlockId(int x, int z)
+    {
+        int y;
+        for (y = 63; !Reader.IsAir(x, y + 1, z); ++y)
+        {
+        }
+
+        return Reader.GetBlockId(x, y, z);
+    }
+
+    public void ReplaceContent(ContentRuntime content) =>
+        Content = content ?? throw new ArgumentNullException(nameof(content));
+
     public BiomeSource GetBiomeSource() => Dimension.BiomeSource;
 
     public float GetLuminance(int x, int y, int z) => Lighting.GetLuminance(x, y, z);
@@ -240,12 +253,12 @@ public abstract class World : IWorldContext
         IsFindingSpawnPoint = true;
         try
         {
-            int x = 0;
-            int z = 0;
-            int y = 64;
+            var x = 0;
+            var z = 0;
+            var y = 64;
 
             const int maxAttempts = 512;
-            int attempts = 0;
+            var attempts = 0;
 
             while (!Dimension.IsValidSpawnPoint(x, z) && attempts++ < maxAttempts)
             {
@@ -264,7 +277,7 @@ public abstract class World : IWorldContext
 
             if (Properties.TerrainType == WorldType.Sky)
             {
-                int topY = Reader.GetTopSolidBlockY(x, z);
+                var topY = Reader.GetTopSolidBlockY(x, z);
                 if (topY > 0)
                 {
                     y = topY;
@@ -286,7 +299,7 @@ public abstract class World : IWorldContext
             Properties.SpawnY = 64;
         }
 
-        int spawnX = Properties.SpawnX;
+        var spawnX = Properties.SpawnX;
 
         int spawnZ;
         for (spawnZ = Properties.SpawnZ;
@@ -304,21 +317,11 @@ public abstract class World : IWorldContext
     {
     }
 
-    public int GetSpawnBlockId(int x, int z)
-    {
-        int y;
-        for (y = 63; !Reader.IsAir(x, y + 1, z); ++y)
-        {
-        }
-
-        return Reader.GetBlockId(x, y, z);
-    }
-
     public void AddPlayer(EntityPlayer player)
     {
         try
         {
-            NBTTagCompound? tag = Properties.PlayerTag;
+            var tag = Properties.PlayerTag;
             if (tag != null)
             {
                 player.Read(tag);
@@ -346,6 +349,7 @@ public abstract class World : IWorldContext
         {
             Save();
         }
+
         if (loadingDisplay != null)
         {
             loadingDisplay.SetStage("Saving chunks");
@@ -397,14 +401,14 @@ public abstract class World : IWorldContext
 
     public Vector3D<double> GetFogColor(float partialTicks)
     {
-        float timeOfDay = GetTime(partialTicks);
+        var timeOfDay = GetTime(partialTicks);
         return Dimension.GetFogColor(timeOfDay, partialTicks);
     }
 
     public float CalculateSkyLightIntensity(float partialTicks)
     {
-        float timeOfDay = GetTime(partialTicks);
-        float intensityFactor = 1.0F - (MathHelper.Cos(timeOfDay * (float)Math.PI * 2.0F) * 2.0F + 12.0F / 16.0F);
+        var timeOfDay = GetTime(partialTicks);
+        var intensityFactor = 1.0F - (MathHelper.Cos(timeOfDay * (float)Math.PI * 2.0F) * 2.0F + 12.0F / 16.0F);
         intensityFactor = Math.Clamp(intensityFactor, 0.0F, 1.0F);
 
         return intensityFactor * intensityFactor * 0.5F;
@@ -467,7 +471,7 @@ public abstract class World : IWorldContext
 
         if (!IsRemote && Entities.AreAllPlayersAsleep())
         {
-            bool wasSpawnInterrupted = false;
+            var wasSpawnInterrupted = false;
 
             if (_spawnHostileMobs && Difficulty >= 1)
             {
@@ -493,12 +497,12 @@ public abstract class World : IWorldContext
 
         using (Profiler.Begin("UpdateSkylight"))
         {
-            int currentAmbientDarkness = Environment.GetAmbientDarkness(1.0F);
+            var currentAmbientDarkness = Environment.GetAmbientDarkness(1.0F);
             if (currentAmbientDarkness != Environment.AmbientDarkness)
             {
                 Environment.AmbientDarkness = currentAmbientDarkness;
 
-                for (int i = 0; i < EventListeners.Count; ++i)
+                for (var i = 0; i < EventListeners.Count; ++i)
                 {
                     EventListeners[i].NotifyAmbientDarknessChanged();
                 }
@@ -528,16 +532,16 @@ public abstract class World : IWorldContext
     {
         _activeChunks.Clear();
 
-        for (int i = 0; i < Entities.Players.Count; ++i)
+        for (var i = 0; i < Entities.Players.Count; ++i)
         {
-            EntityPlayer player = Entities.Players[i];
-            int playerChunkX = MathHelper.Floor(player.X / 16.0D);
-            int playerChunkZ = MathHelper.Floor(player.Z / 16.0D);
+            var player = Entities.Players[i];
+            var playerChunkX = MathHelper.Floor(player.X / 16.0D);
+            var playerChunkZ = MathHelper.Floor(player.Z / 16.0D);
             const byte viewDistance = 9;
 
-            for (int xOffset = -viewDistance; xOffset <= viewDistance; ++xOffset)
+            for (var xOffset = -viewDistance; xOffset <= viewDistance; ++xOffset)
             {
-                for (int zOffset = -viewDistance; zOffset <= viewDistance; ++zOffset)
+                for (var zOffset = -viewDistance; zOffset <= viewDistance; ++zOffset)
                 {
                     _activeChunks.Add(new ChunkPos(xOffset + playerChunkX, zOffset + playerChunkZ));
                 }
@@ -549,27 +553,27 @@ public abstract class World : IWorldContext
             --_soundCounter;
         }
 
-        foreach (ChunkPos chunkPos in _activeChunks)
+        foreach (var chunkPos in _activeChunks)
         {
-            int worldXBase = chunkPos.X * 16;
-            int worldZBase = chunkPos.Z * 16;
-            Chunk currentChunk = BlockHost.GetChunk(chunkPos.X, chunkPos.Z);
+            var worldXBase = chunkPos.X * 16;
+            var worldZBase = chunkPos.Z * 16;
+            var currentChunk = BlockHost.GetChunk(chunkPos.X, chunkPos.Z);
 
             if (_soundCounter == 0)
             {
                 _lcgBlockSeed = _lcgBlockSeed * 3 + 1013904223;
-                int randomVal = _lcgBlockSeed >> 2;
-                int localX = randomVal & 15;
-                int localZ = (randomVal >> 8) & 15;
-                int localY = (randomVal >> 16) & 127;
+                var randomVal = _lcgBlockSeed >> 2;
+                var localX = randomVal & 15;
+                var localZ = (randomVal >> 8) & 15;
+                var localY = (randomVal >> 16) & 127;
 
-                int blockId = currentChunk.GetBlockId(localX, localY, localZ);
-                int worldX = localX + worldXBase;
-                int worldZ = localZ + worldZBase;
+                var blockId = currentChunk.GetBlockId(localX, localY, localZ);
+                var worldX = localX + worldXBase;
+                var worldZ = localZ + worldZBase;
                 if (blockId == 0 && Reader.GetBrightness(worldX, localY, worldZ) <= Random.NextInt(8) &&
                     Lighting.GetBrightness(LightType.Sky, worldX, localY, worldZ) <= 0)
                 {
-                    EntityPlayer? closest = Entities.GetClosestPlayer(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D, 8.0D);
+                    var closest = Entities.GetClosestPlayer(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D, 8.0D);
                     if (closest != null &&
                         closest.GetSquaredDistance(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D) > 4.0D)
                     {
@@ -583,14 +587,14 @@ public abstract class World : IWorldContext
             if (Random.NextInt(100000) == 0 && Environment.IsRaining && Environment.IsThundering())
             {
                 _lcgBlockSeed = _lcgBlockSeed * 3 + 1013904223;
-                int randomVal = _lcgBlockSeed >> 2;
-                int worldX = worldXBase + (randomVal & 15);
-                int worldZ = worldZBase + ((randomVal >> 8) & 15);
-                int worldY = Reader.GetTopSolidBlockY(worldX, worldZ);
+                var randomVal = _lcgBlockSeed >> 2;
+                var worldX = worldXBase + (randomVal & 15);
+                var worldZ = worldZBase + ((randomVal >> 8) & 15);
+                var worldY = Reader.GetTopSolidBlockY(worldX, worldZ);
 
                 if (Environment.IsRainingAt(worldX, worldY, worldZ))
                 {
-                    Entity bolt = Content.EntityTypes.Create("omniblock:lightningbolt", this);
+                    var bolt = Content.EntityTypes.Create("omniblock:lightningbolt", this);
                     bolt.SetPositionAndAnglesKeepPrevAngles(worldX, worldY, worldZ, 0.0F, 0.0F);
                     Entities.SpawnGlobalEntity(bolt);
                     Environment.LightningTicksLeft = 2;
@@ -600,18 +604,18 @@ public abstract class World : IWorldContext
             if (Random.NextInt(16) == 0)
             {
                 _lcgBlockSeed = _lcgBlockSeed * 3 + 1013904223;
-                int randomVal = _lcgBlockSeed >> 2;
-                int localX = randomVal & 15;
-                int localZ = (randomVal >> 8) & 15;
-                int worldX = localX + worldXBase;
-                int worldZ = localZ + worldZBase;
-                int worldY = Reader.GetTopSolidBlockY(worldX, worldZ);
+                var randomVal = _lcgBlockSeed >> 2;
+                var localX = randomVal & 15;
+                var localZ = (randomVal >> 8) & 15;
+                var worldX = localX + worldXBase;
+                var worldZ = localZ + worldZBase;
+                var worldY = Reader.GetTopSolidBlockY(worldX, worldZ);
 
                 if (GetBiomeSource().GetBiome(worldX, worldZ).GetEnableSnow() && worldY >= 0 && worldY < ChuckFormat.WorldHeight &&
                     currentChunk.GetLight(LightType.Block, localX, worldY, localZ) < 10)
                 {
-                    int blockBelowId = currentChunk.GetBlockId(localX, worldY - 1, localZ);
-                    int currentBlockId = currentChunk.GetBlockId(localX, worldY, localZ);
+                    var blockBelowId = currentChunk.GetBlockId(localX, worldY - 1, localZ);
+                    var currentBlockId = currentChunk.GetBlockId(localX, worldY, localZ);
 
                     if (Environment.IsRaining && currentBlockId == 0 && Content.Blocks.Get("snow").CanPlaceAt(new CanPlaceAtContext(this, 1.ToSide(), worldX, worldY, worldZ)) &&
                         blockBelowId != 0 && blockBelowId != Content.Blocks.Get("ice").Id &&
@@ -627,13 +631,13 @@ public abstract class World : IWorldContext
                 }
             }
 
-            for (int j = 0; j < 80; ++j)
+            for (var j = 0; j < 80; ++j)
             {
                 _lcgBlockSeed = _lcgBlockSeed * 3 + 1013904223;
-                int randomTickVal = _lcgBlockSeed >> 2;
-                int localX = randomTickVal & 15;
-                int localZ = (randomTickVal >> 8) & 15;
-                int localY = (randomTickVal >> 16) & 127;
+                var randomTickVal = _lcgBlockSeed >> 2;
+                var localX = randomTickVal & 15;
+                var localZ = (randomTickVal >> 8) & 15;
+                var localY = (randomTickVal >> 16) & 127;
 
                 RandomTickBlock(currentChunk, localX, localY, localZ, worldXBase, worldZBase);
             }
@@ -642,8 +646,8 @@ public abstract class World : IWorldContext
 
     internal void RandomTickBlock(Chunk chunk, int localX, int localY, int localZ, int worldXBase, int worldZBase)
     {
-        int blockId = chunk.GetBlockId(localX, localY, localZ);
-        if (!Content.Blocks.TryGetByProtocolId(blockId, out Block? block) || !block.TickRandomly) return;
+        var blockId = chunk.GetBlockId(localX, localY, localZ);
+        if (!Content.Blocks.TryGetByProtocolId(blockId, out var block) || !block.TickRandomly) return;
 
         block.OnTick(new OnTickEvent(this, localX + worldXBase, localY, localZ + worldZBase,
             chunk.GetBlockMeta(localX, localY, localZ), blockId));
@@ -653,13 +657,13 @@ public abstract class World : IWorldContext
     {
         const byte searchRadius = 16;
 
-        for (int i = 0; i < 1000; ++i)
+        for (var i = 0; i < 1000; ++i)
         {
-            int targetX = centerX + Random.NextInt(searchRadius) - Random.NextInt(searchRadius);
-            int targetY = centerY + Random.NextInt(searchRadius) - Random.NextInt(searchRadius);
-            int targetZ = centerZ + Random.NextInt(searchRadius) - Random.NextInt(searchRadius);
+            var targetX = centerX + Random.NextInt(searchRadius) - Random.NextInt(searchRadius);
+            var targetY = centerY + Random.NextInt(searchRadius) - Random.NextInt(searchRadius);
+            var targetZ = centerZ + Random.NextInt(searchRadius) - Random.NextInt(searchRadius);
 
-            int blockId = Reader.GetBlockId(targetX, targetY, targetZ);
+            var blockId = Reader.GetBlockId(targetX, targetY, targetZ);
             if (blockId > 0)
             {
                 Content.Blocks.GetByProtocolId(blockId).RandomDisplayTick(new OnTickEvent(this, targetX, targetY, targetZ, Reader.GetBlockMeta(targetX, targetY, targetZ), blockId));
@@ -689,29 +693,29 @@ public abstract class World : IWorldContext
 
         setBlocksDirty(
             chunkX * 16, 0, chunkZ * 16,
-            (chunkX * 16) + 16, ChuckFormat.WorldHeight, (chunkZ * 16) + 16);
+            chunkX * 16 + 16, ChuckFormat.WorldHeight, chunkZ * 16 + 16);
     }
 
     public void HandleChunkDataUpdate(int x, int y, int z, int sizeX, int sizeY, int sizeZ, byte[] chunkData)
     {
-        int startChunkX = x >> 4;
-        int startChunkZ = z >> 4;
-        int endChunkX = (x + sizeX - 1) >> 4;
-        int endChunkZ = (z + sizeZ - 1) >> 4;
+        var startChunkX = x >> 4;
+        var startChunkZ = z >> 4;
+        var endChunkX = (x + sizeX - 1) >> 4;
+        var endChunkZ = (z + sizeZ - 1) >> 4;
 
-        int currentBufferOffset = 0;
-        int minY = Math.Max(0, y);
-        int maxY = Math.Min(ChuckFormat.WorldHeight, y + sizeY);
+        var currentBufferOffset = 0;
+        var minY = Math.Max(0, y);
+        var maxY = Math.Min(ChuckFormat.WorldHeight, y + sizeY);
 
-        for (int chunkX = startChunkX; chunkX <= endChunkX; ++chunkX)
+        for (var chunkX = startChunkX; chunkX <= endChunkX; ++chunkX)
         {
-            int localStartX = Math.Max(0, x - chunkX * 16);
-            int localEndX = Math.Min(16, x + sizeX - chunkX * 16);
+            var localStartX = Math.Max(0, x - chunkX * 16);
+            var localEndX = Math.Min(16, x + sizeX - chunkX * 16);
 
-            for (int chunkZ = startChunkZ; chunkZ <= endChunkZ; ++chunkZ)
+            for (var chunkZ = startChunkZ; chunkZ <= endChunkZ; ++chunkZ)
             {
-                int localStartZ = Math.Max(0, z - chunkZ * 16);
-                int localEndZ = Math.Min(16, z + sizeZ - chunkZ * 16);
+                var localStartZ = Math.Max(0, z - chunkZ * 16);
+                var localEndZ = Math.Min(16, z + sizeZ - chunkZ * 16);
 
                 currentBufferOffset = BlockHost.GetChunk(chunkX, chunkZ).LoadFromPacket(
                     chunkData,
@@ -738,7 +742,7 @@ public abstract class World : IWorldContext
 
     public void setBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
-        for (int i = 0; i < EventListeners.Count; ++i)
+        for (var i = 0; i < EventListeners.Count; ++i)
         {
             EventListeners[i].SetBlocksDirty(minX, minY, minZ, maxX, maxY, maxZ);
         }

@@ -1,5 +1,5 @@
-using OmniBlock.Diagnostics;
 using Hexa.NET.ImGui;
+using OmniBlock.Diagnostics;
 
 namespace OmniBlock.Client.Diagnostics.Windows;
 
@@ -44,9 +44,9 @@ internal sealed class ServerInfoWindow : DebugWindow
             return;
         }
 
-        float mspt = MetricRegistry.Get(ServerMetrics.Mspt);
+        var mspt = MetricRegistry.Get(ServerMetrics.Mspt);
 
-        long msptWrittenAt = MetricRegistry.LastUpdatedMs(ServerMetrics.Mspt);
+        var msptWrittenAt = MetricRegistry.LastUpdatedMs(ServerMetrics.Mspt);
         if (msptWrittenAt != _lastGraphedAtMs)
         {
             _lastGraphedAtMs = msptWrittenAt;

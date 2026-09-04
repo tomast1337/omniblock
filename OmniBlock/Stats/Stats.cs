@@ -1,7 +1,6 @@
 using OmniBlock.Blocks;
-using OmniBlock.Items;
-using OmniBlock.Registries;
 using OmniBlock.Processes;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Stats;
 
@@ -66,9 +65,9 @@ public static class Stats
     {
         if (_hasBasicItemStatsInitialized && _hasExtendedItemStatsInitialized)
         {
-            HashSet<int> craftedIds = new HashSet<int>();
+            var craftedIds = new HashSet<int>();
 
-            foreach (ICompiledProcess process in processes.Values)
+            foreach (var process in processes.Values)
             {
                 switch (process)
                 {
@@ -83,11 +82,11 @@ public static class Stats
 
             Crafted = new StatBase[32000];
 
-            foreach (int itemId in craftedIds)
+            foreach (var itemId in craftedIds)
             {
-                if (items.TryGetByProtocolId(itemId, out Item? item) && item is not null)
+                if (items.TryGetByProtocolId(itemId, out var item) && item is not null)
                 {
-                    string translatedName = StatCollector.TranslateToLocalFormatted("stat.craftItem", item.GetStatName());
+                    var translatedName = StatCollector.TranslateToLocalFormatted("stat.craftItem", item.GetStatName());
                     Crafted[itemId] = new StatCrafting(16842752 + itemId, translatedName, itemId).RegisterStat();
                 }
             }
@@ -98,13 +97,13 @@ public static class Stats
 
     private static StatBase[] InitBlocksMined(string baseName, int baseId)
     {
-        StatBase[] statsArray = new StatBase[256];
+        var statsArray = new StatBase[256];
 
-        for (int i = 0; i < 256; ++i)
+        for (var i = 0; i < 256; ++i)
         {
-            if (BlockRegistry.TryGetByProtocolId(i, out Block? block) && block.EnableStats)
+            if (BlockRegistry.TryGetByProtocolId(i, out var block) && block.EnableStats)
             {
-                string translatedName = StatCollector.TranslateToLocalFormatted(baseName, block.TranslateBlockName());
+                var translatedName = StatCollector.TranslateToLocalFormatted(baseName, block.TranslateBlockName());
                 statsArray[i] = new StatCrafting(baseId + i, translatedName, i).RegisterStat();
                 BlocksMinedStats.Add(statsArray[i]);
             }
@@ -118,11 +117,11 @@ public static class Stats
     {
         statsArray ??= new StatBase[32000];
 
-        for (int i = startIdx; i < endIdx; ++i)
+        for (var i = startIdx; i < endIdx; ++i)
         {
-            if (items.TryGetByProtocolId(i, out Item? item) && item is not null)
+            if (items.TryGetByProtocolId(i, out var item) && item is not null)
             {
-                string translatedName = StatCollector.TranslateToLocalFormatted(baseName, item.GetStatName());
+                var translatedName = StatCollector.TranslateToLocalFormatted(baseName, item.GetStatName());
                 statsArray[i] = new StatCrafting(baseId + i, translatedName, i).RegisterStat();
 
                 if (i >= BlockRegistry.ProtocolIdCapacity)
@@ -140,11 +139,11 @@ public static class Stats
     {
         statsArray ??= new StatBase[32000];
 
-        for (int i = startIdx; i < endIdx; ++i)
+        for (var i = startIdx; i < endIdx; ++i)
         {
-            if (items.TryGetByProtocolId(i, out Item? item) && item is not null && item.IsDamagable())
+            if (items.TryGetByProtocolId(i, out var item) && item is not null && item.IsDamagable())
             {
-                string translatedName = StatCollector.TranslateToLocalFormatted(baseName, item.GetStatName());
+                var translatedName = StatCollector.TranslateToLocalFormatted(baseName, item.GetStatName());
                 statsArray[i] = new StatCrafting(baseId + i, translatedName, i).RegisterStat();
             }
         }
@@ -183,9 +182,5 @@ public static class Stats
         }
     }
 
-    public static StatBase GetStatById(int id)
-    {
-        return IdToStat[id];
-    }
-
+    public static StatBase GetStatById(int id) => IdToStat[id];
 }

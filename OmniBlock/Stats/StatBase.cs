@@ -5,18 +5,13 @@ namespace OmniBlock.Stats;
 
 public class StatBase
 {
-    public int Id { get; }
-    public string StatName { get; }
-    public bool LocalOnly { get; set; }
-    public string StatGuid { get; set; }
-
-    private readonly Func<int, string> _formatter;
-
     private const string DefaultDecimalFormat = "0.00";
 
     public static readonly Func<int, string> IntegerFormat = FormatInteger;
     public static readonly Func<int, string> TimeProvider = StatFormatters.FormatTime;
     public static readonly Func<int, string> DistanceProvider = StatFormatters.FormatDistance;
+
+    private readonly Func<int, string> _formatter;
 
     public StatBase(int id, string statName, Func<int, string> formatter)
     {
@@ -30,6 +25,11 @@ public class StatBase
     {
     }
 
+    public int Id { get; }
+    public string StatName { get; }
+    public bool LocalOnly { get; set; }
+    public string StatGuid { get; set; }
+
     public virtual StatBase SetLocalOnly()
     {
         LocalOnly = true;
@@ -40,7 +40,7 @@ public class StatBase
     {
         if (Stats.IdToStat.ContainsKey(Id))
         {
-            string existingStatName = Stats.IdToStat[Id].StatName;
+            var existingStatName = Stats.IdToStat[Id].StatName;
             throw new InvalidOperationException($"Duplicate stat id: \"{existingStatName}\" and \"{StatName}\" at id {Id}");
         }
 
@@ -53,23 +53,11 @@ public class StatBase
 
     public virtual bool IsAchievement() => false;
 
-    public string Format(int value)
-    {
-        return _formatter(value);
-    }
+    public string Format(int value) => _formatter(value);
 
-    public override string ToString()
-    {
-        return StatName;
-    }
+    public override string ToString() => StatName;
 
-    public static string FormatInteger(int value)
-    {
-        return value.ToString("N0", CultureInfo.InvariantCulture);
-    }
+    public static string FormatInteger(int value) => value.ToString("N0", CultureInfo.InvariantCulture);
 
-    public static string FormatDecimal(double value)
-    {
-        return value.ToString(DefaultDecimalFormat, CultureInfo.InvariantCulture);
-    }
+    public static string FormatDecimal(double value) => value.ToString(DefaultDecimalFormat, CultureInfo.InvariantCulture);
 }

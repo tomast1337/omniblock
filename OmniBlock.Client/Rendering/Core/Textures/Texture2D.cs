@@ -1,5 +1,5 @@
-using OmniBlock.Client.Rendering.Core.WebGPU;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Client.Rendering.Core.WebGPU;
 using Silk.NET.OpenGL;
 using AddressMode = Silk.NET.WebGPU.AddressMode;
 using FilterMode = Silk.NET.WebGPU.FilterMode;
@@ -30,15 +30,6 @@ public class Texture2D : IDisposable
     private static readonly Dictionary<uint, Texture2D> s_byId = [];
     private static uint s_nextWebGpuId;
 
-    public uint Id { get; private set; }
-    public string Source { get; }
-    public int Width { get; private set; }
-    public int Height { get; private set; }
-    public static int ActiveTextureCount => s_activeTextures.Count;
-
-    /// <summary>The WebGPU texture, once an upload has given it a size.</summary>
-    public WgpuTexture? Wgpu { get; private set; }
-
     private WgpuSamplerDescription _sampler = WgpuSamplerDescription.Nearest;
 
     public Texture2D(string source)
@@ -49,8 +40,14 @@ public class Texture2D : IDisposable
         s_byId[Id] = this;
     }
 
-    /// <summary>The texture a renderer's bucket id refers to, or null if it has been disposed.</summary>
-    public static Texture2D? Find(uint id) => s_byId.GetValueOrDefault(id);
+    public uint Id { get; private set; }
+    public string Source { get; }
+    public int Width { get; private set; }
+    public int Height { get; private set; }
+    public static int ActiveTextureCount => s_activeTextures.Count;
+
+    /// <summary>The WebGPU texture, once an upload has given it a size.</summary>
+    public WgpuTexture? Wgpu { get; private set; }
 
     /// <summary>The last texture <see cref="Bind" /> was called on.</summary>
     /// <remarks>
@@ -58,6 +55,25 @@ public class Texture2D : IDisposable
     ///     binding has to be remembered until a draw can act on it.
     /// </remarks>
     public static Texture2D? Bound { get; private set; }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+
+        if (Id == 0) return;
+
+        Wgpu?.Dispose();
+        Wgpu = null;
+
+        if (ReferenceEquals(Bound, this)) Bound = null;
+
+        s_activeTextures.Remove(Id, out _);
+        s_byId.Remove(Id);
+        Id = 0;
+    }
+
+    /// <summary>The texture a renderer's bucket id refers to, or null if it has been disposed.</summary>
+    public static Texture2D? Find(uint id) => s_byId.GetValueOrDefault(id);
 
     public void Bind()
     {
@@ -78,19 +94,20 @@ public class Texture2D : IDisposable
             Mag = mag == TextureMagFilter.Linear ? FilterMode.Linear : FilterMode.Nearest,
             Mipmap = min is TextureMinFilter.LinearMipmapLinear or TextureMinFilter.NearestMipmapLinear
                 ? MipmapFilterMode.Linear
-                : MipmapFilterMode.Nearest,
+                : MipmapFilterMode.Nearest
         });
     }
 
-    public void SetWrap(TextureWrapMode s, TextureWrapMode t)
+    public void SetWrap(TextureWrapMode s, TextureWrapMode t) => UpdateSampler(_sampler with
     {
-        UpdateSampler(_sampler with { AddressU = ToAddressMode(s), AddressV = ToAddressMode(t) });
-    }
+        AddressU = ToAddressMode(s),
+        AddressV = ToAddressMode(t)
+    });
 
-    public void SetMaxLevel(int level)
+    public void SetMaxLevel(int level) => UpdateSampler(_sampler with
     {
-        UpdateSampler(_sampler with { LodMaxClamp = level });
-    }
+        LodMaxClamp = level
+    });
 
     public unsafe void Upload(int width, int height, byte* ptr, int level = 0, PixelFormat format = PixelFormat.Rgba, InternalFormat internalFormat = InternalFormat.Rgba)
     {
@@ -106,38 +123,19 @@ public class Texture2D : IDisposable
         WriteWgpu(level, 0, 0, width, height, ptr);
     }
 
-    public unsafe void UploadSubImage(int x, int y, int width, int height, byte* ptr, int level = 0, PixelFormat format = PixelFormat.Rgba)
+    public unsafe void UploadSubImage(int x, int y, int width, int height, byte* ptr, int level = 0, PixelFormat format = PixelFormat.Rgba) => WriteWgpu(level, x, y, width, height, ptr);
+
+    public void SetAnisotropicFilter(float level) => UpdateSampler(_sampler with
     {
-        WriteWgpu(level, x, y, width, height, ptr);
-    }
-
-    public void SetAnisotropicFilter(float level)
-    {
-        UpdateSampler(_sampler with { MaxAnisotropy = (uint)Math.Max(1.0f, level) });
-    }
-
-    public void Dispose()
-    {
-        GC.SuppressFinalize(this);
-
-        if (Id == 0) return;
-
-        Wgpu?.Dispose();
-        Wgpu = null;
-
-        if (ReferenceEquals(Bound, this)) Bound = null;
-
-        s_activeTextures.Remove(Id, out _);
-        s_byId.Remove(Id);
-        Id = 0;
-    }
+        MaxAnisotropy = (uint)Math.Max(1.0f, level)
+    });
 
     public static void LogLeakReport()
     {
         if (s_activeTextures.Count == 0) return;
 
         s_logger.LogWarning("Found {Count} leaked textures on shutdown!", s_activeTextures.Count);
-        foreach (KeyValuePair<uint, (string Source, DateTime CreatedAt)> entry in s_activeTextures)
+        foreach (var entry in s_activeTextures)
         {
             s_logger.LogWarning("Leaked Texture ID: {Id}, Source: {Source}, Created At: {CreatedAt}", entry.Key, entry.Value.Source, entry.Value.CreatedAt);
         }
@@ -154,7 +152,7 @@ public class Texture2D : IDisposable
 
         Wgpu?.Dispose();
 
-        uint levels = (uint)Math.Max(1, (int)Math.Log2(Math.Max(Width, Height)) + 1);
+        var levels = (uint)Math.Max(1, (int)Math.Log2(Math.Max(Width, Height)) + 1);
         Wgpu = new WgpuTexture(device, (uint)Width, (uint)Height, levels, _sampler);
     }
 
@@ -176,6 +174,6 @@ public class Texture2D : IDisposable
     {
         TextureWrapMode.ClampToEdge or TextureWrapMode.ClampToBorder => AddressMode.ClampToEdge,
         TextureWrapMode.MirroredRepeat => AddressMode.MirrorRepeat,
-        _ => AddressMode.Repeat,
+        _ => AddressMode.Repeat
     };
 }

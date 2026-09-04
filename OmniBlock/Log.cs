@@ -35,7 +35,7 @@ public sealed class Log
 
         // $"{DateTime.Now:yyyy-MM-dd_HH.mm.ss}.log"
 
-        string path = Path.Combine(
+        var path = Path.Combine(
             _directory,
             $"{DateTime.Now:yyyy-MM-dd_HH.mm.ss}.log");
 
@@ -57,13 +57,13 @@ public sealed class Log
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(_directory);
 
-        string parent = Path.Combine(
+        var parent = Path.Combine(
             _directory,
             "crashes");
 
         Directory.CreateDirectory(parent);
 
-        string path = Path.Combine(parent, $"{DateTime.Now:yyyy-MM-dd_HH.mm.ss}.log");
+        var path = Path.Combine(parent, $"{DateTime.Now:yyyy-MM-dd_HH.mm.ss}.log");
 
         File.WriteAllText(path, exception.ToString());
     }
@@ -114,7 +114,7 @@ internal sealed class MemoryLoggerProvider : ILoggerProvider
     {
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
-            string message = formatter(state, exception);
+            var message = formatter(state, exception);
             provider.Add(new LogEntry(DateTime.Now, logLevel, category, message, exception));
         }
 
@@ -136,8 +136,8 @@ internal sealed class FileLoggerProvider(string path) : ILoggerProvider
     {
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
-            string message = formatter(state, exception);
-            string line = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{logLevel}] {category}: {message}";
+            var message = formatter(state, exception);
+            var line = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{logLevel}] {category}: {message}";
 
             stream.Write(Encoding.UTF8.GetBytes(line));
 

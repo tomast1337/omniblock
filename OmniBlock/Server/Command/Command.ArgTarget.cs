@@ -1,8 +1,8 @@
-using OmniBlock.Entities;
 using Brigadier.NET;
 using Brigadier.NET.ArgumentTypes;
 using Brigadier.NET.Context;
 using Brigadier.NET.Suggestion;
+using OmniBlock.Entities;
 using StringReader = Brigadier.NET.StringReader;
 
 namespace OmniBlock.Server.Command;
@@ -15,18 +15,18 @@ public abstract partial class Command
 
         public Entity Parse<T>(StringReader reader, T source) => ParseStatic(reader, source);
 
-        public static Entity ParseStatic<T>(StringReader reader, T source)
-        {
-            Entity[] e = ArgTargets.Parse(reader, source, false, 1);
-            if (e.Length < 1) throw ArgTargets.TargetNotFound.CreateWithContext(reader);
-            return e[0];
-        }
-
         public Task<Suggestions> ListSuggestions<T>(
             CommandContext<T> context,
             SuggestionsBuilder builder) =>
             context is not CommandContext<CommandSource> c ? Suggestions.Empty() : ArgTargets.ListSuggestionsAsync(c, builder);
 
         public IEnumerable<string> Examples => ArgTargets.StaticExamples;
+
+        public static Entity ParseStatic<T>(StringReader reader, T source)
+        {
+            var e = ArgTargets.Parse(reader, source, false, 1);
+            if (e.Length < 1) throw ArgTargets.TargetNotFound.CreateWithContext(reader);
+            return e[0];
+        }
     }
 }

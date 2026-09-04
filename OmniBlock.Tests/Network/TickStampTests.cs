@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using OmniBlock.Network;
 using OmniBlock.Network.Messages;
 using OmniBlock.Util;
@@ -9,7 +10,10 @@ public sealed class TickStampTests
     private static TickStampMessage RoundTrip(long serverTimeMs)
     {
         MemoryStream stream = new();
-        new TickStampMessage { ServerTimeMs = serverTimeMs }.Write(stream);
+        new TickStampMessage
+        {
+            ServerTimeMs = serverTimeMs
+        }.Write(stream);
         stream.Position = 0;
 
         TickStampMessage read = new();
@@ -18,10 +22,7 @@ public sealed class TickStampTests
     }
 
     [Fact]
-    public void Round_trips_a_timestamp()
-    {
-        Assert.Equal(1_234_567_890L, RoundTrip(1_234_567_890L).ServerTimeMs);
-    }
+    public void Round_trips_a_timestamp() => Assert.Equal(1_234_567_890L, RoundTrip(1_234_567_890L).ServerTimeMs);
 
     [Fact]
     public void Round_trips_a_timestamp_past_the_32_bit_range()
@@ -36,7 +37,10 @@ public sealed class TickStampTests
     public void Reports_the_size_it_writes()
     {
         MemoryStream stream = new();
-        TickStampMessage message = new() { ServerTimeMs = 42 };
+        TickStampMessage message = new()
+        {
+            ServerTimeMs = 42
+        };
         message.Write(stream);
 
         Assert.Equal(message.Size(), stream.Length);
@@ -48,10 +52,7 @@ public sealed class TickStampTests
     ///     which every message shares.
     /// </summary>
     [Fact]
-    public void Is_high_priority()
-    {
-        Assert.Equal(SendPriority.High, new TickStampMessage().Priority);
-    }
+    public void Is_high_priority() => Assert.Equal(SendPriority.High, new TickStampMessage().Priority);
 
     /// <summary>
     ///     The value is the simulation instant, taken before anything moved, not the moment the
@@ -59,10 +60,7 @@ public sealed class TickStampTests
     ///     and fold the gap between the two server loops into the timeline.
     /// </summary>
     [Fact]
-    public void Does_not_ask_the_transport_for_a_send_timestamp()
-    {
-        Assert.False(new TickStampMessage().NeedsSendTimestamp);
-    }
+    public void Does_not_ask_the_transport_for_a_send_timestamp() => Assert.False(new TickStampMessage().NeedsSendTimestamp);
 }
 
 public sealed class MonotonicClockTests
@@ -70,16 +68,16 @@ public sealed class MonotonicClockTests
     [Fact]
     public void NowMs_does_not_go_backwards()
     {
-        long a = MonotonicClock.NowMs();
-        long b = MonotonicClock.NowMs();
+        var a = MonotonicClock.NowMs();
+        var b = MonotonicClock.NowMs();
         Assert.True(b >= a);
     }
 
     [Fact]
     public void NowTicks_does_not_go_backwards()
     {
-        long a = MonotonicClock.NowTicks();
-        long b = MonotonicClock.NowTicks();
+        var a = MonotonicClock.NowTicks();
+        var b = MonotonicClock.NowTicks();
         Assert.True(b >= a);
     }
 
@@ -88,8 +86,8 @@ public sealed class MonotonicClockTests
     {
         // The two conversions must not drift apart: ElapsedMs measures the intervals the histograms
         // record, ToMs produces the stamps that go on the wire, and clock sync compares them.
-        long start = MonotonicClock.NowTicks();
-        long end = start + System.Diagnostics.Stopwatch.Frequency; // exactly one second
+        var start = MonotonicClock.NowTicks();
+        var end = start + Stopwatch.Frequency; // exactly one second
 
         Assert.Equal(1000.0, MonotonicClock.ElapsedMs(start, end), 3);
         Assert.Equal(1000L, MonotonicClock.ToMs(end) - MonotonicClock.ToMs(start));
@@ -98,7 +96,7 @@ public sealed class MonotonicClockTests
     [Fact]
     public void ElapsedMs_of_a_zero_interval_is_zero()
     {
-        long t = MonotonicClock.NowTicks();
+        var t = MonotonicClock.NowTicks();
         Assert.Equal(0.0, MonotonicClock.ElapsedMs(t, t));
     }
 }

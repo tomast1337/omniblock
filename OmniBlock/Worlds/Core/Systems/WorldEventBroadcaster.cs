@@ -18,7 +18,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
     {
         DeterminismGuard.AssertPure("sound broadcast");
 
-        foreach (IWorldEventListener t in eventListeners)
+        foreach (var t in eventListeners)
         {
             t.PlaySound(sound, entity.X, entity.Y - entity.StandingEyeHeight, entity.Z, volume, pitch);
         }
@@ -26,7 +26,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
 
     public void PlaySoundAtPos(double x, double y, double z, string sound, float volume, float pitch)
     {
-        foreach (IWorldEventListener t in eventListeners)
+        foreach (var t in eventListeners)
         {
             t.PlaySound(sound, x, y, z, volume, pitch);
         }
@@ -34,7 +34,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
 
     public void PlayStreamingAtPos(string? music, int x, int y, int z)
     {
-        foreach (IWorldEventListener t in eventListeners)
+        foreach (var t in eventListeners)
         {
             t.PlayStreaming(music, x, y, z);
         }
@@ -44,7 +44,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
     {
         DeterminismGuard.AssertPure("particle spawn");
 
-        foreach (IWorldEventListener t in eventListeners)
+        foreach (var t in eventListeners)
         {
             t.SpawnParticle(particle, x, y, z, velocityX, velocityY, velocityZ);
         }
@@ -52,7 +52,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
 
     public void BlockUpdateEvent(int x, int y, int z)
     {
-        foreach (IWorldEventListener t in eventListeners)
+        foreach (var t in eventListeners)
         {
             t.BlockUpdate(x, y, z);
         }
@@ -62,7 +62,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
 
     public void WorldEvent(EntityPlayer? player, int @event, int x, int y, int z, int data)
     {
-        for (int index = 0; index < eventListeners.Count; ++index)
+        for (var index = 0; index < eventListeners.Count; ++index)
         {
             eventListeners[index].WorldEvent(player, @event, x, y, z, data);
         }
@@ -79,7 +79,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
     }
 
     /// <summary>
-    /// Like <see cref="NotifyNeighbors"/>, but also notifies around the block below
+    ///     Like <see cref="NotifyNeighbors" />, but also notifies around the block below
     /// </summary>
     public void NotifyNeighborsFloor(int x, int y, int z, int blockId)
     {
@@ -97,10 +97,10 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
     {
         if (isRemote) return;
 
-        int targetBlockId = reader.GetBlockId(x, y, z);
-        if (!worldContext.Content.Blocks.TryGetByProtocolId(targetBlockId, out Block? block)) return;
+        var targetBlockId = reader.GetBlockId(x, y, z);
+        if (!worldContext.Content.Blocks.TryGetByProtocolId(targetBlockId, out var block)) return;
 
-        int meta = reader.GetBlockMeta(x, y, z);
+        var meta = reader.GetBlockMeta(x, y, z);
         OnTickEvent tickEvent = new(worldContext, x, y, z, meta, blockId);
         block.NeighborUpdate(tickEvent);
     }
@@ -121,13 +121,13 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
 
     public virtual void PlayNote(int x, int y, int z, int soundType, int pitch)
     {
-        int blockId = reader.GetBlockId(x, y, z);
+        var blockId = reader.GetBlockId(x, y, z);
         if (blockId > 0)
         {
             worldContext.Content.Blocks.GetByProtocolId(blockId).OnBlockAction(new OnBlockActionEvent(worldContext, soundType, pitch, x, y, z));
         }
 
-        for (int i = 0; i < eventListeners.Count; ++i)
+        for (var i = 0; i < eventListeners.Count; ++i)
         {
             eventListeners[i].PlayNote(x, y, z, soundType, pitch);
         }
@@ -135,16 +135,17 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
 
     public void SetBlocksDirty(int x, int y, int z)
     {
-        for (int i = 0; i < eventListeners.Count; ++i)
+        for (var i = 0; i < eventListeners.Count; ++i)
         {
             eventListeners[i].SetBlocksDirty(x, y, z, x, y, z);
         }
     }
 
     public void EntityEvent(Entity entity, EntityStatusMessage.EntityState @event) => EntityEvent(entity, (byte)@event);
+
     public virtual void EntityEvent(Entity entity, byte @event)
     {
-        for (int i = 0; i < eventListeners.Count; ++i)
+        for (var i = 0; i < eventListeners.Count; ++i)
         {
             eventListeners[i].BroadcastEntityEvent(entity, @event);
         }
@@ -152,7 +153,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
 
     public void SetBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
-        for (int i = 0; i < eventListeners.Count; ++i)
+        for (var i = 0; i < eventListeners.Count; ++i)
         {
             eventListeners[i].SetBlocksDirty(minX, minY, minZ, maxX, maxY, maxZ);
         }
@@ -161,7 +162,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
     public void UpdateBlockEntity(int x, int y, int z, BlockEntity blockEntity)
     {
         worldContext.Reader.MarkChunkDirty(x, z);
-        for (int i = 0; i < eventListeners.Count; ++i)
+        for (var i = 0; i < eventListeners.Count; ++i)
         {
             eventListeners[i].UpdateBlockEntity(x, y, z, blockEntity);
         }
@@ -169,7 +170,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
 
     public void NotifyAmbientDarknessChanged()
     {
-        for (int i = 0; i < eventListeners.Count; ++i)
+        for (var i = 0; i < eventListeners.Count; ++i)
         {
             eventListeners[i].NotifyAmbientDarknessChanged();
         }

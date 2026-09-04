@@ -60,7 +60,7 @@ public sealed class HoppingBehavior : IEntityTicker, IEntityLifecycle
     /// <summary>Runs after movement has resolved, which is when a landing has actually happened.</summary>
     public void OnTickEnd(EntityLiving self)
     {
-        EntityState state = self.State;
+        var state = self.State;
         if (self.OnGround && !state[_wasOnGround])
         {
             Splat(self, state);
@@ -73,8 +73,8 @@ public sealed class HoppingBehavior : IEntityTicker, IEntityLifecycle
     {
         self.TickDespawn();
 
-        EntityState state = self.State;
-        EntityPlayer? player = self.World.Entities.GetClosestPlayerTarget(self.X, self.Y, self.Z, _noticeRange);
+        var state = self.State;
+        var player = self.World.Entities.GetClosestPlayerTarget(self.X, self.Y, self.Z, _noticeRange);
         if (player != null)
         {
             self.faceEntity(player, 10.0F, 20.0F);
@@ -99,13 +99,13 @@ public sealed class HoppingBehavior : IEntityTicker, IEntityLifecycle
 
     private void Splat(EntityLiving self, EntityState state)
     {
-        int size = Size(self);
-        for (int particle = 0; particle < size * _particlesPerSize; ++particle)
+        var size = Size(self);
+        for (var particle = 0; particle < size * _particlesPerSize; ++particle)
         {
-            float angle = self.Random.NextFloat() * (float)Math.PI * 2.0F;
-            float spread = self.Random.NextFloat() * 0.5F + 0.5F;
-            float offsetX = MathHelper.Sin(angle) * size * 0.5F * spread;
-            float offsetZ = MathHelper.Cos(angle) * size * 0.5F * spread;
+            var angle = self.Random.NextFloat() * (float)Math.PI * 2.0F;
+            var spread = self.Random.NextFloat() * 0.5F + 0.5F;
+            var offsetX = MathHelper.Sin(angle) * size * 0.5F * spread;
+            var offsetZ = MathHelper.Cos(angle) * size * 0.5F * spread;
             self.World.Broadcaster.AddParticle(_particle, self.X + offsetX, self.BoundingBox.MinY, self.Z + offsetZ, 0.0D, 0.0D, 0.0D);
         }
 
@@ -125,7 +125,7 @@ public sealed class HoppingBehavior : IEntityTicker, IEntityLifecycle
             state[_jumpDelay] /= _nearbyDelayDivisor;
         }
 
-        int size = Size(self);
+        var size = Size(self);
         self.Jumping = true;
         if (size >= _jumpSoundMinimumSize)
         {
@@ -152,7 +152,7 @@ public sealed class HoppingBehavior : IEntityTicker, IEntityLifecycle
     /// <summary>Interpolated squash for the renderer, which finds this behavior by capability.</summary>
     public float Squish(Entity self, float tickDelta)
     {
-        EntityState state = self.State;
+        var state = self.State;
         return state[_previousSquish] + (state[_squish] - state[_previousSquish]) * tickDelta;
     }
 }

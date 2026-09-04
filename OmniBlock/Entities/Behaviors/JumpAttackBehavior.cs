@@ -21,9 +21,9 @@ public sealed class JumpAttackBehavior(float minRange, float maxRange, int chanc
                 return;
             }
 
-            double dx = target.X - self.X;
-            double dz = target.Z - self.Z;
-            float horizontalDistance = MathHelper.Sqrt(dx * dx + dz * dz);
+            var dx = target.X - self.X;
+            var dz = target.Z - self.Z;
+            var horizontalDistance = MathHelper.Sqrt(dx * dx + dz * dz);
             self.VelocityX = dx / horizontalDistance * 0.5D * 0.8F + self.VelocityX * 0.2F;
             self.VelocityZ = dz / horizontalDistance * 0.5D * 0.8F + self.VelocityZ * 0.2F;
             self.VelocityY = 0.4F;

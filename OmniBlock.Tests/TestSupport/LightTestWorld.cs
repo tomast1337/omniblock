@@ -21,15 +21,13 @@ namespace OmniBlock.Tests.TestSupport;
 /// </remarks>
 public sealed class LightTestWorld : World
 {
-    private ControlledChunkSource _chunks = null!;
-
-    public LightTestWorld() : base(new NoStorage(), "light", new WorldSettings(0L, WorldType.Default), null, OmniBlock.Registries.ContentRuntime.Current)
+    public LightTestWorld() : base(new NoStorage(), "light", new WorldSettings(0L, WorldType.Default), null, ContentRuntime.Current)
     {
     }
 
-    public ControlledChunkSource Chunks => _chunks;
+    public ControlledChunkSource Chunks { get; private set; } = null!;
 
-    protected override IChunkSource CreateChunkCache() => _chunks = new ControlledChunkSource(this);
+    protected override IChunkSource CreateChunkCache() => Chunks = new ControlledChunkSource(this);
 
     /// <summary>Runs queued light updates to completion, as a server tick eventually does.</summary>
     public void DrainLighting()
@@ -51,9 +49,18 @@ public sealed class ControlledChunkSource(World world) : IChunkSource
     public bool IsChunkLoaded(int x, int z) => _chunks.ContainsKey((x, z));
 
     public Chunk GetChunk(int x, int z) =>
-        _chunks.TryGetValue((x, z), out Chunk? chunk) ? chunk : _empty;
+        _chunks.TryGetValue((x, z), out var chunk) ? chunk : _empty;
 
     public Chunk LoadChunk(int x, int z) => GetChunk(x, z);
+
+    public void DecorateTerrain(IChunkSource source, int x, int z)
+    {
+    }
+
+    public bool Save(bool saveEntities, LoadingDisplay display) => true;
+    public bool Tick() => false;
+    public bool CanSave() => false;
+    public string GetDebugInfo() => "ControlledChunkSource";
 
     /// <summary>
     ///     Adds a chunk and gives it the same first light pass a generated chunk gets, in the order
@@ -91,15 +98,6 @@ public sealed class ControlledChunkSource(World world) : IChunkSource
         chunk.Load();
         return chunk;
     }
-
-    public void DecorateTerrain(IChunkSource source, int x, int z)
-    {
-    }
-
-    public bool Save(bool saveEntities, LoadingDisplay display) => true;
-    public bool Tick() => false;
-    public bool CanSave() => false;
-    public string GetDebugInfo() => "ControlledChunkSource";
 }
 
 public sealed class NoStorage : IWorldStorage

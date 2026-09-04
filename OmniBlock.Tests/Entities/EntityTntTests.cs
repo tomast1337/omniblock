@@ -1,16 +1,14 @@
-using OmniBlock.Blocks;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.NBT;
 using OmniBlock.Rules;
-using OmniBlock.Tests.TestSupport;
 
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// Covers primed TNT, the first non-living entity to lose its class. Everything it was — a lit
-/// fuse, tumbling ballistics, the detonation and its rule gate — is declared in primedtnt.json and
-/// carried by one behavior across three slots.
+///     Covers primed TNT, the first non-living entity to lose its class. Everything it was — a lit
+///     fuse, tumbling ballistics, the detonation and its rule gate — is declared in primedtnt.json and
+///     carried by one behavior across three slots.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityTntTests
@@ -19,7 +17,7 @@ public sealed class EntityTntTests
 
     private static Entity Tnt(FakeWorldContext world, double x = 8.5, double y = 66.0, double z = 8.5)
     {
-        Entity tnt = TestEntityCatalog.ByName("primedtnt").Create(world);
+        var tnt = TestEntityCatalog.ByName("primedtnt").Create(world);
         tnt.SetPositionAndAngles(x, y, z, 0.0F, 0.0F);
         Assert.True(world.Entities.SpawnEntity(tnt));
         return tnt;
@@ -29,11 +27,11 @@ public sealed class EntityTntTests
     public void Primed_tnt_has_no_class_of_its_own()
     {
         FakeWorldContext world = new();
-        Entity tnt = Tnt(world);
+        var tnt = Tnt(world);
 
         Assert.Equal(typeof(EntityObject), tnt.GetType());
 
-        EntityBehaviorSet behaviors = TestEntityCatalog.ByName("primedtnt").Behaviors;
+        var behaviors = TestEntityCatalog.ByName("primedtnt").Behaviors;
         Assert.Same(behaviors.Ticker, behaviors.Lifecycle);
         Assert.Same(behaviors.Ticker, behaviors.Persistence);
     }
@@ -43,7 +41,7 @@ public sealed class EntityTntTests
     public void Primed_tnt_is_born_lit()
     {
         FakeWorldContext world = new();
-        Entity tnt = Tnt(world);
+        var tnt = Tnt(world);
 
         Assert.Equal(80, Fuse.FuseTicks(tnt));
         Assert.Equal(0.2F, tnt.VelocityY, 5);
@@ -53,7 +51,7 @@ public sealed class EntityTntTests
     public void The_body_comes_from_the_definition()
     {
         FakeWorldContext world = new();
-        Entity tnt = Tnt(world);
+        var tnt = Tnt(world);
 
         Assert.Equal(0.98F, tnt.Width, 5);
         Assert.Equal(0.98F, tnt.Height, 5);
@@ -67,7 +65,7 @@ public sealed class EntityTntTests
     public void The_fuse_burns_down_one_tick_at_a_time()
     {
         FakeWorldContext world = new();
-        Entity tnt = Tnt(world);
+        var tnt = Tnt(world);
 
         tnt.Tick();
         Assert.Equal(79, Fuse.FuseTicks(tnt));
@@ -81,7 +79,7 @@ public sealed class EntityTntTests
     public void Tnt_falls_and_settles_on_the_ground()
     {
         FakeWorldContext world = new();
-        Entity tnt = Tnt(world);
+        var tnt = Tnt(world);
         tnt.VelocityY = 0.0D;
 
         tnt.Tick();
@@ -94,9 +92,9 @@ public sealed class EntityTntTests
     public void A_spent_fuse_detonates_and_breaks_the_world()
     {
         FakeWorldContext world = new();
-        int stone = TestBlocks.Get("stone").Id;
+        var stone = TestBlocks.Get("stone").Id;
         world.Writer.SetBlock(9, 66, 8, stone);
-        Entity tnt = Tnt(world);
+        var tnt = Tnt(world);
         Fuse.SetFuse(tnt, 0);
 
         tnt.Tick();
@@ -111,9 +109,9 @@ public sealed class EntityTntTests
     {
         FakeWorldContext world = new();
         world.Rules.Set(DefaultRules.TntExplodes, new BoolValue(false));
-        int stone = TestBlocks.Get("stone").Id;
+        var stone = TestBlocks.Get("stone").Id;
         world.Writer.SetBlock(9, 66, 8, stone);
-        Entity tnt = Tnt(world);
+        var tnt = Tnt(world);
         Fuse.SetFuse(tnt, 0);
 
         tnt.Tick();
@@ -128,9 +126,9 @@ public sealed class EntityTntTests
     {
         FakeWorldContext world = new();
 
-        for (int attempt = 0; attempt < 20; attempt++)
+        for (var attempt = 0; attempt < 20; attempt++)
         {
-            Entity tnt = Tnt(world);
+            var tnt = Tnt(world);
             Fuse.ShortenFuse(tnt);
             Assert.InRange(Fuse.FuseTicks(tnt), 10, 29);
         }
@@ -140,13 +138,13 @@ public sealed class EntityTntTests
     public void The_fuse_survives_an_nbt_round_trip()
     {
         FakeWorldContext world = new();
-        Entity tnt = Tnt(world);
+        var tnt = Tnt(world);
         Fuse.SetFuse(tnt, 42);
 
         NBTTagCompound nbt = new();
         tnt.Write(nbt);
 
-        Entity restored = Tnt(world);
+        var restored = Tnt(world);
         restored.Read(nbt);
 
         Assert.Equal(42, Fuse.FuseTicks(restored));
@@ -156,7 +154,7 @@ public sealed class EntityTntTests
     [Fact]
     public void Protocol_ids_are_pinned()
     {
-        EntityType type = TestEntityCatalog.ByName("primedtnt");
+        var type = TestEntityCatalog.ByName("primedtnt");
 
         Assert.Equal(20, type.RequireDefinition().ProtocolId);
         Assert.Equal(50, type.RequireDefinition().SpawnObjectId);

@@ -8,16 +8,16 @@ public class LeverRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
-        int orientation = metadata & 7;
-        bool isActivated = (metadata & 8) > 0;
+        var metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
+        var orientation = metadata & 7;
+        var isActivated = (metadata & 8) > 0;
 
-        float baseWidth = 0.25F;
-        float baseThickness = 3.0F / 16.0F;
-        float baseHeight = 3.0F / 16.0F;
+        var baseWidth = 0.25F;
+        var baseThickness = 3.0F / 16.0F;
+        var baseHeight = 3.0F / 16.0F;
 
         // 1. Calculate the baseplate box (Your existing logic)
-        Box baseBox = orientation switch
+        var baseBox = orientation switch
         {
             5 => new Box(0.5 - baseHeight, 0.0, 0.5 - baseWidth, 0.5 + baseHeight, baseThickness, 0.5 + baseWidth),
             6 => new Box(0.5 - baseWidth, 0.0, 0.5 - baseHeight, 0.5 + baseWidth, baseThickness, 0.5 + baseHeight),
@@ -29,11 +29,11 @@ public class LeverRenderer : IBlockRenderer
         };
 
         // Levers use a cobblestone texture for the baseplate by default, unless overridden
-        int baseTextureId = ctx.OverrideTexture >= 0 ? ctx.OverrideTexture : BlockRegistry.Get("cobblestone").TextureId;
+        var baseTextureId = ctx.OverrideTexture >= 0 ? ctx.OverrideTexture : BlockRegistry.Get("cobblestone").TextureId;
 
         // Create a sub-context specifically for drawing the baseplate
         var baseCtx = new BlockRenderContext(
-            blockReader: ctx.BlockReader,
+            ctx.BlockReader,
             lighting: ctx.Lighting,
             tess: ctx.Tess,
             overrideTexture: baseTextureId,
@@ -55,26 +55,26 @@ public class LeverRenderer : IBlockRenderer
         baseCtx.DrawBlock(block, pos);
 
         var handleCtx = new BlockRenderContext(
-            blockReader: ctx.BlockReader,
-            tess: ctx.Tess,
-            lighting: ctx.Lighting,
-            overrideTexture: ctx.OverrideTexture,
-            renderAllFaces: ctx.RenderAllFaces,
-            flipTexture: ctx.FlipTexture,
-            bounds: null,
-            uvTop: ctx.UvRotateTop,
-            uvBottom: ctx.UvRotateBottom,
-            uvNorth: ctx.UvRotateNorth,
-            uvSouth: ctx.UvRotateSouth,
-            uvEast: ctx.UvRotateEast,
-            uvWest: ctx.UvRotateWest,
+            ctx.BlockReader,
+            ctx.Tess,
+            ctx.Lighting,
+            ctx.OverrideTexture,
+            ctx.RenderAllFaces,
+            ctx.FlipTexture,
+            null,
+            ctx.UvRotateTop,
+            ctx.UvRotateBottom,
+            ctx.UvRotateNorth,
+            ctx.UvRotateSouth,
+            ctx.UvRotateEast,
+            ctx.UvRotateWest,
             customFlag: ctx.CustomFlag,
             enableAo: false,
             aoBlendMode: 1
         );
 
         // Determine texture for the handle itself
-        int handleTextureId = handleCtx.OverrideTexture >= 0 ? handleCtx.OverrideTexture : block.GetTexture(0);
+        var handleTextureId = handleCtx.OverrideTexture >= 0 ? handleCtx.OverrideTexture : block.GetTexture(0);
 
         handleCtx.Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(handleTextureId));
 
@@ -82,15 +82,15 @@ public class LeverRenderer : IBlockRenderer
         // fixed pixel offsets in the vanilla art, and those are the same fractions of a larger tile.
         const float texel = 1.0F / 16.0F;
 
-        float minU = 0.0F;
-        float maxU = 1.0F;
-        float minV = 0.0F;
-        float maxV = 1.0F;
+        var minU = 0.0F;
+        var maxU = 1.0F;
+        var minV = 0.0F;
+        var maxV = 1.0F;
 
         // --- 3. Handle Vertex Math ---
-        Vec3D[] vertices = new Vec3D[8];
-        float hRadius = 1.0F / 16.0F;
-        float hLength = 10.0F / 16.0F;
+        var vertices = new Vec3D[8];
+        var hRadius = 1.0F / 16.0F;
+        var hLength = 10.0F / 16.0F;
 
         // Initial handle box (standing straight up)
         vertices[0] = new Vec3D(-hRadius, 0.0D, -hRadius);
@@ -102,7 +102,7 @@ public class LeverRenderer : IBlockRenderer
         vertices[6] = new Vec3D(hRadius, hLength, hRadius);
         vertices[7] = new Vec3D(-hRadius, hLength, hRadius);
 
-        for (int i = 0; i < 8; ++i)
+        for (var i = 0; i < 8; ++i)
         {
             // Toggle angle based on state
             if (isActivated)
@@ -141,16 +141,16 @@ public class LeverRenderer : IBlockRenderer
         }
 
         // --- 4. Draw the Handle Faces ---
-        int colorMultiplier = block.GetColorMultiplier(ctx.BlockReader, pos.X, pos.Y, pos.Z);
-        float r = (colorMultiplier >> 16 & 255) * 0.0039215686F;
-        float g = (colorMultiplier >> 8 & 255) * 0.0039215686F;
-        float b = (colorMultiplier & 255) * 0.0039215686F;
+        var colorMultiplier = block.GetColorMultiplier(ctx.BlockReader, pos.X, pos.Y, pos.Z);
+        var r = ((colorMultiplier >> 16) & 255) * 0.0039215686F;
+        var g = ((colorMultiplier >> 8) & 255) * 0.0039215686F;
+        var b = (colorMultiplier & 255) * 0.0039215686F;
 
         ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
 
         handleCtx.Tess.setColorOpaque_F(r, g, b);
 
-        for (int face = 0; face < 6; ++face)
+        for (var face = 0; face < 6; ++face)
         {
             // The handle uses specific tiny snippets of the texture atlas for its detail
             if (face == 0) // Bottom cap

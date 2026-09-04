@@ -2,14 +2,13 @@ namespace OmniBlock.NBT;
 
 public sealed class NBTTagCompound : NBTBase
 {
+    private readonly Dictionary<string, NBTBase> _dictionary = [];
     public IEnumerable<NBTBase> Values => _dictionary.Values;
     public IReadOnlyDictionary<string, NBTBase> Dictionary => _dictionary;
 
-    private readonly Dictionary<string, NBTBase> _dictionary = [];
-
     public override void WriteTagContents(Stream output)
     {
-        foreach (NBTBase value in _dictionary.Values)
+        foreach (var value in _dictionary.Values)
         {
             WriteTag(value, output);
         }
@@ -23,7 +22,7 @@ public sealed class NBTTagCompound : NBTBase
 
         while (true)
         {
-            NBTBase tag = ReadTag(input);
+            var tag = ReadTag(input);
 
             if (tag.GetTagType() is 0)
             {
@@ -34,10 +33,7 @@ public sealed class NBTTagCompound : NBTBase
         }
     }
 
-    public override byte GetTagType()
-    {
-        return 10;
-    }
+    public override byte GetTagType() => 10;
 
     public void SetTag(string key, NBTBase value)
     {
@@ -115,75 +111,33 @@ public sealed class NBTTagCompound : NBTBase
         _dictionary[key] = value;
     }
 
-    public void SetBoolean(string key, bool value)
-    {
-        SetByte(key, (sbyte)(value ? 1 : 0));
-    }
+    public void SetBoolean(string key, bool value) => SetByte(key, (sbyte)(value ? 1 : 0));
 
-    public bool HasKey(string key)
-    {
-        return _dictionary.ContainsKey(key);
-    }
+    public bool HasKey(string key) => _dictionary.ContainsKey(key);
 
-    public sbyte GetByte(string key)
-    {
-        return !_dictionary.TryGetValue(key, out NBTBase? value) ? (sbyte)0 : ((NBTTagByte)value).Value;
-    }
+    public sbyte GetByte(string key) => !_dictionary.TryGetValue(key, out var value) ? (sbyte)0 : ((NBTTagByte)value).Value;
 
-    public short GetShort(string key)
-    {
-        return !_dictionary.TryGetValue(key, out NBTBase? value) ? (short)0 : ((NBTTagShort)value).Value;
-    }
+    public short GetShort(string key) => !_dictionary.TryGetValue(key, out var value) ? (short)0 : ((NBTTagShort)value).Value;
 
-    public int GetInteger(string key)
-    {
-        return !_dictionary.TryGetValue(key, out NBTBase? value) ? 0 : ((NBTTagInt)value).Value;
-    }
+    public int GetInteger(string key) => !_dictionary.TryGetValue(key, out var value) ? 0 : ((NBTTagInt)value).Value;
 
-    public long GetLong(string key)
-    {
-        return !_dictionary.TryGetValue(key, out NBTBase? value) ? 0L : ((NBTTagLong)value).Value;
-    }
+    public long GetLong(string key) => !_dictionary.TryGetValue(key, out var value) ? 0L : ((NBTTagLong)value).Value;
 
-    public float GetFloat(string key)
-    {
-        return !_dictionary.TryGetValue(key, out NBTBase? value) ? 0.0F : ((NBTTagFloat)value).Value;
-    }
+    public float GetFloat(string key) => !_dictionary.TryGetValue(key, out var value) ? 0.0F : ((NBTTagFloat)value).Value;
 
-    public double GetDouble(string key)
-    {
-        return !_dictionary.TryGetValue(key, out NBTBase? value) ? 0.0D : ((NBTTagDouble)value).Value;
-    }
+    public double GetDouble(string key) => !_dictionary.TryGetValue(key, out var value) ? 0.0D : ((NBTTagDouble)value).Value;
 
-    public string GetString(string key)
-    {
-        return !_dictionary.TryGetValue(key, out NBTBase? value) ? string.Empty : ((NBTTagString)value).Value;
-    }
+    public string GetString(string key) => !_dictionary.TryGetValue(key, out var value) ? string.Empty : ((NBTTagString)value).Value;
 
-    public byte[] GetByteArray(string key)
-    {
-        return !_dictionary.TryGetValue(key, out NBTBase? value) ? [] : ((NBTTagByteArray)value).Values;
-    }
+    public byte[] GetByteArray(string key) => !_dictionary.TryGetValue(key, out var value) ? [] : ((NBTTagByteArray)value).Values;
 
-    public NBTTagCompound GetCompoundTag(string key)
-    {
-        return !_dictionary.TryGetValue(key, out NBTBase? value) ? new NBTTagCompound() : (NBTTagCompound)value;
-    }
+    public NBTTagCompound GetCompoundTag(string key) => !_dictionary.TryGetValue(key, out var value) ? new NBTTagCompound() : (NBTTagCompound)value;
 
-    public NBTTagList GetTagList(string key)
-    {
-        return !_dictionary.TryGetValue(key, out NBTBase? value) ? new NBTTagList() : (NBTTagList)value;
-    }
+    public NBTTagList GetTagList(string key) => !_dictionary.TryGetValue(key, out var value) ? new NBTTagList() : (NBTTagList)value;
 
-    public bool GetBoolean(string key)
-    {
-        return GetByte(key) != 0;
-    }
+    public bool GetBoolean(string key) => GetByte(key) != 0;
 
     public bool RemoveTag(string key) => _dictionary.Remove(key);
 
-    public override string ToString()
-    {
-        return $"{_dictionary.Count} entries";
-    }
+    public override string ToString() => $"{_dictionary.Count} entries";
 }

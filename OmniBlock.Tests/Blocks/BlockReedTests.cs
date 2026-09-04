@@ -10,8 +10,8 @@ public sealed class BlockReedTests
     public void CanPlaceAt_ConfiguredGroundNextToWater_ReturnsTrue()
     {
         FakeWorldContext world = new();
-        Block reeds = TestBlocks.Get("sugar_cane");
-        Block customGround = TestBlocks.Get("stone");
+        var reeds = TestBlocks.Get("sugar_cane");
+        var customGround = TestBlocks.Get("stone");
         world.ReaderWriter.SetInitial(0, 63, 0, customGround.Id);
         world.ReaderWriter.SetInitial(1, 63, 0, TestBlocks.Get("water").Id);
 
@@ -24,8 +24,8 @@ public sealed class BlockReedTests
     public void CanPlaceAt_ConfiguredGroundWithoutWater_ReturnsFalse()
     {
         FakeWorldContext world = new();
-        Block reeds = TestBlocks.Get("sugar_cane");
-        Block customGround = TestBlocks.Get("stone");
+        var reeds = TestBlocks.Get("sugar_cane");
+        var customGround = TestBlocks.Get("stone");
         world.ReaderWriter.SetInitial(0, 63, 0, customGround.Id);
 
         ReedBehavior behavior = new([customGround]);
@@ -37,8 +37,8 @@ public sealed class BlockReedTests
     public void CanPlaceAt_VanillaGroundNotInCustomConfig_ReturnsFalse()
     {
         FakeWorldContext world = new();
-        Block reeds = TestBlocks.Get("sugar_cane");
-        Block customGround = TestBlocks.Get("stone");
+        var reeds = TestBlocks.Get("sugar_cane");
+        var customGround = TestBlocks.Get("stone");
         world.ReaderWriter.SetInitial(0, 63, 0, TestBlocks.Get("dirt").Id);
         world.ReaderWriter.SetInitial(1, 63, 0, TestBlocks.Get("water").Id);
 
@@ -50,14 +50,14 @@ public sealed class BlockReedTests
     [Fact]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"reed"}""");
+        using var json = JsonDocument.Parse("""{"Type":"reed"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("reed", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"reed","valid_ground":["omniblock:dirt","not_a_real_block"]}""");
+        using var json = JsonDocument.Parse("""{"Type":"reed","valid_ground":["omniblock:dirt","not_a_real_block"]}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("reed", json.RootElement));
     }
 }

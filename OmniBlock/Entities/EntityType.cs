@@ -28,6 +28,7 @@ public class EntityType(
 
     /// <summary>Client-interpreted presentation descriptor; never resolves a client-side type here.</summary>
     public EntityRenderDescriptor? RenderDescriptor { get; } = renderDescriptor;
+
     public ResourceLocation? ConstructorProviderType { get; } = constructorProviderType;
 
     /// <summary>
@@ -36,7 +37,7 @@ public class EntityType(
     /// </summary>
     public Entity Create(IWorldContext world)
     {
-        Entity entity = factory(world, this);
+        var entity = factory(world, this);
 
         // After the constructor, not inside it: a behavior that rolls per-individual state (a slime's
         // size, which resizes the body) needs a finished entity.

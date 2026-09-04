@@ -1,20 +1,19 @@
 using OmniBlock.Items;
-using OmniBlock.Registries;
+using OmniBlock.Registries.Data;
 
 namespace OmniBlock.Tests.Items;
 
 /// <summary>
-/// Verifies <see cref="ItemDefinitionJsonLoader"/> (an explicit-ID <see cref="Registries.Data.DataAssetLoader"/>
-/// subclass, wired in via <see cref="RegistryDefinitions.Items"/>) supports the same base + global-datapack +
-/// world-datapack layering as GameModes/Recipes — see <see cref="RegistryAccessTests"/> for the pattern this
-/// mirrors. Does not touch <c>Item.ITEMS[]</c> — that's still boot-time-only, deliberately out of scope.
+///     Verifies <see cref="ItemDefinitionJsonLoader" /> (an explicit-ID <see cref="Registries.Data.DataAssetLoader" />
+///     subclass, wired in via <see cref="RegistryDefinitions.Items" />) supports the same base + global-datapack +
+///     world-datapack layering as GameModes/Recipes — see <see cref="RegistryAccessTests" /> for the pattern this
+///     mirrors. Does not touch <c>Item.ITEMS[]</c> — that's still boot-time-only, deliberately out of scope.
 /// </summary>
 [Collection("RegistryAccess")]
 public sealed class ItemDefinitionDatapackTests : IDisposable
 {
-    private readonly string _tempDir;
-
     private static readonly RegistryKey<ItemDefinition> s_key = new(ResourceLocation.Parse("test:item"));
+    private readonly string _tempDir;
 
     public ItemDefinitionDatapackTests()
     {
@@ -29,26 +28,26 @@ public sealed class ItemDefinitionDatapackTests : IDisposable
         GC.Collect();
         GC.WaitForPendingFinalizers();
         if (Directory.Exists(_tempDir))
-            Directory.Delete(_tempDir, recursive: true);
+            Directory.Delete(_tempDir, true);
     }
 
     private void WriteBaseItem(string name, int protocolId)
     {
-        string dir = Path.Combine(_tempDir, "assets", "item");
+        var dir = Path.Combine(_tempDir, "assets", "item");
         Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, $"{name}.json"), $$"""{"ProtocolId": {{protocolId}}}""");
     }
 
     private void WriteDatapackItem(string packName, string ns, string name, int protocolId)
     {
-        string dir = Path.Combine(_tempDir, "datapacks", packName, "data", ns, "item");
+        var dir = Path.Combine(_tempDir, "datapacks", packName, "data", ns, "item");
         Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, $"{name}.json"), $$"""{"ProtocolId": {{protocolId}}}""");
     }
 
     private void WriteWorldItem(string packName, string ns, string name, int protocolId)
     {
-        string dir = Path.Combine(_tempDir, "world", "datapacks", packName, "data", ns, "item");
+        var dir = Path.Combine(_tempDir, "world", "datapacks", packName, "data", ns, "item");
         Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, $"{name}.json"), $$"""{"ProtocolId": {{protocolId}}}""");
     }
@@ -62,9 +61,9 @@ public sealed class ItemDefinitionDatapackTests : IDisposable
         WriteBaseItem("ruby", 300);
         RegistryAccess.AddDynamic(RegisterItemsDefinition());
 
-        RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
+        var ra = RegistryAccess.Build(_tempDir);
 
-        ItemDefinition? def = ra.GetOrThrow(s_key).GetValue(ResourceLocation.Parse("omniblock:ruby"));
+        var def = ra.GetOrThrow(s_key).GetValue(ResourceLocation.Parse("omniblock:ruby"));
         Assert.NotNull(def);
         Assert.Equal(300, def.ProtocolId);
     }
@@ -76,8 +75,8 @@ public sealed class ItemDefinitionDatapackTests : IDisposable
         WriteDatapackItem("mypack", "omniblock", "sapphire", 301);
         RegistryAccess.AddDynamic(RegisterItemsDefinition());
 
-        RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir, datapackPath: _tempDir);
-        IReadableRegistry<ItemDefinition> registry = ra.GetOrThrow(s_key);
+        var ra = RegistryAccess.Build(_tempDir, _tempDir);
+        var registry = ra.GetOrThrow(s_key);
 
         Assert.NotNull(registry.GetValue(ResourceLocation.Parse("omniblock:ruby")));
         Assert.NotNull(registry.GetValue(ResourceLocation.Parse("omniblock:sapphire")));
@@ -90,8 +89,8 @@ public sealed class ItemDefinitionDatapackTests : IDisposable
         WriteWorldItem("worldpack", "omniblock", "topaz", 302);
         RegistryAccess.AddDynamic(RegisterItemsDefinition());
 
-        RegistryAccess server = RegistryAccess.Build(basePath: _tempDir);
-        RegistryAccess withWorld = server.WithWorldDatapacks(Path.Combine(_tempDir, "world"));
+        var server = RegistryAccess.Build(_tempDir);
+        var withWorld = server.WithWorldDatapacks(Path.Combine(_tempDir, "world"));
 
         Assert.Null(server.GetOrThrow(s_key).GetValue(ResourceLocation.Parse("omniblock:topaz")));
         Assert.NotNull(withWorld.GetOrThrow(s_key).GetValue(ResourceLocation.Parse("omniblock:topaz")));
@@ -103,6 +102,6 @@ public sealed class ItemDefinitionDatapackTests : IDisposable
         WriteBaseItem("bad_item", 5); // 0-255 is reserved for block-derived items
         RegistryAccess.AddDynamic(RegisterItemsDefinition());
 
-        Assert.Throws<Registries.Data.AssetLoadException>(() => RegistryAccess.Build(basePath: _tempDir));
+        Assert.Throws<AssetLoadException>(() => RegistryAccess.Build(_tempDir));
     }
 }

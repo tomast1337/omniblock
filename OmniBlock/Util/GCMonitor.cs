@@ -4,16 +4,11 @@ namespace OmniBlock.Util;
 
 public sealed class GCMonitor : IDisposable
 {
-    public long MaxMemoryBytes { get; private set; }
-    public long UsedMemoryBytes { get; private set; }
-    public long UsedHeapBytes { get; private set; }
-    public bool AllowUpdating { get; set; } = true;
+    private const int UpdateIntervalMs = 250;
+    private readonly Process _process;
 
     private readonly Timer _timer;
-    private readonly Process _process;
     private bool _disposed;
-
-    private const int UpdateIntervalMs = 250;
 
     public GCMonitor()
     {
@@ -28,15 +23,10 @@ public sealed class GCMonitor : IDisposable
         );
     }
 
-    private void Update()
-    {
-        if (!AllowUpdating || _disposed) return;
-
-        _process.Refresh();
-
-        UsedMemoryBytes = _process.WorkingSet64;
-        UsedHeapBytes = GC.GetTotalMemory(false);
-    }
+    public long MaxMemoryBytes { get; private set; }
+    public long UsedMemoryBytes { get; private set; }
+    public long UsedHeapBytes { get; private set; }
+    public bool AllowUpdating { get; set; } = true;
 
     public void Dispose()
     {
@@ -45,5 +35,15 @@ public sealed class GCMonitor : IDisposable
 
         _timer.Dispose();
         _process.Dispose();
+    }
+
+    private void Update()
+    {
+        if (!AllowUpdating || _disposed) return;
+
+        _process.Refresh();
+
+        UsedMemoryBytes = _process.WorkingSet64;
+        UsedHeapBytes = GC.GetTotalMemory(false);
     }
 }

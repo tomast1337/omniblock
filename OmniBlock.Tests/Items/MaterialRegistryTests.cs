@@ -1,5 +1,3 @@
-using OmniBlock.Items;
-
 namespace OmniBlock.Tests.Items;
 
 public sealed class MaterialRegistryTests
@@ -7,7 +5,7 @@ public sealed class MaterialRegistryTests
     [Fact]
     public void ToolMaterialRegistry_LoadsIronFromJson()
     {
-        ToolMaterial iron = ToolMaterialRegistry.Get("iron");
+        var iron = ToolMaterialRegistry.Get("iron");
 
         Assert.Equal(250, iron.MaxUses);
         Assert.Equal(6.0f, iron.Efficiency);
@@ -18,7 +16,7 @@ public sealed class MaterialRegistryTests
     [Fact]
     public void ArmorMaterialRegistry_LoadsDiamondFromJson()
     {
-        ArmorMaterial diamond = ArmorMaterialRegistry.Get("diamond");
+        var diamond = ArmorMaterialRegistry.Get("diamond");
 
         Assert.Equal(3, diamond.ArmorLevel);
         Assert.Equal("diamond", diamond.TexturePrefix);
@@ -27,7 +25,7 @@ public sealed class MaterialRegistryTests
     [Fact]
     public void IronShovel_MaxDamageMatchesIronToolMaterial()
     {
-        Item shovel = ContentRuntime.Current.Items.Get("omniblock:shovel_iron");
+        var shovel = ContentRuntime.Current.Items.Get("omniblock:shovel_iron");
         Assert.Equal(250, shovel.GetMaxDamage());
     }
 }

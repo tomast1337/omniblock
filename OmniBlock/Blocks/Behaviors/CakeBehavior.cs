@@ -20,10 +20,7 @@ internal sealed class CakeBehavior(int top, int side, int inner, int bottom) : I
         return true;
     }
 
-    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event)
-    {
-        Eat(@event.Player, @event.World, @event.X, @event.Y, @event.Z);
-    }
+    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event) => Eat(@event.Player, @event.World, @event.X, @event.Y, @event.Z);
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
     {
@@ -32,10 +29,7 @@ internal sealed class CakeBehavior(int top, int side, int inner, int bottom) : I
         block.SetRuntimeBoundingBox(minX, 0.0F, EdgeInset, 1.0F - EdgeInset, CakeHeight, 1.0F - EdgeInset);
     }
 
-    public void SetupRenderBoundingBox(Block block)
-    {
-        block.SetRuntimeBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, CakeHeight, 1.0F - EdgeInset);
-    }
+    public void SetupRenderBoundingBox(Block block) => block.SetRuntimeBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, CakeHeight, 1.0F - EdgeInset);
 
     public Box? GetCollisionShape(Block block, IBlockReader reader, EntityManager entities, int x, int y, int z, Box? defaultShape)
     {
@@ -44,15 +38,9 @@ internal sealed class CakeBehavior(int top, int side, int inner, int bottom) : I
         return new Box(x + minX, y, z + EdgeInset, x + 1 - EdgeInset, y + CakeHeight - EdgeInset, z + 1 - EdgeInset);
     }
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-    {
-        return CanGrow(@event.World.Reader, @event.X, @event.Y, @event.Z);
-    }
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => CanGrow(@event.World.Reader, @event.X, @event.Y, @event.Z);
 
-    public bool CanGrow(Block block, OnTickEvent @event)
-    {
-        return CanGrow(@event.World.Reader, @event.X, @event.Y, @event.Z);
-    }
+    public bool CanGrow(Block block, OnTickEvent @event) => CanGrow(@event.World.Reader, @event.X, @event.Y, @event.Z);
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
@@ -81,10 +69,7 @@ internal sealed class CakeBehavior(int top, int side, int inner, int bottom) : I
         };
     }
 
-    private static bool CanGrow(IBlockReader world, int x, int y, int z)
-    {
-        return world.GetMaterial(x, y - 1, z).IsSolid;
-    }
+    private static bool CanGrow(IBlockReader world, int x, int y, int z) => world.GetMaterial(x, y - 1, z).IsSolid;
 
     private static void Eat(EntityPlayer player, IWorldContext world, int x, int y, int z)
     {

@@ -1,15 +1,14 @@
-using System.Collections.Generic;
-using System.Linq;
 using OmniBlock.Entities;
 using OmniBlock.Items;
 using OmniBlock.Loot;
 using OmniBlock.Loot.Conditions;
+using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Tests.Loot;
 
 /// <summary>
-/// Covers the shared pool-based loot model: additive pools, weighted entries within a pool,
-/// conditions (including the killer gate behind creeper discs), and context-aware entries.
+///     Covers the shared pool-based loot model: additive pools, weighted entries within a pool,
+///     conditions (including the killer gate behind creeper discs), and context-aware entries.
 /// </summary>
 public sealed class LootTableTests
 {
@@ -17,16 +16,16 @@ public sealed class LootTableTests
     private static readonly Item s_bone = ContentRuntime.Current.Items.Get("omniblock:bone");
 
     private static LootContext Context(Entity? self = null, Entity? killer = null) =>
-        new(self, killer, 0, System.Random.Shared);
+        new(self, killer, 0, Random.Shared);
 
     [Fact]
     public void Single_entry_pool_always_yields_that_item()
     {
-        LootTable table = LootTable.Single(s_arrow, 1, 1);
+        var table = LootTable.Single(s_arrow, 1, 1);
 
-        for (int i = 0; i < 20; i++)
+        for (var i = 0; i < 20; i++)
         {
-            ItemStack stack = Assert.Single(table.Roll(Context()));
+            var stack = Assert.Single(table.Roll(Context()));
             Assert.Equal(s_arrow.Id, stack.ItemId);
         }
     }
@@ -34,12 +33,12 @@ public sealed class LootTableTests
     [Fact]
     public void Count_range_is_respected()
     {
-        LootTable table = LootTable.Single(s_arrow, 2, 4);
+        var table = LootTable.Single(s_arrow, 2, 4);
         HashSet<int> seenCounts = [];
 
-        for (int i = 0; i < 300; i++)
+        for (var i = 0; i < 300; i++)
         {
-            int count = table.Roll(Context()).Count();
+            var count = table.Roll(Context()).Count();
             Assert.InRange(count, 2, 4);
             seenCounts.Add(count);
         }
@@ -54,7 +53,7 @@ public sealed class LootTableTests
             new LootPool([LootEntry.Of(s_arrow)], 1, 1),
             new LootPool([LootEntry.Of(s_bone)], 1, 1));
 
-        List<int> ids = table.Roll(Context()).Select(s => s.ItemId).ToList();
+        var ids = table.Roll(Context()).Select(s => s.ItemId).ToList();
 
         Assert.Equal(2, ids.Count);
         Assert.Contains(s_arrow.Id, ids);
@@ -64,13 +63,13 @@ public sealed class LootTableTests
     [Fact]
     public void Entries_within_a_pool_are_exclusive_and_weighted()
     {
-        LootTable table = new(new LootPool([LootEntry.Of(s_arrow, weight: 9), LootEntry.Of(s_bone, weight: 1)], 1, 1));
-        int arrows = 0;
-        int bones = 0;
+        LootTable table = new(new LootPool([LootEntry.Of(s_arrow, 9), LootEntry.Of(s_bone)], 1, 1));
+        var arrows = 0;
+        var bones = 0;
 
-        for (int i = 0; i < 400; i++)
+        for (var i = 0; i < 400; i++)
         {
-            ItemStack stack = Assert.Single(table.Roll(Context()));
+            var stack = Assert.Single(table.Roll(Context()));
             if (stack.ItemId == s_arrow.Id) arrows++;
             else bones++;
         }
@@ -85,9 +84,9 @@ public sealed class LootTableTests
     [Fact]
     public void Zero_weight_entry_is_never_picked()
     {
-        LootTable table = new(new LootPool([LootEntry.Of(s_arrow, weight: 0), LootEntry.Of(s_bone, weight: 1)], 1, 1));
+        LootTable table = new(new LootPool([LootEntry.Of(s_arrow, 0), LootEntry.Of(s_bone)], 1, 1));
 
-        for (int i = 0; i < 100; i++)
+        for (var i = 0; i < 100; i++)
         {
             Assert.Equal(s_bone.Id, Assert.Single(table.Roll(Context())).ItemId);
         }
@@ -100,7 +99,7 @@ public sealed class LootTableTests
             new LootPool([LootEntry.Of(s_arrow)], 1, 1),
             new LootPool([LootEntry.Of(s_bone)], 1, 1, new NeverCondition()));
 
-        ItemStack stack = Assert.Single(table.Roll(Context()));
+        var stack = Assert.Single(table.Roll(Context()));
         Assert.Equal(s_arrow.Id, stack.ItemId);
     }
 
@@ -122,10 +121,10 @@ public sealed class LootTableTests
         BurningPig pig = new(world);
         LootTable table = new(new LootPool([LootEntry.Of(s_bone)], 1, 1, new OnFireCondition()));
 
-        Assert.Empty(table.Roll(Context(self: pig)));
+        Assert.Empty(table.Roll(Context(pig)));
 
         pig.Ignite();
-        Assert.Single(table.Roll(Context(self: pig)));
+        Assert.Single(table.Roll(Context(pig)));
     }
 
     [Fact]
@@ -134,7 +133,7 @@ public sealed class LootTableTests
         LootTable table = new(new LootPool(
             [new LootEntry(context => new ItemStack(s_arrow, 1, context.BlockMeta))], 1, 1));
 
-        ItemStack stack = Assert.Single(table.Roll(new LootContext(null, null, 7, System.Random.Shared)));
+        var stack = Assert.Single(table.Roll(new LootContext(null, null, 7, Random.Shared)));
         Assert.Equal(7, stack.GetDamage());
     }
 
@@ -144,7 +143,7 @@ public sealed class LootTableTests
         public bool Test(in LootContext context) => false;
     }
 
-    private sealed class BurningPig(OmniBlock.Worlds.Core.Systems.IWorldContext world) : EntityCreature(world, TestEntityCatalog.ByName("pig"))
+    private sealed class BurningPig(IWorldContext world) : EntityCreature(world, TestEntityCatalog.ByName("pig"))
     {
         public void Ignite() => FireTicks = 100;
     }

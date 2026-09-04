@@ -2,7 +2,6 @@ using OmniBlock.Blocks;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Entities;
 using OmniBlock.Items;
-using OmniBlock.Recipes;
 using OmniBlock.Processes;
 using OmniBlock.Registries.Data;
 using OmniBlock.Worlds.Generation.Biomes;
@@ -43,8 +42,8 @@ internal static class RegistryDefinitions
     // Loaded once at Bootstrap.Initialize() into process-global canonical registries —
     // never per-world, never reloaded: static Block instances cannot re-resolve materials.
     public static readonly RegistryDefinition<MaterialDefinition> Materials =
-        new(RegistryKeys.Materials, "material", LoadLocations.AllInit, isReloadable: false, serversideOnly: true);
+        new(RegistryKeys.Materials, "material", LoadLocations.AllInit, false, true);
 
     public static readonly RegistryDefinition<SoundGroupDefinition> SoundGroups =
-        new(RegistryKeys.SoundGroups, "sound_group", LoadLocations.AllInit, isReloadable: false, serversideOnly: true);
+        new(RegistryKeys.SoundGroups, "sound_group", LoadLocations.AllInit, false, true);
 }

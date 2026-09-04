@@ -32,7 +32,7 @@ public sealed class EntityBehaviorSet
     /// </summary>
     public T? Find<T>() where T : class
     {
-        foreach (object? slot in new object?[] { Ticker, Attack, Targeting, Loot, Lifecycle, Persistence, Interactable, Physics })
+        foreach (var slot in new object?[] { Ticker, Attack, Targeting, Loot, Lifecycle, Persistence, Interactable, Physics })
         {
             if (FindIn(slot) is { } found)
             {

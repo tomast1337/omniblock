@@ -30,15 +30,9 @@ internal sealed class SnowBehavior(Item dropItem, float dropSpread) : BlockRunti
         @event.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.Id], 1);
     }
 
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId)
-    {
-        return dropItem.Id;
-    }
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => dropItem.Id;
 
-    public int GetDroppedItemCount(Block block, int defaultCount)
-    {
-        return 0;
-    }
+    public int GetDroppedItemCount(Block block, int defaultCount) => 0;
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
     {
@@ -76,8 +70,5 @@ internal sealed class SnowBehavior(Item dropItem, float dropSpread) : BlockRunti
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
     }
 
-    public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
-    {
-        return side == Side.Up || defaultVisibility;
-    }
+    public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility) => side == Side.Up || defaultVisibility;
 }

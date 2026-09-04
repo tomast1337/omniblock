@@ -6,10 +6,9 @@ public class ConsoleInputThread(OmniBlockServer server)
     {
         Thread t = new(() =>
         {
-
             while (!server.stopped && server.running)
             {
-                string? line = Console.ReadLine();
+                var line = Console.ReadLine();
                 if (line != null)
                 {
                     server.QueueCommands(line, server);

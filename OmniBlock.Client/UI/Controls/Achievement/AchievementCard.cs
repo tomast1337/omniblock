@@ -1,4 +1,3 @@
-using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.UI.Rendering;
 using OmniBlock.Stats;
 using Color = OmniBlock.Client.UI.Colors.Color;
@@ -24,8 +23,8 @@ public class AchievementCard : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        bool unlocked = _stats.HasAchievementUnlocked(_achievement);
-        bool canUnlock = _stats.CanUnlockAchievement(_achievement);
+        var unlocked = _stats.HasAchievementUnlocked(_achievement);
+        var canUnlock = _stats.CanUnlockAchievement(_achievement);
 
         // Base background
         renderer.DrawRect(0, 0, ComputedWidth, ComputedHeight, new Color(0, 0, 0, 100));
@@ -43,20 +42,20 @@ public class AchievementCard : UIElement
         DrawAchievementIcon(renderer, unlocked, canUnlock);
 
         // --- Titles and Description ---
-        Color titleColor = unlocked ? _achievement.isChallenge() ? Color.AchievementChallengeYellow : Color.White
+        var titleColor = unlocked ? _achievement.isChallenge() ? Color.AchievementChallengeYellow : Color.White
             : canUnlock ? Color.GrayE0 : Color.Gray80;
 
-        string name = Translations.Get(_achievement.StatName);
+        var name = Translations.Get(_achievement.StatName);
         renderer.DrawText(name, 46, 8, titleColor);
 
-        string? desc = _achievement.GetTranslatedDescription;
+        var desc = _achievement.GetTranslatedDescription;
         if (desc != null && canUnlock)
         {
             renderer.DrawTextWrapped(desc, 46, 22, ComputedWidth - 120, Color.GrayA0);
         }
         else if (!canUnlock)
         {
-            string reqName = _achievement.parent?.GetTranslatedTitle ?? "Unknown";
+            var reqName = _achievement.parent?.GetTranslatedTitle ?? "Unknown";
             renderer.DrawTextWrapped(string.Format(Translations.Get("achievement.requires"), reqName), 46, 22, ComputedWidth - 120, Color.AchievementRequiresRed);
         }
 
@@ -75,11 +74,11 @@ public class AchievementCard : UIElement
 
     private void DrawAchievementIcon(UIRenderer renderer, bool unlocked, bool canUnlock)
     {
-        TextureHandle bgTexture = renderer.TextureManager.GetTextureId("/achievement/bg.png");
+        var bgTexture = renderer.TextureManager.GetTextureId("/achievement/bg.png");
         renderer.TextureManager.BindTexture(bgTexture);
 
         const int iconX = 10;
-        int iconY = (int)ComputedHeight / 2 - 13;
+        var iconY = (int)ComputedHeight / 2 - 13;
 
         renderer.DrawTexturedModalRect(bgTexture, iconX - 2, iconY - 2, _achievement.isChallenge() ? 26 : 0, 202, 26, 26);
 

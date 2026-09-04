@@ -8,10 +8,9 @@ namespace OmniBlock.Screens;
 
 public class FurnaceScreenHandler : ScreenHandler
 {
-
-    private BlockEntityFurnace furnaceBlockEntity;
-    private int cookTime;
+    private readonly BlockEntityFurnace furnaceBlockEntity;
     private int burnTime;
+    private int cookTime;
     private int fuelTime;
 
     public FurnaceScreenHandler(InventoryPlayer playerInventory, BlockEntityFurnace furnace)
@@ -24,7 +23,7 @@ public class FurnaceScreenHandler : ScreenHandler
         int row;
         for (row = 0; row < 3; ++row)
         {
-            for (int column = 0; column < 9; ++column)
+            for (var column = 0; column < 9; ++column)
             {
                 AddSlot(new Slot(playerInventory, column + row * 9 + 9, 8 + column * 18, 84 + row * 18));
             }
@@ -34,7 +33,6 @@ public class FurnaceScreenHandler : ScreenHandler
         {
             AddSlot(new Slot(playerInventory, row, 8 + row * 18, 142));
         }
-
     }
 
     public override void AddListener(ScreenHandlerListener listener)
@@ -49,9 +47,9 @@ public class FurnaceScreenHandler : ScreenHandler
     {
         base.SendContentUpdates();
 
-        for (int listenerIndex = 0; listenerIndex < Listeners.Count; ++listenerIndex)
+        for (var listenerIndex = 0; listenerIndex < Listeners.Count; ++listenerIndex)
         {
-            ScreenHandlerListener listener = Listeners[listenerIndex];
+            var listener = Listeners[listenerIndex];
             if (cookTime != furnaceBlockEntity.CookTime)
             {
                 listener.onPropertyUpdate(this, 0, furnaceBlockEntity.CookTime);
@@ -89,21 +87,17 @@ public class FurnaceScreenHandler : ScreenHandler
         {
             furnaceBlockEntity.FuelTime = value;
         }
-
     }
 
-    public override bool canUse(EntityPlayer player)
-    {
-        return furnaceBlockEntity.CanPlayerUse(player);
-    }
+    public override bool canUse(EntityPlayer player) => furnaceBlockEntity.CanPlayerUse(player);
 
     public override ItemStack quickMove(int slotNumber)
     {
         ItemStack movedStack = null;
-        Slot slot = Slots[slotNumber];
+        var slot = Slots[slotNumber];
         if (slot != null && slot.hasStack())
         {
-            ItemStack slotStack = slot.getStack();
+            var slotStack = slot.getStack();
             movedStack = slotStack.Copy();
             if (slotNumber == 2)
             {

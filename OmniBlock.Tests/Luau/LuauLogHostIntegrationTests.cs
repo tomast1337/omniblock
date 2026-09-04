@@ -19,7 +19,7 @@ public sealed class LuauLogHostIntegrationTests
         {
             LuauLogHost.Install(state.Handle);
 
-            Assert.True(state.TryExecute("print('player', 42, true)", out string output), output);
+            Assert.True(state.TryExecute("print('player', 42, true)", out var output), output);
             Assert.Equal(["player\t42\ttrue"], lines);
         }
         finally

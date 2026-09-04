@@ -28,10 +28,7 @@ public sealed class PistonMovingBehavior : BlockRuntimeBehavior, IBlockPhysics, 
             @event.World.Entities.RemoveBlockEntity(@event.X, @event.Y, @event.Z);
     }
 
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId)
-    {
-        return 0;
-    }
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => 0;
 
     public void OnDropStacks(Block block, OnDropEvent @event)
     {
@@ -41,10 +38,7 @@ public sealed class PistonMovingBehavior : BlockRuntimeBehavior, IBlockPhysics, 
         if (piston != null) Blocks.GetByProtocolId(piston.PushedBlockId).DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, piston.PushedBlockData));
     }
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-    {
-        return false;
-    }
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => false;
 
     public Box? GetCollisionShape(Block block, IBlockReader reader, EntityManager entities, int x, int y, int z, Box? defaultShape)
     {
@@ -76,10 +70,7 @@ public sealed class PistonMovingBehavior : BlockRuntimeBehavior, IBlockPhysics, 
             -(double)(PistonConstants.HeadOffsetZ[facing] * progress)));
     }
 
-    public static BlockEntity CreatePistonBlockEntity(int blockId, int blockMeta, int facing, bool extending, bool source)
-    {
-        return new BlockEntityPiston(blockId, blockMeta, facing, extending, source);
-    }
+    public static BlockEntity CreatePistonBlockEntity(int blockId, int blockMeta, int facing, bool extending, bool source) => new BlockEntityPiston(blockId, blockMeta, facing, extending, source);
 
     public Box? GetPushedBlockCollisionShape(Block block, IBlockReader world, EntityManager entities, int x, int y, int z, int blockId, float sizeMultiplier, int facing)
     {

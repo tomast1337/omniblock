@@ -2,16 +2,12 @@ namespace OmniBlock.NBT;
 
 internal sealed class NBTTagByteArray : NBTBase
 {
-    public byte[] Values { get; set; } = [];
-
     public NBTTagByteArray()
     {
     }
 
-    public NBTTagByteArray(byte[] value)
-    {
-        Values = value;
-    }
+    public NBTTagByteArray(byte[] value) => Values = value;
+    public byte[] Values { get; set; } = [];
 
     public override void WriteTagContents(Stream output)
     {
@@ -26,13 +22,7 @@ internal sealed class NBTTagByteArray : NBTBase
         input.ReadExactly(Values);
     }
 
-    public override byte GetTagType()
-    {
-        return 7;
-    }
+    public override byte GetTagType() => 7;
 
-    public override string ToString()
-    {
-        return $"[{Values.Length} bytes]";
-    }
+    public override string ToString() => $"[{Values.Length} bytes]";
 }

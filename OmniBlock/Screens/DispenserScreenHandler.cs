@@ -7,7 +7,7 @@ namespace OmniBlock.Screens;
 
 public class DispenserScreenHandler : ScreenHandler
 {
-    private BlockEntityDispenser dispenserBlockEntity;
+    private readonly BlockEntityDispenser dispenserBlockEntity;
 
     public DispenserScreenHandler(IInventory playerInventory, BlockEntityDispenser dispenser)
     {
@@ -35,11 +35,7 @@ public class DispenserScreenHandler : ScreenHandler
         {
             AddSlot(new Slot(playerInventory, row, 8 + row * 18, 142));
         }
-
     }
 
-    public override bool canUse(EntityPlayer player)
-    {
-        return dispenserBlockEntity.CanPlayerUse(player);
-    }
+    public override bool canUse(EntityPlayer player) => dispenserBlockEntity.CanPlayerUse(player);
 }

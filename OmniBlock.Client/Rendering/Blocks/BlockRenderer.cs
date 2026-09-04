@@ -2,9 +2,9 @@ using OmniBlock.Blocks;
 using OmniBlock.Client.Rendering.Blocks.Renderers;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Util.Maths;
-using OmniBlock.Worlds;
 using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
+using Silk.NET.Maths;
 
 namespace OmniBlock.Client.Rendering.Blocks;
 
@@ -31,21 +31,21 @@ public class BlockRenderer
 
     public static bool RenderBlockByRenderType(IBlockReader world, ILightProvider lighting, Block block, BlockPos pos, Tessellator tess, int overrideTexture = -1, bool renderAllFaces = false, bool doVariance = false)
     {
-        BlockRendererType type = block.RenderType;
+        var type = block.RenderType;
 
         block.UpdateBoundingBox(world, pos.X, pos.Y, pos.Z);
 
-        TextureVariance topRule = doVariance ? block.TopVariance : TextureVariance.None;
-        TextureVariance botRule = doVariance ? block.BottomVariance : TextureVariance.None;
-        TextureVariance sideRule = doVariance ? block.SideVariance : TextureVariance.None;
+        var topRule = doVariance ? block.TopVariance : TextureVariance.None;
+        var botRule = doVariance ? block.BottomVariance : TextureVariance.None;
+        var sideRule = doVariance ? block.SideVariance : TextureVariance.None;
 
-        int topHash = topRule != TextureVariance.None ? BlockRenderContext.GetTextureVarianceHash(pos.X, pos.Y, pos.Z) : 0;
-        int botHash = botRule != TextureVariance.None ? BlockRenderContext.GetTextureVarianceHash(pos.X, pos.Y - 1, pos.Z) : 0;
-        int sideHash = sideRule != TextureVariance.None ? BlockRenderContext.GetTextureVarianceHash(pos.X, pos.Y, pos.Z) : 0;
+        var topHash = topRule != TextureVariance.None ? BlockRenderContext.GetTextureVarianceHash(pos.X, pos.Y, pos.Z) : 0;
+        var botHash = botRule != TextureVariance.None ? BlockRenderContext.GetTextureVarianceHash(pos.X, pos.Y - 1, pos.Z) : 0;
+        var sideHash = sideRule != TextureVariance.None ? BlockRenderContext.GetTextureVarianceHash(pos.X, pos.Y, pos.Z) : 0;
 
-        int topRot = BlockRenderContext.ApplyVariance(topHash, topRule, out int flipTop);
-        int botRot = BlockRenderContext.ApplyVariance(botHash, botRule, out int flipBot);
-        int sideRot = BlockRenderContext.ApplyVariance(sideHash, sideRule, out int flipSide);
+        var topRot = BlockRenderContext.ApplyVariance(topHash, topRule, out var flipTop);
+        var botRot = BlockRenderContext.ApplyVariance(botHash, botRule, out var flipBot);
+        var sideRot = BlockRenderContext.ApplyVariance(sideHash, sideRule, out var flipSide);
 
         var ctx = new BlockRenderContext(
             tess: tess,
@@ -100,27 +100,27 @@ public class BlockRenderer
 
     public static void RenderBlockOnInventory(Block block, int metadata, float brightness, Tessellator tess)
     {
-        BlockRendererType renderType = block.RenderType;
+        var renderType = block.RenderType;
         var uiCtx = new BlockRenderContext(
-            blockReader: NullBlockReader.Instance,
-            tess: tess,
-            lighting: null,
+            NullBlockReader.Instance,
+            tess,
+            null,
             renderAllFaces: true,
             enableAo: false,
             overrideTexture: -1
         );
 
-        Vec3D origin = new Vec3D(0, 0, 0);
-        FaceColors dummyColors = new FaceColors();
+        var origin = new Vec3D(0, 0, 0);
+        var dummyColors = new FaceColors();
 
         if (renderType == BlockRendererType.Standard || renderType == BlockRendererType.PistonBase)
         {
-            bool isPiston = renderType == BlockRendererType.PistonBase;
+            var isPiston = renderType == BlockRendererType.PistonBase;
 
             void SetFaceColor(int face)
             {
-                int c = block.GetColorForFace(metadata, face);
-                GLManager.Color = new((c >> 16 & 255) / 255.0F * brightness, (c >> 8 & 255) / 255.0F * brightness, (c & 255) / 255.0F * brightness, 1.0F);
+                var c = block.GetColorForFace(metadata, face);
+                GLManager.Color = new Vector4D<float>(((c >> 16) & 255) / 255.0F * brightness, ((c >> 8) & 255) / 255.0F * brightness, (c & 255) / 255.0F * brightness, 1.0F);
             }
 
             block.SetupRenderBoundingBox();
@@ -171,8 +171,8 @@ public class BlockRenderer
         }
         else
         {
-            int color = block.GetColor(metadata);
-            GLManager.Color = new((color >> 16 & 255) / 255.0F * brightness, (color >> 8 & 255) / 255.0F * brightness, (color & 255) / 255.0F * brightness, 1.0F);
+            var color = block.GetColor(metadata);
+            GLManager.Color = new Vector4D<float>(((color >> 16) & 255) / 255.0F * brightness, ((color >> 8) & 255) / 255.0F * brightness, (color & 255) / 255.0F * brightness, 1.0F);
             GLManager.ModelView.Translate(-0.5F, -0.5F, -0.5F);
             var itemWorld = new ItemRenderBlockAccess(block.Id, metadata, brightness);
             BlockPos itemPos = new(0, 0, 0);
@@ -187,13 +187,13 @@ public class BlockRenderer
     public static void RenderBlockFallingSand(Block block, IWorldContext world, int x, int y, int z, Tessellator tess)
     {
         // Directional shading multipliers for fake 3D depth
-        float lightBottom = 0.5F;
-        float lightTop = 1.0F;
-        float lightZ = 0.8F; // East/West faces
-        float lightX = 0.6F; // North/South faces
+        var lightBottom = 0.5F;
+        var lightTop = 1.0F;
+        var lightZ = 0.8F; // East/West faces
+        var lightX = 0.6F; // North/South faces
 
         var entityCtx = new BlockRenderContext(
-            blockReader: world.Reader,
+            world.Reader,
             lighting: world.Lighting,
             tess: tess,
             renderAllFaces: true,
@@ -203,12 +203,12 @@ public class BlockRenderer
         tess.startDrawingQuads();
 
         // Base luminance at the entity's current position
-        float currentLuminance = block.GetLuminance(world.Lighting, x, y, z);
-        Vec3D localOrigin = new Vec3D(-0.5, -0.5, -0.5);
-        FaceColors dummyColors = new FaceColors();
+        var currentLuminance = block.GetLuminance(world.Lighting, x, y, z);
+        var localOrigin = new Vec3D(-0.5, -0.5, -0.5);
+        var dummyColors = new FaceColors();
 
         // Bottom Face
-        float faceLum = Math.Max(currentLuminance, block.GetLuminance(world.Lighting, x, y - 1, z));
+        var faceLum = Math.Max(currentLuminance, block.GetLuminance(world.Lighting, x, y - 1, z));
         tess.setColorOpaque_F(lightBottom * faceLum, lightBottom * faceLum, lightBottom * faceLum);
         entityCtx.DrawBottomFace(block, localOrigin, dummyColors, block.GetTexture(Side.Down));
 

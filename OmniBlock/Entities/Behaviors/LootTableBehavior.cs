@@ -1,4 +1,3 @@
-using OmniBlock.Items;
 using OmniBlock.Loot;
 
 namespace OmniBlock.Entities.Behaviors;
@@ -12,7 +11,7 @@ public sealed class LootTableBehavior(LootTable table) : IEntityLootBehavior
 
     public void DropLoot(EntityLiving self, Entity? killer)
     {
-        foreach (ItemStack stack in Table.Roll(LootContext.ForMob(self, killer)))
+        foreach (var stack in Table.Roll(LootContext.ForMob(self, killer)))
         {
             self.DropItem(stack, 0.0F);
         }

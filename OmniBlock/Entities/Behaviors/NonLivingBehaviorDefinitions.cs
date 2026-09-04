@@ -1,6 +1,5 @@
 using System.Text.Json.Serialization;
 using OmniBlock.Blocks;
-using OmniBlock.Items;
 using OmniBlock.Registries;
 
 namespace OmniBlock.Entities.Behaviors;
@@ -77,7 +76,7 @@ public sealed class DroppedItemDefinition : EntityBehaviorDefinition
 
     public override object Build(in EntityBehaviorBuildContext context)
     {
-        IItemRuntimeView items = context.Items;
+        var items = context.Items;
         return new DroppedItemBehavior(
             context.Layout,
             DespawnAge,
@@ -114,7 +113,7 @@ public sealed class ThrownProjectileDefinition : EntityBehaviorDefinition
 
     private static string ResolveEntity(IEntityTypeBuildView entities, string name)
     {
-        ResourceLocation key = ResourceLocation.Parse(name);
+        var key = ResourceLocation.Parse(name);
         if (!entities.TryGet(key, out _)) throw new KeyNotFoundException($"Unknown entity type '{key}'.");
         return key.ToString();
     }
@@ -177,7 +176,7 @@ public sealed class BoatDefinition : EntityBehaviorDefinition
 
     public override object Build(in EntityBehaviorBuildContext context)
     {
-        IItemRuntimeView items = context.Items;
+        var items = context.Items;
         return new BoatBehavior(
             context.Layout,
             BreakDamage,
@@ -202,7 +201,7 @@ public sealed class MinecartDefinition : EntityBehaviorDefinition
 
     public override object Build(in EntityBehaviorBuildContext context)
     {
-        IItemRuntimeView items = context.Items;
+        var items = context.Items;
         return new MinecartBehavior(
             context.Layout,
             BreakDamage,

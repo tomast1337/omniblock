@@ -20,7 +20,7 @@ public static class MissingTextureImage
     public static Image<Rgba32> Generate(int size)
     {
         var image = new Image<Rgba32>(size, size);
-        int half = size / 2;
+        var half = size / 2;
 
         image.Mutate(ctx =>
         {

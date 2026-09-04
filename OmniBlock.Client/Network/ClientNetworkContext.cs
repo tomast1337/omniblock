@@ -1,7 +1,7 @@
 using OmniBlock.Client.Rendering;
 using OmniBlock.Client.UI.Screens;
-using OmniBlock.Stats;
 using OmniBlock.Registries;
+using OmniBlock.Stats;
 
 namespace OmniBlock.Client.Network;
 

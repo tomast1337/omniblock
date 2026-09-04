@@ -1,6 +1,6 @@
-namespace OmniBlock.Network.Messages;
-
 using OmniBlock.Registries;
+
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Every message type whose <c>Read</c>/<c>Write</c>/<c>Size</c> live in a <c>*.Wire.cs</c>

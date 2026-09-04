@@ -12,7 +12,7 @@ public class LanguageListItem(Language value) : ListItem<Language>(value)
 
         Style.Height = 20;
 
-        string displayName = Value.Name;
+        var displayName = Value.Name;
         if (string.IsNullOrEmpty(displayName))
         {
             displayName = "Unknown"; // Fallback

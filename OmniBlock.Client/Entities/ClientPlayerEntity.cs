@@ -72,9 +72,9 @@ public class ClientPlayerEntity : EntityPlayer
 
     protected override void TickMovement()
     {
-        if (!Game.StatFileWriter.HasAchievementUnlocked(global::OmniBlock.Achievements.OpenInventory))
+        if (!Game.StatFileWriter.HasAchievementUnlocked(Achievements.OpenInventory))
         {
-            Game.HUD.AchievementToast.QueueInfo(global::OmniBlock.Achievements.OpenInventory);
+            Game.HUD.AchievementToast.QueueInfo(Achievements.OpenInventory);
         }
 
         LastScreenDistortion = ChangeDimensionCooldown;
@@ -192,7 +192,13 @@ public class ClientPlayerEntity : EntityPlayer
         if (this is EntityClientPlayerMP mp && (Game.World?.IsRemote ?? false))
         {
             sendUpdate = () => mp.sendQueue.SendMessage(
-                new UpdateSignMessage { X = sign.X, Y = (short)sign.Y, Z = sign.Z, Lines = sign.Texts });
+                new UpdateSignMessage
+                {
+                    X = sign.X,
+                    Y = (short)sign.Y,
+                    Z = sign.Z,
+                    Lines = sign.Texts
+                });
         }
 
         Game.Navigate(new SignEditScreen(Game.UIContext, sign, sendUpdate));
@@ -216,7 +222,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public virtual void setHealth(int newHealth)
     {
-        int damageAmount = Health - newHealth;
+        var damageAmount = Health - newHealth;
         if (damageAmount <= 0)
         {
             Health = newHealth;
@@ -253,9 +259,9 @@ public class ClientPlayerEntity : EntityPlayer
         {
             if (stat.IsAchievement())
             {
-                Achievement achievement = (Achievement)stat;
-                bool parentUnlocked = achievement.parent == null || Game.StatFileWriter.HasAchievementUnlocked(achievement.parent);
-                bool alreadyUnlocked = Game.StatFileWriter.HasAchievementUnlocked(achievement);
+                var achievement = (Achievement)stat;
+                var parentUnlocked = achievement.parent == null || Game.StatFileWriter.HasAchievementUnlocked(achievement.parent);
+                var alreadyUnlocked = Game.StatFileWriter.HasAchievementUnlocked(achievement);
 
                 if (parentUnlocked)
                 {
@@ -278,19 +284,19 @@ public class ClientPlayerEntity : EntityPlayer
 
     protected override bool PushOutOfBlocks(double posX, double posY, double posZ)
     {
-        int floorX = MathHelper.Floor(posX);
-        int floorY = MathHelper.Floor(posY);
-        int floorZ = MathHelper.Floor(posZ);
-        double fracX = posX - floorX;
-        double fracZ = posZ - floorZ;
+        var floorX = MathHelper.Floor(posX);
+        var floorY = MathHelper.Floor(posY);
+        var floorZ = MathHelper.Floor(posZ);
+        var fracX = posX - floorX;
+        var fracZ = posZ - floorZ;
         if (isBlockTranslucent(floorX, floorY, floorZ) || isBlockTranslucent(floorX, floorY + 1, floorZ))
         {
-            bool canPushWest = !isBlockTranslucent(floorX - 1, floorY, floorZ) && !isBlockTranslucent(floorX - 1, floorY + 1, floorZ);
-            bool canPushEast = !isBlockTranslucent(floorX + 1, floorY, floorZ) && !isBlockTranslucent(floorX + 1, floorY + 1, floorZ);
-            bool canPushNorth = !isBlockTranslucent(floorX, floorY, floorZ - 1) && !isBlockTranslucent(floorX, floorY + 1, floorZ - 1);
-            bool canPushSouth = !isBlockTranslucent(floorX, floorY, floorZ + 1) && !isBlockTranslucent(floorX, floorY + 1, floorZ + 1);
-            int pushDirection = -1;
-            double closestEdgeDistance = 9999.0D;
+            var canPushWest = !isBlockTranslucent(floorX - 1, floorY, floorZ) && !isBlockTranslucent(floorX - 1, floorY + 1, floorZ);
+            var canPushEast = !isBlockTranslucent(floorX + 1, floorY, floorZ) && !isBlockTranslucent(floorX + 1, floorY + 1, floorZ);
+            var canPushNorth = !isBlockTranslucent(floorX, floorY, floorZ - 1) && !isBlockTranslucent(floorX, floorY + 1, floorZ - 1);
+            var canPushSouth = !isBlockTranslucent(floorX, floorY, floorZ + 1) && !isBlockTranslucent(floorX, floorY + 1, floorZ + 1);
+            var pushDirection = -1;
+            var closestEdgeDistance = 9999.0D;
             if (canPushWest && fracX < closestEdgeDistance)
             {
                 closestEdgeDistance = fracX;
@@ -315,7 +321,7 @@ public class ClientPlayerEntity : EntityPlayer
                 pushDirection = 5;
             }
 
-            float pushStrength = 0.1F;
+            var pushStrength = 0.1F;
             if (pushDirection == 0)
             {
                 VelocityX = -pushStrength;

@@ -15,22 +15,16 @@ public readonly partial struct Color : IEquatable<Color>
 
     private Color(int value) => _value = value;
 
-    public static Color FromArgb(uint v)
-    {
-        return BitConverter.IsLittleEndian ? new Color((v & 0xFF00FF00) | ((v & 0x000000FF) << 16) | ((v & 0x00FF0000) >> 16)) : new Color((v << 8) | (v >> 24));
-    }
+    public static Color FromArgb(uint v) => BitConverter.IsLittleEndian ? new Color((v & 0xFF00FF00) | ((v & 0x000000FF) << 16) | ((v & 0x00FF0000) >> 16)) : new Color((v << 8) | (v >> 24));
 
-    public static Color FromRgb(uint v)
-    {
-        return BitConverter.IsLittleEndian ? new Color(0xFF000000 | ((v & 0x000000FF) << 16) | (v & 0x0000FF00) | ((v & 0x00FF0000) >> 16)) : new Color((v << 8) | 0xFF);
-    }
+    public static Color FromRgb(uint v) => BitConverter.IsLittleEndian ? new Color(0xFF000000 | ((v & 0x000000FF) << 16) | (v & 0x0000FF00) | ((v & 0x00FF0000) >> 16)) : new Color((v << 8) | 0xFF);
 
     public static Color FromColorCode(int colorCode, byte alpha = 0xFF, bool darken = false)
     {
-        int baseColorOffset = ((colorCode >> 3) & 1) * 85;
-        int r = ((colorCode >> 2) & 1) * 170 + baseColorOffset;
-        int g = ((colorCode >> 1) & 1) * 170 + baseColorOffset;
-        int b = ((colorCode >> 0) & 1) * 170 + baseColorOffset;
+        var baseColorOffset = ((colorCode >> 3) & 1) * 85;
+        var r = ((colorCode >> 2) & 1) * 170 + baseColorOffset;
+        var g = ((colorCode >> 1) & 1) * 170 + baseColorOffset;
+        var b = ((colorCode >> 0) & 1) * 170 + baseColorOffset;
 
         if (colorCode == 6)
         {
@@ -39,7 +33,7 @@ public readonly partial struct Color : IEquatable<Color>
 
         if (BitConverter.IsLittleEndian)
         {
-            int v = (b << 16) | (g << 8) | r;
+            var v = (b << 16) | (g << 8) | r;
             if (darken)
             {
                 v = (v & 0x00FCFCFC) >> 2;
@@ -49,7 +43,7 @@ public readonly partial struct Color : IEquatable<Color>
         }
         else
         {
-            int v = (r << 24) | (g << 16) | (b << 8);
+            var v = (r << 24) | (g << 16) | (b << 8);
             if (darken)
             {
                 v = (int)(((uint)v & 0xFCFCFC00) >> 2);
@@ -63,12 +57,12 @@ public readonly partial struct Color : IEquatable<Color>
     {
         if (BitConverter.IsLittleEndian)
         {
-            int a = _value >> 24;
+            var a = _value >> 24;
             return new Color(((_value & 0x00FCFCFC) >> 2) | (a << 24));
         }
         else
         {
-            int a = _value & 0xFF;
+            var a = _value & 0xFF;
             return new Color((int)(((uint)_value & 0xFCFCFC00) >> 2) | a);
         }
     }

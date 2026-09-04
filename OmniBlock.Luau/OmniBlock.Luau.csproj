@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="OmniBlock.Tests" />
+    <InternalsVisibleTo Include="OmniBlock.Tests"/>
   </ItemGroup>
 
   <!--
@@ -29,6 +29,6 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(LUAU_NATIVE_LOCAL)' == '1' And Exists('$(LuauNativeLocalOverride)')">
-    <None Include="$(LuauNativeLocalOverride)" CopyToOutputDirectory="PreserveNewest" Link="%(Filename)%(Extension)" />
+    <None Include="$(LuauNativeLocalOverride)" CopyToOutputDirectory="PreserveNewest" Link="%(Filename)%(Extension)"/>
   </ItemGroup>
 </Project>

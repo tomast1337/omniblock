@@ -15,8 +15,5 @@ internal class ItemSlab : ItemBlock
 
     protected override int GetPlacementMetadata(int meta) => meta;
 
-    public override string GetItemNameIs(ItemStack itemStack)
-    {
-        return SlabBehavior.Names.Length > itemStack.GetDamage() ? $"{base.GetItemName()}.{SlabBehavior.Names[itemStack.GetDamage()]}" : "";
-    }
+    public override string GetItemNameIs(ItemStack itemStack) => SlabBehavior.Names.Length > itemStack.GetDamage() ? $"{base.GetItemName()}.{SlabBehavior.Names[itemStack.GetDamage()]}" : "";
 }

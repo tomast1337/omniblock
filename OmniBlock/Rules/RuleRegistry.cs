@@ -4,9 +4,13 @@ namespace OmniBlock.Rules;
 
 public sealed class RuleRegistry
 {
+    private readonly ConcurrentDictionary<ResourceLocation, IGameRule> _rules = new();
     public static RuleRegistry Instance { get; } = CreateDefault();
 
-    private readonly ConcurrentDictionary<ResourceLocation, IGameRule> _rules = new();
+    public IEnumerable<IGameRule> All => _rules.Values;
+
+    public IEnumerable<string> Categories =>
+        _rules.Values.Select(r => r.Category).Distinct().Order();
 
     private static RuleRegistry CreateDefault()
     {
@@ -28,16 +32,12 @@ public sealed class RuleRegistry
         _rules.TryGetValue(key, out rule!);
 
     public IGameRule Get(ResourceLocation key) =>
-        _rules.TryGetValue(key, out IGameRule? r) ? r
+        _rules.TryGetValue(key, out var r)
+            ? r
             : throw new KeyNotFoundException($"No rule registered for key '{key}'.");
-
-    public IEnumerable<IGameRule> All => _rules.Values;
 
     public IEnumerable<IGameRule> ByCategory(string category) =>
         _rules.Values.Where(r => r.Category == category);
-
-    public IEnumerable<string> Categories =>
-        _rules.Values.Select(r => r.Category).Distinct().Order();
 }
 
 public sealed class RuleRegistrar(RuleRegistry registry, Namespace ns)
@@ -59,6 +59,6 @@ public sealed class RuleRegistrar(RuleRegistry registry, Namespace ns)
         (StringRule)registry.Register(new StringRule(new ResourceLocation(ns, name), defaultValue, category, description));
 
     public EnumRule<T> Enum<T>(string name, T defaultValue,
-        string category = "general", string description = "") where T : struct, global::System.Enum =>
+        string category = "general", string description = "") where T : struct, Enum =>
         (EnumRule<T>)registry.Register(new EnumRule<T>(new ResourceLocation(ns, name), defaultValue, category, description));
 }

@@ -6,7 +6,7 @@ public static class FlexLayout
 {
     public static void ApplyLayout(LayoutContext context)
     {
-        Node rootNode = BuildTree(context.Root, context.MeasureString);
+        var rootNode = BuildTree(context.Root, context.MeasureString);
         rootNode.CalculateLayout(context.AvailableWidth, context.AvailableHeight, Direction.LTR);
         ApplyResults(rootNode, context.Root, context.MeasureString);
     }
@@ -88,7 +88,7 @@ public static class FlexLayout
             });
         }
 
-        foreach (UIElement child in element.Children)
+        foreach (var child in element.Children)
         {
             node.AddChild(BuildTree(child, measureString));
         }
@@ -108,7 +108,7 @@ public static class FlexLayout
             MeasureString = measureString
         });
 
-        for (int i = 0; i < element.Children.Count; i++)
+        for (var i = 0; i < element.Children.Count; i++)
         {
             ApplyResults(node.GetChild(i), element.Children[i], measureString);
         }

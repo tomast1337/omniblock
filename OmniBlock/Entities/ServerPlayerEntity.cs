@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Entities.Behaviors;
@@ -6,7 +7,6 @@ using OmniBlock.Items;
 using OmniBlock.NBT;
 using OmniBlock.Network.Chunks;
 using OmniBlock.Network.Messages;
-using OmniBlock.Network.Packets;
 using OmniBlock.Network.Snapshots;
 using OmniBlock.Registries;
 using OmniBlock.Screens;
@@ -20,7 +20,6 @@ using OmniBlock.Worlds;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Entities;
 
@@ -28,8 +27,12 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 {
     private static readonly ILogger s_logger = Log.Instance.For<ServerPlayerEntity>();
 
-    /// <summary>Set on arrival, cleared once the player is clear of portal blocks.</summary>
-    private bool _mustLeavePortalBeforeAnother;
+    /// <summary>
+    ///     Paces chunk streaming against the transport's own queue. See <see cref="ChunkSendPacer" />
+    ///     for why the queue rather than a bandwidth estimate.
+    /// </summary>
+    private readonly ChunkSendPacer _chunkPacer = new();
+
     private readonly ItemStack?[] _equipment = [null, null, null, null, null];
     private readonly PlayerChunkSendQueue _pendingChunkUpdates = new();
     private readonly OmniBlockServer _server;
@@ -39,6 +42,10 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     private double _chunkStreamingMotionZ;
     private int _joinInvulnerabilityTicks = 60;
     private int _lastHealthScore = -99999999;
+
+    /// <summary>Set on arrival, cleared once the player is clear of portal blocks.</summary>
+    private bool _mustLeavePortalBeforeAnother;
+
     private int _screenHandlerSyncId;
     public ServerPlayerInteractionManager InteractionManager;
     public double LastX;
@@ -50,15 +57,15 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         GameModeHolder = server.DefaultGameMode;
         interactionManager.player = this;
         InteractionManager = interactionManager;
-        Vec3I spawnPos = world.Properties.GetSpawnPos();
-        int x = spawnPos.X;
-        int y = spawnPos.Z;
-        int z = spawnPos.Y;
+        var spawnPos = world.Properties.GetSpawnPos();
+        var x = spawnPos.X;
+        var y = spawnPos.Z;
+        var z = spawnPos.Y;
         if (!world.Dimension.HasCeiling)
         {
             if (world.Properties.TerrainType == WorldType.Sky)
             {
-                int validityY = world.Reader.GetSpawnPositionValidityY(x, y);
+                var validityY = world.Reader.GetSpawnPositionValidityY(x, y);
                 if (validityY > 0)
                 {
                     z = validityY;
@@ -121,7 +128,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         NetworkHandler?.SendMessage(new InventoryMessage
         {
             SyncId = (sbyte)handler.SyncId,
-            Contents = [.. stacks.Select(s => s?.Copy())],
+            Contents = [.. stacks.Select(s => s?.Copy())]
         });
         NetworkHandler?.SendMessage(SlotUpdate(-1, -1, Inventory.GetCursorStack()));
     }
@@ -131,7 +138,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         {
             SyncId = (sbyte)handler.SyncId,
             PropertyId = (short)syncId,
-            Value = (short)trackedValue,
+            Value = (short)trackedValue
         });
 
     /// <summary>The stack is copied because the screen keeps mutating the one it handed over.</summary>
@@ -139,7 +146,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     {
         SyncId = (sbyte)syncId,
         Slot = (short)slot,
-        Stack = stack?.Copy(),
+        Stack = stack?.Copy()
     };
 
 
@@ -164,9 +171,9 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         _joinInvulnerabilityTicks--;
         CurrentScreenHandler?.SendContentUpdates();
 
-        for (int i = 0; i < 5; i++)
+        for (var i = 0; i < 5; i++)
         {
-            ItemStack? itemStack = getEquipment(i);
+            var itemStack = getEquipment(i);
             if (itemStack == _equipment[i])
             {
                 continue;
@@ -218,9 +225,9 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     private void PlayerTickPostGeneric(bool shouldSendChunkUpdates)
     {
-        for (int slotIndex = 0; slotIndex < Inventory.Size; slotIndex++)
+        for (var slotIndex = 0; slotIndex < Inventory.Size; slotIndex++)
         {
-            ItemStack? itemStack = Inventory.GetStack(slotIndex);
+            var itemStack = Inventory.GetStack(slotIndex);
             if (NetworkHandler != null && (itemStack == null || !itemStack.GetItem().IsNetworkSynced() || NetworkHandler?.getBlockDataSendQueueSize() > 2))
             {
                 continue;
@@ -231,7 +238,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
                 continue;
             }
 
-            Message? packet = itemStack.GetItem().GetUpdatePacket(itemStack, World, this);
+            var packet = itemStack.GetItem().GetUpdatePacket(itemStack, World, this);
             if (packet != null)
             {
                 NetworkHandler?.SendMessage(packet);
@@ -248,7 +255,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         // when a movement packet arrives. The decay below is four times the gain, so a single tick
         // without a packet costs four ticks of progress, and eighty consecutive gains — what the
         // threshold needs — is not reachable on any connection that ever gaps.
-        bool insidePortalBlock =
+        var insidePortalBlock =
             World.Reader.IsMaterialInBox(BoundingBox, static m => m == Material.NetherPortal);
 
         // Arriving through a portal leaves the player standing in the one at the far end, so the
@@ -260,8 +267,8 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             _mustLeavePortalBeforeAnother = false;
         }
 
-        bool standingInPortal = !_mustLeavePortalBeforeAnother
-            && (InTeleportationState || (PortalCooldown <= 0 && insidePortalBlock));
+        var standingInPortal = !_mustLeavePortalBeforeAnother
+                               && (InTeleportationState || (PortalCooldown <= 0 && insidePortalBlock));
 
         if (standingInPortal)
         {
@@ -316,7 +323,10 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             return;
         }
 
-        NetworkHandler?.SendMessage(new HealthUpdateMessage { HealthMp = (short)Health });
+        NetworkHandler?.SendMessage(new HealthUpdateMessage
+        {
+            HealthMp = (short)Health
+        });
         _lastHealthScore = Health;
     }
 
@@ -325,7 +335,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         base.ReadNbt(nbt);
         if (nbt.HasKey("Gamemode"))
         {
-            if (_server.RegistryAccess.GetOrThrow(RegistryKeys.GameModes).AsAssetLoader().TryGetHolder(nbt.GetString("Gamemode"), out Holder<GameMode>? holder))
+            if (_server.RegistryAccess.GetOrThrow(RegistryKeys.GameModes).AsAssetLoader().TryGetHolder(nbt.GetString("Gamemode"), out var holder))
             {
                 GameModeHolder = holder;
             }
@@ -346,12 +356,6 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             nbt.RemoveTag("Gamemode");
         }
     }
-
-    /// <summary>
-    ///     Paces chunk streaming against the transport's own queue. See <see cref="ChunkSendPacer" />
-    ///     for why the queue rather than a bandwidth estimate.
-    /// </summary>
-    private readonly ChunkSendPacer _chunkPacer = new();
 
     public void ResetChunkStreamingState()
     {
@@ -378,15 +382,15 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             return;
         }
 
-        ServerWorld world = _server.getWorld(DimensionId);
+        var world = _server.getWorld(DimensionId);
         _chunkPacer.BeginTick();
 
-        int pending = NetworkHandler?.getWorldPacketBacklog() ?? 0;
+        var pending = NetworkHandler?.getWorldPacketBacklog() ?? 0;
 
         // CanSend is evaluated first, so a refusal leaves the queue untouched: the chunk stays at
         // its priority and is reconsidered next tick, by which time the player may have moved and
         // re-prioritising should decide afresh.
-        while (_chunkPacer.CanSend(pending) && _pendingChunkUpdates.TryDequeue(out ChunkPos chunkPos))
+        while (_chunkPacer.CanSend(pending) && _pendingChunkUpdates.TryDequeue(out var chunkPos))
         {
             if (!ActiveChunks.Contains(chunkPos))
             {
@@ -406,14 +410,14 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     internal ChunkPriority GetChunkPriority(ChunkPos chunkPos, long sequence)
     {
-        int playerChunkX = (int)X >> 4;
-        int playerChunkZ = (int)Z >> 4;
-        int deltaX = chunkPos.X - playerChunkX;
-        int deltaZ = chunkPos.Z - playerChunkZ;
-        int ring = Math.Max(Math.Abs(deltaX), Math.Abs(deltaZ));
+        var playerChunkX = (int)X >> 4;
+        var playerChunkZ = (int)Z >> 4;
+        var deltaX = chunkPos.X - playerChunkX;
+        var deltaZ = chunkPos.Z - playerChunkZ;
+        var ring = Math.Max(Math.Abs(deltaX), Math.Abs(deltaZ));
 
-        double directionPenalty = 0.0;
-        double motionLength = Math.Sqrt(_chunkStreamingMotionX * _chunkStreamingMotionX + _chunkStreamingMotionZ * _chunkStreamingMotionZ);
+        var directionPenalty = 0.0;
+        var motionLength = Math.Sqrt(_chunkStreamingMotionX * _chunkStreamingMotionX + _chunkStreamingMotionZ * _chunkStreamingMotionZ);
         if (motionLength > 0.0)
         {
             directionPenalty = -(deltaX * _chunkStreamingMotionX + deltaZ * _chunkStreamingMotionZ) / motionLength;
@@ -425,7 +429,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     /// <summary>Sends one chunk and returns the bytes it cost, for the pacer.</summary>
     private int SendChunkData(IWorldContext world, ChunkPos chunkPos)
     {
-        ServerPlayNetworkHandler? handler = NetworkHandler;
+        var handler = NetworkHandler;
         if (handler is null)
         {
             return 0;
@@ -437,9 +441,9 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         // first chunks are already queued.
         if (handler.WantsCompactPayloads)
         {
-            Chunk chunk = world.ChunkHost.GetChunk(chunkPos.X, chunkPos.Z);
+            var chunk = world.ChunkHost.GetChunk(chunkPos.X, chunkPos.Z);
 
-            byte[] blob = ChunkBlobCodec.Encode(
+            var blob = ChunkBlobCodec.Encode(
                 chunk.Blocks, chunk.Meta.Bytes, chunk.BlockLight.Bytes, chunk.SkyLight.Bytes);
 
             // The client's claim is checked against the chunk as it is right now, so a stale or
@@ -449,10 +453,14 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             // that a chunk does not need sending costs 0.2 ms of encoding it. Avoiding that needs a
             // per-chunk cached hash invalidated on modification, and Chunk has no version counter to
             // hang that on — worth doing, but a change to the chunk rather than to the protocol.
-            if (OfferedChunkHashes.TryGetValue(chunkPos, out ulong offered)
+            if (OfferedChunkHashes.TryGetValue(chunkPos, out var offered)
                 && offered == ChunkHash.Of(blob))
             {
-                ChunkUnchangedMessage unchanged = new() { ChunkX = chunkPos.X, ChunkZ = chunkPos.Z };
+                ChunkUnchangedMessage unchanged = new()
+                {
+                    ChunkX = chunkPos.X,
+                    ChunkZ = chunkPos.Z
+                };
                 handler.SendMessage(unchanged);
                 return unchanged.Size();
             }
@@ -461,7 +469,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             {
                 ChunkX = chunkPos.X,
                 ChunkZ = chunkPos.Z,
-                Compressed = ChunkDataMessage.Compress(blob),
+                Compressed = ChunkDataMessage.Compress(blob)
             };
 
             handler.SendMessage(message);
@@ -472,7 +480,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         // is skipped because its saving is measured in wire bytes and there is no wire; the box
         // encoding is kept because the chunk pacer's budget is denominated in the size the message
         // reports, and a message that reports a header is not paced at all.
-        RegionDataMessage region = RegionDataMessage.Of(
+        var region = RegionDataMessage.Of(
             chunkPos.X * 16, 0, chunkPos.Z * 16, 16, ChuckFormat.WorldHeight, 16, world);
         handler.SendMessage(region);
         return region.Size();
@@ -480,13 +488,13 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     private void SendBlockEntityUpdates(IWorldContext world, ChunkPos chunkPos)
     {
-        int startX = chunkPos.X * 16;
-        int startZ = chunkPos.Z * 16;
-        int endX = startX + 16;
-        int endZ = startZ + 16;
+        var startX = chunkPos.X * 16;
+        var startZ = chunkPos.Z * 16;
+        var endX = startX + 16;
+        var endZ = startZ + 16;
 
-        List<BlockEntity> blockEntities = world.Entities.GetBlockEntities(startX, 0, startZ, endX, ChuckFormat.WorldHeight, endZ);
-        foreach (BlockEntity blockEntity in blockEntities)
+        var blockEntities = world.Entities.GetBlockEntities(startX, 0, startZ, endX, ChuckFormat.WorldHeight, endZ);
+        foreach (var blockEntity in blockEntities)
         {
             updateBlockEntity(blockEntity);
         }
@@ -509,10 +517,14 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
         if (!item.Dead)
         {
-            EntityTracker et = _server.getEntityTracker(DimensionId);
+            var et = _server.getEntityTracker(DimensionId);
             if (ArrowBehavior.IsArrow(item) || item.Behaviors.Find<DroppedItemBehavior>() is not null)
             {
-                et.sendToListeners(item, new ItemPickupMessage { EntityId = item.ID, CollectorEntityId = ID });
+                et.sendToListeners(item, new ItemPickupMessage
+                {
+                    EntityId = item.ID,
+                    CollectorEntityId = ID
+                });
             }
         }
 
@@ -529,22 +541,26 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
         HandSwingTicks = -1;
         HandSwinging = true;
-        EntityTracker et = _server.getEntityTracker(DimensionId);
+        var et = _server.getEntityTracker(DimensionId);
         et.sendToListeners(this, Animate(EntityAnimationMessage.EntityAnimation.SwingHand));
     }
 
     private EntityAnimationMessage Animate(EntityAnimationMessage.EntityAnimation animation) =>
-        new() { EntityId = ID, AnimationId = (byte)animation };
+        new()
+        {
+            EntityId = ID,
+            AnimationId = (byte)animation
+        };
 
     public override SleepAttemptResult TrySleep(int x, int y, int z)
     {
-        SleepAttemptResult sleepAttemptResult = base.TrySleep(x, y, z);
+        var sleepAttemptResult = base.TrySleep(x, y, z);
         if (sleepAttemptResult != SleepAttemptResult.OK)
         {
             return sleepAttemptResult;
         }
 
-        EntityTracker et = _server.getEntityTracker(DimensionId);
+        var et = _server.getEntityTracker(DimensionId);
         var sleepMessage = new PlayerSleepUpdateMessage
         {
             PlayerId = ID,
@@ -563,7 +579,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     {
         if (IsSleeping)
         {
-            EntityTracker et = _server.getEntityTracker(DimensionId);
+            var et = _server.getEntityTracker(DimensionId);
             et.sendToAround(this, Animate(EntityAnimationMessage.EntityAnimation.WakeUp));
         }
 
@@ -575,7 +591,11 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     public override void SetVehicle(Entity? entity)
     {
         base.SetVehicle(entity);
-        NetworkHandler?.SendMessage(new EntityVehicleMessage { EntityId = ID, VehicleEntityId = Vehicle?.ID ?? -1 });
+        NetworkHandler?.SendMessage(new EntityVehicleMessage
+        {
+            EntityId = ID,
+            VehicleEntityId = Vehicle?.ID ?? -1
+        });
         NetworkHandler?.teleport(X, Y, Z, Yaw, Pitch);
     }
 
@@ -586,14 +606,14 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public void handleFall(double heightDifference, bool onGround) => base.Fall(heightDifference, onGround);
 
-    private void incrementScreenHandlerSyncId() => _screenHandlerSyncId = (_screenHandlerSyncId % 100) + 1;
+    private void incrementScreenHandlerSyncId() => _screenHandlerSyncId = _screenHandlerSyncId % 100 + 1;
 
     private OpenScreenMessage OpenScreen(int screenHandlerId, string name, int slots) => new()
     {
         SyncId = (sbyte)_screenHandlerSyncId,
         ScreenHandlerId = (sbyte)screenHandlerId,
         Name = name,
-        SlotsCount = (sbyte)slots,
+        SlotsCount = (sbyte)slots
     };
 
 
@@ -644,7 +664,10 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public override void CloseHandledScreen()
     {
-        NetworkHandler?.SendMessage(new CloseScreenMessage { SyncId = (sbyte)CurrentScreenHandler.SyncId });
+        NetworkHandler?.SendMessage(new CloseScreenMessage
+        {
+            SyncId = (sbyte)CurrentScreenHandler.SyncId
+        });
         onHandledScreenClosed();
     }
 
@@ -706,11 +729,19 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
         while (amount > 100)
         {
-            NetworkHandler?.SendMessage(new IncreaseStatMessage { StatId = stat.Id, Amount = 100 });
+            NetworkHandler?.SendMessage(new IncreaseStatMessage
+            {
+                StatId = stat.Id,
+                Amount = 100
+            });
             amount -= 100;
         }
 
-        NetworkHandler?.SendMessage(new IncreaseStatMessage { StatId = stat.Id, Amount = (sbyte)amount });
+        NetworkHandler?.SendMessage(new IncreaseStatMessage
+        {
+            StatId = stat.Id,
+            Amount = (sbyte)amount
+        });
     }
 
     public void onDisconnect()
@@ -732,8 +763,11 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public override void SendMessage(string message)
     {
-        string translatedMessage = Translations.Get(message);
-        NetworkHandler?.SendMessage(new ChatMessage { Text = translatedMessage });
+        var translatedMessage = Translations.Get(message);
+        NetworkHandler?.SendMessage(new ChatMessage
+        {
+            Text = translatedMessage
+        });
     }
 
     //client only

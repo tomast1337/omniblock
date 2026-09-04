@@ -24,19 +24,16 @@ public static class ControllerManager
     private static bool s_wasJumpDown;
     private static long s_nextZoomInAdjustAtMs;
     private static long s_nextZoomOutAdjustAtMs;
-
-    public static bool SneakToggle { get; set; }
     private static bool s_suppressInGameInput;
 
-    public static void Initialize(OmniBlock game)
-    {
-        s_game = game;
-    }
+    public static bool SneakToggle { get; set; }
+
+    public static void Initialize(OmniBlock game) => s_game = game;
 
     private static bool IsActionDown(string actionKey)
     {
         if (s_game == null) return false;
-        foreach (ControllerBinding cb in s_game.Options.ControllerBindings)
+        foreach (var cb in s_game.Options.ControllerBindings)
         {
             if (cb.ActionKey == actionKey)
             {
@@ -44,6 +41,7 @@ public static class ControllerManager
                 return Controller.IsButtonDown(cb.Button);
             }
         }
+
         return false;
     }
 
@@ -72,18 +70,19 @@ public static class ControllerManager
     }
 
     /// <summary>
-    /// Handles controller bindings that should fire regardless of whether the player is
-    /// in-game, on a menu, or on the main screen (e.g. the debug overlay toggle).
+    ///     Handles controller bindings that should fire regardless of whether the player is
+    ///     in-game, on a menu, or on the main screen (e.g. the debug overlay toggle).
     /// </summary>
     public static void UpdateGlobal()
     {
         if (s_game == null) return;
 
-        bool toggleDebug = Controller.IsButtonDown(GamepadButton.Back);
+        var toggleDebug = Controller.IsButtonDown(GamepadButton.Back);
         if (toggleDebug && !s_wasToggleDebugDown)
         {
             s_game.Options.ShowDebugInfo = !s_game.Options.ShowDebugInfo;
         }
+
         s_wasToggleDebugDown = toggleDebug;
     }
 
@@ -96,20 +95,20 @@ public static class ControllerManager
             return;
         }
 
-        bool jumpHeld = IsActionDown("controller.jump");
-        bool attackHeld = Controller.RightTrigger > 0.5f;
-        bool interactHeld = Controller.LeftTrigger > 0.5f;
-        bool inventoryHeld = IsActionDown("controller.inventory");
-        bool dropHeld = IsActionDown("controller.drop");
-        bool lbHeld = IsActionDown("controller.hotbarLeft");
-        bool rbHeld = IsActionDown("controller.hotbarRight");
-        bool cameraHeld = IsActionDown("controller.camera");
-        bool pauseHeld = IsActionDown("controller.pause");
-        bool playerListHeld = Controller.IsButtonDown(GamepadButton.Back);
-        bool pickBlockHeld = IsActionDown("controller.pickBlock");
-        bool sneakHeld = IsActionDown("controller.sneak");
-        bool craftingHeld = IsActionDown("controller.crafting");
-        bool zoomHeld = IsActionDown("controller.zoom");
+        var jumpHeld = IsActionDown("controller.jump");
+        var attackHeld = Controller.RightTrigger > 0.5f;
+        var interactHeld = Controller.LeftTrigger > 0.5f;
+        var inventoryHeld = IsActionDown("controller.inventory");
+        var dropHeld = IsActionDown("controller.drop");
+        var lbHeld = IsActionDown("controller.hotbarLeft");
+        var rbHeld = IsActionDown("controller.hotbarRight");
+        var cameraHeld = IsActionDown("controller.camera");
+        var pauseHeld = IsActionDown("controller.pause");
+        var playerListHeld = Controller.IsButtonDown(GamepadButton.Back);
+        var pickBlockHeld = IsActionDown("controller.pickBlock");
+        var sneakHeld = IsActionDown("controller.sneak");
+        var craftingHeld = IsActionDown("controller.crafting");
+        var zoomHeld = IsActionDown("controller.zoom");
 
         if (s_suppressInGameInput)
         {
@@ -119,6 +118,7 @@ public static class ControllerManager
             {
                 s_suppressInGameInput = false;
             }
+
             SyncWasStates();
             return;
         }
@@ -174,7 +174,7 @@ public static class ControllerManager
         // Hotbar / Zoom adjust
         if (zoomHeld)
         {
-            long nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            var nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
             if (lbHeld && (!s_wasHotbarLeftDown || nowMs >= s_nextZoomInAdjustAtMs))
             {
@@ -236,7 +236,9 @@ public static class ControllerManager
 
         SyncWasStates();
 
-        while (Controller.Next()) { }
+        while (Controller.Next())
+        {
+        }
     }
 
     public static void UpdateUI(UIScreen? screen)
@@ -255,8 +257,8 @@ public static class ControllerManager
     {
         if (Controller.IsActive() && s_game != null && s_game.CurrentScreen == null && !s_suppressInGameInput)
         {
-            float lx = Controller.LeftStickX;
-            float ly = Controller.LeftStickY;
+            var lx = Controller.LeftStickX;
+            var ly = Controller.LeftStickY;
 
             moveStrafe -= lx;
             moveForward -= ly;
@@ -272,21 +274,21 @@ public static class ControllerManager
 
         if (Controller.IsActive() && !s_suppressInGameInput)
         {
-            float rx = Controller.RightStickX;
-            float ry = Controller.RightStickY;
-            float deadzone = Controller.RightStickDeadzone;
+            var rx = Controller.RightStickX;
+            var ry = Controller.RightStickY;
+            var deadzone = Controller.RightStickDeadzone;
 
             if (Math.Abs(rx) > deadzone || Math.Abs(ry) > deadzone)
             {
                 const float mult = 120.0f;
 
-                float sensitivity = s_game.Options.ControllerSensitivity * 0.6f + 0.2f;
+                var sensitivity = s_game.Options.ControllerSensitivity * 0.6f + 0.2f;
                 sensitivity = sensitivity * sensitivity * sensitivity * 8.0f;
 
-                float activeRx = (Math.Abs(rx) - deadzone) / (1.0f - deadzone);
+                var activeRx = (Math.Abs(rx) - deadzone) / (1.0f - deadzone);
                 yawDelta += activeRx * activeRx * Math.Sign(rx) * 10f * sensitivity * deltaTime * mult;
 
-                float activeRy = (Math.Abs(ry) - deadzone) / (1.0f - deadzone);
+                var activeRy = (Math.Abs(ry) - deadzone) / (1.0f - deadzone);
                 pitchDelta += activeRy * activeRy * Math.Sign(ry) * 10f * sensitivity * deltaTime * mult;
             }
         }

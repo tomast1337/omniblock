@@ -1,5 +1,5 @@
-using OmniBlock.NBT;
 using Microsoft.Extensions.Logging;
+using OmniBlock.NBT;
 
 namespace OmniBlock.Worlds.Storage;
 
@@ -22,7 +22,7 @@ public class PersistentStateManager
 
     public PersistentState? LoadData(Type type, string id) // On server never returns null, on client always
     {
-        if (_loadedDataMap.TryGetValue(id, out PersistentState? existingState))
+        if (_loadedDataMap.TryGetValue(id, out var existingState))
         {
             return existingState;
         }
@@ -33,7 +33,7 @@ public class PersistentStateManager
         {
             try
             {
-                FileInfo? file = _saveHandler.GetWorldPropertiesFile(id);
+                var file = _saveHandler.GetWorldPropertiesFile(id);
                 if (file != null && file.Exists)
                 {
                     try
@@ -45,8 +45,8 @@ public class PersistentStateManager
                         throw new InvalidOperationException($"Failed to instantiate {type.Name}", ex);
                     }
 
-                    using FileStream stream = file.OpenRead();
-                    NBTTagCompound rootTag = NbtIo.ReadCompressed(stream);
+                    using var stream = file.OpenRead();
+                    var rootTag = NbtIo.ReadCompressed(stream);
 
                     newState.ReadNBT(rootTag.GetCompoundTag("data"));
                 }
@@ -81,7 +81,7 @@ public class PersistentStateManager
 
     public void SaveAllData()
     {
-        foreach (PersistentState state in _loadedDataList)
+        foreach (var state in _loadedDataList)
         {
             if (state.IsDirty())
             {
@@ -100,7 +100,7 @@ public class PersistentStateManager
 
         try
         {
-            FileInfo? file = _saveHandler.GetWorldPropertiesFile(state.Id);
+            var file = _saveHandler.GetWorldPropertiesFile(state.Id);
             if (file != null)
             {
                 NBTTagCompound stateTag = new();
@@ -109,7 +109,7 @@ public class PersistentStateManager
                 NBTTagCompound rootTag = new();
                 rootTag.SetCompoundTag("data", stateTag);
 
-                using FileStream stream = file.Create();
+                using var stream = file.Create();
                 NbtIo.WriteCompressed(rootTag, stream);
             }
         }
@@ -129,13 +129,13 @@ public class PersistentStateManager
                 return;
             }
 
-            FileInfo? file = _saveHandler.GetWorldPropertiesFile("idcounts");
+            var file = _saveHandler.GetWorldPropertiesFile("idcounts");
             if (file != null && file.Exists)
             {
-                using FileStream stream = file.OpenRead();
-                NBTTagCompound rootTag = NbtIo.Read(stream);
+                using var stream = file.OpenRead();
+                var rootTag = NbtIo.Read(stream);
 
-                foreach (NBTBase tag in rootTag.Values)
+                foreach (var tag in rootTag.Values)
                 {
                     if (tag is NBTTagShort shortTag)
                     {
@@ -152,8 +152,8 @@ public class PersistentStateManager
 
     public int GetUniqueDataId(string key)
     {
-        short currentId = _idCounts.TryGetValue(key, out short count) ? count : (short)0;
-        short nextId = (short)(currentId + 1);
+        var currentId = _idCounts.TryGetValue(key, out var count) ? count : (short)0;
+        var nextId = (short)(currentId + 1);
 
         _idCounts[key] = nextId;
 
@@ -164,16 +164,16 @@ public class PersistentStateManager
 
         try
         {
-            FileInfo? file = _saveHandler.GetWorldPropertiesFile("idcounts");
+            var file = _saveHandler.GetWorldPropertiesFile("idcounts");
             if (file != null)
             {
                 NBTTagCompound rootTag = new();
-                foreach (KeyValuePair<string, short> kvp in _idCounts)
+                foreach (var kvp in _idCounts)
                 {
                     rootTag.SetShort(kvp.Key, kvp.Value);
                 }
 
-                using FileStream stream = file.Create();
+                using var stream = file.Create();
                 NbtIo.Write(rootTag, stream);
             }
         }

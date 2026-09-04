@@ -3,8 +3,8 @@ using OmniBlock.Registries.Data;
 namespace OmniBlock;
 
 /// <summary>
-/// JSON shape of <c>assets/sound_group/*.json</c>. Converted once by
-/// <see cref="SoundGroupRegistry"/> into the canonical <see cref="BlockSoundGroup"/> instance.
+///     JSON shape of <c>assets/sound_group/*.json</c>. Converted once by
+///     <see cref="SoundGroupRegistry" /> into the canonical <see cref="BlockSoundGroup" /> instance.
 /// </summary>
 public sealed class SoundGroupDefinition : DataAsset
 {

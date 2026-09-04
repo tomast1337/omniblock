@@ -1,5 +1,4 @@
 using System.Text.Json;
-using OmniBlock.Blocks;
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Entities;
@@ -14,28 +13,72 @@ public sealed class ItemBuildContextTests
     [Fact]
     public void Context_routes_every_dependency_through_injected_resolvers()
     {
-        Block block = TestBlocks.Get("stone");
-        Item item = ContentRuntime.Current.Items.Get("omniblock:stick");
-        ToolMaterial tool = ToolMaterialRegistry.Get("iron");
-        ArmorMaterial armor = ArmorMaterialRegistry.Get("diamond");
-        Material material = MaterialRegistry.Get("wood");
+        var block = TestBlocks.Get("stone");
+        var item = ContentRuntime.Current.Items.Get("omniblock:stick");
+        var tool = ToolMaterialRegistry.Get("iron");
+        var armor = ArmorMaterialRegistry.Get("diamond");
+        var material = MaterialRegistry.Get("wood");
         EntityType entity = new((_, _) => null!, typeof(Entity), "test");
         BlockEntityType blockEntity = new(static () => new GenericBlockEntity(), "test");
         RecipeDefinition recipe = new();
         object interaction = new();
         List<string> calls = [];
         ItemBuildContext context = new(
-            key => { calls.Add($"block:{key}"); return block; },
-            key => { calls.Add($"block_item:{key}"); return item; },
-            key => { calls.Add($"item:{key}"); return item; },
-            key => { calls.Add($"tool:{key}"); return tool; },
-            key => { calls.Add($"armor:{key}"); return armor; },
-            key => { calls.Add($"material:{key}"); return material; },
-            key => { calls.Add($"texture:{key}"); return 17; },
-            key => { calls.Add($"entity:{key}"); return entity; },
-            key => { calls.Add($"block_entity:{key}"); return blockEntity; },
-            key => { calls.Add($"recipe:{key}"); return recipe; },
-            key => { calls.Add($"interaction:{key}"); return interaction; });
+            key =>
+            {
+                calls.Add($"block:{key}");
+                return block;
+            },
+            key =>
+            {
+                calls.Add($"block_item:{key}");
+                return item;
+            },
+            key =>
+            {
+                calls.Add($"item:{key}");
+                return item;
+            },
+            key =>
+            {
+                calls.Add($"tool:{key}");
+                return tool;
+            },
+            key =>
+            {
+                calls.Add($"armor:{key}");
+                return armor;
+            },
+            key =>
+            {
+                calls.Add($"material:{key}");
+                return material;
+            },
+            key =>
+            {
+                calls.Add($"texture:{key}");
+                return 17;
+            },
+            key =>
+            {
+                calls.Add($"entity:{key}");
+                return entity;
+            },
+            key =>
+            {
+                calls.Add($"block_entity:{key}");
+                return blockEntity;
+            },
+            key =>
+            {
+                calls.Add($"recipe:{key}");
+                return recipe;
+            },
+            key =>
+            {
+                calls.Add($"interaction:{key}");
+                return interaction;
+            });
 
         Assert.Same(block, context.ResolveBlock("example:block"));
         Assert.Same(item, context.ResolveBlockItem("example:block_item"));
@@ -49,20 +92,24 @@ public sealed class ItemBuildContextTests
         Assert.Same(recipe, context.ResolveRecipeDependency("example:recipe"));
         Assert.Same(interaction, context.ResolveInteractionDependency("example:interaction"));
         Assert.Equal(
-            [
-                "block:example:block", "block_item:example:block_item", "item:example:item",
-                "tool:example:tool", "armor:example:armor", "material:example:material",
-                "texture:example:texture", "entity:example:entity", "block_entity:example:block_entity",
-                "recipe:example:recipe", "interaction:example:interaction"
-            ], calls);
+        [
+            "block:example:block", "block_item:example:block_item", "item:example:item",
+            "tool:example:tool", "armor:example:armor", "material:example:material",
+            "texture:example:texture", "entity:example:entity", "block_entity:example:block_entity",
+            "recipe:example:recipe", "interaction:example:interaction"
+        ], calls);
     }
 
     [Fact]
     public void Item_factory_uses_injected_texture_and_behavior_providers()
     {
         List<string> calls = [];
-        ItemBuildContext context = Context(
-            texture: key => { calls.Add($"texture:{key}"); return 91; });
+        var context = Context(
+            texture: key =>
+            {
+                calls.Add($"texture:{key}");
+                return 91;
+            });
         var providers = new RecordingProvider(calls);
         ItemDefinition definition = new()
         {
@@ -72,7 +119,7 @@ public sealed class ItemBuildContextTests
             Behaviors = [Behavior("""{"Type":"shears"}""")]
         };
 
-        Item item = ItemFactory.Create(definition, context, providers);
+        var item = ItemFactory.Create(definition, context, providers);
 
         Assert.Equal(91, item.GetTextureId(0));
         Assert.IsType<ShearsBehavior>(item.GetBehavior<IItemBehavior>());
@@ -82,24 +129,23 @@ public sealed class ItemBuildContextTests
     [Fact]
     public void Unknown_dependency_and_default_context_fail_with_clear_messages()
     {
-        ItemBuildContext missing = Context(item: _ => throw new KeyNotFoundException());
-        KeyNotFoundException unknown = Assert.Throws<KeyNotFoundException>(() => missing.ResolveItem("example:missing"));
+        var missing = Context(_ => throw new KeyNotFoundException());
+        var unknown = Assert.Throws<KeyNotFoundException>(() => missing.ResolveItem("example:missing"));
         Assert.Contains("example:missing", unknown.Message);
 
-        InvalidOperationException uninitialized = Assert.Throws<InvalidOperationException>(
-            () => default(ItemBuildContext).ResolveBlock("example:block"));
+        var uninitialized = Assert.Throws<InvalidOperationException>(() => default(ItemBuildContext).ResolveBlock("example:block"));
         Assert.Contains(nameof(ItemBuildContext), uninitialized.Message);
     }
 
     [Fact]
     public void Declarative_item_type_selects_provider_and_validates_unknown_types()
     {
-        ItemBuildContext context = Context();
+        var context = Context();
         var providers = new ItemBehaviorProviderRegistry();
-        JsonElement tool = Behavior("""{"Type":"tool","Material":"iron","Kind":"pickaxe"}""");
+        var tool = Behavior("""{"Type":"tool","Material":"iron","Kind":"pickaxe"}""");
 
         Assert.IsType<ToolBehavior>(providers.Build(ResourceLocation.Parse("tool"), tool, context));
-        ArgumentException error = Assert.Throws<ArgumentException>(() => providers.Build(
+        var error = Assert.Throws<ArgumentException>(() => providers.Build(
             ResourceLocation.Parse("example:missing"), Behavior("""{"Type":"example:missing"}"""), context));
         Assert.Contains("example:missing", error.Message);
     }
@@ -107,7 +153,7 @@ public sealed class ItemBuildContextTests
     [Fact]
     public void Item_factory_builds_a_bounded_ordered_behavior_collection()
     {
-        ItemBuildContext context = Context();
+        var context = Context();
         var providers = new ItemBehaviorProviderRegistry(new Dictionary<ResourceLocation, ItemBehaviorProviderRegistry.BehaviorFactory>
         {
             [ResourceLocation.Parse("example:first")] = static (_, _) => new FirstTestBehavior(),
@@ -119,7 +165,7 @@ public sealed class ItemBuildContextTests
             Behaviors = [Behavior("""{"Type":"example:first"}"""), Behavior("""{"Type":"example:second"}""")]
         };
 
-        Item item = ItemFactory.Create(definition, context, providers);
+        var item = ItemFactory.Create(definition, context, providers);
         Assert.Equal(2, item.BehaviorCount);
         Assert.NotNull(item.GetBehavior<FirstTestBehavior>());
         Assert.NotNull(item.GetBehavior<SecondTestBehavior>());
@@ -139,8 +185,8 @@ public sealed class ItemBuildContextTests
         Func<ResourceLocation, Item>? item = null,
         Func<string, int>? texture = null)
     {
-        Block block = TestBlocks.Get("stone");
-        Item fallbackItem = ContentRuntime.Current.Items.Get("omniblock:stick");
+        var block = TestBlocks.Get("stone");
+        var fallbackItem = ContentRuntime.Current.Items.Get("omniblock:stick");
         return new ItemBuildContext(
             _ => block,
             _ => fallbackItem,
@@ -155,6 +201,8 @@ public sealed class ItemBuildContextTests
             _ => new object());
     }
 
+    private static JsonElement Behavior(string json) => JsonSerializer.Deserialize<JsonElement>(json);
+
     private sealed class RecordingProvider(List<string> calls) : IItemBehaviorProviderRegistry
     {
         public IItemBehavior Build(ResourceLocation type, JsonElement definition, in ItemBuildContext context)
@@ -165,14 +213,20 @@ public sealed class ItemBuildContextTests
     }
 
     private sealed class FirstTestBehavior : IItemBehavior;
-    private sealed class SecondTestBehavior : IItemBehavior;
-    private sealed class TestBehavior3 : IItemBehavior;
-    private sealed class TestBehavior4 : IItemBehavior;
-    private sealed class TestBehavior5 : IItemBehavior;
-    private sealed class TestBehavior6 : IItemBehavior;
-    private sealed class TestBehavior7 : IItemBehavior;
-    private sealed class TestBehavior8 : IItemBehavior;
-    private sealed class OverflowTestBehavior : IItemBehavior;
 
-    private static JsonElement Behavior(string json) => JsonSerializer.Deserialize<JsonElement>(json);
+    private sealed class SecondTestBehavior : IItemBehavior;
+
+    private sealed class TestBehavior3 : IItemBehavior;
+
+    private sealed class TestBehavior4 : IItemBehavior;
+
+    private sealed class TestBehavior5 : IItemBehavior;
+
+    private sealed class TestBehavior6 : IItemBehavior;
+
+    private sealed class TestBehavior7 : IItemBehavior;
+
+    private sealed class TestBehavior8 : IItemBehavior;
+
+    private sealed class OverflowTestBehavior : IItemBehavior;
 }

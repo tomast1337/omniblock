@@ -156,7 +156,7 @@ public partial class Node
     // StyleSetWidth sets width
     public void StyleSetWidth(float width)
     {
-        Value dim = nodeStyle.Dimensions[(int)Dimension.Width];
+        var dim = nodeStyle.Dimensions[(int)Dimension.Width];
         if (dim.value != width || dim.unit != Unit.Point)
         {
             dim.value = width;
@@ -173,7 +173,7 @@ public partial class Node
     // StyleSetWidthPercent sets width percent
     public void StyleSetWidthPercent(float width)
     {
-        Value dim = nodeStyle.Dimensions[(int)Dimension.Width];
+        var dim = nodeStyle.Dimensions[(int)Dimension.Width];
         if (dim.value != width || dim.unit != Unit.Percent)
         {
             dim.value = width;
@@ -190,7 +190,7 @@ public partial class Node
     // StyleSetWidthAuto sets width auto
     public void StyleSetWidthAuto()
     {
-        Value dim = nodeStyle.Dimensions[(int)Dimension.Width];
+        var dim = nodeStyle.Dimensions[(int)Dimension.Width];
         if (dim.unit != Unit.Auto)
         {
             dim.value = float.NaN;
@@ -205,7 +205,7 @@ public partial class Node
     // StyleSetHeight sets height
     public void StyleSetHeight(float height)
     {
-        Value dim = nodeStyle.Dimensions[(int)Dimension.Height];
+        var dim = nodeStyle.Dimensions[(int)Dimension.Height];
         if (dim.value != height || dim.unit != Unit.Point)
         {
             dim.value = height;
@@ -222,7 +222,7 @@ public partial class Node
     // StyleSetHeightPercent sets height percent
     public void StyleSetHeightPercent(float height)
     {
-        Value dim = nodeStyle.Dimensions[(int)Dimension.Height];
+        var dim = nodeStyle.Dimensions[(int)Dimension.Height];
         if (dim.value != height || dim.unit != Unit.Percent)
         {
             dim.value = height;
@@ -239,7 +239,7 @@ public partial class Node
     // StyleSetHeightAuto sets height auto
     public void StyleSetHeightAuto()
     {
-        Value dim = nodeStyle.Dimensions[(int)Dimension.Height];
+        var dim = nodeStyle.Dimensions[(int)Dimension.Height];
         if (dim.unit != Unit.Auto)
         {
             dim.value = float.NaN;
@@ -266,7 +266,7 @@ public partial class Node
     // StyleSetPosition sets position
     public void StyleSetPosition(Edge edge, float position)
     {
-        Value pos = nodeStyle.Position[(int)edge];
+        var pos = nodeStyle.Position[(int)edge];
         if (pos.value != position || pos.unit != Unit.Point)
         {
             pos.value = position;
@@ -283,7 +283,7 @@ public partial class Node
     // StyleSetPositionPercent sets position percent
     public void StyleSetPositionPercent(Edge edge, float position)
     {
-        Value pos = nodeStyle.Position[(int)edge];
+        var pos = nodeStyle.Position[(int)edge];
         if (pos.value != position || pos.unit != Unit.Percent)
         {
             pos.value = position;

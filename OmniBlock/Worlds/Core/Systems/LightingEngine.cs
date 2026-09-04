@@ -1,22 +1,22 @@
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Logging;
 using OmniBlock.Blocks;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Lighting;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Worlds.Core.Systems;
 
 public class LightingEngine : ILightProvider
 {
-    private readonly IWorldContext _world;
+    private readonly int _cobblestoneStairsId;
+    private readonly int _farmlandId;
 
     private readonly List<LightUpdate> _lightingQueue = [];
-    private readonly HashSet<PendingLightCell> _pendingLightCells = [];
     private readonly ILogger<LightingEngine> _logger = Log.Instance.For<LightingEngine>();
+    private readonly HashSet<PendingLightCell> _pendingLightCells = [];
     private readonly int _slabId;
-    private readonly int _farmlandId;
-    private readonly int _cobblestoneStairsId;
     private readonly int _woodenStairsId;
+    private readonly IWorldContext _world;
     private int _lightingUpdatesCounter;
     private int _lightingUpdatesScheduled;
 
@@ -29,11 +29,11 @@ public class LightingEngine : ILightProvider
         _woodenStairsId = ResolveOptionalBlockId("wooden_stairs");
     }
 
-    private readonly record struct PendingLightCell(LightType Type, int X, int Y, int Z);
+    internal int PendingUpdateCount => _lightingQueue.Count;
 
     public float GetNaturalBrightness(int x, int y, int z, int blockLight)
     {
-        int lightLevel = GetLightLevel(x, y, z);
+        var lightLevel = GetLightLevel(x, y, z);
         if (lightLevel < blockLight)
         {
             lightLevel = blockLight;
@@ -57,7 +57,7 @@ public class LightingEngine : ILightProvider
 
         if (checkNeighbors)
         {
-            int blockId = _world.Reader.GetBlockId(x, y, z);
+            var blockId = _world.Reader.GetBlockId(x, y, z);
             if (UsesNeighborLight(blockId))
             {
                 return GetLightLevels(x, y + 1, z, false)
@@ -78,8 +78,8 @@ public class LightingEngine : ILightProvider
             return _world.Dimension.HasCeiling ? default : LightLevels.FullSky;
         }
 
-        Chunk chunk = _world.ChunkHost.GetChunk(x >> 4, z >> 4);
-        byte packed = chunk.GetPackedLight(x & 15, y, z & 15);
+        var chunk = _world.ChunkHost.GetChunk(x >> 4, z >> 4);
+        var packed = chunk.GetPackedLight(x & 15, y, z & 15);
         return LightLevels.Of((packed >> 4) & 0xF, packed & 0xF);
     }
 
@@ -113,14 +113,14 @@ public class LightingEngine : ILightProvider
 
         if (checkNeighbors)
         {
-            int blockId = _world.Reader.GetBlockId(x, y, z);
+            var blockId = _world.Reader.GetBlockId(x, y, z);
             if (UsesNeighborLight(blockId))
             {
-                int neighborMaxLight = GetLightLevel(x, y + 1, z, false);
-                int lightPosX = GetLightLevel(x + 1, y, z, false);
-                int lightNegX = GetLightLevel(x - 1, y, z, false);
-                int lightPosZ = GetLightLevel(x, y, z + 1, false);
-                int lightNegZ = GetLightLevel(x, y, z - 1, false);
+                var neighborMaxLight = GetLightLevel(x, y + 1, z, false);
+                var lightPosX = GetLightLevel(x + 1, y, z, false);
+                var lightNegX = GetLightLevel(x - 1, y, z, false);
+                var lightPosZ = GetLightLevel(x, y, z + 1, false);
+                var lightNegZ = GetLightLevel(x, y, z - 1, false);
 
                 if (lightPosX > neighborMaxLight)
                 {
@@ -156,7 +156,7 @@ public class LightingEngine : ILightProvider
             return !_world.Dimension.HasCeiling ? 15 - _world.Environment.AmbientDarkness : 0;
         }
 
-        Chunk chunk = _world.ChunkHost.GetChunk(x >> 4, z >> 4);
+        var chunk = _world.ChunkHost.GetChunk(x >> 4, z >> 4);
         return chunk.GetLight(x & 15, y, z & 15, _world.Environment.AmbientDarkness);
     }
 
@@ -178,7 +178,7 @@ public class LightingEngine : ILightProvider
             }
             else if (lightType == LightType.Block)
             {
-                int blockId = _world.Reader.GetBlockId(x, y, z);
+                var blockId = _world.Reader.GetBlockId(x, y, z);
                 if (_world.Content.Blocks.GetLightEmission(blockId) > targetLuminance)
                 {
                     targetLuminance = _world.Content.Blocks.GetLightEmission(blockId);
@@ -206,14 +206,14 @@ public class LightingEngine : ILightProvider
 
         if (x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000)
         {
-            int chunkX = x >> 4;
-            int chunkZ = z >> 4;
+            var chunkX = x >> 4;
+            var chunkZ = z >> 4;
             if (!_world.ChunkHost.HasChunk(chunkX, chunkZ))
             {
                 return 0;
             }
 
-            Chunk chunk = _world.ChunkHost.GetChunk(chunkX, chunkZ);
+            var chunk = _world.ChunkHost.GetChunk(chunkX, chunkZ);
             return chunk.GetLight(type, x & 15, y, z & 15);
         }
 
@@ -228,7 +228,7 @@ public class LightingEngine : ILightProvider
             {
                 if (_world.ChunkHost.HasChunk(x >> 4, z >> 4))
                 {
-                    Chunk chunk = _world.ChunkHost.GetChunk(x >> 4, z >> 4);
+                    var chunk = _world.ChunkHost.GetChunk(x >> 4, z >> 4);
                     chunk.SetLight(lightType, x & 15, y, z & 15, value);
                     OnLightUpdated?.Invoke(x, y, z);
                 }
@@ -246,7 +246,7 @@ public class LightingEngine : ILightProvider
         ++_lightingUpdatesCounter;
         try
         {
-            int updatesBudget = 500;
+            var updatesBudget = 500;
 
             while (_lightingQueue.Count > 0)
             {
@@ -257,8 +257,8 @@ public class LightingEngine : ILightProvider
 
                 updatesBudget--;
 
-                int lastIndex = _lightingQueue.Count - 1;
-                LightUpdate updateTask = _lightingQueue[lastIndex];
+                var lastIndex = _lightingQueue.Count - 1;
+                var updateTask = _lightingQueue[lastIndex];
 
                 _lightingQueue.RemoveAt(lastIndex);
                 if (updateTask.IsSingleCell)
@@ -266,6 +266,7 @@ public class LightingEngine : ILightProvider
                     _pendingLightCells.Remove(new PendingLightCell(updateTask.LightType,
                         updateTask.MinX, updateTask.MinY, updateTask.MinZ));
                 }
+
                 updateTask.UpdateLight(_world.Reader, _world.ChunkHost, this, _world.Content.Blocks);
             }
 
@@ -304,8 +305,8 @@ public class LightingEngine : ILightProvider
                 return;
             }
 
-            int centerX = (maxX + minX) / 2;
-            int centerZ = (maxZ + minZ) / 2;
+            var centerX = (maxX + minX) / 2;
+            var centerZ = (maxZ + minZ) / 2;
 
             if (_world.Reader.IsPosLoaded(centerX, 64, centerZ))
             {
@@ -314,20 +315,20 @@ public class LightingEngine : ILightProvider
                     return;
                 }
 
-                bool isSingleCell = minX == maxX && minY == maxY && minZ == maxZ;
+                var isSingleCell = minX == maxX && minY == maxY && minZ == maxZ;
                 PendingLightCell pendingCell = new(type, minX, minY, minZ);
                 if (isSingleCell && !_pendingLightCells.Add(pendingCell)) return;
 
-                int queueSize = _lightingQueue.Count;
-                Span<LightUpdate> span = CollectionsMarshal.AsSpan(_lightingQueue);
+                var queueSize = _lightingQueue.Count;
+                var span = CollectionsMarshal.AsSpan(_lightingQueue);
 
                 if (attemptMerge)
                 {
-                    int lookbackCount = Math.Min(5, queueSize);
-                    for (int i = 0; i < lookbackCount; ++i)
+                    var lookbackCount = Math.Min(5, queueSize);
+                    for (var i = 0; i < lookbackCount; ++i)
                     {
-                        ref LightUpdate existingUpdate = ref span[queueSize - i - 1];
-                        bool existingWasSingleCell = existingUpdate.IsSingleCell;
+                        ref var existingUpdate = ref span[queueSize - i - 1];
+                        var existingWasSingleCell = existingUpdate.IsSingleCell;
                         PendingLightCell existingCell = new(existingUpdate.LightType,
                             existingUpdate.MinX, existingUpdate.MinY, existingUpdate.MinZ);
                         if (existingUpdate.LightType == type &&
@@ -358,12 +359,12 @@ public class LightingEngine : ILightProvider
         }
     }
 
-    internal int PendingUpdateCount => _lightingQueue.Count;
-
     private bool UsesNeighborLight(int blockId) =>
         blockId == _slabId || blockId == _farmlandId ||
         blockId == _cobblestoneStairsId || blockId == _woodenStairsId;
 
     private int ResolveOptionalBlockId(ResourceLocation key) =>
-        _world.Content.Blocks.TryGet(key, out Block? block) ? block.Id : -1;
+        _world.Content.Blocks.TryGet(key, out var block) ? block.Id : -1;
+
+    private readonly record struct PendingLightCell(LightType Type, int X, int Y, int Z);
 }

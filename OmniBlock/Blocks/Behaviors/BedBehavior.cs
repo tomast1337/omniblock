@@ -95,10 +95,7 @@ public sealed class BedBehavior(int bottom, int footTop, int footSide, int footE
         return true;
     }
 
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId)
-    {
-        return IsHeadOfBed(blockMeta) ? 0 : bedItem.Id;
-    }
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => IsHeadOfBed(blockMeta) ? 0 : bedItem.Id;
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
@@ -136,20 +133,11 @@ public sealed class BedBehavior(int bottom, int footTop, int footSide, int footE
         return footSide;
     }
 
-    public static int GetDirection(int meta)
-    {
-        return meta & 3;
-    }
+    public static int GetDirection(int meta) => meta & 3;
 
-    public static bool IsHeadOfBed(int meta)
-    {
-        return (meta & 8) != 0;
-    }
+    public static bool IsHeadOfBed(int meta) => (meta & 8) != 0;
 
-    private static bool IsBedOccupied(int meta)
-    {
-        return (meta & 4) != 0;
-    }
+    private static bool IsBedOccupied(int meta) => (meta & 4) != 0;
 
     public static void UpdateState(IBlockWriter worldWriter, int x, int y, int z, int meta, bool occupied)
     {

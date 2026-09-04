@@ -1,7 +1,6 @@
 using OmniBlock.Client.UI.Controls;
 using OmniBlock.Client.UI.Controls.Core;
 using OmniBlock.Client.UI.Layout.Flexbox;
-using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Storage;
 using Color = OmniBlock.Client.UI.Colors.Color;
 
@@ -40,9 +39,9 @@ public class RenameWorldScreen(
         lName.Style.MarginBottom = 4;
         Root.AddChild(lName);
 
-        IWorldStorageSource worldStorage = saveLoader;
-        WorldProperties? worldProperties = worldStorage.GetProperties(_worldFolderName);
-        string currentWorldName = worldProperties?.LevelName ?? string.Empty;
+        var worldStorage = saveLoader;
+        var worldProperties = worldStorage.GetProperties(_worldFolderName);
+        var currentWorldName = worldProperties?.LevelName ?? string.Empty;
 
         _txfName = new TextField
         {
@@ -55,7 +54,7 @@ public class RenameWorldScreen(
         Panel buttonPanel = new();
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
-        Button btnRename = CreateButton();
+        var btnRename = CreateButton();
         btnRename.AutomationId = "world.rename.submit";
         btnRename.Text = Translations.Get("gui.rename");
         btnRename.Style.Width = 100;
@@ -70,7 +69,7 @@ public class RenameWorldScreen(
         };
         buttonPanel.AddChild(btnRename);
 
-        Button btnCancel = CreateButton();
+        var btnCancel = CreateButton();
         btnCancel.AutomationId = "world.rename.cancel";
         btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 100;

@@ -1,3 +1,5 @@
+using System.Numerics;
+using OmniBlock.Client.Rendering.Particles;
 using Silk.NET.Maths;
 using Silk.NET.WebGPU;
 
@@ -20,13 +22,22 @@ public sealed unsafe class WgpuParticleRenderer : IDisposable
     /// <summary>Bytes of the <see cref="ParticleWgslUniforms" /> block.</summary>
     private const uint UniformSize = 160;
 
-    private WgpuPipeline? _pipeline;
-
     // One storage buffer per particle layer rather than one rewritten between draws: a queue write
     // always lands before the pass that reads it runs, so three draws sharing one buffer would all
     // sample whichever layer wrote last — the same trap WgpuPipeline's per-draw uniform pool exists
     // to avoid.
     private readonly WgpuStorageBuffer?[] _layerBuffers = new WgpuStorageBuffer?[3];
+
+    private WgpuPipeline? _pipeline;
+
+    public void Dispose()
+    {
+        _pipeline?.Dispose();
+        foreach (var buffer in _layerBuffers)
+        {
+            buffer?.Dispose();
+        }
+    }
 
     /// <summary>Resets the per-draw uniform pool. Call once per frame before any layer is drawn.</summary>
     public void BeginFrame() => _pipeline?.ResetUniformPool();
@@ -40,16 +51,16 @@ public sealed unsafe class WgpuParticleRenderer : IDisposable
     /// </remarks>
     public void DrawLayer(WebGpuDevice device, WgpuTexture texture,
         Matrix4X4<float> modelView, Matrix4X4<float> projection,
-        System.Numerics.Vector3 right, System.Numerics.Vector3 up,
+        Vector3 right, Vector3 up,
         int layer, ReadOnlySpan<ParticleInstance> instances)
     {
         if (instances.Length == 0) return;
 
-        WgpuPipeline pipeline = EnsurePipeline(device);
-        RenderPassEncoder* pass = ((WebGpuDrawTarget)GLManager.DrawTarget).CurrentPass;
+        var pipeline = EnsurePipeline(device);
+        var pass = ((WebGpuDrawTarget)GLManager.DrawTarget).CurrentPass;
 
-        WgpuStorageBuffer buffer = _layerBuffers[layer] ??= new WgpuStorageBuffer(
-            device, (ulong)(Particles.ParticleBuffer.MaxParticles * InstanceStride),
+        var buffer = _layerBuffers[layer] ??= new WgpuStorageBuffer(
+            device, ParticleBuffer.MaxParticles * InstanceStride,
             pipeline.TextureBindGroupLayout);
         buffer.Write(instances);
 
@@ -59,11 +70,11 @@ public sealed unsafe class WgpuParticleRenderer : IDisposable
             ModelViewMatrix = WebGpuDrawTarget.ToNumerics(modelView),
             ProjectionMatrix = WebGpuDrawTarget.ToNumerics(WgpuClip.FromGl(projection)),
             Right = right,
-            Up = up,
+            Up = up
         });
-        buffer.Bind(pass, 1);
+        buffer.Bind(pass);
 
-        BindGroup* textureGroup = texture.BindGroupFor(pipeline.TextureArrayBindGroupLayout!);
+        var textureGroup = texture.BindGroupFor(pipeline.TextureArrayBindGroupLayout!);
         WgpuPipeline.BindGroup(pass, 2, textureGroup, device.Api);
 
         // 6 vertices build one particle's quad (two triangles); instance_index in particle.wgsl
@@ -75,28 +86,35 @@ public sealed unsafe class WgpuParticleRenderer : IDisposable
     {
         if (_pipeline is not null) return _pipeline;
 
-        string source = AssetManager.Instance.GetAsset("shaders/particle.wgsl").GetTextContent();
+        var source = AssetManager.Instance.GetAsset("shaders/particle.wgsl").GetTextContent();
 
         BindGroupLayoutEntry[] uniformEntries =
         [
-            new BindGroupLayoutEntry
+            new()
             {
                 Binding = 0,
                 Visibility = ShaderStage.Vertex,
-                Buffer = new BufferBindingLayout { Type = BufferBindingType.Uniform, MinBindingSize = UniformSize },
-            },
+                Buffer = new BufferBindingLayout
+                {
+                    Type = BufferBindingType.Uniform,
+                    MinBindingSize = UniformSize
+                }
+            }
         ];
 
         // Bound as the pipeline's "texture" group (group 1) even though it carries a storage
         // buffer, not a texture — WgpuPipeline only names the slot after its most common use.
         BindGroupLayoutEntry[] storageEntries =
         [
-            new BindGroupLayoutEntry
+            new()
             {
                 Binding = 0,
                 Visibility = ShaderStage.Vertex,
-                Buffer = new BufferBindingLayout { Type = BufferBindingType.ReadOnlyStorage },
-            },
+                Buffer = new BufferBindingLayout
+                {
+                    Type = BufferBindingType.ReadOnlyStorage
+                }
+            }
         ];
 
         // Bound as the pipeline's "texture array" group (group 2) for the same reason — it is a
@@ -104,22 +122,25 @@ public sealed unsafe class WgpuParticleRenderer : IDisposable
         // when a shader that wants both a texture and a storage buffer builds one.
         BindGroupLayoutEntry[] textureEntries =
         [
-            new BindGroupLayoutEntry
+            new()
             {
                 Binding = 0,
                 Visibility = ShaderStage.Fragment,
                 Texture = new TextureBindingLayout
                 {
                     SampleType = TextureSampleType.Float,
-                    ViewDimension = TextureViewDimension.Dimension2D,
-                },
+                    ViewDimension = TextureViewDimension.Dimension2D
+                }
             },
-            new BindGroupLayoutEntry
+            new()
             {
                 Binding = 1,
                 Visibility = ShaderStage.Fragment,
-                Sampler = new SamplerBindingLayout { Type = SamplerBindingType.Filtering },
-            },
+                Sampler = new SamplerBindingLayout
+                {
+                    Type = SamplerBindingType.Filtering
+                }
+            }
         ];
 
         _pipeline = new WgpuPipeline(
@@ -127,22 +148,13 @@ public sealed unsafe class WgpuParticleRenderer : IDisposable
             UniformSize,
             uniformEntries,
             storageEntries,
-            buffers: null, bufferCount: 0,
+            null, 0,
             RenderState.Translucent,
             device.SurfaceFormat,
             WgpuFramebuffer.DepthFormat,
             PrimitiveTopology.TriangleList,
-            textureArrayEntries: textureEntries);
+            textureEntries);
 
         return _pipeline;
-    }
-
-    public void Dispose()
-    {
-        _pipeline?.Dispose();
-        foreach (WgpuStorageBuffer? buffer in _layerBuffers)
-        {
-            buffer?.Dispose();
-        }
     }
 }

@@ -1,18 +1,15 @@
 using System.Globalization;
 using System.Text;
-using System.Text.Json;
 using OmniBlock.Blocks;
 using OmniBlock.Entities;
-using OmniBlock.Items;
-using OmniBlock.Registries;
 using OmniBlock.Registries.Data;
 
 namespace OmniBlock.Tests.Catalog;
 
 /// <summary>
-/// Characterizes the catalog produced by the shipped JSON assets. This deliberately records the
-/// merged definitions and their runtime composition rather than duplicating every source file.
-/// An intentional content change should update the readable snapshot in the same commit.
+///     Characterizes the catalog produced by the shipped JSON assets. This deliberately records the
+///     merged definitions and their runtime composition rather than duplicating every source file.
+///     An intentional content change should update the readable snapshot in the same commit.
 /// </summary>
 public sealed class CatalogSnapshotTests
 {
@@ -21,8 +18,8 @@ public sealed class CatalogSnapshotTests
     [Fact]
     public void Shipped_catalog_matches_snapshot()
     {
-        string actual = CatalogSnapshot.Build();
-        string expected = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Catalog", SnapshotFileName));
+        var actual = CatalogSnapshot.Build();
+        var expected = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Catalog", SnapshotFileName));
 
         Assert.Equal(Normalize(expected), Normalize(actual));
     }
@@ -48,9 +45,9 @@ internal static class CatalogSnapshot
         AssertLoaderSucceeded(loader);
 
         snapshot.AppendLine("[blocks]");
-        foreach (BlockDefinition definition in loader.OrderBy(static d => d.ProtocolId))
+        foreach (var definition in loader.OrderBy(static d => d.ProtocolId))
         {
-            Block block = TestBlocks.Get(definition.Name);
+            var block = TestBlocks.Get(definition.Name);
             snapshot.Append(definition.ProtocolId.ToString(CultureInfo.InvariantCulture)).Append(' ')
                 .Append(Key(definition.Namespace, definition.Name))
                 .Append(" material=").Append(definition.Material)
@@ -69,9 +66,9 @@ internal static class CatalogSnapshot
     private static void AppendItems(StringBuilder snapshot)
     {
         snapshot.AppendLine("[items]");
-        foreach (ItemDefinition definition in TestItemCatalog.LoadDefinitions().OrderBy(static d => d.ProtocolId))
+        foreach (var definition in TestItemCatalog.LoadDefinitions().OrderBy(static d => d.ProtocolId))
         {
-            Item item = ContentRuntime.Current.Items.GetByProtocolId(definition.ProtocolId);
+            var item = ContentRuntime.Current.Items.GetByProtocolId(definition.ProtocolId);
             snapshot.Append(definition.ProtocolId.ToString(CultureInfo.InvariantCulture)).Append(' ')
                 .Append(Key(definition.Namespace, definition.Name))
                 .Append(" stack=").Append(item.GetMaxCount().ToString(CultureInfo.InvariantCulture))
@@ -86,11 +83,11 @@ internal static class CatalogSnapshot
     private static void AppendEntities(StringBuilder snapshot)
     {
         snapshot.AppendLine("[entities]");
-        foreach (EntityType type in ContentRuntime.Current.EntityTypes.Values
+        foreach (var type in ContentRuntime.Current.EntityTypes.Values
                      .Where(static type => type.Definition is not null)
                      .OrderBy(type => type.Definition!.ProtocolId))
         {
-            EntityDefinition definition = type.RequireDefinition();
+            var definition = type.RequireDefinition();
             snapshot.Append(definition.ProtocolId.ToString(CultureInfo.InvariantCulture)).Append(' ')
                 .Append(Key(definition.Namespace, definition.Name))
                 .Append(" runtime=").Append(type.BaseType.Name)
@@ -106,8 +103,8 @@ internal static class CatalogSnapshot
     private static string BlockBehaviors(BlockDefinition definition) =>
         Join(definition.Behaviors.Select(static behavior =>
         {
-            string type = behavior.GetProperty("Type").GetString() ?? "?";
-            string slots = Join(behavior.GetProperty("Slots").EnumerateArray().Select(static slot => slot.GetString() ?? "?"));
+            var type = behavior.GetProperty("Type").GetString() ?? "?";
+            var slots = Join(behavior.GetProperty("Slots").EnumerateArray().Select(static slot => slot.GetString() ?? "?"));
             return $"{type}[{slots}]";
         }));
 

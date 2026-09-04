@@ -1,8 +1,8 @@
-using OmniBlock.Server.Commands;
-using OmniBlock.Server.Internal;
 using Brigadier.NET;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Exceptions;
+using OmniBlock.Server.Commands;
+using OmniBlock.Server.Internal;
 
 namespace OmniBlock.Server.Command;
 
@@ -27,8 +27,8 @@ internal class ServerCommandHandler : ICommandHandler
 
     public void ExecuteCommand(PendingCommand pendingCommand)
     {
-        ICommandOutput output = pendingCommand.Output;
-        int code = 0;
+        var output = pendingCommand.Output;
+        var code = 0;
         try
         {
             code = Dispatcher.Execute(pendingCommand.CommandAndArgs, new Command.CommandSource(this, output.Name, output));
@@ -60,7 +60,7 @@ internal class ServerCommandHandler : ICommandHandler
             return "";
         }
 
-        int num = Math.Min(e.Input.Length, e.Cursor);
+        var num = Math.Min(e.Input.Length, e.Cursor);
         return e.Input.Substring(0, num);
     }
 
@@ -116,7 +116,7 @@ internal class ServerCommandHandler : ICommandHandler
 
     public void Register(Command command)
     {
-        foreach (string commandName in command.Names)
+        foreach (var commandName in command.Names)
         {
             Dispatcher.Register(l => command.Register(l.Literal(commandName).Requires(ctx => Requirement(command, ctx))));
         }
@@ -126,7 +126,7 @@ internal class ServerCommandHandler : ICommandHandler
 
     private static bool Requirement(Command cmd, Command.CommandSource ctx)
     {
-        bool isInternalServer = ctx.Server is InternalServer;
+        var isInternalServer = ctx.Server is InternalServer;
 
         if (isInternalServer && cmd.DisallowInternalServer)
         {

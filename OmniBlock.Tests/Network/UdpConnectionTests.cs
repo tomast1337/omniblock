@@ -1,6 +1,5 @@
 using System.Net;
 using OmniBlock.Network;
-using OmniBlock.Network.Messages;
 using OmniBlock.Network.Packets;
 using OmniBlock.Network.Transport;
 using OmniBlock.Util;
@@ -19,17 +18,6 @@ namespace OmniBlock.Tests.Network;
 /// </summary>
 public sealed class UdpConnectionTests
 {
-    private sealed class RecordingHandler : NetHandler
-    {
-        public List<Packet> Applied { get; } = [];
-
-        public override bool isServerSide() => true;
-
-        public override void handle(Packet packet) => Applied.Add(packet);
-
-        public override void onOmniMessage(OmniMessagePacket packet) => Applied.Add(packet);
-    }
-
     /// <summary>
     ///     A packet whose <c>Apply</c> actually reaches the handler. Most do not — KeepAlive's is an
     ///     empty override — so a received-packet assertion has to be made with one that does, or it
@@ -41,7 +29,10 @@ public sealed class UdpConnectionTests
     {
         FakeTransportConnection transport = new();
         RecordingHandler handler = new();
-        UdpConnection connection = new(transport, handler) { betaSharpClient = true };
+        UdpConnection connection = new(transport, handler)
+        {
+            betaSharpClient = true
+        };
 
         return (connection, transport, handler);
     }
@@ -49,7 +40,7 @@ public sealed class UdpConnectionTests
     [Fact]
     public void A_sent_packet_becomes_one_datagram()
     {
-        (UdpConnection connection, FakeTransportConnection transport, _) = Fixture();
+        var (connection, transport, _) = Fixture();
 
         connection.sendPacket(Packet.Get(PacketId.Handshake));
 
@@ -61,7 +52,7 @@ public sealed class UdpConnectionTests
     [Fact]
     public void A_received_datagram_becomes_one_applied_packet()
     {
-        (UdpConnection connection, FakeTransportConnection transport, RecordingHandler handler) = Fixture();
+        var (connection, transport, handler) = Fixture();
 
         transport.Deliver(Observable());
         connection.tick();
@@ -73,9 +64,9 @@ public sealed class UdpConnectionTests
     [Fact]
     public void Several_datagrams_are_applied_in_the_order_they_arrived()
     {
-        (UdpConnection connection, FakeTransportConnection transport, RecordingHandler handler) = Fixture();
+        var (connection, transport, handler) = Fixture();
 
-        for (int i = 0; i < 5; i++)
+        for (var i = 0; i < 5; i++)
         {
             transport.Deliver(Observable(i));
         }
@@ -95,7 +86,7 @@ public sealed class UdpConnectionTests
     [Fact]
     public void A_malformed_datagram_costs_a_datagram_rather_than_the_connection()
     {
-        (UdpConnection connection, FakeTransportConnection transport, RecordingHandler handler) = Fixture();
+        var (connection, transport, handler) = Fixture();
 
         transport.Deliver(Observable(1));
         transport.DeliverRaw([0xFF, 0xFF, 0xFF, 0xFF]); // no such packet id
@@ -115,13 +106,13 @@ public sealed class UdpConnectionTests
     [Fact]
     public void The_transports_arrival_stamp_reaches_the_message_envelope()
     {
-        (UdpConnection connection, FakeTransportConnection transport, RecordingHandler handler) = Fixture();
+        var (connection, transport, handler) = Fixture();
 
-        long before = MonotonicClock.NowMs();
+        var before = MonotonicClock.NowMs();
         transport.Deliver(Observable());
         connection.tick();
 
-        OmniMessagePacket envelope = Assert.IsType<OmniMessagePacket>(Assert.Single(handler.Applied));
+        var envelope = Assert.IsType<OmniMessagePacket>(Assert.Single(handler.Applied));
 
         Assert.True(envelope.ReceivedAtMs >= before, "the envelope was not stamped on arrival");
         Assert.True(envelope.ReceivedAtMs <= MonotonicClock.NowMs());
@@ -134,12 +125,12 @@ public sealed class UdpConnectionTests
     [Fact]
     public void A_message_that_asks_for_a_send_stamp_gets_one_on_the_way_out()
     {
-        (UdpConnection connection, FakeTransportConnection transport, _) = Fixture();
+        var (connection, transport, _) = Fixture();
 
-        OmniMessagePacket envelope = OmniMessagePacket.Get(0, [], carriesSendTime: true);
+        var envelope = OmniMessagePacket.Get(0, [], true);
         Assert.Equal(0, envelope.SentAtMs);
 
-        long before = MonotonicClock.NowMs();
+        var before = MonotonicClock.NowMs();
         connection.sendPacket(envelope);
 
         Assert.True(envelope.SentAtMs >= before);
@@ -150,7 +141,7 @@ public sealed class UdpConnectionTests
     public void A_chunk_sized_packet_goes_out_as_a_single_datagram()
     {
         // Fragmentation is the transport's problem, not this layer's. One packet stays one payload.
-        (UdpConnection connection, FakeTransportConnection transport, _) = Fixture();
+        var (connection, transport, _) = Fixture();
 
         connection.sendPacket(OmniMessagePacket.Get(0, new byte[81_920]));
 
@@ -161,7 +152,7 @@ public sealed class UdpConnectionTests
     [Fact]
     public void Losing_the_transport_disconnects_the_connection()
     {
-        (UdpConnection connection, FakeTransportConnection transport, _) = Fixture();
+        var (connection, transport, _) = Fixture();
 
         transport.IsConnected = false;
         connection.tick();
@@ -173,7 +164,7 @@ public sealed class UdpConnectionTests
     [Fact]
     public void Disconnecting_closes_the_transport()
     {
-        (UdpConnection connection, FakeTransportConnection transport, _) = Fixture();
+        var (connection, transport, _) = Fixture();
 
         connection.disconnect("done");
 
@@ -197,14 +188,20 @@ public sealed class UdpConnectionTests
         await using LiteNetLibTransport clientTransport = new();
         clientTransport.StartClient();
 
-        Task<ITransportConnection> accepting = FirstAcceptedAsync(serverTransport, cancellation.Token);
+        var accepting = FirstAcceptedAsync(serverTransport, cancellation.Token);
 
-        ITransportConnection clientPeer = await clientTransport.ConnectAsync(
+        var clientPeer = await clientTransport.ConnectAsync(
             new IPEndPoint(IPAddress.Loopback, serverTransport.LocalPort), cancellation.Token);
 
         RecordingHandler serverHandler = new();
-        UdpConnection serverSide = new(await accepting, serverHandler) { betaSharpClient = true };
-        UdpConnection clientSide = new(clientPeer, new RecordingHandler()) { betaSharpClient = true };
+        UdpConnection serverSide = new(await accepting, serverHandler)
+        {
+            betaSharpClient = true
+        };
+        UdpConnection clientSide = new(clientPeer, new RecordingHandler())
+        {
+            betaSharpClient = true
+        };
 
         // A chunk-sized payload alongside small ones: fragmentation and reassembly are the part a
         // fake transport cannot exercise at all.
@@ -212,7 +209,7 @@ public sealed class UdpConnectionTests
         clientSide.sendPacket(OmniMessagePacket.Get(2, new byte[81_920]));
         clientSide.sendPacket(Observable(3));
 
-        DateTime deadline = DateTime.UtcNow + TimeSpan.FromSeconds(10);
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(10);
         while (serverHandler.Applied.Count < 3 && DateTime.UtcNow < deadline)
         {
             serverSide.tick();
@@ -226,11 +223,22 @@ public sealed class UdpConnectionTests
     private static async Task<ITransportConnection> FirstAcceptedAsync(
         ITransport transport, CancellationToken cancellationToken)
     {
-        await foreach (ITransportConnection connection in transport.AcceptAsync(cancellationToken))
+        await foreach (var connection in transport.AcceptAsync(cancellationToken))
         {
             return connection;
         }
 
         throw new InvalidOperationException("The transport was disposed before a peer connected.");
+    }
+
+    private sealed class RecordingHandler : NetHandler
+    {
+        public List<Packet> Applied { get; } = [];
+
+        public override bool isServerSide() => true;
+
+        public override void handle(Packet packet) => Applied.Add(packet);
+
+        public override void onOmniMessage(OmniMessagePacket packet) => Applied.Add(packet);
     }
 }

@@ -39,13 +39,13 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
         bottomButtons.Style.FlexDirection = FlexDirection.Row;
         bottomButtons.Style.MarginBottom = 20;
 
-        Button btnDone = CreateButton();
+        var btnDone = CreateButton();
         btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.MarginRight = 4;
         btnDone.OnClick += e => Context.Navigator.Navigate(parent);
         bottomButtons.AddChild(btnDone);
 
-        ImageButton btnLang = CreateImageButton();
+        var btnLang = CreateImageButton();
         btnLang.OnClick += e => Context.Navigator.Navigate(new TranslationsCreditsScreen(Context, this));
         btnLang.Texture = Renderer.TextureManager.GetTextureId("/gui/Globe.png");
         btnLang.U = 0;

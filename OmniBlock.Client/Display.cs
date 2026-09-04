@@ -2,12 +2,13 @@ using System.Runtime.InteropServices;
 using Silk.NET.GLFW;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
+using Monitor = Silk.NET.GLFW.Monitor;
 
 namespace OmniBlock.Client;
 
 /// <summary>
-/// Display manager class that provides functionality similar to LWJGL's Display class.
-/// Only one display may be open at once.
+///     Display manager class that provides functionality similar to LWJGL's Display class.
+///     Only one display may be open at once.
 /// </summary>
 public static unsafe class Display
 {
@@ -50,33 +51,32 @@ public static unsafe class Display
         }
 
         // Get initial display mode (primary monitor)
-        Silk.NET.GLFW.Monitor* monitor = _glfw.GetPrimaryMonitor();
-        Silk.NET.GLFW.VideoMode* videoMode = _glfw.GetVideoMode(monitor);
+        var monitor = _glfw.GetPrimaryMonitor();
+        var videoMode = _glfw.GetVideoMode(monitor);
         _initialMode = new DisplayMode(videoMode->Width, videoMode->Height,
             videoMode->RefreshRate, videoMode->RedBits + videoMode->GreenBits + videoMode->BlueBits);
         _currentMode = _initialMode;
     }
 
     /// <summary>
-    /// Loads the GLFW bundled with the app, by full path, before Silk.NET can resolve one by name.
-    /// Linux only; a no-op everywhere else.
+    ///     Loads the GLFW bundled with the app, by full path, before Silk.NET can resolve one by name.
+    ///     Linux only; a no-op everywhere else.
     /// </summary>
     /// <remarks>
-    /// ImGuiImplGLFW.so declares <c>NEEDED: libglfw.so</c> with <c>RUNPATH: $ORIGIN</c>, so it is
-    /// hard-pinned to the GLFW sitting next to it. Silk.NET instead asks the OS for
-    /// "libglfw.so.3" by bare name, which on a machine with GLFW installed system-wide resolves to
-    /// /usr/lib. That leaves two GLFW libraries mapped into one process, each with its own global
-    /// state: Silk creates the window on its instance, the ImGui backend registers input callbacks
-    /// on the other, and because that instance has never seen the window, the callbacks never fire.
-    /// The debug overlay still renders (ImGuiImplOpenGL3 only touches OpenGL) but receives no mouse
-    /// or keyboard input whatsoever.
-    ///
-    /// dlopen-ing the bundled file by full path first fixes both halves: the loaded object is
-    /// registered under its SONAME ("libglfw.so.3"), so Silk's by-name lookup matches it instead of
-    /// searching the system, and ImGuiImplGLFW's "$ORIGIN/libglfw.so" resolves to the same
-    /// st_dev/st_ino, which the dynamic linker deduplicates onto the already-loaded object. Both
-    /// sides then share a single GLFW. Preloading the identically named "libglfw.so" (rather than
-    /// "libglfw.so.3") is what makes the inode match, so the order of the candidates below matters.
+    ///     ImGuiImplGLFW.so declares <c>NEEDED: libglfw.so</c> with <c>RUNPATH: $ORIGIN</c>, so it is
+    ///     hard-pinned to the GLFW sitting next to it. Silk.NET instead asks the OS for
+    ///     "libglfw.so.3" by bare name, which on a machine with GLFW installed system-wide resolves to
+    ///     /usr/lib. That leaves two GLFW libraries mapped into one process, each with its own global
+    ///     state: Silk creates the window on its instance, the ImGui backend registers input callbacks
+    ///     on the other, and because that instance has never seen the window, the callbacks never fire.
+    ///     The debug overlay still renders (ImGuiImplOpenGL3 only touches OpenGL) but receives no mouse
+    ///     or keyboard input whatsoever.
+    ///     dlopen-ing the bundled file by full path first fixes both halves: the loaded object is
+    ///     registered under its SONAME ("libglfw.so.3"), so Silk's by-name lookup matches it instead of
+    ///     searching the system, and ImGuiImplGLFW's "$ORIGIN/libglfw.so" resolves to the same
+    ///     st_dev/st_ino, which the dynamic linker deduplicates onto the already-loaded object. Both
+    ///     sides then share a single GLFW. Preloading the identically named "libglfw.so" (rather than
+    ///     "libglfw.so.3") is what makes the inode match, so the order of the candidates below matters.
     /// </remarks>
     private static void PreloadBundledGlfw()
     {
@@ -85,7 +85,7 @@ public static unsafe class Display
             return;
         }
 
-        string rid = RuntimeInformation.ProcessArchitecture switch
+        var rid = RuntimeInformation.ProcessArchitecture switch
         {
             Architecture.X64 => "linux-x64",
             Architecture.Arm64 => "linux-arm64",
@@ -96,7 +96,7 @@ public static unsafe class Display
         List<string> candidates = [];
         if (rid.Length != 0)
         {
-            string nativeDir = Path.Combine(AppContext.BaseDirectory, "runtimes", rid, "native");
+            var nativeDir = Path.Combine(AppContext.BaseDirectory, "runtimes", rid, "native");
             candidates.Add(Path.Combine(nativeDir, "libglfw.so"));
             candidates.Add(Path.Combine(nativeDir, "libglfw.so.3"));
         }
@@ -104,7 +104,7 @@ public static unsafe class Display
         candidates.Add(Path.Combine(AppContext.BaseDirectory, "libglfw.so"));
         candidates.Add(Path.Combine(AppContext.BaseDirectory, "libglfw.so.3"));
 
-        foreach (string candidate in candidates)
+        foreach (var candidate in candidates)
         {
             if (File.Exists(candidate) && NativeLibrary.TryLoad(candidate, out _))
             {
@@ -117,51 +117,51 @@ public static unsafe class Display
     }
 
     /// <summary>
-    /// Return true if the window's native peer has been created.
+    ///     Return true if the window's native peer has been created.
     /// </summary>
     public static bool isCreated()
     {
-        lock (_lock) { return _window != null; }
+        lock (_lock)
+        {
+            return _window != null;
+        }
     }
 
     /// <summary>
-    /// Return the current display mode, as set by setDisplayMode().
+    ///     Return the current display mode, as set by setDisplayMode().
     /// </summary>
     public static DisplayMode getDisplayMode()
     {
-        lock (_lock) { return _currentMode; }
+        lock (_lock)
+        {
+            return _currentMode;
+        }
     }
 
     /// <summary>
-    /// Return the initial desktop display mode.
+    ///     Return the initial desktop display mode.
     /// </summary>
-    public static DisplayMode getDesktopDisplayMode()
-    {
-        return _initialMode;
-    }
+    public static DisplayMode getDesktopDisplayMode() => _initialMode;
 
     /// <summary>
-    /// Returns the entire list of possible fullscreen display modes as an array.
-    /// Only DisplayModes from this call can be used when the Display is in fullscreen mode.
+    ///     Returns the entire list of possible fullscreen display modes as an array.
+    ///     Only DisplayModes from this call can be used when the Display is in fullscreen mode.
     /// </summary>
     public static DisplayMode[] getAvailableDisplayModes()
     {
         lock (_lock)
         {
             var modes = new List<DisplayMode>();
-            Silk.NET.GLFW.Monitor* monitor = _glfw!.GetPrimaryMonitor();
+            var monitor = _glfw!.GetPrimaryMonitor();
 
-            unsafe
+            int count;
+            var videoModes = _glfw.GetVideoModes(monitor, out count);
+
+            for (var i = 0; i < count; i++)
             {
-                int count;
-                Silk.NET.GLFW.VideoMode* videoModes = _glfw.GetVideoModes(monitor, out count);
-
-                for (int i = 0; i < count; i++)
-                {
-                    Silk.NET.GLFW.VideoMode mode = videoModes[i];
-                    int bpp = mode.RedBits + mode.GreenBits + mode.BlueBits;
-                    modes.Add(new DisplayMode(mode.Width, mode.Height, mode.RefreshRate, bpp));
-                }
+                var mode = videoModes[i];
+                var bpp = mode.RedBits + mode.GreenBits + mode.BlueBits;
+                modes.Add(new DisplayMode(mode.Width, mode.Height, mode.RefreshRate, bpp));
             }
 
             // Remove duplicates
@@ -170,8 +170,8 @@ public static unsafe class Display
     }
 
     /// <summary>
-    /// Set the current display mode. If no OpenGL context has been created, the given mode will apply to
-    /// the context when create() is called.
+    ///     Set the current display mode. If no OpenGL context has been created, the given mode will apply to
+    ///     the context when create() is called.
     /// </summary>
     public static void setDisplayMode(DisplayMode mode)
     {
@@ -180,7 +180,7 @@ public static unsafe class Display
             if (mode == null)
                 throw new ArgumentNullException(nameof(mode));
 
-            bool wasFullscreen = isFullscreen();
+            var wasFullscreen = isFullscreen();
             _currentMode = mode;
 
             if (!isCreated())
@@ -198,28 +198,25 @@ public static unsafe class Display
     }
 
     /// <summary>
-    /// Return whether the Display is in fullscreen mode.
+    ///     Return whether the Display is in fullscreen mode.
     /// </summary>
     public static bool isFullscreen()
     {
-        lock (_lock) { return _fullscreen && _currentMode.isFullscreenCapable(); }
+        lock (_lock)
+        {
+            return _fullscreen && _currentMode.isFullscreenCapable();
+        }
     }
 
     /// <summary>
-    /// Set the fullscreen mode of the context.
+    ///     Set the fullscreen mode of the context.
     /// </summary>
-    public static void setFullscreen(bool fullscreen)
-    {
-        setDisplayModeAndFullscreenInternal(fullscreen, _currentMode);
-    }
+    public static void setFullscreen(bool fullscreen) => setDisplayModeAndFullscreenInternal(fullscreen, _currentMode);
 
     /// <summary>
-    /// Set the mode of the context.
+    ///     Set the mode of the context.
     /// </summary>
-    public static void setDisplayModeAndFullscreen(DisplayMode mode)
-    {
-        setDisplayModeAndFullscreenInternal(mode.isFullscreenCapable(), mode);
-    }
+    public static void setDisplayModeAndFullscreen(DisplayMode mode) => setDisplayModeAndFullscreenInternal(mode.isFullscreenCapable(), mode);
 
     private static void setDisplayModeAndFullscreenInternal(bool fullscreen, DisplayMode mode)
     {
@@ -228,13 +225,13 @@ public static unsafe class Display
             if (mode == null)
                 throw new ArgumentNullException(nameof(mode));
 
-            bool wasFullscreen = isFullscreen();
-            DisplayMode oldMode = _currentMode;
+            var wasFullscreen = isFullscreen();
+            var oldMode = _currentMode;
 
             _currentMode = mode;
             _fullscreen = fullscreen;
 
-            if (!isCreated() || wasFullscreen == isFullscreen() && mode.Equals(oldMode))
+            if (!isCreated() || (wasFullscreen == isFullscreen() && mode.Equals(oldMode)))
                 return;
 
             if (isFullscreen())
@@ -258,23 +255,20 @@ public static unsafe class Display
 
         if (_window != null && _glfw != null)
         {
-            Silk.NET.GLFW.Monitor* monitor = null;
+            Monitor* monitor = null;
             if (!windowedMode)
             {
                 monitor = _glfw.GetPrimaryMonitor();
             }
 
-            unsafe
-            {
-                _glfw.SetWindowMonitor(
-                    (WindowHandle*)_window.Handle,
-                    monitor,
-                    0, 0,
-                    _currentMode.getWidth(),
-                    _currentMode.getHeight(),
-                    _currentMode.getFrequency()
-                );
-            }
+            _glfw.SetWindowMonitor(
+                (WindowHandle*)_window.Handle,
+                monitor,
+                0, 0,
+                _currentMode.getWidth(),
+                _currentMode.getHeight(),
+                _currentMode.getFrequency()
+            );
         }
     }
 
@@ -282,31 +276,31 @@ public static unsafe class Display
     {
         if (_window != null && _glfw != null)
         {
-            unsafe
-            {
-                _glfw.SetWindowMonitor(
-                    (WindowHandle*)_window.Handle,
-                    null,
-                    getWindowX(),
-                    getWindowY(),
-                    _currentMode.getWidth(),
-                    _currentMode.getHeight(),
-                    0
-                );
-            }
+            _glfw.SetWindowMonitor(
+                (WindowHandle*)_window.Handle,
+                null,
+                getWindowX(),
+                getWindowY(),
+                _currentMode.getWidth(),
+                _currentMode.getHeight(),
+                0
+            );
         }
     }
 
     /// <summary>
-    /// Return the title of the window.
+    ///     Return the title of the window.
     /// </summary>
     public static string getTitle()
     {
-        lock (_lock) { return _title; }
+        lock (_lock)
+        {
+            return _title;
+        }
     }
 
     /// <summary>
-    /// Set the title of the window. This may be ignored by the underlying OS.
+    ///     Set the title of the window. This may be ignored by the underlying OS.
     /// </summary>
     public static void setTitle(string title)
     {
@@ -319,7 +313,7 @@ public static unsafe class Display
     }
 
     /// <summary>
-    /// Return true if the user or operating system has asked the window to close.
+    ///     Return true if the user or operating system has asked the window to close.
     /// </summary>
     public static bool isCloseRequested()
     {
@@ -332,7 +326,7 @@ public static unsafe class Display
     }
 
     /// <summary>
-    /// Return true if the window is visible, false if not.
+    ///     Return true if the window is visible, false if not.
     /// </summary>
     public static bool isVisible()
     {
@@ -345,7 +339,7 @@ public static unsafe class Display
     }
 
     /// <summary>
-    /// Return true if window is active, that is, the foreground display of the operating system.
+    ///     Return true if window is active, that is, the foreground display of the operating system.
     /// </summary>
     public static bool isActive()
     {
@@ -358,7 +352,7 @@ public static unsafe class Display
     }
 
     /// <summary>
-    /// Set the window's location. This is a no-op on fullscreen windows.
+    ///     Set the window's location. This is a no-op on fullscreen windows.
     /// </summary>
     public static void setLocation(int x, int y)
     {
@@ -382,6 +376,7 @@ public static unsafe class Display
                 return Math.Max(0, (_initialMode.getWidth() - _currentMode.getWidth()) / 2);
             return _x;
         }
+
         return 0;
     }
 
@@ -393,11 +388,12 @@ public static unsafe class Display
                 return Math.Max(0, (_initialMode.getHeight() - _currentMode.getHeight()) / 2);
             return _y;
         }
+
         return 0;
     }
 
     /// <summary>
-    /// Return the x position (top-left) of the Display window.
+    ///     Return the x position (top-left) of the Display window.
     /// </summary>
     public static int getX()
     {
@@ -407,7 +403,7 @@ public static unsafe class Display
     }
 
     /// <summary>
-    /// Return the y position (top-left) of the Display window.
+    ///     Return the y position (top-left) of the Display window.
     /// </summary>
     public static int getY()
     {
@@ -417,7 +413,7 @@ public static unsafe class Display
     }
 
     /// <summary>
-    /// Return the width of the Display window.
+    ///     Return the width of the Display window.
     /// </summary>
     public static int getWidth()
     {
@@ -427,7 +423,7 @@ public static unsafe class Display
     }
 
     /// <summary>
-    /// Return the height of the Display window.
+    ///     Return the height of the Display window.
     /// </summary>
     public static int getHeight()
     {
@@ -437,7 +433,7 @@ public static unsafe class Display
     }
 
     /// <summary>
-    /// Return the framebuffer width in pixels.
+    ///     Return the framebuffer width in pixels.
     /// </summary>
     public static int getFramebufferWidth()
     {
@@ -456,7 +452,7 @@ public static unsafe class Display
     }
 
     /// <summary>
-    /// Return the framebuffer height in pixels.
+    ///     Return the framebuffer height in pixels.
     /// </summary>
     public static int getFramebufferHeight()
     {
@@ -475,31 +471,22 @@ public static unsafe class Display
     }
 
     /// <summary>
-    /// Return true if the Display window is resizable.
+    ///     Return true if the Display window is resizable.
     /// </summary>
-    public static bool isResizable()
-    {
-        return _resizable;
-    }
+    public static bool isResizable() => _resizable;
 
     /// <summary>
-    /// Enable or disable the Display window to be resized.
+    ///     Enable or disable the Display window to be resized.
     /// </summary>
-    public static void setResizable(bool resizable)
-    {
-        _resizable = resizable;
-    }
+    public static void setResizable(bool resizable) => _resizable = resizable;
 
     /// <summary>
-    /// Return true if the Display window has been resized.
+    ///     Return true if the Display window has been resized.
     /// </summary>
-    public static bool wasResized()
-    {
-        return _wasResized;
-    }
+    public static bool wasResized() => _wasResized;
 
     /// <summary>
-    /// Set the initial color of the Display.
+    ///     Set the initial color of the Display.
     /// </summary>
     public static void setInitialBackground(float r, float g, float b)
     {
@@ -509,7 +496,7 @@ public static unsafe class Display
     }
 
     /// <summary>
-    /// Set the buffer swap interval.
+    ///     Set the buffer swap interval.
     /// </summary>
     public static void setSwapInterval(int value)
     {
@@ -522,15 +509,12 @@ public static unsafe class Display
     }
 
     /// <summary>
-    /// Enable or disable vertical monitor synchronization.
+    ///     Enable or disable vertical monitor synchronization.
     /// </summary>
-    public static void setVSyncEnabled(bool sync)
-    {
-        setSwapInterval(sync ? 1 : 0);
-    }
+    public static void setVSyncEnabled(bool sync) => setSwapInterval(sync ? 1 : 0);
 
     /// <summary>
-    /// Create the OpenGL context.
+    ///     Create the OpenGL context.
     /// </summary>
     public static void create()
     {
@@ -539,7 +523,7 @@ public static unsafe class Display
             if (isCreated())
                 throw new InvalidOperationException("Only one LWJGL context may be instantiated at any one time.");
 
-            WindowOptions options = WindowOptions.Default;
+            var options = WindowOptions.Default;
             options.Size = new Vector2D<int>(_currentMode.getWidth(), _currentMode.getHeight());
             options.Title = _title;
             options.WindowBorder = _resizable ? WindowBorder.Resizable : WindowBorder.Fixed;
@@ -598,18 +582,15 @@ public static unsafe class Display
             return;
         }
 
-        _glfw.GetFramebufferSize((WindowHandle*)_window.Handle, out int width, out int height);
+        _glfw.GetFramebufferSize((WindowHandle*)_window.Handle, out var width, out var height);
         _framebufferWidth = Math.Max(1, width);
         _framebufferHeight = Math.Max(1, height);
     }
 
-    private static void onClosing()
-    {
-        _closeRequested = true;
-    }
+    private static void onClosing() => _closeRequested = true;
 
     /// <summary>
-    /// Process operating system events.
+    ///     Process operating system events.
     /// </summary>
     public static void processMessages()
     {
@@ -623,7 +604,7 @@ public static unsafe class Display
     }
 
     /// <summary>
-    /// Swap the display buffers.
+    ///     Swap the display buffers.
     /// </summary>
     public static void swapBuffers()
     {
@@ -634,15 +615,12 @@ public static unsafe class Display
     }
 
     /// <summary>
-    /// Update the window. If the window is visible clears the dirty flag and calls swapBuffers().
+    ///     Update the window. If the window is visible clears the dirty flag and calls swapBuffers().
     /// </summary>
-    public static void update()
-    {
-        update(true);
-    }
+    public static void update() => update(true);
 
     /// <summary>
-    /// Update the window.
+    ///     Update the window.
     /// </summary>
     public static void update(bool processMessages)
     {
@@ -666,7 +644,7 @@ public static unsafe class Display
     }
 
     /// <summary>
-    /// Destroy the Display.
+    ///     Destroy the Display.
     /// </summary>
     public static void destroy()
     {
@@ -699,15 +677,9 @@ public static unsafe class Display
         return (WindowHandle*)_window!.Handle;
     }
 
-    public static Glfw getGlfw()
-    {
-        return _glfw!;
-    }
+    public static Glfw getGlfw() => _glfw!;
 
-    public static IWindow getWindow()
-    {
-        return _window!;
-    }
+    public static IWindow getWindow() => _window!;
 
     public static string GetClipboardString()
     {
@@ -723,15 +695,15 @@ public static unsafe class Display
 }
 
 /// <summary>
-/// Represents a display mode with width, height, refresh rate, and bit depth.
+///     Represents a display mode with width, height, refresh rate, and bit depth.
 /// </summary>
 public class DisplayMode : IEquatable<DisplayMode>
 {
-    private readonly int width;
-    private readonly int height;
-    private readonly int freq;
     private readonly int bpp;
+    private readonly int freq;
     private readonly bool fullscreenCapable;
+    private readonly int height;
+    private readonly int width;
 
     public DisplayMode(int width, int height, int freq = 60, int bpp = 32, bool fullscreenCapable = true)
     {
@@ -740,31 +712,6 @@ public class DisplayMode : IEquatable<DisplayMode>
         this.freq = freq;
         this.bpp = bpp;
         this.fullscreenCapable = fullscreenCapable;
-    }
-
-    public int getWidth()
-    {
-        return width;
-    }
-
-    public int getHeight()
-    {
-        return height;
-    }
-
-    public int getFrequency()
-    {
-        return freq;
-    }
-
-    public int getBitsPerPixel()
-    {
-        return bpp;
-    }
-
-    public bool isFullscreenCapable()
-    {
-        return fullscreenCapable;
     }
 
     public bool Equals(DisplayMode? other)
@@ -776,18 +723,19 @@ public class DisplayMode : IEquatable<DisplayMode>
                bpp == other.bpp;
     }
 
-    public override bool Equals(object? obj)
-    {
-        return Equals(obj as DisplayMode);
-    }
+    public int getWidth() => width;
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(width, height, freq, bpp);
-    }
+    public int getHeight() => height;
 
-    public override string ToString()
-    {
-        return $"{width}x{height} @ {freq}Hz ({bpp}bpp)";
-    }
+    public int getFrequency() => freq;
+
+    public int getBitsPerPixel() => bpp;
+
+    public bool isFullscreenCapable() => fullscreenCapable;
+
+    public override bool Equals(object? obj) => Equals(obj as DisplayMode);
+
+    public override int GetHashCode() => HashCode.Combine(width, height, freq, bpp);
+
+    public override string ToString() => $"{width}x{height} @ {freq}Hz ({bpp}bpp)";
 }

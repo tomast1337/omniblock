@@ -15,9 +15,9 @@ internal sealed class BedBehavior : IItemBehavior
         }
 
         ++y;
-        int dir = MathHelper.Floor(player.Yaw * 4.0F / 360.0F + 0.5D) & 3;
-        int offsetX = 0;
-        int offsetZ = 0;
+        var dir = MathHelper.Floor(player.Yaw * 4.0F / 360.0F + 0.5D) & 3;
+        var offsetX = 0;
+        var offsetZ = 0;
         if (dir == 0)
         {
             offsetZ = 1;
@@ -38,10 +38,10 @@ internal sealed class BedBehavior : IItemBehavior
             offsetX = 1;
         }
 
-        bool footReplaceable = IsReplaceable(world, x, y, z);
-        bool headReplaceable = IsReplaceable(world, x + offsetX, y, z + offsetZ);
-        bool footSupported = world.Reader.ShouldSuffocate(x, y - 1, z);
-        bool headSupported = world.Reader.ShouldSuffocate(x + offsetX, y - 1, z + offsetZ);
+        var footReplaceable = IsReplaceable(world, x, y, z);
+        var headReplaceable = IsReplaceable(world, x + offsetX, y, z + offsetZ);
+        var footSupported = world.Reader.ShouldSuffocate(x, y - 1, z);
+        var headSupported = world.Reader.ShouldSuffocate(x + offsetX, y - 1, z + offsetZ);
 
         if (!footReplaceable || !headReplaceable || !footSupported || !headSupported)
         {
@@ -58,7 +58,7 @@ internal sealed class BedBehavior : IItemBehavior
 
     private static bool IsReplaceable(IWorldContext world, int x, int y, int z)
     {
-        int blockId = world.Reader.GetBlockId(x, y, z);
+        var blockId = world.Reader.GetBlockId(x, y, z);
         return blockId == 0 || BlockRegistry.GetByProtocolId(blockId).Material.IsReplaceable;
     }
 }

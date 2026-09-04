@@ -1,7 +1,7 @@
+using Microsoft.Extensions.Logging;
 using OmniBlock.Client.UI.Layout.Flexbox;
 using OmniBlock.Client.UI.Rendering;
 using OmniBlock.Util.Maths;
-using Microsoft.Extensions.Logging;
 using Color = OmniBlock.Client.UI.Colors.Color;
 
 namespace OmniBlock.Client.UI.Controls.MainMenu;
@@ -27,7 +27,7 @@ public class MainMenuSplash : UIElement
         try
         {
             List<string> splashLines = [];
-            string splashesText = AssetManager.Instance.GetAsset("title/splashes.txt").GetTextContent();
+            var splashesText = AssetManager.Instance.GetAsset("title/splashes.txt").GetTextContent();
             using (StringReader reader = new(splashesText))
             {
                 string? line;
@@ -47,7 +47,7 @@ public class MainMenuSplash : UIElement
             }
 
             // Special days
-            DateTime now = DateTime.Now;
+            var now = DateTime.Now;
             if (now.Month == 11 && now.Day == 9)
             {
                 _splashText = "Happy birthday, ez!";
@@ -79,7 +79,7 @@ public class MainMenuSplash : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        float splashScale = 1.8F - MathHelper.Abs(MathHelper.Sin(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() % 1000L / 1000.0F * (float)Math.PI * 2.0F) * 0.1F);
+        var splashScale = 1.8F - MathHelper.Abs(MathHelper.Sin(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() % 1000L / 1000.0F * (float)Math.PI * 2.0F) * 0.1F);
         splashScale = splashScale * 100.0F / (ComputedWidth + 32);
 
         renderer.DrawCenteredText(_splashText, 0, -8, Color.Yellow, -20.0f, splashScale);

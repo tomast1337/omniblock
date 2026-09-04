@@ -18,21 +18,12 @@ namespace OmniBlock.Blocks.Behaviors;
 /// </summary>
 internal sealed class TallGrassBehavior(Item seeds, int seedDropChanceOneIn, int[] textures) : IBlockVisuals, IBlockLifecycle
 {
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId)
-    {
-        return Random.Shared.Next(seedDropChanceOneIn) == 0 ? seeds.Id : -1;
-    }
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => Random.Shared.Next(seedDropChanceOneIn) == 0 ? seeds.Id : -1;
 
     // Metadata past the last kind kept the middle one -- plain tall grass -- rather than failing.
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
-    {
-        return meta >= 0 && meta < textures.Length ? textures[meta] : textures[1];
-    }
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => meta >= 0 && meta < textures.Length ? textures[meta] : textures[1];
 
-    public int GetColor(Block block, int meta, int defaultColor)
-    {
-        return meta == 0 ? 0xFFFFFF : GrassColors.getDefaultColor();
-    }
+    public int GetColor(Block block, int meta, int defaultColor) => meta == 0 ? 0xFFFFFF : GrassColors.getDefaultColor();
 
     public int GetColorMultiplier(Block block, IBlockReader reader, int x, int y, int z, int defaultColor)
     {
@@ -41,10 +32,7 @@ internal sealed class TallGrassBehavior(Item seeds, int seedDropChanceOneIn, int
         return BiomeTintedColor(reader, x, y, z);
     }
 
-    public int GetColorMultiplier(Block block, IBlockReader reader, int x, int y, int z, int knownMeta, int defaultColor)
-    {
-        return knownMeta == 0 ? 0xFFFFFF : BiomeTintedColor(reader, x, y, z);
-    }
+    public int GetColorMultiplier(Block block, IBlockReader reader, int x, int y, int z, int knownMeta, int defaultColor) => knownMeta == 0 ? 0xFFFFFF : BiomeTintedColor(reader, x, y, z);
 
     private static int BiomeTintedColor(IBlockReader reader, int x, int y, int z)
     {

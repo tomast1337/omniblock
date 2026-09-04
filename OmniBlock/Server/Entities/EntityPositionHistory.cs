@@ -42,11 +42,10 @@ public sealed class EntityPositionHistory
 
     private readonly Sighting[] _records = new Sighting[Capacity];
 
-    private int _count;
     private int _next;
 
     /// <summary>Records retained, for tests and diagnostics.</summary>
-    public int Count => _count;
+    public int Count { get; private set; }
 
     /// <summary>
     ///     Appends this tick's position. <paramref name="serverTimeMs" /> is the simulation instant,
@@ -59,7 +58,7 @@ public sealed class EntityPositionHistory
         // A repeated stamp is the same tick recorded twice, which happens when the tracker runs more
         // often than the simulation. Overwrite rather than append: two records at one instant give
         // the interpolation a zero-width interval to divide by.
-        if (_count > 0 && Newest().ServerTimeMs == serverTimeMs)
+        if (Count > 0 && Newest().ServerTimeMs == serverTimeMs)
         {
             _records[(_next - 1 + Capacity) % Capacity] = new Sighting(serverTimeMs, x, y, z);
             return;
@@ -68,9 +67,9 @@ public sealed class EntityPositionHistory
         _records[_next] = new Sighting(serverTimeMs, x, y, z);
         _next = (_next + 1) % Capacity;
 
-        if (_count < Capacity)
+        if (Count < Capacity)
         {
-            _count++;
+            Count++;
         }
     }
 
@@ -93,41 +92,41 @@ public sealed class EntityPositionHistory
         y = 0.0;
         z = 0.0;
 
-        if (_count == 0)
+        if (Count == 0)
         {
             return false;
         }
 
-        Sighting newest = Newest();
+        var newest = Newest();
         if (serverTimeMs >= newest.ServerTimeMs)
         {
             (x, y, z) = (newest.X, newest.Y, newest.Z);
             return true;
         }
 
-        Sighting oldest = At(0);
+        var oldest = At(0);
         if (serverTimeMs <= oldest.ServerTimeMs)
         {
             (x, y, z) = (oldest.X, oldest.Y, oldest.Z);
             return true;
         }
 
-        for (int i = _count - 1; i > 0; i--)
+        for (var i = Count - 1; i > 0; i--)
         {
-            Sighting after = At(i);
-            Sighting before = At(i - 1);
+            var after = At(i);
+            var before = At(i - 1);
 
             if (serverTimeMs < before.ServerTimeMs)
             {
                 continue;
             }
 
-            long span = after.ServerTimeMs - before.ServerTimeMs;
-            double t = span <= 0 ? 0.0 : (double)(serverTimeMs - before.ServerTimeMs) / span;
+            var span = after.ServerTimeMs - before.ServerTimeMs;
+            var t = span <= 0 ? 0.0 : (double)(serverTimeMs - before.ServerTimeMs) / span;
 
-            x = before.X + ((after.X - before.X) * t);
-            y = before.Y + ((after.Y - before.Y) * t);
-            z = before.Z + ((after.Z - before.Z) * t);
+            x = before.X + (after.X - before.X) * t;
+            y = before.Y + (after.Y - before.Y) * t;
+            z = before.Z + (after.Z - before.Z) * t;
             return true;
         }
 
@@ -152,10 +151,10 @@ public sealed class EntityPositionHistory
         return Math.Clamp(requestedMs, nowMs - MaxRewindMs, nowMs);
     }
 
-    private Sighting Newest() => At(_count - 1);
+    private Sighting Newest() => At(Count - 1);
 
     /// <summary>Index 0 is the oldest retained record.</summary>
-    private Sighting At(int index) => _records[(_next - _count + index + Capacity) % Capacity];
+    private Sighting At(int index) => _records[(_next - Count + index + Capacity) % Capacity];
 
     private readonly record struct Sighting(long ServerTimeMs, double X, double Y, double Z);
 }

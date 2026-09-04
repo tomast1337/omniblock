@@ -2,6 +2,7 @@ using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Entities.Models;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
+using Silk.NET.Maths;
 
 namespace OmniBlock.Client.Rendering.Entities;
 
@@ -27,9 +28,9 @@ public sealed class FleeceEntityRenderer : LivingEntityRenderer
         if (wool.IsShearedOn(entity)) return false;
 
         loadTexture(_texture);
-        float brightness = entity.GetBrightnessAtEyes(tickDelta);
-        float[] tint = WoolBehavior.ColorTable[wool.ColorOf(entity)];
-        GLManager.Color = new(brightness * tint[0], brightness * tint[1], brightness * tint[2], 1.0F);
+        var brightness = entity.GetBrightnessAtEyes(tickDelta);
+        var tint = WoolBehavior.ColorTable[wool.ColorOf(entity)];
+        GLManager.Color = new Vector4D<float>(brightness * tint[0], brightness * tint[1], brightness * tint[2], 1.0F);
         return true;
     }
 }
