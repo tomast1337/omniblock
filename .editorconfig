@@ -110,7 +110,7 @@ csharp_preferred_modifier_order = public,private,protected,internal,static,exter
 
 # Code style defaults
 csharp_using_directive_placement = outside_namespace:suggestion
-csharp_prefer_braces = true:refactoring
+csharp_prefer_braces = when_multiline:refactoring
 csharp_preserve_single_line_blocks = true:none
 csharp_preserve_single_line_statements = false:none
 csharp_prefer_static_local_function = true:suggestion
@@ -118,7 +118,7 @@ csharp_prefer_simple_using_statement = false:none
 csharp_style_prefer_switch_expression = true:suggestion
 
 # Expression-bodied members
-csharp_style_expression_bodied_methods = true:refactoring
+csharp_style_expression_bodied_methods = when_on_single_line:refactoring
 csharp_style_expression_bodied_constructors = true:refactoring
 csharp_style_expression_bodied_operators = true:refactoring
 csharp_style_expression_bodied_properties = true:refactoring
@@ -178,6 +178,8 @@ csharp_style_var_elsewhere = false:suggestion
 
 # ReSharper properties
 resharper_wrap_object_and_collection_initializer_style = chop_always
+# Rider syntax style: omit braces for single-statement if/else, keep them once the body is multiline
+resharper_csharp_braces_for_ifelse = required_for_multiline
 
 # Visual Basic files
 [*.vb]
