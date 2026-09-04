@@ -296,3 +296,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-09-04 — Update .editorconfig to set max line length and adjust var usage preferences (Nicolas Vyčas Nery; `ed8d56aafe1b31451d733c41dddc493388e68c47`)
 - 2026-09-04 — Refactor .editorconfig for improved formatting and consistency in naming rules (Nicolas Vyčas Nery; `6c4aa4a0d966e5b4db2c8b5f647b0120002e5d86`)
 - 2026-09-04 — chore: formatting (Nicolas Vyčas Nery; `171644408f4eff093c52df1b1108b414516a3096`)
+- 2026-09-04 — refactor: rename variable for clarity in addPlayer method (Nicolas Vyčas Nery; `5fad0cf3c927792f43cc7d45e41937eb206a309f`)

@@ -56,8 +56,8 @@ public class PlayerManager
         player.ActiveChunks.Clear();
         player.ChunksTerrainSentToClient.Clear();
         GetChunkMap(player.DimensionId).addPlayer(player);
-        var var2 = _server.getWorld(player.DimensionId);
-        var2.ChunkCache.LoadChunk((int)player.X >> 4, (int)player.Z >> 4);
+        var world = _server.getWorld(player.DimensionId);
+        world.ChunkCache.LoadChunk((int)player.X >> 4, (int)player.Z >> 4);
     }
 
     public int getBlockViewDistance() => _chunkMaps[0].getBlockViewDistance();
