@@ -24,7 +24,7 @@ public sealed class EntityLineOfSightTests
 
     private static EntityCreature Spawn(FakeWorldContext world, string name, double x, double z)
     {
-        EntityCreature mob = (EntityCreature)EntityRegistry.ByName(name).Create(world);
+        EntityCreature mob = (EntityCreature)TestEntityCatalog.ByName(name).Create(world);
         mob.SetPositionAndAngles(x, 65.0, z, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(mob));
         return mob;
@@ -112,7 +112,7 @@ public sealed class EntityLineOfSightTests
     public void Slime_contact_damage_needs_a_clear_line()
     {
         FakeWorldContext world = new();
-        EntityLiving slime = (EntityLiving)EntityRegistry.ByName("slime").Create(world);
+        EntityLiving slime = (EntityLiving)TestEntityCatalog.ByName("slime").Create(world);
         slime.Behaviors.Find<SizedBodyBehavior>()!.SetSize(slime, 4);
         slime.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(slime));

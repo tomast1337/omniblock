@@ -149,7 +149,7 @@ public sealed class ItemBuildContextTests
             _ => ArmorMaterialRegistry.Get("iron"),
             _ => MaterialRegistry.Get("wood"),
             texture ?? (_ => 0),
-            _ => EntityRegistry.ByName("snowball"),
+            _ => TestEntityCatalog.ByName("snowball"),
             _ => BlockEntity.Generic,
             _ => new RecipeDefinition(),
             _ => new object());

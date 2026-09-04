@@ -52,7 +52,7 @@ public abstract class EntityPlayer : EntityLiving
     public float SleepOffsetZ;
     public float StepBobbingAmount;
 
-    protected EntityPlayer(IWorldContext world) : base(world)
+    protected EntityPlayer(IWorldContext world) : base(world, world.Content.EntityTypes.Get("omniblock:player"))
     {
         Inventory = new InventoryPlayer(this);
         PlayerScreenHandler = new PlayerScreenHandler(Inventory, !world.IsRemote);

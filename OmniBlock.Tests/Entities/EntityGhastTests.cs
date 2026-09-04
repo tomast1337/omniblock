@@ -15,7 +15,7 @@ public sealed class EntityGhastTests
 {
     private static EntityLiving Ghast(FakeWorldContext world, double x = 8.5, double z = 8.5)
     {
-        EntityLiving ghast = (EntityLiving)EntityRegistry.ByName("ghast").Create(world);
+        EntityLiving ghast = (EntityLiving)TestEntityCatalog.ByName("ghast").Create(world);
         ghast.SetPositionAndAngles(x, 65.0, z, 0f, 0f);
         return ghast;
     }
@@ -34,8 +34,8 @@ public sealed class EntityGhastTests
         FakeWorldContext world = new();
 
         Assert.Equal(typeof(EntityLiving), Ghast(world).GetType());
-        Assert.IsType<CompositeBehavior>(EntityRegistry.ByName("ghast").Behaviors.Physics);
-        Assert.IsType<CompositeBehavior>(EntityRegistry.ByName("ghast").Behaviors.Ticker);
+        Assert.IsType<CompositeBehavior>(TestEntityCatalog.ByName("ghast").Behaviors.Physics);
+        Assert.IsType<CompositeBehavior>(TestEntityCatalog.ByName("ghast").Behaviors.Ticker);
     }
 
     /// <summary>
@@ -45,7 +45,7 @@ public sealed class EntityGhastTests
     [Fact]
     public void Behaviors_nested_in_a_composite_are_still_found_by_capability()
     {
-        EntityBehaviorSet behaviors = EntityRegistry.ByName("ghast").Behaviors;
+        EntityBehaviorSet behaviors = TestEntityCatalog.ByName("ghast").Behaviors;
 
         Assert.NotNull(behaviors.Find<FlyingMovementBehavior>());
         Assert.NotNull(behaviors.Find<FlyingWanderBehavior>());

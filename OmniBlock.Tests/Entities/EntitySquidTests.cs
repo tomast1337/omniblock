@@ -16,7 +16,7 @@ public sealed class EntitySquidTests
 
     private static EntityLiving Squid(FakeWorldContext world, double x = 8.5, double y = 65.0, double z = 8.5)
     {
-        EntityLiving squid = (EntityLiving)EntityRegistry.ByName("squid").Create(world);
+        EntityLiving squid = (EntityLiving)TestEntityCatalog.ByName("squid").Create(world);
         squid.SetPositionAndAngles(x, y, z, 0f, 0f);
         return squid;
     }
@@ -39,10 +39,10 @@ public sealed class EntitySquidTests
         FakeWorldContext world = new();
 
         Assert.Equal(typeof(EntityLiving), Squid(world).GetType());
-        Assert.IsType<CompositeBehavior>(EntityRegistry.ByName("squid").Behaviors.Physics);
-        Assert.IsType<CompositeBehavior>(EntityRegistry.ByName("squid").Behaviors.Ticker);
-        Assert.NotNull(EntityRegistry.ByName("squid").Behaviors.Find<JetSwimBehavior>());
-        Assert.NotNull(EntityRegistry.ByName("squid").Behaviors.Find<SpawnInFluidBehavior>());
+        Assert.IsType<CompositeBehavior>(TestEntityCatalog.ByName("squid").Behaviors.Physics);
+        Assert.IsType<CompositeBehavior>(TestEntityCatalog.ByName("squid").Behaviors.Ticker);
+        Assert.NotNull(TestEntityCatalog.ByName("squid").Behaviors.Find<JetSwimBehavior>());
+        Assert.NotNull(TestEntityCatalog.ByName("squid").Behaviors.Find<SpawnInFluidBehavior>());
     }
 
     /// <summary>
@@ -52,7 +52,7 @@ public sealed class EntitySquidTests
     [Fact]
     public void Swimming_fills_both_of_its_slots_with_one_behavior()
     {
-        EntityBehaviorSet behaviors = EntityRegistry.ByName("squid").Behaviors;
+        EntityBehaviorSet behaviors = TestEntityCatalog.ByName("squid").Behaviors;
         JetSwimBehavior swim = behaviors.Find<JetSwimBehavior>()!;
 
         Assert.Same(swim, ((CompositeBehavior)behaviors.Physics!).Children.OfType<JetSwimBehavior>().Single());
@@ -62,8 +62,8 @@ public sealed class EntitySquidTests
     [Fact]
     public void A_squid_breathes_underwater_where_a_zombie_does_not()
     {
-        Assert.True(EntityRegistry.ByName("squid").Definition!.BreathesUnderwater);
-        Assert.False(EntityRegistry.ByName("zombie").Definition!.BreathesUnderwater);
+        Assert.True(TestEntityCatalog.ByName("squid").Definition!.BreathesUnderwater);
+        Assert.False(TestEntityCatalog.ByName("zombie").Definition!.BreathesUnderwater);
     }
 
     /// <summary>
@@ -73,8 +73,8 @@ public sealed class EntitySquidTests
     [Fact]
     public void Only_a_squid_declares_that_its_velocity_is_tracked()
     {
-        Assert.True(EntityRegistry.ByName("squid").Definition!.TracksVelocity);
-        Assert.False(EntityRegistry.ByName("cow").Definition!.TracksVelocity);
+        Assert.True(TestEntityCatalog.ByName("squid").Definition!.TracksVelocity);
+        Assert.False(TestEntityCatalog.ByName("cow").Definition!.TracksVelocity);
     }
 
     /// <summary>Travel is a bare move: nothing accelerates it and nothing damps it.</summary>
@@ -162,7 +162,7 @@ public sealed class EntitySquidTests
         Flood(world, 40, 40);
 
         EntityLiving squid = Squid(world, 40.5, 65.0, 40.5);
-        EntityCreature zombie = (EntityCreature)EntityRegistry.ByName("zombie").Create(world);
+        EntityCreature zombie = (EntityCreature)TestEntityCatalog.ByName("zombie").Create(world);
         zombie.SetPositionAndAngles(40.5, 65.0, 40.5, 0f, 0f);
 
         Assert.True(squid.CanSpawn());

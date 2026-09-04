@@ -13,11 +13,11 @@ namespace OmniBlock.Tests.Entities;
 [Collection("EntityTests")]
 public sealed class EntityWolfTests
 {
-    private static TameableBehavior Tame => EntityRegistry.ByName("wolf").Behaviors.Find<TameableBehavior>()!;
+    private static TameableBehavior Tame => TestEntityCatalog.ByName("wolf").Behaviors.Find<TameableBehavior>()!;
 
     private static EntityCreature Wolf(FakeWorldContext world, double x = 8.5, double z = 8.5)
     {
-        EntityCreature wolf = (EntityCreature)EntityRegistry.ByName("wolf").Create(world);
+        EntityCreature wolf = (EntityCreature)TestEntityCatalog.ByName("wolf").Create(world);
         wolf.SetPositionAndAngles(x, 65.0, z, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(wolf));
         return wolf;
@@ -59,7 +59,7 @@ public sealed class EntityWolfTests
 
         Assert.Equal(typeof(EntityCreature), Wolf(world).GetType());
 
-        EntityBehaviorSet behaviors = EntityRegistry.ByName("wolf").Behaviors;
+        EntityBehaviorSet behaviors = TestEntityCatalog.ByName("wolf").Behaviors;
         Assert.NotNull(behaviors.Find<TameableBehavior>());
         Assert.NotNull(behaviors.Find<FollowOwnerBehavior>());
         Assert.NotNull(behaviors.Find<HeadTiltBehavior>());
@@ -74,7 +74,7 @@ public sealed class EntityWolfTests
     [Fact]
     public void One_behavior_fills_every_slot_that_reads_the_flags()
     {
-        EntityBehaviorSet behaviors = EntityRegistry.ByName("wolf").Behaviors;
+        EntityBehaviorSet behaviors = TestEntityCatalog.ByName("wolf").Behaviors;
 
         Assert.IsType<CompositeBehavior>(behaviors.Interactable);
         Assert.IsType<CompositeBehavior>(behaviors.Persistence);
@@ -185,7 +185,7 @@ public sealed class EntityWolfTests
     {
         FakeWorldContext world = new();
         EntityCreature wolf = Wolf(world);
-        EntityCreature zombie = (EntityCreature)EntityRegistry.ByName("zombie").Create(world);
+        EntityCreature zombie = (EntityCreature)TestEntityCatalog.ByName("zombie").Create(world);
         TestEntityPlayer player = Player(world);
 
         Assert.Equal(3, wolf.Behaviors.Lifecycle!.ModifyDamage(wolf, zombie, 5));

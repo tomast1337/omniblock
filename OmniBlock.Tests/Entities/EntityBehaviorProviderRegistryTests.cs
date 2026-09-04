@@ -91,7 +91,7 @@ public sealed class EntityBehaviorProviderRegistryTests
 
     private sealed class RegistryEntityTypeView : IEntityTypeBuildView
     {
-        public EntityType Get(ResourceLocation key) => DefaultRegistries.EntityTypes.GetOrThrow(key);
-        public bool TryGet(ResourceLocation key, out EntityType? type) => DefaultRegistries.EntityTypes.TryGet(key, out type);
+        public EntityType Get(ResourceLocation key) => ContentRuntime.Current.EntityTypes.Get(key);
+        public bool TryGet(ResourceLocation key, out EntityType? type) => ContentRuntime.Current.EntityTypes.TryGet(key, out type);
     }
 }

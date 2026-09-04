@@ -249,16 +249,6 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         BuildPendingEntityDefinitions();
     }
 
-    internal void PublishEntitiesToLegacyRegistry()
-    {
-        foreach ((ResourceLocation key, _, EntityType type) in _entityTypes)
-            DefaultRegistries.EntityTypes.Register(
-                _entityTypesByProtocolId.First(pair => ReferenceEquals(pair.Value, type)).Key,
-                key,
-                type);
-        DefaultRegistries.EntityTypes.Freeze();
-    }
-
     private void BuildPendingEntityDefinitions()
     {
         if (_entityTypes.Count != 0) return;

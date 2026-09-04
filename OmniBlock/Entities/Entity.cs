@@ -17,7 +17,7 @@ public abstract partial class Entity : IEntity
     private bool _firstTick = true;
     public Box BoundingBox = new(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
 
-    protected Entity(IWorldContext world, EntityType? type = null)
+    protected Entity(IWorldContext world, EntityType? type)
     {
         ArgumentNullException.ThrowIfNull(world);
         World = world;
@@ -25,10 +25,6 @@ public abstract partial class Entity : IEntity
         SetPosition(0.0D, 0.0D, 0.0D);
         _flags = DataSynchronizer.MakeProperty<byte>(0, 0);
 
-        // Prefer the type handed down by the registry factory: two registered types may share one
-        // class, so the class alone does not identify the entity. The lookup is the fallback for
-        // entities constructed directly (tests, the client's player subclasses).
-        type ??= world.Content.EntityTypes.GetByRuntimeType(GetType());
         _type = type;
         EntityBehaviorSet behaviors = type?.Behaviors ?? EntityBehaviorSet.Empty;
         Behaviors = behaviors;

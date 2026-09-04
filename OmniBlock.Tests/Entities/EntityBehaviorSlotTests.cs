@@ -19,7 +19,7 @@ public sealed class EntityBehaviorSlotTests
     {
         FakeWorldContext world = new();
         TestZombie zombie = Spawn(world, new TestZombie(world), 8.5, 65.0, 8.5);
-        EntityCreature pig = Spawn(world, (EntityCreature)EntityRegistry.ByName("pig").Create(world), 9.5, 65.0, 8.5);
+        EntityCreature pig = Spawn(world, (EntityCreature)TestEntityCatalog.ByName("pig").Create(world), 9.5, 65.0, 8.5);
         int healthBefore = pig.Health;
 
         zombie.ForceAttack(pig, 1.0f);
@@ -33,7 +33,7 @@ public sealed class EntityBehaviorSlotTests
     {
         FakeWorldContext world = new();
         TestZombie zombie = Spawn(world, new TestZombie(world), 8.5, 65.0, 8.5);
-        EntityCreature pig = Spawn(world, (EntityCreature)EntityRegistry.ByName("pig").Create(world), 20.0, 65.0, 8.5);
+        EntityCreature pig = Spawn(world, (EntityCreature)TestEntityCatalog.ByName("pig").Create(world), 20.0, 65.0, 8.5);
         int healthBefore = pig.Health;
 
         zombie.ForceAttack(pig, 11.0f);
@@ -46,7 +46,7 @@ public sealed class EntityBehaviorSlotTests
     public void Monster_composes_melee_and_always_hunt_slots()
     {
         FakeWorldContext world = new();
-        EntityCreature zombie = (EntityCreature)EntityRegistry.ByName("zombie").Create(world);
+        EntityCreature zombie = (EntityCreature)TestEntityCatalog.ByName("zombie").Create(world);
 
         Assert.IsType<MeleeAttackBehavior>(zombie.Attack);
         Assert.IsType<AlwaysHuntTargetBehavior>(zombie.Targeting);
@@ -56,7 +56,7 @@ public sealed class EntityBehaviorSlotTests
     public void Spider_composes_jump_attack_and_darkness_only_targeting()
     {
         FakeWorldContext world = new();
-        EntityCreature spider = (EntityCreature)EntityRegistry.ByName("spider").Create(world);
+        EntityCreature spider = (EntityCreature)TestEntityCatalog.ByName("spider").Create(world);
 
         // The jump attack is wrapped: a spider in daylight loses interest before it attacks.
         Assert.IsType<JumpAttackBehavior>(Assert.IsType<LoseTargetInDaylightBehavior>(spider.Attack).Inner);
@@ -68,7 +68,7 @@ public sealed class EntityBehaviorSlotTests
     {
         FakeWorldContext world = new();
 
-        foreach (EntityCreature animal in new EntityCreature[] { (EntityCreature)EntityRegistry.ByName("pig").Create(world), (EntityCreature)EntityRegistry.ByName("cow").Create(world), (EntityCreature)EntityRegistry.ByName("sheep").Create(world), (EntityCreature)EntityRegistry.ByName("chicken").Create(world) })
+        foreach (EntityCreature animal in new EntityCreature[] { (EntityCreature)TestEntityCatalog.ByName("pig").Create(world), (EntityCreature)TestEntityCatalog.ByName("cow").Create(world), (EntityCreature)TestEntityCatalog.ByName("sheep").Create(world), (EntityCreature)TestEntityCatalog.ByName("chicken").Create(world) })
         {
             Assert.Null(animal.Attack);
             Assert.Null(animal.Targeting);
@@ -79,7 +79,7 @@ public sealed class EntityBehaviorSlotTests
     public void Darkness_only_targeting_acquires_player_while_unlit()
     {
         FakeWorldContext world = new();
-        EntityCreature spider = Spawn(world, (EntityCreature)EntityRegistry.ByName("spider").Create(world), 8.5, 65.0, 8.5);
+        EntityCreature spider = Spawn(world, (EntityCreature)TestEntityCatalog.ByName("spider").Create(world), 8.5, 65.0, 8.5);
         TestEntityPlayer player = Spawn(world, new TestEntityPlayer(world) { Name = "tester" }, 9.5, 65.0, 8.5);
 
         // Unlit, so the brightness gate opens. The daylight rejection branch is covered by
@@ -91,7 +91,7 @@ public sealed class EntityBehaviorSlotTests
     public void Always_hunt_targeting_acquires_a_player_in_range()
     {
         FakeWorldContext world = new();
-        EntityCreature zombie = Spawn(world, (EntityCreature)EntityRegistry.ByName("zombie").Create(world), 8.5, 65.0, 8.5);
+        EntityCreature zombie = Spawn(world, (EntityCreature)TestEntityCatalog.ByName("zombie").Create(world), 8.5, 65.0, 8.5);
         TestEntityPlayer player = Spawn(world, new TestEntityPlayer(world) { Name = "tester" }, 11.5, 65.0, 8.5);
 
         // Nothing between them, so the sightline is clear. The rejection branch and the light-based
@@ -104,7 +104,7 @@ public sealed class EntityBehaviorSlotTests
     public void Simple_loot_drops_only_its_own_item()
     {
         FakeWorldContext world = new();
-        EntityCreature cow = Spawn(world, (EntityCreature)EntityRegistry.ByName("cow").Create(world), 8.5, 65.0, 8.5);
+        EntityCreature cow = Spawn(world, (EntityCreature)TestEntityCatalog.ByName("cow").Create(world), 8.5, 65.0, 8.5);
 
         List<int> dropped = CollectDrops(world, cow, killer: null, rolls: 100);
 
@@ -116,7 +116,7 @@ public sealed class EntityBehaviorSlotTests
     public void Skeleton_loot_drops_both_arrows_and_bones()
     {
         FakeWorldContext world = new();
-        EntityCreature skeleton = Spawn(world, (EntityCreature)EntityRegistry.ByName("skeleton").Create(world), 8.5, 65.0, 8.5);
+        EntityCreature skeleton = Spawn(world, (EntityCreature)TestEntityCatalog.ByName("skeleton").Create(world), 8.5, 65.0, 8.5);
 
         List<int> dropped = CollectDrops(world, skeleton, killer: null, rolls: 100);
 
@@ -129,8 +129,8 @@ public sealed class EntityBehaviorSlotTests
     public void Creeper_loot_drops_record_only_when_killed_by_skeleton()
     {
         FakeWorldContext world = new();
-        EntityCreature creeper = Spawn(world, (EntityCreature)EntityRegistry.ByName("creeper").Create(world), 8.5, 65.0, 8.5);
-        EntityCreature skeleton = Spawn(world, (EntityCreature)EntityRegistry.ByName("skeleton").Create(world), 12.5, 65.0, 12.5);
+        EntityCreature creeper = Spawn(world, (EntityCreature)TestEntityCatalog.ByName("creeper").Create(world), 8.5, 65.0, 8.5);
+        EntityCreature skeleton = Spawn(world, (EntityCreature)TestEntityCatalog.ByName("skeleton").Create(world), 12.5, 65.0, 12.5);
         int recordId = ContentRuntime.Current.Items.Get("omniblock:record").Id;
 
         List<int> withoutSkeleton = CollectDrops(world, creeper, killer: null, rolls: 60);
@@ -145,8 +145,8 @@ public sealed class EntityBehaviorSlotTests
     public void Sheep_loot_drops_one_wool_stamped_with_its_fleece_colour()
     {
         FakeWorldContext world = new();
-        EntityCreature sheep = Spawn(world, (EntityCreature)EntityRegistry.ByName("sheep").Create(world), 8.5, 65.0, 8.5);
-        ((WoolBehavior)EntityRegistry.ByName("sheep").Behaviors.Interactable!).SetColorOn(sheep, 4);
+        EntityCreature sheep = Spawn(world, (EntityCreature)TestEntityCatalog.ByName("sheep").Create(world), 8.5, 65.0, 8.5);
+        ((WoolBehavior)TestEntityCatalog.ByName("sheep").Behaviors.Interactable!).SetColorOn(sheep, 4);
 
         List<ItemStack> drops = CollectDropStacks(world, sheep, killer: null, rolls: 1);
 
@@ -175,7 +175,7 @@ public sealed class EntityBehaviorSlotTests
     public void Slime_loot_drops_slimeballs_only_at_the_smallest_size()
     {
         FakeWorldContext world = new();
-        EntityLiving slime = Spawn(world, (EntityLiving)EntityRegistry.ByName("slime").Create(world), 8.5, 65.0, 8.5);
+        EntityLiving slime = Spawn(world, (EntityLiving)TestEntityCatalog.ByName("slime").Create(world), 8.5, 65.0, 8.5);
         SizedBodyBehavior body = slime.Behaviors.Find<SizedBodyBehavior>()!;
 
         body.SetSize(slime, 2);
@@ -191,7 +191,7 @@ public sealed class EntityBehaviorSlotTests
     public void Squid_loot_always_drops_at_least_one_ink_sac()
     {
         FakeWorldContext world = new();
-        EntityLiving squid = Spawn(world, (EntityLiving)EntityRegistry.ByName("squid").Create(world), 8.5, 65.0, 8.5);
+        EntityLiving squid = Spawn(world, (EntityLiving)TestEntityCatalog.ByName("squid").Create(world), 8.5, 65.0, 8.5);
 
         for (int roll = 0; roll < 20; roll++)
         {
@@ -202,14 +202,14 @@ public sealed class EntityBehaviorSlotTests
     [Fact]
     public void Wolf_has_no_loot_behavior()
     {
-        Assert.Null(EntityRegistry.ByName("wolf").Behaviors.Loot);
+        Assert.Null(TestEntityCatalog.ByName("wolf").Behaviors.Loot);
     }
 
     [Fact]
     public void Slime_split_spawns_half_sized_children_on_death()
     {
         FakeWorldContext world = new();
-        EntityLiving slime = Spawn(world, (EntityLiving)EntityRegistry.ByName("slime").Create(world), 8.5, 65.0, 8.5);
+        EntityLiving slime = Spawn(world, (EntityLiving)TestEntityCatalog.ByName("slime").Create(world), 8.5, 65.0, 8.5);
         SizedBodyBehavior body = slime.Behaviors.Find<SizedBodyBehavior>()!;
         body.SetSize(slime, 4);
         slime.Health = 0;
@@ -225,7 +225,7 @@ public sealed class EntityBehaviorSlotTests
     public void Slime_split_does_not_fire_for_the_smallest_size()
     {
         FakeWorldContext world = new();
-        EntityLiving slime = Spawn(world, (EntityLiving)EntityRegistry.ByName("slime").Create(world), 8.5, 65.0, 8.5);
+        EntityLiving slime = Spawn(world, (EntityLiving)TestEntityCatalog.ByName("slime").Create(world), 8.5, 65.0, 8.5);
         slime.Behaviors.Find<SizedBodyBehavior>()!.SetSize(slime, 1);
         slime.Health = 0;
 
@@ -238,12 +238,12 @@ public sealed class EntityBehaviorSlotTests
     public void Pig_lightning_converts_the_pig_into_a_zombie_pigman()
     {
         FakeWorldContext world = new();
-        EntityCreature pig = Spawn(world, (EntityCreature)EntityRegistry.ByName("pig").Create(world), 8.5, 65.0, 8.5);
+        EntityCreature pig = Spawn(world, (EntityCreature)TestEntityCatalog.ByName("pig").Create(world), 8.5, 65.0, 8.5);
 
         pig.OnStruckByLightning(Bolt(world, pig.X, pig.Y, pig.Z));
 
         Assert.True(pig.Dead);
-        Assert.Single(world.Entities.Entities, e => EntityRegistry.GetId(e) == "pigzombie");
+        Assert.Single(world.Entities.Entities, e => TestEntityCatalog.GetId(e) == "pigzombie");
         // The default fire/damage response is suppressed, so the pig never burns on the way out.
         Assert.False(pig.IsOnFire);
     }
@@ -252,7 +252,7 @@ public sealed class EntityBehaviorSlotTests
     public void Creeper_is_supercharged_through_its_lifecycle_slot()
     {
         FakeWorldContext world = new();
-        EntityCreature creeper = Spawn(world, (EntityCreature)EntityRegistry.ByName("creeper").Create(world), 8.5, 65.0, 8.5);
+        EntityCreature creeper = Spawn(world, (EntityCreature)TestEntityCatalog.ByName("creeper").Create(world), 8.5, 65.0, 8.5);
 
         // The fuse behavior fills Lifecycle too, so the strike no longer needs a class to catch it.
         Assert.NotNull(creeper.Behaviors.Find<FuseBehavior>());
@@ -265,7 +265,7 @@ public sealed class EntityBehaviorSlotTests
 
     private static Entity Bolt(FakeWorldContext world, double x, double y, double z)
     {
-        Entity bolt = EntityRegistry.ByName("lightningbolt").Create(world);
+        Entity bolt = TestEntityCatalog.ByName("lightningbolt").Create(world);
         bolt.SetPositionAndAnglesKeepPrevAngles(x, y, z, 0.0F, 0.0F);
         return bolt;
     }
@@ -298,18 +298,18 @@ public sealed class EntityBehaviorSlotTests
             .Select(entity => EntityTestHarness.DroppedStack(entity)!)];
     }
 
-    private sealed class TestZombie(IWorldContext world) : EntityCreature(world, EntityRegistry.ByName("zombie"))
+    private sealed class TestZombie(IWorldContext world) : EntityCreature(world, TestEntityCatalog.ByName("zombie"))
     {
         public int ExposedAttackTime => AttackTime;
         public void ForceAttack(Entity target, float distance) => attackEntity(target, distance);
     }
 
-    private sealed class TestPig(IWorldContext world) : EntityCreature(world, EntityRegistry.ByName("pig"))
+    private sealed class TestPig(IWorldContext world) : EntityCreature(world, TestEntityCatalog.ByName("pig"))
     {
         public void Ignite() => FireTicks = 100;
     }
 
     /// <summary>Slimes have no class of their own any more, so they are found by registered type.</summary>
     private static IEnumerable<EntityLiving> Slimes(FakeWorldContext world) =>
-        world.Entities.Entities.OfType<EntityLiving>().Where(e => EntityRegistry.GetId(e) == "slime");
+        world.Entities.Entities.OfType<EntityLiving>().Where(e => TestEntityCatalog.GetId(e) == "slime");
 }

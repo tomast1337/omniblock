@@ -16,7 +16,7 @@ namespace OmniBlock.Tests.Entities;
 [Collection("EntityTests")]
 public sealed class EntityArrowTests
 {
-    private static ArrowBehavior Flight => EntityRegistry.ByName("arrow").Behaviors.Find<ArrowBehavior>()!;
+    private static ArrowBehavior Flight => TestEntityCatalog.ByName("arrow").Behaviors.Find<ArrowBehavior>()!;
 
     private static TestEntityPlayer Player(FakeWorldContext world, double y = 65.0)
     {
@@ -30,7 +30,7 @@ public sealed class EntityArrowTests
     private static Entity ArrowInGround(FakeWorldContext world)
     {
         EntityTestHarness.PlaceStoneFloor(world, 0, 15, 0, 15, 63);
-        Entity arrow = EntityRegistry.ByName("arrow").Create(world);
+        Entity arrow = TestEntityCatalog.ByName("arrow").Create(world);
         arrow.SetPositionAndAngles(8.5, 66.0, 8.5, 0f, 0f);
         Flight.SetHeading(arrow, 0.0, -1.0, 0.0, 1.0F, 0.0F);
         Assert.True(world.Entities.SpawnEntity(arrow));
@@ -44,11 +44,11 @@ public sealed class EntityArrowTests
     public void An_arrow_has_no_class_of_its_own()
     {
         FakeWorldContext world = new();
-        Entity arrow = EntityRegistry.ByName("arrow").Create(world);
+        Entity arrow = TestEntityCatalog.ByName("arrow").Create(world);
 
         Assert.Equal(typeof(EntityObject), arrow.GetType());
         Assert.True(ArrowBehavior.IsArrow(arrow));
-        Assert.False(ArrowBehavior.IsArrow(EntityRegistry.ByName("snowball").Create(world)));
+        Assert.False(ArrowBehavior.IsArrow(TestEntityCatalog.ByName("snowball").Create(world)));
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public sealed class EntityArrowTests
     public void A_mobs_arrow_cannot_be_picked_up()
     {
         FakeWorldContext world = new();
-        EntityLiving skeleton = (EntityLiving)EntityRegistry.ByName("skeleton").Create(world);
+        EntityLiving skeleton = (EntityLiving)TestEntityCatalog.ByName("skeleton").Create(world);
         skeleton.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(skeleton));
 
@@ -83,7 +83,7 @@ public sealed class EntityArrowTests
     public void An_arrow_arcs_under_gravity_in_flight()
     {
         FakeWorldContext world = new();
-        Entity arrow = EntityRegistry.ByName("arrow").Create(world);
+        Entity arrow = TestEntityCatalog.ByName("arrow").Create(world);
         arrow.SetPositionAndAngles(8.5, 80.0, 8.5, 0f, 0f);
         Flight.SetHeading(arrow, 1.0, 0.0, 0.0, 1.0F, 0.0F);
         Assert.True(world.Entities.SpawnEntity(arrow));
@@ -140,12 +140,12 @@ public sealed class EntityArrowTests
     public void An_arrow_hitting_a_mob_damages_it_and_is_spent()
     {
         FakeWorldContext world = new();
-        EntityLiving pig = (EntityLiving)EntityRegistry.ByName("pig").Create(world);
+        EntityLiving pig = (EntityLiving)TestEntityCatalog.ByName("pig").Create(world);
         pig.SetPositionAndAngles(8.5, 64.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(pig));
         int healthBefore = pig.Health;
 
-        Entity arrow = EntityRegistry.ByName("arrow").Create(world);
+        Entity arrow = TestEntityCatalog.ByName("arrow").Create(world);
         arrow.SetPositionAndAngles(8.5, 64.5, 6.5, 0f, 0f);
         Flight.SetHeading(arrow, 0.0, 0.0, 1.0, 0.5F, 0.0F);
         Assert.True(world.Entities.SpawnEntity(arrow));
@@ -166,7 +166,7 @@ public sealed class EntityArrowTests
         NBTTagCompound nbt = new();
         arrow.Write(nbt);
 
-        Entity restored = EntityRegistry.ByName("arrow").Create(world);
+        Entity restored = TestEntityCatalog.ByName("arrow").Create(world);
         restored.Read(nbt);
 
         Assert.True(Flight.BelongsToPlayer(restored));
@@ -178,7 +178,7 @@ public sealed class EntityArrowTests
     [Fact]
     public void Protocol_facts_are_pinned()
     {
-        EntityDefinition arrow = EntityRegistry.ByName("arrow").RequireDefinition();
+        EntityDefinition arrow = TestEntityCatalog.ByName("arrow").RequireDefinition();
 
         Assert.Equal(10, arrow.ProtocolId);
         Assert.Equal(60, arrow.SpawnObjectId);

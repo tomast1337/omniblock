@@ -12,14 +12,14 @@ public sealed class EntityFuseTests
 {
     private static Entity Bolt(FakeWorldContext world, double x, double y, double z)
     {
-        Entity bolt = EntityRegistry.ByName("lightningbolt").Create(world);
+        Entity bolt = TestEntityCatalog.ByName("lightningbolt").Create(world);
         bolt.SetPositionAndAnglesKeepPrevAngles(x, y, z, 0.0F, 0.0F);
         return bolt;
     }
 
     private static (EntityCreature Creeper, FuseBehavior Fuse) Creeper(FakeWorldContext world)
     {
-        EntityCreature creeper = (EntityCreature)EntityRegistry.ByName("creeper").Create(world);
+        EntityCreature creeper = (EntityCreature)TestEntityCatalog.ByName("creeper").Create(world);
         creeper.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(creeper));
         return (creeper, creeper.Behaviors.Find<FuseBehavior>()!);

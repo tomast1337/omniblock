@@ -32,7 +32,7 @@ public sealed class BiomeSpawnListTests
     {
         FakeWorldContext world = new();
         return biome.GetSpawnableList(kind).Entries
-            .Select(e => (EntityRegistry.GetId(e.Item.Factory(world))!, e.Weight))
+            .Select(e => (TestEntityCatalog.GetId(e.Item.Factory(world))!, e.Weight))
             .ToArray();
     }
 

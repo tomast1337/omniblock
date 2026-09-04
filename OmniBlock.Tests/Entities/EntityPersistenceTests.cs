@@ -16,14 +16,14 @@ public sealed class EntityPersistenceTests
     public void Creeper_powered_survives_a_save_load_round_trip()
     {
         FakeWorldContext world = new();
-        EntityCreature creeper = (EntityCreature)EntityRegistry.ByName("creeper").Create(world);
+        EntityCreature creeper = (EntityCreature)TestEntityCatalog.ByName("creeper").Create(world);
         creeper.Synced<bool>("powered")!.Value = true;
         creeper.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
         NBTTagCompound nbt = new();
         Assert.True(creeper.SaveSelfNbt(nbt));
 
-        EntityCreature loaded = Assert.IsType<EntityCreature>(EntityRegistry.GetEntityFromNbt(nbt, new FakeWorldContext()));
+        EntityCreature loaded = Assert.IsType<EntityCreature>(TestEntityCatalog.GetEntityFromNbt(nbt, new FakeWorldContext()));
         Assert.True(loaded.Synced<bool>("powered")!.Value);
     }
 
@@ -31,13 +31,13 @@ public sealed class EntityPersistenceTests
     public void Creeper_that_was_never_struck_loads_unpowered()
     {
         FakeWorldContext world = new();
-        EntityCreature creeper = (EntityCreature)EntityRegistry.ByName("creeper").Create(world);
+        EntityCreature creeper = (EntityCreature)TestEntityCatalog.ByName("creeper").Create(world);
         creeper.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
         NBTTagCompound nbt = new();
         Assert.True(creeper.SaveSelfNbt(nbt));
 
-        EntityCreature loaded = Assert.IsType<EntityCreature>(EntityRegistry.GetEntityFromNbt(nbt, new FakeWorldContext()));
+        EntityCreature loaded = Assert.IsType<EntityCreature>(TestEntityCatalog.GetEntityFromNbt(nbt, new FakeWorldContext()));
         Assert.False(loaded.Synced<bool>("powered")!.Value);
     }
 
@@ -45,14 +45,14 @@ public sealed class EntityPersistenceTests
     public void Pig_saddle_survives_a_save_load_round_trip()
     {
         FakeWorldContext world = new();
-        EntityCreature pig = (EntityCreature)EntityRegistry.ByName("pig").Create(world);
+        EntityCreature pig = (EntityCreature)TestEntityCatalog.ByName("pig").Create(world);
         pig.Synced<bool>("saddled")!.Value = true;
         pig.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
         NBTTagCompound nbt = new();
         Assert.True(pig.SaveSelfNbt(nbt));
 
-        EntityCreature loaded = Assert.IsType<EntityCreature>(EntityRegistry.GetEntityFromNbt(nbt, new FakeWorldContext()));
+        EntityCreature loaded = Assert.IsType<EntityCreature>(TestEntityCatalog.GetEntityFromNbt(nbt, new FakeWorldContext()));
         Assert.True(loaded.Synced<bool>("saddled")!.Value);
     }
 
@@ -62,9 +62,9 @@ public sealed class EntityPersistenceTests
         // The save format is a compatibility surface: these keys must match what the hand-written
         // WriteNbt overrides used, or existing worlds silently lose state.
         FakeWorldContext world = new();
-        EntityCreature creeper = (EntityCreature)EntityRegistry.ByName("creeper").Create(world);
+        EntityCreature creeper = (EntityCreature)TestEntityCatalog.ByName("creeper").Create(world);
         creeper.Synced<bool>("powered")!.Value = true;
-        EntityCreature pig = (EntityCreature)EntityRegistry.ByName("pig").Create(world);
+        EntityCreature pig = (EntityCreature)TestEntityCatalog.ByName("pig").Create(world);
         pig.Synced<bool>("saddled")!.Value = true;
 
         NBTTagCompound creeperNbt = new();

@@ -18,37 +18,37 @@ public sealed class EntityTickerTests
 
         // The whole point of moving construction to load: two zombies share one behavior instance,
         // so spawning no longer re-parses JSON or allocates a fresh behavior graph.
-        EntityCreature first = (EntityCreature)EntityRegistry.ByName("zombie").Create(world);
-        EntityCreature second = (EntityCreature)EntityRegistry.ByName("zombie").Create(world);
+        EntityCreature first = (EntityCreature)TestEntityCatalog.ByName("zombie").Create(world);
+        EntityCreature second = (EntityCreature)TestEntityCatalog.ByName("zombie").Create(world);
 
         Assert.NotNull(first.Attack);
         Assert.Same(first.Attack, second.Attack);
         Assert.Same(first.Loot, second.Loot);
-        Assert.Same(EntityRegistry.ByName("zombie").Behaviors.Attack, first.Attack);
+        Assert.Same(TestEntityCatalog.ByName("zombie").Behaviors.Attack, first.Attack);
     }
 
     [Fact]
     public void Shared_tickers_keep_per_entity_state_separate()
     {
         FakeWorldContext world = new();
-        EntityCreature first = (EntityCreature)EntityRegistry.ByName("chicken").Create(world);
-        EntityCreature second = (EntityCreature)EntityRegistry.ByName("chicken").Create(world);
+        EntityCreature first = (EntityCreature)TestEntityCatalog.ByName("chicken").Create(world);
+        EntityCreature second = (EntityCreature)TestEntityCatalog.ByName("chicken").Create(world);
 
-        LayEggsBehavior ticker = Assert.IsType<LayEggsBehavior>(EntityRegistry.ByName("chicken").Behaviors.Ticker);
+        LayEggsBehavior ticker = Assert.IsType<LayEggsBehavior>(TestEntityCatalog.ByName("chicken").Behaviors.Ticker);
 
         ticker.Reset(first);
         ticker.Reset(second);
 
         // Same behavior object, independent countdowns — the property that makes sharing safe.
-        Assert.Same(ticker, EntityRegistry.ByName("chicken").Behaviors.Ticker);
+        Assert.Same(ticker, TestEntityCatalog.ByName("chicken").Behaviors.Ticker);
         Assert.True(first.State != second.State);
     }
 
     [Fact]
     public void Zombie_and_skeleton_share_one_daylight_burn_behavior_type()
     {
-        Assert.NotNull(EntityRegistry.ByName("zombie").Behaviors.Find<BurnInDaylightBehavior>());
-        Assert.NotNull(EntityRegistry.ByName("skeleton").Behaviors.Find<BurnInDaylightBehavior>());
+        Assert.NotNull(TestEntityCatalog.ByName("zombie").Behaviors.Find<BurnInDaylightBehavior>());
+        Assert.NotNull(TestEntityCatalog.ByName("skeleton").Behaviors.Find<BurnInDaylightBehavior>());
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public sealed class EntityTickerTests
     {
         FakeWorldContext world = new();
         BurnInDaylightBehavior ticker = new();
-        EntityCreature zombie = (EntityCreature)EntityRegistry.ByName("zombie").Create(world);
+        EntityCreature zombie = (EntityCreature)TestEntityCatalog.ByName("zombie").Create(world);
         zombie.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
         // FakeWorldContext reports darkness, so the brightness gate keeps the mob unlit.
@@ -68,11 +68,11 @@ public sealed class EntityTickerTests
     public void Chicken_lays_an_egg_when_its_countdown_expires()
     {
         FakeWorldContext world = new();
-        EntityCreature chicken = (EntityCreature)EntityRegistry.ByName("chicken").Create(world);
+        EntityCreature chicken = (EntityCreature)TestEntityCatalog.ByName("chicken").Create(world);
         chicken.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(chicken));
 
-        LayEggsBehavior ticker = Assert.IsType<LayEggsBehavior>(EntityRegistry.ByName("chicken").Behaviors.Ticker);
+        LayEggsBehavior ticker = Assert.IsType<LayEggsBehavior>(TestEntityCatalog.ByName("chicken").Behaviors.Ticker);
         int eggId = ContentRuntime.Current.Items.Get("omniblock:egg").Id;
 
         // Drive the countdown to zero rather than ticking ~6000 times.
@@ -91,7 +91,7 @@ public sealed class EntityTickerTests
         FakeWorldContext world = new();
         // Every non-living entity ticks through a behavior, and every monster ticks through the
         // shared hostile rules, so the examples left are farm animals.
-        Assert.Null(EntityRegistry.ByName("cow").Behaviors.Ticker);
-        Assert.Null(EntityRegistry.ByName("pig").Behaviors.Ticker);
+        Assert.Null(TestEntityCatalog.ByName("cow").Behaviors.Ticker);
+        Assert.Null(TestEntityCatalog.ByName("pig").Behaviors.Ticker);
     }
 }

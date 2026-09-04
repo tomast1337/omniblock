@@ -86,7 +86,7 @@ internal static class CatalogSnapshot
     private static void AppendEntities(StringBuilder snapshot)
     {
         snapshot.AppendLine("[entities]");
-        foreach (EntityType type in DefaultRegistries.EntityTypes
+        foreach (EntityType type in ContentRuntime.Current.EntityTypes.Values
                      .Where(static type => type.Definition is not null)
                      .OrderBy(type => type.Definition!.ProtocolId))
         {

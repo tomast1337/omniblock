@@ -13,11 +13,11 @@ namespace OmniBlock.Tests.Entities;
 [Collection("EntityTests")]
 public sealed class EntitySlimeTests
 {
-    private static SizedBodyBehavior Body => EntityRegistry.ByName("slime").Behaviors.Find<SizedBodyBehavior>()!;
+    private static SizedBodyBehavior Body => TestEntityCatalog.ByName("slime").Behaviors.Find<SizedBodyBehavior>()!;
 
     private static EntityLiving Slime(FakeWorldContext world, int size, double x = 8.5, double z = 8.5)
     {
-        EntityLiving slime = (EntityLiving)EntityRegistry.ByName("slime").Create(world);
+        EntityLiving slime = (EntityLiving)TestEntityCatalog.ByName("slime").Create(world);
         Body.SetSize(slime, size);
         slime.SetPositionAndAngles(x, 65.0, z, 0f, 0f);
         return slime;
@@ -29,9 +29,9 @@ public sealed class EntitySlimeTests
         FakeWorldContext world = new();
 
         Assert.Equal(typeof(EntityLiving), Slime(world, 2).GetType());
-        Assert.NotNull(EntityRegistry.ByName("slime").Behaviors.Find<HoppingBehavior>());
-        Assert.NotNull(EntityRegistry.ByName("slime").Behaviors.Find<SplitOnDeathBehavior>());
-        Assert.IsType<SlimeChunkSpawnBehavior>(EntityRegistry.ByName("slime").Behaviors.Physics);
+        Assert.NotNull(TestEntityCatalog.ByName("slime").Behaviors.Find<HoppingBehavior>());
+        Assert.NotNull(TestEntityCatalog.ByName("slime").Behaviors.Find<SplitOnDeathBehavior>());
+        Assert.IsType<SlimeChunkSpawnBehavior>(TestEntityCatalog.ByName("slime").Behaviors.Physics);
     }
 
     /// <summary>Size is the body: it decides the box and the health, and nothing else sets either.</summary>
@@ -61,7 +61,7 @@ public sealed class EntitySlimeTests
         EntityLiving slime = Slime(world, 2);
 
         Assert.Equal(2, slime.Synced<byte>("size")!.Value);
-        Assert.Null(EntityRegistry.ByName("zombie").Create(world).Synced<byte>("size"));
+        Assert.Null(TestEntityCatalog.ByName("zombie").Create(world).Synced<byte>("size"));
     }
 
     /// <summary>A creation roll always lands on one of the declared sizes.</summary>
@@ -73,7 +73,7 @@ public sealed class EntitySlimeTests
 
         for (int attempt = 0; attempt < 200; attempt++)
         {
-            EntityLiving slime = (EntityLiving)EntityRegistry.ByName("slime").Create(world);
+            EntityLiving slime = (EntityLiving)TestEntityCatalog.ByName("slime").Create(world);
             int size = Body.Size(slime);
 
             Assert.Contains(size, new[] { 1, 2, 4 });
@@ -101,7 +101,7 @@ public sealed class EntitySlimeTests
 
         Assert.Equal(3, nbt.GetInteger("Size"));
 
-        EntityLiving loaded = (EntityLiving)EntityRegistry.ByName("slime").Create(world);
+        EntityLiving loaded = (EntityLiving)TestEntityCatalog.ByName("slime").Create(world);
         loaded.Read(nbt);
 
         Assert.Equal(4, Body.Size(loaded));
@@ -128,7 +128,7 @@ public sealed class EntitySlimeTests
             .ToList();
 
         Assert.Equal(4, children.Count);
-        Assert.All(children, child => Assert.Equal("slime", EntityRegistry.GetId(child)));
+        Assert.All(children, child => Assert.Equal("slime", TestEntityCatalog.GetId(child)));
         Assert.All(children, child => Assert.Equal(2, Body.Size(child)));
         Assert.All(children, child => Assert.Equal(4, child.Health));
     }

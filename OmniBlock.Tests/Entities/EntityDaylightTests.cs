@@ -13,7 +13,7 @@ public sealed class EntityDaylightTests
 {
     private static EntityCreature Spawn(FakeWorldContext world, string name, double x = 8.5, double z = 8.5)
     {
-        EntityCreature mob = (EntityCreature)EntityRegistry.ByName(name).Create(world);
+        EntityCreature mob = (EntityCreature)TestEntityCatalog.ByName(name).Create(world);
         mob.SetPositionAndAngles(x, 65.0, z, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(mob));
         return mob;
@@ -124,10 +124,10 @@ public sealed class EntityDaylightTests
         FakeWorldContext world = new();
         world.SetLightLevel(15);
 
-        EntityCreature zombie = (EntityCreature)EntityRegistry.ByName("zombie").Create(world);
+        EntityCreature zombie = (EntityCreature)TestEntityCatalog.ByName("zombie").Create(world);
         zombie.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
-        EntityCreature pigZombie = (EntityCreature)EntityRegistry.ByName("pigzombie").Create(world);
+        EntityCreature pigZombie = (EntityCreature)TestEntityCatalog.ByName("pigzombie").Create(world);
         pigZombie.SetPositionAndAngles(40.5, 65.0, 40.5, 0f, 0f);
 
         Assert.False(zombie.CanSpawn());

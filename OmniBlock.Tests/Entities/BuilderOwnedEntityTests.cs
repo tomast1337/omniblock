@@ -50,7 +50,7 @@ public sealed class BuilderOwnedEntityTests
     public void Failed_entity_compilation_does_not_publish_a_partial_legacy_catalog()
     {
         ContentRuntime published = ContentRuntime.Current;
-        int legacyCount = DefaultRegistries.EntityTypes.Count();
+        int legacyCount = ContentRuntime.Current.EntityTypes.Count;
         ContentRuntimeBuilder builder = ContentRuntimeBuilder.CreateBuiltIns();
         builder.AddEntityDefinition(Definition("broken", 20,
             """{"Type":"example:missing","Slots":["Physics"]}"""));
@@ -60,15 +60,15 @@ public sealed class BuilderOwnedEntityTests
         Assert.Contains("omniblock:broken", error.Message);
         Assert.Contains("example:missing", error.Message);
         Assert.Same(published, ContentRuntime.Current);
-        Assert.Equal(legacyCount, DefaultRegistries.EntityTypes.Count());
-        Assert.False(DefaultRegistries.EntityTypes.ContainsKey("omniblock:broken"));
+        Assert.Equal(legacyCount, ContentRuntime.Current.EntityTypes.Count);
+        Assert.False(ContentRuntime.Current.EntityTypes.TryGet("omniblock:broken", out _));
     }
 
     [Fact]
     public void Later_process_failure_does_not_publish_successfully_built_entities()
     {
         ContentRuntime published = ContentRuntime.Current;
-        int legacyCount = DefaultRegistries.EntityTypes.Count();
+        int legacyCount = ContentRuntime.Current.EntityTypes.Count;
         ContentRuntimeBuilder builder = ContentRuntimeBuilder.CreateBuiltIns();
         builder.AddEntityDefinition(Definition("complete_but_unpublished", 20));
         builder.AddProcessDefinition(new ProcessDefinition
@@ -83,8 +83,8 @@ public sealed class BuilderOwnedEntityTests
 
         Assert.Contains("missing_provider", error.Message);
         Assert.Same(published, ContentRuntime.Current);
-        Assert.Equal(legacyCount, DefaultRegistries.EntityTypes.Count());
-        Assert.False(DefaultRegistries.EntityTypes.ContainsKey("omniblock:complete_but_unpublished"));
+        Assert.Equal(legacyCount, ContentRuntime.Current.EntityTypes.Count);
+        Assert.False(ContentRuntime.Current.EntityTypes.TryGet("omniblock:complete_but_unpublished", out _));
     }
 
     private static EntityDefinition Definition(string name, int protocolId, params string[] behaviors) => new()

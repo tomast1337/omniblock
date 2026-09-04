@@ -15,11 +15,11 @@ namespace OmniBlock.Tests.Entities;
 [Collection("EntityTests")]
 public sealed class EntityTntTests
 {
-    private static PrimedExplosiveBehavior Fuse => EntityRegistry.ByName("primedtnt").Behaviors.Find<PrimedExplosiveBehavior>()!;
+    private static PrimedExplosiveBehavior Fuse => TestEntityCatalog.ByName("primedtnt").Behaviors.Find<PrimedExplosiveBehavior>()!;
 
     private static Entity Tnt(FakeWorldContext world, double x = 8.5, double y = 66.0, double z = 8.5)
     {
-        Entity tnt = EntityRegistry.ByName("primedtnt").Create(world);
+        Entity tnt = TestEntityCatalog.ByName("primedtnt").Create(world);
         tnt.SetPositionAndAngles(x, y, z, 0.0F, 0.0F);
         Assert.True(world.Entities.SpawnEntity(tnt));
         return tnt;
@@ -33,7 +33,7 @@ public sealed class EntityTntTests
 
         Assert.Equal(typeof(EntityObject), tnt.GetType());
 
-        EntityBehaviorSet behaviors = EntityRegistry.ByName("primedtnt").Behaviors;
+        EntityBehaviorSet behaviors = TestEntityCatalog.ByName("primedtnt").Behaviors;
         Assert.Same(behaviors.Ticker, behaviors.Lifecycle);
         Assert.Same(behaviors.Ticker, behaviors.Persistence);
     }
@@ -156,10 +156,10 @@ public sealed class EntityTntTests
     [Fact]
     public void Protocol_ids_are_pinned()
     {
-        EntityType type = EntityRegistry.ByName("primedtnt");
+        EntityType type = TestEntityCatalog.ByName("primedtnt");
 
         Assert.Equal(20, type.RequireDefinition().ProtocolId);
         Assert.Equal(50, type.RequireDefinition().SpawnObjectId);
-        Assert.Same(type, EntityRegistry.BySpawnObjectId(50));
+        Assert.Same(type, TestEntityCatalog.BySpawnObjectId(50));
     }
 }

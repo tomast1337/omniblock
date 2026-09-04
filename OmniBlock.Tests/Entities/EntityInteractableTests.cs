@@ -27,7 +27,7 @@ public sealed class EntityInteractableTests
     public void Milking_a_cow_swaps_the_bucket_for_milk()
     {
         FakeWorldContext world = new();
-        EntityCreature cow = (EntityCreature)EntityRegistry.ByName("cow").Create(world);
+        EntityCreature cow = (EntityCreature)TestEntityCatalog.ByName("cow").Create(world);
         TestEntityPlayer player = Player(world, ContentRuntime.Current.Items.Get("omniblock:bucket"));
 
         Assert.True(cow.Interact(player));
@@ -38,7 +38,7 @@ public sealed class EntityInteractableTests
     public void Milking_needs_the_right_item_in_hand()
     {
         FakeWorldContext world = new();
-        EntityCreature cow = (EntityCreature)EntityRegistry.ByName("cow").Create(world);
+        EntityCreature cow = (EntityCreature)TestEntityCatalog.ByName("cow").Create(world);
 
         Assert.False(cow.Interact(Player(world)));
         Assert.False(cow.Interact(Player(world, ContentRuntime.Current.Items.Get("omniblock:stick"))));
@@ -48,7 +48,7 @@ public sealed class EntityInteractableTests
     public void An_unsaddled_pig_cannot_be_ridden()
     {
         FakeWorldContext world = new();
-        EntityCreature pig = (EntityCreature)EntityRegistry.ByName("pig").Create(world);
+        EntityCreature pig = (EntityCreature)TestEntityCatalog.ByName("pig").Create(world);
         TestEntityPlayer player = Player(world);
 
         Assert.False(pig.Interact(player));
@@ -59,7 +59,7 @@ public sealed class EntityInteractableTests
     public void A_saddled_pig_carries_the_player()
     {
         FakeWorldContext world = new();
-        EntityCreature pig = (EntityCreature)EntityRegistry.ByName("pig").Create(world);
+        EntityCreature pig = (EntityCreature)TestEntityCatalog.ByName("pig").Create(world);
         pig.Synced<bool>("saddled")!.Value = true;
         pig.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         TestEntityPlayer player = Player(world);
@@ -72,7 +72,7 @@ public sealed class EntityInteractableTests
     public void A_saddled_pig_refuses_a_second_rider()
     {
         FakeWorldContext world = new();
-        EntityCreature pig = (EntityCreature)EntityRegistry.ByName("pig").Create(world);
+        EntityCreature pig = (EntityCreature)TestEntityCatalog.ByName("pig").Create(world);
         pig.Synced<bool>("saddled")!.Value = true;
         pig.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
@@ -84,7 +84,7 @@ public sealed class EntityInteractableTests
     public void Only_a_large_slime_hurts_the_player_it_touches()
     {
         FakeWorldContext world = new();
-        EntityLiving slime = (EntityLiving)EntityRegistry.ByName("slime").Create(world);
+        EntityLiving slime = (EntityLiving)TestEntityCatalog.ByName("slime").Create(world);
         slime.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         SizedBodyBehavior body = slime.Behaviors.Find<SizedBodyBehavior>()!;
         TestEntityPlayer player = Player(world);
@@ -102,10 +102,10 @@ public sealed class EntityInteractableTests
     [Fact]
     public void Slots_come_from_json_and_stay_null_where_undeclared()
     {
-        Assert.IsType<SwapHeldItemBehavior>(EntityRegistry.ByName("cow").Behaviors.Interactable);
-        Assert.IsType<RideIfSaddledBehavior>(EntityRegistry.ByName("pig").Behaviors.Interactable);
-        Assert.IsType<ContactDamageBehavior>(EntityRegistry.ByName("slime").Behaviors.Interactable);
+        Assert.IsType<SwapHeldItemBehavior>(TestEntityCatalog.ByName("cow").Behaviors.Interactable);
+        Assert.IsType<RideIfSaddledBehavior>(TestEntityCatalog.ByName("pig").Behaviors.Interactable);
+        Assert.IsType<ContactDamageBehavior>(TestEntityCatalog.ByName("slime").Behaviors.Interactable);
 
-        Assert.Null(EntityRegistry.ByName("zombie").Behaviors.Interactable);
+        Assert.Null(TestEntityCatalog.ByName("zombie").Behaviors.Interactable);
     }
 }

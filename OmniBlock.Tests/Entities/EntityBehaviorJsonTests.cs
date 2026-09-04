@@ -58,8 +58,8 @@ public sealed class EntityBehaviorJsonTests
 
         // The nested melee is what a spider falls back to outside its lunge band.
         FakeWorldContext world = new();
-        EntityCreature spider = (EntityCreature)EntityRegistry.ByName("spider").Create(world);
-        EntityCreature target = (EntityCreature)EntityRegistry.ByName("pig").Create(world);
+        EntityCreature spider = (EntityCreature)TestEntityCatalog.ByName("spider").Create(world);
+        EntityCreature target = (EntityCreature)TestEntityCatalog.ByName("pig").Create(world);
         spider.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         target.SetPositionAndAngles(9.0, 65.0, 8.5, 0f, 0f);
         int before = target.Health;
@@ -137,8 +137,8 @@ public sealed class EntityBehaviorJsonTests
     public void Sheep_wool_takes_its_meta_from_the_live_fleece_colour()
     {
         FakeWorldContext world = new();
-        EntityCreature sheep = (EntityCreature)EntityRegistry.ByName("sheep").Create(world);
-        ((WoolBehavior)EntityRegistry.ByName("sheep").Behaviors.Interactable!).SetColorOn(sheep, 11);
+        EntityCreature sheep = (EntityCreature)TestEntityCatalog.ByName("sheep").Create(world);
+        ((WoolBehavior)TestEntityCatalog.ByName("sheep").Behaviors.Interactable!).SetColorOn(sheep, 11);
 
         LootTable table = LootJson.ParseTable(Json("""
         { "Pools": [ { "Entries": [{"Item":"omniblock:wool","MetaFrom":"FleeceColor"}], "MinCount": 1, "MaxCount": 1 } ] }
@@ -153,25 +153,25 @@ public sealed class EntityBehaviorJsonTests
     {
         FakeWorldContext world = new();
 
-        EntityCreature zombie = (EntityCreature)EntityRegistry.ByName("zombie").Create(world);
+        EntityCreature zombie = (EntityCreature)TestEntityCatalog.ByName("zombie").Create(world);
         Assert.IsType<MeleeAttackBehavior>(zombie.Attack);
         Assert.IsType<AlwaysHuntTargetBehavior>(zombie.Targeting);
         Assert.IsType<LootTableBehavior>(zombie.Loot);
 
-        EntityCreature spider = (EntityCreature)EntityRegistry.ByName("spider").Create(world);
+        EntityCreature spider = (EntityCreature)TestEntityCatalog.ByName("spider").Create(world);
         // The jump attack is wrapped: a spider in daylight loses interest before it attacks.
         Assert.IsType<JumpAttackBehavior>(Assert.IsType<LoseTargetInDaylightBehavior>(spider.Attack).Inner);
         Assert.IsType<DarknessOnlyTargetBehavior>(spider.Targeting);
 
-        Assert.IsType<RangedAttackBehavior>(EntityRegistry.ByName("skeleton").Behaviors.Attack);
-        Assert.NotNull(EntityRegistry.ByName("slime").Behaviors.Find<SplitOnDeathBehavior>());
-        Assert.IsType<LightningConversionBehavior>(EntityRegistry.ByName("pig").Behaviors.Lifecycle);
+        Assert.IsType<RangedAttackBehavior>(TestEntityCatalog.ByName("skeleton").Behaviors.Attack);
+        Assert.NotNull(TestEntityCatalog.ByName("slime").Behaviors.Find<SplitOnDeathBehavior>());
+        Assert.IsType<LightningConversionBehavior>(TestEntityCatalog.ByName("pig").Behaviors.Lifecycle);
 
         // Animals declare no Attack/Targeting, and a wolf declares no Loot at all.
-        EntityCreature cow = (EntityCreature)EntityRegistry.ByName("cow").Create(world);
+        EntityCreature cow = (EntityCreature)TestEntityCatalog.ByName("cow").Create(world);
         Assert.Null(cow.Attack);
         Assert.Null(cow.Targeting);
-        Assert.Null(EntityRegistry.ByName("wolf").Behaviors.Loot);
+        Assert.Null(TestEntityCatalog.ByName("wolf").Behaviors.Loot);
     }
 
     [Fact]
@@ -319,9 +319,9 @@ public sealed class EntityBehaviorJsonTests
     private sealed class RegistryEntityTypeView : IEntityTypeBuildView
     {
         public EntityType Get(ResourceLocation key) =>
-            OmniBlock.Registries.DefaultRegistries.EntityTypes.GetOrThrow(key);
+            OmniBlock.Registries.ContentRuntime.Current.EntityTypes.Get(key);
 
         public bool TryGet(ResourceLocation key, out EntityType? type) =>
-            OmniBlock.Registries.DefaultRegistries.EntityTypes.TryGet(key, out type);
+            OmniBlock.Registries.ContentRuntime.Current.EntityTypes.TryGet(key, out type);
     }
 }

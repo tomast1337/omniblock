@@ -14,7 +14,6 @@ public sealed class RuntimeEntityTypeRegistry : IEntityTypeBuildView
     private readonly FrozenDictionary<int, EntityType> _byProtocolId;
     private readonly FrozenDictionary<int, EntityType> _bySpawnObjectId;
     private readonly FrozenDictionary<int, EntityType> _byGlobalSpawnId;
-    private readonly FrozenDictionary<Type, EntityType> _byUnambiguousRuntimeType;
     private readonly FrozenDictionary<EntityType, ResourceLocation> _keysByType;
     private readonly FrozenDictionary<EntityType, int> _protocolIdsByType;
 
@@ -25,8 +24,6 @@ public sealed class RuntimeEntityTypeRegistry : IEntityTypeBuildView
         var byProtocolId = new Dictionary<int, EntityType>();
         var bySpawnObjectId = new Dictionary<int, EntityType>();
         var byGlobalSpawnId = new Dictionary<int, EntityType>();
-        var runtimeCandidates = new Dictionary<Type, EntityType>();
-        var ambiguousRuntimeTypes = new HashSet<Type>();
         var keysByType = new Dictionary<EntityType, ResourceLocation>();
         var protocolIdsByType = new Dictionary<EntityType, int>();
 
@@ -41,21 +38,19 @@ public sealed class RuntimeEntityTypeRegistry : IEntityTypeBuildView
             AddOptional(bySpawnObjectId, type.Definition?.SpawnObjectId ?? 0, "object-spawn", key, type);
             AddOptional(byGlobalSpawnId, type.Definition?.GlobalSpawnId ?? 0, "global-spawn", key, type);
 
-            if (!runtimeCandidates.TryAdd(type.BaseType, type)) ambiguousRuntimeTypes.Add(type.BaseType);
         }
 
-        foreach (Type ambiguous in ambiguousRuntimeTypes) runtimeCandidates.Remove(ambiguous);
         _byKey = byKey.ToFrozenDictionary();
         _byProtocolId = byProtocolId.ToFrozenDictionary();
         _bySpawnObjectId = bySpawnObjectId.ToFrozenDictionary();
         _byGlobalSpawnId = byGlobalSpawnId.ToFrozenDictionary();
-        _byUnambiguousRuntimeType = runtimeCandidates.ToFrozenDictionary();
         _keysByType = keysByType.ToFrozenDictionary();
         _protocolIdsByType = protocolIdsByType.ToFrozenDictionary();
     }
 
     public int Count => _byKey.Count;
     public IEnumerable<ResourceLocation> Keys => _byKey.Keys;
+    public IEnumerable<EntityType> Values => _byKey.Values;
 
     public EntityType Get(ResourceLocation key) => _byKey.TryGetValue(key, out EntityType? type)
         ? type : throw new KeyNotFoundException($"Unknown entity type '{key}'.");
@@ -67,13 +62,6 @@ public sealed class RuntimeEntityTypeRegistry : IEntityTypeBuildView
     public bool TryGetByProtocolId(int id, [NotNullWhen(true)] out EntityType? type) => _byProtocolId.TryGetValue(id, out type);
     public EntityType? GetBySpawnObjectId(int id) => _bySpawnObjectId.GetValueOrDefault(id);
     public EntityType? GetByGlobalSpawnId(int id) => _byGlobalSpawnId.GetValueOrDefault(id);
-
-    public EntityType? GetByRuntimeType(Type runtimeType)
-    {
-        for (Type? candidate = runtimeType; candidate is not null; candidate = candidate.BaseType)
-            if (_byUnambiguousRuntimeType.TryGetValue(candidate, out EntityType? type)) return type;
-        return null;
-    }
 
     public Entity Create(ResourceLocation key, IWorldContext world) => Get(key).Create(world);
     public Entity Create(string key, IWorldContext world) => Create(ParseKey(key), world);
@@ -102,6 +90,7 @@ public sealed class RuntimeEntityTypeRegistry : IEntityTypeBuildView
 
     public int GetProtocolId(Entity entity) =>
         entity.Type is { } type && _protocolIdsByType.TryGetValue(type, out int id) ? id : -1;
+    public int GetProtocolId(EntityType type) => _protocolIdsByType.TryGetValue(type, out int id) ? id : -1;
     public ResourceLocation? GetKey(Entity entity) =>
         entity.Type is { } type ? _keysByType.GetValueOrDefault(type) : null;
 

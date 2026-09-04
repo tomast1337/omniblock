@@ -14,7 +14,7 @@ namespace OmniBlock.Tests.Entities;
 [Collection("EntityTests")]
 public sealed class EntityPaintingTests
 {
-    private static HangingArtBehavior Hanging => EntityRegistry.ByName("painting").Behaviors.Find<HangingArtBehavior>()!;
+    private static HangingArtBehavior Hanging => TestEntityCatalog.ByName("painting").Behaviors.Find<HangingArtBehavior>()!;
 
     /// <summary>
     /// The backing a painting anchored at (8, 65, 8) facing +Z hangs on. The art's own anchor block
@@ -152,7 +152,7 @@ public sealed class EntityPaintingTests
         NBTTagCompound nbt = new();
         painting.Write(nbt);
 
-        Entity restored = EntityRegistry.ByName("painting").Create(world);
+        Entity restored = TestEntityCatalog.ByName("painting").Create(world);
         restored.Read(nbt);
 
         HangingArtBehavior hanging = restored.Behaviors.Find<HangingArtBehavior>()!;
@@ -166,7 +166,7 @@ public sealed class EntityPaintingTests
     [Fact]
     public void Protocol_facts_are_pinned()
     {
-        EntityDefinition painting = EntityRegistry.ByName("painting").RequireDefinition();
+        EntityDefinition painting = TestEntityCatalog.ByName("painting").RequireDefinition();
 
         Assert.Equal(9, painting.ProtocolId);
         Assert.Equal(0, painting.SpawnObjectId);

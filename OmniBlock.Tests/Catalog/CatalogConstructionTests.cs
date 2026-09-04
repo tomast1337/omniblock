@@ -79,11 +79,11 @@ public sealed class CatalogConstructionTests
     [Fact]
     public void Every_shipped_entity_definition_has_a_constructed_type_and_all_declared_slots()
     {
-        foreach (EntityType type in DefaultRegistries.EntityTypes.Where(static type => type.Definition is not null))
+        foreach (EntityType type in ContentRuntime.Current.EntityTypes.Values.Where(static type => type.Definition is not null))
         {
             EntityDefinition definition = type.RequireDefinition();
-            Assert.Same(type, EntityRegistry.ByName(definition.Name));
-            Assert.Equal(definition.ProtocolId, DefaultRegistries.EntityTypes.GetId(type));
+            Assert.Same(type, TestEntityCatalog.ByName(definition.Name));
+            Assert.Equal(definition.ProtocolId, ContentRuntime.Current.EntityTypes.GetProtocolId(type));
 
             foreach (var behavior in definition.Behaviors)
             {

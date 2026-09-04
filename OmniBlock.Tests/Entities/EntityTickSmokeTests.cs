@@ -8,12 +8,12 @@ public sealed class EntityTickSmokeTests
 {
     public static IEnumerable<object[]> RegistryEntityTypesExceptPlayer()
     {
-        // Enumerates the registry itself now that EntityRegistry exposes no per-type static fields.
-        foreach (ResourceLocation key in OmniBlock.Registries.DefaultRegistries.EntityTypes.Keys)
+        // Enumerates the registry itself now that TestEntityCatalog exposes no per-type static fields.
+        foreach (ResourceLocation key in OmniBlock.Registries.ContentRuntime.Current.EntityTypes.Keys)
         {
             if (key.Path == "player") continue;
 
-            yield return [key.Path, OmniBlock.Registries.DefaultRegistries.EntityTypes.GetOrThrow(key)];
+            yield return [key.Path, OmniBlock.Registries.ContentRuntime.Current.EntityTypes.Get(key)];
         }
     }
 

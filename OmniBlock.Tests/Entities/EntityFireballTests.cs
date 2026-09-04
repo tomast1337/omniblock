@@ -13,11 +13,11 @@ namespace OmniBlock.Tests.Entities;
 [Collection("EntityTests")]
 public sealed class EntityFireballTests
 {
-    private static FireballBehavior Flight => EntityRegistry.ByName("fireball").Behaviors.Find<FireballBehavior>()!;
+    private static FireballBehavior Flight => TestEntityCatalog.ByName("fireball").Behaviors.Find<FireballBehavior>()!;
 
     private static EntityLiving Ghast(FakeWorldContext world)
     {
-        EntityLiving ghast = (EntityLiving)EntityRegistry.ByName("ghast").Create(world);
+        EntityLiving ghast = (EntityLiving)TestEntityCatalog.ByName("ghast").Create(world);
         ghast.SetPositionAndAngles(8.5, 70.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(ghast));
         return ghast;
@@ -27,7 +27,7 @@ public sealed class EntityFireballTests
     public void A_fireball_has_no_class_of_its_own()
     {
         FakeWorldContext world = new();
-        Entity fireball = EntityRegistry.ByName("fireball").Create(world);
+        Entity fireball = TestEntityCatalog.ByName("fireball").Create(world);
 
         Assert.Equal(typeof(EntityObject), fireball.GetType());
         Assert.Equal(1.0F, fireball.TargetingMargin);
@@ -55,7 +55,7 @@ public sealed class EntityFireballTests
     public void A_fireball_accelerates_along_its_power_and_burns()
     {
         FakeWorldContext world = new();
-        Entity fireball = EntityRegistry.ByName("fireball").Create(world);
+        Entity fireball = TestEntityCatalog.ByName("fireball").Create(world);
         fireball.SetPositionAndAngles(8.5, 80.0, 8.5, 0f, 0f);
         Flight.SetDirection(fireball, 1.0, 0.0, 0.0);
         Assert.True(world.Entities.SpawnEntity(fireball));
@@ -74,7 +74,7 @@ public sealed class EntityFireballTests
     {
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 15, 0, 15, 63);
-        Entity fireball = EntityRegistry.ByName("fireball").Create(world);
+        Entity fireball = TestEntityCatalog.ByName("fireball").Create(world);
         fireball.SetPositionAndAngles(8.5, 70.0, 8.5, 0f, 0f);
         Flight.SetDirection(fireball, 0.0, -1.0, 0.0);
         Assert.True(world.Entities.SpawnEntity(fireball));
@@ -93,7 +93,7 @@ public sealed class EntityFireballTests
         player.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(player));
 
-        Entity fireball = EntityRegistry.ByName("fireball").Create(world);
+        Entity fireball = TestEntityCatalog.ByName("fireball").Create(world);
         fireball.SetPositionAndAngles(8.5, 65.0, 10.5, 0f, 0f);
         Flight.SetDirection(fireball, 0.0, 0.0, -1.0);
         Assert.True(world.Entities.SpawnEntity(fireball));
@@ -110,7 +110,7 @@ public sealed class EntityFireballTests
     public void Flight_state_survives_an_nbt_round_trip()
     {
         FakeWorldContext world = new();
-        Entity fireball = EntityRegistry.ByName("fireball").Create(world);
+        Entity fireball = TestEntityCatalog.ByName("fireball").Create(world);
         fireball.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
         NBTTagCompound nbt = new();
@@ -119,7 +119,7 @@ public sealed class EntityFireballTests
         nbt.SetByte("inTile", (sbyte)4);
         nbt.SetByte("inGround", 1);
 
-        Entity restored = EntityRegistry.ByName("fireball").Create(world);
+        Entity restored = TestEntityCatalog.ByName("fireball").Create(world);
         restored.Read(nbt);
         NBTTagCompound written = new();
         restored.Write(written);
@@ -132,7 +132,7 @@ public sealed class EntityFireballTests
     [Fact]
     public void Protocol_facts_are_pinned()
     {
-        EntityDefinition fireball = EntityRegistry.ByName("fireball").RequireDefinition();
+        EntityDefinition fireball = TestEntityCatalog.ByName("fireball").RequireDefinition();
 
         Assert.Equal(63, fireball.ProtocolId);
         Assert.Equal(63, fireball.SpawnObjectId);

@@ -95,24 +95,24 @@ public static class EntityTestHarness
     /// <summary>Creates an entity suitable for NBT save/load (registry items with invalid default state get a safe stack).</summary>
     public static Entity CreateForNbtRoundTrip(EntityType type, FakeWorldContext world)
     {
-        if (type == EntityRegistry.ByName("item"))
+        if (type == TestEntityCatalog.ByName("item"))
         {
             return DroppedItemBehavior.Create(world, 8.5, 65.0, 8.5, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 1));
         }
 
-        if (type == EntityRegistry.ByName("primedtnt"))
+        if (type == TestEntityCatalog.ByName("primedtnt"))
         {
             Entity primed = type.Create(world);
             primed.SetPositionAndAngles(8.5, 66.0, 8.5, 0.0F, 0.0F);
             return primed;
         }
 
-        if (type == EntityRegistry.ByName("painting"))
+        if (type == TestEntityCatalog.ByName("painting"))
         {
             return HangingArtBehavior.HangAt(world, 8, 65, 8, 2, "Kebab");
         }
 
-        if (type == EntityRegistry.ByName("fallingsand"))
+        if (type == TestEntityCatalog.ByName("fallingsand"))
         {
             Entity sand = type.Create(world);
             sand.Behaviors.Find<SettleAsBlockBehavior>()!.SetBlock(sand, BlockRegistry.Get("sand").Id);
@@ -120,7 +120,7 @@ public static class EntityTestHarness
             return sand;
         }
 
-        if (type == EntityRegistry.ByName("minecart"))
+        if (type == TestEntityCatalog.ByName("minecart"))
         {
             return MinecartBehavior.Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Rideable);
         }

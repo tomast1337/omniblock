@@ -287,3 +287,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-09-03 — Implemented entity runtime injection across the remaining production consumers (Nicolas Vyčas Nery; `2d6e9eb4a8b966f8f2c45e757b54bc5a4f2ed914`)
 - 2026-09-03 — Implemented client-only entity renderer registration (Nicolas Vyčas Nery; `0099c83094068a27c8eb352cfe5007a4acd098af`)
 - 2026-09-03 — Implemented entity compatibility and save rules (Nicolas Vyčas Nery; `2595017816151ecc49e73b0c8463af9afc830875`)
+- 2026-09-03 — Removed the transitional entity globals (Nicolas Vyčas Nery; `d0116ed9ad31b8b63a26708d1b5c85f7b5d18f18`)

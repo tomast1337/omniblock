@@ -11,7 +11,7 @@ public sealed class TestEntityPlayer : EntityPlayer
     {
     }
 
-    public override EntityType Type => EntityRegistry.ByName("player");
+    public override EntityType Type => TestEntityCatalog.ByName("player");
 
     /// <summary>Stats awarded to this player. The base implementation is a no-op, so tests record them here.</summary>
     private readonly Dictionary<StatBase, int> _stats = [];

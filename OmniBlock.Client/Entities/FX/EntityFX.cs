@@ -22,7 +22,7 @@ public class EntityFX : Entity
     public static double interpPosY;
     public static double interpPosZ;
 
-    public EntityFX(IWorldContext world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) : base(world)
+    public EntityFX(IWorldContext world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) : base(world, null)
     {
         SetBoundingBoxSpacing(0.2F, 0.2F);
         StandingEyeHeight = Height / 2.0F;

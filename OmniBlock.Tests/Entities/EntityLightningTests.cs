@@ -15,11 +15,11 @@ namespace OmniBlock.Tests.Entities;
 [Collection("EntityTests")]
 public sealed class EntityLightningTests
 {
-    private static LightningStrikeBehavior Strike => EntityRegistry.ByName("lightningbolt").Behaviors.Find<LightningStrikeBehavior>()!;
+    private static LightningStrikeBehavior Strike => TestEntityCatalog.ByName("lightningbolt").Behaviors.Find<LightningStrikeBehavior>()!;
 
     private static Entity Bolt(FakeWorldContext world, double x = 8.5, double y = 64.0, double z = 8.5)
     {
-        Entity bolt = EntityRegistry.ByName("lightningbolt").Create(world);
+        Entity bolt = TestEntityCatalog.ByName("lightningbolt").Create(world);
         bolt.SetPositionAndAnglesKeepPrevAngles(x, y, z, 0.0F, 0.0F);
         Assert.True(world.Entities.SpawnEntity(bolt));
         return bolt;
@@ -32,7 +32,7 @@ public sealed class EntityLightningTests
         Entity bolt = Bolt(world);
 
         Assert.Equal(typeof(EntityObject), bolt.GetType());
-        Assert.Same(EntityRegistry.ByName("lightningbolt").Behaviors.Ticker, EntityRegistry.ByName("lightningbolt").Behaviors.Physics);
+        Assert.Same(TestEntityCatalog.ByName("lightningbolt").Behaviors.Ticker, TestEntityCatalog.ByName("lightningbolt").Behaviors.Physics);
     }
 
     /// <summary>Each bolt draws its own jagged path: the seed rolls at creation and again per flash.</summary>
@@ -80,7 +80,7 @@ public sealed class EntityLightningTests
     public void Nearby_entities_are_electrocuted()
     {
         FakeWorldContext world = new();
-        EntityCreature creeper = (EntityCreature)EntityRegistry.ByName("creeper").Create(world);
+        EntityCreature creeper = (EntityCreature)TestEntityCatalog.ByName("creeper").Create(world);
         creeper.SetPositionAndAngles(9.5, 64.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(creeper));
         Entity bolt = Bolt(world, y: 64.0);
@@ -119,11 +119,11 @@ public sealed class EntityLightningTests
     [Fact]
     public void The_global_spawn_id_is_pinned()
     {
-        EntityType type = EntityRegistry.ByName("lightningbolt");
+        EntityType type = TestEntityCatalog.ByName("lightningbolt");
 
         Assert.Equal(65, type.RequireDefinition().ProtocolId);
         Assert.Equal(1, type.RequireDefinition().GlobalSpawnId);
-        Assert.Same(type, EntityRegistry.ByGlobalSpawnId(1));
-        Assert.Null(EntityRegistry.ByGlobalSpawnId(2));
+        Assert.Same(type, TestEntityCatalog.ByGlobalSpawnId(1));
+        Assert.Null(TestEntityCatalog.ByGlobalSpawnId(2));
     }
 }

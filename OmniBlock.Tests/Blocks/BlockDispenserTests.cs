@@ -18,7 +18,7 @@ public sealed class BlockDispenserTests
         {
         }
 
-        public override EntityType Type => EntityRegistry.ByName("player");
+        public override EntityType Type => TestEntityCatalog.ByName("player");
 
         public override void Spawn()
         {
@@ -152,7 +152,7 @@ public sealed class BlockDispenserTests
 
         BlockRegistry.Get("dispenser").OnTick(DispenserTick(world, 3, 64, 3));
 
-        Assert.Contains(world.Entities.Entities, e => EntityRegistry.GetId(e) == "arrow");
+        Assert.Contains(world.Entities.Entities, e => TestEntityCatalog.GetId(e) == "arrow");
     }
 
     [Fact]
@@ -166,7 +166,7 @@ public sealed class BlockDispenserTests
 
         BlockRegistry.Get("dispenser").OnTick(DispenserTick(world, 30, 64, 30));
 
-        Assert.Contains(world.Entities.Entities, e => EntityRegistry.GetId(e) == "arrow");
+        Assert.Contains(world.Entities.Entities, e => TestEntityCatalog.GetId(e) == "arrow");
     }
 
     [Fact]
@@ -180,7 +180,7 @@ public sealed class BlockDispenserTests
 
         BlockRegistry.Get("dispenser").OnTick(DispenserTick(world, 31, 64, 31));
 
-        Assert.Contains(world.Entities.Entities, e => EntityRegistry.GetId(e) == "arrow");
+        Assert.Contains(world.Entities.Entities, e => TestEntityCatalog.GetId(e) == "arrow");
     }
 
     [Fact]
@@ -194,7 +194,7 @@ public sealed class BlockDispenserTests
 
         BlockRegistry.Get("dispenser").OnTick(DispenserTick(world, 32, 64, 32));
 
-        Assert.Contains(world.Entities.Entities, e => EntityRegistry.GetId(e) == "arrow");
+        Assert.Contains(world.Entities.Entities, e => TestEntityCatalog.GetId(e) == "arrow");
     }
 
     [Fact]
@@ -208,7 +208,7 @@ public sealed class BlockDispenserTests
 
         BlockRegistry.Get("dispenser").OnTick(DispenserTick(world, 4, 64, 4));
 
-        Assert.Contains(world.Entities.Entities, e => EntityRegistry.GetId(e) == "egg");
+        Assert.Contains(world.Entities.Entities, e => TestEntityCatalog.GetId(e) == "egg");
     }
 
     [Fact]
@@ -222,7 +222,7 @@ public sealed class BlockDispenserTests
 
         BlockRegistry.Get("dispenser").OnTick(DispenserTick(world, 5, 64, 5));
 
-        Assert.Contains(world.Entities.Entities, e => EntityRegistry.GetId(e) == "snowball");
+        Assert.Contains(world.Entities.Entities, e => TestEntityCatalog.GetId(e) == "snowball");
     }
 
     [Fact]

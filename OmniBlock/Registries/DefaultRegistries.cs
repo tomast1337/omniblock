@@ -13,9 +13,6 @@ namespace OmniBlock.Registries;
 
 public static class DefaultRegistries
 {
-    public static readonly IRegistry<EntityType> EntityTypes =
-        new IndexedRegistry<EntityType>(ResourceLocation.Parse("entity_types"));
-
     public static readonly IRegistry<Biome> Biomes =
         new IndexedRegistry<Biome>(ResourceLocation.Parse("biomes"));
 
@@ -108,7 +105,6 @@ public static class DefaultRegistries
 
         MetricRegistry.Bootstrap(typeof(ServerMetrics));
 
-        RegistryAccess.AddBuiltIn(RegistryKeys.EntityTypes, EntityTypes);
         RegistryAccess.AddBuiltIn(RegistryKeys.Biomes, Biomes);
         RegistryAccess.AddBuiltIn(RegistryKeys.BlockEntityTypes, BlockEntityTypes);
         RegistryAccess.AddBuiltIn(RegistryKeys.GameRules, GameRules);

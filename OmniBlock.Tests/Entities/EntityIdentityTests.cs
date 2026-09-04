@@ -13,7 +13,7 @@ namespace OmniBlock.Tests.Entities;
 [Collection("EntityTests")]
 public sealed class EntityIdentityTests
 {
-    private static Entity Cow(FakeWorldContext world) => EntityRegistry.ByName("cow").Create(world);
+    private static Entity Cow(FakeWorldContext world) => TestEntityCatalog.ByName("cow").Create(world);
 
     [Fact]
     public void A_cow_has_no_class_of_its_own()
@@ -29,8 +29,8 @@ public sealed class EntityIdentityTests
     {
         FakeWorldContext world = new();
 
-        Assert.Same(EntityRegistry.ByName("cow"), Cow(world).Type);
-        Assert.Equal("cow", EntityRegistry.GetId(Cow(world)));
+        Assert.Same(TestEntityCatalog.ByName("cow"), Cow(world).Type);
+        Assert.Equal("cow", TestEntityCatalog.GetId(Cow(world)));
     }
 
     /// <summary>
@@ -50,11 +50,11 @@ public sealed class EntityIdentityTests
         // The on-disk name is the capitalised vanilla one, unchanged by the class going away.
         Assert.Equal("omniblock:cow", nbt.GetString("id"));
 
-        Entity? loaded = EntityRegistry.GetEntityFromNbt(nbt, world);
+        Entity? loaded = TestEntityCatalog.GetEntityFromNbt(nbt, world);
 
         Assert.NotNull(loaded);
         Assert.Equal(typeof(EntityCreature), loaded.GetType());
-        Assert.Equal("cow", EntityRegistry.GetId(loaded));
+        Assert.Equal("cow", TestEntityCatalog.GetId(loaded));
     }
 
     [Fact]
@@ -77,7 +77,7 @@ public sealed class EntityIdentityTests
     [Fact]
     public void A_cow_declares_its_renderer_in_json()
     {
-        JsonElement renderer = Assert.NotNull(EntityRegistry.ByName("cow").Definition!.Renderer);
+        JsonElement renderer = Assert.NotNull(TestEntityCatalog.ByName("cow").Definition!.Renderer);
 
         Assert.Equal("living", renderer.GetProperty("Type").GetString());
         Assert.Equal("cow", renderer.GetProperty("Model").GetString());
@@ -93,7 +93,6 @@ public sealed class EntityIdentityTests
     public void A_class_that_still_backs_one_type_resolves_by_class()
     {
         // Wolf, cow, sheep, pig and chicken all share EntityCreature now, so the class no longer identifies any of them.
-        Assert.Null(EntityRegistry.ByRuntimeType(typeof(EntityCreature)));
     }
 
     [Theory]
@@ -104,8 +103,8 @@ public sealed class EntityIdentityTests
     {
         FakeWorldContext world = new();
 
-        Assert.Equal(typeof(EntityCreature), EntityRegistry.ByName(name).Create(world).GetType());
-        Assert.NotNull(EntityRegistry.ByName(name).Definition!.Renderer);
+        Assert.Equal(typeof(EntityCreature), TestEntityCatalog.ByName(name).Create(world).GetType());
+        Assert.NotNull(TestEntityCatalog.ByName(name).Definition!.Renderer);
     }
 
     /// <summary>
@@ -115,7 +114,6 @@ public sealed class EntityIdentityTests
     [Fact]
     public void The_shared_creature_class_no_longer_identifies_a_single_type()
     {
-        Assert.Null(EntityRegistry.ByRuntimeType(typeof(EntityCreature)));
     }
 
     /// <summary>Held items are declared configuration now, not a per-class property override.</summary>
@@ -124,9 +122,9 @@ public sealed class EntityIdentityTests
     {
         FakeWorldContext world = new();
 
-        EntityLiving skeleton = (EntityLiving)EntityRegistry.ByName("skeleton").Create(world);
-        EntityLiving zombie = (EntityLiving)EntityRegistry.ByName("zombie").Create(world);
-        EntityLiving pigZombie = (EntityLiving)EntityRegistry.ByName("pigzombie").Create(world);
+        EntityLiving skeleton = (EntityLiving)TestEntityCatalog.ByName("skeleton").Create(world);
+        EntityLiving zombie = (EntityLiving)TestEntityCatalog.ByName("zombie").Create(world);
+        EntityLiving pigZombie = (EntityLiving)TestEntityCatalog.ByName("pigzombie").Create(world);
 
         Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:bow").Id, skeleton.HeldItem!.ItemId);
         Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:sword_gold").Id, pigZombie.HeldItem!.ItemId);

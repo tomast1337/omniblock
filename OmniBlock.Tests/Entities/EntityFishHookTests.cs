@@ -14,7 +14,7 @@ namespace OmniBlock.Tests.Entities;
 [Collection("EntityTests")]
 public sealed class EntityFishHookTests
 {
-    private static FishingBobberBehavior Bobber => EntityRegistry.ByName("fishhook").Behaviors.Find<FishingBobberBehavior>()!;
+    private static FishingBobberBehavior Bobber => TestEntityCatalog.ByName("fishhook").Behaviors.Find<FishingBobberBehavior>()!;
 
     private static TestEntityPlayer Angler(FakeWorldContext world)
     {
@@ -36,7 +36,7 @@ public sealed class EntityFishHookTests
     public void A_bobber_has_no_class_of_its_own()
     {
         FakeWorldContext world = new();
-        Entity bobber = EntityRegistry.ByName("fishhook").Create(world);
+        Entity bobber = TestEntityCatalog.ByName("fishhook").Create(world);
 
         Assert.Equal(typeof(EntityObject), bobber.GetType());
         Assert.True(bobber.IgnoreFrustumCheck, "The line has to be drawn even when the float is off-screen.");
@@ -106,7 +106,7 @@ public sealed class EntityFishHookTests
     {
         FakeWorldContext world = new();
         TestEntityPlayer angler = Angler(world);
-        EntityLiving pig = (EntityLiving)EntityRegistry.ByName("pig").Create(world);
+        EntityLiving pig = (EntityLiving)TestEntityCatalog.ByName("pig").Create(world);
         pig.SetPositionAndAngles(8.5, 65.0, 14.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(pig));
 
@@ -134,7 +134,7 @@ public sealed class EntityFishHookTests
     public void Flight_state_survives_an_nbt_round_trip()
     {
         FakeWorldContext world = new();
-        Entity bobber = EntityRegistry.ByName("fishhook").Create(world);
+        Entity bobber = TestEntityCatalog.ByName("fishhook").Create(world);
         bobber.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
         NBTTagCompound nbt = new();
@@ -144,7 +144,7 @@ public sealed class EntityFishHookTests
         nbt.SetByte("shake", (sbyte)3);
         nbt.SetByte("inGround", 1);
 
-        Entity restored = EntityRegistry.ByName("fishhook").Create(world);
+        Entity restored = TestEntityCatalog.ByName("fishhook").Create(world);
         restored.Read(nbt);
         NBTTagCompound written = new();
         restored.Write(written);
@@ -158,7 +158,7 @@ public sealed class EntityFishHookTests
     [Fact]
     public void Protocol_facts_are_pinned()
     {
-        EntityDefinition bobber = EntityRegistry.ByName("fishhook").RequireDefinition();
+        EntityDefinition bobber = TestEntityCatalog.ByName("fishhook").RequireDefinition();
 
         Assert.Equal(64, bobber.ProtocolId);
         Assert.Equal(90, bobber.SpawnObjectId);

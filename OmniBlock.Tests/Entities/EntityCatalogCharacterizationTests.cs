@@ -46,18 +46,18 @@ public sealed class EntityCatalogCharacterizationTests
     public void Shipped_catalog_keeps_names_ids_and_runtime_categories()
     {
         Assert.Equal(s_catalog.Select(row => row.Name),
-            DefaultRegistries.EntityTypes.Keys.Select(key => key.Path).OrderBy(NameOrder));
+            ContentRuntime.Current.EntityTypes.Keys.Select(key => key.Path).OrderBy(NameOrder));
 
         FakeWorldContext world = new();
         foreach ((string name, int protocolId, int objectId, int globalId, Type runtimeType) in s_catalog)
         {
-            EntityType type = EntityRegistry.ByName(name);
-            Assert.Equal(protocolId, DefaultRegistries.EntityTypes.GetId(type));
+            EntityType type = TestEntityCatalog.ByName(name);
+            Assert.Equal(protocolId, ContentRuntime.Current.EntityTypes.GetProtocolId(type));
             Assert.Equal(runtimeType, type.BaseType);
 
             if (name != "player") Assert.Equal(runtimeType, type.Create(world).GetType());
-            if (objectId != 0) Assert.Same(type, EntityRegistry.BySpawnObjectId(objectId));
-            if (globalId != 0) Assert.Same(type, EntityRegistry.ByGlobalSpawnId(globalId));
+            if (objectId != 0) Assert.Same(type, TestEntityCatalog.BySpawnObjectId(objectId));
+            if (globalId != 0) Assert.Same(type, TestEntityCatalog.ByGlobalSpawnId(globalId));
         }
     }
 
@@ -66,7 +66,7 @@ public sealed class EntityCatalogCharacterizationTests
     {
         foreach ((string name, _, _, _, _) in s_catalog.Where(row => row.Name != "player"))
         {
-            EntityDefinition definition = EntityRegistry.ByName(name).RequireDefinition();
+            EntityDefinition definition = TestEntityCatalog.ByName(name).RequireDefinition();
             Assert.True(definition.Width > 0, name);
             Assert.True(definition.Height > 0, name);
             Assert.True(definition.Health > 0, name);
@@ -78,10 +78,10 @@ public sealed class EntityCatalogCharacterizationTests
         AssertDefinition("boat", 1.5f, 0.6f, tracksVelocity: true, collidable: true);
         AssertDefinition("arrow", 0.5f, 0.5f, tracksVelocity: true, collidable: false);
         AssertDefinition("ghast", 4f, 4f, tracksVelocity: false, collidable: false);
-        Assert.True(EntityRegistry.ByName("ghast").RequireDefinition().FireImmune);
-        Assert.True(EntityRegistry.ByName("squid").RequireDefinition().BreathesUnderwater);
-        Assert.True(EntityRegistry.ByName("fishhook").RequireDefinition().IgnoreFrustumCheck);
-        Assert.True(EntityRegistry.ByName("arrow").RequireDefinition().AlwaysSyncsRotation);
+        Assert.True(TestEntityCatalog.ByName("ghast").RequireDefinition().FireImmune);
+        Assert.True(TestEntityCatalog.ByName("squid").RequireDefinition().BreathesUnderwater);
+        Assert.True(TestEntityCatalog.ByName("fishhook").RequireDefinition().IgnoreFrustumCheck);
+        Assert.True(TestEntityCatalog.ByName("arrow").RequireDefinition().AlwaysSyncsRotation);
     }
 
     [Fact]
@@ -102,7 +102,7 @@ public sealed class EntityCatalogCharacterizationTests
     {
         foreach ((string name, _, _, _, _) in s_catalog.Where(row => row.Name != "player"))
         {
-            EntityType type = EntityRegistry.ByName(name);
+            EntityType type = TestEntityCatalog.ByName(name);
             foreach (string slot in type.RequireDefinition().Behaviors
                          .SelectMany(entry => entry.GetProperty("Slots").EnumerateArray())
                          .Select(entry => entry.GetString()!).Distinct())
@@ -114,7 +114,7 @@ public sealed class EntityCatalogCharacterizationTests
 
     private static void AssertDefinition(string name, float width, float height, bool tracksVelocity, bool collidable)
     {
-        EntityDefinition definition = EntityRegistry.ByName(name).RequireDefinition();
+        EntityDefinition definition = TestEntityCatalog.ByName(name).RequireDefinition();
         Assert.Equal(width, definition.Width);
         Assert.Equal(height, definition.Height);
         Assert.Equal(tracksVelocity, definition.TracksVelocity);
@@ -125,7 +125,7 @@ public sealed class EntityCatalogCharacterizationTests
         string name,
         params (string Name, int Id, SyncedValueKind Kind, double Default, string? DefaultString)[] expected)
     {
-        SyncedPropertyDefinition[] actual = EntityRegistry.ByName(name).RequireDefinition().SyncedProperties;
+        SyncedPropertyDefinition[] actual = TestEntityCatalog.ByName(name).RequireDefinition().SyncedProperties;
         Assert.Equal(expected.Length, actual.Length);
         for (int i = 0; i < expected.Length; i++)
         {

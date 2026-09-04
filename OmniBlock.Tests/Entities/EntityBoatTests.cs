@@ -14,7 +14,7 @@ namespace OmniBlock.Tests.Entities;
 [Collection("EntityTests")]
 public sealed class EntityBoatTests
 {
-    private static BoatBehavior Hull => EntityRegistry.ByName("boat").Behaviors.Find<BoatBehavior>()!;
+    private static BoatBehavior Hull => TestEntityCatalog.ByName("boat").Behaviors.Find<BoatBehavior>()!;
 
     private static Entity Launch(FakeWorldContext world, double x = 8.5, double y = 65.0, double z = 8.5)
     {
@@ -215,7 +215,7 @@ public sealed class EntityBoatTests
     [Fact]
     public void Protocol_facts_are_pinned()
     {
-        EntityDefinition boat = EntityRegistry.ByName("boat").RequireDefinition();
+        EntityDefinition boat = TestEntityCatalog.ByName("boat").RequireDefinition();
 
         Assert.Equal(41, boat.ProtocolId);
         Assert.Equal(1, boat.SpawnObjectId);

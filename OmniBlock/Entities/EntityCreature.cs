@@ -4,7 +4,7 @@ using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Entities;
 
-public class EntityCreature(IWorldContext world, EntityType? type = null) : EntityLiving(world, type)
+public class EntityCreature(IWorldContext world, EntityType type) : EntityLiving(world, type)
 {
     private const float Range = 16.0F;
     private PathEntity? _pathToEntity;

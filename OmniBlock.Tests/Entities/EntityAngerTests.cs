@@ -13,7 +13,7 @@ public sealed class EntityAngerTests
 {
     private static EntityCreature Spawn(FakeWorldContext world, string name, double x = 8.5, double z = 8.5)
     {
-        EntityCreature mob = (EntityCreature)EntityRegistry.ByName(name).Create(world);
+        EntityCreature mob = (EntityCreature)TestEntityCatalog.ByName(name).Create(world);
         mob.SetPositionAndAngles(x, 65.0, z, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(mob));
         return mob;
@@ -45,12 +45,12 @@ public sealed class EntityAngerTests
     {
         // The giant declares its own path preference beside the shared monster rule, and being
         // first in the composite is what makes it win.
-        Assert.NotNull(EntityRegistry.ByName("giant").Behaviors.Find<LightSeekingPathBehavior>());
-        Assert.Null(EntityRegistry.ByName("zombie").Behaviors.Find<LightSeekingPathBehavior>());
+        Assert.NotNull(TestEntityCatalog.ByName("giant").Behaviors.Find<LightSeekingPathBehavior>());
+        Assert.Null(TestEntityCatalog.ByName("zombie").Behaviors.Find<LightSeekingPathBehavior>());
 
         FakeWorldContext lit = new();
-        EntityCreature giant = (EntityCreature)EntityRegistry.ByName("giant").Create(lit);
-        EntityCreature zombie = (EntityCreature)EntityRegistry.ByName("zombie").Create(lit);
+        EntityCreature giant = (EntityCreature)TestEntityCatalog.ByName("giant").Create(lit);
+        EntityCreature zombie = (EntityCreature)TestEntityCatalog.ByName("zombie").Create(lit);
 
         // Exact opposites: the giant reads luminance - 0.5 where every other monster reads
         // 0.5 - luminance.
@@ -140,7 +140,7 @@ public sealed class EntityAngerTests
         Assert.True(mob.SaveSelfNbt(nbt));
         Assert.True(nbt.GetShort("Anger") > 0);
 
-        Entity loaded = Assert.IsType<EntityCreature>(EntityRegistry.GetEntityFromNbt(nbt, new FakeWorldContext()));
+        Entity loaded = Assert.IsType<EntityCreature>(TestEntityCatalog.GetEntityFromNbt(nbt, new FakeWorldContext()));
         Assert.True(anger.IsAngry(loaded));
     }
 
@@ -151,7 +151,7 @@ public sealed class EntityAngerTests
         FakeWorldContext world = new();
 
         // Not added to the world: a mob already occupying its own box blocks its own spawn check.
-        EntityCreature mob = (EntityCreature)EntityRegistry.ByName("pigzombie").Create(world);
+        EntityCreature mob = (EntityCreature)TestEntityCatalog.ByName("pigzombie").Create(world);
         mob.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
         SpawnIgnoringLightBehavior spawn = mob.Behaviors.Find<SpawnIgnoringLightBehavior>()!;

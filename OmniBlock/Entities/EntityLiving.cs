@@ -17,11 +17,9 @@ namespace OmniBlock.Entities;
 /// </summary>
 public class EntityLiving : Entity
 {
-    public EntityLiving(IWorldContext world, EntityType? type = null) : base(world, type)
+    public EntityLiving(IWorldContext world, EntityType type) : base(world, type)
     {
-        // Read through Type, not the parameter: an entity constructed directly still resolves its
-        // type by class in the base constructor, and should get that type's configuration.
-        EntityDefinition? definition = Type?.Definition;
+        EntityDefinition? definition = type.Definition;
         Definition = definition ?? EntityDefinition.Default;
         PreventEntitySpawning = true;
         SetPosition(X, Y, Z);

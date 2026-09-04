@@ -13,7 +13,7 @@ public sealed class EntitySpiderTests
 {
     private static EntityCreature Spider(FakeWorldContext world)
     {
-        EntityCreature spider = (EntityCreature)EntityRegistry.ByName("spider").Create(world);
+        EntityCreature spider = (EntityCreature)TestEntityCatalog.ByName("spider").Create(world);
         spider.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         return spider;
     }
@@ -24,8 +24,8 @@ public sealed class EntitySpiderTests
         FakeWorldContext world = new();
 
         Assert.Equal(typeof(EntityCreature), Spider(world).GetType());
-        Assert.NotNull(EntityRegistry.ByName("spider").Behaviors.Find<WallClimbBehavior>());
-        Assert.NotNull(EntityRegistry.ByName("spider").Behaviors.Find<SpawnRiderBehavior>());
+        Assert.NotNull(TestEntityCatalog.ByName("spider").Behaviors.Find<WallClimbBehavior>());
+        Assert.NotNull(TestEntityCatalog.ByName("spider").Behaviors.Find<SpawnRiderBehavior>());
     }
 
     /// <summary>
@@ -55,15 +55,15 @@ public sealed class EntitySpiderTests
     [Fact]
     public void A_spider_makes_no_footstep_sounds_where_a_zombie_does()
     {
-        Assert.False(EntityRegistry.ByName("spider").Definition!.MakesStepSounds);
-        Assert.True(EntityRegistry.ByName("zombie").Definition!.MakesStepSounds);
+        Assert.False(TestEntityCatalog.ByName("spider").Definition!.MakesStepSounds);
+        Assert.True(TestEntityCatalog.ByName("zombie").Definition!.MakesStepSounds);
     }
 
     [Fact]
     public void A_spider_carries_its_rider_lower_than_its_back()
     {
-        Assert.Equal(-0.5D, EntityRegistry.ByName("spider").Definition!.PassengerRideOffset);
-        Assert.Equal(0.0D, EntityRegistry.ByName("zombie").Definition!.PassengerRideOffset);
+        Assert.Equal(-0.5D, TestEntityCatalog.ByName("spider").Definition!.PassengerRideOffset);
+        Assert.Equal(0.0D, TestEntityCatalog.ByName("zombie").Definition!.PassengerRideOffset);
     }
 
     /// <summary>
@@ -74,7 +74,7 @@ public sealed class EntitySpiderTests
     public void A_spider_sometimes_spawns_a_skeleton_riding_it()
     {
         FakeWorldContext world = new();
-        SpawnRiderBehavior jockey = EntityRegistry.ByName("spider").Behaviors.Find<SpawnRiderBehavior>()!;
+        SpawnRiderBehavior jockey = TestEntityCatalog.ByName("spider").Behaviors.Find<SpawnRiderBehavior>()!;
 
         // Roll until the one-in-a-hundred fires rather than depending on a particular seed.
         for (int attempt = 0; attempt < 5000; attempt++)
@@ -84,7 +84,7 @@ public sealed class EntitySpiderTests
 
             if (spider.Passenger is null) continue;
 
-            Assert.Equal("skeleton", EntityRegistry.GetId(spider.Passenger));
+            Assert.Equal("skeleton", TestEntityCatalog.GetId(spider.Passenger));
             return;
         }
 
@@ -95,7 +95,7 @@ public sealed class EntitySpiderTests
     public void Daylight_disinterest_wraps_the_real_attack_rather_than_replacing_it()
     {
         LoseTargetInDaylightBehavior attack =
-            Assert.IsType<LoseTargetInDaylightBehavior>(EntityRegistry.ByName("spider").Behaviors.Attack);
+            Assert.IsType<LoseTargetInDaylightBehavior>(TestEntityCatalog.ByName("spider").Behaviors.Attack);
 
         Assert.IsType<JumpAttackBehavior>(attack.Inner);
     }

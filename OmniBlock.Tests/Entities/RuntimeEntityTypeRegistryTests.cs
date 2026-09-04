@@ -18,8 +18,6 @@ public sealed class RuntimeEntityTypeRegistryTests
         Assert.Same(entities.Get("omniblock:lightningbolt"), entities.GetByGlobalSpawnId(1));
         Assert.Null(entities.GetBySpawnObjectId(999));
         Assert.Null(entities.GetByGlobalSpawnId(999));
-        Assert.Null(entities.GetByRuntimeType(typeof(EntityCreature)));
-        Assert.Same(entities.Get("omniblock:player"), entities.GetByRuntimeType(typeof(ServerPlayerEntity)));
     }
 
     [Fact]

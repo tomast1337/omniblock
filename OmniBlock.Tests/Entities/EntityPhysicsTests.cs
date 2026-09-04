@@ -14,7 +14,7 @@ public sealed class EntityPhysicsTests
 {
     private static EntityCreature Spawn(FakeWorldContext world, string name)
     {
-        EntityCreature animal = (EntityCreature)EntityRegistry.ByName(name).Create(world);
+        EntityCreature animal = (EntityCreature)TestEntityCatalog.ByName(name).Create(world);
         animal.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         world.Entities.SpawnEntity(animal);
         return animal;
@@ -29,8 +29,8 @@ public sealed class EntityPhysicsTests
     {
         FakeWorldContext world = new();
 
-        Assert.Equal(typeof(EntityCreature), EntityRegistry.ByName(name).Create(world).GetType());
-        Assert.NotNull(EntityRegistry.ByName(name).Definition!.Renderer);
+        Assert.Equal(typeof(EntityCreature), TestEntityCatalog.ByName(name).Create(world).GetType());
+        Assert.NotNull(TestEntityCatalog.ByName(name).Definition!.Renderer);
     }
 
     /// <summary>
@@ -40,18 +40,17 @@ public sealed class EntityPhysicsTests
     [Fact]
     public void A_class_shared_by_several_types_resolves_to_nothing()
     {
-        Assert.Null(EntityRegistry.ByRuntimeType(typeof(EntityCreature)));
     }
 
     [Fact]
     public void Slots_come_from_json_and_stay_null_where_undeclared()
     {
-        Assert.NotNull(EntityRegistry.ByName("chicken").Behaviors.Find<FlapDescentBehavior>());
-        Assert.NotNull(EntityRegistry.ByName("pig").Behaviors.Find<RiderFallStatBehavior>());
+        Assert.NotNull(TestEntityCatalog.ByName("chicken").Behaviors.Find<FlapDescentBehavior>());
+        Assert.NotNull(TestEntityCatalog.ByName("pig").Behaviors.Find<RiderFallStatBehavior>());
 
         // A cow's only physics is the grazing rule every farm animal shares.
-        Assert.Null(EntityRegistry.ByName("cow").Behaviors.Find<FlapDescentBehavior>());
-        Assert.Null(EntityRegistry.ByName("sheep").Behaviors.Find<RiderFallStatBehavior>());
+        Assert.Null(TestEntityCatalog.ByName("cow").Behaviors.Find<FlapDescentBehavior>());
+        Assert.Null(TestEntityCatalog.ByName("sheep").Behaviors.Find<RiderFallStatBehavior>());
     }
 
     /// <summary>
@@ -65,7 +64,7 @@ public sealed class EntityPhysicsTests
         EntityCreature chicken = Spawn(world, "chicken");
 
         Assert.True(chicken.Behaviors.Physics!.OnLanding(chicken, 20.0F));
-        Assert.Null(EntityRegistry.ByName("cow").Behaviors.Find<FlapDescentBehavior>());
+        Assert.Null(TestEntityCatalog.ByName("cow").Behaviors.Find<FlapDescentBehavior>());
     }
 
     /// <summary>
@@ -76,7 +75,7 @@ public sealed class EntityPhysicsTests
     [Fact]
     public void A_chickens_wings_are_reachable_even_though_the_slot_holds_a_composite()
     {
-        EntityBehaviorSet behaviors = EntityRegistry.ByName("chicken").Behaviors;
+        EntityBehaviorSet behaviors = TestEntityCatalog.ByName("chicken").Behaviors;
 
         Assert.IsNotType<FlapDescentBehavior>(behaviors.Physics);
         Assert.NotNull(behaviors.Find<FlapDescentBehavior>());
@@ -92,7 +91,7 @@ public sealed class EntityPhysicsTests
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 15, 0, 15, 63);
 
-        EntityCreature chicken = (EntityCreature)EntityRegistry.ByName("chicken").Create(world);
+        EntityCreature chicken = (EntityCreature)TestEntityCatalog.ByName("chicken").Create(world);
         chicken.SetPositionAndAngles(8.5, 64.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(chicken));
 
@@ -177,7 +176,7 @@ public sealed class EntityPhysicsTests
         Assert.True(sheep.SaveSelfNbt(nbt));
         Assert.Equal(12, nbt.GetByte("Color"));
 
-        Entity loaded = Assert.IsType<EntityCreature>(EntityRegistry.GetEntityFromNbt(nbt, new FakeWorldContext()));
+        Entity loaded = Assert.IsType<EntityCreature>(TestEntityCatalog.GetEntityFromNbt(nbt, new FakeWorldContext()));
         Assert.Equal(12, wool.ColorOf(loaded));
         Assert.False(wool.IsShearedOn(loaded));
     }

@@ -14,7 +14,7 @@ namespace OmniBlock.Tests.Entities;
 [Collection("EntityTests")]
 public sealed class EntityMinecartTests
 {
-    private static MinecartBehavior Cart => EntityRegistry.ByName("minecart").Behaviors.Find<MinecartBehavior>()!;
+    private static MinecartBehavior Cart => TestEntityCatalog.ByName("minecart").Behaviors.Find<MinecartBehavior>()!;
 
     private static Entity Place(FakeWorldContext world, double x, double y, double z, int type) =>
         MinecartBehavior.Place(world, x, y, z, type);
@@ -417,7 +417,7 @@ public sealed class EntityMinecartTests
 
         FakeWorldContext worldB = new();
         EntityTestHarness.PlaceStoneFloor(worldB, 0, 15, 0, 15, 63);
-        Entity? loaded = EntityRegistry.GetEntityFromNbt(nbt, worldB);
+        Entity? loaded = TestEntityCatalog.GetEntityFromNbt(nbt, worldB);
         Assert.NotNull(loaded);
         Assert.Equal(typeof(EntityObject), loaded.GetType());
         Assert.Equal(MinecartBehavior.Chest, Cart.Type(loaded));
@@ -436,7 +436,7 @@ public sealed class EntityMinecartTests
         cart.VelocityZ = 0.12;
         Assert.True(world.Entities.SpawnEntity(cart));
 
-        var pig = (EntityCreature)EntityRegistry.ByName("pig").Create(world);
+        var pig = (EntityCreature)TestEntityCatalog.ByName("pig").Create(world);
         pig.SetPosition(9.2, 65.0, 8.6);
         Assert.True(world.Entities.SpawnEntity(pig));
 
@@ -494,7 +494,7 @@ public sealed class EntityMinecartTests
 
         FakeWorldContext worldB = new();
         EntityTestHarness.PlaceStoneFloor(worldB, 0, 15, 0, 15, 63);
-        Entity? loaded = EntityRegistry.GetEntityFromNbt(nbt, worldB);
+        Entity? loaded = TestEntityCatalog.GetEntityFromNbt(nbt, worldB);
         Assert.NotNull(loaded);
         Assert.Equal(MinecartBehavior.Furnace, Cart.Type(loaded));
     }
@@ -502,7 +502,7 @@ public sealed class EntityMinecartTests
     [Fact]
     public void Protocol_facts_are_pinned()
     {
-        EntityDefinition minecart = EntityRegistry.ByName("minecart").RequireDefinition();
+        EntityDefinition minecart = TestEntityCatalog.ByName("minecart").RequireDefinition();
 
         Assert.Equal(40, minecart.ProtocolId);
         Assert.Equal(0, minecart.SpawnObjectId);

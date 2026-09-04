@@ -14,11 +14,11 @@ namespace OmniBlock.Tests.Entities;
 [Collection("EntityTests")]
 public sealed class EntityFallingSandTests
 {
-    private static SettleAsBlockBehavior Settle => EntityRegistry.ByName("fallingsand").Behaviors.Find<SettleAsBlockBehavior>()!;
+    private static SettleAsBlockBehavior Settle => TestEntityCatalog.ByName("fallingsand").Behaviors.Find<SettleAsBlockBehavior>()!;
 
     private static Entity FallingBlock(FakeWorldContext world, string block, double x = 8.5, double y = 70.0, double z = 8.5)
     {
-        Entity sand = EntityRegistry.ByName("fallingsand").Create(world);
+        Entity sand = TestEntityCatalog.ByName("fallingsand").Create(world);
         Settle.SetBlock(sand, BlockRegistry.Get(block).Id);
         sand.SetPositionAndAngles(x, y, z, 0.0F, 0.0F);
         Assert.True(world.Entities.SpawnEntity(sand));
@@ -32,7 +32,7 @@ public sealed class EntityFallingSandTests
         Entity sand = FallingBlock(world, "sand");
 
         Assert.Equal(typeof(EntityObject), sand.GetType());
-        Assert.Same(EntityRegistry.ByName("fallingsand").Behaviors.Ticker, EntityRegistry.ByName("fallingsand").Behaviors.Persistence);
+        Assert.Same(TestEntityCatalog.ByName("fallingsand").Behaviors.Ticker, TestEntityCatalog.ByName("fallingsand").Behaviors.Persistence);
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public sealed class EntityFallingSandTests
     public void A_block_of_nothing_dies_immediately()
     {
         FakeWorldContext world = new();
-        Entity sand = EntityRegistry.ByName("fallingsand").Create(world);
+        Entity sand = TestEntityCatalog.ByName("fallingsand").Create(world);
         sand.SetPositionAndAngles(8.5, 70.0, 8.5, 0.0F, 0.0F);
         Assert.True(world.Entities.SpawnEntity(sand));
 
@@ -103,7 +103,7 @@ public sealed class EntityFallingSandTests
         NBTTagCompound nbt = new();
         gravel.Write(nbt);
 
-        Entity restored = EntityRegistry.ByName("fallingsand").Create(world);
+        Entity restored = TestEntityCatalog.ByName("fallingsand").Create(world);
         restored.Read(nbt);
 
         Assert.Equal(BlockRegistry.Get("gravel").Id, Settle.BlockId(restored));
@@ -126,6 +126,6 @@ public sealed class EntityFallingSandTests
         Assert.Equal(BlockRegistry.Get("gravel").Id, Settle.BlockForSpawnObjectId(71));
         Assert.Null(Settle.BlockForSpawnObjectId(50));
 
-        Assert.Equal(21, EntityRegistry.ByName("fallingsand").RequireDefinition().ProtocolId);
+        Assert.Equal(21, TestEntityCatalog.ByName("fallingsand").RequireDefinition().ProtocolId);
     }
 }

@@ -76,7 +76,7 @@ public sealed class GameEventsTests
     public void EntityHurt_publishes_entity_attacker_and_amount()
     {
         FakeWorldContext world = new();
-        EntityCreature wolf = (EntityCreature)EntityRegistry.ByName("wolf").Create(world);
+        EntityCreature wolf = (EntityCreature)TestEntityCatalog.ByName("wolf").Create(world);
         wolf.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(wolf));
 
@@ -103,7 +103,7 @@ public sealed class GameEventsTests
     public void EntityHurt_reports_null_attacker_for_environmental_damage()
     {
         FakeWorldContext world = new();
-        EntityCreature wolf = (EntityCreature)EntityRegistry.ByName("wolf").Create(world);
+        EntityCreature wolf = (EntityCreature)TestEntityCatalog.ByName("wolf").Create(world);
         wolf.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(wolf));
 

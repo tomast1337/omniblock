@@ -15,7 +15,7 @@ namespace OmniBlock.Tests.Entities;
 [Collection("EntityTests")]
 public sealed class EntityDroppedItemTests
 {
-    private static DroppedItemBehavior Dropped => EntityRegistry.ByName("item").Behaviors.Find<DroppedItemBehavior>()!;
+    private static DroppedItemBehavior Dropped => TestEntityCatalog.ByName("item").Behaviors.Find<DroppedItemBehavior>()!;
 
     private static Entity Drop(FakeWorldContext world, ItemStack stack, int pickupDelay = 0, double y = 65.0)
     {
@@ -39,7 +39,7 @@ public sealed class EntityDroppedItemTests
         Entity item = Drop(world, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 1));
 
         Assert.Equal(typeof(EntityObject), item.GetType());
-        Assert.Same(EntityRegistry.ByName("item").Behaviors.Ticker, EntityRegistry.ByName("item").Behaviors.Interactable);
+        Assert.Same(TestEntityCatalog.ByName("item").Behaviors.Ticker, TestEntityCatalog.ByName("item").Behaviors.Interactable);
         Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:stick").Id, Dropped.Stack(item)!.ItemId);
     }
 
@@ -129,7 +129,7 @@ public sealed class EntityDroppedItemTests
         NBTTagCompound nbt = new();
         item.Write(nbt);
 
-        Entity restored = EntityRegistry.ByName("item").Create(world);
+        Entity restored = TestEntityCatalog.ByName("item").Create(world);
         restored.Read(nbt);
 
         ItemStack stack = Dropped.Stack(restored)!;
@@ -154,7 +154,7 @@ public sealed class EntityDroppedItemTests
     [Fact]
     public void Protocol_facts_are_pinned()
     {
-        EntityType type = EntityRegistry.ByName("item");
+        EntityType type = TestEntityCatalog.ByName("item");
 
         Assert.Equal(1, type.RequireDefinition().ProtocolId);
         Assert.True(type.RequireDefinition().TracksVelocity);

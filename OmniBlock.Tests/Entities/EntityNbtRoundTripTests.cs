@@ -11,12 +11,12 @@ public sealed class EntityNbtRoundTripTests
 {
     public static IEnumerable<object[]> RegistryEntityTypesExceptPlayer()
     {
-        // Enumerates the registry itself now that EntityRegistry exposes no per-type static fields.
-        foreach (ResourceLocation key in OmniBlock.Registries.DefaultRegistries.EntityTypes.Keys)
+        // Enumerates the registry itself now that TestEntityCatalog exposes no per-type static fields.
+        foreach (ResourceLocation key in OmniBlock.Registries.ContentRuntime.Current.EntityTypes.Keys)
         {
             if (key.Path == "player") continue;
 
-            yield return [OmniBlock.Registries.DefaultRegistries.EntityTypes.GetOrThrow(key)];
+            yield return [OmniBlock.Registries.ContentRuntime.Current.EntityTypes.Get(key)];
         }
     }
 
@@ -34,7 +34,7 @@ public sealed class EntityNbtRoundTripTests
         FakeWorldContext worldB = new();
         EntityTestHarness.PlaceStoneFloor(worldB, 0, 15, 0, 15, 63);
 
-        Entity? loaded = EntityRegistry.GetEntityFromNbt(nbt, worldB);
+        Entity? loaded = TestEntityCatalog.GetEntityFromNbt(nbt, worldB);
         Assert.NotNull(loaded);
         Assert.Same(type, loaded!.Type);
         Assert.IsAssignableFrom(type.BaseType, loaded);
