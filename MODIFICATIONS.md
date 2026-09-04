@@ -293,3 +293,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-09-04 — Refactor block retrieval to use level.Content.Blocks for consistency (Nicolas Vyčas Nery; `7c31b6c5e8be7a32bba14f9192264f7ce3a5ff62`)
 - 2026-09-04 — Refactor tests to use TestBlocks for block lookups (Nicolas Vyčas Nery; `d8646c6bcbaad807eb2057c16c44deb932166a14`)
 - 2026-09-04 — Refactor .editorconfig to adjust brace preferences and expression-bodied member settings (Nicolas Vyčas Nery; `aab6d11d324fc685b3bff3563cc8555b7b8c8d58`)
+- 2026-09-04 — Update .editorconfig to set max line length and adjust var usage preferences (Nicolas Vyčas Nery; `ed8d56aafe1b31451d733c41dddc493388e68c47`)
