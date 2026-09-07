@@ -18,7 +18,7 @@ public static class ParticlePhysics
         var bz = MathHelper.Floor(nz);
 
         var blockId = world.Reader.GetBlockId(bx, by, bz);
-        var solid = IsSolid(blockId);
+        var solid = IsSolid(world.Content.Blocks, blockId);
 
         if (!solid)
         {
@@ -32,7 +32,7 @@ public static class ParticlePhysics
             // Try each axis independently using the already-computed target block coords
             // Y axis
             var yBlockId = world.Reader.GetBlockId(MathHelper.Floor(buf.X[i]), by, MathHelper.Floor(buf.Z[i]));
-            var ySolid = IsSolid(yBlockId);
+            var ySolid = IsSolid(world.Content.Blocks, yBlockId);
             if (!ySolid)
             {
                 buf.Y[i] += buf.VelY[i];
@@ -46,7 +46,7 @@ public static class ParticlePhysics
 
             // X axis
             var xBlockId = world.Reader.GetBlockId(bx, MathHelper.Floor(buf.Y[i]), MathHelper.Floor(buf.Z[i]));
-            var xSolid = IsSolid(xBlockId);
+            var xSolid = IsSolid(world.Content.Blocks, xBlockId);
             if (!xSolid)
             {
                 buf.X[i] += buf.VelX[i];
@@ -58,7 +58,7 @@ public static class ParticlePhysics
 
             // Z axis
             var zBlockId = world.Reader.GetBlockId(MathHelper.Floor(buf.X[i]), MathHelper.Floor(buf.Y[i]), bz);
-            var zSolid = IsSolid(zBlockId);
+            var zSolid = IsSolid(world.Content.Blocks, zBlockId);
             if (!zSolid)
             {
                 buf.Z[i] += buf.VelZ[i];
@@ -70,8 +70,8 @@ public static class ParticlePhysics
         }
     }
 
-    private static bool IsSolid(int blockId) =>
+    private static bool IsSolid(IBlockRuntimeView blocks, int blockId) =>
         blockId > 0
-        && global::OmniBlock.Registries.ContentRuntime.Current.Blocks.TryGetByProtocolId(blockId, out var block)
+        && blocks.TryGetByProtocolId(blockId, out var block)
         && block.Material.BlocksMovement;
 }

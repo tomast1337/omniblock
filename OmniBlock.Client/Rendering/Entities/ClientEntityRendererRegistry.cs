@@ -32,7 +32,7 @@ internal sealed class ClientEntityRendererRegistry
             Model(d), EntityModelRegistry.Create(Json(d).GetProperty("OverlayModel").GetString()!), Shadow(d)));
         Register("falling_block", (d, _) => new FallingBlockEntityRenderer(Shadow(d)));
         Register("lightning", (_, _) => new LightningEntityRenderer());
-        Register("item", (_, _) => new ItemRenderer());
+        Register("item", (_, content) => new ItemRenderer(content.Blocks));
         Register("arrow", (_, _) => new ArrowEntityRenderer());
         Register("painting", (_, _) => new PaintingEntityRenderer());
         Register("fishing_bobber", (_, _) => new FishingBobberEntityRenderer());

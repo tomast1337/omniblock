@@ -58,7 +58,7 @@ public abstract class EntityRenderer
     {
         GLManager.LightingEnabled = false;
 
-        var textureId = global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("fire").TextureId;
+        var textureId = World.Content.Blocks.Get("fire").TextureId;
         var texX = (textureId & 15) << 4;
         var texY = textureId & 240;
 
@@ -172,7 +172,7 @@ public abstract class EntityRenderer
                     if (blockId > 0 && World.Lighting.GetLightLevel(blockX, blockY, blockZ) > 3)
                     {
                         renderShadowOnBlock(
-                            global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(blockId),
+                            World.Content.Blocks.GetByProtocolId(blockId),
                             new Vec3D(pos.X, pos.Y + target.GetShadowRadius(), pos.Z),
                             blockX, blockY, blockZ,
                             shadowiness,

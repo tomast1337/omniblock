@@ -3,7 +3,7 @@ using OmniBlock.Util.Maths;
 
 namespace OmniBlock.Client.DynamicTexture;
 
-internal class LavaSprite() : Rendering.Core.Textures.DynamicTexture(global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("flowing_lava").TextureId)
+internal class LavaSprite(IBlockRuntimeView blocks) : Rendering.Core.Textures.DynamicTexture(blocks.Get(ResourceLocation.Parse("omniblock:flowing_lava")).TextureId)
 {
     private readonly float[] _heat = new float[256];
     private readonly float[] _heatDelta = new float[256];

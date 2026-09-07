@@ -207,8 +207,8 @@ public partial class OmniBlock :
     private readonly ClientReadySignal _clientReady = new();
     private readonly E2ETestController? _e2eTestController;
     private readonly LoadingScreenRenderer _loadingScreen;
-    private readonly WaterSprite _textureWaterFX = new();
-    private readonly LavaSprite _textureLavaFX = new();
+    private readonly WaterSprite _textureWaterFX;
+    private readonly LavaSprite _textureLavaFX;
     private readonly DebugTelemetry _debugTelemetry = new();
 
     private DebugWindowManager _debugWindowManager;
@@ -244,6 +244,8 @@ public partial class OmniBlock :
     private OmniBlock(int width, int height, bool isFullscreen, ClientLaunchOptions launchOptions, ContentRuntime content)
     {
         Content = content;
+        _textureWaterFX = new WaterSprite(content.Blocks);
+        _textureLavaFX = new LavaSprite(content.Blocks);
         _launchOptions = launchOptions;
         if (launchOptions.E2ETest is { } e2eTest)
         {
@@ -669,7 +671,7 @@ public partial class OmniBlock :
 
         TextureManager.AddDynamicTexture(_textureLavaFX);
         TextureManager.AddDynamicTexture(_textureWaterFX);
-        TextureManager.AddDynamicTexture(new NetherPortalSprite());
+        TextureManager.AddDynamicTexture(new NetherPortalSprite(Content.Blocks));
         TextureManager.AddDynamicTexture(new CompassSprite(this));
         TextureManager.AddDynamicTexture(new ClockSprite(this));
         TextureManager.AddDynamicTexture(new WaterSideSprite());
@@ -695,7 +697,7 @@ public partial class OmniBlock :
             () => PlayerController,
             () => World,
             () => CurrentScreen == null && Player != null && World != null
-                ? new InGameTipContext(ObjectMouseOver, World.Reader, Player.Inventory.ItemInHand)
+                ? new InGameTipContext(ObjectMouseOver, World.Reader, Content.Blocks, Player.Inventory.ItemInHand)
                 : null,
             () => _isMainMenuOpen
         ));
@@ -1818,7 +1820,7 @@ public partial class OmniBlock :
 
     public void StartInternalServer(string worldDir, WorldSettings worldSettings)
     {
-        InternalServer = new InternalServer(Path.Combine(OmniBlockDir, "saves"), worldDir, worldSettings, Options.RenderDistance, Options.Difficulty);
+        InternalServer = new InternalServer(Path.Combine(OmniBlockDir, "saves"), worldDir, worldSettings, Options.RenderDistance, Options.Difficulty, Content);
         InternalServer.RegistryAccess = RegistryAccess;
         InternalServer.RunThreaded("Internal Server");
     }

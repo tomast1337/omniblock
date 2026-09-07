@@ -23,7 +23,7 @@ public class FallingBlockEntityRenderer : EntityRenderer
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate((float)x, (float)y, (float)z);
         loadTexture("/terrain.png");
-        var block = global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(blockId);
+        var block = World.Content.Blocks.GetByProtocolId(blockId);
         var world = target.World;
         GLManager.LightingEnabled = false;
         BlockRenderer.RenderBlockFallingSand(block, world, MathHelper.Floor(target.X), MathHelper.Floor(target.Y), MathHelper.Floor(target.Z), Tessellator.instance);

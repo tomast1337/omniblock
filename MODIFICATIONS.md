@@ -300,3 +300,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-09-07 — Refactor item behaviors to utilize runtime block registry (Nicolas Vyčas Nery; `0d72a655d5678e1007b57aab5df07b854a58a91b`)
 - 2026-09-07 — refactor: streamline block registry and bootstrap processes (Nicolas Vyčas Nery; `afed905bfacafff2469a5a9830a7fac7b4fc4b23`)
 - 2026-09-07 — Refactor block registry access to use ContentRuntime directly (Nicolas Vyčas Nery; `84992f8125c627a6d635c547e57662aa282b726a`)
+- 2026-09-07 — Refactor rendering code to use IBlockRuntimeView for block access (Nicolas Vyčas Nery; `998c4be5bcc050f6bcf98a874ad8eddb2eef16b2`)

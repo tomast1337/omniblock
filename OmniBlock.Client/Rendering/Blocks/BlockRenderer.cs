@@ -29,7 +29,7 @@ public class BlockRenderer
     private static readonly PistonExtensionRenderer s_pistonExt = new();
 
 
-    public static bool RenderBlockByRenderType(IBlockReader world, ILightProvider lighting, Block block, BlockPos pos, Tessellator tess, int overrideTexture = -1, bool renderAllFaces = false, bool doVariance = false)
+    public static bool RenderBlockByRenderType(IBlockReader world, IBlockRuntimeView blocks, ILightProvider lighting, Block block, BlockPos pos, Tessellator tess, int overrideTexture = -1, bool renderAllFaces = false, bool doVariance = false)
     {
         var type = block.RenderType;
 
@@ -51,6 +51,7 @@ public class BlockRenderer
             tess: tess,
             lighting: lighting,
             blockReader: world,
+            blocks: blocks,
             overrideTexture: overrideTexture,
             renderAllFaces: renderAllFaces,
             flipTexture: false,
@@ -98,11 +99,12 @@ public class BlockRenderer
         };
     }
 
-    public static void RenderBlockOnInventory(Block block, int metadata, float brightness, Tessellator tess)
+    public static void RenderBlockOnInventory(IBlockRuntimeView blocks, Block block, int metadata, float brightness, Tessellator tess)
     {
         var renderType = block.RenderType;
         var uiCtx = new BlockRenderContext(
             NullBlockReader.Instance,
+            blocks,
             tess,
             null,
             renderAllFaces: true,
@@ -178,7 +180,7 @@ public class BlockRenderer
             BlockPos itemPos = new(0, 0, 0);
             tess.startDrawingQuads();
             tess.setNormal(0.0F, 1.0F, 0.0F);
-            RenderBlockByRenderType(itemWorld, itemWorld, block, itemPos, tess, uiCtx.OverrideTexture, true);
+            RenderBlockByRenderType(itemWorld, blocks, itemWorld, block, itemPos, tess, uiCtx.OverrideTexture, true);
             tess.draw(ProgramSlot.Gui);
             GLManager.ModelView.Translate(0.5F, 0.5F, 0.5F);
         }
@@ -194,6 +196,7 @@ public class BlockRenderer
 
         var entityCtx = new BlockRenderContext(
             world.Reader,
+            world.Content.Blocks,
             lighting: world.Lighting,
             tess: tess,
             renderAllFaces: true,

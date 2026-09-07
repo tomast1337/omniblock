@@ -37,6 +37,8 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
     private readonly byte[] _skyLight;
     private readonly int _skylightSubtracted;
 
+    public IBlockRuntimeView ContentBlocks => _contentBlocks;
+
     public WorldRegionSnapshot(IWorldContext world, int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
         _contentBlocks = world.Content.Blocks;

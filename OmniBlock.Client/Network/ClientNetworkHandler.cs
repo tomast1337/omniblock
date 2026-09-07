@@ -734,7 +734,7 @@ public class ClientNetworkHandler : NetHandler
         OpenChunkCache(packet.WorldSeed, packet.DimensionId);
         _context.PlayerHost.SetPlayerController(_context.Factory.CreatePlayerController(this));
         _context.StatFileWriter.ReadStat(Stats.Stats.JoinMultiplayerStat, 1);
-        _worldClient = new ClientWorld(this, packet.WorldSeed, packet.DimensionId)
+        _worldClient = new ClientWorld(this, packet.WorldSeed, packet.DimensionId, _context.Content)
         {
             IsRemote = true
         };
@@ -1283,7 +1283,7 @@ public class ClientNetworkHandler : NetHandler
             Snapshots.Reset();
 
             _terrainLoaded = false;
-            _worldClient = new ClientWorld(this, _worldClient.Properties.RandomSeed, packet.DimensionId)
+            _worldClient = new ClientWorld(this, _worldClient.Properties.RandomSeed, packet.DimensionId, _worldClient.Content)
             {
                 IsRemote = true
             };

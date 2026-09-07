@@ -9,13 +9,11 @@ namespace OmniBlock.Client.UI.Controls.ListItems;
 
 public class FlatLayerListItem(FlatLayerInfo layer) : ListItem<FlatLayerInfo>(layer)
 {
-    private static readonly ItemRenderer s_itemRenderer = new();
-
     public override void Render(UIRenderer renderer)
     {
         base.Render(renderer);
 
-        var block = global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(Value.FillBlock);
+        var block = renderer.Context.Content.Blocks.GetByProtocolId(Value.FillBlock);
         var blockName = block?.TranslateBlockName() ?? Translations.Get("newWorld.customize.unknown");
 
         renderer.DrawRect(4, 4, 18, 18, Color.BackgroundBlackAlpha);
@@ -23,7 +21,7 @@ public class FlatLayerListItem(FlatLayerInfo layer) : ListItem<FlatLayerInfo>(la
         if (block != null)
         {
             var textureId = block.GetTexture(Side.Up);
-            renderer.DrawItemIntoGui(s_itemRenderer, Value.FillBlock, Value.FillBlockMeta, textureId, 5, 5);
+            renderer.DrawItemIntoGui(Value.FillBlock, Value.FillBlockMeta, textureId, 5, 5);
         }
 
         renderer.DrawText(blockName, 26, 4, Color.White);

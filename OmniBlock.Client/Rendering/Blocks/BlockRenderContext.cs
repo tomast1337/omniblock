@@ -10,6 +10,7 @@ namespace OmniBlock.Client.Rendering.Blocks;
 public ref struct BlockRenderContext
 {
     public readonly IBlockReader BlockReader;
+    public readonly IBlockRuntimeView Blocks;
     public readonly ILightProvider Lighting;
     public readonly Tessellator Tess;
 
@@ -38,7 +39,7 @@ public ref struct BlockRenderContext
     public bool CustomFlag;
 
     public BlockRenderContext(
-        IBlockReader blockReader, Tessellator tess,
+        IBlockReader blockReader, IBlockRuntimeView blocks, Tessellator tess,
         ILightProvider lighting,
         int overrideTexture = -1, bool renderAllFaces = false,
         bool flipTexture = false, Box? bounds = null,
@@ -52,6 +53,7 @@ public ref struct BlockRenderContext
         int aoBlendMode = 0)
     {
         BlockReader = blockReader;
+        Blocks = blocks;
         Tess = tess;
         Lighting = lighting;
 
@@ -491,7 +493,7 @@ public ref struct BlockRenderContext
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private readonly bool IsOpaque(int x, int y, int z) => !global::OmniBlock.Registries.ContentRuntime.Current.Blocks.AllowsVision(BlockReader.GetBlockId(x, y, z));
+    private readonly bool IsOpaque(int x, int y, int z) => !Blocks.AllowsVision(BlockReader.GetBlockId(x, y, z));
 
     /// <summary>
     ///     Sets the light the next vertices carry from one cell, for a primitive lit as a whole.

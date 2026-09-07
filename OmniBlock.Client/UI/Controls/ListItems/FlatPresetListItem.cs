@@ -9,8 +9,6 @@ namespace OmniBlock.Client.UI.Controls.ListItems;
 
 public class FlatPresetListItem(FlatPresetsScreen.PresetItem preset) : ListItem<FlatPresetsScreen.PresetItem>(preset)
 {
-    private static readonly ItemRenderer s_itemRenderer = new();
-
     public override void Render(UIRenderer renderer)
     {
         base.Render(renderer);
@@ -20,11 +18,11 @@ public class FlatPresetListItem(FlatPresetsScreen.PresetItem preset) : ListItem<
 
         if (Value.IconId < 256)
         {
-            var block = global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(Value.IconId);
+            var block = renderer.Context.Content.Blocks.GetByProtocolId(Value.IconId);
             if (block != null)
             {
                 var textureId = block.GetTexture(Side.Up);
-                renderer.DrawItemIntoGui(s_itemRenderer, Value.IconId, Value.IconMeta, textureId, 5, 5);
+                renderer.DrawItemIntoGui(Value.IconId, Value.IconMeta, textureId, 5, 5);
             }
         }
         else
@@ -32,7 +30,7 @@ public class FlatPresetListItem(FlatPresetsScreen.PresetItem preset) : ListItem<
             if (renderer.Context.Content.Items.TryGetByProtocolId(Value.IconId, out var item) && item is not null)
             {
                 var textureId = item.GetTextureId(Value.IconMeta);
-                renderer.DrawItemIntoGui(s_itemRenderer, Value.IconId, Value.IconMeta, textureId, 5, 5);
+                renderer.DrawItemIntoGui(Value.IconId, Value.IconMeta, textureId, 5, 5);
             }
         }
 

@@ -7,7 +7,7 @@ using Exception = System.Exception;
 
 namespace OmniBlock.Server;
 
-internal class DedicatedServer(IServerConfiguration config) : OmniBlockServer(config)
+internal class DedicatedServer(IServerConfiguration config, ContentRuntime content) : OmniBlockServer(config, content)
 {
     private static readonly ILogger<DedicatedServer> s_logger = Log.Instance.For<DedicatedServer>();
 
@@ -73,12 +73,12 @@ internal class DedicatedServer(IServerConfiguration config) : OmniBlockServer(co
     {
         Log.Instance.Initialize(Directory.GetCurrentDirectory());
         AssetManager.Initialize(AssetManager.AssetProfile.Headless);
-        Bootstrap.Initialize();
+        var content = Bootstrap.Initialize();
 
         try
         {
             DedicatedServerConfiguration config = new(new FileInfo("server.properties"));
-            DedicatedServer server = new(config);
+            DedicatedServer server = new(config, content);
             server.RunThreaded("Server Thread");
         }
         catch (Exception e)

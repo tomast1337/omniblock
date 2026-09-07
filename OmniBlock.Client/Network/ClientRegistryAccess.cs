@@ -27,13 +27,6 @@ internal sealed class ClientRegistryAccess(ContentRuntime content, Action<Conten
     private readonly Dictionary<ResourceLocation, Dictionary<ResourceLocation, string?>> _raw = [];
     private ContentRuntime? _pendingContent;
 
-    internal ClientRegistryAccess(RuntimeItemRegistry items)
-        : this(ContentRuntime.Current, _ => { })
-    {
-        if (!ReferenceEquals(items, ContentRuntime.Current.Items))
-            throw new ArgumentException("Item registry must belong to the active content runtime.", nameof(items));
-    }
-
     /// <summary>
     ///     Stores the entries from a <see cref="RegistryDataMessage" />.
     /// </summary>

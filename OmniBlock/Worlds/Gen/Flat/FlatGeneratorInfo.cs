@@ -111,9 +111,6 @@ public class FlatGeneratorInfo
         };
     }
 
-    public static FlatGeneratorInfo CreateFromString(string input) =>
-        CreateFromString(input, ContentRuntime.Current.Blocks);
-
     public static FlatGeneratorInfo CreateFromString(string input, IBlockRuntimeView blocks)
     {
         if (string.IsNullOrEmpty(input))
@@ -181,9 +178,6 @@ public class FlatGeneratorInfo
 
         return info;
     }
-
-    public static FlatGeneratorInfo GetDefault() =>
-        GetDefault(ContentRuntime.Current.Blocks);
 
     public static FlatGeneratorInfo GetDefault(IBlockRuntimeView blocks)
     {

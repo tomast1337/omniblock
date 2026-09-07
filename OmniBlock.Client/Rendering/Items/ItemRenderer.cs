@@ -13,11 +13,13 @@ namespace OmniBlock.Client.Rendering.Items;
 
 public class ItemRenderer : EntityRenderer
 {
+    private readonly IBlockRuntimeView _blocks;
     private readonly JavaRandom random = new();
     public bool useCustomDisplayColor = true;
 
-    public ItemRenderer()
+    public ItemRenderer(IBlockRuntimeView blocks)
     {
+        _blocks = blocks ?? throw new ArgumentNullException(nameof(blocks));
         ShadowRadius = 0.15F;
         ShadowStrength = 12.0F / 16.0F;
     }
@@ -53,13 +55,13 @@ public class ItemRenderer : EntityRenderer
         float minU;
         float maxU;
         float minV;
-        if (stack.ItemId < 256 && BlockRenderer.IsSideLit(global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(stack.ItemId).RenderType))
+        if (stack.ItemId < 256 && BlockRenderer.IsSideLit(_blocks.GetByProtocolId(stack.ItemId).RenderType))
         {
             GLManager.ModelView.Rotate(spinAngle, 0.0F, 1.0F, 0.0F);
             loadTexture("/terrain.png");
             var blockScale = 0.25F;
-            if (!global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(stack.ItemId).IsFullCube() && stack.ItemId != global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("slab").Id
-                                                                          && global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(stack.ItemId).RenderType != BlockRendererType.PistonBase)
+            if (!_blocks.GetByProtocolId(stack.ItemId).IsFullCube() && stack.ItemId != _blocks.Get("slab").Id
+                                                                          && _blocks.GetByProtocolId(stack.ItemId).RenderType != BlockRendererType.PistonBase)
             {
                 blockScale = 0.5F;
             }
@@ -77,7 +79,7 @@ public class ItemRenderer : EntityRenderer
                     GLManager.ModelView.Translate(minU, maxU, minV);
                 }
 
-                BlockRenderer.RenderBlockOnInventory(global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(stack.ItemId), stack.GetDamage(), entityItem.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
+                BlockRenderer.RenderBlockOnInventory(_blocks, _blocks.GetByProtocolId(stack.ItemId), stack.GetDamage(), entityItem.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
                 GLManager.ModelView.Pop();
             }
         }
@@ -146,10 +148,10 @@ public class ItemRenderer : EntityRenderer
     {
         var itemId = item.Id;
         float blue;
-        if (itemId < 256 && BlockRenderer.IsSideLit(global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(itemId).RenderType))
+        if (itemId < 256 && BlockRenderer.IsSideLit(_blocks.GetByProtocolId(itemId).RenderType))
         {
             textureManager.BindTexture(textureManager.GetTextureId("/terrain.png"));
-            var block = global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(itemId);
+            var block = _blocks.GetByProtocolId(itemId);
             GLManager.ModelView.Push();
             GLManager.ModelView.Translate(x - 2, y + 3, -3.0F);
             GLManager.ModelView.Scale(10.0F, 10.0F, 10.0F);
@@ -167,7 +169,7 @@ public class ItemRenderer : EntityRenderer
             }
 
             GLManager.ModelView.Rotate(-90.0F, 0.0F, 1.0F, 0.0F);
-            BlockRenderer.RenderBlockOnInventory(block, itemDamage, 1.0F, Tessellator.instance);
+            BlockRenderer.RenderBlockOnInventory(_blocks, block, itemDamage, 1.0F, Tessellator.instance);
             GLManager.ModelView.Pop();
         }
         else if (iconIndex >= 0)

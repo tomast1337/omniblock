@@ -15,7 +15,7 @@ public class CreateFlatWorldScreen(
     private readonly List<FlatLayerListItem> _listItems = [];
 
     private Button _btnRemove = null!;
-    private FlatGeneratorInfo _generatorInfo = FlatGeneratorInfo.CreateFromString(generatorOptions);
+    private FlatGeneratorInfo _generatorInfo = FlatGeneratorInfo.CreateFromString(generatorOptions, context.Content.Blocks);
     private ScrollView _scrollView = null!;
     private int _selectedIndex = -1;
 
@@ -24,7 +24,7 @@ public class CreateFlatWorldScreen(
         get => _generatorInfo.ToString();
         set
         {
-            _generatorInfo = FlatGeneratorInfo.CreateFromString(value);
+            _generatorInfo = FlatGeneratorInfo.CreateFromString(value, Context.Content.Blocks);
             PopulateLayerList();
         }
     }

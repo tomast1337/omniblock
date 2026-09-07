@@ -16,6 +16,9 @@ public static class BlockRuntimeViewExtensions
     public static int GetOpacity(this IBlockRuntimeView blocks, int protocolId) => blocks.TryGetByProtocolId(protocolId, out var block) ? block.Opacity : 0;
 
     public static int GetLightEmission(this IBlockRuntimeView blocks, int protocolId) => blocks.TryGetByProtocolId(protocolId, out var block) ? block.LightEmission : 0;
+
+    public static bool AllowsVision(this IBlockRuntimeView blocks, int protocolId) =>
+        !blocks.TryGetByProtocolId(protocolId, out var block) || block.AllowsVision;
 }
 
 public sealed class StagedBlockRuntimeView : IBlockRuntimeView

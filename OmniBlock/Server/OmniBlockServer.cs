@@ -71,10 +71,10 @@ public abstract class OmniBlockServer : ICommandOutput
     public bool stopped;
     public ServerWorld[] worlds;
 
-    protected OmniBlockServer(IServerConfiguration config)
+    protected OmniBlockServer(IServerConfiguration config, ContentRuntime content)
     {
         this.config = config;
-        Content = ContentRuntime.Current;
+        Content = content ?? throw new ArgumentNullException(nameof(content));
     }
 
     public ContentRuntime Content { get; private set; }
@@ -213,7 +213,7 @@ public abstract class OmniBlockServer : ICommandOutput
         {
             if (i == 0)
             {
-                worlds[i] = new ServerWorld(this, worldStorage, worldDir, 0, settings, null);
+                worlds[i] = new ServerWorld(this, worldStorage, worldDir, 0, settings, null, Content);
             }
             else
             {

@@ -34,7 +34,7 @@ public class UIRenderer
             DepthWrite = true
         };
 
-    private readonly ItemRenderer _itemRenderer = new();
+    private readonly ItemRenderer _itemRenderer;
     private readonly Stack<(bool Enabled, int X, int Y, int W, int H)> _scissorStack = new();
     private readonly Stack<Vector2D<float>> _translationStack = new();
     private uint _currentTint = 0xFFFFFFFF;
@@ -45,7 +45,11 @@ public class UIRenderer
     private float _translateX;
     private float _translateY;
 
-    public UIRenderer(UIContext context) => Context = context;
+    public UIRenderer(UIContext context)
+    {
+        Context = context;
+        _itemRenderer = new ItemRenderer(context.Content.Blocks);
+    }
     public UIContext Context { get; }
 
     public TextureManager TextureManager => Context.TextureManager;
@@ -379,7 +383,7 @@ public class UIRenderer
         _batch.AddQuad(finalX, finalY, finalX + width, finalY + height, u0, v0, u1, v1, (uint)Color.FromRgb(0x404040));
     }
 
-    public void DrawItemIntoGui(ItemRenderer itemRenderer, int itemId, int itemMeta, int textureId, float x, float y)
+    public void DrawItemIntoGui(int itemId, int itemMeta, int textureId, float x, float y)
     {
         var isBlock3D = itemId < 256 && BlockRenderer.IsSideLit(Context.Content.Blocks.GetByProtocolId(itemId).RenderType);
 
@@ -387,7 +391,7 @@ public class UIRenderer
         {
             _batch.Flush();
             Lighting.turnOnGui();
-            itemRenderer.drawItemIntoGui(TextRenderer, TextureManager, Context.Content.Items.GetByProtocolId(itemId), itemMeta, textureId, (int)(x + _translateX), (int)(y + _translateY));
+            _itemRenderer.drawItemIntoGui(TextRenderer, TextureManager, Context.Content.Items.GetByProtocolId(itemId), itemMeta, textureId, (int)(x + _translateX), (int)(y + _translateY));
             Lighting.turnOff();
             return;
         }

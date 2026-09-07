@@ -29,11 +29,12 @@ public class LeverRenderer : IBlockRenderer
         };
 
         // Levers use a cobblestone texture for the baseplate by default, unless overridden
-        var baseTextureId = ctx.OverrideTexture >= 0 ? ctx.OverrideTexture : global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("cobblestone").TextureId;
+        var baseTextureId = ctx.OverrideTexture >= 0 ? ctx.OverrideTexture : ctx.Blocks.Get("cobblestone").TextureId;
 
         // Create a sub-context specifically for drawing the baseplate
         var baseCtx = new BlockRenderContext(
             ctx.BlockReader,
+            ctx.Blocks,
             lighting: ctx.Lighting,
             tess: ctx.Tess,
             overrideTexture: baseTextureId,
@@ -56,6 +57,7 @@ public class LeverRenderer : IBlockRenderer
 
         var handleCtx = new BlockRenderContext(
             ctx.BlockReader,
+            ctx.Blocks,
             ctx.Tess,
             ctx.Lighting,
             ctx.OverrideTexture,

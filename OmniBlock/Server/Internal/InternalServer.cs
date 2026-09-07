@@ -16,8 +16,8 @@ public class InternalServer : OmniBlockServer
 
     public volatile bool isReady;
 
-    public InternalServer(string worldPath, string levelName, WorldSettings settings, int viewDistance, int initialDifficulty) :
-        base(new InternalServerConfiguration(levelName, settings.TerrainType.Name, settings.Seed.ToString(), settings.GeneratorOptions, viewDistance))
+    public InternalServer(string worldPath, string levelName, WorldSettings settings, int viewDistance, int initialDifficulty, Registries.ContentRuntime content) :
+        base(new InternalServerConfiguration(levelName, settings.TerrainType.Name, settings.Seed.ToString(), settings.GeneratorOptions, viewDistance), content)
     {
         _worldPath = worldPath;
         logHelp = false;

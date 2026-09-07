@@ -73,6 +73,24 @@ public sealed class StaticBlockCatalogAccessTests
     }
 
     [Fact]
+    public void Published_content_global_is_confined_to_bootstrap()
+    {
+        var root = FindRepositoryRoot();
+        var violations = FindSourceFiles()
+            .Where(file => !Path.GetRelativePath(root, file).StartsWith("OmniBlock.Tests"))
+            .Where(file => Path.GetFileName(file) != "Bootstrap.cs")
+            .SelectMany(file => File.ReadLines(file)
+                .Select((line, index) => (line, number: index + 1))
+                .Where(static entry => entry.line.Contains("ContentRuntime.Current"))
+                .Select(entry => $"{Path.GetRelativePath(root, file)}:{entry.number}"))
+            .ToArray();
+
+        Assert.True(violations.Length == 0,
+            $"Runtime consumers must receive ContentRuntime from their composition owner:{Environment.NewLine}"
+            + string.Join(Environment.NewLine, violations));
+    }
+
+    [Fact]
     public void Runtime_block_behaviors_cannot_access_global_content_registries()
     {
         var behaviorDirectory = Path.Combine(FindRepositoryRoot(), "OmniBlock", "Blocks", "Behaviors");

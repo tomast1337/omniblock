@@ -21,7 +21,7 @@ public class ReedRenderer : IBlockRenderer
         float renderZ = pos.Z;
 
         // Apply random organic offset for grass so it doesn't look grid-aligned
-        if (block == global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("grass")) // Assuming Block.TallGrass or equivalent
+        if (block == ctx.Blocks.Get("grass")) // Assuming Block.TallGrass or equivalent
         {
             var hash = (pos.X * 3129871L) ^ (pos.Z * 116129781L) ^ pos.Y;
             hash = hash * hash * 42317861L + hash * 11L;

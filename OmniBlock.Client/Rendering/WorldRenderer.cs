@@ -1103,7 +1103,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         tessellator.setTranslationD(-renderX, -renderY, -renderZ);
         tessellator.disableColor();
 
-        BlockRenderer.RenderBlockByRenderType(_world.Reader, _world.Lighting, targetBlock, new BlockPos(hit.BlockX, hit.BlockY, hit.BlockZ), tessellator, 240 + (int)(DamagePartialTime * 10.0F), true, _game.Options.AlternateBlocksEnabled);
+        BlockRenderer.RenderBlockByRenderType(_world.Reader, _world.Content.Blocks, _world.Lighting, targetBlock, new BlockPos(hit.BlockX, hit.BlockY, hit.BlockZ), tessellator, 240 + (int)(DamagePartialTime * 10.0F), true, _game.Options.AlternateBlocksEnabled);
         tessellator.draw(ProgramSlot.DamagedBlock);
 
         tessellator.setTranslationD(0.0D, 0.0D, 0.0D);

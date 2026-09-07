@@ -124,7 +124,7 @@ internal class ChunkMeshGenerator : IDisposable
         };
 
         var tess = new Tessellator();
-        var ctx = new BlockRenderContext(cache, tess, cache);
+        var ctx = new BlockRenderContext(cache, cache.ContentBlocks, tess, cache);
 
         // Full 1x1x1 Standard blocks (minus grass, minus anything using texture variance) are
         // pulled out of the per-block loop below and merged into larger quads instead — see
@@ -167,7 +167,7 @@ internal class ChunkMeshGenerator : IDisposable
                         var id = cache.GetBlockId(x, y, z);
                         if (id <= 0) continue;
 
-                        var b = global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(id);
+                        var b = cache.ContentBlocks.GetByProtocolId(id);
                         var blockPass = b.RenderLayer;
 
                         if (blockPass != pass)
@@ -176,7 +176,7 @@ internal class ChunkMeshGenerator : IDisposable
                         }
                         else if (pass != 0 || greedyEligible[LocalIndex(x - minX, y - minY, z - minZ)] is null)
                         {
-                            BlockRenderer.RenderBlockByRenderType(cache, cache, b, new BlockPos(x, y, z), tess, doVariance: alternateBlocks);
+                            BlockRenderer.RenderBlockByRenderType(cache, cache.ContentBlocks, cache, b, new BlockPos(x, y, z), tess, doVariance: alternateBlocks);
                         }
                     }
                 }
@@ -229,7 +229,7 @@ internal class ChunkMeshGenerator : IDisposable
             return false;
         }
 
-        var candidate = global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(id);
+        var candidate = cache.ContentBlocks.GetByProtocolId(id);
         if (candidate.RenderType != BlockRendererType.Standard || candidate.RenderLayer != 0)
         {
             block = null;

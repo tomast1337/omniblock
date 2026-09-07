@@ -6,7 +6,7 @@ namespace OmniBlock.Server.Worlds;
 
 internal class ReadOnlyServerWorld : ServerWorld
 {
-    public ReadOnlyServerWorld(OmniBlockServer server, IWorldStorage storage, string saveName, int dimension, WorldSettings settings, ServerWorld del) : base(server, storage, saveName, dimension, settings, del)
+    public ReadOnlyServerWorld(OmniBlockServer server, IWorldStorage storage, string saveName, int dimension, WorldSettings settings, ServerWorld del) : base(server, storage, saveName, dimension, settings, del, del.Content)
     {
         StateManager = del.StateManager;
         Properties = new DerivingWorldProperties(del.Properties);

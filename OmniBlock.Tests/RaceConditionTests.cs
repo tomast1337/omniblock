@@ -9,7 +9,7 @@ public class RaceConditionTests
     [Fact]
     public void RegistrySync_Invalidates_Removed_Holders_Leading_To_Potential_Crash()
     {
-        var registries = new ClientRegistryAccess(ContentRuntime.Current.Items);
+        var registries = new ClientRegistryAccess(ContentRuntime.Current, _ => { });
         var key = RegistryKeys.GameModes;
 
         var message1 = RegistryDataMessage.FromRegistry(key, BuildRegistry("survival", "deleted_mode"));
@@ -33,7 +33,7 @@ public class RaceConditionTests
     [Fact]
     public void Sequential_Message_Delivery_Prevents_RaceCondition_By_Updating_State_Atomically()
     {
-        var registries = new ClientRegistryAccess(ContentRuntime.Current.Items);
+        var registries = new ClientRegistryAccess(ContentRuntime.Current, _ => { });
         var key = RegistryKeys.GameModes;
 
         registries.Accumulate(RegistryDataMessage.FromRegistry(key, BuildRegistry("survival", "deleted_mode")));

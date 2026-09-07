@@ -14,14 +14,14 @@ public class FlatPresetsScreen(UIContext context, CreateFlatWorldScreen parent) 
 
     private readonly List<PresetItem> _presets =
     [
-        new("Classic Flat", "2;7,2x3,2;1;village"),
-        new("Tunnelers' Dream", "2;7,230x1,5x3,2;1;biome_1,dungeon,decoration,stronghold,mineshaft", global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("stone").Id),
-        new("Water World", "2;7,5x1,5x3,5x12,90x9;1;village,biome_1"),
-        new("Overworld", "2;7,59x1,3x3,2;1;village,biome_1,decoration,stronghold,mineshaft,dungeon,lake,lava_lake", global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("dead_bush").Id),
-        new("Snowy Kingdom", "2;7,59x1,3x3,2,78;1;village,biome_1"),
-        new("Bottomless Pit", "2;2x4,3x3,2;1;village,biome_1", context.Content.Items.Get("omniblock:feather").Id),
-        new("Desert", "2;7,3x1,52x24,8x12;1;village,biome_1,decoration,stronghold,mineshaft,dungeon"),
-        new("Redstone Ready", "2;7,3x1,52x24;1;", context.Content.Items.Get("omniblock:redstone").Id)
+        new("Classic Flat", "2;7,2x3,2;1;village", context.Content.Blocks),
+        new("Tunnelers' Dream", "2;7,230x1,5x3,2;1;biome_1,dungeon,decoration,stronghold,mineshaft", context.Content.Blocks, context.Content.Blocks.Get("stone").Id),
+        new("Water World", "2;7,5x1,5x3,5x12,90x9;1;village,biome_1", context.Content.Blocks),
+        new("Overworld", "2;7,59x1,3x3,2;1;village,biome_1,decoration,stronghold,mineshaft,dungeon,lake,lava_lake", context.Content.Blocks, context.Content.Blocks.Get("dead_bush").Id),
+        new("Snowy Kingdom", "2;7,59x1,3x3,2,78;1;village,biome_1", context.Content.Blocks),
+        new("Bottomless Pit", "2;2x4,3x3,2;1;village,biome_1", context.Content.Blocks, context.Content.Items.Get("omniblock:feather").Id),
+        new("Desert", "2;7,3x1,52x24,8x12;1;village,biome_1,decoration,stronghold,mineshaft,dungeon", context.Content.Blocks),
+        new("Redstone Ready", "2;7,3x1,52x24;1;", context.Content.Blocks, context.Content.Items.Get("omniblock:redstone").Id)
     ];
 
     private Button _btnSelect = null!;
@@ -125,22 +125,22 @@ public class FlatPresetsScreen(UIContext context, CreateFlatWorldScreen parent) 
         }
     }
 
-    public class PresetItem(string name, string value, int iconId = -1)
+    public class PresetItem(string name, string value, IBlockRuntimeView blocks, int iconId = -1)
     {
         public string Name { get; } = name;
         public string Value { get; } = value;
-        public int IconId { get; } = iconId != -1 ? iconId : GetIconIdFromValue(value);
-        public int IconMeta { get; } = GetIconMetaFromValue(value);
+        public int IconId { get; } = iconId != -1 ? iconId : GetIconIdFromValue(value, blocks);
+        public int IconMeta { get; } = GetIconMetaFromValue(value, blocks);
 
-        private static int GetIconIdFromValue(string value)
+        private static int GetIconIdFromValue(string value, IBlockRuntimeView blocks)
         {
-            var info = FlatGeneratorInfo.CreateFromString(value);
-            return info.FlatLayers.Count > 0 ? info.FlatLayers[^1].FillBlock : global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("grass_block").Id;
+            var info = FlatGeneratorInfo.CreateFromString(value, blocks);
+            return info.FlatLayers.Count > 0 ? info.FlatLayers[^1].FillBlock : blocks.Get(ResourceLocation.Parse("omniblock:grass_block")).Id;
         }
 
-        private static int GetIconMetaFromValue(string value)
+        private static int GetIconMetaFromValue(string value, IBlockRuntimeView blocks)
         {
-            var info = FlatGeneratorInfo.CreateFromString(value);
+            var info = FlatGeneratorInfo.CreateFromString(value, blocks);
             return info.FlatLayers.Count > 0 ? info.FlatLayers[^1].FillBlockMeta : 0;
         }
     }

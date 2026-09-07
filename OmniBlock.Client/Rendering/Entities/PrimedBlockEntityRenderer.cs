@@ -50,7 +50,7 @@ public class PrimedBlockEntityRenderer : EntityRenderer
 
         flashProgress = (1.0F - (fuse - tickDelta + 1.0F) / 100.0F) * 0.8F;
         loadTexture("/terrain.png");
-        BlockRenderer.RenderBlockOnInventory(_block, 0, target.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
+        BlockRenderer.RenderBlockOnInventory(target.World.Content.Blocks, _block, 0, target.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
         if (fuse / 5 % 2 == 0)
         {
             // Texturing and lighting are shader uniforms rather than pipeline state, so they stay
@@ -63,7 +63,7 @@ public class PrimedBlockEntityRenderer : EntityRenderer
                 Blend = BlendMode.SourceToDestinationAlpha
             });
             GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, flashProgress);
-            BlockRenderer.RenderBlockOnInventory(_block, 0, 1.0F, Tessellator.instance);
+            BlockRenderer.RenderBlockOnInventory(target.World.Content.Blocks, _block, 0, 1.0F, Tessellator.instance);
             GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
             GLManager.State.Apply(RenderState.Entity);
             GLManager.LightingEnabled = true;

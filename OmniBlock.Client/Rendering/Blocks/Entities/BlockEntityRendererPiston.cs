@@ -19,7 +19,7 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
             throw new ArgumentException("BlockEntity is not a Piston");
         }
 
-        var block = global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(piston.PushedBlockId);
+        var block = tileEntityRenderer.World.Content.Blocks.GetByProtocolId(piston.PushedBlockId);
         if (block == null) return;
         if (piston.GetProgress(tickDelta) < 1.0F)
         {
@@ -50,6 +50,7 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
 
             var baseCtx = new BlockRenderContext(
                 piston.World.Reader,
+                piston.World.Content.Blocks,
                 lighting: piston.World.Lighting,
                 tess: tess,
                 renderAllFaces: true,
@@ -58,7 +59,7 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
 
             BlockPos pos = new(piston.X, piston.Y, piston.Z);
 
-            if (block == global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("piston_head") && piston.GetProgress(tickDelta) < 0.5F)
+            if (block == tileEntityRenderer.World.Content.Blocks.Get("piston_head") && piston.GetProgress(tickDelta) < 0.5F)
             {
                 var ctx = baseCtx with
                 {
@@ -74,7 +75,7 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
                     CustomFlag = piston.GetProgress(tickDelta) < 0.5F
                 };
 
-                _pistonExtensionRenderer.Draw(global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("piston_head"), pos, ref headCtx);
+                _pistonExtensionRenderer.Draw(tileEntityRenderer.World.Content.Blocks.Get("piston_head"), pos, ref headCtx);
 
                 tess.setTranslationD(x - piston.X, y - piston.Y, z - piston.Z);
 
