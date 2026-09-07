@@ -26,8 +26,7 @@ public static class DefaultRegistries
     public static void Initialize(ContentRuntimeBuilder content)
     {
         ArgumentNullException.ThrowIfNull(content);
-        // Must load before BlockRegistry.Initialize() — blocks resolve their Material and
-        // SoundGroup by name during construction.
+        // Blocks resolve their material and sound-group dependencies during construction.
         MaterialRegistry.Initialize();
         SoundGroupRegistry.Initialize();
 
@@ -59,10 +58,21 @@ public static class DefaultRegistries
         // pass, freezes the complete item catalog, and only then exposes the transitional array.
         content.BuildItemsForBootstrap();
 
-        // Now safe: items are fully loaded, so loot-table/behavior lookups by item name inside
-        // BlockRegistry.Initialize() will succeed. BlockRegistry, in turn, must run before Stats
-        // below — Achievements references specific blocks by name.
-        BlockRegistry.Initialize(content);
+        // Item drafts must exist before block loot and behavior references are resolved.
+        var blockLoader = (BlockDefinitionJsonLoader)RegistryDefinitions.Blocks.CreateLoader();
+        blockLoader.LoadFromPaths(null, null, null);
+        if (blockLoader.HasErrors)
+        {
+            throw new AssetLoadException(blockLoader.FirstErrorMessage
+                                         ?? "One or more block definitions failed to load.");
+        }
+
+        foreach (var definition in ContentIdAllocator.AssignBlockIds(blockLoader))
+        {
+            content.AddBlockDefinition(definition);
+        }
+
+        content.BuildBlocksForBootstrap();
 
         Stats.Stats.InitializeItemStats(content);
         Stats.Stats.InitializeExtendedItemStats(content);

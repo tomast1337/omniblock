@@ -36,6 +36,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
     private readonly List<ItemDefinition> _pendingItemDefinitions = [];
     private readonly List<ProcessDefinition> _pendingProcessDefinitions = [];
     private bool _built;
+    private bool _blocksBuilt;
     private bool _itemDraftsCreated;
     private bool _itemsFinalized;
 
@@ -133,6 +134,8 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
     internal void BuildItemsForBootstrap() => CreatePendingItemDrafts();
 
     internal void FinalizeItemsForBootstrap() => BuildPendingItems();
+
+    internal void BuildBlocksForBootstrap() => BuildPendingBlockDefinitions();
 
     internal void AddBlock(BlockDefinition definition, Block block)
     {
@@ -435,7 +438,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
 
     private void BuildPendingBlockDefinitions()
     {
-        if (_pendingBlockDefinitions.Count == 0) return;
+        if (_blocksBuilt || _pendingBlockDefinitions.Count == 0) return;
         var definitions = ContentIdAllocator.AssignBlockIds(_pendingBlockDefinitions);
         foreach (var definition in definitions)
         {
@@ -462,6 +465,9 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
                 throw new InvalidOperationException($"Block '{key}' failed reference validation: {error.Message}", error);
             }
         }
+
+        BuildBlockItems(definitions);
+        _blocksBuilt = true;
     }
 
     private void ValidateBlocks()

@@ -104,8 +104,13 @@ public readonly struct BehaviorBuildContext
             }
         }
 
-        public Block GetByProtocolId(int protocolId) => BlockRegistry.GetByProtocolId(protocolId);
+        public Block GetByProtocolId(int protocolId) => throw new InvalidOperationException(
+            "Protocol-ID block resolution requires an explicit block runtime view.");
 
-        public bool TryGetByProtocolId(int protocolId, out Block? block) => BlockRegistry.TryGetByProtocolId(protocolId, out block);
+        public bool TryGetByProtocolId(int protocolId, out Block? block)
+        {
+            block = null;
+            return false;
+        }
     }
 }

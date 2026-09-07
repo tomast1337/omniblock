@@ -165,7 +165,10 @@ public sealed class StaticBlockCatalogAccessTests
         var root = FindRepositoryRoot();
         string[] paths =
         [
+            Path.Combine(root, "OmniBlock", "Bootstrap.cs"),
             Path.Combine(root, "OmniBlock", "Blocks", "Block.cs"),
+            Path.Combine(root, "OmniBlock", "Blocks", "Behaviors", "BehaviorBuildContext.cs"),
+            Path.Combine(root, "OmniBlock", "Registries", "DefaultRegistries.cs"),
             Path.Combine(root, "OmniBlock", "Screens"),
             Path.Combine(root, "OmniBlock", "Stats"),
             Path.Combine(root, "OmniBlock", "Worlds", "Generation", "Biomes")
