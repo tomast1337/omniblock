@@ -137,7 +137,7 @@ public class EntityLiving : Entity
             var x = MathHelper.Floor(X);
             var y = MathHelper.Floor(BoundingBox.MinY);
             var z = MathHelper.Floor(Z);
-            return World.Reader.GetBlockId(x, y, z) == BlockRegistry.Get("ladder").Id;
+            return World.Reader.GetBlockId(x, y, z) == World.Content.Blocks.Get("omniblock:ladder").Id;
         }
     }
 
@@ -611,7 +611,7 @@ public class EntityLiving : Entity
             return;
         }
 
-        var soundGroup = BlockRegistry.GetByProtocolId(groundBlockId).SoundGroup;
+        var soundGroup = World.Content.Blocks.GetByProtocolId(groundBlockId).SoundGroup;
         World.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.5F, soundGroup.Pitch * (12.0F / 16.0F));
     }
 
@@ -660,7 +660,7 @@ public class EntityLiving : Entity
                 var groundBlockId = World.Reader.GetBlockId(MathHelper.Floor(X), MathHelper.Floor(BoundingBox.MinY) - 1, MathHelper.Floor(Z));
                 if (groundBlockId > 0)
                 {
-                    friction = BlockRegistry.GetByProtocolId(groundBlockId).Slipperiness * 0.91F;
+                    friction = World.Content.Blocks.GetByProtocolId(groundBlockId).Slipperiness * 0.91F;
                 }
             }
 
@@ -673,7 +673,7 @@ public class EntityLiving : Entity
                 var groundBlockId = World.Reader.GetBlockId(MathHelper.Floor(X), MathHelper.Floor(BoundingBox.MinY) - 1, MathHelper.Floor(Z));
                 if (groundBlockId > 0)
                 {
-                    friction = BlockRegistry.GetByProtocolId(groundBlockId).Slipperiness * 0.91F;
+                    friction = World.Content.Blocks.GetByProtocolId(groundBlockId).Slipperiness * 0.91F;
                 }
             }
 

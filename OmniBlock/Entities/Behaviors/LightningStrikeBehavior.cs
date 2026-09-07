@@ -133,9 +133,10 @@ public sealed class LightningStrikeBehavior : IEntityTicker, IEntityLifecycle, I
 
     private static void TryPlaceFire(IWorldContext world, int x, int y, int z)
     {
-        if (world.Reader.GetBlockId(x, y, z) == 0 && BlockRegistry.Get("fire").CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
+        Block fire = world.Content.Blocks.Get("omniblock:fire");
+        if (world.Reader.GetBlockId(x, y, z) == 0 && fire.CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
         {
-            world.Writer.SetBlock(x, y, z, BlockRegistry.Get("fire").Id);
+            world.Writer.SetBlock(x, y, z, fire.Id);
         }
     }
 }

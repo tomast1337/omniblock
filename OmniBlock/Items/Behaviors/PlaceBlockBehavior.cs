@@ -12,7 +12,7 @@ internal sealed class PlaceBlockBehavior : IItemBehavior
 
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
-        if (world.Reader.GetBlockId(x, y, z) == BlockRegistry.Get("snow").Id)
+        if (world.Reader.GetBlockId(x, y, z) == world.Content.Blocks.Get("omniblock:snow").Id)
         {
             meta = 0;
         }

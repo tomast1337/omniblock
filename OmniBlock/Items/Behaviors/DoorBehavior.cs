@@ -21,8 +21,8 @@ internal sealed class DoorBehavior : IItemBehavior
 
         y++;
 
-        var blockId = _doorMaterial == MaterialRegistry.Get("wood") ? BlockRegistry.Get("door").Id : BlockRegistry.Get("iron_door").Id;
-        if (!BlockRegistry.GetByProtocolId(blockId).CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
+        var blockId = _doorMaterial == MaterialRegistry.Get("wood") ? world.Content.Blocks.Get("omniblock:door").Id : world.Content.Blocks.Get("omniblock:iron_door").Id;
+        if (!world.Content.Blocks.GetByProtocolId(blockId).CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
         {
             return false;
         }

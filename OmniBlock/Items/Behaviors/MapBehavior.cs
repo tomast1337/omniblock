@@ -149,7 +149,7 @@ public sealed class MapBehavior : IItemBehavior
                 {
                     sampleX = worldX + worldZ * 231871;
                     sampleX = sampleX * sampleX * 31287121 + sampleX * 11;
-                    blockHistogram[((sampleX >> 20) & 1) == 0 ? BlockRegistry.Get("dirt").Id : BlockRegistry.Get("stone").Id] += 10;
+                    blockHistogram[((sampleX >> 20) & 1) == 0 ? world.Content.Blocks.Get("omniblock:dirt").Id : world.Content.Blocks.Get("omniblock:stone").Id] += 10;
                     avgHeight = 100.0D;
                 }
                 else
@@ -162,7 +162,7 @@ public sealed class MapBehavior : IItemBehavior
                             var blockId = 0;
                             if (currentY > 1)
                             {
-                                ProcessBlockHeight(chunk, sampleX, chunkOffsetX, sampleZ, chunkOffsetZ, ref currentY, out blockId, ref fluidDepth);
+                                ProcessBlockHeight(world.Content.Blocks, chunk, sampleX, chunkOffsetX, sampleZ, chunkOffsetZ, ref currentY, out blockId, ref fluidDepth);
                             }
 
                             avgHeight += currentY / (double)(blocksPerPixel * blocksPerPixel);
@@ -198,7 +198,7 @@ public sealed class MapBehavior : IItemBehavior
                 colorIndex = 0;
                 if (sampleZ > 0)
                 {
-                    var mapColor = BlockRegistry.GetByProtocolId(sampleZ).Material.MapColor;
+                    var mapColor = world.Content.Blocks.GetByProtocolId(sampleZ).Material.MapColor;
                     if (mapColor == MapColor.Water)
                     {
                         shadeFactor = fluidDepth * 0.1D + ((pixelX + pixelZ) & 1) * 0.2D;
@@ -246,7 +246,7 @@ public sealed class MapBehavior : IItemBehavior
         }
     }
 
-    private static void ProcessBlockHeight(Chunk chunk, int chunkX, int dx, int chunkZ, int dz, ref int scanY, out int blockId, ref int fluidDepth)
+    private static void ProcessBlockHeight(IBlockRuntimeView blocks, Chunk chunk, int chunkX, int dx, int chunkZ, int dz, ref int scanY, out int blockId, ref int fluidDepth)
     {
         blockId = 0;
         var exitLoop = false;
@@ -259,7 +259,7 @@ public sealed class MapBehavior : IItemBehavior
             {
                 foundSurface = false;
             }
-            else if (scanY > 0 && blockId > 0 && BlockRegistry.GetByProtocolId(blockId).Material.MapColor == MapColor.Air)
+            else if (scanY > 0 && blockId > 0 && blocks.GetByProtocolId(blockId).Material.MapColor == MapColor.Air)
             {
                 foundSurface = false;
             }
@@ -272,7 +272,7 @@ public sealed class MapBehavior : IItemBehavior
 
             if (foundSurface)
             {
-                if (blockId == 0 || !BlockRegistry.GetByProtocolId(blockId).Material.IsFluid)
+                if (blockId == 0 || !blocks.GetByProtocolId(blockId).Material.IsFluid)
                 {
                     exitLoop = true;
                 }
@@ -283,7 +283,7 @@ public sealed class MapBehavior : IItemBehavior
                     {
                         var fluidBlockId = chunk.GetBlockId(chunkX + dx, depthCheckY--, chunkZ + dz);
                         ++fluidDepth;
-                        if (depthCheckY <= 0 || fluidBlockId == 0 || !BlockRegistry.GetByProtocolId(fluidBlockId).Material.IsFluid)
+                        if (depthCheckY <= 0 || fluidBlockId == 0 || !blocks.GetByProtocolId(fluidBlockId).Material.IsFluid)
                         {
                             exitLoop = true;
                             break;

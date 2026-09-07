@@ -87,6 +87,7 @@ public static class DefaultRegistries
         foreach (var definition in processLoader) content.AddProcessDefinition(definition);
 
         Biomes.Bootstrap(typeof(Biome));
+        Biome.ResolveBlocks(content);
 
         // After both registries above: every spawn entry names an entity type that must already exist.
         var biomeSpawnLoader = new DataAssetLoader<BiomeSpawnDefinition>(RegistryDefinitions.BiomeSpawns.AssetPath, LoadLocations.Assets, false);

@@ -208,7 +208,8 @@ public sealed class ItemBuildContextTests
         public IItemBehavior Build(ResourceLocation type, JsonElement definition, in ItemBuildContext context)
         {
             calls.Add($"type:{type.Path}");
-            return new ShearsBehavior();
+            var block = context.ResolveBlock(ResourceLocation.Parse("omniblock:stone"));
+            return new ShearsBehavior(block, block, block);
         }
     }
 

@@ -74,6 +74,6 @@ public sealed class FlyingMovementBehavior : IEntityPhysics
             MathHelper.Floor(self.BoundingBox.MinY) - 1,
             MathHelper.Floor(self.Z));
 
-        return groundBlockId > 0 ? BlockRegistry.GetByProtocolId(groundBlockId).Slipperiness * 0.91F : 546.0F * 0.1F * 0.1F * 0.1F;
+        return groundBlockId > 0 ? self.World.Content.Blocks.GetByProtocolId(groundBlockId).Slipperiness * 0.91F : 546.0F * 0.1F * 0.1F * 0.1F;
     }
 }

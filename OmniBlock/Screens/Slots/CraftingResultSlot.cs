@@ -21,7 +21,7 @@ internal class CraftingResultSlot : Slot
     public override void onTakeItem(ItemStack stack)
     {
         stack.OnCraft(thePlayer.World, thePlayer);
-        if (stack.ItemId == BlockRegistry.Get("crafting_table").Id)
+        if (stack.ItemId == thePlayer.World.Content.Blocks.Get("omniblock:crafting_table").Id)
         {
             thePlayer.IncreaseStat(Achievements.BuildWorkbench, 1);
         }
@@ -29,7 +29,7 @@ internal class CraftingResultSlot : Slot
         {
             thePlayer.IncreaseStat(Achievements.BuildPickaxe, 1);
         }
-        else if (stack.ItemId == BlockRegistry.Get("furnace").Id)
+        else if (stack.ItemId == thePlayer.World.Content.Blocks.Get("omniblock:furnace").Id)
         {
             thePlayer.IncreaseStat(Achievements.BuildFurnace, 1);
         }

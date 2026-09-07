@@ -344,7 +344,7 @@ public static class ContentIdAllocator
             ResourceLocation key = new(definition.Namespace, definition.Name);
             if (!keys.Add(key)) throw new InvalidOperationException($"Duplicate block name '{key}'.");
             if (definition.ProtocolId < 0) continue;
-            if (definition.ProtocolId >= BlockRegistry.ProtocolIdCapacity)
+            if (definition.ProtocolId >= RuntimeBlockRegistry.ProtocolIdCapacity)
                 throw new InvalidOperationException($"Block '{key}' protocol ID {definition.ProtocolId} exceeds the current save/wire limit.");
             if (used.TryGetValue(definition.ProtocolId, out var collision))
                 throw new InvalidOperationException($"Blocks '{collision}' and '{key}' both request protocol ID {definition.ProtocolId}.");
@@ -358,12 +358,12 @@ public static class ContentIdAllocator
             ResourceLocation key = new(definition.Namespace, definition.Name);
             var id = -1;
             if (previous is not null && previous.BlockIds.TryGetValue(key, out var savedId)
-                                     && savedId >= 0 && savedId < BlockRegistry.ProtocolIdCapacity
+                                     && savedId >= 0 && savedId < RuntimeBlockRegistry.ProtocolIdCapacity
                                      && !used.ContainsKey(savedId))
                 id = savedId;
             if (id < 0)
             {
-                for (var candidate = 0; candidate < BlockRegistry.ProtocolIdCapacity; candidate++)
+                for (var candidate = 0; candidate < RuntimeBlockRegistry.ProtocolIdCapacity; candidate++)
                     if (!used.ContainsKey(candidate))
                     {
                         id = candidate;

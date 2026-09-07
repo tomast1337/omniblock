@@ -28,5 +28,5 @@ public sealed class GrazingAnimalBehavior : IEntityPhysics
     }
 
     private static bool StandsOnGrass(EntityLiving self, int x, int y, int z) =>
-        self.World.Reader.GetBlockId(x, y - 1, z) == BlockRegistry.Get("grass_block").Id;
+        self.World.Reader.GetBlockId(x, y - 1, z) == self.World.Content.Blocks.Get("omniblock:grass_block").Id;
 }

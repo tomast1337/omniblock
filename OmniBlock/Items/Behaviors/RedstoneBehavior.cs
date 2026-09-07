@@ -8,7 +8,7 @@ internal sealed class RedstoneBehavior : IItemBehavior
 {
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
-        if (world.Reader.GetBlockId(x, y, z) != BlockRegistry.Get("snow").Id)
+        if (world.Reader.GetBlockId(x, y, z) != world.Content.Blocks.Get("omniblock:snow").Id)
         {
             if (meta == 0)
             {
@@ -46,10 +46,11 @@ internal sealed class RedstoneBehavior : IItemBehavior
             }
         }
 
-        if (BlockRegistry.Get("redstone_wire").CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
+        Block redstoneWire = world.Content.Blocks.Get("omniblock:redstone_wire");
+        if (redstoneWire.CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
         {
             itemStack.ConsumeItem(player);
-            world.Writer.SetBlock(x, y, z, BlockRegistry.Get("redstone_wire").Id);
+            world.Writer.SetBlock(x, y, z, redstoneWire.Id);
         }
 
         return true;

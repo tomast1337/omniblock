@@ -121,8 +121,9 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
         var blockId = self.World.Reader.GetBlockId(self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
         if (blockId > 0)
         {
-            BlockRegistry.GetByProtocolId(blockId).UpdateBoundingBox(self.World.Reader, self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
-            var box = BlockRegistry.GetByProtocolId(blockId).GetCollisionShape(self.World.Reader, self.World.Entities, self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
+            Block block = self.World.Content.Blocks.GetByProtocolId(blockId);
+            block.UpdateBoundingBox(self.World.Reader, self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
+            var box = block.GetCollisionShape(self.World.Reader, self.World.Entities, self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
             if (box != null && box.Value.Contains(new Vec3D(self.X, self.Y, self.Z)))
             {
                 self.State[_inGround] = true;

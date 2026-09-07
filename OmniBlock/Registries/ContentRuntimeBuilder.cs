@@ -139,11 +139,11 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         if (_built) throw new InvalidOperationException("Cannot add content after the runtime has been built.");
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(block);
-        if (definition.ProtocolId is < 0 or >= BlockRegistry.ProtocolIdCapacity)
+        if (definition.ProtocolId is < 0 or >= RuntimeBlockRegistry.ProtocolIdCapacity)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(definition), definition.ProtocolId,
-                $"Block protocol id must be between 0 and {BlockRegistry.ProtocolIdCapacity - 1}.");
+                $"Block protocol id must be between 0 and {RuntimeBlockRegistry.ProtocolIdCapacity - 1}.");
         }
 
         ResourceLocation key = new(definition.Namespace, definition.Name);

@@ -1,4 +1,5 @@
 using OmniBlock.Blocks;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Worlds.Chunks;
 
@@ -6,7 +7,7 @@ internal class BlockSource
 {
     public static void Fill(byte[] blocks, IBlockRuntimeView runtimeBlocks)
     {
-        Span<byte> sanitizationTable = stackalloc byte[BlockRegistry.ProtocolIdCapacity];
+        Span<byte> sanitizationTable = stackalloc byte[RuntimeBlockRegistry.ProtocolIdCapacity];
         for (var i = 0; i < sanitizationTable.Length; i++)
             sanitizationTable[i] = i == 0 || runtimeBlocks.TryGetByProtocolId(i, out _) ? (byte)i : (byte)0;
 

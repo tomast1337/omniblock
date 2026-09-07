@@ -39,7 +39,7 @@ internal sealed class BoatBehavior : IItemBehavior
             var hitZ = hitResult.BlockZ;
             if (!world.IsRemote)
             {
-                if (world.Reader.GetBlockId(hitX, hitY, hitZ) == BlockRegistry.Get("snow").Id)
+                if (world.Reader.GetBlockId(hitX, hitY, hitZ) == world.Content.Blocks.Get("omniblock:snow").Id)
                 {
                     --hitY;
                 }

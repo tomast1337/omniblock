@@ -7,7 +7,7 @@ namespace OmniBlock.Items.Behaviors;
 internal sealed class SeedsBehavior : IItemBehavior
 {
     // Deferred: SeedsBehaviorDefinition.Build() runs during ItemFactory.Create(), before
-    // BlockRegistry.Initialize() has loaded any blocks.
+    // the builder has constructed any block drafts.
     private readonly Func<int> _blockIdFactory;
 
     internal SeedsBehavior(Func<int> blockId) => _blockIdFactory = blockId;
@@ -21,7 +21,7 @@ internal sealed class SeedsBehavior : IItemBehavior
         }
 
         var blockId = world.Reader.GetBlockId(x, y, z);
-        if (blockId == BlockRegistry.Get("farmland").Id && world.Reader.IsAir(x, y + 1, z))
+        if (blockId == world.Content.Blocks.Get("omniblock:farmland").Id && world.Reader.IsAir(x, y + 1, z))
         {
             world.Writer.SetBlock(x, y + 1, z, _blockId);
             itemStack.ConsumeItem(player);

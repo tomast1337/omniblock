@@ -5,14 +5,25 @@ namespace OmniBlock.Items.Behaviors;
 
 internal sealed class ShearsBehavior : IItemBehavior
 {
+    private readonly Block _cobweb;
+    private readonly Block _leaves;
+    private readonly Block _wool;
+
+    internal ShearsBehavior(Block cobweb, Block leaves, Block wool)
+    {
+        _cobweb = cobweb;
+        _leaves = leaves;
+        _wool = wool;
+    }
+
     public float GetMiningSpeedMultiplier(Item item, ItemStack itemStack, Block block)
     {
-        if (block.Id == BlockRegistry.Get("cobweb").Id || block.Id == BlockRegistry.Get("leaves").Id)
+        if (block == _cobweb || block == _leaves)
         {
             return 15.0F;
         }
 
-        if (block.Id == BlockRegistry.Get("wool").Id)
+        if (block == _wool)
         {
             return 5.0F;
         }
@@ -22,7 +33,7 @@ internal sealed class ShearsBehavior : IItemBehavior
 
     public bool PostMine(Item item, ItemStack itemStack, int blockId, int x, int y, int z, EntityLiving player)
     {
-        if (blockId == BlockRegistry.Get("leaves").Id || blockId == BlockRegistry.Get("cobweb").Id)
+        if (blockId == _leaves.Id || blockId == _cobweb.Id)
         {
             itemStack.DamageItem(1, player);
         }
@@ -30,5 +41,5 @@ internal sealed class ShearsBehavior : IItemBehavior
         return false;
     }
 
-    public bool IsSuitableFor(Item item, Block block) => block.Id == BlockRegistry.Get("cobweb").Id;
+    public bool IsSuitableFor(Item item, Block block) => block == _cobweb;
 }

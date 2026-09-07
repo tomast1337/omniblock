@@ -113,10 +113,10 @@ internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locat
                     continue;
                 }
 
-                if (definition.ProtocolId < -1 || definition.ProtocolId >= BlockRegistry.ProtocolIdCapacity)
+                if (definition.ProtocolId < -1 || definition.ProtocolId >= RuntimeBlockRegistry.ProtocolIdCapacity)
                 {
                     HasErrors = true;
-                    FirstErrorMessage ??= $"Block '{file}' has ProtocolId {definition.ProtocolId}, outside the valid automatic-or-0-{BlockRegistry.ProtocolIdCapacity - 1} range.";
+                    FirstErrorMessage ??= $"Block '{file}' has ProtocolId {definition.ProtocolId}, outside the valid automatic-or-0-{RuntimeBlockRegistry.ProtocolIdCapacity - 1} range.";
                     continue;
                 }
 

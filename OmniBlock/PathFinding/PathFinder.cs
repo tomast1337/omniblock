@@ -25,27 +25,21 @@ internal class PathFinder
     {
         _worldMap = world.Reader;
         _blocks = world.Content.Blocks;
-        _ironDoorId = _blocks.Get("omniblock:iron_door").Id;
-        _woodenDoorId = _blocks.Get("omniblock:door").Id;
+        _ironDoorId = ResolveOptionalBlockId("omniblock:iron_door");
+        _woodenDoorId = ResolveOptionalBlockId("omniblock:door");
         for (var i = 0; i < _pointPool.Length; i++)
         {
             _pointPool[i] = new PathPoint(0, 0, 0);
         }
     }
 
-    internal PathEntity? FindPath(Entity entity, Entity target, float range)
-    {
-        PathEntity? result;
-        using (Profiler.Begin("FindPathToTarget"))
-        {
-            result = CreateEntityPathTo(entity, target.X, target.BoundingBox.MinY, target.Z, range);
-        }
+    private int ResolveOptionalBlockId(string key) =>
+        _blocks.TryGet(ResourceLocation.Parse(key), out Block? block) ? block.Id : -1;
 
-        return result;
-    }
+    internal PathEntity? FindPath(Entity entity, Entity target, float range) => FindPath(entity, (int)target.X, (int)target.Y, (int)target.Z, range);
 
 
-    internal PathEntity? findPath(Entity entity, int x, int y, int z, float range)
+    internal PathEntity? FindPath(Entity entity, int x, int y, int z, float range)
     {
         PathEntity? result;
         using (Profiler.Begin("FindPathToPosition"))
@@ -122,21 +116,19 @@ internal class PathFinder
                 var option = _pathOptions[i];
                 var totalDistance = current.TotalPathDistance + current.DistanceTo(option);
 
-                if (!option.IsAssigned() || totalDistance < option.TotalPathDistance)
-                {
-                    option.Previous = current;
-                    option.TotalPathDistance = totalDistance;
-                    option.DistanceToNext = option.DistanceTo(target);
+                if (option.IsAssigned() && !(totalDistance < option.TotalPathDistance)) continue;
+                option.Previous = current;
+                option.TotalPathDistance = totalDistance;
+                option.DistanceToNext = option.DistanceTo(target);
 
-                    if (option.IsAssigned())
-                    {
-                        _path.ChangeDistance(option, option.TotalPathDistance + option.DistanceToNext);
-                    }
-                    else
-                    {
-                        option.DistanceToTarget = option.TotalPathDistance + option.DistanceToNext;
-                        _path.AddPoint(option);
-                    }
+                if (option.IsAssigned())
+                {
+                    _path.ChangeDistance(option, option.TotalPathDistance + option.DistanceToNext);
+                }
+                else
+                {
+                    option.DistanceToTarget = option.TotalPathDistance + option.DistanceToNext;
+                    _path.AddPoint(option);
                 }
             }
         }
@@ -159,26 +151,10 @@ internal class PathFinder
         var pointEast = GetSafePoint(entity, current.X + 1, current.Y, current.Z, size, stepUp);
         var pointNorth = GetSafePoint(entity, current.X, current.Y, current.Z - 1, size, stepUp);
 
-        if (pointSouth is { IsFirst: false } && pointSouth.DistanceTo(target) < maxDistance)
-        {
-            _pathOptions[optionCount++] = pointSouth;
-        }
-
-        if (pointWest is { IsFirst: false } && pointWest.DistanceTo(target) < maxDistance)
-        {
-            _pathOptions[optionCount++] = pointWest;
-        }
-
-        if (pointEast is { IsFirst: false } && pointEast.DistanceTo(target) < maxDistance)
-        {
-            _pathOptions[optionCount++] = pointEast;
-        }
-
-        if (pointNorth is { IsFirst: false } && pointNorth.DistanceTo(target) < maxDistance)
-        {
-            _pathOptions[optionCount++] = pointNorth;
-        }
-
+        if (pointSouth is { IsFirst: false } && pointSouth.DistanceTo(target) < maxDistance) _pathOptions[optionCount++] = pointSouth;
+        if (pointWest is { IsFirst: false } && pointWest.DistanceTo(target) < maxDistance) _pathOptions[optionCount++] = pointWest;
+        if (pointEast is { IsFirst: false } && pointEast.DistanceTo(target) < maxDistance) _pathOptions[optionCount++] = pointEast;
+        if (pointNorth is { IsFirst: false } && pointNorth.DistanceTo(target) < maxDistance) _pathOptions[optionCount++] = pointNorth;
         return optionCount;
     }
 

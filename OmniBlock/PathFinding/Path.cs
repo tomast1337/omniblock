@@ -7,10 +7,7 @@ internal class Path
 
     public void AddPoint(PathPoint point)
     {
-        if (point.Index >= 0)
-        {
-            throw new InvalidOperationException("OW KNOWS!");
-        }
+        if (point.Index >= 0) throw new InvalidOperationException("OW KNOWS!");
 
         if (_count == _pathPoints.Length)
         {
@@ -32,10 +29,7 @@ internal class Path
         _pathPoints[0] = _pathPoints[--_count];
         _pathPoints[_count] = null!;
 
-        if (_count > 0)
-        {
-            SiftDown(0);
-        }
+        if (_count > 0) SiftDown(0);
 
         result.Index = -1;
         return result;
@@ -46,14 +40,8 @@ internal class Path
         var oldDistance = point.DistanceToTarget;
         point.DistanceToTarget = newDistance;
 
-        if (newDistance < oldDistance)
-        {
-            SiftUp(point.Index);
-        }
-        else
-        {
-            SiftDown(point.Index);
-        }
+        if (newDistance < oldDistance) SiftUp(point.Index);
+        else SiftDown(point.Index);
     }
 
     private void SiftUp(int index)
@@ -66,10 +54,7 @@ internal class Path
             var parentIndex = (index - 1) >> 1;
             var parentNode = _pathPoints[parentIndex];
 
-            if (distance >= parentNode.DistanceToTarget)
-            {
-                break;
-            }
+            if (distance >= parentNode.DistanceToTarget) break;
 
             _pathPoints[index] = parentNode;
             parentNode.Index = index;
@@ -90,10 +75,7 @@ internal class Path
             var leftChildIndex = 1 + (index << 1);
             var rightChildIndex = leftChildIndex + 1;
 
-            if (leftChildIndex >= _count)
-            {
-                break;
-            }
+            if (leftChildIndex >= _count) break;
 
             var leftChild = _pathPoints[leftChildIndex];
             var leftDistance = leftChild.DistanceToTarget;
@@ -110,10 +92,7 @@ internal class Path
 
             if (leftDistance < rightDistance)
             {
-                if (leftDistance >= distance)
-                {
-                    break;
-                }
+                if (leftDistance >= distance) break;
 
                 _pathPoints[index] = leftChild;
                 leftChild.Index = index;
@@ -121,10 +100,7 @@ internal class Path
             }
             else
             {
-                if (rightDistance >= distance)
-                {
-                    break;
-                }
+                if (rightDistance >= distance) break;
 
                 _pathPoints[index] = rightChild!;
                 rightChild!.Index = index;

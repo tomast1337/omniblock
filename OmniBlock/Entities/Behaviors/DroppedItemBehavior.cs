@@ -150,7 +150,7 @@ public sealed class DroppedItemBehavior : IEntityTicker, IEntityLifecycle, IEnti
             var groundBlockId = self.World.Reader.GetBlockId(MathHelper.Floor(self.X), MathHelper.Floor(self.BoundingBox.MinY) - 1, MathHelper.Floor(self.Z));
             if (groundBlockId > 0)
             {
-                friction = BlockRegistry.GetByProtocolId(groundBlockId).Slipperiness * 0.98F;
+                friction = self.World.Content.Blocks.GetByProtocolId(groundBlockId).Slipperiness * 0.98F;
             }
         }
 

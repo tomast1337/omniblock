@@ -788,7 +788,7 @@ public abstract class EntityPlayer : EntityLiving
         SetBoundingBoxSpacing(0.6F, 1.8F);
         resetEyeHeight();
         var bedPos = SleepingPos;
-        if (bedPos is var (x, y, z) && World.Reader.GetBlockId(x, y, z) == BlockRegistry.Get("bed").Id)
+        if (bedPos is var (x, y, z) && World.Reader.GetBlockId(x, y, z) == World.Content.Blocks.Get("omniblock:bed").Id)
         {
             var bedMeta = World.Reader.GetBlockMeta(x, y, z);
             BedBehavior.UpdateState(World.Writer, x, y, z, bedMeta, false);
@@ -810,7 +810,7 @@ public abstract class EntityPlayer : EntityLiving
         }
     }
 
-    private bool IsSleepingInBed() => SleepingPos != null && World.Reader.GetBlockId(SleepingPos.Value.X, SleepingPos.Value.Y, SleepingPos.Value.Z) == BlockRegistry.Get("bed").Id;
+    private bool IsSleepingInBed() => SleepingPos != null && World.Reader.GetBlockId(SleepingPos.Value.X, SleepingPos.Value.Y, SleepingPos.Value.Z) == World.Content.Blocks.Get("omniblock:bed").Id;
 
     public static Vec3I? FindRespawnPosition(IWorldContext world, Vec3I? spawnPos)
     {
@@ -826,7 +826,7 @@ public abstract class EntityPlayer : EntityLiving
         chunkSource.LoadChunk((x - 3) >> 4, (z + 3) >> 4);
         chunkSource.LoadChunk((x + 3) >> 4, (z + 3) >> 4);
 
-        return world.Reader.GetBlockId(x, y, z) != BlockRegistry.Get("bed").Id ? null : BedBehavior.FindWakeUpPosition(world.Reader, x, y, z, 0);
+        return world.Reader.GetBlockId(x, y, z) != world.Content.Blocks.Get("omniblock:bed").Id ? null : BedBehavior.FindWakeUpPosition(world.Reader, x, y, z, 0);
     }
 
     public float GetSleepingRotation()

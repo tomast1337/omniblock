@@ -5,6 +5,7 @@ public interface IBlockRuntimeView
 {
     Block Get(ResourceLocation key);
     Block GetByProtocolId(int protocolId);
+    bool TryGet(ResourceLocation key, out Block? block);
     bool TryGetByProtocolId(int protocolId, out Block? block);
 }
 
@@ -38,6 +39,8 @@ public sealed class StagedBlockRuntimeView : IBlockRuntimeView
     }
 
     public bool TryGetByProtocolId(int protocolId, out Block? block) => _blocks.TryGetValue(protocolId, out block);
+
+    public bool TryGet(ResourceLocation key, out Block? block) => _blocksByKey.TryGetValue(key, out block);
 
     internal void Add(ResourceLocation key, Block block)
     {

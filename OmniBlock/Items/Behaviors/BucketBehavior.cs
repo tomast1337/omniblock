@@ -15,8 +15,7 @@ internal sealed class BucketBehavior : IItemBehavior
     private readonly Item _bucketWater;
 
     // Deferred: BucketBehaviorDefinition.Build() runs during ItemFactory.Create(), which runs
-    // before BlockRegistry.Initialize() — resolving "flowing_water"/"flowing_lava" eagerly here
-    // would run before blocks exist. Evaluated lazily, well after boot completes.
+    // before block drafts exist. Evaluated lazily after the builder has constructed blocks.
     private readonly Func<int> _isFullFactory;
 
     internal BucketBehavior(Func<int> isFull, Item bucket, Item bucketWater, Item bucketLava)
@@ -116,7 +115,7 @@ internal sealed class BucketBehavior : IItemBehavior
 
                 if (world.Reader.IsAir(hitX, hitY, hitZ) || !world.Reader.GetMaterial(hitX, hitY, hitZ).IsSolid)
                 {
-                    if (world.Dimension.EvaporatesWater && _isFull == BlockRegistry.Get("flowing_water").Id)
+                    if (world.Dimension.EvaporatesWater && _isFull == world.Content.Blocks.Get("omniblock:flowing_water").Id)
                     {
                         world.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "random.fizz", 0.5F, 2.6F + (world.Random.NextFloat() - world.Random.NextFloat()) * 0.8F);
                         for (var i = 0; i < 8; ++i)

@@ -42,7 +42,7 @@ internal sealed class FlintAndSteelBehavior : IItemBehavior
         if (blockId == 0)
         {
             world.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "fire.ignite", 1.0F, Item.s_itemRand.NextFloat() * 0.4F + 0.8F);
-            world.Writer.SetBlock(x, y, z, BlockRegistry.Get("fire").Id);
+            world.Writer.SetBlock(x, y, z, world.Content.Blocks.Get("omniblock:fire").Id);
         }
 
         itemStack.DamageItem(1, player);

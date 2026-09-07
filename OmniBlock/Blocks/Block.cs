@@ -401,7 +401,7 @@ public class Block
     public bool CanPlaceAt(CanPlaceAtContext evt)
     {
         var blockId = evt.World.Reader.GetBlockId(evt.X, evt.Y, evt.Z);
-        var baseResult = blockId == 0 || BlockRegistry.GetByProtocolId(blockId).Material.IsReplaceable;
+        var baseResult = blockId == 0 || evt.World.Content.Blocks.GetByProtocolId(blockId).Material.IsReplaceable;
         return Physics == null ? baseResult : baseResult && Physics.CanPlaceAt(this, evt);
     }
 

@@ -90,6 +90,20 @@ public readonly struct BehaviorBuildContext
     {
         public Block Get(ResourceLocation key) => resolveBlock(key);
 
+        public bool TryGet(ResourceLocation key, out Block? block)
+        {
+            try
+            {
+                block = resolveBlock(key);
+                return block is not null;
+            }
+            catch (KeyNotFoundException)
+            {
+                block = null;
+                return false;
+            }
+        }
+
         public Block GetByProtocolId(int protocolId) => BlockRegistry.GetByProtocolId(protocolId);
 
         public bool TryGetByProtocolId(int protocolId, out Block? block) => BlockRegistry.TryGetByProtocolId(protocolId, out block);

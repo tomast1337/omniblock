@@ -39,7 +39,9 @@ public class PlayerScreenHandler : ScreenHandler
 
         for (var armorSlot = 0; armorSlot < 4; ++armorSlot)
         {
-            AddSlot(new SlotArmor(this, inventoryPlayer, inventoryPlayer.Size - 1 - armorSlot, 8, 8 + armorSlot * 18, armorSlot));
+            AddSlot(new SlotArmor(this, inventoryPlayer, inventoryPlayer.Size - 1 - armorSlot, 8,
+                8 + armorSlot * 18, armorSlot,
+                inventoryPlayer.Player.World.Content.Blocks.Get("omniblock:pumpkin").Id));
         }
 
         for (row = 0; row < 3; ++row)

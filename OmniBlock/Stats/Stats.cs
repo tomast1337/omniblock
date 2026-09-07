@@ -36,7 +36,7 @@ public static class Stats
     public static StatBase PlayerKillsStat = new StatBasic(2024, "stat.playerKills").RegisterStat();
     public static StatBase FishCaughtStat = new StatBasic(2025, "stat.fishCaught").RegisterStat();
 
-    public static StatBase[] MineBlockStatArray = InitBlocksMined("stat.mineBlock", 16777216);
+    public static StatBase[] MineBlockStatArray = new StatBase[RuntimeBlockRegistry.ProtocolIdCapacity];
     public static StatBase[] Crafted;
     public static StatBase[] Used;
     public static StatBase[] Broken;
@@ -47,15 +47,16 @@ public static class Stats
     public static void InitializeItemStats(ContentRuntimeBuilder content)
     {
         OmniBlock.Achievements.Initialize(content);
-        Used = InitItemUsedStats(content, Used, "stat.useItem", 16908288, 0, BlockRegistry.ProtocolIdCapacity);
-        Broken = InitializeBrokenItemStats(content, Broken, "stat.breakItem", 16973824, 0, BlockRegistry.ProtocolIdCapacity);
+        MineBlockStatArray = InitBlocksMined(content, "stat.mineBlock", 16777216);
+        Used = InitItemUsedStats(content, Used, "stat.useItem", 16908288, 0, RuntimeBlockRegistry.ProtocolIdCapacity);
+        Broken = InitializeBrokenItemStats(content, Broken, "stat.breakItem", 16973824, 0, RuntimeBlockRegistry.ProtocolIdCapacity);
         _hasBasicItemStatsInitialized = true;
     }
 
     public static void InitializeExtendedItemStats(IItemRuntimeView items)
     {
-        Used = InitItemUsedStats(items, Used, "stat.useItem", 16908288, BlockRegistry.ProtocolIdCapacity, 32000);
-        Broken = InitializeBrokenItemStats(items, Broken, "stat.breakItem", 16973824, BlockRegistry.ProtocolIdCapacity, 32000);
+        Used = InitItemUsedStats(items, Used, "stat.useItem", 16908288, RuntimeBlockRegistry.ProtocolIdCapacity, 32000);
+        Broken = InitializeBrokenItemStats(items, Broken, "stat.breakItem", 16973824, RuntimeBlockRegistry.ProtocolIdCapacity, 32000);
         _hasExtendedItemStatsInitialized = true;
     }
 
@@ -91,17 +92,17 @@ public static class Stats
                 }
             }
 
-            ReplaceAllSimilarBlocks(Crafted);
+            ReplaceAllSimilarBlocks(Crafted, items);
         }
     }
 
-    private static StatBase[] InitBlocksMined(string baseName, int baseId)
+    private static StatBase[] InitBlocksMined(ContentRuntimeBuilder content, string baseName, int baseId)
     {
         var statsArray = new StatBase[256];
 
         for (var i = 0; i < 256; ++i)
         {
-            if (BlockRegistry.TryGetByProtocolId(i, out var block) && block.EnableStats)
+            if (content.TryGetBlockByProtocolId(i, out var block) && block is not null && block.EnableStats)
             {
                 var translatedName = StatCollector.TranslateToLocalFormatted(baseName, block.TranslateBlockName());
                 statsArray[i] = new StatCrafting(baseId + i, translatedName, i).RegisterStat();
@@ -109,7 +110,7 @@ public static class Stats
             }
         }
 
-        ReplaceAllSimilarBlocks(statsArray);
+        ReplaceAllSimilarBlocks(statsArray, content);
         return statsArray;
     }
 
@@ -124,14 +125,14 @@ public static class Stats
                 var translatedName = StatCollector.TranslateToLocalFormatted(baseName, item.GetStatName());
                 statsArray[i] = new StatCrafting(baseId + i, translatedName, i).RegisterStat();
 
-                if (i >= BlockRegistry.ProtocolIdCapacity)
+                if (i >= RuntimeBlockRegistry.ProtocolIdCapacity)
                 {
                     ItemStats.Add(statsArray[i]);
                 }
             }
         }
 
-        ReplaceAllSimilarBlocks(statsArray);
+        ReplaceAllSimilarBlocks(statsArray, items);
         return statsArray;
     }
 
@@ -148,23 +149,38 @@ public static class Stats
             }
         }
 
-        ReplaceAllSimilarBlocks(statsArray);
+        ReplaceAllSimilarBlocks(statsArray, items);
         return statsArray;
     }
 
-    private static void ReplaceAllSimilarBlocks(StatBase[] statsArray)
+    private static void ReplaceAllSimilarBlocks(StatBase[] statsArray, IItemRuntimeView items)
     {
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("water").Id, BlockRegistry.Get("flowing_water").Id);
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("lava").Id, BlockRegistry.Get("lava").Id);
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("jack_lantern").Id, BlockRegistry.Get("pumpkin").Id);
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("lit_furnace").Id, BlockRegistry.Get("furnace").Id);
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("lit_redstone_ore").Id, BlockRegistry.Get("redstone_ore").Id);
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("powered_repeater").Id, BlockRegistry.Get("repeater").Id);
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("lit_redstone_torch").Id, BlockRegistry.Get("redstone_torch").Id);
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("red_mushroom").Id, BlockRegistry.Get("brown_mushroom").Id);
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("double_slab").Id, BlockRegistry.Get("slab").Id);
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("grass_block").Id, BlockRegistry.Get("dirt").Id);
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("farmland").Id, BlockRegistry.Get("dirt").Id);
+        ReplaceSimilarBlocks(statsArray, items.Get(ResourceLocation.Parse("omniblock:water")).Id, items.Get(ResourceLocation.Parse("omniblock:flowing_water")).Id);
+        ReplaceSimilarBlocks(statsArray, items.Get(ResourceLocation.Parse("omniblock:lava")).Id, items.Get(ResourceLocation.Parse("omniblock:lava")).Id);
+        ReplaceSimilarBlocks(statsArray, items.Get(ResourceLocation.Parse("omniblock:jack_lantern")).Id, items.Get(ResourceLocation.Parse("omniblock:pumpkin")).Id);
+        ReplaceSimilarBlocks(statsArray, items.Get(ResourceLocation.Parse("omniblock:lit_furnace")).Id, items.Get(ResourceLocation.Parse("omniblock:furnace")).Id);
+        ReplaceSimilarBlocks(statsArray, items.Get(ResourceLocation.Parse("omniblock:lit_redstone_ore")).Id, items.Get(ResourceLocation.Parse("omniblock:redstone_ore")).Id);
+        ReplaceSimilarBlocks(statsArray, items.Get(ResourceLocation.Parse("omniblock:powered_repeater")).Id, items.Get(ResourceLocation.Parse("omniblock:repeater")).Id);
+        ReplaceSimilarBlocks(statsArray, items.Get(ResourceLocation.Parse("omniblock:lit_redstone_torch")).Id, items.Get(ResourceLocation.Parse("omniblock:redstone_torch")).Id);
+        ReplaceSimilarBlocks(statsArray, items.Get(ResourceLocation.Parse("omniblock:red_mushroom")).Id, items.Get(ResourceLocation.Parse("omniblock:brown_mushroom")).Id);
+        ReplaceSimilarBlocks(statsArray, items.Get(ResourceLocation.Parse("omniblock:double_slab")).Id, items.Get(ResourceLocation.Parse("omniblock:slab")).Id);
+        ReplaceSimilarBlocks(statsArray, items.Get(ResourceLocation.Parse("omniblock:grass_block")).Id, items.Get(ResourceLocation.Parse("omniblock:dirt")).Id);
+        ReplaceSimilarBlocks(statsArray, items.Get(ResourceLocation.Parse("omniblock:farmland")).Id, items.Get(ResourceLocation.Parse("omniblock:dirt")).Id);
+    }
+
+    private static void ReplaceAllSimilarBlocks(StatBase[] statsArray, ContentRuntimeBuilder content)
+    {
+        ReplaceSimilarBlocks(statsArray, content.GetBlock(ResourceLocation.Parse("omniblock:water")).Id, content.GetBlock(ResourceLocation.Parse("omniblock:flowing_water")).Id);
+        ReplaceSimilarBlocks(statsArray, content.GetBlock(ResourceLocation.Parse("omniblock:lava")).Id, content.GetBlock(ResourceLocation.Parse("omniblock:lava")).Id);
+        ReplaceSimilarBlocks(statsArray, content.GetBlock(ResourceLocation.Parse("omniblock:jack_lantern")).Id, content.GetBlock(ResourceLocation.Parse("omniblock:pumpkin")).Id);
+        ReplaceSimilarBlocks(statsArray, content.GetBlock(ResourceLocation.Parse("omniblock:lit_furnace")).Id, content.GetBlock(ResourceLocation.Parse("omniblock:furnace")).Id);
+        ReplaceSimilarBlocks(statsArray, content.GetBlock(ResourceLocation.Parse("omniblock:lit_redstone_ore")).Id, content.GetBlock(ResourceLocation.Parse("omniblock:redstone_ore")).Id);
+        ReplaceSimilarBlocks(statsArray, content.GetBlock(ResourceLocation.Parse("omniblock:powered_repeater")).Id, content.GetBlock(ResourceLocation.Parse("omniblock:repeater")).Id);
+        ReplaceSimilarBlocks(statsArray, content.GetBlock(ResourceLocation.Parse("omniblock:lit_redstone_torch")).Id, content.GetBlock(ResourceLocation.Parse("omniblock:redstone_torch")).Id);
+        ReplaceSimilarBlocks(statsArray, content.GetBlock(ResourceLocation.Parse("omniblock:red_mushroom")).Id, content.GetBlock(ResourceLocation.Parse("omniblock:brown_mushroom")).Id);
+        ReplaceSimilarBlocks(statsArray, content.GetBlock(ResourceLocation.Parse("omniblock:double_slab")).Id, content.GetBlock(ResourceLocation.Parse("omniblock:slab")).Id);
+        ReplaceSimilarBlocks(statsArray, content.GetBlock(ResourceLocation.Parse("omniblock:grass_block")).Id, content.GetBlock(ResourceLocation.Parse("omniblock:dirt")).Id);
+        ReplaceSimilarBlocks(statsArray, content.GetBlock(ResourceLocation.Parse("omniblock:farmland")).Id, content.GetBlock(ResourceLocation.Parse("omniblock:dirt")).Id);
     }
 
     private static void ReplaceSimilarBlocks(StatBase[] statsArray, int sourceId, int targetId)

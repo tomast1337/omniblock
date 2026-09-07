@@ -70,7 +70,8 @@ public class CraftingScreenHandler : ScreenHandler
         }
     }
 
-    public override bool canUse(EntityPlayer player) => world.Reader.GetBlockId(x, y, z) != BlockRegistry.Get("crafting_table").Id ? false : player.GetSquaredDistance(x + 0.5D, y + 0.5D, z + 0.5D) <= 64.0D;
+    public override bool canUse(EntityPlayer player) => world.Reader.GetBlockId(x, y, z) == world.Content.Blocks.Get("omniblock:crafting_table").Id
+                                                        && player.GetSquaredDistance(x + 0.5D, y + 0.5D, z + 0.5D) <= 64.0D;
 
     public override ItemStack quickMove(int slotNumber)
     {

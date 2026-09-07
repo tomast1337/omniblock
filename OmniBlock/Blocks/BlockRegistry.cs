@@ -5,7 +5,7 @@ namespace OmniBlock.Blocks;
 
 public static class BlockRegistry
 {
-    public const int ProtocolIdCapacity = 256;
+    public const int ProtocolIdCapacity = RuntimeBlockRegistry.ProtocolIdCapacity;
 
     private static readonly CanonicalRegistry<BlockDefinition> s_registry = new("block");
 

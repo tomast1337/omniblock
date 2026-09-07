@@ -25,10 +25,10 @@ public class Biome
     public static readonly Biome Sky = Register(12, "sky", new BiomeGenSky().SetColor(0x8080FF).SetName("Sky").DisableRain());
 
     private static readonly Biome[] s_biomes = new Biome[4096];
-    public byte SoilBlockId = (byte)BlockRegistry.Get("dirt").Id;
-    public byte TopBlockId = (byte)BlockRegistry.Get("grass_block").Id;
+    public byte SoilBlockId;
+    public byte TopBlockId;
 
-    static Biome() => Init();
+    static Biome() => InitializeClimateLookup();
 
     protected Biome()
     {
@@ -123,7 +123,7 @@ public class Biome
         return this;
     }
 
-    public static void Init()
+    private static void InitializeClimateLookup()
     {
         for (var i = 0; i < 64; ++i)
         {
@@ -133,8 +133,23 @@ public class Biome
             }
         }
 
-        Desert.TopBlockId = Desert.SoilBlockId = (byte)BlockRegistry.Get("sand").Id;
-        IceDesert.TopBlockId = IceDesert.SoilBlockId = (byte)BlockRegistry.Get("sand").Id;
+    }
+
+    internal static void ResolveBlocks(ContentRuntimeBuilder content)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+        var dirt = (byte)content.GetBlock(ResourceLocation.Parse("omniblock:dirt")).Id;
+        var grass = (byte)content.GetBlock(ResourceLocation.Parse("omniblock:grass_block")).Id;
+        var sand = (byte)content.GetBlock(ResourceLocation.Parse("omniblock:sand")).Id;
+
+        foreach (var biome in s_registry)
+        {
+            biome.SoilBlockId = dirt;
+            biome.TopBlockId = grass;
+        }
+
+        Desert.TopBlockId = Desert.SoilBlockId = sand;
+        IceDesert.TopBlockId = IceDesert.SoilBlockId = sand;
     }
 
     public virtual Feature GetRandomWorldGenForTrees(JavaRandom rand) => rand.NextInt(10) == 0 ? new LargeOakTreeFeature() : new OakTreeFeature();

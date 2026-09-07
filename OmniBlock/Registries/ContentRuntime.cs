@@ -263,6 +263,7 @@ public sealed class RuntimeItemRegistry : IItemRuntimeView
 /// <summary>Frozen key and protocol-ID indexes over the constructed block catalog.</summary>
 public sealed class RuntimeBlockRegistry : IBlockRuntimeView
 {
+    public const int ProtocolIdCapacity = 256;
     private readonly FrozenDictionary<ResourceLocation, Block> _byKey;
     private readonly FrozenDictionary<int, Block> _byProtocolId;
 

@@ -31,10 +31,13 @@ public sealed class ItemBehaviorProviderRegistry : IItemBehaviorProviderRegistry
         [Key("food")] = static (j, c) => new FoodBehavior(Int(j, "HealAmount"), Bool(j, "IsMeat"),
             OptionalString(j, "ReturnItem") is { } key ? c.ResolveItem(ResourceLocation.Parse(key)) : null),
         [Key("tool")] = static (j, c) => BuildTool(j, c),
-        [Key("sword")] = static (j, c) => new SwordBehavior(c.ResolveToolMaterial(ResourceLocation.Parse(String(j, "Material")))),
+        [Key("sword")] = static (j, c) => new SwordBehavior(
+            c.ResolveToolMaterial(ResourceLocation.Parse(String(j, "Material"))),
+            c.ResolveBlock(Key("cobweb"))),
         [Key("hoe")] = static (j, c) => new HoeBehavior(c.ResolveToolMaterial(ResourceLocation.Parse(String(j, "Material")))),
         [Key("armor")] = static (j, c) => new ArmorBehavior(c.ResolveArmorMaterial(ResourceLocation.Parse(String(j, "Material"))), (ArmorSlot)Int(j, "Slot")),
-        [Key("shears")] = static (_, _) => new ShearsBehavior(),
+        [Key("shears")] = static (_, c) => new ShearsBehavior(
+            c.ResolveBlock(Key("cobweb")), c.ResolveBlock(Key("leaves")), c.ResolveBlock(Key("wool"))),
         [Key("flint_and_steel")] = static (_, _) => new FlintAndSteelBehavior(),
         [Key("fishing_rod")] = static (j, c) => new FishingRodBehavior(c.ResolveItemTexture(String(j, "Cast"))),
         [Key("bow")] = static (_, c) => new BowBehavior(c.ResolveItem(Key("arrow"))),

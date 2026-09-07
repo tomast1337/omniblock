@@ -440,7 +440,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         var blockY = MathHelper.Floor(self.Y);
         var blockZ = MathHelper.Floor(self.Z);
 
-        if (IsRailBlock(self.World.Reader.GetBlockId(blockX, blockY - 1, blockZ)))
+        if (IsRailBlock(self.World.Content.Blocks, self.World.Reader.GetBlockId(blockX, blockY - 1, blockZ)))
         {
             --blockY;
         }
@@ -448,7 +448,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         var shouldEmitSmoke = false;
         var railBlockId = self.World.Reader.GetBlockId(blockX, blockY, blockZ);
 
-        if (IsRailBlock(railBlockId))
+        if (IsRailBlock(self.World.Content.Blocks, railBlockId))
         {
             shouldEmitSmoke = RideRail(self, blockX, blockY, blockZ, railBlockId);
         }
@@ -573,13 +573,13 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         var poweredRailActive = false;
         var poweredRailBraking = false;
 
-        if (railBlockId == BlockRegistry.Get("powered_rail").Id)
+        if (railBlockId == self.World.Content.Blocks.Get("omniblock:powered_rail").Id)
         {
             poweredRailActive = (railMeta & 8) != 0;
             poweredRailBraking = !poweredRailActive;
         }
 
-        if (RailBehavior.IsAlwaysStraight(BlockRegistry.GetByProtocolId(railBlockId)))
+        if (RailBehavior.IsAlwaysStraight(self.World.Content.Blocks.GetByProtocolId(railBlockId)))
         {
             railMeta &= 7;
         }
@@ -918,19 +918,19 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         var blockY = MathHelper.Floor(y);
         var blockZ = MathHelper.Floor(z);
 
-        if (IsRailBlock(self.World.Reader.GetBlockId(blockX, blockY - 1, blockZ)))
+        if (IsRailBlock(self.World.Content.Blocks, self.World.Reader.GetBlockId(blockX, blockY - 1, blockZ)))
         {
             --blockY;
         }
 
         var blockId = self.World.Reader.GetBlockId(blockX, blockY, blockZ);
-        if (!IsRailBlock(blockId))
+        if (!IsRailBlock(self.World.Content.Blocks, blockId))
         {
             return null;
         }
 
         var railMeta = self.World.Reader.GetBlockMeta(blockX, blockY, blockZ);
-        if (RailBehavior.IsAlwaysStraight(BlockRegistry.GetByProtocolId(blockId)))
+        if (RailBehavior.IsAlwaysStraight(self.World.Content.Blocks.GetByProtocolId(blockId)))
         {
             railMeta &= 7;
         }
@@ -964,19 +964,19 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         var blockY = MathHelper.Floor(y);
         var blockZ = MathHelper.Floor(z);
 
-        if (IsRailBlock(self.World.Reader.GetBlockId(blockX, blockY - 1, blockZ)))
+        if (IsRailBlock(self.World.Content.Blocks, self.World.Reader.GetBlockId(blockX, blockY - 1, blockZ)))
         {
             --blockY;
         }
 
         var blockId = self.World.Reader.GetBlockId(blockX, blockY, blockZ);
-        if (!IsRailBlock(blockId))
+        if (!IsRailBlock(self.World.Content.Blocks, blockId))
         {
             return null;
         }
 
         var railMeta = self.World.Reader.GetBlockMeta(blockX, blockY, blockZ);
-        if (RailBehavior.IsAlwaysStraight(BlockRegistry.GetByProtocolId(blockId)))
+        if (RailBehavior.IsAlwaysStraight(self.World.Content.Blocks.GetByProtocolId(blockId)))
         {
             railMeta &= 7;
         }
@@ -1026,8 +1026,8 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         return new Vec3D(x, y, z);
     }
 
-    private static bool IsRailBlock(int blockId) =>
-        BlockRegistry.TryGetByProtocolId(blockId, out var block) && RailBehavior.IsRail(block);
+    private static bool IsRailBlock(IBlockRuntimeView blocks, int blockId) =>
+        blocks.TryGetByProtocolId(blockId, out var block) && RailBehavior.IsRail(block);
 
     private static double WrapDegrees(double angle)
     {

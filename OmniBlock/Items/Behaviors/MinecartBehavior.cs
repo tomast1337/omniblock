@@ -14,7 +14,7 @@ internal sealed class MinecartBehavior : IItemBehavior
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
         var blockId = world.Reader.GetBlockId(x, y, z);
-        if (!RailBehavior.IsRail(BlockRegistry.GetByProtocolId(blockId)))
+        if (!world.Content.Blocks.TryGetByProtocolId(blockId, out Block? block) || !RailBehavior.IsRail(block))
         {
             return false;
         }

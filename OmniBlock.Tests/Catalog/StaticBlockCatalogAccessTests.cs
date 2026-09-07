@@ -94,13 +94,32 @@ public sealed class StaticBlockCatalogAccessTests
     }
 
     [Fact]
+    public void Runtime_item_behaviors_cannot_access_the_static_block_registry()
+    {
+        string root = FindRepositoryRoot();
+        string behaviorDirectory = Path.Combine(root, "OmniBlock", "Items", "Behaviors");
+        string[] violations = Directory.EnumerateFiles(behaviorDirectory, "*.cs")
+            .SelectMany(file => File.ReadLines(file)
+                .Select((line, index) => (line, number: index + 1))
+                .Where(static entry => entry.line.Contains("BlockRegistry.")
+                                       && !entry.line.Contains("RuntimeBlockRegistry."))
+                .Select(entry => $"{Path.GetRelativePath(root, file)}:{entry.number}"))
+            .ToArray();
+
+        Assert.True(violations.Length == 0,
+            $"Runtime item behaviors must use resolved blocks or world.Content.Blocks:{Environment.NewLine}"
+            + string.Join(Environment.NewLine, violations));
+    }
+
+    [Fact]
     public void World_core_cannot_access_the_static_block_registry()
     {
         var root = FindRepositoryRoot();
         string[] directories =
         [
             Path.Combine(root, "OmniBlock", "Worlds", "Core"),
-            Path.Combine(root, "OmniBlock", "Blocks", "Entities")
+            Path.Combine(root, "OmniBlock", "Blocks", "Entities"),
+            Path.Combine(root, "OmniBlock", "Entities")
         ];
         var violations = directories
             .SelectMany(static directory => Directory.EnumerateFiles(directory, "*.cs", SearchOption.AllDirectories))
@@ -130,12 +149,40 @@ public sealed class StaticBlockCatalogAccessTests
         var violations = files
             .SelectMany(file => File.ReadLines(file)
                 .Select((line, index) => (line, number: index + 1, file))
-                .Where(static entry => entry.line.Contains("BlockRegistry."))
+                .Where(static entry => entry.line.Contains("BlockRegistry.")
+                                       && !entry.line.Contains("RuntimeBlockRegistry."))
                 .Select(entry => $"{Path.GetRelativePath(root, entry.file)}:{entry.number}"))
             .ToArray();
 
         Assert.True(violations.Length == 0,
             $"Migrated world systems must resolve blocks through their owning runtime:{Environment.NewLine}"
+            + string.Join(Environment.NewLine, violations));
+    }
+
+    [Fact]
+    public void Migrated_shared_runtime_consumers_cannot_access_the_static_block_registry()
+    {
+        var root = FindRepositoryRoot();
+        string[] paths =
+        [
+            Path.Combine(root, "OmniBlock", "Blocks", "Block.cs"),
+            Path.Combine(root, "OmniBlock", "Screens"),
+            Path.Combine(root, "OmniBlock", "Stats"),
+            Path.Combine(root, "OmniBlock", "Worlds", "Generation", "Biomes")
+        ];
+        var files = paths.SelectMany(static path => Directory.Exists(path)
+            ? Directory.EnumerateFiles(path, "*.cs", SearchOption.AllDirectories)
+            : [path]);
+        var violations = files
+            .SelectMany(file => File.ReadLines(file)
+                .Select((line, index) => (line, number: index + 1, file))
+                .Where(static entry => entry.line.Contains("BlockRegistry.")
+                                       && !entry.line.Contains("RuntimeBlockRegistry."))
+                .Select(entry => $"{Path.GetRelativePath(root, entry.file)}:{entry.number}"))
+            .ToArray();
+
+        Assert.True(violations.Length == 0,
+            $"Shared runtime consumers must use injected block views:{Environment.NewLine}"
             + string.Join(Environment.NewLine, violations));
     }
 

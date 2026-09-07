@@ -30,7 +30,7 @@ internal sealed class DyeBehavior(int[] textures) : IItemBehavior
         }
 
         var blockId = world.Reader.GetBlockId(x, y, z);
-        if (blockId == BlockRegistry.Get("sapling").Id)
+        if (blockId == world.Content.Blocks.Get("omniblock:sapling").Id)
         {
             if (!world.IsRemote)
             {
@@ -41,7 +41,7 @@ internal sealed class DyeBehavior(int[] textures) : IItemBehavior
             return true;
         }
 
-        if (blockId == BlockRegistry.Get("wheat").Id)
+        if (blockId == world.Content.Blocks.Get("omniblock:wheat").Id)
         {
             if (!world.IsRemote)
             {
@@ -52,7 +52,7 @@ internal sealed class DyeBehavior(int[] textures) : IItemBehavior
             return true;
         }
 
-        if (blockId == BlockRegistry.Get("grass_block").Id)
+        if (blockId == world.Content.Blocks.Get("omniblock:grass_block").Id)
         {
             if (!world.IsRemote)
             {
@@ -68,7 +68,7 @@ internal sealed class DyeBehavior(int[] textures) : IItemBehavior
                         spawnX += Item.s_itemRand.NextInt(3) - 1;
                         spawnY += (Item.s_itemRand.NextInt(3) - 1) * Item.s_itemRand.NextInt(3) / 2;
                         spawnZ += Item.s_itemRand.NextInt(3) - 1;
-                        if (world.Reader.GetBlockId(spawnX, spawnY - 1, spawnZ) != BlockRegistry.Get("grass_block").Id || world.Reader.ShouldSuffocate(spawnX, spawnY, spawnZ))
+                        if (world.Reader.GetBlockId(spawnX, spawnY - 1, spawnZ) != world.Content.Blocks.Get("omniblock:grass_block").Id || world.Reader.ShouldSuffocate(spawnX, spawnY, spawnZ))
                         {
                             validPosition = false;
                         }
@@ -78,15 +78,15 @@ internal sealed class DyeBehavior(int[] textures) : IItemBehavior
                     {
                         if (Item.s_itemRand.NextInt(10) != 0)
                         {
-                            world.Writer.SetBlock(spawnX, spawnY, spawnZ, BlockRegistry.Get("grass").Id, 1);
+                            world.Writer.SetBlock(spawnX, spawnY, spawnZ, world.Content.Blocks.Get("omniblock:grass").Id, 1);
                         }
                         else if (Item.s_itemRand.NextInt(3) != 0)
                         {
-                            world.Writer.SetBlock(spawnX, spawnY, spawnZ, BlockRegistry.Get("dandelion").Id);
+                            world.Writer.SetBlock(spawnX, spawnY, spawnZ, world.Content.Blocks.Get("omniblock:dandelion").Id);
                         }
                         else
                         {
-                            world.Writer.SetBlock(spawnX, spawnY, spawnZ, BlockRegistry.Get("rose").Id);
+                            world.Writer.SetBlock(spawnX, spawnY, spawnZ, world.Content.Blocks.Get("omniblock:rose").Id);
                         }
                     }
                 }

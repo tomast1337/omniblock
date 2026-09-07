@@ -13,7 +13,7 @@ public sealed class RecordBehavior : IItemBehavior
 
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
-        if (world.Reader.GetBlockId(x, y, z) != BlockRegistry.Get("jukebox").Id || world.Reader.GetBlockMeta(x, y, z) != 0)
+        if (world.Reader.GetBlockId(x, y, z) != world.Content.Blocks.Get("omniblock:jukebox").Id || world.Reader.GetBlockMeta(x, y, z) != 0)
         {
             return false;
         }

@@ -360,7 +360,7 @@ public abstract partial class Entity
         var blockZ = MathHelper.Floor(Z);
         var blockId = World.Reader.GetBlockId(blockX, blockY, blockZ);
 
-        if (World.Reader.GetBlockId(blockX, blockY - 1, blockZ) == BlockRegistry.Get("fence").Id)
+        if (World.Reader.GetBlockId(blockX, blockY - 1, blockZ) == World.Content.Blocks.Get("omniblock:fence").Id)
         {
             blockId = World.Reader.GetBlockId(blockX, blockY - 1, blockZ);
         }
@@ -371,19 +371,20 @@ public abstract partial class Entity
         }
 
         _nextStepSoundDistance = (int)HorizontalSpeed + 1;
-        var soundGroup = BlockRegistry.GetByProtocolId(blockId).SoundGroup;
+        var block = World.Content.Blocks.GetByProtocolId(blockId);
+        var soundGroup = block.SoundGroup;
 
-        if (World.Reader.GetBlockId(blockX, blockY + 1, blockZ) == BlockRegistry.Get("snow").Id)
+        if (World.Reader.GetBlockId(blockX, blockY + 1, blockZ) == World.Content.Blocks.Get("omniblock:snow").Id)
         {
-            soundGroup = BlockRegistry.Get("snow").SoundGroup;
+            soundGroup = World.Content.Blocks.Get("omniblock:snow").SoundGroup;
             World.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
         }
-        else if (!BlockRegistry.GetByProtocolId(blockId).Material.IsFluid)
+        else if (!block.Material.IsFluid)
         {
             World.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
         }
 
-        BlockRegistry.GetByProtocolId(blockId).onSteppedOn(new OnEntityStepEvent(World, this, blockX, blockY, blockZ));
+        block.onSteppedOn(new OnEntityStepEvent(World, this, blockX, blockY, blockZ));
     }
 
     /// <summary>Tells every block the box now overlaps that something is standing in it.</summary>
@@ -410,7 +411,7 @@ public abstract partial class Entity
                     var blockId = World.Reader.GetBlockId(x, y, z);
                     if (blockId > 0)
                     {
-                        BlockRegistry.GetByProtocolId(blockId).OnEntityCollision(new OnEntityCollisionEvent(World, this, x, y, z));
+                        World.Content.Blocks.GetByProtocolId(blockId).OnEntityCollision(new OnEntityCollisionEvent(World, this, x, y, z));
                     }
                 }
             }
@@ -483,7 +484,7 @@ public abstract partial class Entity
         var floorEyeY = MathHelper.Floor(MathHelper.Floor(eyeY));
         var floorZ = MathHelper.Floor(Z);
         var id = World.Reader.GetBlockId(floorX, floorEyeY, floorZ);
-        if (id != 0 && BlockRegistry.GetByProtocolId(id).Material == mat)
+        if (id != 0 && World.Content.Blocks.GetByProtocolId(id).Material == mat)
         {
             var fluidHeight = FluidMath.GetFluidHeightFromMeta(World.Reader.GetBlockMeta(floorX, floorEyeY, floorZ)) - 1.0F / 9.0F;
             var fluidSurfaceY = floorEyeY + 1 - fluidHeight;

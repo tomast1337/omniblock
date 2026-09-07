@@ -69,7 +69,7 @@ public abstract partial class Entity : IEntity
     /// </summary>
     public virtual EntityType? Type => _type;
 
-    public int ID { get; set; } = s_nextEntityId++;
+    public int ID { get; set; } = Interlocked.Increment(ref s_nextEntityId) - 1;
 
     /// <summary>
     ///     Multiplayer for rendering, based of the render distance,
