@@ -3,7 +3,7 @@ using OmniBlock.Util.Maths;
 
 namespace OmniBlock.Client.DynamicTexture;
 
-internal class NetherPortalSprite() : Rendering.Core.Textures.DynamicTexture(BlockRegistry.Get("nether_portal").TextureId)
+internal class NetherPortalSprite() : Rendering.Core.Textures.DynamicTexture(global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("nether_portal").TextureId)
 {
     private readonly byte[][] _frames = new byte[32][];
     private int _ticks;

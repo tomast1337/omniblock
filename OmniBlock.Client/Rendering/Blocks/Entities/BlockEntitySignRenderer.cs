@@ -17,7 +17,7 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
         GLManager.ModelView.Push();
         var modelScale = 2.0F / 3.0F;
         float rotationYaw;
-        if (signBlock == BlockRegistry.Get("sign"))
+        if (signBlock == global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("sign"))
         {
             GLManager.ModelView.Translate((float)x + 0.5F, (float)y + 12.0F / 16.0F * modelScale, (float)z + 0.5F);
             var rotationDegrees = sign.PushedBlockData * 360 / 16.0F;

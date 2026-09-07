@@ -66,13 +66,10 @@ public sealed class StaticBlockCatalogAccessTests
     }
 
     [Fact]
-    public void Block_registry_cannot_bridge_items_or_write_the_legacy_item_array()
+    public void Legacy_block_registry_has_been_removed()
     {
         var blockRegistry = Path.Combine(FindRepositoryRoot(), "OmniBlock", "Blocks", "BlockRegistry.cs");
-        var source = File.ReadAllText(blockRegistry);
-
-        Assert.DoesNotContain("BridgeTo" + "Items", source);
-        Assert.DoesNotContain("Item." + "Items", source);
+        Assert.False(File.Exists(blockRegistry), "The static BlockRegistry compatibility facade must not return.");
     }
 
     [Fact]

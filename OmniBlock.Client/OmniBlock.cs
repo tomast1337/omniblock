@@ -1634,7 +1634,7 @@ public partial class OmniBlock :
         {
             var blockId = World.Reader.GetBlockId(ObjectMouseOver.BlockX, ObjectMouseOver.BlockY, ObjectMouseOver.BlockZ);
             var blockMeta = World.Reader.GetBlockMeta(ObjectMouseOver.BlockX, ObjectMouseOver.BlockY, ObjectMouseOver.BlockZ);
-            var hitBlock = BlockRegistry.GetByProtocolId(blockId);
+            var hitBlock = Content.Blocks.GetByProtocolId(blockId);
 
             var (primaryMeta, backupId, backupMeta) = hitBlock.GetPickBlockItem(blockMeta);
 

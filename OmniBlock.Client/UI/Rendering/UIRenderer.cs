@@ -381,7 +381,7 @@ public class UIRenderer
 
     public void DrawItemIntoGui(ItemRenderer itemRenderer, int itemId, int itemMeta, int textureId, float x, float y)
     {
-        var isBlock3D = itemId < 256 && BlockRenderer.IsSideLit(BlockRegistry.GetByProtocolId(itemId).RenderType);
+        var isBlock3D = itemId < 256 && BlockRenderer.IsSideLit(Context.Content.Blocks.GetByProtocolId(itemId).RenderType);
 
         if (isBlock3D)
         {
@@ -415,7 +415,7 @@ public class UIRenderer
             return;
         }
 
-        var isBlock = stack.ItemId < 256 && BlockRenderer.IsSideLit(BlockRegistry.GetByProtocolId(stack.ItemId).RenderType);
+        var isBlock = stack.ItemId < 256 && BlockRenderer.IsSideLit(Context.Content.Blocks.GetByProtocolId(stack.ItemId).RenderType);
 
         if (isBlock)
         {
@@ -623,7 +623,7 @@ public class UIRenderer
         GLManager.ModelView.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
 
         var signBlock = sign.GetBlock();
-        if (signBlock == BlockRegistry.Get("sign"))
+        if (signBlock == Context.Content.Blocks.Get("sign"))
         {
             var rotation = sign.PushedBlockData * 360 / 16.0F;
             GLManager.ModelView.Rotate(rotation, 0.0F, 1.0F, 0.0F);

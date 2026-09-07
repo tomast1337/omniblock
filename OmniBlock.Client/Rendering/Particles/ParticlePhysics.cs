@@ -72,6 +72,6 @@ public static class ParticlePhysics
 
     private static bool IsSolid(int blockId) =>
         blockId > 0
-        && BlockRegistry.TryGetByProtocolId(blockId, out var block)
+        && global::OmniBlock.Registries.ContentRuntime.Current.Blocks.TryGetByProtocolId(blockId, out var block)
         && block.Material.BlocksMovement;
 }

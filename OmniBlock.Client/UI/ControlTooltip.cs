@@ -55,28 +55,28 @@ public static class ControlTooltip
             var blockZ = hit.BlockZ;
             var blockId = context.WorldReader.GetBlockId(blockX, blockY, blockZ);
 
-            if (blockId == BlockRegistry.Get("chest").Id || blockId == BlockRegistry.Get("furnace").Id || blockId == BlockRegistry.Get("lit_furnace").Id || blockId == BlockRegistry.Get("crafting_table").Id ||
-                blockId == BlockRegistry.Get("dispenser").Id)
+            if (blockId == global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("chest").Id || blockId == global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("furnace").Id || blockId == global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("lit_furnace").Id || blockId == global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("crafting_table").Id ||
+                blockId == global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("dispenser").Id)
             {
                 useAction = "Interact";
             }
-            else if (blockId == BlockRegistry.Get("door").Id || blockId == BlockRegistry.Get("iron_door").Id || blockId == BlockRegistry.Get("trapdoor").Id)
+            else if (blockId == global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("door").Id || blockId == global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("iron_door").Id || blockId == global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("trapdoor").Id)
             {
                 useAction = "Open/Close";
             }
-            else if (blockId == BlockRegistry.Get("lever").Id || blockId == BlockRegistry.Get("button").Id || blockId == BlockRegistry.Get("repeater").Id || blockId == BlockRegistry.Get("powered_repeater").Id)
+            else if (blockId == global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("lever").Id || blockId == global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("button").Id || blockId == global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("repeater").Id || blockId == global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("powered_repeater").Id)
             {
                 useAction = "Use";
             }
-            else if (blockId == BlockRegistry.Get("bed").Id)
+            else if (blockId == global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("bed").Id)
             {
                 useAction = "Sleep";
             }
-            else if (blockId == BlockRegistry.Get("cake").Id)
+            else if (blockId == global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("cake").Id)
             {
                 useAction = "Eat";
             }
-            else if (blockId == BlockRegistry.Get("jukebox").Id)
+            else if (blockId == global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("jukebox").Id)
             {
                 useAction = "Use";
             }

@@ -27,7 +27,7 @@ public class PlayerController
     public virtual bool SendBlockRemoved(int x, int y, int z, int direction)
     {
         var world = Game.World;
-        var block = BlockRegistry.GetByProtocolId(world.Reader.GetBlockId(x, y, z));
+        var block = world.Content.Blocks.GetByProtocolId(world.Reader.GetBlockId(x, y, z));
         world.Broadcaster.NotifyNeighbors(x, y, z, world.Reader.GetBlockId(x, y, z));
         var blockMeta = world.Reader.GetBlockMeta(x, y, z);
         var success = world.Writer.SetBlock(x, y, z, 0);
@@ -101,7 +101,7 @@ public class PlayerController
         if (targetId > 0 && !player.IsSneaking())
         {
             if (!player.GameMode.CanInteract) return false;
-            var used = BlockRegistry.GetByProtocolId(targetId).OnUse(new OnUseEvent(world, player, blockX, blockY, blockZ));
+            var used = world.Content.Blocks.GetByProtocolId(targetId).OnUse(new OnUseEvent(world, player, blockX, blockY, blockZ));
             if (used) return true;
         }
 

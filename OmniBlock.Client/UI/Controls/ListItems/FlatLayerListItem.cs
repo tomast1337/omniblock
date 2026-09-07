@@ -15,7 +15,7 @@ public class FlatLayerListItem(FlatLayerInfo layer) : ListItem<FlatLayerInfo>(la
     {
         base.Render(renderer);
 
-        var block = BlockRegistry.GetByProtocolId(Value.FillBlock);
+        var block = global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(Value.FillBlock);
         var blockName = block?.TranslateBlockName() ?? Translations.Get("newWorld.customize.unknown");
 
         renderer.DrawRect(4, 4, 18, 18, Color.BackgroundBlackAlpha);

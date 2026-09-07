@@ -167,7 +167,7 @@ internal class ChunkMeshGenerator : IDisposable
                         var id = cache.GetBlockId(x, y, z);
                         if (id <= 0) continue;
 
-                        var b = BlockRegistry.GetByProtocolId(id);
+                        var b = global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(id);
                         var blockPass = b.RenderLayer;
 
                         if (blockPass != pass)
@@ -229,7 +229,7 @@ internal class ChunkMeshGenerator : IDisposable
             return false;
         }
 
-        var candidate = BlockRegistry.GetByProtocolId(id);
+        var candidate = global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(id);
         if (candidate.RenderType != BlockRendererType.Standard || candidate.RenderLayer != 0)
         {
             block = null;

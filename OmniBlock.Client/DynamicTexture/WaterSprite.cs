@@ -2,7 +2,7 @@ using OmniBlock.Blocks;
 
 namespace OmniBlock.Client.DynamicTexture;
 
-internal class WaterSprite() : Rendering.Core.Textures.DynamicTexture(BlockRegistry.Get("flowing_water").TextureId)
+internal class WaterSprite() : Rendering.Core.Textures.DynamicTexture(global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("flowing_water").TextureId)
 {
     private readonly float[] _heat = new float[256];
     private readonly float[] _heatDelta = new float[256];

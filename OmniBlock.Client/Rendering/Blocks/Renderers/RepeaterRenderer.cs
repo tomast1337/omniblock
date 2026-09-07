@@ -24,7 +24,7 @@ public class RepeaterRenderer : IBlockRenderer
         // 2. Prepare Torch Rendering
         var luminance = 1.0F;
         ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
-        if (BlockRegistry.GetLightEmission(block.Id) > 0)
+        if (global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetLightEmission(block.Id) > 0)
         {
             // Halfway to full bright is not a light level, so the lit repeater's torch simply is
             // full bright now. It emits, so it was already close.

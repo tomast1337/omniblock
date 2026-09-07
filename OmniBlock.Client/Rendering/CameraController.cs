@@ -138,7 +138,7 @@ public class CameraController
             if (!_game.Options.DebugCamera)
             {
                 var blockId = _game.World.Reader.GetBlockId(MathHelper.Floor(cameraEntity.X), MathHelper.Floor(cameraEntity.Y), MathHelper.Floor(cameraEntity.Z));
-                if (blockId == BlockRegistry.Get("bed").Id)
+                if (blockId == _game.Content.Blocks.Get("bed").Id)
                 {
                     var meta = _game.World.Reader.GetBlockMeta(MathHelper.Floor(cameraEntity.X), MathHelper.Floor(cameraEntity.Y), MathHelper.Floor(cameraEntity.Z));
                     var rotation = meta & 3;

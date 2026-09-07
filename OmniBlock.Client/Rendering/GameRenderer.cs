@@ -583,9 +583,9 @@ public class GameRenderer
                     var zOffset = _random.NextFloat();
                     if (blockBelowId > 0)
                     {
-                        if (BlockRegistry.GetByProtocolId(blockBelowId).Material == Material.Lava)
+                        if (_client.Content.Blocks.GetByProtocolId(blockBelowId).Material == Material.Lava)
                         {
-                            _client.ParticleManager.AddSmoke(sampleX + xOffset, topSolidY + 0.1F - BlockRegistry.GetByProtocolId(blockBelowId).BoundingBox.MinY, sampleZ + zOffset, 0.0, 0.0, 0.0);
+                            _client.ParticleManager.AddSmoke(sampleX + xOffset, topSolidY + 0.1F - _client.Content.Blocks.GetByProtocolId(blockBelowId).BoundingBox.MinY, sampleZ + zOffset, 0.0, 0.0, 0.0);
                         }
                         else
                         {
@@ -593,11 +593,11 @@ public class GameRenderer
                             if (_random.NextInt(validDropCount) == 0)
                             {
                                 rainSoundX = sampleX + xOffset;
-                                rainSoundY = topSolidY + 0.1 - BlockRegistry.GetByProtocolId(blockBelowId).BoundingBox.MinY;
+                                rainSoundY = topSolidY + 0.1 - _client.Content.Blocks.GetByProtocolId(blockBelowId).BoundingBox.MinY;
                                 rainSoundZ = sampleZ + zOffset;
                             }
 
-                            _client.ParticleManager.AddRain(sampleX + xOffset, topSolidY + 0.1F - BlockRegistry.GetByProtocolId(blockBelowId).BoundingBox.MinY, sampleZ + zOffset);
+                            _client.ParticleManager.AddRain(sampleX + xOffset, topSolidY + 0.1F - _client.Content.Blocks.GetByProtocolId(blockBelowId).BoundingBox.MinY, sampleZ + zOffset);
                         }
                     }
                 }

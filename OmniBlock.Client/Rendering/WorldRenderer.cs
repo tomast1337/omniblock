@@ -413,7 +413,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void LoadRenderers()
     {
-        LeavesBehavior.SetGraphicsLevel(BlockRegistry.Get("leaves"), true);
+        LeavesBehavior.SetGraphicsLevel(_world.Content.Blocks.Get("leaves"), true);
         _renderDistance = _game.Options.RenderDistance;
 
         ChunkRenderer?.Dispose();
@@ -1093,7 +1093,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         _textureManager.BindTexture(_textureManager.GetTextureId("/terrain.png"));
 
         var targetBlockId = _world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
-        var targetBlock = targetBlockId > 0 ? BlockRegistry.GetByProtocolId(targetBlockId) : BlockRegistry.Get("stone");
+        var targetBlock = targetBlockId > 0 ? _world.Content.Blocks.GetByProtocolId(targetBlockId) : _world.Content.Blocks.Get("stone");
 
         var renderX = entityPlayer.LastTickX + (entityPlayer.X - entityPlayer.LastTickX) * tickDelta;
         var renderY = entityPlayer.LastTickY + (entityPlayer.Y - entityPlayer.LastTickY) * tickDelta;
@@ -1130,11 +1130,11 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             var blockId = _world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
             if (blockId > 0)
             {
-                BlockRegistry.GetByProtocolId(blockId).UpdateBoundingBox(_world.Reader, hit.BlockX, hit.BlockY, hit.BlockZ);
+                _world.Content.Blocks.GetByProtocolId(blockId).UpdateBoundingBox(_world.Reader, hit.BlockX, hit.BlockY, hit.BlockZ);
                 var renderX = player.LastTickX + (player.X - player.LastTickX) * tickDelta;
                 var renderY = player.LastTickY + (player.Y - player.LastTickY) * tickDelta;
                 var renderZ = player.LastTickZ + (player.Z - player.LastTickZ) * tickDelta;
-                DrawOutlinedBoundingBox(BlockRegistry.GetByProtocolId(blockId).GetBoundingBox(_world.Reader, _world.Entities, hit.BlockX, hit.BlockY, hit.BlockZ).Expand(outlinePadding, outlinePadding, outlinePadding).Offset(-renderX, -renderY, -renderZ));
+                DrawOutlinedBoundingBox(_world.Content.Blocks.GetByProtocolId(blockId).GetBoundingBox(_world.Reader, _world.Entities, hit.BlockX, hit.BlockY, hit.BlockZ).Expand(outlinePadding, outlinePadding, outlinePadding).Offset(-renderX, -renderY, -renderZ));
             }
 
             GLManager.TextureEnabled = true;
@@ -1195,7 +1195,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     public void WorldEventBreak(int blockId, int meta, int x, int y, int z)
     {
         if (blockId == 0) return;
-        var block = BlockRegistry.GetByProtocolId(blockId);
+        var block = _world.Content.Blocks.GetByProtocolId(blockId);
         WorldEventBreak(block, meta, x, y, z);
     }
 

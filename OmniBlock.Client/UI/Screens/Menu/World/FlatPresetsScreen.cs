@@ -15,9 +15,9 @@ public class FlatPresetsScreen(UIContext context, CreateFlatWorldScreen parent) 
     private readonly List<PresetItem> _presets =
     [
         new("Classic Flat", "2;7,2x3,2;1;village"),
-        new("Tunnelers' Dream", "2;7,230x1,5x3,2;1;biome_1,dungeon,decoration,stronghold,mineshaft", BlockRegistry.Get("stone").Id),
+        new("Tunnelers' Dream", "2;7,230x1,5x3,2;1;biome_1,dungeon,decoration,stronghold,mineshaft", global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("stone").Id),
         new("Water World", "2;7,5x1,5x3,5x12,90x9;1;village,biome_1"),
-        new("Overworld", "2;7,59x1,3x3,2;1;village,biome_1,decoration,stronghold,mineshaft,dungeon,lake,lava_lake", BlockRegistry.Get("dead_bush").Id),
+        new("Overworld", "2;7,59x1,3x3,2;1;village,biome_1,decoration,stronghold,mineshaft,dungeon,lake,lava_lake", global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("dead_bush").Id),
         new("Snowy Kingdom", "2;7,59x1,3x3,2,78;1;village,biome_1"),
         new("Bottomless Pit", "2;2x4,3x3,2;1;village,biome_1", context.Content.Items.Get("omniblock:feather").Id),
         new("Desert", "2;7,3x1,52x24,8x12;1;village,biome_1,decoration,stronghold,mineshaft,dungeon"),
@@ -135,7 +135,7 @@ public class FlatPresetsScreen(UIContext context, CreateFlatWorldScreen parent) 
         private static int GetIconIdFromValue(string value)
         {
             var info = FlatGeneratorInfo.CreateFromString(value);
-            return info.FlatLayers.Count > 0 ? info.FlatLayers[^1].FillBlock : BlockRegistry.Get("grass_block").Id;
+            return info.FlatLayers.Count > 0 ? info.FlatLayers[^1].FillBlock : global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("grass_block").Id;
         }
 
         private static int GetIconMetaFromValue(string value)

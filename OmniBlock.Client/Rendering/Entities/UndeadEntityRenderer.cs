@@ -21,7 +21,7 @@ public class UndeadEntityRenderer : LivingEntityRenderer
             ModelBipedMain.BipedRightArm.Transform(1.0F / 16.0F);
             GLManager.ModelView.Translate(-(1.0F / 16.0F), 7.0F / 16.0F, 1.0F / 16.0F);
             float itemScale;
-            if (heldItem.ItemId < 256 && BlockRenderer.IsSideLit(BlockRegistry.GetByProtocolId(heldItem.ItemId).RenderType))
+            if (heldItem.ItemId < 256 && BlockRenderer.IsSideLit(global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(heldItem.ItemId).RenderType))
             {
                 itemScale = 0.5F;
                 GLManager.ModelView.Translate(0.0F, 3.0F / 16.0F, -(5.0F / 16.0F));

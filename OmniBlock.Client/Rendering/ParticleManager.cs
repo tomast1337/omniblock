@@ -307,7 +307,7 @@ public class ParticleManager
         float r = 0.6f, g = 0.6f, b = 0.6f;
         var baseScale = RandomBaseScale() / 2.0f;
 
-        if (!(block == BlockRegistry.Get("grass_block") && texIndex != 0))
+        if (!(block == worldObj.Content.Blocks.Get("grass_block") && texIndex != 0))
         {
             var color = block.GetColorMultiplier(worldObj.Reader, blockX, blockY, blockZ, meta);
             r *= ((color >> 16) & 255) / 255.0f;
@@ -335,7 +335,7 @@ public class ParticleManager
         float r = 0.6f, g = 0.6f, b = 0.6f;
         var baseScale = RandomBaseScale() * sizeScale / 2.0f;
 
-        if (!(block == BlockRegistry.Get("grass_block") && texIndex != 0))
+        if (!(block == worldObj.Content.Blocks.Get("grass_block") && texIndex != 0))
         {
             var color = block.GetColorMultiplier(worldObj.Reader, blockX, blockY, blockZ, meta);
             r *= ((color >> 16) & 255) / 255.0f;
@@ -354,7 +354,7 @@ public class ParticleManager
 
         var texIndex = item.GetTextureId(0);
         var baseScale = RandomBaseScale() / 2.0f;
-        var gravity = BlockRegistry.Get("snow_block").ParticleFallSpeedModifier;
+        var gravity = worldObj.Content.Blocks.Get("snow_block").ParticleFallSpeedModifier;
 
         _layers[2].Add(ParticleType.Slime, x, y, z, bvx, bvy, bvz,
             1.0f, 1.0f, 1.0f, baseScale, gravity, texIndex,
@@ -368,7 +368,7 @@ public class ParticleManager
             return;
         }
 
-        var block = BlockRegistry.GetByProtocolId(blockId);
+        var block = worldObj.Content.Blocks.GetByProtocolId(blockId);
         AddBlockDestroyEffects(x, y, z, block, meta);
     }
 
@@ -398,7 +398,7 @@ public class ParticleManager
         var blockId = worldObj.Reader.GetBlockId(blockX, blockY, blockZ);
         if (blockId != 0)
         {
-            var block = BlockRegistry.GetByProtocolId(blockId);
+            var block = worldObj.Content.Blocks.GetByProtocolId(blockId);
             var bb = block.BoundingBox;
             var margin = 0.1F;
 

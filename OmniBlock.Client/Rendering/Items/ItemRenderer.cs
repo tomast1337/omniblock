@@ -53,13 +53,13 @@ public class ItemRenderer : EntityRenderer
         float minU;
         float maxU;
         float minV;
-        if (stack.ItemId < 256 && BlockRenderer.IsSideLit(BlockRegistry.GetByProtocolId(stack.ItemId).RenderType))
+        if (stack.ItemId < 256 && BlockRenderer.IsSideLit(global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(stack.ItemId).RenderType))
         {
             GLManager.ModelView.Rotate(spinAngle, 0.0F, 1.0F, 0.0F);
             loadTexture("/terrain.png");
             var blockScale = 0.25F;
-            if (!BlockRegistry.GetByProtocolId(stack.ItemId).IsFullCube() && stack.ItemId != BlockRegistry.Get("slab").Id
-                                                                          && BlockRegistry.GetByProtocolId(stack.ItemId).RenderType != BlockRendererType.PistonBase)
+            if (!global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(stack.ItemId).IsFullCube() && stack.ItemId != global::OmniBlock.Registries.ContentRuntime.Current.Blocks.Get("slab").Id
+                                                                          && global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(stack.ItemId).RenderType != BlockRendererType.PistonBase)
             {
                 blockScale = 0.5F;
             }
@@ -77,7 +77,7 @@ public class ItemRenderer : EntityRenderer
                     GLManager.ModelView.Translate(minU, maxU, minV);
                 }
 
-                BlockRenderer.RenderBlockOnInventory(BlockRegistry.GetByProtocolId(stack.ItemId), stack.GetDamage(), entityItem.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
+                BlockRenderer.RenderBlockOnInventory(global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(stack.ItemId), stack.GetDamage(), entityItem.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
                 GLManager.ModelView.Pop();
             }
         }
@@ -146,10 +146,10 @@ public class ItemRenderer : EntityRenderer
     {
         var itemId = item.Id;
         float blue;
-        if (itemId < 256 && BlockRenderer.IsSideLit(BlockRegistry.GetByProtocolId(itemId).RenderType))
+        if (itemId < 256 && BlockRenderer.IsSideLit(global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(itemId).RenderType))
         {
             textureManager.BindTexture(textureManager.GetTextureId("/terrain.png"));
-            var block = BlockRegistry.GetByProtocolId(itemId);
+            var block = global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(itemId);
             GLManager.ModelView.Push();
             GLManager.ModelView.Translate(x - 2, y + 3, -3.0F);
             GLManager.ModelView.Scale(10.0F, 10.0F, 10.0F);

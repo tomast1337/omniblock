@@ -136,7 +136,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         {
             GLManager.ModelView.Push();
             _modelBipedMain.BipedHead.Transform(1.0F / 16.0F);
-            if (BlockRenderer.IsSideLit(BlockRegistry.GetByProtocolId(helmetStack.ItemId).RenderType))
+            if (BlockRenderer.IsSideLit(global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(helmetStack.ItemId).RenderType))
             {
                 var helmetScale = 10.0F / 16.0F;
                 GLManager.ModelView.Translate(0.0F, -0.25F, 0.0F);
@@ -223,7 +223,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                 heldItem = new ItemStack(playerEntity.World.Content.Items.Get("omniblock:stick"));
             }
 
-            if (heldItem.ItemId < 256 && BlockRenderer.IsSideLit(BlockRegistry.GetByProtocolId(heldItem.ItemId).RenderType))
+            if (heldItem.ItemId < 256 && BlockRenderer.IsSideLit(global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(heldItem.ItemId).RenderType))
             {
                 heldItemScale = 0.5F;
                 GLManager.ModelView.Translate(0.0F, 3.0F / 16.0F, -(5.0F / 16.0F));

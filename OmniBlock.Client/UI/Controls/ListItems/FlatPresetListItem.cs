@@ -20,7 +20,7 @@ public class FlatPresetListItem(FlatPresetsScreen.PresetItem preset) : ListItem<
 
         if (Value.IconId < 256)
         {
-            var block = BlockRegistry.GetByProtocolId(Value.IconId);
+            var block = global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(Value.IconId);
             if (block != null)
             {
                 var textureId = block.GetTexture(Side.Up);

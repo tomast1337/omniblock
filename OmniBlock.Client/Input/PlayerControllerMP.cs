@@ -58,12 +58,12 @@ public class PlayerControllerMP : PlayerController
             var blockId = Game.World.Reader.GetBlockId(x, y, z);
             if (blockId > 0 && _curBlockDamageMp == 0.0F && Game.Player.GameMode.CanInteract)
             {
-                BlockRegistry.GetByProtocolId(blockId).OnBlockBreakStart(new OnBlockBreakStartEvent(Game.World, Game.Player, x, y, z));
+                Game.Content.Blocks.GetByProtocolId(blockId).OnBlockBreakStart(new OnBlockBreakStartEvent(Game.World, Game.Player, x, y, z));
             }
 
             if (!Game.Player.GameMode.CanBreak) return;
 
-            if (blockId > 0 && BlockRegistry.GetByProtocolId(blockId).GetHardness(Game.Player) >= Game.Player.GameMode.BreakSpeed)
+            if (blockId > 0 && Game.Content.Blocks.GetByProtocolId(blockId).GetHardness(Game.Player) >= Game.Player.GameMode.BreakSpeed)
             {
                 var meta = Game.World.Reader.GetBlockMeta(x, y, z);
                 if (SendBlockRemoved(x, y, z, direction))
@@ -110,14 +110,14 @@ public class PlayerControllerMP : PlayerController
                         return;
                     }
 
-                    var block = BlockRegistry.GetByProtocolId(blockId);
+                    var block = Game.Content.Blocks.GetByProtocolId(blockId);
 
                     // If it's an unknown block id, break behavior will be handled on server.
                     if (block == null)
                     {
                         if (_mineSoundTimer++ % 4 == 0)
                         {
-                            Game.SoundManager.PlayStepSound(BlockRegistry.Get("bedrock").SoundGroup, x, y, z);
+                            Game.SoundManager.PlayStepSound(Game.Content.Blocks.Get("bedrock").SoundGroup, x, y, z);
                         }
 
                         return;

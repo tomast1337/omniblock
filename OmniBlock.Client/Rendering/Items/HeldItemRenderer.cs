@@ -35,10 +35,10 @@ public class HeldItemRenderer
     public void renderItem(EntityLiving entity, ItemStack item)
     {
         GLManager.ModelView.Push();
-        if (item.ItemId < 256 && BlockRenderer.IsSideLit(BlockRegistry.GetByProtocolId(item.ItemId).RenderType))
+        if (item.ItemId < 256 && BlockRenderer.IsSideLit(global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(item.ItemId).RenderType))
         {
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId("/terrain.png"));
-            BlockRenderer.RenderBlockOnInventory(BlockRegistry.GetByProtocolId(item.ItemId), item.GetDamage(), entity.GetBrightnessAtEyes(1.0F), Tessellator.instance);
+            BlockRenderer.RenderBlockOnInventory(global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(item.ItemId), item.GetDamage(), entity.GetBrightnessAtEyes(1.0F), Tessellator.instance);
         }
         else
         {
@@ -321,7 +321,7 @@ public class HeldItemRenderer
             var blockId = _game.World.Reader.GetBlockId(blockX, blockY, blockZ);
             if (_game.World.Reader.ShouldSuffocate(blockX, blockY, blockZ))
             {
-                renderInsideOfBlock(tickDelta, BlockRegistry.GetByProtocolId(blockId).GetTexture(Side.North));
+                renderInsideOfBlock(tickDelta, global::OmniBlock.Registries.ContentRuntime.Current.Blocks.GetByProtocolId(blockId).GetTexture(Side.North));
             }
             else
             {
@@ -340,7 +340,7 @@ public class HeldItemRenderer
                 }
             }
 
-            if (BlockRegistry.TryGetByProtocolId(blockId, out var block))
+            if (global::OmniBlock.Registries.ContentRuntime.Current.Blocks.TryGetByProtocolId(blockId, out var block))
             {
                 renderInsideOfBlock(tickDelta, block.GetTexture(Side.North));
             }
