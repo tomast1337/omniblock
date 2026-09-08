@@ -310,3 +310,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-09-08 — refactor: enhance chunk rendering prediction and scheduling with velocity-based mesh prefetching (Nicolas Vyčas Nery; `3744b172beac95f7ba4d9b2dcd9a1799a2b48cc6`)
 - 2026-09-08 — refactor: enhance chunk streaming prefetching and management with new offset calculations and reconciliation logic (Nicolas Vyčas Nery; `c5e6a298f71f90912446da8b0e645a680f8e47a6`)
 - 2026-09-08 — refactor: implement mesh work priority system for chunk rendering and scheduling (Nicolas Vyčas Nery; `3009c1c22f40378604930b01c0a46f8edc5f4dcf`)
+- 2026-09-08 — refactor: add mesh pending and request-to-GPU metrics to Luau client state (Nicolas Vyčas Nery; `ecd0ed8e0494f0041a7addb49d72d5944c8fe28a`)

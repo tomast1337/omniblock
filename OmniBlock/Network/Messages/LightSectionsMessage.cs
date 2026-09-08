@@ -94,14 +94,16 @@ public sealed class LightSectionsMessage : Message
     }
 
     /// <summary>
-    ///     Writes every section this message names into a chunk.
+    ///     Writes every changed section this message names into a chunk and returns their mask.
     /// </summary>
     /// <remarks>
-    ///     Refuses a payload that does not hold exactly what the mask claims. The two come from the
+    ///     Refuses a payload that does not hold exactly what the mask claims. Sections already equal
+    ///     to the snapshot are not rewritten or reported, avoiding redundant client mesh rebuilds.
+    ///     The two come from the
     ///     same peer, so a mask naming fewer sections than the payload carries cannot be used to
     ///     smuggle an over-large expansion past the limit.
     /// </remarks>
-    public void ApplyTo(Chunk chunk)
+    public uint ApplyTo(Chunk chunk)
     {
         ArgumentNullException.ThrowIfNull(chunk);
 
@@ -115,6 +117,8 @@ public sealed class LightSectionsMessage : Message
         }
 
         var offset = 0;
+        var changedSections = 0u;
+        var current = new byte[Chunk.LightSectionPayloadBytes];
 
         for (var section = 0; section < Chunk.LightSectionCount; section++)
         {
@@ -123,9 +127,18 @@ public sealed class LightSectionsMessage : Message
                 continue;
             }
 
-            chunk.ApplyLightSection(section, raw.AsSpan(offset, Chunk.LightSectionPayloadBytes));
+            var incoming = raw.AsSpan(offset, Chunk.LightSectionPayloadBytes);
+            chunk.CopyLightSection(section, current);
+            if (!incoming.SequenceEqual(current))
+            {
+                chunk.ApplyLightSection(section, incoming);
+                changedSections |= 1u << section;
+            }
+
             offset += Chunk.LightSectionPayloadBytes;
         }
+
+        return changedSections;
     }
 
     private byte[] Decompress()

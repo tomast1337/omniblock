@@ -24,6 +24,16 @@ selection, options, new-world loading, and loading the checked-in fixture.
 Each script exits through `OMNI.test.pass()`; results and captured client logs
 are written under `artifacts/e2e-local/` by default.
 
+World scenarios can observe the renderer without controlling renderer internals:
+
+```lua
+OMNI.client.state.meshPending         -- queued, dirty, or awaiting-upload meshes
+OMNI.client.state.meshRequestToGpuMs  -- average request-to-upload latency in milliseconds
+```
+
+Both values are live and read-only. They are intended for streaming-health assertions and
+diagnostics; performance budgets should account for the CI renderer and host hardware.
+
 The following environment variables are optional:
 
 - `E2E_ARTIFACTS_DIR`: artifact output directory.

@@ -1093,11 +1093,24 @@ public class ClientNetworkHandler : NetHandler
             return;
         }
 
-        message.ApplyTo(_worldClient.BlockHost.GetChunk(message.ChunkX, message.ChunkZ));
+        var changedSections = message.ApplyTo(
+            _worldClient.BlockHost.GetChunk(message.ChunkX, message.ChunkZ));
+        var worldX = message.ChunkX * 16;
+        var worldZ = message.ChunkZ * 16;
 
-        _worldClient.setBlocksDirty(
-            message.ChunkX * 16, 0, message.ChunkZ * 16,
-            message.ChunkX * 16 + 15, ChuckFormat.WorldHeight - 1, message.ChunkZ * 16 + 15);
+        // The wire already names the vertical sections it carries. Invalidating the whole column
+        // discarded that information: one lava-light update could rebuild every vertical mesh and,
+        // after the renderer's one-cell AO border, sections in eight neighbouring columns too.
+        // Repeated snapshots that contain no changed bytes now schedule no rendering work at all.
+        for (var section = 0; section < Chunk.LightSectionCount; section++)
+        {
+            if ((changedSections & (1u << section)) == 0) continue;
+
+            var minY = section * Chunk.LightSectionHeight;
+            _worldClient.setBlocksDirty(
+                worldX, minY, worldZ,
+                worldX + 15, minY + Chunk.LightSectionHeight - 1, worldZ + 15);
+        }
     }
 
     private void onDisconnect(DisconnectMessage packet)

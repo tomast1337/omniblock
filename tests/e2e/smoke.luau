@@ -29,4 +29,8 @@ OMNI.waitUntil(function()
 end, 60, 0.05)
 
 assert(OMNI.client.state.worldId == "e2e-smoke", "the wrong world was loaded")
+assert(type(OMNI.client.state.meshPending) == "number", "mesh backlog is unavailable")
+assert(OMNI.client.state.meshPending >= 0, "mesh backlog cannot be negative")
+assert(type(OMNI.client.state.meshRequestToGpuMs) == "number", "mesh latency is unavailable")
+assert(OMNI.client.state.meshRequestToGpuMs >= 0, "mesh latency cannot be negative")
 OMNI.test.pass()

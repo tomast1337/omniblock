@@ -17,7 +17,8 @@ internal sealed partial class LuauCompletion
 
     private static readonly string[] s_omniMembers = ["client", "config", "environment", "has", "run", "test", "ui", "wait", "waitUntil"];
     private static readonly string[] s_clientMembers = ["state", "worlds"];
-    private static readonly string[] s_clientStateMembers = ["playerReady", "worldId", "worldLoaded"];
+    private static readonly string[] s_clientStateMembers =
+        ["meshPending", "meshRequestToGpuMs", "playerReady", "worldId", "worldLoaded"];
     private static readonly string[] s_testMembers = ["fail", "pass"];
     private static readonly string[] s_worldMembers = ["list", "load"];
     private static readonly string[] s_uiMembers = ["hud", "querySelector", "root", "screen"];

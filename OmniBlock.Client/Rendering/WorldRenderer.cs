@@ -1175,7 +1175,11 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void MarkBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
+        if (maxY < 0 || minY >= ChuckFormat.WorldHeight) return;
+
         var (start, end) = GetSectionRange(minX, minY, minZ, maxX, maxY, maxZ);
+        start.Y = Math.Max(0, start.Y);
+        end.Y = Math.Min(ChuckFormat.WorldHeight / SubChunkRenderer.Size - 1, end.Y);
 
         for (var x = start.X; x <= end.X; x++)
         {

@@ -133,6 +133,15 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     public bool UseOcclusionCulling { get; set; } = true;
     internal ChunkMeshProfileSnapshot MeshProfile => _meshGenerator.Profile;
+    internal int PendingMeshWork
+    {
+        get
+        {
+            var profile = MeshProfile;
+            return _dirtyChunks.Count + _lightingUpdates.Count + profile.Queued +
+                   profile.CriticalResults + profile.ForegroundResults + profile.BackgroundResults;
+        }
+    }
     internal void ResetMeshProfile() => _meshGenerator.ResetProfile();
 
     public int TotalChunks => _renderers.Count;

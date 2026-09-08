@@ -448,6 +448,8 @@ public partial class OmniBlock :
                 World != null && Player != null &&
                 CurrentScreen is not (LevelLoadingScreen or ConnectingScreen or DownloadingTerrainScreen);
             LuauClientStateHost.WorldId = () => World != null && InternalServer != null ? _singleplayerWorldId : null;
+            LuauClientStateHost.MeshPending = () => WorldRenderer?.ChunkRenderer.PendingMeshWork ?? 0;
+            LuauClientStateHost.MeshRequestToGpuMs = () => WorldRenderer?.ChunkRenderer.MeshProfile.RequestToUploadMs ?? 0;
             LuauClientStateHost.Install(LuauState.Handle);
             if (!LuauState.TryExecute(LuauClientStateHost.Bootstrap, out var clientStateBootstrapError))
             {
@@ -774,6 +776,8 @@ public partial class OmniBlock :
             LuauClientStateHost.WorldLoaded = null;
             LuauClientStateHost.PlayerReady = null;
             LuauClientStateHost.WorldId = null;
+            LuauClientStateHost.MeshPending = null;
+            LuauClientStateHost.MeshRequestToGpuMs = null;
             LuauTestHost.Pass = null;
             LuauTestHost.Fail = null;
             _luauWorldService = null;

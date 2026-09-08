@@ -1,4 +1,5 @@
 using OmniBlock.Network.Messages;
+using OmniBlock.Worlds.Chunks;
 
 namespace OmniBlock.Tests.Network;
 
@@ -49,8 +50,37 @@ public sealed class LightSectionsRoundTripTests
         var dark = destination.BlockHost.GetChunk(0, 0);
         Assert.Equal(0, dark.GetPackedLight(8, 80, 8));
 
-        received.ApplyTo(dark);
+        var changedSections = received.ApplyTo(dark);
 
         Assert.Equal(lit.GetPackedLight(8, 80, 8), dark.GetPackedLight(8, 80, 8));
+        Assert.NotEqual(0u, changedSections);
+        Assert.Equal(0u, received.ApplyTo(dark));
+    }
+
+    [Fact]
+    public void Applying_light_reports_only_sections_whose_bytes_changed()
+    {
+        LightTestWorld source = new();
+        source.Chunks.Add(0, 0);
+        source.DrainLighting();
+        var sourceChunk = source.BlockHost.GetChunk(0, 0);
+
+        const int changedSection = 5;
+        const int unchangedSection = 1;
+        var sent = LightSectionsMessage.Of(
+            sourceChunk,
+            (1u << changedSection) | (1u << unchangedSection));
+
+        LightTestWorld destination = new();
+        destination.Chunks.Add(0, 0, populateLight: false);
+        var destinationChunk = destination.BlockHost.GetChunk(0, 0);
+
+        // Make one named section identical before applying the message. The transport mask says
+        // what was sent; the returned mask says what actually needs a client-side rebuild.
+        var unchanged = new byte[Chunk.LightSectionPayloadBytes];
+        sourceChunk.CopyLightSection(unchangedSection, unchanged);
+        destinationChunk.ApplyLightSection(unchangedSection, unchanged);
+
+        Assert.Equal(1u << changedSection, sent.ApplyTo(destinationChunk));
     }
 }

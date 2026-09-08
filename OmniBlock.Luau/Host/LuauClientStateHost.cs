@@ -13,6 +13,8 @@ public static unsafe class LuauClientStateHost
                                             if key == "worldLoaded" then return __ClientState.worldLoaded() end
                                             if key == "playerReady" then return __ClientState.playerReady() end
                                             if key == "worldId" then return __ClientState.worldId() end
+                                            if key == "meshPending" then return __ClientState.meshPending() end
+                                            if key == "meshRequestToGpuMs" then return __ClientState.meshRequestToGpuMs() end
                                             return nil
                                         end,
                                         __newindex = function()
@@ -24,13 +26,17 @@ public static unsafe class LuauClientStateHost
     public static Func<bool>? WorldLoaded;
     public static Func<bool>? PlayerReady;
     public static Func<string?>? WorldId;
+    public static Func<double>? MeshPending;
+    public static Func<double>? MeshRequestToGpuMs;
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 3);
+        LuauNative.lua_createtable(l, 0, 5);
         Add(l, "worldLoaded", &WorldLoadedClosure);
         Add(l, "playerReady", &PlayerReadyClosure);
         Add(l, "worldId", &WorldIdClosure);
+        Add(l, "meshPending", &MeshPendingClosure);
+        Add(l, "meshRequestToGpuMs", &MeshRequestToGpuMsClosure);
         LuauNative.lua_setfield(l, LuauNative.GlobalsIndex, "__ClientState");
     }
 
@@ -72,6 +78,20 @@ public static unsafe class LuauClientStateHost
         return 1;
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int MeshPendingClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(MeshPending));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int MeshRequestToGpuMsClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(MeshRequestToGpuMs));
+        return 1;
+    }
+
     private static bool ReadBool(Func<bool>? getter)
     {
         try
@@ -82,6 +102,19 @@ public static unsafe class LuauClientStateHost
         {
             // Managed exceptions must never cross an unmanaged Luau callback boundary.
             return false;
+        }
+    }
+
+    private static double ReadNumber(Func<double>? getter)
+    {
+        try
+        {
+            return getter?.Invoke() ?? 0;
+        }
+        catch
+        {
+            // Managed exceptions must never cross an unmanaged Luau callback boundary.
+            return 0;
         }
     }
 }
