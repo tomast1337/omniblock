@@ -4,6 +4,7 @@ using OmniBlock.Client.Options;
 using OmniBlock.Client.Rendering.Chunks.Occlusion;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.WebGPU;
+using OmniBlock.Client.Worlds;
 using OmniBlock.Profiling;
 using OmniBlock.Util;
 using OmniBlock.Util.Maths;
@@ -34,6 +35,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly List<ChunkToMeshInfo> _dirtyChunks = [];
     private readonly List<ChunkToMeshInfo> _lightingUpdates = [];
     private readonly HashSet<Vector3D<int>> _priorityChunks = [];
+    private readonly HashSet<Vector3D<int>> _startupMeshRetries = [];
     private readonly ChunkMeshGenerator _meshGenerator;
     private readonly List<SubChunkRenderer> _occludedRenderersBuffer = [];
     private readonly ChunkOcclusionCuller _occlusionCuller = new();
@@ -383,6 +385,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 }
 
                 _priorityChunks.Remove(mesh.Pos);
+                if (_world is ClientWorld clientWorld)
+                    clientWorld.NetworkHandler.NotifyMeshUploaded(mesh.Pos);
             }
             else
             {
@@ -497,6 +501,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         var bestIndex = -1;
         var bestPriority = false;
+        var bestVisible = false;
         var bestDist = double.MaxValue;
         for (var i = 0; i < _dirtyChunks.Count; i++)
         {
@@ -509,12 +514,15 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             );
 
             var dist = Vector3D.DistanceSquared(ToDoubleVec(info.Pos), _lastViewPos);
-            if (camera.IsBoundingBoxInFrustum(aabb) &&
-                (info.Priority && !bestPriority || info.Priority == bestPriority && dist < bestDist))
+            var visible = camera.IsBoundingBoxInFrustum(aabb);
+            if (info.Priority && !bestPriority ||
+                info.Priority == bestPriority && visible && !bestVisible ||
+                info.Priority == bestPriority && visible == bestVisible && dist < bestDist)
             {
                 bestDist = dist;
                 bestIndex = i;
                 bestPriority = info.Priority;
+                bestVisible = visible;
             }
         }
 
@@ -595,6 +603,15 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         const int MAX_CHUNKS_PER_FRAME = 32;
         const int PRIORITY_PASS_LIMIT = 1024;
         const int BACKGROUND_PASS_LIMIT = 2048;
+
+        // The ordinary spherical discovery scan is deliberately bounded and skips positions that
+        // already own version state. Initial loading has a stronger contract: every section that
+        // can make the central 3x3 playable area ready must be discovered, and an existing background job
+        // must be promoted instead of skipped. This also prevents a whole edge stripe from waiting
+        // for the background cursor to wrap around the render distance.
+        if (_world is ClientWorld clientWorld)
+            foreach (var required in clientWorld.NetworkHandler.Preload.RequiredMeshSections())
+                PrioritizeMesh(required);
 
         for (var i = 0; i < PRIORITY_PASS_LIMIT && i < s_spiralOffsets.Length; i++)
         {
@@ -707,6 +724,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         if (!IsChunkInRenderDistance(chunkPos, _lastViewPos))
             return false;
 
+        // During initial entry, the central 3x3 playable area must not sit behind thousands of ordinary
+        // render-distance sections. This is deliberately inferred here so every discovery and
+        // dirtying path applies the same startup priority.
+        if (!priority && _world is ClientWorld clientWorld && clientWorld.NetworkHandler.Preload.RequiresMesh(chunkPos))
+            priority = true;
+
         // The snapshot needs one cell of neighbor padding, but it already reads a missing column
         // through ChunkSource's empty-chunk fallback. Requiring the whole neighbor ring here made
         // a fully received, interactive chunk invisible until every adjacent streaming placeholder
@@ -746,6 +769,43 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
 
         return false;
+    }
+
+    private void PrioritizeMesh(Vector3D<int> chunkPos)
+    {
+        if (_renderers.ContainsKey(chunkPos))
+            return;
+
+        if (_chunkVersions.ContainsKey(chunkPos))
+        {
+            _priorityChunks.Add(chunkPos);
+
+            for (var i = 0; i < _dirtyChunks.Count; i++)
+                if (_dirtyChunks[i].Pos == chunkPos)
+                {
+                    if (!_dirtyChunks[i].Priority)
+                        _dirtyChunks[i] = new ChunkToMeshInfo(
+                            _dirtyChunks[i].Pos,
+                            _dirtyChunks[i].Version,
+                            true);
+                    return;
+                }
+
+            if (_meshGenerator.Promote(chunkPos))
+                return;
+
+            // Version state can outlive the request that created it (for example when an early
+            // result was discarded). Discovery normally interprets that state as "already seen"
+            // and never retries it. Give each startup section one fresh version so such an orphan
+            // cannot hold the loading screen indefinitely. If a worker still owns the old version,
+            // normal stale-result handling will immediately rebuild this promoted replacement.
+            if (_startupMeshRetries.Add(chunkPos))
+                MarkDirty(chunkPos, true);
+
+            return;
+        }
+
+        MarkDirty(chunkPos, true);
     }
 
     internal static bool HasRenderableSourceChunk(World world, Vector3D<int> sectionPos)

@@ -12,6 +12,7 @@ public class LightingEngine : ILightProvider
     private readonly int _farmlandId;
 
     private readonly List<LightUpdate> _lightingQueue = [];
+    private readonly object _lightingQueueGate = new();
     private readonly ILogger<LightingEngine> _logger = Log.Instance.For<LightingEngine>();
     private readonly HashSet<PendingLightCell> _pendingLightCells = [];
     private readonly int _slabId;
@@ -29,7 +30,13 @@ public class LightingEngine : ILightProvider
         _woodenStairsId = ResolveOptionalBlockId("wooden_stairs");
     }
 
-    internal int PendingUpdateCount => _lightingQueue.Count;
+    internal int PendingUpdateCount
+    {
+        get
+        {
+            lock (_lightingQueueGate) return _lightingQueue.Count;
+        }
+    }
 
     public float GetNaturalBrightness(int x, int y, int z, int blockLight)
     {
@@ -238,6 +245,8 @@ public class LightingEngine : ILightProvider
 
     public bool DoLightingUpdates()
     {
+        lock (_lightingQueueGate)
+        {
         if (_lightingUpdatesCounter >= 50)
         {
             return false;
@@ -276,6 +285,7 @@ public class LightingEngine : ILightProvider
         {
             --_lightingUpdatesCounter;
         }
+        }
     }
 
     public void QueueLightUpdate(LightType type, int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
@@ -283,6 +293,8 @@ public class LightingEngine : ILightProvider
 
     public void QueueLightUpdate(LightType type, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, bool attemptMerge)
     {
+        lock (_lightingQueueGate)
+        {
         // A remote world holds only the light the wire writes — the chunk blob on load, the
         // section snapshot on change. Propagating locally here would race that snapshot with a
         // locally derived answer that can diverge while a neighbour is still loading, and nothing
@@ -356,6 +368,7 @@ public class LightingEngine : ILightProvider
         finally
         {
             --_lightingUpdatesScheduled;
+        }
         }
     }
 

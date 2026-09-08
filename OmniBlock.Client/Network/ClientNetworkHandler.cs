@@ -26,6 +26,7 @@ using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Mechanics;
 using OmniBlock.Worlds.Storage;
+using Silk.NET.Maths;
 
 namespace OmniBlock.Client.Network;
 
@@ -78,6 +79,8 @@ public class ClientNetworkHandler : NetHandler
 
     private long _snapshotRecords;
     private bool _terrainLoaded;
+
+    public ClientWorldPreloadState Preload { get; } = new();
 
     private int _ticks;
     private ClientWorld _worldClient;
@@ -557,6 +560,7 @@ public class ClientNetworkHandler : NetHandler
             worldX, 0, worldZ, worldX + 15, ChuckFormat.WorldHeight - 1, worldZ + 15);
 
         _worldClient.ApplyChunkBlob(message.ChunkX, message.ChunkZ, blob);
+        Preload.MarkChunkDecoded(message.ChunkX, message.ChunkZ);
 
         _chunksFromCache++;
         _chunkBytesSaved += blob.Length;
@@ -583,6 +587,7 @@ public class ClientNetworkHandler : NetHandler
 
         var blob = message.Decompress();
         _worldClient.ApplyChunkBlob(message.ChunkX, message.ChunkZ, blob);
+        Preload.MarkChunkDecoded(message.ChunkX, message.ChunkZ);
 
         // Stored compressed, exactly as it arrived. The blob is six times larger and we already
         // hold the small version, so decompressing to store it would spend disk to save a
@@ -1023,11 +1028,15 @@ public class ClientNetworkHandler : NetHandler
             ent.PrevY = ent.Y;
             ent.PrevZ = ent.Z;
             _terrainLoaded = true;
-            _context.Navigator.Navigate(null);
+            Preload.SetSpawn(ent.X, ent.Y, ent.Z);
         }
     }
 
-    private void onChunkStatusUpdate(ChunkStatusUpdateMessage packet) => _worldClient.UpdateChunk(packet.X, packet.Z, packet.Loaded);
+    private void onChunkStatusUpdate(ChunkStatusUpdateMessage packet)
+    {
+        _worldClient.UpdateChunk(packet.X, packet.Z, packet.Loaded);
+        if (!packet.Loaded) Preload.MarkChunkUnloaded(packet.X, packet.Z);
+    }
 
     private void onChunkDeltaUpdate(ChunkDeltaUpdateMessage packet)
     {
@@ -1054,7 +1063,17 @@ public class ClientNetworkHandler : NetHandler
     {
         _worldClient.ClearBlockResets(message.X, message.Y, message.Z, message.X + message.SizeX - 1, message.Y + message.SizeY - 1, message.Z + message.SizeZ - 1);
         _worldClient.HandleChunkDataUpdate(message.X, message.Y, message.Z, message.SizeX, message.SizeY, message.SizeZ, message.Decompress());
+        var minChunkX = message.X >> 4;
+        var maxChunkX = (message.X + message.SizeX - 1) >> 4;
+        var minChunkZ = message.Z >> 4;
+        var maxChunkZ = (message.Z + message.SizeZ - 1) >> 4;
+        for (var chunkX = minChunkX; chunkX <= maxChunkX; chunkX++)
+        for (var chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++)
+            if (_worldClient.BlockHost.GetChunk(chunkX, chunkZ).Loaded)
+                Preload.MarkChunkDecoded(chunkX, chunkZ);
     }
+
+    public void NotifyMeshUploaded(Vector3D<int> sectionWorldPos) => Preload.MarkMeshUploaded(sectionWorldPos);
 
     private void onBlockUpdate(BlockUpdateMessage packet) => _worldClient.SetBlockWithMetaFromPacket(packet.X, packet.Y, packet.Z, packet.BlockRawId, packet.BlockMetadata);
 
@@ -1283,6 +1302,7 @@ public class ClientNetworkHandler : NetHandler
             Snapshots.Reset();
 
             _terrainLoaded = false;
+            Preload.Reset();
             _worldClient = new ClientWorld(this, _worldClient.Properties.RandomSeed, packet.DimensionId, _worldClient.Content)
             {
                 IsRemote = true

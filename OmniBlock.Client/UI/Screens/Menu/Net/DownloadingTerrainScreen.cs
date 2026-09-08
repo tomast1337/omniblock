@@ -10,6 +10,7 @@ namespace OmniBlock.Client.UI.Screens.Menu.Net;
 public class DownloadingTerrainScreen(UIContext context, ClientNetworkHandler networkHandler) : UIScreen(context)
 {
     private readonly ClientNetworkHandler _networkHandler = networkHandler;
+    private Label _progress = null!;
     private int _tickCounter;
 
     public override bool PausesGame => false;
@@ -27,6 +28,15 @@ public class DownloadingTerrainScreen(UIContext context, ClientNetworkHandler ne
             Centered = true
         };
         Root.AddChild(label);
+
+        _progress = new Label
+        {
+            Text = "Waiting for spawn...",
+            TextColor = Color.White,
+            Centered = true
+        };
+        _progress.Style.MarginTop = 8;
+        Root.AddChild(_progress);
     }
 
     public override void Update(float partialTicks)
@@ -40,6 +50,17 @@ public class DownloadingTerrainScreen(UIContext context, ClientNetworkHandler ne
         }
 
         _networkHandler?.Tick();
+
+        var preload = _networkHandler.Preload;
+        _progress.Text = !preload.HasSpawn
+            ? "Waiting for spawn..."
+            : $"Terrain {preload.DecodedChunks}/{preload.RequiredChunks}  " +
+              $"Meshes {preload.UploadedMeshes}/{preload.RequiredMeshes}";
+
+        if (preload.IsReady)
+        {
+            Context.Navigator.Navigate(null);
+        }
     }
 
     public override void KeyTyped(int key, char character)
