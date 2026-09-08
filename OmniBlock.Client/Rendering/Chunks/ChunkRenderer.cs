@@ -20,6 +20,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 {
     private const int MaxRenderDistance = 32 + 1;
     private const int MaxMeshWorkers = 8;
+    internal const int MeshSafetyRingRadius = 3;
+    internal const long MeshAgePromotionTicks = 120;
 
     //TODO: MAKE THIS CONFIGURABLE
     private const double MeshUploadBudgetMs = 1.5;
@@ -68,6 +70,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly World _world;
     private int _currentIndex;
     private int _frameIndex;
+    private long _schedulerTick;
     private ICuller? _lastCamera;
     private int _lastRenderDistance;
     private Vector3D<double> _lastViewPos;
@@ -188,6 +191,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         {
             _occlusionCuller.FindVisible(
                 this,
+                _renderers.Values.Select(static state => state.Renderer),
                 cameraState?.Renderer,
                 renderParams.ViewPos,
                 renderParams.Camera,
@@ -501,9 +505,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private bool TryDispatchBestDirtyMeshUpdate(ICuller? camera)
     {
         var bestIndex = -1;
-        var bestPriority = false;
-        var bestVisible = false;
-        var bestDist = double.MaxValue;
+        var bestRank = (Tier: int.MaxValue, EnqueuedAt: long.MaxValue, DistanceSquared: double.MaxValue);
         for (var i = 0; i < _dirtyChunks.Count; i++)
         {
             var info = _dirtyChunks[i];
@@ -514,16 +516,18 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 info.Pos.Z + SubChunkRenderer.Size
             );
 
-            var dist = Vector3D.DistanceSquared(ToDoubleVec(info.Pos), _lastViewPos);
             var visible = camera?.IsBoundingBoxInFrustum(aabb) ?? false;
-            if (info.Priority && !bestPriority ||
-                info.Priority == bestPriority && visible && !bestVisible ||
-                info.Priority == bestPriority && visible == bestVisible && dist < bestDist)
+            var rank = GetMeshSchedulingRank(
+                info.Pos,
+                _lastViewPos,
+                info.Priority,
+                visible,
+                info.EnqueuedAt,
+                _schedulerTick);
+            if (rank.CompareTo(bestRank) < 0)
             {
-                bestDist = dist;
                 bestIndex = i;
-                bestPriority = info.Priority;
-                bestVisible = visible;
+                bestRank = rank;
             }
         }
 
@@ -533,9 +537,38 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
 
         var closest = _dirtyChunks[bestIndex];
-        _meshGenerator.MeshChunk(_world, closest.Pos, closest.Version, _options.AlternateBlocksEnabled, closest.Priority);
+        var workerPriority = closest.Priority || IsInMeshSafetyRing(closest.Pos, _lastViewPos);
+        _meshGenerator.MeshChunk(_world, closest.Pos, closest.Version, _options.AlternateBlocksEnabled, workerPriority);
         _dirtyChunks.RemoveAt(bestIndex);
         return true;
+    }
+
+    internal static (int Tier, long EnqueuedAt, double DistanceSquared) GetMeshSchedulingRank(
+        Vector3D<int> position,
+        Vector3D<double> viewPosition,
+        bool urgent,
+        bool visible,
+        long enqueuedAt,
+        long schedulerTick)
+    {
+        var baseTier = urgent ? 0 : IsInMeshSafetyRing(position, viewPosition) ? 1 : visible ? 2 : 3;
+        var age = Math.Max(0, schedulerTick - enqueuedAt);
+        // Old background work eventually competes with visible work, where its older enqueue time
+        // wins the tie. It never displaces the permanent safety ring or urgent gameplay work.
+        var minimumTier = baseTier <= 1 ? baseTier : 2;
+        var promotedTier = Math.Max(minimumTier, baseTier - (int)(age / MeshAgePromotionTicks));
+        return (promotedTier, enqueuedAt, Vector3D.DistanceSquared(ToDoubleVec(position), viewPosition));
+    }
+
+    internal static bool IsInMeshSafetyRing(Vector3D<int> position, Vector3D<double> viewPosition)
+    {
+        var centerX = (int)Math.Floor(viewPosition.X / SubChunkRenderer.Size);
+        var centerZ = (int)Math.Floor(viewPosition.Z / SubChunkRenderer.Size);
+        var chunkX = position.X / SubChunkRenderer.Size;
+        var chunkZ = position.Z / SubChunkRenderer.Size;
+        var deltaX = chunkX - centerX;
+        var deltaZ = chunkZ - centerZ;
+        return deltaX * deltaX + deltaZ * deltaZ <= MeshSafetyRingRadius * MeshSafetyRingRadius;
     }
 
     private bool TryDispatchBestLightingMeshUpdate()
@@ -590,7 +623,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         using var _chunkTick = Profiler.Begin("ChunkTick");
 
+        _schedulerTick++;
         _lastViewPos = viewPos;
+        if (_schedulerTick % 100 == 0 && Environment.GetEnvironmentVariable("OMNIBLOCK_MESH_DIAGNOSTICS") == "1")
+            LogNearbySurfaceMeshes(viewPos);
 
         Vector3D<int> currentChunk = new(
             (int)Math.Floor(viewPos.X / SubChunkRenderer.Size),
@@ -740,11 +776,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         if (!IsChunkInRenderDistance(chunkPos, _lastViewPos))
             return false;
 
-        // During initial entry, the central 3x3 playable area must not sit behind thousands of ordinary
-        // render-distance sections. This is deliberately inferred here so every discovery and
-        // dirtying path applies the same startup priority.
-        if (!priority && _world is ClientWorld clientWorld && clientWorld.NetworkHandler.Preload.RequiresMesh(chunkPos))
-            priority = true;
+        // Full chunk arrival uses the same dirty notification as player edits. Only updates to
+        // an existing mesh are urgent; treating every first mesh as an edit lets the entire
+        // streaming backlog overtake missing safety-ring terrain.
+        priority = ShouldPrioritizeMesh(priority, _renderers.ContainsKey(chunkPos),
+            _world is ClientWorld clientWorld && clientWorld.NetworkHandler.Preload.RequiresMesh(chunkPos));
 
         // The snapshot needs one cell of neighbor padding, but it already reads a missing column
         // through ChunkSource's empty-chunk fallback. Requiring the whole neighbor ring here made
@@ -770,22 +806,38 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             {
                 if (_dirtyChunks[i].Pos == chunkPos)
                 {
-                    _dirtyChunks[i] = new ChunkToMeshInfo(chunkPos, snapshot.Value, priority || _dirtyChunks[i].Priority);
+                    _dirtyChunks[i] = new ChunkToMeshInfo(
+                        chunkPos,
+                        snapshot.Value,
+                        priority || _dirtyChunks[i].Priority,
+                        _dirtyChunks[i].EnqueuedAt);
                     return true;
                 }
             }
 
-            _dirtyChunks.Add(new ChunkToMeshInfo(chunkPos, snapshot.Value, priority));
+            _dirtyChunks.Add(new ChunkToMeshInfo(chunkPos, snapshot.Value, priority, _schedulerTick));
             return true;
         }
 
         if (priority)
         {
+            // SnapshotIfNeeded also reports pending while the request is still in our local
+            // list. Promoting only the worker queue silently loses priority in that interval.
+            for (var i = 0; i < _dirtyChunks.Count; i++)
+                if (_dirtyChunks[i].Pos == chunkPos)
+                {
+                    var pending = _dirtyChunks[i];
+                    _dirtyChunks[i] = new ChunkToMeshInfo(pending.Pos, pending.Version, true, pending.EnqueuedAt);
+                    return false;
+                }
             _meshGenerator.Promote(chunkPos);
         }
 
         return false;
     }
+
+    internal static bool ShouldPrioritizeMesh(bool updateRequested, bool hasRenderer, bool requiredForStartup) =>
+        requiredForStartup || updateRequested && hasRenderer;
 
     private void PrioritizeMesh(Vector3D<int> chunkPos)
     {
@@ -809,7 +861,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                         _dirtyChunks[i] = new ChunkToMeshInfo(
                             _dirtyChunks[i].Pos,
                             _dirtyChunks[i].Version,
-                            true);
+                            true,
+                            _dirtyChunks[i].EnqueuedAt);
                     return;
                 }
 
@@ -858,6 +911,32 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         var chunkX = sectionPos.X >> 4;
         var chunkZ = sectionPos.Z >> 4;
         return world.BlockHost.HasChunk(chunkX, chunkZ) && world.BlockHost.GetChunk(chunkX, chunkZ).Loaded;
+    }
+
+    private void LogNearbySurfaceMeshes(Vector3D<double> viewPos)
+    {
+        _logger.LogInformation("Mesh queues dirty={Count}, urgent={Urgent}, worker={Workers}",
+            _dirtyChunks.Count, _dirtyChunks.Count(entry => entry.Priority), _meshGenerator.Profile);
+        var cx = (int)Math.Floor(viewPos.X / 16);
+        var cz = (int)Math.Floor(viewPos.Z / 16);
+        for (var x = cx - 3; x <= cx + 3; x++)
+        for (var z = cz - 3; z <= cz + 3; z++)
+        {
+            if (!HasRenderableSourceChunk(_world, new Vector3D<int>(x * 16, 0, z * 16))) continue;
+            var chunk = _world.BlockHost.GetChunk(x, z);
+            for (var y = ChuckFormat.WorldHeight - 1; y >= 0; y--)
+            {
+                if (chunk.Blocks[ChuckFormat.GetIndex(8, y, 8)] == 0) continue;
+                var pos = new Vector3D<int>(x * 16, y / 16 * 16, z * 16);
+                _renderers.TryGetValue(pos, out var state);
+                _chunkVersions.TryGetValue(pos, out var version);
+                _logger.LogInformation("Mesh surface {Pos}: bytes={Bytes}, visible={Visible}, version={Version}, dirty={Dirty}, urgent={Urgent}",
+                    pos, state?.Renderer.SolidMeshSizeBytes ?? -1, state?.Renderer.LastVisibleFrame == _frameIndex,
+                    version?.State.ToString() ?? "none", _dirtyChunks.Any(entry => entry.Pos == pos),
+                    _dirtyChunks.Any(entry => entry.Pos == pos && entry.Priority));
+                break;
+            }
+        }
     }
 
     private bool IsChunkInRenderDistance(Vector3D<int> chunkWorldPos, Vector3D<double> viewPos)
@@ -1265,11 +1344,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         public SubChunkRenderer Renderer { get; } = renderer;
     }
 
-    private struct ChunkToMeshInfo(Vector3D<int> pos, long version, bool priority)
+    private struct ChunkToMeshInfo(Vector3D<int> pos, long version, bool priority, long enqueuedAt = 0)
     {
         public readonly Vector3D<int> Pos = pos;
         public readonly long Version = version;
         public readonly bool Priority = priority;
+        public readonly long EnqueuedAt = enqueuedAt;
     }
 
     private sealed class TranslucentDistanceComparer : IComparer<SubChunkRenderer>

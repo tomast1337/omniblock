@@ -9,11 +9,12 @@ public interface IChunkVisibilityVisitor
 
 public class ChunkOcclusionCuller
 {
-    private readonly ChunkQueue[] _queues = [new(32768), new(32768)];
-    private int _currentQueue;
+    private readonly Queue<SubChunkRenderer> _queue = new();
+    private readonly Dictionary<SubChunkRenderer, ChunkDirectionMask> _reached = new();
 
     public void FindVisible(
         IChunkVisibilityVisitor visitor,
+        IEnumerable<SubChunkRenderer> renderers,
         SubChunkRenderer? startNode,
         Vector3D<double> viewPos,
         ICuller culler,
@@ -21,135 +22,62 @@ public class ChunkOcclusionCuller
         bool useOcclusionCulling,
         int frame)
     {
-        var readQueue = _queues[_currentQueue];
-        var writeQueue = _queues[1 - _currentQueue];
-
-        readQueue.Reset();
-        writeQueue.Reset();
-
-        if (startNode == null)
+        // A missing camera mesh is normal during streaming and when flying above the world.
+        // With no reliable portal seed, conservatively draw the available meshes in view.
+        if (!useOcclusionCulling || startNode == null)
         {
+            foreach (var renderer in renderers)
+                DrawIfVisible(renderer);
             return;
         }
 
-        startNode.LastVisibleFrame = frame;
-        startNode.IncomingDirections = ChunkDirectionMask.None;
-        visitor.Visit(startNode);
-
-        var initialOutgoing = useOcclusionCulling
-            ? startNode.VisibilityData.GetVisibleFrom(ChunkDirectionMask.None, viewPos, startNode)
-            : ChunkDirectionMask.All;
-
-        EnqueueNeighbors(writeQueue, startNode, initialOutgoing, frame);
-
-        while (!writeQueue.IsEmpty)
+        Reach(startNode, ChunkDirectionMask.All);
+        foreach (var renderer in renderers)
         {
-            // Swap queues
-            _currentQueue = 1 - _currentQueue;
-            readQueue = _queues[_currentQueue];
-            writeQueue = _queues[1 - _currentQueue];
+            // An absent neighbor is unknown space, not an opaque wall. Seed its exposed face so
+            // a hole in the mesh cache cannot hide an otherwise finished component of terrain.
+            var unknown = ChunkDirectionMask.None;
+            if (renderer.AdjacentDown == null) unknown |= ChunkDirectionMask.Down;
+            if (renderer.AdjacentUp == null) unknown |= ChunkDirectionMask.Up;
+            if (renderer.AdjacentNorth == null) unknown |= ChunkDirectionMask.North;
+            if (renderer.AdjacentSouth == null) unknown |= ChunkDirectionMask.South;
+            if (renderer.AdjacentWest == null) unknown |= ChunkDirectionMask.West;
+            if (renderer.AdjacentEast == null) unknown |= ChunkDirectionMask.East;
+            Reach(renderer, unknown);
+        }
 
-            writeQueue.Reset();
+        while (_queue.TryDequeue(out var current))
+        {
+            DrawIfVisible(current);
+            // Frustum selection affects drawing only. A connected path can leave the frustum
+            // or turn back toward the camera before reaching visible terrain.
+            var outgoing = current.VisibilityData.GetVisibleFrom(_reached[current], viewPos, current);
+            if ((outgoing & ChunkDirectionMask.Down) != 0) Reach(current.AdjacentDown, ChunkDirectionMask.Up);
+            if ((outgoing & ChunkDirectionMask.Up) != 0) Reach(current.AdjacentUp, ChunkDirectionMask.Down);
+            if ((outgoing & ChunkDirectionMask.North) != 0) Reach(current.AdjacentNorth, ChunkDirectionMask.South);
+            if ((outgoing & ChunkDirectionMask.South) != 0) Reach(current.AdjacentSouth, ChunkDirectionMask.North);
+            if ((outgoing & ChunkDirectionMask.West) != 0) Reach(current.AdjacentWest, ChunkDirectionMask.East);
+            if ((outgoing & ChunkDirectionMask.East) != 0) Reach(current.AdjacentEast, ChunkDirectionMask.West);
+        }
 
-            SubChunkRenderer? current;
-            while ((current = readQueue.Dequeue()) != null)
-            {
-                if (!current.IsVisible(culler, viewPos, renderDistance))
-                    continue;
+        _reached.Clear();
 
-                visitor.Visit(current);
-
-                ChunkDirectionMask outgoing;
-                if (useOcclusionCulling)
-                {
-                    outgoing = current.VisibilityData.GetVisibleFrom(current.IncomingDirections, viewPos, current);
-                }
-                else
-                {
-                    outgoing = ChunkDirectionMask.All;
-                }
-
-                outgoing &= GetOutwardDirections(viewPos, current);
-
-                EnqueueNeighbors(writeQueue, current, outgoing, frame);
-            }
+        void DrawIfVisible(SubChunkRenderer renderer)
+        {
+            if (renderer.LastVisibleFrame == frame || !renderer.IsVisible(culler, viewPos, renderDistance)) return;
+            renderer.LastVisibleFrame = frame;
+            visitor.Visit(renderer);
         }
     }
 
-    private static void EnqueueNeighbors(ChunkQueue queue, SubChunkRenderer current, ChunkDirectionMask outgoing, int frame)
+    private void Reach(SubChunkRenderer? renderer, ChunkDirectionMask incoming)
     {
-        if (outgoing == ChunkDirectionMask.None) return;
-
-        if ((outgoing & ChunkDirectionMask.Down) != 0) VisitNode(queue, current.AdjacentDown, ChunkDirectionMask.Up, frame);
-        if ((outgoing & ChunkDirectionMask.Up) != 0) VisitNode(queue, current.AdjacentUp, ChunkDirectionMask.Down, frame);
-        if ((outgoing & ChunkDirectionMask.North) != 0) VisitNode(queue, current.AdjacentNorth, ChunkDirectionMask.South, frame);
-        if ((outgoing & ChunkDirectionMask.South) != 0) VisitNode(queue, current.AdjacentSouth, ChunkDirectionMask.North, frame);
-        if ((outgoing & ChunkDirectionMask.West) != 0) VisitNode(queue, current.AdjacentWest, ChunkDirectionMask.East, frame);
-        if ((outgoing & ChunkDirectionMask.East) != 0) VisitNode(queue, current.AdjacentEast, ChunkDirectionMask.West, frame);
-    }
-
-    private static void VisitNode(ChunkQueue queue, SubChunkRenderer? neighbor, ChunkDirectionMask incoming, int frame)
-    {
-        if (neighbor == null) return;
-
-        if (neighbor.LastVisibleFrame != frame)
-        {
-            neighbor.LastVisibleFrame = frame;
-            neighbor.IncomingDirections = ChunkDirectionMask.None;
-            queue.Enqueue(neighbor);
-        }
-
-        neighbor.IncomingDirections |= incoming;
-    }
-
-
-    private static ChunkDirectionMask GetOutwardDirections(Vector3D<double> viewPos, SubChunkRenderer renderer)
-    {
-        var chunkX = renderer.Position.X / SubChunkRenderer.Size;
-        var chunkY = renderer.Position.Y / SubChunkRenderer.Size;
-        var chunkZ = renderer.Position.Z / SubChunkRenderer.Size;
-
-        var viewChunkX = (int)Math.Floor(viewPos.X / SubChunkRenderer.Size);
-        var viewChunkY = (int)Math.Floor(viewPos.Y / SubChunkRenderer.Size);
-        var viewChunkZ = (int)Math.Floor(viewPos.Z / SubChunkRenderer.Size);
-
-        var mask = ChunkDirectionMask.None;
-        if (chunkX <= viewChunkX) mask |= ChunkDirectionMask.West;
-        if (chunkX >= viewChunkX) mask |= ChunkDirectionMask.East;
-        if (chunkY <= viewChunkY) mask |= ChunkDirectionMask.Down;
-        if (chunkY >= viewChunkY) mask |= ChunkDirectionMask.Up;
-        if (chunkZ <= viewChunkZ) mask |= ChunkDirectionMask.North;
-        if (chunkZ >= viewChunkZ) mask |= ChunkDirectionMask.South;
-        return mask;
-    }
-
-    private class ChunkQueue
-    {
-        private readonly SubChunkRenderer[] _data;
-        private int _read;
-        private int _write;
-
-        public ChunkQueue(int capacity)
-        {
-            _data = new SubChunkRenderer[capacity];
-            _read = 0;
-            _write = 0;
-        }
-
-        public bool IsEmpty => _read == _write;
-
-        public void Enqueue(SubChunkRenderer item) => _data[_write++] = item;
-
-        public SubChunkRenderer? Dequeue()
-        {
-            if (_read == _write) return null;
-            return _data[_read++];
-        }
-
-        public void Reset()
-        {
-            _read = 0;
-            _write = 0;
-        }
+        if (renderer == null || incoming == ChunkDirectionMask.None) return;
+        _reached.TryGetValue(renderer, out var previous);
+        if ((previous | incoming) == previous) return;
+        _reached[renderer] = previous | incoming;
+        // A second path may enter through a different face after the first path was processed.
+        // Revisit on new incoming faces; there are at most six such changes per mesh.
+        _queue.Enqueue(renderer);
     }
 }
