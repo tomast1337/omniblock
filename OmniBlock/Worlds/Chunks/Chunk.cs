@@ -424,7 +424,9 @@ public class Chunk
                 World.Content.Blocks.GetByProtocolId(rawId).OnPlaced(new OnPlacedEvent(World, null, 0, 0, worldX, y, worldZ));
             }
 
-            if (sameId)
+            // Protocol id 0 is the air sentinel, not a catalog entry. A network delta can
+            // legitimately normalize stale metadata on an already-air cell.
+            if (sameId && rawId != 0)
             {
                 World.Content.Blocks.GetByProtocolId(rawId).OnMetadataChange(new OnMetadataChangeEvent(World, worldX, y, worldZ, meta));
             }

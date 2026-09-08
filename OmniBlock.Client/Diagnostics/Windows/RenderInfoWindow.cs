@@ -151,6 +151,22 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
         ImGui.Spacing();
         if (ctx.ChunkRenderer is { } chunkRenderer)
         {
+            var mesh = chunkRenderer.MeshProfile;
+            ImGuiTextSafe.Text($"Workers:   {mesh.Workers}  queued {mesh.Queued}");
+            ImGuiTextSafe.Text($"Results:   urgent {mesh.UrgentResults}  background {mesh.BackgroundResults}");
+            ImGuiTextSafe.Text($"Built:     {mesh.Meshes:N0}");
+            ImGuiTextSafe.Text($"Snapshot:  {mesh.SnapshotMs:F3} ms avg");
+            ImGuiTextSafe.Text($"Queue wait:{mesh.QueueWaitMs,7:F3} ms avg");
+            ImGuiTextSafe.Text($"Classify:  {mesh.ClassificationMs:F3} ms avg");
+            ImGuiTextSafe.Text($"Geometry:  {mesh.GeometryMs:F3} ms avg");
+            ImGuiTextSafe.Text($"Visibility:{mesh.VisibilityMs,7:F3} ms avg");
+            ImGuiTextSafe.Text($"Generate:  {mesh.GenerationMs:F3} ms avg");
+            ImGuiTextSafe.Text($"Upload:    {mesh.UploadMs:F3} ms avg");
+            ImGuiTextSafe.Text($"Done->GPU: {mesh.FinishedToUploadMs:F3} ms avg");
+            ImGuiTextSafe.Text($"Request->GPU: {mesh.RequestToUploadMs:F3} ms avg");
+            if (ImGui.Button("Reset mesh profile")) chunkRenderer.ResetMeshProfile();
+            ImGui.Spacing();
+
             var wireframe = chunkRenderer.WireframeEnabled;
             if (ImGui.Checkbox("Wireframe", ref wireframe))
             {

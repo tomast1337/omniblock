@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using OmniBlock.Blocks;
@@ -22,6 +23,8 @@ internal struct MeshBuildResult : IDisposable
     public Vector3D<int> Pos;
     public long Version;
     public bool Priority;
+    public long RequestedAt;
+    public long FinishedAt;
 
     public readonly void Dispose()
     {
@@ -57,6 +60,7 @@ internal class ChunkMeshGenerator : IDisposable
     private readonly PriorityWorkScheduler<Vector3D<int>, MeshBuildRequest> _work = new();
     private readonly Task[] _workers;
     private readonly ConcurrentQueue<MeshBuildResult> _urgentResults = new();
+    private readonly ChunkMeshProfiler _profile = new();
 
     public ChunkMeshGenerator(ushort maxConcurrentTasks = 0)
     {
@@ -67,6 +71,11 @@ internal class ChunkMeshGenerator : IDisposable
     }
 
     public ushort MaxConcurrentTasks { get; }
+
+    public ChunkMeshProfileSnapshot Profile => _profile.Snapshot(
+        _work.Count, _urgentResults.Count, _backgroundResults.Count, MaxConcurrentTasks);
+
+    public void ResetProfile() => _profile.Reset();
 
     public void Dispose()
     {
@@ -96,6 +105,7 @@ internal class ChunkMeshGenerator : IDisposable
     //TODO: Make a chunk mesh config struct for alternateBlocks and other flags
     public void MeshChunk(World world, Vector3D<int> pos, long version, bool alternateBlocks, bool priority = false)
     {
+        var requestedAt = Stopwatch.GetTimestamp();
         // 1 block of padding on every side of the 16-block sub-chunk (18x18x18 total) — exactly
         // what face culling and AO need to look at a block's immediate neighbours.
         WorldRegionSnapshot cache = new(
@@ -103,8 +113,9 @@ internal class ChunkMeshGenerator : IDisposable
             pos.X - 1, pos.Y - 1, pos.Z - 1,
             pos.X + SubChunkRenderer.Size, pos.Y + SubChunkRenderer.Size, pos.Z + SubChunkRenderer.Size
         );
+        _profile.RecordSnapshot(Stopwatch.GetTimestamp() - requestedAt);
 
-        var request = new MeshBuildRequest(pos, version, cache, alternateBlocks);
+        var request = new MeshBuildRequest(pos, version, cache, alternateBlocks, requestedAt, Stopwatch.GetTimestamp());
         if (!_work.Enqueue(pos, request, priority))
         {
             cache.Dispose();
@@ -120,10 +131,13 @@ internal class ChunkMeshGenerator : IDisposable
             try
             {
                 var (request, priority) = await _work.TakeAsync(_shutdown.Token);
+                _profile.RecordQueueWait(Stopwatch.GetTimestamp() - request.EnqueuedAt);
                 try
                 {
                     var mesh = GenerateMesh(request.Pos, request.Version, request.Cache, request.AlternateBlocks);
                     mesh.Priority = priority;
+                    mesh.RequestedAt = request.RequestedAt;
+                    mesh.FinishedAt = Stopwatch.GetTimestamp();
                     (priority ? _urgentResults : _backgroundResults).Enqueue(mesh);
                 }
                 catch (Exception ex)
@@ -146,10 +160,13 @@ internal class ChunkMeshGenerator : IDisposable
         Vector3D<int> Pos,
         long Version,
         WorldRegionSnapshot Cache,
-        bool AlternateBlocks);
+        bool AlternateBlocks,
+        long RequestedAt,
+        long EnqueuedAt);
 
     private MeshBuildResult GenerateMesh(Vector3D<int> pos, long version, WorldRegionSnapshot cache, bool alternateBlocks)
     {
+        var generationStart = Stopwatch.GetTimestamp();
         var minX = pos.X;
         var minY = pos.Y;
         var minZ = pos.Z;
@@ -171,6 +188,7 @@ internal class ChunkMeshGenerator : IDisposable
         // EmitGreedyMesh. Precomputed once so the sweep and the loop's skip check agree on
         // exactly which cells were handled the fast way.
         Block?[] greedyEligible = new Block[SubChunkRenderer.Size * SubChunkRenderer.Size * SubChunkRenderer.Size];
+        var classificationStart = Stopwatch.GetTimestamp();
         for (var y = minY; y < maxY; y++)
         {
             for (var z = minZ; z < maxZ; z++)
@@ -184,7 +202,9 @@ internal class ChunkMeshGenerator : IDisposable
                 }
             }
         }
+        _profile.RecordClassification(Stopwatch.GetTimestamp() - classificationStart);
 
+        var geometryStart = Stopwatch.GetTimestamp();
         for (var pass = 0; pass < 2; pass++)
         {
             var hasNextPass = false;
@@ -243,11 +263,18 @@ internal class ChunkMeshGenerator : IDisposable
 
             if (!hasNextPass) break;
         }
+        _profile.RecordGeometry(Stopwatch.GetTimestamp() - geometryStart);
 
         result.IsLit = cache.IsLit;
+        var visibilityStart = Stopwatch.GetTimestamp();
         result.VisibilityData = ChunkVisibilityComputer.Compute(cache, pos.X, pos.Y, pos.Z);
+        _profile.RecordVisibility(Stopwatch.GetTimestamp() - visibilityStart);
+        _profile.RecordGeneration(Stopwatch.GetTimestamp() - generationStart);
         return result;
     }
+
+    public void RecordUpload(long elapsedTicks, long finishedToUploadTicks, long requestToUploadTicks) =>
+        _profile.RecordUpload(elapsedTicks, finishedToUploadTicks, requestToUploadTicks);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int LocalIndex(int lx, int ly, int lz) => (lx * SubChunkRenderer.Size + lz) * SubChunkRenderer.Size + ly;

@@ -17,6 +17,7 @@ namespace OmniBlock.Client.Rendering.Chunks;
 public class ChunkRenderer : IChunkVisibilityVisitor
 {
     private const int MaxRenderDistance = 32 + 1;
+    private const int MaxMeshWorkers = 8;
 
     //TODO: MAKE THIS CONFIGURABLE
     private const double MeshUploadBudgetMs = 1.5;
@@ -101,14 +102,15 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         _options = options;
 
-        // Left uncapped, every dispatched chunk becomes its own unbounded Task.Run; once the
-        // dispatch side stopped throttling itself to ~2 chunks/frame, an uncapped mesh generator
-        // could flood the ThreadPool with concurrent GenerateMesh calls (each visiting 32K+
-        // blocks plus a flood-fill) and starve the frame thread. Same reservation the chunk
-        // loader's worker pool leaves for the tick thread.
-        _meshGenerator = new ChunkMeshGenerator((ushort)Math.Max(1, Environment.ProcessorCount - 2));
+        // Meshes are CPU-heavy. Reserving two logical processors is not enough on high-core-count
+        // machines: dozens of workers contend with entity rendering, simulation and networking
+        // even when the mesh queue is already draining immediately.
+        _meshGenerator = new ChunkMeshGenerator((ushort)GetMeshWorkerCount(Environment.ProcessorCount));
         _world = world;
     }
+
+    internal static int GetMeshWorkerCount(int processorCount) =>
+        Math.Clamp(processorCount - 2, 1, MaxMeshWorkers);
 
     /// <summary>
     ///     Debug toggle: draws the solid pass as flat-green triangle edges instead of textured
@@ -119,6 +121,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     public bool WireframeEnabled { get; set; }
 
     public bool UseOcclusionCulling { get; set; } = true;
+    internal ChunkMeshProfileSnapshot MeshProfile => _meshGenerator.Profile;
+    internal void ResetMeshProfile() => _meshGenerator.ResetProfile();
 
     public int TotalChunks => _renderers.Count;
     public int ChunksInFrustum { get; private set; }
@@ -335,6 +339,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         while (stopwatch.Elapsed.TotalMilliseconds < MeshUploadBudgetMs)
         {
             if (!_meshGenerator.TryDequeueMesh(out var mesh)) break;
+            var uploadStart = Stopwatch.GetTimestamp();
 
             if (IsChunkInRenderDistance(mesh.Pos, viewPos))
             {
@@ -386,6 +391,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 mesh.Dispose();
                 _priorityChunks.Remove(mesh.Pos);
             }
+
+            var uploadedAt = Stopwatch.GetTimestamp();
+            _meshGenerator.RecordUpload(
+                uploadedAt - uploadStart,
+                uploadedAt - mesh.FinishedAt,
+                uploadedAt - mesh.RequestedAt);
         }
     }
 
