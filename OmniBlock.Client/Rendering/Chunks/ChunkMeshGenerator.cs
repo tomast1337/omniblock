@@ -22,7 +22,7 @@ internal struct MeshBuildResult : IDisposable
     public ChunkVisibilityStore VisibilityData;
     public Vector3D<int> Pos;
     public long Version;
-    public bool Priority;
+    public MeshWorkPriority Priority;
     public long RequestedAt;
     public long FinishedAt;
 
@@ -56,10 +56,12 @@ internal class ChunkMeshGenerator : IDisposable
     private readonly ILogger<ChunkMeshGenerator> _logger = Log.Instance.For<ChunkMeshGenerator>();
 
     private readonly ConcurrentQueue<MeshBuildResult> _backgroundResults = new();
+    private readonly ConcurrentQueue<MeshBuildResult> _foregroundResults = new();
+    private readonly MeshPriorityFairness _resultFairness = new();
     private readonly CancellationTokenSource _shutdown = new();
     private readonly PriorityWorkScheduler<Vector3D<int>, MeshBuildRequest> _work = new();
     private readonly Task[] _workers;
-    private readonly ConcurrentQueue<MeshBuildResult> _urgentResults = new();
+    private readonly ConcurrentQueue<MeshBuildResult> _criticalResults = new();
     private readonly ChunkMeshProfiler _profile = new();
 
     public ChunkMeshGenerator(ushort maxConcurrentTasks = 0)
@@ -73,7 +75,8 @@ internal class ChunkMeshGenerator : IDisposable
     public ushort MaxConcurrentTasks { get; }
 
     public ChunkMeshProfileSnapshot Profile => _profile.Snapshot(
-        _work.Count, _urgentResults.Count, _backgroundResults.Count, MaxConcurrentTasks);
+        _work.Count, _criticalResults.Count, _foregroundResults.Count, _backgroundResults.Count,
+        MaxConcurrentTasks);
 
     public void ResetProfile() => _profile.Reset();
 
@@ -91,19 +94,34 @@ internal class ChunkMeshGenerator : IDisposable
         foreach (var pending in _work.Drain()) pending.Cache.Dispose();
         _shutdown.Dispose();
         _work.Dispose();
-        while (_urgentResults.TryDequeue(out var urgent)) urgent.Dispose();
+        while (_criticalResults.TryDequeue(out var critical)) critical.Dispose();
+        while (_foregroundResults.TryDequeue(out var foreground)) foreground.Dispose();
         while (_backgroundResults.TryDequeue(out var background)) background.Dispose();
         _listPool.Dispose();
     }
 
     public bool TryDequeueMesh(out MeshBuildResult result)
     {
-        if (_urgentResults.TryDequeue(out result)) return true;
-        return _backgroundResults.TryDequeue(out result);
+        var priority = _resultFairness.Select(
+            !_criticalResults.IsEmpty,
+            !_foregroundResults.IsEmpty,
+            !_backgroundResults.IsEmpty);
+        if (ResultQueueFor(priority).TryDequeue(out result)) return true;
+
+        // Producers may enqueue between the availability snapshot and the selected dequeue.
+        // Falling through all lanes keeps that harmless race from looking like an empty result set.
+        return _criticalResults.TryDequeue(out result)
+               || _foregroundResults.TryDequeue(out result)
+               || _backgroundResults.TryDequeue(out result);
     }
 
     //TODO: Make a chunk mesh config struct for alternateBlocks and other flags
-    public void MeshChunk(World world, Vector3D<int> pos, long version, bool alternateBlocks, bool priority = false)
+    public void MeshChunk(
+        World world,
+        Vector3D<int> pos,
+        long version,
+        bool alternateBlocks,
+        MeshWorkPriority priority = MeshWorkPriority.Background)
     {
         var requestedAt = Stopwatch.GetTimestamp();
         // 1 block of padding on every side of the 16-block sub-chunk (18x18x18 total) — exactly
@@ -122,7 +140,7 @@ internal class ChunkMeshGenerator : IDisposable
         }
     }
 
-    public bool Promote(Vector3D<int> pos) => _work.Promote(pos);
+    public bool Promote(Vector3D<int> pos, MeshWorkPriority priority) => _work.Promote(pos, priority);
 
     private async Task WorkerLoop()
     {
@@ -138,7 +156,7 @@ internal class ChunkMeshGenerator : IDisposable
                     mesh.Priority = priority;
                     mesh.RequestedAt = request.RequestedAt;
                     mesh.FinishedAt = Stopwatch.GetTimestamp();
-                    (priority ? _urgentResults : _backgroundResults).Enqueue(mesh);
+                    ResultQueueFor(priority).Enqueue(mesh);
                 }
                 catch (Exception ex)
                 {
@@ -155,6 +173,13 @@ internal class ChunkMeshGenerator : IDisposable
             }
         }
     }
+
+    private ConcurrentQueue<MeshBuildResult> ResultQueueFor(MeshWorkPriority priority) => priority switch
+    {
+        MeshWorkPriority.Critical => _criticalResults,
+        MeshWorkPriority.Foreground => _foregroundResults,
+        _ => _backgroundResults
+    };
 
     private readonly record struct MeshBuildRequest(
         Vector3D<int> Pos,

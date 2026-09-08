@@ -11,22 +11,40 @@ public sealed class ChunkMeshSchedulingTests
     public void Streamed_chunk_notifications_cannot_overtake_a_missing_safety_ring_mesh()
     {
         var nearby = ChunkRenderer.GetMeshSchedulingRank(new Vector3D<int>(32, 64, 0), View,
-            ChunkRenderer.ShouldPrioritizeMesh(false, false, false), false, 10, 20);
+            MeshWorkPriority.Background, false, 10, 20);
         for (var x = 4; x < 32; x++)
         {
             // The world reports full chunk arrivals using an urgent dirty notification too.
             var streamed = ChunkRenderer.GetMeshSchedulingRank(new Vector3D<int>(x * 16, 64, 0), View,
-                ChunkRenderer.ShouldPrioritizeMesh(true, false, false), true, 0, 20);
+                ChunkRenderer.ClassifyRequestedMeshPriority(true, false, false), true, 0, 20);
             Assert.True(nearby.CompareTo(streamed) < 0);
         }
 
         var edit = ChunkRenderer.GetMeshSchedulingRank(new Vector3D<int>(64, 64, 0), View,
-            ChunkRenderer.ShouldPrioritizeMesh(true, true, false), true, 20, 20);
+            ChunkRenderer.ClassifyRequestedMeshPriority(true, true, false), true, 20, 20);
         Assert.True(edit.CompareTo(nearby) < 0);
 
-        var startup = ChunkRenderer.GetMeshSchedulingRank(new Vector3D<int>(16, 64, 0), View,
-            ChunkRenderer.ShouldPrioritizeMesh(true, false, true), false, 20, 20);
-        Assert.True(startup.CompareTo(nearby) < 0);
+        var startup = ChunkRenderer.GetMeshSchedulingRank(new Vector3D<int>(16 * 8, 64, 0), View,
+            ChunkRenderer.ClassifyRequestedMeshPriority(true, false, true), false, 20, 20);
+        var ordinaryVisible = ChunkRenderer.GetMeshSchedulingRank(new Vector3D<int>(16 * 7, 64, 0), View,
+            MeshWorkPriority.Background, true, 10, 20);
+        Assert.True(startup.CompareTo(ordinaryVisible) < 0);
+    }
+
+    [Theory]
+    [InlineData(true, true, false, (int)MeshWorkPriority.Critical)]
+    [InlineData(true, false, true, (int)MeshWorkPriority.Foreground)]
+    [InlineData(false, false, true, (int)MeshWorkPriority.Foreground)]
+    [InlineData(true, false, false, (int)MeshWorkPriority.Background)]
+    public void Dirty_notifications_are_classified_without_promoting_streaming_to_gameplay_priority(
+        bool updateRequested,
+        bool hasRenderer,
+        bool requiredForStartup,
+        int expected)
+    {
+        Assert.Equal(
+            (MeshWorkPriority)expected,
+            ChunkRenderer.ClassifyRequestedMeshPriority(updateRequested, hasRenderer, requiredForStartup));
     }
 
     [Theory]
