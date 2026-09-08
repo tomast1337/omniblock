@@ -591,8 +591,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         var radiusSq = _lastRenderDistance * _lastRenderDistance;
         var enqueuedCount = 0;
-        var priorityPassClean = true;
-
         //TODO: MAKE THESE CONFIGURABLE
         const int MAX_CHUNKS_PER_FRAME = 32;
         const int PRIORITY_PASS_LIMIT = 1024;
@@ -617,18 +615,17 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             if (MarkDirty(chunkPos))
             {
                 enqueuedCount++;
-                priorityPassClean = false;
-            }
-            else
-            {
-                priorityPassClean = false;
             }
 
             if (enqueuedCount >= MAX_CHUNKS_PER_FRAME)
                 break;
         }
 
-        if (priorityPassClean && enqueuedCount < MAX_CHUNKS_PER_FRAME)
+        // Keep advancing the discovery cursor whenever the near-camera pass leaves capacity.
+        // A position can fail MarkDirty merely because its neighbor ring has not arrived yet. The
+        // old "priority pass clean" gate treated that temporary hole as a reason to stop scanning,
+        // so loaded sections beyond the fixed priority window could remain invisible indefinitely.
+        if (enqueuedCount < MAX_CHUNKS_PER_FRAME)
         {
             for (var i = 0; i < BACKGROUND_PASS_LIMIT; i++)
             {
@@ -707,8 +704,15 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     public bool MarkDirty(Vector3D<int> chunkPos, bool priority = false)
     {
-        if (!_world.BlockHost.IsRegionLoaded(chunkPos.X - 1, chunkPos.Y - 1, chunkPos.Z - 1, chunkPos.X + SubChunkRenderer.Size + 1, chunkPos.Y + SubChunkRenderer.Size + 1, chunkPos.Z + SubChunkRenderer.Size + 1) |
-            !IsChunkInRenderDistance(chunkPos, _lastViewPos))
+        if (!IsChunkInRenderDistance(chunkPos, _lastViewPos))
+            return false;
+
+        // The snapshot needs one cell of neighbor padding, but it already reads a missing column
+        // through ChunkSource's empty-chunk fallback. Requiring the whole neighbor ring here made
+        // a fully received, interactive chunk invisible until every adjacent streaming placeholder
+        // arrived. When a real neighbor is decoded, its expanded dirty range rebuilds this shared
+        // boundary with the newly available faces and lighting.
+        if (!HasRenderableSourceChunk(_world, chunkPos))
             return false;
 
         if (!_chunkVersions.TryGetValue(chunkPos, out var version))
@@ -742,6 +746,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
 
         return false;
+    }
+
+    internal static bool HasRenderableSourceChunk(World world, Vector3D<int> sectionPos)
+    {
+        var chunkX = sectionPos.X >> 4;
+        var chunkZ = sectionPos.Z >> 4;
+        return world.BlockHost.HasChunk(chunkX, chunkZ) && world.BlockHost.GetChunk(chunkX, chunkZ).Loaded;
     }
 
     private bool IsChunkInRenderDistance(Vector3D<int> chunkWorldPos, Vector3D<double> viewPos)

@@ -303,3 +303,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-09-07 — Refactor rendering code to use IBlockRuntimeView for block access (Nicolas Vyčas Nery; `998c4be5bcc050f6bcf98a874ad8eddb2eef16b2`)
 - 2026-09-07 — refactor: enhance chunk mesh generation with priority handling and introduce PriorityWorkScheduler (Nicolas Vyčas Nery; `bb29218699e1df018e48c519e391bffcd28bedb0`)
 - 2026-09-08 — refactor: enhance chunk mesh profiling and rendering diagnostics (Nicolas Vyčas Nery; `b6cd84c75d25b26ad0d56fe413f078d501c543e9`)
+- 2026-09-08 — refactor: improve chunk rendering eligibility checks and add unit tests (Nicolas Vyčas Nery; `af0157aa04b70312d26ff82c94c1ea272e17b3e5`)
