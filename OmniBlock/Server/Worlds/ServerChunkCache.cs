@@ -15,6 +15,9 @@ public class ServerChunkCache : IChunkSource
     private readonly IChunkSource _generator;
     private readonly ILogger<ServerChunkCache> _logger = Log.Instance.For<ServerChunkCache>();
     private readonly IChunkStorage _storage;
+    // Region decoding constructs entities and block entities against the live world. The region
+    // byte stream is internally locked, but that larger decode path is not parallel-safe.
+    private readonly object _storageLoadLock = new();
     private readonly ServerWorld _world;
     private int _generationScopes;
 
@@ -49,6 +52,8 @@ public class ServerChunkCache : IChunkSource
                     chunk = _generator.GetChunk(chunkX, chunkZ);
                 }
             }
+
+            ValidateChunkCoordinates(chunk, chunkX, chunkZ);
 
             _chunksByPos.Add(hash, chunk);
             _chunks.Add(chunk);
@@ -213,7 +218,12 @@ public class ServerChunkCache : IChunkSource
 
         try
         {
-            var loadedChunk = _storage.LoadChunk(_world, chunkX, chunkZ);
+            Chunk? loadedChunk;
+            lock (_storageLoadLock)
+            {
+                loadedChunk = _storage.LoadChunk(_world, chunkX, chunkZ);
+            }
+
             loadedChunk?.LastSaveTime = _world.GetTime();
 
             return loadedChunk;
@@ -284,6 +294,7 @@ public class ServerChunkCache : IChunkSource
             return;
         }
 
+        ValidateChunkCoordinates(chunk, chunkX, chunkZ);
         _chunksToUnload.Remove(hash);
         _chunksByPos.Add(hash, chunk);
         _chunks.Add(chunk);
@@ -300,10 +311,20 @@ public class ServerChunkCache : IChunkSource
         _chunksToUnload.Remove(key);
         if (_chunksByPos.ContainsKey(key)) return;
         var chunk = LoadChunkFromStorage(chunkX, chunkZ) ?? generatedChunk;
+        ValidateChunkCoordinates(chunk, chunkX, chunkZ);
         _chunksByPos.Add(key, chunk);
         _chunks.Add(chunk);
         chunk.PopulateBlockLight();
         chunk.Load();
+    }
+
+    private static void ValidateChunkCoordinates(Chunk chunk, int expectedX, int expectedZ)
+    {
+        if (!chunk.ChunkPosEquals(expectedX, expectedZ))
+        {
+            throw new InvalidDataException(
+                $"Refusing to cache chunk {chunk.X},{chunk.Z} under key {expectedX},{expectedZ}.");
+        }
     }
 
     // Runs the 4 decoration neighbour checks for a newly inserted chunk,

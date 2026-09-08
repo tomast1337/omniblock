@@ -619,8 +619,9 @@ public class Chunk
 
         if (chunkX != X || chunkZ != Z)
         {
-            s_logger.LogWarning($"Entity in wrong chunk location! {entity}");
-            s_logger.LogDebug(Environment.StackTrace);
+            throw new InvalidOperationException(
+                $"Cannot add entity '{entity}' at {entity.X:F3},{entity.Y:F3},{entity.Z:F3} " +
+                $"to chunk {X},{Z}; entity belongs to chunk {chunkX},{chunkZ}.");
         }
 
         var slice = MathHelper.Floor(entity.Y / 16.0D);

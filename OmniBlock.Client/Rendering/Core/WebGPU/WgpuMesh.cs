@@ -87,19 +87,12 @@ public sealed unsafe class WgpuMesh : IDisposable
         if (_disposed) return;
         _disposed = true;
 
-        var api = _device.Api;
-
-        if (VertexBuffer is not null)
-        {
-            api.BufferDestroy(VertexBuffer);
-            api.BufferRelease(VertexBuffer);
-        }
-
-        if (IndexBuffer is not null)
-        {
-            api.BufferDestroy(IndexBuffer);
-            api.BufferRelease(IndexBuffer);
-        }
+        // Chunk meshes can be replaced after the current frame was submitted and while the next
+        // encoder is already being assembled. Destroying immediately lets wgpu-native recycle a
+        // handle still referenced by recorded draws; if the replacement is smaller, validation
+        // then reports that the old vertex count exceeds the newly bound buffer. Retiring through
+        // the device keeps both handles alive until a presentation boundary.
+        WgpuRelease.DeferredBuffers(_device, (nint)VertexBuffer, (nint)IndexBuffer);
     }
 
     /// <summary>

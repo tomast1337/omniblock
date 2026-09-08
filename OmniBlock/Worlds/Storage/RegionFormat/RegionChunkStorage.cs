@@ -25,7 +25,21 @@ internal class RegionChunkStorage : IChunkStorage
 
         if (stream != null)
         {
-            var chunkTag = NbtIo.Read(stream);
+            NBTTagCompound chunkTag;
+            try
+            {
+                chunkTag = NbtIo.Read(stream);
+            }
+            catch (Exception exception) when (exception is InvalidDataException or EndOfStreamException or ArgumentOutOfRangeException)
+            {
+                _logger.LogWarning(
+                    exception,
+                    "Ignoring unreadable chunk file at {ChunkX},{ChunkZ}; the requested chunk will be regenerated.",
+                    chunkX,
+                    chunkZ);
+                return null;
+            }
+
             if (!chunkTag.HasKey("Level"))
             {
                 _logger.LogInformation($"Chunk file at {chunkX},{chunkZ} is missing level data, skipping");
@@ -38,14 +52,26 @@ internal class RegionChunkStorage : IChunkStorage
                 return null;
             }
 
-            var chunk = LoadChunkFromNbt(world, chunkTag.GetCompoundTag("Level"));
-            if (!chunk.ChunkPosEquals(chunkX, chunkZ))
+            var levelTag = chunkTag.GetCompoundTag("Level");
+            var storedX = levelTag.GetInteger("xPos");
+            var storedZ = levelTag.GetInteger("zPos");
+            if (!HasExpectedCoordinates(levelTag, chunkX, chunkZ))
             {
-                _logger.LogInformation($"Chunk file at {chunkX},{chunkZ} is in the wrong location; relocating. (Expected {chunkX}, {chunkZ}, got {chunk.X}, {chunk.Z})");
-                chunkTag.SetInteger("xPos", chunkX);
-                chunkTag.SetInteger("zPos", chunkZ);
-                chunk = LoadChunkFromNbt(world, chunkTag.GetCompoundTag("Level"));
+                // The payload can contain entities and block entities whose world coordinates
+                // still belong to the embedded chunk. Relabelling only xPos/zPos creates a mixed
+                // chunk and causes those entities to be reinserted forever. Treat this slot as
+                // missing so the generator can replace it safely.
+                _logger.LogWarning(
+                    "Ignoring chunk file at {ExpectedX},{ExpectedZ} because its payload belongs " +
+                    "to {ActualX},{ActualZ}; the requested chunk will be regenerated.",
+                    chunkX,
+                    chunkZ,
+                    storedX,
+                    storedZ);
+                return null;
             }
+
+            var chunk = LoadChunkFromNbt(world, levelTag);
 
             chunk.Fill();
             return chunk;
@@ -53,6 +79,9 @@ internal class RegionChunkStorage : IChunkStorage
 
         return null;
     }
+
+    internal static bool HasExpectedCoordinates(NBTTagCompound levelTag, int chunkX, int chunkZ) =>
+        levelTag.GetInteger("xPos") == chunkX && levelTag.GetInteger("zPos") == chunkZ;
 
     public void SaveChunk(IWorldContext world, Chunk chunk, Action unused1, long unused2)
     {

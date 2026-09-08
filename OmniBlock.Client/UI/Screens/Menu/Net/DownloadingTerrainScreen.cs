@@ -3,6 +3,7 @@ using OmniBlock.Client.UI.Controls;
 using OmniBlock.Client.UI.Controls.Core;
 using OmniBlock.Client.UI.Layout.Flexbox;
 using OmniBlock.Network.Messages;
+using Microsoft.Extensions.Logging;
 using Color = OmniBlock.Client.UI.Colors.Color;
 
 namespace OmniBlock.Client.UI.Screens.Menu.Net;
@@ -10,7 +11,7 @@ namespace OmniBlock.Client.UI.Screens.Menu.Net;
 public class DownloadingTerrainScreen(UIContext context, ClientNetworkHandler networkHandler) : UIScreen(context)
 {
     private readonly ClientNetworkHandler _networkHandler = networkHandler;
-    private Label _progress = null!;
+    private readonly ILogger<DownloadingTerrainScreen> _logger = Log.Instance.For<DownloadingTerrainScreen>();
     private int _tickCounter;
 
     public override bool PausesGame => false;
@@ -29,14 +30,12 @@ public class DownloadingTerrainScreen(UIContext context, ClientNetworkHandler ne
         };
         Root.AddChild(label);
 
-        _progress = new Label
-        {
-            Text = "Waiting for spawn...",
-            TextColor = Color.White,
-            Centered = true
-        };
-        _progress.Style.MarginTop = 8;
-        Root.AddChild(_progress);
+        TerrainLoadingMap loadingMap = new(_networkHandler.Preload);
+        loadingMap.Style.Width = 80;
+        loadingMap.Style.Height = 80;
+        loadingMap.Style.MarginTop = 10;
+        loadingMap.IsHitTestVisible = false;
+        Root.AddChild(loadingMap);
     }
 
     public override void Update(float partialTicks)
@@ -52,10 +51,16 @@ public class DownloadingTerrainScreen(UIContext context, ClientNetworkHandler ne
         _networkHandler?.Tick();
 
         var preload = _networkHandler.Preload;
-        _progress.Text = !preload.HasSpawn
-            ? "Waiting for spawn..."
-            : $"Terrain {preload.DecodedChunks}/{preload.RequiredChunks}  " +
-              $"Meshes {preload.UploadedMeshes}/{preload.RequiredMeshes}";
+        if (_tickCounter % 100 == 0)
+        {
+            _logger.LogInformation(
+                "World preload progress: chunks {Decoded}/{RequiredChunks}, meshes {Meshes}/{RequiredMeshes}; missing mesh columns: {MissingMeshes}",
+                preload.DecodedChunks,
+                preload.RequiredChunks,
+                preload.UploadedMeshes,
+                preload.RequiredMeshes,
+                preload.DescribeMissingMeshes());
+        }
 
         if (preload.IsReady)
         {

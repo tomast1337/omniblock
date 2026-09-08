@@ -82,4 +82,19 @@ public sealed class ClientWorldPreloadStateTests
 
         Assert.Equal(24, state.RequiredMeshSections().Count());
     }
+
+    [Fact]
+    public void Visual_state_reports_decoded_and_meshed_columns_independently()
+    {
+        ClientWorldPreloadState state = new();
+        state.SetSpawn(8, 64, 8);
+
+        state.MarkChunkDecoded(1, -1);
+        Assert.True(state.IsChunkDecoded(1, -1));
+        Assert.False(state.HasMesh(1, -1));
+
+        state.MarkMeshUploaded(new Vector3D<int>(16, 80, -16));
+        Assert.True(state.HasMesh(1, -1));
+        Assert.False(state.IsChunkDecoded(-1, 1));
+    }
 }

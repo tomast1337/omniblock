@@ -35,6 +35,36 @@ public sealed class ClientWorldPreloadState
     public void MarkMeshUploaded(Vector3D<int> pos) =>
         _uploadedSections.Add(new Vector3D<int>(pos.X >> 4, pos.Y >> 4, pos.Z >> 4));
 
+    public bool IsChunkDecoded(int offsetX, int offsetZ) =>
+        HasSpawn && _decodedChunks.Contains(new ChunkPos(_centerChunk.X + offsetX, _centerChunk.Z + offsetZ));
+
+    public bool HasMesh(int offsetX, int offsetZ)
+    {
+        if (!HasSpawn)
+            return false;
+
+        for (var y = Math.Max(0, _centerSectionY - VerticalSectionRadius);
+             y <= Math.Min(ChuckFormat.WorldHeight / 16 - 1, _centerSectionY + VerticalSectionRadius); y++)
+            if (_uploadedSections.Contains(new Vector3D<int>(_centerChunk.X + offsetX, y, _centerChunk.Z + offsetZ)))
+                return true;
+
+        return false;
+    }
+
+    public string DescribeMissingMeshes()
+    {
+        if (!HasSpawn)
+            return "spawn-not-received";
+
+        List<string> missing = [];
+        for (var x = -MeshChunkRadius; x <= MeshChunkRadius; x++)
+        for (var z = -MeshChunkRadius; z <= MeshChunkRadius; z++)
+            if (!HasMesh(x, z))
+                missing.Add($"{_centerChunk.X + x},{_centerChunk.Z + z}");
+
+        return missing.Count == 0 ? "none" : string.Join(" ", missing);
+    }
+
     /// <summary>
     ///     True while this section can satisfy the initial playable-area mesh requirement.
     ///     The renderer uses this to put startup work ahead of the rest of the render distance.

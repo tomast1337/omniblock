@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Logging;
 using OmniBlock.Client.Options;
 using OmniBlock.Client.Rendering.Chunks.Occlusion;
 using OmniBlock.Client.Rendering.Core;
@@ -35,11 +36,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly List<ChunkToMeshInfo> _dirtyChunks = [];
     private readonly List<ChunkToMeshInfo> _lightingUpdates = [];
     private readonly HashSet<Vector3D<int>> _priorityChunks = [];
-    private readonly HashSet<Vector3D<int>> _startupMeshRetries = [];
     private readonly ChunkMeshGenerator _meshGenerator;
     private readonly List<SubChunkRenderer> _occludedRenderersBuffer = [];
     private readonly ChunkOcclusionCuller _occlusionCuller = new();
     private readonly GameOptions _options;
+    private readonly ILogger<ChunkRenderer> _logger = Log.Instance.For<ChunkRenderer>();
     private readonly Dictionary<Vector3D<int>, SubChunkState> _renderers = [];
     private readonly List<SubChunkRenderer> _renderersToRemove = [];
     private readonly TranslucentDistanceComparer _translucentDistanceComparer = new();
@@ -479,7 +480,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     ///     could go; a wall-clock budget lets it drain as fast as those actually allow, and still
     ///     bounds the frame-thread cost of dispatching regardless of how large the backlog gets.
     /// </summary>
-    private void DispatchPendingMeshUpdates(ICuller camera)
+    private void DispatchPendingMeshUpdates(ICuller? camera)
     {
         _dirtyChunks.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
         _lightingUpdates.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
@@ -497,7 +498,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
     }
 
-    private bool TryDispatchBestDirtyMeshUpdate(ICuller camera)
+    private bool TryDispatchBestDirtyMeshUpdate(ICuller? camera)
     {
         var bestIndex = -1;
         var bestPriority = false;
@@ -514,7 +515,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             );
 
             var dist = Vector3D.DistanceSquared(ToDoubleVec(info.Pos), _lastViewPos);
-            var visible = camera.IsBoundingBoxInFrustum(aabb);
+            var visible = camera?.IsBoundingBoxInFrustum(aabb) ?? false;
             if (info.Priority && !bestPriority ||
                 info.Priority == bestPriority && visible && !bestVisible ||
                 info.Priority == bestPriority && visible == bestVisible && dist < bestDist)
@@ -610,8 +611,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         // must be promoted instead of skipped. This also prevents a whole edge stripe from waiting
         // for the background cursor to wrap around the render distance.
         if (_world is ClientWorld clientWorld)
+        {
             foreach (var required in clientWorld.NetworkHandler.Preload.RequiredMeshSections())
                 PrioritizeMesh(required);
+
+            if (_frameIndex % 300 == 0 && !clientWorld.NetworkHandler.Preload.IsReady)
+                LogBlockingStartupMeshes(clientWorld);
+        }
 
         for (var i = 0; i < PRIORITY_PASS_LIMIT && i < s_spiralOffsets.Length; i++)
         {
@@ -686,6 +692,16 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             }
 
             _chunkVersionsToRemove.Clear();
+        }
+
+        // The terrain-loading screen ticks the world renderer but does not necessarily open and
+        // finish a world render pass. EndFrame is therefore not a reliable pump for startup mesh
+        // work. Drain it here until the playable area is complete; normal gameplay keeps the
+        // post-pass path so mesh replacement remains outside command recording.
+        if (_world is ClientWorld loadingWorld && !loadingWorld.NetworkHandler.Preload.IsReady)
+        {
+            DispatchPendingMeshUpdates(null);
+            LoadNewMeshes(_lastViewPos);
         }
     }
 
@@ -776,6 +792,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         if (_renderers.ContainsKey(chunkPos))
             return;
 
+        // Do not consume the one-shot orphan recovery while this is still a network placeholder.
+        // The startup loop calls us again every frame; once the full chunk blob marks it Loaded,
+        // the retry can create a real snapshot instead of being lost on MarkDirty's source guard.
+        if (!HasRenderableSourceChunk(_world, chunkPos))
+            return;
+
         if (_chunkVersions.ContainsKey(chunkPos))
         {
             _priorityChunks.Add(chunkPos);
@@ -791,21 +813,44 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     return;
                 }
 
-            if (_meshGenerator.Promote(chunkPos))
+            var version = _chunkVersions[chunkPos];
+            if (version.State.Pending != -1)
+            {
+                // A queued job can be promoted; an already-running job cannot, but remains the
+                // authoritative pending build and will be handled when its result arrives.
+                _meshGenerator.Promote(chunkPos);
                 return;
+            }
 
             // Version state can outlive the request that created it (for example when an early
-            // result was discarded). Discovery normally interprets that state as "already seen"
-            // and never retries it. Give each startup section one fresh version so such an orphan
-            // cannot hold the loading screen indefinitely. If a worker still owns the old version,
-            // normal stale-result handling will immediately rebuild this promoted replacement.
-            if (_startupMeshRetries.Add(chunkPos))
-                MarkDirty(chunkPos, true);
+            // result was discarded). With no renderer and no pending epoch, this is an actual
+            // orphan, so enqueue a fresh urgent build. MarkDirty immediately records a pending
+            // epoch, preventing the next frame from duplicating it.
+            MarkDirty(chunkPos, true);
 
             return;
         }
 
         MarkDirty(chunkPos, true);
+    }
+
+    private void LogBlockingStartupMeshes(ClientWorld clientWorld)
+    {
+        foreach (var pos in clientWorld.NetworkHandler.Preload.RequiredMeshSections())
+        {
+            var state = _chunkVersions.TryGetValue(pos, out var version)
+                ? version.State.ToString()
+                : "none";
+            _logger.LogInformation(
+                "Blocking startup mesh {Pos}: source={Source}, version={Version}, dirty={Dirty}, " +
+                "renderer={Renderer}, priority={Priority}",
+                pos,
+                HasRenderableSourceChunk(_world, pos),
+                state,
+                _dirtyChunks.Any(entry => entry.Pos == pos),
+                _renderers.ContainsKey(pos),
+                _priorityChunks.Contains(pos));
+        }
     }
 
     internal static bool HasRenderableSourceChunk(World world, Vector3D<int> sectionPos)

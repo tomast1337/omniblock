@@ -1,4 +1,5 @@
 using Silk.NET.WebGPU;
+using WgpuBuffer = Silk.NET.WebGPU.Buffer;
 
 namespace OmniBlock.Client.Rendering.Core.WebGPU;
 
@@ -13,6 +14,26 @@ namespace OmniBlock.Client.Rendering.Core.WebGPU;
 /// </remarks>
 internal static unsafe class WgpuRelease
 {
+    /// <summary>
+    ///     Defers destruction of vertex/index buffers until the frame using their previous contents
+    ///     has been submitted. Replacing a chunk mesh while an encoder still references its old
+    ///     buffer can otherwise make a recycled native handle point at a differently sized buffer.
+    /// </summary>
+    public static void DeferredBuffers(WebGpuDevice device, params nint[] buffers)
+    {
+        var api = device.Api;
+        device.Retire(() =>
+        {
+            foreach (var handle in buffers)
+            {
+                if (handle == 0) continue;
+                var buffer = (WgpuBuffer*)handle;
+                api.BufferDestroy(buffer);
+                api.BufferRelease(buffer);
+            }
+        });
+    }
+
     /// <summary>
     ///     Releases the bind groups, then the sampler, view and texture — any of which may be zero
     ///     when the caller is only replacing part of the set.
