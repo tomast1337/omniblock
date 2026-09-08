@@ -5,6 +5,7 @@ namespace OmniBlock.Client.Rendering.Chunks;
 internal readonly record struct ChunkMeshProfileSnapshot(
     int Workers,
     int Queued,
+    int Outstanding,
     int CriticalResults,
     int ForegroundResults,
     int BackgroundResults,
@@ -71,6 +72,7 @@ internal sealed class ChunkMeshProfiler
 
     public ChunkMeshProfileSnapshot Snapshot(
         int queued,
+        int outstanding,
         int criticalResults,
         int foregroundResults,
         int backgroundResults,
@@ -80,7 +82,7 @@ internal sealed class ChunkMeshProfiler
         var snapshots = Interlocked.Read(ref _snapshotCount);
         var uploads = Interlocked.Read(ref _uploadCount);
         return new ChunkMeshProfileSnapshot(
-            workers, queued, criticalResults, foregroundResults, backgroundResults, meshes,
+            workers, queued, outstanding, criticalResults, foregroundResults, backgroundResults, meshes,
             AverageMs(_snapshotTicks, snapshots),
             AverageMs(_queueWaitTicks, meshes),
             AverageMs(_classificationTicks, meshes),

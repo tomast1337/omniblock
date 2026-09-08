@@ -6,157 +6,139 @@ namespace OmniBlock.Client.Rendering.Chunks.Occlusion;
 
 public static class ChunkVisibilityComputer
 {
+    private const int Size = SubChunkRenderer.Size;
+    private const int TotalBlocks = Size * Size * Size;
+
+    /// <summary>Compiles which boundary faces are connected through non-opaque cells.</summary>
+    /// <remarks>
+    ///     Connectivity belongs to transparent components, not to individual starting faces. The
+    ///     previous implementation flood-filled the same open section once from each of its six
+    ///     faces, repeating block lookups and traversal up to six times. This version classifies
+    ///     opacity once and visits every reachable cell once, then connects every face touched by
+    ///     that component. Closed interior cavities are deliberately ignored because no adjacent
+    ///     section can enter them.
+    /// </remarks>
     public static ChunkVisibilityStore Compute(WorldRegionSnapshot cache, int minX, int minY, int minZ)
     {
         ChunkVisibilityStore store = new();
+        Span<uint> opaque = stackalloc uint[TotalBlocks / 32];
+        Span<uint> visited = stackalloc uint[TotalBlocks / 32];
+        Span<ushort> queue = stackalloc ushort[TotalBlocks];
+        var opaqueCount = ClassifyOpacity(cache, minX, minY, minZ, opaque);
 
-        // We use a bitset to track visited blocks (4096 bits = 512 bytes)
-        Span<uint> visited = stackalloc uint[SubChunkRenderer.Size * SubChunkRenderer.Size * SubChunkRenderer.Size / 32];
-
-        // Check connectivity from each face
-        for (var f = 0; f < ChunkDirectionExtensions.Count; f++)
+        if (opaqueCount == 0)
         {
-            var startFace = (ChunkDirection)f;
-            visited.Clear();
+            ConnectFaces(ref store, ChunkDirectionMask.All);
+            return store;
+        }
 
-            var reachable = FloodFill(cache, minX, minY, minZ, startFace, visited);
+        for (var idx = 0; idx < TotalBlocks; idx++)
+        {
+            var x = idx & 0xF;
+            var y = (idx >> 4) & 0xF;
+            var z = (idx >> 8) & 0xF;
+            if (!IsBoundary(x, y, z) || IsSet(opaque, idx) || IsSet(visited, idx)) continue;
 
-            // For each reachable face, set visibility
-            for (var t = 0; t < ChunkDirectionExtensions.Count; t++)
-            {
-                if ((reachable & (ChunkDirectionMask)(1 << t)) != 0)
-                {
-                    store.SetVisible(startFace, (ChunkDirection)t);
-                }
-            }
+            ConnectFaces(ref store, FloodComponent(idx, opaque, visited, queue));
         }
 
         return store;
     }
 
-    private static ChunkDirectionMask FloodFill(
+    private static int ClassifyOpacity(
         WorldRegionSnapshot cache,
         int minX, int minY, int minZ,
-        ChunkDirection startFace,
-        Span<uint> visited)
+        Span<uint> opaque)
     {
-        var reachable = ChunkDirectionMask.None;
-        const int totalBlocks = SubChunkRenderer.Size * SubChunkRenderer.Size * SubChunkRenderer.Size;
-
-        Span<ushort> queue = stackalloc ushort[totalBlocks];
-        int head = 0, tail = 0;
-
-        // Add all air blocks on the start face to the queue
-        for (var i = 0; i < SubChunkRenderer.Size; i++)
+        var count = 0;
+        for (var z = 0; z < Size; z++)
+        for (var y = 0; y < Size; y++)
+        for (var x = 0; x < Size; x++)
         {
-            for (var j = 0; j < SubChunkRenderer.Size; j++)
-            {
-                int lx = 0, ly = 0, lz = 0;
-                switch (startFace)
-                {
-                    case ChunkDirection.Down:
-                        lx = i;
-                        ly = 0;
-                        lz = j;
-                        break;
-                    case ChunkDirection.Up:
-                        lx = i;
-                        ly = SubChunkRenderer.Size - 1;
-                        lz = j;
-                        break;
-                    case ChunkDirection.North:
-                        lx = i;
-                        ly = j;
-                        lz = 0;
-                        break;
-                    case ChunkDirection.South:
-                        lx = i;
-                        ly = j;
-                        lz = SubChunkRenderer.Size - 1;
-                        break;
-                    case ChunkDirection.West:
-                        lx = 0;
-                        ly = i;
-                        lz = j;
-                        break;
-                    case ChunkDirection.East:
-                        lx = SubChunkRenderer.Size - 1;
-                        ly = i;
-                        lz = j;
-                        break;
-                }
+            var id = cache.GetBlockId(minX + x, minY + y, minZ + z);
+            if (id <= 0 || !cache.ContentBlocks.IsOpaque(id)) continue;
 
-                if (IsAir(cache, minX + lx, minY + ly, minZ + lz))
-                {
-                    var idx = GetIndex(lx, ly, lz);
-                    if (!IsVisited(visited, idx))
-                    {
-                        MarkVisited(visited, idx);
-                        queue[tail++] = (ushort)idx;
-                    }
-                }
-            }
+            Set(opaque, GetIndex(x, y, z));
+            count++;
         }
+
+        return count;
+    }
+
+    private static ChunkDirectionMask FloodComponent(
+        int seed,
+        ReadOnlySpan<uint> opaque,
+        Span<uint> visited,
+        Span<ushort> queue)
+    {
+        var head = 0;
+        var tail = 0;
+        var faces = ChunkDirectionMask.None;
+        Set(visited, seed);
+        queue[tail++] = (ushort)seed;
 
         while (head < tail)
         {
             var idx = queue[head++];
-            var lx = idx & 0xF;
-            var ly = (idx >> 4) & 0xF;
-            var lz = (idx >> 8) & 0xF;
+            var x = idx & 0xF;
+            var y = (idx >> 4) & 0xF;
+            var z = (idx >> 8) & 0xF;
 
-            // Check if we touched any other face
-            if (lx == 0) reachable |= ChunkDirectionMask.West;
-            if (lx == SubChunkRenderer.Size - 1) reachable |= ChunkDirectionMask.East;
-            if (ly == 0) reachable |= ChunkDirectionMask.Down;
-            if (ly == SubChunkRenderer.Size - 1) reachable |= ChunkDirectionMask.Up;
-            if (lz == 0) reachable |= ChunkDirectionMask.North;
-            if (lz == SubChunkRenderer.Size - 1) reachable |= ChunkDirectionMask.South;
+            if (x == 0) faces |= ChunkDirectionMask.West;
+            if (x == Size - 1) faces |= ChunkDirectionMask.East;
+            if (y == 0) faces |= ChunkDirectionMask.Down;
+            if (y == Size - 1) faces |= ChunkDirectionMask.Up;
+            if (z == 0) faces |= ChunkDirectionMask.North;
+            if (z == Size - 1) faces |= ChunkDirectionMask.South;
 
-            TryVisit(cache, minX, minY, minZ, lx - 1, ly, lz, visited, queue, ref tail);
-            TryVisit(cache, minX, minY, minZ, lx + 1, ly, lz, visited, queue, ref tail);
-            TryVisit(cache, minX, minY, minZ, lx, ly - 1, lz, visited, queue, ref tail);
-            TryVisit(cache, minX, minY, minZ, lx, ly + 1, lz, visited, queue, ref tail);
-            TryVisit(cache, minX, minY, minZ, lx, ly, lz - 1, visited, queue, ref tail);
-            TryVisit(cache, minX, minY, minZ, lx, ly, lz + 1, visited, queue, ref tail);
+            if (x > 0) TryVisit(idx - 1, opaque, visited, queue, ref tail);
+            if (x < Size - 1) TryVisit(idx + 1, opaque, visited, queue, ref tail);
+            if (y > 0) TryVisit(idx - 16, opaque, visited, queue, ref tail);
+            if (y < Size - 1) TryVisit(idx + 16, opaque, visited, queue, ref tail);
+            if (z > 0) TryVisit(idx - 256, opaque, visited, queue, ref tail);
+            if (z < Size - 1) TryVisit(idx + 256, opaque, visited, queue, ref tail);
         }
 
-        return reachable;
+        return faces;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void TryVisit(
-        WorldRegionSnapshot cache,
-        int minX, int minY, int minZ,
-        int lx, int ly, int lz,
+        int idx,
+        ReadOnlySpan<uint> opaque,
         Span<uint> visited,
         Span<ushort> queue,
         ref int tail)
     {
-        if (lx < 0 || lx >= SubChunkRenderer.Size || ly < 0 || ly >= SubChunkRenderer.Size || lz < 0 || lz >= SubChunkRenderer.Size) return;
+        if (IsSet(opaque, idx) || IsSet(visited, idx)) return;
+        Set(visited, idx);
+        queue[tail++] = (ushort)idx;
+    }
 
-        var idx = GetIndex(lx, ly, lz);
-        if (IsVisited(visited, idx)) return;
-
-        if (IsAir(cache, minX + lx, minY + ly, minZ + lz))
+    private static void ConnectFaces(ref ChunkVisibilityStore store, ChunkDirectionMask faces)
+    {
+        for (var from = 0; from < ChunkDirectionExtensions.Count; from++)
         {
-            MarkVisited(visited, idx);
-            queue[tail++] = (ushort)idx;
+            if ((faces & (ChunkDirectionMask)(1 << from)) == 0) continue;
+            for (var to = 0; to < ChunkDirectionExtensions.Count; to++)
+            {
+                if ((faces & (ChunkDirectionMask)(1 << to)) != 0)
+                    store.SetVisible((ChunkDirection)from, (ChunkDirection)to);
+            }
         }
     }
 
-    private static bool IsAir(WorldRegionSnapshot cache, int x, int y, int z)
-    {
-        var id = cache.GetBlockId(x, y, z);
-        if (id <= 0) return true;
-        return !cache.ContentBlocks.IsOpaque(id);
-    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsBoundary(int x, int y, int z) =>
+        x == 0 || x == Size - 1 || y == 0 || y == Size - 1 || z == 0 || z == Size - 1;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int GetIndex(int x, int y, int z) => x | (y << 4) | (z << 8);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool IsVisited(Span<uint> visited, int idx) => (visited[idx >> 5] & (1u << (idx & 31))) != 0;
+    private static bool IsSet(ReadOnlySpan<uint> bits, int idx) =>
+        (bits[idx >> 5] & (1u << (idx & 31))) != 0;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void MarkVisited(Span<uint> visited, int idx) => visited[idx >> 5] |= 1u << (idx & 31);
+    private static void Set(Span<uint> bits, int idx) => bits[idx >> 5] |= 1u << (idx & 31);
 }

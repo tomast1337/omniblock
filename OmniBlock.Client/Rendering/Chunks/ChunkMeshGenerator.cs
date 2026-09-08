@@ -57,6 +57,7 @@ internal class ChunkMeshGenerator : IDisposable
 
     private readonly ConcurrentQueue<MeshBuildResult> _backgroundResults = new();
     private readonly ConcurrentQueue<MeshBuildResult> _foregroundResults = new();
+    private readonly ConcurrentDictionary<Vector3D<int>, byte> _outstanding = new();
     private readonly MeshPriorityFairness _resultFairness = new();
     private readonly CancellationTokenSource _shutdown = new();
     private readonly PriorityWorkScheduler<Vector3D<int>, MeshBuildRequest> _work = new();
@@ -75,7 +76,8 @@ internal class ChunkMeshGenerator : IDisposable
     public ushort MaxConcurrentTasks { get; }
 
     public ChunkMeshProfileSnapshot Profile => _profile.Snapshot(
-        _work.Count, _criticalResults.Count, _foregroundResults.Count, _backgroundResults.Count,
+        _work.Count, _outstanding.Count,
+        _criticalResults.Count, _foregroundResults.Count, _backgroundResults.Count,
         MaxConcurrentTasks);
 
     public void ResetProfile() => _profile.Reset();
@@ -97,6 +99,7 @@ internal class ChunkMeshGenerator : IDisposable
         while (_criticalResults.TryDequeue(out var critical)) critical.Dispose();
         while (_foregroundResults.TryDequeue(out var foreground)) foreground.Dispose();
         while (_backgroundResults.TryDequeue(out var background)) background.Dispose();
+        _outstanding.Clear();
         _listPool.Dispose();
     }
 
@@ -106,14 +109,22 @@ internal class ChunkMeshGenerator : IDisposable
             !_criticalResults.IsEmpty,
             !_foregroundResults.IsEmpty,
             !_backgroundResults.IsEmpty);
-        if (ResultQueueFor(priority).TryDequeue(out result)) return true;
+        if (ResultQueueFor(priority).TryDequeue(out result))
+        {
+            _outstanding.TryRemove(result.Pos, out _);
+            return true;
+        }
 
         // Producers may enqueue between the availability snapshot and the selected dequeue.
         // Falling through all lanes keeps that harmless race from looking like an empty result set.
-        return _criticalResults.TryDequeue(out result)
-               || _foregroundResults.TryDequeue(out result)
-               || _backgroundResults.TryDequeue(out result);
+        var found = _criticalResults.TryDequeue(out result)
+                    || _foregroundResults.TryDequeue(out result)
+                    || _backgroundResults.TryDequeue(out result);
+        if (found) _outstanding.TryRemove(result.Pos, out _);
+        return found;
     }
+
+    public bool HasOutstanding(Vector3D<int> pos) => _outstanding.ContainsKey(pos);
 
     //TODO: Make a chunk mesh config struct for alternateBlocks and other flags
     public void MeshChunk(
@@ -134,8 +145,15 @@ internal class ChunkMeshGenerator : IDisposable
         _profile.RecordSnapshot(Stopwatch.GetTimestamp() - requestedAt);
 
         var request = new MeshBuildRequest(pos, version, cache, alternateBlocks, requestedAt, Stopwatch.GetTimestamp());
+        if (!_outstanding.TryAdd(pos, 0))
+        {
+            cache.Dispose();
+            return;
+        }
+
         if (!_work.Enqueue(pos, request, priority))
         {
+            _outstanding.TryRemove(pos, out _);
             cache.Dispose();
         }
     }
@@ -160,6 +178,7 @@ internal class ChunkMeshGenerator : IDisposable
                 }
                 catch (Exception ex)
                 {
+                    _outstanding.TryRemove(request.Pos, out _);
                     _logger.LogError(ex, "Error generating chunk mesh at {Pos}", request.Pos);
                 }
                 finally

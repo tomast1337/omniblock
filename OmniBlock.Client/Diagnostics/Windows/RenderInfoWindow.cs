@@ -152,7 +152,8 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
         if (ctx.ChunkRenderer is { } chunkRenderer)
         {
             var mesh = chunkRenderer.MeshProfile;
-            ImGuiTextSafe.Text($"Workers:   {mesh.Workers}  queued {mesh.Queued}");
+            ImGuiTextSafe.Text(
+                $"Workers:   {mesh.Workers}  queued {mesh.Queued}  outstanding {mesh.Outstanding}");
             ImGuiTextSafe.Text(
                 $"Results:   critical {mesh.CriticalResults}  foreground {mesh.ForegroundResults}  background {mesh.BackgroundResults}");
             ImGuiTextSafe.Text($"Built:     {mesh.Meshes:N0}");

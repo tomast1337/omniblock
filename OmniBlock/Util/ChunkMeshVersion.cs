@@ -75,6 +75,11 @@ public class ChunkMeshVersion
         }
     }
 
+    /// <summary>
+    ///     Makes a lost request eligible for a new snapshot without pretending it completed.
+    /// </summary>
+    public void AbandonPendingMesh() => _pendingMesh = -1;
+
     public bool IsStale(long snapshotEpoch) => _epoch > snapshotEpoch;
 
     public bool IsModified() => _epoch != _lastMeshed;

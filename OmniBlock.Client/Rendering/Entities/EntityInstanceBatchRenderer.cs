@@ -527,16 +527,30 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         return texture;
     }
 
-    /// <summary>Uploads the static model geometry to a WgpuMesh once.</summary>
+    /// <summary>Uploads the current static model-geometry snapshot to a <see cref="WgpuMesh" />.</summary>
+    /// <remarks>
+    ///     Models bake lazily as entity types first become visible. Consequently the CPU list can
+    ///     grow after an earlier frame created the shared GPU mesh. Keeping that first mesh made a
+    ///     later bucket address the new vertex range through the old, smaller buffer. WebGPU then
+    ///     rejected the entire command encoder (for example, vertex 17100 against a 12672-vertex
+    ///     buffer). Replace the snapshot whenever the staged count changes; deferred mesh disposal
+    ///     keeps the previous snapshot alive for draws already recorded in the current pass.
+    /// </remarks>
     private void EnsureStaticMeshUploaded(WebGpuDevice device)
     {
-        if (_staticMesh is not null) return;
+        if (!NeedsStaticMeshUpload(_staticVertices.Count, _staticMesh?.VertexCount)) return;
 
         ReadOnlySpan<EntityInstancedVertex> verts = CollectionsMarshal.AsSpan(_staticVertices);
-        _staticMesh = new WgpuMesh(device,
+        var replacement = new WgpuMesh(device,
             MemoryMarshal.AsBytes(verts),
             EntityInstancedVertexStride);
+        var previous = _staticMesh;
+        _staticMesh = replacement;
+        previous?.Dispose();
     }
+
+    internal static bool NeedsStaticMeshUpload(int stagedVertexCount, uint? uploadedVertexCount) =>
+        uploadedVertexCount is null || uploadedVertexCount.Value != (uint)stagedVertexCount;
 
     /// <summary>
     ///     Everything about how a draw is rasterised and shaded that a caller can change between one

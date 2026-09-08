@@ -138,8 +138,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         get
         {
             var profile = MeshProfile;
-            return _dirtyChunks.Count + _lightingUpdates.Count + profile.Queued +
-                   profile.CriticalResults + profile.ForegroundResults + profile.BackgroundResults;
+            return _dirtyChunks.Count + _lightingUpdates.Count + profile.Outstanding;
         }
     }
     internal void ResetMeshProfile() => _meshGenerator.ResetProfile();
@@ -774,8 +773,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             if (chunkPos.Y < 0 || chunkPos.Y >= ChuckFormat.WorldHeight)
                 continue;
 
-            if (_renderers.ContainsKey(chunkPos) || _chunkVersions.ContainsKey(chunkPos))
+            if (_renderers.ContainsKey(chunkPos))
                 continue;
+
+            RecoverOrphanedMesh(chunkPos);
+            if (_chunkVersions.ContainsKey(chunkPos)) continue;
 
             if (MarkDirty(chunkPos))
             {
@@ -800,9 +802,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 if (distSq <= radiusSq)
                 {
                     var chunkPos = (currentChunk + offset) * SubChunkRenderer.Size;
-                    if (!_renderers.ContainsKey(chunkPos) && !_chunkVersions.ContainsKey(chunkPos))
+                    if (!_renderers.ContainsKey(chunkPos))
                     {
-                        if (MarkDirty(chunkPos))
+                        RecoverOrphanedMesh(chunkPos);
+                        if (!_chunkVersions.ContainsKey(chunkPos) && MarkDirty(chunkPos))
                         {
                             enqueuedCount++;
                         }
@@ -969,6 +972,24 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         if (priority == MeshWorkPriority.Background) return;
         _requestedPriorities[chunkPos] = MaxPriority(RequestedPriority(chunkPos), priority);
+    }
+
+    /// <summary>
+    ///     Drops version state that claims a missing renderer has work pending when no local,
+    ///     worker, or result queue actually owns that work. Discovery can then schedule it again.
+    /// </summary>
+    private void RecoverOrphanedMesh(Vector3D<int> chunkPos)
+    {
+        if (!_chunkVersions.TryGetValue(chunkPos, out var version)) return;
+        if (_dirtyChunks.Any(entry => entry.Pos == chunkPos) ||
+            _lightingUpdates.Any(entry => entry.Pos == chunkPos) ||
+            _meshGenerator.HasOutstanding(chunkPos))
+            return;
+
+        version.AbandonPendingMesh();
+        version.Release();
+        _chunkVersions.Remove(chunkPos);
+        _requestedPriorities.Remove(chunkPos);
     }
 
     private void PrioritizeMesh(Vector3D<int> chunkPos)
