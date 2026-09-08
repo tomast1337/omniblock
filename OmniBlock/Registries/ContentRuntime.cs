@@ -6,6 +6,7 @@ using OmniBlock.Entities;
 using OmniBlock.Items;
 using OmniBlock.Items.Behaviors;
 using OmniBlock.Processes;
+using OmniBlock.Worlds;
 
 namespace OmniBlock.Registries;
 
@@ -26,7 +27,8 @@ public sealed class ContentRuntime
         IBlockBehaviorProviderRegistry blockBehaviorProviders,
         IItemBehaviorProviderRegistry itemBehaviorProviders,
         IProcessProviderRegistry processProviders,
-        RuntimeProcessRegistry processes)
+        RuntimeProcessRegistry processes,
+        IEnumerable<WorldType> worldTypes)
     {
         ArgumentNullException.ThrowIfNull(blockBehaviorProviders);
         var blockEntries = blocks.ToArray();
@@ -36,6 +38,7 @@ public sealed class ContentRuntime
         Blocks = new RuntimeBlockRegistry(blockEntries);
         Items = new RuntimeItemRegistry(itemEntries, blockItemEntries, Blocks);
         EntityTypes = new RuntimeEntityTypeRegistry(entityEntries);
+        WorldTypes = new RuntimeWorldTypeRegistry(worldTypes);
         Manifest = new ContentCatalogManifest(Blocks.Keys.Select(key =>
                 new KeyValuePair<ResourceLocation, int>(key, Blocks.Get(key).Id)),
             itemEntries.Select(entry => new KeyValuePair<ResourceLocation, int>(entry.Key, entry.Item.Id)),
@@ -57,6 +60,7 @@ public sealed class ContentRuntime
         Blocks = source.Blocks;
         Items = source.Items;
         EntityTypes = source.EntityTypes;
+        WorldTypes = source.WorldTypes;
         Manifest = new ContentCatalogManifest(source.Manifest.BlockIds, source.Manifest.ItemIds,
             processes.ManifestEntries, source.Manifest.Entities);
         BlockBehaviorProviders = source.BlockBehaviorProviders;
@@ -73,6 +77,7 @@ public sealed class ContentRuntime
     public RuntimeBlockRegistry Blocks { get; }
     public RuntimeItemRegistry Items { get; }
     public RuntimeEntityTypeRegistry EntityTypes { get; }
+    public RuntimeWorldTypeRegistry WorldTypes { get; }
     public ContentCatalogManifest Manifest { get; }
     public IBlockBehaviorProviderRegistry BlockBehaviorProviders { get; }
     public IItemBehaviorProviderRegistry ItemBehaviorProviders { get; }

@@ -21,7 +21,8 @@ public class SelectWorldTypeListItem(WorldType type) : ListItem<WorldType>(type)
             renderer.DrawRect(4, 4, 24, 24, Color.BackgroundBlackAlpha);
         }
 
-        renderer.DrawText(Value.DisplayName, 32, 4, Color.White);
-        renderer.DrawText(Value.Description, 32, 16, Color.Gray80);
+        var translationRoot = $"selectWorld.type.{Value.Name.ToLowerInvariant()}";
+        renderer.DrawText(Translations.Get($"{translationRoot}.title"), 32, 4, Color.White);
+        renderer.DrawText(Translations.Get($"{translationRoot}.description"), 32, 16, Color.Gray80);
     }
 }

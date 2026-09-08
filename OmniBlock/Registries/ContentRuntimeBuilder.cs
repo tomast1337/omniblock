@@ -10,6 +10,7 @@ using OmniBlock.Items.Behaviors;
 using OmniBlock.Processes;
 using OmniBlock.Textures;
 using OmniBlock.Util;
+using OmniBlock.Worlds;
 
 namespace OmniBlock.Registries;
 
@@ -243,7 +244,8 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
             BlockBehaviorProviders,
             ItemBehaviorProviders,
             ProcessProviders,
-            processes);
+            processes,
+            WorldType.BuiltIns);
         _built = true;
         return runtime;
     }

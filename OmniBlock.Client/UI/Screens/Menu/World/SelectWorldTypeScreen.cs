@@ -13,7 +13,7 @@ public class SelectWorldTypeScreen(
     WorldType currentType) : UIScreen(context)
 {
     private readonly List<SelectWorldTypeListItem> _listItems = [];
-    private readonly List<WorldType> _types = [.. WorldType.WorldTypes.Where(t => t != null && t.CanBeCreated)];
+    private readonly List<WorldType> _types = [.. context.Content.WorldTypes.All.Where(static type => type.CanBeCreated)];
     private ScrollView _scrollView = null!;
     private int _selectedIndex = -1;
 
@@ -78,9 +78,6 @@ public class SelectWorldTypeScreen(
         _listItems.Clear();
         foreach (var type in _types)
         {
-            type.SetDisplayName(Translations.Get($"selectWorld.type.{type.Name.ToLowerInvariant()}.title"))
-                .SetDescription(Translations.Get($"selectWorld.type.{type.Name.ToLowerInvariant()}.description"));
-
             var index = _listItems.Count;
             SelectWorldTypeListItem item = new(type);
             item.OnClick += e => SelectItem(index);

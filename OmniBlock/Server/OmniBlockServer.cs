@@ -179,7 +179,9 @@ public abstract class OmniBlockServer : ICommandOutput
         }
 
         var typeString = config.GetLevelType("DEFAULT");
-        var worldType = WorldType.ParseWorldType(typeString) ?? WorldType.Default;
+        var worldType = Content.WorldTypes.TryGet(typeString, out var configuredWorldType)
+            ? configuredWorldType
+            : Content.WorldTypes.Get("omniblock:default");
         var optionsString = config.GetLevelOptions("");
 
         _logger.LogInformation("Preparing level \"{WorldName}\"", worldName);

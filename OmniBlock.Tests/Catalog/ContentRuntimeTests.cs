@@ -1,5 +1,6 @@
 using System.Text.Json;
 using OmniBlock.Blocks;
+using OmniBlock.Worlds;
 
 namespace OmniBlock.Tests.Catalog;
 
@@ -37,6 +38,22 @@ public sealed class ContentRuntimeTests
         Assert.Same(coal, runtime.Items.Get("omniblock:coal"));
         Assert.Same(coal, runtime.Items.GetByProtocolId(coal.Id));
         Assert.Same(runtime.Items.Get("omniblock:stone"), runtime.Items.GetByProtocolId(stone.Id));
+    }
+
+    [Fact]
+    public void Published_runtime_owns_the_immutable_world_type_catalog()
+    {
+        var worldTypes = ContentRuntime.Current.WorldTypes;
+
+        Assert.Equal(["default", "flat", "sky"], worldTypes.All.Select(static type => type.Name));
+        Assert.Same(worldTypes.Get("omniblock:default"), worldTypes.Get("DEFAULT"));
+        Assert.Same(worldTypes.Get("omniblock:flat"), worldTypes.Get("Flat"));
+        Assert.False(worldTypes.TryGet("example:missing", out _));
+        Assert.Throws<KeyNotFoundException>(() => worldTypes.Get("example:missing"));
+        Assert.DoesNotContain(typeof(WorldType).GetProperties(),
+            static property => property.SetMethod?.IsPublic == true);
+        Assert.DoesNotContain(typeof(WorldType).GetFields(),
+            static field => field.IsPublic && !field.IsInitOnly);
     }
 
     [Fact]
