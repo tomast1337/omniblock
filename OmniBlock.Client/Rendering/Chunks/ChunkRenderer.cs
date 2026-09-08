@@ -22,6 +22,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private const int MaxMeshWorkers = 8;
     internal const int MeshSafetyRingRadius = 3;
     internal const long MeshAgePromotionTicks = 120;
+    internal const double MeshPredictionTicks = 10.0;
+    internal const double MeshPrefetchMargin = SubChunkRenderer.Size;
 
     //TODO: MAKE THIS CONFIGURABLE
     private const double MeshUploadBudgetMs = 1.5;
@@ -74,6 +76,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private ICuller? _lastCamera;
     private int _lastRenderDistance;
     private Vector3D<double> _lastViewPos;
+    private Vector3D<double> _predictedViewPos;
     private Matrix4X4<float> _modelView;
     private Matrix4X4<float> _projection;
 
@@ -516,12 +519,15 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 info.Pos.Z + SubChunkRenderer.Size
             );
 
-            var visible = camera?.IsBoundingBoxInFrustum(aabb) ?? false;
+            // Expand only the scheduling frustum. Drawing still tests the exact mesh bounds.
+            var prefetched = camera?.IsBoundingBoxInFrustum(aabb.Expand(
+                MeshPrefetchMargin, MeshPrefetchMargin, MeshPrefetchMargin)) ?? false;
             var rank = GetMeshSchedulingRank(
                 info.Pos,
                 _lastViewPos,
+                _predictedViewPos,
                 info.Priority,
-                visible,
+                prefetched,
                 info.EnqueuedAt,
                 _schedulerTick);
             if (rank.CompareTo(bestRank) < 0)
@@ -549,15 +555,29 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         bool urgent,
         bool visible,
         long enqueuedAt,
+        long schedulerTick) => GetMeshSchedulingRank(
+        position, viewPosition, viewPosition, urgent, visible, enqueuedAt, schedulerTick);
+
+    internal static (int Tier, long EnqueuedAt, double DistanceSquared) GetMeshSchedulingRank(
+        Vector3D<int> position,
+        Vector3D<double> viewPosition,
+        Vector3D<double> predictedViewPosition,
+        bool urgent,
+        bool prefetched,
+        long enqueuedAt,
         long schedulerTick)
     {
-        var baseTier = urgent ? 0 : IsInMeshSafetyRing(position, viewPosition) ? 1 : visible ? 2 : 3;
+        var baseTier = urgent ? 0 : IsInMeshSafetyRing(position, viewPosition) ? 1 : prefetched ? 2 : 3;
         var age = Math.Max(0, schedulerTick - enqueuedAt);
         // Old background work eventually competes with visible work, where its older enqueue time
         // wins the tie. It never displaces the permanent safety ring or urgent gameplay work.
         var minimumTier = baseTier <= 1 ? baseTier : 2;
         var promotedTier = Math.Max(minimumTier, baseTier - (int)(age / MeshAgePromotionTicks));
-        return (promotedTier, enqueuedAt, Vector3D.DistanceSquared(ToDoubleVec(position), viewPosition));
+        var meshPosition = ToDoubleVec(position);
+        var distance = Math.Min(
+            Vector3D.DistanceSquared(meshPosition, viewPosition),
+            Vector3D.DistanceSquared(meshPosition, predictedViewPosition));
+        return (promotedTier, enqueuedAt, distance);
     }
 
     internal static bool IsInMeshSafetyRing(Vector3D<int> position, Vector3D<double> viewPosition)
@@ -619,14 +639,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
     }
 
-    public void Tick(Vector3D<double> viewPos)
+    public void Tick(Vector3D<double> viewPos, Vector3D<double> velocity)
     {
         using var _chunkTick = Profiler.Begin("ChunkTick");
 
         _schedulerTick++;
         _lastViewPos = viewPos;
-        if (_schedulerTick % 100 == 0 && Environment.GetEnvironmentVariable("OMNIBLOCK_MESH_DIAGNOSTICS") == "1")
-            LogNearbySurfaceMeshes(viewPos);
+        _predictedViewPos = PredictMeshCenter(viewPos, velocity);
 
         Vector3D<int> currentChunk = new(
             (int)Math.Floor(viewPos.X / SubChunkRenderer.Size),
@@ -740,6 +759,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             LoadNewMeshes(_lastViewPos);
         }
     }
+
+    internal static Vector3D<double> PredictMeshCenter(Vector3D<double> position, Vector3D<double> velocity) =>
+        position + velocity * MeshPredictionTicks;
 
     public void MarkAllVisibleChunksDirty()
     {
@@ -913,31 +935,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         return world.BlockHost.HasChunk(chunkX, chunkZ) && world.BlockHost.GetChunk(chunkX, chunkZ).Loaded;
     }
 
-    private void LogNearbySurfaceMeshes(Vector3D<double> viewPos)
-    {
-        _logger.LogInformation("Mesh queues dirty={Count}, urgent={Urgent}, worker={Workers}",
-            _dirtyChunks.Count, _dirtyChunks.Count(entry => entry.Priority), _meshGenerator.Profile);
-        var cx = (int)Math.Floor(viewPos.X / 16);
-        var cz = (int)Math.Floor(viewPos.Z / 16);
-        for (var x = cx - 3; x <= cx + 3; x++)
-        for (var z = cz - 3; z <= cz + 3; z++)
-        {
-            if (!HasRenderableSourceChunk(_world, new Vector3D<int>(x * 16, 0, z * 16))) continue;
-            var chunk = _world.BlockHost.GetChunk(x, z);
-            for (var y = ChuckFormat.WorldHeight - 1; y >= 0; y--)
-            {
-                if (chunk.Blocks[ChuckFormat.GetIndex(8, y, 8)] == 0) continue;
-                var pos = new Vector3D<int>(x * 16, y / 16 * 16, z * 16);
-                _renderers.TryGetValue(pos, out var state);
-                _chunkVersions.TryGetValue(pos, out var version);
-                _logger.LogInformation("Mesh surface {Pos}: bytes={Bytes}, visible={Visible}, version={Version}, dirty={Dirty}, urgent={Urgent}",
-                    pos, state?.Renderer.SolidMeshSizeBytes ?? -1, state?.Renderer.LastVisibleFrame == _frameIndex,
-                    version?.State.ToString() ?? "none", _dirtyChunks.Any(entry => entry.Pos == pos),
-                    _dirtyChunks.Any(entry => entry.Pos == pos && entry.Priority));
-                break;
-            }
-        }
-    }
 
     private bool IsChunkInRenderDistance(Vector3D<int> chunkWorldPos, Vector3D<double> viewPos)
     {

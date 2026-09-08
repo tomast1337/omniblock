@@ -307,3 +307,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-09-08 — refactor: implement ClientWorldPreloadState for chunk and mesh management, update related rendering and UI components (Nicolas Vyčas Nery; `0f04862d6a589f6eb8d695edb4490a308c9c3f73`)
 - 2026-09-08 — refactor: enhance chunk loading and rendering with new terrain loading map and improved mesh handling (Nicolas Vyčas Nery; `74fc310f717753162e405b5612c30f8049bbeae4`)
 - 2026-09-08 — refactor: enhance chunk rendering and occlusion handling with improved scheduling and visibility checks (Nicolas Vyčas Nery; `01a68f2c8a2a3b216f8c80f9deb403d2cc91c605`)
+- 2026-09-08 — refactor: enhance chunk rendering prediction and scheduling with velocity-based mesh prefetching (Nicolas Vyčas Nery; `3744b172beac95f7ba4d9b2dcd9a1799a2b48cc6`)

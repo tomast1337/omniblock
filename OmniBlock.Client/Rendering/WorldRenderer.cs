@@ -408,7 +408,9 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         var viewX = view.LastTickX + (view.X - view.LastTickX) * partialTicks;
         var viewY = view.LastTickY + (view.Y - view.LastTickY) * partialTicks;
         var viewZ = view.LastTickZ + (view.Z - view.LastTickZ) * partialTicks;
-        ChunkRenderer.Tick(new Vector3D<double>(viewX, viewY, viewZ));
+        ChunkRenderer.Tick(
+            new Vector3D<double>(viewX, viewY, viewZ),
+            new Vector3D<double>(view.VelocityX, view.VelocityY, view.VelocityZ));
     }
 
     public void LoadRenderers()

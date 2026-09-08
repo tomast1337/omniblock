@@ -89,4 +89,24 @@ public sealed class ChunkMeshSchedulingTests
 
         Assert.True(older.CompareTo(newer) < 0);
     }
+
+    [Fact]
+    public void Prediction_favors_meshes_ahead_of_player_motion()
+    {
+        var predicted = ChunkRenderer.PredictMeshCenter(View, new Vector3D<double>(1, 0, 0));
+        var ahead = ChunkRenderer.GetMeshSchedulingRank(new Vector3D<int>(16 * 8, 64, 0), View, predicted,
+            false, true, 10, 10);
+        var behind = ChunkRenderer.GetMeshSchedulingRank(new Vector3D<int>(-16 * 8, 64, 0), View, predicted,
+            false, true, 10, 10);
+
+        Assert.True(ahead.CompareTo(behind) < 0);
+    }
+
+    [Fact]
+    public void Prediction_uses_half_a_second_of_game_velocity()
+    {
+        Assert.Equal(
+            new Vector3D<double>(18, 72, -2),
+            ChunkRenderer.PredictMeshCenter(View, new Vector3D<double>(1, 0, -1)));
+    }
 }
