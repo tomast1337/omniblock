@@ -21,6 +21,7 @@ internal struct MeshBuildResult : IDisposable
     public ChunkVisibilityStore VisibilityData;
     public Vector3D<int> Pos;
     public long Version;
+    public bool Priority;
 
     public readonly void Dispose()
     {
@@ -51,32 +52,49 @@ internal class ChunkMeshGenerator : IDisposable
 
     private readonly ILogger<ChunkMeshGenerator> _logger = Log.Instance.For<ChunkMeshGenerator>();
 
-    private readonly ConcurrentQueue<MeshBuildResult> _results = new();
+    private readonly ConcurrentQueue<MeshBuildResult> _backgroundResults = new();
+    private readonly CancellationTokenSource _shutdown = new();
+    private readonly PriorityWorkScheduler<Vector3D<int>, MeshBuildRequest> _work = new();
+    private readonly Task[] _workers;
+    private readonly ConcurrentQueue<MeshBuildResult> _urgentResults = new();
 
-    private SemaphoreSlim? _concurrencySemaphore;
-
-    public ChunkMeshGenerator(ushort maxConcurrentTasks = 0) => MaxConcurrentTasks = maxConcurrentTasks;
-
-    public ushort MaxConcurrentTasks
+    public ChunkMeshGenerator(ushort maxConcurrentTasks = 0)
     {
-        get;
-        set
-        {
-            field = value;
-
-            _concurrencySemaphore?.Dispose();
-            _concurrencySemaphore = field > 0
-                ? new SemaphoreSlim(field, field)
-                : null;
-        }
+        MaxConcurrentTasks = maxConcurrentTasks == 0 ? (ushort)1 : maxConcurrentTasks;
+        _workers = new Task[MaxConcurrentTasks];
+        for (var i = 0; i < _workers.Length; i++)
+            _workers[i] = Task.Run(WorkerLoop);
     }
 
-    public void Dispose() => _listPool.Dispose();
+    public ushort MaxConcurrentTasks { get; }
 
-    public bool TryDequeueMesh(out MeshBuildResult result) => _results.TryDequeue(out result);
+    public void Dispose()
+    {
+        _shutdown.Cancel();
+        try
+        {
+            Task.WaitAll(_workers);
+        }
+        catch (AggregateException ex) when (ex.InnerExceptions.All(static e => e is TaskCanceledException or OperationCanceledException))
+        {
+        }
+
+        foreach (var pending in _work.Drain()) pending.Cache.Dispose();
+        _shutdown.Dispose();
+        _work.Dispose();
+        while (_urgentResults.TryDequeue(out var urgent)) urgent.Dispose();
+        while (_backgroundResults.TryDequeue(out var background)) background.Dispose();
+        _listPool.Dispose();
+    }
+
+    public bool TryDequeueMesh(out MeshBuildResult result)
+    {
+        if (_urgentResults.TryDequeue(out result)) return true;
+        return _backgroundResults.TryDequeue(out result);
+    }
 
     //TODO: Make a chunk mesh config struct for alternateBlocks and other flags
-    public void MeshChunk(World world, Vector3D<int> pos, long version, bool alternateBlocks)
+    public void MeshChunk(World world, Vector3D<int> pos, long version, bool alternateBlocks, bool priority = false)
     {
         // 1 block of padding on every side of the 16-block sub-chunk (18x18x18 total) — exactly
         // what face culling and AO need to look at a block's immediate neighbours.
@@ -86,27 +104,49 @@ internal class ChunkMeshGenerator : IDisposable
             pos.X + SubChunkRenderer.Size, pos.Y + SubChunkRenderer.Size, pos.Z + SubChunkRenderer.Size
         );
 
-        Task.Run(async () =>
+        var request = new MeshBuildRequest(pos, version, cache, alternateBlocks);
+        if (!_work.Enqueue(pos, request, priority))
         {
-            if (_concurrencySemaphore != null)
-                await _concurrencySemaphore.WaitAsync();
+            cache.Dispose();
+        }
+    }
 
+    public bool Promote(Vector3D<int> pos) => _work.Promote(pos);
+
+    private async Task WorkerLoop()
+    {
+        while (!_shutdown.IsCancellationRequested)
+        {
             try
             {
-                var mesh = GenerateMesh(pos, version, cache, alternateBlocks);
-                _results.Enqueue(mesh);
+                var (request, priority) = await _work.TakeAsync(_shutdown.Token);
+                try
+                {
+                    var mesh = GenerateMesh(request.Pos, request.Version, request.Cache, request.AlternateBlocks);
+                    mesh.Priority = priority;
+                    (priority ? _urgentResults : _backgroundResults).Enqueue(mesh);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error generating chunk mesh at {Pos}", request.Pos);
+                }
+                finally
+                {
+                    request.Cache.Dispose();
+                }
             }
-            catch (Exception ex)
+            catch (OperationCanceledException) when (_shutdown.IsCancellationRequested)
             {
-                _logger.LogError(ex, "Error generating chunk mesh at {Pos}", pos);
+                break;
             }
-            finally
-            {
-                cache.Dispose();
-                _concurrencySemaphore?.Release();
-            }
-        });
+        }
     }
+
+    private readonly record struct MeshBuildRequest(
+        Vector3D<int> Pos,
+        long Version,
+        WorldRegionSnapshot Cache,
+        bool AlternateBlocks);
 
     private MeshBuildResult GenerateMesh(Vector3D<int> pos, long version, WorldRegionSnapshot cache, bool alternateBlocks)
     {

@@ -32,6 +32,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly List<Vector3D<int>> _chunkVersionsToRemove = [];
     private readonly List<ChunkToMeshInfo> _dirtyChunks = [];
     private readonly List<ChunkToMeshInfo> _lightingUpdates = [];
+    private readonly HashSet<Vector3D<int>> _priorityChunks = [];
     private readonly ChunkMeshGenerator _meshGenerator;
     private readonly List<SubChunkRenderer> _occludedRenderersBuffer = [];
     private readonly ChunkOcclusionCuller _occlusionCuller = new();
@@ -350,7 +351,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     var snapshot = version.SnapshotIfNeeded();
                     if (snapshot.HasValue)
                     {
-                        _meshGenerator.MeshChunk(_world, mesh.Pos, snapshot.Value, _options.AlternateBlocksEnabled);
+                        var priority = mesh.Priority || _priorityChunks.Contains(mesh.Pos);
+                        _meshGenerator.MeshChunk(_world, mesh.Pos, snapshot.Value, _options.AlternateBlocksEnabled, priority);
                     }
 
                     // Superseded by the requeue above (or by whichever in-flight build already
@@ -374,12 +376,15 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     _renderers[mesh.Pos] = new SubChunkState(mesh.IsLit, renderer);
                     UpdateAdjacency(renderer, true);
                 }
+
+                _priorityChunks.Remove(mesh.Pos);
             }
             else
             {
                 // Finished after the chunk fell out of render distance — UploadMeshData (which
                 // would normally return these to the pool) never runs for it.
                 mesh.Dispose();
+                _priorityChunks.Remove(mesh.Pos);
             }
         }
     }
@@ -480,6 +485,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private bool TryDispatchBestDirtyMeshUpdate(ICuller camera)
     {
         var bestIndex = -1;
+        var bestPriority = false;
         var bestDist = double.MaxValue;
         for (var i = 0; i < _dirtyChunks.Count; i++)
         {
@@ -492,10 +498,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             );
 
             var dist = Vector3D.DistanceSquared(ToDoubleVec(info.Pos), _lastViewPos);
-            if (dist < bestDist && camera.IsBoundingBoxInFrustum(aabb))
+            if (camera.IsBoundingBoxInFrustum(aabb) &&
+                (info.Priority && !bestPriority || info.Priority == bestPriority && dist < bestDist))
             {
                 bestDist = dist;
                 bestIndex = i;
+                bestPriority = info.Priority;
             }
         }
 
@@ -505,7 +513,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
 
         var closest = _dirtyChunks[bestIndex];
-        _meshGenerator.MeshChunk(_world, closest.Pos, closest.Version, _options.AlternateBlocksEnabled);
+        _meshGenerator.MeshChunk(_world, closest.Pos, closest.Version, _options.AlternateBlocksEnabled, closest.Priority);
         _dirtyChunks.RemoveAt(bestIndex);
         return true;
     }
@@ -530,7 +538,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
 
         var update = _lightingUpdates[bestIndex];
-        _meshGenerator.MeshChunk(_world, update.Pos, update.Version, _options.AlternateBlocksEnabled);
+        _meshGenerator.MeshChunk(_world, update.Pos, update.Version, _options.AlternateBlocksEnabled, update.Priority);
         _lightingUpdates.RemoveAt(bestIndex);
         return true;
     }
@@ -649,6 +657,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             {
                 _chunkVersions[pos].Release();
                 _chunkVersions.Remove(pos);
+                _priorityChunks.Remove(pos);
             }
 
             _chunkVersionsToRemove.Clear();
@@ -698,6 +707,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
 
         version.MarkDirty();
+        if (priority) _priorityChunks.Add(chunkPos);
 
         var snapshot = version.SnapshotIfNeeded();
         if (snapshot.HasValue)
@@ -706,13 +716,18 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             {
                 if (_dirtyChunks[i].Pos == chunkPos)
                 {
-                    _dirtyChunks[i] = new ChunkToMeshInfo(chunkPos, snapshot.Value, priority || _dirtyChunks[i].priority);
+                    _dirtyChunks[i] = new ChunkToMeshInfo(chunkPos, snapshot.Value, priority || _dirtyChunks[i].Priority);
                     return true;
                 }
             }
 
             _dirtyChunks.Add(new ChunkToMeshInfo(chunkPos, snapshot.Value, priority));
             return true;
+        }
+
+        if (priority)
+        {
+            _meshGenerator.Promote(chunkPos);
         }
 
         return false;
@@ -1082,6 +1097,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     public void Dispose()
     {
+        _meshGenerator.Dispose();
+
         foreach (var state in _renderers.Values)
         {
             state.Renderer.Dispose();
@@ -1105,6 +1122,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         _translucentRenderers.Clear();
         _renderersToRemove.Clear();
+        _priorityChunks.Clear();
 
         foreach (var version in _chunkVersions.Values)
         {
@@ -1124,7 +1142,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         public readonly Vector3D<int> Pos = pos;
         public readonly long Version = version;
-        public readonly bool priority = priority;
+        public readonly bool Priority = priority;
     }
 
     private sealed class TranslucentDistanceComparer : IComparer<SubChunkRenderer>

@@ -1173,23 +1173,34 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void MarkBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
-        var xStart = (int)Math.Floor((double)minX / SubChunkRenderer.Size);
-        var yStart = (int)Math.Floor((double)minY / SubChunkRenderer.Size);
-        var zStart = (int)Math.Floor((double)minZ / SubChunkRenderer.Size);
-        var xEnd = (int)Math.Ceiling((double)maxX / SubChunkRenderer.Size);
-        var yEnd = (int)Math.Ceiling((double)maxY / SubChunkRenderer.Size);
-        var zEnd = (int)Math.Ceiling((double)maxZ / SubChunkRenderer.Size);
+        var (start, end) = GetSectionRange(minX, minY, minZ, maxX, maxY, maxZ);
 
-        for (var x = xStart; x <= xEnd; x++)
+        for (var x = start.X; x <= end.X; x++)
         {
-            for (var y = yStart; y <= yEnd; y++)
+            for (var y = start.Y; y <= end.Y; y++)
             {
-                for (var z = zStart; z <= zEnd; z++)
+                for (var z = start.Z; z <= end.Z; z++)
                 {
                     ChunkRenderer.MarkDirty(new Vector3D<int>(x, y, z) * SubChunkRenderer.Size, true);
                 }
             }
         }
+    }
+
+    internal static (Vector3D<int> Start, Vector3D<int> End) GetSectionRange(
+        int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
+    {
+        // The range is inclusive. Ceiling the maximum and then iterating with <= marks the next
+        // section for almost every ordinary block update.
+        Vector3D<int> start = new(
+            (int)Math.Floor(minX / (double)SubChunkRenderer.Size),
+            (int)Math.Floor(minY / (double)SubChunkRenderer.Size),
+            (int)Math.Floor(minZ / (double)SubChunkRenderer.Size));
+        Vector3D<int> end = new(
+            (int)Math.Floor(maxX / (double)SubChunkRenderer.Size),
+            (int)Math.Floor(maxY / (double)SubChunkRenderer.Size),
+            (int)Math.Floor(maxZ / (double)SubChunkRenderer.Size));
+        return (start, end);
     }
 
     public void WorldEventBreak(int blockId, int meta, int x, int y, int z)
