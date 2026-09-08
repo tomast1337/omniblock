@@ -24,6 +24,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     internal const long MeshAgePromotionTicks = 120;
     internal const double MeshPredictionTicks = 10.0;
     internal const double MeshPrefetchMargin = SubChunkRenderer.Size;
+    internal const int MeshSpeculativeRadius = 1;
 
     //TODO: MAKE THIS CONFIGURABLE
     private const double MeshUploadBudgetMs = 1.5;
@@ -273,7 +274,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         foreach (var state in _renderers.Values)
         {
-            if (!IsChunkInRenderDistance(state.Renderer.Position, _lastViewPos))
+            if (!IsChunkInMeshRetentionDistance(state.Renderer.Position, _lastViewPos))
             {
                 _renderersToRemove.Add(state.Renderer);
             }
@@ -351,7 +352,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             if (!_meshGenerator.TryDequeueMesh(out var mesh)) break;
             var uploadStart = Stopwatch.GetTimestamp();
 
-            if (IsChunkInRenderDistance(mesh.Pos, viewPos))
+            if (IsChunkInMeshRetentionDistance(mesh.Pos, viewPos))
             {
                 if (!_chunkVersions.TryGetValue(mesh.Pos, out var version))
                 {
@@ -489,8 +490,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     /// </summary>
     private void DispatchPendingMeshUpdates(ICuller? camera)
     {
-        _dirtyChunks.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
-        _lightingUpdates.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
+        _dirtyChunks.RemoveAll(c => !IsChunkInMeshRetentionDistance(c.Pos, _lastViewPos));
+        _lightingUpdates.RemoveAll(c => !IsChunkInMeshRetentionDistance(c.Pos, _lastViewPos));
 
         var stopwatch = Stopwatch.StartNew();
         while (stopwatch.Elapsed.TotalMilliseconds < MeshDispatchBudgetMs)
@@ -528,6 +529,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 _predictedViewPos,
                 info.Priority,
                 prefetched,
+                !IsChunkInRenderDistance(info.Pos, _lastViewPos),
                 info.EnqueuedAt,
                 _schedulerTick);
             if (rank.CompareTo(bestRank) < 0)
@@ -556,7 +558,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         bool visible,
         long enqueuedAt,
         long schedulerTick) => GetMeshSchedulingRank(
-        position, viewPosition, viewPosition, urgent, visible, enqueuedAt, schedulerTick);
+        position, viewPosition, viewPosition, urgent, visible, false, enqueuedAt, schedulerTick);
 
     internal static (int Tier, long EnqueuedAt, double DistanceSquared) GetMeshSchedulingRank(
         Vector3D<int> position,
@@ -564,14 +566,21 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         Vector3D<double> predictedViewPosition,
         bool urgent,
         bool prefetched,
+        bool speculative,
         long enqueuedAt,
         long schedulerTick)
     {
-        var baseTier = urgent ? 0 : IsInMeshSafetyRing(position, viewPosition) ? 1 : prefetched ? 2 : 3;
+        var baseTier = urgent
+            ? 0
+            : IsInMeshSafetyRing(position, viewPosition)
+                ? 1
+                : speculative
+                    ? 4
+                    : prefetched ? 2 : 3;
         var age = Math.Max(0, schedulerTick - enqueuedAt);
         // Old background work eventually competes with visible work, where its older enqueue time
         // wins the tie. It never displaces the permanent safety ring or urgent gameplay work.
-        var minimumTier = baseTier <= 1 ? baseTier : 2;
+        var minimumTier = baseTier <= 1 ? baseTier : baseTier == 4 ? 3 : 2;
         var promotedTier = Math.Max(minimumTier, baseTier - (int)(age / MeshAgePromotionTicks));
         var meshPosition = ToDoubleVec(position);
         var distance = Math.Min(
@@ -620,7 +629,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         foreach (var state in _renderers.Values)
         {
-            if (IsChunkInRenderDistance(state.Renderer.Position, _lastViewPos) && state.IsLit)
+            if (IsChunkInMeshRetentionDistance(state.Renderer.Position, _lastViewPos) && state.IsLit)
             {
                 if (!_chunkVersions.TryGetValue(state.Renderer.Position, out var version))
                 {
@@ -653,7 +662,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             (int)Math.Floor(viewPos.Z / SubChunkRenderer.Size)
         );
 
-        var radiusSq = _lastRenderDistance * _lastRenderDistance;
+        var retentionRadius = _lastRenderDistance + MeshSpeculativeRadius;
+        var radiusSq = retentionRadius * retentionRadius;
         var enqueuedCount = 0;
         //TODO: MAKE THESE CONFIGURABLE
         const int MAX_CHUNKS_PER_FRAME = 32;
@@ -733,7 +743,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         {
             foreach (var version in _chunkVersions)
             {
-                if (!IsChunkInRenderDistance(version.Key, _lastViewPos))
+                if (!IsChunkInMeshRetentionDistance(version.Key, _lastViewPos))
                 {
                     _chunkVersionsToRemove.Add(version.Key);
                 }
@@ -795,7 +805,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     public bool MarkDirty(Vector3D<int> chunkPos, bool priority = false)
     {
-        if (!IsChunkInRenderDistance(chunkPos, _lastViewPos))
+        if (!IsChunkInMeshRetentionDistance(chunkPos, _lastViewPos))
             return false;
 
         // Full chunk arrival uses the same dirty notification as player edits. Only updates to
@@ -947,6 +957,37 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         var dx = chunkX - viewChunkX;
         var dz = chunkZ - viewChunkZ;
         return dx * dx + dz * dz <= _lastRenderDistance * _lastRenderDistance;
+    }
+
+    private bool IsChunkInMeshRetentionDistance(Vector3D<int> chunkWorldPos, Vector3D<double> viewPos) =>
+        IsChunkInRenderDistance(chunkWorldPos, viewPos) ||
+        IsSpeculativePrefetchChunk(chunkWorldPos, viewPos, _predictedViewPos, _lastRenderDistance);
+
+    internal static bool IsSpeculativePrefetchChunk(
+        Vector3D<int> chunkWorldPos,
+        Vector3D<double> viewPos,
+        Vector3D<double> predictedViewPos,
+        int renderDistance)
+    {
+        var chunkX = chunkWorldPos.X / SubChunkRenderer.Size;
+        var chunkZ = chunkWorldPos.Z / SubChunkRenderer.Size;
+        var viewChunkX = (int)Math.Floor(viewPos.X / SubChunkRenderer.Size);
+        var viewChunkZ = (int)Math.Floor(viewPos.Z / SubChunkRenderer.Size);
+        var predictedChunkX = predictedViewPos.X / SubChunkRenderer.Size;
+        var predictedChunkZ = predictedViewPos.Z / SubChunkRenderer.Size;
+        var dx = chunkX - viewChunkX;
+        var dz = chunkZ - viewChunkZ;
+        var currentDistanceSq = dx * dx + dz * dz;
+        if (currentDistanceSq <= renderDistance * renderDistance)
+            return false;
+
+        var retentionRadius = renderDistance + MeshSpeculativeRadius;
+        if (currentDistanceSq > retentionRadius * retentionRadius)
+            return false;
+
+        var predictedDx = chunkX - predictedChunkX;
+        var predictedDz = chunkZ - predictedChunkZ;
+        return predictedDx * predictedDx + predictedDz * predictedDz <= renderDistance * renderDistance;
     }
 
     public void GetMeshSizeStats(out int minSize, out int maxSize, out int avgSize, out Dictionary<int, int> buckets)

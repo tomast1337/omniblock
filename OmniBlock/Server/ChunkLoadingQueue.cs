@@ -117,6 +117,19 @@ internal class ChunkLoadingQueue
 
     public void Tick() => ApplyCompletedLoads();
 
+    public void ReprioritizeAll()
+    {
+        lock (_queueLock)
+        {
+            if (_queue.Count == 0) return;
+            var queued = _queue.UnorderedItems.Select(static item => item.Element).ToArray();
+            _queue.Clear();
+            foreach (var pending in queued)
+                _queue.Enqueue(pending, ToQueuePriority(pending.GetPriority()));
+            Monitor.PulseAll(_queueLock);
+        }
+    }
+
     /// <summary>Applies every chunk a background worker has finished loading since the last tick.</summary>
     private void ApplyCompletedLoads()
     {

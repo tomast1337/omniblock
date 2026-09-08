@@ -371,6 +371,10 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         _pendingChunkUpdates.ReprioritizeAll(this);
     }
 
+    internal (int X, int Z) GetChunkStreamingPrefetchOffset() => (
+        Math.Sign(_chunkStreamingMotionX),
+        Math.Sign(_chunkStreamingMotionZ));
+
     public void ScheduleChunkSend(ChunkPos chunkPos) => _pendingChunkUpdates.EnqueueOrPromote(this, chunkPos);
 
     public void CancelChunkSend(ChunkPos chunkPos) => _pendingChunkUpdates.Remove(chunkPos);

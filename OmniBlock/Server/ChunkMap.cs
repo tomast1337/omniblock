@@ -41,71 +41,14 @@ internal class ChunkMap
     public void SetViewDistance(int newDistance)
     {
         var oldDistance = _viewDistance;
+        if (newDistance == oldDistance) return;
+
+        var previousByPlayer = players.ToDictionary(
+            static player => player,
+            player => GetChunks(player, oldDistance).ToArray());
         _viewDistance = newDistance;
-
-        if (newDistance < oldDistance)
-        {
-            // Unload chunks that are now out of view distance
-            foreach (var player in players)
-            {
-                var px = (int)player.LastX >> 4;
-                var pz = (int)player.LastZ >> 4;
-
-                foreach (var item in GetChunks(player, oldDistance))
-                {
-                    if (isWithinViewDistance(item.X, item.Z, px, pz))
-                    {
-                        continue;
-                    }
-
-                    if (GetOrCreateChunk(item.X, item.Z, false) is TrackedChunk chunk)
-                    {
-                        chunk.removePlayer(player);
-                    }
-                    else
-                    {
-                        loadQueue.Remove(item.X, item.Z, player);
-                        player.CancelChunkSend(item);
-                    }
-                }
-            }
-        }
-        else if (newDistance > oldDistance)
-        {
-            // Load chunks that are now within view distance
-            foreach (var player in players)
-            {
-                var px = (int)player.LastX >> 4;
-                var pz = (int)player.LastZ >> 4;
-
-                foreach (var item in GetChunks(player))
-                {
-                    if (isWithinOldViewDistance(item.X, item.Z, px, pz, oldDistance))
-                    {
-                        continue;
-                    }
-
-                    if (GetOrCreateChunk(item.X, item.Z, false) is TrackedChunk chunk)
-                    {
-                        if (!chunk.HasPlayer(player))
-                        {
-                            chunk.addPlayer(player);
-                        }
-                    }
-                    else
-                    {
-                        loadQueue.Add(item.X, item.Z, player);
-                    }
-                }
-            }
-        }
-    }
-
-    private static bool isWithinOldViewDistance(int chunkX, int chunkZ, int centerX, int centerZ, int oldDist)
-    {
-        var dx = chunkX - centerX;
-        var dz = chunkZ - centerZ;
-        return dx >= -oldDist && dx <= oldDist && dz >= -oldDist && dz <= oldDist;
+        foreach (var player in players)
+            ReconcilePlayerChunks(player, previousByPlayer[player], GetChunks(player).ToArray());
     }
 
     public void updateChunks()
@@ -217,7 +160,7 @@ internal class ChunkMap
 
     public void removePlayer(ServerPlayerEntity player)
     {
-        foreach (var item in GetChunks(player))
+        foreach (var item in player.ActiveChunks.ToArray())
         {
             var chunk = GetOrCreateChunk(item.X, item.Z, false);
             chunk?.removePlayer(player);
@@ -226,13 +169,6 @@ internal class ChunkMap
         players.Remove(player);
         loadQueue.RemovePlayer(player);
         player.ResetChunkStreamingState();
-    }
-
-    private bool isWithinViewDistance(int chunkX, int chunkZ, int centerX, int centerZ)
-    {
-        var deltaX = chunkX - centerX;
-        var deltaZ = chunkZ - centerZ;
-        return deltaX >= -_viewDistance && deltaX <= _viewDistance && deltaZ >= -_viewDistance && deltaZ <= _viewDistance;
     }
 
     public void updatePlayerChunks(ServerPlayerEntity player)
@@ -248,44 +184,11 @@ internal class ChunkMap
             return;
         }
 
+        var previous = GetChunksAt(player, playerLastChunkCenterX, playerLastChunkCenterZ, _viewDistance);
         player.UpdateChunkStreamingMotion(playerChunkCenterDeltaX, playerChunkCenterDeltaZ);
-
-        for (var x = playerChunkCenterX - _viewDistance; x <= playerChunkCenterX + _viewDistance; x++)
-        {
-            for (var z = playerChunkCenterZ - _viewDistance; z <= playerChunkCenterZ + _viewDistance; z++)
-            {
-                if (!isWithinViewDistance(x, z, playerLastChunkCenterX, playerLastChunkCenterZ))
-                {
-                    if (GetOrCreateChunk(x, z, false) is { } chunk)
-                    {
-                        if (!chunk.HasPlayer(player))
-                        {
-                            chunk.addPlayer(player);
-                        }
-                    }
-                    else
-                    {
-                        loadQueue.Add(x, z, player);
-                    }
-                }
-
-                if (!isWithinViewDistance(x - playerChunkCenterDeltaX, z - playerChunkCenterDeltaZ, playerChunkCenterX, playerChunkCenterZ))
-                {
-                    var oldChunkX = x - playerChunkCenterDeltaX;
-                    var oldChunkZ = z - playerChunkCenterDeltaZ;
-                    if (GetOrCreateChunk(oldChunkX, oldChunkZ, false) is TrackedChunk chunk)
-                    {
-                        chunk.removePlayer(player);
-                    }
-                    else
-                    {
-                        ChunkPos oldChunkPos = new(oldChunkX, oldChunkZ);
-                        loadQueue.Remove(oldChunkX, oldChunkZ, player);
-                        player.CancelChunkSend(oldChunkPos);
-                    }
-                }
-            }
-        }
+        var desired = GetChunksAt(player, playerChunkCenterX, playerChunkCenterZ, _viewDistance);
+        ReconcilePlayerChunks(player, previous, desired);
+        loadQueue.ReprioritizeAll();
 
         player.LastX = player.X;
         player.LastZ = player.Z;
@@ -295,32 +198,87 @@ internal class ChunkMap
 
     private ReadOnlySpan<ChunkPos> GetChunks(ServerPlayerEntity player) => GetChunks(player, _viewDistance);
 
-    private static ReadOnlySpan<ChunkPos> GetChunks(ServerPlayerEntity player, int radius)
-    {
-        var playerChunkX = (int)player.X >> 4;
-        var playerChunkZ = (int)player.Z >> 4;
-        var diameter = radius * 2 + 1;
-        var chunks = new ChunkPos[diameter * diameter];
-        var index = 0;
+    private static ReadOnlySpan<ChunkPos> GetChunks(ServerPlayerEntity player, int radius) =>
+        GetChunksAt(player, (int)player.X >> 4, (int)player.Z >> 4, radius);
 
-        chunks[index++] = new ChunkPos(playerChunkX, playerChunkZ);
+    private static ChunkPos[] GetChunksAt(ServerPlayerEntity player, int playerChunkX, int playerChunkZ, int radius)
+    {
+        var (prefetchX, prefetchZ) = player.GetChunkStreamingPrefetchOffset();
+        return GetStreamingChunks(playerChunkX, playerChunkZ, radius, prefetchX, prefetchZ);
+    }
+
+    internal static ChunkPos[] GetStreamingChunks(
+        int playerChunkX, int playerChunkZ, int radius, int prefetchX, int prefetchZ)
+    {
+        var diameter = radius * 2 + 1;
+        var chunks = new List<ChunkPos>(diameter * diameter + diameter * 2 + 1);
+        var included = new HashSet<ChunkPos>();
+
+        Add(playerChunkX, playerChunkZ);
 
         for (var currentRadius = 1; currentRadius <= radius; currentRadius++)
         {
             for (var dx = -currentRadius; dx <= currentRadius; dx++)
-                chunks[index++] = new ChunkPos(playerChunkX + dx, playerChunkZ - currentRadius);
+                Add(playerChunkX + dx, playerChunkZ - currentRadius);
 
             for (var dz = -currentRadius + 1; dz <= currentRadius; dz++)
-                chunks[index++] = new ChunkPos(playerChunkX + currentRadius, playerChunkZ + dz);
+                Add(playerChunkX + currentRadius, playerChunkZ + dz);
 
             for (var dx = currentRadius - 1; dx >= -currentRadius; dx--)
-                chunks[index++] = new ChunkPos(playerChunkX + dx, playerChunkZ + currentRadius);
+                Add(playerChunkX + dx, playerChunkZ + currentRadius);
 
             for (var dz = currentRadius - 1; dz >= -currentRadius + 1; dz--)
-                chunks[index++] = new ChunkPos(playerChunkX - currentRadius, playerChunkZ + dz);
+                Add(playerChunkX - currentRadius, playerChunkZ + dz);
         }
 
-        return chunks;
+        if (prefetchX != 0 || prefetchZ != 0)
+            for (var x = -radius; x <= radius; x++)
+            for (var z = -radius; z <= radius; z++)
+                Add(playerChunkX + prefetchX + x, playerChunkZ + prefetchZ + z);
+
+        return [.. chunks];
+
+        void Add(int x, int z)
+        {
+            var pos = new ChunkPos(x, z);
+            if (included.Add(pos)) chunks.Add(pos);
+        }
+    }
+
+    private void ReconcilePlayerChunks(
+        ServerPlayerEntity player,
+        IEnumerable<ChunkPos> previous,
+        IEnumerable<ChunkPos> desiredChunks)
+    {
+        var desired = desiredChunks.ToHashSet();
+        var previousSet = previous.ToHashSet();
+
+        foreach (var pos in desired)
+        {
+            if (previousSet.Contains(pos)) continue;
+            if (GetOrCreateChunk(pos.X, pos.Z, false) is { } chunk)
+            {
+                if (!chunk.HasPlayer(player)) chunk.addPlayer(player);
+            }
+            else
+            {
+                loadQueue.Add(pos.X, pos.Z, player);
+            }
+        }
+
+        foreach (var pos in previousSet)
+        {
+            if (desired.Contains(pos)) continue;
+            if (GetOrCreateChunk(pos.X, pos.Z, false) is { } chunk)
+            {
+                chunk.removePlayer(player);
+            }
+            else
+            {
+                loadQueue.Remove(pos.X, pos.Z, player);
+                player.CancelChunkSend(pos);
+            }
+        }
     }
 
     internal class TrackedChunk

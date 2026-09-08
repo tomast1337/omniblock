@@ -95,9 +95,9 @@ public sealed class ChunkMeshSchedulingTests
     {
         var predicted = ChunkRenderer.PredictMeshCenter(View, new Vector3D<double>(1, 0, 0));
         var ahead = ChunkRenderer.GetMeshSchedulingRank(new Vector3D<int>(16 * 8, 64, 0), View, predicted,
-            false, true, 10, 10);
+            false, true, false, 10, 10);
         var behind = ChunkRenderer.GetMeshSchedulingRank(new Vector3D<int>(-16 * 8, 64, 0), View, predicted,
-            false, true, 10, 10);
+            false, true, false, 10, 10);
 
         Assert.True(ahead.CompareTo(behind) < 0);
     }
@@ -108,5 +108,35 @@ public sealed class ChunkMeshSchedulingTests
         Assert.Equal(
             new Vector3D<double>(18, 72, -2),
             ChunkRenderer.PredictMeshCenter(View, new Vector3D<double>(1, 0, -1)));
+    }
+
+    [Fact]
+    public void Speculative_prefetch_is_a_bounded_cap_ahead_of_motion()
+    {
+        const int renderDistance = 4;
+        var predicted = ChunkRenderer.PredictMeshCenter(View, new Vector3D<double>(1, 0, 0));
+
+        Assert.True(ChunkRenderer.IsSpeculativePrefetchChunk(
+            new Vector3D<int>(5 * 16, 64, 0), View, predicted, renderDistance));
+        Assert.False(ChunkRenderer.IsSpeculativePrefetchChunk(
+            new Vector3D<int>(-5 * 16, 64, 0), View, predicted, renderDistance));
+        Assert.False(ChunkRenderer.IsSpeculativePrefetchChunk(
+            new Vector3D<int>(6 * 16, 64, 0), View, predicted, renderDistance));
+        Assert.False(ChunkRenderer.IsSpeculativePrefetchChunk(
+            new Vector3D<int>(5 * 16, 64, 0), View, View, renderDistance));
+    }
+
+    [Fact]
+    public void Speculative_prefetch_stays_below_drawable_background_work()
+    {
+        var background = ChunkRenderer.GetMeshSchedulingRank(
+            new Vector3D<int>(4 * 16, 64, 0), View, View, false, false, false, 10, 10);
+        var speculative = ChunkRenderer.GetMeshSchedulingRank(
+            new Vector3D<int>(5 * 16, 64, 0), View, new Vector3D<double>(18, 72, 8),
+            false, true, true, 10, 10);
+
+        Assert.Equal(3, background.Tier);
+        Assert.Equal(4, speculative.Tier);
+        Assert.True(background.CompareTo(speculative) < 0);
     }
 }
