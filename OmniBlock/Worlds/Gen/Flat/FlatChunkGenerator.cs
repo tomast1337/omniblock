@@ -8,9 +8,11 @@ namespace OmniBlock.Worlds.Gen.Flat;
 
 internal class FlatChunkGenerator : IChunkSource
 {
+    private readonly BlockIds _blocks;
     private readonly CactusPatchFeature _featureCactus = new();
     private readonly ClayOreFeature _featureClay = new(32);
     private readonly DungeonFeature _featureDungeon = new();
+    private readonly string _generatorOptions;
     private readonly PumpkinPatchFeature _featurePumpkin = new();
     private readonly SugarCanePatchFeature _featureSugarcane = new();
     private readonly FlatGeneratorInfo _generatorInfo;
@@ -41,14 +43,22 @@ internal class FlatChunkGenerator : IChunkSource
     }
 
     public FlatChunkGenerator(IWorldContext world, string generatorOptions)
+        : this(world, generatorOptions, BlockIds.Resolve(world))
+    {
+    }
+
+    private FlatChunkGenerator(IWorldContext world, string generatorOptions, BlockIds blocks)
     {
         _world = world;
+        _blocks = blocks;
+        _generatorOptions = generatorOptions;
         _generatorInfo = FlatGeneratorInfo.CreateFromString(generatorOptions, world.Content.Blocks);
         _random = new JavaRandom(world.Seed);
         InitFeatures();
     }
 
-    public IChunkSource CreateParallelInstance() => new FlatChunkGenerator(_world);
+    public IChunkSource CreateParallelInstance() =>
+        new FlatChunkGenerator(_world, _generatorOptions, _blocks);
 
     public Chunk GetChunk(int chunkX, int chunkZ)
     {
@@ -331,23 +341,70 @@ internal class FlatChunkGenerator : IChunkSource
 
     private void InitFeatures()
     {
-        _featureWaterLake = new LakeFeature(_world.Content.Blocks.Get("water").Id);
-        _featureLavaLake = new LakeFeature(_world.Content.Blocks.Get("lava").Id);
-        _featureDirt = new OreFeature(_world.Content.Blocks.Get("dirt").Id, 32);
-        _featureGravel = new OreFeature(_world.Content.Blocks.Get("gravel").Id, 32);
-        _featureCoal = new OreFeature(_world.Content.Blocks.Get("coal_ore").Id, 16);
-        _featureIron = new OreFeature(_world.Content.Blocks.Get("iron_ore").Id, 8);
-        _featureGold = new OreFeature(_world.Content.Blocks.Get("gold_ore").Id, 8);
-        _featureRedstone = new OreFeature(_world.Content.Blocks.Get("redstone_ore").Id, 7);
-        _featureDiamond = new OreFeature(_world.Content.Blocks.Get("diamond_ore").Id, 7);
-        _featureLapis = new OreFeature(_world.Content.Blocks.Get("lapis_ore").Id, 6);
-        _featureDandelion = new PlantPatchFeature(_world.Content.Blocks.Get("dandelion").Id);
-        _featureRose = new PlantPatchFeature(_world.Content.Blocks.Get("rose").Id);
-        _featureBrownMushroom = new PlantPatchFeature(_world.Content.Blocks.Get("brown_mushroom").Id);
-        _featureRedMushroom = new PlantPatchFeature(_world.Content.Blocks.Get("red_mushroom").Id);
-        _featureDeadBush = new DeadBushPatchFeature(_world.Content.Blocks.Get("dead_bush").Id);
-        _featureGrass = new GrassPatchFeature(_world.Content.Blocks.Get("grass").Id, 1);
-        _featureWaterSpring = new SpringFeature(_world.Content.Blocks.Get("flowing_water").Id);
-        _featureLavaSpring = new SpringFeature(_world.Content.Blocks.Get("flowing_lava").Id);
+        _featureWaterLake = new LakeFeature(_blocks.Water);
+        _featureLavaLake = new LakeFeature(_blocks.Lava);
+        _featureDirt = new OreFeature(_blocks.Dirt, 32);
+        _featureGravel = new OreFeature(_blocks.Gravel, 32);
+        _featureCoal = new OreFeature(_blocks.CoalOre, 16);
+        _featureIron = new OreFeature(_blocks.IronOre, 8);
+        _featureGold = new OreFeature(_blocks.GoldOre, 8);
+        _featureRedstone = new OreFeature(_blocks.RedstoneOre, 7);
+        _featureDiamond = new OreFeature(_blocks.DiamondOre, 7);
+        _featureLapis = new OreFeature(_blocks.LapisOre, 6);
+        _featureDandelion = new PlantPatchFeature(_blocks.Dandelion);
+        _featureRose = new PlantPatchFeature(_blocks.Rose);
+        _featureBrownMushroom = new PlantPatchFeature(_blocks.BrownMushroom);
+        _featureRedMushroom = new PlantPatchFeature(_blocks.RedMushroom);
+        _featureDeadBush = new DeadBushPatchFeature(_blocks.DeadBush);
+        _featureGrass = new GrassPatchFeature(_blocks.Grass, 1);
+        _featureWaterSpring = new SpringFeature(_blocks.FlowingWater);
+        _featureLavaSpring = new SpringFeature(_blocks.FlowingLava);
+    }
+
+    private sealed class BlockIds
+    {
+        private BlockIds(IWorldContext world)
+        {
+            var blocks = world.Content.Blocks;
+            Water = blocks.Get("water").Id;
+            FlowingWater = blocks.Get("flowing_water").Id;
+            Lava = blocks.Get("lava").Id;
+            FlowingLava = blocks.Get("flowing_lava").Id;
+            Dirt = blocks.Get("dirt").Id;
+            Gravel = blocks.Get("gravel").Id;
+            CoalOre = blocks.Get("coal_ore").Id;
+            IronOre = blocks.Get("iron_ore").Id;
+            GoldOre = blocks.Get("gold_ore").Id;
+            RedstoneOre = blocks.Get("redstone_ore").Id;
+            DiamondOre = blocks.Get("diamond_ore").Id;
+            LapisOre = blocks.Get("lapis_ore").Id;
+            Dandelion = blocks.Get("dandelion").Id;
+            Rose = blocks.Get("rose").Id;
+            BrownMushroom = blocks.Get("brown_mushroom").Id;
+            RedMushroom = blocks.Get("red_mushroom").Id;
+            DeadBush = blocks.Get("dead_bush").Id;
+            Grass = blocks.Get("grass").Id;
+        }
+
+        public int Water { get; }
+        public int FlowingWater { get; }
+        public int Lava { get; }
+        public int FlowingLava { get; }
+        public int Dirt { get; }
+        public int Gravel { get; }
+        public int CoalOre { get; }
+        public int IronOre { get; }
+        public int GoldOre { get; }
+        public int RedstoneOre { get; }
+        public int DiamondOre { get; }
+        public int LapisOre { get; }
+        public int Dandelion { get; }
+        public int Rose { get; }
+        public int BrownMushroom { get; }
+        public int RedMushroom { get; }
+        public int DeadBush { get; }
+        public int Grass { get; }
+
+        public static BlockIds Resolve(IWorldContext world) => new(world);
     }
 }

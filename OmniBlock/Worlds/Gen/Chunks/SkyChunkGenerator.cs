@@ -12,6 +12,7 @@ namespace OmniBlock.Worlds.Gen.Chunks;
 
 internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
 {
+    private readonly BlockIds _blocks;
     private readonly BiomeSource _biomeSource;
     private readonly Carver _carver = new CaveCarver();
     private readonly OctavePerlinNoiseSampler _depthNoise;
@@ -53,11 +54,19 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
     private double[] _selectorNoiseBuffer;
     private double[] _temperatures;
 
-    private SkyChunkGenerator(IWorldContext world, long seed, BiomeSource biomeSource) : this(world, seed) => _biomeSource = biomeSource;
-
-    public SkyChunkGenerator(IWorldContext world, long seed) : base(world, seed)
+    public SkyChunkGenerator(IWorldContext world, long seed)
+        : this(world, seed, world.Dimension.BiomeSource, BlockIds.Resolve(world))
     {
-        _biomeSource = world.Dimension.BiomeSource;
+    }
+
+    private SkyChunkGenerator(
+        IWorldContext world,
+        long seed,
+        BiomeSource biomeSource,
+        BlockIds blocks) : base(world, seed)
+    {
+        _blocks = blocks;
+        _biomeSource = biomeSource;
         _minLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
         _maxLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
         _selectorNoise = new OctavePerlinNoiseSampler(_random, 8);
@@ -68,7 +77,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
         InitFeatures();
     }
 
-    public IChunkSource CreateParallelInstance() => new SkyChunkGenerator(_world, _seed, new BiomeSource(_world));
+    public IChunkSource CreateParallelInstance() => new SkyChunkGenerator(_world, _seed, _biomeSource.Clone(), _blocks);
 
     public Chunk LoadChunk(int chunkX, int chunkZ) => GetChunk(chunkX, chunkZ);
 
@@ -345,7 +354,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
 
                 if (temperatureSample < 0.5D && topBlockY > 0 && topBlockY < 128 && _world.Reader.IsAir(x, topBlockY, z) && _world.Reader.GetMaterial(x, topBlockY - 1, z).BlocksMovement && _world.Reader.GetMaterial(x, topBlockY - 1, z) != Material.Ice)
                 {
-                    _world.Writer.SetBlock(x, topBlockY, z, _world.Content.Blocks.Get("snow").Id);
+                    _world.Writer.SetBlock(x, topBlockY, z, _blocks.Snow);
                 }
             }
         }
@@ -363,22 +372,22 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
 
     private void InitFeatures()
     {
-        _featureWaterLake = new LakeFeature(_world.Content.Blocks.Get("water").Id);
-        _featureLavaLake = new LakeFeature(_world.Content.Blocks.Get("lava").Id);
-        _featureDirt = new OreFeature(_world.Content.Blocks.Get("dirt").Id, 32);
-        _featureGravel = new OreFeature(_world.Content.Blocks.Get("gravel").Id, 32);
-        _featureCoal = new OreFeature(_world.Content.Blocks.Get("coal_ore").Id, 16);
-        _featureIron = new OreFeature(_world.Content.Blocks.Get("iron_ore").Id, 8);
-        _featureGold = new OreFeature(_world.Content.Blocks.Get("gold_ore").Id, 8);
-        _featureRedstone = new OreFeature(_world.Content.Blocks.Get("redstone_ore").Id, 7);
-        _featureDiamond = new OreFeature(_world.Content.Blocks.Get("diamond_ore").Id, 7);
-        _featureLapis = new OreFeature(_world.Content.Blocks.Get("lapis_ore").Id, 6);
-        _featureDandelion = new PlantPatchFeature(_world.Content.Blocks.Get("dandelion").Id);
-        _featureRose = new PlantPatchFeature(_world.Content.Blocks.Get("rose").Id);
-        _featureBrownMushroom = new PlantPatchFeature(_world.Content.Blocks.Get("brown_mushroom").Id);
-        _featureRedMushroom = new PlantPatchFeature(_world.Content.Blocks.Get("red_mushroom").Id);
-        _featureWaterSpring = new SpringFeature(_world.Content.Blocks.Get("flowing_water").Id);
-        _featureLavaSpring = new SpringFeature(_world.Content.Blocks.Get("flowing_lava").Id);
+        _featureWaterLake = new LakeFeature(_blocks.Water);
+        _featureLavaLake = new LakeFeature(_blocks.Lava);
+        _featureDirt = new OreFeature(_blocks.Dirt, 32);
+        _featureGravel = new OreFeature(_blocks.Gravel, 32);
+        _featureCoal = new OreFeature(_blocks.CoalOre, 16);
+        _featureIron = new OreFeature(_blocks.IronOre, 8);
+        _featureGold = new OreFeature(_blocks.GoldOre, 8);
+        _featureRedstone = new OreFeature(_blocks.RedstoneOre, 7);
+        _featureDiamond = new OreFeature(_blocks.DiamondOre, 7);
+        _featureLapis = new OreFeature(_blocks.LapisOre, 6);
+        _featureDandelion = new PlantPatchFeature(_blocks.Dandelion);
+        _featureRose = new PlantPatchFeature(_blocks.Rose);
+        _featureBrownMushroom = new PlantPatchFeature(_blocks.BrownMushroom);
+        _featureRedMushroom = new PlantPatchFeature(_blocks.RedMushroom);
+        _featureWaterSpring = new SpringFeature(_blocks.FlowingWater);
+        _featureLavaSpring = new SpringFeature(_blocks.FlowingLava);
     }
 
     public void BuildTerrain(int chunkX, int chunkZ, byte[] blocks)
@@ -426,7 +435,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
                                 var blockType = 0;
                                 if (terrainDensity > 0.0D)
                                 {
-                                    blockType = _world.Content.Blocks.Get("stone").Id;
+                                    blockType = _blocks.Stone;
                                 }
 
                                 blocks[blockIndex] = (byte)blockType;
@@ -471,14 +480,14 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
                     {
                         currentDepth = -1;
                     }
-                    else if (currentBlock == _world.Content.Blocks.Get("stone").Id)
+                    else if (currentBlock == _blocks.Stone)
                     {
                         if (currentDepth == -1)
                         {
                             if (surfaceDepth <= 0)
                             {
                                 topBlock = 0;
-                                soilBlock = (byte)_world.Content.Blocks.Get("stone").Id;
+                                soilBlock = (byte)_blocks.Stone;
                             }
 
                             currentDepth = surfaceDepth;
@@ -495,10 +504,10 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
                         {
                             --currentDepth;
                             blocks[blockIndex] = soilBlock;
-                            if (currentDepth == 0 && soilBlock == _world.Content.Blocks.Get("sand").Id)
+                            if (currentDepth == 0 && soilBlock == _blocks.Sand)
                             {
                                 currentDepth = _random.NextInt(4);
-                                soilBlock = (byte)_world.Content.Blocks.Get("sandstone").Id;
+                                soilBlock = (byte)_blocks.Sandstone;
                             }
                         }
                     }
@@ -570,5 +579,58 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
         }
 
         return heightMap;
+    }
+
+    // Deliberately separate from Overworld's palette: the two providers may evolve
+    // independently, while each worker still shares one immutable resolved dependency set.
+    private sealed class BlockIds
+    {
+        private BlockIds(IWorldContext world)
+        {
+            var blocks = world.Content.Blocks;
+            Stone = blocks.Get("stone").Id;
+            Water = blocks.Get("water").Id;
+            FlowingWater = blocks.Get("flowing_water").Id;
+            Lava = blocks.Get("lava").Id;
+            FlowingLava = blocks.Get("flowing_lava").Id;
+            Dirt = blocks.Get("dirt").Id;
+            Gravel = blocks.Get("gravel").Id;
+            Sand = blocks.Get("sand").Id;
+            Sandstone = blocks.Get("sandstone").Id;
+            CoalOre = blocks.Get("coal_ore").Id;
+            IronOre = blocks.Get("iron_ore").Id;
+            GoldOre = blocks.Get("gold_ore").Id;
+            RedstoneOre = blocks.Get("redstone_ore").Id;
+            DiamondOre = blocks.Get("diamond_ore").Id;
+            LapisOre = blocks.Get("lapis_ore").Id;
+            Dandelion = blocks.Get("dandelion").Id;
+            Rose = blocks.Get("rose").Id;
+            BrownMushroom = blocks.Get("brown_mushroom").Id;
+            RedMushroom = blocks.Get("red_mushroom").Id;
+            Snow = blocks.Get("snow").Id;
+        }
+
+        public int Stone { get; }
+        public int Water { get; }
+        public int FlowingWater { get; }
+        public int Lava { get; }
+        public int FlowingLava { get; }
+        public int Dirt { get; }
+        public int Gravel { get; }
+        public int Sand { get; }
+        public int Sandstone { get; }
+        public int CoalOre { get; }
+        public int IronOre { get; }
+        public int GoldOre { get; }
+        public int RedstoneOre { get; }
+        public int DiamondOre { get; }
+        public int LapisOre { get; }
+        public int Dandelion { get; }
+        public int Rose { get; }
+        public int BrownMushroom { get; }
+        public int RedMushroom { get; }
+        public int Snow { get; }
+
+        public static BlockIds Resolve(IWorldContext world) => new(world);
     }
 }

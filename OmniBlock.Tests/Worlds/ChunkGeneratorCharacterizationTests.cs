@@ -101,6 +101,22 @@ public sealed class ChunkGeneratorCharacterizationTests
         Assert.Equal(primaryB, workerB);
     }
 
+    [Fact]
+    public void Parallel_sky_decoration_preserves_the_fixed_sky_biome_source()
+    {
+        const long seed = 0x1234_5678_9ABCDEFL;
+        var primary = GeneratorFixture.Create("sky", seed);
+        var parallel = GeneratorFixture.Create("sky", seed);
+        var worker = parallel.Generator.CreateParallelInstance();
+
+        PopulateDecorationNeighborhood(primary.World, primary.Generator);
+        PopulateDecorationNeighborhood(parallel.World, worker);
+        primary.Generator.DecorateTerrain(primary.World.Chunks, 0, 0);
+        worker.DecorateTerrain(parallel.World.Chunks, 0, 0);
+
+        Assert.Equal(Fingerprint(primary.World.Chunks.All), Fingerprint(parallel.World.Chunks.All));
+    }
+
     [Theory]
     [InlineData("default", 246813579L, "0292e5defd7f632606cec1273bf2ca8b27db3c9d677b30f6d73e715da9f167eb")]
     [InlineData("flat", 246813579L, "74c35f9e5910ed073e7bea236d440567f18c1396195e47d815d8653a056b0a5b")]
@@ -187,6 +203,13 @@ public sealed class ChunkGeneratorCharacterizationTests
         hash.AppendData(chunk.Meta.Bytes);
         hash.AppendData(chunk.HeightMap);
         return Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
+    }
+
+    private static void PopulateDecorationNeighborhood(GenerationTestWorld world, IChunkSource generator)
+    {
+        for (var chunkX = -1; chunkX <= 2; chunkX++)
+        for (var chunkZ = -1; chunkZ <= 2; chunkZ++)
+            world.Chunks.Store(generator.GetChunk(chunkX, chunkZ));
     }
 
     private static string Fingerprint(IEnumerable<Chunk> chunks)

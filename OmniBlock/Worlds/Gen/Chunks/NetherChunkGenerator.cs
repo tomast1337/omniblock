@@ -9,6 +9,7 @@ namespace OmniBlock.Worlds.Gen.Chunks;
 
 internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
 {
+    private readonly BlockIds _blocks;
     private readonly Carver _cave = new NetherCaveCarver();
     private readonly OctavePerlinNoiseSampler _depthNoise;
     private readonly OctavePerlinNoiseSampler _maxLimitPerlinNoise;
@@ -33,8 +34,14 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
     private double[] _sandBuffer = new double[256];
     private double[] _scaleNoiseBuffer;
 
-    public NetherChunkGenerator(IWorldContext world, long seed) : base(world, seed)
+    public NetherChunkGenerator(IWorldContext world, long seed)
+        : this(world, seed, BlockIds.Resolve(world))
     {
+    }
+
+    private NetherChunkGenerator(IWorldContext world, long seed, BlockIds blocks) : base(world, seed)
+    {
+        _blocks = blocks;
         _minLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
         _maxLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
         _perlinNoise1 = new OctavePerlinNoiseSampler(_random, 8);
@@ -45,7 +52,7 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
         InitFeatures();
     }
 
-    public IChunkSource CreateParallelInstance() => new NetherChunkGenerator(_world, _seed);
+    public IChunkSource CreateParallelInstance() => new NetherChunkGenerator(_world, _seed, _blocks);
 
     public Chunk LoadChunk(int x, int z) => GetChunk(x, z);
 
@@ -135,12 +142,12 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
 
     private void InitFeatures()
     {
-        _featureNetherLavaSpring = new NetherLavaSpringFeature(_world.Content.Blocks.Get("flowing_lava").Id);
+        _featureNetherLavaSpring = new NetherLavaSpringFeature(_blocks.FlowingLava);
         _featureNetherFire = new NetherFirePatchFeature();
         _featureGlowstoneFull = new GlowstoneClusterFeature();
         _featureGlowstoneRare = new GlowstoneClusterFeatureRare();
-        _featureBrownMushroom = new PlantPatchFeature(_world.Content.Blocks.Get("brown_mushroom").Id);
-        _featureRedMushroom = new PlantPatchFeature(_world.Content.Blocks.Get("red_mushroom").Id);
+        _featureBrownMushroom = new PlantPatchFeature(_blocks.BrownMushroom);
+        _featureRedMushroom = new PlantPatchFeature(_blocks.RedMushroom);
     }
 
     public void BuildTerrain(int chunkX, int chunkZ, byte[] blocks)
@@ -189,12 +196,12 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
                                 var blockType = 0;
                                 if (sampleY * 8 + subY < lavaLevel)
                                 {
-                                    blockType = _world.Content.Blocks.Get("lava").Id;
+                                    blockType = _blocks.Lava;
                                 }
 
                                 if (terrainDensity > 0.0D)
                                 {
-                                    blockType = _world.Content.Blocks.Get("netherrack").Id;
+                                    blockType = _blocks.Netherrack;
                                 }
 
                                 blocks[blockIndex] = (byte)blockType;
@@ -232,19 +239,19 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
                 var isGravel = _gravelBuffer[localX + localZ * 16] + _random.NextDouble() * 0.2D > 0.0D;
                 var surfaceDepth = (int)(_depthBuffer[localX + localZ * 16] / 3.0D + 3.0D + _random.NextDouble() * 0.25D);
                 var currentDepth = -1;
-                var topBlock = (byte)_world.Content.Blocks.Get("netherrack").Id;
-                var soilBlock = (byte)_world.Content.Blocks.Get("netherrack").Id;
+                var topBlock = (byte)_blocks.Netherrack;
+                var soilBlock = (byte)_blocks.Netherrack;
 
                 for (var blockY = 127; blockY >= 0; --blockY)
                 {
                     var blockIndex = (localZ * 16 + localX) * 128 + blockY;
                     if (blockY >= 127 - _random.NextInt(5))
                     {
-                        blocks[blockIndex] = (byte)_world.Content.Blocks.Get("bedrock").Id;
+                        blocks[blockIndex] = (byte)_blocks.Bedrock;
                     }
                     else if (blockY <= 0 + _random.NextInt(5))
                     {
-                        blocks[blockIndex] = (byte)_world.Content.Blocks.Get("bedrock").Id;
+                        blocks[blockIndex] = (byte)_blocks.Bedrock;
                     }
                     else
                     {
@@ -253,43 +260,43 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
                         {
                             currentDepth = -1;
                         }
-                        else if (currentBlock == _world.Content.Blocks.Get("netherrack").Id)
+                        else if (currentBlock == _blocks.Netherrack)
                         {
                             if (currentDepth == -1)
                             {
                                 if (surfaceDepth <= 0)
                                 {
                                     topBlock = 0;
-                                    soilBlock = (byte)_world.Content.Blocks.Get("netherrack").Id;
+                                    soilBlock = (byte)_blocks.Netherrack;
                                 }
                                 else if (blockY >= seaLevel - 4 && blockY <= seaLevel + 1)
                                 {
-                                    topBlock = (byte)_world.Content.Blocks.Get("netherrack").Id;
-                                    soilBlock = (byte)_world.Content.Blocks.Get("netherrack").Id;
+                                    topBlock = (byte)_blocks.Netherrack;
+                                    soilBlock = (byte)_blocks.Netherrack;
                                     if (isGravel)
                                     {
-                                        topBlock = (byte)_world.Content.Blocks.Get("gravel").Id;
+                                        topBlock = (byte)_blocks.Gravel;
                                     }
 
                                     if (isGravel)
                                     {
-                                        soilBlock = (byte)_world.Content.Blocks.Get("netherrack").Id;
+                                        soilBlock = (byte)_blocks.Netherrack;
                                     }
 
                                     if (isSoulsand)
                                     {
-                                        topBlock = (byte)_world.Content.Blocks.Get("soulsand").Id;
+                                        topBlock = (byte)_blocks.SoulSand;
                                     }
 
                                     if (isSoulsand)
                                     {
-                                        soilBlock = (byte)_world.Content.Blocks.Get("soulsand").Id;
+                                        soilBlock = (byte)_blocks.SoulSand;
                                     }
                                 }
 
                                 if (blockY < seaLevel && topBlock == 0)
                                 {
-                                    topBlock = (byte)_world.Content.Blocks.Get("lava").Id;
+                                    topBlock = (byte)_blocks.Lava;
                                 }
 
                                 currentDepth = surfaceDepth;
@@ -444,6 +451,33 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
         }
 
         return heightMap;
+    }
+
+    private sealed class BlockIds
+    {
+        private BlockIds(IWorldContext world)
+        {
+            var blocks = world.Content.Blocks;
+            Netherrack = blocks.Get("netherrack").Id;
+            Lava = blocks.Get("lava").Id;
+            FlowingLava = blocks.Get("flowing_lava").Id;
+            Bedrock = blocks.Get("bedrock").Id;
+            Gravel = blocks.Get("gravel").Id;
+            SoulSand = blocks.Get("soulsand").Id;
+            BrownMushroom = blocks.Get("brown_mushroom").Id;
+            RedMushroom = blocks.Get("red_mushroom").Id;
+        }
+
+        public int Netherrack { get; }
+        public int Lava { get; }
+        public int FlowingLava { get; }
+        public int Bedrock { get; }
+        public int Gravel { get; }
+        public int SoulSand { get; }
+        public int BrownMushroom { get; }
+        public int RedMushroom { get; }
+
+        public static BlockIds Resolve(IWorldContext world) => new(world);
     }
 
     public static void markChunksForUnload(int _)
