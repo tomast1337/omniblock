@@ -1,0 +1,5 @@
+{
+  "Generator": "omniblock:overworld",
+  "IconPath": "/gui/world_types/default.png",
+  "CanBeCreated": true
+}

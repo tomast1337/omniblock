@@ -1,5 +1,5 @@
 using OmniBlock.Worlds.Chunks;
-using OmniBlock.Worlds.Gen.Chunks;
+using OmniBlock.Worlds.Generation;
 using OmniBlock.Worlds.Generation.Biomes;
 using OmniBlock.Worlds.Generation.Biomes.Source;
 
@@ -11,7 +11,17 @@ public class SkyDimension : Dimension
 
     public override void InitBiomeSource() => BiomeSource = new FixedBiomeSource(Biome.Sky, 0.5D, 0.0D);
 
-    public override IChunkSource CreateChunkGenerator() => new SkyChunkGenerator(World, World.Seed);
+    public override IChunkSource CreateChunkGenerator()
+    {
+        var terrainType = World.Properties.TerrainType;
+        WorldGeneratorBuildContext context = new(
+            World,
+            World.Seed,
+            World.Properties.GeneratorOptions);
+        return World.Content.WorldGeneratorProviders.Create(
+            terrainType.GeneratorProviderType,
+            context);
+    }
 
     public override float GetTimeOfDay(long time, float partialTicks) => 0.0F;
 

@@ -36,10 +36,14 @@ internal class FlatChunkGenerator : IChunkSource
     private LakeFeature _featureWaterLake;
     private SpringFeature _featureWaterSpring;
 
-    public FlatChunkGenerator(IWorldContext world)
+    public FlatChunkGenerator(IWorldContext world) : this(world, world.Properties.GeneratorOptions)
+    {
+    }
+
+    public FlatChunkGenerator(IWorldContext world, string generatorOptions)
     {
         _world = world;
-        _generatorInfo = FlatGeneratorInfo.CreateFromString(world.Properties.GeneratorOptions, world.Content.Blocks);
+        _generatorInfo = FlatGeneratorInfo.CreateFromString(generatorOptions, world.Content.Blocks);
         _random = new JavaRandom(world.Seed);
         InitFeatures();
     }

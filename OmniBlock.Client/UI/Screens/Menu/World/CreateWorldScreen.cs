@@ -18,7 +18,7 @@ public class CreateWorldScreen(
     private Button _btnWorldType = null!;
     private bool _moreOptions;
     private string _seed = "";
-    private WorldType _selectedWorldType = WorldType.Default;
+    private WorldType _selectedWorldType = context.Content.WorldTypes.Get("omniblock:default");
     private TextField _txfSeed = null!;
 
     private TextField _txfWorldName = null!;
@@ -95,7 +95,7 @@ public class CreateWorldScreen(
             _btnCustomize.AutomationId = "world.create.customize";
             _btnCustomize.Text = Translations.Get("gui.customize");
             _btnCustomize.Style.MarginBottom = 10;
-            _btnCustomize.Enabled = _selectedWorldType == WorldType.Flat;
+            _btnCustomize.Enabled = _selectedWorldType.Key == WorldType.Flat.Key;
             _btnCustomize.OnClick += e => Context.Navigator.Navigate(new CreateFlatWorldScreen(Context, this, GeneratorOptions));
             Root.AddChild(_btnCustomize);
         }

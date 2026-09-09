@@ -48,6 +48,9 @@ public abstract class World : IWorldContext
         var loadedProperties = worldStorage.LoadProperties();
         var shouldInitializeSpawn = loadedProperties == null;
         Properties = loadedProperties ?? new WorldProperties(settings, levelName);
+        // Storage and transitional callers may still carry a legacy WorldType instance. Worlds
+        // always bind that stable key back to the immutable type owned by their injected runtime.
+        Properties.TerrainType = Content.WorldTypes.Get(Properties.TerrainType.Key);
         if (Properties.ContentManifest is { } savedManifest)
         {
             var compatibility = Content.Manifest.CompareTo(savedManifest);
@@ -71,7 +74,7 @@ public abstract class World : IWorldContext
         }
 
 
-        if (Dimension is OverworldDimension && Properties.TerrainType == WorldType.Sky)
+        if (Dimension is OverworldDimension && Properties.TerrainType.Key == WorldType.Sky.Key)
         {
             Dimension = new SkyDimension();
         }
@@ -275,7 +278,7 @@ public abstract class World : IWorldContext
                 z = Properties.SpawnZ;
             }
 
-            if (Properties.TerrainType == WorldType.Sky)
+            if (Properties.TerrainType.Key == WorldType.Sky.Key)
             {
                 var topY = Reader.GetTopSolidBlockY(x, z);
                 if (topY > 0)

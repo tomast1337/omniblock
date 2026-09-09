@@ -1,21 +1,29 @@
 namespace OmniBlock.Worlds;
 
+using OmniBlock.Worlds.Generation;
+
 public class WorldType
 {
-    public static readonly WorldType Default = new("omniblock:default", "/gui/world_types/default.png");
-    public static readonly WorldType Flat = new("omniblock:flat", "/gui/world_types/flat.png");
-    public static readonly WorldType Sky = new("omniblock:sky", "/gui/world_types/sky.png");
+    public static readonly WorldType Default = new("omniblock:default", BuiltInWorldGeneratorProviders.Overworld, "/gui/world_types/default.png");
+    public static readonly WorldType Flat = new("omniblock:flat", BuiltInWorldGeneratorProviders.Flat, "/gui/world_types/flat.png");
+    public static readonly WorldType Sky = new("omniblock:sky", BuiltInWorldGeneratorProviders.Sky, "/gui/world_types/sky.png");
 
     internal static IReadOnlyList<WorldType> BuiltIns { get; } = [Default, Flat, Sky];
 
-    internal WorldType(ResourceLocation key, string iconPath = "", bool canBeCreated = true)
+    internal WorldType(
+        ResourceLocation key,
+        ResourceLocation generatorProviderType,
+        string iconPath = "",
+        bool canBeCreated = true)
     {
         Key = key;
+        GeneratorProviderType = generatorProviderType;
         IconPath = iconPath;
         CanBeCreated = canBeCreated;
     }
 
     public ResourceLocation Key { get; }
+    public ResourceLocation GeneratorProviderType { get; }
     public string Name => Key.Path;
     public string IconPath { get; }
     public bool CanBeCreated { get; }

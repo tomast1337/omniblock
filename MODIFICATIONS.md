@@ -314,3 +314,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-09-08 — refactor: enhance chunk mesh management with outstanding request tracking and visibility improvements (Nicolas Vyčas Nery; `4e8ac9142c9c91538f18ad27db7c7169ccf61487`)
 - 2026-09-08 — refactor: add unit tests for chunk loading queue and world type characterization (Nicolas Vyčas Nery; `6ad193bb51388c457f8eea9e4b69a898deac133c`)
 - 2026-09-08 — refactor: implement runtime world type registry and enhance world type management (Nicolas Vyčas Nery; `7fb0e83cd761072d2e334cd4d5c758670077a21d`)
+- 2026-09-08 — refactor: implement world type system with generator providers and definitions (Nicolas Vyčas Nery; `12f4520ec214aa7505c32f82c8555e67e540c08a`)

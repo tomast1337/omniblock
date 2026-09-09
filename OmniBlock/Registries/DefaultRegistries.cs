@@ -8,6 +8,7 @@ using OmniBlock.Processes;
 using OmniBlock.Registries.Data;
 using OmniBlock.Rules;
 using OmniBlock.Worlds.Generation.Biomes;
+using OmniBlock.Worlds;
 
 namespace OmniBlock.Registries;
 
@@ -26,6 +27,15 @@ public static class DefaultRegistries
     public static void Initialize(ContentRuntimeBuilder content)
     {
         ArgumentNullException.ThrowIfNull(content);
+        var worldTypeLoader = new DataAssetLoader<WorldTypeDefinition>(
+            RegistryDefinitions.WorldTypes.AssetPath,
+            LoadLocations.Assets,
+            false);
+        worldTypeLoader.LoadFromPaths(null, null, null);
+        if (worldTypeLoader.HasErrors)
+            throw new AssetLoadException(worldTypeLoader.FirstErrorMessage ?? "Failed to load world-type definitions.");
+        foreach (var definition in worldTypeLoader) content.AddWorldTypeDefinition(definition);
+
         // Blocks resolve their material and sound-group dependencies during construction.
         MaterialRegistry.Initialize();
         SoundGroupRegistry.Initialize();

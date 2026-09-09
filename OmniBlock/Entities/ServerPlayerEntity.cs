@@ -63,7 +63,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         var z = spawnPos.Y;
         if (!world.Dimension.HasCeiling)
         {
-            if (world.Properties.TerrainType == WorldType.Sky)
+            if (world.Properties.TerrainType.Key == WorldType.Sky.Key)
             {
                 var validityY = world.Reader.GetSpawnPositionValidityY(x, y);
                 if (validityY > 0)

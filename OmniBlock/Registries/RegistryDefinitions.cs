@@ -5,6 +5,7 @@ using OmniBlock.Items;
 using OmniBlock.Processes;
 using OmniBlock.Registries.Data;
 using OmniBlock.Worlds.Generation.Biomes;
+using OmniBlock.Worlds;
 
 namespace OmniBlock.Registries;
 
@@ -46,4 +47,7 @@ internal static class RegistryDefinitions
 
     public static readonly RegistryDefinition<SoundGroupDefinition> SoundGroups =
         new(RegistryKeys.SoundGroups, "sound_group", LoadLocations.AllInit, false, true);
+
+    public static readonly RegistryDefinition<WorldTypeDefinition> WorldTypes =
+        new(RegistryKeys.WorldTypes, "world_type");
 }

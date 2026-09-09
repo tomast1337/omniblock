@@ -11,6 +11,7 @@ using OmniBlock.Processes;
 using OmniBlock.Textures;
 using OmniBlock.Util;
 using OmniBlock.Worlds;
+using OmniBlock.Worlds.Generation;
 
 namespace OmniBlock.Registries;
 
@@ -36,6 +37,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
     private readonly List<EntityDefinition> _pendingEntityDefinitions = [];
     private readonly List<ItemDefinition> _pendingItemDefinitions = [];
     private readonly List<ProcessDefinition> _pendingProcessDefinitions = [];
+    private readonly List<WorldTypeDefinition> _pendingWorldTypeDefinitions = [];
     private bool _built;
     private bool _blocksBuilt;
     private bool _itemDraftsCreated;
@@ -49,7 +51,8 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         StagedBlockRuntimeView? blockRuntimeView = null,
         IProcessProviderRegistry? processProviders = null,
         IEntityBehaviorProviderRegistry? entityBehaviorProviders = null,
-        IEntityConstructorProviderRegistry? entityConstructorProviders = null)
+        IEntityConstructorProviderRegistry? entityConstructorProviders = null,
+        IWorldGeneratorProviderRegistry? worldGeneratorProviders = null)
     {
         ArgumentNullException.ThrowIfNull(blockBehaviorProviders);
         BlockBehaviorProviders = blockBehaviorProviders;
@@ -58,6 +61,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         ProcessProviders = processProviders ?? BuiltInProcessProviders.CreateRegistry();
         EntityBehaviorProviders = entityBehaviorProviders ?? new EntityBehaviorProviderRegistry();
         EntityConstructorProviders = entityConstructorProviders ?? new EntityConstructorProviderRegistry();
+        WorldGeneratorProviders = worldGeneratorProviders ?? BuiltInWorldGeneratorProviders.CreateRegistry();
         _blockRuntimeView = blockRuntimeView ?? new StagedBlockRuntimeView();
         BlockBuildContext = blockBuildContext;
         ItemBuildContext = itemBuildContext;
@@ -69,6 +73,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
     public IProcessProviderRegistry ProcessProviders { get; }
     public IEntityBehaviorProviderRegistry EntityBehaviorProviders { get; }
     public IEntityConstructorProviderRegistry EntityConstructorProviders { get; }
+    public IWorldGeneratorProviderRegistry WorldGeneratorProviders { get; }
     public ItemBuildContext ItemBuildContext { get; }
     public BehaviorBuildContext BehaviorBuildContext => BlockBuildContext.Behaviors;
     internal IBlockRuntimeView StagedBlocks => _blockRuntimeView;
@@ -118,6 +123,13 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         if (_built) throw new InvalidOperationException("Cannot add content after the runtime has been built.");
         ArgumentNullException.ThrowIfNull(definition);
         _pendingEntityDefinitions.Add(definition);
+    }
+
+    internal void AddWorldTypeDefinition(WorldTypeDefinition definition)
+    {
+        if (_built) throw new InvalidOperationException("Cannot add content after the runtime has been built.");
+        ArgumentNullException.ThrowIfNull(definition);
+        _pendingWorldTypeDefinitions.Add(definition);
     }
 
     internal bool ContainsEntityDefinition(ResourceLocation key) =>
@@ -235,6 +247,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         foreach (var (_, item) in _blockItems) item.Freeze();
         _blockRuntimeView.Freeze();
         var processes = BuildProcesses();
+        var worldTypes = BuildWorldTypes();
         ContentRuntime runtime = new(
             _blocks.Select(static entry => (entry.Key, entry.Block)),
             _items.Select(static entry => (entry.Key, entry.Item)),
@@ -245,9 +258,40 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
             ItemBehaviorProviders,
             ProcessProviders,
             processes,
-            WorldType.BuiltIns);
+            worldTypes,
+            WorldGeneratorProviders);
         _built = true;
         return runtime;
+    }
+
+    private IReadOnlyList<WorldType> BuildWorldTypes()
+    {
+        var types = new List<WorldType>(_pendingWorldTypeDefinitions.Count);
+        var keys = new HashSet<ResourceLocation>();
+        var legacyNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var definition in _pendingWorldTypeDefinitions)
+        {
+            ResourceLocation key = new(definition.Namespace, definition.Name);
+            if (!keys.Add(key))
+                throw new InvalidOperationException($"Duplicate world type '{key}'.");
+            if (!legacyNames.Add(key.Path))
+                throw new InvalidOperationException($"Duplicate legacy world-type name '{key.Path}'.");
+            if (string.IsNullOrWhiteSpace(definition.Generator))
+                throw new InvalidOperationException($"World type '{key}': generator provider is required.");
+
+            var providerType = ResourceLocation.Parse(definition.Generator);
+            if (!WorldGeneratorProviders.Contains(providerType))
+                throw new InvalidOperationException(
+                    $"World type '{key}': unknown generator provider '{providerType}'.");
+
+            types.Add(new WorldType(
+                key,
+                providerType,
+                definition.IconPath,
+                definition.CanBeCreated));
+        }
+
+        return types;
     }
 
     internal void BuildEntitiesForBootstrap() => BuildPendingEntityDefinitions();

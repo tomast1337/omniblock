@@ -2,7 +2,6 @@ using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Biomes.Source;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core.Systems;
-using OmniBlock.Worlds.Gen.Chunks;
 using Silk.NET.Maths;
 
 namespace OmniBlock.Worlds.Dimensions;
@@ -43,7 +42,7 @@ public abstract class Dimension
 
     public virtual void InitBiomeSource() => BiomeSource = new BiomeSource(World);
 
-    public virtual IChunkSource CreateChunkGenerator() => new OverworldChunkGenerator(World, World.Seed);
+    public abstract IChunkSource CreateChunkGenerator();
 
     public virtual bool IsValidSpawnPoint(int x, int z)
     {

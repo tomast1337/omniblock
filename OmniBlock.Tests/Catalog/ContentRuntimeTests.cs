@@ -10,6 +10,12 @@ public sealed class ContentRuntimeTests
     public void World_context_owns_the_injected_content_runtime()
     {
         var builder = ContentRuntimeBuilder.CreateBuiltIns();
+        builder.AddWorldTypeDefinition(new WorldTypeDefinition
+        {
+            Namespace = Namespace.OmniBlock,
+            Name = "default",
+            Generator = "omniblock:overworld"
+        });
         var isolated = builder.Build();
 
         FakeWorldContext world = new(isolated);
@@ -48,6 +54,10 @@ public sealed class ContentRuntimeTests
         Assert.Equal(["default", "flat", "sky"], worldTypes.All.Select(static type => type.Name));
         Assert.Same(worldTypes.Get("omniblock:default"), worldTypes.Get("DEFAULT"));
         Assert.Same(worldTypes.Get("omniblock:flat"), worldTypes.Get("Flat"));
+        Assert.Equal("/gui/world_types/default.png", worldTypes.Get("default").IconPath);
+        Assert.Equal("omniblock:overworld", worldTypes.Get("default").GeneratorProviderType);
+        Assert.Equal("omniblock:flat", worldTypes.Get("flat").GeneratorProviderType);
+        Assert.Equal("omniblock:sky", worldTypes.Get("sky").GeneratorProviderType);
         Assert.False(worldTypes.TryGet("example:missing", out _));
         Assert.Throws<KeyNotFoundException>(() => worldTypes.Get("example:missing"));
         Assert.DoesNotContain(typeof(WorldType).GetProperties(),

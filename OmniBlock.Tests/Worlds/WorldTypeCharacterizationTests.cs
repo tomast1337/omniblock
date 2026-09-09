@@ -1,24 +1,30 @@
 using OmniBlock.NBT;
 using OmniBlock.Worlds;
 using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Generation;
 
 namespace OmniBlock.Tests.Worlds;
 
 public sealed class WorldTypeCharacterizationTests
 {
-    public static TheoryData<WorldType, string, string> ShippedTypes => new()
+    public static TheoryData<WorldType, string, string, ResourceLocation> ShippedTypes => new()
     {
-        { WorldType.Default, "default", "/gui/world_types/default.png" },
-        { WorldType.Flat, "flat", "/gui/world_types/flat.png" },
-        { WorldType.Sky, "sky", "/gui/world_types/sky.png" }
+        { WorldType.Default, "default", "/gui/world_types/default.png", BuiltInWorldGeneratorProviders.Overworld },
+        { WorldType.Flat, "flat", "/gui/world_types/flat.png", BuiltInWorldGeneratorProviders.Flat },
+        { WorldType.Sky, "sky", "/gui/world_types/sky.png", BuiltInWorldGeneratorProviders.Sky }
     };
 
     [Theory]
     [MemberData(nameof(ShippedTypes))]
-    public void Shipped_world_type_catalog_is_stable(WorldType type, string name, string iconPath)
+    public void Shipped_world_type_catalog_is_stable(
+        WorldType type,
+        string name,
+        string iconPath,
+        ResourceLocation generatorProvider)
     {
         Assert.Equal(name, type.Name);
         Assert.Equal(iconPath, type.IconPath);
+        Assert.Equal(generatorProvider, type.GeneratorProviderType);
         Assert.True(type.CanBeCreated);
         Assert.Equal($"generator.{name}", type.GetTranslateName());
     }
@@ -41,9 +47,11 @@ public sealed class WorldTypeCharacterizationTests
     public void World_type_and_provider_options_survive_the_level_nbt_round_trip(
         WorldType type,
         string name,
-        string iconPath)
+        string iconPath,
+        ResourceLocation generatorProvider)
     {
         _ = iconPath;
+        _ = generatorProvider;
         var original = new WorldProperties(
             new WorldSettings(123456789L, type, "provider-specific-options"),
             "characterization");

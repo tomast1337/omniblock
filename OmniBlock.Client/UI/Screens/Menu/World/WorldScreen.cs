@@ -196,7 +196,7 @@ public class WorldScreen(
         }
         else
         {
-            settings = new WorldSettings(0L, WorldType.Default);
+            settings = new WorldSettings(0L, Context.Content.WorldTypes.Get("omniblock:default"));
         }
 
         singleplayerHost.LoadWorld(worldFileName, worldInfo.DisplayName, settings);

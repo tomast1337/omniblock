@@ -7,6 +7,7 @@ using OmniBlock.Items;
 using OmniBlock.Items.Behaviors;
 using OmniBlock.Processes;
 using OmniBlock.Worlds;
+using OmniBlock.Worlds.Generation;
 
 namespace OmniBlock.Registries;
 
@@ -28,9 +29,11 @@ public sealed class ContentRuntime
         IItemBehaviorProviderRegistry itemBehaviorProviders,
         IProcessProviderRegistry processProviders,
         RuntimeProcessRegistry processes,
-        IEnumerable<WorldType> worldTypes)
+        IEnumerable<WorldType> worldTypes,
+        IWorldGeneratorProviderRegistry worldGeneratorProviders)
     {
         ArgumentNullException.ThrowIfNull(blockBehaviorProviders);
+        ArgumentNullException.ThrowIfNull(worldGeneratorProviders);
         var blockEntries = blocks.ToArray();
         var itemEntries = items.ToArray();
         var blockItemEntries = blockItems.ToArray();
@@ -39,6 +42,7 @@ public sealed class ContentRuntime
         Items = new RuntimeItemRegistry(itemEntries, blockItemEntries, Blocks);
         EntityTypes = new RuntimeEntityTypeRegistry(entityEntries);
         WorldTypes = new RuntimeWorldTypeRegistry(worldTypes);
+        WorldGeneratorProviders = worldGeneratorProviders;
         Manifest = new ContentCatalogManifest(Blocks.Keys.Select(key =>
                 new KeyValuePair<ResourceLocation, int>(key, Blocks.Get(key).Id)),
             itemEntries.Select(entry => new KeyValuePair<ResourceLocation, int>(entry.Key, entry.Item.Id)),
@@ -61,6 +65,7 @@ public sealed class ContentRuntime
         Items = source.Items;
         EntityTypes = source.EntityTypes;
         WorldTypes = source.WorldTypes;
+        WorldGeneratorProviders = source.WorldGeneratorProviders;
         Manifest = new ContentCatalogManifest(source.Manifest.BlockIds, source.Manifest.ItemIds,
             processes.ManifestEntries, source.Manifest.Entities);
         BlockBehaviorProviders = source.BlockBehaviorProviders;
@@ -78,6 +83,7 @@ public sealed class ContentRuntime
     public RuntimeItemRegistry Items { get; }
     public RuntimeEntityTypeRegistry EntityTypes { get; }
     public RuntimeWorldTypeRegistry WorldTypes { get; }
+    public IWorldGeneratorProviderRegistry WorldGeneratorProviders { get; }
     public ContentCatalogManifest Manifest { get; }
     public IBlockBehaviorProviderRegistry BlockBehaviorProviders { get; }
     public IItemBehaviorProviderRegistry ItemBehaviorProviders { get; }

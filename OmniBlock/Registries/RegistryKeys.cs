@@ -6,6 +6,7 @@ using OmniBlock.Items;
 using OmniBlock.Processes;
 using OmniBlock.Rules;
 using OmniBlock.Worlds.Generation.Biomes;
+using OmniBlock.Worlds;
 
 namespace OmniBlock.Registries;
 
@@ -28,4 +29,5 @@ public static class RegistryKeys
     public static readonly RegistryKey<ArmorMaterialDefinition> ArmorMaterials = new("omniblock:armor_material");
     public static readonly RegistryKey<MaterialDefinition> Materials = new("omniblock:material");
     public static readonly RegistryKey<SoundGroupDefinition> SoundGroups = new("omniblock:sound_group");
+    public static readonly RegistryKey<WorldTypeDefinition> WorldTypes = new("omniblock:world_type");
 }

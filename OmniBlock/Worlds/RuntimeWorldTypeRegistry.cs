@@ -24,7 +24,8 @@ public sealed class RuntimeWorldTypeRegistry
 
         _byKey = byKey.ToFrozenDictionary();
         _byLegacyName = byLegacyName.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
-        All = [.. byKey.Values.OrderBy(static type => type.Key.ToString(), StringComparer.Ordinal)];
+        All = Array.AsReadOnly(
+            byKey.Values.OrderBy(static type => type.Key.ToString(), StringComparer.Ordinal).ToArray());
     }
 
     public IReadOnlyList<WorldType> All { get; }
