@@ -49,6 +49,18 @@ public static class DefaultRegistries
         foreach (var definition in dimensionGeneratorLoader)
             content.AddDimensionGeneratorProfile(definition);
 
+        var biomeGenerationLoader = new DataAssetLoader<BiomeGenerationDefinition>(
+            "biome_generation",
+            LoadLocations.Assets,
+            false);
+        biomeGenerationLoader.LoadFromPaths(null, null, null);
+        if (biomeGenerationLoader.HasErrors)
+            throw new AssetLoadException(
+                biomeGenerationLoader.FirstErrorMessage
+                ?? "Failed to load biome-generation definitions.");
+        foreach (var definition in biomeGenerationLoader)
+            content.AddBiomeGenerationDefinition(definition);
+
         // Blocks resolve their material and sound-group dependencies during construction.
         MaterialRegistry.Initialize();
         SoundGroupRegistry.Initialize();

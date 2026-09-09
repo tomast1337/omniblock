@@ -5,6 +5,7 @@ using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Gen.Chunks;
 using OmniBlock.Worlds.Gen.Flat;
+using OmniBlock.Worlds.Generation.Biomes;
 
 namespace OmniBlock.Worlds.Generation;
 
@@ -13,7 +14,9 @@ public readonly record struct WorldGeneratorBuildContext(
     long Seed,
     string Options);
 
-public readonly record struct WorldGeneratorCompileContext(IBlockRuntimeView Blocks);
+public readonly record struct WorldGeneratorCompileContext(
+    IBlockRuntimeView Blocks,
+    RuntimeBiomeGenerationRegistry? BiomeGeneration = null);
 
 public interface ICompiledWorldGenerator
 {
@@ -91,7 +94,7 @@ public static class BuiltInWorldGeneratorProviders
             in WorldGeneratorCompileContext context)
         {
             var references = ReadBlockReferences(worldTypeId, "overworld", definition);
-            var settings = ParseSettings(worldTypeId, definition);
+            var settings = ParseSettings(worldTypeId, definition, context.BiomeGeneration);
             if (references is null) return new Compiled(null, settings);
             var blocks = OverworldChunkGenerator.BlockIds.Resolve(
                 context.Blocks,
@@ -102,7 +105,8 @@ public static class BuiltInWorldGeneratorProviders
 
         private static OverworldChunkGenerator.Settings ParseSettings(
             ResourceLocation worldTypeId,
-            JsonElement definition)
+            JsonElement definition,
+            RuntimeBiomeGenerationRegistry? biomeGeneration)
         {
             var parsed = definition.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null
                 ? new SettingsDefinition()
@@ -115,7 +119,8 @@ public static class BuiltInWorldGeneratorProviders
                 parsed.DirtAttempts, parsed.GravelAttempts, parsed.CoalAttempts, parsed.IronAttempts,
                 parsed.SurfaceLevel, parsed.SurfaceNoiseScale, parsed.BedrockDepth,
                 parsed.SandstoneDepthBound,
-                parsed.Features);
+                parsed.Features,
+                biomeGeneration ?? RuntimeBiomeGenerationRegistry.Empty);
             settings.Validate(worldTypeId);
             return settings;
         }

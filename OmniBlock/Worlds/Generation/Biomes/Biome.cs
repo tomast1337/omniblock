@@ -35,6 +35,7 @@ public class Biome
     }
 
     public string Name { get; private set; } = "";
+    public ResourceLocation Key { get; private set; }
     public int GrassColor { get; private set; }
     public int FoliageColor { get; private set; } = 0x4EE031;
     protected WeightedRandomSelector<SpawnListEntry> MonsterList { get; } = new();
@@ -89,7 +90,9 @@ public class Biome
 
     private static Biome Register(int id, string name, Biome biome)
     {
-        s_registry.Register(id, ResourceLocation.Parse(name), biome);
+        var key = ResourceLocation.Parse(name);
+        biome.Key = key;
+        s_registry.Register(id, key, biome);
         return biome;
     }
 

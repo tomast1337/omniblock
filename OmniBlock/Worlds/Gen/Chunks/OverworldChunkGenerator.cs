@@ -66,7 +66,12 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
     private double[] _temperatures;
 
     public OverworldChunkGenerator(IWorldContext world, long seed)
-        : this(world, seed, world.Dimension.BiomeSource, BlockIds.Resolve(world.Content.Blocks), Settings.Default)
+        : this(
+            world,
+            seed,
+            world.Dimension.BiomeSource,
+            BlockIds.Resolve(world.Content.Blocks),
+            Settings.Default with { BiomeGeneration = world.Content.BiomeGeneration })
     {
     }
 
@@ -124,12 +129,14 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
         double SurfaceNoiseScale,
         int BedrockDepth,
         int SandstoneDepthBound,
-        FeatureSettings Features)
+        FeatureSettings Features,
+        RuntimeBiomeGenerationRegistry BiomeGeneration)
     {
         public static Settings Default { get; } = new(
             16, 16, 8, 4, 4, 10, 16, 8, 684.412D, 684.412D, 8, 10, 20, 10, 20, 20,
             64, 1.0D / 32.0D, 5, 4,
-            FeatureSettings.Default);
+            FeatureSettings.Default,
+            RuntimeBiomeGenerationRegistry.Empty);
 
         public void Validate(ResourceLocation owner)
         {
@@ -530,10 +537,13 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
         }
 
         // Generate Tallgrass and Ferns
+        var fernSelectionBound = _settings.BiomeGeneration
+            .GetOrDefault(chunkBiome.Key)
+            .FernSelectionBound;
         for (byte i = 0; i < amountOfTallgrass; ++i)
         {
             byte grassMeta = 1;
-            if (chunkBiome == Biome.Rainforest && _random.NextInt(3) != 0)
+            if (fernSelectionBound > 0 && _random.NextInt(fernSelectionBound) != 0)
             {
                 // Fern
                 grassMeta = 2;

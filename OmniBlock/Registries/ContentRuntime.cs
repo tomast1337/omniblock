@@ -8,6 +8,7 @@ using OmniBlock.Items.Behaviors;
 using OmniBlock.Processes;
 using OmniBlock.Worlds;
 using OmniBlock.Worlds.Generation;
+using OmniBlock.Worlds.Generation.Biomes;
 
 namespace OmniBlock.Registries;
 
@@ -29,6 +30,7 @@ public sealed class ContentRuntime
         IItemBehaviorProviderRegistry itemBehaviorProviders,
         IProcessProviderRegistry processProviders,
         RuntimeProcessRegistry processes,
+        RuntimeBiomeGenerationRegistry biomeGeneration,
         IEnumerable<WorldType> worldTypes,
         IEnumerable<DimensionGeneratorProfile> dimensionGeneratorProfiles,
         IWorldGeneratorProviderRegistry worldGeneratorProviders)
@@ -42,6 +44,7 @@ public sealed class ContentRuntime
         Blocks = new RuntimeBlockRegistry(blockEntries);
         Items = new RuntimeItemRegistry(itemEntries, blockItemEntries, Blocks);
         EntityTypes = new RuntimeEntityTypeRegistry(entityEntries);
+        BiomeGeneration = biomeGeneration;
         WorldTypes = new RuntimeWorldTypeRegistry(worldTypes);
         DimensionGeneratorProfiles = new RuntimeDimensionGeneratorProfileRegistry(
             dimensionGeneratorProfiles);
@@ -67,6 +70,7 @@ public sealed class ContentRuntime
         Blocks = source.Blocks;
         Items = source.Items;
         EntityTypes = source.EntityTypes;
+        BiomeGeneration = source.BiomeGeneration;
         WorldTypes = source.WorldTypes;
         DimensionGeneratorProfiles = source.DimensionGeneratorProfiles;
         WorldGeneratorProviders = source.WorldGeneratorProviders;
@@ -86,6 +90,7 @@ public sealed class ContentRuntime
     public RuntimeBlockRegistry Blocks { get; }
     public RuntimeItemRegistry Items { get; }
     public RuntimeEntityTypeRegistry EntityTypes { get; }
+    public RuntimeBiomeGenerationRegistry BiomeGeneration { get; }
     public RuntimeWorldTypeRegistry WorldTypes { get; }
     public RuntimeDimensionGeneratorProfileRegistry DimensionGeneratorProfiles { get; }
     public IWorldGeneratorProviderRegistry WorldGeneratorProviders { get; }

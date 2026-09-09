@@ -12,6 +12,7 @@ using OmniBlock.Textures;
 using OmniBlock.Util;
 using OmniBlock.Worlds;
 using OmniBlock.Worlds.Generation;
+using OmniBlock.Worlds.Generation.Biomes;
 
 namespace OmniBlock.Registries;
 
@@ -34,6 +35,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
     private readonly Dictionary<ResourceLocation, Item> _itemsByKey = [];
     private readonly Dictionary<int, Item> _itemsByProtocolId = [];
     private readonly List<BlockDefinition> _pendingBlockDefinitions = [];
+    private readonly List<BiomeGenerationDefinition> _pendingBiomeGenerationDefinitions = [];
     private readonly List<EntityDefinition> _pendingEntityDefinitions = [];
     private readonly List<ItemDefinition> _pendingItemDefinitions = [];
     private readonly List<ProcessDefinition> _pendingProcessDefinitions = [];
@@ -138,6 +140,13 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         if (_built) throw new InvalidOperationException("Cannot add content after the runtime has been built.");
         ArgumentNullException.ThrowIfNull(definition);
         _pendingDimensionGeneratorProfiles.Add(definition);
+    }
+
+    internal void AddBiomeGenerationDefinition(BiomeGenerationDefinition definition)
+    {
+        if (_built) throw new InvalidOperationException("Cannot add content after the runtime has been built.");
+        ArgumentNullException.ThrowIfNull(definition);
+        _pendingBiomeGenerationDefinitions.Add(definition);
     }
 
     internal bool ContainsEntityDefinition(ResourceLocation key) =>
@@ -255,8 +264,9 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         foreach (var (_, item) in _blockItems) item.Freeze();
         _blockRuntimeView.Freeze();
         var processes = BuildProcesses();
-        var worldTypes = BuildWorldTypes();
-        var dimensionGeneratorProfiles = BuildDimensionGeneratorProfiles();
+        var biomeGeneration = BuildBiomeGeneration();
+        var worldTypes = BuildWorldTypes(biomeGeneration);
+        var dimensionGeneratorProfiles = BuildDimensionGeneratorProfiles(biomeGeneration);
         ContentRuntime runtime = new(
             _blocks.Select(static entry => (entry.Key, entry.Block)),
             _items.Select(static entry => (entry.Key, entry.Item)),
@@ -267,6 +277,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
             ItemBehaviorProviders,
             ProcessProviders,
             processes,
+            biomeGeneration,
             worldTypes,
             dimensionGeneratorProfiles,
             WorldGeneratorProviders);
@@ -274,7 +285,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         return runtime;
     }
 
-    private IReadOnlyList<WorldType> BuildWorldTypes()
+    private IReadOnlyList<WorldType> BuildWorldTypes(RuntimeBiomeGenerationRegistry biomeGeneration)
     {
         var types = new List<WorldType>(_pendingWorldTypeDefinitions.Count);
         var keys = new HashSet<ResourceLocation>();
@@ -298,7 +309,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
                 providerType,
                 key,
                 definition.GeneratorSettings,
-                new WorldGeneratorCompileContext(_blockRuntimeView));
+                new WorldGeneratorCompileContext(_blockRuntimeView, biomeGeneration));
             types.Add(new WorldType(
                 key,
                 providerType,
@@ -310,7 +321,28 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         return types;
     }
 
-    private IReadOnlyList<DimensionGeneratorProfile> BuildDimensionGeneratorProfiles()
+    private RuntimeBiomeGenerationRegistry BuildBiomeGeneration()
+    {
+        var settings = new List<KeyValuePair<ResourceLocation, BiomeGenerationSettings>>();
+        var keys = new HashSet<ResourceLocation>();
+        foreach (var definition in _pendingBiomeGenerationDefinitions)
+        {
+            ResourceLocation key = new(definition.Namespace, definition.Name);
+            if (!keys.Add(key))
+                throw new InvalidOperationException($"Duplicate biome generation definition '{key}'.");
+            if (definition.FernSelectionBound < 0)
+                throw new InvalidOperationException(
+                    $"Biome generation definition '{key}' has invalid FernSelectionBound {definition.FernSelectionBound}.");
+            settings.Add(new KeyValuePair<ResourceLocation, BiomeGenerationSettings>(
+                key,
+                new BiomeGenerationSettings(definition.FernSelectionBound)));
+        }
+
+        return new RuntimeBiomeGenerationRegistry(settings);
+    }
+
+    private IReadOnlyList<DimensionGeneratorProfile> BuildDimensionGeneratorProfiles(
+        RuntimeBiomeGenerationRegistry biomeGeneration)
     {
         var profiles = new List<DimensionGeneratorProfile>(_pendingDimensionGeneratorProfiles.Count);
         var keys = new HashSet<ResourceLocation>();
@@ -336,7 +368,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
                 providerType,
                 key,
                 definition.GeneratorSettings,
-                new WorldGeneratorCompileContext(_blockRuntimeView));
+                new WorldGeneratorCompileContext(_blockRuntimeView, biomeGeneration));
             profiles.Add(new DimensionGeneratorProfile(
                 key,
                 definition.DimensionId,
