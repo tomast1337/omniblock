@@ -113,7 +113,7 @@ public class MainMenuScreen(
         {
             Text = "OmniBlock " + OmniBlock.Version,
             TextColor = Color.White,
-            URL = "https://git.gay/omniblock-official/omniblock"
+            URL = "https://github.com/tomast1337/omniblock"
         };
         versionLabel.Style.Position = PositionType.Absolute;
         versionLabel.Style.Left = 2;
@@ -128,6 +128,22 @@ public class MainMenuScreen(
         copyrightPanel.Style.Right = 2;
         copyrightPanel.Style.AlignItems = Align.FlexEnd;
 
+        copyrightPanel.AddChild(new Label
+        {
+            Text = "Copyright © 2026 Nicolas Vyčas Nery",
+            TextColor = Color.White
+        });
+        copyrightPanel.AddChild(new Label
+        {
+            Text = "OmniBlock — based on BetaSharp",
+            TextColor = Color.White
+        });
+        copyrightPanel.AddChild(new Link
+        {
+            Text = "https://github.com/tomast1337/omniblock",
+            TextColor = Color.White,
+            URL = "https://github.com/tomast1337/omniblock"
+        });
         copyrightPanel.AddChild(new Label
         {
             Text = "Copyright Mojang Studios. Not an official Minecraft product.",

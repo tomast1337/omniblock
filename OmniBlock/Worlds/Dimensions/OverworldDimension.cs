@@ -29,9 +29,7 @@ internal class OverworldDimension : Dimension
             World,
             World.Seed,
             World.Properties.GeneratorOptions);
-        return World.Content.WorldGeneratorProviders.Create(
-            terrainType.GeneratorProviderType,
-            context);
+        return terrainType.CreateGenerator(context);
     }
 
     public override bool IsValidSpawnPoint(int x, int z)

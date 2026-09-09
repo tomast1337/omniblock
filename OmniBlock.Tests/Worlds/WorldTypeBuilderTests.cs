@@ -1,3 +1,4 @@
+using System.Text.Json;
 using OmniBlock.Registries;
 using OmniBlock.Worlds;
 using OmniBlock.Worlds.Generation;
@@ -34,6 +35,36 @@ public sealed class WorldTypeBuilderTests
         Assert.Same(published, ContentRuntime.Current);
     }
 
+    [Theory]
+    [InlineData("omniblock:overworld", "stone")]
+    [InlineData("omniblock:sky", "stone")]
+    [InlineData("omniblock:flat", "water")]
+    public void Unknown_generator_block_reference_fails_before_runtime_publication(
+        string provider,
+        string role)
+    {
+        var builder = ContentRuntimeBuilder.CreateBuiltIns();
+        var definition = Definition("example", "broken_blocks", provider);
+        definition = new WorldTypeDefinition
+        {
+            Namespace = definition.Namespace,
+            Name = definition.Name,
+            Generator = definition.Generator,
+            IconPath = definition.IconPath,
+            CanBeCreated = definition.CanBeCreated,
+            GeneratorSettings = GeneratorSettings(provider, (role, "example:missing_block"))
+        };
+        builder.AddWorldTypeDefinition(definition);
+        var published = ContentRuntime.Current;
+
+        var error = Assert.Throws<InvalidOperationException>(() => builder.Build());
+
+        Assert.Contains("example:broken_blocks", error.Message);
+        Assert.Contains(role, error.Message);
+        Assert.Contains("example:missing_block", error.Message);
+        Assert.Same(published, ContentRuntime.Current);
+    }
+
     [Fact]
     public void Duplicate_world_type_resource_ids_fail_atomically()
     {
@@ -53,8 +84,8 @@ public sealed class WorldTypeBuilderTests
     {
         var firstBuilder = ContentRuntimeBuilder.CreateBuiltIns();
         var secondBuilder = ContentRuntimeBuilder.CreateBuiltIns();
-        firstBuilder.AddWorldTypeDefinition(Definition("example", "custom", "omniblock:overworld"));
-        secondBuilder.AddWorldTypeDefinition(Definition("example", "custom", "omniblock:overworld"));
+        firstBuilder.AddWorldTypeDefinition(Definition("example", "custom", "omniblock:sky"));
+        secondBuilder.AddWorldTypeDefinition(Definition("example", "custom", "omniblock:sky"));
 
         var first = firstBuilder.Build();
         var second = secondBuilder.Build();
@@ -74,4 +105,37 @@ public sealed class WorldTypeBuilderTests
         IconPath = "/example.png",
         CanBeCreated = true
     };
+
+    private static JsonElement GeneratorSettings(
+        string provider,
+        params (string Role, string Reference)[] replacements)
+    {
+        string[] roles = provider switch
+        {
+            "omniblock:overworld" =>
+            [
+                "stone", "water", "flowing_water", "lava", "flowing_lava", "ice", "bedrock",
+                "dirt", "gravel", "sand", "sandstone", "coal_ore", "iron_ore", "gold_ore",
+                "redstone_ore", "diamond_ore", "lapis_ore", "dandelion", "grass", "dead_bush",
+                "rose", "brown_mushroom", "red_mushroom", "snow"
+            ],
+            "omniblock:sky" =>
+            [
+                "stone", "water", "flowing_water", "lava", "flowing_lava", "dirt", "gravel",
+                "sand", "sandstone", "coal_ore", "iron_ore", "gold_ore", "redstone_ore",
+                "diamond_ore", "lapis_ore", "dandelion", "rose", "brown_mushroom",
+                "red_mushroom", "snow"
+            ],
+            "omniblock:flat" =>
+            [
+                "water", "flowing_water", "lava", "flowing_lava", "dirt", "gravel", "coal_ore",
+                "iron_ore", "gold_ore", "redstone_ore", "diamond_ore", "lapis_ore", "dandelion",
+                "rose", "brown_mushroom", "red_mushroom", "dead_bush", "grass"
+            ],
+            _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, null)
+        };
+        var blocks = roles.ToDictionary(static role => role, static role => $"omniblock:{role}");
+        foreach (var (role, reference) in replacements) blocks[role] = reference;
+        return JsonSerializer.SerializeToElement(new { Blocks = blocks });
+    }
 }

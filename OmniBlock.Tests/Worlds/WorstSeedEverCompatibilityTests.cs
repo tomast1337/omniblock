@@ -62,6 +62,7 @@ public sealed class WorstSeedEverCompatibilityTests
     {
         public bool Initialize()
         {
+            DefaultRegistries.RegisterDynamicDefinitions();
             RegistryAccess = RegistryAccess.Build(AppContext.BaseDirectory);
             return base.Init();
         }

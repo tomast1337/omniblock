@@ -125,13 +125,18 @@ public static class DefaultRegistries
         RegistryAccess.AddBuiltIn(RegistryKeys.Biomes, Biomes);
         RegistryAccess.AddBuiltIn(RegistryKeys.BlockEntityTypes, BlockEntityTypes);
         RegistryAccess.AddBuiltIn(RegistryKeys.GameRules, GameRules);
+        RegisterDynamicDefinitions();
+
+        FreezeAll();
+    }
+
+    internal static void RegisterDynamicDefinitions()
+    {
         RegistryAccess.AddDynamic(RegistryDefinitions.GameModes);
         RegistryAccess.AddDynamic(RegistryDefinitions.Recipes);
         RegistryAccess.AddDynamic(RegistryDefinitions.ToolMaterials);
         RegistryAccess.AddDynamic(RegistryDefinitions.ArmorMaterials);
         RegistryAccess.AddDynamic(RegistryDefinitions.Items);
-
-        FreezeAll();
     }
 
     private static void FreezeAll()

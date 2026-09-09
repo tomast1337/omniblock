@@ -56,3 +56,9 @@ dotnet build
 
 Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for the code of conduct and pull request process. \
 This is a personal project, so review and merge timelines aren't guaranteed, but submissions are appreciated.
+
+## License
+
+OmniBlock's Covered Code is licensed under the [Common Public Attribution License 1.0](LICENSE.md). The required attribution URL is <https://github.com/tomast1337/omniblock>.
+
+Code inherited from [BetaSharp](https://git.gay/betasharp-official/betasharp) remains available under its original MIT license. See [LICENSING.md](LICENSING.md) for scope and third-party licensing details.

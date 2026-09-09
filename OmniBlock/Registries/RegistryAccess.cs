@@ -54,7 +54,13 @@ public sealed class RegistryAccess
         => s_builtIns[key.Location] = registry;
 
     public static void AddDynamic<T>(RegistryDefinition<T> definition) where T : class, IDataAsset
-        => s_dynamicEntries.Add(new DynamicRegistryEntry<T>(definition));
+    {
+        // Registration is keyed, like every resulting runtime registry. This also lets a test or
+        // embedded server restore the standard bootstrap registrations after an isolated registry
+        // fixture has cleared them, without accumulating duplicate loader passes.
+        s_dynamicEntries.RemoveAll(entry => entry.Key == definition.Key.Location);
+        s_dynamicEntries.Add(new DynamicRegistryEntry<T>(definition));
+    }
 
     /// <summary>For test isolation only — clears all registered dynamic entries.</summary>
     internal static void ClearDynamicEntries() => s_dynamicEntries.Clear();

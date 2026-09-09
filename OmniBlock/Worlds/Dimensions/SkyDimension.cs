@@ -18,9 +18,7 @@ public class SkyDimension : Dimension
             World,
             World.Seed,
             World.Properties.GeneratorOptions);
-        return World.Content.WorldGeneratorProviders.Create(
-            terrainType.GeneratorProviderType,
-            context);
+        return terrainType.CreateGenerator(context);
     }
 
     public override float GetTimeOfDay(long time, float partialTicks) => 0.0F;

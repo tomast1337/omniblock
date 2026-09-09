@@ -1,5 +1,29 @@
 {
   "Generator": "omniblock:sky",
+  "GeneratorSettings": {
+    "Blocks": {
+      "stone": "omniblock:stone",
+      "water": "omniblock:water",
+      "flowing_water": "omniblock:flowing_water",
+      "lava": "omniblock:lava",
+      "flowing_lava": "omniblock:flowing_lava",
+      "dirt": "omniblock:dirt",
+      "gravel": "omniblock:gravel",
+      "sand": "omniblock:sand",
+      "sandstone": "omniblock:sandstone",
+      "coal_ore": "omniblock:coal_ore",
+      "iron_ore": "omniblock:iron_ore",
+      "gold_ore": "omniblock:gold_ore",
+      "redstone_ore": "omniblock:redstone_ore",
+      "diamond_ore": "omniblock:diamond_ore",
+      "lapis_ore": "omniblock:lapis_ore",
+      "dandelion": "omniblock:dandelion",
+      "rose": "omniblock:rose",
+      "brown_mushroom": "omniblock:brown_mushroom",
+      "red_mushroom": "omniblock:red_mushroom",
+      "snow": "omniblock:snow"
+    }
+  },
   "IconPath": "/gui/world_types/sky.png",
   "CanBeCreated": true
 }

@@ -1,4 +1,6 @@
 using System.Collections.Frozen;
+using System.Text.Json;
+using OmniBlock.Blocks;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Gen.Chunks;
@@ -11,14 +13,28 @@ public readonly record struct WorldGeneratorBuildContext(
     long Seed,
     string Options);
 
-public interface IWorldGeneratorProvider
+public readonly record struct WorldGeneratorCompileContext(IBlockRuntimeView Blocks);
+
+public interface ICompiledWorldGenerator
 {
     IChunkSource Create(in WorldGeneratorBuildContext context);
 }
 
+public interface IWorldGeneratorProvider
+{
+    ICompiledWorldGenerator Compile(
+        ResourceLocation worldTypeId,
+        JsonElement definition,
+        in WorldGeneratorCompileContext context);
+}
+
 public interface IWorldGeneratorProviderRegistry
 {
-    IChunkSource Create(ResourceLocation providerType, in WorldGeneratorBuildContext context);
+    ICompiledWorldGenerator Compile(
+        ResourceLocation providerType,
+        ResourceLocation worldTypeId,
+        JsonElement definition,
+        in WorldGeneratorCompileContext context);
     bool Contains(ResourceLocation providerType);
 }
 
@@ -36,11 +52,13 @@ public sealed class WorldGeneratorProviderRegistry : IWorldGeneratorProviderRegi
         _providers = staged.ToFrozenDictionary();
     }
 
-    public IChunkSource Create(
+    public ICompiledWorldGenerator Compile(
         ResourceLocation providerType,
-        in WorldGeneratorBuildContext context) =>
+        ResourceLocation worldTypeId,
+        JsonElement definition,
+        in WorldGeneratorCompileContext context) =>
         _providers.TryGetValue(providerType, out var provider)
-            ? provider.Create(context)
+            ? provider.Compile(worldTypeId, definition, context)
             : throw new KeyNotFoundException($"Unknown world-generator provider '{providerType}'.");
 
     public bool Contains(ResourceLocation providerType) => _providers.ContainsKey(providerType);
@@ -54,21 +72,111 @@ public static class BuiltInWorldGeneratorProviders
 
     public static WorldGeneratorProviderRegistry CreateRegistry() => new(
     [
-        Pair(Overworld, new DelegateProvider(static context =>
-            new OverworldChunkGenerator(context.World, context.Seed))),
-        Pair(Flat, new DelegateProvider(static context =>
-            new FlatChunkGenerator(context.World, context.Options))),
-        Pair(Sky, new DelegateProvider(static context =>
-            new SkyChunkGenerator(context.World, context.Seed)))
+        Pair(Overworld, new OverworldProvider()),
+        Pair(Flat, new FlatProvider()),
+        Pair(Sky, new SkyProvider())
     ]);
 
     private static KeyValuePair<ResourceLocation, IWorldGeneratorProvider> Pair(
         ResourceLocation type,
         IWorldGeneratorProvider provider) => new(type, provider);
 
-    private sealed class DelegateProvider(
-        Func<WorldGeneratorBuildContext, IChunkSource> factory) : IWorldGeneratorProvider
+    private sealed class OverworldProvider : IWorldGeneratorProvider
     {
-        public IChunkSource Create(in WorldGeneratorBuildContext context) => factory(context);
+        public ICompiledWorldGenerator Compile(
+            ResourceLocation worldTypeId,
+            JsonElement definition,
+            in WorldGeneratorCompileContext context)
+        {
+            var references = ReadBlockReferences(worldTypeId, "overworld", definition);
+            if (references is null) return new Compiled(null);
+            var blocks = OverworldChunkGenerator.BlockIds.Resolve(
+                context.Blocks,
+                references,
+                worldTypeId);
+            return new Compiled(blocks);
+        }
+
+        private sealed class Compiled(OverworldChunkGenerator.BlockIds? blocks)
+            : ICompiledWorldGenerator
+        {
+            public IChunkSource Create(in WorldGeneratorBuildContext context) =>
+                blocks is null
+                    ? new OverworldChunkGenerator(context.World, context.Seed)
+                    : new OverworldChunkGenerator(context.World, context.Seed, blocks);
+        }
+    }
+
+    private sealed class SkyProvider : IWorldGeneratorProvider
+    {
+        public ICompiledWorldGenerator Compile(
+            ResourceLocation worldTypeId,
+            JsonElement definition,
+            in WorldGeneratorCompileContext context)
+        {
+            var references = ReadBlockReferences(worldTypeId, "sky", definition);
+            if (references is null) return new Compiled(null);
+            var blocks = SkyChunkGenerator.BlockIds.Resolve(context.Blocks, references, worldTypeId);
+            return new Compiled(blocks);
+        }
+
+        private sealed class Compiled(SkyChunkGenerator.BlockIds? blocks) : ICompiledWorldGenerator
+        {
+            public IChunkSource Create(in WorldGeneratorBuildContext context) =>
+                blocks is null
+                    ? new SkyChunkGenerator(context.World, context.Seed)
+                    : new SkyChunkGenerator(context.World, context.Seed, blocks);
+        }
+    }
+
+    private sealed class FlatProvider : IWorldGeneratorProvider
+    {
+        public ICompiledWorldGenerator Compile(
+            ResourceLocation worldTypeId,
+            JsonElement definition,
+            in WorldGeneratorCompileContext context)
+        {
+            var references = ReadBlockReferences(worldTypeId, "flat", definition);
+            if (references is null) return new Compiled(null);
+            var blocks = FlatChunkGenerator.BlockIds.Resolve(context.Blocks, references, worldTypeId);
+            return new Compiled(blocks);
+        }
+
+        private sealed class Compiled(FlatChunkGenerator.BlockIds? blocks) : ICompiledWorldGenerator
+        {
+            public IChunkSource Create(in WorldGeneratorBuildContext context) =>
+                blocks is null
+                    ? new FlatChunkGenerator(context.World, context.Options)
+                    : new FlatChunkGenerator(context.World, context.Options, blocks);
+        }
+    }
+
+    private static IReadOnlyDictionary<string, string>? ReadBlockReferences(
+        ResourceLocation owner,
+        string providerName,
+        JsonElement definition)
+    {
+        if (definition.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+            return null; // Compatibility for programmatically-created legacy definitions.
+        if (definition.ValueKind != JsonValueKind.Object)
+            throw new InvalidOperationException(
+                $"World type '{owner}' {providerName} generator settings must be an object.");
+        if (!definition.TryGetProperty("Blocks", out var blocksElement)
+            || blocksElement.ValueKind != JsonValueKind.Object)
+            throw new InvalidOperationException(
+                $"World type '{owner}' {providerName} generator settings require a 'Blocks' object.");
+
+        var references = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var property in blocksElement.EnumerateObject())
+        {
+            if (property.Value.ValueKind != JsonValueKind.String)
+                throw new InvalidOperationException(
+                    $"World type '{owner}' {providerName} block role '{property.Name}' must be a resource name.");
+            if (!references.TryAdd(property.Name, property.Value.GetString()!))
+                throw new InvalidOperationException(
+                    $"World type '{owner}' {providerName} repeats block role '{property.Name}'.");
+        }
+
+        return references;
     }
 }

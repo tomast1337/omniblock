@@ -284,11 +284,17 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
                 throw new InvalidOperationException(
                     $"World type '{key}': unknown generator provider '{providerType}'.");
 
+            var compiledGenerator = WorldGeneratorProviders.Compile(
+                providerType,
+                key,
+                definition.GeneratorSettings,
+                new WorldGeneratorCompileContext(_blockRuntimeView));
             types.Add(new WorldType(
                 key,
                 providerType,
                 definition.IconPath,
-                definition.CanBeCreated));
+                definition.CanBeCreated,
+                compiledGenerator));
         }
 
         return types;

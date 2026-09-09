@@ -1,4 +1,5 @@
 using OmniBlock.Registries.Data;
+using System.Text.Json;
 
 namespace OmniBlock.Worlds;
 
@@ -9,6 +10,7 @@ namespace OmniBlock.Worlds;
 public sealed class WorldTypeDefinition : DataAsset
 {
     public string Generator { get; init; } = "";
+    public JsonElement GeneratorSettings { get; init; }
     public string IconPath { get; init; } = "";
     public bool CanBeCreated { get; init; } = true;
 }

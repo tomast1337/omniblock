@@ -14,7 +14,7 @@ public sealed class ContentRuntimeTests
         {
             Namespace = Namespace.OmniBlock,
             Name = "default",
-            Generator = "omniblock:overworld"
+            Generator = "omniblock:sky"
         });
         var isolated = builder.Build();
 

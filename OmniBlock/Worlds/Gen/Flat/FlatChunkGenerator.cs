@@ -1,3 +1,4 @@
+using OmniBlock.Blocks;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core.Systems;
@@ -43,11 +44,11 @@ internal class FlatChunkGenerator : IChunkSource
     }
 
     public FlatChunkGenerator(IWorldContext world, string generatorOptions)
-        : this(world, generatorOptions, BlockIds.Resolve(world))
+        : this(world, generatorOptions, BlockIds.Resolve(world.Content.Blocks))
     {
     }
 
-    private FlatChunkGenerator(IWorldContext world, string generatorOptions, BlockIds blocks)
+    internal FlatChunkGenerator(IWorldContext world, string generatorOptions, BlockIds blocks)
     {
         _world = world;
         _blocks = blocks;
@@ -361,29 +362,48 @@ internal class FlatChunkGenerator : IChunkSource
         _featureLavaSpring = new SpringFeature(_blocks.FlowingLava);
     }
 
-    private sealed class BlockIds
+    internal sealed class BlockIds
     {
-        private BlockIds(IWorldContext world)
+        private BlockIds(IBlockRuntimeView blocks, IReadOnlyDictionary<string, string>? references, ResourceLocation? owner)
         {
-            var blocks = world.Content.Blocks;
-            Water = blocks.Get("water").Id;
-            FlowingWater = blocks.Get("flowing_water").Id;
-            Lava = blocks.Get("lava").Id;
-            FlowingLava = blocks.Get("flowing_lava").Id;
-            Dirt = blocks.Get("dirt").Id;
-            Gravel = blocks.Get("gravel").Id;
-            CoalOre = blocks.Get("coal_ore").Id;
-            IronOre = blocks.Get("iron_ore").Id;
-            GoldOre = blocks.Get("gold_ore").Id;
-            RedstoneOre = blocks.Get("redstone_ore").Id;
-            DiamondOre = blocks.Get("diamond_ore").Id;
-            LapisOre = blocks.Get("lapis_ore").Id;
-            Dandelion = blocks.Get("dandelion").Id;
-            Rose = blocks.Get("rose").Id;
-            BrownMushroom = blocks.Get("brown_mushroom").Id;
-            RedMushroom = blocks.Get("red_mushroom").Id;
-            DeadBush = blocks.Get("dead_bush").Id;
-            Grass = blocks.Get("grass").Id;
+            Water = Resolve("water");
+            FlowingWater = Resolve("flowing_water");
+            Lava = Resolve("lava");
+            FlowingLava = Resolve("flowing_lava");
+            Dirt = Resolve("dirt");
+            Gravel = Resolve("gravel");
+            CoalOre = Resolve("coal_ore");
+            IronOre = Resolve("iron_ore");
+            GoldOre = Resolve("gold_ore");
+            RedstoneOre = Resolve("redstone_ore");
+            DiamondOre = Resolve("diamond_ore");
+            LapisOre = Resolve("lapis_ore");
+            Dandelion = Resolve("dandelion");
+            Rose = Resolve("rose");
+            BrownMushroom = Resolve("brown_mushroom");
+            RedMushroom = Resolve("red_mushroom");
+            DeadBush = Resolve("dead_bush");
+            Grass = Resolve("grass");
+
+            int Resolve(string role)
+            {
+                var reference = references is null
+                    ? $"omniblock:{role}"
+                    : references.TryGetValue(role, out var configured)
+                        ? configured
+                        : throw new InvalidOperationException(
+                            $"World type '{owner}' flat generator is missing block role '{role}'.");
+                try
+                {
+                    return blocks.Get(ResourceLocation.Parse(reference)).Id;
+                }
+                catch (Exception error)
+                {
+                    throw new InvalidOperationException(
+                        $"World type '{owner}' flat generator block role '{role}' references unknown block '{reference}'.",
+                        error);
+                }
+            }
         }
 
         public int Water { get; }
@@ -405,6 +425,9 @@ internal class FlatChunkGenerator : IChunkSource
         public int DeadBush { get; }
         public int Grass { get; }
 
-        public static BlockIds Resolve(IWorldContext world) => new(world);
+        public static BlockIds Resolve(
+            IBlockRuntimeView blocks,
+            IReadOnlyDictionary<string, string>? references = null,
+            ResourceLocation? owner = null) => new(blocks, references, owner);
     }
 }

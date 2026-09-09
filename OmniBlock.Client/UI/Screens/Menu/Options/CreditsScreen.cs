@@ -117,7 +117,7 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
 
         ColoredTextUntranslated(Translations.GetFormat("credits.version", OmniBlock.Version), Color.Yellow, 1f);
         Text("credits.description");
-        Link("credits.github", "https://git.gay/omniblock-official/omniblock");
+        Link("credits.github", "https://github.com/tomast1337/omniblock");
         Link("credits.author", "https://git.gay/Fazin85");
         Seperator();
 

@@ -1,4 +1,5 @@
 using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Blocks;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Util.Maths.Noise;
 using OmniBlock.Worlds.Biomes.Source;
@@ -55,7 +56,12 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
     private double[] _temperatures;
 
     public SkyChunkGenerator(IWorldContext world, long seed)
-        : this(world, seed, world.Dimension.BiomeSource, BlockIds.Resolve(world))
+        : this(world, seed, world.Dimension.BiomeSource, BlockIds.Resolve(world.Content.Blocks))
+    {
+    }
+
+    internal SkyChunkGenerator(IWorldContext world, long seed, BlockIds blocks)
+        : this(world, seed, world.Dimension.BiomeSource, blocks)
     {
     }
 
@@ -583,31 +589,50 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
 
     // Deliberately separate from Overworld's palette: the two providers may evolve
     // independently, while each worker still shares one immutable resolved dependency set.
-    private sealed class BlockIds
+    internal sealed class BlockIds
     {
-        private BlockIds(IWorldContext world)
+        private BlockIds(IBlockRuntimeView blocks, IReadOnlyDictionary<string, string>? references, ResourceLocation? owner)
         {
-            var blocks = world.Content.Blocks;
-            Stone = blocks.Get("stone").Id;
-            Water = blocks.Get("water").Id;
-            FlowingWater = blocks.Get("flowing_water").Id;
-            Lava = blocks.Get("lava").Id;
-            FlowingLava = blocks.Get("flowing_lava").Id;
-            Dirt = blocks.Get("dirt").Id;
-            Gravel = blocks.Get("gravel").Id;
-            Sand = blocks.Get("sand").Id;
-            Sandstone = blocks.Get("sandstone").Id;
-            CoalOre = blocks.Get("coal_ore").Id;
-            IronOre = blocks.Get("iron_ore").Id;
-            GoldOre = blocks.Get("gold_ore").Id;
-            RedstoneOre = blocks.Get("redstone_ore").Id;
-            DiamondOre = blocks.Get("diamond_ore").Id;
-            LapisOre = blocks.Get("lapis_ore").Id;
-            Dandelion = blocks.Get("dandelion").Id;
-            Rose = blocks.Get("rose").Id;
-            BrownMushroom = blocks.Get("brown_mushroom").Id;
-            RedMushroom = blocks.Get("red_mushroom").Id;
-            Snow = blocks.Get("snow").Id;
+            Stone = Resolve("stone");
+            Water = Resolve("water");
+            FlowingWater = Resolve("flowing_water");
+            Lava = Resolve("lava");
+            FlowingLava = Resolve("flowing_lava");
+            Dirt = Resolve("dirt");
+            Gravel = Resolve("gravel");
+            Sand = Resolve("sand");
+            Sandstone = Resolve("sandstone");
+            CoalOre = Resolve("coal_ore");
+            IronOre = Resolve("iron_ore");
+            GoldOre = Resolve("gold_ore");
+            RedstoneOre = Resolve("redstone_ore");
+            DiamondOre = Resolve("diamond_ore");
+            LapisOre = Resolve("lapis_ore");
+            Dandelion = Resolve("dandelion");
+            Rose = Resolve("rose");
+            BrownMushroom = Resolve("brown_mushroom");
+            RedMushroom = Resolve("red_mushroom");
+            Snow = Resolve("snow");
+
+            int Resolve(string role)
+            {
+                var reference = references is null
+                    ? $"omniblock:{role}"
+                    : references.TryGetValue(role, out var configured)
+                        ? configured
+                        : throw new InvalidOperationException(
+                            $"World type '{owner}' sky generator is missing block role '{role}'.");
+                try
+                {
+                    return blocks.Get(ResourceLocation.Parse(reference)).Id;
+                }
+                catch (Exception error)
+                {
+                    throw new InvalidOperationException(
+                        $"World type '{owner}' sky generator block role '{role}' references unknown block '{reference}'.",
+                        error);
+                }
+            }
         }
 
         public int Stone { get; }
@@ -631,6 +656,9 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
         public int RedMushroom { get; }
         public int Snow { get; }
 
-        public static BlockIds Resolve(IWorldContext world) => new(world);
+        public static BlockIds Resolve(
+            IBlockRuntimeView blocks,
+            IReadOnlyDictionary<string, string>? references = null,
+            ResourceLocation? owner = null) => new(blocks, references, owner);
     }
 }
