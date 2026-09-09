@@ -317,3 +317,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-09-08 — refactor: implement world type system with generator providers and definitions (Nicolas Vyčas Nery; `12f4520ec214aa7505c32f82c8555e67e540c08a`)
 - 2026-09-09 — test: add characterization tests for chunk generator functionality (Nicolas Vyčas Nery; `63e766994a7b0230c29272156b2645a480d663ce`)
 - 2026-09-09 — refactor: introduce BlockIds class for improved block management in chunk generators (Nicolas Vyčas Nery; `d6ab4def5813ac976a2e52a8bf62e369731735e0`)
+- 2026-09-09 — test: add compatibility tests for worst seed ever world generation (Nicolas Vyčas Nery; `2f5b1ee542b960324e9d45fc7c6cc318ae793ad7`)
