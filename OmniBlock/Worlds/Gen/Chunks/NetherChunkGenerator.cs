@@ -11,6 +11,7 @@ namespace OmniBlock.Worlds.Gen.Chunks;
 internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
 {
     private readonly BlockIds _blocks;
+    private readonly Settings _settings;
     private readonly Carver _cave = new NetherCaveCarver();
     private readonly OctavePerlinNoiseSampler _depthNoise;
     private readonly OctavePerlinNoiseSampler _maxLimitPerlinNoise;
@@ -36,24 +37,27 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
     private double[] _scaleNoiseBuffer;
 
     public NetherChunkGenerator(IWorldContext world, long seed)
-        : this(world, seed, BlockIds.Resolve(world.Content.Blocks))
+        : this(world, seed, BlockIds.Resolve(world.Content.Blocks), Settings.Default)
     {
     }
 
-    internal NetherChunkGenerator(IWorldContext world, long seed, BlockIds blocks) : base(world, seed)
+    internal NetherChunkGenerator(IWorldContext world, long seed, BlockIds blocks, Settings settings)
+        : base(world, seed)
     {
         _blocks = blocks;
-        _minLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
-        _maxLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
-        _perlinNoise1 = new OctavePerlinNoiseSampler(_random, 8);
-        _perlinNoise2 = new OctavePerlinNoiseSampler(_random, 4);
-        _perlinNoise3 = new OctavePerlinNoiseSampler(_random, 4);
-        _scaleNoise = new OctavePerlinNoiseSampler(_random, 10);
-        _depthNoise = new OctavePerlinNoiseSampler(_random, 16);
+        _settings = settings;
+        _minLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, settings.MinLimitOctaves);
+        _maxLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, settings.MaxLimitOctaves);
+        _perlinNoise1 = new OctavePerlinNoiseSampler(_random, settings.SelectorOctaves);
+        _perlinNoise2 = new OctavePerlinNoiseSampler(_random, settings.SurfaceOctaves);
+        _perlinNoise3 = new OctavePerlinNoiseSampler(_random, settings.SurfaceDepthOctaves);
+        _scaleNoise = new OctavePerlinNoiseSampler(_random, settings.ScaleOctaves);
+        _depthNoise = new OctavePerlinNoiseSampler(_random, settings.DepthOctaves);
         InitFeatures();
     }
 
-    public IChunkSource CreateParallelInstance() => new NetherChunkGenerator(_world, _seed, _blocks);
+    public IChunkSource CreateParallelInstance() =>
+        new NetherChunkGenerator(_world, _seed, _blocks, _settings);
 
     public Chunk LoadChunk(int x, int z) => GetChunk(x, z);
 
@@ -80,7 +84,7 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
         int featureX;
         int featureY;
         int featureZ;
-        for (numIterations = 0; numIterations < 8; ++numIterations)
+        for (numIterations = 0; numIterations < _settings.LavaSpringAttempts; ++numIterations)
         {
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(120) + 4;
@@ -109,7 +113,7 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
             _featureGlowstoneFull.Generate(_world, _random, featureY, featureZ, featureZFallback);
         }
 
-        for (featureX = 0; featureX < 10; ++featureX)
+        for (featureX = 0; featureX < _settings.GlowstoneClusterAttempts; ++featureX)
         {
             featureY = blockX + _random.NextInt(16) + 8;
             featureZ = _random.NextInt(128);
@@ -154,7 +158,7 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
     public void BuildTerrain(int chunkX, int chunkZ, byte[] blocks)
     {
         byte horiScale = 4;
-        byte lavaLevel = 32;
+        var lavaLevel = _settings.LavaLevel;
         var xMax = horiScale + 1;
         byte yMax = 17;
         var zMax = horiScale + 1;
@@ -226,8 +230,8 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
 
     public void BuildSurfaces(int chunkX, int chunkZ, byte[] blocks)
     {
-        byte seaLevel = 64;
-        var noiseScale = 1.0D / 32.0D;
+        var seaLevel = _settings.SurfaceLevel;
+        var noiseScale = _settings.SurfaceNoiseScale;
         _sandBuffer = _perlinNoise2.Create(_sandBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, noiseScale, noiseScale, 1.0D);
         _gravelBuffer = _perlinNoise2.Create(_gravelBuffer, chunkX * 16, 109.0134D, chunkZ * 16, 16, 1, 16, noiseScale, 1.0D, noiseScale);
         _depthBuffer = _perlinNoise3.Create(_depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, noiseScale * 2.0D, noiseScale * 2.0D, noiseScale * 2.0D);
@@ -329,8 +333,8 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
             heightMap = new double[sizeX * sizeY * sizeZ];
         }
 
-        var horizontalScale = 684.412D;
-        var verticalScale = 2053.236D;
+        var horizontalScale = _settings.HorizontalNoiseScale;
+        var verticalScale = _settings.VerticalNoiseScale;
         _scaleNoiseBuffer = _scaleNoise.Create(_scaleNoiseBuffer, x, y, z, sizeX, 1, sizeZ, 1.0D, 0.0D, 1.0D);
         _depthNoiseBuffer = _depthNoise.Create(_depthNoiseBuffer, x, y, z, sizeX, 1, sizeZ, 100.0D, 0.0D, 100.0D);
         _perlinNoiseBuffer = _perlinNoise1.Create(_perlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale / 80.0D, verticalScale / 60.0D, horizontalScale / 80.0D);
@@ -504,6 +508,76 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
             IBlockRuntimeView blocks,
             IReadOnlyDictionary<string, string>? references = null,
             ResourceLocation? owner = null) => new(blocks, references, owner);
+    }
+
+    internal sealed record Settings(
+        int LavaLevel,
+        int SurfaceLevel,
+        double SurfaceNoiseScale,
+        double HorizontalNoiseScale,
+        double VerticalNoiseScale,
+        int MinLimitOctaves,
+        int MaxLimitOctaves,
+        int SelectorOctaves,
+        int SurfaceOctaves,
+        int SurfaceDepthOctaves,
+        int ScaleOctaves,
+        int DepthOctaves,
+        int LavaSpringAttempts,
+        int GlowstoneClusterAttempts)
+    {
+        public static Settings Default { get; } = new(
+            32,
+            64,
+            1.0D / 32.0D,
+            684.412D,
+            2053.236D,
+            16,
+            16,
+            8,
+            4,
+            4,
+            10,
+            16,
+            8,
+            10);
+
+        public void Validate(ResourceLocation owner)
+        {
+            Positive(nameof(LavaLevel), LavaLevel);
+            Positive(nameof(SurfaceLevel), SurfaceLevel);
+            Positive(nameof(SurfaceNoiseScale), SurfaceNoiseScale);
+            Positive(nameof(HorizontalNoiseScale), HorizontalNoiseScale);
+            Positive(nameof(VerticalNoiseScale), VerticalNoiseScale);
+            Positive(nameof(MinLimitOctaves), MinLimitOctaves);
+            Positive(nameof(MaxLimitOctaves), MaxLimitOctaves);
+            Positive(nameof(SelectorOctaves), SelectorOctaves);
+            Positive(nameof(SurfaceOctaves), SurfaceOctaves);
+            Positive(nameof(SurfaceDepthOctaves), SurfaceDepthOctaves);
+            Positive(nameof(ScaleOctaves), ScaleOctaves);
+            Positive(nameof(DepthOctaves), DepthOctaves);
+            NonNegative(nameof(LavaSpringAttempts), LavaSpringAttempts);
+            NonNegative(nameof(GlowstoneClusterAttempts), GlowstoneClusterAttempts);
+
+            if (LavaLevel >= ChuckFormat.WorldHeight)
+                Invalid(nameof(LavaLevel), LavaLevel, $"must be below {ChuckFormat.WorldHeight}");
+            if (SurfaceLevel >= ChuckFormat.WorldHeight)
+                Invalid(nameof(SurfaceLevel), SurfaceLevel, $"must be below {ChuckFormat.WorldHeight}");
+
+            void Positive(string name, double value)
+            {
+                if (!double.IsFinite(value) || value <= 0) Invalid(name, value, "must be finite and greater than zero");
+            }
+
+            void NonNegative(string name, int value)
+            {
+                if (value < 0) Invalid(name, value, "must not be negative");
+            }
+
+            void Invalid(string name, object value, string requirement) =>
+                throw new InvalidOperationException(
+                    $"Dimension generator profile '{owner}' nether setting '{name}' is {value} and {requirement}.");
+        }
     }
 
     public static void markChunksForUnload(int _)

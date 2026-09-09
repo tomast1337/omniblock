@@ -20,7 +20,13 @@
       "red_mushroom": "omniblock:red_mushroom",
       "dead_bush": "omniblock:dead_bush",
       "grass": "omniblock:grass"
-    }
+    },
+    "DungeonAttempts": 8,
+    "ClayAttempts": 10,
+    "DirtAttempts": 20,
+    "GravelAttempts": 10,
+    "CoalAttempts": 20,
+    "IronAttempts": 20
   },
   "IconPath": "/gui/world_types/flat.png",
   "CanBeCreated": true

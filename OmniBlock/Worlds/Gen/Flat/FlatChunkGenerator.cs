@@ -10,6 +10,7 @@ namespace OmniBlock.Worlds.Gen.Flat;
 internal class FlatChunkGenerator : IChunkSource
 {
     private readonly BlockIds _blocks;
+    private readonly Settings _settings;
     private readonly CactusPatchFeature _featureCactus = new();
     private readonly ClayOreFeature _featureClay = new(32);
     private readonly DungeonFeature _featureDungeon = new();
@@ -44,14 +45,19 @@ internal class FlatChunkGenerator : IChunkSource
     }
 
     public FlatChunkGenerator(IWorldContext world, string generatorOptions)
-        : this(world, generatorOptions, BlockIds.Resolve(world.Content.Blocks))
+        : this(world, generatorOptions, BlockIds.Resolve(world.Content.Blocks), Settings.Default)
     {
     }
 
-    internal FlatChunkGenerator(IWorldContext world, string generatorOptions, BlockIds blocks)
+    internal FlatChunkGenerator(
+        IWorldContext world,
+        string generatorOptions,
+        BlockIds blocks,
+        Settings settings)
     {
         _world = world;
         _blocks = blocks;
+        _settings = settings;
         _generatorOptions = generatorOptions;
         _generatorInfo = FlatGeneratorInfo.CreateFromString(generatorOptions, world.Content.Blocks);
         _random = new JavaRandom(world.Seed);
@@ -59,7 +65,7 @@ internal class FlatChunkGenerator : IChunkSource
     }
 
     public IChunkSource CreateParallelInstance() =>
-        new FlatChunkGenerator(_world, _generatorOptions, _blocks);
+        new FlatChunkGenerator(_world, _generatorOptions, _blocks, _settings);
 
     public Chunk GetChunk(int chunkX, int chunkZ)
     {
@@ -146,7 +152,7 @@ internal class FlatChunkGenerator : IChunkSource
 
         if (hasDungeons)
         {
-            for (var i = 0; i < 8; ++i)
+            for (var i = 0; i < _settings.DungeonAttempts; ++i)
             {
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(128);
@@ -158,7 +164,7 @@ internal class FlatChunkGenerator : IChunkSource
         if (hasDecoration)
         {
             // Ores
-            for (var i = 0; i < 10; ++i)
+            for (var i = 0; i < _settings.ClayAttempts; ++i)
             {
                 featureX = blockX + _random.NextInt(16);
                 featureY = _random.NextInt(128);
@@ -166,7 +172,7 @@ internal class FlatChunkGenerator : IChunkSource
                 _featureClay.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
-            for (var i = 0; i < 20; ++i)
+            for (var i = 0; i < _settings.DirtAttempts; ++i)
             {
                 featureX = blockX + _random.NextInt(16);
                 featureY = _random.NextInt(128);
@@ -174,7 +180,7 @@ internal class FlatChunkGenerator : IChunkSource
                 _featureDirt.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
-            for (var i = 0; i < 10; ++i)
+            for (var i = 0; i < _settings.GravelAttempts; ++i)
             {
                 featureX = blockX + _random.NextInt(16);
                 featureY = _random.NextInt(128);
@@ -182,7 +188,7 @@ internal class FlatChunkGenerator : IChunkSource
                 _featureGravel.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
-            for (var i = 0; i < 20; ++i)
+            for (var i = 0; i < _settings.CoalAttempts; ++i)
             {
                 featureX = blockX + _random.NextInt(16);
                 featureY = _random.NextInt(128);
@@ -190,7 +196,7 @@ internal class FlatChunkGenerator : IChunkSource
                 _featureCoal.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
-            for (var i = 0; i < 20; ++i)
+            for (var i = 0; i < _settings.IronAttempts; ++i)
             {
                 featureX = blockX + _random.NextInt(16);
                 featureY = _random.NextInt(64);
@@ -360,6 +366,34 @@ internal class FlatChunkGenerator : IChunkSource
         _featureGrass = new GrassPatchFeature(_blocks.Grass, 1);
         _featureWaterSpring = new SpringFeature(_blocks.FlowingWater);
         _featureLavaSpring = new SpringFeature(_blocks.FlowingLava);
+    }
+
+    internal sealed record Settings(
+        int DungeonAttempts,
+        int ClayAttempts,
+        int DirtAttempts,
+        int GravelAttempts,
+        int CoalAttempts,
+        int IronAttempts)
+    {
+        public static Settings Default { get; } = new(8, 10, 20, 10, 20, 20);
+
+        public void Validate(ResourceLocation owner)
+        {
+            NonNegative(nameof(DungeonAttempts), DungeonAttempts);
+            NonNegative(nameof(ClayAttempts), ClayAttempts);
+            NonNegative(nameof(DirtAttempts), DirtAttempts);
+            NonNegative(nameof(GravelAttempts), GravelAttempts);
+            NonNegative(nameof(CoalAttempts), CoalAttempts);
+            NonNegative(nameof(IronAttempts), IronAttempts);
+
+            void NonNegative(string name, int value)
+            {
+                if (value < 0)
+                    throw new InvalidOperationException(
+                        $"World type '{owner}' flat setting '{name}' must not be negative (was {value}).");
+            }
+        }
     }
 
     internal sealed class BlockIds

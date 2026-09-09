@@ -51,6 +51,28 @@ public sealed class DimensionGeneratorProfileTests
         Assert.Same(published, ContentRuntime.Current);
     }
 
+    [Theory]
+    [InlineData("LavaLevel", -1)]
+    [InlineData("SurfaceLevel", 128)]
+    [InlineData("MinLimitOctaves", 0)]
+    [InlineData("LavaSpringAttempts", -1)]
+    public void Invalid_nether_numeric_settings_fail_during_compilation(
+        string setting,
+        int value)
+    {
+        var definition = InvalidNumericSettings(setting, value);
+        var providers = BuiltInWorldGeneratorProviders.CreateRegistry();
+
+        var error = Assert.Throws<InvalidOperationException>(() => providers.Compile(
+            BuiltInWorldGeneratorProviders.Nether,
+            "example:invalid_nether",
+            definition,
+            new WorldGeneratorCompileContext(ContentRuntime.Current.Blocks)));
+
+        Assert.Contains("example:invalid_nether", error.Message);
+        Assert.Contains(setting, error.Message);
+    }
+
     [Fact]
     public void Builders_create_independent_dimension_generator_profiles()
     {
@@ -92,5 +114,22 @@ public sealed class DimensionGeneratorProfileTests
         var blocks = roles.ToDictionary(static role => role, static role => $"omniblock:{role}");
         foreach (var (role, reference) in replacements) blocks[role] = reference;
         return JsonSerializer.SerializeToElement(new { Blocks = blocks });
+    }
+
+    private static JsonElement InvalidNumericSettings(string setting, int value)
+    {
+        var blocks = new Dictionary<string, string>
+        {
+            ["netherrack"] = "omniblock:netherrack",
+            ["lava"] = "omniblock:lava",
+            ["flowing_lava"] = "omniblock:flowing_lava",
+            ["bedrock"] = "omniblock:bedrock",
+            ["gravel"] = "omniblock:gravel",
+            ["soulsand"] = "omniblock:soulsand",
+            ["brown_mushroom"] = "omniblock:brown_mushroom",
+            ["red_mushroom"] = "omniblock:red_mushroom"
+        };
+        var settings = new Dictionary<string, object> { ["Blocks"] = blocks, [setting] = value };
+        return JsonSerializer.SerializeToElement(settings);
     }
 }

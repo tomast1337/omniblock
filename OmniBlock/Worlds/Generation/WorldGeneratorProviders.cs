@@ -91,21 +91,65 @@ public static class BuiltInWorldGeneratorProviders
             in WorldGeneratorCompileContext context)
         {
             var references = ReadBlockReferences(worldTypeId, "overworld", definition);
-            if (references is null) return new Compiled(null);
+            var settings = ParseSettings(worldTypeId, definition);
+            if (references is null) return new Compiled(null, settings);
             var blocks = OverworldChunkGenerator.BlockIds.Resolve(
                 context.Blocks,
                 references,
                 worldTypeId);
-            return new Compiled(blocks);
+            return new Compiled(blocks, settings);
         }
 
-        private sealed class Compiled(OverworldChunkGenerator.BlockIds? blocks)
+        private static OverworldChunkGenerator.Settings ParseSettings(
+            ResourceLocation worldTypeId,
+            JsonElement definition)
+        {
+            var parsed = definition.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null
+                ? new SettingsDefinition()
+                : definition.Deserialize<SettingsDefinition>() ?? new SettingsDefinition();
+            OverworldChunkGenerator.Settings settings = new(
+                parsed.MinLimitOctaves, parsed.MaxLimitOctaves, parsed.SelectorOctaves,
+                parsed.SurfaceOctaves, parsed.DepthOctaves, parsed.FloatingScaleOctaves,
+                parsed.FloatingNoiseOctaves, parsed.ForestOctaves, parsed.HorizontalNoiseScale,
+                parsed.VerticalNoiseScale, parsed.DungeonAttempts, parsed.ClayAttempts,
+                parsed.DirtAttempts, parsed.GravelAttempts, parsed.CoalAttempts, parsed.IronAttempts);
+            settings.Validate(worldTypeId);
+            return settings;
+        }
+
+        private sealed class SettingsDefinition
+        {
+            public int MinLimitOctaves { get; init; } = 16;
+            public int MaxLimitOctaves { get; init; } = 16;
+            public int SelectorOctaves { get; init; } = 8;
+            public int SurfaceOctaves { get; init; } = 4;
+            public int DepthOctaves { get; init; } = 4;
+            public int FloatingScaleOctaves { get; init; } = 10;
+            public int FloatingNoiseOctaves { get; init; } = 16;
+            public int ForestOctaves { get; init; } = 8;
+            public double HorizontalNoiseScale { get; init; } = 684.412D;
+            public double VerticalNoiseScale { get; init; } = 684.412D;
+            public int DungeonAttempts { get; init; } = 8;
+            public int ClayAttempts { get; init; } = 10;
+            public int DirtAttempts { get; init; } = 20;
+            public int GravelAttempts { get; init; } = 10;
+            public int CoalAttempts { get; init; } = 20;
+            public int IronAttempts { get; init; } = 20;
+        }
+
+        private sealed class Compiled(
+            OverworldChunkGenerator.BlockIds? blocks,
+            OverworldChunkGenerator.Settings settings)
             : ICompiledWorldGenerator
         {
             public IChunkSource Create(in WorldGeneratorBuildContext context) =>
                 blocks is null
-                    ? new OverworldChunkGenerator(context.World, context.Seed)
-                    : new OverworldChunkGenerator(context.World, context.Seed, blocks);
+                    ? new OverworldChunkGenerator(
+                        context.World,
+                        context.Seed,
+                        OverworldChunkGenerator.BlockIds.Resolve(context.World.Content.Blocks),
+                        settings)
+                    : new OverworldChunkGenerator(context.World, context.Seed, blocks, settings);
         }
     }
 
@@ -117,17 +161,60 @@ public static class BuiltInWorldGeneratorProviders
             in WorldGeneratorCompileContext context)
         {
             var references = ReadBlockReferences(worldTypeId, "sky", definition);
-            if (references is null) return new Compiled(null);
+            var settings = ParseSettings(worldTypeId, definition);
+            if (references is null) return new Compiled(null, settings);
             var blocks = SkyChunkGenerator.BlockIds.Resolve(context.Blocks, references, worldTypeId);
-            return new Compiled(blocks);
+            return new Compiled(blocks, settings);
         }
 
-        private sealed class Compiled(SkyChunkGenerator.BlockIds? blocks) : ICompiledWorldGenerator
+        private static SkyChunkGenerator.Settings ParseSettings(
+            ResourceLocation worldTypeId,
+            JsonElement definition)
+        {
+            var parsed = definition.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null
+                ? new SettingsDefinition()
+                : definition.Deserialize<SettingsDefinition>() ?? new SettingsDefinition();
+            SkyChunkGenerator.Settings settings = new(
+                parsed.MinLimitOctaves, parsed.MaxLimitOctaves, parsed.SelectorOctaves,
+                parsed.DepthOctaves, parsed.FloatingScaleOctaves, parsed.FloatingNoiseOctaves,
+                parsed.ForestOctaves, parsed.HorizontalNoiseScale, parsed.VerticalNoiseScale,
+                parsed.DungeonAttempts, parsed.ClayAttempts, parsed.DirtAttempts,
+                parsed.GravelAttempts, parsed.CoalAttempts, parsed.IronAttempts);
+            settings.Validate(worldTypeId);
+            return settings;
+        }
+
+        private sealed class SettingsDefinition
+        {
+            public int MinLimitOctaves { get; init; } = 16;
+            public int MaxLimitOctaves { get; init; } = 16;
+            public int SelectorOctaves { get; init; } = 8;
+            public int DepthOctaves { get; init; } = 4;
+            public int FloatingScaleOctaves { get; init; } = 10;
+            public int FloatingNoiseOctaves { get; init; } = 16;
+            public int ForestOctaves { get; init; } = 8;
+            public double HorizontalNoiseScale { get; init; } = 684.412D;
+            public double VerticalNoiseScale { get; init; } = 684.412D;
+            public int DungeonAttempts { get; init; } = 8;
+            public int ClayAttempts { get; init; } = 10;
+            public int DirtAttempts { get; init; } = 20;
+            public int GravelAttempts { get; init; } = 10;
+            public int CoalAttempts { get; init; } = 20;
+            public int IronAttempts { get; init; } = 20;
+        }
+
+        private sealed class Compiled(
+            SkyChunkGenerator.BlockIds? blocks,
+            SkyChunkGenerator.Settings settings) : ICompiledWorldGenerator
         {
             public IChunkSource Create(in WorldGeneratorBuildContext context) =>
                 blocks is null
-                    ? new SkyChunkGenerator(context.World, context.Seed)
-                    : new SkyChunkGenerator(context.World, context.Seed, blocks);
+                    ? new SkyChunkGenerator(
+                        context.World,
+                        context.Seed,
+                        SkyChunkGenerator.BlockIds.Resolve(context.World.Content.Blocks),
+                        settings)
+                    : new SkyChunkGenerator(context.World, context.Seed, blocks, settings);
         }
     }
 
@@ -139,17 +226,52 @@ public static class BuiltInWorldGeneratorProviders
             in WorldGeneratorCompileContext context)
         {
             var references = ReadBlockReferences(worldTypeId, "flat", definition);
-            if (references is null) return new Compiled(null);
+            var settings = ParseSettings(worldTypeId, definition);
+            if (references is null) return new Compiled(null, settings);
             var blocks = FlatChunkGenerator.BlockIds.Resolve(context.Blocks, references, worldTypeId);
-            return new Compiled(blocks);
+            return new Compiled(blocks, settings);
         }
 
-        private sealed class Compiled(FlatChunkGenerator.BlockIds? blocks) : ICompiledWorldGenerator
+        private static FlatChunkGenerator.Settings ParseSettings(
+            ResourceLocation worldTypeId,
+            JsonElement definition)
+        {
+            var parsed = definition.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null
+                ? new SettingsDefinition()
+                : definition.Deserialize<SettingsDefinition>() ?? new SettingsDefinition();
+            FlatChunkGenerator.Settings settings = new(
+                parsed.DungeonAttempts,
+                parsed.ClayAttempts,
+                parsed.DirtAttempts,
+                parsed.GravelAttempts,
+                parsed.CoalAttempts,
+                parsed.IronAttempts);
+            settings.Validate(worldTypeId);
+            return settings;
+        }
+
+        private sealed class SettingsDefinition
+        {
+            public int DungeonAttempts { get; init; } = 8;
+            public int ClayAttempts { get; init; } = 10;
+            public int DirtAttempts { get; init; } = 20;
+            public int GravelAttempts { get; init; } = 10;
+            public int CoalAttempts { get; init; } = 20;
+            public int IronAttempts { get; init; } = 20;
+        }
+
+        private sealed class Compiled(
+            FlatChunkGenerator.BlockIds? blocks,
+            FlatChunkGenerator.Settings settings) : ICompiledWorldGenerator
         {
             public IChunkSource Create(in WorldGeneratorBuildContext context) =>
                 blocks is null
-                    ? new FlatChunkGenerator(context.World, context.Options)
-                    : new FlatChunkGenerator(context.World, context.Options, blocks);
+                    ? new FlatChunkGenerator(
+                        context.World,
+                        context.Options,
+                        FlatChunkGenerator.BlockIds.Resolve(context.World.Content.Blocks),
+                        settings)
+                    : new FlatChunkGenerator(context.World, context.Options, blocks, settings);
         }
     }
 
@@ -165,17 +287,70 @@ public static class BuiltInWorldGeneratorProviders
                 "nether",
                 definition,
                 "Dimension generator profile");
-            if (references is null) return new Compiled(null);
+            var settings = ParseSettings(profileId, definition);
+            if (references is null) return new Compiled(null, settings);
             var blocks = NetherChunkGenerator.BlockIds.Resolve(context.Blocks, references, profileId);
-            return new Compiled(blocks);
+            return new Compiled(blocks, settings);
         }
 
-        private sealed class Compiled(NetherChunkGenerator.BlockIds? blocks) : ICompiledWorldGenerator
+        private static NetherChunkGenerator.Settings ParseSettings(
+            ResourceLocation profileId,
+            JsonElement definition)
+        {
+            var parsed = definition.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null
+                ? new NetherSettingsDefinition()
+                : definition.Deserialize<NetherSettingsDefinition>()
+                  ?? throw new InvalidOperationException(
+                      $"Dimension generator profile '{profileId}' has invalid nether settings.");
+            NetherChunkGenerator.Settings settings = new(
+                parsed.LavaLevel,
+                parsed.SurfaceLevel,
+                parsed.SurfaceNoiseScale,
+                parsed.HorizontalNoiseScale,
+                parsed.VerticalNoiseScale,
+                parsed.MinLimitOctaves,
+                parsed.MaxLimitOctaves,
+                parsed.SelectorOctaves,
+                parsed.SurfaceOctaves,
+                parsed.SurfaceDepthOctaves,
+                parsed.ScaleOctaves,
+                parsed.DepthOctaves,
+                parsed.LavaSpringAttempts,
+                parsed.GlowstoneClusterAttempts);
+            settings.Validate(profileId);
+            return settings;
+        }
+
+        private sealed class NetherSettingsDefinition
+        {
+            public int LavaLevel { get; init; } = 32;
+            public int SurfaceLevel { get; init; } = 64;
+            public double SurfaceNoiseScale { get; init; } = 1.0D / 32.0D;
+            public double HorizontalNoiseScale { get; init; } = 684.412D;
+            public double VerticalNoiseScale { get; init; } = 2053.236D;
+            public int MinLimitOctaves { get; init; } = 16;
+            public int MaxLimitOctaves { get; init; } = 16;
+            public int SelectorOctaves { get; init; } = 8;
+            public int SurfaceOctaves { get; init; } = 4;
+            public int SurfaceDepthOctaves { get; init; } = 4;
+            public int ScaleOctaves { get; init; } = 10;
+            public int DepthOctaves { get; init; } = 16;
+            public int LavaSpringAttempts { get; init; } = 8;
+            public int GlowstoneClusterAttempts { get; init; } = 10;
+        }
+
+        private sealed class Compiled(
+            NetherChunkGenerator.BlockIds? blocks,
+            NetherChunkGenerator.Settings settings) : ICompiledWorldGenerator
         {
             public IChunkSource Create(in WorldGeneratorBuildContext context) =>
                 blocks is null
-                    ? new NetherChunkGenerator(context.World, context.Seed)
-                    : new NetherChunkGenerator(context.World, context.Seed, blocks);
+                    ? new NetherChunkGenerator(
+                        context.World,
+                        context.Seed,
+                        NetherChunkGenerator.BlockIds.Resolve(context.World.Content.Blocks),
+                        settings)
+                    : new NetherChunkGenerator(context.World, context.Seed, blocks, settings);
         }
     }
 

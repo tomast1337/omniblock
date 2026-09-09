@@ -11,6 +11,20 @@
       "soulsand": "omniblock:soulsand",
       "brown_mushroom": "omniblock:brown_mushroom",
       "red_mushroom": "omniblock:red_mushroom"
-    }
+    },
+    "LavaLevel": 32,
+    "SurfaceLevel": 64,
+    "SurfaceNoiseScale": 0.03125,
+    "HorizontalNoiseScale": 684.412,
+    "VerticalNoiseScale": 2053.236,
+    "MinLimitOctaves": 16,
+    "MaxLimitOctaves": 16,
+    "SelectorOctaves": 8,
+    "SurfaceOctaves": 4,
+    "SurfaceDepthOctaves": 4,
+    "ScaleOctaves": 10,
+    "DepthOctaves": 16,
+    "LavaSpringAttempts": 8,
+    "GlowstoneClusterAttempts": 10
   }
 }

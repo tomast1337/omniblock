@@ -79,6 +79,29 @@ public sealed class WorldTypeBuilderTests
         Assert.Same(published, ContentRuntime.Current);
     }
 
+    [Theory]
+    [InlineData("omniblock:overworld", "MinLimitOctaves", 0)]
+    [InlineData("omniblock:overworld", "DungeonAttempts", -1)]
+    [InlineData("omniblock:sky", "HorizontalNoiseScale", 0)]
+    [InlineData("omniblock:sky", "IronAttempts", -1)]
+    [InlineData("omniblock:flat", "DungeonAttempts", -1)]
+    public void Invalid_numeric_generator_settings_fail_during_compilation(
+        string provider,
+        string setting,
+        int value)
+    {
+        var providers = BuiltInWorldGeneratorProviders.CreateRegistry();
+
+        var error = Assert.Throws<InvalidOperationException>(() => providers.Compile(
+            ResourceLocation.Parse(provider),
+            "example:invalid_settings",
+            GeneratorSettingsWithValue(provider, setting, value),
+            new WorldGeneratorCompileContext(ContentRuntime.Current.Blocks)));
+
+        Assert.Contains("example:invalid_settings", error.Message);
+        Assert.Contains(setting, error.Message);
+    }
+
     [Fact]
     public void Builders_create_independent_world_type_instances()
     {
@@ -110,7 +133,24 @@ public sealed class WorldTypeBuilderTests
         string provider,
         params (string Role, string Reference)[] replacements)
     {
-        string[] roles = provider switch
+        var roles = GeneratorRoles(provider);
+        var blocks = roles.ToDictionary(static role => role, static role => $"omniblock:{role}");
+        foreach (var (role, reference) in replacements) blocks[role] = reference;
+        return JsonSerializer.SerializeToElement(new { Blocks = blocks });
+    }
+
+    private static JsonElement GeneratorSettingsWithValue(
+        string provider,
+        string setting,
+        int value)
+    {
+        var blocks = GeneratorRoles(provider)
+            .ToDictionary(static role => role, static role => $"omniblock:{role}");
+        var settings = new Dictionary<string, object> { ["Blocks"] = blocks, [setting] = value };
+        return JsonSerializer.SerializeToElement(settings);
+    }
+
+    private static string[] GeneratorRoles(string provider) => provider switch
         {
             "omniblock:overworld" =>
             [
@@ -134,8 +174,4 @@ public sealed class WorldTypeBuilderTests
             ],
             _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, null)
         };
-        var blocks = roles.ToDictionary(static role => role, static role => $"omniblock:{role}");
-        foreach (var (role, reference) in replacements) blocks[role] = reference;
-        return JsonSerializer.SerializeToElement(new { Blocks = blocks });
-    }
 }

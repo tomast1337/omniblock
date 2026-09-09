@@ -22,7 +22,22 @@
       "brown_mushroom": "omniblock:brown_mushroom",
       "red_mushroom": "omniblock:red_mushroom",
       "snow": "omniblock:snow"
-    }
+    },
+    "MinLimitOctaves": 16,
+    "MaxLimitOctaves": 16,
+    "SelectorOctaves": 8,
+    "DepthOctaves": 4,
+    "FloatingScaleOctaves": 10,
+    "FloatingNoiseOctaves": 16,
+    "ForestOctaves": 8,
+    "HorizontalNoiseScale": 684.412,
+    "VerticalNoiseScale": 684.412,
+    "DungeonAttempts": 8,
+    "ClayAttempts": 10,
+    "DirtAttempts": 20,
+    "GravelAttempts": 10,
+    "CoalAttempts": 20,
+    "IronAttempts": 20
   },
   "IconPath": "/gui/world_types/sky.png",
   "CanBeCreated": true

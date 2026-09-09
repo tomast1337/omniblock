@@ -14,6 +14,7 @@ namespace OmniBlock.Worlds.Gen.Chunks;
 internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
 {
     private readonly BlockIds _blocks;
+    private readonly Settings _settings;
     private readonly BiomeSource _biomeSource;
     private readonly Carver _carver = new CaveCarver();
     private readonly OctavePerlinNoiseSampler _depthNoise;
@@ -56,12 +57,12 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
     private double[] _temperatures;
 
     public SkyChunkGenerator(IWorldContext world, long seed)
-        : this(world, seed, world.Dimension.BiomeSource, BlockIds.Resolve(world.Content.Blocks))
+        : this(world, seed, world.Dimension.BiomeSource, BlockIds.Resolve(world.Content.Blocks), Settings.Default)
     {
     }
 
-    internal SkyChunkGenerator(IWorldContext world, long seed, BlockIds blocks)
-        : this(world, seed, world.Dimension.BiomeSource, blocks)
+    internal SkyChunkGenerator(IWorldContext world, long seed, BlockIds blocks, Settings settings)
+        : this(world, seed, world.Dimension.BiomeSource, blocks, settings)
     {
     }
 
@@ -69,21 +70,24 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
         IWorldContext world,
         long seed,
         BiomeSource biomeSource,
-        BlockIds blocks) : base(world, seed)
+        BlockIds blocks,
+        Settings settings) : base(world, seed)
     {
         _blocks = blocks;
+        _settings = settings;
         _biomeSource = biomeSource;
-        _minLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
-        _maxLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
-        _selectorNoise = new OctavePerlinNoiseSampler(_random, 8);
-        _depthNoise = new OctavePerlinNoiseSampler(_random, 4);
-        _floatingIslandScale = new OctavePerlinNoiseSampler(_random, 10);
-        _floatingIslandNoise = new OctavePerlinNoiseSampler(_random, 16);
-        _forestNoise = new OctavePerlinNoiseSampler(_random, 8);
+        _minLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, settings.MinLimitOctaves);
+        _maxLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, settings.MaxLimitOctaves);
+        _selectorNoise = new OctavePerlinNoiseSampler(_random, settings.SelectorOctaves);
+        _depthNoise = new OctavePerlinNoiseSampler(_random, settings.DepthOctaves);
+        _floatingIslandScale = new OctavePerlinNoiseSampler(_random, settings.FloatingScaleOctaves);
+        _floatingIslandNoise = new OctavePerlinNoiseSampler(_random, settings.FloatingNoiseOctaves);
+        _forestNoise = new OctavePerlinNoiseSampler(_random, settings.ForestOctaves);
         InitFeatures();
     }
 
-    public IChunkSource CreateParallelInstance() => new SkyChunkGenerator(_world, _seed, _biomeSource.Clone(), _blocks);
+    public IChunkSource CreateParallelInstance() =>
+        new SkyChunkGenerator(_world, _seed, _biomeSource.Clone(), _blocks, _settings);
 
     public Chunk LoadChunk(int chunkX, int chunkZ) => GetChunk(chunkX, chunkZ);
 
@@ -136,7 +140,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
             }
         }
 
-        for (var i = 0; i < 8; ++i)
+        for (var i = 0; i < _settings.DungeonAttempts; ++i)
         {
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
@@ -144,7 +148,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
             _featureDungeon.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        for (var i = 0; i < 10; ++i)
+        for (var i = 0; i < _settings.ClayAttempts; ++i)
         {
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(128);
@@ -152,7 +156,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
             _featureClay.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        for (var i = 0; i < 20; ++i)
+        for (var i = 0; i < _settings.DirtAttempts; ++i)
         {
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(128);
@@ -160,7 +164,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
             _featureDirt.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        for (var i = 0; i < 10; ++i)
+        for (var i = 0; i < _settings.GravelAttempts; ++i)
         {
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(128);
@@ -168,7 +172,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
             _featureGravel.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        for (var i = 0; i < 20; ++i)
+        for (var i = 0; i < _settings.CoalAttempts; ++i)
         {
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(128);
@@ -176,7 +180,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
             _featureCoal.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        for (var i = 0; i < 20; ++i)
+        for (var i = 0; i < _settings.IronAttempts; ++i)
         {
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(64);
@@ -526,8 +530,8 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
     {
         heightMap ??= new double[sizeX * sizeY * sizeZ];
 
-        var horizontalScale = 684.412D;
-        var verticalScale = 684.412D;
+        var horizontalScale = _settings.HorizontalNoiseScale;
+        var verticalScale = _settings.VerticalNoiseScale;
         _scaleNoiseBuffer = _floatingIslandScale.Create(_scaleNoiseBuffer, x, z, sizeX, sizeZ, 1.121D, 1.121D, 0.5D);
         _depthNoiseBuffer = _floatingIslandNoise.Create(_depthNoiseBuffer, x, z, sizeX, sizeZ, 200.0D, 200.0D, 0.5D);
         horizontalScale *= 2.0D;
@@ -585,6 +589,60 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
         }
 
         return heightMap;
+    }
+
+    internal sealed record Settings(
+        int MinLimitOctaves,
+        int MaxLimitOctaves,
+        int SelectorOctaves,
+        int DepthOctaves,
+        int FloatingScaleOctaves,
+        int FloatingNoiseOctaves,
+        int ForestOctaves,
+        double HorizontalNoiseScale,
+        double VerticalNoiseScale,
+        int DungeonAttempts,
+        int ClayAttempts,
+        int DirtAttempts,
+        int GravelAttempts,
+        int CoalAttempts,
+        int IronAttempts)
+    {
+        public static Settings Default { get; } = new(
+            16, 16, 8, 4, 10, 16, 8, 684.412D, 684.412D, 8, 10, 20, 10, 20, 20);
+
+        public void Validate(ResourceLocation owner)
+        {
+            Positive(nameof(MinLimitOctaves), MinLimitOctaves);
+            Positive(nameof(MaxLimitOctaves), MaxLimitOctaves);
+            Positive(nameof(SelectorOctaves), SelectorOctaves);
+            Positive(nameof(DepthOctaves), DepthOctaves);
+            Positive(nameof(FloatingScaleOctaves), FloatingScaleOctaves);
+            Positive(nameof(FloatingNoiseOctaves), FloatingNoiseOctaves);
+            Positive(nameof(ForestOctaves), ForestOctaves);
+            Positive(nameof(HorizontalNoiseScale), HorizontalNoiseScale);
+            Positive(nameof(VerticalNoiseScale), VerticalNoiseScale);
+            NonNegative(nameof(DungeonAttempts), DungeonAttempts);
+            NonNegative(nameof(ClayAttempts), ClayAttempts);
+            NonNegative(nameof(DirtAttempts), DirtAttempts);
+            NonNegative(nameof(GravelAttempts), GravelAttempts);
+            NonNegative(nameof(CoalAttempts), CoalAttempts);
+            NonNegative(nameof(IronAttempts), IronAttempts);
+
+            void Positive(string name, double value)
+            {
+                if (!double.IsFinite(value) || value <= 0) Invalid(name, value, "must be finite and greater than zero");
+            }
+
+            void NonNegative(string name, int value)
+            {
+                if (value < 0) Invalid(name, value, "must not be negative");
+            }
+
+            void Invalid(string name, object value, string requirement) =>
+                throw new InvalidOperationException(
+                    $"World type '{owner}' sky setting '{name}' is {value} and {requirement}.");
+        }
     }
 
     // Deliberately separate from Overworld's palette: the two providers may evolve
