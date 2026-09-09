@@ -185,7 +185,7 @@ public sealed class GeneratedMessageTests
     // ---- inventory slots ----
 
     [Fact]
-    public void A_filled_slot_round_trips_and_costs_five_bytes()
+    public void A_filled_slot_round_trips_with_its_component_length()
     {
         ClickSlotMessage written = new()
         {
@@ -215,12 +215,11 @@ public sealed class GeneratedMessageTests
     }
 
     /// <summary>
-    ///     The two slot encodings differ by three bytes, which is what the hand-written packets got
-    ///     wrong: <c>ClickSlotC2SPacket</c> declared a constant eleven for a payload that is nine or
-    ///     twelve. A generated size is measured, not declared.
+    ///     A component-free filled slot adds its ID, count, damage and an empty component-length
+    ///     prefix. A generated size is measured, not declared.
     /// </summary>
     [Fact]
-    public void An_empty_slot_costs_three_bytes_less_than_a_filled_one()
+    public void A_filled_slot_includes_an_empty_component_payload_marker()
     {
         ClickSlotMessage empty = new();
         ClickSlotMessage filled = new()
@@ -230,7 +229,7 @@ public sealed class GeneratedMessageTests
 
         Assert.Equal(Serialise(empty).Length, empty.Size());
         Assert.Equal(Serialise(filled).Length, filled.Size());
-        Assert.Equal(3, filled.Size() - empty.Size());
+        Assert.Equal(4, filled.Size() - empty.Size());
     }
 
     // ---- the four position packets, collapsed ----
@@ -411,8 +410,8 @@ public sealed class GeneratedMessageTests
 
         Assert.Equal(bytes.Length, message.Size());
 
-        // One byte of sync id, one varint of count, then 5 + 2 + 2 + 5.
-        Assert.Equal(1 + 1 + 5 + 2 + 2 + 5, bytes.Length);
+        // One byte of sync id, one varint of count, then 6 + 2 + 2 + 6.
+        Assert.Equal(1 + 1 + 6 + 2 + 2 + 6, bytes.Length);
     }
 
     [Fact]

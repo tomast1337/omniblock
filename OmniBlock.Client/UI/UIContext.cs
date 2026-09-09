@@ -5,6 +5,7 @@ using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.Rendering.UI;
 using OmniBlock.Client.UI.Screens;
 using OmniBlock.Registries;
+using OmniBlock.Worlds.Core;
 using Silk.NET.Maths;
 
 namespace OmniBlock.Client.UI;
@@ -24,6 +25,7 @@ public sealed class UIContext(
     Timer timer,
     IScreenNavigator navigator,
     Func<bool> hasWorld,
+    Func<World?> world,
     Func<Vector2D<int>> mouseOffset,
     Func<Vector2D<int>>? renderTargetSize,
     ContentRuntime content
@@ -40,6 +42,7 @@ public sealed class UIContext(
     public Timer Timer => timer;
     public IScreenNavigator Navigator => navigator;
     public bool HasWorld => hasWorld();
+    public World? World => world();
 
     public int DisplayWidth => displaySize().X;
     public int DisplayHeight => displaySize().Y;

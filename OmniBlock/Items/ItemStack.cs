@@ -8,7 +8,10 @@ namespace OmniBlock.Items;
 
 public class ItemStack
 {
+    public const int MaxSerializedComponentBytes = 16 * 1024;
+
     private readonly Item _item;
+    private NBTTagCompound _components = new();
     private int _damage;
     public int AnimationTime;
     public int Count;
@@ -50,12 +53,15 @@ public class ItemStack
         _item = items.GetByProtocolId(ItemId);
         Count = nbt.GetByte("Count");
         _damage = nbt.GetShort("Damage");
+        if (nbt.HasKey("Components")) _components = Normalize(nbt.GetCompoundTag("Components"));
     }
 
     public ItemStack Split(int splitAmount)
     {
         Count -= splitAmount;
-        return new ItemStack(_item, splitAmount, _damage);
+        var split = new ItemStack(_item, splitAmount, _damage);
+        split._components = CloneComponents();
+        return split;
     }
 
     public Item GetItem() => _item;
@@ -82,6 +88,7 @@ public class ItemStack
         nbt.SetShort("id", (short)ItemId);
         nbt.SetByte("Count", (sbyte)Count);
         nbt.SetShort("Damage", (short)_damage);
+        if (_components.Dictionary.Count != 0) nbt.SetCompoundTag("Components", CloneComponents());
         return nbt;
     }
 
@@ -92,6 +99,9 @@ public class ItemStack
             throw new InvalidOperationException("An item stack cannot be rebound to a different runtime item.");
         Count = nbt.GetByte("Count");
         _damage = nbt.GetShort("Damage");
+        _components = nbt.HasKey("Components")
+            ? Normalize(nbt.GetCompoundTag("Components"))
+            : new NBTTagCompound();
     }
 
     public int GetMaxCount() => GetItem().GetMaxCount();
@@ -209,13 +219,76 @@ public class ItemStack
 
     public void useOnEntity(EntityLiving entityLiving, EntityPlayer entityPlayer) => _item.useOnEntity(this, entityLiving, entityPlayer);
 
-    public ItemStack Copy() => new(_item, Count, _damage);
+    public ItemStack Copy()
+    {
+        var copy = new ItemStack(_item, Count, _damage);
+        copy._components = CloneComponents();
+        return copy;
+    }
 
     public static bool AreEqual(ItemStack? a, ItemStack? b) => (a == null && b == null) || (a != null && b != null && a.Equals2(b));
 
-    private bool Equals2(ItemStack itemStack) => Count == itemStack.Count && ItemId == itemStack.ItemId && _damage == itemStack._damage;
+    private bool Equals2(ItemStack itemStack) =>
+        Count == itemStack.Count
+        && ItemId == itemStack.ItemId
+        && _damage == itemStack._damage
+        && SerializeComponents().AsSpan().SequenceEqual(itemStack.SerializeComponents());
 
-    public bool IsItemEqual(ItemStack itemStack) => ItemId == itemStack.ItemId && _damage == itemStack._damage;
+    public bool IsItemEqual(ItemStack itemStack) =>
+        ItemId == itemStack.ItemId
+        && _damage == itemStack._damage
+        && SerializeComponents().AsSpan().SequenceEqual(itemStack.SerializeComponents());
+
+    public bool HasComponent(ResourceLocation key) => _components.HasKey(key.ToString());
+
+    public string GetStringComponent(ResourceLocation key) => _components.GetString(key.ToString());
+
+    public void SetStringComponent(ResourceLocation key, string value)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(value);
+        _components.SetString(key.ToString(), value);
+    }
+
+    public bool RemoveComponent(ResourceLocation key) => _components.RemoveTag(key.ToString());
+
+    internal byte[] SerializeComponents()
+    {
+        if (_components.Dictionary.Count == 0) return [];
+        NBTTagCompound canonical = new();
+        foreach (var (key, value) in _components.Dictionary.OrderBy(entry => entry.Key, StringComparer.Ordinal))
+            canonical.SetTag(key, value);
+        using MemoryStream stream = new();
+        NbtIo.Write(canonical, stream);
+        var bytes = stream.ToArray();
+        if (bytes.Length > MaxSerializedComponentBytes)
+            throw new InvalidOperationException($"Item stack components exceed {MaxSerializedComponentBytes} bytes.");
+        return bytes;
+    }
+
+    internal void ReadSerializedComponents(byte[] bytes)
+    {
+        ArgumentNullException.ThrowIfNull(bytes);
+        if (bytes.Length > MaxSerializedComponentBytes)
+            throw new InvalidDataException($"Item stack components exceed {MaxSerializedComponentBytes} bytes.");
+        _components = bytes.Length == 0
+            ? new NBTTagCompound()
+            : Normalize(NbtIo.Read(new MemoryStream(bytes, writable: false)));
+    }
+
+    private NBTTagCompound CloneComponents()
+    {
+        var bytes = SerializeComponents();
+        return bytes.Length == 0
+            ? new NBTTagCompound()
+            : Normalize(NbtIo.Read(new MemoryStream(bytes, writable: false)));
+    }
+
+    private static NBTTagCompound Normalize(NBTTagCompound components)
+    {
+        components.Key = string.Empty;
+        return components;
+    }
 
     public string GetItemName() => _item.GetItemNameIs(this);
 

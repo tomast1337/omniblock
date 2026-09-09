@@ -1,4 +1,5 @@
 using OmniBlock.Blocks;
+using OmniBlock.Blocks.Entities;
 using OmniBlock.Entities;
 using OmniBlock.Worlds.Core.Systems;
 
@@ -39,6 +40,12 @@ internal sealed class PlaceBlockBehavior : IItemBehavior
         {
             if (world.Writer.SetBlock(x, y, z, BlockId))
             {
+                if (block.HasBlockEntity
+                    && world.Entities.GetBlockEntity<BlockEntity>(x, y, z) is IBlockEntityItemData itemData)
+                {
+                    itemData.ApplyItemData(itemStack);
+                }
+
                 block.OnPlaced(new OnPlacedEvent(world, player, meta.ToSide(), meta.ToSide(), x, y, z));
                 world.Broadcaster.PlaySoundAtEntity(player, block.SoundGroup.StepSound, (block.SoundGroup.Volume + 1.0F) / 2.0F, block.SoundGroup.Pitch * 0.8F);
                 itemStack.ConsumeItem(player);

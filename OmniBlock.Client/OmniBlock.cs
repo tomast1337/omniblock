@@ -548,6 +548,7 @@ public partial class OmniBlock :
             Timer,
             this,
             () => World != null,
+            () => World,
             () => new Vector2D<int>((int)DebugViewportOffset.X, (int)DebugViewportOffset.Y),
             () =>
             {

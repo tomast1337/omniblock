@@ -10,6 +10,7 @@ using OmniBlock.Client.Rendering.Items;
 using OmniBlock.Client.Rendering.UI;
 using OmniBlock.Entities;
 using OmniBlock.Items;
+using OmniBlock.Worlds.Core;
 using Silk.NET.Maths;
 using SixLabors.Fonts;
 using Color = OmniBlock.Client.UI.Colors.Color;
@@ -35,6 +36,7 @@ public class UIRenderer
         };
 
     private readonly ItemRenderer _itemRenderer;
+    private readonly ClientItemPreviewRegistry _itemPreviews;
     private readonly Stack<(bool Enabled, int X, int Y, int W, int H)> _scissorStack = new();
     private readonly Stack<Vector2D<float>> _translationStack = new();
     private uint _currentTint = 0xFFFFFFFF;
@@ -49,6 +51,7 @@ public class UIRenderer
     {
         Context = context;
         _itemRenderer = new ItemRenderer(context.Content.Blocks);
+        _itemPreviews = new ClientItemPreviewRegistry(context.Content);
     }
     public UIContext Context { get; }
 
@@ -423,6 +426,7 @@ public class UIRenderer
 
         if (isBlock)
         {
+            DrawCompositeItemContents(stack, x, y);
             _batch.Flush();
             GLManager.ModelView.Push();
             GLManager.ModelView.Translate(0, 0, 32.0f);
@@ -461,6 +465,18 @@ public class UIRenderer
         }
     }
 
+    private void DrawCompositeItemContents(ItemStack stack, float x, float y)
+    {
+        var world = Context.World;
+        if (world is null || !_itemPreviews.TryGetEntityPreview(stack, world, out var preview)) return;
+
+        // Composite contents are drawn first, then the block shell in DrawItem. Cutout pixels leave
+        // the contents visible while solid bars/details remain in front of them.
+        var centerX = x + preview.CenterX;
+        var baselineY = y + preview.BaselineY;
+        DrawEntity(preview.Entity, centerX, baselineY, preview.Scale, centerX, baselineY - 50, preview.Depth);
+    }
+
     public void DrawItemOverlay(ItemStack? stack, float x, float y)
     {
         if (stack == null)
@@ -491,13 +507,13 @@ public class UIRenderer
         }
     }
 
-    public void DrawEntity(Entity entity, float x, float y, float scale, float mouseX, float mouseY)
+    public void DrawEntity(Entity entity, float x, float y, float scale, float mouseX, float mouseY, float depth = 50.0F)
     {
         _batch.Flush();
 
         GLManager.State.Apply(s_preview);
         GLManager.ModelView.Push();
-        GLManager.ModelView.Translate(x + _translateX, y + _translateY, 50.0F);
+        GLManager.ModelView.Translate(x + _translateX, y + _translateY, depth);
 
         GLManager.ModelView.Scale(-scale, scale, scale);
         GLManager.ModelView.Rotate(180.0F, 0.0F, 0.0F, 1.0F);

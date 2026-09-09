@@ -80,8 +80,8 @@ internal static class StreamExtensions
         + value.Path.Length;
 
     /// <summary>
-    ///     Bytes <see cref="Stream.WriteItemStack" /> will emit. Two for an empty slot, five for a
-    ///     filled one.
+    ///     Bytes <see cref="Stream.WriteItemStack" /> will emit. Two for an empty slot; a filled
+    ///     slot has five fixed bytes plus a bounded length-prefixed component payload.
     ///     <para>
     ///         Hand-written packets carrying a stack got this wrong in both directions —
     ///         <c>ClickSlotC2SPacket</c> declared eleven bytes for a payload that is nine or twelve,
@@ -90,11 +90,16 @@ internal static class StreamExtensions
     ///         under an envelope that does.
     ///     </para>
     /// </summary>
-    public static int ItemStackSize(ItemStack? value) => value is null ? 2 : 5;
+    public static int ItemStackSize(ItemStack? value)
+    {
+        if (value is null) return 2;
+        var components = value.SerializeComponents();
+        return 5 + VarIntSize(components.Length) + components.Length;
+    }
 
     /// <summary>
     ///     Bytes <see cref="Stream.WriteItemStacks" /> will emit: a varint count, then two bytes per
-    ///     empty slot and five per filled one.
+    ///     empty slot and the measured size of every filled slot and its components.
     ///     <para>
     ///         Measured rather than assumed, which is the whole difference from the packet this
     ///         replaces: <c>InventoryS2CPacket</c> charged five bytes for every slot including the
@@ -427,6 +432,7 @@ internal static class StreamExtensions
             stream.WriteShort((short)value.ItemId);
             stream.WriteByte((byte)value.Count);
             stream.WriteShort((short)value.GetDamage());
+            stream.WriteByteArray(value.SerializeComponents());
         }
 
         /// <summary>Writes a run of slots, length-prefixed.</summary>
@@ -482,7 +488,9 @@ internal static class StreamExtensions
             var count = (sbyte)stream.ReadByte();
             var damage = stream.ReadShort();
 
-            return new ItemStack(items, itemId, count, damage);
+            var stack = new ItemStack(items, itemId, count, damage);
+            stack.ReadSerializedComponents(stream.ReadByteArray(ItemStack.MaxSerializedComponentBytes));
+            return stack;
         }
 
         /// <summary>

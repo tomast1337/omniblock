@@ -1,4 +1,5 @@
 using OmniBlock.Blocks;
+using OmniBlock.Blocks.Entities;
 using OmniBlock.Entities;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core.Systems;
@@ -86,6 +87,12 @@ internal class ItemBlock : Item
         if (!world.Writer.SetBlockWithoutCallingOnPlaced(x, y, z, BlockId, placementMeta))
         {
             return true;
+        }
+
+        if (block.HasBlockEntity
+            && world.Entities.GetBlockEntity<BlockEntity>(x, y, z) is IBlockEntityItemData itemData)
+        {
+            itemData.ApplyItemData(itemStack);
         }
 
         block.OnPlaced(new OnPlacedEvent(world, entityPlayer, meta.ToSide(), meta.ToSide(), x, y, z));

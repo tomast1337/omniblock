@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using OmniBlock.Entities;
+using OmniBlock.Items;
 using OmniBlock.NBT;
 using OmniBlock.Network.Messages;
 using OmniBlock.Util.Maths;
@@ -7,8 +8,11 @@ using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Blocks.Entities;
 
-public class BlockEntityMobSpawner : BlockEntity
+public class BlockEntityMobSpawner : BlockEntity, IBlockEntityItemData
 {
+    public static readonly ResourceLocation SpawnedEntityComponent =
+        new(Namespace.Get("omniblock"), "spawner_entity_type");
+
     private readonly ILogger<BlockEntityMobSpawner> _logger = Log.Instance.For<BlockEntityMobSpawner>();
     private string _spawnedEntityId = "Pig";
 
@@ -36,6 +40,12 @@ public class BlockEntityMobSpawner : BlockEntity
         Z = Z,
         EntityTypeId = _spawnedEntityId
     };
+
+    public void ApplyItemData(ItemStack stack)
+    {
+        var entityType = stack.GetStringComponent(SpawnedEntityComponent);
+        if (!string.IsNullOrWhiteSpace(entityType)) SetSpawnedEntityId(entityType);
+    }
 
     private bool IsPlayerInRange() => World!.Entities.GetClosestPlayer(X + 0.5D, Y + 0.5D, Z + 0.5D, 16.0D) != null;
 
