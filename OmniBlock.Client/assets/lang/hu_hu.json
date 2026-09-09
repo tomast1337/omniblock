@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Csirke" },
+            "cow": { "name": "Tehén" },
+            "creeper": { "name": "Creeper" },
+            "ghast": { "name": "Ghast" },
+            "giant": { "name": "Óriás" },
+            "pig": { "name": "Malac" },
+            "pigzombie": { "name": "Zombimalac" },
+            "sheep": { "name": "Bárány" },
+            "skeleton": { "name": "Csontváz" },
+            "slime": { "name": "Nyálka" },
+            "spider": { "name": "Pók" },
+            "squid": { "name": "Tintahal" },
+            "wolf": { "name": "Farkas" },
+            "zombie": { "name": "Zombi" }
+        }
+    },
     "gui": {
         "joinServer": "Csatlakozás a szerverhez",
         "rename": "Átnevezés",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "Szörnykeltő",
+            "configuredName": "%1$s-idéző",
             "desc": ""
         },
         "stairsWood": {

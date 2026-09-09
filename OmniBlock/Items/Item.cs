@@ -230,6 +230,9 @@ public class Item
         return _translationKey;
     }
 
+    public virtual string GetDisplayName(ItemStack itemStack) =>
+        Translations.GetNamed(GetItemNameIs(itemStack));
+
     public Item SetCraftingReturnItem(Item item)
     {
         EnsureMutable();

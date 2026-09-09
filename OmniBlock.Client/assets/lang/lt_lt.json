@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Višta" },
+            "cow": { "name": "Karvė" },
+            "creeper": { "name": "Creeperis" },
+            "ghast": { "name": "Ghastas" },
+            "giant": { "name": "Milžinas" },
+            "pig": { "name": "Kiaulė" },
+            "pigzombie": { "name": "Kiaulė zombis" },
+            "sheep": { "name": "Avis" },
+            "skeleton": { "name": "Skeletas" },
+            "slime": { "name": "Gleivė" },
+            "spider": { "name": "Voras" },
+            "squid": { "name": "Kalmaras" },
+            "wolf": { "name": "Vilkas" },
+            "zombie": { "name": "Zombis" }
+        }
+    },
     "gui": {
         "joinServer": "Prisijungti prie serverio",
         "rename": "Pervadinti",
@@ -551,6 +569,7 @@
         },
         "mobSpawner": {
             "name": "Monstrų generatorius",
+            "configuredName": "%1$s atsiradimo generatorius",
             "desc": ""
         },
         "stairsWood": {

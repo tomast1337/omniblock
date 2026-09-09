@@ -95,6 +95,22 @@ public class Translations
 
     public static string GetNamed(string key) => Get($"{key}.name");
 
+    /// <summary>Uses the selected language, then the default language, then the supplied fallback.</summary>
+    public static string GetOrDefault(string key, string fallback)
+    {
+        if (Instance.CurrentLanguage?.TryGet(key, out var current) == true) return current;
+        if (Instance.DefaultLanguage?.TryGet(key, out var @default) == true) return @default;
+        return fallback;
+    }
+
+    public static string GetFormatOrDefault(string key, string fallback, params object[] values)
+    {
+        var value = GetOrDefault(key, fallback);
+        for (var i = 0; i < values.Length; i++)
+            value = value.Replace($"%{i + 1}$s", values[i]?.ToString() ?? string.Empty);
+        return value;
+    }
+
     public static void SwitchLanguage(string lang)
     {
         if (!Instance.Languages.TryGetValue(lang, out var language)) return;

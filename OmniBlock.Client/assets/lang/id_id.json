@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Ayam" },
+            "cow": { "name": "Sapi" },
+            "creeper": { "name": "Creeper" },
+            "ghast": { "name": "Ghast" },
+            "giant": { "name": "Raksasa" },
+            "pig": { "name": "Babi" },
+            "pigzombie": { "name": "Babi zombi" },
+            "sheep": { "name": "Domba" },
+            "skeleton": { "name": "Kerangka" },
+            "slime": { "name": "Slime" },
+            "spider": { "name": "Laba-laba" },
+            "squid": { "name": "Cumi-cumi" },
+            "wolf": { "name": "Serigala" },
+            "zombie": { "name": "Zombi" }
+        }
+    },
     "gui": {
         "joinServer": "Bergabung ke Server",
         "rename": "Ganti Nama",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "Pembuat Monster",
+            "configuredName": "Spawner %1$s",
             "desc": ""
         },
         "stairsWood": {

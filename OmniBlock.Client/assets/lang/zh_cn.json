@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "鸡" },
+            "cow": { "name": "牛" },
+            "creeper": { "name": "苦力怕" },
+            "ghast": { "name": "恶魂" },
+            "giant": { "name": "巨人" },
+            "pig": { "name": "猪" },
+            "pigzombie": { "name": "僵尸猪人" },
+            "sheep": { "name": "羊" },
+            "skeleton": { "name": "骷髅" },
+            "slime": { "name": "史莱姆" },
+            "spider": { "name": "蜘蛛" },
+            "squid": { "name": "鱿鱼" },
+            "wolf": { "name": "狼" },
+            "zombie": { "name": "僵尸" }
+        }
+    },
     "gui": {
         "joinServer": "加入服务器",
         "rename": "重命名",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "刷怪笼",
+            "configuredName": "%1$s生成器",
             "desc": ""
         },
         "stairsWood": {

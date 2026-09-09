@@ -47,6 +47,25 @@ public class BlockEntityMobSpawner : BlockEntity, IBlockEntityItemData
         if (!string.IsNullOrWhiteSpace(entityType)) SetSpawnedEntityId(entityType);
     }
 
+    public string GetItemDisplayName(ItemStack stack, string defaultDisplayName)
+    {
+        var targetName = stack.GetStringComponent(SpawnedEntityComponent);
+        if (string.IsNullOrWhiteSpace(targetName)) targetName = "omniblock:pig";
+        if (!ResourceLocation.TryParse(targetName.ToLowerInvariant(), out var target) || target is null)
+            return defaultDisplayName;
+
+        var fallbackEntityName = string.Join(' ', target.Path
+            .Split(['_', '-', '.'], StringSplitOptions.RemoveEmptyEntries)
+            .Select(word => char.ToUpperInvariant(word[0]) + word[1..]));
+        var entityName = Translations.GetOrDefault(
+            $"entity.{target.Namespace}.{target.Path}.name",
+            fallbackEntityName);
+        return Translations.GetFormatOrDefault(
+            "tile.mobSpawner.configuredName",
+            "%1$s Spawner",
+            entityName);
+    }
+
     private bool IsPlayerInRange() => World!.Entities.GetClosestPlayer(X + 0.5D, Y + 0.5D, Z + 0.5D, 16.0D) != null;
 
     public override void Tick(EntityManager entities)

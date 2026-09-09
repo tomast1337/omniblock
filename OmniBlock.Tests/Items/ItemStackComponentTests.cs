@@ -85,4 +85,17 @@ public sealed class ItemStackComponentTests
         Assert.NotNull(placed);
         Assert.Equal("omniblock:skeleton", placed.GetSpawnedEntityId());
     }
+
+    [Theory]
+    [InlineData(null, "Pig Spawner")]
+    [InlineData("omniblock:skeleton", "Skeleton Spawner")]
+    [InlineData("example:clockwork_golem", "Clockwork Golem Spawner")]
+    public void Spawner_display_name_reflects_its_configured_entity(string? entityType, string expected)
+    {
+        ItemStack stack = new(ContentRuntime.Current.Items.Get("omniblock:spawner"));
+        if (entityType is not null)
+            stack.SetStringComponent(BlockEntityMobSpawner.SpawnedEntityComponent, entityType);
+
+        Assert.Equal(expected, stack.GetDisplayName());
+    }
 }

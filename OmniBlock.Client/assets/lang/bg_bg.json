@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Кокошка" },
+            "cow": { "name": "Крава" },
+            "creeper": { "name": "Крийпър" },
+            "ghast": { "name": "Гаст" },
+            "giant": { "name": "Гигант" },
+            "pig": { "name": "Прасе" },
+            "pigzombie": { "name": "Зомби прасе" },
+            "sheep": { "name": "Овца" },
+            "skeleton": { "name": "Скелет" },
+            "slime": { "name": "Слуз" },
+            "spider": { "name": "Паяк" },
+            "squid": { "name": "Калмар" },
+            "wolf": { "name": "Вълк" },
+            "zombie": { "name": "Зомби" }
+        }
+    },
     "gui": {
         "joinServer": "Присъединяване към сървъра",
         "rename": "Преименуване",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "Спаунер на чудовища",
+            "configuredName": "Спаунър на %1$s",
             "desc": ""
         },
         "stairsWood": {

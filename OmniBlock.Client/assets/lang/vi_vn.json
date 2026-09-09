@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Gà" },
+            "cow": { "name": "Bò" },
+            "creeper": { "name": "Creeper" },
+            "ghast": { "name": "Ghast" },
+            "giant": { "name": "Người khổng lồ" },
+            "pig": { "name": "Lợn" },
+            "pigzombie": { "name": "Người lợn thây ma" },
+            "sheep": { "name": "Cừu" },
+            "skeleton": { "name": "Bộ xương" },
+            "slime": { "name": "Slime" },
+            "spider": { "name": "Nhện" },
+            "squid": { "name": "Mực" },
+            "wolf": { "name": "Sói" },
+            "zombie": { "name": "Thây ma" }
+        }
+    },
     "gui": {
         "joinServer": "Tham gia máy chủ",
         "rename": "Đổi tên",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "Lồng sinh Quái vật",
+            "configuredName": "Lồng sinh %1$s",
             "desc": ""
         },
         "stairsWood": {

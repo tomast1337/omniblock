@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Κότα" },
+            "cow": { "name": "Αγελάδα" },
+            "creeper": { "name": "Creeper" },
+            "ghast": { "name": "Ghast" },
+            "giant": { "name": "Γίγαντας" },
+            "pig": { "name": "Γουρούνι" },
+            "pigzombie": { "name": "Γουρουνοζόμπι" },
+            "sheep": { "name": "Πρόβατο" },
+            "skeleton": { "name": "Σκελετός" },
+            "slime": { "name": "Γλίτσα" },
+            "spider": { "name": "Αράχνη" },
+            "squid": { "name": "Καλαμάρι" },
+            "wolf": { "name": "Λύκος" },
+            "zombie": { "name": "Ζόμπι" }
+        }
+    },
     "gui": {
         "joinServer": "Σύνδεση σε Διακομιστή",
         "rename": "Μετονομασία",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "Εκκολαπτήρας Τεράτων",
+            "configuredName": "Γεννήτρια %1$s",
             "desc": ""
         },
         "stairsWood": {

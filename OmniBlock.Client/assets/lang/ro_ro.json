@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Găină" },
+            "cow": { "name": "Vacă" },
+            "creeper": { "name": "Creeper" },
+            "ghast": { "name": "Ghast" },
+            "giant": { "name": "Uriaș" },
+            "pig": { "name": "Porc" },
+            "pigzombie": { "name": "Porc zombi" },
+            "sheep": { "name": "Oaie" },
+            "skeleton": { "name": "Schelet" },
+            "slime": { "name": "Slime" },
+            "spider": { "name": "Păianjen" },
+            "squid": { "name": "Calmar" },
+            "wolf": { "name": "Lup" },
+            "zombie": { "name": "Zombi" }
+        }
+    },
     "gui": {
         "joinServer": "Conectare la server",
         "rename": "Redenumește",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "Generator de monștri",
+            "configuredName": "Generator de %1$s",
             "desc": ""
         },
         "stairsWood": {

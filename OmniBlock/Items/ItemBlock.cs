@@ -9,10 +9,12 @@ namespace OmniBlock.Items;
 internal class ItemBlock : Item
 {
     protected readonly Block Block;
+    private readonly IBlockEntityItemData? _itemData;
 
     public ItemBlock(Block block) : base(block.Id - 256)
     {
         Block = block;
+        _itemData = block.GetBlockEntity() as IBlockEntityItemData;
         SetTextureId(block.GetTexture(2.ToSide()));
     }
 
@@ -105,4 +107,10 @@ internal class ItemBlock : Item
     public override string GetItemNameIs(ItemStack itemStack) => Block.BlockName;
 
     public override string GetItemName() => Block.BlockName;
+
+    public override string GetDisplayName(ItemStack itemStack)
+    {
+        var defaultName = base.GetDisplayName(itemStack);
+        return _itemData?.GetItemDisplayName(itemStack, defaultName) ?? defaultName;
+    }
 }

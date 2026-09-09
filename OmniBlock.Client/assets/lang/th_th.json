@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "ไก่" },
+            "cow": { "name": "วัว" },
+            "creeper": { "name": "ครีปเปอร์" },
+            "ghast": { "name": "แกสต์" },
+            "giant": { "name": "ยักษ์" },
+            "pig": { "name": "หมู" },
+            "pigzombie": { "name": "ซอมบี้หมู" },
+            "sheep": { "name": "แกะ" },
+            "skeleton": { "name": "โครงกระดูก" },
+            "slime": { "name": "สไลม์" },
+            "spider": { "name": "แมงมุม" },
+            "squid": { "name": "ปลาหมึก" },
+            "wolf": { "name": "หมาป่า" },
+            "zombie": { "name": "ซอมบี้" }
+        }
+    },
     "gui": {
         "joinServer": "เข้าร่วมเซิร์ฟเวอร์",
         "rename": "เปลี่ยนชื่อ",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "เครื่องสร้างมอนสเตอร์",
+            "configuredName": "กรงเกิด%1$s",
             "desc": ""
         },
         "stairsWood": {

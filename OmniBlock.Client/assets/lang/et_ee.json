@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Kana" },
+            "cow": { "name": "Lehm" },
+            "creeper": { "name": "Creeper" },
+            "ghast": { "name": "Ghast" },
+            "giant": { "name": "Hiiglane" },
+            "pig": { "name": "Siga" },
+            "pigzombie": { "name": "Zombisiga" },
+            "sheep": { "name": "Lammas" },
+            "skeleton": { "name": "Luukere" },
+            "slime": { "name": "Limakuubik" },
+            "spider": { "name": "Ämblik" },
+            "squid": { "name": "Kalmaar" },
+            "wolf": { "name": "Hunt" },
+            "zombie": { "name": "Zombi" }
+        }
+    },
     "gui": {
         "joinServer": "Liitu serveriga",
         "rename": "Nimeta ümber",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "Koletise tekitaja",
+            "configuredName": "%1$s tekitaja",
             "desc": ""
         },
         "stairsWood": {

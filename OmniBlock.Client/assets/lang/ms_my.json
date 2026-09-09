@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Ayam" },
+            "cow": { "name": "Lembu" },
+            "creeper": { "name": "Creeper" },
+            "ghast": { "name": "Ghast" },
+            "giant": { "name": "Gergasi" },
+            "pig": { "name": "Babi" },
+            "pigzombie": { "name": "Babi zombi" },
+            "sheep": { "name": "Biri-biri" },
+            "skeleton": { "name": "Rangka" },
+            "slime": { "name": "Lendir" },
+            "spider": { "name": "Labah-labah" },
+            "squid": { "name": "Sotong" },
+            "wolf": { "name": "Serigala" },
+            "zombie": { "name": "Zombi" }
+        }
+    },
     "gui": {
         "joinServer": "Sertai Pelayan",
         "rename": "Tukar Nama",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "Pembiak Monster",
+            "configuredName": "Penjana %1$s",
             "desc": ""
         },
         "stairsWood": {

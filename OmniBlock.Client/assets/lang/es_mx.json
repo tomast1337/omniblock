@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Pollo" },
+            "cow": { "name": "Vaca" },
+            "creeper": { "name": "Creeper" },
+            "ghast": { "name": "Ghast" },
+            "giant": { "name": "Gigante" },
+            "pig": { "name": "Cerdo" },
+            "pigzombie": { "name": "Hombre cerdo zombi" },
+            "sheep": { "name": "Oveja" },
+            "skeleton": { "name": "Esqueleto" },
+            "slime": { "name": "Slime" },
+            "spider": { "name": "Araña" },
+            "squid": { "name": "Calamar" },
+            "wolf": { "name": "Lobo" },
+            "zombie": { "name": "Zombi" }
+        }
+    },
     "gui": {
         "joinServer": "Unirse al servidor",
         "rename": "Renombrar",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "Generador de monstruos",
+            "configuredName": "Generador de %1$s",
             "desc": ""
         },
         "stairsWood": {

@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Vista" },
+            "cow": { "name": "Govs" },
+            "creeper": { "name": "Krīpers" },
+            "ghast": { "name": "Gasts" },
+            "giant": { "name": "Milzis" },
+            "pig": { "name": "Cūka" },
+            "pigzombie": { "name": "Zombijcūka" },
+            "sheep": { "name": "Aita" },
+            "skeleton": { "name": "Skelets" },
+            "slime": { "name": "Gļota" },
+            "spider": { "name": "Zirneklis" },
+            "squid": { "name": "Kalmārs" },
+            "wolf": { "name": "Vilks" },
+            "zombie": { "name": "Zombijs" }
+        }
+    },
     "gui": {
         "joinServer": "Pievienoties serverim",
         "rename": "Pārdēvēt",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "Briesmoņu radītājs",
+            "configuredName": "%1$s radītājs",
             "desc": ""
         },
         "stairsWood": {

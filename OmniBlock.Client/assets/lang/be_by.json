@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Курыца" },
+            "cow": { "name": "Карова" },
+            "creeper": { "name": "Крыпер" },
+            "ghast": { "name": "Гаст" },
+            "giant": { "name": "Волат" },
+            "pig": { "name": "Свіння" },
+            "pigzombie": { "name": "Свінозомбі" },
+            "sheep": { "name": "Авечка" },
+            "skeleton": { "name": "Шкілет" },
+            "slime": { "name": "Слізень" },
+            "spider": { "name": "Павук" },
+            "squid": { "name": "Спрут" },
+            "wolf": { "name": "Воўк" },
+            "zombie": { "name": "Зомбі" }
+        }
+    },
     "gui": {
         "joinServer": "Далучыцца да сервера",
         "rename": "Перайменаваць",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "Спаўнер мобаў",
+            "configuredName": "Спаўнер: %1$s",
             "desc": ""
         },
         "stairsWood": {

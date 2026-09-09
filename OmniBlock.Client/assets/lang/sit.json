@@ -1,4 +1,22 @@
 {
+  "entity": {
+    "omniblock": {
+      "chicken": { "name": "Chicken" },
+      "cow": { "name": "Cow" },
+      "creeper": { "name": "Creeper" },
+      "ghast": { "name": "Ghast" },
+      "giant": { "name": "Giant" },
+      "pig": { "name": "Pig" },
+      "pigzombie": { "name": "Zombie Pigman" },
+      "sheep": { "name": "Sheep" },
+      "skeleton": { "name": "Skeleton" },
+      "slime": { "name": "Slime" },
+      "spider": { "name": "Spider" },
+      "squid": { "name": "Squid" },
+      "wolf": { "name": "Wolf" },
+      "zombie": { "name": "Zombie" }
+    }
+  },
   "lang": {
     "name": "󱥬󱥔 (󱥠󱥔)",
     "font": "sevenish"
@@ -554,6 +572,7 @@
     },
     "mobSpawner": {
       "name": "󱤎󱤖",
+      "configuredName": "%1$s Spawner",
       "desc": ""
     },
     "stairsWood": {

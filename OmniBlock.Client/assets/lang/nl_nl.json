@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Kip" },
+            "cow": { "name": "Koe" },
+            "creeper": { "name": "Creeper" },
+            "ghast": { "name": "Ghast" },
+            "giant": { "name": "Reus" },
+            "pig": { "name": "Varken" },
+            "pigzombie": { "name": "Zombievarken" },
+            "sheep": { "name": "Schaap" },
+            "skeleton": { "name": "Skelet" },
+            "slime": { "name": "Slijmkubus" },
+            "spider": { "name": "Spin" },
+            "squid": { "name": "Inktvis" },
+            "wolf": { "name": "Wolf" },
+            "zombie": { "name": "Zombie" }
+        }
+    },
     "gui": {
         "joinServer": "Server betreden",
         "rename": "Hernoemen",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "Monsterspawner",
+            "configuredName": "%1$s-spawner",
             "desc": ""
         },
         "stairsWood": {

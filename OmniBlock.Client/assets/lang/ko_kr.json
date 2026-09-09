@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "닭" },
+            "cow": { "name": "소" },
+            "creeper": { "name": "크리퍼" },
+            "ghast": { "name": "가스트" },
+            "giant": { "name": "거인" },
+            "pig": { "name": "돼지" },
+            "pigzombie": { "name": "좀비 피그맨" },
+            "sheep": { "name": "양" },
+            "skeleton": { "name": "스켈레톤" },
+            "slime": { "name": "슬라임" },
+            "spider": { "name": "거미" },
+            "squid": { "name": "오징어" },
+            "wolf": { "name": "늑대" },
+            "zombie": { "name": "좀비" }
+        }
+    },
     "gui": {
         "joinServer": "서버 접속",
         "rename": "이름 바꾸기",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "몬스터 생성기",
+            "configuredName": "%1$s 생성기",
             "desc": ""
         },
         "stairsWood": {

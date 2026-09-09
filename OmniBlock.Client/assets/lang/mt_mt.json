@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Tiġieġa" },
+            "cow": { "name": "Baqra" },
+            "creeper": { "name": "Creeper" },
+            "ghast": { "name": "Ghast" },
+            "giant": { "name": "Ġgant" },
+            "pig": { "name": "Ħanżir" },
+            "pigzombie": { "name": "Ħanżir zombi" },
+            "sheep": { "name": "Nagħġa" },
+            "skeleton": { "name": "Skeletru" },
+            "slime": { "name": "Slime" },
+            "spider": { "name": "Brimba" },
+            "squid": { "name": "Klamaru" },
+            "wolf": { "name": "Lupu" },
+            "zombie": { "name": "Zombi" }
+        }
+    },
     "gui": {
         "joinServer": "Ingħaqad mas-Server",
         "rename": "Erġa' Semmi",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "Ġeneratur tal-Monstri",
+            "configuredName": "Ġeneratur ta' %1$s",
             "desc": ""
         },
         "stairsWood": {

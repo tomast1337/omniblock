@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "मुर्गी" },
+            "cow": { "name": "गाय" },
+            "creeper": { "name": "क्रीपर" },
+            "ghast": { "name": "घास्ट" },
+            "giant": { "name": "विशालकाय" },
+            "pig": { "name": "सूअर" },
+            "pigzombie": { "name": "ज़ॉम्बी पिगमैन" },
+            "sheep": { "name": "भेड़" },
+            "skeleton": { "name": "कंकाल" },
+            "slime": { "name": "स्लाइम" },
+            "spider": { "name": "मकड़ी" },
+            "squid": { "name": "स्क्विड" },
+            "wolf": { "name": "भेड़िया" },
+            "zombie": { "name": "ज़ॉम्बी" }
+        }
+    },
     "gui": {
         "joinServer": "सर्वर से जुड़ें",
         "rename": "नाम बदलें",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "मॉन्स्टर स्पॉनर",
+            "configuredName": "%1$s स्पॉनर",
             "desc": ""
         },
         "stairsWood": {

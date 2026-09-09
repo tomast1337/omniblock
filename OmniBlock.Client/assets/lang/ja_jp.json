@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "ニワトリ" },
+            "cow": { "name": "ウシ" },
+            "creeper": { "name": "クリーパー" },
+            "ghast": { "name": "ガスト" },
+            "giant": { "name": "ジャイアント" },
+            "pig": { "name": "ブタ" },
+            "pigzombie": { "name": "ゾンビピッグマン" },
+            "sheep": { "name": "ヒツジ" },
+            "skeleton": { "name": "スケルトン" },
+            "slime": { "name": "スライム" },
+            "spider": { "name": "クモ" },
+            "squid": { "name": "イカ" },
+            "wolf": { "name": "オオカミ" },
+            "zombie": { "name": "ゾンビ" }
+        }
+    },
     "gui": {
         "rename": "名前を変更",
         "edit": "編集",
@@ -478,6 +496,7 @@
         },
         "mobSpawner": {
             "name": "モンスタースポナー",
+            "configuredName": "%1$sスポナー",
             "desc": ""
         },
         "stairsWood": {

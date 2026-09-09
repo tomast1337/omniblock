@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Kokoš" },
+            "cow": { "name": "Krava" },
+            "creeper": { "name": "Creeper" },
+            "ghast": { "name": "Ghast" },
+            "giant": { "name": "Velikan" },
+            "pig": { "name": "Prašič" },
+            "pigzombie": { "name": "Zombi prašič" },
+            "sheep": { "name": "Ovca" },
+            "skeleton": { "name": "Okostnjak" },
+            "slime": { "name": "Sluz" },
+            "spider": { "name": "Pajek" },
+            "squid": { "name": "Ligenj" },
+            "wolf": { "name": "Volk" },
+            "zombie": { "name": "Zombi" }
+        }
+    },
     "gui": {
         "joinServer": "Pridruži se strežniku",
         "rename": "Preimenuj",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "Ustvarjalnik pošasti",
+            "configuredName": "Prikazovalnik za %1$s",
             "desc": ""
         },
         "stairsWood": {

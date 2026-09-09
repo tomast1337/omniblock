@@ -60,4 +60,17 @@ public class Language(string code, string name, string author)
         if (Translations is null) return key;
         return Translations.TryGetValue(key, out var translation) ? translation : key;
     }
+
+    public bool TryGet(string key, out string translation)
+    {
+        if (Translations is null) LoadTranslations();
+        if (Translations is not null && Translations.TryGetValue(key, out var found))
+        {
+            translation = found;
+            return true;
+        }
+
+        translation = string.Empty;
+        return false;
+    }
 }

@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Galinha" },
+            "cow": { "name": "Vaca" },
+            "creeper": { "name": "Creeper" },
+            "ghast": { "name": "Ghast" },
+            "giant": { "name": "Gigante" },
+            "pig": { "name": "Porco" },
+            "pigzombie": { "name": "Homem-porco zumbi" },
+            "sheep": { "name": "Ovelha" },
+            "skeleton": { "name": "Esqueleto" },
+            "slime": { "name": "Slime" },
+            "spider": { "name": "Aranha" },
+            "squid": { "name": "Lula" },
+            "wolf": { "name": "Lobo" },
+            "zombie": { "name": "Zumbi" }
+        }
+    },
     "gui": {
         "rename": "Renomear",
         "edit": "Editar",
@@ -478,6 +496,7 @@
         },
         "mobSpawner": {
             "name": "Gerador de Monstros",
+            "configuredName": "Gerador de %1$s",
             "desc": ""
         },
         "stairsWood": {

@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "دجاجة" },
+            "cow": { "name": "بقرة" },
+            "creeper": { "name": "كريبر" },
+            "ghast": { "name": "غاست" },
+            "giant": { "name": "عملاق" },
+            "pig": { "name": "خنزير" },
+            "pigzombie": { "name": "زومبي الخنزير" },
+            "sheep": { "name": "خروف" },
+            "skeleton": { "name": "هيكل عظمي" },
+            "slime": { "name": "سلايم" },
+            "spider": { "name": "عنكبوت" },
+            "squid": { "name": "حبار" },
+            "wolf": { "name": "ذئب" },
+            "zombie": { "name": "زومبي" }
+        }
+    },
     "gui": {
         "joinServer": "الانضمام إلى الخادم",
         "rename": "إعادة تسمية",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "مولّد الوحوش",
+            "configuredName": "مولّد %1$s",
             "desc": ""
         },
         "stairsWood": {

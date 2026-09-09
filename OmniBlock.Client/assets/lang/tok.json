@@ -1,4 +1,22 @@
 ﻿{
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "waso" },
+            "cow": { "name": "soweli mani" },
+            "creeper": { "name": "Creeper" },
+            "ghast": { "name": "Ghast" },
+            "giant": { "name": "soweli suli" },
+            "pig": { "name": "soweli" },
+            "pigzombie": { "name": "soweli moli" },
+            "sheep": { "name": "soweli len" },
+            "skeleton": { "name": "jan pi palisa kiwen" },
+            "slime": { "name": "ko" },
+            "spider": { "name": "pipi" },
+            "squid": { "name": "kala luka" },
+            "wolf": { "name": "soweli utala" },
+            "zombie": { "name": "jan moli" }
+        }
+    },
     "lang": {
         "name": "toki pona"
     },
@@ -551,6 +569,7 @@
         },
         "mobSpawner": {
             "name": "ilo kama",
+            "configuredName": "poki mama pi %1$s",
             "desc": ""
         },
         "stairsWood": {

@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Oiloa" },
+            "cow": { "name": "Behia" },
+            "creeper": { "name": "Creeperra" },
+            "ghast": { "name": "Ghasta" },
+            "giant": { "name": "Erraldoia" },
+            "pig": { "name": "Txerria" },
+            "pigzombie": { "name": "Txerri zonbia" },
+            "sheep": { "name": "Ardia" },
+            "skeleton": { "name": "Eskeletoa" },
+            "slime": { "name": "Lohia" },
+            "spider": { "name": "Armiarma" },
+            "squid": { "name": "Txibia" },
+            "wolf": { "name": "Otsoa" },
+            "zombie": { "name": "Zonbia" }
+        }
+    },
     "gui": {
         "joinServer": "Zerbitzarira sartu",
         "rename": "Berrizendatu",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "Munstro-sorgailua",
+            "configuredName": "%1$s sortzailea",
             "desc": ""
         },
         "stairsWood": {

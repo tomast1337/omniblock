@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Tavuk" },
+            "cow": { "name": "İnek" },
+            "creeper": { "name": "Creeper" },
+            "ghast": { "name": "Ghast" },
+            "giant": { "name": "Dev" },
+            "pig": { "name": "Domuz" },
+            "pigzombie": { "name": "Zombi Domuz Adam" },
+            "sheep": { "name": "Koyun" },
+            "skeleton": { "name": "İskelet" },
+            "slime": { "name": "Balçık" },
+            "spider": { "name": "Örümcek" },
+            "squid": { "name": "Mürekkep Balığı" },
+            "wolf": { "name": "Kurt" },
+            "zombie": { "name": "Zombi" }
+        }
+    },
     "gui": {
         "joinServer": "Sunucuya Katıl",
         "rename": "Yeniden Adlandır",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "Canavar Üretici",
+            "configuredName": "%1$s Çağırıcı",
             "desc": ""
         },
         "stairsWood": {

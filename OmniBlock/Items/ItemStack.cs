@@ -292,6 +292,8 @@ public class ItemStack
 
     public string GetItemName() => _item.GetItemNameIs(this);
 
+    public string GetDisplayName() => _item.GetDisplayName(this);
+
     public static ItemStack Clone(ItemStack itemStack) => itemStack == null ? null : itemStack.Copy();
 
     public override string ToString() => $"{Count}x{_item.GetItemName()}@{_damage}";

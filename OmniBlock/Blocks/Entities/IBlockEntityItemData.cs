@@ -9,4 +9,6 @@ namespace OmniBlock.Blocks.Entities;
 public interface IBlockEntityItemData
 {
     void ApplyItemData(ItemStack stack);
+
+    string GetItemDisplayName(ItemStack stack, string defaultDisplayName) => defaultDisplayName;
 }

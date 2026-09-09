@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Sicín" },
+            "cow": { "name": "Bó" },
+            "creeper": { "name": "Creeper" },
+            "ghast": { "name": "Ghast" },
+            "giant": { "name": "Fathach" },
+            "pig": { "name": "Muc" },
+            "pigzombie": { "name": "Muc zombaí" },
+            "sheep": { "name": "Caora" },
+            "skeleton": { "name": "Cnámharlach" },
+            "slime": { "name": "Slime" },
+            "spider": { "name": "Damhán alla" },
+            "squid": { "name": "Scuid" },
+            "wolf": { "name": "Mac tíre" },
+            "zombie": { "name": "Zombaí" }
+        }
+    },
     "gui": {
         "joinServer": "Iontráil Freastalaí",
         "rename": "Athainmnigh",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "Sceiteoir Arrachtaigh",
+            "configuredName": "Ginteoir %1$s",
             "desc": ""
         },
         "stairsWood": {

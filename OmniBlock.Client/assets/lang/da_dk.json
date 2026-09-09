@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Kylling" },
+            "cow": { "name": "Ko" },
+            "creeper": { "name": "Creeper" },
+            "ghast": { "name": "Ghast" },
+            "giant": { "name": "Kæmpe" },
+            "pig": { "name": "Gris" },
+            "pigzombie": { "name": "Zombiesvin" },
+            "sheep": { "name": "Får" },
+            "skeleton": { "name": "Skelet" },
+            "slime": { "name": "Slim" },
+            "spider": { "name": "Edderkop" },
+            "squid": { "name": "Blæksprutte" },
+            "wolf": { "name": "Ulv" },
+            "zombie": { "name": "Zombie" }
+        }
+    },
     "gui": {
         "joinServer": "Tilslut server",
         "rename": "Omdøb",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "Monsterspawner",
+            "configuredName": "%1$s-generator",
             "desc": ""
         },
         "stairsWood": {

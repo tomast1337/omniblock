@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Kjúklingur" },
+            "cow": { "name": "Kýr" },
+            "creeper": { "name": "Creeper" },
+            "ghast": { "name": "Ghast" },
+            "giant": { "name": "Risi" },
+            "pig": { "name": "Svín" },
+            "pigzombie": { "name": "Uppvakningasvín" },
+            "sheep": { "name": "Kind" },
+            "skeleton": { "name": "Beinagrind" },
+            "slime": { "name": "Slím" },
+            "spider": { "name": "Kónguló" },
+            "squid": { "name": "Smokkfiskur" },
+            "wolf": { "name": "Úlfur" },
+            "zombie": { "name": "Uppvakningur" }
+        }
+    },
     "gui": {
         "joinServer": "Tengjast netþjóni",
         "rename": "Endurnefna",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "Skrímslabú",
+            "configuredName": "%1$s-kveikja",
             "desc": ""
         },
         "stairsWood": {

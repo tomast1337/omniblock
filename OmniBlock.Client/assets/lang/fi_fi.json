@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Kana" },
+            "cow": { "name": "Lehmä" },
+            "creeper": { "name": "Creeper" },
+            "ghast": { "name": "Ghast" },
+            "giant": { "name": "Jättiläinen" },
+            "pig": { "name": "Sika" },
+            "pigzombie": { "name": "Zombipossu" },
+            "sheep": { "name": "Lammas" },
+            "skeleton": { "name": "Luuranko" },
+            "slime": { "name": "Lima" },
+            "spider": { "name": "Hämähäkki" },
+            "squid": { "name": "Kalmari" },
+            "wolf": { "name": "Susi" },
+            "zombie": { "name": "Zombi" }
+        }
+    },
     "gui": {
         "joinServer": "Liity palvelimelle",
         "rename": "Nimeä uudelleen",
@@ -562,6 +580,7 @@
         },
         "mobSpawner": {
             "name": "Luojakuutio",
+            "configuredName": "%1$s-generattori",
             "desc": ""
         },
         "stairsWood": {

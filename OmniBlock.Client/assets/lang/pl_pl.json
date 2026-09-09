@@ -1,4 +1,22 @@
 {
+    "entity": {
+        "omniblock": {
+            "chicken": { "name": "Kurczak" },
+            "cow": { "name": "Krowa" },
+            "creeper": { "name": "Creeper" },
+            "ghast": { "name": "Ghast" },
+            "giant": { "name": "Olbrzym" },
+            "pig": { "name": "Świnia" },
+            "pigzombie": { "name": "Zombie-świnia" },
+            "sheep": { "name": "Owca" },
+            "skeleton": { "name": "Szkielet" },
+            "slime": { "name": "Szlam" },
+            "spider": { "name": "Pająk" },
+            "squid": { "name": "Kałamarnica" },
+            "wolf": { "name": "Wilk" },
+            "zombie": { "name": "Zombie" }
+        }
+    },
     "gui": {
         "joinServer": "Dołącz do serwera",
         "rename": "Zmień nazwę",
@@ -504,6 +522,7 @@
         },
         "mobSpawner": {
             "name": "Spawner potworów",
+            "configuredName": "Spawner: %1$s",
             "desc": ""
         },
         "stairsWood": {
