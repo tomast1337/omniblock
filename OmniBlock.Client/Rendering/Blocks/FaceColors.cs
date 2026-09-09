@@ -82,25 +82,25 @@ internal readonly ref struct FaceColors(
             l0, l1, l2, l3);
     }
 
-    public readonly void ApplyTopLeft(Tessellator tess)
+    public readonly void ApplyTopLeft(IBlockVertexSink tess)
     {
         tess.setColorOpaque_F(RedTopLeft, GreenTopLeft, BlueTopLeft);
         tess.setLight(LightTopLeft.Sky, LightTopLeft.Block);
     }
 
-    public readonly void ApplyBottomLeft(Tessellator tess)
+    public readonly void ApplyBottomLeft(IBlockVertexSink tess)
     {
         tess.setColorOpaque_F(RedBottomLeft, GreenBottomLeft, BlueBottomLeft);
         tess.setLight(LightBottomLeft.Sky, LightBottomLeft.Block);
     }
 
-    public readonly void ApplyBottomRight(Tessellator tess)
+    public readonly void ApplyBottomRight(IBlockVertexSink tess)
     {
         tess.setColorOpaque_F(RedBottomRight, GreenBottomRight, BlueBottomRight);
         tess.setLight(LightBottomRight.Sky, LightBottomRight.Block);
     }
 
-    public readonly void ApplyTopRight(Tessellator tess)
+    public readonly void ApplyTopRight(IBlockVertexSink tess)
     {
         tess.setColorOpaque_F(RedTopRight, GreenTopRight, BlueTopRight);
         tess.setLight(LightTopRight.Sky, LightTopRight.Block);

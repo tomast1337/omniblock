@@ -12,7 +12,7 @@ public ref struct BlockRenderContext
     public readonly IBlockReader BlockReader;
     public readonly IBlockRuntimeView Blocks;
     public readonly ILightProvider Lighting;
-    public readonly Tessellator Tess;
+    public readonly IBlockVertexSink Tess;
 
     public int OverrideTexture;
     public readonly bool RenderAllFaces;
@@ -39,7 +39,7 @@ public ref struct BlockRenderContext
     public bool CustomFlag;
 
     public BlockRenderContext(
-        IBlockReader blockReader, IBlockRuntimeView blocks, Tessellator tess,
+        IBlockReader blockReader, IBlockRuntimeView blocks, IBlockVertexSink tess,
         ILightProvider lighting,
         int overrideTexture = -1, bool renderAllFaces = false,
         bool flipTexture = false, Box? bounds = null,

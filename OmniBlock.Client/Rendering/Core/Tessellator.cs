@@ -1,6 +1,4 @@
 using System.Runtime.InteropServices;
-using OmniBlock.Client.Rendering.Core.WebGPU;
-using OmniBlock.Util;
 using Color = OmniBlock.Client.UI.Colors.Color;
 
 namespace OmniBlock.Client.Rendering.Core;
@@ -128,13 +126,7 @@ public static class ChunkVertexHelper
     public static ushort FloatToShortUV(float uv) => (ushort)Math.Clamp((int)MathF.Round(uv * UV_SCALE), 0, ushort.MaxValue);
 }
 
-public enum TesselatorCaptureVertexFormat
-{
-    Default,
-    Chunk
-}
-
-public class Tessellator
+public class Tessellator : IBlockVertexSink
 {
     /// <summary>
     ///     What a vertex carries when its texture is the plain 2D one on unit 0 rather than a layer of
@@ -142,14 +134,8 @@ public class Tessellator
     /// </summary>
     public const int NoArrayLayer = -1;
 
-    /// <summary>Ints per vertex in the capture scratch buffer: x, y, z, u, v, colour, normal, light, array layer.</summary>
-    private const int ScratchVertexInts = 9;
-
     /// <summary>Ints per vertex in the raw buffer, matching <see cref="Vertex" /> field for field.</summary>
     private const int RawVertexInts = 9;
-
-    /// <summary>The scratch buffer holds exactly one quad, which is emitted as two triangles once full.</summary>
-    private const int ScratchQuadInts = ScratchVertexInts * 4;
 
     /// <summary>
     ///     The packed light a vertex carries when its draw sets none: no sky, full block. Through the
@@ -164,25 +150,19 @@ public class Tessellator
     private int addedVertices;
     private int arrayLayer = NoArrayLayer;
     private byte blockLight;
-    private PooledList<ChunkVertex> capturedChunkVertices;
-    private PooledList<Vertex> capturedVertices;
     private int color;
     private int drawMode;
     private bool hasColor;
     private bool hasLight;
     private bool hasNormals;
     private bool hasTexture;
-    private bool isCaptureMode;
     private bool isColorDisabled;
     private int normal;
     private int rawBufferIndex;
-    private int[] scratchBuffer;
-    private int scratchBufferIndex;
     private byte skyLight;
     private double textureU;
     private double textureV;
     private int vertexCount;
-    private TesselatorCaptureVertexFormat vertexFormat;
     private double xOffset;
     private double yOffset;
     private double zOffset;
@@ -191,10 +171,6 @@ public class Tessellator
     {
         this.bufferSize = bufferSize;
         rawBuffer = new int[bufferSize];
-    }
-
-    public Tessellator()
-    {
     }
 
     public bool IsDrawing { get; private set; }
@@ -237,92 +213,9 @@ public class Tessellator
     /// <summary>The light the vertices from here on carry, or full brightness if none was set.</summary>
     private int PackedLight => hasLight ? skyLight | (blockLight << 8) : FullBrightLight;
 
-    public void startCapture(TesselatorCaptureVertexFormat format)
-    {
-        if (format == TesselatorCaptureVertexFormat.Chunk && IsDrawing)
-        {
-            throw new InvalidOperationException("Chunk vertex format is only supported in capture mode!");
-        }
-
-        vertexFormat = format;
-        isCaptureMode = true;
-
-        capturedVertices = null;
-        capturedChunkVertices = null;
-
-        if (format == TesselatorCaptureVertexFormat.Default)
-        {
-            capturedVertices = new PooledList<Vertex>();
-        }
-        else
-        {
-            capturedChunkVertices = new PooledList<ChunkVertex>();
-        }
-
-        scratchBuffer = new int[ScratchQuadInts];
-        scratchBufferIndex = 0;
-    }
-
-    public PooledList<Vertex> endCaptureVertices()
-    {
-        if (!isCaptureMode || vertexFormat != TesselatorCaptureVertexFormat.Default)
-        {
-            throw new InvalidOperationException("Not capturing default vertices!");
-        }
-
-        isCaptureMode = false;
-        var result = capturedVertices;
-        CleanupCapture();
-        return result;
-    }
-
-    public PooledList<ChunkVertex> endCaptureChunkVertices()
-    {
-        if (!isCaptureMode || vertexFormat != TesselatorCaptureVertexFormat.Chunk)
-        {
-            throw new InvalidOperationException("Not capturing chunk vertices!");
-        }
-
-        isCaptureMode = false;
-        var result = capturedChunkVertices;
-        CleanupCapture();
-        return result;
-    }
-
-    /// <summary>
-    ///     Ends capture mode and uploads the accumulated <see cref="ChunkVertex" /> data straight into
-    ///     a <see cref="WebGPU.WgpuMesh" />, skipping the intermediate CPU list.
-    /// </summary>
-    /// <remarks>
-    ///     The caller owns the returned mesh and must dispose it. The mesh is created with
-    ///     <see cref="PrimitiveTopology.TriangleList" /> and the stride the chunk WGSL pipeline expects.
-    /// </remarks>
-    public WgpuMesh EndCaptureChunkMesh(WebGpuDevice device)
-    {
-        if (!isCaptureMode || vertexFormat != TesselatorCaptureVertexFormat.Chunk)
-        {
-            throw new InvalidOperationException("Not capturing chunk vertices!");
-        }
-
-        isCaptureMode = false;
-        var verts = capturedChunkVertices;
-        CleanupCapture();
-
-        return WgpuMesh.FromChunkVertices(device, verts.Span);
-    }
-
-    private void CleanupCapture()
-    {
-        capturedVertices = null;
-        capturedChunkVertices = null;
-        scratchBuffer = null;
-        scratchBufferIndex = 0;
-    }
-
     public void begin()
     {
         arrayLayer = NoArrayLayer;
-        scratchBufferIndex = 0;
         vertexCount = 0;
         hasTexture = false;
         hasColor = false;
@@ -353,12 +246,6 @@ public class Tessellator
         }
 
         IsDrawing = false;
-
-        if (isCaptureMode)
-        {
-            scratchBufferIndex = 0;
-            return;
-        }
 
         if (vertexCount > 0)
         {
@@ -548,167 +435,66 @@ public class Tessellator
 
     public void addVertex(double x, double y, double z)
     {
-        if (isCaptureMode)
+        ++addedVertices;
+        if (drawMode == 7 && convertQuadsToTriangles && addedVertices % 4 == 0)
         {
-            scratchBuffer[scratchBufferIndex + 0] = BitConverter.SingleToInt32Bits((float)(x + xOffset));
-            scratchBuffer[scratchBufferIndex + 1] = BitConverter.SingleToInt32Bits((float)(y + yOffset));
-            scratchBuffer[scratchBufferIndex + 2] = BitConverter.SingleToInt32Bits((float)(z + zOffset));
-
-            if (hasTexture)
+            for (var triangleCopyIndex = 0; triangleCopyIndex < 2; ++triangleCopyIndex)
             {
-                scratchBuffer[scratchBufferIndex + 3] = BitConverter.SingleToInt32Bits((float)textureU);
-                scratchBuffer[scratchBufferIndex + 4] = BitConverter.SingleToInt32Bits((float)textureV);
-            }
-            else if (vertexFormat == TesselatorCaptureVertexFormat.Chunk)
-            {
-                throw new InvalidOperationException("ChunkVertex requires texture coordinates!");
-            }
-
-            if (hasColor)
-            {
-                scratchBuffer[scratchBufferIndex + 5] = color;
-            }
-
-            if (hasNormals)
-            {
-                scratchBuffer[scratchBufferIndex + 6] = normal;
-            }
-
-            if (hasLight)
-            {
-                scratchBuffer[scratchBufferIndex + 7] = skyLight | (blockLight << 8);
-            }
-
-            scratchBuffer[scratchBufferIndex + 8] = arrayLayer;
-
-            scratchBufferIndex += ScratchVertexInts;
-
-            if (drawMode == 7 && convertQuadsToTriangles && scratchBufferIndex == ScratchQuadInts)
-            {
-                EmitVertexFromScratch(0);
-                EmitVertexFromScratch(ScratchVertexInts);
-                EmitVertexFromScratch(ScratchVertexInts * 2);
-
-                EmitVertexFromScratch(ScratchVertexInts * 2);
-                EmitVertexFromScratch(ScratchVertexInts * 3);
-                EmitVertexFromScratch(0);
-
-                scratchBufferIndex = 0;
-            }
-        }
-        else
-        {
-            ++addedVertices;
-            if (drawMode == 7 && convertQuadsToTriangles && addedVertices % 4 == 0)
-            {
-                for (var triangleCopyIndex = 0; triangleCopyIndex < 2; ++triangleCopyIndex)
+                var copyOffset = RawVertexInts * (3 - triangleCopyIndex);
+                if (hasTexture)
                 {
-                    var copyOffset = RawVertexInts * (3 - triangleCopyIndex);
-                    if (hasTexture)
-                    {
-                        rawBuffer[rawBufferIndex + 3] = rawBuffer[rawBufferIndex - copyOffset + 3];
-                        rawBuffer[rawBufferIndex + 4] = rawBuffer[rawBufferIndex - copyOffset + 4];
-                    }
-
-                    if (hasColor)
-                    {
-                        rawBuffer[rawBufferIndex + 5] = rawBuffer[rawBufferIndex - copyOffset + 5];
-                    }
-
-                    rawBuffer[rawBufferIndex + 0] = rawBuffer[rawBufferIndex - copyOffset + 0];
-                    rawBuffer[rawBufferIndex + 1] = rawBuffer[rawBufferIndex - copyOffset + 1];
-                    rawBuffer[rawBufferIndex + 2] = rawBuffer[rawBufferIndex - copyOffset + 2];
-                    rawBuffer[rawBufferIndex + 7] = rawBuffer[rawBufferIndex - copyOffset + 7];
-                    rawBuffer[rawBufferIndex + 8] = rawBuffer[rawBufferIndex - copyOffset + 8];
-                    ++vertexCount;
-                    rawBufferIndex += RawVertexInts;
-                }
-            }
-
-            if (hasTexture)
-            {
-                rawBuffer[rawBufferIndex + 3] = BitConverter.SingleToInt32Bits((float)textureU);
-                rawBuffer[rawBufferIndex + 4] = BitConverter.SingleToInt32Bits((float)textureV);
-            }
-
-            if (hasColor)
-            {
-                rawBuffer[rawBufferIndex + 5] = color;
-            }
-
-            if (hasNormals)
-            {
-                rawBuffer[rawBufferIndex + 6] = normal;
-            }
-
-            rawBuffer[rawBufferIndex + 7] = arrayLayer;
-            rawBuffer[rawBufferIndex + 8] = PackedLight;
-
-            rawBuffer[rawBufferIndex + 0] = BitConverter.SingleToInt32Bits((float)(x + xOffset));
-            rawBuffer[rawBufferIndex + 1] = BitConverter.SingleToInt32Bits((float)(y + yOffset));
-            rawBuffer[rawBufferIndex + 2] = BitConverter.SingleToInt32Bits((float)(z + zOffset));
-            rawBufferIndex += RawVertexInts;
-            ++vertexCount;
-
-            if (vertexCount % 4 == 0 && rawBufferIndex >= bufferSize - RawVertexInts * 4)
-            {
-                // In capture mode this draws nothing — it recycles the scratch buffer so a chunk
-                // mesh larger than the buffer can keep accumulating, which is the only way a batch
-                // gets near this size.
-                if (!isCaptureMode)
-                {
-                    throw new InvalidOperationException(
-                        $"A batch of {vertexCount} vertices filled the Tessellator before naming a " +
-                        "slot. Splitting it here would draw the first half under whichever program " +
-                        "happened to be bound, so the batch has to be broken up by its caller.");
+                    rawBuffer[rawBufferIndex + 3] = rawBuffer[rawBufferIndex - copyOffset + 3];
+                    rawBuffer[rawBufferIndex + 4] = rawBuffer[rawBufferIndex - copyOffset + 4];
                 }
 
-                Submit(null);
-                IsDrawing = true;
+                if (hasColor)
+                {
+                    rawBuffer[rawBufferIndex + 5] = rawBuffer[rawBufferIndex - copyOffset + 5];
+                }
+
+                rawBuffer[rawBufferIndex + 0] = rawBuffer[rawBufferIndex - copyOffset + 0];
+                rawBuffer[rawBufferIndex + 1] = rawBuffer[rawBufferIndex - copyOffset + 1];
+                rawBuffer[rawBufferIndex + 2] = rawBuffer[rawBufferIndex - copyOffset + 2];
+                rawBuffer[rawBufferIndex + 7] = rawBuffer[rawBufferIndex - copyOffset + 7];
+                rawBuffer[rawBufferIndex + 8] = rawBuffer[rawBufferIndex - copyOffset + 8];
+                ++vertexCount;
+                rawBufferIndex += RawVertexInts;
             }
         }
-    }
 
-    private void EmitVertexFromScratch(int baseIndex)
-    {
-        var x = BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 0]);
-        var y = BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 1]);
-        var z = BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 2]);
-
-        if (vertexFormat == TesselatorCaptureVertexFormat.Chunk)
+        if (hasTexture)
         {
-            var col = hasColor ? scratchBuffer[baseIndex + 5] : unchecked((int)0xFFFFFFFF);
-            var light = hasLight ? scratchBuffer[baseIndex + 7] : 0;
-
-            var u = BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 3]);
-            var v = BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 4]);
-
-            capturedChunkVertices.Add(
-                ChunkVertexHelper.Create(
-                    col,
-                    x, y, z,
-                    u, v,
-                    scratchBuffer[baseIndex + 8],
-                    (byte)(light & 0xFF),
-                    (byte)((light >> 8) & 0xFF)
-                )
-            );
+            rawBuffer[rawBufferIndex + 3] = BitConverter.SingleToInt32Bits((float)textureU);
+            rawBuffer[rawBufferIndex + 4] = BitConverter.SingleToInt32Bits((float)textureV);
         }
-        else
-        {
-            var u = hasTexture ? BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 3]) : 0f;
-            var v = hasTexture ? BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 4]) : 0f;
-            var col = hasColor ? scratchBuffer[baseIndex + 5] : 0;
-            var norm = hasNormals ? scratchBuffer[baseIndex + 6] : 0;
 
-            capturedVertices.Add(new Vertex(x, y, z, u, v, col, norm)
-            {
-                ArrayLayer = scratchBuffer[baseIndex + 8],
-                Light = hasLight ? scratchBuffer[baseIndex + 7] : FullBrightLight
-            });
+        if (hasColor)
+        {
+            rawBuffer[rawBufferIndex + 5] = color;
+        }
+
+        if (hasNormals)
+        {
+            rawBuffer[rawBufferIndex + 6] = normal;
+        }
+
+        rawBuffer[rawBufferIndex + 7] = arrayLayer;
+        rawBuffer[rawBufferIndex + 8] = PackedLight;
+
+        rawBuffer[rawBufferIndex + 0] = BitConverter.SingleToInt32Bits((float)(x + xOffset));
+        rawBuffer[rawBufferIndex + 1] = BitConverter.SingleToInt32Bits((float)(y + yOffset));
+        rawBuffer[rawBufferIndex + 2] = BitConverter.SingleToInt32Bits((float)(z + zOffset));
+        rawBufferIndex += RawVertexInts;
+        ++vertexCount;
+
+        if (vertexCount % 4 == 0 && rawBufferIndex >= bufferSize - RawVertexInts * 4)
+        {
+            throw new InvalidOperationException(
+                $"A batch of {vertexCount} vertices filled the Tessellator before naming a " +
+                "slot. Splitting it here would draw the first half under whichever program " +
+                "happened to be bound, so the batch has to be broken up by its caller.");
         }
     }
-
 
     public void setColorOpaque_I(int color)
     {

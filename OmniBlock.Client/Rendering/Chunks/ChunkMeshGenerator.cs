@@ -50,9 +50,6 @@ internal class ChunkMeshGenerator : IDisposable
     /// </summary>
     private static readonly int s_grassSideTextureId = Atlases.Terrain.IndexOf("omniblock:grass_block_side");
 
-    private readonly ObjectPool<PooledList<ChunkVertex>> _listPool =
-        new(() => new PooledList<ChunkVertex>(), 64);
-
     private readonly ILogger<ChunkMeshGenerator> _logger = Log.Instance.For<ChunkMeshGenerator>();
 
     private readonly ConcurrentQueue<MeshBuildResult> _backgroundResults = new();
@@ -100,7 +97,6 @@ internal class ChunkMeshGenerator : IDisposable
         while (_foregroundResults.TryDequeue(out var foreground)) foreground.Dispose();
         while (_backgroundResults.TryDequeue(out var background)) background.Dispose();
         _outstanding.Clear();
-        _listPool.Dispose();
     }
 
     public bool TryDequeueMesh(out MeshBuildResult result)
@@ -224,9 +220,6 @@ internal class ChunkMeshGenerator : IDisposable
             Version = version
         };
 
-        var tess = new Tessellator();
-        var ctx = new BlockRenderContext(cache, cache.ContentBlocks, tess, cache);
-
         // Full 1x1x1 Standard blocks (minus grass, minus anything using texture variance) are
         // pulled out of the per-block loop below and merged into larger quads instead — see
         // EmitGreedyMesh. Precomputed once so the sweep and the loop's skip check agree on
@@ -252,14 +245,13 @@ internal class ChunkMeshGenerator : IDisposable
         for (var pass = 0; pass < 2; pass++)
         {
             var hasNextPass = false;
-
-            tess.startCapture(TesselatorCaptureVertexFormat.Chunk);
-            tess.startDrawingQuads();
-            tess.setTranslationD(-pos.X, -pos.Y, -pos.Z);
+            using var mesh = new ChunkMeshBuilder();
+            mesh.Begin(-pos.X, -pos.Y, -pos.Z);
+            var ctx = new BlockRenderContext(cache, cache.ContentBlocks, mesh, cache);
 
             if (pass == 0)
             {
-                EmitGreedyMesh(cache, ctx, tess, greedyEligible, minX, minY, minZ);
+                EmitGreedyMesh(cache, ctx, mesh, greedyEligible, minX, minY, minZ);
             }
 
             for (var y = minY; y < maxY; y++)
@@ -280,29 +272,27 @@ internal class ChunkMeshGenerator : IDisposable
                         }
                         else if (pass != 0 || greedyEligible[LocalIndex(x - minX, y - minY, z - minZ)] is null)
                         {
-                            BlockRenderer.RenderBlockByRenderType(cache, cache.ContentBlocks, cache, b, new BlockPos(x, y, z), tess, doVariance: alternateBlocks);
+                            BlockRenderer.RenderBlockByRenderType(cache, cache.ContentBlocks, cache, b, new BlockPos(x, y, z), mesh, doVariance: alternateBlocks);
                         }
                     }
                 }
             }
 
-            tess.draw(ProgramSlot.Terrain);
-            tess.setTranslationD(0, 0, 0);
-
-            var verts = tess.endCaptureChunkVertices();
+            var verts = mesh.Finish();
             if (verts.Count > 0)
             {
-                var list = _listPool.Get();
-                list.AddRange(verts.Span);
-
                 if (pass == 0)
                 {
-                    result.Solid = list;
+                    result.Solid = verts;
                 }
                 else
                 {
-                    result.Translucent = list;
+                    result.Translucent = verts;
                 }
+            }
+            else
+            {
+                verts.Dispose();
             }
 
             if (!hasNextPass) break;
@@ -374,7 +364,7 @@ internal class ChunkMeshGenerator : IDisposable
         return true;
     }
 
-    private static void EmitGreedyMesh(WorldRegionSnapshot cache, BlockRenderContext ctx, Tessellator tess, Block?[] eligible, int minX, int minY, int minZ)
+    private static void EmitGreedyMesh(WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess, Block?[] eligible, int minX, int minY, int minZ)
     {
         EmitGreedyTop(cache, ctx, tess, eligible, minX, minY, minZ);
         EmitGreedyBottom(cache, ctx, tess, eligible, minX, minY, minZ);
@@ -384,7 +374,7 @@ internal class ChunkMeshGenerator : IDisposable
         EmitGreedySouth(cache, ctx, tess, eligible, minX, minY, minZ);
     }
 
-    private static void EmitGreedyTop(WorldRegionSnapshot cache, BlockRenderContext ctx, Tessellator tess, Block?[] eligible, int minX, int minY, int minZ)
+    private static void EmitGreedyTop(WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess, Block?[] eligible, int minX, int minY, int minZ)
     {
         var size = SubChunkRenderer.Size;
         var grid = new FaceMergeKey?[size * size];
@@ -433,7 +423,7 @@ internal class ChunkMeshGenerator : IDisposable
         }
     }
 
-    private static void EmitGreedyBottom(WorldRegionSnapshot cache, BlockRenderContext ctx, Tessellator tess, Block?[] eligible, int minX, int minY, int minZ)
+    private static void EmitGreedyBottom(WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess, Block?[] eligible, int minX, int minY, int minZ)
     {
         var size = SubChunkRenderer.Size;
         var grid = new FaceMergeKey?[size * size];
@@ -482,7 +472,7 @@ internal class ChunkMeshGenerator : IDisposable
         }
     }
 
-    private static void EmitGreedyEast(WorldRegionSnapshot cache, BlockRenderContext ctx, Tessellator tess, Block?[] eligible, int minX, int minY, int minZ)
+    private static void EmitGreedyEast(WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess, Block?[] eligible, int minX, int minY, int minZ)
     {
         var size = SubChunkRenderer.Size;
         var grid = new FaceMergeKey?[size * size];
@@ -535,7 +525,7 @@ internal class ChunkMeshGenerator : IDisposable
         }
     }
 
-    private static void EmitGreedyWest(WorldRegionSnapshot cache, BlockRenderContext ctx, Tessellator tess, Block?[] eligible, int minX, int minY, int minZ)
+    private static void EmitGreedyWest(WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess, Block?[] eligible, int minX, int minY, int minZ)
     {
         var size = SubChunkRenderer.Size;
         var grid = new FaceMergeKey?[size * size];
@@ -585,7 +575,7 @@ internal class ChunkMeshGenerator : IDisposable
         }
     }
 
-    private static void EmitGreedyNorth(WorldRegionSnapshot cache, BlockRenderContext ctx, Tessellator tess, Block?[] eligible, int minX, int minY, int minZ)
+    private static void EmitGreedyNorth(WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess, Block?[] eligible, int minX, int minY, int minZ)
     {
         var size = SubChunkRenderer.Size;
         var grid = new FaceMergeKey?[size * size];
@@ -637,7 +627,7 @@ internal class ChunkMeshGenerator : IDisposable
         }
     }
 
-    private static void EmitGreedySouth(WorldRegionSnapshot cache, BlockRenderContext ctx, Tessellator tess, Block?[] eligible, int minX, int minY, int minZ)
+    private static void EmitGreedySouth(WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess, Block?[] eligible, int minX, int minY, int minZ)
     {
         var size = SubChunkRenderer.Size;
         var grid = new FaceMergeKey?[size * size];
@@ -742,7 +732,7 @@ internal class ChunkMeshGenerator : IDisposable
     ///     "flipped" ever means in the per-block renderer this mirrors: which diagonal the two
     ///     triangles split along, not a different set of corners.
     /// </summary>
-    private static void EmitMergedQuad(Tessellator tess, in FaceMergeKey key, bool flipped, float shade, QuadCorner tl, QuadCorner bl, QuadCorner br, QuadCorner tr)
+    private static void EmitMergedQuad(IBlockVertexSink tess, in FaceMergeKey key, bool flipped, float shade, QuadCorner tl, QuadCorner bl, QuadCorner br, QuadCorner tr)
     {
         var r = ((key.TintColor >> 16) & 255) * ColorScale * shade;
         var g = ((key.TintColor >> 8) & 255) * ColorScale * shade;

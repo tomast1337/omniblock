@@ -29,7 +29,7 @@ public class BlockRenderer
     private static readonly PistonExtensionRenderer s_pistonExt = new();
 
 
-    public static bool RenderBlockByRenderType(IBlockReader world, IBlockRuntimeView blocks, ILightProvider lighting, Block block, BlockPos pos, Tessellator tess, int overrideTexture = -1, bool renderAllFaces = false, bool doVariance = false)
+    public static bool RenderBlockByRenderType(IBlockReader world, IBlockRuntimeView blocks, ILightProvider lighting, Block block, BlockPos pos, IBlockVertexSink tess, int overrideTexture = -1, bool renderAllFaces = false, bool doVariance = false)
     {
         var type = block.RenderType;
 
