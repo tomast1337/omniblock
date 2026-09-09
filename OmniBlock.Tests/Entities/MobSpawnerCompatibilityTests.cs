@@ -1,11 +1,23 @@
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Entities;
 using OmniBlock.NBT;
+using OmniBlock.Network.Messages;
 
 namespace OmniBlock.Tests.Entities;
 
 public sealed class MobSpawnerCompatibilityTests
 {
+    [Fact]
+    public void Update_message_carries_the_actual_spawn_target()
+    {
+        BlockEntityMobSpawner spawner = new();
+        spawner.SetSpawnedEntityId("omniblock:skeleton");
+
+        var update = Assert.IsType<MobSpawnerUpdateMessage>(spawner.CreateUpdateMessage());
+
+        Assert.Equal("omniblock:skeleton", update.EntityTypeId);
+    }
+
     [Fact]
     public void Unknown_target_resource_id_survives_nbt_round_trip()
     {

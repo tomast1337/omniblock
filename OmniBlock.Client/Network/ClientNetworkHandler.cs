@@ -476,6 +476,7 @@ public class ClientNetworkHandler : NetHandler
         MessageHandlers.On<ScreenHandlerPropertyMessage>(onScreenHandlerProperty);
         MessageHandlers.On<ScreenHandlerAckMessage>(onScreenHandlerAck);
         MessageHandlers.On<UpdateSignMessage>(onUpdateSign);
+        MessageHandlers.On<MobSpawnerUpdateMessage>(onMobSpawnerUpdate);
         MessageHandlers.On<ChatMessage>(onChatMessage);
         MessageHandlers.On<DisconnectMessage>(onDisconnect);
         MessageHandlers.On<RegistryDataMessage>(onRegistryData);
@@ -1451,6 +1452,16 @@ public class ClientNetworkHandler : NetHandler
                 signEntity.MarkDirty();
             }
         }
+    }
+
+    private void onMobSpawnerUpdate(MobSpawnerUpdateMessage packet)
+    {
+        var world = _context.WorldHost.World;
+        if (!world.BlockHost.IsPosLoaded(packet.X, packet.Y, packet.Z)) return;
+
+        world.Entities
+            .GetBlockEntity<BlockEntityMobSpawner>(packet.X, packet.Y, packet.Z)
+            ?.SetSpawnedEntityId(packet.EntityTypeId);
     }
 
     private void onScreenHandlerProperty(ScreenHandlerPropertyMessage packet)

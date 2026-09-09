@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using OmniBlock.Entities;
 using OmniBlock.NBT;
+using OmniBlock.Network.Messages;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core.Systems;
 
@@ -20,7 +21,21 @@ public class BlockEntityMobSpawner : BlockEntity
 
     public string GetSpawnedEntityId() => _spawnedEntityId;
 
-    public void SetSpawnedEntityId(string spawnedEntityId) => _spawnedEntityId = spawnedEntityId;
+    public void SetSpawnedEntityId(string spawnedEntityId)
+    {
+        ArgumentNullException.ThrowIfNull(spawnedEntityId);
+        if (_spawnedEntityId == spawnedEntityId) return;
+        _spawnedEntityId = spawnedEntityId;
+        MarkDirty();
+    }
+
+    public override Message? CreateUpdateMessage() => new MobSpawnerUpdateMessage
+    {
+        X = X,
+        Y = (short)Y,
+        Z = Z,
+        EntityTypeId = _spawnedEntityId
+    };
 
     private bool IsPlayerInRange() => World!.Entities.GetClosestPlayer(X + 0.5D, Y + 0.5D, Z + 0.5D, 16.0D) != null;
 

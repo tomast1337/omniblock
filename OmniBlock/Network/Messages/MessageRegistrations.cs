@@ -44,6 +44,7 @@ internal static class MessageRegistrations
         registry.Register(LightSectionsMessage.Id, 1, static () => new LightSectionsMessage());
         registry.Register(LivingEntitySpawnMessage.Id, 1, static () => new LivingEntitySpawnMessage());
         registry.Register(MapUpdateMessage.Id, 1, static () => new MapUpdateMessage());
+        registry.Register(MobSpawnerUpdateMessage.Id, 1, static () => new MobSpawnerUpdateMessage());
         registry.Register(OpenScreenMessage.Id, 1, static () => new OpenScreenMessage());
         registry.Register(PaintingSpawnMessage.Id, 1, static () => new PaintingSpawnMessage());
         registry.Register(PlayNoteSoundMessage.Id, 1, static () => new PlayNoteSoundMessage());
