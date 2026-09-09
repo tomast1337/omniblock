@@ -119,10 +119,17 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
         int DirtAttempts,
         int GravelAttempts,
         int CoalAttempts,
-        int IronAttempts)
+        int IronAttempts,
+        int SurfaceLevel,
+        double SurfaceNoiseScale,
+        int BedrockDepth,
+        int SandstoneDepthBound,
+        FeatureSettings Features)
     {
         public static Settings Default { get; } = new(
-            16, 16, 8, 4, 4, 10, 16, 8, 684.412D, 684.412D, 8, 10, 20, 10, 20, 20);
+            16, 16, 8, 4, 4, 10, 16, 8, 684.412D, 684.412D, 8, 10, 20, 10, 20, 20,
+            64, 1.0D / 32.0D, 5, 4,
+            FeatureSettings.Default);
 
         public void Validate(ResourceLocation owner)
         {
@@ -142,6 +149,11 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
             NonNegative(nameof(GravelAttempts), GravelAttempts);
             NonNegative(nameof(CoalAttempts), CoalAttempts);
             NonNegative(nameof(IronAttempts), IronAttempts);
+            Positive(nameof(SurfaceLevel), SurfaceLevel);
+            Positive(nameof(SurfaceNoiseScale), SurfaceNoiseScale);
+            Positive(nameof(BedrockDepth), BedrockDepth);
+            Positive(nameof(SandstoneDepthBound), SandstoneDepthBound);
+            Features.Validate(owner);
 
             void Positive(string name, double value)
             {
@@ -156,6 +168,95 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
             void Invalid(string name, object value, string requirement) =>
                 throw new InvalidOperationException(
                     $"World type '{owner}' overworld setting '{name}' is {value} and {requirement}.");
+        }
+    }
+
+    internal sealed record FeatureSettings(
+        int WaterLakeChance,
+        int LavaLakeChance,
+        int LavaLakeUpperY,
+        int LavaLakeYOffset,
+        int LavaLakeSurfaceY,
+        int LavaLakeAboveSurfaceChance,
+        int GoldAttempts,
+        int GoldMaxY,
+        int RedstoneAttempts,
+        int RedstoneMaxY,
+        int DiamondAttempts,
+        int DiamondMaxY,
+        int LapisAttempts,
+        int LapisMaxY,
+        int TreeBonusChance,
+        int RoseChance,
+        int BrownMushroomChance,
+        int RedMushroomChance,
+        int SugarcaneAttempts,
+        int PumpkinChance,
+        int WaterSpringAttempts,
+        int WaterSpringUpperY,
+        int WaterSpringYOffset,
+        int LavaSpringAttempts,
+        int LavaSpringUpperY,
+        int LavaSpringYOffset,
+        int ClayVeinSize,
+        int DirtVeinSize,
+        int GravelVeinSize,
+        int CoalVeinSize,
+        int IronVeinSize,
+        int GoldVeinSize,
+        int RedstoneVeinSize,
+        int DiamondVeinSize,
+        int LapisVeinSize)
+    {
+        public static FeatureSettings Default { get; } = new(
+            4, 8, 120, 8, 64, 10, 2, 32, 8, 16, 1, 16, 1, 16, 10, 2, 4, 8,
+            10, 32, 50, 120, 8, 20, 112, 8, 32, 32, 32, 16, 8, 8, 7, 7, 6);
+
+        public void Validate(ResourceLocation owner)
+        {
+            foreach (var (name, value) in Values())
+                if (name.EndsWith("Attempts", StringComparison.Ordinal) ? value < 0 : value <= 0)
+                    throw new InvalidOperationException(
+                        $"World type '{owner}' overworld feature setting '{name}' has invalid value {value}.");
+
+            IEnumerable<(string, int)> Values()
+            {
+                yield return (nameof(WaterLakeChance), WaterLakeChance);
+                yield return (nameof(LavaLakeChance), LavaLakeChance);
+                yield return (nameof(LavaLakeUpperY), LavaLakeUpperY);
+                yield return (nameof(LavaLakeYOffset), LavaLakeYOffset);
+                yield return (nameof(LavaLakeSurfaceY), LavaLakeSurfaceY);
+                yield return (nameof(LavaLakeAboveSurfaceChance), LavaLakeAboveSurfaceChance);
+                yield return (nameof(GoldAttempts), GoldAttempts);
+                yield return (nameof(GoldMaxY), GoldMaxY);
+                yield return (nameof(RedstoneAttempts), RedstoneAttempts);
+                yield return (nameof(RedstoneMaxY), RedstoneMaxY);
+                yield return (nameof(DiamondAttempts), DiamondAttempts);
+                yield return (nameof(DiamondMaxY), DiamondMaxY);
+                yield return (nameof(LapisAttempts), LapisAttempts);
+                yield return (nameof(LapisMaxY), LapisMaxY);
+                yield return (nameof(TreeBonusChance), TreeBonusChance);
+                yield return (nameof(RoseChance), RoseChance);
+                yield return (nameof(BrownMushroomChance), BrownMushroomChance);
+                yield return (nameof(RedMushroomChance), RedMushroomChance);
+                yield return (nameof(SugarcaneAttempts), SugarcaneAttempts);
+                yield return (nameof(PumpkinChance), PumpkinChance);
+                yield return (nameof(WaterSpringAttempts), WaterSpringAttempts);
+                yield return (nameof(WaterSpringUpperY), WaterSpringUpperY);
+                yield return (nameof(WaterSpringYOffset), WaterSpringYOffset);
+                yield return (nameof(LavaSpringAttempts), LavaSpringAttempts);
+                yield return (nameof(LavaSpringUpperY), LavaSpringUpperY);
+                yield return (nameof(LavaSpringYOffset), LavaSpringYOffset);
+                yield return (nameof(ClayVeinSize), ClayVeinSize);
+                yield return (nameof(DirtVeinSize), DirtVeinSize);
+                yield return (nameof(GravelVeinSize), GravelVeinSize);
+                yield return (nameof(CoalVeinSize), CoalVeinSize);
+                yield return (nameof(IronVeinSize), IronVeinSize);
+                yield return (nameof(GoldVeinSize), GoldVeinSize);
+                yield return (nameof(RedstoneVeinSize), RedstoneVeinSize);
+                yield return (nameof(DiamondVeinSize), DiamondVeinSize);
+                yield return (nameof(LapisVeinSize), LapisVeinSize);
+            }
         }
     }
 
@@ -205,7 +306,7 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
         int featureZ;
 
         // Generate lakes
-        if (_random.NextInt(4) == 0)
+        if (_random.NextInt(_settings.Features.WaterLakeChance) == 0)
         {
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
@@ -214,12 +315,14 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
         }
 
         // Generate lava lakes
-        if (_random.NextInt(8) == 0)
+        if (_random.NextInt(_settings.Features.LavaLakeChance) == 0)
         {
             featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(_random.NextInt(120) + 8);
+            featureY = _random.NextInt(
+                _random.NextInt(_settings.Features.LavaLakeUpperY) + _settings.Features.LavaLakeYOffset);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            if (featureY < 64 || _random.NextInt(10) == 0)
+            if (featureY < _settings.Features.LavaLakeSurfaceY
+                || _random.NextInt(_settings.Features.LavaLakeAboveSurfaceChance) == 0)
             {
                 _featureLavaLake.Generate(_world, _random, featureX, featureY, featureZ);
             }
@@ -280,37 +383,37 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
         }
 
         // Generate Gold Ore Veins
-        for (var i = 0; i < 2; ++i)
+        for (var i = 0; i < _settings.Features.GoldAttempts; ++i)
         {
             featureX = blockX + _random.NextInt(16);
-            featureY = _random.NextInt(32);
+            featureY = _random.NextInt(_settings.Features.GoldMaxY);
             featureZ = blockZ + _random.NextInt(16);
             _featureGold.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate Redstone Ore Veins
-        for (var i = 0; i < 8; ++i)
+        for (var i = 0; i < _settings.Features.RedstoneAttempts; ++i)
         {
             featureX = blockX + _random.NextInt(16);
-            featureY = _random.NextInt(16);
+            featureY = _random.NextInt(_settings.Features.RedstoneMaxY);
             featureZ = blockZ + _random.NextInt(16);
             _featureRedstone.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate Diamond Ore Veins
-        for (var i = 0; i < 1; ++i)
+        for (var i = 0; i < _settings.Features.DiamondAttempts; ++i)
         {
             featureX = blockX + _random.NextInt(16);
-            featureY = _random.NextInt(16);
+            featureY = _random.NextInt(_settings.Features.DiamondMaxY);
             featureZ = blockZ + _random.NextInt(16);
             _featureDiamond.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate Lapis Lazuli Ore Veins
-        for (var i = 0; i < 1; ++i)
+        for (var i = 0; i < _settings.Features.LapisAttempts; ++i)
         {
             featureX = blockX + _random.NextInt(16);
-            featureY = _random.NextInt(16);
+            featureY = _random.NextInt(_settings.Features.LapisMaxY);
             featureZ = blockZ + _random.NextInt(16);
             _featureLapis.Generate(_world, _random, featureX, featureY, featureZ);
         }
@@ -319,7 +422,7 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
         fraction = 0.5D;
         var treeDensitySample = (int)((_forestNoise.GenerateNoise(blockX * fraction, blockZ * fraction) / 8.0D + _random.NextDouble() * 4.0D + 4.0D) / 3.0D);
         var numberOfTrees = 0;
-        if (_random.NextInt(10) == 0)
+        if (_random.NextInt(_settings.Features.TreeBonusChance) == 0)
         {
             ++numberOfTrees;
         }
@@ -458,7 +561,7 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
         }
 
         // Generate Roses
-        if (_random.NextInt(2) == 0)
+        if (_random.NextInt(_settings.Features.RoseChance) == 0)
         {
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
@@ -467,7 +570,7 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
         }
 
         // Generate Brown Mushrooms
-        if (_random.NextInt(4) == 0)
+        if (_random.NextInt(_settings.Features.BrownMushroomChance) == 0)
         {
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
@@ -476,7 +579,7 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
         }
 
         // Generate Red Mushrooms
-        if (_random.NextInt(8) == 0)
+        if (_random.NextInt(_settings.Features.RedMushroomChance) == 0)
         {
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
@@ -485,7 +588,7 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
         }
 
         // Generate Sugarcane
-        for (var i = 0; i < 10; ++i)
+        for (var i = 0; i < _settings.Features.SugarcaneAttempts; ++i)
         {
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
@@ -494,7 +597,7 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
         }
 
         // Generate Pumpkin Patches
-        if (_random.NextInt(32) == 0)
+        if (_random.NextInt(_settings.Features.PumpkinChance) == 0)
         {
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
@@ -518,19 +621,23 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
         }
 
         // Generate one-block water sources
-        for (var i = 0; i < 50; ++i)
+        for (var i = 0; i < _settings.Features.WaterSpringAttempts; ++i)
         {
             featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(_random.NextInt(120) + 8);
+            featureY = _random.NextInt(
+                _random.NextInt(_settings.Features.WaterSpringUpperY) + _settings.Features.WaterSpringYOffset);
             featureZ = blockZ + _random.NextInt(16) + 8;
             _featureWaterSpring.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate one-block lava sources
-        for (var x = 0; x < 20; ++x)
+        for (var x = 0; x < _settings.Features.LavaSpringAttempts; ++x)
         {
             featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(_random.NextInt(_random.NextInt(112) + 8) + 8);
+            featureY = _random.NextInt(
+                _random.NextInt(
+                    _random.NextInt(_settings.Features.LavaSpringUpperY) + _settings.Features.LavaSpringYOffset)
+                + _settings.Features.LavaSpringYOffset);
             featureZ = blockZ + _random.NextInt(16) + 8;
             _featureLavaSpring.Generate(_world, _random, featureX, featureY, featureZ);
         }
@@ -570,15 +677,15 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
         _featureWaterLake = new LakeFeature(_blocks.Water);
         _featureLavaLake = new LakeFeature(_blocks.Lava);
         _featureDungeon = new DungeonFeature();
-        _featureClay = new ClayOreFeature(32);
-        _featureDirt = new OreFeature(_blocks.Dirt, 32);
-        _featureGravel = new OreFeature(_blocks.Gravel, 32);
-        _featureCoal = new OreFeature(_blocks.CoalOre, 16);
-        _featureIron = new OreFeature(_blocks.IronOre, 8);
-        _featureGold = new OreFeature(_blocks.GoldOre, 8);
-        _featureRedstone = new OreFeature(_blocks.RedstoneOre, 7);
-        _featureDiamond = new OreFeature(_blocks.DiamondOre, 7);
-        _featureLapis = new OreFeature(_blocks.LapisOre, 6);
+        _featureClay = new ClayOreFeature(_settings.Features.ClayVeinSize);
+        _featureDirt = new OreFeature(_blocks.Dirt, _settings.Features.DirtVeinSize);
+        _featureGravel = new OreFeature(_blocks.Gravel, _settings.Features.GravelVeinSize);
+        _featureCoal = new OreFeature(_blocks.CoalOre, _settings.Features.CoalVeinSize);
+        _featureIron = new OreFeature(_blocks.IronOre, _settings.Features.IronVeinSize);
+        _featureGold = new OreFeature(_blocks.GoldOre, _settings.Features.GoldVeinSize);
+        _featureRedstone = new OreFeature(_blocks.RedstoneOre, _settings.Features.RedstoneVeinSize);
+        _featureDiamond = new OreFeature(_blocks.DiamondOre, _settings.Features.DiamondVeinSize);
+        _featureLapis = new OreFeature(_blocks.LapisOre, _settings.Features.LapisVeinSize);
         _featureDandelion = new PlantPatchFeature(_blocks.Dandelion);
         _featureGrass1 = new GrassPatchFeature(_blocks.Grass, 1);
         _featureGrass2 = new GrassPatchFeature(_blocks.Grass, 2);
@@ -705,8 +812,8 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
     /// <returns>The interpolated result.</returns>
     public void BuildSurfaces(int chunkX, int chunkZ, byte[] blocks, Biome[] biomes)
     {
-        const byte WATER_LEVEL = 64;
-        const double oneThirtySecond = 1.0D / 32.0D;
+        var waterLevel = _settings.SurfaceLevel;
+        var oneThirtySecond = _settings.SurfaceNoiseScale;
         _sandBuffer = _sandGravelNoise.Create(_sandBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, oneThirtySecond, oneThirtySecond, 1.0D);
         _gravelBuffer = _sandGravelNoise.Create(_gravelBuffer, chunkX * 16, 109.0134D, chunkZ * 16, 16, 1, 16, oneThirtySecond, 1.0D, oneThirtySecond);
         _depthBuffer = _depthNoise.Create(_depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, oneThirtySecond * 2.0D, oneThirtySecond * 2.0D, oneThirtySecond * 2.0D);
@@ -729,7 +836,7 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
                 {
                     var blockIndex = (localZ * 16 + localX) * ChuckFormat.ChunkHeight + blockY;
                     // Generate Bedrock floor
-                    if (blockY <= 0 + _random.NextInt(5))
+                    if (blockY <= _random.NextInt(_settings.BedrockDepth))
                     {
                         blocks[blockIndex] = (byte)_blocks.Bedrock;
                     }
@@ -749,7 +856,7 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
                                     topBlock = 0;
                                     soilBlock = (byte)_blocks.Stone;
                                 }
-                                else if (blockY >= WATER_LEVEL - 4 && blockY <= WATER_LEVEL + 1)
+                                else if (blockY >= waterLevel - 4 && blockY <= waterLevel + 1)
                                 {
                                     topBlock = localBiome.TopBlockId;
                                     soilBlock = localBiome.SoilBlockId;
@@ -774,13 +881,13 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
                                     }
                                 }
 
-                                if (blockY < WATER_LEVEL && topBlock == 0)
+                                if (blockY < waterLevel && topBlock == 0)
                                 {
                                     topBlock = (byte)_blocks.Water;
                                 }
 
                                 currentDepth = surfaceDepth;
-                                if (blockY >= WATER_LEVEL - 1)
+                                if (blockY >= waterLevel - 1)
                                 {
                                     blocks[blockIndex] = topBlock;
                                 }
@@ -795,7 +902,7 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
                                 blocks[blockIndex] = soilBlock;
                                 if (currentDepth == 0 && soilBlock == _blocks.Sand)
                                 {
-                                    currentDepth = _random.NextInt(4);
+                                    currentDepth = _random.NextInt(_settings.SandstoneDepthBound);
                                     soilBlock = (byte)_blocks.Sandstone;
                                 }
                             }

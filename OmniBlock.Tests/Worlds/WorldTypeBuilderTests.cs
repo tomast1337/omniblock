@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using OmniBlock.Registries;
 using OmniBlock.Worlds;
 using OmniBlock.Worlds.Generation;
@@ -102,6 +103,29 @@ public sealed class WorldTypeBuilderTests
         Assert.Contains(setting, error.Message);
     }
 
+    [Theory]
+    [InlineData("omniblock:overworld", "default", "WaterLakeChance")]
+    [InlineData("omniblock:sky", "sky", "GoldMaxY")]
+    [InlineData("omniblock:flat", "flat", "LavaSpringUpperY")]
+    public void Invalid_feature_settings_fail_during_compilation(
+        string provider,
+        string assetName,
+        string setting)
+    {
+        var definition = LoadSettings(assetName);
+        definition["Features"]![setting] = 0;
+        var providers = BuiltInWorldGeneratorProviders.CreateRegistry();
+
+        var error = Assert.Throws<InvalidOperationException>(() => providers.Compile(
+            ResourceLocation.Parse(provider),
+            "example:invalid_features",
+            JsonSerializer.SerializeToElement(definition),
+            new WorldGeneratorCompileContext(ContentRuntime.Current.Blocks)));
+
+        Assert.Contains("example:invalid_features", error.Message);
+        Assert.Contains(setting, error.Message);
+    }
+
     [Fact]
     public void Builders_create_independent_world_type_instances()
     {
@@ -174,4 +198,11 @@ public sealed class WorldTypeBuilderTests
             ],
             _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, null)
         };
+
+    private static JsonObject LoadSettings(string assetName)
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "assets", "world_type", $"{assetName}.json");
+        var root = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        return root["GeneratorSettings"]!.AsObject();
+    }
 }

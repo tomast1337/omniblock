@@ -19,7 +19,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
     private readonly Carver _carver = new CaveCarver();
     private readonly OctavePerlinNoiseSampler _depthNoise;
     private readonly CactusPatchFeature _featureCactus = new();
-    private readonly ClayOreFeature _featureClay = new(32);
+    private ClayOreFeature _featureClay;
     private readonly DungeonFeature _featureDungeon = new();
     private readonly PumpkinPatchFeature _featurePumpkin = new();
     private readonly SugarCanePatchFeature _featureSugarcane = new();
@@ -121,7 +121,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
         int featureY;
         int featureZ;
 
-        if (_random.NextInt(4) == 0)
+        if (_random.NextInt(_settings.Features.WaterLakeChance) == 0)
         {
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
@@ -129,12 +129,14 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
             _featureWaterLake.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        if (_random.NextInt(8) == 0)
+        if (_random.NextInt(_settings.Features.LavaLakeChance) == 0)
         {
             featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(_random.NextInt(120) + 8);
+            featureY = _random.NextInt(
+                _random.NextInt(_settings.Features.LavaLakeUpperY) + _settings.Features.LavaLakeYOffset);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            if (featureY < 64 || _random.NextInt(10) == 0)
+            if (featureY < _settings.Features.LavaLakeSurfaceY
+                || _random.NextInt(_settings.Features.LavaLakeAboveSurfaceChance) == 0)
             {
                 _featureLavaLake.Generate(_world, _random, featureX, featureY, featureZ);
             }
@@ -188,34 +190,35 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
             _featureIron.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        for (var i = 0; i < 2; ++i)
+        for (var i = 0; i < _settings.Features.GoldAttempts; ++i)
         {
             featureX = blockX + _random.NextInt(16);
-            featureY = _random.NextInt(32);
+            featureY = _random.NextInt(_settings.Features.GoldMaxY);
             featureZ = blockZ + _random.NextInt(16);
             _featureGold.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        for (var i = 0; i < 8; ++i)
+        for (var i = 0; i < _settings.Features.RedstoneAttempts; ++i)
         {
             featureX = blockX + _random.NextInt(16);
-            featureY = _random.NextInt(16);
+            featureY = _random.NextInt(_settings.Features.RedstoneMaxY);
             featureZ = blockZ + _random.NextInt(16);
             _featureRedstone.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        for (var i = 0; i < 1; ++i)
+        for (var i = 0; i < _settings.Features.DiamondAttempts; ++i)
         {
             featureX = blockX + _random.NextInt(16);
-            featureY = _random.NextInt(16);
+            featureY = _random.NextInt(_settings.Features.DiamondMaxY);
             featureZ = blockZ + _random.NextInt(16);
             _featureDiamond.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        for (var i = 0; i < 1; ++i)
+        for (var i = 0; i < _settings.Features.LapisAttempts; ++i)
         {
             featureX = blockX + _random.NextInt(16);
-            featureY = _random.NextInt(16) + _random.NextInt(16);
+            featureY = _random.NextInt(_settings.Features.LapisMaxY)
+                       + _random.NextInt(_settings.Features.LapisMaxY);
             featureZ = blockZ + _random.NextInt(16);
             _featureLapis.Generate(_world, _random, featureX, featureY, featureZ);
         }
@@ -224,7 +227,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
         var treeDensitySample = (int)((_forestNoise.GenerateNoise(blockX * fraction, blockZ * fraction) / 8.0D + _random.NextDouble() * 4.0D + 4.0D) / 3.0D);
         var numberOfTrees = 0;
 
-        if (_random.NextInt(10) == 0)
+        if (_random.NextInt(_settings.Features.TreeBonusChance) == 0)
         {
             ++numberOfTrees;
         }
@@ -281,7 +284,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
             _featureDandelion.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        if (_random.NextInt(2) == 0)
+        if (_random.NextInt(_settings.Features.RoseChance) == 0)
         {
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
@@ -289,7 +292,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
             _featureRose.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        if (_random.NextInt(4) == 0)
+        if (_random.NextInt(_settings.Features.BrownMushroomChance) == 0)
         {
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
@@ -297,7 +300,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
             _featureBrownMushroom.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        if (_random.NextInt(8) == 0)
+        if (_random.NextInt(_settings.Features.RedMushroomChance) == 0)
         {
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
@@ -305,7 +308,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
             _featureRedMushroom.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        for (var i = 0; i < 10; ++i)
+        for (var i = 0; i < _settings.Features.SugarcaneAttempts; ++i)
         {
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
@@ -313,7 +316,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
             _featureSugarcane.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        if (_random.NextInt(32) == 0)
+        if (_random.NextInt(_settings.Features.PumpkinChance) == 0)
         {
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
@@ -335,18 +338,22 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
             _featureCactus.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        for (var i = 0; i < 50; ++i)
+        for (var i = 0; i < _settings.Features.WaterSpringAttempts; ++i)
         {
             featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(_random.NextInt(120) + 8);
+            featureY = _random.NextInt(
+                _random.NextInt(_settings.Features.WaterSpringUpperY) + _settings.Features.WaterSpringYOffset);
             featureZ = blockZ + _random.NextInt(16) + 8;
             _featureWaterSpring.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        for (var i = 0; i < 20; ++i)
+        for (var i = 0; i < _settings.Features.LavaSpringAttempts; ++i)
         {
             featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(_random.NextInt(_random.NextInt(112) + 8) + 8);
+            featureY = _random.NextInt(
+                _random.NextInt(
+                    _random.NextInt(_settings.Features.LavaSpringUpperY) + _settings.Features.LavaSpringYOffset)
+                + _settings.Features.LavaSpringYOffset);
             featureZ = blockZ + _random.NextInt(16) + 8;
             _featureLavaSpring.Generate(_world, _random, featureX, featureY, featureZ);
         }
@@ -384,14 +391,15 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
     {
         _featureWaterLake = new LakeFeature(_blocks.Water);
         _featureLavaLake = new LakeFeature(_blocks.Lava);
-        _featureDirt = new OreFeature(_blocks.Dirt, 32);
-        _featureGravel = new OreFeature(_blocks.Gravel, 32);
-        _featureCoal = new OreFeature(_blocks.CoalOre, 16);
-        _featureIron = new OreFeature(_blocks.IronOre, 8);
-        _featureGold = new OreFeature(_blocks.GoldOre, 8);
-        _featureRedstone = new OreFeature(_blocks.RedstoneOre, 7);
-        _featureDiamond = new OreFeature(_blocks.DiamondOre, 7);
-        _featureLapis = new OreFeature(_blocks.LapisOre, 6);
+        _featureClay = new ClayOreFeature(_settings.Features.ClayVeinSize);
+        _featureDirt = new OreFeature(_blocks.Dirt, _settings.Features.DirtVeinSize);
+        _featureGravel = new OreFeature(_blocks.Gravel, _settings.Features.GravelVeinSize);
+        _featureCoal = new OreFeature(_blocks.CoalOre, _settings.Features.CoalVeinSize);
+        _featureIron = new OreFeature(_blocks.IronOre, _settings.Features.IronVeinSize);
+        _featureGold = new OreFeature(_blocks.GoldOre, _settings.Features.GoldVeinSize);
+        _featureRedstone = new OreFeature(_blocks.RedstoneOre, _settings.Features.RedstoneVeinSize);
+        _featureDiamond = new OreFeature(_blocks.DiamondOre, _settings.Features.DiamondVeinSize);
+        _featureLapis = new OreFeature(_blocks.LapisOre, _settings.Features.LapisVeinSize);
         _featureDandelion = new PlantPatchFeature(_blocks.Dandelion);
         _featureRose = new PlantPatchFeature(_blocks.Rose);
         _featureBrownMushroom = new PlantPatchFeature(_blocks.BrownMushroom);
@@ -469,7 +477,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
 
     public void BuildSurfaces(int chunkX, int chunkZ, byte[] blocks, Biome[] biomes)
     {
-        var chunkBiome = 1.0D / 32.0D;
+        var chunkBiome = _settings.SurfaceNoiseScale;
         _depthBuffer = _depthNoise.Create(_depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, chunkBiome * 2.0D, chunkBiome * 2.0D, chunkBiome * 2.0D);
 
         for (var localX = 0; localX < 16; ++localX)
@@ -516,7 +524,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
                             blocks[blockIndex] = soilBlock;
                             if (currentDepth == 0 && soilBlock == _blocks.Sand)
                             {
-                                currentDepth = _random.NextInt(4);
+                                currentDepth = _random.NextInt(_settings.SandstoneDepthBound);
                                 soilBlock = (byte)_blocks.Sandstone;
                             }
                         }
@@ -606,10 +614,15 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
         int DirtAttempts,
         int GravelAttempts,
         int CoalAttempts,
-        int IronAttempts)
+        int IronAttempts,
+        double SurfaceNoiseScale,
+        int SandstoneDepthBound,
+        FeatureSettings Features)
     {
         public static Settings Default { get; } = new(
-            16, 16, 8, 4, 10, 16, 8, 684.412D, 684.412D, 8, 10, 20, 10, 20, 20);
+            16, 16, 8, 4, 10, 16, 8, 684.412D, 684.412D, 8, 10, 20, 10, 20, 20,
+            1.0D / 32.0D, 4,
+            FeatureSettings.Default);
 
         public void Validate(ResourceLocation owner)
         {
@@ -628,6 +641,9 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
             NonNegative(nameof(GravelAttempts), GravelAttempts);
             NonNegative(nameof(CoalAttempts), CoalAttempts);
             NonNegative(nameof(IronAttempts), IronAttempts);
+            Positive(nameof(SurfaceNoiseScale), SurfaceNoiseScale);
+            Positive(nameof(SandstoneDepthBound), SandstoneDepthBound);
+            Features.Validate(owner);
 
             void Positive(string name, double value)
             {
@@ -642,6 +658,94 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
             void Invalid(string name, object value, string requirement) =>
                 throw new InvalidOperationException(
                     $"World type '{owner}' sky setting '{name}' is {value} and {requirement}.");
+        }
+    }
+
+    internal sealed record FeatureSettings(
+        int WaterLakeChance,
+        int LavaLakeChance,
+        int LavaLakeUpperY,
+        int LavaLakeYOffset,
+        int LavaLakeSurfaceY,
+        int LavaLakeAboveSurfaceChance,
+        int GoldAttempts,
+        int GoldMaxY,
+        int RedstoneAttempts,
+        int RedstoneMaxY,
+        int DiamondAttempts,
+        int DiamondMaxY,
+        int LapisAttempts,
+        int LapisMaxY,
+        int TreeBonusChance,
+        int RoseChance,
+        int BrownMushroomChance,
+        int RedMushroomChance,
+        int SugarcaneAttempts,
+        int PumpkinChance,
+        int WaterSpringAttempts,
+        int WaterSpringUpperY,
+        int WaterSpringYOffset,
+        int LavaSpringAttempts,
+        int LavaSpringUpperY,
+        int LavaSpringYOffset,
+        int ClayVeinSize,
+        int DirtVeinSize,
+        int GravelVeinSize,
+        int CoalVeinSize,
+        int IronVeinSize,
+        int GoldVeinSize,
+        int RedstoneVeinSize,
+        int DiamondVeinSize,
+        int LapisVeinSize)
+    {
+        public static FeatureSettings Default { get; } = new(
+            4, 8, 120, 8, 64, 10, 2, 32, 8, 16, 1, 16, 1, 16, 10, 2, 4, 8,
+            10, 32, 50, 120, 8, 20, 112, 8, 32, 32, 32, 16, 8, 8, 7, 7, 6);
+
+        public void Validate(ResourceLocation owner)
+        {
+            var values = new Dictionary<string, int>
+            {
+                [nameof(WaterLakeChance)] = WaterLakeChance,
+                [nameof(LavaLakeChance)] = LavaLakeChance,
+                [nameof(LavaLakeUpperY)] = LavaLakeUpperY,
+                [nameof(LavaLakeYOffset)] = LavaLakeYOffset,
+                [nameof(LavaLakeSurfaceY)] = LavaLakeSurfaceY,
+                [nameof(LavaLakeAboveSurfaceChance)] = LavaLakeAboveSurfaceChance,
+                [nameof(GoldAttempts)] = GoldAttempts,
+                [nameof(GoldMaxY)] = GoldMaxY,
+                [nameof(RedstoneAttempts)] = RedstoneAttempts,
+                [nameof(RedstoneMaxY)] = RedstoneMaxY,
+                [nameof(DiamondAttempts)] = DiamondAttempts,
+                [nameof(DiamondMaxY)] = DiamondMaxY,
+                [nameof(LapisAttempts)] = LapisAttempts,
+                [nameof(LapisMaxY)] = LapisMaxY,
+                [nameof(TreeBonusChance)] = TreeBonusChance,
+                [nameof(RoseChance)] = RoseChance,
+                [nameof(BrownMushroomChance)] = BrownMushroomChance,
+                [nameof(RedMushroomChance)] = RedMushroomChance,
+                [nameof(SugarcaneAttempts)] = SugarcaneAttempts,
+                [nameof(PumpkinChance)] = PumpkinChance,
+                [nameof(WaterSpringAttempts)] = WaterSpringAttempts,
+                [nameof(WaterSpringUpperY)] = WaterSpringUpperY,
+                [nameof(WaterSpringYOffset)] = WaterSpringYOffset,
+                [nameof(LavaSpringAttempts)] = LavaSpringAttempts,
+                [nameof(LavaSpringUpperY)] = LavaSpringUpperY,
+                [nameof(LavaSpringYOffset)] = LavaSpringYOffset,
+                [nameof(ClayVeinSize)] = ClayVeinSize,
+                [nameof(DirtVeinSize)] = DirtVeinSize,
+                [nameof(GravelVeinSize)] = GravelVeinSize,
+                [nameof(CoalVeinSize)] = CoalVeinSize,
+                [nameof(IronVeinSize)] = IronVeinSize,
+                [nameof(GoldVeinSize)] = GoldVeinSize,
+                [nameof(RedstoneVeinSize)] = RedstoneVeinSize,
+                [nameof(DiamondVeinSize)] = DiamondVeinSize,
+                [nameof(LapisVeinSize)] = LapisVeinSize
+            };
+            foreach (var (name, value) in values)
+                if (name.EndsWith("Attempts", StringComparison.Ordinal) ? value < 0 : value <= 0)
+                    throw new InvalidOperationException(
+                        $"World type '{owner}' sky feature setting '{name}' has invalid value {value}.");
         }
     }
 

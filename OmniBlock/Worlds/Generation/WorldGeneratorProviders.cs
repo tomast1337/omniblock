@@ -112,7 +112,10 @@ public static class BuiltInWorldGeneratorProviders
                 parsed.SurfaceOctaves, parsed.DepthOctaves, parsed.FloatingScaleOctaves,
                 parsed.FloatingNoiseOctaves, parsed.ForestOctaves, parsed.HorizontalNoiseScale,
                 parsed.VerticalNoiseScale, parsed.DungeonAttempts, parsed.ClayAttempts,
-                parsed.DirtAttempts, parsed.GravelAttempts, parsed.CoalAttempts, parsed.IronAttempts);
+                parsed.DirtAttempts, parsed.GravelAttempts, parsed.CoalAttempts, parsed.IronAttempts,
+                parsed.SurfaceLevel, parsed.SurfaceNoiseScale, parsed.BedrockDepth,
+                parsed.SandstoneDepthBound,
+                parsed.Features);
             settings.Validate(worldTypeId);
             return settings;
         }
@@ -135,6 +138,12 @@ public static class BuiltInWorldGeneratorProviders
             public int GravelAttempts { get; init; } = 10;
             public int CoalAttempts { get; init; } = 20;
             public int IronAttempts { get; init; } = 20;
+            public int SurfaceLevel { get; init; } = 64;
+            public double SurfaceNoiseScale { get; init; } = 1.0D / 32.0D;
+            public int BedrockDepth { get; init; } = 5;
+            public int SandstoneDepthBound { get; init; } = 4;
+            public OverworldChunkGenerator.FeatureSettings Features { get; init; } =
+                OverworldChunkGenerator.FeatureSettings.Default;
         }
 
         private sealed class Compiled(
@@ -179,7 +188,8 @@ public static class BuiltInWorldGeneratorProviders
                 parsed.DepthOctaves, parsed.FloatingScaleOctaves, parsed.FloatingNoiseOctaves,
                 parsed.ForestOctaves, parsed.HorizontalNoiseScale, parsed.VerticalNoiseScale,
                 parsed.DungeonAttempts, parsed.ClayAttempts, parsed.DirtAttempts,
-                parsed.GravelAttempts, parsed.CoalAttempts, parsed.IronAttempts);
+                parsed.GravelAttempts, parsed.CoalAttempts, parsed.IronAttempts,
+                parsed.SurfaceNoiseScale, parsed.SandstoneDepthBound, parsed.Features);
             settings.Validate(worldTypeId);
             return settings;
         }
@@ -201,6 +211,10 @@ public static class BuiltInWorldGeneratorProviders
             public int GravelAttempts { get; init; } = 10;
             public int CoalAttempts { get; init; } = 20;
             public int IronAttempts { get; init; } = 20;
+            public double SurfaceNoiseScale { get; init; } = 1.0D / 32.0D;
+            public int SandstoneDepthBound { get; init; } = 4;
+            public SkyChunkGenerator.FeatureSettings Features { get; init; } =
+                SkyChunkGenerator.FeatureSettings.Default;
         }
 
         private sealed class Compiled(
@@ -245,7 +259,8 @@ public static class BuiltInWorldGeneratorProviders
                 parsed.DirtAttempts,
                 parsed.GravelAttempts,
                 parsed.CoalAttempts,
-                parsed.IronAttempts);
+                parsed.IronAttempts,
+                parsed.Features);
             settings.Validate(worldTypeId);
             return settings;
         }
@@ -258,6 +273,8 @@ public static class BuiltInWorldGeneratorProviders
             public int GravelAttempts { get; init; } = 10;
             public int CoalAttempts { get; init; } = 20;
             public int IronAttempts { get; init; } = 20;
+            public FlatChunkGenerator.FeatureSettings Features { get; init; } =
+                FlatChunkGenerator.FeatureSettings.Default;
         }
 
         private sealed class Compiled(
@@ -316,7 +333,17 @@ public static class BuiltInWorldGeneratorProviders
                 parsed.ScaleOctaves,
                 parsed.DepthOctaves,
                 parsed.LavaSpringAttempts,
-                parsed.GlowstoneClusterAttempts);
+                parsed.GlowstoneClusterAttempts,
+                parsed.BedrockDepth,
+                parsed.FeatureHorizontalRange,
+                parsed.FeatureHorizontalOffset,
+                parsed.FeatureUpperY,
+                parsed.FeatureVerticalOffset,
+                parsed.FireClusterBound,
+                parsed.GlowstoneClusterBound,
+                parsed.RareGlowstoneUpperY,
+                parsed.MushroomChance,
+                parsed.MushroomUpperY);
             settings.Validate(profileId);
             return settings;
         }
@@ -337,6 +364,16 @@ public static class BuiltInWorldGeneratorProviders
             public int DepthOctaves { get; init; } = 16;
             public int LavaSpringAttempts { get; init; } = 8;
             public int GlowstoneClusterAttempts { get; init; } = 10;
+            public int BedrockDepth { get; init; } = 5;
+            public int FeatureHorizontalRange { get; init; } = 16;
+            public int FeatureHorizontalOffset { get; init; } = 8;
+            public int FeatureUpperY { get; init; } = 120;
+            public int FeatureVerticalOffset { get; init; } = 4;
+            public int FireClusterBound { get; init; } = 10;
+            public int GlowstoneClusterBound { get; init; } = 10;
+            public int RareGlowstoneUpperY { get; init; } = 128;
+            public int MushroomChance { get; init; } = 1;
+            public int MushroomUpperY { get; init; } = 128;
         }
 
         private sealed class Compiled(

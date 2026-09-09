@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using OmniBlock.Registries;
 using OmniBlock.Worlds.Generation;
 
@@ -71,6 +72,29 @@ public sealed class DimensionGeneratorProfileTests
 
         Assert.Contains("example:invalid_nether", error.Message);
         Assert.Contains(setting, error.Message);
+    }
+
+    [Fact]
+    public void Invalid_nether_feature_range_fails_during_compilation()
+    {
+        var path = Path.Combine(
+            AppContext.BaseDirectory,
+            "assets",
+            "dimension_generator",
+            "nether.json");
+        var root = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        var settings = root["GeneratorSettings"]!.AsObject();
+        settings["FireClusterBound"] = 0;
+        var providers = BuiltInWorldGeneratorProviders.CreateRegistry();
+
+        var error = Assert.Throws<InvalidOperationException>(() => providers.Compile(
+            BuiltInWorldGeneratorProviders.Nether,
+            "example:invalid_nether_features",
+            JsonSerializer.SerializeToElement(settings),
+            new WorldGeneratorCompileContext(ContentRuntime.Current.Blocks)));
+
+        Assert.Contains("example:invalid_nether_features", error.Message);
+        Assert.Contains("FireClusterBound", error.Message);
     }
 
     [Fact]

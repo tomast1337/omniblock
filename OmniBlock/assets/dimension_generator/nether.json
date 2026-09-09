@@ -25,6 +25,16 @@
     "ScaleOctaves": 10,
     "DepthOctaves": 16,
     "LavaSpringAttempts": 8,
-    "GlowstoneClusterAttempts": 10
+    "GlowstoneClusterAttempts": 10,
+    "BedrockDepth": 5,
+    "FeatureHorizontalRange": 16,
+    "FeatureHorizontalOffset": 8,
+    "FeatureUpperY": 120,
+    "FeatureVerticalOffset": 4,
+    "FireClusterBound": 10,
+    "GlowstoneClusterBound": 10,
+    "RareGlowstoneUpperY": 128,
+    "MushroomChance": 1,
+    "MushroomUpperY": 128
   }
 }

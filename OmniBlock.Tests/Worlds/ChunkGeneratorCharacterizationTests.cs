@@ -1,12 +1,16 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using OmniBlock.Entities;
+using OmniBlock.Registries;
 using OmniBlock.Server.Worlds;
 using OmniBlock.Worlds;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Dimensions;
+using OmniBlock.Worlds.Generation;
 using OmniBlock.Worlds.Storage;
 using OmniBlock.Worlds.Storage.RegionFormat;
 
@@ -52,6 +56,33 @@ public sealed class ChunkGeneratorCharacterizationTests
         var actual = Fingerprint(chunk);
 
         Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void Compiled_overworld_noise_settings_change_candidate_terrain()
+    {
+        var runtime = ContentRuntime.Current;
+        var path = Path.Combine(AppContext.BaseDirectory, "assets", "world_type", "default.json");
+        var root = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        var settings = root["GeneratorSettings"]!.AsObject();
+        settings["HorizontalNoiseScale"] = 512.0D;
+        var compiled = runtime.WorldGeneratorProviders.Compile(
+            BuiltInWorldGeneratorProviders.Overworld,
+            "example:scaled_overworld",
+            JsonSerializer.SerializeToElement(settings),
+            new WorldGeneratorCompileContext(runtime.Blocks));
+        var world = new GenerationTestWorld(
+            987654321L,
+            runtime.WorldTypes.Get("omniblock:default"),
+            "",
+            null);
+        WorldGeneratorBuildContext context = new(world, world.Seed, "");
+
+        var actual = Fingerprint(compiled.Create(context).GetChunk(12, -7));
+
+        Assert.NotEqual(
+            "7624e29fe1e5b381551048ad8214c072187d2a4fef7b0f55ad2ee87f56063f09",
+            actual);
     }
 
     [Theory]

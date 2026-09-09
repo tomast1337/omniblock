@@ -12,7 +12,7 @@ internal class FlatChunkGenerator : IChunkSource
     private readonly BlockIds _blocks;
     private readonly Settings _settings;
     private readonly CactusPatchFeature _featureCactus = new();
-    private readonly ClayOreFeature _featureClay = new(32);
+    private ClayOreFeature _featureClay;
     private readonly DungeonFeature _featureDungeon = new();
     private readonly string _generatorOptions;
     private readonly PumpkinPatchFeature _featurePumpkin = new();
@@ -131,7 +131,7 @@ internal class FlatChunkGenerator : IChunkSource
         var hasDungeons = _generatorInfo.WorldFeatures.ContainsKey("dungeon");
         var hasDecoration = _generatorInfo.WorldFeatures.ContainsKey("decoration");
 
-        if (hasLakes && _random.NextInt(4) == 0)
+        if (hasLakes && _random.NextInt(_settings.Features.WaterLakeChance) == 0)
         {
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
@@ -139,12 +139,14 @@ internal class FlatChunkGenerator : IChunkSource
             _featureWaterLake.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        if (hasLavaLakes && _random.NextInt(8) == 0)
+        if (hasLavaLakes && _random.NextInt(_settings.Features.LavaLakeChance) == 0)
         {
             featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(_random.NextInt(120) + 8);
+            featureY = _random.NextInt(
+                _random.NextInt(_settings.Features.LavaLakeUpperY) + _settings.Features.LavaLakeYOffset);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            if (featureY < 64 || _random.NextInt(10) == 0)
+            if (featureY < _settings.Features.LavaLakeSurfaceY
+                || _random.NextInt(_settings.Features.LavaLakeAboveSurfaceChance) == 0)
             {
                 _featureLavaLake.Generate(_world, _random, featureX, featureY, featureZ);
             }
@@ -204,41 +206,42 @@ internal class FlatChunkGenerator : IChunkSource
                 _featureIron.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
-            for (var i = 0; i < 2; ++i)
+            for (var i = 0; i < _settings.Features.GoldAttempts; ++i)
             {
                 featureX = blockX + _random.NextInt(16);
-                featureY = _random.NextInt(32);
+                featureY = _random.NextInt(_settings.Features.GoldMaxY);
                 featureZ = blockZ + _random.NextInt(16);
                 _featureGold.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
-            for (var i = 0; i < 8; ++i)
+            for (var i = 0; i < _settings.Features.RedstoneAttempts; ++i)
             {
                 featureX = blockX + _random.NextInt(16);
-                featureY = _random.NextInt(16);
+                featureY = _random.NextInt(_settings.Features.RedstoneMaxY);
                 featureZ = blockZ + _random.NextInt(16);
                 _featureRedstone.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
-            for (var i = 0; i < 1; ++i)
+            for (var i = 0; i < _settings.Features.DiamondAttempts; ++i)
             {
                 featureX = blockX + _random.NextInt(16);
-                featureY = _random.NextInt(16);
+                featureY = _random.NextInt(_settings.Features.DiamondMaxY);
                 featureZ = blockZ + _random.NextInt(16);
                 _featureDiamond.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
-            for (var i = 0; i < 1; ++i)
+            for (var i = 0; i < _settings.Features.LapisAttempts; ++i)
             {
                 featureX = blockX + _random.NextInt(16);
-                featureY = _random.NextInt(16) + _random.NextInt(16);
+                featureY = _random.NextInt(_settings.Features.LapisMaxY)
+                           + _random.NextInt(_settings.Features.LapisMaxY);
                 featureZ = blockZ + _random.NextInt(16);
                 _featureLapis.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
             // Trees
             var numberOfTrees = 0;
-            if (_random.NextInt(10) == 0) numberOfTrees++;
+            if (_random.NextInt(_settings.Features.TreeChance) == 0) numberOfTrees++;
 
             for (var i = 0; i < numberOfTrees; ++i)
             {
@@ -250,7 +253,7 @@ internal class FlatChunkGenerator : IChunkSource
             }
 
             // Flowers and Mushrooms
-            for (var i = 0; i < 2; ++i)
+            for (var i = 0; i < _settings.Features.DandelionAttempts; ++i)
             {
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(128);
@@ -258,7 +261,7 @@ internal class FlatChunkGenerator : IChunkSource
                 _featureDandelion.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
-            if (_random.NextInt(2) == 0)
+            if (_random.NextInt(_settings.Features.RoseChance) == 0)
             {
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(128);
@@ -266,7 +269,7 @@ internal class FlatChunkGenerator : IChunkSource
                 _featureRose.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
-            if (_random.NextInt(4) == 0)
+            if (_random.NextInt(_settings.Features.BrownMushroomChance) == 0)
             {
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(128);
@@ -274,7 +277,7 @@ internal class FlatChunkGenerator : IChunkSource
                 _featureBrownMushroom.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
-            if (_random.NextInt(8) == 0)
+            if (_random.NextInt(_settings.Features.RedMushroomChance) == 0)
             {
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(128);
@@ -283,7 +286,7 @@ internal class FlatChunkGenerator : IChunkSource
             }
 
             // Sugarcane, Pumpkins
-            for (var i = 0; i < 10; ++i)
+            for (var i = 0; i < _settings.Features.SugarcaneAttempts; ++i)
             {
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(128);
@@ -291,7 +294,7 @@ internal class FlatChunkGenerator : IChunkSource
                 _featureSugarcane.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
-            if (_random.NextInt(32) == 0)
+            if (_random.NextInt(_settings.Features.PumpkinChance) == 0)
             {
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(128);
@@ -300,7 +303,7 @@ internal class FlatChunkGenerator : IChunkSource
             }
 
             // Grass, Dead Bush, Cactus
-            for (var i = 0; i < 20; ++i)
+            for (var i = 0; i < _settings.Features.GrassAttempts; ++i)
             {
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(128);
@@ -308,7 +311,7 @@ internal class FlatChunkGenerator : IChunkSource
                 _featureGrass.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
-            for (var i = 0; i < 2; ++i)
+            for (var i = 0; i < _settings.Features.DeadBushAttempts; ++i)
             {
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(128);
@@ -316,7 +319,7 @@ internal class FlatChunkGenerator : IChunkSource
                 _featureDeadBush.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
-            for (var i = 0; i < 10; ++i)
+            for (var i = 0; i < _settings.Features.CactusAttempts; ++i)
             {
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(128);
@@ -325,18 +328,22 @@ internal class FlatChunkGenerator : IChunkSource
             }
 
             // Spring Features
-            for (var i = 0; i < 50; ++i)
+            for (var i = 0; i < _settings.Features.WaterSpringAttempts; ++i)
             {
                 featureX = blockX + _random.NextInt(16) + 8;
-                featureY = _random.NextInt(_random.NextInt(120) + 8);
+                featureY = _random.NextInt(
+                    _random.NextInt(_settings.Features.WaterSpringUpperY) + _settings.Features.WaterSpringYOffset);
                 featureZ = blockZ + _random.NextInt(16) + 8;
                 _featureWaterSpring.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
-            for (var i = 0; i < 20; ++i)
+            for (var i = 0; i < _settings.Features.LavaSpringAttempts; ++i)
             {
                 featureX = blockX + _random.NextInt(16) + 8;
-                featureY = _random.NextInt(_random.NextInt(_random.NextInt(112) + 8) + 8);
+                featureY = _random.NextInt(
+                    _random.NextInt(
+                        _random.NextInt(_settings.Features.LavaSpringUpperY) + _settings.Features.LavaSpringYOffset)
+                    + _settings.Features.LavaSpringYOffset);
                 featureZ = blockZ + _random.NextInt(16) + 8;
                 _featureLavaSpring.Generate(_world, _random, featureX, featureY, featureZ);
             }
@@ -350,14 +357,15 @@ internal class FlatChunkGenerator : IChunkSource
     {
         _featureWaterLake = new LakeFeature(_blocks.Water);
         _featureLavaLake = new LakeFeature(_blocks.Lava);
-        _featureDirt = new OreFeature(_blocks.Dirt, 32);
-        _featureGravel = new OreFeature(_blocks.Gravel, 32);
-        _featureCoal = new OreFeature(_blocks.CoalOre, 16);
-        _featureIron = new OreFeature(_blocks.IronOre, 8);
-        _featureGold = new OreFeature(_blocks.GoldOre, 8);
-        _featureRedstone = new OreFeature(_blocks.RedstoneOre, 7);
-        _featureDiamond = new OreFeature(_blocks.DiamondOre, 7);
-        _featureLapis = new OreFeature(_blocks.LapisOre, 6);
+        _featureClay = new ClayOreFeature(_settings.Features.ClayVeinSize);
+        _featureDirt = new OreFeature(_blocks.Dirt, _settings.Features.DirtVeinSize);
+        _featureGravel = new OreFeature(_blocks.Gravel, _settings.Features.GravelVeinSize);
+        _featureCoal = new OreFeature(_blocks.CoalOre, _settings.Features.CoalVeinSize);
+        _featureIron = new OreFeature(_blocks.IronOre, _settings.Features.IronVeinSize);
+        _featureGold = new OreFeature(_blocks.GoldOre, _settings.Features.GoldVeinSize);
+        _featureRedstone = new OreFeature(_blocks.RedstoneOre, _settings.Features.RedstoneVeinSize);
+        _featureDiamond = new OreFeature(_blocks.DiamondOre, _settings.Features.DiamondVeinSize);
+        _featureLapis = new OreFeature(_blocks.LapisOre, _settings.Features.LapisVeinSize);
         _featureDandelion = new PlantPatchFeature(_blocks.Dandelion);
         _featureRose = new PlantPatchFeature(_blocks.Rose);
         _featureBrownMushroom = new PlantPatchFeature(_blocks.BrownMushroom);
@@ -374,9 +382,10 @@ internal class FlatChunkGenerator : IChunkSource
         int DirtAttempts,
         int GravelAttempts,
         int CoalAttempts,
-        int IronAttempts)
+        int IronAttempts,
+        FeatureSettings Features)
     {
-        public static Settings Default { get; } = new(8, 10, 20, 10, 20, 20);
+        public static Settings Default { get; } = new(8, 10, 20, 10, 20, 20, FeatureSettings.Default);
 
         public void Validate(ResourceLocation owner)
         {
@@ -386,12 +395,70 @@ internal class FlatChunkGenerator : IChunkSource
             NonNegative(nameof(GravelAttempts), GravelAttempts);
             NonNegative(nameof(CoalAttempts), CoalAttempts);
             NonNegative(nameof(IronAttempts), IronAttempts);
+            Features.Validate(owner);
 
             void NonNegative(string name, int value)
             {
                 if (value < 0)
                     throw new InvalidOperationException(
                         $"World type '{owner}' flat setting '{name}' must not be negative (was {value}).");
+            }
+        }
+    }
+
+    internal sealed record FeatureSettings(
+        int WaterLakeChance,
+        int LavaLakeChance,
+        int LavaLakeUpperY,
+        int LavaLakeYOffset,
+        int LavaLakeSurfaceY,
+        int LavaLakeAboveSurfaceChance,
+        int GoldAttempts,
+        int GoldMaxY,
+        int RedstoneAttempts,
+        int RedstoneMaxY,
+        int DiamondAttempts,
+        int DiamondMaxY,
+        int LapisAttempts,
+        int LapisMaxY,
+        int TreeChance,
+        int DandelionAttempts,
+        int RoseChance,
+        int BrownMushroomChance,
+        int RedMushroomChance,
+        int SugarcaneAttempts,
+        int PumpkinChance,
+        int GrassAttempts,
+        int DeadBushAttempts,
+        int CactusAttempts,
+        int WaterSpringAttempts,
+        int WaterSpringUpperY,
+        int WaterSpringYOffset,
+        int LavaSpringAttempts,
+        int LavaSpringUpperY,
+        int LavaSpringYOffset,
+        int ClayVeinSize,
+        int DirtVeinSize,
+        int GravelVeinSize,
+        int CoalVeinSize,
+        int IronVeinSize,
+        int GoldVeinSize,
+        int RedstoneVeinSize,
+        int DiamondVeinSize,
+        int LapisVeinSize)
+    {
+        public static FeatureSettings Default { get; } = new(
+            4, 8, 120, 8, 64, 10, 2, 32, 8, 16, 1, 16, 1, 16, 10, 2, 2, 4, 8,
+            10, 32, 20, 2, 10, 50, 120, 8, 20, 112, 8, 32, 32, 32, 16, 8, 8, 7, 7, 6);
+
+        public void Validate(ResourceLocation owner)
+        {
+            foreach (var property in GetType().GetProperties())
+            {
+                var allowsZero = property.Name.EndsWith("Attempts", StringComparison.Ordinal);
+                if (property.GetValue(this) is int value && (allowsZero ? value < 0 : value <= 0))
+                    throw new InvalidOperationException(
+                        $"World type '{owner}' flat feature setting '{property.Name}' has invalid value {value}.");
             }
         }
     }

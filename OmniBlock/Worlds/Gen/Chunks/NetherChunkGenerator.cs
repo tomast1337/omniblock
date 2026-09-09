@@ -86,54 +86,54 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
         int featureZ;
         for (numIterations = 0; numIterations < _settings.LavaSpringAttempts; ++numIterations)
         {
-            featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(120) + 4;
-            featureZ = blockZ + _random.NextInt(16) + 8;
+            featureX = blockX + _random.NextInt(_settings.FeatureHorizontalRange) + _settings.FeatureHorizontalOffset;
+            featureY = _random.NextInt(_settings.FeatureUpperY) + _settings.FeatureVerticalOffset;
+            featureZ = blockZ + _random.NextInt(_settings.FeatureHorizontalRange) + _settings.FeatureHorizontalOffset;
             _featureNetherLavaSpring.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        numIterations = _random.NextInt(_random.NextInt(10) + 1) + 1;
+        numIterations = _random.NextInt(_random.NextInt(_settings.FireClusterBound) + 1) + 1;
 
         int featureZFallback;
         for (featureX = 0; featureX < numIterations; ++featureX)
         {
-            featureY = blockX + _random.NextInt(16) + 8;
-            featureZ = _random.NextInt(120) + 4;
-            featureZFallback = blockZ + _random.NextInt(16) + 8;
+            featureY = blockX + _random.NextInt(_settings.FeatureHorizontalRange) + _settings.FeatureHorizontalOffset;
+            featureZ = _random.NextInt(_settings.FeatureUpperY) + _settings.FeatureVerticalOffset;
+            featureZFallback = blockZ + _random.NextInt(_settings.FeatureHorizontalRange) + _settings.FeatureHorizontalOffset;
             _featureNetherFire.Generate(_world, _random, featureY, featureZ, featureZFallback);
         }
 
-        numIterations = _random.NextInt(_random.NextInt(10) + 1);
+        numIterations = _random.NextInt(_random.NextInt(_settings.GlowstoneClusterBound) + 1);
 
         for (featureX = 0; featureX < numIterations; ++featureX)
         {
-            featureY = blockX + _random.NextInt(16) + 8;
-            featureZ = _random.NextInt(120) + 4;
-            featureZFallback = blockZ + _random.NextInt(16) + 8;
+            featureY = blockX + _random.NextInt(_settings.FeatureHorizontalRange) + _settings.FeatureHorizontalOffset;
+            featureZ = _random.NextInt(_settings.FeatureUpperY) + _settings.FeatureVerticalOffset;
+            featureZFallback = blockZ + _random.NextInt(_settings.FeatureHorizontalRange) + _settings.FeatureHorizontalOffset;
             _featureGlowstoneFull.Generate(_world, _random, featureY, featureZ, featureZFallback);
         }
 
         for (featureX = 0; featureX < _settings.GlowstoneClusterAttempts; ++featureX)
         {
-            featureY = blockX + _random.NextInt(16) + 8;
-            featureZ = _random.NextInt(128);
-            featureZFallback = blockZ + _random.NextInt(16) + 8;
+            featureY = blockX + _random.NextInt(_settings.FeatureHorizontalRange) + _settings.FeatureHorizontalOffset;
+            featureZ = _random.NextInt(_settings.RareGlowstoneUpperY);
+            featureZFallback = blockZ + _random.NextInt(_settings.FeatureHorizontalRange) + _settings.FeatureHorizontalOffset;
             _featureGlowstoneRare.Generate(_world, _random, featureY, featureZ, featureZFallback);
         }
 
-        if (_random.NextInt(1) == 0)
+        if (_random.NextInt(_settings.MushroomChance) == 0)
         {
-            featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(128);
-            featureZ = blockZ + _random.NextInt(16) + 8;
+            featureX = blockX + _random.NextInt(_settings.FeatureHorizontalRange) + _settings.FeatureHorizontalOffset;
+            featureY = _random.NextInt(_settings.MushroomUpperY);
+            featureZ = blockZ + _random.NextInt(_settings.FeatureHorizontalRange) + _settings.FeatureHorizontalOffset;
             _featureBrownMushroom.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        if (_random.NextInt(1) == 0)
+        if (_random.NextInt(_settings.MushroomChance) == 0)
         {
-            featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(128);
-            featureZ = blockZ + _random.NextInt(16) + 8;
+            featureX = blockX + _random.NextInt(_settings.FeatureHorizontalRange) + _settings.FeatureHorizontalOffset;
+            featureY = _random.NextInt(_settings.MushroomUpperY);
+            featureZ = blockZ + _random.NextInt(_settings.FeatureHorizontalRange) + _settings.FeatureHorizontalOffset;
             _featureRedMushroom.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
@@ -250,11 +250,11 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
                 for (var blockY = 127; blockY >= 0; --blockY)
                 {
                     var blockIndex = (localZ * 16 + localX) * 128 + blockY;
-                    if (blockY >= 127 - _random.NextInt(5))
+                    if (blockY >= 127 - _random.NextInt(_settings.BedrockDepth))
                     {
                         blocks[blockIndex] = (byte)_blocks.Bedrock;
                     }
-                    else if (blockY <= 0 + _random.NextInt(5))
+                    else if (blockY <= _random.NextInt(_settings.BedrockDepth))
                     {
                         blocks[blockIndex] = (byte)_blocks.Bedrock;
                     }
@@ -524,7 +524,17 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
         int ScaleOctaves,
         int DepthOctaves,
         int LavaSpringAttempts,
-        int GlowstoneClusterAttempts)
+        int GlowstoneClusterAttempts,
+        int BedrockDepth,
+        int FeatureHorizontalRange,
+        int FeatureHorizontalOffset,
+        int FeatureUpperY,
+        int FeatureVerticalOffset,
+        int FireClusterBound,
+        int GlowstoneClusterBound,
+        int RareGlowstoneUpperY,
+        int MushroomChance,
+        int MushroomUpperY)
     {
         public static Settings Default { get; } = new(
             32,
@@ -540,7 +550,17 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
             10,
             16,
             8,
-            10);
+            10,
+            5,
+            16,
+            8,
+            120,
+            4,
+            10,
+            10,
+            128,
+            1,
+            128);
 
         public void Validate(ResourceLocation owner)
         {
@@ -558,6 +578,16 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
             Positive(nameof(DepthOctaves), DepthOctaves);
             NonNegative(nameof(LavaSpringAttempts), LavaSpringAttempts);
             NonNegative(nameof(GlowstoneClusterAttempts), GlowstoneClusterAttempts);
+            Positive(nameof(BedrockDepth), BedrockDepth);
+            Positive(nameof(FeatureHorizontalRange), FeatureHorizontalRange);
+            NonNegative(nameof(FeatureHorizontalOffset), FeatureHorizontalOffset);
+            Positive(nameof(FeatureUpperY), FeatureUpperY);
+            NonNegative(nameof(FeatureVerticalOffset), FeatureVerticalOffset);
+            Positive(nameof(FireClusterBound), FireClusterBound);
+            Positive(nameof(GlowstoneClusterBound), GlowstoneClusterBound);
+            Positive(nameof(RareGlowstoneUpperY), RareGlowstoneUpperY);
+            Positive(nameof(MushroomChance), MushroomChance);
+            Positive(nameof(MushroomUpperY), MushroomUpperY);
 
             if (LavaLevel >= ChuckFormat.WorldHeight)
                 Invalid(nameof(LavaLevel), LavaLevel, $"must be below {ChuckFormat.WorldHeight}");
