@@ -69,12 +69,14 @@ public static class BuiltInWorldGeneratorProviders
     public static readonly ResourceLocation Overworld = "omniblock:overworld";
     public static readonly ResourceLocation Flat = "omniblock:flat";
     public static readonly ResourceLocation Sky = "omniblock:sky";
+    public static readonly ResourceLocation Nether = "omniblock:nether";
 
     public static WorldGeneratorProviderRegistry CreateRegistry() => new(
     [
         Pair(Overworld, new OverworldProvider()),
         Pair(Flat, new FlatProvider()),
-        Pair(Sky, new SkyProvider())
+        Pair(Sky, new SkyProvider()),
+        Pair(Nether, new NetherProvider())
     ]);
 
     private static KeyValuePair<ResourceLocation, IWorldGeneratorProvider> Pair(
@@ -151,30 +153,57 @@ public static class BuiltInWorldGeneratorProviders
         }
     }
 
+    private sealed class NetherProvider : IWorldGeneratorProvider
+    {
+        public ICompiledWorldGenerator Compile(
+            ResourceLocation profileId,
+            JsonElement definition,
+            in WorldGeneratorCompileContext context)
+        {
+            var references = ReadBlockReferences(
+                profileId,
+                "nether",
+                definition,
+                "Dimension generator profile");
+            if (references is null) return new Compiled(null);
+            var blocks = NetherChunkGenerator.BlockIds.Resolve(context.Blocks, references, profileId);
+            return new Compiled(blocks);
+        }
+
+        private sealed class Compiled(NetherChunkGenerator.BlockIds? blocks) : ICompiledWorldGenerator
+        {
+            public IChunkSource Create(in WorldGeneratorBuildContext context) =>
+                blocks is null
+                    ? new NetherChunkGenerator(context.World, context.Seed)
+                    : new NetherChunkGenerator(context.World, context.Seed, blocks);
+        }
+    }
+
     private static IReadOnlyDictionary<string, string>? ReadBlockReferences(
         ResourceLocation owner,
         string providerName,
-        JsonElement definition)
+        JsonElement definition,
+        string ownerKind = "World type")
     {
         if (definition.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
             return null; // Compatibility for programmatically-created legacy definitions.
         if (definition.ValueKind != JsonValueKind.Object)
             throw new InvalidOperationException(
-                $"World type '{owner}' {providerName} generator settings must be an object.");
+                $"{ownerKind} '{owner}' {providerName} generator settings must be an object.");
         if (!definition.TryGetProperty("Blocks", out var blocksElement)
             || blocksElement.ValueKind != JsonValueKind.Object)
             throw new InvalidOperationException(
-                $"World type '{owner}' {providerName} generator settings require a 'Blocks' object.");
+                $"{ownerKind} '{owner}' {providerName} generator settings require a 'Blocks' object.");
 
         var references = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var property in blocksElement.EnumerateObject())
         {
             if (property.Value.ValueKind != JsonValueKind.String)
                 throw new InvalidOperationException(
-                    $"World type '{owner}' {providerName} block role '{property.Name}' must be a resource name.");
+                    $"{ownerKind} '{owner}' {providerName} block role '{property.Name}' must be a resource name.");
             if (!references.TryAdd(property.Name, property.Value.GetString()!))
                 throw new InvalidOperationException(
-                    $"World type '{owner}' {providerName} repeats block role '{property.Name}'.");
+                    $"{ownerKind} '{owner}' {providerName} repeats block role '{property.Name}'.");
         }
 
         return references;

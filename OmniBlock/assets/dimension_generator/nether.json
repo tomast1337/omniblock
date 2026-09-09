@@ -1,0 +1,16 @@
+{
+  "DimensionId": -1,
+  "Generator": "omniblock:nether",
+  "GeneratorSettings": {
+    "Blocks": {
+      "netherrack": "omniblock:netherrack",
+      "lava": "omniblock:lava",
+      "flowing_lava": "omniblock:flowing_lava",
+      "bedrock": "omniblock:bedrock",
+      "gravel": "omniblock:gravel",
+      "soulsand": "omniblock:soulsand",
+      "brown_mushroom": "omniblock:brown_mushroom",
+      "red_mushroom": "omniblock:red_mushroom"
+    }
+  }
+}

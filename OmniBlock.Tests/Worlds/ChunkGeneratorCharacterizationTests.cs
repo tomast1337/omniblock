@@ -241,7 +241,9 @@ public sealed class ChunkGeneratorCharacterizationTests
         {
             var types = ContentRuntime.Current.WorldTypes;
             var worldType = profile == "nether" ? types.Get("default") : types.Get(profile);
-            var dimension = profile == "nether" ? Dimension.FromId(-1) : null;
+            var dimension = profile == "nether"
+                ? Dimension.FromId(-1, ContentRuntime.Current)
+                : null;
             return new GeneratorFixture(new GenerationTestWorld(seed, worldType, options, dimension));
         }
     }

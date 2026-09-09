@@ -37,6 +37,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
     private readonly List<EntityDefinition> _pendingEntityDefinitions = [];
     private readonly List<ItemDefinition> _pendingItemDefinitions = [];
     private readonly List<ProcessDefinition> _pendingProcessDefinitions = [];
+    private readonly List<DimensionGeneratorProfileDefinition> _pendingDimensionGeneratorProfiles = [];
     private readonly List<WorldTypeDefinition> _pendingWorldTypeDefinitions = [];
     private bool _built;
     private bool _blocksBuilt;
@@ -130,6 +131,13 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         if (_built) throw new InvalidOperationException("Cannot add content after the runtime has been built.");
         ArgumentNullException.ThrowIfNull(definition);
         _pendingWorldTypeDefinitions.Add(definition);
+    }
+
+    internal void AddDimensionGeneratorProfile(DimensionGeneratorProfileDefinition definition)
+    {
+        if (_built) throw new InvalidOperationException("Cannot add content after the runtime has been built.");
+        ArgumentNullException.ThrowIfNull(definition);
+        _pendingDimensionGeneratorProfiles.Add(definition);
     }
 
     internal bool ContainsEntityDefinition(ResourceLocation key) =>
@@ -248,6 +256,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         _blockRuntimeView.Freeze();
         var processes = BuildProcesses();
         var worldTypes = BuildWorldTypes();
+        var dimensionGeneratorProfiles = BuildDimensionGeneratorProfiles();
         ContentRuntime runtime = new(
             _blocks.Select(static entry => (entry.Key, entry.Block)),
             _items.Select(static entry => (entry.Key, entry.Item)),
@@ -259,6 +268,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
             ProcessProviders,
             processes,
             worldTypes,
+            dimensionGeneratorProfiles,
             WorldGeneratorProviders);
         _built = true;
         return runtime;
@@ -298,6 +308,43 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         }
 
         return types;
+    }
+
+    private IReadOnlyList<DimensionGeneratorProfile> BuildDimensionGeneratorProfiles()
+    {
+        var profiles = new List<DimensionGeneratorProfile>(_pendingDimensionGeneratorProfiles.Count);
+        var keys = new HashSet<ResourceLocation>();
+        var dimensionIds = new HashSet<int>();
+        foreach (var definition in _pendingDimensionGeneratorProfiles)
+        {
+            ResourceLocation key = new(definition.Namespace, definition.Name);
+            if (!keys.Add(key))
+                throw new InvalidOperationException($"Duplicate dimension generator profile '{key}'.");
+            if (!dimensionIds.Add(definition.DimensionId))
+                throw new InvalidOperationException(
+                    $"Duplicate dimension generator profile id {definition.DimensionId} for '{key}'.");
+            if (string.IsNullOrWhiteSpace(definition.Generator))
+                throw new InvalidOperationException(
+                    $"Dimension generator profile '{key}': generator provider is required.");
+
+            var providerType = ResourceLocation.Parse(definition.Generator);
+            if (!WorldGeneratorProviders.Contains(providerType))
+                throw new InvalidOperationException(
+                    $"Dimension generator profile '{key}': unknown generator provider '{providerType}'.");
+
+            var compiledGenerator = WorldGeneratorProviders.Compile(
+                providerType,
+                key,
+                definition.GeneratorSettings,
+                new WorldGeneratorCompileContext(_blockRuntimeView));
+            profiles.Add(new DimensionGeneratorProfile(
+                key,
+                definition.DimensionId,
+                providerType,
+                compiledGenerator));
+        }
+
+        return profiles;
     }
 
     internal void BuildEntitiesForBootstrap() => BuildPendingEntityDefinitions();

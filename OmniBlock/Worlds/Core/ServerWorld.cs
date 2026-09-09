@@ -23,7 +23,7 @@ public class ServerWorld : World
     public bool savingDisabled;
 
     public ServerWorld(OmniBlockServer server, IWorldStorage storage, string saveName, int dimensionId, WorldSettings settings, ServerWorld del,
-        ContentRuntime content) : base(storage, saveName, settings, Dimension.FromId(dimensionId), content)
+        ContentRuntime content) : base(storage, saveName, settings, Dimension.FromId(dimensionId, content), content)
     {
         this.server = server;
         BypassSpawnProtection = dimensionId != 0;

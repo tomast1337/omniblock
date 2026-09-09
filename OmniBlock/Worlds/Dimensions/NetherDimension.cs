@@ -1,6 +1,7 @@
 using OmniBlock.Blocks;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Gen.Chunks;
+using OmniBlock.Worlds.Generation;
 using OmniBlock.Worlds.Generation.Biomes;
 using OmniBlock.Worlds.Generation.Biomes.Source;
 using Silk.NET.Maths;
@@ -9,6 +10,13 @@ namespace OmniBlock.Worlds.Dimensions;
 
 internal class NetherDimension : Dimension
 {
+    private readonly DimensionGeneratorProfile _generatorProfile;
+
+    internal NetherDimension(DimensionGeneratorProfile generatorProfile)
+    {
+        _generatorProfile = generatorProfile;
+    }
+
     public override bool HasWorldSpawn => false;
 
     public override void InitBiomeSource()
@@ -33,7 +41,11 @@ internal class NetherDimension : Dimension
         }
     }
 
-    public override IChunkSource CreateChunkGenerator() => new NetherChunkGenerator(World, World.Seed);
+    public override IChunkSource CreateChunkGenerator()
+    {
+        WorldGeneratorBuildContext context = new(World, World.Seed, "");
+        return _generatorProfile.CreateGenerator(context);
+    }
 
     public override bool IsValidSpawnPoint(int x, int z)
     {

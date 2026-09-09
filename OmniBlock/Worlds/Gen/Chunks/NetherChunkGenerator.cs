@@ -1,3 +1,4 @@
+using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Util.Maths.Noise;
 using OmniBlock.Worlds.Chunks;
@@ -35,11 +36,11 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
     private double[] _scaleNoiseBuffer;
 
     public NetherChunkGenerator(IWorldContext world, long seed)
-        : this(world, seed, BlockIds.Resolve(world))
+        : this(world, seed, BlockIds.Resolve(world.Content.Blocks))
     {
     }
 
-    private NetherChunkGenerator(IWorldContext world, long seed, BlockIds blocks) : base(world, seed)
+    internal NetherChunkGenerator(IWorldContext world, long seed, BlockIds blocks) : base(world, seed)
     {
         _blocks = blocks;
         _minLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
@@ -453,19 +454,41 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
         return heightMap;
     }
 
-    private sealed class BlockIds
+    internal sealed class BlockIds
     {
-        private BlockIds(IWorldContext world)
+        private BlockIds(
+            IBlockRuntimeView blocks,
+            IReadOnlyDictionary<string, string>? references,
+            ResourceLocation? owner)
         {
-            var blocks = world.Content.Blocks;
-            Netherrack = blocks.Get("netherrack").Id;
-            Lava = blocks.Get("lava").Id;
-            FlowingLava = blocks.Get("flowing_lava").Id;
-            Bedrock = blocks.Get("bedrock").Id;
-            Gravel = blocks.Get("gravel").Id;
-            SoulSand = blocks.Get("soulsand").Id;
-            BrownMushroom = blocks.Get("brown_mushroom").Id;
-            RedMushroom = blocks.Get("red_mushroom").Id;
+            Netherrack = Resolve("netherrack");
+            Lava = Resolve("lava");
+            FlowingLava = Resolve("flowing_lava");
+            Bedrock = Resolve("bedrock");
+            Gravel = Resolve("gravel");
+            SoulSand = Resolve("soulsand");
+            BrownMushroom = Resolve("brown_mushroom");
+            RedMushroom = Resolve("red_mushroom");
+
+            int Resolve(string role)
+            {
+                var reference = references is null
+                    ? $"omniblock:{role}"
+                    : references.TryGetValue(role, out var configured)
+                        ? configured
+                        : throw new InvalidOperationException(
+                            $"Dimension generator profile '{owner}' nether generator is missing block role '{role}'.");
+                try
+                {
+                    return blocks.Get(ResourceLocation.Parse(reference)).Id;
+                }
+                catch (Exception error)
+                {
+                    throw new InvalidOperationException(
+                        $"Dimension generator profile '{owner}' nether generator block role '{role}' references unknown block '{reference}'.",
+                        error);
+                }
+            }
         }
 
         public int Netherrack { get; }
@@ -477,7 +500,10 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
         public int BrownMushroom { get; }
         public int RedMushroom { get; }
 
-        public static BlockIds Resolve(IWorldContext world) => new(world);
+        public static BlockIds Resolve(
+            IBlockRuntimeView blocks,
+            IReadOnlyDictionary<string, string>? references = null,
+            ResourceLocation? owner = null) => new(blocks, references, owner);
     }
 
     public static void markChunksForUnload(int _)

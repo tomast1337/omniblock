@@ -30,6 +30,7 @@ public sealed class ContentRuntime
         IProcessProviderRegistry processProviders,
         RuntimeProcessRegistry processes,
         IEnumerable<WorldType> worldTypes,
+        IEnumerable<DimensionGeneratorProfile> dimensionGeneratorProfiles,
         IWorldGeneratorProviderRegistry worldGeneratorProviders)
     {
         ArgumentNullException.ThrowIfNull(blockBehaviorProviders);
@@ -42,6 +43,8 @@ public sealed class ContentRuntime
         Items = new RuntimeItemRegistry(itemEntries, blockItemEntries, Blocks);
         EntityTypes = new RuntimeEntityTypeRegistry(entityEntries);
         WorldTypes = new RuntimeWorldTypeRegistry(worldTypes);
+        DimensionGeneratorProfiles = new RuntimeDimensionGeneratorProfileRegistry(
+            dimensionGeneratorProfiles);
         WorldGeneratorProviders = worldGeneratorProviders;
         Manifest = new ContentCatalogManifest(Blocks.Keys.Select(key =>
                 new KeyValuePair<ResourceLocation, int>(key, Blocks.Get(key).Id)),
@@ -65,6 +68,7 @@ public sealed class ContentRuntime
         Items = source.Items;
         EntityTypes = source.EntityTypes;
         WorldTypes = source.WorldTypes;
+        DimensionGeneratorProfiles = source.DimensionGeneratorProfiles;
         WorldGeneratorProviders = source.WorldGeneratorProviders;
         Manifest = new ContentCatalogManifest(source.Manifest.BlockIds, source.Manifest.ItemIds,
             processes.ManifestEntries, source.Manifest.Entities);
@@ -83,6 +87,7 @@ public sealed class ContentRuntime
     public RuntimeItemRegistry Items { get; }
     public RuntimeEntityTypeRegistry EntityTypes { get; }
     public RuntimeWorldTypeRegistry WorldTypes { get; }
+    public RuntimeDimensionGeneratorProfileRegistry DimensionGeneratorProfiles { get; }
     public IWorldGeneratorProviderRegistry WorldGeneratorProviders { get; }
     public ContentCatalogManifest Manifest { get; }
     public IBlockBehaviorProviderRegistry BlockBehaviorProviders { get; }

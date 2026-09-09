@@ -66,11 +66,11 @@ public abstract class World : IWorldContext
         }
         else if (Properties.Dimension == -1)
         {
-            Dimension = Dimension.FromId(-1);
+            Dimension = Dimension.FromId(-1, Content);
         }
         else
         {
-            Dimension = Dimension.FromId(0);
+            Dimension = Dimension.FromId(0, Content);
         }
 
 

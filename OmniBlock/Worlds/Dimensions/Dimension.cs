@@ -1,4 +1,5 @@
 using OmniBlock.Util.Maths;
+using OmniBlock.Registries;
 using OmniBlock.Worlds.Biomes.Source;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core.Systems;
@@ -116,10 +117,11 @@ public abstract class Dimension
         return new Vector3D<double>(r, g, b);
     }
 
-    public static Dimension FromId(int id) => id switch
+    public static Dimension FromId(int id, ContentRuntime content) => id switch
     {
-        -1 => new NetherDimension(),
+        -1 => new NetherDimension(content.DimensionGeneratorProfiles.GetByDimensionId(-1)),
         0 => new OverworldDimension(),
         _ => throw new ArgumentOutOfRangeException($"Invalid Dimension:{id}")
     };
+
 }

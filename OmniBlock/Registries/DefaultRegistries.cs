@@ -8,6 +8,7 @@ using OmniBlock.Processes;
 using OmniBlock.Registries.Data;
 using OmniBlock.Rules;
 using OmniBlock.Worlds.Generation.Biomes;
+using OmniBlock.Worlds.Generation;
 using OmniBlock.Worlds;
 
 namespace OmniBlock.Registries;
@@ -35,6 +36,18 @@ public static class DefaultRegistries
         if (worldTypeLoader.HasErrors)
             throw new AssetLoadException(worldTypeLoader.FirstErrorMessage ?? "Failed to load world-type definitions.");
         foreach (var definition in worldTypeLoader) content.AddWorldTypeDefinition(definition);
+
+        var dimensionGeneratorLoader = new DataAssetLoader<DimensionGeneratorProfileDefinition>(
+            "dimension_generator",
+            LoadLocations.Assets,
+            false);
+        dimensionGeneratorLoader.LoadFromPaths(null, null, null);
+        if (dimensionGeneratorLoader.HasErrors)
+            throw new AssetLoadException(
+                dimensionGeneratorLoader.FirstErrorMessage
+                ?? "Failed to load dimension-generator profiles.");
+        foreach (var definition in dimensionGeneratorLoader)
+            content.AddDimensionGeneratorProfile(definition);
 
         // Blocks resolve their material and sound-group dependencies during construction.
         MaterialRegistry.Initialize();

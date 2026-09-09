@@ -20,7 +20,7 @@ public class ClientWorld : World
     private readonly HashSet<Entity> pendingEntities = [];
     private MultiplayerChunkCache _chunkCache;
 
-    public ClientWorld(ClientNetworkHandler netHandler, long seed, int dimId, ContentRuntime content) : base(new EmptyWorldStorage(), "MpServer", new WorldSettings(seed, content.WorldTypes.Get("omniblock:default")), Dimension.FromId(dimId), content)
+    public ClientWorld(ClientNetworkHandler netHandler, long seed, int dimId, ContentRuntime content) : base(new EmptyWorldStorage(), "MpServer", new WorldSettings(seed, content.WorldTypes.Get("omniblock:default")), Dimension.FromId(dimId, content), content)
     {
         NetworkHandler = netHandler;
         SetSpawnPos(new Vec3I(8, 64, 8));
