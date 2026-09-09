@@ -13,8 +13,6 @@ internal static class NaturalSpawner
     private const float SpawnMinRadius = 24.0F; // Expressed in blocks
     private const int SpawnCloseness = 6;
 
-    private static readonly HashSet<ChunkPos> ChunksForSpawning = [];
-
     private static readonly string[] Monsters =
     [
         "omniblock:spider",
@@ -36,7 +34,9 @@ internal static class NaturalSpawner
         pathFinder.SetWorld(world.Reader);
         if (!spawnHostile && !spawnPeaceful) return;
 
-        ChunksForSpawning.Clear();
+        // This is scratch state for one world's spawn pass. Keeping it static lets overlapping
+        // server/world ticks clear or extend the set while another pass is enumerating it.
+        HashSet<ChunkPos> chunksForSpawning = [];
 
         foreach (var p in world.Entities.Players)
         {
@@ -47,7 +47,7 @@ internal static class NaturalSpawner
             {
                 for (var z = -SpawnMaxRadius; z <= SpawnMaxRadius; ++z)
                 {
-                    ChunksForSpawning.Add(new ChunkPos(chunkX + x, chunkZ + z));
+                    chunksForSpawning.Add(new ChunkPos(chunkX + x, chunkZ + z));
                 }
             }
         }
@@ -57,9 +57,9 @@ internal static class NaturalSpawner
         {
             if (((!creatureKind.Peaceful && spawnHostile) || (creatureKind.Peaceful && spawnPeaceful)) &&
                 world.Entities.CountEntitiesInCategory(creatureKind.Category) <=
-                creatureKind.MobCap * ChunksForSpawning.Count / 256)
+                creatureKind.MobCap * chunksForSpawning.Count / 256)
             {
-                foreach (var chunk in ChunksForSpawning)
+                foreach (var chunk in chunksForSpawning)
                 {
                     var biome = world.Dimension.BiomeSource.GetBiome(chunk);
                     var spawnSelector = biome.GetSpawnableList(creatureKind);
