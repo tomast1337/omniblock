@@ -125,6 +125,22 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         MarkBlocksDirty(minX - 1, minY - 1, minZ - 1, maxX + 1, maxY + 1, maxZ + 1);
     }
 
+    public void SetBlocksDirtyForStreaming(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
+    {
+        if (!_world.BlockHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ)) return;
+
+        var (start, end) = GetSectionRange(
+            minX - 1, minY - 1, minZ - 1,
+            maxX + 1, maxY + 1, maxZ + 1);
+        start.Y = Math.Max(0, start.Y);
+        end.Y = Math.Min(ChuckFormat.WorldHeight / SubChunkRenderer.Size - 1, end.Y);
+
+        for (var x = start.X; x <= end.X; x++)
+        for (var y = start.Y; y <= end.Y; y++)
+        for (var z = start.Z; z <= end.Z; z++)
+            ChunkRenderer.MarkStreamingDirty(new Vector3D<int>(x, y, z) * SubChunkRenderer.Size);
+    }
+
     public void PlayStreaming(string soundName, int x, int y, int z)
     {
         if (soundName != null)

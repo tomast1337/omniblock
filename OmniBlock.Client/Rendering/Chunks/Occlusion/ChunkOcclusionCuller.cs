@@ -9,10 +9,11 @@ public interface IChunkVisibilityVisitor
 
 public class ChunkOcclusionCuller
 {
+    private const double TraversalMargin = SubChunkRenderer.Size;
     private readonly Queue<SubChunkRenderer> _queue = new();
     private readonly Dictionary<SubChunkRenderer, ChunkDirectionMask> _reached = new();
 
-    public void FindVisible(
+    public int FindVisible(
         IChunkVisibilityVisitor visitor,
         IEnumerable<SubChunkRenderer> renderers,
         SubChunkRenderer? startNode,
@@ -22,18 +23,32 @@ public class ChunkOcclusionCuller
         bool useOcclusionCulling,
         int frame)
     {
+        var frustumCount = 0;
+
         // A missing camera mesh is normal during streaming and when flying above the world.
         // With no reliable portal seed, conservatively draw the available meshes in view.
         if (!useOcclusionCulling || startNode == null)
         {
             foreach (var renderer in renderers)
-                DrawIfVisible(renderer);
-            return;
+            {
+                if (!culler.IsBoundingBoxInFrustum(renderer.BoundingBox)) continue;
+                frustumCount++;
+                DrawIfVisible(renderer, true);
+            }
+
+            return frustumCount;
         }
 
         Reach(startNode, ChunkDirectionMask.All);
         foreach (var renderer in renderers)
         {
+            // Only an exposed mesh that can actually contribute to this frame needs to seed a
+            // disconnected component. The old pass seeded every hole in the entire resident mesh
+            // cache. At distance 32 that turns a visibility query into a graph walk over roughly
+            // 34,000 sections every frame, including terrain behind the camera.
+            if (!culler.IsBoundingBoxInFrustum(renderer.BoundingBox)) continue;
+            frustumCount++;
+
             // An absent neighbor is unknown space, not an opaque wall. Seed its exposed face so
             // a hole in the mesh cache cannot hide an otherwise finished component of terrain.
             var unknown = ChunkDirectionMask.None;
@@ -48,25 +63,38 @@ public class ChunkOcclusionCuller
 
         while (_queue.TryDequeue(out var current))
         {
-            DrawIfVisible(current);
-            // Frustum selection affects drawing only. A connected path can leave the frustum
-            // or turn back toward the camera before reaching visible terrain.
+            DrawIfVisible(current, false);
+            // Connectivity may briefly leave the exact draw frustum before turning back toward
+            // visible terrain, but it must not wander across the entire resident radius. One
+            // section of margin preserves those edge paths and bounds work to the camera region.
             var outgoing = current.VisibilityData.GetVisibleFrom(_reached[current], viewPos, current);
-            if ((outgoing & ChunkDirectionMask.Down) != 0) Reach(current.AdjacentDown, ChunkDirectionMask.Up);
-            if ((outgoing & ChunkDirectionMask.Up) != 0) Reach(current.AdjacentUp, ChunkDirectionMask.Down);
-            if ((outgoing & ChunkDirectionMask.North) != 0) Reach(current.AdjacentNorth, ChunkDirectionMask.South);
-            if ((outgoing & ChunkDirectionMask.South) != 0) Reach(current.AdjacentSouth, ChunkDirectionMask.North);
-            if ((outgoing & ChunkDirectionMask.West) != 0) Reach(current.AdjacentWest, ChunkDirectionMask.East);
-            if ((outgoing & ChunkDirectionMask.East) != 0) Reach(current.AdjacentEast, ChunkDirectionMask.West);
+            if ((outgoing & ChunkDirectionMask.Down) != 0) ReachIfNearFrustum(current.AdjacentDown, ChunkDirectionMask.Up);
+            if ((outgoing & ChunkDirectionMask.Up) != 0) ReachIfNearFrustum(current.AdjacentUp, ChunkDirectionMask.Down);
+            if ((outgoing & ChunkDirectionMask.North) != 0) ReachIfNearFrustum(current.AdjacentNorth, ChunkDirectionMask.South);
+            if ((outgoing & ChunkDirectionMask.South) != 0) ReachIfNearFrustum(current.AdjacentSouth, ChunkDirectionMask.North);
+            if ((outgoing & ChunkDirectionMask.West) != 0) ReachIfNearFrustum(current.AdjacentWest, ChunkDirectionMask.East);
+            if ((outgoing & ChunkDirectionMask.East) != 0) ReachIfNearFrustum(current.AdjacentEast, ChunkDirectionMask.West);
         }
 
         _reached.Clear();
+        return frustumCount;
 
-        void DrawIfVisible(SubChunkRenderer renderer)
+        void DrawIfVisible(SubChunkRenderer renderer, bool knownInFrustum)
         {
-            if (renderer.LastVisibleFrame == frame || !renderer.IsVisible(culler, viewPos, renderDistance)) return;
+            if (renderer.LastVisibleFrame == frame ||
+                !(knownInFrustum
+                    ? renderer.IsWithinRenderDistance(viewPos, renderDistance)
+                    : renderer.IsVisible(culler, viewPos, renderDistance))) return;
             renderer.LastVisibleFrame = frame;
             visitor.Visit(renderer);
+        }
+
+        void ReachIfNearFrustum(SubChunkRenderer? renderer, ChunkDirectionMask incoming)
+        {
+            if (renderer == null ||
+                !culler.IsBoundingBoxInFrustum(renderer.BoundingBox.Expand(
+                    TraversalMargin, TraversalMargin, TraversalMargin))) return;
+            Reach(renderer, incoming);
         }
     }
 

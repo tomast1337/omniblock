@@ -15,6 +15,7 @@ public static unsafe class LuauClientStateHost
                                             if key == "worldId" then return __ClientState.worldId() end
                                             if key == "meshPending" then return __ClientState.meshPending() end
                                             if key == "meshRequestToGpuMs" then return __ClientState.meshRequestToGpuMs() end
+                                            if key == "frameTimeMs" then return __ClientState.frameTimeMs() end
                                             return nil
                                         end,
                                         __newindex = function()
@@ -28,15 +29,17 @@ public static unsafe class LuauClientStateHost
     public static Func<string?>? WorldId;
     public static Func<double>? MeshPending;
     public static Func<double>? MeshRequestToGpuMs;
+    public static Func<double>? FrameTimeMs;
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 5);
+        LuauNative.lua_createtable(l, 0, 6);
         Add(l, "worldLoaded", &WorldLoadedClosure);
         Add(l, "playerReady", &PlayerReadyClosure);
         Add(l, "worldId", &WorldIdClosure);
         Add(l, "meshPending", &MeshPendingClosure);
         Add(l, "meshRequestToGpuMs", &MeshRequestToGpuMsClosure);
+        Add(l, "frameTimeMs", &FrameTimeMsClosure);
         LuauNative.lua_setfield(l, LuauNative.GlobalsIndex, "__ClientState");
     }
 
@@ -89,6 +92,13 @@ public static unsafe class LuauClientStateHost
     private static int MeshRequestToGpuMsClosure(IntPtr l)
     {
         LuauNative.lua_pushnumber(l, ReadNumber(MeshRequestToGpuMs));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int FrameTimeMsClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(FrameTimeMs));
         return 1;
     }
 

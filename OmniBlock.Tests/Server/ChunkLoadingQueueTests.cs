@@ -17,6 +17,17 @@ public sealed class ChunkLoadingQueueTests
     }
 
     [Theory]
+    [InlineData(1, 1)]
+    [InlineData(8, 3)]
+    [InlineData(16, 4)]
+    [InlineData(32, 4)]
+    public void Integrated_chunk_loader_leaves_capacity_for_client_meshing_and_rendering(
+        int processors, int expected)
+    {
+        Assert.Equal(expected, ChunkLoadingQueue.GetWorkerCount(processors, sharesProcessWithClient: true));
+    }
+
+    [Theory]
     [InlineData(1, 1, true)]
     [InlineData(2, 1, false)]
     [InlineData(8, 3, false)]

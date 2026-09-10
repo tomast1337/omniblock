@@ -9,6 +9,13 @@ public interface IWorldEventListener
 
     void SetBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ);
 
+    /// <summary>
+    ///     Announces bulk terrain streaming. Presentation listeners may defer meshes that do not
+    ///     exist yet; ordinary gameplay updates must continue to use <see cref="SetBlocksDirty" />.
+    /// </summary>
+    void SetBlocksDirtyForStreaming(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) =>
+        SetBlocksDirty(minX, minY, minZ, maxX, maxY, maxZ);
+
     void PlaySound(string soundName, double x, double y, double z, float volume, float pitch);
 
     void SpawnParticle(string particleName, double x, double y, double z, double velocityX, double velocityY, double velocityZ);

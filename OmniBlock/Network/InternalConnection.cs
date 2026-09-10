@@ -53,21 +53,6 @@ public class InternalConnection : Connection
         readQueue.Enqueue(packet);
     }
 
-    protected override void processPackets()
-    {
-        if (netHandler == null)
-        {
-            throw new Exception("InternalConnection is not initialized");
-        }
-
-        // No cap here, deliberately: loopback hands packets over directly, so a queue depth is a
-        // scheduling artefact rather than a transport backlog and there is nothing to pace against.
-        while (readQueue.TryDequeue(out var packet))
-        {
-            ApplyPacket(packet, netHandler);
-        }
-    }
-
     public override void disconnect(string disconnectedReason, params object[] disconnectReasonArgs)
     {
         if (open)
@@ -100,14 +85,13 @@ public class InternalConnection : Connection
 
     public override void disconnect() => disconnect("Disconnecting");
 
-    public override void tick()
-    {
-        processPackets();
-        if (disconnected && readQueue.IsEmpty)
-        {
-            netHandler?.onDisconnected(disconnectedReason, disconnectReasonArgs);
-        }
-    }
+    /// <summary>
+    ///     Loopback has no socket queue, but it does have the peer's application queue. Reporting
+    ///     that depth gives chunk streaming the same consumer-side backpressure as a real
+    ///     transport. Without it, distance 32 can enqueue thousands of decoded chunks while the
+    ///     renderer is still meshing the first rings.
+    /// </summary>
+    public override int getWorldPacketBacklog() => RemoteConnection?.ReadQueueDepth ?? 0;
 
     public override IPEndPoint getAddress() => new(IPAddress.Parse("127.0.0.1"), 12345);
 }

@@ -111,6 +111,26 @@ public sealed class ChunkOcclusionCullerTests
         }
     }
 
+    [Fact]
+    public void Occlusion_walk_does_not_visit_the_entire_resident_cache()
+    {
+        var nodes = Enumerable.Range(0, 128).Select(index => Node(index * 16)).ToArray();
+        try
+        {
+            var frustum = new NearOriginFrustum();
+            Find(nodes, nodes[0], true, frustum);
+
+            // Every resident section is classified once. Only the few near the exact or expanded
+            // frustum may be revisited by the portal walk; distant missing-neighbour sections must
+            // not seed work of their own.
+            Assert.InRange(frustum.Calls, nodes.Length, nodes.Length + 16);
+        }
+        finally
+        {
+            foreach (var node in nodes) node.Dispose();
+        }
+    }
+
     private static SubChunkRenderer Node(int x, bool sealedNeighbors = false)
     {
         var node = new SubChunkRenderer(new Vector3D<int>(x, 64, 0));
@@ -139,6 +159,19 @@ public sealed class ChunkOcclusionCullerTests
     private sealed class TestFrustum(Box? rejected = null) : ICuller
     {
         public bool IsBoundingBoxInFrustum(Box aabb) => !rejected.HasValue || !aabb.Equals(rejected.Value);
+        public void SetPosition(double x, double y, double z) { }
+    }
+
+    private sealed class NearOriginFrustum : ICuller
+    {
+        public int Calls { get; private set; }
+
+        public bool IsBoundingBoxInFrustum(Box aabb)
+        {
+            Calls++;
+            return aabb.MinX < 48;
+        }
+
         public void SetPosition(double x, double y, double z) { }
     }
 }

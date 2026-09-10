@@ -25,6 +25,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     internal const double MeshPredictionTicks = 10.0;
     internal const double MeshPrefetchMargin = SubChunkRenderer.Size;
     internal const int MeshSpeculativeRadius = 1;
+    internal const int MeshDiscoveryBacklogPerWorker = 8;
 
     //TODO: MAKE THIS CONFIGURABLE
     private const double MeshUploadBudgetMs = 1.5;
@@ -121,7 +122,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     }
 
     internal static int GetMeshWorkerCount(int processorCount) =>
-        Math.Clamp(processorCount - 2, 1, MaxMeshWorkers);
+        Math.Clamp((processorCount - 2) / 2, 1, MaxMeshWorkers);
+
+    internal static int GetMeshDiscoveryCapacity(int pending, int workerCount) =>
+        Math.Max(0, workerCount * MeshDiscoveryBacklogPerWorker - pending);
 
     /// <summary>
     ///     Debug toggle: draws the solid pass as flat-green triangle edges instead of textured
@@ -202,7 +206,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         using (Profiler.Begin("FindVisible"))
         {
-            _occlusionCuller.FindVisible(
+            ChunksInFrustum = _occlusionCuller.FindVisible(
                 this,
                 _renderers.Values.Select(static state => state.Renderer),
                 cameraState?.Renderer,
@@ -216,19 +220,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         AddNearbySections(cameraChunkPos, _frameIndex, renderParams.Camera);
 
-        var frustumCount = 0;
         var visitedVisibleCount = _visibleRenderers.Count;
-
-        foreach (var state in _renderers.Values)
-        {
-            if (renderParams.Camera.IsBoundingBoxInFrustum(state.Renderer.BoundingBox))
-            {
-                frustumCount++;
-            }
-        }
-
-        ChunksInFrustum = frustumCount;
-        ChunksOccluded = frustumCount - visitedVisibleCount;
+        ChunksOccluded = ChunksInFrustum - visitedVisibleCount;
         ChunksRendered = visitedVisibleCount;
 
         if (renderParams.RenderOccluded)
@@ -760,7 +753,17 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 LogBlockingStartupMeshes(clientWorld);
         }
 
-        for (var i = 0; i < PRIORITY_PASS_LIMIT && i < s_spiralOffsets.Length; i++)
+        // Discovery is a producer and the mesh workers/uploads are the consumers. Letting the
+        // producer run 32 sections every frame regardless of consumer progress grows a distance-32
+        // world into a ten-thousand-entry dirty list, making the scheduler's priority scan itself
+        // a frame stall. Keep only a small multiple of worker count buffered; urgent notifications
+        // and startup prerequisites above are never rejected by this background limit.
+        var pendingMeshWork = _dirtyChunks.Count + _lightingUpdates.Count + _meshGenerator.Profile.Outstanding;
+        var discoveryBudget = Math.Min(
+            MAX_CHUNKS_PER_FRAME,
+            GetMeshDiscoveryCapacity(pendingMeshWork, _meshGenerator.MaxConcurrentTasks));
+
+        for (var i = 0; discoveryBudget > 0 && i < PRIORITY_PASS_LIMIT && i < s_spiralOffsets.Length; i++)
         {
             var offset = s_spiralOffsets[i];
             var distSq = offset.X * offset.X + offset.Y * offset.Y + offset.Z * offset.Z;
@@ -784,7 +787,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 enqueuedCount++;
             }
 
-            if (enqueuedCount >= MAX_CHUNKS_PER_FRAME)
+            if (enqueuedCount >= discoveryBudget)
                 break;
         }
 
@@ -792,7 +795,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         // A position can fail MarkDirty merely because its neighbor ring has not arrived yet. The
         // old "priority pass clean" gate treated that temporary hole as a reason to stop scanning,
         // so loaded sections beyond the fixed priority window could remain invisible indefinitely.
-        if (enqueuedCount < MAX_CHUNKS_PER_FRAME)
+        if (enqueuedCount < discoveryBudget)
         {
             for (var i = 0; i < BACKGROUND_PASS_LIMIT; i++)
             {
@@ -814,7 +817,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
                 _currentIndex = (_currentIndex + 1) % s_spiralOffsets.Length;
 
-                if (enqueuedCount >= MAX_CHUNKS_PER_FRAME)
+                if (enqueuedCount >= discoveryBudget)
                     break;
             }
         }
@@ -952,6 +955,20 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
 
         return false;
+    }
+
+    /// <summary>
+    ///     Rebuilds an already presented boundary when an adjacent streamed chunk arrives, while
+    ///     leaving brand-new, off-screen sections to the bounded radial discovery pass. Bulk chunk
+    ///     arrival previously inserted every section in a 3x3-column region directly into the
+    ///     dirty list, allowing distance 32 to create a ten-thousand-entry scheduler scan.
+    /// </summary>
+    internal void MarkStreamingDirty(Vector3D<int> chunkPos)
+    {
+        var requiredForStartup = _world is ClientWorld clientWorld &&
+                                 clientWorld.NetworkHandler.Preload.RequiresMesh(chunkPos);
+        if (_renderers.ContainsKey(chunkPos) || requiredForStartup)
+            MarkDirty(chunkPos);
     }
 
     internal static MeshWorkPriority ClassifyRequestedMeshPriority(

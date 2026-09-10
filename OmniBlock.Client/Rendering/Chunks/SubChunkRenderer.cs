@@ -96,6 +96,12 @@ public class SubChunkRenderer : IDisposable
     {
         if (!camera.IsBoundingBoxInFrustum(BoundingBox)) return false;
 
+        return IsWithinRenderDistance(viewPos, renderDistance);
+    }
+
+    internal bool IsWithinRenderDistance(Vector3D<double> viewPos, float renderDistance)
+    {
+
         var dx = PositionPlus.X - viewPos.X;
         var dy = PositionPlus.Y - viewPos.Y;
         var dz = PositionPlus.Z - viewPos.Z;

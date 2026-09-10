@@ -16,14 +16,21 @@ namespace OmniBlock.Server;
 ///         slowly and a fast one drains fast.
 ///     </para>
 ///     <para>
-///         <b>Two bounds, doing different jobs.</b> The queue-depth mark keeps the link busy without
-///         building a buffer. The per-tick byte cap stops one tick handing over everything before the
-///         queue has had a chance to grow — without it, the first tick of a join enqueues the whole
-///         view distance and the depth signal never gets to say no.
+///         <b>Three bounds, doing different jobs.</b> Queue depth tracks transport pressure, bytes
+///         track link pressure, and the full-chunk count tracks downstream decode/mesh pressure.
+///         A local or highly compressible chunk can be cheap in bytes and still expand into eight
+///         section meshes, so neither of the first two bounds substitutes for the third.
 ///     </para>
 /// </summary>
 public sealed class ChunkSendPacer
 {
+    /// <summary>
+    ///     Maximum newly decoded chunk columns admitted per tick. At 20 TPS this is 40 columns, or
+    ///     at most 320 new section meshes per second. Cached unchanged acknowledgements do not spend
+    ///     this budget because they create no client mesh work.
+    /// </summary>
+    public const int MaxMeshChunksPerTick = 2;
+
     /// <summary>
     ///     Stop when the transport already has this many world-data packets queued.
     ///     <para>
@@ -48,6 +55,7 @@ public sealed class ChunkSendPacer
     public const int MaxBytesPerTick = 32 * 1024;
 
     private int _bytesThisTick;
+    private int _meshChunksThisTick;
 
     /// <summary>Bytes handed over during the tick now ending. For diagnostics.</summary>
     public int BytesLastTick { get; private set; }
@@ -60,6 +68,7 @@ public sealed class ChunkSendPacer
     {
         BytesLastTick = _bytesThisTick;
         _bytesThisTick = 0;
+        _meshChunksThisTick = 0;
         Backpressured = false;
     }
 
@@ -77,6 +86,11 @@ public sealed class ChunkSendPacer
             return false;
         }
 
+        if (_meshChunksThisTick >= MaxMeshChunksPerTick)
+        {
+            return false;
+        }
+
         if (pendingPackets >= MaxPendingPackets)
         {
             Backpressured = true;
@@ -87,5 +101,9 @@ public sealed class ChunkSendPacer
     }
 
     /// <summary>Books what a chunk actually cost, once it is known.</summary>
-    public void Record(int bytes) => _bytesThisTick += bytes;
+    public void Record(int bytes, bool requiresMeshing = true)
+    {
+        _bytesThisTick += bytes;
+        if (requiresMeshing) _meshChunksThisTick++;
+    }
 }

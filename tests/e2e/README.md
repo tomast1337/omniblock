@@ -17,6 +17,10 @@ tests/e2e/run-local.sh
 tests/e2e/run-local.sh multiplayer
 ```
 
+The opt-in `view-distance-32-diagnostic` scenario holds a real single-player session at the maximum
+distance for 30 seconds and logs frame time plus mesh pressure. It is intentionally outside the
+default suite because it is a sustained performance regression rather than a fast functional check.
+
 Every scenario gets a fresh disposable game-data directory and its own artifact
 subdirectory. The suite covers main-menu structure and navigation, world
 rename/delete/create forms, multiplayer server add/edit/delete, language
@@ -29,9 +33,10 @@ World scenarios can observe the renderer without controlling renderer internals:
 ```lua
 OMNI.client.state.meshPending         -- queued, dirty, or awaiting-upload meshes
 OMNI.client.state.meshRequestToGpuMs  -- average request-to-upload latency in milliseconds
+OMNI.client.state.frameTimeMs         -- latest full client frame time in milliseconds
 ```
 
-Both values are live and read-only. They are intended for streaming-health assertions and
+These values are live and read-only. They are intended for streaming-health assertions and
 diagnostics; performance budgets should account for the CI renderer and host hardware.
 
 The following environment variables are optional:

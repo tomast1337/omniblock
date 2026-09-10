@@ -696,7 +696,8 @@ public abstract class World : IWorldContext
 
         setBlocksDirty(
             chunkX * 16, 0, chunkZ * 16,
-            chunkX * 16 + 16, ChuckFormat.WorldHeight, chunkZ * 16 + 16);
+            chunkX * 16 + 16, ChuckFormat.WorldHeight, chunkZ * 16 + 16,
+            streaming: true);
     }
 
     public void HandleChunkDataUpdate(int x, int y, int z, int sizeX, int sizeY, int sizeZ, byte[] chunkData)
@@ -728,7 +729,8 @@ public abstract class World : IWorldContext
 
                 setBlocksDirty(
                     chunkX * 16 + localStartX, minY, chunkZ * 16 + localStartZ,
-                    chunkX * 16 + localEndX, maxY, chunkZ * 16 + localEndZ);
+                    chunkX * 16 + localEndX, maxY, chunkZ * 16 + localEndZ,
+                    streaming: true);
             }
         }
     }
@@ -743,11 +745,16 @@ public abstract class World : IWorldContext
 
     public void SetSpawnPos(Vec3I pos) => Properties.SetSpawn(pos.X, pos.Y, pos.Z);
 
-    public void setBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
+    public void setBlocksDirty(
+        int minX, int minY, int minZ, int maxX, int maxY, int maxZ,
+        bool streaming = false)
     {
         for (var i = 0; i < EventListeners.Count; ++i)
         {
-            EventListeners[i].SetBlocksDirty(minX, minY, minZ, maxX, maxY, maxZ);
+            if (streaming)
+                EventListeners[i].SetBlocksDirtyForStreaming(minX, minY, minZ, maxX, maxY, maxZ);
+            else
+                EventListeners[i].SetBlocksDirty(minX, minY, minZ, maxX, maxY, maxZ);
         }
     }
 }

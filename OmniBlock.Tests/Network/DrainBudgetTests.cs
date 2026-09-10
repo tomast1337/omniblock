@@ -47,15 +47,14 @@ public sealed class DrainBudgetTests
         CountingPacket.Applied = 0;
         ManualClock clock = new();
 
-        // 1 ms each against a 10 ms budget, checked every 64 packets, so the drain stops on the
-        // first check and 512 of the 576 stay queued.
+        // 1 ms each against a 10 ms budget, checked after each packet.
         DrainableConnection connection = new(clock, 576, 1.0);
 
         connection.Drain();
 
         Assert.Equal(1, connection.DrainBudgetHits);
-        Assert.Equal(64, CountingPacket.Applied);
-        Assert.Equal(512, connection.ReadQueueDepth);
+        Assert.Equal(10, CountingPacket.Applied);
+        Assert.Equal(566, connection.ReadQueueDepth);
     }
 
     /// <summary>
@@ -70,8 +69,7 @@ public sealed class DrainBudgetTests
         CountingPacket.Applied = 0;
         ManualClock clock = new();
 
-        // 0.05 ms each over two intervals of 64 reaches 6.4 ms, short of the 10 ms budget at both
-        // checks, so nothing stops the drain and nothing is charged as a hit.
+        // 0.05 ms each reaches 6.4 ms in total, short of the 10 ms budget.
         DrainableConnection connection = new(clock, 128, 0.05);
 
         connection.Drain();
@@ -83,7 +81,7 @@ public sealed class DrainBudgetTests
 
     /// <summary>
     ///     Forward progress is guaranteed even when the budget is already blown on entry, because
-    ///     the check runs every 64 packets rather than before each one. Without that floor an
+    ///     the check runs after applying a packet rather than before it. Without that floor an
     ///     expensive enough packet stream could leave the queue permanently stuck.
     /// </summary>
     [Fact]
@@ -95,7 +93,7 @@ public sealed class DrainBudgetTests
 
         connection.Drain();
 
-        Assert.Equal(64, CountingPacket.Applied);
+        Assert.Equal(1, CountingPacket.Applied);
     }
 
     private sealed class CountingHandler : NetHandler

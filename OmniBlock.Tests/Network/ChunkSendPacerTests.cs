@@ -1,4 +1,5 @@
 using OmniBlock.Network;
+using OmniBlock.Network.Packets;
 using OmniBlock.Server;
 
 namespace OmniBlock.Tests.Network;
@@ -59,6 +60,7 @@ public sealed class ChunkSendPacerTests
         }
 
         Assert.True(sent > 0, "the pacer refused the very first chunk");
+        Assert.Equal(ChunkSendPacer.MaxMeshChunksPerTick, sent);
         Assert.True(
             sent * ChunkBytes <= ChunkSendPacer.MaxBytesPerTick + ChunkBytes,
             $"{sent} chunks is {sent * ChunkBytes} bytes against a {ChunkSendPacer.MaxBytesPerTick} cap");
@@ -94,7 +96,7 @@ public sealed class ChunkSendPacerTests
         var sent = 0;
         while (pacer.CanSend(0) && sent < 100_000)
         {
-            pacer.Record(8); // ChunkUnchangedMessage
+            pacer.Record(8, requiresMeshing: false); // ChunkUnchangedMessage
             sent++;
         }
 
@@ -136,17 +138,24 @@ public sealed class ChunkSendPacerTests
     }
 
     /// <summary>
-    ///     Loopback has no queue to report and must not be paced: there is no wire to be ahead of.
+    ///     Loopback reports the receiving game-thread queue. It has no wire, but decoded world
+    ///     packets can still arrive faster than the client can turn them into meshes.
     /// </summary>
     [Fact]
-    public void Loopback_reports_no_backlog_and_is_never_paced()
+    public void Loopback_backpressures_chunk_sends_from_the_peer_read_queue()
     {
-        InternalConnection connection = new(null, "test");
+        InternalConnection receiver = new(null, "receiver");
+        InternalConnection sender = new(null, "sender");
+        sender.AssignRemote(receiver);
 
-        Assert.Equal(0, connection.getWorldPacketBacklog());
+        for (var i = 0; i < ChunkSendPacer.MaxPendingPackets; i++)
+            sender.sendPacket(new HandshakePacket());
+
+        Assert.Equal(ChunkSendPacer.MaxPendingPackets, sender.getWorldPacketBacklog());
 
         ChunkSendPacer pacer = new();
         pacer.BeginTick();
-        Assert.True(pacer.CanSend(connection.getWorldPacketBacklog()));
+        Assert.False(pacer.CanSend(sender.getWorldPacketBacklog()));
+        Assert.True(pacer.Backpressured);
     }
 }

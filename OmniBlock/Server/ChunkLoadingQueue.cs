@@ -42,7 +42,7 @@ internal class ChunkLoadingQueue
         // workers in single-player. Merely leaving two logical processors free still creates 30
         // loaders on a 32-thread machine, oversubscribing simulation, lighting, rendering and
         // networking. A bounded pool preserves parallel generation without flooding the scheduler.
-        var workerCount = GetWorkerCount(Environment.ProcessorCount);
+        var workerCount = GetWorkerCount(Environment.ProcessorCount, chunkMap.SharesProcessWithClient);
         _workers = new Thread[workerCount];
         for (var i = 0; i < workerCount; i++)
         {
@@ -55,8 +55,10 @@ internal class ChunkLoadingQueue
         }
     }
 
-    internal static int GetWorkerCount(int processorCount) =>
-        Math.Clamp(processorCount - 2, 1, MaxChunkLoadWorkers);
+    internal static int GetWorkerCount(int processorCount, bool sharesProcessWithClient = false) =>
+        sharesProcessWithClient
+            ? Math.Clamp((processorCount - 2) / 2, 1, MaxChunkLoadWorkers / 2)
+            : Math.Clamp(processorCount - 2, 1, MaxChunkLoadWorkers);
 
     public void Add(int x, int z, ServerPlayerEntity player)
     {

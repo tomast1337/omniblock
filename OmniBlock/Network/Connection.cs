@@ -54,11 +54,12 @@ public class Connection
     public const double DrainBudgetMs = 10.0;
 
     /// <summary>
-    ///     Packets applied between budget checks. Reading the clock per packet would cost more than
-    ///     applying one, and it also sets the floor on forward progress: the drain always applies at
-    ///     least this many, so a single expensive packet cannot leave the queue permanently stuck.
+    ///     Packets applied between budget checks. This is one deliberately: full chunk messages can
+    ///     each be expensive enough to consume the budget by themselves. Checking only every 64
+    ///     packets let loopback spend hundreds of milliseconds decoding terrain in one client tick.
+    ///     The check occurs after applying a packet, so forward progress is still guaranteed.
     /// </summary>
-    private const int BudgetCheckInterval = 64;
+    private const int BudgetCheckInterval = 1;
 
     private readonly IPEndPoint? _address;
 

@@ -17,11 +17,13 @@ public sealed class LuauClientStateHostIntegrationTests
         string? worldId = null;
         double meshPending = 0;
         double meshRequestToGpuMs = 0;
+        double frameTimeMs = 0;
         LuauClientStateHost.WorldLoaded = () => worldLoaded;
         LuauClientStateHost.PlayerReady = () => playerReady;
         LuauClientStateHost.WorldId = () => worldId;
         LuauClientStateHost.MeshPending = () => meshPending;
         LuauClientStateHost.MeshRequestToGpuMs = () => meshRequestToGpuMs;
+        LuauClientStateHost.FrameTimeMs = () => frameTimeMs;
 
         try
         {
@@ -34,18 +36,21 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.worldId", "nil");
             AssertValue(state, "OMNI.client.state.meshPending", "0");
             AssertValue(state, "OMNI.client.state.meshRequestToGpuMs", "0");
+            AssertValue(state, "OMNI.client.state.frameTimeMs", "0");
 
             worldLoaded = true;
             playerReady = true;
             worldId = "e2e-smoke";
             meshPending = 7;
             meshRequestToGpuMs = 12.5;
+            frameTimeMs = 6.25;
 
             AssertValue(state, "OMNI.client.state.worldLoaded", "true");
             AssertValue(state, "OMNI.client.state.playerReady", "true");
             AssertValue(state, "OMNI.client.state.worldId", "e2e-smoke");
             AssertValue(state, "OMNI.client.state.meshPending", "7");
             AssertValue(state, "OMNI.client.state.meshRequestToGpuMs", "12.5");
+            AssertValue(state, "OMNI.client.state.frameTimeMs", "6.25");
             Assert.False(state.TryExecute("OMNI.client.state.worldLoaded = false", out var readOnlyError));
             Assert.Contains("read-only", readOnlyError);
         }
@@ -56,6 +61,7 @@ public sealed class LuauClientStateHostIntegrationTests
             LuauClientStateHost.WorldId = null;
             LuauClientStateHost.MeshPending = null;
             LuauClientStateHost.MeshRequestToGpuMs = null;
+            LuauClientStateHost.FrameTimeMs = null;
         }
     }
 

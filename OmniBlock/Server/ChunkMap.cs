@@ -196,6 +196,8 @@ internal class ChunkMap
 
     public int getBlockViewDistance() => _viewDistance * 16 - 16;
 
+    internal bool SharesProcessWithClient => _server is Internal.InternalServer;
+
     private ReadOnlySpan<ChunkPos> GetChunks(ServerPlayerEntity player) => GetChunks(player, _viewDistance);
 
     private static ReadOnlySpan<ChunkPos> GetChunks(ServerPlayerEntity player, int radius) =>

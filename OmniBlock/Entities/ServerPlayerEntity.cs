@@ -401,7 +401,8 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
                 continue;
             }
 
-            _chunkPacer.Record(SendChunkData(world, chunkPos));
+            var sendCost = SendChunkData(world, chunkPos);
+            _chunkPacer.Record(sendCost.Bytes, sendCost.RequiresMeshing);
             ChunksTerrainSentToClient[chunkPos] = Environment.TickCount64;
             SendBlockEntityUpdates(world, chunkPos);
             _server.getEntityTracker(DimensionId).updateListenerForChunk(this, chunkPos.X, chunkPos.Z);
@@ -431,12 +432,12 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     }
 
     /// <summary>Sends one chunk and returns the bytes it cost, for the pacer.</summary>
-    private int SendChunkData(IWorldContext world, ChunkPos chunkPos)
+    private ChunkSendCost SendChunkData(IWorldContext world, ChunkPos chunkPos)
     {
         var handler = NetworkHandler;
         if (handler is null)
         {
-            return 0;
+            return default;
         }
 
         // A peer that speaks the protocol gets the palette encoding; a vanilla client, and loopback,
@@ -466,7 +467,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
                     ChunkZ = chunkPos.Z
                 };
                 handler.SendMessage(unchanged);
-                return unchanged.Size();
+                return new ChunkSendCost(unchanged.Size(), false);
             }
 
             ChunkDataMessage message = new()
@@ -477,7 +478,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             };
 
             handler.SendMessage(message);
-            return message.Size();
+            return new ChunkSendCost(message.Size(), true);
         }
 
         // Loopback, and nothing else now that every play packet is a message. The palette encoding
@@ -487,8 +488,10 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         var region = RegionDataMessage.Of(
             chunkPos.X * 16, 0, chunkPos.Z * 16, 16, ChuckFormat.WorldHeight, 16, world);
         handler.SendMessage(region);
-        return region.Size();
+        return new ChunkSendCost(region.Size(), true);
     }
+
+    private readonly record struct ChunkSendCost(int Bytes, bool RequiresMeshing);
 
     private void SendBlockEntityUpdates(IWorldContext world, ChunkPos chunkPos)
     {
