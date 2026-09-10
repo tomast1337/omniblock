@@ -14,7 +14,7 @@ public sealed class ChunkMeshBuilderTests
         using var vertices = builder.Finish();
 
         Assert.Equal(20, System.Runtime.InteropServices.Marshal.SizeOf<ChunkVertex>());
-        Assert.Equal(12, vertices.Count);
+        Assert.Equal(8, vertices.Count);
 
         var firstColor = BitConverter.IsLittleEndian ? unchecked((int)0xFFBF7F3F) : 0x3F7FBFFF;
         var secondColor = BitConverter.IsLittleEndian ? unchecked((int)0xFF001FFF) : unchecked((int)0xFF1F00FF);
@@ -25,22 +25,18 @@ public sealed class ChunkMeshBuilderTests
             V(0, 2816, 0, 0, 0, firstColor, 49, 22, 3),
             V(0, 3328, 0, 0, 4095, firstColor, 49, 22, 3),
             V(512, 3328, 0, 4095, 4095, secondColor, 60, 0, 3),
-            V(512, 3328, 0, 4095, 4095, secondColor, 60, 0, 3),
             V(512, 2816, 0, 4095, 0, secondColor, 60, 0, 3),
-            V(0, 2816, 0, 0, 0, firstColor, 49, 22, 3),
             V(2176, 3584, 1024, 0, 0, thirdColor, 0, 60, 251),
             V(2176, 4096, 1024, 0, 65520, thirdColor, 0, 60, 251),
             V(2688, 4096, 1024, 65520, 65520, thirdColor, 0, 60, 251),
-            V(2688, 4096, 1024, 65520, 65520, thirdColor, 0, 60, 251),
-            V(2688, 3584, 1024, 65520, 0, thirdColor, 0, 60, 251),
-            V(2176, 3584, 1024, 0, 0, thirdColor, 0, 60, 251)
+            V(2688, 3584, 1024, 65520, 0, thirdColor, 0, 60, 251)
         };
 
         for (var i = 0; i < expected.Length; i++) AssertVertex(expected[i], vertices.Buffer[i]);
     }
 
     [Fact]
-    public void Quad_is_expanded_to_two_triangles_in_existing_winding_order()
+    public void Quad_stores_each_corner_once_in_emission_order()
     {
         using var builder = new ChunkMeshBuilder();
         builder.Begin(0, 0, 0);
@@ -53,13 +49,11 @@ public sealed class ChunkMeshBuilderTests
         builder.addVertexWithUV(1, 0, 0, 1, 0);
         using var vertices = builder.Finish();
 
-        Assert.Equal(6, vertices.Count);
+        Assert.Equal(4, vertices.Count);
         AssertVertexPosition(vertices.Buffer[0], 0, 0, 0);
         AssertVertexPosition(vertices.Buffer[1], 0, 1, 0);
         AssertVertexPosition(vertices.Buffer[2], 1, 1, 0);
-        AssertVertexPosition(vertices.Buffer[3], 1, 1, 0);
-        AssertVertexPosition(vertices.Buffer[4], 1, 0, 0);
-        AssertVertexPosition(vertices.Buffer[5], 0, 0, 0);
+        AssertVertexPosition(vertices.Buffer[3], 1, 0, 0);
     }
 
     [Fact]

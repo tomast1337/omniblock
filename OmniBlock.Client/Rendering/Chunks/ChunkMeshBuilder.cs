@@ -7,8 +7,8 @@ namespace OmniBlock.Client.Rendering.Chunks;
 ///     Builds packed terrain vertices without going through the immediate-mode tessellator.
 /// </summary>
 /// <remarks>
-///     Block renderers emit quads. This builder snapshots each corner's render state and expands
-///     every complete quad to the terrain pipeline's triangle-list order: 0,1,2, 2,3,0.
+///     Block renderers emit quads. This builder snapshots each corner's render state and stores the
+///     four unique vertices; every terrain mesh shares the device's sequential quad index buffer.
 /// </remarks>
 internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
 {
@@ -75,9 +75,7 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
         Emit(0);
         Emit(1);
         Emit(2);
-        Emit(2);
         Emit(3);
-        Emit(0);
         _quadVertexCount = 0;
     }
 

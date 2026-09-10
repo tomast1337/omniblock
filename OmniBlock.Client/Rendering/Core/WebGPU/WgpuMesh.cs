@@ -15,13 +15,13 @@ namespace OmniBlock.Client.Rendering.Core.WebGPU;
 ///     passes a size to <c>SetVertexBuffer</c> or <c>SetIndexBuffer</c> must either know the
 ///     exact byte count or pass this sentinel.
 /// </remarks>
-static file class WgpuWholeSize
+internal static class WgpuWholeSize
 {
     public const ulong Value = ulong.MaxValue;
 }
 
 /// <summary>
-///     Vertex and optional index buffers with the draw call that submits them.
+///     A vertex buffer and either owned, shared, or no indices, with the draw call that submits it.
 /// </summary>
 /// <remarks>
 ///     Upload once, draw many times — the WebGPU equivalent of a GL display list or VAO. The
@@ -34,6 +34,7 @@ public sealed unsafe class WgpuMesh : IDisposable
     public const uint ChunkVertexStride = 20;
 
     private readonly WebGpuDevice _device;
+    private bool _usesSharedQuadIndices;
 
     private bool _disposed;
 
@@ -47,6 +48,7 @@ public sealed unsafe class WgpuMesh : IDisposable
         VertexCount = (uint)(vertexData.Length / vertexStride);
         IndexCount = 0;
         IndexFormat = IndexFormat.Undefined;
+        _usesSharedQuadIndices = false;
 
         VertexBuffer = CreateBuffer(device, vertexData, BufferUsage.Vertex | BufferUsage.CopyDst);
         IndexBuffer = null;
@@ -62,6 +64,7 @@ public sealed unsafe class WgpuMesh : IDisposable
         VertexCount = (uint)(vertexData.Length / vertexStride);
         IndexCount = (uint)(indexData.Length / IndexStride(indexFormat));
         IndexFormat = indexFormat;
+        _usesSharedQuadIndices = false;
 
         VertexBuffer = CreateBuffer(device, vertexData, BufferUsage.Vertex | BufferUsage.CopyDst);
         IndexBuffer = CreateBuffer(device, indexData, BufferUsage.Index | BufferUsage.CopyDst);
@@ -70,10 +73,10 @@ public sealed unsafe class WgpuMesh : IDisposable
     public WgpuBuffer* VertexBuffer { get; }
     public WgpuBuffer* IndexBuffer { get; }
 
-    /// <summary>How many vertices to draw when <see cref="IndexBuffer" /> is null.</summary>
+    /// <summary>How many vertices the mesh stores.</summary>
     public uint VertexCount { get; }
 
-    /// <summary>How many indices to draw when <see cref="IndexBuffer" /> is set.</summary>
+    /// <summary>How many owned indices to draw; shared quad indices are derived from <see cref="VertexCount" />.</summary>
     public uint IndexCount { get; }
 
     /// <summary>The type of each index in <see cref="IndexBuffer" />.</summary>
@@ -103,6 +106,25 @@ public sealed unsafe class WgpuMesh : IDisposable
         PrimitiveTopology topology = PrimitiveTopology.TriangleList) =>
         new(device, MemoryMarshal.AsBytes(vertices), ChunkVertexStride, topology);
 
+    /// <summary>
+    ///     Creates a terrain mesh containing four unique vertices per quad. All such meshes on the
+    ///     device share its growable sequential index buffer.
+    /// </summary>
+    public static WgpuMesh FromChunkQuads(WebGpuDevice device, ReadOnlySpan<ChunkVertex> vertices)
+    {
+        if (vertices.Length % 4 != 0)
+        {
+            throw new ArgumentException("A chunk quad mesh requires four vertices per quad.", nameof(vertices));
+        }
+
+        var mesh = new WgpuMesh(device, MemoryMarshal.AsBytes(vertices), ChunkVertexStride)
+        {
+            _usesSharedQuadIndices = true
+        };
+        device.QuadIndices.EnsureCapacity(mesh.VertexCount / 4);
+        return mesh;
+    }
+
     /// <summary>Records the draw command on the current render pass.</summary>
     public void Draw(RenderPassEncoder* pass, uint instanceCount = 1)
     {
@@ -110,7 +132,11 @@ public sealed unsafe class WgpuMesh : IDisposable
 
         api.RenderPassEncoderSetVertexBuffer(pass, 0, VertexBuffer, 0, WgpuWholeSize.Value);
 
-        if (IndexBuffer is not null)
+        if (_usesSharedQuadIndices)
+        {
+            _device.QuadIndices.BindAndDraw(pass, VertexCount / 4, instanceCount);
+        }
+        else if (IndexBuffer is not null)
         {
             api.RenderPassEncoderSetIndexBuffer(pass, IndexBuffer, IndexFormat, 0, WgpuWholeSize.Value);
             api.RenderPassEncoderDrawIndexed(pass, IndexCount, instanceCount, 0, 0, 0);

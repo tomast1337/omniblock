@@ -72,8 +72,8 @@ public class SubChunkRenderer : IDisposable
     public float Age { get; private set; }
     public bool HasFadedIn => Age >= FadeDuration;
 
-    public int SolidMeshSizeBytes => vertexCounts[0] * 16;
-    public int TranslucentMeshSizeBytes => vertexCounts[1] * 16;
+    public int SolidMeshSizeBytes => vertexCounts[0] * (int)WgpuMesh.ChunkVertexStride;
+    public int TranslucentMeshSizeBytes => vertexCounts[1] * (int)WgpuMesh.ChunkVertexStride;
 
     public void Dispose()
     {
@@ -136,7 +136,7 @@ public class SubChunkRenderer : IDisposable
         vertexCounts[bufferIdx] = meshData.Length;
 
         _meshes[bufferIdx]?.Dispose();
-        _meshes[bufferIdx] = WgpuMesh.FromChunkVertices(WebGpuDevice.Current!, meshData);
+        _meshes[bufferIdx] = WgpuMesh.FromChunkQuads(WebGpuDevice.Current!, meshData);
 
         if (bufferIdx == 0)
         {
@@ -146,27 +146,34 @@ public class SubChunkRenderer : IDisposable
     }
 
     /// <summary>
-    ///     Expands a flat triangle-list span (v0 v1 v2, v0 v2 v3, ... — see
-    ///     <see cref="Tessellator.addVertex" />'s quad-to-triangle split) into a line-list span of the
-    ///     same triangles' edges, 6 vertices per input triangle. Includes the diagonal each quad was
-    ///     split along, same as any wireframe drawn at the triangle level rather than the original
-    ///     quad's.
+    ///     Expands four unique vertices per quad into the edges of its two indexed triangles.
+    ///     Includes the diagonal, matching a triangle-level wireframe.
     /// </summary>
-    private static WgpuMesh? BuildWireframeMesh(Span<ChunkVertex> triangles)
+    private static WgpuMesh? BuildWireframeMesh(Span<ChunkVertex> quads)
     {
-        if (triangles.Length == 0) return null;
-
-        var lines = new ChunkVertex[triangles.Length * 2];
-        var outIdx = 0;
-        for (var i = 0; i + 2 < triangles.Length; i += 3)
+        if (quads.Length == 0) return null;
+        if (quads.Length % 4 != 0)
         {
-            ChunkVertex a = triangles[i], b = triangles[i + 1], c = triangles[i + 2];
+            throw new ArgumentException("Wireframe terrain input requires four vertices per quad.", nameof(quads));
+        }
+
+        var lines = new ChunkVertex[quads.Length * 3];
+        var outIdx = 0;
+        for (var i = 0; i < quads.Length; i += 4)
+        {
+            ChunkVertex a = quads[i], b = quads[i + 1], c = quads[i + 2], d = quads[i + 3];
             lines[outIdx++] = a;
             lines[outIdx++] = b;
             lines[outIdx++] = b;
             lines[outIdx++] = c;
             lines[outIdx++] = c;
             lines[outIdx++] = a;
+            lines[outIdx++] = c;
+            lines[outIdx++] = d;
+            lines[outIdx++] = d;
+            lines[outIdx++] = a;
+            lines[outIdx++] = a;
+            lines[outIdx++] = c;
         }
 
         return WgpuMesh.FromChunkVertices(WebGpuDevice.Current!, lines, PrimitiveTopology.LineList);

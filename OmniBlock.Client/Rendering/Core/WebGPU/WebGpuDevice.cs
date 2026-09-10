@@ -71,6 +71,7 @@ public sealed unsafe class WebGpuDevice : IDisposable
         Adapter = RequestAdapter();
         Device = RequestDevice(Adapter);
         Queue = Api.DeviceGetQueue(Device);
+        QuadIndices = new SharedQuadIndexBuffer(this);
 
         _errorCallback = new PfnErrorCallback(OnUncapturedError);
         Api.DeviceSetUncapturedErrorCallback(Device, _errorCallback, null);
@@ -90,6 +91,7 @@ public sealed unsafe class WebGpuDevice : IDisposable
     public Adapter* Adapter { get; }
     public Device* Device { get; }
     public Queue* Queue { get; }
+    internal SharedQuadIndexBuffer QuadIndices { get; }
 
     /// <summary>The format the surface's textures are in, and so the format every pipeline that draws to the screen must target.</summary>
     public TextureFormat SurfaceFormat { get; }
@@ -119,6 +121,8 @@ public sealed unsafe class WebGpuDevice : IDisposable
             Api.CommandEncoderRelease(_commandEncoder);
             _commandEncoder = null;
         }
+
+        QuadIndices.Dispose();
 
         if (Queue is not null) Api.QueueRelease(Queue);
         if (Device is not null) Api.DeviceRelease(Device);
