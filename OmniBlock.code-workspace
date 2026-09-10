@@ -1,0 +1,18 @@
+{
+    "folders": [
+        { "path": "." }
+    ],
+    "settings": {
+        "files.associations": {
+            "*.luau": "luau"
+        },
+        "luau-lsp.platform.type": "standard",
+        "luau-lsp.sourcemap.enabled": false,
+        "luau-lsp.types.definitionFiles": {
+            "@omniblock": "Scripting/omni.d.luau"
+        }
+    },
+    "extensions": {
+        "recommendations": ["JohnnyMorganz.luau-lsp"]
+    }
+}
