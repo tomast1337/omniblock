@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Items;
 using OmniBlock.NBT;

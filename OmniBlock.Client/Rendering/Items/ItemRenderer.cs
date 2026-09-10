@@ -61,7 +61,7 @@ public class ItemRenderer : EntityRenderer
             loadTexture("/terrain.png");
             var blockScale = 0.25F;
             if (!_blocks.GetByProtocolId(stack.ItemId).IsFullCube() && stack.ItemId != _blocks.Get("slab").Id
-                                                                          && _blocks.GetByProtocolId(stack.ItemId).RenderType != BlockRendererType.PistonBase)
+                                                                    && _blocks.GetByProtocolId(stack.ItemId).RenderType != BlockRendererType.PistonBase)
             {
                 blockScale = 0.5F;
             }

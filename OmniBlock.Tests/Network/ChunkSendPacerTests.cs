@@ -96,7 +96,7 @@ public sealed class ChunkSendPacerTests
         var sent = 0;
         while (pacer.CanSend(0) && sent < 100_000)
         {
-            pacer.Record(8, requiresMeshing: false); // ChunkUnchangedMessage
+            pacer.Record(8, false); // ChunkUnchangedMessage
             sent++;
         }
 

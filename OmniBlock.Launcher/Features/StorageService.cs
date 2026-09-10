@@ -10,7 +10,7 @@ internal sealed class StorageService(ILogger<StorageService> logger)
 {
     public async Task<T?> GetAsync<T>(JsonTypeInfo<T> typeInfo) where T : class
     {
-        string path = $"{Path.Combine(App.Folder, typeInfo.Type.Name.ToLowerInvariant())}.json";
+        var path = $"{Path.Combine(App.Folder, typeInfo.Type.Name.ToLowerInvariant())}.json";
 
         try
         {
@@ -30,8 +30,5 @@ internal sealed class StorageService(ILogger<StorageService> logger)
         await JsonSerializer.SerializeAsync(stream, instance, typeInfo);
     }
 
-    public void Delete(string name)
-    {
-        File.Delete($"{Path.Combine(App.Folder, name.ToLowerInvariant())}.json");
-    }
+    public void Delete(string name) => File.Delete($"{Path.Combine(App.Folder, name.ToLowerInvariant())}.json");
 }

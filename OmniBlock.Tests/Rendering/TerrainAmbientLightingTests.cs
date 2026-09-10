@@ -1,6 +1,5 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using OmniBlock.Tests.TestSupport;
 using OmniBlock.Worlds.Core;
 
 namespace OmniBlock.Tests.Rendering;

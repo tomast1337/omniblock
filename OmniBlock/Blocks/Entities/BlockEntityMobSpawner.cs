@@ -23,24 +23,6 @@ public class BlockEntityMobSpawner : BlockEntity, IBlockEntityItemData
     public double Rotation { get; set; }
     public double LastRotation { get; set; }
 
-    public string GetSpawnedEntityId() => _spawnedEntityId;
-
-    public void SetSpawnedEntityId(string spawnedEntityId)
-    {
-        ArgumentNullException.ThrowIfNull(spawnedEntityId);
-        if (_spawnedEntityId == spawnedEntityId) return;
-        _spawnedEntityId = spawnedEntityId;
-        MarkDirty();
-    }
-
-    public override Message? CreateUpdateMessage() => new MobSpawnerUpdateMessage
-    {
-        X = X,
-        Y = (short)Y,
-        Z = Z,
-        EntityTypeId = _spawnedEntityId
-    };
-
     public void ApplyItemData(ItemStack stack)
     {
         var entityType = stack.GetStringComponent(SpawnedEntityComponent);
@@ -65,6 +47,24 @@ public class BlockEntityMobSpawner : BlockEntity, IBlockEntityItemData
             "%1$s Spawner",
             entityName);
     }
+
+    public string GetSpawnedEntityId() => _spawnedEntityId;
+
+    public void SetSpawnedEntityId(string spawnedEntityId)
+    {
+        ArgumentNullException.ThrowIfNull(spawnedEntityId);
+        if (_spawnedEntityId == spawnedEntityId) return;
+        _spawnedEntityId = spawnedEntityId;
+        MarkDirty();
+    }
+
+    public override Message? CreateUpdateMessage() => new MobSpawnerUpdateMessage
+    {
+        X = X,
+        Y = (short)Y,
+        Z = Z,
+        EntityTypeId = _spawnedEntityId
+    };
 
     private bool IsPlayerInRange() => World!.Entities.GetClosestPlayer(X + 0.5D, Y + 0.5D, Z + 0.5D, 16.0D) != null;
 

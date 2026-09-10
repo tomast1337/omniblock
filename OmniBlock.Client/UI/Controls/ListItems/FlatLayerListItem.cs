@@ -1,5 +1,4 @@
 using OmniBlock.Blocks;
-using OmniBlock.Client.Rendering.Items;
 using OmniBlock.Client.UI.Controls.Core;
 using OmniBlock.Client.UI.Rendering;
 using OmniBlock.Worlds.Gen.Flat;

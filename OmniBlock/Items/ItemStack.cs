@@ -273,7 +273,7 @@ public class ItemStack
             throw new InvalidDataException($"Item stack components exceed {MaxSerializedComponentBytes} bytes.");
         _components = bytes.Length == 0
             ? new NBTTagCompound()
-            : Normalize(NbtIo.Read(new MemoryStream(bytes, writable: false)));
+            : Normalize(NbtIo.Read(new MemoryStream(bytes, false)));
     }
 
     private NBTTagCompound CloneComponents()
@@ -281,7 +281,7 @@ public class ItemStack
         var bytes = SerializeComponents();
         return bytes.Length == 0
             ? new NBTTagCompound()
-            : Normalize(NbtIo.Read(new MemoryStream(bytes, writable: false)));
+            : Normalize(NbtIo.Read(new MemoryStream(bytes, false)));
     }
 
     private static NBTTagCompound Normalize(NBTTagCompound components)

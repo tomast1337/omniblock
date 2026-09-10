@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Client.Input;
 using OmniBlock.Client.Options;

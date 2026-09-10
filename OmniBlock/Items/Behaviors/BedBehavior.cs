@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Entities;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core.Systems;
@@ -48,7 +47,7 @@ internal sealed class BedBehavior : IItemBehavior
             return false;
         }
 
-        int bedId = world.Content.Blocks.Get("omniblock:bed").Id;
+        var bedId = world.Content.Blocks.Get("omniblock:bed").Id;
         world.Writer.SetBlock(x, y, z, bedId, dir);
         world.Writer.SetBlock(x + offsetX, y, z + offsetZ, bedId, dir + 8);
         world.Broadcaster.NotifyNeighbors(x, y, z, bedId);

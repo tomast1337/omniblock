@@ -24,7 +24,8 @@
 
         <Grid ColumnDefinitions="* 0.35*" VerticalAlignment="Bottom" ColumnSpacing="10" Grid.Row="1">
             <!-- ReSharper disable once Xaml.StyleClassNotFound -->
-            <Button Content="{CompiledBinding Message}" Classes="accent" Command="{CompiledBinding RunCommand}" Grid.Column="0" />
+            <Button Content="{CompiledBinding Message}" Classes="accent" Command="{CompiledBinding RunCommand}"
+                    Grid.Column="0" />
 
             <Button Content="Back" Command="{CompiledBinding BackCommand}" Grid.Column="1" />
         </Grid>

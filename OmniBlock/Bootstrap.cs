@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Registries;
 
 namespace OmniBlock;

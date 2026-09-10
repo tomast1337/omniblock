@@ -1,6 +1,5 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using OmniBlock.Registries;
 using OmniBlock.Worlds;
 using OmniBlock.Worlds.Generation;
 
@@ -160,7 +159,10 @@ public sealed class WorldTypeBuilderTests
         var roles = GeneratorRoles(provider);
         var blocks = roles.ToDictionary(static role => role, static role => $"omniblock:{role}");
         foreach (var (role, reference) in replacements) blocks[role] = reference;
-        return JsonSerializer.SerializeToElement(new { Blocks = blocks });
+        return JsonSerializer.SerializeToElement(new
+        {
+            Blocks = blocks
+        });
     }
 
     private static JsonElement GeneratorSettingsWithValue(
@@ -170,34 +172,38 @@ public sealed class WorldTypeBuilderTests
     {
         var blocks = GeneratorRoles(provider)
             .ToDictionary(static role => role, static role => $"omniblock:{role}");
-        var settings = new Dictionary<string, object> { ["Blocks"] = blocks, [setting] = value };
+        var settings = new Dictionary<string, object>
+        {
+            ["Blocks"] = blocks,
+            [setting] = value
+        };
         return JsonSerializer.SerializeToElement(settings);
     }
 
     private static string[] GeneratorRoles(string provider) => provider switch
-        {
-            "omniblock:overworld" =>
-            [
-                "stone", "water", "flowing_water", "lava", "flowing_lava", "ice", "bedrock",
-                "dirt", "gravel", "sand", "sandstone", "coal_ore", "iron_ore", "gold_ore",
-                "redstone_ore", "diamond_ore", "lapis_ore", "dandelion", "grass", "dead_bush",
-                "rose", "brown_mushroom", "red_mushroom", "snow"
-            ],
-            "omniblock:sky" =>
-            [
-                "stone", "water", "flowing_water", "lava", "flowing_lava", "dirt", "gravel",
-                "sand", "sandstone", "coal_ore", "iron_ore", "gold_ore", "redstone_ore",
-                "diamond_ore", "lapis_ore", "dandelion", "rose", "brown_mushroom",
-                "red_mushroom", "snow"
-            ],
-            "omniblock:flat" =>
-            [
-                "water", "flowing_water", "lava", "flowing_lava", "dirt", "gravel", "coal_ore",
-                "iron_ore", "gold_ore", "redstone_ore", "diamond_ore", "lapis_ore", "dandelion",
-                "rose", "brown_mushroom", "red_mushroom", "dead_bush", "grass"
-            ],
-            _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, null)
-        };
+    {
+        "omniblock:overworld" =>
+        [
+            "stone", "water", "flowing_water", "lava", "flowing_lava", "ice", "bedrock",
+            "dirt", "gravel", "sand", "sandstone", "coal_ore", "iron_ore", "gold_ore",
+            "redstone_ore", "diamond_ore", "lapis_ore", "dandelion", "grass", "dead_bush",
+            "rose", "brown_mushroom", "red_mushroom", "snow"
+        ],
+        "omniblock:sky" =>
+        [
+            "stone", "water", "flowing_water", "lava", "flowing_lava", "dirt", "gravel",
+            "sand", "sandstone", "coal_ore", "iron_ore", "gold_ore", "redstone_ore",
+            "diamond_ore", "lapis_ore", "dandelion", "rose", "brown_mushroom",
+            "red_mushroom", "snow"
+        ],
+        "omniblock:flat" =>
+        [
+            "water", "flowing_water", "lava", "flowing_lava", "dirt", "gravel", "coal_ore",
+            "iron_ore", "gold_ore", "redstone_ore", "diamond_ore", "lapis_ore", "dandelion",
+            "rose", "brown_mushroom", "red_mushroom", "dead_bush", "grass"
+        ],
+        _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, null)
+    };
 
     private static JsonObject LoadSettings(string assetName)
     {

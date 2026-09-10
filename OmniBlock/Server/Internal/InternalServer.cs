@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using OmniBlock.Network.Messages;
+using OmniBlock.Registries;
 using OmniBlock.Server.Network;
 using OmniBlock.Worlds.Core.Systems;
 
@@ -16,7 +17,7 @@ public class InternalServer : OmniBlockServer
 
     public volatile bool isReady;
 
-    public InternalServer(string worldPath, string levelName, WorldSettings settings, int viewDistance, int initialDifficulty, Registries.ContentRuntime content) :
+    public InternalServer(string worldPath, string levelName, WorldSettings settings, int viewDistance, int initialDifficulty, ContentRuntime content) :
         base(new InternalServerConfiguration(levelName, settings.TerrainType.Name, settings.Seed.ToString(), settings.GeneratorOptions, viewDistance), content)
     {
         _worldPath = worldPath;

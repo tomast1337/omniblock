@@ -6,9 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using OmniBlock.Launcher.Features.Hosting;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using OmniBlock.Launcher.Features.Hosting;
 
 namespace OmniBlock.Launcher.Features.Properties;
 
@@ -16,66 +16,57 @@ namespace OmniBlock.Launcher.Features.Properties;
 // Had to manually implement INotifyDataErrorInfo because ObservableValidator isn't AOT friendly.
 internal sealed partial class PropertiesViewModel(NavigationService navigationService) : ObservableObject, INotifyDataErrorInfo
 {
-    [ObservableProperty]
-    public partial string? ServerIp { get; set; }
+    private readonly Dictionary<string, string> _errors = [];
+    private readonly string _path = Path.Combine(AppContext.BaseDirectory, nameof(Kind.Server), "server.properties");
 
-    [ObservableProperty]
-    public partial bool DualStack { get; set; } = false;
+    [ObservableProperty] public partial string? ServerIp { get; set; }
 
-    [ObservableProperty]
-    public partial int ServerPort { get; set; } = 25565;
+    [ObservableProperty] public partial bool DualStack { get; set; } = false;
 
-    [ObservableProperty]
-    public partial bool OnlineMode { get; set; } = true;
+    [ObservableProperty] public partial int ServerPort { get; set; } = 25565;
 
-    [ObservableProperty]
-    public partial bool SpawnAnimals { get; set; } = true;
+    [ObservableProperty] public partial bool OnlineMode { get; set; } = true;
 
-    [ObservableProperty]
-    public partial bool Pvp { get; set; } = true;
+    [ObservableProperty] public partial bool SpawnAnimals { get; set; } = true;
 
-    [ObservableProperty]
-    public partial bool AllowFlight { get; set; } = false;
+    [ObservableProperty] public partial bool Pvp { get; set; } = true;
 
-    [ObservableProperty]
-    public partial int ViewDistance { get; set; } = 10;
+    [ObservableProperty] public partial bool AllowFlight { get; set; } = false;
 
-    [ObservableProperty]
-    public partial int MaxPlayers { get; set; } = 20;
+    [ObservableProperty] public partial int ViewDistance { get; set; } = 10;
 
-    [ObservableProperty]
-    public partial bool WhiteList { get; set; } = false;
+    [ObservableProperty] public partial int MaxPlayers { get; set; } = 20;
 
-    [ObservableProperty]
-    public partial string LevelName { get; set; } = "world";
+    [ObservableProperty] public partial bool WhiteList { get; set; } = false;
 
-    [ObservableProperty]
-    public partial string? LevelSeed { get; set; }
+    [ObservableProperty] public partial string LevelName { get; set; } = "world";
 
-    [ObservableProperty]
-    public partial int LevelType { get; set; }
+    [ObservableProperty] public partial string? LevelSeed { get; set; }
 
-    [ObservableProperty]
-    public partial string? GeneratorSettings { get; set; }
+    [ObservableProperty] public partial int LevelType { get; set; }
 
-    [ObservableProperty]
-    public partial bool SpawnMonsters { get; set; } = true;
+    [ObservableProperty] public partial string? GeneratorSettings { get; set; }
 
-    [ObservableProperty]
-    public partial int SpawnRegionSize { get; set; } = 196;
+    [ObservableProperty] public partial bool SpawnMonsters { get; set; } = true;
 
-    [ObservableProperty]
-    public partial bool AllowNether { get; set; } = true;
+    [ObservableProperty] public partial int SpawnRegionSize { get; set; } = 196;
 
-    [ObservableProperty]
-    public partial bool IsReady { get; set; }
+    [ObservableProperty] public partial bool AllowNether { get; set; } = true;
+
+    [ObservableProperty] public partial bool IsReady { get; set; }
 
     public bool HasErrors => _errors.Count != 0;
 
     public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
 
-    private readonly Dictionary<string, string> _errors = [];
-    private readonly string _path = Path.Combine(AppContext.BaseDirectory, nameof(Kind.Server), "server.properties");
+    public IEnumerable GetErrors(string? propertyName)
+    {
+        return string.IsNullOrEmpty(propertyName)
+            ? _errors.Values.SelectMany(error => error).ToArray()
+            : _errors.TryGetValue(propertyName, out var message)
+                ? [message]
+                : Array.Empty<string>();
+    }
 
     [RelayCommand]
     private async Task InitializeAsync()
@@ -84,16 +75,16 @@ internal sealed partial class PropertiesViewModel(NavigationService navigationSe
 
         try
         {
-            foreach (string line in await File.ReadAllLinesAsync(_path))
+            foreach (var line in await File.ReadAllLinesAsync(_path))
             {
-                string trimmed = line.Trim();
+                var trimmed = line.Trim();
 
                 if (string.IsNullOrWhiteSpace(trimmed) || trimmed.StartsWith('#') || trimmed.StartsWith('!'))
                 {
                     continue;
                 }
 
-                int index = trimmed.IndexOf('=');
+                var index = trimmed.IndexOf('=');
 
                 if (index < 0)
                 {
@@ -105,7 +96,7 @@ internal sealed partial class PropertiesViewModel(NavigationService navigationSe
                     continue;
                 }
 
-                string value = trimmed[(index + 1)..].Trim();
+                var value = trimmed[(index + 1)..].Trim();
 
                 switch (trimmed[..index].Trim())
                 {
@@ -115,55 +106,55 @@ internal sealed partial class PropertiesViewModel(NavigationService navigationSe
                             break;
                         }
 
-                    case "dual-stack" when bool.TryParse(value, out bool result):
+                    case "dual-stack" when bool.TryParse(value, out var result):
                         {
                             DualStack = result;
                             break;
                         }
 
-                    case "server-port" when int.TryParse(value, out int result):
+                    case "server-port" when int.TryParse(value, out var result):
                         {
                             ServerPort = result;
                             break;
                         }
 
-                    case "online-mode" when bool.TryParse(value, out bool result):
+                    case "online-mode" when bool.TryParse(value, out var result):
                         {
                             OnlineMode = result;
                             break;
                         }
 
-                    case "spawn-animals" when bool.TryParse(value, out bool result):
+                    case "spawn-animals" when bool.TryParse(value, out var result):
                         {
                             SpawnAnimals = result;
                             break;
                         }
 
-                    case "pvp" when bool.TryParse(value, out bool result):
+                    case "pvp" when bool.TryParse(value, out var result):
                         {
                             Pvp = result;
                             break;
                         }
 
-                    case "allow-flight" when bool.TryParse(value, out bool result):
+                    case "allow-flight" when bool.TryParse(value, out var result):
                         {
                             AllowFlight = result;
                             break;
                         }
 
-                    case "view-distance" when int.TryParse(value, out int result):
+                    case "view-distance" when int.TryParse(value, out var result):
                         {
                             ViewDistance = result;
                             break;
                         }
 
-                    case "max-players" when int.TryParse(value, out int result):
+                    case "max-players" when int.TryParse(value, out var result):
                         {
                             MaxPlayers = result;
                             break;
                         }
 
-                    case "white-list" when bool.TryParse(value, out bool result):
+                    case "white-list" when bool.TryParse(value, out var result):
                         {
                             WhiteList = result;
                             break;
@@ -198,19 +189,19 @@ internal sealed partial class PropertiesViewModel(NavigationService navigationSe
                             break;
                         }
 
-                    case "spawn-monsters" when bool.TryParse(value, out bool result):
+                    case "spawn-monsters" when bool.TryParse(value, out var result):
                         {
                             SpawnMonsters = result;
                             break;
                         }
 
-                    case "spawn-region-size" when int.TryParse(value, out int result):
+                    case "spawn-region-size" when int.TryParse(value, out var result):
                         {
                             SpawnRegionSize = result;
                             break;
                         }
 
-                    case "allow-nether" when bool.TryParse(value, out bool result):
+                    case "allow-nether" when bool.TryParse(value, out var result):
                         {
                             AllowNether = result;
                             break;
@@ -235,41 +226,38 @@ internal sealed partial class PropertiesViewModel(NavigationService navigationSe
     }
 
     [RelayCommand]
-    private void Back()
-    {
-        navigationService.Navigate<HostingViewModel>();
-    }
+    private void Back() => navigationService.Navigate<HostingViewModel>();
 
     private async Task WriteAsync()
     {
-        string levelType = LevelType switch
+        var levelType = LevelType switch
         {
             0 => "DEFAULT",
             1 => "FLAT",
             _ => "DEFAULT"
         };
 
-        string value = $"""
-                        # OmniBlock server properties
-                        # Generated by OmniBlock's launcher
-                        server-ip={ServerIp}
-                        dual-stack={DualStack}
-                        server-port={ServerPort}
-                        online-mode={OnlineMode}
-                        spawn-animals={SpawnAnimals}
-                        pvp={Pvp}
-                        allow-flight={AllowFlight}
-                        view-distance={ViewDistance}
-                        max-players={MaxPlayers}
-                        white-list={WhiteList}
-                        level-name={LevelName}
-                        level-seed={LevelSeed}
-                        level-type={levelType}
-                        generator-settings={GeneratorSettings}
-                        spawn-monsters={SpawnMonsters}
-                        spawn-region-size={SpawnRegionSize}
-                        allow-nether={AllowNether}
-                        """;
+        var value = $"""
+                     # OmniBlock server properties
+                     # Generated by OmniBlock's launcher
+                     server-ip={ServerIp}
+                     dual-stack={DualStack}
+                     server-port={ServerPort}
+                     online-mode={OnlineMode}
+                     spawn-animals={SpawnAnimals}
+                     pvp={Pvp}
+                     allow-flight={AllowFlight}
+                     view-distance={ViewDistance}
+                     max-players={MaxPlayers}
+                     white-list={WhiteList}
+                     level-name={LevelName}
+                     level-seed={LevelSeed}
+                     level-type={levelType}
+                     generator-settings={GeneratorSettings}
+                     spawn-monsters={SpawnMonsters}
+                     spawn-region-size={SpawnRegionSize}
+                     allow-nether={AllowNether}
+                     """;
 
         await File.WriteAllTextAsync(_path, value);
     }
@@ -306,14 +294,5 @@ internal sealed partial class PropertiesViewModel(NavigationService navigationSe
         }
 
         ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(string.Empty));
-    }
-
-    public IEnumerable GetErrors(string? propertyName)
-    {
-        return string.IsNullOrEmpty(propertyName)
-            ? _errors.Values.SelectMany(error => error).ToArray()
-            : _errors.TryGetValue(propertyName, out string? message)
-                ? [message]
-                : Array.Empty<string>();
     }
 }

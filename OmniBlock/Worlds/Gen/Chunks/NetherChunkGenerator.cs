@@ -11,7 +11,6 @@ namespace OmniBlock.Worlds.Gen.Chunks;
 internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
 {
     private readonly BlockIds _blocks;
-    private readonly Settings _settings;
     private readonly Carver _cave = new NetherCaveCarver();
     private readonly OctavePerlinNoiseSampler _depthNoise;
     private readonly OctavePerlinNoiseSampler _maxLimitPerlinNoise;
@@ -20,6 +19,7 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
     private readonly OctavePerlinNoiseSampler _perlinNoise2;
     private readonly OctavePerlinNoiseSampler _perlinNoise3;
     private readonly OctavePerlinNoiseSampler _scaleNoise;
+    private readonly Settings _settings;
     private double[] _depthBuffer = new double[256];
     private double[] _depthNoiseBuffer;
     private PlantPatchFeature _featureBrownMushroom;
@@ -458,6 +458,10 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
         return heightMap;
     }
 
+    public static void markChunksForUnload(int _)
+    {
+    }
+
     internal sealed class BlockIds
     {
         private BlockIds(
@@ -608,9 +612,5 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
                 throw new InvalidOperationException(
                     $"Dimension generator profile '{owner}' nether setting '{name}' is {value} and {requirement}.");
         }
-    }
-
-    public static void markChunksForUnload(int _)
-    {
     }
 }

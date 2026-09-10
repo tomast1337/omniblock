@@ -5,8 +5,8 @@ using OmniBlock.Entities;
 using OmniBlock.Items;
 using OmniBlock.Processes;
 using OmniBlock.Rules;
-using OmniBlock.Worlds.Generation.Biomes;
 using OmniBlock.Worlds;
+using OmniBlock.Worlds.Generation.Biomes;
 
 namespace OmniBlock.Registries;
 

@@ -16,13 +16,13 @@ public sealed class ItemStackComponentTests
         original.SetStringComponent(TestComponent, "omniblock:skeleton");
 
         ItemStack saved = new(items, original.WriteToNbt(new NBTTagCompound()));
-        ItemStack copy = original.Copy();
-        ItemStack split = original.Split(1);
+        var copy = original.Copy();
+        var split = original.Split(1);
 
         using MemoryStream wire = new();
         wire.WriteItemStack(original);
         wire.Position = 0;
-        ItemStack networked = Assert.IsType<ItemStack>(wire.ReadItemStack(items));
+        var networked = Assert.IsType<ItemStack>(wire.ReadItemStack(items));
 
         Assert.All([saved, copy, split, networked], stack =>
             Assert.Equal("omniblock:skeleton", stack.GetStringComponent(TestComponent)));

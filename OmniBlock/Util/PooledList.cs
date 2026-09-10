@@ -15,7 +15,7 @@ public sealed class PooledList<T>(int initialCapacity = 16) : IDisposable where 
     {
         if (Buffer != null)
         {
-            ArrayPool<T>.Shared.Return(Buffer, false);
+            ArrayPool<T>.Shared.Return(Buffer);
             Buffer = null!;
             Count = 0;
         }

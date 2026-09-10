@@ -22,8 +22,8 @@
         </Style>
 
         <Style Selector="Button">
-            <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
-            <Setter Property="HorizontalContentAlignment" Value="Center"></Setter>
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
         </Style>
 
         <Style Selector="Grid">

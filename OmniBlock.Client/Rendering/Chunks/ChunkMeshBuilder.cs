@@ -13,7 +13,6 @@ namespace OmniBlock.Client.Rendering.Chunks;
 internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
 {
     private readonly PendingVertex[] _quad = new PendingVertex[4];
-    private PooledList<ChunkVertex>? _vertices = new();
     private int _arrayLayer = Tessellator.NoArrayLayer;
     private byte _blockLight;
     private int _color = unchecked((int)0xFFFFFFFF);
@@ -21,39 +20,10 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
     private bool _hasLight;
     private int _quadVertexCount;
     private byte _skyLight;
+    private PooledList<ChunkVertex>? _vertices = new();
     private double _xOffset;
     private double _yOffset;
     private double _zOffset;
-
-    public void Begin(double xOffset, double yOffset, double zOffset)
-    {
-        ObjectDisposedException.ThrowIf(_vertices is null, this);
-        _vertices.Clear();
-        _quadVertexCount = 0;
-        _arrayLayer = Tessellator.NoArrayLayer;
-        _color = unchecked((int)0xFFFFFFFF);
-        _hasColor = false;
-        _hasLight = false;
-        _skyLight = 0;
-        _blockLight = 0;
-        _xOffset = xOffset;
-        _yOffset = yOffset;
-        _zOffset = zOffset;
-    }
-
-    public PooledList<ChunkVertex> Finish()
-    {
-        ObjectDisposedException.ThrowIf(_vertices is null, this);
-
-        // Tessellator capture discarded an incomplete primitive at draw(). Block renderers should
-        // emit whole quads, but retaining that behavior avoids turning an extraction into a new
-        // runtime failure mode.
-        _quadVertexCount = 0;
-
-        var result = _vertices;
-        _vertices = null;
-        return result;
-    }
 
     public void addVertexWithUV(double x, double y, double z, double u, double v)
     {
@@ -111,6 +81,36 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
     {
         _vertices?.Dispose();
         _vertices = null;
+    }
+
+    public void Begin(double xOffset, double yOffset, double zOffset)
+    {
+        ObjectDisposedException.ThrowIf(_vertices is null, this);
+        _vertices.Clear();
+        _quadVertexCount = 0;
+        _arrayLayer = Tessellator.NoArrayLayer;
+        _color = unchecked((int)0xFFFFFFFF);
+        _hasColor = false;
+        _hasLight = false;
+        _skyLight = 0;
+        _blockLight = 0;
+        _xOffset = xOffset;
+        _yOffset = yOffset;
+        _zOffset = zOffset;
+    }
+
+    public PooledList<ChunkVertex> Finish()
+    {
+        ObjectDisposedException.ThrowIf(_vertices is null, this);
+
+        // Tessellator capture discarded an incomplete primitive at draw(). Block renderers should
+        // emit whole quads, but retaining that behavior avoids turning an extraction into a new
+        // runtime failure mode.
+        _quadVertexCount = 0;
+
+        var result = _vertices;
+        _vertices = null;
+        return result;
     }
 
     private void Emit(int index)

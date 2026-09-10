@@ -90,7 +90,7 @@ public class AssetManager
 
                     var fileName = Path.GetFileName(file);
 
-                    DefineAsset($"lang/" + fileName, AssetType.Text);
+                    DefineAsset("lang/" + fileName, AssetType.Text);
                 }
             }
             else

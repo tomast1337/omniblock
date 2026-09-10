@@ -16,7 +16,10 @@ internal sealed class MojangClient(IHttpClientFactory clientFactory)
 
         return await client.PostAsync(
             $"{Url}/authentication/login_with_xbox",
-            new TokenRequest { Value = $"XBL3.0 x={hash};{token}" },
+            new TokenRequest
+            {
+                Value = $"XBL3.0 x={hash};{token}"
+            },
             MojangSerializerContext.Default.TokenRequest,
             MojangSerializerContext.Default.TokenResponse);
     }

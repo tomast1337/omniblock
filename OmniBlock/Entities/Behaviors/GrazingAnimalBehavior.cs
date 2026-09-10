@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Util.Maths;
 
 namespace OmniBlock.Entities.Behaviors;

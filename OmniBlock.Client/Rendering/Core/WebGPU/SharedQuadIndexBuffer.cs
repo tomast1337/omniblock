@@ -14,17 +14,24 @@ internal sealed unsafe class SharedQuadIndexBuffer : IDisposable
 {
     private readonly WebGpuDevice _device;
     private WgpuBuffer* _buffer;
-    private uint _quadCapacity;
 
     public SharedQuadIndexBuffer(WebGpuDevice device) => _device = device;
 
-    public uint QuadCapacity => _quadCapacity;
+    public uint QuadCapacity { get; private set; }
+
+    public void Dispose()
+    {
+        if (_buffer is null) return;
+        _device.Api.BufferRelease(_buffer);
+        _buffer = null;
+        QuadCapacity = 0;
+    }
 
     public void EnsureCapacity(uint requiredQuads)
     {
-        if (requiredQuads <= _quadCapacity) return;
+        if (requiredQuads <= QuadCapacity) return;
 
-        var capacity = Math.Max(256u, _quadCapacity);
+        var capacity = Math.Max(256u, QuadCapacity);
         while (capacity < requiredQuads)
         {
             capacity = checked(capacity * 2);
@@ -48,7 +55,7 @@ internal sealed unsafe class SharedQuadIndexBuffer : IDisposable
 
         var previous = _buffer;
         _buffer = replacement;
-        _quadCapacity = capacity;
+        QuadCapacity = capacity;
 
         if (previous is not null)
         {
@@ -63,14 +70,6 @@ internal sealed unsafe class SharedQuadIndexBuffer : IDisposable
         _device.Api.RenderPassEncoderSetIndexBuffer(
             pass, _buffer, IndexFormat.Uint32, 0, WgpuWholeSize.Value);
         _device.Api.RenderPassEncoderDrawIndexed(pass, checked(quadCount * 6), instanceCount, 0, 0, 0);
-    }
-
-    public void Dispose()
-    {
-        if (_buffer is null) return;
-        _device.Api.BufferRelease(_buffer);
-        _buffer = null;
-        _quadCapacity = 0;
     }
 
     internal static void FillIndices(Span<uint> destination)

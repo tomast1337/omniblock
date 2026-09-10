@@ -1,6 +1,5 @@
 using System.Numerics;
 using Hexa.NET.ImGui;
-using OmniBlock.Blocks;
 using OmniBlock.Diagnostics;
 using OmniBlock.Util.Hit;
 using OmniBlock.Worlds.Chunks;

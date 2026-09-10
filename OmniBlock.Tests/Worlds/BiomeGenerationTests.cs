@@ -1,4 +1,3 @@
-using OmniBlock.Registries;
 using OmniBlock.Worlds.Generation.Biomes;
 
 namespace OmniBlock.Tests.Worlds;

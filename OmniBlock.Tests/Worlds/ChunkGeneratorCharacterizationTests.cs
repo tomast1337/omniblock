@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using OmniBlock.Entities;
-using OmniBlock.Registries;
 using OmniBlock.Server.Worlds;
 using OmniBlock.Worlds;
 using OmniBlock.Worlds.Chunks;
@@ -102,9 +101,9 @@ public sealed class ChunkGeneratorCharacterizationTests
 
         var actual = string.Join(',',
             chunk.HeightMap[0],
-            chunk.HeightMap[7 << 4 | 5],
-            chunk.HeightMap[12 << 4 | 3],
-            chunk.HeightMap[15 << 4 | 15]);
+            chunk.HeightMap[(7 << 4) | 5],
+            chunk.HeightMap[(12 << 4) | 3],
+            chunk.HeightMap[(15 << 4) | 15]);
 
         Assert.Equal(expected, actual);
     }
@@ -223,7 +222,7 @@ public sealed class ChunkGeneratorCharacterizationTests
             Assert.Equal(wool.Id, chunk[x, 3, z]);
             Assert.Equal(5, chunk.GetBlockMeta(x, 3, z));
             Assert.Equal(0, chunk[x, 4, z]);
-            Assert.Equal(4, chunk.HeightMap[z << 4 | x]);
+            Assert.Equal(4, chunk.HeightMap[(z << 4) | x]);
         }
     }
 
@@ -302,8 +301,6 @@ public sealed class ChunkGeneratorCharacterizationTests
 
         public IEnumerable<Chunk> All => _chunks.Values;
 
-        public void Store(Chunk chunk) => _chunks[(chunk.X, chunk.Z)] = chunk;
-
         public bool IsChunkLoaded(int x, int z) => _chunks.ContainsKey((x, z));
 
         public Chunk GetChunk(int x, int z)
@@ -315,21 +312,41 @@ public sealed class ChunkGeneratorCharacterizationTests
         }
 
         public Chunk LoadChunk(int x, int z) => GetChunk(x, z);
-        public void DecorateTerrain(IChunkSource source, int x, int z) { }
+
+        public void DecorateTerrain(IChunkSource source, int x, int z)
+        {
+        }
+
         public bool Save(bool saveEntities, LoadingDisplay display) => true;
         public bool Tick() => false;
         public bool CanSave() => false;
         public string GetDebugInfo() => nameof(MemoryChunkSource);
+
+        public void Store(Chunk chunk) => _chunks[(chunk.X, chunk.Z)] = chunk;
     }
 
     private sealed class MemoryWorldStorage : IWorldStorage
     {
         public WorldProperties? LoadProperties() => null;
-        public void CheckSessionLock() { }
+
+        public void CheckSessionLock()
+        {
+        }
+
         public IChunkStorage? GetChunkStorage(Dimension dimension) => null;
-        public void Save(WorldProperties properties, List<EntityPlayer> players) { }
-        public void Save(WorldProperties properties) { }
-        public void ForceSave() { }
+
+        public void Save(WorldProperties properties, List<EntityPlayer> players)
+        {
+        }
+
+        public void Save(WorldProperties properties)
+        {
+        }
+
+        public void ForceSave()
+        {
+        }
+
         public IPlayerStorage? GetPlayerStorage() => null;
         public FileInfo? GetWorldPropertiesFile(string name) => null;
     }

@@ -18,8 +18,8 @@ namespace OmniBlock.Client.Entities;
 public class ClientPlayerEntity : EntityPlayer
 {
     private bool _isFlying;
-    private bool _testFlying;
     private byte _lastJump;
+    private bool _testFlying;
     protected OmniBlock Game;
     public MovementInput movementInput;
 

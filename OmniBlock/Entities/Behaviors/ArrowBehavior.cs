@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Entities.State;
 using OmniBlock.Items;
 using OmniBlock.NBT;
@@ -121,7 +120,7 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
         var blockId = self.World.Reader.GetBlockId(self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
         if (blockId > 0)
         {
-            Block block = self.World.Content.Blocks.GetByProtocolId(blockId);
+            var block = self.World.Content.Blocks.GetByProtocolId(blockId);
             block.UpdateBoundingBox(self.World.Reader, self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
             var box = block.GetCollisionShape(self.World.Reader, self.World.Entities, self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
             if (box != null && box.Value.Contains(new Vec3D(self.X, self.Y, self.Z)))

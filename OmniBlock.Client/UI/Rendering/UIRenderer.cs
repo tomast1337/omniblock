@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Client.Options;
 using OmniBlock.Client.Rendering.Blocks;
@@ -10,7 +9,6 @@ using OmniBlock.Client.Rendering.Items;
 using OmniBlock.Client.Rendering.UI;
 using OmniBlock.Entities;
 using OmniBlock.Items;
-using OmniBlock.Worlds.Core;
 using Silk.NET.Maths;
 using SixLabors.Fonts;
 using Color = OmniBlock.Client.UI.Colors.Color;
@@ -35,8 +33,9 @@ public class UIRenderer
             DepthWrite = true
         };
 
-    private readonly ItemRenderer _itemRenderer;
     private readonly ClientItemPreviewRegistry _itemPreviews;
+
+    private readonly ItemRenderer _itemRenderer;
     private readonly Stack<(bool Enabled, int X, int Y, int W, int H)> _scissorStack = new();
     private readonly Stack<Vector2D<float>> _translationStack = new();
     private uint _currentTint = 0xFFFFFFFF;
@@ -53,6 +52,7 @@ public class UIRenderer
         _itemRenderer = new ItemRenderer(context.Content.Blocks);
         _itemPreviews = new ClientItemPreviewRegistry(context.Content);
     }
+
     public UIContext Context { get; }
 
     public TextureManager TextureManager => Context.TextureManager;

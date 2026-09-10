@@ -11,10 +11,7 @@ public sealed class ChunkLoadingQueueTests
     [InlineData(10, 8)]
     [InlineData(32, 8)]
     [InlineData(128, 8)]
-    public void Chunk_loader_concurrency_is_bounded(int processors, int expected)
-    {
-        Assert.Equal(expected, ChunkLoadingQueue.GetWorkerCount(processors));
-    }
+    public void Chunk_loader_concurrency_is_bounded(int processors, int expected) => Assert.Equal(expected, ChunkLoadingQueue.GetWorkerCount(processors));
 
     [Theory]
     [InlineData(1, 1)]
@@ -22,10 +19,8 @@ public sealed class ChunkLoadingQueueTests
     [InlineData(16, 4)]
     [InlineData(32, 4)]
     public void Integrated_chunk_loader_leaves_capacity_for_client_meshing_and_rendering(
-        int processors, int expected)
-    {
-        Assert.Equal(expected, ChunkLoadingQueue.GetWorkerCount(processors, sharesProcessWithClient: true));
-    }
+        int processors, int expected) =>
+        Assert.Equal(expected, ChunkLoadingQueue.GetWorkerCount(processors, true));
 
     [Theory]
     [InlineData(1, 1, true)]

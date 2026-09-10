@@ -37,10 +37,8 @@ public sealed class WorldTypeCharacterizationTests
     [InlineData("missing:generator", "default")]
     public void Saved_names_are_resolved_case_insensitively_with_a_default_fallback(
         string input,
-        string expected)
-    {
+        string expected) =>
         Assert.Equal(expected, WorldType.ParseWorldType(input).Name);
-    }
 
     [Theory]
     [MemberData(nameof(ShippedTypes))]

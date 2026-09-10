@@ -1,12 +1,12 @@
 using System;
 using System.Threading.Tasks;
-using OmniBlock.Launcher.Features.Alert;
-using OmniBlock.Launcher.Features.Home;
-using OmniBlock.Launcher.Features.Sessions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Launcher.Features.Alert;
+using OmniBlock.Launcher.Features.Home;
+using OmniBlock.Launcher.Features.Sessions;
 
 namespace OmniBlock.Launcher.Features.Authentication;
 
@@ -18,32 +18,26 @@ internal sealed partial class AuthenticationViewModel(
     NavigationService navigationService,
     StorageService storageService) : ObservableObject
 {
-    [ObservableProperty]
-    public partial string? Url { get; set; }
+    [ObservableProperty] public partial string? Url { get; set; }
 
-    [ObservableProperty]
-    public partial string? Message { get; set; }
+    [ObservableProperty] public partial string? Message { get; set; }
 
-    [ObservableProperty]
-    public partial bool IsReady { get; set; }
+    [ObservableProperty] public partial bool IsReady { get; set; }
 
     [RelayCommand]
-    private async Task InitializeAsync()
-    {
-        await authenticationService.InitializeAsync();
-    }
+    private async Task InitializeAsync() => await authenticationService.InitializeAsync();
 
     [RelayCommand]
     private async Task UseWebAsync()
     {
-        string token = await authenticationService.AuthenticateWebAsync();
+        var token = await authenticationService.AuthenticateWebAsync();
         await AuthenticateAsync(token);
     }
 
     [RelayCommand]
     private async Task UseCodeAsync()
     {
-        string token = await authenticationService.AuthenticateCodeAsync(callback =>
+        var token = await authenticationService.AuthenticateCodeAsync(callback =>
         {
             Url = callback.VerificationUrl;
             Message = $"Use a Web browser to open {callback.VerificationUrl} and enter the code {callback.UserCode} to authenticate";

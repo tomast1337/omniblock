@@ -31,9 +31,9 @@ public sealed class ChunkOcclusionCullerTests
     [Fact]
     public void Traversal_can_cross_a_mesh_outside_the_frustum()
     {
-        using var camera = Node(0, sealedNeighbors: true);
-        using var bridge = Node(16, sealedNeighbors: true);
-        using var terrain = Node(32, sealedNeighbors: true);
+        using var camera = Node(0, true);
+        using var bridge = Node(16, true);
+        using var terrain = Node(32, true);
         camera.AdjacentEast = bridge;
         bridge.AdjacentWest = camera;
         bridge.AdjacentEast = terrain;
@@ -51,11 +51,11 @@ public sealed class ChunkOcclusionCullerTests
     [Fact]
     public void New_incoming_face_reopens_a_previously_visited_mesh()
     {
-        using var camera = Node(0, sealedNeighbors: true);
-        using var junction = Node(16, sealedNeighbors: true);
-        using var detour = Node(32, sealedNeighbors: true);
-        using var returnPath = Node(64, sealedNeighbors: true);
-        using var terrain = Node(48, sealedNeighbors: true);
+        using var camera = Node(0, true);
+        using var junction = Node(16, true);
+        using var detour = Node(32, true);
+        using var returnPath = Node(64, true);
+        using var terrain = Node(48, true);
         camera.AdjacentEast = junction;
         camera.AdjacentSouth = detour;
         detour.AdjacentEast = returnPath;
@@ -73,9 +73,9 @@ public sealed class ChunkOcclusionCullerTests
     [Fact]
     public void Enclosed_terrain_is_still_occluded()
     {
-        using var camera = Node(0, sealedNeighbors: true);
-        using var wall = Node(16, sealedNeighbors: true);
-        using var terrain = Node(32, sealedNeighbors: true);
+        using var camera = Node(0, true);
+        using var wall = Node(16, true);
+        using var terrain = Node(32, true);
         camera.AdjacentEast = wall;
         wall.AdjacentEast = terrain;
         camera.VisibilityData.SetVisible(ChunkDirection.West, ChunkDirection.East);
@@ -136,8 +136,11 @@ public sealed class ChunkOcclusionCullerTests
         var node = new SubChunkRenderer(new Vector3D<int>(x, 64, 0));
         // Self-links close unused graph edges, preventing missing-neighbor seeds in portal tests.
         if (sealedNeighbors)
+        {
             node.AdjacentDown = node.AdjacentUp = node.AdjacentNorth = node.AdjacentSouth =
                 node.AdjacentWest = node.AdjacentEast = node;
+        }
+
         return node;
     }
 
@@ -159,7 +162,10 @@ public sealed class ChunkOcclusionCullerTests
     private sealed class TestFrustum(Box? rejected = null) : ICuller
     {
         public bool IsBoundingBoxInFrustum(Box aabb) => !rejected.HasValue || !aabb.Equals(rejected.Value);
-        public void SetPosition(double x, double y, double z) { }
+
+        public void SetPosition(double x, double y, double z)
+        {
+        }
     }
 
     private sealed class NearOriginFrustum : ICuller
@@ -172,6 +178,8 @@ public sealed class ChunkOcclusionCullerTests
             return aabb.MinX < 48;
         }
 
-        public void SetPosition(double x, double y, double z) { }
+        public void SetPosition(double x, double y, double z)
+        {
+        }
     }
 }

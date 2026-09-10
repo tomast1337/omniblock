@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using OmniBlock.Blocks;
 using OmniBlock.Client.Options;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.Textures;

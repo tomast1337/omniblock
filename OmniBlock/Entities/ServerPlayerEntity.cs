@@ -491,8 +491,6 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         return new ChunkSendCost(region.Size(), true);
     }
 
-    private readonly record struct ChunkSendCost(int Bytes, bool RequiresMeshing);
-
     private void SendBlockEntityUpdates(IWorldContext world, ChunkPos chunkPos)
     {
         var startX = chunkPos.X * 16;
@@ -779,4 +777,6 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     //client only
     public override void Spawn() => throw new NotImplementedException();
+
+    private readonly record struct ChunkSendCost(int Bytes, bool RequiresMeshing);
 }

@@ -1,6 +1,4 @@
-using OmniBlock.Blocks;
 using OmniBlock.Worlds.Chunks;
-using OmniBlock.Worlds.Gen.Chunks;
 using OmniBlock.Worlds.Generation;
 using OmniBlock.Worlds.Generation.Biomes;
 using OmniBlock.Worlds.Generation.Biomes.Source;
@@ -12,10 +10,7 @@ internal class NetherDimension : Dimension
 {
     private readonly DimensionGeneratorProfile _generatorProfile;
 
-    internal NetherDimension(DimensionGeneratorProfile generatorProfile)
-    {
-        _generatorProfile = generatorProfile;
-    }
+    internal NetherDimension(DimensionGeneratorProfile generatorProfile) => _generatorProfile = generatorProfile;
 
     public override bool HasWorldSpawn => false;
 

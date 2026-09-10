@@ -11,7 +11,6 @@ using OmniBlock.Server.Internal;
 using OmniBlock.Server.Network;
 using OmniBlock.Server.Worlds;
 using OmniBlock.Util;
-using OmniBlock.Worlds;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Storage;

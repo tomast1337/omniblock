@@ -13,7 +13,13 @@ internal sealed class XboxClient(IHttpClientFactory clientFactory)
 
         return await client.PostAsync(
             "https://user.auth.xboxlive.com/user/authenticate",
-            new UserRequest { Properties = new UserRequest.UserProperties { RpsTicket = $"d={token}" } },
+            new UserRequest
+            {
+                Properties = new UserRequest.UserProperties
+                {
+                    RpsTicket = $"d={token}"
+                }
+            },
             XboxSerializerContext.Default.UserRequest,
             XboxSerializerContext.Default.UserResponse);
     }
@@ -24,7 +30,13 @@ internal sealed class XboxClient(IHttpClientFactory clientFactory)
 
         return await client.PostAsync(
             "https://xsts.auth.xboxlive.com/xsts/authorize",
-            new TokenRequest { Properties = new TokenRequest.TokenProperties { UserTokens = [token] } },
+            new TokenRequest
+            {
+                Properties = new TokenRequest.TokenProperties
+                {
+                    UserTokens = [token]
+                }
+            },
             XboxSerializerContext.Default.TokenRequest,
             XboxSerializerContext.Default.TokenResponse);
     }

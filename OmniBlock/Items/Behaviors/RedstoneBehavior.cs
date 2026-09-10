@@ -46,7 +46,7 @@ internal sealed class RedstoneBehavior : IItemBehavior
             }
         }
 
-        Block redstoneWire = world.Content.Blocks.Get("omniblock:redstone_wire");
+        var redstoneWire = world.Content.Blocks.Get("omniblock:redstone_wire");
         if (redstoneWire.CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
         {
             itemStack.ConsumeItem(player);

@@ -59,16 +59,22 @@ public class Item
     public TBehavior? GetBehavior<TBehavior>() where TBehavior : class, IItemBehavior
     {
         for (var i = 0; i < BehaviorCount; i++)
+        {
             if (_behaviors[i] is TBehavior behavior)
                 return behavior;
+        }
+
         return null;
     }
 
     private IItemBehavior? GetBehavior(Type type)
     {
         for (var i = 0; i < BehaviorCount; i++)
+        {
             if (_behaviors[i]!.GetType() == type)
                 return _behaviors[i];
+        }
+
         return null;
     }
 
@@ -102,8 +108,11 @@ public class Item
     public virtual bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
         for (var i = 0; i < BehaviorCount; i++)
+        {
             if (_behaviors[i]!.UseOnBlock(this, itemStack, entityPlayer, world, x, y, z, meta))
                 return true;
+        }
+
         return false;
     }
 
@@ -176,8 +185,11 @@ public class Item
     public bool IsSuitableFor(Block block)
     {
         for (var i = 0; i < BehaviorCount; i++)
+        {
             if (_behaviors[i]!.IsSuitableFor(this, block))
                 return true;
+        }
+
         return false;
     }
 
@@ -197,16 +209,22 @@ public class Item
     {
         if (Handheld) return true;
         for (var i = 0; i < BehaviorCount; i++)
+        {
             if (_behaviors[i]!.IsHandheld(this))
                 return true;
+        }
+
         return false;
     }
 
     public bool IsHandheldRod()
     {
         for (var i = 0; i < BehaviorCount; i++)
+        {
             if (_behaviors[i]!.IsHandheldRod(this))
                 return true;
+        }
+
         return false;
     }
 
@@ -280,16 +298,22 @@ public class Item
     public bool IsNetworkSynced()
     {
         for (var i = 0; i < BehaviorCount; i++)
+        {
             if (_behaviors[i]!.IsNetworkSynced(this))
                 return true;
+        }
+
         return false;
     }
 
     public Message? GetUpdatePacket(ItemStack stack, IWorldContext world, EntityPlayer player)
     {
         for (var i = 0; i < BehaviorCount; i++)
+        {
             if (_behaviors[i]!.GetUpdatePacket(this, stack, world, player) is { } packet)
                 return packet;
+        }
+
         return null;
     }
 }

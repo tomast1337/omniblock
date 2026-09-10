@@ -13,6 +13,5 @@ internal sealed class Session
 
     public required DateTimeOffset Expiration { get; set; }
 
-    [JsonIgnore]
-    public bool HasExpired => DateTimeOffset.UtcNow.AddMinutes(5) > Expiration;
+    [JsonIgnore] public bool HasExpired => DateTimeOffset.UtcNow.AddMinutes(5) > Expiration;
 }

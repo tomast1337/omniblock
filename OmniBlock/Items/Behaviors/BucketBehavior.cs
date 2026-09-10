@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Entities;
 using OmniBlock.Util.Hit;

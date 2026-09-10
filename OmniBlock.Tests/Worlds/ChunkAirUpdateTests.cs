@@ -1,5 +1,3 @@
-using OmniBlock.Worlds.Chunks;
-
 namespace OmniBlock.Tests.Worlds;
 
 public sealed class ChunkAirUpdateTests

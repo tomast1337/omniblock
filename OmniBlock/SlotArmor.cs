@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Inventories;
 using OmniBlock.Items;
 using OmniBlock.Items.Behaviors;
@@ -9,9 +8,9 @@ namespace OmniBlock;
 
 internal class SlotArmor : Slot
 {
+    private readonly int _pumpkinId;
     private readonly int armorType;
     private readonly PlayerScreenHandler inventory;
-    private readonly int _pumpkinId;
 
     public SlotArmor(PlayerScreenHandler screenHandler, IInventory inventory, int slotIndex, int x, int y, int armorType, int pumpkinId) : base(inventory, slotIndex, x, y)
     {

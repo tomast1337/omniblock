@@ -45,7 +45,7 @@ internal sealed class SignBehavior : IItemBehavior
             ++x;
         }
 
-        Block sign = world.Content.Blocks.Get("omniblock:sign");
+        var sign = world.Content.Blocks.Get("omniblock:sign");
         if (!sign.CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
         {
             return false;

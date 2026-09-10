@@ -111,9 +111,9 @@ public sealed class StaticBlockCatalogAccessTests
     [Fact]
     public void Runtime_item_behaviors_cannot_access_the_static_block_registry()
     {
-        string root = FindRepositoryRoot();
-        string behaviorDirectory = Path.Combine(root, "OmniBlock", "Items", "Behaviors");
-        string[] violations = Directory.EnumerateFiles(behaviorDirectory, "*.cs")
+        var root = FindRepositoryRoot();
+        var behaviorDirectory = Path.Combine(root, "OmniBlock", "Items", "Behaviors");
+        var violations = Directory.EnumerateFiles(behaviorDirectory, "*.cs")
             .SelectMany(file => File.ReadLines(file)
                 .Select((line, index) => (line, number: index + 1))
                 .Where(static entry => entry.line.Contains("BlockRegistry.")

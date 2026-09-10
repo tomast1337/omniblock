@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Entities.Models;

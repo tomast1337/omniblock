@@ -213,6 +213,45 @@ public class Tessellator : IBlockVertexSink
     /// <summary>The light the vertices from here on carry, or full brightness if none was set.</summary>
     private int PackedLight => hasLight ? skyLight | (blockLight << 8) : FullBrightLight;
 
+    /// <summary>
+    ///     Which layer of the bound texture array the vertices from here on sample. Stays set until
+    ///     changed, like the colour and the UV do.
+    /// </summary>
+    /// <remarks>
+    ///     A layer rather than a texture name because the caller is usually resolving a legacy
+    ///     <c>TextureId</c>: see <see cref="Textures.AtlasTileMap.LayerOfGridIndex" />.
+    /// </remarks>
+    public void setArrayLayer(int layer) => arrayLayer = layer;
+
+    public void setColorOpaque_F(float red, float green, float blue) => setColorOpaque((int)(red * 255.0F), (int)(green * 255.0F), (int)(blue * 255.0F));
+
+    public void addVertexWithUV(double x, double y, double z, double u, double v)
+    {
+        setTextureUV(u, v);
+        addVertex(x, y, z);
+    }
+
+    /// <summary>
+    ///     The two light levels the next vertices carry, each 0..15 and allowed to be fractional.
+    /// </summary>
+    /// <remarks>
+    ///     Levels, not brightness: the ramp and the time of day are applied by the terrain shader, so
+    ///     what is stored here is what the world holds rather than what it currently looks like.
+    /// </remarks>
+    public void setLight(float sky, float block)
+    {
+        skyLight = ChunkVertexHelper.ToQuarterLevels(sky);
+        blockLight = ChunkVertexHelper.ToQuarterLevels(block);
+        hasLight = true;
+    }
+
+    public void setTranslationF(float x, float y, float z)
+    {
+        xOffset += x;
+        yOffset += y;
+        zOffset += z;
+    }
+
     public void begin()
     {
         arrayLayer = NoArrayLayer;
@@ -321,20 +360,8 @@ public class Tessellator : IBlockVertexSink
         textureV = v;
     }
 
-    /// <summary>
-    ///     Which layer of the bound texture array the vertices from here on sample. Stays set until
-    ///     changed, like the colour and the UV do.
-    /// </summary>
-    /// <remarks>
-    ///     A layer rather than a texture name because the caller is usually resolving a legacy
-    ///     <c>TextureId</c>: see <see cref="Textures.AtlasTileMap.LayerOfGridIndex" />.
-    /// </remarks>
-    public void setArrayLayer(int layer) => arrayLayer = layer;
-
     /// <summary>Goes back to sampling the plain 2D texture bound to unit 0.</summary>
     public void clearArrayLayer() => arrayLayer = NoArrayLayer;
-
-    public void setColorOpaque_F(float red, float green, float blue) => setColorOpaque((int)(red * 255.0F), (int)(green * 255.0F), (int)(blue * 255.0F));
 
     public void setColorRGBA_F(float red, float green, float blue, float alpha) => setColorRGBA((int)(red * 255.0F), (int)(green * 255.0F), (int)(blue * 255.0F), (int)(alpha * 255.0F));
 
@@ -427,12 +454,6 @@ public class Tessellator : IBlockVertexSink
         hasColor = true;
     }
 
-    public void addVertexWithUV(double x, double y, double z, double u, double v)
-    {
-        setTextureUV(u, v);
-        addVertex(x, y, z);
-    }
-
     public void addVertex(double x, double y, double z)
     {
         ++addedVertices;
@@ -523,31 +544,10 @@ public class Tessellator : IBlockVertexSink
         normal = packedX | (packedY << 8) | (packedZ << 16);
     }
 
-    /// <summary>
-    ///     The two light levels the next vertices carry, each 0..15 and allowed to be fractional.
-    /// </summary>
-    /// <remarks>
-    ///     Levels, not brightness: the ramp and the time of day are applied by the terrain shader, so
-    ///     what is stored here is what the world holds rather than what it currently looks like.
-    /// </remarks>
-    public void setLight(float sky, float block)
-    {
-        skyLight = ChunkVertexHelper.ToQuarterLevels(sky);
-        blockLight = ChunkVertexHelper.ToQuarterLevels(block);
-        hasLight = true;
-    }
-
     public void setTranslationD(double x, double y, double z)
     {
         xOffset = x;
         yOffset = y;
         zOffset = z;
-    }
-
-    public void setTranslationF(float x, float y, float z)
-    {
-        xOffset += x;
-        yOffset += y;
-        zOffset += z;
     }
 }

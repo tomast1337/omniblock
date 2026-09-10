@@ -320,8 +320,6 @@ public sealed class RuntimeBlockRegistry : IBlockRuntimeView
             ? block
             : throw new KeyNotFoundException($"Unknown block '{key}'.");
 
-    public Block Get(string key) => Get(ResourceLocation.Parse(key));
-
     public Block GetByProtocolId(int protocolId) =>
         _byProtocolId.TryGetValue(protocolId, out var block)
             ? block
@@ -330,6 +328,8 @@ public sealed class RuntimeBlockRegistry : IBlockRuntimeView
     public bool TryGetByProtocolId(int protocolId, out Block? block) => _byProtocolId.TryGetValue(protocolId, out block);
 
     public bool TryGet(ResourceLocation key, out Block? block) => _byKey.TryGetValue(key, out block);
+
+    public Block Get(string key) => Get(ResourceLocation.Parse(key));
 
     public bool IsOpaque(int protocolId) => TryGetByProtocolId(protocolId, out var block) && block.IsOpaque;
 

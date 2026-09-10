@@ -34,7 +34,7 @@ internal class PathFinder
     }
 
     private int ResolveOptionalBlockId(string key) =>
-        _blocks.TryGet(ResourceLocation.Parse(key), out Block? block) ? block.Id : -1;
+        _blocks.TryGet(ResourceLocation.Parse(key), out var block) ? block.Id : -1;
 
     internal PathEntity? FindPath(Entity entity, Entity target, float range) => FindPath(entity, (int)target.X, (int)target.Y, (int)target.Z, range);
 

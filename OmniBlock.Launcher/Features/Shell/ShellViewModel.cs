@@ -5,6 +5,5 @@ namespace OmniBlock.Launcher.Features.Shell;
 
 internal sealed partial class ShellViewModel : ObservableObject
 {
-    [ObservableProperty]
-    public partial INotifyPropertyChanged? Current { get; set; }
+    [ObservableProperty] public partial INotifyPropertyChanged? Current { get; set; }
 }

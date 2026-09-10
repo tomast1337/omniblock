@@ -1,6 +1,5 @@
 using System.Text;
 using OmniBlock.Blocks;
-using OmniBlock.Registries;
 
 namespace OmniBlock.Worlds.Gen.Flat;
 

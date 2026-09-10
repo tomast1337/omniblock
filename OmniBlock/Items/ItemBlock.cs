@@ -8,8 +8,8 @@ namespace OmniBlock.Items;
 
 internal class ItemBlock : Item
 {
-    protected readonly Block Block;
     private readonly IBlockEntityItemData? _itemData;
+    protected readonly Block Block;
 
     public ItemBlock(Block block) : base(block.Id - 256)
     {

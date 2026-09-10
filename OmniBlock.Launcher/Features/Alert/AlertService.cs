@@ -30,7 +30,10 @@ internal sealed class AlertService
         var view = new AlertView
         {
             Title = title,
-            AlertBlock = { Text = message }
+            AlertBlock =
+            {
+                Text = message
+            }
         };
 
         try

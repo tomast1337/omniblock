@@ -3,7 +3,8 @@
              xmlns:local="clr-namespace:OmniBlock.Launcher.Features.Authentication"
              xmlns:qr="clr-namespace:Avalonia.Labs.Qr;assembly=Avalonia.Labs.Qr"
 
-             x:Class="OmniBlock.Launcher.Features.Authentication.AuthenticationView" x:DataType="local:AuthenticationViewModel">
+             x:Class="OmniBlock.Launcher.Features.Authentication.AuthenticationView"
+             x:DataType="local:AuthenticationViewModel">
 
     <UserControl.Styles>
         <Style Selector="TextBlock">
@@ -31,7 +32,8 @@
 
             <Grid Classes="hidden" Classes.shown="{CompiledBinding IsReady}">
                 <StackPanel>
-                    <qr:QrCode IsQuietZoneEnabled="True" Height="150" Width="150" Data="{CompiledBinding Url}" Foreground="{StaticResource TextControlForeground}"
+                    <qr:QrCode IsQuietZoneEnabled="True" Height="150" Width="150" Data="{CompiledBinding Url}"
+                               Foreground="{StaticResource TextControlForeground}"
                                CornerRadius="{StaticResource ControlCornerRadius}" />
 
                     <SelectableTextBlock Text="{CompiledBinding Message}" TextAlignment="Center" TextWrapping="Wrap" />

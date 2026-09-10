@@ -1,15 +1,14 @@
-namespace OmniBlock.Worlds;
-
-using OmniBlock.Worlds.Generation;
+using OmniBlock.Registries;
 using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Generation;
+
+namespace OmniBlock.Worlds;
 
 public class WorldType
 {
     public static readonly WorldType Default = new("omniblock:default", BuiltInWorldGeneratorProviders.Overworld, "/gui/world_types/default.png");
     public static readonly WorldType Flat = new("omniblock:flat", BuiltInWorldGeneratorProviders.Flat, "/gui/world_types/flat.png");
     public static readonly WorldType Sky = new("omniblock:sky", BuiltInWorldGeneratorProviders.Sky, "/gui/world_types/sky.png");
-
-    internal static IReadOnlyList<WorldType> BuiltIns { get; } = [Default, Flat, Sky];
 
     internal WorldType(
         ResourceLocation key,
@@ -24,6 +23,8 @@ public class WorldType
         CanBeCreated = canBeCreated;
         CompiledGenerator = compiledGenerator;
     }
+
+    internal static IReadOnlyList<WorldType> BuiltIns { get; } = [Default, Flat, Sky];
 
     public ResourceLocation Key { get; }
     public ResourceLocation GeneratorProviderType { get; }
@@ -40,12 +41,14 @@ public class WorldType
 
     public static WorldType ParseWorldType(string name)
     {
-        if (Registries.ContentRuntime.TryGetCurrent(out var runtime) &&
+        if (ContentRuntime.TryGetCurrent(out var runtime) &&
             runtime!.WorldTypes.TryGet(name, out var runtimeType)) return runtimeType;
 
         foreach (var type in BuiltIns)
+        {
             if (type.Name.Equals(name, StringComparison.OrdinalIgnoreCase) ||
                 type.Key.ToString().Equals(name, StringComparison.OrdinalIgnoreCase)) return type;
+        }
 
         return Default;
     }

@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Entities;
 using OmniBlock.Worlds.Core.Systems;
@@ -14,7 +13,7 @@ internal sealed class MinecartBehavior : IItemBehavior
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
         var blockId = world.Reader.GetBlockId(x, y, z);
-        if (!world.Content.Blocks.TryGetByProtocolId(blockId, out Block? block) || !RailBehavior.IsRail(block))
+        if (!world.Content.Blocks.TryGetByProtocolId(blockId, out var block) || !RailBehavior.IsRail(block))
         {
             return false;
         }

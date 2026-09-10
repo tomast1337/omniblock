@@ -5,9 +5,9 @@ namespace OmniBlock.Items.Behaviors;
 
 internal sealed class SwordBehavior : IItemBehavior
 {
+    private readonly Block _cobweb;
     private readonly ToolMaterial _toolMaterial;
     private readonly int _weaponDamage;
-    private readonly Block _cobweb;
 
     internal SwordBehavior(ToolMaterial toolMaterial, Block cobweb)
     {

@@ -62,12 +62,12 @@ internal sealed class MeshPriorityFairness
 /// </summary>
 internal sealed class PriorityWorkScheduler<TKey, TValue> : IDisposable where TKey : notnull
 {
+    private readonly SemaphoreSlim _available = new(0);
+    private readonly LinkedList<TKey> _background = [];
     private readonly LinkedList<TKey> _critical = [];
     private readonly Dictionary<TKey, Entry> _entries = [];
-    private readonly LinkedList<TKey> _background = [];
-    private readonly LinkedList<TKey> _foreground = [];
     private readonly MeshPriorityFairness _fairness = new();
-    private readonly SemaphoreSlim _available = new(0);
+    private readonly LinkedList<TKey> _foreground = [];
     private readonly object _gate = new();
     private bool _disposed;
 
@@ -77,6 +77,17 @@ internal sealed class PriorityWorkScheduler<TKey, TValue> : IDisposable where TK
         {
             lock (_gate) return _entries.Count;
         }
+    }
+
+    public void Dispose()
+    {
+        lock (_gate)
+        {
+            if (_disposed) return;
+            _disposed = true;
+        }
+
+        _available.Dispose();
     }
 
     public bool Enqueue(TKey key, TValue value, MeshWorkPriority priority)
@@ -164,17 +175,6 @@ internal sealed class PriorityWorkScheduler<TKey, TValue> : IDisposable where TK
             _background.Clear();
             return values;
         }
-    }
-
-    public void Dispose()
-    {
-        lock (_gate)
-        {
-            if (_disposed) return;
-            _disposed = true;
-        }
-
-        _available.Dispose();
     }
 
     private LinkedList<TKey> QueueFor(MeshWorkPriority priority) => priority switch

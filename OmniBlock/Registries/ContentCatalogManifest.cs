@@ -108,8 +108,11 @@ public sealed class ContentCatalogManifest
         }
 
         foreach (var key in _processes.Keys)
+        {
             if (!required._processes.ContainsKey(key))
                 addedProcesses.Add(key);
+        }
+
         List<ResourceLocation> missingEntities = [], addedEntities = [];
         List<EntityCatalogMismatch> changedEntities = [];
         foreach (var (key, wanted) in required._entities)
@@ -119,8 +122,11 @@ public sealed class ContentCatalogManifest
         }
 
         foreach (var key in _entities.Keys)
+        {
             if (!required._entities.ContainsKey(key))
                 addedEntities.Add(key);
+        }
+
         return new CatalogCompatibility(Fingerprint == required.Fingerprint, missingBlocks, addedBlocks, missingItems,
             addedItems, mismatched, missingProcesses, addedProcesses, changedProcesses,
             [.. missingProcesses.Select(key => required._processes[key].ProviderType).Distinct()],
@@ -138,8 +144,10 @@ public sealed class ContentCatalogManifest
             }
 
             foreach (var key in actual.Keys)
+            {
                 if (!wanted.ContainsKey(key))
                     added.Add(key);
+            }
         }
     }
 
@@ -364,11 +372,13 @@ public static class ContentIdAllocator
             if (id < 0)
             {
                 for (var candidate = 0; candidate < RuntimeBlockRegistry.ProtocolIdCapacity; candidate++)
+                {
                     if (!used.ContainsKey(candidate))
                     {
                         id = candidate;
                         break;
                     }
+                }
             }
 
             if (id < 0) throw new InvalidOperationException($"No protocol IDs remain for block '{key}'.");
@@ -411,11 +421,13 @@ public static class ContentIdAllocator
             if (id < 0)
             {
                 for (var candidate = 256; candidate < 32000; candidate++)
+                {
                     if (!used.ContainsKey(candidate))
                     {
                         id = candidate;
                         break;
                     }
+                }
             }
 
             if (id < 0) throw new InvalidOperationException($"No protocol IDs remain for item '{key}'.");

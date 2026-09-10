@@ -1,13 +1,13 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using OmniBlock.Launcher.Features.Authentication;
-using OmniBlock.Launcher.Features.Home;
-using OmniBlock.Launcher.Features.Sessions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Launcher.Features.Authentication;
+using OmniBlock.Launcher.Features.Home;
+using OmniBlock.Launcher.Features.Sessions;
 
 namespace OmniBlock.Launcher.Features.Splash;
 
@@ -18,11 +18,11 @@ internal sealed partial class SplashViewModel(ILogger<SplashViewModel> logger, T
     {
         try
         {
-            string file = Path.Combine(AppContext.BaseDirectory, nameof(Kind.Client), "version.txt");
+            var file = Path.Combine(AppContext.BaseDirectory, nameof(Kind.Client), "version.txt");
 
             using var reader = new StreamReader(file);
 
-            string? version = await reader.ReadLineAsync();
+            var version = await reader.ReadLineAsync();
 
             titleService.Set($"OmniBlock Launcher {version}");
         }

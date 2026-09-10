@@ -17,18 +17,18 @@ internal sealed class AuthenticationService(ILogger<AuthenticationService> logge
         .WithRedirectUri("http://localhost")
         .Build();
 
+    private readonly string[] _scopes = ["XboxLive.signin offline_access"];
+
     private readonly SystemWebViewOptions _webViewOptions = new()
     {
         BrowserRedirectSuccess = new Uri("https://omniblock.net/successful-login")
     };
 
-    private readonly string[] _scopes = ["XboxLive.signin offline_access"];
-
     public async Task InitializeAsync()
     {
         logger.LogInformation("Initializing authentication service");
 
-        string path = Path.Combine(App.Folder, "omniblock.launcher.cache");
+        var path = Path.Combine(App.Folder, "omniblock.launcher.cache");
 
         var properties = new StorageCreationPropertiesBuilder(Path.GetFileName(path), Path.GetDirectoryName(path))
             .WithLinuxKeyring(

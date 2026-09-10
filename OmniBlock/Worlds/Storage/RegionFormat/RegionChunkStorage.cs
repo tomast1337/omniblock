@@ -80,9 +80,6 @@ internal class RegionChunkStorage : IChunkStorage
         return null;
     }
 
-    internal static bool HasExpectedCoordinates(NBTTagCompound levelTag, int chunkX, int chunkZ) =>
-        levelTag.GetInteger("xPos") == chunkX && levelTag.GetInteger("zPos") == chunkZ;
-
     public void SaveChunk(IWorldContext world, Chunk chunk, Action unused1, long unused2)
     {
         try
@@ -122,6 +119,9 @@ internal class RegionChunkStorage : IChunkStorage
     public void FlushToDisk()
     {
     }
+
+    internal static bool HasExpectedCoordinates(NBTTagCompound levelTag, int chunkX, int chunkZ) =>
+        levelTag.GetInteger("xPos") == chunkX && levelTag.GetInteger("zPos") == chunkZ;
 
     public static void storeChunkInCompound(Chunk chunk, IWorldContext world, NBTTagCompound nbt)
     {

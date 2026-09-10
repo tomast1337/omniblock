@@ -1,6 +1,5 @@
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
-using OmniBlock.Blocks;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Lighting;
 
@@ -247,44 +246,44 @@ public class LightingEngine : ILightProvider
     {
         lock (_lightingQueueGate)
         {
-        if (_lightingUpdatesCounter >= 50)
-        {
-            return false;
-        }
-
-        ++_lightingUpdatesCounter;
-        try
-        {
-            var updatesBudget = 500;
-
-            while (_lightingQueue.Count > 0)
+            if (_lightingUpdatesCounter >= 50)
             {
-                if (updatesBudget <= 0)
-                {
-                    return true;
-                }
-
-                updatesBudget--;
-
-                var lastIndex = _lightingQueue.Count - 1;
-                var updateTask = _lightingQueue[lastIndex];
-
-                _lightingQueue.RemoveAt(lastIndex);
-                if (updateTask.IsSingleCell)
-                {
-                    _pendingLightCells.Remove(new PendingLightCell(updateTask.LightType,
-                        updateTask.MinX, updateTask.MinY, updateTask.MinZ));
-                }
-
-                updateTask.UpdateLight(_world.Reader, _world.ChunkHost, this, _world.Content.Blocks);
+                return false;
             }
 
-            return false;
-        }
-        finally
-        {
-            --_lightingUpdatesCounter;
-        }
+            ++_lightingUpdatesCounter;
+            try
+            {
+                var updatesBudget = 500;
+
+                while (_lightingQueue.Count > 0)
+                {
+                    if (updatesBudget <= 0)
+                    {
+                        return true;
+                    }
+
+                    updatesBudget--;
+
+                    var lastIndex = _lightingQueue.Count - 1;
+                    var updateTask = _lightingQueue[lastIndex];
+
+                    _lightingQueue.RemoveAt(lastIndex);
+                    if (updateTask.IsSingleCell)
+                    {
+                        _pendingLightCells.Remove(new PendingLightCell(updateTask.LightType,
+                            updateTask.MinX, updateTask.MinY, updateTask.MinZ));
+                    }
+
+                    updateTask.UpdateLight(_world.Reader, _world.ChunkHost, this, _world.Content.Blocks);
+                }
+
+                return false;
+            }
+            finally
+            {
+                --_lightingUpdatesCounter;
+            }
         }
     }
 
@@ -295,80 +294,80 @@ public class LightingEngine : ILightProvider
     {
         lock (_lightingQueueGate)
         {
-        // A remote world holds only the light the wire writes — the chunk blob on load, the
-        // section snapshot on change. Propagating locally here would race that snapshot with a
-        // locally derived answer that can diverge while a neighbour is still loading, and nothing
-        // arbitrates the two once they disagree.
-        if (_world.IsRemote)
-        {
-            return;
-        }
-
-        if (_world.Dimension.HasCeiling && type == LightType.Sky)
-        {
-            return;
-        }
-
-        ++_lightingUpdatesScheduled;
-        try
-        {
-            if (_lightingUpdatesScheduled == 50)
+            // A remote world holds only the light the wire writes — the chunk blob on load, the
+            // section snapshot on change. Propagating locally here would race that snapshot with a
+            // locally derived answer that can diverge while a neighbour is still loading, and nothing
+            // arbitrates the two once they disagree.
+            if (_world.IsRemote)
             {
                 return;
             }
 
-            var centerX = (maxX + minX) / 2;
-            var centerZ = (maxZ + minZ) / 2;
-
-            if (_world.Reader.IsPosLoaded(centerX, 64, centerZ))
+            if (_world.Dimension.HasCeiling && type == LightType.Sky)
             {
-                if (_world.ChunkHost.GetChunkFromPos(centerX, centerZ).IsEmpty())
+                return;
+            }
+
+            ++_lightingUpdatesScheduled;
+            try
+            {
+                if (_lightingUpdatesScheduled == 50)
                 {
                     return;
                 }
 
-                var isSingleCell = minX == maxX && minY == maxY && minZ == maxZ;
-                PendingLightCell pendingCell = new(type, minX, minY, minZ);
-                if (isSingleCell && !_pendingLightCells.Add(pendingCell)) return;
+                var centerX = (maxX + minX) / 2;
+                var centerZ = (maxZ + minZ) / 2;
 
-                var queueSize = _lightingQueue.Count;
-                var span = CollectionsMarshal.AsSpan(_lightingQueue);
-
-                if (attemptMerge)
+                if (_world.Reader.IsPosLoaded(centerX, 64, centerZ))
                 {
-                    var lookbackCount = Math.Min(5, queueSize);
-                    for (var i = 0; i < lookbackCount; ++i)
+                    if (_world.ChunkHost.GetChunkFromPos(centerX, centerZ).IsEmpty())
                     {
-                        ref var existingUpdate = ref span[queueSize - i - 1];
-                        var existingWasSingleCell = existingUpdate.IsSingleCell;
-                        PendingLightCell existingCell = new(existingUpdate.LightType,
-                            existingUpdate.MinX, existingUpdate.MinY, existingUpdate.MinZ);
-                        if (existingUpdate.LightType == type &&
-                            existingUpdate.Expand(minX, minY, minZ, maxX, maxY, maxZ))
+                        return;
+                    }
+
+                    var isSingleCell = minX == maxX && minY == maxY && minZ == maxZ;
+                    PendingLightCell pendingCell = new(type, minX, minY, minZ);
+                    if (isSingleCell && !_pendingLightCells.Add(pendingCell)) return;
+
+                    var queueSize = _lightingQueue.Count;
+                    var span = CollectionsMarshal.AsSpan(_lightingQueue);
+
+                    if (attemptMerge)
+                    {
+                        var lookbackCount = Math.Min(5, queueSize);
+                        for (var i = 0; i < lookbackCount; ++i)
                         {
-                            if (isSingleCell) _pendingLightCells.Remove(pendingCell);
-                            if (existingWasSingleCell && !existingUpdate.IsSingleCell)
-                                _pendingLightCells.Remove(existingCell);
-                            return;
+                            ref var existingUpdate = ref span[queueSize - i - 1];
+                            var existingWasSingleCell = existingUpdate.IsSingleCell;
+                            PendingLightCell existingCell = new(existingUpdate.LightType,
+                                existingUpdate.MinX, existingUpdate.MinY, existingUpdate.MinZ);
+                            if (existingUpdate.LightType == type &&
+                                existingUpdate.Expand(minX, minY, minZ, maxX, maxY, maxZ))
+                            {
+                                if (isSingleCell) _pendingLightCells.Remove(pendingCell);
+                                if (existingWasSingleCell && !existingUpdate.IsSingleCell)
+                                    _pendingLightCells.Remove(existingCell);
+                                return;
+                            }
                         }
                     }
-                }
 
-                _lightingQueue.Add(new LightUpdate(type, minX, minY, minZ, maxX, maxY, maxZ));
+                    _lightingQueue.Add(new LightUpdate(type, minX, minY, minZ, maxX, maxY, maxZ));
 
-                const int maxQueueCapacity = 1000000;
-                if (_lightingQueue.Count > maxQueueCapacity)
-                {
-                    _logger.LogInformation($"More than {maxQueueCapacity} updates, aborting lighting updates");
-                    _lightingQueue.Clear();
-                    _pendingLightCells.Clear();
+                    const int maxQueueCapacity = 1000000;
+                    if (_lightingQueue.Count > maxQueueCapacity)
+                    {
+                        _logger.LogInformation($"More than {maxQueueCapacity} updates, aborting lighting updates");
+                        _lightingQueue.Clear();
+                        _pendingLightCells.Clear();
+                    }
                 }
             }
-        }
-        finally
-        {
-            --_lightingUpdatesScheduled;
-        }
+            finally
+            {
+                --_lightingUpdatesScheduled;
+            }
         }
     }
 

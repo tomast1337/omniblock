@@ -50,17 +50,17 @@ internal class ChunkMeshGenerator : IDisposable
     /// </summary>
     private static readonly int s_grassSideTextureId = Atlases.Terrain.IndexOf("omniblock:grass_block_side");
 
-    private readonly ILogger<ChunkMeshGenerator> _logger = Log.Instance.For<ChunkMeshGenerator>();
-
     private readonly ConcurrentQueue<MeshBuildResult> _backgroundResults = new();
+    private readonly ConcurrentQueue<MeshBuildResult> _criticalResults = new();
     private readonly ConcurrentQueue<MeshBuildResult> _foregroundResults = new();
+
+    private readonly ILogger<ChunkMeshGenerator> _logger = Log.Instance.For<ChunkMeshGenerator>();
     private readonly ConcurrentDictionary<Vector3D<int>, byte> _outstanding = new();
+    private readonly ChunkMeshProfiler _profile = new();
     private readonly MeshPriorityFairness _resultFairness = new();
     private readonly CancellationTokenSource _shutdown = new();
     private readonly PriorityWorkScheduler<Vector3D<int>, MeshBuildRequest> _work = new();
     private readonly Task[] _workers;
-    private readonly ConcurrentQueue<MeshBuildResult> _criticalResults = new();
-    private readonly ChunkMeshProfiler _profile = new();
 
     public ChunkMeshGenerator(ushort maxConcurrentTasks = 0)
     {
@@ -76,8 +76,6 @@ internal class ChunkMeshGenerator : IDisposable
         _work.Count, _outstanding.Count,
         _criticalResults.Count, _foregroundResults.Count, _backgroundResults.Count,
         MaxConcurrentTasks);
-
-    public void ResetProfile() => _profile.Reset();
 
     public void Dispose()
     {
@@ -98,6 +96,8 @@ internal class ChunkMeshGenerator : IDisposable
         while (_backgroundResults.TryDequeue(out var background)) background.Dispose();
         _outstanding.Clear();
     }
+
+    public void ResetProfile() => _profile.Reset();
 
     public bool TryDequeueMesh(out MeshBuildResult result)
     {
@@ -217,14 +217,6 @@ internal class ChunkMeshGenerator : IDisposable
         _ => _backgroundResults
     };
 
-    private readonly record struct MeshBuildRequest(
-        Vector3D<int> Pos,
-        long Version,
-        WorldRegionSnapshot Cache,
-        bool AlternateBlocks,
-        long RequestedAt,
-        long EnqueuedAt);
-
     private MeshBuildResult GenerateMesh(Vector3D<int> pos, long version, WorldRegionSnapshot cache, bool alternateBlocks)
     {
         var generationStart = Stopwatch.GetTimestamp();
@@ -260,6 +252,7 @@ internal class ChunkMeshGenerator : IDisposable
                 }
             }
         }
+
         _profile.RecordClassification(Stopwatch.GetTimestamp() - classificationStart);
 
         var geometryStart = Stopwatch.GetTimestamp();
@@ -318,6 +311,7 @@ internal class ChunkMeshGenerator : IDisposable
 
             if (!hasNextPass) break;
         }
+
         _profile.RecordGeometry(Stopwatch.GetTimestamp() - geometryStart);
 
         result.IsLit = cache.IsLit;
@@ -771,6 +765,14 @@ internal class ChunkMeshGenerator : IDisposable
             tess.addVertexWithUV(c.X, c.Y, c.Z, c.U, c.V);
         }
     }
+
+    private readonly record struct MeshBuildRequest(
+        Vector3D<int> Pos,
+        long Version,
+        WorldRegionSnapshot Cache,
+        bool AlternateBlocks,
+        long RequestedAt,
+        long EnqueuedAt);
 
     /// <summary>One corner of a quad about to be emitted: world position, tiled UV, and its light.</summary>
     private readonly record struct QuadCorner(float X, float Y, float Z, float U, float V, CornerLight Light);

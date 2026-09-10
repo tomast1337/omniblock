@@ -697,7 +697,7 @@ public abstract class World : IWorldContext
         setBlocksDirty(
             chunkX * 16, 0, chunkZ * 16,
             chunkX * 16 + 16, ChuckFormat.WorldHeight, chunkZ * 16 + 16,
-            streaming: true);
+            true);
     }
 
     public void HandleChunkDataUpdate(int x, int y, int z, int sizeX, int sizeY, int sizeZ, byte[] chunkData)
@@ -730,7 +730,7 @@ public abstract class World : IWorldContext
                 setBlocksDirty(
                     chunkX * 16 + localStartX, minY, chunkZ * 16 + localStartZ,
                     chunkX * 16 + localEndX, maxY, chunkZ * 16 + localEndZ,
-                    streaming: true);
+                    true);
             }
         }
     }

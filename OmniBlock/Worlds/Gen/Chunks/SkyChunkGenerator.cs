@@ -1,5 +1,5 @@
-using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Util.Maths.Noise;
 using OmniBlock.Worlds.Biomes.Source;
@@ -13,13 +13,11 @@ namespace OmniBlock.Worlds.Gen.Chunks;
 
 internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
 {
-    private readonly BlockIds _blocks;
-    private readonly Settings _settings;
     private readonly BiomeSource _biomeSource;
+    private readonly BlockIds _blocks;
     private readonly Carver _carver = new CaveCarver();
     private readonly OctavePerlinNoiseSampler _depthNoise;
     private readonly CactusPatchFeature _featureCactus = new();
-    private ClayOreFeature _featureClay;
     private readonly DungeonFeature _featureDungeon = new();
     private readonly PumpkinPatchFeature _featurePumpkin = new();
     private readonly SugarCanePatchFeature _featureSugarcane = new();
@@ -29,10 +27,12 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
     private readonly OctavePerlinNoiseSampler _maxLimitPerlinNoise;
     private readonly OctavePerlinNoiseSampler _minLimitPerlinNoise;
     private readonly OctavePerlinNoiseSampler _selectorNoise;
+    private readonly Settings _settings;
     private Biome[] _biomes;
     private double[] _depthBuffer = new double[256];
     private double[] _depthNoiseBuffer;
     private PlantPatchFeature _featureBrownMushroom;
+    private ClayOreFeature _featureClay;
     private OreFeature _featureCoal;
     private PlantPatchFeature _featureDandelion;
     private OreFeature _featureDiamond;
@@ -743,9 +743,13 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
                 [nameof(LapisVeinSize)] = LapisVeinSize
             };
             foreach (var (name, value) in values)
+            {
                 if (name.EndsWith("Attempts", StringComparison.Ordinal) ? value < 0 : value <= 0)
+                {
                     throw new InvalidOperationException(
                         $"World type '{owner}' sky feature setting '{name}' has invalid value {value}.");
+                }
+            }
         }
     }
 

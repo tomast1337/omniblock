@@ -98,7 +98,8 @@ public sealed class GeneratedMessageTests
                      TimeSyncRequestMessage.Id, TimeSyncResponseMessage.Id, TickStampMessage.Id, ChunkDataMessage.Id, ChunkUnchangedMessage.Id, InteractEntityMessage.Id, SnapshotAckMessage.Id, PlayerActionMessage.Id, InteractBlockMessage.Id,
                      SelectedSlotMessage.Id, ClientCommandMessage.Id, PlayerInputMessage.Id, ClickSlotMessage.Id, EntityMoveMessage.Id, EntityTeleportMessage.Id, EntityDestroyMessage.Id, EntityStatusMessage.Id, EntityVelocityMessage.Id,
                      EntityVehicleMessage.Id, EntityDataMessage.Id, EntityEquipmentMessage.Id, EntityAnimationMessage.Id, ItemPickupMessage.Id, EntitySpawnMessage.Id, ItemEntitySpawnMessage.Id, LivingEntitySpawnMessage.Id, GlobalEntitySpawnMessage.Id,
-                     PaintingSpawnMessage.Id, PlayerSpawnMessage.Id, InventoryMessage.Id, ScreenHandlerSlotMessage.Id, ScreenHandlerPropertyMessage.Id, ScreenHandlerAckMessage.Id, OpenScreenMessage.Id, CloseScreenMessage.Id, UpdateSignMessage.Id, MobSpawnerUpdateMessage.Id
+                     PaintingSpawnMessage.Id, PlayerSpawnMessage.Id, InventoryMessage.Id, ScreenHandlerSlotMessage.Id, ScreenHandlerPropertyMessage.Id, ScreenHandlerAckMessage.Id, OpenScreenMessage.Id, CloseScreenMessage.Id, UpdateSignMessage.Id,
+                     MobSpawnerUpdateMessage.Id
                  })
         {
             Assert.True(registry.GetId(key) >= 0, $"{key} is not registered.");

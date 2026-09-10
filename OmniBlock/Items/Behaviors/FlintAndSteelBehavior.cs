@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Entities;
 using OmniBlock.Worlds.Core.Systems;
 

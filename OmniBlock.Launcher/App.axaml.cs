@@ -1,21 +1,18 @@
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Microsoft.Extensions.DependencyInjection;
 using OmniBlock.Launcher.Features;
 using OmniBlock.Launcher.Features.Hosting;
 using OmniBlock.Launcher.Features.Shell;
 using OmniBlock.Launcher.Features.Splash;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace OmniBlock.Launcher;
 
 internal sealed class App : Application
 {
-    public static string Folder { get; }
-
     private readonly IServiceProvider _services = Bootstrapper.Build();
 
     static App()
@@ -23,6 +20,8 @@ internal sealed class App : Application
         Folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $".{nameof(OmniBlock)}", "launcher");
         Directory.CreateDirectory(Folder);
     }
+
+    public static string Folder { get; }
 
     public override void Initialize()
     {

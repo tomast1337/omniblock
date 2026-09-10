@@ -80,8 +80,6 @@ public class ClientNetworkHandler : NetHandler
     private long _snapshotRecords;
     private bool _terrainLoaded;
 
-    public ClientWorldPreloadState Preload { get; } = new();
-
     private int _ticks;
     private ClientWorld _worldClient;
     public string StatusMessage;
@@ -127,6 +125,8 @@ public class ClientNetworkHandler : NetHandler
 
         RegisterMessageHandlers();
     }
+
+    public ClientWorldPreloadState Preload { get; } = new();
 
     public bool Disconnected { get; private set; }
     public PersistentStateManager ClientPersistentStateManager { get; } = new(null);
@@ -1070,8 +1070,10 @@ public class ClientNetworkHandler : NetHandler
         var maxChunkZ = (message.Z + message.SizeZ - 1) >> 4;
         for (var chunkX = minChunkX; chunkX <= maxChunkX; chunkX++)
         for (var chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++)
+        {
             if (_worldClient.BlockHost.GetChunk(chunkX, chunkZ).Loaded)
                 Preload.MarkChunkDecoded(chunkX, chunkZ);
+        }
     }
 
     public void NotifyMeshUploaded(Vector3D<int> sectionWorldPos) => Preload.MarkMeshUploaded(sectionWorldPos);

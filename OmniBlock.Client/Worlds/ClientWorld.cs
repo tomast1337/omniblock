@@ -4,7 +4,6 @@ using OmniBlock.Entities;
 using OmniBlock.Network.Messages;
 using OmniBlock.Registries;
 using OmniBlock.Util.Maths;
-using OmniBlock.Worlds;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
@@ -20,7 +19,8 @@ public class ClientWorld : World
     private readonly HashSet<Entity> pendingEntities = [];
     private MultiplayerChunkCache _chunkCache;
 
-    public ClientWorld(ClientNetworkHandler netHandler, long seed, int dimId, ContentRuntime content) : base(new EmptyWorldStorage(), "MpServer", new WorldSettings(seed, content.WorldTypes.Get("omniblock:default")), Dimension.FromId(dimId, content), content)
+    public ClientWorld(ClientNetworkHandler netHandler, long seed, int dimId, ContentRuntime content) : base(new EmptyWorldStorage(), "MpServer", new WorldSettings(seed, content.WorldTypes.Get("omniblock:default")), Dimension.FromId(dimId, content),
+        content)
     {
         NetworkHandler = netHandler;
         SetSpawnPos(new Vec3I(8, 64, 8));

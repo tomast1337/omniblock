@@ -2,32 +2,25 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using OmniBlock.Launcher.Features.Authentication;
-using OmniBlock.Launcher.Features.Home.GitHub;
-using OmniBlock.Launcher.Features.Hosting;
-using OmniBlock.Launcher.Features.Sessions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Launcher.Features.Authentication;
+using OmniBlock.Launcher.Features.Home.GitHub;
+using OmniBlock.Launcher.Features.Hosting;
+using OmniBlock.Launcher.Features.Sessions;
 
 namespace OmniBlock.Launcher.Features.Home;
 
 internal sealed partial class HomeViewModel : ObservableObject
 {
-    public ObservableCollection<OmniBlockRelease> Releases { get; } = [];
-
-    [ObservableProperty]
-    public partial Session? Session { get; set; }
-
-    [ObservableProperty]
-    public partial bool DebugMode { get; set; }
+    private readonly GitHubClient _gitHubClient;
 
     private readonly ILogger<HomeViewModel> _logger;
-    private readonly GitHubClient _gitHubClient;
     private readonly NavigationService _navigationService;
-    private readonly StorageService _storageService;
     private readonly ProcessService _processService;
+    private readonly StorageService _storageService;
 
     public HomeViewModel(
         ILogger<HomeViewModel> logger,
@@ -47,6 +40,12 @@ internal sealed partial class HomeViewModel : ObservableObject
             this,
             static (viewModel, message) => viewModel.Session = message.Session);
     }
+
+    public ObservableCollection<OmniBlockRelease> Releases { get; } = [];
+
+    [ObservableProperty] public partial Session? Session { get; set; }
+
+    [ObservableProperty] public partial bool DebugMode { get; set; }
 
     [RelayCommand]
     private void Initialize()
@@ -80,10 +79,7 @@ internal sealed partial class HomeViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void Host()
-    {
-        _navigationService.Navigate<HostingViewModel>();
-    }
+    private void Host() => _navigationService.Navigate<HostingViewModel>();
 
     private async Task GetReleasesAsync()
     {

@@ -7,9 +7,9 @@ using OmniBlock.Items;
 using OmniBlock.Processes;
 using OmniBlock.Registries.Data;
 using OmniBlock.Rules;
-using OmniBlock.Worlds.Generation.Biomes;
-using OmniBlock.Worlds.Generation;
 using OmniBlock.Worlds;
+using OmniBlock.Worlds.Generation;
+using OmniBlock.Worlds.Generation.Biomes;
 
 namespace OmniBlock.Registries;
 
@@ -43,9 +43,12 @@ public static class DefaultRegistries
             false);
         dimensionGeneratorLoader.LoadFromPaths(null, null, null);
         if (dimensionGeneratorLoader.HasErrors)
+        {
             throw new AssetLoadException(
                 dimensionGeneratorLoader.FirstErrorMessage
                 ?? "Failed to load dimension-generator profiles.");
+        }
+
         foreach (var definition in dimensionGeneratorLoader)
             content.AddDimensionGeneratorProfile(definition);
 
@@ -55,9 +58,12 @@ public static class DefaultRegistries
             false);
         biomeGenerationLoader.LoadFromPaths(null, null, null);
         if (biomeGenerationLoader.HasErrors)
+        {
             throw new AssetLoadException(
                 biomeGenerationLoader.FirstErrorMessage
                 ?? "Failed to load biome-generation definitions.");
+        }
+
         foreach (var definition in biomeGenerationLoader)
             content.AddBiomeGenerationDefinition(definition);
 

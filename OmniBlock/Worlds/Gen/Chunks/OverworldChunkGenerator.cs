@@ -1,5 +1,5 @@
-using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Util.Maths.Noise;
 using OmniBlock.Worlds.Biomes.Source;
@@ -13,9 +13,8 @@ namespace OmniBlock.Worlds.Gen.Chunks;
 
 internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
 {
-    private readonly BlockIds _blocks;
-    private readonly Settings _settings;
     private readonly BiomeSource _biomeSource;
+    private readonly BlockIds _blocks;
     private readonly Carver _carver = new CaveCarver();
     private readonly OctavePerlinNoiseSampler _depthNoise;
     private readonly OctavePerlinNoiseSampler _floatingIslandNoise;
@@ -27,6 +26,7 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
 
     // Seed and per-instance biome source (allows thread-safe parallel generation)
     private readonly OctavePerlinNoiseSampler _selectorNoise;
+    private readonly Settings _settings;
     private Biome[] _biomes;
     private double[] _depthBuffer = new double[256];
     private double[] _depthNoiseBuffer;
@@ -71,7 +71,10 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
             seed,
             world.Dimension.BiomeSource,
             BlockIds.Resolve(world.Content.Blocks),
-            Settings.Default with { BiomeGeneration = world.Content.BiomeGeneration })
+            Settings.Default with
+            {
+                BiomeGeneration = world.Content.BiomeGeneration
+            })
     {
     }
 
@@ -107,165 +110,6 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
         => new OverworldChunkGenerator(_world, _seed, new BiomeSource(_world), _blocks, _settings);
 
     public Chunk LoadChunk(int chunkX, int chunkZ) => GetChunk(chunkX, chunkZ);
-
-    internal sealed record Settings(
-        int MinLimitOctaves,
-        int MaxLimitOctaves,
-        int SelectorOctaves,
-        int SurfaceOctaves,
-        int DepthOctaves,
-        int FloatingScaleOctaves,
-        int FloatingNoiseOctaves,
-        int ForestOctaves,
-        double HorizontalNoiseScale,
-        double VerticalNoiseScale,
-        int DungeonAttempts,
-        int ClayAttempts,
-        int DirtAttempts,
-        int GravelAttempts,
-        int CoalAttempts,
-        int IronAttempts,
-        int SurfaceLevel,
-        double SurfaceNoiseScale,
-        int BedrockDepth,
-        int SandstoneDepthBound,
-        FeatureSettings Features,
-        RuntimeBiomeGenerationRegistry BiomeGeneration)
-    {
-        public static Settings Default { get; } = new(
-            16, 16, 8, 4, 4, 10, 16, 8, 684.412D, 684.412D, 8, 10, 20, 10, 20, 20,
-            64, 1.0D / 32.0D, 5, 4,
-            FeatureSettings.Default,
-            RuntimeBiomeGenerationRegistry.Empty);
-
-        public void Validate(ResourceLocation owner)
-        {
-            Positive(nameof(MinLimitOctaves), MinLimitOctaves);
-            Positive(nameof(MaxLimitOctaves), MaxLimitOctaves);
-            Positive(nameof(SelectorOctaves), SelectorOctaves);
-            Positive(nameof(SurfaceOctaves), SurfaceOctaves);
-            Positive(nameof(DepthOctaves), DepthOctaves);
-            Positive(nameof(FloatingScaleOctaves), FloatingScaleOctaves);
-            Positive(nameof(FloatingNoiseOctaves), FloatingNoiseOctaves);
-            Positive(nameof(ForestOctaves), ForestOctaves);
-            Positive(nameof(HorizontalNoiseScale), HorizontalNoiseScale);
-            Positive(nameof(VerticalNoiseScale), VerticalNoiseScale);
-            NonNegative(nameof(DungeonAttempts), DungeonAttempts);
-            NonNegative(nameof(ClayAttempts), ClayAttempts);
-            NonNegative(nameof(DirtAttempts), DirtAttempts);
-            NonNegative(nameof(GravelAttempts), GravelAttempts);
-            NonNegative(nameof(CoalAttempts), CoalAttempts);
-            NonNegative(nameof(IronAttempts), IronAttempts);
-            Positive(nameof(SurfaceLevel), SurfaceLevel);
-            Positive(nameof(SurfaceNoiseScale), SurfaceNoiseScale);
-            Positive(nameof(BedrockDepth), BedrockDepth);
-            Positive(nameof(SandstoneDepthBound), SandstoneDepthBound);
-            Features.Validate(owner);
-
-            void Positive(string name, double value)
-            {
-                if (!double.IsFinite(value) || value <= 0) Invalid(name, value, "must be finite and greater than zero");
-            }
-
-            void NonNegative(string name, int value)
-            {
-                if (value < 0) Invalid(name, value, "must not be negative");
-            }
-
-            void Invalid(string name, object value, string requirement) =>
-                throw new InvalidOperationException(
-                    $"World type '{owner}' overworld setting '{name}' is {value} and {requirement}.");
-        }
-    }
-
-    internal sealed record FeatureSettings(
-        int WaterLakeChance,
-        int LavaLakeChance,
-        int LavaLakeUpperY,
-        int LavaLakeYOffset,
-        int LavaLakeSurfaceY,
-        int LavaLakeAboveSurfaceChance,
-        int GoldAttempts,
-        int GoldMaxY,
-        int RedstoneAttempts,
-        int RedstoneMaxY,
-        int DiamondAttempts,
-        int DiamondMaxY,
-        int LapisAttempts,
-        int LapisMaxY,
-        int TreeBonusChance,
-        int RoseChance,
-        int BrownMushroomChance,
-        int RedMushroomChance,
-        int SugarcaneAttempts,
-        int PumpkinChance,
-        int WaterSpringAttempts,
-        int WaterSpringUpperY,
-        int WaterSpringYOffset,
-        int LavaSpringAttempts,
-        int LavaSpringUpperY,
-        int LavaSpringYOffset,
-        int ClayVeinSize,
-        int DirtVeinSize,
-        int GravelVeinSize,
-        int CoalVeinSize,
-        int IronVeinSize,
-        int GoldVeinSize,
-        int RedstoneVeinSize,
-        int DiamondVeinSize,
-        int LapisVeinSize)
-    {
-        public static FeatureSettings Default { get; } = new(
-            4, 8, 120, 8, 64, 10, 2, 32, 8, 16, 1, 16, 1, 16, 10, 2, 4, 8,
-            10, 32, 50, 120, 8, 20, 112, 8, 32, 32, 32, 16, 8, 8, 7, 7, 6);
-
-        public void Validate(ResourceLocation owner)
-        {
-            foreach (var (name, value) in Values())
-                if (name.EndsWith("Attempts", StringComparison.Ordinal) ? value < 0 : value <= 0)
-                    throw new InvalidOperationException(
-                        $"World type '{owner}' overworld feature setting '{name}' has invalid value {value}.");
-
-            IEnumerable<(string, int)> Values()
-            {
-                yield return (nameof(WaterLakeChance), WaterLakeChance);
-                yield return (nameof(LavaLakeChance), LavaLakeChance);
-                yield return (nameof(LavaLakeUpperY), LavaLakeUpperY);
-                yield return (nameof(LavaLakeYOffset), LavaLakeYOffset);
-                yield return (nameof(LavaLakeSurfaceY), LavaLakeSurfaceY);
-                yield return (nameof(LavaLakeAboveSurfaceChance), LavaLakeAboveSurfaceChance);
-                yield return (nameof(GoldAttempts), GoldAttempts);
-                yield return (nameof(GoldMaxY), GoldMaxY);
-                yield return (nameof(RedstoneAttempts), RedstoneAttempts);
-                yield return (nameof(RedstoneMaxY), RedstoneMaxY);
-                yield return (nameof(DiamondAttempts), DiamondAttempts);
-                yield return (nameof(DiamondMaxY), DiamondMaxY);
-                yield return (nameof(LapisAttempts), LapisAttempts);
-                yield return (nameof(LapisMaxY), LapisMaxY);
-                yield return (nameof(TreeBonusChance), TreeBonusChance);
-                yield return (nameof(RoseChance), RoseChance);
-                yield return (nameof(BrownMushroomChance), BrownMushroomChance);
-                yield return (nameof(RedMushroomChance), RedMushroomChance);
-                yield return (nameof(SugarcaneAttempts), SugarcaneAttempts);
-                yield return (nameof(PumpkinChance), PumpkinChance);
-                yield return (nameof(WaterSpringAttempts), WaterSpringAttempts);
-                yield return (nameof(WaterSpringUpperY), WaterSpringUpperY);
-                yield return (nameof(WaterSpringYOffset), WaterSpringYOffset);
-                yield return (nameof(LavaSpringAttempts), LavaSpringAttempts);
-                yield return (nameof(LavaSpringUpperY), LavaSpringUpperY);
-                yield return (nameof(LavaSpringYOffset), LavaSpringYOffset);
-                yield return (nameof(ClayVeinSize), ClayVeinSize);
-                yield return (nameof(DirtVeinSize), DirtVeinSize);
-                yield return (nameof(GravelVeinSize), GravelVeinSize);
-                yield return (nameof(CoalVeinSize), CoalVeinSize);
-                yield return (nameof(IronVeinSize), IronVeinSize);
-                yield return (nameof(GoldVeinSize), GoldVeinSize);
-                yield return (nameof(RedstoneVeinSize), RedstoneVeinSize);
-                yield return (nameof(DiamondVeinSize), DiamondVeinSize);
-                yield return (nameof(LapisVeinSize), LapisVeinSize);
-            }
-        }
-    }
 
     /// <summary>
     ///     Generates a chunk at the given coordinates. The chunk is generated by first creating a low-resolution height map,
@@ -1068,6 +912,169 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
         }
 
         return heightMap;
+    }
+
+    internal sealed record Settings(
+        int MinLimitOctaves,
+        int MaxLimitOctaves,
+        int SelectorOctaves,
+        int SurfaceOctaves,
+        int DepthOctaves,
+        int FloatingScaleOctaves,
+        int FloatingNoiseOctaves,
+        int ForestOctaves,
+        double HorizontalNoiseScale,
+        double VerticalNoiseScale,
+        int DungeonAttempts,
+        int ClayAttempts,
+        int DirtAttempts,
+        int GravelAttempts,
+        int CoalAttempts,
+        int IronAttempts,
+        int SurfaceLevel,
+        double SurfaceNoiseScale,
+        int BedrockDepth,
+        int SandstoneDepthBound,
+        FeatureSettings Features,
+        RuntimeBiomeGenerationRegistry BiomeGeneration)
+    {
+        public static Settings Default { get; } = new(
+            16, 16, 8, 4, 4, 10, 16, 8, 684.412D, 684.412D, 8, 10, 20, 10, 20, 20,
+            64, 1.0D / 32.0D, 5, 4,
+            FeatureSettings.Default,
+            RuntimeBiomeGenerationRegistry.Empty);
+
+        public void Validate(ResourceLocation owner)
+        {
+            Positive(nameof(MinLimitOctaves), MinLimitOctaves);
+            Positive(nameof(MaxLimitOctaves), MaxLimitOctaves);
+            Positive(nameof(SelectorOctaves), SelectorOctaves);
+            Positive(nameof(SurfaceOctaves), SurfaceOctaves);
+            Positive(nameof(DepthOctaves), DepthOctaves);
+            Positive(nameof(FloatingScaleOctaves), FloatingScaleOctaves);
+            Positive(nameof(FloatingNoiseOctaves), FloatingNoiseOctaves);
+            Positive(nameof(ForestOctaves), ForestOctaves);
+            Positive(nameof(HorizontalNoiseScale), HorizontalNoiseScale);
+            Positive(nameof(VerticalNoiseScale), VerticalNoiseScale);
+            NonNegative(nameof(DungeonAttempts), DungeonAttempts);
+            NonNegative(nameof(ClayAttempts), ClayAttempts);
+            NonNegative(nameof(DirtAttempts), DirtAttempts);
+            NonNegative(nameof(GravelAttempts), GravelAttempts);
+            NonNegative(nameof(CoalAttempts), CoalAttempts);
+            NonNegative(nameof(IronAttempts), IronAttempts);
+            Positive(nameof(SurfaceLevel), SurfaceLevel);
+            Positive(nameof(SurfaceNoiseScale), SurfaceNoiseScale);
+            Positive(nameof(BedrockDepth), BedrockDepth);
+            Positive(nameof(SandstoneDepthBound), SandstoneDepthBound);
+            Features.Validate(owner);
+
+            void Positive(string name, double value)
+            {
+                if (!double.IsFinite(value) || value <= 0) Invalid(name, value, "must be finite and greater than zero");
+            }
+
+            void NonNegative(string name, int value)
+            {
+                if (value < 0) Invalid(name, value, "must not be negative");
+            }
+
+            void Invalid(string name, object value, string requirement) =>
+                throw new InvalidOperationException(
+                    $"World type '{owner}' overworld setting '{name}' is {value} and {requirement}.");
+        }
+    }
+
+    internal sealed record FeatureSettings(
+        int WaterLakeChance,
+        int LavaLakeChance,
+        int LavaLakeUpperY,
+        int LavaLakeYOffset,
+        int LavaLakeSurfaceY,
+        int LavaLakeAboveSurfaceChance,
+        int GoldAttempts,
+        int GoldMaxY,
+        int RedstoneAttempts,
+        int RedstoneMaxY,
+        int DiamondAttempts,
+        int DiamondMaxY,
+        int LapisAttempts,
+        int LapisMaxY,
+        int TreeBonusChance,
+        int RoseChance,
+        int BrownMushroomChance,
+        int RedMushroomChance,
+        int SugarcaneAttempts,
+        int PumpkinChance,
+        int WaterSpringAttempts,
+        int WaterSpringUpperY,
+        int WaterSpringYOffset,
+        int LavaSpringAttempts,
+        int LavaSpringUpperY,
+        int LavaSpringYOffset,
+        int ClayVeinSize,
+        int DirtVeinSize,
+        int GravelVeinSize,
+        int CoalVeinSize,
+        int IronVeinSize,
+        int GoldVeinSize,
+        int RedstoneVeinSize,
+        int DiamondVeinSize,
+        int LapisVeinSize)
+    {
+        public static FeatureSettings Default { get; } = new(
+            4, 8, 120, 8, 64, 10, 2, 32, 8, 16, 1, 16, 1, 16, 10, 2, 4, 8,
+            10, 32, 50, 120, 8, 20, 112, 8, 32, 32, 32, 16, 8, 8, 7, 7, 6);
+
+        public void Validate(ResourceLocation owner)
+        {
+            foreach (var (name, value) in Values())
+            {
+                if (name.EndsWith("Attempts", StringComparison.Ordinal) ? value < 0 : value <= 0)
+                {
+                    throw new InvalidOperationException(
+                        $"World type '{owner}' overworld feature setting '{name}' has invalid value {value}.");
+                }
+            }
+
+            IEnumerable<(string, int)> Values()
+            {
+                yield return (nameof(WaterLakeChance), WaterLakeChance);
+                yield return (nameof(LavaLakeChance), LavaLakeChance);
+                yield return (nameof(LavaLakeUpperY), LavaLakeUpperY);
+                yield return (nameof(LavaLakeYOffset), LavaLakeYOffset);
+                yield return (nameof(LavaLakeSurfaceY), LavaLakeSurfaceY);
+                yield return (nameof(LavaLakeAboveSurfaceChance), LavaLakeAboveSurfaceChance);
+                yield return (nameof(GoldAttempts), GoldAttempts);
+                yield return (nameof(GoldMaxY), GoldMaxY);
+                yield return (nameof(RedstoneAttempts), RedstoneAttempts);
+                yield return (nameof(RedstoneMaxY), RedstoneMaxY);
+                yield return (nameof(DiamondAttempts), DiamondAttempts);
+                yield return (nameof(DiamondMaxY), DiamondMaxY);
+                yield return (nameof(LapisAttempts), LapisAttempts);
+                yield return (nameof(LapisMaxY), LapisMaxY);
+                yield return (nameof(TreeBonusChance), TreeBonusChance);
+                yield return (nameof(RoseChance), RoseChance);
+                yield return (nameof(BrownMushroomChance), BrownMushroomChance);
+                yield return (nameof(RedMushroomChance), RedMushroomChance);
+                yield return (nameof(SugarcaneAttempts), SugarcaneAttempts);
+                yield return (nameof(PumpkinChance), PumpkinChance);
+                yield return (nameof(WaterSpringAttempts), WaterSpringAttempts);
+                yield return (nameof(WaterSpringUpperY), WaterSpringUpperY);
+                yield return (nameof(WaterSpringYOffset), WaterSpringYOffset);
+                yield return (nameof(LavaSpringAttempts), LavaSpringAttempts);
+                yield return (nameof(LavaSpringUpperY), LavaSpringUpperY);
+                yield return (nameof(LavaSpringYOffset), LavaSpringYOffset);
+                yield return (nameof(ClayVeinSize), ClayVeinSize);
+                yield return (nameof(DirtVeinSize), DirtVeinSize);
+                yield return (nameof(GravelVeinSize), GravelVeinSize);
+                yield return (nameof(CoalVeinSize), CoalVeinSize);
+                yield return (nameof(IronVeinSize), IronVeinSize);
+                yield return (nameof(GoldVeinSize), GoldVeinSize);
+                yield return (nameof(RedstoneVeinSize), RedstoneVeinSize);
+                yield return (nameof(DiamondVeinSize), DiamondVeinSize);
+                yield return (nameof(LapisVeinSize), LapisVeinSize);
+            }
+        }
     }
 
     /// <summary>

@@ -88,7 +88,7 @@ public class HelpCommand : Command.Command
 
                         if (valueType.IsEnum)
                         {
-                            if (Enum.TryParse(valueType, s[i], true, out var _))
+                            if (Enum.TryParse(valueType, s[i], true, out _))
                             {
                                 a = r2;
                                 break;

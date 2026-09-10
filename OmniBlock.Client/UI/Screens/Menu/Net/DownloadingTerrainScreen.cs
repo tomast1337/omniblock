@@ -1,17 +1,17 @@
+using Microsoft.Extensions.Logging;
 using OmniBlock.Client.Network;
 using OmniBlock.Client.UI.Controls;
 using OmniBlock.Client.UI.Controls.Core;
 using OmniBlock.Client.UI.Layout.Flexbox;
 using OmniBlock.Network.Messages;
-using Microsoft.Extensions.Logging;
 using Color = OmniBlock.Client.UI.Colors.Color;
 
 namespace OmniBlock.Client.UI.Screens.Menu.Net;
 
 public class DownloadingTerrainScreen(UIContext context, ClientNetworkHandler networkHandler) : UIScreen(context)
 {
-    private readonly ClientNetworkHandler _networkHandler = networkHandler;
     private readonly ILogger<DownloadingTerrainScreen> _logger = Log.Instance.For<DownloadingTerrainScreen>();
+    private readonly ClientNetworkHandler _networkHandler = networkHandler;
     private int _tickCounter;
 
     public override bool PausesGame => false;

@@ -1,4 +1,3 @@
-using OmniBlock.Blocks;
 using OmniBlock.Entities;
 using OmniBlock.Registries;
 using OmniBlock.Util.Maths;
@@ -135,7 +134,6 @@ public class Biome
                 s_biomes[i + j * 64] = LocateBiome(i / 63.0F, j / 63.0F);
             }
         }
-
     }
 
     internal static void ResolveBlocks(ContentRuntimeBuilder content)

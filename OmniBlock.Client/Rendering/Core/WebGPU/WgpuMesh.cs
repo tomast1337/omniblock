@@ -34,9 +34,9 @@ public sealed unsafe class WgpuMesh : IDisposable
     public const uint ChunkVertexStride = 20;
 
     private readonly WebGpuDevice _device;
-    private bool _usesSharedQuadIndices;
 
     private bool _disposed;
+    private bool _usesSharedQuadIndices;
 
     /// <summary>
     ///     Creates the vertex buffer and uploads its data.

@@ -33,17 +33,17 @@ internal readonly record struct ChunkMeshProfileSnapshot(
 internal sealed class ChunkMeshProfiler
 {
     private long _classificationTicks;
+    private long _finishedToUploadTicks;
     private long _generationTicks;
     private long _geometryTicks;
     private long _meshes;
     private long _queueWaitTicks;
+    private long _requestToUploadTicks;
     private long _snapshotCount;
     private long _snapshotTicks;
     private long _uploadCount;
     private long _uploadTicks;
     private long _visibilityTicks;
-    private long _finishedToUploadTicks;
-    private long _requestToUploadTicks;
 
     public void RecordSnapshot(long ticks)
     {

@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Entities;
 using OmniBlock.Network.Messages;
+using OmniBlock.Server.Internal;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core;
 
@@ -35,6 +36,8 @@ internal class ChunkMap
         _dimensionId = dimensionId;
         loadQueue = new ChunkLoadingQueue(this);
     }
+
+    internal bool SharesProcessWithClient => _server is InternalServer;
 
     public ServerWorld getWorld() => _server.getWorld(_dimensionId);
 
@@ -196,8 +199,6 @@ internal class ChunkMap
 
     public int getBlockViewDistance() => _viewDistance * 16 - 16;
 
-    internal bool SharesProcessWithClient => _server is Internal.InternalServer;
-
     private ReadOnlySpan<ChunkPos> GetChunks(ServerPlayerEntity player) => GetChunks(player, _viewDistance);
 
     private static ReadOnlySpan<ChunkPos> GetChunks(ServerPlayerEntity player, int radius) =>
@@ -234,9 +235,11 @@ internal class ChunkMap
         }
 
         if (prefetchX != 0 || prefetchZ != 0)
+        {
             for (var x = -radius; x <= radius; x++)
             for (var z = -radius; z <= radius; z++)
                 Add(playerChunkX + prefetchX + x, playerChunkZ + prefetchZ + z);
+        }
 
         return [.. chunks];
 

@@ -1,6 +1,5 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using OmniBlock.Registries;
 using OmniBlock.Worlds.Generation;
 
 namespace OmniBlock.Tests.Worlds;
@@ -137,7 +136,10 @@ public sealed class DimensionGeneratorProfileTests
         ];
         var blocks = roles.ToDictionary(static role => role, static role => $"omniblock:{role}");
         foreach (var (role, reference) in replacements) blocks[role] = reference;
-        return JsonSerializer.SerializeToElement(new { Blocks = blocks });
+        return JsonSerializer.SerializeToElement(new
+        {
+            Blocks = blocks
+        });
     }
 
     private static JsonElement InvalidNumericSettings(string setting, int value)
@@ -153,7 +155,11 @@ public sealed class DimensionGeneratorProfileTests
             ["brown_mushroom"] = "omniblock:brown_mushroom",
             ["red_mushroom"] = "omniblock:red_mushroom"
         };
-        var settings = new Dictionary<string, object> { ["Blocks"] = blocks, [setting] = value };
+        var settings = new Dictionary<string, object>
+        {
+            ["Blocks"] = blocks,
+            [setting] = value
+        };
         return JsonSerializer.SerializeToElement(settings);
     }
 }

@@ -38,6 +38,7 @@ public interface IWorldGeneratorProviderRegistry
         ResourceLocation worldTypeId,
         JsonElement definition,
         in WorldGeneratorCompileContext context);
+
     bool Contains(ResourceLocation providerType);
 }
 
@@ -50,8 +51,11 @@ public sealed class WorldGeneratorProviderRegistry : IWorldGeneratorProviderRegi
     {
         var staged = new Dictionary<ResourceLocation, IWorldGeneratorProvider>();
         foreach (var (type, provider) in providers)
+        {
             if (!staged.TryAdd(type, provider))
                 throw new InvalidOperationException($"Duplicate world-generator provider '{type}'.");
+        }
+
         _providers = staged.ToFrozenDictionary();
     }
 
@@ -85,6 +89,46 @@ public static class BuiltInWorldGeneratorProviders
     private static KeyValuePair<ResourceLocation, IWorldGeneratorProvider> Pair(
         ResourceLocation type,
         IWorldGeneratorProvider provider) => new(type, provider);
+
+    private static IReadOnlyDictionary<string, string>? ReadBlockReferences(
+        ResourceLocation owner,
+        string providerName,
+        JsonElement definition,
+        string ownerKind = "World type")
+    {
+        if (definition.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+            return null; // Compatibility for programmatically-created legacy definitions.
+        if (definition.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidOperationException(
+                $"{ownerKind} '{owner}' {providerName} generator settings must be an object.");
+        }
+
+        if (!definition.TryGetProperty("Blocks", out var blocksElement)
+            || blocksElement.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidOperationException(
+                $"{ownerKind} '{owner}' {providerName} generator settings require a 'Blocks' object.");
+        }
+
+        var references = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var property in blocksElement.EnumerateObject())
+        {
+            if (property.Value.ValueKind != JsonValueKind.String)
+            {
+                throw new InvalidOperationException(
+                    $"{ownerKind} '{owner}' {providerName} block role '{property.Name}' must be a resource name.");
+            }
+
+            if (!references.TryAdd(property.Name, property.Value.GetString()!))
+            {
+                throw new InvalidOperationException(
+                    $"{ownerKind} '{owner}' {providerName} repeats block role '{property.Name}'.");
+            }
+        }
+
+        return references;
+    }
 
     private sealed class OverworldProvider : IWorldGeneratorProvider
     {
@@ -147,6 +191,7 @@ public static class BuiltInWorldGeneratorProviders
             public double SurfaceNoiseScale { get; init; } = 1.0D / 32.0D;
             public int BedrockDepth { get; init; } = 5;
             public int SandstoneDepthBound { get; init; } = 4;
+
             public OverworldChunkGenerator.FeatureSettings Features { get; init; } =
                 OverworldChunkGenerator.FeatureSettings.Default;
         }
@@ -218,6 +263,7 @@ public static class BuiltInWorldGeneratorProviders
             public int IronAttempts { get; init; } = 20;
             public double SurfaceNoiseScale { get; init; } = 1.0D / 32.0D;
             public int SandstoneDepthBound { get; init; } = 4;
+
             public SkyChunkGenerator.FeatureSettings Features { get; init; } =
                 SkyChunkGenerator.FeatureSettings.Default;
         }
@@ -278,6 +324,7 @@ public static class BuiltInWorldGeneratorProviders
             public int GravelAttempts { get; init; } = 10;
             public int CoalAttempts { get; init; } = 20;
             public int IronAttempts { get; init; } = 20;
+
             public FlatChunkGenerator.FeatureSettings Features { get; init; } =
                 FlatChunkGenerator.FeatureSettings.Default;
         }
@@ -394,35 +441,5 @@ public static class BuiltInWorldGeneratorProviders
                         settings)
                     : new NetherChunkGenerator(context.World, context.Seed, blocks, settings);
         }
-    }
-
-    private static IReadOnlyDictionary<string, string>? ReadBlockReferences(
-        ResourceLocation owner,
-        string providerName,
-        JsonElement definition,
-        string ownerKind = "World type")
-    {
-        if (definition.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
-            return null; // Compatibility for programmatically-created legacy definitions.
-        if (definition.ValueKind != JsonValueKind.Object)
-            throw new InvalidOperationException(
-                $"{ownerKind} '{owner}' {providerName} generator settings must be an object.");
-        if (!definition.TryGetProperty("Blocks", out var blocksElement)
-            || blocksElement.ValueKind != JsonValueKind.Object)
-            throw new InvalidOperationException(
-                $"{ownerKind} '{owner}' {providerName} generator settings require a 'Blocks' object.");
-
-        var references = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var property in blocksElement.EnumerateObject())
-        {
-            if (property.Value.ValueKind != JsonValueKind.String)
-                throw new InvalidOperationException(
-                    $"{ownerKind} '{owner}' {providerName} block role '{property.Name}' must be a resource name.");
-            if (!references.TryAdd(property.Name, property.Value.GetString()!))
-                throw new InvalidOperationException(
-                    $"{ownerKind} '{owner}' {providerName} repeats block role '{property.Name}'.");
-        }
-
-        return references;
     }
 }

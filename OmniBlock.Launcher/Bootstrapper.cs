@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using CommunityToolkit.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using OmniBlock.Launcher.Features;
 using OmniBlock.Launcher.Features.Alert;
 using OmniBlock.Launcher.Features.Authentication;
@@ -12,8 +14,6 @@ using OmniBlock.Launcher.Features.Sessions;
 using OmniBlock.Launcher.Features.Shell;
 using OmniBlock.Launcher.Features.Splash;
 using OmniBlock.Launcher.Features.Xbox;
-using CommunityToolkit.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
 namespace OmniBlock.Launcher;

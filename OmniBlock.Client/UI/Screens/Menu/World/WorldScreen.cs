@@ -2,7 +2,6 @@ using OmniBlock.Client.UI.Controls;
 using OmniBlock.Client.UI.Controls.Core;
 using OmniBlock.Client.UI.Controls.ListItems;
 using OmniBlock.Client.UI.Layout.Flexbox;
-using OmniBlock.Worlds;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Storage;
 using Color = OmniBlock.Client.UI.Colors.Color;

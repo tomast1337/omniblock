@@ -2,31 +2,26 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using OmniBlock.Launcher.Features.Home;
-using OmniBlock.Launcher.Features.Properties;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Launcher.Features.Home;
+using OmniBlock.Launcher.Features.Properties;
 
 namespace OmniBlock.Launcher.Features.Hosting;
 
 internal sealed partial class HostingViewModel(ILogger<HostingViewModel> logger, ProcessService processService, NavigationService navigationService) : ObservableObject
 {
+    private Process? _process;
     public ObservableCollection<string> Logs { get; } = [];
 
-    [ObservableProperty]
-    public partial int Last { get; set; }
+    [ObservableProperty] public partial int Last { get; set; }
 
-    [ObservableProperty]
-    public partial string Input { get; set; } = string.Empty;
+    [ObservableProperty] public partial string Input { get; set; } = string.Empty;
 
-    [ObservableProperty]
-    public partial string Message { get; set; } = "Run";
+    [ObservableProperty] public partial string Message { get; set; } = "Run";
 
-    [ObservableProperty]
-    public partial bool IsRunning { get; set; }
-
-    private Process? _process;
+    [ObservableProperty] public partial bool IsRunning { get; set; }
 
     public void Stop()
     {
@@ -118,16 +113,10 @@ internal sealed partial class HostingViewModel(ILogger<HostingViewModel> logger,
     }
 
     [RelayCommand]
-    private void Properties()
-    {
-        navigationService.Navigate<PropertiesViewModel>();
-    }
+    private void Properties() => navigationService.Navigate<PropertiesViewModel>();
 
     [RelayCommand]
-    private void Back()
-    {
-        navigationService.Navigate<HomeViewModel>();
-    }
+    private void Back() => navigationService.Navigate<HomeViewModel>();
 
     private async Task WriteAsync(string? input)
     {
@@ -153,8 +142,5 @@ internal sealed partial class HostingViewModel(ILogger<HostingViewModel> logger,
         Last = Logs.Count - 1;
     }
 
-    private void OnExited(object? sender, EventArgs eventArgs)
-    {
-        Stop();
-    }
+    private void OnExited(object? sender, EventArgs eventArgs) => Stop();
 }

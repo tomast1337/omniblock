@@ -56,7 +56,7 @@ public class GameRuleCommand : Command.Command
         var valueStr = context.GetArgument<string>("value");
         var key = ResourceLocation.Parse(ruleName);
 
-        if (!registry.TryGet(key, out var _))
+        if (!registry.TryGet(key, out _))
         {
             context.Source.Output.SendMessage($"Unknown game rule: {ruleName}");
             return 1;

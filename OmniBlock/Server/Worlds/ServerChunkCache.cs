@@ -14,7 +14,9 @@ public class ServerChunkCache : IChunkSource
     private readonly Chunk _empty;
     private readonly IChunkSource _generator;
     private readonly ILogger<ServerChunkCache> _logger = Log.Instance.For<ServerChunkCache>();
+
     private readonly IChunkStorage _storage;
+
     // Region decoding constructs entities and block entities against the live world. The region
     // byte stream is internally locked, but that larger decode path is not parallel-safe.
     private readonly object _storageLoadLock = new();

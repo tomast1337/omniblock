@@ -32,6 +32,7 @@ public sealed class ClientWorldPreloadState
 
     public void MarkChunkDecoded(int x, int z) => _decodedChunks.Add(new ChunkPos(x, z));
     public void MarkChunkUnloaded(int x, int z) => _decodedChunks.Remove(new ChunkPos(x, z));
+
     public void MarkMeshUploaded(Vector3D<int> pos) =>
         _uploadedSections.Add(new Vector3D<int>(pos.X >> 4, pos.Y >> 4, pos.Z >> 4));
 
@@ -44,9 +45,12 @@ public sealed class ClientWorldPreloadState
             return false;
 
         for (var y = Math.Max(0, _centerSectionY - VerticalSectionRadius);
-             y <= Math.Min(ChuckFormat.WorldHeight / 16 - 1, _centerSectionY + VerticalSectionRadius); y++)
+             y <= Math.Min(ChuckFormat.WorldHeight / 16 - 1, _centerSectionY + VerticalSectionRadius);
+             y++)
+        {
             if (_uploadedSections.Contains(new Vector3D<int>(_centerChunk.X + offsetX, y, _centerChunk.Z + offsetZ)))
                 return true;
+        }
 
         return false;
     }
@@ -59,8 +63,10 @@ public sealed class ClientWorldPreloadState
         List<string> missing = [];
         for (var x = -MeshChunkRadius; x <= MeshChunkRadius; x++)
         for (var z = -MeshChunkRadius; z <= MeshChunkRadius; z++)
+        {
             if (!HasMesh(x, z))
                 missing.Add($"{_centerChunk.X + x},{_centerChunk.Z + z}");
+        }
 
         return missing.Count == 0 ? "none" : string.Join(" ", missing);
     }
@@ -86,9 +92,12 @@ public sealed class ClientWorldPreloadState
         // One nearby vertical section is enough for each column. Once one has uploaded, avoid
         // promoting the other two and spend the urgent queue on columns still blocking entry.
         for (var y = Math.Max(0, _centerSectionY - VerticalSectionRadius);
-             y <= Math.Min(ChuckFormat.WorldHeight / 16 - 1, _centerSectionY + VerticalSectionRadius); y++)
+             y <= Math.Min(ChuckFormat.WorldHeight / 16 - 1, _centerSectionY + VerticalSectionRadius);
+             y++)
+        {
             if (_uploadedSections.Contains(new Vector3D<int>(section.X, y, section.Z)))
                 return false;
+        }
 
         return true;
     }
@@ -101,7 +110,8 @@ public sealed class ClientWorldPreloadState
         for (var x = -MeshChunkRadius; x <= MeshChunkRadius; x++)
         for (var z = -MeshChunkRadius; z <= MeshChunkRadius; z++)
         for (var y = Math.Max(0, _centerSectionY - VerticalSectionRadius);
-             y <= Math.Min(ChuckFormat.WorldHeight / 16 - 1, _centerSectionY + VerticalSectionRadius); y++)
+             y <= Math.Min(ChuckFormat.WorldHeight / 16 - 1, _centerSectionY + VerticalSectionRadius);
+             y++)
         {
             var section = new Vector3D<int>(_centerChunk.X + x, y, _centerChunk.Z + z);
             if (RequiresMesh(section * 16))
@@ -121,7 +131,8 @@ public sealed class ClientWorldPreloadState
         var count = 0;
         for (var x = -ChunkRadius; x <= ChunkRadius; x++)
         for (var z = -ChunkRadius; z <= ChunkRadius; z++)
-            if (_decodedChunks.Contains(new ChunkPos(_centerChunk.X + x, _centerChunk.Z + z))) count++;
+            if (_decodedChunks.Contains(new ChunkPos(_centerChunk.X + x, _centerChunk.Z + z)))
+                count++;
         return count;
     }
 
@@ -132,13 +143,15 @@ public sealed class ClientWorldPreloadState
         for (var z = -MeshChunkRadius; z <= MeshChunkRadius; z++)
         {
             for (var y = Math.Max(0, _centerSectionY - VerticalSectionRadius);
-                 y <= Math.Min(ChuckFormat.WorldHeight / 16 - 1, _centerSectionY + VerticalSectionRadius); y++)
+                 y <= Math.Min(ChuckFormat.WorldHeight / 16 - 1, _centerSectionY + VerticalSectionRadius);
+                 y++)
             {
                 if (!_uploadedSections.Contains(new Vector3D<int>(_centerChunk.X + x, y, _centerChunk.Z + z))) continue;
                 count++;
                 break;
             }
         }
+
         return count;
     }
 }

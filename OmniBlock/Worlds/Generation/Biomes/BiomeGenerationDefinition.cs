@@ -24,8 +24,11 @@ public sealed class RuntimeBiomeGenerationRegistry
     {
         var staged = new Dictionary<ResourceLocation, BiomeGenerationSettings>();
         foreach (var (key, value) in settings)
+        {
             if (!staged.TryAdd(key, value))
                 throw new InvalidOperationException($"Duplicate biome generation definition '{key}'.");
+        }
+
         _settings = staged.ToFrozenDictionary();
     }
 

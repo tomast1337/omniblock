@@ -10,17 +10,17 @@ namespace OmniBlock.Worlds.Gen.Flat;
 internal class FlatChunkGenerator : IChunkSource
 {
     private readonly BlockIds _blocks;
-    private readonly Settings _settings;
     private readonly CactusPatchFeature _featureCactus = new();
-    private ClayOreFeature _featureClay;
     private readonly DungeonFeature _featureDungeon = new();
-    private readonly string _generatorOptions;
     private readonly PumpkinPatchFeature _featurePumpkin = new();
     private readonly SugarCanePatchFeature _featureSugarcane = new();
     private readonly FlatGeneratorInfo _generatorInfo;
+    private readonly string _generatorOptions;
     private readonly JavaRandom _random;
+    private readonly Settings _settings;
     private readonly IWorldContext _world;
     private PlantPatchFeature _featureBrownMushroom;
+    private ClayOreFeature _featureClay;
     private OreFeature _featureCoal;
     private PlantPatchFeature _featureDandelion;
     private DeadBushPatchFeature _featureDeadBush;
@@ -400,8 +400,10 @@ internal class FlatChunkGenerator : IChunkSource
             void NonNegative(string name, int value)
             {
                 if (value < 0)
+                {
                     throw new InvalidOperationException(
                         $"World type '{owner}' flat setting '{name}' must not be negative (was {value}).");
+                }
             }
         }
     }
@@ -457,8 +459,10 @@ internal class FlatChunkGenerator : IChunkSource
             {
                 var allowsZero = property.Name.EndsWith("Attempts", StringComparison.Ordinal);
                 if (property.GetValue(this) is int value && (allowsZero ? value < 0 : value <= 0))
+                {
                     throw new InvalidOperationException(
                         $"World type '{owner}' flat feature setting '{property.Name}' has invalid value {value}.");
+                }
             }
         }
     }

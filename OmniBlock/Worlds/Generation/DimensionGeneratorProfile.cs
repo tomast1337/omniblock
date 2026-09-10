@@ -42,8 +42,8 @@ public sealed class DimensionGeneratorProfile
 
 public sealed class RuntimeDimensionGeneratorProfileRegistry
 {
-    private readonly FrozenDictionary<ResourceLocation, DimensionGeneratorProfile> _byKey;
     private readonly FrozenDictionary<int, DimensionGeneratorProfile> _byDimensionId;
+    private readonly FrozenDictionary<ResourceLocation, DimensionGeneratorProfile> _byKey;
 
     internal RuntimeDimensionGeneratorProfileRegistry(IEnumerable<DimensionGeneratorProfile> profiles)
     {
@@ -52,11 +52,16 @@ public sealed class RuntimeDimensionGeneratorProfileRegistry
         foreach (var profile in profiles)
         {
             if (!byKey.TryAdd(profile.Key, profile))
+            {
                 throw new InvalidOperationException(
                     $"Duplicate dimension generator profile '{profile.Key}'.");
+            }
+
             if (!byDimensionId.TryAdd(profile.DimensionId, profile))
+            {
                 throw new InvalidOperationException(
                     $"Duplicate dimension generator profile id {profile.DimensionId} for '{profile.Key}'.");
+            }
         }
 
         _byKey = byKey.ToFrozenDictionary();

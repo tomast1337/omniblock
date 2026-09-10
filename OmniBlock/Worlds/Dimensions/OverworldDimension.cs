@@ -1,9 +1,7 @@
 using OmniBlock.Worlds.Chunks;
-using OmniBlock.Worlds.Gen.Chunks;
-using OmniBlock.Worlds.Gen.Flat;
+using OmniBlock.Worlds.Generation;
 using OmniBlock.Worlds.Generation.Biomes;
 using OmniBlock.Worlds.Generation.Biomes.Source;
-using OmniBlock.Worlds.Generation;
 
 namespace OmniBlock.Worlds.Dimensions;
 

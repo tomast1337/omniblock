@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using OmniBlock.Client.Rendering.Chunks;
 using OmniBlock.Client.Rendering.Core;
 
@@ -13,7 +14,7 @@ public sealed class ChunkMeshBuilderTests
         EmitCharacterizationGeometry(builder);
         using var vertices = builder.Finish();
 
-        Assert.Equal(20, System.Runtime.InteropServices.Marshal.SizeOf<ChunkVertex>());
+        Assert.Equal(20, Marshal.SizeOf<ChunkVertex>());
         Assert.Equal(8, vertices.Count);
 
         var firstColor = BitConverter.IsLittleEndian ? unchecked((int)0xFFBF7F3F) : 0x3F7FBFFF;
@@ -22,14 +23,8 @@ public sealed class ChunkMeshBuilderTests
 
         var expected = new[]
         {
-            V(0, 2816, 0, 0, 0, firstColor, 49, 22, 3),
-            V(0, 3328, 0, 0, 4095, firstColor, 49, 22, 3),
-            V(512, 3328, 0, 4095, 4095, secondColor, 60, 0, 3),
-            V(512, 2816, 0, 4095, 0, secondColor, 60, 0, 3),
-            V(2176, 3584, 1024, 0, 0, thirdColor, 0, 60, 251),
-            V(2176, 4096, 1024, 0, 65520, thirdColor, 0, 60, 251),
-            V(2688, 4096, 1024, 65520, 65520, thirdColor, 0, 60, 251),
-            V(2688, 3584, 1024, 65520, 0, thirdColor, 0, 60, 251)
+            V(0, 2816, 0, 0, 0, firstColor, 49, 22, 3), V(0, 3328, 0, 0, 4095, firstColor, 49, 22, 3), V(512, 3328, 0, 4095, 4095, secondColor, 60, 0, 3), V(512, 2816, 0, 4095, 0, secondColor, 60, 0, 3),
+            V(2176, 3584, 1024, 0, 0, thirdColor, 0, 60, 251), V(2176, 4096, 1024, 0, 65520, thirdColor, 0, 60, 251), V(2688, 4096, 1024, 65520, 65520, thirdColor, 0, 60, 251), V(2688, 3584, 1024, 65520, 0, thirdColor, 0, 60, 251)
         };
 
         for (var i = 0; i < expected.Length; i++) AssertVertex(expected[i], vertices.Buffer[i]);

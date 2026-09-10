@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGui.Backends.GLFW;
 using Microsoft.Extensions.Logging;
-using OmniBlock.Blocks;
 using OmniBlock.Client.Diagnostics;
 using OmniBlock.Client.DynamicTexture;
 using OmniBlock.Client.Entities;

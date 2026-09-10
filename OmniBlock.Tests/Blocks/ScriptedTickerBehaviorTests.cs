@@ -31,7 +31,7 @@ public sealed class ScriptedTickerBehaviorTests
     public void TickHost_ReadsAndWritesThroughToTheWorld()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(5, 64, 5, TestBlocks.Get("stone").Id, 0);
+        world.ReaderWriter.SetInitial(5, 64, 5, TestBlocks.Get("stone").Id);
 
         ScriptTickHookRegistry.Register("test:mutate_hook", (host, x, y, z, _, _) =>
         {

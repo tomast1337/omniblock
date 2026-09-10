@@ -1,5 +1,4 @@
 using OmniBlock.Blocks.Entities;
-using OmniBlock.Registries;
 using OmniBlock.Server;
 
 namespace OmniBlock.Tests.Worlds;
@@ -64,7 +63,7 @@ public sealed class WorstSeedEverCompatibilityTests
         {
             DefaultRegistries.RegisterDynamicDefinitions();
             RegistryAccess = RegistryAccess.Build(AppContext.BaseDirectory);
-            return base.Init();
+            return Init();
         }
 
         public override FileInfo GetFile(string path) => new(Path.Combine(root, path));
@@ -90,10 +89,17 @@ public sealed class WorstSeedEverCompatibilityTests
         public bool GetWhiteList(bool fallback) => false;
         public int GetSpawnRegionSize(int fallback) => 64;
         public string GetDefaultGamemode(string fallback) => fallback;
-        public void Save() { }
+
+        public void Save()
+        {
+        }
+
         public bool GetProperty(string property, bool fallback) => fallback;
         public int GetProperty(string property, int fallback) => fallback;
         public string GetProperty(string property, string fallback) => fallback;
-        public void SetProperty(string property, bool value) { }
+
+        public void SetProperty(string property, bool value)
+        {
+        }
     }
 }

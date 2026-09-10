@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using Microsoft.Extensions.DependencyInjection;
 using OmniBlock.Launcher.Features.Authentication;
 using OmniBlock.Launcher.Features.Home;
 using OmniBlock.Launcher.Features.Hosting;
 using OmniBlock.Launcher.Features.Properties;
 using OmniBlock.Launcher.Features.Splash;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace OmniBlock.Launcher;
 
@@ -26,7 +26,7 @@ internal sealed class ViewLocator(IServiceProvider services) : IDataTemplate
 
     public Control Build(object? instance)
     {
-        string? name = instance?.GetType().Name;
+        var name = instance?.GetType().Name;
 
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -35,8 +35,5 @@ internal sealed class ViewLocator(IServiceProvider services) : IDataTemplate
             : factory();
     }
 
-    public bool Match(object? instance)
-    {
-        return instance is INotifyPropertyChanged;
-    }
+    public bool Match(object? instance) => instance is INotifyPropertyChanged;
 }

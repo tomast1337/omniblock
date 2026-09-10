@@ -34,15 +34,15 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
     private readonly List<(ResourceLocation Key, ItemDefinition Definition, Item Item)> _items = [];
     private readonly Dictionary<ResourceLocation, Item> _itemsByKey = [];
     private readonly Dictionary<int, Item> _itemsByProtocolId = [];
-    private readonly List<BlockDefinition> _pendingBlockDefinitions = [];
     private readonly List<BiomeGenerationDefinition> _pendingBiomeGenerationDefinitions = [];
+    private readonly List<BlockDefinition> _pendingBlockDefinitions = [];
+    private readonly List<DimensionGeneratorProfileDefinition> _pendingDimensionGeneratorProfiles = [];
     private readonly List<EntityDefinition> _pendingEntityDefinitions = [];
     private readonly List<ItemDefinition> _pendingItemDefinitions = [];
     private readonly List<ProcessDefinition> _pendingProcessDefinitions = [];
-    private readonly List<DimensionGeneratorProfileDefinition> _pendingDimensionGeneratorProfiles = [];
     private readonly List<WorldTypeDefinition> _pendingWorldTypeDefinitions = [];
-    private bool _built;
     private bool _blocksBuilt;
+    private bool _built;
     private bool _itemDraftsCreated;
     private bool _itemsFinalized;
 
@@ -206,8 +206,11 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
     {
         if (_itemsByKey.TryGetValue(key, out var item)) return item.Id;
         foreach (var (_, definition, block) in _blocks)
+        {
             if (definition.BlockItem.Aliases.Contains(key.Path, StringComparer.OrdinalIgnoreCase))
                 return block.Id;
+        }
+
         return ResolveBlockReference(key).Id;
     }
 
@@ -302,8 +305,10 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
 
             var providerType = ResourceLocation.Parse(definition.Generator);
             if (!WorldGeneratorProviders.Contains(providerType))
+            {
                 throw new InvalidOperationException(
                     $"World type '{key}': unknown generator provider '{providerType}'.");
+            }
 
             var compiledGenerator = WorldGeneratorProviders.Compile(
                 providerType,
@@ -331,8 +336,11 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
             if (!keys.Add(key))
                 throw new InvalidOperationException($"Duplicate biome generation definition '{key}'.");
             if (definition.FernSelectionBound < 0)
+            {
                 throw new InvalidOperationException(
                     $"Biome generation definition '{key}' has invalid FernSelectionBound {definition.FernSelectionBound}.");
+            }
+
             settings.Add(new KeyValuePair<ResourceLocation, BiomeGenerationSettings>(
                 key,
                 new BiomeGenerationSettings(definition.FernSelectionBound)));
@@ -353,16 +361,23 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
             if (!keys.Add(key))
                 throw new InvalidOperationException($"Duplicate dimension generator profile '{key}'.");
             if (!dimensionIds.Add(definition.DimensionId))
+            {
                 throw new InvalidOperationException(
                     $"Duplicate dimension generator profile id {definition.DimensionId} for '{key}'.");
+            }
+
             if (string.IsNullOrWhiteSpace(definition.Generator))
+            {
                 throw new InvalidOperationException(
                     $"Dimension generator profile '{key}': generator provider is required.");
+            }
 
             var providerType = ResourceLocation.Parse(definition.Generator);
             if (!WorldGeneratorProviders.Contains(providerType))
+            {
                 throw new InvalidOperationException(
                     $"Dimension generator profile '{key}': unknown generator provider '{providerType}'.");
+            }
 
             var compiledGenerator = WorldGeneratorProviders.Compile(
                 providerType,

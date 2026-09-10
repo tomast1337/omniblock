@@ -96,8 +96,11 @@ public sealed class RuntimeCraftingProcessView
     {
         ArgumentNullException.ThrowIfNull(input);
         foreach (var process in _recipes)
+        {
             if (process.Matches(input))
                 return process;
+        }
+
         return null;
     }
 

@@ -18,7 +18,7 @@ internal sealed class MinecraftService(IHttpClientFactory clientFactory)
 
         await using var file = File.Open(Path.Combine(directory, "b1.7.3.jar"), FileMode.OpenOrCreate);
 
-        byte[] hash = await sha256.ComputeHashAsync(file);
+        var hash = await sha256.ComputeHashAsync(file);
 
         if (hash.SequenceEqual(_expectedHash))
         {
