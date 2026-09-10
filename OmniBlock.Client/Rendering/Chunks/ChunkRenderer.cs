@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using OmniBlock.Client.Options;
 using OmniBlock.Client.Rendering.Chunks.Occlusion;
@@ -26,6 +27,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     internal const double MeshPrefetchMargin = SubChunkRenderer.Size;
     internal const int MeshSpeculativeRadius = 1;
     internal const int MeshDiscoveryBacklogPerWorker = 8;
+    internal const int MeshSafetyBacklogPerWorker = 2;
 
     //TODO: MAKE THIS CONFIGURABLE
     private const double MeshUploadBudgetMs = 1.5;
@@ -37,6 +39,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private const uint ChunkUniformSize = 336;
 
     private static readonly Vector3D<int>[] s_spiralOffsets;
+    private static readonly Vector2D<int>[] s_safetyColumnOffsets;
     private readonly Dictionary<Vector3D<int>, ChunkMeshVersion> _chunkVersions = [];
     private readonly List<Vector3D<int>> _chunkVersionsToRemove = [];
     private readonly MeshPriorityFairness _dispatchFairness = new();
@@ -80,6 +83,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private int _lastRenderDistance;
     private Vector3D<double> _lastViewPos;
     private Vector3D<double> _predictedViewPos;
+    private int _meshVisibilityCenterX;
+    private int _meshVisibilityCenterZ;
+    private int _meshVisibilityRadius = int.MaxValue;
     private Matrix4X4<float> _modelView;
     private Matrix4X4<float> _projection;
 
@@ -108,6 +114,15 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             (a.X * a.X + a.Y * a.Y + a.Z * a.Z).CompareTo(b.X * b.X + b.Y * b.Y + b.Z * b.Z));
 
         s_spiralOffsets = [.. offsets];
+
+        var safetyColumns = new List<Vector2D<int>>();
+        for (var x = -MeshSafetyRingRadius; x <= MeshSafetyRingRadius; x++)
+        for (var z = -MeshSafetyRingRadius; z <= MeshSafetyRingRadius; z++)
+            if (x * x + z * z <= MeshSafetyRingRadius * MeshSafetyRingRadius)
+                safetyColumns.Add(new Vector2D<int>(x, z));
+        safetyColumns.Sort((a, b) =>
+            (a.X * a.X + a.Y * a.Y).CompareTo(b.X * b.X + b.Y * b.Y));
+        s_safetyColumnOffsets = [.. safetyColumns];
     }
 
     public ChunkRenderer(World world, GameOptions options)
@@ -126,6 +141,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     internal static int GetMeshDiscoveryCapacity(int pending, int workerCount) =>
         Math.Max(0, workerCount * MeshDiscoveryBacklogPerWorker - pending);
+
+    internal static int GetMeshSafetyDiscoveryCapacity(int foregroundPending, int workerCount) =>
+        Math.Max(0, workerCount * MeshSafetyBacklogPerWorker - foregroundPending);
 
     /// <summary>
     ///     Debug toggle: draws the solid pass as flat-green triangle edges instead of textured
@@ -147,13 +165,123 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     }
     internal void ResetMeshProfile() => _meshGenerator.ResetProfile();
 
+    internal MeshSafetyRingState GetMeshSafetyRingState(Vector3D<double> viewPosition)
+    {
+        var centerX = (int)Math.Floor(viewPosition.X / SubChunkRenderer.Size);
+        var centerZ = (int)Math.Floor(viewPosition.Z / SubChunkRenderer.Size);
+        var loadedColumns = 0;
+        var expectedSections = 0;
+        var missingMeshes = 0;
+
+        for (var dx = -MeshSafetyRingRadius; dx <= MeshSafetyRingRadius; dx++)
+        for (var dz = -MeshSafetyRingRadius; dz <= MeshSafetyRingRadius; dz++)
+        {
+            if (dx * dx + dz * dz > MeshSafetyRingRadius * MeshSafetyRingRadius) continue;
+
+            var chunkX = centerX + dx;
+            var chunkZ = centerZ + dz;
+            if (!_world.BlockHost.HasChunk(chunkX, chunkZ) ||
+                !_world.BlockHost.GetChunk(chunkX, chunkZ).Loaded) continue;
+
+            loadedColumns++;
+            for (var y = 0; y < ChuckFormat.WorldHeight; y += SubChunkRenderer.Size)
+            {
+                expectedSections++;
+                if (!_renderers.ContainsKey(new Vector3D<int>(
+                        chunkX * SubChunkRenderer.Size, y, chunkZ * SubChunkRenderer.Size)))
+                    missingMeshes++;
+            }
+        }
+
+        return new MeshSafetyRingState(loadedColumns, expectedSections, missingMeshes);
+    }
+
+    /// <summary>
+    ///     Captures the CPU-side streaming and mesh state as a compact TSV grid. Unlike a screenshot,
+    ///     this neither copies the swap-chain texture back from the GPU nor encodes an image, so it
+    ///     is suitable for timing-sensitive E2E diagnostics.
+    /// </summary>
+    internal string CreateTerrainStateDump(Vector3D<double> viewPosition)
+    {
+        var centerX = (int)Math.Floor(viewPosition.X / SubChunkRenderer.Size);
+        var centerZ = (int)Math.Floor(viewPosition.Z / SubChunkRenderer.Size);
+        var radius = Math.Max(MeshSafetyRingRadius, _lastRenderDistance);
+        var visible = _visibleRenderers.Select(static renderer => renderer.Position).ToHashSet();
+        var dirty = _dirtyChunks.Select(static item => item.Pos).ToHashSet();
+        var text = new StringBuilder(256 + (radius * 2 + 1) * (radius * 2 + 1) * 48);
+
+        text.Append("center\t").Append(centerX).Append('\t').Append(centerZ).AppendLine();
+        text.Append("viewDistance\t").Append(_lastRenderDistance).AppendLine();
+        text.Append("meshReadyRadius\t").Append(MeshReadyRadius).AppendLine();
+        text.Append("totalRenderers\t").Append(_renderers.Count).AppendLine();
+        text.Append("pendingWork\t").Append(PendingMeshWork).AppendLine();
+        text.AppendLine("chunkX\tchunkZ\tdistance2\tloaded\tmeshes\tvisible\tpending\tdirty\tforeground\tcritical\tbackground");
+
+        for (var dz = -radius; dz <= radius; dz++)
+        for (var dx = -radius; dx <= radius; dx++)
+        {
+            if (dx * dx + dz * dz > radius * radius) continue;
+            var chunkX = centerX + dx;
+            var chunkZ = centerZ + dz;
+            var loaded = _world.BlockHost.HasChunk(chunkX, chunkZ) &&
+                         _world.BlockHost.GetChunk(chunkX, chunkZ).Loaded;
+            var meshes = 0;
+            var visibleMeshes = 0;
+            var pending = 0;
+            var dirtyMeshes = 0;
+            var foreground = 0;
+            var critical = 0;
+            var background = 0;
+
+            for (var y = 0; y < ChuckFormat.WorldHeight; y += SubChunkRenderer.Size)
+            {
+                var pos = new Vector3D<int>(chunkX * SubChunkRenderer.Size, y,
+                    chunkZ * SubChunkRenderer.Size);
+                if (_renderers.ContainsKey(pos)) meshes++;
+                if (visible.Contains(pos)) visibleMeshes++;
+                if (_chunkVersions.TryGetValue(pos, out var version) && version.State.Pending != -1) pending++;
+                if (dirty.Contains(pos)) dirtyMeshes++;
+                switch (RequestedPriority(pos))
+                {
+                    case MeshWorkPriority.Critical: critical++; break;
+                    case MeshWorkPriority.Foreground: foreground++; break;
+                    case MeshWorkPriority.Background: background++; break;
+                }
+            }
+
+            text.Append(chunkX).Append('\t').Append(chunkZ).Append('\t')
+                .Append(dx * dx + dz * dz).Append('\t').Append(loaded ? 1 : 0).Append('\t')
+                .Append(meshes).Append('\t').Append(visibleMeshes).Append('\t')
+                .Append(pending).Append('\t').Append(dirtyMeshes).Append('\t')
+                .Append(foreground).Append('\t').Append(critical).Append('\t').Append(background)
+                .AppendLine();
+        }
+
+        return text.ToString();
+    }
+
     public int TotalChunks => _renderers.Count;
     public int ChunksInFrustum { get; private set; }
     public int ChunksOccluded { get; private set; }
     public int ChunksRendered { get; private set; }
     public int TranslucentMeshes { get; private set; }
 
-    public void Visit(SubChunkRenderer renderer) => _visibleRenderers.Add(renderer);
+    internal int MeshReadyRadius => _meshVisibilityRadius == int.MaxValue
+        ? Math.Max(0, _lastRenderDistance)
+        : _meshVisibilityRadius;
+
+    public void Visit(SubChunkRenderer renderer)
+    {
+        if (_meshVisibilityRadius != int.MaxValue)
+        {
+            if (_meshVisibilityRadius < 0) return;
+            var dx = renderer.Position.X / SubChunkRenderer.Size - _meshVisibilityCenterX;
+            var dz = renderer.Position.Z / SubChunkRenderer.Size - _meshVisibilityCenterZ;
+            if (dx * dx + dz * dz > _meshVisibilityRadius * _meshVisibilityRadius) return;
+        }
+
+        _visibleRenderers.Add(renderer);
+    }
 
     /// <summary>
     ///     Chooses which sub-chunks the frame draws and records the explicitly supplied world-view
@@ -196,6 +324,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         _renderers.TryGetValue(cameraChunkPos, out var cameraState);
 
+        _meshVisibilityCenterX = cameraChunkPos.X / SubChunkRenderer.Size;
+        _meshVisibilityCenterZ = cameraChunkPos.Z / SubChunkRenderer.Size;
+        _meshVisibilityRadius = GetContiguousMeshRadius(
+            _meshVisibilityCenterX,
+            _meshVisibilityCenterZ,
+            MeshSafetyRingRadius);
+
         if (cameraState == null)
         {
             var y = Math.Clamp(cameraChunkPos.Y, 0, 112);
@@ -218,7 +353,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             );
         }
 
-        AddNearbySections(cameraChunkPos, _frameIndex, renderParams.Camera);
+        AddOcclusionSafetyRing(cameraChunkPos, _frameIndex, renderParams.Camera);
 
         var visitedVisibleCount = _visibleRenderers.Count;
         ChunksOccluded = ChunksInFrustum - visitedVisibleCount;
@@ -456,16 +591,28 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
     }
 
-    private void AddNearbySections(Vector3D<int> cameraChunkPos, int frame, ICuller camera)
+    /// <summary>
+    ///     Conservatively draws completed meshes in the radial safety ring when they are inside
+    ///     the camera frustum. Portal-style chunk occlusion is an optimization, not an authority on
+    ///     whether nearby loaded terrain exists; a temporarily incomplete adjacency graph must not
+    ///     turn collision-bearing terrain invisible until the player enters its immediate section.
+    /// </summary>
+    private void AddOcclusionSafetyRing(Vector3D<int> cameraChunkPos, int frame, ICuller camera)
     {
         var size = SubChunkRenderer.Size;
-        for (var x = -size; x <= size; x += size)
+        for (var chunkX = -MeshSafetyRingRadius; chunkX <= MeshSafetyRingRadius; chunkX++)
         {
-            for (var y = -size; y <= size; y += size)
+            for (var chunkZ = -MeshSafetyRingRadius; chunkZ <= MeshSafetyRingRadius; chunkZ++)
             {
-                for (var z = -size; z <= size; z += size)
+                if (chunkX * chunkX + chunkZ * chunkZ > MeshSafetyRingRadius * MeshSafetyRingRadius)
+                    continue;
+
+                for (var y = 0; y < ChuckFormat.WorldHeight; y += size)
                 {
-                    var pos = cameraChunkPos + new Vector3D<int>(x, y, z);
+                    var pos = new Vector3D<int>(
+                        cameraChunkPos.X + chunkX * size,
+                        y,
+                        cameraChunkPos.Z + chunkZ * size);
                     if (_renderers.TryGetValue(pos, out var state))
                     {
                         if (state.Renderer.LastVisibleFrame != frame)
@@ -480,6 +627,40 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 }
             }
         }
+    }
+
+    /// <summary>
+    ///     Returns the largest complete radial ring, or <see cref="int.MaxValue"/> once the whole
+    ///     safety area is ready and ordinary render-distance visibility may resume.
+    /// </summary>
+    private int GetContiguousMeshRadius(int centerX, int centerZ, int requiredRadius)
+    {
+        for (var radius = 0; radius <= requiredRadius; radius++)
+        {
+            var radiusSquared = radius * radius;
+            for (var dx = -radius; dx <= radius; dx++)
+            for (var dz = -radius; dz <= radius; dz++)
+            {
+                if (dx * dx + dz * dz > radiusSquared || IsMeshColumnReady(centerX + dx, centerZ + dz))
+                    continue;
+                return radius - 1;
+            }
+        }
+
+        return int.MaxValue;
+    }
+
+    private bool IsMeshColumnReady(int chunkX, int chunkZ)
+    {
+        if (!_world.BlockHost.HasChunk(chunkX, chunkZ) ||
+            !_world.BlockHost.GetChunk(chunkX, chunkZ).Loaded) return false;
+
+        for (var y = 0; y < ChuckFormat.WorldHeight; y += SubChunkRenderer.Size)
+            if (!_renderers.ContainsKey(new Vector3D<int>(
+                    chunkX * SubChunkRenderer.Size, y, chunkZ * SubChunkRenderer.Size)))
+                return false;
+
+        return true;
     }
 
     /// <summary>
@@ -513,7 +694,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         var criticalIndex = -1;
         var foregroundIndex = -1;
         var backgroundIndex = -1;
-        var criticalRank = (Tier: int.MaxValue, EnqueuedAt: long.MaxValue, DistanceSquared: double.MaxValue);
+        var criticalRank = (Tier: int.MaxValue, DistanceSquared: double.MaxValue, EnqueuedAt: long.MaxValue);
         var foregroundRank = criticalRank;
         var backgroundRank = criticalRank;
 
@@ -590,7 +771,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 ? MeshWorkPriority.Foreground
                 : MeshWorkPriority.Background;
 
-    internal static (int Tier, long EnqueuedAt, double DistanceSquared) GetMeshSchedulingRank(
+    internal static (int Tier, double DistanceSquared, long EnqueuedAt) GetMeshSchedulingRank(
         Vector3D<int> position,
         Vector3D<double> viewPosition,
         bool urgent,
@@ -601,7 +782,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         urgent ? MeshWorkPriority.Critical : MeshWorkPriority.Background,
         visible, false, enqueuedAt, schedulerTick);
 
-    internal static (int Tier, long EnqueuedAt, double DistanceSquared) GetMeshSchedulingRank(
+    internal static (int Tier, double DistanceSquared, long EnqueuedAt) GetMeshSchedulingRank(
         Vector3D<int> position,
         Vector3D<double> viewPosition,
         MeshWorkPriority priority,
@@ -610,7 +791,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         long schedulerTick) => GetMeshSchedulingRank(
         position, viewPosition, viewPosition, priority, visible, false, enqueuedAt, schedulerTick);
 
-    internal static (int Tier, long EnqueuedAt, double DistanceSquared) GetMeshSchedulingRank(
+    internal static (int Tier, double DistanceSquared, long EnqueuedAt) GetMeshSchedulingRank(
         Vector3D<int> position,
         Vector3D<double> viewPosition,
         Vector3D<double> predictedViewPosition,
@@ -623,7 +804,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         urgent ? MeshWorkPriority.Critical : MeshWorkPriority.Background,
         prefetched, speculative, enqueuedAt, schedulerTick);
 
-    private static (int Tier, long EnqueuedAt, double DistanceSquared) GetMeshSchedulingRank(
+    private static (int Tier, double DistanceSquared, long EnqueuedAt) GetMeshSchedulingRank(
         Vector3D<int> position,
         Vector3D<double> viewPosition,
         Vector3D<double> predictedViewPosition,
@@ -643,15 +824,18 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 : prefetched ? 2 : 3
         };
         var age = Math.Max(0, schedulerTick - enqueuedAt);
-        // Old background work eventually competes with visible work, where its older enqueue time
-        // wins the tie. It never displaces the permanent safety ring or urgent gameplay work.
+        // Old background work eventually competes with visible work. It never displaces the
+        // permanent safety ring or urgent gameplay work.
         var minimumTier = baseTier <= 1 ? baseTier : baseTier == 4 ? 3 : 2;
         var promotedTier = Math.Max(minimumTier, baseTier - (int)(age / MeshAgePromotionTicks));
         var meshPosition = ToDoubleVec(position);
         var distance = Math.Min(
             Vector3D.DistanceSquared(meshPosition, viewPosition),
             Vector3D.DistanceSquared(meshPosition, predictedViewPosition));
-        return (promotedTier, enqueuedAt, distance);
+        // Distance dominates inside a tier. Enqueue time is only a tie-breaker because age already
+        // earns explicit tier promotion above. Comparing age first made an old frontier mesh beat
+        // a newly discovered hole beside a moving player.
+        return (promotedTier, distance, enqueuedAt);
     }
 
     internal static bool IsInMeshSafetyRing(Vector3D<int> position, Vector3D<double> viewPosition)
@@ -725,11 +909,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _lastViewPos = viewPos;
         _predictedViewPos = PredictMeshCenter(viewPos, velocity);
 
-        Vector3D<int> currentChunk = new(
-            (int)Math.Floor(viewPos.X / SubChunkRenderer.Size),
-            (int)Math.Floor(viewPos.Y / SubChunkRenderer.Size),
-            (int)Math.Floor(viewPos.Z / SubChunkRenderer.Size)
-        );
+        var currentChunk = GetMeshDiscoveryCenter(viewPos);
+
+        // Requests were ordered for an earlier camera position when they entered the bounded
+        // worker backlog. Re-sort the small queues as the player moves so a distant request cannot
+        // remain ahead merely because it was discovered before a new nearby hole.
+        _meshGenerator.Reprioritize(_lastViewPos, _predictedViewPos);
 
         var retentionRadius = _lastRenderDistance + MeshSpeculativeRadius;
         var radiusSq = retentionRadius * retentionRadius;
@@ -751,6 +936,53 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
             if (_frameIndex % 300 == 0 && !clientWorld.NetworkHandler.Preload.IsReady)
                 LogBlockingStartupMeshes(clientWorld);
+        }
+
+        // Reserve a small admission window for missing meshes around the player's current column.
+        // The general backlog may already be full of work selected before the player moved. If the
+        // safety ring shared that capacity, flying into a loaded-but-unmeshed area could not even
+        // promote its nearby sections until distant work drained.
+        var foregroundPending = _requestedPriorities.Count(static entry =>
+            entry.Value == MeshWorkPriority.Foreground);
+        var safetyDiscoveryBudget = GetMeshSafetyDiscoveryCapacity(
+            foregroundPending,
+            _meshGenerator.MaxConcurrentTasks);
+        var safetyAdmitted = 0;
+
+        // Do not derive this traversal from the render-distance 3D spiral. At an aerial camera the
+        // bottom sections are seven vertical steps from the clamped discovery center, and more
+        // than PRIORITY_PASS_LIMIT unrelated spiral entries can sort ahead of them. Walking the
+        // small safety set explicitly guarantees all 29 * 8 sections remain discoverable.
+        foreach (var columnOffset in s_safetyColumnOffsets)
+        {
+            if (safetyAdmitted >= safetyDiscoveryBudget) break;
+            for (var verticalDistance = 0; verticalDistance < ChuckFormat.WorldHeight / SubChunkRenderer.Size;
+                 verticalDistance++)
+            {
+                if (TrySafetySection(currentChunk.Y - verticalDistance) &&
+                    safetyAdmitted >= safetyDiscoveryBudget) break;
+                if (verticalDistance != 0 && TrySafetySection(currentChunk.Y + verticalDistance) &&
+                    safetyAdmitted >= safetyDiscoveryBudget) break;
+            }
+
+            if (safetyAdmitted >= safetyDiscoveryBudget) break;
+
+            continue;
+
+            bool TrySafetySection(int sectionY)
+            {
+                if (sectionY < 0 || sectionY >= ChuckFormat.WorldHeight / SubChunkRenderer.Size)
+                    return false;
+                var chunkPos = new Vector3D<int>(
+                    currentChunk.X + columnOffset.X,
+                    sectionY,
+                    currentChunk.Z + columnOffset.Y) * SubChunkRenderer.Size;
+                if (_renderers.ContainsKey(chunkPos)) return false;
+                RecoverOrphanedMesh(chunkPos);
+                if (!PrioritizeSafetyMesh(chunkPos)) return false;
+                safetyAdmitted++;
+                return true;
+            }
         }
 
         // Discovery is a producer and the mesh workers/uploads are the consumers. Letting the
@@ -856,6 +1088,14 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     internal static Vector3D<double> PredictMeshCenter(Vector3D<double> position, Vector3D<double> velocity) =>
         position + velocity * MeshPredictionTicks;
 
+    internal static Vector3D<int> GetMeshDiscoveryCenter(Vector3D<double> viewPosition) => new(
+        (int)Math.Floor(viewPosition.X / SubChunkRenderer.Size),
+        Math.Clamp(
+            (int)Math.Floor(viewPosition.Y / SubChunkRenderer.Size),
+            0,
+            (ChuckFormat.WorldHeight - 1) / SubChunkRenderer.Size),
+        (int)Math.Floor(viewPosition.Z / SubChunkRenderer.Size));
+
     public void MarkAllVisibleChunksDirty()
     {
         if (_lastRenderDistance <= 0) return;
@@ -897,7 +1137,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         var requestedPriority = ClassifyRequestedMeshPriority(
             priority,
             _renderers.ContainsKey(chunkPos),
-            _world is ClientWorld clientWorld && clientWorld.NetworkHandler.Preload.RequiresMesh(chunkPos));
+            _world is ClientWorld clientWorld && clientWorld.NetworkHandler.Preload.RequiresMesh(chunkPos),
+            IsInMeshSafetyRing(chunkPos, _lastViewPos));
 
         // The snapshot needs one cell of neighbor padding, but it already reads a missing column
         // through ChunkSource's empty-chunk fallback. Requiring the whole neighbor ring here made
@@ -967,17 +1208,29 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         var requiredForStartup = _world is ClientWorld clientWorld &&
                                  clientWorld.NetworkHandler.Preload.RequiresMesh(chunkPos);
-        if (_renderers.ContainsKey(chunkPos) || requiredForStartup)
-            MarkDirty(chunkPos);
+        if (!_renderers.ContainsKey(chunkPos) && !requiredForStartup) return;
+
+        // A neighboring full-chunk arrival can touch this boundary repeatedly while the streaming
+        // wave crosses it. Do not invalidate a build already using a coherent snapshot: doing so
+        // every arrival makes each result stale before upload and can permanently starve nearby
+        // holes. At worst that snapshot contains an internal face against the formerly absent
+        // neighbor; it is hidden by the neighbor and a later ordinary update can clean it up.
+        if (_chunkVersions.TryGetValue(chunkPos, out var version) && version.State.Pending != -1)
+            return;
+
+        MarkDirty(chunkPos);
     }
 
     internal static MeshWorkPriority ClassifyRequestedMeshPriority(
         bool updateRequested,
         bool hasRenderer,
-        bool requiredForStartup) =>
+        bool requiredForStartup,
+        bool withinSafetyRing = false) =>
         updateRequested && hasRenderer
             ? MeshWorkPriority.Critical
-            : requiredForStartup ? MeshWorkPriority.Foreground : MeshWorkPriority.Background;
+            : requiredForStartup || withinSafetyRing
+                ? MeshWorkPriority.Foreground
+                : MeshWorkPriority.Background;
 
     private static MeshWorkPriority MaxPriority(MeshWorkPriority left, MeshWorkPriority right) =>
         left >= right ? left : right;
@@ -1055,6 +1308,46 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
 
         MarkDirty(chunkPos, true);
+    }
+
+    /// <summary>
+    ///     Admits or promotes one missing safety-ring mesh without changing the content epoch of
+    ///     work already in flight. Calling MarkDirty repeatedly here makes every worker result
+    ///     stale before it can upload, which is a self-sustaining invisible-hole loop.
+    /// </summary>
+    private bool PrioritizeSafetyMesh(Vector3D<int> chunkPos)
+    {
+        if (_renderers.ContainsKey(chunkPos) || !HasRenderableSourceChunk(_world, chunkPos))
+            return false;
+
+        var previousPriority = RequestedPriority(chunkPos);
+        if (_chunkVersions.TryGetValue(chunkPos, out var version))
+        {
+            RememberPriority(chunkPos, MeshWorkPriority.Foreground);
+
+            for (var i = 0; i < _dirtyChunks.Count; i++)
+            {
+                if (_dirtyChunks[i].Pos != chunkPos) continue;
+                var pending = _dirtyChunks[i];
+                if (pending.Priority < MeshWorkPriority.Foreground)
+                    _dirtyChunks[i] = new ChunkToMeshInfo(
+                        pending.Pos,
+                        pending.Version,
+                        MeshWorkPriority.Foreground,
+                        pending.EnqueuedAt);
+                return previousPriority < MeshWorkPriority.Foreground;
+            }
+
+            if (version.State.Pending != -1)
+            {
+                _meshGenerator.Promote(chunkPos, MeshWorkPriority.Foreground);
+                return previousPriority < MeshWorkPriority.Foreground;
+            }
+        }
+
+        MarkDirty(chunkPos);
+        return previousPriority < MeshWorkPriority.Foreground &&
+               RequestedPriority(chunkPos) >= MeshWorkPriority.Foreground;
     }
 
     private void LogBlockingStartupMeshes(ClientWorld clientWorld)
@@ -1545,6 +1838,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
     }
 }
+
+internal readonly record struct MeshSafetyRingState(
+    int LoadedColumns,
+    int ExpectedSections,
+    int MissingMeshes);
 
 /// <summary>
 ///     Mirror of the WGSL <c>Uniforms</c> struct in <c>chunk.wgsl</c>, laid out to match

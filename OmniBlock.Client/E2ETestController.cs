@@ -59,6 +59,24 @@ internal sealed class E2ETestController : IDisposable
 
     public void EnsureCompleted() => Complete("failed", "Client exited before OMNI.test.pass() was called", FailedExitCode);
 
+    /// <summary>Writes a diagnostic captured by the game thread without involving GPU readback.</summary>
+    public void WriteTextArtifact(string name, string contents)
+    {
+        try
+        {
+            Directory.CreateDirectory(_options.ArtifactsPath);
+            var safeName = string.Concat(name.Select(static c =>
+                char.IsAsciiLetterOrDigit(c) || c is '-' or '_' or '.' ? c : '_'));
+            if (string.IsNullOrWhiteSpace(safeName)) safeName = "diagnostic.txt";
+            File.WriteAllText(Path.Combine(_options.ArtifactsPath, safeName), contents);
+        }
+        catch (Exception ex)
+        {
+            Log.Instance.For<E2ETestController>().LogError(
+                ex, "Failed to write E2E diagnostic artifact {Name}", name);
+        }
+    }
+
     private void Complete(string status, string? reason, int exitCode)
     {
         E2ETestResult result;

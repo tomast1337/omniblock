@@ -44,6 +44,24 @@ public sealed class PriorityWorkSchedulerTests
     }
 
     [Fact]
+    public async Task Queued_work_can_be_reordered_within_a_lane_after_the_view_moves()
+    {
+        using PriorityWorkScheduler<int, string> scheduler = new();
+        scheduler.Enqueue(100, "far", MeshWorkPriority.Background);
+        scheduler.Enqueue(20, "near", MeshWorkPriority.Background);
+        scheduler.Enqueue(60, "middle", MeshWorkPriority.Background);
+
+        scheduler.ReorderWithinPriorities(static (left, right) => left.CompareTo(right));
+
+        Assert.Equal(("near", MeshWorkPriority.Background),
+            await scheduler.TakeAsync(CancellationToken.None));
+        Assert.Equal(("middle", MeshWorkPriority.Background),
+            await scheduler.TakeAsync(CancellationToken.None));
+        Assert.Equal(("far", MeshWorkPriority.Background),
+            await scheduler.TakeAsync(CancellationToken.None));
+    }
+
+    [Fact]
     public void Drain_returns_each_coalesced_value_once()
     {
         using PriorityWorkScheduler<string, int> scheduler = new();

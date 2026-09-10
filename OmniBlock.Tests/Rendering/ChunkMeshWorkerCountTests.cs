@@ -29,4 +29,16 @@ public sealed class ChunkMeshWorkerCountTests
     {
         Assert.Equal(expected, ChunkRenderer.GetMeshDiscoveryCapacity(pending, workers));
     }
+
+    [Theory]
+    [InlineData(0, 1, 2)]
+    [InlineData(1, 1, 1)]
+    [InlineData(2, 1, 0)]
+    [InlineData(12, 8, 4)]
+    [InlineData(16, 8, 0)]
+    public void Safety_discovery_keeps_a_small_reserved_foreground_window(
+        int foregroundPending, int workers, int expected)
+    {
+        Assert.Equal(expected, ChunkRenderer.GetMeshSafetyDiscoveryCapacity(foregroundPending, workers));
+    }
 }

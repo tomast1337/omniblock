@@ -13,6 +13,7 @@ using OmniBlock.Client.Input;
 using OmniBlock.Client.Network;
 using OmniBlock.Client.Options;
 using OmniBlock.Client.Rendering;
+using OmniBlock.Client.Rendering.Chunks;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.Rendering.Core.WebGPU;
@@ -451,6 +452,13 @@ public partial class OmniBlock :
             LuauClientStateHost.MeshPending = () => WorldRenderer?.ChunkRenderer.PendingMeshWork ?? 0;
             LuauClientStateHost.MeshRequestToGpuMs = () => WorldRenderer?.ChunkRenderer.MeshProfile.RequestToUploadMs ?? 0;
             LuauClientStateHost.FrameTimeMs = () => MetricRegistry.Get(ClientMetrics.FrameTimeMs);
+            LuauClientStateHost.MeshSafetyLoadedColumns = () => CurrentMeshSafetyRingState().LoadedColumns;
+            LuauClientStateHost.MeshSafetyExpectedSections = () => CurrentMeshSafetyRingState().ExpectedSections;
+            LuauClientStateHost.MeshSafetyHoles = () => CurrentMeshSafetyRingState().MissingMeshes;
+            LuauClientStateHost.MeshReadyRadius = () => WorldRenderer?.ChunkRenderer.MeshReadyRadius ?? 0;
+            LuauClientStateHost.PlayerX = () => Player?.X ?? 0;
+            LuauClientStateHost.PlayerY = () => Player?.Y ?? 0;
+            LuauClientStateHost.PlayerZ = () => Player?.Z ?? 0;
             LuauClientStateHost.Install(LuauState.Handle);
             if (!LuauState.TryExecute(LuauClientStateHost.Bootstrap, out var clientStateBootstrapError))
             {
@@ -461,6 +469,23 @@ public partial class OmniBlock :
             {
                 LuauTestHost.Pass = _e2eTestController.Pass;
                 LuauTestHost.Fail = reason => _e2eTestController.Fail(reason);
+                LuauTestHost.Creative = () => Player?.SendChatMessage("/gm c");
+                LuauTestHost.SetFlying = flying => Player?.SetFlyingForTest(flying);
+                LuauTestHost.Teleport = (x, y, z) => Player?.SendChatMessage($"/tp {x} {y} {z}");
+                LuauTestHost.LookDown = () =>
+                {
+                    if (Player == null) return;
+                    Player.PrevPitch = Player.Pitch = 90.0F;
+                };
+                LuauTestHost.Screenshot = () => WebGpuRenderer.ScreenshotRequested = true;
+                LuauTestHost.DumpTerrain = label =>
+                {
+                    if (Player == null || WorldRenderer?.ChunkRenderer == null) return;
+                    _e2eTestController.WriteTextArtifact(
+                        $"terrain-{label}.tsv",
+                        WorldRenderer.ChunkRenderer.CreateTerrainStateDump(
+                            new Vector3D<double>(Player.X, Player.Y, Player.Z)));
+                };
                 LuauTestHost.Install(LuauState.Handle);
                 if (!LuauState.TryExecute(LuauTestHost.Bootstrap, out var testBootstrapError))
                 {
@@ -781,8 +806,21 @@ public partial class OmniBlock :
             LuauClientStateHost.MeshPending = null;
             LuauClientStateHost.MeshRequestToGpuMs = null;
             LuauClientStateHost.FrameTimeMs = null;
+            LuauClientStateHost.MeshSafetyLoadedColumns = null;
+            LuauClientStateHost.MeshSafetyExpectedSections = null;
+            LuauClientStateHost.MeshSafetyHoles = null;
+            LuauClientStateHost.MeshReadyRadius = null;
+            LuauClientStateHost.PlayerX = null;
+            LuauClientStateHost.PlayerY = null;
+            LuauClientStateHost.PlayerZ = null;
             LuauTestHost.Pass = null;
             LuauTestHost.Fail = null;
+            LuauTestHost.Creative = null;
+            LuauTestHost.SetFlying = null;
+            LuauTestHost.Teleport = null;
+            LuauTestHost.LookDown = null;
+            LuauTestHost.Screenshot = null;
+            LuauTestHost.DumpTerrain = null;
             _luauWorldService = null;
             LuauLogHost.WriteLine = null;
             LuauState?.Dispose();
@@ -2116,6 +2154,13 @@ public partial class OmniBlock :
             HUD.AddChatMessage(webGpuResult);
             WebGpuRenderer.ScreenshotResult = null;
         }
+    }
+
+    private MeshSafetyRingState CurrentMeshSafetyRingState()
+    {
+        if (WorldRenderer?.ChunkRenderer == null || Player == null) return default;
+        return WorldRenderer.ChunkRenderer.GetMeshSafetyRingState(
+            new Vector3D<double>(Player.X, Player.Y, Player.Z));
     }
 
     private void ForceReload()

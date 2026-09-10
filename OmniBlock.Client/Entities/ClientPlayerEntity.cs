@@ -18,6 +18,7 @@ namespace OmniBlock.Client.Entities;
 public class ClientPlayerEntity : EntityPlayer
 {
     private bool _isFlying;
+    private bool _testFlying;
     private byte _lastJump;
     protected OmniBlock Game;
     public MovementInput movementInput;
@@ -72,6 +73,16 @@ public class ClientPlayerEntity : EntityPlayer
 
     protected override void TickMovement()
     {
+        // The restricted E2E controller uses a sustained flight hold while inspecting terrain
+        // from above. A one-shot assignment is not sufficient: stale grounded state arriving
+        // around a teleport can clear ordinary creative flight before the next movement tick.
+        if (_testFlying)
+        {
+            _isFlying = true;
+            OnGround = false;
+            VelocityY = 0;
+        }
+
         if (!Game.StatFileWriter.HasAchievementUnlocked(Achievements.OpenInventory))
         {
             Game.HUD.AchievementToast.QueueInfo(Achievements.OpenInventory);
@@ -125,7 +136,10 @@ public class ClientPlayerEntity : EntityPlayer
 
         if (!GameMode.DisallowFlying && (_isFlying || !GameMode.CanWalk))
         {
-            _isFlying &= !OnGround;
+            if (!_testFlying)
+            {
+                _isFlying &= !OnGround;
+            }
 
             if (!movementInput.sneak)
             {
@@ -165,6 +179,15 @@ public class ClientPlayerEntity : EntityPlayer
     }
 
     public void resetPlayerKeyState() => movementInput.resetKeyState();
+
+    /// <summary>Direct state hook used only by the restricted E2E host after creative setup.</summary>
+    internal void SetFlyingForTest(bool flying)
+    {
+        _testFlying = _isFlying = flying;
+        if (!flying) return;
+        OnGround = false;
+        VelocityY = 0;
+    }
 
     public void handleKeyPress(int scanCode, bool isPressed) => movementInput.checkKeyForMovementInput(scanCode, isPressed);
 

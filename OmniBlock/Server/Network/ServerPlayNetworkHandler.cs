@@ -404,6 +404,14 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         teleportTargetY = y;
         teleportTargetZ = z;
         player.SetPositionAndAngles(x, y, z, yaw, pitch);
+
+        // The server already owns the authoritative destination. Recenter chunk streaming now
+        // instead of waiting for the client to echo this teleport in a movement packet. Waiting
+        // creates a circular dependency at an unloaded destination: the client can be unable to
+        // tick/send its acknowledgement until terrain arrives, while terrain would not be queued
+        // until that acknowledgement (or a later movement) arrived.
+        server.playerManager.updatePlayerChunks(player);
+
         player.NetworkHandler.SendMessage(new PlayerMoveFullMessage
         {
             X = x,

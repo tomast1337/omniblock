@@ -156,6 +156,27 @@ internal class ChunkMeshGenerator : IDisposable
 
     public bool Promote(Vector3D<int> pos, MeshWorkPriority priority) => _work.Promote(pos, priority);
 
+    public void Reprioritize(Vector3D<double> viewPosition, Vector3D<double> predictedViewPosition)
+    {
+        _work.ReorderWithinPriorities((left, right) =>
+        {
+            var leftDistance = DistanceToEither(left, viewPosition, predictedViewPosition);
+            var rightDistance = DistanceToEither(right, viewPosition, predictedViewPosition);
+            return leftDistance.CompareTo(rightDistance);
+        });
+    }
+
+    private static double DistanceToEither(
+        Vector3D<int> position,
+        Vector3D<double> viewPosition,
+        Vector3D<double> predictedViewPosition)
+    {
+        var meshPosition = new Vector3D<double>(position.X, position.Y, position.Z);
+        return Math.Min(
+            Vector3D.DistanceSquared(meshPosition, viewPosition),
+            Vector3D.DistanceSquared(meshPosition, predictedViewPosition));
+    }
+
     private async Task WorkerLoop()
     {
         while (!_shutdown.IsCancellationRequested)

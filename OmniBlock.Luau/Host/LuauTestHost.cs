@@ -11,6 +11,12 @@ public static unsafe class LuauTestHost
                                     OMNI.test = {
                                         pass = function() __Test.pass() end,
                                         fail = function(reason) __Test.fail(tostring(reason or "Test failed")) end,
+                                        creative = function() __Test.creative() end,
+                                        setFlying = function(value) __Test.setFlying(value) end,
+                                        teleport = function(x, y, z) __Test.teleport(x, y, z) end,
+                                        lookDown = function() __Test.lookDown() end,
+                                        screenshot = function() __Test.screenshot() end,
+                                        dumpTerrain = function(label) __Test.dumpTerrain(tostring(label or "terrain")) end,
                                     }
                                     local previousHas = OMNI.has
                                     OMNI.has = function(capability)
@@ -20,12 +26,24 @@ public static unsafe class LuauTestHost
 
     public static Action? Pass;
     public static Action<string>? Fail;
+    public static Action? Creative;
+    public static Action<bool>? SetFlying;
+    public static Action<int, int, int>? Teleport;
+    public static Action? LookDown;
+    public static Action? Screenshot;
+    public static Action<string>? DumpTerrain;
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 2);
+        LuauNative.lua_createtable(l, 0, 8);
         Add(l, "pass", &PassClosure);
         Add(l, "fail", &FailClosure);
+        Add(l, "creative", &CreativeClosure);
+        Add(l, "setFlying", &SetFlyingClosure);
+        Add(l, "teleport", &TeleportClosure);
+        Add(l, "lookDown", &LookDownClosure);
+        Add(l, "screenshot", &ScreenshotClosure);
+        Add(l, "dumpTerrain", &DumpTerrainClosure);
         LuauNative.lua_setfield(l, LuauNative.GlobalsIndex, "__Test");
     }
 
@@ -61,6 +79,83 @@ public static unsafe class LuauTestHost
         }
 
         return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int CreativeClosure(IntPtr l)
+    {
+        Invoke(Creative);
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int SetFlyingClosure(IntPtr l)
+    {
+        try
+        {
+            SetFlying?.Invoke(LuauNative.lua_toboolean(l, 1) != 0);
+        }
+        catch
+        {
+        }
+
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int TeleportClosure(IntPtr l)
+    {
+        try
+        {
+            Teleport?.Invoke(
+                LuauNative.luaL_checkinteger(l, 1),
+                LuauNative.luaL_checkinteger(l, 2),
+                LuauNative.luaL_checkinteger(l, 3));
+        }
+        catch
+        {
+        }
+
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int LookDownClosure(IntPtr l)
+    {
+        Invoke(LookDown);
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int ScreenshotClosure(IntPtr l)
+    {
+        Invoke(Screenshot);
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int DumpTerrainClosure(IntPtr l)
+    {
+        try
+        {
+            DumpTerrain?.Invoke(ReadString(l, 1) ?? "terrain");
+        }
+        catch
+        {
+        }
+
+        return 0;
+    }
+
+    private static void Invoke(Action? action)
+    {
+        try
+        {
+            action?.Invoke();
+        }
+        catch
+        {
+        }
     }
 
     private static string? ReadString(IntPtr l, int index)

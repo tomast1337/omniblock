@@ -98,14 +98,30 @@ public sealed class ChunkMeshSchedulingTests
     }
 
     [Fact]
-    public void Older_work_wins_within_the_same_tier()
+    public void Closer_work_wins_within_the_same_tier_even_when_it_is_newer()
     {
-        var older = ChunkRenderer.GetMeshSchedulingRank(new Vector3D<int>(16 * 2, 64, 0), View,
+        var olderFar = ChunkRenderer.GetMeshSchedulingRank(new Vector3D<int>(16 * 3, 64, 0), View,
             false, false, 5, 20);
-        var newer = ChunkRenderer.GetMeshSchedulingRank(new Vector3D<int>(16, 64, 0), View,
+        var newerClose = ChunkRenderer.GetMeshSchedulingRank(new Vector3D<int>(16, 64, 0), View,
             false, false, 10, 20);
 
-        Assert.True(older.CompareTo(newer) < 0);
+        Assert.True(newerClose.CompareTo(olderFar) < 0);
+    }
+
+    [Theory]
+    [InlineData(false, false, false, false, (int)MeshWorkPriority.Background)]
+    [InlineData(false, false, false, true, (int)MeshWorkPriority.Foreground)]
+    public void Missing_safety_ring_meshes_use_the_foreground_lane(
+        bool updateRequested,
+        bool hasRenderer,
+        bool requiredForStartup,
+        bool withinSafetyRing,
+        int expected)
+    {
+        Assert.Equal(
+            (MeshWorkPriority)expected,
+            ChunkRenderer.ClassifyRequestedMeshPriority(
+                updateRequested, hasRenderer, requiredForStartup, withinSafetyRing));
     }
 
     [Fact]
@@ -126,6 +142,17 @@ public sealed class ChunkMeshSchedulingTests
         Assert.Equal(
             new Vector3D<double>(18, 72, -2),
             ChunkRenderer.PredictMeshCenter(View, new Vector3D<double>(1, 0, -1)));
+    }
+
+    [Theory]
+    [InlineData(64, 4)]
+    [InlineData(164, 7)]
+    [InlineData(-40, 0)]
+    public void Discovery_center_is_clamped_to_world_sections(double viewY, int expectedSectionY)
+    {
+        var center = ChunkRenderer.GetMeshDiscoveryCenter(new Vector3D<double>(0, viewY, 0));
+
+        Assert.Equal(expectedSectionY, center.Y);
     }
 
     [Fact]

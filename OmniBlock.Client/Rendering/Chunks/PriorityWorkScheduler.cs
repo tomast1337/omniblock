@@ -109,6 +109,34 @@ internal sealed class PriorityWorkScheduler<TKey, TValue> : IDisposable where TK
         }
     }
 
+    /// <summary>
+    ///     Reorders queued work inside each lane without changing lane priority or availability.
+    ///     Work already claimed by a consumer is intentionally unaffected.
+    /// </summary>
+    public void ReorderWithinPriorities(Comparison<TKey> comparison)
+    {
+        lock (_gate)
+        {
+            Reorder(_critical);
+            Reorder(_foreground);
+            Reorder(_background);
+        }
+
+        void Reorder(LinkedList<TKey> queue)
+        {
+            if (queue.Count < 2) return;
+
+            var keys = queue.ToList();
+            keys.Sort(comparison);
+            queue.Clear();
+            foreach (var key in keys)
+            {
+                var node = queue.AddLast(key);
+                _entries[key].Node = node;
+            }
+        }
+    }
+
     public async ValueTask<(TValue Value, MeshWorkPriority Priority)> TakeAsync(CancellationToken cancellationToken)
     {
         await _available.WaitAsync(cancellationToken);

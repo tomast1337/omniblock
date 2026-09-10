@@ -16,6 +16,13 @@ public static unsafe class LuauClientStateHost
                                             if key == "meshPending" then return __ClientState.meshPending() end
                                             if key == "meshRequestToGpuMs" then return __ClientState.meshRequestToGpuMs() end
                                             if key == "frameTimeMs" then return __ClientState.frameTimeMs() end
+                                            if key == "meshSafetyLoadedColumns" then return __ClientState.meshSafetyLoadedColumns() end
+                                            if key == "meshSafetyExpectedSections" then return __ClientState.meshSafetyExpectedSections() end
+                                            if key == "meshSafetyHoles" then return __ClientState.meshSafetyHoles() end
+                                            if key == "meshReadyRadius" then return __ClientState.meshReadyRadius() end
+                                            if key == "playerX" then return __ClientState.playerX() end
+                                            if key == "playerY" then return __ClientState.playerY() end
+                                            if key == "playerZ" then return __ClientState.playerZ() end
                                             return nil
                                         end,
                                         __newindex = function()
@@ -30,16 +37,30 @@ public static unsafe class LuauClientStateHost
     public static Func<double>? MeshPending;
     public static Func<double>? MeshRequestToGpuMs;
     public static Func<double>? FrameTimeMs;
+    public static Func<double>? MeshSafetyLoadedColumns;
+    public static Func<double>? MeshSafetyExpectedSections;
+    public static Func<double>? MeshSafetyHoles;
+    public static Func<double>? MeshReadyRadius;
+    public static Func<double>? PlayerX;
+    public static Func<double>? PlayerY;
+    public static Func<double>? PlayerZ;
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 6);
+        LuauNative.lua_createtable(l, 0, 13);
         Add(l, "worldLoaded", &WorldLoadedClosure);
         Add(l, "playerReady", &PlayerReadyClosure);
         Add(l, "worldId", &WorldIdClosure);
         Add(l, "meshPending", &MeshPendingClosure);
         Add(l, "meshRequestToGpuMs", &MeshRequestToGpuMsClosure);
         Add(l, "frameTimeMs", &FrameTimeMsClosure);
+        Add(l, "meshSafetyLoadedColumns", &MeshSafetyLoadedColumnsClosure);
+        Add(l, "meshSafetyExpectedSections", &MeshSafetyExpectedSectionsClosure);
+        Add(l, "meshSafetyHoles", &MeshSafetyHolesClosure);
+        Add(l, "meshReadyRadius", &MeshReadyRadiusClosure);
+        Add(l, "playerX", &PlayerXClosure);
+        Add(l, "playerY", &PlayerYClosure);
+        Add(l, "playerZ", &PlayerZClosure);
         LuauNative.lua_setfield(l, LuauNative.GlobalsIndex, "__ClientState");
     }
 
@@ -99,6 +120,55 @@ public static unsafe class LuauClientStateHost
     private static int FrameTimeMsClosure(IntPtr l)
     {
         LuauNative.lua_pushnumber(l, ReadNumber(FrameTimeMs));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int MeshSafetyLoadedColumnsClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(MeshSafetyLoadedColumns));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int MeshSafetyExpectedSectionsClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(MeshSafetyExpectedSections));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int MeshSafetyHolesClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(MeshSafetyHoles));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int MeshReadyRadiusClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(MeshReadyRadius));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int PlayerXClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(PlayerX));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int PlayerYClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(PlayerY));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int PlayerZClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(PlayerZ));
         return 1;
     }
 

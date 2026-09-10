@@ -14,8 +14,20 @@ public sealed class LuauTestHostIntegrationTests
         state.ResetInstructionBudget(100_000);
         var passes = 0;
         string? failure = null;
+        var creative = 0;
+        var flying = false;
+        var teleport = (X: 0, Y: 0, Z: 0);
+        var lookDown = 0;
+        var screenshots = 0;
+        string? terrainDump = null;
         LuauTestHost.Pass = () => passes++;
         LuauTestHost.Fail = reason => failure = reason;
+        LuauTestHost.Creative = () => creative++;
+        LuauTestHost.SetFlying = value => flying = value;
+        LuauTestHost.Teleport = (x, y, z) => teleport = (x, y, z);
+        LuauTestHost.LookDown = () => lookDown++;
+        LuauTestHost.Screenshot = () => screenshots++;
+        LuauTestHost.DumpTerrain = label => terrainDump = label;
 
         try
         {
@@ -26,17 +38,32 @@ public sealed class LuauTestHostIntegrationTests
             LuauTestHost.Install(state.Handle);
             Assert.True(state.TryExecute(LuauTestHost.Bootstrap, out var bootstrapError), bootstrapError);
             Assert.True(state.TryExecute(
-                "OMNI.test.pass(); OMNI.test.fail('broken'); return OMNI.has('test')",
+                "OMNI.test.pass(); OMNI.test.fail('broken'); OMNI.test.creative(); " +
+                "OMNI.test.setFlying(true); OMNI.test.teleport(160, 164, 0); " +
+                "OMNI.test.lookDown(); OMNI.test.screenshot(); OMNI.test.dumpTerrain('airborne'); " +
+                "return OMNI.has('test')",
                 out var hasTest), hasTest);
 
             Assert.Equal(1, passes);
             Assert.Equal("broken", failure);
+            Assert.Equal(1, creative);
+            Assert.True(flying);
+            Assert.Equal((160, 164, 0), teleport);
+            Assert.Equal(1, lookDown);
+            Assert.Equal(1, screenshots);
+            Assert.Equal("airborne", terrainDump);
             Assert.Equal("true", hasTest);
         }
         finally
         {
             LuauTestHost.Pass = null;
             LuauTestHost.Fail = null;
+            LuauTestHost.Creative = null;
+            LuauTestHost.SetFlying = null;
+            LuauTestHost.Teleport = null;
+            LuauTestHost.LookDown = null;
+            LuauTestHost.Screenshot = null;
+            LuauTestHost.DumpTerrain = null;
         }
     }
 }

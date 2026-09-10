@@ -61,6 +61,11 @@ for scenario in "${scenarios[@]}"; do
     status=$?
     set -e
 
+    if [[ -d "$game_data_dir/screenshots" ]]; then
+        mkdir -p "$scenario_artifacts/screenshots"
+        cp -a "$game_data_dir/screenshots/." "$scenario_artifacts/screenshots/"
+    fi
+
     result_file="$scenario_artifacts/result.json"
     if [[ -f "$result_file" ]]; then
         artifact_exit_code="$(sed -n 's/^[[:space:]]*"exitCode":[[:space:]]*\([0-9][0-9]*\),\{0,1\}[[:space:]]*$/\1/p' "$result_file" | head -n 1)"
