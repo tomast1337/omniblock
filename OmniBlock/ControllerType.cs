@@ -2,6 +2,8 @@ namespace OmniBlock;
 
 public class ControllerType
 {
+    public static ControllerType[] ControllerTypes { get; } = new ControllerType[8];
+
     public static readonly ControllerType XboxOne = new("xone", "Xbox One", 0);
     public static readonly ControllerType Xbox360 = new("x360", "Xbox 360", 1);
     public static readonly ControllerType PS3 = new("ps3", "PS3", 2);
@@ -17,8 +19,6 @@ public class ControllerType
         Label = l;
         ControllerTypes[idx] = this;
     }
-
-    public static ControllerType[] ControllerTypes { get; } = new ControllerType[8];
 
     public string Key { get; }
     public string Label { get; }

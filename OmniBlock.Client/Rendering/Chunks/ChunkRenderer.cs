@@ -81,9 +81,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private ICuller? _lastCamera;
     private int _lastRenderDistance;
     private Vector3D<double> _lastViewPos;
-    private int _meshVisibilityCenterX;
-    private int _meshVisibilityCenterZ;
-    private int _meshVisibilityRadius = int.MaxValue;
+    private int _meshReadyRadius = int.MaxValue;
     private Matrix4X4<float> _modelView;
     private Vector3D<double> _predictedViewPos;
     private Matrix4X4<float> _projection;
@@ -165,22 +163,16 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     public int ChunksRendered { get; private set; }
     public int TranslucentMeshes { get; private set; }
 
-    internal int MeshReadyRadius => _meshVisibilityRadius == int.MaxValue
+    internal int MeshReadyRadius => _meshReadyRadius == int.MaxValue
         ? Math.Max(0, _lastRenderDistance)
-        : _meshVisibilityRadius;
+        : _meshReadyRadius;
 
-    public void Visit(SubChunkRenderer renderer)
-    {
-        if (_meshVisibilityRadius != int.MaxValue)
-        {
-            if (_meshVisibilityRadius < 0) return;
-            var dx = renderer.Position.X / SubChunkRenderer.Size - _meshVisibilityCenterX;
-            var dz = renderer.Position.Z / SubChunkRenderer.Size - _meshVisibilityCenterZ;
-            if (dx * dx + dz * dz > _meshVisibilityRadius * _meshVisibilityRadius) return;
-        }
-
-        _visibleRenderers.Add(renderer);
-    }
+    /// <summary>
+    ///     Accepts every resident mesh selected by the frustum/occlusion stage. MeshReadyRadius is
+    ///     diagnostic state only: ordinary camera movement may make a new safety ring incomplete,
+    ///     but must never hide valid meshes that were already uploaded and remain resident.
+    /// </summary>
+    public void Visit(SubChunkRenderer renderer) => _visibleRenderers.Add(renderer);
 
     internal static int GetMeshWorkerCount(int processorCount) =>
         Math.Clamp((processorCount - 2) / 2, 1, MaxMeshWorkers);
@@ -329,11 +321,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         _renderers.TryGetValue(cameraChunkPos, out var cameraState);
 
-        _meshVisibilityCenterX = cameraChunkPos.X / SubChunkRenderer.Size;
-        _meshVisibilityCenterZ = cameraChunkPos.Z / SubChunkRenderer.Size;
-        _meshVisibilityRadius = GetContiguousMeshRadius(
-            _meshVisibilityCenterX,
-            _meshVisibilityCenterZ,
+        var meshReadyCenterX = cameraChunkPos.X / SubChunkRenderer.Size;
+        var meshReadyCenterZ = cameraChunkPos.Z / SubChunkRenderer.Size;
+        _meshReadyRadius = GetContiguousMeshRadius(
+            meshReadyCenterX,
+            meshReadyCenterZ,
             MeshSafetyRingRadius);
 
         if (cameraState == null)

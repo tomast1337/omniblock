@@ -16,10 +16,6 @@ OMNI.test.setFlying(true)
 OMNI.test.lookDown()
 
 OMNI.wait(0.25)
-if OMNI.client.state.meshSafetyHoles > 0 then
-    assert(OMNI.client.state.meshReadyRadius < 3,
-        "distant terrain was revealed through an incomplete safety ring")
-end
 OMNI.test.dumpTerrain("initial")
 
 OMNI.wait(2)
