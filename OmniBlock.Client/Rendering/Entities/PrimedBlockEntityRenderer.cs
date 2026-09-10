@@ -26,8 +26,8 @@ public class PrimedBlockEntityRenderer : EntityRenderer
     {
         var fuse = target.Behaviors.Find<PrimedExplosiveBehavior>()?.FuseTicks(target) ?? 0;
 
-        GLManager.ModelView.Push();
-        GLManager.ModelView.Translate((float)x, (float)y, (float)z);
+        RenderSystem.ModelView.Push();
+        RenderSystem.ModelView.Translate((float)x, (float)y, (float)z);
         float flashProgress;
         if (fuse - tickDelta + 1.0F < 10.0F)
         {
@@ -45,7 +45,7 @@ public class PrimedBlockEntityRenderer : EntityRenderer
             flashProgress *= flashProgress;
             flashProgress *= flashProgress;
             var scale = 1.0F + flashProgress * 0.3F;
-            GLManager.ModelView.Scale(scale, scale, scale);
+            RenderSystem.ModelView.Scale(scale, scale, scale);
         }
 
         flashProgress = (1.0F - (fuse - tickDelta + 1.0F) / 100.0F) * 0.8F;
@@ -56,20 +56,20 @@ public class PrimedBlockEntityRenderer : EntityRenderer
             // Texturing and lighting are shader uniforms rather than pipeline state, so they stay
             // as they are. The flash weights itself against what is already there rather than
             // against its own alpha, which is the one place that blend mode is used.
-            GLManager.TextureEnabled = false;
-            GLManager.LightingEnabled = false;
-            GLManager.State.Apply(RenderState.Entity with
+            RenderSystem.TextureEnabled = false;
+            RenderSystem.LightingEnabled = false;
+            RenderSystem.State.Apply(RenderState.Entity with
             {
                 Blend = BlendMode.SourceToDestinationAlpha
             });
-            GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, flashProgress);
+            RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, flashProgress);
             BlockRenderer.RenderBlockOnInventory(target.World.Content.Blocks, _block, 0, 1.0F, Tessellator.instance);
-            GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
-            GLManager.State.Apply(RenderState.Entity);
-            GLManager.LightingEnabled = true;
-            GLManager.TextureEnabled = true;
+            RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
+            RenderSystem.State.Apply(RenderState.Entity);
+            RenderSystem.LightingEnabled = true;
+            RenderSystem.TextureEnabled = true;
         }
 
-        GLManager.ModelView.Pop();
+        RenderSystem.ModelView.Pop();
     }
 }

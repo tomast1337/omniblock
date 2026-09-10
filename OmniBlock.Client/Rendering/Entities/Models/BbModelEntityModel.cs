@@ -89,7 +89,7 @@ public class BbModelEntityModel : ModelBase
                 }
             }
 
-            var tint = GLManager.Color;
+            var tint = RenderSystem.Color;
             // See EntityBatchRenderer's identical BoundTextureId: WebGPU has no binding point to
             // read back from, so what the caller bound is tracked on Texture2D itself.
             var boundTexture = Texture2D.Bound?.Id ?? 0;

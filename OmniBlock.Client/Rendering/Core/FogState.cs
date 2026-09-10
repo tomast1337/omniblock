@@ -19,7 +19,7 @@ public enum FogCurve
 ///         One value rather than a spread of globals, because fog is decided once per pass — from
 ///         the weather, the dimension and what the camera is submerged in — and every shader that
 ///         fades geometry into the distance has to agree on it. Assigning
-///         <see cref="GLManager.Fog" /> is the whole of setting it.
+///         <see cref="RenderSystem.Fog" /> is the whole of setting it.
 ///     </para>
 ///     <para>
 ///         Whether fog applies at all is separate, and is still <c>Enable</c>/<c>Disable</c> of

@@ -63,7 +63,7 @@ public class MapItemRenderer
         // This used to enable blending without saying which one, inheriting whichever factors the
         // last thing to draw happened to leave behind. Ordinary transparency is what it wants and
         // what it got, so it says so now.
-        GLManager.State.Apply(RenderState.Entity with
+        RenderSystem.State.Apply(RenderState.Entity with
         {
             Blend = BlendMode.Alpha
         });
@@ -71,23 +71,23 @@ public class MapItemRenderer
         // Paired with the alpha test off, not on: the unexplored parts of the sheet are the
         // translucent checkerboard built above, and the alpha test would throw them away before
         // blending ever saw them.
-        GLManager.AlphaTestEnabled = false;
+        RenderSystem.AlphaTestEnabled = false;
         tess.startDrawingQuads();
         tess.addVertexWithUV(0, 128, -0.01F, 0.0D, 1.0D);
         tess.addVertexWithUV(128, 128, -0.01F, 1.0D, 1.0D);
         tess.addVertexWithUV(128, 0, -0.01F, 1.0D, 0.0D);
         tess.addVertexWithUV(0, 0, -0.01F, 0.0D, 0.0D);
         tess.draw(ProgramSlot.Hand);
-        GLManager.AlphaTestEnabled = true;
-        GLManager.State.Apply(RenderState.Entity);
+        RenderSystem.AlphaTestEnabled = true;
+        RenderSystem.State.Apply(RenderState.Entity);
         textureManager.BindTexture(textureManager.GetTextureId("/misc/mapicons.png"));
         foreach (var icon in mapState.Icons)
         {
-            GLManager.ModelView.Push();
-            GLManager.ModelView.Translate((sbyte)icon.X / 2.0F + 64.0F, (sbyte)icon.Z / 2.0F + 64.0F, -0.02F);
-            GLManager.ModelView.Rotate((sbyte)icon.Rotation * 360 / 16.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.ModelView.Scale(4.0F, 4.0F, 3.0F);
-            GLManager.ModelView.Translate(-(2.0F / 16.0F), 2.0F / 16.0F, 0.0F);
+            RenderSystem.ModelView.Push();
+            RenderSystem.ModelView.Translate((sbyte)icon.X / 2.0F + 64.0F, (sbyte)icon.Z / 2.0F + 64.0F, -0.02F);
+            RenderSystem.ModelView.Rotate((sbyte)icon.Rotation * 360 / 16.0F, 0.0F, 0.0F, 1.0F);
+            RenderSystem.ModelView.Scale(4.0F, 4.0F, 3.0F);
+            RenderSystem.ModelView.Translate(-(2.0F / 16.0F), 2.0F / 16.0F, 0.0F);
             var uMin = (icon.Type % 4 + 0) / 4.0F;
             var vMin = (icon.Type / 4 + 0) / 4.0F;
             var uMax = (icon.Type % 4 + 1) / 4.0F;
@@ -98,13 +98,13 @@ public class MapItemRenderer
             tess.addVertexWithUV(1, -1, 0, uMax, vMax);
             tess.addVertexWithUV(-1, -1, 0, uMin, vMax);
             tess.draw(ProgramSlot.Hand);
-            GLManager.ModelView.Pop();
+            RenderSystem.ModelView.Pop();
         }
 
-        GLManager.ModelView.Push();
-        GLManager.ModelView.Translate(0.0F, 0.0F, -0.04F);
-        GLManager.ModelView.Scale(1.0F, 1.0F, 1.0F);
+        RenderSystem.ModelView.Push();
+        RenderSystem.ModelView.Translate(0.0F, 0.0F, -0.04F);
+        RenderSystem.ModelView.Scale(1.0F, 1.0F, 1.0F);
         _textRenderer.DrawString(mapState.Id, 0, 0, Color.White);
-        GLManager.ModelView.Pop();
+        RenderSystem.ModelView.Pop();
     }
 }

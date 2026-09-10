@@ -49,10 +49,10 @@ public class LoadingScreenRenderer(OmniBlock game) : LoadingDisplay
         var width = resolution.ScaledWidth;
         var height = resolution.ScaledHeight;
 
-        GLManager.Projection.LoadIdentity();
-        GLManager.Projection.Ortho(0.0, width, height, 0.0, 100.0, 300.0);
-        GLManager.ModelView.LoadIdentity();
-        GLManager.ModelView.Translate(0.0f, 0.0f, -200.0f);
+        RenderSystem.Projection.LoadIdentity();
+        RenderSystem.Projection.Ortho(0.0, width, height, 0.0, 100.0, 300.0);
+        RenderSystem.ModelView.LoadIdentity();
+        RenderSystem.ModelView.Translate(0.0f, 0.0f, -200.0f);
 
         void DrawContents()
         {
@@ -76,7 +76,7 @@ public class LoadingScreenRenderer(OmniBlock game) : LoadingDisplay
                 var x = width / 2 - progressBarWidth / 2;
                 var y = height / 2 + 16;
 
-                GLManager.TextureEnabled = false;
+                RenderSystem.TextureEnabled = false;
                 tessellator.startDrawingQuads();
                 tessellator.setColorOpaque_I(0x808080);
                 tessellator.addVertex(x, y, 0.0);
@@ -90,7 +90,7 @@ public class LoadingScreenRenderer(OmniBlock game) : LoadingDisplay
                 tessellator.addVertex(x + progress, y + progressBarHeight, 0.0);
                 tessellator.addVertex(x + progress, y, 0.0);
                 tessellator.draw(ProgramSlot.Basic);
-                GLManager.TextureEnabled = true;
+                RenderSystem.TextureEnabled = true;
             }
 
             var titleX = (width - game.TextRenderer.GetStringWidth(_titleText)) / 2;
@@ -127,10 +127,10 @@ public class LoadingScreenRenderer(OmniBlock game) : LoadingDisplay
 
             ScaledResolution resolution = new(game.Options, game.DisplayWidth, game.DisplayHeight);
 
-            GLManager.Projection.LoadIdentity();
-            GLManager.Projection.Ortho(0.0, resolution.ScaledWidth, resolution.ScaledHeight, 0.0, 100.0, 300.0);
-            GLManager.ModelView.LoadIdentity();
-            GLManager.ModelView.Translate(0.0f, 0.0f, -200.0f);
+            RenderSystem.Projection.LoadIdentity();
+            RenderSystem.Projection.Ortho(0.0, resolution.ScaledWidth, resolution.ScaledHeight, 0.0, 100.0, 300.0);
+            RenderSystem.ModelView.LoadIdentity();
+            RenderSystem.ModelView.Translate(0.0f, 0.0f, -200.0f);
         }
     }
 }

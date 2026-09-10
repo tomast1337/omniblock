@@ -70,7 +70,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         // seam. Registrations rather than a lazy build, because the sky and cloud shaders are not
         // built from GL state (unlike gbuffers, which vary by RenderState). One pipeline per slot —
         // the draw target matches the slot it was given, so each pipeline is built once.
-        if (GLManager.DrawTargetOrNull is WebGpuDrawTarget wgpuTarget)
+        if (RenderSystem.DrawTargetOrNull is WebGpuDrawTarget wgpuTarget)
         {
             wgpuTarget.RegisterSlotPipeline(ProgramSlot.SkyBasic, "shaders/sky.wgsl",
                 SkyUniformSize, true);
@@ -89,12 +89,12 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     /// <summary>Whether the draw target has slot pipelines registered for the sky.</summary>
     private bool HasSkySlotPipeline =>
-        GLManager.DrawTargetOrNull is WebGpuDrawTarget t
+        RenderSystem.DrawTargetOrNull is WebGpuDrawTarget t
         && t.HasSlotPipeline(ProgramSlot.SkyBasic);
 
     /// <summary>Whether the draw target has a slot pipeline registered for clouds.</summary>
     private bool HasCloudSlotPipeline =>
-        GLManager.DrawTargetOrNull is WebGpuDrawTarget t
+        RenderSystem.DrawTargetOrNull is WebGpuDrawTarget t
         && t.HasSlotPipeline(ProgramSlot.Clouds);
 
     public void Dispose()
@@ -593,30 +593,30 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         // already in the buffer covers it — while writing no depth of its own, or a dome at
         // distance 100 would reject everything drawn later. That is RenderState.Translucent, and
         // it holds for the whole pass; only the blend changes below.
-        GLManager.State.Apply(RenderState.Translucent);
+        RenderSystem.State.Apply(RenderState.Translucent);
 
         // Sky dome (top + bottom) — angle-based gradient
         SetSkyUniforms(SkyGradient(skyRed, skyGreen, skyBlue, groundR, groundG, groundB));
-        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
         DrawSkyMesh(_skyAbove, ProgramSlot.SkyBasic);
         DrawSkyMesh(_skyBelow, ProgramSlot.SkyBasic);
 
         // Sunrise/sunset fan was TriangleFan topology, which has no WebGPU counterpart, and is
         // skipped entirely rather than ported.
-        GLManager.AlphaTestEnabled = false;
+        RenderSystem.AlphaTestEnabled = false;
         Lighting.turnOff();
 
         // Sun and Moon (textured)
         // Sun, moon and the stars after them only ever brighten what is behind them, faded in by
         // their own alpha so the rain gradient can dim them.
-        GLManager.State.Apply(RenderState.Translucent with
+        RenderSystem.State.Apply(RenderState.Translucent with
         {
             Blend = BlendMode.AdditiveByAlpha
         });
-        GLManager.ModelView.Push();
+        RenderSystem.ModelView.Push();
         var rainFade = 1.0F - _world.Environment.GetRainGradient(tickDelta);
-        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, rainFade);
-        GLManager.ModelView.Rotate(_world.GetTime(tickDelta) * 360.0F, 1.0F, 0.0F, 0.0F);
+        RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, rainFade);
+        RenderSystem.ModelView.Rotate(_world.GetTime(tickDelta) * 360.0F, 1.0F, 0.0F, 0.0F);
         RefreshSkyModelView();
         SetSkyUniforms(SkyTextured(rainFade));
         var sunQuadSize = 30.0F;
@@ -641,15 +641,15 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         if (starBrightness > 0.0F)
         {
             SetSkyUniforms(SkyStars(starBrightness));
-            GLManager.Color = new Vector4D<float>(starBrightness, starBrightness, starBrightness, starBrightness);
+            RenderSystem.Color = new Vector4D<float>(starBrightness, starBrightness, starBrightness, starBrightness);
             DrawSkyMesh(_stars, ProgramSlot.SkyBasic);
         }
 
-        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.AlphaTestEnabled = true;
-        GLManager.ModelView.Pop();
+        RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.AlphaTestEnabled = true;
+        RenderSystem.ModelView.Pop();
 
-        GLManager.State.Apply(RenderState.Opaque);
+        RenderSystem.State.Apply(RenderState.Opaque);
     }
 
     // ── Sky slot-uniform plumbing ──────────────────────────────────────────
@@ -662,10 +662,10 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     {
         if (!HasSkySlotPipeline) return;
 
-        template.ModelViewMatrix = WebGpuDrawTarget.ToNumerics(GLManager.ModelView.Top);
+        template.ModelViewMatrix = WebGpuDrawTarget.ToNumerics(RenderSystem.ModelView.Top);
         template.ProjectionMatrix =
-            WebGpuDrawTarget.ToNumerics(WgpuClip.FromGl(GLManager.Projection.Top));
-        GLManager.Context.SkySlot = template;
+            WebGpuDrawTarget.ToNumerics(WgpuClip.FromGl(RenderSystem.Projection.Top));
+        RenderSystem.Context.SkySlot = template;
     }
 
     /// <summary>Refreshes the model-view in the sky slot after a stack mutation.</summary>
@@ -673,9 +673,9 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     {
         if (!HasSkySlotPipeline) return;
 
-        var u = GLManager.Context.SkySlot;
-        u.ModelViewMatrix = WebGpuDrawTarget.ToNumerics(GLManager.ModelView.Top);
-        GLManager.Context.SkySlot = u;
+        var u = RenderSystem.Context.SkySlot;
+        u.ModelViewMatrix = WebGpuDrawTarget.ToNumerics(RenderSystem.ModelView.Top);
+        RenderSystem.Context.SkySlot = u;
     }
 
     /// <summary>Draws <paramref name="mesh" /> under the sky's WebGPU slot.</summary>
@@ -693,7 +693,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     private static SkyWgslUniforms SkyGradient(float skyR, float skyG, float skyB,
         float groundR, float groundG, float groundB)
     {
-        var fog = GLManager.Fog;
+        var fog = RenderSystem.Fog;
         return new SkyWgslUniforms
         {
             SkyColor = new Vector3(skyR, skyG, skyB),
@@ -711,7 +711,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     /// </summary>
     private static SkyWgslUniforms SkyTextured(float alpha)
     {
-        var fog = GLManager.Fog;
+        var fog = RenderSystem.Fog;
         return new SkyWgslUniforms
         {
             Tint = new Vector4(1, 1, 1, alpha),
@@ -729,7 +729,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     /// </summary>
     private static SkyWgslUniforms SkyUntextured()
     {
-        var fog = GLManager.Fog;
+        var fog = RenderSystem.Fog;
         return new SkyWgslUniforms
         {
             Tint = Vector4.One,
@@ -747,7 +747,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     /// </summary>
     private static SkyWgslUniforms SkyStars(float brightness)
     {
-        var fog = GLManager.Fog;
+        var fog = RenderSystem.Fog;
         return new SkyWgslUniforms
         {
             Tint = new Vector4(brightness, brightness, brightness, brightness),
@@ -767,13 +767,13 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     {
         if (!HasCloudSlotPipeline) return;
 
-        var fog = GLManager.Fog;
-        GLManager.Context.CloudSlot = new CloudWgslUniforms
+        var fog = RenderSystem.Fog;
+        RenderSystem.Context.CloudSlot = new CloudWgslUniforms
         {
-            ModelViewMatrix = WebGpuDrawTarget.ToNumerics(GLManager.ModelView.Top),
+            ModelViewMatrix = WebGpuDrawTarget.ToNumerics(RenderSystem.ModelView.Top),
             ProjectionMatrix =
-                WebGpuDrawTarget.ToNumerics(WgpuClip.FromGl(GLManager.Projection.Top)),
-            TextureMatrix = WebGpuDrawTarget.ToNumerics(GLManager.TextureMatrix.Top),
+                WebGpuDrawTarget.ToNumerics(WgpuClip.FromGl(RenderSystem.Projection.Top)),
+            TextureMatrix = WebGpuDrawTarget.ToNumerics(RenderSystem.TextureMatrix.Top),
             CloudOffset = new Vector3(offsetX, offsetY, offsetZ),
             CloudScale = scale,
             FogStart = fog.Start,
@@ -967,7 +967,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         // Culling off because the cloud sheet is a single plane seen from either side, depending
         // on whether the camera is above or below the cloud layer.
-        GLManager.State.Apply(RenderState.Entity with
+        RenderSystem.State.Apply(RenderState.Entity with
         {
             Blend = BlendMode.Alpha
         });
@@ -983,28 +983,28 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         var subCloudOffsetX = (float)(cloudOffsetX - MathHelper.Floor(cloudOffsetX)) + CloudsRenderDistance / 2;
         var subCloudOffsetZ = (float)(cloudOffsetZ - MathHelper.Floor(cloudOffsetZ)) + CloudsRenderDistance / 2;
 
-        GLManager.ModelView.Scale(cloudScale, 1.0F, cloudScale);
-        GLManager.ModelView.Push();
-        GLManager.ModelView.Translate(-subCloudOffsetX, cloudY, -subCloudOffsetZ);
+        RenderSystem.ModelView.Scale(cloudScale, 1.0F, cloudScale);
+        RenderSystem.ModelView.Push();
+        RenderSystem.ModelView.Translate(-subCloudOffsetX, cloudY, -subCloudOffsetZ);
 
-        GLManager.TextureMatrix.Push();
-        GLManager.TextureMatrix.Translate(textureOffsetU, textureOffsetV, 0.0F);
+        RenderSystem.TextureMatrix.Push();
+        RenderSystem.TextureMatrix.Translate(textureOffsetU, textureOffsetV, 0.0F);
 
-        GLManager.Color = new Vector4D<float>(cloudRed, cloudGreen, cloudBlue, 0.8F);
+        RenderSystem.Color = new Vector4D<float>(cloudRed, cloudGreen, cloudBlue, 0.8F);
         SetCloudUniforms(-subCloudOffsetX, cloudY, -subCloudOffsetZ, cloudScale / 2f,
             textureOffsetU, textureOffsetV, cloudRed, cloudGreen, cloudBlue, 0.8F,
             GetCelestialLightDir(tickDelta));
         DrawCloudMesh(_clouds[0]);
 
-        GLManager.TextureMatrix.Pop();
+        RenderSystem.TextureMatrix.Pop();
 
-        GLManager.ModelView.Pop();
+        RenderSystem.ModelView.Pop();
 
-        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
 
         // This used to put culling back and leave blending on, so the first-person hand pass drew
         // blended or not depending on whether clouds were enabled and the camera was in the Nether.
-        GLManager.State.Apply(RenderState.Opaque);
+        RenderSystem.State.Apply(RenderState.Opaque);
     }
 
     private void RenderLegacyCloudsFancy(float tickDelta)
@@ -1039,49 +1039,49 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         var subCloudOffsetX = (float)(cloudOffsetX - MathHelper.Floor(cloudOffsetX));
         var subCloudOffsetZ = (float)(cloudOffsetZ - MathHelper.Floor(cloudOffsetZ));
 
-        GLManager.ModelView.Scale(cloudScale, 1.0F, cloudScale);
+        RenderSystem.ModelView.Scale(cloudScale, 1.0F, cloudScale);
 
         for (var passIndex = 0; passIndex < 2; ++passIndex)
         {
             // Pass 0 writes only depth. With culling off, a box's near and far faces would both
             // blend into the same pixel and come out twice as opaque; laying depth down first
             // leaves pass 1 blending each surface exactly once.
-            GLManager.State.Apply(cloudState with
+            RenderSystem.State.Apply(cloudState with
             {
                 ColorWrite = passIndex != 0
             });
 
-            GLManager.ModelView.Push();
-            GLManager.ModelView.Translate(-subCloudOffsetX, cloudY, -subCloudOffsetZ);
+            RenderSystem.ModelView.Push();
+            RenderSystem.ModelView.Translate(-subCloudOffsetX, cloudY, -subCloudOffsetZ);
 
-            GLManager.TextureMatrix.Push();
-            GLManager.TextureMatrix.Translate(textureOffsetU, textureOffsetV, 0.0F);
+            RenderSystem.TextureMatrix.Push();
+            RenderSystem.TextureMatrix.Translate(textureOffsetU, textureOffsetV, 0.0F);
 
             if (cloudY > -cloudHeight - 1.0F)
             {
-                GLManager.Color = new Vector4D<float>(cloudRed * 0.7F, cloudGreen * 0.7F, cloudBlue * 0.7F, 0.8F);
+                RenderSystem.Color = new Vector4D<float>(cloudRed * 0.7F, cloudGreen * 0.7F, cloudBlue * 0.7F, 0.8F);
                 _clouds[0].DrawWithBoundProgram(); // Bottom
             }
 
             if (cloudY <= cloudHeight + 1.0F)
             {
-                GLManager.Color = new Vector4D<float>(cloudRed, cloudGreen, cloudBlue, 0.8F);
+                RenderSystem.Color = new Vector4D<float>(cloudRed, cloudGreen, cloudBlue, 0.8F);
                 _clouds[1].DrawWithBoundProgram(); // Top
             }
 
-            GLManager.Color = new Vector4D<float>(cloudRed * 0.9F, cloudGreen * 0.9F, cloudBlue * 0.9F, 0.8F);
+            RenderSystem.Color = new Vector4D<float>(cloudRed * 0.9F, cloudGreen * 0.9F, cloudBlue * 0.9F, 0.8F);
             _clouds[2].DrawWithBoundProgram(); // Side X
 
-            GLManager.Color = new Vector4D<float>(cloudRed * 0.8F, cloudGreen * 0.8F, cloudBlue * 0.8F, 0.8F);
+            RenderSystem.Color = new Vector4D<float>(cloudRed * 0.8F, cloudGreen * 0.8F, cloudBlue * 0.8F, 0.8F);
             _clouds[3].DrawWithBoundProgram(); // Side Z
 
-            GLManager.TextureMatrix.Pop();
+            RenderSystem.TextureMatrix.Pop();
 
-            GLManager.ModelView.Pop();
+            RenderSystem.ModelView.Pop();
         }
 
-        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.State.Apply(RenderState.Opaque);
+        RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.State.Apply(RenderState.Opaque);
     }
 
     public void DrawBlockBreaking(EntityPlayer entityPlayer, HitResult hit, ItemStack itemStack, float tickDelta)
@@ -1090,20 +1090,20 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         var tessellator = Tessellator.instance;
 
-        GLManager.ModelView.Push();
-        GLManager.AlphaTestEnabled = true;
+        RenderSystem.ModelView.Push();
+        RenderSystem.AlphaTestEnabled = true;
 
         // Culling matters here and was previously inherited: this redraws the block's own faces
         // with the crack texture multiplied over them, so with culling off the far faces multiply
         // a second time and the crack comes out twice as dark. GameRenderer calls this from two
         // places — once for the underwater case, straight after the entity pass has left culling
         // off, and once with it on — which is why the crack looked different underwater.
-        GLManager.State.Apply(RenderState.Opaque with
+        RenderSystem.State.Apply(RenderState.Opaque with
         {
             Blend = BlendMode.Multiply,
             DepthBias = DepthBias.Decal
         });
-        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 0.5F);
+        RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 0.5F);
 
         _textureManager.BindTexture(_textureManager.GetTextureId("/terrain.png"));
 
@@ -1122,13 +1122,13 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         tessellator.draw(ProgramSlot.DamagedBlock);
 
         tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
-        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
 
-        GLManager.AlphaTestEnabled = false;
+        RenderSystem.AlphaTestEnabled = false;
 
         // Takes the bias back off with it, since Opaque carries DepthBias.None.
-        GLManager.State.Apply(RenderState.Opaque);
-        GLManager.ModelView.Pop();
+        RenderSystem.State.Apply(RenderState.Opaque);
+        RenderSystem.ModelView.Pop();
     }
 
     public void DrawSelectionBox(EntityPlayer player, HitResult hit, int renderPass, ItemStack itemStack, float tickDelta)
@@ -1138,9 +1138,9 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             // Line loops, so the culling this carries is inert; what it is here for is the depth
             // pair — tested, so the outline is hidden by blocks in front of the target, but not
             // written, so a line lying exactly on a block face does not fight with it.
-            GLManager.State.Apply(RenderState.Translucent);
-            GLManager.Color = new Vector4D<float>(0.0F, 0.0F, 0.0F, 0.4F);
-            GLManager.TextureEnabled = false;
+            RenderSystem.State.Apply(RenderState.Translucent);
+            RenderSystem.Color = new Vector4D<float>(0.0F, 0.0F, 0.0F, 0.4F);
+            RenderSystem.TextureEnabled = false;
             var outlinePadding = 0.002F;
             var blockId = _world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
             if (blockId > 0)
@@ -1152,8 +1152,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                 DrawOutlinedBoundingBox(_world.Content.Blocks.GetByProtocolId(blockId).GetBoundingBox(_world.Reader, _world.Entities, hit.BlockX, hit.BlockY, hit.BlockZ).Expand(outlinePadding, outlinePadding, outlinePadding).Offset(-renderX, -renderY, -renderZ));
             }
 
-            GLManager.TextureEnabled = true;
-            GLManager.State.Apply(RenderState.Opaque);
+            RenderSystem.TextureEnabled = true;
+            RenderSystem.State.Apply(RenderState.Opaque);
         }
     }
 

@@ -6,6 +6,6 @@ public static class GLU
     {
         var fH = (float)Math.Tan(fovY / 360.0 * Math.PI) * zNear;
         var fW = fH * aspect;
-        GLManager.Projection.Frustum(-fW, fW, -fH, fH, zNear, zFar);
+        RenderSystem.Projection.Frustum(-fW, fW, -fH, fH, zNear, zFar);
     }
 }

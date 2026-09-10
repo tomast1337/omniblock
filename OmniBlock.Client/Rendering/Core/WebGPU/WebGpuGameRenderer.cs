@@ -36,7 +36,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         // during startup, and capturing them needs a target even though drawing them needs a pass.
         var device = WebGpuDevice.Current!;
         _drawTarget = new WebGpuDrawTarget(device, device.SurfaceFormat, TextureFormat.Depth32float);
-        GLManager.DrawTargetOrNull = _drawTarget;
+        RenderSystem.DrawTargetOrNull = _drawTarget;
     }
 
     /// <summary>
@@ -192,7 +192,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
 
         // How a block-shaped draw is lit, this frame. Default with no world, so the menus do not
         // inherit the last one's nightfall. Read by everything that builds a uniform block below.
-        GLManager.WorldLight = _game.World is { } lit
+        RenderSystem.WorldLight = _game.World is { } lit
             ? new WorldLightState(lit.Environment.AmbientDarkness, lit.Dimension.LightLevelToLuminance[0])
             : WorldLightState.Default;
 
@@ -231,7 +231,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         finally
         {
             // Not necessarily the pass opened above: the Soft Clouds bracket inside DrawWorld
-            // (GLManager.CloudBlurPassOrNull) ends that pass and reopens a new one on the same
+            // (RenderSystem.CloudBlurPassOrNull) ends that pass and reopens a new one on the same
             // attachments while capturing and compositing the blur, and _drawTarget.CurrentPass is
             // how the replacement is found here instead of ending/releasing the stale local.
             worldPass = _drawTarget.CurrentPass;
@@ -398,7 +398,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     ///     backbuffer with no gamma correction at all — this one now reads the gamma slider like
     ///     everything else does. Runs through the same <see cref="EnsureResources" /> as
     ///     <see cref="RenderFrame" /> — safe because <see cref="OmniBlock.StartGame" /> now calls
-    ///     <c>SetupOpenGLAndInput</c> (where <c>ImGui.CreateContext()</c> runs) before
+    ///     <c>SetupRenderingAndInput</c> (where <c>ImGui.CreateContext()</c> runs) before
     ///     <c>LoadScreen</c>, so the ImGui backend this pulls in already has a context to attach to.
     ///     Also replays the last ImGui draw data the same way <see cref="RenderFrame" /> does, so an
     ///     already-open F3 overlay stays on screen — non-interactively, since nothing pumps a fresh
@@ -420,7 +420,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
 
         var pass = _offscreenFb.BeginPass(encoder, new Color(0, 0, 0, 1));
         _drawTarget.BeginPass(pass, _offscreenFb.Width, _offscreenFb.Height);
-        GLManager.State.Apply(RenderState.Interface);
+        RenderSystem.State.Apply(RenderState.Interface);
 
         try
         {
@@ -772,7 +772,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         if (_cloudBlurPass == null)
         {
             _cloudBlurPass = new WgpuCloudBlurPass(device, _drawTarget, _offscreenFb, _blitQuad!);
-            GLManager.CloudBlurPassOrNull = _cloudBlurPass;
+            RenderSystem.CloudBlurPassOrNull = _cloudBlurPass;
         }
 
         if (_imguiWgpu == null)

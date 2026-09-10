@@ -200,7 +200,7 @@ public sealed class UIBatchRenderer : IDisposable
         // claiming blend was off while it was on, and the next draw asking for off got nothing.
         //
         // Everything but the blend, which is the caller's to choose; see <see cref="Blend" />.
-        GLManager.State.Apply(RenderState.Interface with
+        RenderSystem.State.Apply(RenderState.Interface with
         {
             Blend = Blend
         });
@@ -208,17 +208,17 @@ public sealed class UIBatchRenderer : IDisposable
         var texture = _useTexture ? Texture2D.Find(_currentTextureId) : null;
         texture?.Bind();
 
-        GLManager.GuiTextureId = texture is null
+        RenderSystem.GuiTextureId = texture is null
             ? 0
             : _texToLogicalId.GetValueOrDefault(_currentTextureId);
 
         // The quads are already in interface space, under the projection the interface chose. The
         // ambient matrices belong to whatever was drawing before — a world, a mob preview — so they
         // are replaced for the length of the submission rather than trusted.
-        GLManager.Projection.Push();
-        GLManager.ModelView.Push();
-        GLManager.Projection.Load(_projection);
-        GLManager.ModelView.LoadIdentity();
+        RenderSystem.Projection.Push();
+        RenderSystem.ModelView.Push();
+        RenderSystem.Projection.Load(_projection);
+        RenderSystem.ModelView.LoadIdentity();
 
         try
         {
@@ -233,12 +233,12 @@ public sealed class UIBatchRenderer : IDisposable
                 Slot = texture is null ? ProgramSlot.Basic : ProgramSlot.Gui
             };
 
-            GLManager.DrawTarget.Submit(command);
+            RenderSystem.DrawTarget.Submit(command);
         }
         finally
         {
-            GLManager.ModelView.Pop();
-            GLManager.Projection.Pop();
+            RenderSystem.ModelView.Pop();
+            RenderSystem.Projection.Pop();
             _vertexCount = 0;
         }
     }

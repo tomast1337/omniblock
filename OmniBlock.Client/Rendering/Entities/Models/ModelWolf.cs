@@ -98,7 +98,7 @@ public sealed class ModelWolf : BbModelEntityModel
         if (shake?.IsShaking(entity) == true)
         {
             var shakeBrightness = entity.GetBrightnessAtEyes(partialTick) * shake.Shading(entity, partialTick);
-            GLManager.Color = new Vector4D<float>(shakeBrightness, shakeBrightness, shakeBrightness, 1.0F);
+            RenderSystem.Color = new Vector4D<float>(shakeBrightness, shakeBrightness, shakeBrightness, 1.0F);
         }
     }
 

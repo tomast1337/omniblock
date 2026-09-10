@@ -2,13 +2,19 @@ using Silk.NET.Maths;
 
 namespace OmniBlock.Client.Rendering.Core;
 
-public class GLManager
+/// <summary>
+///     Backend-neutral facade for the current render context and active draw target.
+/// </summary>
+/// <remarks>
+///     This exposes rendering intent accumulated by compatibility-era callers. WebGPU resources,
+///     command encoding, and presentation remain owned by the narrower <c>Wgpu*</c> types.
+/// </remarks>
+public static class RenderSystem
 {
-    static GLManager() => Context.RasterStateChanging += OnRasterStateChanging;
+    static RenderSystem() => Context.RasterStateChanging += OnRasterStateChanging;
 
     /// <summary>
-    ///     The values a draw is made under, which both backends read. Held apart from
-    ///     <see cref="GL" /> because none of it is OpenGL — see <see cref="RenderContext" />.
+    ///     The values a draw is made under, independent of the backend that records it.
     /// </summary>
     public static RenderContext Context { get; } = new();
 
@@ -17,10 +23,8 @@ public class GLManager
     ///     if nothing can draw right now.
     /// </summary>
     /// <remarks>
-    ///     Settable, and null for most of a WebGPU frame, because a WebGPU draw needs an open render
-    ///     pass and there is no such thing outside one. The renderer installs a target for the length
-    ///     of its pass and clears it afterwards. Under OpenGL one target is installed at startup and
-    ///     stays.
+    ///     Null outside a render pass because WebGPU has nowhere to record a draw then. The renderer
+    ///     installs a target for the length of each pass and clears it afterwards.
     /// </remarks>
     public static IDrawTarget? DrawTargetOrNull { get; set; }
 
@@ -30,9 +34,8 @@ public class GLManager
 
     /// <summary>
     ///     The Soft Clouds blur, or null when the setting cannot run (no implementation installed).
-    ///     Set by whichever backend owns the buffers it needs — <c>FramebufferManager</c> under
-    ///     OpenGL, <c>WgpuCloudBlurPass</c> under WebGPU — so <c>GameRenderer.DrawWorld</c> can bracket
-    ///     cloud rendering without knowing which.
+    ///     Supplied by the active backend so <c>GameRenderer.DrawWorld</c> can bracket cloud
+    ///     rendering without owning WebGPU resources.
     /// </summary>
     public static ICloudBlurPass? CloudBlurPassOrNull { get; set; }
 
@@ -216,13 +219,13 @@ public class GLManager
     internal static void OnRasterStateChanging() => RasterStateChanging?.Invoke();
 
     /// <summary>
-    ///     Selects the WebGPU backend.
+    ///     Initializes backend-neutral render state before the WebGPU renderer starts recording.
     /// </summary>
     /// <remarks>
     ///     A WebGPU draw goes through the <c>Wgpu*</c> classes. <see cref="DrawTargetOrNull" /> is
     ///     installed by that backend for the length of each pass, not here.
     /// </remarks>
-    public static void Init()
+    public static void Initialize()
     {
         DrawTargetOrNull = null;
         State.Invalidate();

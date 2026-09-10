@@ -32,12 +32,12 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
             // wants, and unlike the enables it replaces it is put back at the end: this used to
             // leave blending on for whatever block entity drew next, so a sign behind a moving
             // piston came out blended and a sign anywhere else did not.
-            GLManager.State.Apply(RenderState.Entity with
+            RenderSystem.State.Apply(RenderState.Entity with
             {
                 Blend = BlendMode.Alpha
             });
 
-            GLManager.ShadeModel = ShadeModel.Smooth;
+            RenderSystem.ShadeModel = ShadeModel.Smooth;
 
             tess.startDrawingQuads();
             tess.setTranslationD(
@@ -92,7 +92,7 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
 
             tess.setTranslationD(0.0D, 0.0D, 0.0D);
             tess.draw(ProgramSlot.BlockEntity);
-            GLManager.State.Apply(RenderState.Entity);
+            RenderSystem.State.Apply(RenderState.Entity);
             Lighting.turnOn();
         }
     }

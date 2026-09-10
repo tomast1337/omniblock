@@ -34,7 +34,7 @@ public class HeldItemRenderer
 
     public void renderItem(EntityLiving entity, ItemStack item)
     {
-        GLManager.ModelView.Push();
+        RenderSystem.ModelView.Push();
         if (item.ItemId < 256 && BlockRenderer.IsSideLit(_game.Content.Blocks.GetByProtocolId(item.ItemId).RenderType))
         {
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId("/terrain.png"));
@@ -55,12 +55,12 @@ public class HeldItemRenderer
             var quadWidth = 1.0F;
             var xOffset = 0.0F;
             var yOffset = 0.3F;
-            GLManager.ModelView.Translate(-xOffset, -yOffset, 0.0F);
+            RenderSystem.ModelView.Translate(-xOffset, -yOffset, 0.0F);
             var itemScale = 1.5F;
-            GLManager.ModelView.Scale(itemScale, itemScale, itemScale);
-            GLManager.ModelView.Rotate(50.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.ModelView.Rotate(335.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.ModelView.Translate(-(15.0F / 16.0F), -(1.0F / 16.0F), 0.0F);
+            RenderSystem.ModelView.Scale(itemScale, itemScale, itemScale);
+            RenderSystem.ModelView.Rotate(50.0F, 0.0F, 1.0F, 0.0F);
+            RenderSystem.ModelView.Rotate(335.0F, 0.0F, 0.0F, 1.0F);
+            RenderSystem.ModelView.Translate(-(15.0F / 16.0F), -(1.0F / 16.0F), 0.0F);
             var thickness = 1.0F / 16.0F;
             tessellator.startDrawingQuads();
             tessellator.setNormal(0.0F, 0.0F, 1.0F);
@@ -142,7 +142,7 @@ public class HeldItemRenderer
             tessellator.draw(ProgramSlot.Hand);
         }
 
-        GLManager.ModelView.Pop();
+        RenderSystem.ModelView.Pop();
     }
 
     public void renderItemInFirstPerson(float tickDelta)
@@ -150,11 +150,11 @@ public class HeldItemRenderer
         var equipProgress = prevEquippedProgress + (equippedProgress - prevEquippedProgress) * tickDelta;
         var player = _game.Player;
         var pitch = player.PrevPitch + (player.Pitch - player.PrevPitch) * tickDelta;
-        GLManager.ModelView.Push();
-        GLManager.ModelView.Rotate(pitch, 1.0F, 0.0F, 0.0F);
-        GLManager.ModelView.Rotate(player.PrevYaw + (player.Yaw - player.PrevYaw) * tickDelta, 0.0F, 1.0F, 0.0F);
+        RenderSystem.ModelView.Push();
+        RenderSystem.ModelView.Rotate(pitch, 1.0F, 0.0F, 0.0F);
+        RenderSystem.ModelView.Rotate(player.PrevYaw + (player.Yaw - player.PrevYaw) * tickDelta, 0.0F, 1.0F, 0.0F);
         Lighting.turnOn();
-        GLManager.ModelView.Pop();
+        RenderSystem.ModelView.Pop();
         var heldStack = itemToRender;
         var brightness = _game.World.GetLuminance(MathHelper.Floor(player.X), MathHelper.Floor(player.Y), MathHelper.Floor(player.Z));
         float red;
@@ -166,22 +166,22 @@ public class HeldItemRenderer
             red = ((itemColor >> 16) & 255) / 255.0F;
             sineSwing = ((itemColor >> 8) & 255) / 255.0F;
             sqrtSwing = (itemColor & 255) / 255.0F;
-            GLManager.Color = new Vector4D<float>(brightness * red, brightness * sineSwing, brightness * sqrtSwing, 1.0F);
+            RenderSystem.Color = new Vector4D<float>(brightness * red, brightness * sineSwing, brightness * sqrtSwing, 1.0F);
         }
         else
         {
-            GLManager.Color = new Vector4D<float>(brightness, brightness, brightness, 1.0F);
+            RenderSystem.Color = new Vector4D<float>(brightness, brightness, brightness, 1.0F);
         }
 
         float baseScale;
         if (itemToRender != null && itemToRender.ItemId == _game.Content.Items.Get("omniblock:map").Id)
         {
-            GLManager.ModelView.Push();
+            RenderSystem.ModelView.Push();
             baseScale = 0.8F;
             var swingProgress = player.GetSwingProgress(tickDelta);
             sineSwing = MathHelper.Sin(swingProgress * (float)Math.PI);
             sqrtSwing = MathHelper.Sin(MathHelper.Sqrt(swingProgress) * (float)Math.PI);
-            GLManager.ModelView.Translate(-sqrtSwing * 0.4F, MathHelper.Sin(MathHelper.Sqrt(swingProgress) * (float)Math.PI * 2.0F) * 0.2F, -sineSwing * 0.2F);
+            RenderSystem.ModelView.Translate(-sqrtSwing * 0.4F, MathHelper.Sin(MathHelper.Sqrt(swingProgress) * (float)Math.PI * 2.0F) * 0.2F, -sineSwing * 0.2F);
             swingProgress = 1.0F - pitch / 45.0F + 0.1F;
             if (swingProgress < 0.0F)
             {
@@ -194,44 +194,44 @@ public class HeldItemRenderer
             }
 
             swingProgress = -MathHelper.Cos(swingProgress * (float)Math.PI) * 0.5F + 0.5F;
-            GLManager.ModelView.Translate(0.0F, 0.0F * baseScale - (1.0F - equipProgress) * 1.2F - swingProgress * 0.5F + 0.04F, -0.9F * baseScale);
-            GLManager.ModelView.Rotate(90.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.ModelView.Rotate(swingProgress * -85.0F, 0.0F, 0.0F, 1.0F);
+            RenderSystem.ModelView.Translate(0.0F, 0.0F * baseScale - (1.0F - equipProgress) * 1.2F - swingProgress * 0.5F + 0.04F, -0.9F * baseScale);
+            RenderSystem.ModelView.Rotate(90.0F, 0.0F, 1.0F, 0.0F);
+            RenderSystem.ModelView.Rotate(swingProgress * -85.0F, 0.0F, 0.0F, 1.0F);
             bindSkinTexture();
 
             for (var i = 0; i < 2; i++)
             {
                 var handSide = i * 2 - 1;
-                GLManager.ModelView.Push();
-                GLManager.ModelView.Translate(-0.0F, -0.6F, 1.1F * handSide);
-                GLManager.ModelView.Rotate(-45 * handSide, 1.0F, 0.0F, 0.0F);
-                GLManager.ModelView.Rotate(-90.0F, 0.0F, 0.0F, 1.0F);
-                GLManager.ModelView.Rotate(59.0F, 0.0F, 0.0F, 1.0F);
-                GLManager.ModelView.Rotate(-65 * handSide, 0.0F, 1.0F, 0.0F);
+                RenderSystem.ModelView.Push();
+                RenderSystem.ModelView.Translate(-0.0F, -0.6F, 1.1F * handSide);
+                RenderSystem.ModelView.Rotate(-45 * handSide, 1.0F, 0.0F, 0.0F);
+                RenderSystem.ModelView.Rotate(-90.0F, 0.0F, 0.0F, 1.0F);
+                RenderSystem.ModelView.Rotate(59.0F, 0.0F, 0.0F, 1.0F);
+                RenderSystem.ModelView.Rotate(-65 * handSide, 0.0F, 1.0F, 0.0F);
                 var playerRendererBase = EntityRenderDispatcher.Instance.GetEntityRenderObject(_game.Player);
                 var playerRenderer = (PlayerEntityRenderer)playerRendererBase;
                 var armScale = 1.0F;
-                GLManager.ModelView.Scale(armScale, armScale, armScale);
+                RenderSystem.ModelView.Scale(armScale, armScale, armScale);
                 playerRenderer.DrawFirstPersonHand();
-                GLManager.ModelView.Pop();
+                RenderSystem.ModelView.Pop();
             }
 
             sineSwing = player.GetSwingProgress(tickDelta);
             sqrtSwing = MathHelper.Sin(sineSwing * sineSwing * (float)Math.PI);
             var secondarySwing = MathHelper.Sin(MathHelper.Sqrt(sineSwing) * (float)Math.PI);
-            GLManager.ModelView.Rotate(-sqrtSwing * 20.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.ModelView.Rotate(-secondarySwing * 20.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.ModelView.Rotate(-secondarySwing * 80.0F, 1.0F, 0.0F, 0.0F);
+            RenderSystem.ModelView.Rotate(-sqrtSwing * 20.0F, 0.0F, 1.0F, 0.0F);
+            RenderSystem.ModelView.Rotate(-secondarySwing * 20.0F, 0.0F, 0.0F, 1.0F);
+            RenderSystem.ModelView.Rotate(-secondarySwing * 80.0F, 1.0F, 0.0F, 0.0F);
             sineSwing = 0.38F;
-            GLManager.ModelView.Scale(sineSwing, sineSwing, sineSwing);
-            GLManager.ModelView.Rotate(90.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.ModelView.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.ModelView.Translate(-1.0F, -1.0F, 0.0F);
+            RenderSystem.ModelView.Scale(sineSwing, sineSwing, sineSwing);
+            RenderSystem.ModelView.Rotate(90.0F, 0.0F, 1.0F, 0.0F);
+            RenderSystem.ModelView.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
+            RenderSystem.ModelView.Translate(-1.0F, -1.0F, 0.0F);
             sqrtSwing = 1 / 64f;
-            GLManager.ModelView.Scale(sqrtSwing, sqrtSwing, sqrtSwing);
+            RenderSystem.ModelView.Scale(sqrtSwing, sqrtSwing, sqrtSwing);
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId("/misc/mapbg.png"));
             var tessellator = Tessellator.instance;
-            GLManager.Normal = new Vector3D<float>(0.0F, 0.0F, -1.0F);
+            RenderSystem.Normal = new Vector3D<float>(0.0F, 0.0F, -1.0F);
             tessellator.startDrawingQuads();
             byte mapBorder = 7;
             tessellator.addVertexWithUV(0 - mapBorder, 128 + mapBorder, 0.0D, 0.0D, 1.0D);
@@ -241,62 +241,62 @@ public class HeldItemRenderer
             tessellator.draw(ProgramSlot.Hand);
             var mapState = MapBehavior.GetMapState(itemToRender.GetDamage(), _game.World);
             mapRenderer.render(_game.Player, _game.TextureManager, mapState);
-            GLManager.ModelView.Pop();
+            RenderSystem.ModelView.Pop();
         }
         else if (itemToRender != null)
         {
-            GLManager.ModelView.Push();
+            RenderSystem.ModelView.Push();
             baseScale = 0.8F;
             red = player.GetSwingProgress(tickDelta);
             sineSwing = MathHelper.Sin(red * (float)Math.PI);
             sqrtSwing = MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI);
-            GLManager.ModelView.Translate(-sqrtSwing * 0.4F, MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI * 2.0F) * 0.2F, -sineSwing * 0.2F);
-            GLManager.ModelView.Translate(0.7F * baseScale, -0.65F * baseScale - (1.0F - equipProgress) * 0.6F, -0.9F * baseScale);
-            GLManager.ModelView.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
+            RenderSystem.ModelView.Translate(-sqrtSwing * 0.4F, MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI * 2.0F) * 0.2F, -sineSwing * 0.2F);
+            RenderSystem.ModelView.Translate(0.7F * baseScale, -0.65F * baseScale - (1.0F - equipProgress) * 0.6F, -0.9F * baseScale);
+            RenderSystem.ModelView.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
             red = player.GetSwingProgress(tickDelta);
             sineSwing = MathHelper.Sin(red * red * (float)Math.PI);
             sqrtSwing = MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI);
-            GLManager.ModelView.Rotate(-sineSwing * 20.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.ModelView.Rotate(-sqrtSwing * 20.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.ModelView.Rotate(-sqrtSwing * 80.0F, 1.0F, 0.0F, 0.0F);
+            RenderSystem.ModelView.Rotate(-sineSwing * 20.0F, 0.0F, 1.0F, 0.0F);
+            RenderSystem.ModelView.Rotate(-sqrtSwing * 20.0F, 0.0F, 0.0F, 1.0F);
+            RenderSystem.ModelView.Rotate(-sqrtSwing * 80.0F, 1.0F, 0.0F, 0.0F);
             red = 0.4F;
-            GLManager.ModelView.Scale(red, red, red);
+            RenderSystem.ModelView.Scale(red, red, red);
             if (itemToRender.GetItem().IsHandheldRod())
             {
-                GLManager.ModelView.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
+                RenderSystem.ModelView.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
             }
 
             renderItem(player, itemToRender);
-            GLManager.ModelView.Pop();
+            RenderSystem.ModelView.Pop();
         }
         else
         {
-            GLManager.ModelView.Push();
+            RenderSystem.ModelView.Push();
             baseScale = 0.8F;
             red = player.GetSwingProgress(tickDelta);
             sineSwing = MathHelper.Sin(red * (float)Math.PI);
             sqrtSwing = MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI);
-            GLManager.ModelView.Translate(-sqrtSwing * 0.3F, MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI * 2.0F) * 0.4F, -sineSwing * 0.4F);
-            GLManager.ModelView.Translate(0.8F * baseScale, -(12.0F / 16.0F) * baseScale - (1.0F - equipProgress) * 0.6F, -0.9F * baseScale);
-            GLManager.ModelView.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
+            RenderSystem.ModelView.Translate(-sqrtSwing * 0.3F, MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI * 2.0F) * 0.4F, -sineSwing * 0.4F);
+            RenderSystem.ModelView.Translate(0.8F * baseScale, -(12.0F / 16.0F) * baseScale - (1.0F - equipProgress) * 0.6F, -0.9F * baseScale);
+            RenderSystem.ModelView.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
             red = player.GetSwingProgress(tickDelta);
             sineSwing = MathHelper.Sin(red * red * (float)Math.PI);
             sqrtSwing = MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI);
-            GLManager.ModelView.Rotate(sqrtSwing * 70.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.ModelView.Rotate(-sineSwing * 20.0F, 0.0F, 0.0F, 1.0F);
+            RenderSystem.ModelView.Rotate(sqrtSwing * 70.0F, 0.0F, 1.0F, 0.0F);
+            RenderSystem.ModelView.Rotate(-sineSwing * 20.0F, 0.0F, 0.0F, 1.0F);
             bindSkinTexture();
-            GLManager.ModelView.Translate(-1.0F, 3.6F, 3.5F);
-            GLManager.ModelView.Rotate(120.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.ModelView.Rotate(200.0F, 1.0F, 0.0F, 0.0F);
-            GLManager.ModelView.Rotate(-135.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.ModelView.Scale(1.0F, 1.0F, 1.0F);
-            GLManager.ModelView.Translate(5.6F, 0.0F, 0.0F);
+            RenderSystem.ModelView.Translate(-1.0F, 3.6F, 3.5F);
+            RenderSystem.ModelView.Rotate(120.0F, 0.0F, 0.0F, 1.0F);
+            RenderSystem.ModelView.Rotate(200.0F, 1.0F, 0.0F, 0.0F);
+            RenderSystem.ModelView.Rotate(-135.0F, 0.0F, 1.0F, 0.0F);
+            RenderSystem.ModelView.Scale(1.0F, 1.0F, 1.0F);
+            RenderSystem.ModelView.Translate(5.6F, 0.0F, 0.0F);
             var playerRendererBase2 = EntityRenderDispatcher.Instance.GetEntityRenderObject(_game.Player);
             var playerRenderer2 = (PlayerEntityRenderer)playerRendererBase2;
             sqrtSwing = 1.0F;
-            GLManager.ModelView.Scale(sqrtSwing, sqrtSwing, sqrtSwing);
+            RenderSystem.ModelView.Scale(sqrtSwing, sqrtSwing, sqrtSwing);
             playerRenderer2.DrawFirstPersonHand();
-            GLManager.ModelView.Pop();
+            RenderSystem.ModelView.Pop();
         }
 
         Lighting.turnOff();
@@ -304,7 +304,7 @@ public class HeldItemRenderer
 
     public void renderOverlays(float tickDelta)
     {
-        GLManager.AlphaTestEnabled = false;
+        RenderSystem.AlphaTestEnabled = false;
         int blockX;
         if (_game.Player.IsOnFire)
         {
@@ -352,7 +352,7 @@ public class HeldItemRenderer
             renderWarpedTextureOverlay(tickDelta);
         }
 
-        GLManager.AlphaTestEnabled = true;
+        RenderSystem.AlphaTestEnabled = true;
     }
 
     private void renderInsideOfBlock(float tickDelta, int textureId)
@@ -360,8 +360,8 @@ public class HeldItemRenderer
         var tessellator = Tessellator.instance;
         _game.Player.GetBrightnessAtEyes(tickDelta);
         var brightness = 0.1F;
-        GLManager.Color = new Vector4D<float>(brightness, brightness, brightness, 0.5F);
-        GLManager.ModelView.Push();
+        RenderSystem.Color = new Vector4D<float>(brightness, brightness, brightness, 0.5F);
+        RenderSystem.ModelView.Push();
         var minX = -1.0F;
         var maxX = 1.0F;
         var minY = -1.0F;
@@ -378,24 +378,24 @@ public class HeldItemRenderer
         tessellator.addVertexWithUV(maxX, maxY, z, minU, minV);
         tessellator.addVertexWithUV(minX, maxY, z, maxU, minV);
         tessellator.draw(ProgramSlot.Hand);
-        GLManager.ModelView.Pop();
-        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.ModelView.Pop();
+        RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     private void renderWarpedTextureOverlay(float tickDelta)
     {
         var tessellator = Tessellator.instance;
         var brightness = _game.Player.GetBrightnessAtEyes(tickDelta);
-        GLManager.Color = new Vector4D<float>(brightness, brightness, brightness, 0.5F);
+        RenderSystem.Color = new Vector4D<float>(brightness, brightness, brightness, 0.5F);
 
         // Blended, but still depth tested and written, which is what a screen-filling quad drawn
         // right after the hand has always been. The depth buffer was cleared before the hand pass,
         // so the only thing this can be occluded by is the hand itself.
-        GLManager.State.Apply(RenderState.Entity with
+        RenderSystem.State.Apply(RenderState.Entity with
         {
             Blend = BlendMode.Alpha
         });
-        GLManager.ModelView.Push();
+        RenderSystem.ModelView.Push();
         var uvScale = 4.0F;
         var minX = -1.0F;
         var maxX = 1.0F;
@@ -410,16 +410,16 @@ public class HeldItemRenderer
         tessellator.addVertexWithUV(maxX, maxY, z, 0.0F + uOffset, 0.0F + vOffset);
         tessellator.addVertexWithUV(minX, maxY, z, uvScale + uOffset, 0.0F + vOffset);
         tessellator.draw(ProgramSlot.Hand);
-        GLManager.ModelView.Pop();
-        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.State.Apply(RenderState.Entity);
+        RenderSystem.ModelView.Pop();
+        RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.State.Apply(RenderState.Entity);
     }
 
     private void renderFireInFirstPerson(float tickDelta)
     {
         var tessellator = Tessellator.instance;
-        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 0.9F);
-        GLManager.State.Apply(RenderState.Entity with
+        RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 0.9F);
+        RenderSystem.State.Apply(RenderState.Entity with
         {
             Blend = BlendMode.Alpha
         });
@@ -427,7 +427,7 @@ public class HeldItemRenderer
 
         for (var layerIndex = 0; layerIndex < s_fireLayers.Length; ++layerIndex)
         {
-            GLManager.ModelView.Push();
+            RenderSystem.ModelView.Push();
             var fireTexture = Atlases.Terrain.IndexOf(s_fireLayers[layerIndex]);
             var textureU = (fireTexture & 15) << 4;
             var textureV = fireTexture & 240;
@@ -440,19 +440,19 @@ public class HeldItemRenderer
             var minY = 0.0F - quadSize / 2.0F;
             var maxY = minY + quadSize;
             var z = -0.5F;
-            GLManager.ModelView.Translate(-(layerIndex * 2 - 1) * 0.24F, -0.3F, 0.0F);
-            GLManager.ModelView.Rotate((layerIndex * 2 - 1) * 10.0F, 0.0F, 1.0F, 0.0F);
+            RenderSystem.ModelView.Translate(-(layerIndex * 2 - 1) * 0.24F, -0.3F, 0.0F);
+            RenderSystem.ModelView.Rotate((layerIndex * 2 - 1) * 10.0F, 0.0F, 1.0F, 0.0F);
             tessellator.startDrawingQuads();
             tessellator.addVertexWithUV(minX, minY, z, maxU, maxV);
             tessellator.addVertexWithUV(maxX, minY, z, minU, maxV);
             tessellator.addVertexWithUV(maxX, maxY, z, minU, minV);
             tessellator.addVertexWithUV(minX, maxY, z, maxU, minV);
             tessellator.draw(ProgramSlot.Hand);
-            GLManager.ModelView.Pop();
+            RenderSystem.ModelView.Pop();
         }
 
-        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.State.Apply(RenderState.Entity);
+        RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.State.Apply(RenderState.Entity);
     }
 
     public void updateEquippedItem()

@@ -12,19 +12,19 @@ public class PaintingEntityRenderer : EntityRenderer
 
     private void RenderPainting(Entity paintingEntity, double x, double y, double z, float yaw)
     {
-        GLManager.ModelView.Push();
-        GLManager.ModelView.Translate((float)x, (float)y, (float)z);
-        GLManager.ModelView.Rotate(yaw, 0.0F, 1.0F, 0.0F);
+        RenderSystem.ModelView.Push();
+        RenderSystem.ModelView.Translate((float)x, (float)y, (float)z);
+        RenderSystem.ModelView.Rotate(yaw, 0.0F, 1.0F, 0.0F);
 
         loadTexture("/art/kz.png");
 
         var art = paintingEntity.Behaviors.Find<HangingArtBehavior>()!.Art(paintingEntity)!;
         var pixelScale = 1.0F / 16.0F;
-        GLManager.ModelView.Scale(pixelScale, pixelScale, pixelScale);
+        RenderSystem.ModelView.Scale(pixelScale, pixelScale, pixelScale);
 
         RenderPaintingQuads(paintingEntity, art.SizeX, art.SizeY, art.OffsetX, art.OffsetY);
 
-        GLManager.ModelView.Pop();
+        RenderSystem.ModelView.Pop();
     }
 
     private void RenderPaintingQuads(Entity paintingEntity, int width, int height, int textureX, int textureY)
@@ -118,6 +118,6 @@ public class PaintingEntityRenderer : EntityRenderer
         }
 
         var light = Dispatcher.World.GetLuminance(checkX, checkY, checkZ);
-        GLManager.Color = new Vector4D<float>(light, light, light, 1.0F);
+        RenderSystem.Color = new Vector4D<float>(light, light, light, 1.0F);
     }
 }

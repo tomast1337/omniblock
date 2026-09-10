@@ -190,38 +190,38 @@ public class ModelPart
             }
             else
             {
-                GLManager.ModelView.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
+                RenderSystem.ModelView.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
                 CaptureCurrentMatrix(scale);
-                GLManager.ModelView.Translate(-RotationPointX * scale, -RotationPointY * scale, -RotationPointZ * scale);
+                RenderSystem.ModelView.Translate(-RotationPointX * scale, -RotationPointY * scale, -RotationPointZ * scale);
             }
         }
         else
         {
-            GLManager.ModelView.Push();
-            GLManager.ModelView.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
+            RenderSystem.ModelView.Push();
+            RenderSystem.ModelView.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
             if (RotateAngleZ != 0.0F)
             {
-                GLManager.ModelView.Rotate(RotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
+                RenderSystem.ModelView.Rotate(RotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
             }
 
             if (RotateAngleY != 0.0F)
             {
-                GLManager.ModelView.Rotate(RotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
+                RenderSystem.ModelView.Rotate(RotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
             }
 
             if (RotateAngleX != 0.0F)
             {
-                GLManager.ModelView.Rotate(RotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
+                RenderSystem.ModelView.Rotate(RotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
             }
 
             CaptureCurrentMatrix(scale);
-            GLManager.ModelView.Pop();
+            RenderSystem.ModelView.Pop();
         }
     }
 
     private void CaptureCurrentMatrix(float scale)
     {
-        var mv = GLManager.ModelView.Top;
+        var mv = RenderSystem.ModelView.Top;
         Matrix4x4 modelView = new(
             mv.M11, mv.M12, mv.M13, mv.M14,
             mv.M21, mv.M22, mv.M23, mv.M24,
@@ -246,32 +246,32 @@ public class ModelPart
             }
             else
             {
-                GLManager.ModelView.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
+                RenderSystem.ModelView.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
                 SubmitBakedVertices(scale);
-                GLManager.ModelView.Translate(-RotationPointX * scale, -RotationPointY * scale, -RotationPointZ * scale);
+                RenderSystem.ModelView.Translate(-RotationPointX * scale, -RotationPointY * scale, -RotationPointZ * scale);
             }
         }
         else
         {
-            GLManager.ModelView.Push();
-            GLManager.ModelView.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
+            RenderSystem.ModelView.Push();
+            RenderSystem.ModelView.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
             if (RotateAngleZ != 0.0F)
             {
-                GLManager.ModelView.Rotate(RotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
+                RenderSystem.ModelView.Rotate(RotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
             }
 
             if (RotateAngleY != 0.0F)
             {
-                GLManager.ModelView.Rotate(RotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
+                RenderSystem.ModelView.Rotate(RotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
             }
 
             if (RotateAngleX != 0.0F)
             {
-                GLManager.ModelView.Rotate(RotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
+                RenderSystem.ModelView.Rotate(RotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
             }
 
             SubmitBakedVertices(scale);
-            GLManager.ModelView.Pop();
+            RenderSystem.ModelView.Pop();
         }
     }
 
@@ -285,25 +285,25 @@ public class ModelPart
         {
             if (RotationPointX != 0.0F || RotationPointY != 0.0F || RotationPointZ != 0.0F)
             {
-                GLManager.ModelView.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
+                RenderSystem.ModelView.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
             }
         }
         else
         {
-            GLManager.ModelView.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
+            RenderSystem.ModelView.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
             if (RotateAngleZ != 0.0F)
             {
-                GLManager.ModelView.Rotate(RotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
+                RenderSystem.ModelView.Rotate(RotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
             }
 
             if (RotateAngleY != 0.0F)
             {
-                GLManager.ModelView.Rotate(RotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
+                RenderSystem.ModelView.Rotate(RotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
             }
 
             if (RotateAngleX != 0.0F)
             {
-                GLManager.ModelView.Rotate(RotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
+                RenderSystem.ModelView.Rotate(RotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
             }
         }
     }
@@ -328,7 +328,7 @@ public class ModelPart
     {
         if (_bakedVertices == null || _bakedVertices.Length == 0) return;
 
-        var mv = GLManager.ModelView.Top;
+        var mv = RenderSystem.ModelView.Top;
         Matrix4x4 modelView = new(
             mv.M11, mv.M12, mv.M13, mv.M14,
             mv.M21, mv.M22, mv.M23, mv.M24,
@@ -337,15 +337,15 @@ public class ModelPart
 
         var normalMatrix = ComputeNormalMatrix(modelView);
 
-        var tintSrc = GLManager.Color;
+        var tintSrc = RenderSystem.Color;
         Vector4 tint = new(tintSrc.X, tintSrc.Y, tintSrc.Z, tintSrc.W);
-        var lightingSrc = GLManager.Lighting;
+        var lightingSrc = RenderSystem.Lighting;
         Vector3 light0Dir = new(lightingSrc.Light0Direction.X, lightingSrc.Light0Direction.Y, lightingSrc.Light0Direction.Z);
         Vector3 light0Diffuse = new(lightingSrc.Light0Diffuse.X, lightingSrc.Light0Diffuse.Y, lightingSrc.Light0Diffuse.Z);
         Vector3 light1Dir = new(lightingSrc.Light1Direction.X, lightingSrc.Light1Direction.Y, lightingSrc.Light1Direction.Z);
         Vector3 light1Diffuse = new(lightingSrc.Light1Diffuse.X, lightingSrc.Light1Diffuse.Y, lightingSrc.Light1Diffuse.Z);
         Vector3 ambient = new(lightingSrc.Ambient.X, lightingSrc.Ambient.Y, lightingSrc.Ambient.Z);
-        var lightingEnabled = GLManager.LightingEnabled;
+        var lightingEnabled = RenderSystem.LightingEnabled;
 
         var a = Math.Clamp(tint.W, 0f, 1f);
 

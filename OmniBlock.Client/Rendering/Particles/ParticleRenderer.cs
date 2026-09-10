@@ -115,7 +115,7 @@ public static class ParticleRenderer
             }
 
             s_wgpuRenderer.DrawLayer(device, texture,
-                GLManager.ModelView.Top, GLManager.Projection.Top,
+                RenderSystem.ModelView.Top, RenderSystem.Projection.Top,
                 right, up, layer, s_instanceScratch.AsSpan(0, buf.Count));
         }
     }

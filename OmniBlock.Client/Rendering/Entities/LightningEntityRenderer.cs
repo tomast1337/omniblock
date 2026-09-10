@@ -27,9 +27,9 @@ public class LightningEntityRenderer : EntityRenderer
 
         // Texturing and lighting are shader uniforms underneath rather than pipeline state, so they
         // stay as they are and are not part of the state above.
-        GLManager.TextureEnabled = false;
-        GLManager.LightingEnabled = false;
-        GLManager.State.Apply(s_bolt);
+        RenderSystem.TextureEnabled = false;
+        RenderSystem.LightingEnabled = false;
+        RenderSystem.State.Apply(s_bolt);
         var xOffsets = new double[8];
         var zOffsets = new double[8];
         var offsetX = 0.0D;
@@ -130,9 +130,9 @@ public class LightningEntityRenderer : EntityRenderer
             }
         }
 
-        GLManager.State.Apply(RenderState.Entity);
-        GLManager.LightingEnabled = true;
-        GLManager.TextureEnabled = true;
+        RenderSystem.State.Apply(RenderState.Entity);
+        RenderSystem.LightingEnabled = true;
+        RenderSystem.TextureEnabled = true;
     }
 
     public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)

@@ -9,8 +9,8 @@ public sealed class ChunkMatrixOwnershipTests
         var file = Path.Combine(root, "OmniBlock.Client", "Rendering", "Chunks", "ChunkRenderer.cs");
         var source = File.ReadAllText(file);
 
-        Assert.DoesNotContain("GLManager.ModelView", source, StringComparison.Ordinal);
-        Assert.DoesNotContain("GLManager.Projection", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("RenderSystem.ModelView", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("RenderSystem.Projection", source, StringComparison.Ordinal);
         Assert.Contains("_modelView = renderParams.ModelView", source, StringComparison.Ordinal);
         Assert.Contains("_projection = renderParams.Projection", source, StringComparison.Ordinal);
     }

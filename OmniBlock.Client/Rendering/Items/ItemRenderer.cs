@@ -32,7 +32,7 @@ public class ItemRenderer : EntityRenderer
 
         var bobPhase = dropped.BobPhase(entityItem);
         var itemAge = dropped.ItemAge(entityItem);
-        GLManager.ModelView.Push();
+        RenderSystem.ModelView.Push();
         var bobOffset = MathHelper.Sin((itemAge + tickDelta) / 10.0F + bobPhase) * 0.1F + 0.1F;
         var spinAngle = ((itemAge + tickDelta) / 20.0F + bobPhase) * (180.0F / (float)Math.PI);
         byte renderCount = 1;
@@ -51,13 +51,13 @@ public class ItemRenderer : EntityRenderer
             renderCount = 4;
         }
 
-        GLManager.ModelView.Translate((float)x, (float)y + bobOffset, (float)z);
+        RenderSystem.ModelView.Translate((float)x, (float)y + bobOffset, (float)z);
         float minU;
         float maxU;
         float minV;
         if (stack.ItemId < 256 && BlockRenderer.IsSideLit(_blocks.GetByProtocolId(stack.ItemId).RenderType))
         {
-            GLManager.ModelView.Rotate(spinAngle, 0.0F, 1.0F, 0.0F);
+            RenderSystem.ModelView.Rotate(spinAngle, 0.0F, 1.0F, 0.0F);
             loadTexture("/terrain.png");
             var blockScale = 0.25F;
             if (!_blocks.GetByProtocolId(stack.ItemId).IsFullCube() && stack.ItemId != _blocks.Get("slab").Id
@@ -66,26 +66,26 @@ public class ItemRenderer : EntityRenderer
                 blockScale = 0.5F;
             }
 
-            GLManager.ModelView.Scale(blockScale, blockScale, blockScale);
+            RenderSystem.ModelView.Scale(blockScale, blockScale, blockScale);
 
             for (var copyIndex = 0; copyIndex < renderCount; ++copyIndex)
             {
-                GLManager.ModelView.Push();
+                RenderSystem.ModelView.Push();
                 if (copyIndex > 0)
                 {
                     minU = (random.NextFloat() * 2.0F - 1.0F) * 0.2F / blockScale;
                     maxU = (random.NextFloat() * 2.0F - 1.0F) * 0.2F / blockScale;
                     minV = (random.NextFloat() * 2.0F - 1.0F) * 0.2F / blockScale;
-                    GLManager.ModelView.Translate(minU, maxU, minV);
+                    RenderSystem.ModelView.Translate(minU, maxU, minV);
                 }
 
                 BlockRenderer.RenderBlockOnInventory(_blocks, _blocks.GetByProtocolId(stack.ItemId), stack.GetDamage(), entityItem.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
-                GLManager.ModelView.Pop();
+                RenderSystem.ModelView.Pop();
             }
         }
         else
         {
-            GLManager.ModelView.Scale(0.5F, 0.5F, 0.5F);
+            RenderSystem.ModelView.Scale(0.5F, 0.5F, 0.5F);
             var iconIndex = stack.GetTextureId();
             if (stack.ItemId < 256)
             {
@@ -115,21 +115,21 @@ public class ItemRenderer : EntityRenderer
                 green = ((colorMultiplier >> 8) & 255) / 255.0F;
                 blue = (colorMultiplier & 255) / 255.0F;
                 var brightness = entityItem.GetBrightnessAtEyes(tickDelta);
-                GLManager.Color = new Vector4D<float>(red * brightness, green * brightness, blue * brightness, 1.0F);
+                RenderSystem.Color = new Vector4D<float>(red * brightness, green * brightness, blue * brightness, 1.0F);
             }
 
             for (colorMultiplier = 0; colorMultiplier < renderCount; ++colorMultiplier)
             {
-                GLManager.ModelView.Push();
+                RenderSystem.ModelView.Push();
                 if (colorMultiplier > 0)
                 {
                     red = (random.NextFloat() * 2.0F - 1.0F) * 0.3F;
                     green = (random.NextFloat() * 2.0F - 1.0F) * 0.3F;
                     blue = (random.NextFloat() * 2.0F - 1.0F) * 0.3F;
-                    GLManager.ModelView.Translate(red, green, blue);
+                    RenderSystem.ModelView.Translate(red, green, blue);
                 }
 
-                GLManager.ModelView.Rotate(180.0F - Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
+                RenderSystem.ModelView.Rotate(180.0F - Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
                 tessellator.startDrawingQuads();
                 tessellator.setNormal(0.0F, 1.0F, 0.0F);
                 tessellator.addVertexWithUV(0.0F - xOffset, 0.0F - yOffset, 0.0D, minU, maxV);
@@ -137,11 +137,11 @@ public class ItemRenderer : EntityRenderer
                 tessellator.addVertexWithUV(quadWidth - xOffset, 1.0F - yOffset, 0.0D, maxU, minV);
                 tessellator.addVertexWithUV(0.0F - xOffset, 1.0F - yOffset, 0.0D, minU, minV);
                 tessellator.draw(ProgramSlot.Entities);
-                GLManager.ModelView.Pop();
+                RenderSystem.ModelView.Pop();
             }
         }
 
-        GLManager.ModelView.Pop();
+        RenderSystem.ModelView.Pop();
     }
 
     public void drawItemIntoGui(TextRenderer fontRenderer, TextureManager textureManager, Item item, int itemDamage, int iconIndex, int x, int y)
@@ -152,29 +152,29 @@ public class ItemRenderer : EntityRenderer
         {
             textureManager.BindTexture(textureManager.GetTextureId("/terrain.png"));
             var block = _blocks.GetByProtocolId(itemId);
-            GLManager.ModelView.Push();
-            GLManager.ModelView.Translate(x - 2, y + 3, -3.0F);
-            GLManager.ModelView.Scale(10.0F, 10.0F, 10.0F);
-            GLManager.ModelView.Translate(1.0F, 0.5F, 1.0F);
-            GLManager.ModelView.Scale(1.0F, 1.0F, -1.0F);
-            GLManager.ModelView.Rotate(210.0F, 1.0F, 0.0F, 0.0F);
-            GLManager.ModelView.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
+            RenderSystem.ModelView.Push();
+            RenderSystem.ModelView.Translate(x - 2, y + 3, -3.0F);
+            RenderSystem.ModelView.Scale(10.0F, 10.0F, 10.0F);
+            RenderSystem.ModelView.Translate(1.0F, 0.5F, 1.0F);
+            RenderSystem.ModelView.Scale(1.0F, 1.0F, -1.0F);
+            RenderSystem.ModelView.Rotate(210.0F, 1.0F, 0.0F, 0.0F);
+            RenderSystem.ModelView.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
             var itemColor = item.GetColorMultiplier(itemDamage);
             blue = ((itemColor >> 16) & 255) / 255.0F;
             var greenChannel = ((itemColor >> 8) & 255) / 255.0F;
             var blueChannel = (itemColor & 255) / 255.0F;
             if (useCustomDisplayColor)
             {
-                GLManager.Color = new Vector4D<float>(blue, greenChannel, blueChannel, 1.0F);
+                RenderSystem.Color = new Vector4D<float>(blue, greenChannel, blueChannel, 1.0F);
             }
 
-            GLManager.ModelView.Rotate(-90.0F, 0.0F, 1.0F, 0.0F);
+            RenderSystem.ModelView.Rotate(-90.0F, 0.0F, 1.0F, 0.0F);
             BlockRenderer.RenderBlockOnInventory(_blocks, block, itemDamage, 1.0F, Tessellator.instance);
-            GLManager.ModelView.Pop();
+            RenderSystem.ModelView.Pop();
         }
         else if (iconIndex >= 0)
         {
-            GLManager.LightingEnabled = false;
+            RenderSystem.LightingEnabled = false;
             if (itemId < 256)
             {
                 textureManager.BindTexture(textureManager.GetTextureId("/terrain.png"));
@@ -190,7 +190,7 @@ public class ItemRenderer : EntityRenderer
             blue = (colorMultiplier & 255) / 255.0F;
             if (useCustomDisplayColor)
             {
-                GLManager.Color = new Vector4D<float>(red, green, blue, 1.0F);
+                RenderSystem.Color = new Vector4D<float>(red, green, blue, 1.0F);
             }
 
             renderTexturedQuad(x, y, iconIndex % 16 * 16, iconIndex / 16 * 16, 16, 16);

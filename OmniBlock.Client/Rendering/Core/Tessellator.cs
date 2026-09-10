@@ -249,7 +249,7 @@ public class Tessellator : IBlockVertexSink
 
         if (vertexCount > 0)
         {
-            GLManager.DrawTarget.Submit(BuildCommand(slot));
+            RenderSystem.DrawTarget.Submit(BuildCommand(slot));
         }
 
         reset();
@@ -283,7 +283,7 @@ public class Tessellator : IBlockVertexSink
 
         IsDrawing = false;
 
-        var mesh = GLManager.DrawTarget.Capture(BuildCommand(null));
+        var mesh = RenderSystem.DrawTarget.Capture(BuildCommand(null));
         reset();
         return mesh;
     }

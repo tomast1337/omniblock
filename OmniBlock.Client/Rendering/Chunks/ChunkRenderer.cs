@@ -314,11 +314,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             {
                 if (WireframeEnabled)
                 {
-                    RenderWireframeWebGpu(pass, WgpuWireframePipelineFor(GLManager.State.Current), array);
+                    RenderWireframeWebGpu(pass, WgpuWireframePipelineFor(RenderSystem.State.Current), array);
                 }
                 else
                 {
-                    RenderSolidWebGpu(pass, WgpuPipelineFor(GLManager.State.Current), array);
+                    RenderSolidWebGpu(pass, WgpuPipelineFor(RenderSystem.State.Current), array);
                 }
             }
         }
@@ -333,7 +333,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         {
             using (Profiler.Begin("DrawChunksTranslucent"))
             {
-                RenderTranslucentWebGpu(pass, WgpuPipelineFor(GLManager.State.Current), array,
+                RenderTranslucentWebGpu(pass, WgpuPipelineFor(RenderSystem.State.Current), array,
                     renderParams.ViewPos);
             }
         }
@@ -1167,7 +1167,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         pass = null;
         textureArray = null!;
 
-        if (GLManager.DrawTargetOrNull is not WebGpuDrawTarget target) return false;
+        if (RenderSystem.DrawTargetOrNull is not WebGpuDrawTarget target) return false;
         if (target.CurrentPass is null || target.TerrainArray is not { } array) return false;
 
         pass = target.CurrentPass;
@@ -1432,8 +1432,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     /// </summary>
     private ChunkUniforms BuildChunkUniforms(Matrix4X4<float> modelView, Vector3D<int> chunkPos, float fadeProgress)
     {
-        var fog = GLManager.Fog;
-        var light = GLManager.WorldLight;
+        var fog = RenderSystem.Fog;
+        var light = RenderSystem.WorldLight;
 
         return new ChunkUniforms
         {

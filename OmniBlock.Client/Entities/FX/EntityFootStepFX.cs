@@ -30,14 +30,14 @@ public class EntityFootStepFX : EntityFX
         }
 
         alpha *= 0.2F;
-        GLManager.LightingEnabled = false;
+        RenderSystem.LightingEnabled = false;
         var footprintSize = 2.0F / 16.0F;
         var renderX = (float)(X - interpPosX);
         var renderY = (float)(Y - interpPosY);
         var renderZ = (float)(Z - interpPosZ);
         var brightness = World.Lighting.GetLuminance(MathHelper.Floor(X), MathHelper.Floor(Y), MathHelper.Floor(Z));
         textureManager.BindTexture(textureManager.GetTextureId("/misc/footprint.png"));
-        GLManager.State.Apply(RenderState.Entity with
+        RenderSystem.State.Apply(RenderState.Entity with
         {
             Blend = BlendMode.Alpha
         });
@@ -48,8 +48,8 @@ public class EntityFootStepFX : EntityFX
         t.addVertexWithUV(renderX + footprintSize, renderY, renderZ - footprintSize, 1.0D, 0.0D);
         t.addVertexWithUV(renderX - footprintSize, renderY, renderZ - footprintSize, 0.0D, 0.0D);
         t.draw(ProgramSlot.Entities);
-        GLManager.State.Apply(RenderState.Entity);
-        GLManager.LightingEnabled = true;
+        RenderSystem.State.Apply(RenderState.Entity);
+        RenderSystem.LightingEnabled = true;
     }
 
     public override void Tick()

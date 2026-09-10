@@ -56,7 +56,7 @@ public abstract class EntityRenderer
 
     private void RenderOnFire(Entity ent, Vec3D pos, float tickDelta)
     {
-        GLManager.LightingEnabled = false;
+        RenderSystem.LightingEnabled = false;
 
         var textureId = World.Content.Blocks.Get("fire").TextureId;
         var texX = (textureId & 15) << 4;
@@ -67,11 +67,11 @@ public abstract class EntityRenderer
         float minV;
         float maxV;
 
-        GLManager.ModelView.Push();
-        GLManager.ModelView.Translate((float)pos.X, (float)pos.Y, (float)pos.Z);
+        RenderSystem.ModelView.Push();
+        RenderSystem.ModelView.Translate((float)pos.X, (float)pos.Y, (float)pos.Z);
 
         var scale = ent.Width * 1.4F;
-        GLManager.ModelView.Scale(scale, scale, scale);
+        RenderSystem.ModelView.Scale(scale, scale, scale);
 
         loadTexture("/terrain.png");
         var tess = Tessellator.instance;
@@ -81,9 +81,9 @@ public abstract class EntityRenderer
         var heightRatio = ent.Height / scale;
         var yOffset = (float)(ent.Y - ent.BoundingBox.MinY);
 
-        GLManager.ModelView.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
-        GLManager.ModelView.Translate(0.0F, 0.0F, -0.3F + (int)heightRatio * 0.02F);
-        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.ModelView.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
+        RenderSystem.ModelView.Translate(0.0F, 0.0F, -0.3F + (int)heightRatio * 0.02F);
+        RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
 
         var zOffset = 0.0F;
         var pass = 0;
@@ -125,15 +125,15 @@ public abstract class EntityRenderer
         }
 
         tess.draw(ProgramSlot.Entities);
-        GLManager.ModelView.Pop();
-        GLManager.LightingEnabled = true;
+        RenderSystem.ModelView.Pop();
+        RenderSystem.LightingEnabled = true;
     }
 
     private void RenderShadow(Entity target, Vec3D pos, float shadowiness, float tickDelta)
     {
         // Blended and depth tested but not depth writing, and unculled like the models it sits under:
         // several shadows can overlap on the ground without the first one drawn hiding the rest.
-        GLManager.State.Apply(RenderState.Entity with
+        RenderSystem.State.Apply(RenderState.Entity with
         {
             Blend = BlendMode.Alpha,
             DepthWrite = false
@@ -185,8 +185,8 @@ public abstract class EntityRenderer
         }
 
         tess.draw(ProgramSlot.Entities);
-        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.State.Apply(RenderState.Entity);
+        RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.State.Apply(RenderState.Entity);
     }
 
     private void renderShadowOnBlock(Block block, Vec3D pos, int blockX, int blockY, int blockZ, float shadowiness, float radius, Vec3D offset)
@@ -222,9 +222,9 @@ public abstract class EntityRenderer
 
     public static void renderShape(Box aabb, Vec3D pos)
     {
-        GLManager.TextureEnabled = false;
+        RenderSystem.TextureEnabled = false;
         var tess = Tessellator.instance;
-        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
 
         tess.startDrawingQuads();
         tess.setTranslationD(pos.X, pos.Y, pos.Z);
@@ -268,7 +268,7 @@ public abstract class EntityRenderer
 
         tess.setTranslationD(0.0D, 0.0D, 0.0D);
         tess.draw(ProgramSlot.Basic);
-        GLManager.TextureEnabled = true;
+        RenderSystem.TextureEnabled = true;
     }
 
     public static void renderShapeFlat(Box aabb)
@@ -331,11 +331,11 @@ public abstract class EntityRenderer
     {
         if (!Dispatcher.Options.ShowDebugInfo) return;
 
-        GLManager.LightingEnabled = false;
-        GLManager.TextureEnabled = false;
-        GLManager.ModelView.Push();
-        GLManager.ModelView.Translate((float)pos.X, (float)pos.Y, (float)pos.Z);
-        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.LightingEnabled = false;
+        RenderSystem.TextureEnabled = false;
+        RenderSystem.ModelView.Push();
+        RenderSystem.ModelView.Translate((float)pos.X, (float)pos.Y, (float)pos.Z);
+        RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
 
         var bb = target.BoundingBox;
         var minX = bb.MinX - target.X;
@@ -377,7 +377,7 @@ public abstract class EntityRenderer
 
         tess.draw(ProgramSlot.Basic);
         tess.startDrawing(1);
-        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 0, 1.0F);
+        RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 0, 1.0F);
 
         tess.addVertex(minX, target.EyeHeight, minZ);
         tess.addVertex(maxX, target.EyeHeight, minZ);
@@ -390,7 +390,7 @@ public abstract class EntityRenderer
 
         tess.draw(ProgramSlot.Line);
         tess.startDrawing(1);
-        GLManager.Color = new Vector4D<float>(1.0F, 0, 0, 1.0F);
+        RenderSystem.Color = new Vector4D<float>(1.0F, 0, 0, 1.0F);
 
         const float toRad = -MathF.PI / 180.0F;
         yaw *= toRad;
@@ -400,8 +400,8 @@ public abstract class EntityRenderer
         tess.addVertex(MathHelper.Sin(yaw) * pitchCos, target.EyeHeight + MathHelper.Sin(target.Pitch * toRad), MathHelper.Cos(yaw) * pitchCos);
 
         tess.draw(ProgramSlot.Line);
-        GLManager.ModelView.Pop();
-        GLManager.TextureEnabled = true;
-        GLManager.LightingEnabled = true;
+        RenderSystem.ModelView.Pop();
+        RenderSystem.TextureEnabled = true;
+        RenderSystem.LightingEnabled = true;
     }
 }

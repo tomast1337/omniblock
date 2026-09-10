@@ -41,7 +41,7 @@ public sealed class RenderContext
     internal SkyWgslUniforms SkySlot;
     // ── Matrix stacks ──────────────────────────────────────────────────────
 
-    /// <inheritdoc cref="GLManager.ModelView" />
+    /// <inheritdoc cref="RenderSystem.ModelView" />
     public MatrixStack ModelView { get; } = new();
 
     /// <inheritdoc cref="ModelView" />
@@ -52,7 +52,7 @@ public sealed class RenderContext
 
     // ── Per-vertex defaults ─────────────────────────────────────────────────
 
-    /// <inheritdoc cref="GLManager.Color" />
+    /// <inheritdoc cref="RenderSystem.Color" />
     public Vector4D<float> Color
     {
         get;
@@ -63,7 +63,7 @@ public sealed class RenderContext
         }
     } = Vector4D<float>.One;
 
-    /// <inheritdoc cref="GLManager.Normal" />
+    /// <inheritdoc cref="RenderSystem.Normal" />
     public Vector3D<float> Normal
     {
         get;

@@ -5,14 +5,14 @@ namespace OmniBlock.Client.Rendering.Core;
 
 public class Lighting
 {
-    public static void turnOff() => GLManager.LightingEnabled = false;
+    public static void turnOff() => RenderSystem.LightingEnabled = false;
 
     public static void turnOnGui()
     {
-        GLManager.ModelView.Push();
-        GLManager.ModelView.Rotate(120.0F, 1.0F, 0.0F, 0.0F);
+        RenderSystem.ModelView.Push();
+        RenderSystem.ModelView.Rotate(120.0F, 1.0F, 0.0F, 0.0F);
         turnOn();
-        GLManager.ModelView.Pop();
+        RenderSystem.ModelView.Pop();
     }
 
     public static void turnOn(bool mirrored = false)
@@ -21,9 +21,9 @@ public class Lighting
         const float diffuse = 0.6F;
         var mx = mirrored ? -1.0f : 1.0f;
 
-        GLManager.LightingEnabled = true;
-        GLManager.ShadeModel = ShadeModel.Flat;
-        GLManager.Lighting = new LightingState(
+        RenderSystem.LightingEnabled = true;
+        RenderSystem.ShadeModel = ShadeModel.Flat;
+        RenderSystem.Lighting = new LightingState(
             EyeSpace(new Vec3D(0.2F * mx, 1.0D, -0.7F)),
             new Vector3D<float>(diffuse, diffuse, diffuse),
             EyeSpace(new Vec3D(-0.2F * mx, 1.0D, 0.7F)),
@@ -45,7 +45,7 @@ public class Lighting
         var unit = direction.Normalize();
         float x = (float)unit.X, y = (float)unit.Y, z = (float)unit.Z;
 
-        var mv = GLManager.ModelView.Top;
+        var mv = RenderSystem.ModelView.Top;
         Vector3D<float> eye = new(
             x * mv.M11 + y * mv.M21 + z * mv.M31,
             x * mv.M12 + y * mv.M22 + z * mv.M32,

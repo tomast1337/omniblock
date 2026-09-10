@@ -328,7 +328,7 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
         // own uniform block. Everything else goes through the generic gbuffers path.
         if (slot is { } named && _slotPipelineInfos.ContainsKey(named))
         {
-            var slotPipeline = SlotPipelineFor(named, GLManager.State.Current);
+            var slotPipeline = SlotPipelineFor(named, RenderSystem.State.Current);
             api.RenderPassEncoderSetPipeline(CurrentPass, slotPipeline.Pipeline.Pipeline);
             ApplyScissor(api);
 
@@ -387,7 +387,7 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
     /// </remarks>
     private void ApplyScissor(Silk.NET.WebGPU.WebGPU api)
     {
-        if (GLManager.Scissor is not { } rect)
+        if (RenderSystem.Scissor is not { } rect)
         {
             api.RenderPassEncoderSetScissorRect(CurrentPass, 0, 0, _passWidth, _passHeight);
             return;
@@ -463,12 +463,12 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
         {
             case ProgramSlot.SkyBasic:
             case ProgramSlot.SkyTextured:
-                var sky = GLManager.Context.SkySlot;
+                var sky = RenderSystem.Context.SkySlot;
                 _device.Api.QueueWriteBuffer(_device.Queue, buffer, 0, &sky, (nuint)sizeof(SkyWgslUniforms));
                 break;
 
             case ProgramSlot.Clouds:
-                var cloud = GLManager.Context.CloudSlot;
+                var cloud = RenderSystem.Context.CloudSlot;
                 _device.Api.QueueWriteBuffer(_device.Queue, buffer, 0, &cloud, (nuint)sizeof(CloudWgslUniforms));
                 break;
         }
@@ -476,7 +476,7 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
 
     private void WriteUniforms(WgpuBuffer* buffer, VertexChannels channels)
     {
-        var context = GLManager.Context;
+        var context = RenderSystem.Context;
         var tint = context.Color;
 
         GbuffersUniforms uniforms = new()
@@ -518,7 +518,7 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
 
     private Program ProgramFor(bool textured, DrawTopology topology)
     {
-        var state = GLManager.State.Current;
+        var state = RenderSystem.State.Current;
 
         if (_programs.TryGetValue((textured, topology, state), out var cached))
         {

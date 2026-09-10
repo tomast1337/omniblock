@@ -12,5 +12,5 @@ public sealed class ScaledEntityRenderer(ModelBase main, float shadowRadius, flo
     : LivingEntityRenderer(main, shadowRadius * scale)
 {
     protected override void PreRenderCallback(EntityLiving entity, float tickDelta) =>
-        GLManager.ModelView.Scale(scale, scale, scale);
+        RenderSystem.ModelView.Scale(scale, scale, scale);
 }

@@ -272,10 +272,10 @@ public partial class OmniBlock :
         SetupDisplay();
         SetupCoreSystems();
 
-        // After SetupOpenGLAndInput, not before: that's where ImGui.CreateContext() runs, and the
+        // After SetupRenderingAndInput, not before: that's where ImGui.CreateContext() runs, and the
         // WebGPU splash goes through the same ImGuiWgpuBackend/RenderState machinery every other
         // frame does — drawing it any earlier means drawing before that machinery exists.
-        SetupOpenGLAndInput();
+        SetupRenderingAndInput();
 
         LoadScreen();
 
@@ -379,7 +379,7 @@ public partial class OmniBlock :
             // computes above all — is in the former.
             WebGpuDevice.Create(Display.getWindow()!,
                 Display.getFramebufferWidth(), Display.getFramebufferHeight());
-            GLManager.Init();
+            RenderSystem.Initialize();
             WebGpuRenderer = new WebGpuGameRenderer(this);
         }
         catch (Exception ex)
@@ -603,7 +603,7 @@ public partial class OmniBlock :
         UiBatchRenderer.RegisterTextureByPath(assetPath, (uint)handle.Id);
     }
 
-    private unsafe void SetupOpenGLAndInput()
+    private unsafe void SetupRenderingAndInput()
     {
         // Anisotropy was a GL extension query; WebGPU has no ceiling to ask for, so this just
         // states the sampler field's fixed value.
@@ -646,8 +646,8 @@ public partial class OmniBlock :
             }
         };
 
-        GLManager.TextureEnabled = true;
-        GLManager.ShadeModel = ShadeModel.Smooth;
+        RenderSystem.TextureEnabled = true;
+        RenderSystem.ShadeModel = ShadeModel.Smooth;
 
         // The state every frame starts from, and the one the rest of the renderer is traced
         // against. It is named here rather than assembled from a handful of enables so that the
@@ -655,14 +655,14 @@ public partial class OmniBlock :
         // Lequal, nothing blended, nothing culled. Culling being off is not an oversight — GL
         // starts with it disabled and the old code only ever set which face to cull, never turned
         // it on, which is the same thing RenderState.Entity settles on for the entity pass.
-        GLManager.State.Apply(RenderState.Entity);
+        RenderSystem.State.Apply(RenderState.Entity);
 
-        GLManager.AlphaTestEnabled = true;
-        GLManager.AlphaThreshold = 0.1F;
+        RenderSystem.AlphaTestEnabled = true;
+        RenderSystem.AlphaThreshold = 0.1F;
         // Both stacks to identity. The model-view holds the default from process start, but
         // stating it explicitly means a later stack-owner change doesn't silently infect this.
-        GLManager.Projection.LoadIdentity();
-        GLManager.ModelView.LoadIdentity();
+        RenderSystem.Projection.LoadIdentity();
+        RenderSystem.ModelView.LoadIdentity();
     }
 
     private void SetupResourcesAndPostProcessing()
@@ -2174,10 +2174,10 @@ public partial class OmniBlock :
     private void LoadScreen()
     {
         ScaledResolution scaledResolution = new(Options, DisplayWidth, DisplayHeight);
-        GLManager.Projection.LoadIdentity();
-        GLManager.Projection.Ortho(0.0D, scaledResolution.ScaledWidth, scaledResolution.ScaledHeight, 0.0D, 1000.0D, 3000.0D);
-        GLManager.ModelView.LoadIdentity();
-        GLManager.ModelView.Translate(0.0F, 0.0F, -2000.0F);
+        RenderSystem.Projection.LoadIdentity();
+        RenderSystem.Projection.Ortho(0.0D, scaledResolution.ScaledWidth, scaledResolution.ScaledHeight, 0.0D, 1000.0D, 3000.0D);
+        RenderSystem.ModelView.LoadIdentity();
+        RenderSystem.ModelView.Translate(0.0F, 0.0F, -2000.0F);
 
         WebGpuRenderer.RenderLoadingFrame(DrawMojangLogo);
         return;
@@ -2185,14 +2185,14 @@ public partial class OmniBlock :
         void DrawMojangLogo()
         {
             var tessellator = Tessellator.instance;
-            GLManager.LightingEnabled = false;
-            GLManager.FogEnabled = false;
+            RenderSystem.LightingEnabled = false;
+            RenderSystem.FogEnabled = false;
 
             // Solid white backdrop, filling the ortho space set up above (scaled coordinates, not
             // raw display pixels — the old version quaded 0..DisplayWidth/Height, which is a
             // different, usually larger, space than what the projection here maps to the window).
-            GLManager.TextureEnabled = false;
-            GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
+            RenderSystem.TextureEnabled = false;
+            RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
             tessellator.startDrawingQuads();
             tessellator.setColorOpaque_I(0xFFFFFF);
             tessellator.addVertex(0.0D, scaledResolution.ScaledHeight, 0.0D);
@@ -2201,17 +2201,17 @@ public partial class OmniBlock :
             tessellator.addVertex(0.0D, 0.0D, 0.0D);
             tessellator.draw(ProgramSlot.Basic);
 
-            GLManager.TextureEnabled = true;
+            RenderSystem.TextureEnabled = true;
             TextureManager.BindTexture(TextureManager.GetTextureId("/title/mojang.png"));
             short logoWidth = 256;
             short logoHeight = 256;
-            GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
+            RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
             tessellator.setColorOpaque_I(0xFFFFFF);
             DrawTextureRegion((scaledResolution.ScaledWidth - logoWidth) / 2, (scaledResolution.ScaledHeight - logoHeight) / 2, 0, 0, logoWidth, logoHeight);
-            GLManager.LightingEnabled = false;
-            GLManager.FogEnabled = false;
-            GLManager.AlphaTestEnabled = true;
-            GLManager.AlphaThreshold = 0.1F;
+            RenderSystem.LightingEnabled = false;
+            RenderSystem.FogEnabled = false;
+            RenderSystem.AlphaTestEnabled = true;
+            RenderSystem.AlphaThreshold = 0.1F;
         }
     }
 

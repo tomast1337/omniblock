@@ -45,7 +45,7 @@ public sealed unsafe class WgpuParticleRenderer : IDisposable
     /// <summary>Draws one layer's particles as instanced billboards.</summary>
     /// <remarks>
     ///     <paramref name="modelView" /> and <paramref name="projection" /> are the same
-    ///     <see cref="GLManager.ModelView" />/<see cref="GLManager.Projection" /> matrices the GL
+    ///     <see cref="RenderSystem.ModelView" />/<see cref="RenderSystem.Projection" /> matrices the GL
     ///     Tessellator path submits particles under — <paramref name="projection" /> is still in
     ///     OpenGL's clip space, and only converted to WebGPU's here, at the point a shader is handed it.
     /// </remarks>
@@ -57,7 +57,7 @@ public sealed unsafe class WgpuParticleRenderer : IDisposable
         if (instances.Length == 0) return;
 
         var pipeline = EnsurePipeline(device);
-        var pass = ((WebGpuDrawTarget)GLManager.DrawTarget).CurrentPass;
+        var pass = ((WebGpuDrawTarget)RenderSystem.DrawTarget).CurrentPass;
 
         var buffer = _layerBuffers[layer] ??= new WgpuStorageBuffer(
             device, ParticleBuffer.MaxParticles * InstanceStride,

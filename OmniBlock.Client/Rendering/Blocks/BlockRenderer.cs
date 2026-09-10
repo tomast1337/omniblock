@@ -122,11 +122,11 @@ public class BlockRenderer
             void SetFaceColor(int face)
             {
                 var c = block.GetColorForFace(metadata, face);
-                GLManager.Color = new Vector4D<float>(((c >> 16) & 255) / 255.0F * brightness, ((c >> 8) & 255) / 255.0F * brightness, (c & 255) / 255.0F * brightness, 1.0F);
+                RenderSystem.Color = new Vector4D<float>(((c >> 16) & 255) / 255.0F * brightness, ((c >> 8) & 255) / 255.0F * brightness, (c & 255) / 255.0F * brightness, 1.0F);
             }
 
             block.SetupRenderBoundingBox();
-            GLManager.ModelView.Translate(-0.5F, -0.5F, -0.5F);
+            RenderSystem.ModelView.Translate(-0.5F, -0.5F, -0.5F);
 
             tess.startDrawingQuads();
             tess.setNormal(0.0F, -1.0F, 0.0F);
@@ -169,20 +169,20 @@ public class BlockRenderer
                 isPiston ? block.GetTexture(Side.East) : block.GetTexture(Side.East, metadata));
             tess.draw(ProgramSlot.Gui);
 
-            GLManager.ModelView.Translate(0.5F, 0.5F, 0.5F);
+            RenderSystem.ModelView.Translate(0.5F, 0.5F, 0.5F);
         }
         else
         {
             var color = block.GetColor(metadata);
-            GLManager.Color = new Vector4D<float>(((color >> 16) & 255) / 255.0F * brightness, ((color >> 8) & 255) / 255.0F * brightness, (color & 255) / 255.0F * brightness, 1.0F);
-            GLManager.ModelView.Translate(-0.5F, -0.5F, -0.5F);
+            RenderSystem.Color = new Vector4D<float>(((color >> 16) & 255) / 255.0F * brightness, ((color >> 8) & 255) / 255.0F * brightness, (color & 255) / 255.0F * brightness, 1.0F);
+            RenderSystem.ModelView.Translate(-0.5F, -0.5F, -0.5F);
             var itemWorld = new ItemRenderBlockAccess(block.Id, metadata, brightness);
             BlockPos itemPos = new(0, 0, 0);
             tess.startDrawingQuads();
             tess.setNormal(0.0F, 1.0F, 0.0F);
             RenderBlockByRenderType(itemWorld, blocks, itemWorld, block, itemPos, tess, uiCtx.OverrideTexture, true);
             tess.draw(ProgramSlot.Gui);
-            GLManager.ModelView.Translate(0.5F, 0.5F, 0.5F);
+            RenderSystem.ModelView.Translate(0.5F, 0.5F, 0.5F);
         }
     }
 

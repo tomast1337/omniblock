@@ -41,7 +41,7 @@ public sealed class FuseEntityRenderer : LivingEntityRenderer
 
         var scaleX = (1.0F + progress * 0.4F) * pulse;
         var scaleY = (1.0F + progress * 0.1F) / pulse;
-        GLManager.ModelView.Scale(scaleX, scaleY, scaleX);
+        RenderSystem.ModelView.Scale(scaleX, scaleY, scaleX);
     }
 
     protected override int getColorMultiplier(EntityLiving entity, float brightness, float tickDelta)
@@ -63,24 +63,24 @@ public sealed class FuseEntityRenderer : LivingEntityRenderer
         {
             var animationTime = entity.Age + tickDelta;
             loadTexture(_overlayTexture);
-            GLManager.TextureMatrix.LoadIdentity();
-            GLManager.TextureMatrix.Translate(animationTime * 0.01F, animationTime * 0.01F, 0.0F);
+            RenderSystem.TextureMatrix.LoadIdentity();
+            RenderSystem.TextureMatrix.Translate(animationTime * 0.01F, animationTime * 0.01F, 0.0F);
             setRenderPassModel(_overlay);
 
-            GLManager.State.Apply(RenderState.Entity with
+            RenderSystem.State.Apply(RenderState.Entity with
             {
                 Blend = BlendMode.Additive
             });
-            GLManager.Color = new Vector4D<float>(0.5F, 0.5F, 0.5F, 1.0F);
-            GLManager.LightingEnabled = false;
+            RenderSystem.Color = new Vector4D<float>(0.5F, 0.5F, 0.5F, 1.0F);
+            RenderSystem.LightingEnabled = false;
             return true;
         }
 
         if (renderPass == 2)
         {
-            GLManager.TextureMatrix.LoadIdentity();
-            GLManager.LightingEnabled = true;
-            GLManager.State.Apply(RenderState.Entity);
+            RenderSystem.TextureMatrix.LoadIdentity();
+            RenderSystem.LightingEnabled = true;
+            RenderSystem.State.Apply(RenderState.Entity);
         }
 
         return false;

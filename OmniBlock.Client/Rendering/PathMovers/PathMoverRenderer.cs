@@ -87,7 +87,7 @@ public static class PathMoverRenderer
         Vector3 up = new(upX, cosPitch, upZ);
 
         s_wgpuRenderer.DrawLayer(device, texture,
-            GLManager.ModelView.Top, GLManager.Projection.Top,
+            RenderSystem.ModelView.Top, RenderSystem.Projection.Top,
             right, up, 0, s_scratch.AsSpan(0, buf.Count));
     }
 }

@@ -67,10 +67,10 @@ public class UIRenderer
     public void Begin()
     {
         // Lighting is a shader uniform rather than pipeline state, so it stays a separate call.
-        GLManager.LightingEnabled = false;
-        GLManager.State.Apply(RenderState.Interface);
-        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.ModelView.Push();
+        RenderSystem.LightingEnabled = false;
+        RenderSystem.State.Apply(RenderState.Interface);
+        RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.ModelView.Push();
 
         _translateX = 0;
         _translateY = 0;
@@ -88,8 +88,8 @@ public class UIRenderer
     public void End()
     {
         _batch.End();
-        GLManager.ModelView.Pop();
-        GLManager.Color = new Vector4D<float>(1.0f, 1.0f, 1.0f, 1.0f);
+        RenderSystem.ModelView.Pop();
+        RenderSystem.Color = new Vector4D<float>(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
 
@@ -102,14 +102,14 @@ public class UIRenderer
             _currentTint = newTint;
         }
 
-        GLManager.Color = new Vector4D<float>(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f, color.A / 255.0f);
+        RenderSystem.Color = new Vector4D<float>(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f, color.A / 255.0f);
     }
 
     public void PopColor()
     {
         _batch.Flush();
         _currentTint = 0xFFFFFFFF;
-        GLManager.Color = new Vector4D<float>(1.0f, 1.0f, 1.0f, 1.0f);
+        RenderSystem.Color = new Vector4D<float>(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     public void SetAlphaTest(bool flag)
@@ -117,11 +117,11 @@ public class UIRenderer
         _batch.Flush();
         if (flag)
         {
-            GLManager.AlphaTestEnabled = true;
+            RenderSystem.AlphaTestEnabled = true;
         }
         else
         {
-            GLManager.AlphaTestEnabled = false;
+            RenderSystem.AlphaTestEnabled = false;
         }
     }
 
@@ -138,7 +138,7 @@ public class UIRenderer
         // it was queued for rather than under the incoming one.
         _batch.Flush();
         _batch.Blend = mode;
-        GLManager.State.Apply(RenderState.Interface with
+        RenderSystem.State.Apply(RenderState.Interface with
         {
             Blend = mode
         });
@@ -148,7 +148,7 @@ public class UIRenderer
     {
         _batch.Flush();
         _batch.Blend = BlendMode.Alpha;
-        GLManager.State.Apply(RenderState.Interface);
+        RenderSystem.State.Apply(RenderState.Interface);
     }
 
     public void ClearDepth()
@@ -159,7 +159,7 @@ public class UIRenderer
         // write mask, and RenderState.Interface has it off. Clearing without it silently leaves the
         // buffer alone, which is how the item on the cursor ended up losing the depth test against
         // the block previews already drawn in the slots underneath it.
-        GLManager.State.Apply(RenderState.Interface with
+        RenderSystem.State.Apply(RenderState.Interface with
         {
             DepthWrite = true
         });
@@ -168,7 +168,7 @@ public class UIRenderer
         // no command to clear one partway through. Doing this properly means ending the interface
         // pass here and beginning another, which the draw target has no way to ask for yet; until
         // then the item on the cursor can lose the depth test against a slot preview.
-        GLManager.State.Apply(RenderState.Interface);
+        RenderSystem.State.Apply(RenderState.Interface);
     }
 
     public void PushTranslate(float x, float y)
@@ -257,7 +257,7 @@ public class UIRenderer
         _scissorEnabled = true;
         _scissorRect = (physicalX, physicalY, physicalWidth, physicalHeight);
 
-        GLManager.Scissor = new ScissorRect(physicalX, physicalY, physicalWidth, physicalHeight);
+        RenderSystem.Scissor = new ScissorRect(physicalX, physicalY, physicalWidth, physicalHeight);
     }
 
     public void DisableClipping()
@@ -269,7 +269,7 @@ public class UIRenderer
             _scissorRect = (prev.X, prev.Y, prev.W, prev.H);
             if (prev.Enabled)
             {
-                GLManager.Scissor = new ScissorRect(prev.X, prev.Y, Math.Max(0, prev.W), Math.Max(0, prev.H));
+                RenderSystem.Scissor = new ScissorRect(prev.X, prev.Y, Math.Max(0, prev.W), Math.Max(0, prev.H));
                 return;
             }
         }
@@ -278,7 +278,7 @@ public class UIRenderer
             _scissorEnabled = false;
         }
 
-        GLManager.Scissor = null;
+        RenderSystem.Scissor = null;
     }
 
     public void DrawRect(float x, float y, float width, float height, Color color)
@@ -428,20 +428,20 @@ public class UIRenderer
         {
             DrawCompositeItemContents(stack, x, y);
             _batch.Flush();
-            GLManager.ModelView.Push();
-            GLManager.ModelView.Translate(0, 0, 32.0f);
+            RenderSystem.ModelView.Push();
+            RenderSystem.ModelView.Translate(0, 0, 32.0f);
 
             // Depth writing as well as testing: the block is solid geometry that has to occlude
             // its own far faces. RenderState.Interface does neither, which is right for flat panels
             // and wrong here.
-            GLManager.State.Apply(s_preview);
+            RenderSystem.State.Apply(s_preview);
 
             Lighting.turnOnGui();
             _itemRenderer.renderItemIntoGUI(TextRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
             Lighting.turnOff();
 
-            GLManager.State.Apply(RenderState.Interface);
-            GLManager.ModelView.Pop();
+            RenderSystem.State.Apply(RenderState.Interface);
+            RenderSystem.ModelView.Pop();
         }
         else
         {
@@ -511,12 +511,12 @@ public class UIRenderer
     {
         _batch.Flush();
 
-        GLManager.State.Apply(s_preview);
-        GLManager.ModelView.Push();
-        GLManager.ModelView.Translate(x + _translateX, y + _translateY, depth);
+        RenderSystem.State.Apply(s_preview);
+        RenderSystem.ModelView.Push();
+        RenderSystem.ModelView.Translate(x + _translateX, y + _translateY, depth);
 
-        GLManager.ModelView.Scale(-scale, scale, scale);
-        GLManager.ModelView.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
+        RenderSystem.ModelView.Scale(-scale, scale, scale);
+        RenderSystem.ModelView.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
 
         var bodyYaw = entity is EntityLiving el ? el.BodyYaw : entity.Yaw;
         var headYaw = entity.Yaw;
@@ -524,10 +524,10 @@ public class UIRenderer
         var lookX = x + _translateX - mouseX;
         var lookY = y + _translateY - 50 - mouseY;
 
-        GLManager.ModelView.Rotate(135.0F, 0.0F, 1.0F, 0.0F);
+        RenderSystem.ModelView.Rotate(135.0F, 0.0F, 1.0F, 0.0F);
         Lighting.turnOn();
-        GLManager.ModelView.Rotate(-135.0F, 0.0F, 1.0F, 0.0F);
-        GLManager.ModelView.Rotate(-(float)Math.Atan(lookY / 40.0F) * 20.0F, 1.0F, 0.0F, 0.0F);
+        RenderSystem.ModelView.Rotate(-135.0F, 0.0F, 1.0F, 0.0F);
+        RenderSystem.ModelView.Rotate(-(float)Math.Atan(lookY / 40.0F) * 20.0F, 1.0F, 0.0F, 0.0F);
 
         if (entity is EntityLiving el2)
         {
@@ -538,7 +538,7 @@ public class UIRenderer
         entity.Pitch = -(float)Math.Atan(lookY / 40.0F) * 20.0F;
         entity.MinBrightness = 1.0F;
 
-        GLManager.ModelView.Translate(0.0F, entity.StandingEyeHeight, 0.0F);
+        RenderSystem.ModelView.Translate(0.0F, entity.StandingEyeHeight, 0.0F);
         EntityRenderDispatcher.Instance.PlayerViewY = 180.0F;
         EntityRenderDispatcher.Instance.RenderEntityWithPosYaw(entity, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F);
 
@@ -551,9 +551,9 @@ public class UIRenderer
         entity.Yaw = headYaw;
         entity.Pitch = headPitch;
 
-        GLManager.ModelView.Pop();
+        RenderSystem.ModelView.Pop();
         Lighting.turnOff();
-        GLManager.State.Apply(RenderState.Interface);
+        RenderSystem.State.Apply(RenderState.Interface);
     }
 
     public void DrawScrollingText(string text, float x, float y, int containerWidth, int containerHeight, Color color, long scrollStartMs, int rightPadding = 2)
@@ -635,19 +635,19 @@ public class UIRenderer
     {
         _batch.Flush();
 
-        GLManager.State.Apply(s_preview);
-        GLManager.ModelView.Push();
-        GLManager.ModelView.Translate(x + _translateX, y + _translateY, 50.0F);
+        RenderSystem.State.Apply(s_preview);
+        RenderSystem.ModelView.Push();
+        RenderSystem.ModelView.Translate(x + _translateX, y + _translateY, 50.0F);
 
-        GLManager.ModelView.Scale(-scale, -scale, -scale);
-        GLManager.ModelView.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
+        RenderSystem.ModelView.Scale(-scale, -scale, -scale);
+        RenderSystem.ModelView.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
 
         var signBlock = sign.GetBlock();
         if (signBlock == Context.Content.Blocks.Get("sign"))
         {
             var rotation = sign.PushedBlockData * 360 / 16.0F;
-            GLManager.ModelView.Rotate(rotation, 0.0F, 1.0F, 0.0F);
-            GLManager.ModelView.Translate(0.0F, -1.0625F, 0.0F);
+            RenderSystem.ModelView.Rotate(rotation, 0.0F, 1.0F, 0.0F);
+            RenderSystem.ModelView.Translate(0.0F, -1.0625F, 0.0F);
         }
         else
         {
@@ -668,12 +668,12 @@ public class UIRenderer
                 angle = -90.0F;
             }
 
-            GLManager.ModelView.Rotate(angle, 0.0F, 1.0F, 0.0F);
-            GLManager.ModelView.Translate(0.0F, -1.0625F, 0.0F);
+            RenderSystem.ModelView.Rotate(angle, 0.0F, 1.0F, 0.0F);
+            RenderSystem.ModelView.Translate(0.0F, -1.0625F, 0.0F);
         }
 
         BlockEntityRenderer.Instance.RenderTileEntityAt(sign, -0.5D, -0.75D, -0.5D, 0.0F);
-        GLManager.ModelView.Pop();
-        GLManager.State.Apply(RenderState.Interface);
+        RenderSystem.ModelView.Pop();
+        RenderSystem.State.Apply(RenderState.Interface);
     }
 }

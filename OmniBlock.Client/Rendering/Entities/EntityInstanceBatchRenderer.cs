@@ -48,7 +48,7 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
     private readonly Dictionary<RenderState, WgpuPipeline> _wgpuPipelines = [];
     private readonly Dictionary<RenderState, int> _wgpuStorageBufferPoolNext = [];
 
-    // A pool per RenderState, not one buffer rewritten per Flush: GLManager.ImmediateGeometryDrawing
+    // A pool per RenderState, not one buffer rewritten per Flush: RenderSystem.ImmediateGeometryDrawing
     // flushes queued instances before every interleaved immediate-mode draw (a burning entity's
     // flame quad is the case that shows it), so one frame can call Flush more than once. All
     // QueueWriteBuffer calls run before the frame's draws execute, so a second flush's write would
@@ -63,7 +63,7 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
     private int _instanceCount;
 
     // WebGPU path. Keyed by RenderState because a WgpuPipeline bakes blend/depth/cull into an
-    // immutable descriptor — unlike GL, which reads it back off GLManager.State per bucket. Each
+    // immutable descriptor — unlike GL, which reads it back off RenderSystem.State per bucket. Each
     // RenderState's own storage buffer, not one shared one, because its bind group is locked to
     // the BindGroupLayout its owning pipeline built; a second pipeline's layout object is not
     // interchangeable with it even when the entries are identical (see WgpuParticleRenderer's
@@ -76,7 +76,7 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         // that was logically in front of it. A burning entity is the case that shows it: its flames
         // are a camera-facing quad drawn straight through the tessellator, so which parts of the
         // still-queued mob they cover changes as the camera moves.
-        GLManager.ImmediateGeometryDrawing += Flush;
+        RenderSystem.ImmediateGeometryDrawing += Flush;
 
     public static EntityInstanceBatchRenderer Instance =>
         s_instance ?? throw new InvalidOperationException($"{nameof(EntityInstanceBatchRenderer)}.{nameof(Initialize)} must be called before use.");
@@ -86,7 +86,7 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
 
     public void Dispose()
     {
-        GLManager.ImmediateGeometryDrawing -= Flush;
+        RenderSystem.ImmediateGeometryDrawing -= Flush;
 
         _staticMesh?.Dispose();
         foreach (var pool in _wgpuStorageBufferPools.Values)
@@ -216,12 +216,12 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         _instanceData[tintOffset + 3] = tint.W;
 
         DrawState draw = new(
-            GLManager.State.Current,
-            GLManager.TextureEnabled,
-            GLManager.EffectiveAlphaThreshold,
-            GLManager.LightingEnabled,
-            GLManager.Lighting,
-            GLManager.TextureMatrix.Top);
+            RenderSystem.State.Current,
+            RenderSystem.TextureEnabled,
+            RenderSystem.EffectiveAlphaThreshold,
+            RenderSystem.LightingEnabled,
+            RenderSystem.Lighting,
+            RenderSystem.TextureMatrix.Top);
 
         // A colour-only draw samples nothing, so the bound texture is not part of what it looks
         // like. Keying on it anyway would split one bucket per texture that happened to be bound.
@@ -279,7 +279,7 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
 
     private void FlushBucketsWebGpu()
     {
-        if (GLManager.DrawTargetOrNull is not WebGpuDrawTarget target || target.CurrentPass is null)
+        if (RenderSystem.DrawTargetOrNull is not WebGpuDrawTarget target || target.CurrentPass is null)
         {
             // No pass is open to draw into (e.g. a flush forced outside RenderEntities' pass);
             // dropping is the same failure mode the pre-instancing WebGPU path had.
@@ -361,12 +361,12 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
 
     private static EntityInstancedWgslUniforms UniformsFor(in DrawState draw)
     {
-        var fog = GLManager.Fog;
+        var fog = RenderSystem.Fog;
         var lighting = draw.Lighting;
 
         return new EntityInstancedWgslUniforms
         {
-            ProjectionMatrix = WebGpuDrawTarget.ToNumerics(WgpuClip.FromGl(GLManager.Projection.Top)),
+            ProjectionMatrix = WebGpuDrawTarget.ToNumerics(WgpuClip.FromGl(RenderSystem.Projection.Top)),
             TextureMatrix = WebGpuDrawTarget.ToNumerics(draw.TextureMatrix),
             Ambient = ToNumerics(lighting.Ambient),
             LightingEnabled = draw.LightingEnabled ? 1u : 0u,
@@ -375,7 +375,7 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
             Light0Diffuse = ToNumerics(lighting.Light0Diffuse),
             AlphaThreshold = draw.AlphaThreshold,
             Light1Dir = ToNumerics(lighting.Light1Direction),
-            FogEnabled = GLManager.FogEnabled ? 1u : 0u,
+            FogEnabled = RenderSystem.FogEnabled ? 1u : 0u,
             Light1Diffuse = ToNumerics(lighting.Light1Diffuse),
             FogMode = (int)fog.Curve,
             FogColor = new Vector4(fog.Color.X, fog.Color.Y, fog.Color.Z, fog.Color.W),

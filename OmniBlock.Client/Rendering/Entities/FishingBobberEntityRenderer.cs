@@ -11,9 +11,9 @@ public class FishingBobberEntityRenderer : EntityRenderer
     public void render(Entity bobberEntity, double x, double y, double z, float yaw, float tickDelta)
     {
         var angler = bobberEntity.Behaviors.Find<FishingBobberBehavior>()!.Angler(bobberEntity);
-        GLManager.ModelView.Push();
-        GLManager.ModelView.Translate((float)x, (float)y, (float)z);
-        GLManager.ModelView.Scale(0.5F, 0.5F, 0.5F);
+        RenderSystem.ModelView.Push();
+        RenderSystem.ModelView.Translate((float)x, (float)y, (float)z);
+        RenderSystem.ModelView.Scale(0.5F, 0.5F, 0.5F);
         byte particleUIndex = 1;
         byte particleVIndex = 2;
         loadTexture("/particles.png");
@@ -25,8 +25,8 @@ public class FishingBobberEntityRenderer : EntityRenderer
         var quadWidth = 1.0F;
         var xOffset = 0.5F;
         var yOffset = 0.5F;
-        GLManager.ModelView.Rotate(180.0F - Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
-        GLManager.ModelView.Rotate(-Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
+        RenderSystem.ModelView.Rotate(180.0F - Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
+        RenderSystem.ModelView.Rotate(-Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
         tessellator.startDrawingQuads();
         tessellator.setNormal(0.0F, 1.0F, 0.0F);
         tessellator.addVertexWithUV(0.0F - xOffset, 0.0F - yOffset, 0.0D, minU, maxV);
@@ -34,7 +34,7 @@ public class FishingBobberEntityRenderer : EntityRenderer
         tessellator.addVertexWithUV(quadWidth - xOffset, 1.0F - yOffset, 0.0D, maxU, minV);
         tessellator.addVertexWithUV(0.0F - xOffset, 1.0F - yOffset, 0.0D, minU, minV);
         tessellator.draw(ProgramSlot.Entities);
-        GLManager.ModelView.Pop();
+        RenderSystem.ModelView.Pop();
         if (angler != null)
         {
             var anglerYawRadians = (angler.PrevYaw + (angler.Yaw - angler.PrevYaw) * tickDelta) * (float)Math.PI / 180.0F;
@@ -66,8 +66,8 @@ public class FishingBobberEntityRenderer : EntityRenderer
             var lineDeltaX = (double)(float)(lineStartX - bobberX);
             var lineDeltaY = (double)(float)(lineStartY - bobberY);
             var lineDeltaZ = (double)(float)(lineStartZ - bobberZ);
-            GLManager.TextureEnabled = false;
-            GLManager.LightingEnabled = false;
+            RenderSystem.TextureEnabled = false;
+            RenderSystem.LightingEnabled = false;
             tessellator.startDrawing(3);
             tessellator.setColorOpaque_I(0x000000);
             byte segmentCount = 16;
@@ -79,8 +79,8 @@ public class FishingBobberEntityRenderer : EntityRenderer
             }
 
             tessellator.draw(ProgramSlot.Line);
-            GLManager.LightingEnabled = true;
-            GLManager.TextureEnabled = true;
+            RenderSystem.LightingEnabled = true;
+            RenderSystem.TextureEnabled = true;
         }
     }
 

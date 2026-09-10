@@ -17,7 +17,7 @@ public class MinecartEntityRenderer : EntityRenderer
     public void render(Entity minecart, double x, double y, double z, float yaw, float tickDelta)
     {
         var cart = minecart.Behaviors.Find<MinecartBehavior>()!;
-        GLManager.ModelView.Push();
+        RenderSystem.ModelView.Push();
         var interpX = minecart.LastTickX + (minecart.X - minecart.LastTickX) * tickDelta;
         var interpY = minecart.LastTickY + (minecart.Y - minecart.LastTickY) * tickDelta;
         var interpZ = minecart.LastTickZ + (minecart.Z - minecart.LastTickZ) * tickDelta;
@@ -41,9 +41,9 @@ public class MinecartEntityRenderer : EntityRenderer
             }
         }
 
-        GLManager.ModelView.Translate((float)x, (float)y, (float)z);
-        GLManager.ModelView.Rotate(180.0F - yaw, 0.0F, 1.0F, 0.0F);
-        GLManager.ModelView.Rotate(-pitch, 0.0F, 0.0F, 1.0F);
+        RenderSystem.ModelView.Translate((float)x, (float)y, (float)z);
+        RenderSystem.ModelView.Rotate(180.0F - yaw, 0.0F, 1.0F, 0.0F);
+        RenderSystem.ModelView.Rotate(-pitch, 0.0F, 0.0F, 1.0F);
         var timeSinceHit = cart.TimeSinceHit(minecart) - tickDelta;
         var damageTaken = cart.Damage(minecart) - tickDelta;
         if (damageTaken < 0.0F)
@@ -53,7 +53,7 @@ public class MinecartEntityRenderer : EntityRenderer
 
         if (timeSinceHit > 0.0F)
         {
-            GLManager.ModelView.Rotate(MathHelper.Sin(timeSinceHit) * timeSinceHit * damageTaken / 10.0F * cart.RockDirection(minecart), 1.0F, 0.0F, 0.0F);
+            RenderSystem.ModelView.Rotate(MathHelper.Sin(timeSinceHit) * timeSinceHit * damageTaken / 10.0F * cart.RockDirection(minecart), 1.0F, 0.0F, 0.0F);
         }
 
         var cartType = cart.Type(minecart);
@@ -61,9 +61,9 @@ public class MinecartEntityRenderer : EntityRenderer
         {
             loadTexture("/terrain.png");
             var blockScale = 12.0F / 16.0F;
-            GLManager.ModelView.Scale(blockScale, blockScale, blockScale);
-            GLManager.ModelView.Translate(0.0F, 5.0F / 16.0F, 0.0F);
-            GLManager.ModelView.Rotate(90.0F, 0.0F, 1.0F, 0.0F);
+            RenderSystem.ModelView.Scale(blockScale, blockScale, blockScale);
+            RenderSystem.ModelView.Translate(0.0F, 5.0F / 16.0F, 0.0F);
+            RenderSystem.ModelView.Rotate(90.0F, 0.0F, 1.0F, 0.0F);
             if (cartType == MinecartBehavior.Chest)
             {
                 BlockRenderer.RenderBlockOnInventory(World.Content.Blocks, World.Content.Blocks.Get("chest"), 0, minecart.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
@@ -73,15 +73,15 @@ public class MinecartEntityRenderer : EntityRenderer
                 BlockRenderer.RenderBlockOnInventory(World.Content.Blocks, World.Content.Blocks.Get("furnace"), 0, minecart.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
             }
 
-            GLManager.ModelView.Rotate(-90.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.ModelView.Translate(0.0F, -(5.0F / 16.0F), 0.0F);
-            GLManager.ModelView.Scale(1.0F / blockScale, 1.0F / blockScale, 1.0F / blockScale);
+            RenderSystem.ModelView.Rotate(-90.0F, 0.0F, 1.0F, 0.0F);
+            RenderSystem.ModelView.Translate(0.0F, -(5.0F / 16.0F), 0.0F);
+            RenderSystem.ModelView.Scale(1.0F / blockScale, 1.0F / blockScale, 1.0F / blockScale);
         }
 
         loadTexture("/item/cart.png");
-        GLManager.ModelView.Scale(-1.0F, -1.0F, 1.0F);
+        RenderSystem.ModelView.Scale(-1.0F, -1.0F, 1.0F);
         _modelMinecart.Render(0.0F, 0.0F, -0.1F, 0.0F, 0.0F, 1.0F / 16.0F);
-        GLManager.ModelView.Pop();
+        RenderSystem.ModelView.Pop();
     }
 
     public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta) => render(target, x, y, z, yaw, tickDelta);

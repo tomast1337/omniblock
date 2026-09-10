@@ -53,8 +53,8 @@ public class Frustum : FrustumData
 
     private void Initialize()
     {
-        Copy(GLManager.Projection.Top, ProjectionMatrix);
-        Copy(GLManager.ModelView.Top, ModelviewMatrix);
+        Copy(RenderSystem.Projection.Top, ProjectionMatrix);
+        Copy(RenderSystem.ModelView.Top, ModelviewMatrix);
 
         for (var i = 0; i < 4; i++)
         {

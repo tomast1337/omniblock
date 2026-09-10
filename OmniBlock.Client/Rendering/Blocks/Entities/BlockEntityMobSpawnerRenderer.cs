@@ -13,8 +13,8 @@ public class BlockEntityMobSpawnerRenderer : BlockEntitySpecialRenderer
     {
         if (spawner.World is not { } world) return;
 
-        GLManager.ModelView.Push();
-        GLManager.ModelView.Translate((float)x + 0.5F, (float)y, (float)z + 0.5F);
+        RenderSystem.ModelView.Push();
+        RenderSystem.ModelView.Translate((float)x + 0.5F, (float)y, (float)z + 0.5F);
         _entityDict.TryGetValue(spawner.GetSpawnedEntityId(), out var displayEntity);
         if (displayEntity == null || !ReferenceEquals(displayEntity.World.Content, world.Content))
         {
@@ -26,16 +26,16 @@ public class BlockEntityMobSpawnerRenderer : BlockEntitySpecialRenderer
         {
             displayEntity.SetWorld(world);
             var scale = 7.0F / 16.0F;
-            GLManager.ModelView.Translate(0.0F, 0.4F, 0.0F);
-            GLManager.ModelView.Rotate((float)(spawner.LastRotation + (spawner.Rotation - spawner.LastRotation) * tickDelta) * 10.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.ModelView.Rotate(-30.0F, 1.0F, 0.0F, 0.0F);
-            GLManager.ModelView.Translate(0.0F, -0.4F, 0.0F);
-            GLManager.ModelView.Scale(scale, scale, scale);
+            RenderSystem.ModelView.Translate(0.0F, 0.4F, 0.0F);
+            RenderSystem.ModelView.Rotate((float)(spawner.LastRotation + (spawner.Rotation - spawner.LastRotation) * tickDelta) * 10.0F, 0.0F, 1.0F, 0.0F);
+            RenderSystem.ModelView.Rotate(-30.0F, 1.0F, 0.0F, 0.0F);
+            RenderSystem.ModelView.Translate(0.0F, -0.4F, 0.0F);
+            RenderSystem.ModelView.Scale(scale, scale, scale);
             displayEntity.SetPositionAndAnglesKeepPrevAngles(x, y, z, 0.0F, 0.0F);
             EntityRenderDispatcher.Instance.RenderEntityWithPosYaw(displayEntity, 0.0D, 0.0D, 0.0D, 0.0F, tickDelta);
         }
 
-        GLManager.ModelView.Pop();
+        RenderSystem.ModelView.Pop();
     }
 
     public override void renderTileEntityAt(BlockEntity blockEntity, double x, double y, double z, float tickDelta) => renderTileEntityMobSpawner((BlockEntityMobSpawner)blockEntity, x, y, z, tickDelta);

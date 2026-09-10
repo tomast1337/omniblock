@@ -26,7 +26,7 @@ public sealed class EntityBatchRenderer : IDisposable
     private EntityBatchRenderer(GameOptions options) =>
         // Queued geometry must be drawn under the blend, depth and alpha state it was posed with,
         // and renderers flip that state freely between parts of the same mob.
-        GLManager.RasterStateChanging += Flush;
+        RenderSystem.RasterStateChanging += Flush;
 
     public static EntityBatchRenderer Instance =>
         s_instance ?? throw new InvalidOperationException($"{nameof(EntityBatchRenderer)}.{nameof(Initialize)} must be called before use.");
@@ -34,7 +34,7 @@ public sealed class EntityBatchRenderer : IDisposable
     /// <summary>What the caller has bound.</summary>
     private static uint BoundTextureId => Texture2D.Bound?.Id ?? 0;
 
-    public void Dispose() => GLManager.RasterStateChanging -= Flush;
+    public void Dispose() => RenderSystem.RasterStateChanging -= Flush;
 
     public static void Initialize(GameOptions options) => s_instance ??= new EntityBatchRenderer(options);
 
@@ -148,12 +148,12 @@ public sealed class EntityBatchRenderer : IDisposable
             converted[i] = new Vertex(source.X, source.Y, source.Z, source.U, source.V, (int)source.Color, 0);
         }
 
-        GLManager.ModelView.Push();
-        GLManager.ModelView.LoadIdentity();
+        RenderSystem.ModelView.Push();
+        RenderSystem.ModelView.LoadIdentity();
 
         try
         {
-            GLManager.DrawTarget.Submit(new DrawCommand
+            RenderSystem.DrawTarget.Submit(new DrawCommand
             {
                 Vertices = MemoryMarshal.AsBytes(converted),
                 VertexCount = _vertexCount,
@@ -166,7 +166,7 @@ public sealed class EntityBatchRenderer : IDisposable
         }
         finally
         {
-            GLManager.ModelView.Pop();
+            RenderSystem.ModelView.Pop();
             _vertexCount = 0;
             caller?.Bind();
         }

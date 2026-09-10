@@ -23,7 +23,7 @@ public sealed class ChargingEntityRenderer(ModelBase main, float shadowRadius) :
         var progress = attack.ChargeProgress(entity, tickDelta);
         var squash = 1.0F / (progress * progress * progress * progress * progress * 2.0F + 1.0F);
 
-        GLManager.ModelView.Scale((8.0F + 1.0F / squash) / 2.0F, (8.0F + squash) / 2.0F, (8.0F + 1.0F / squash) / 2.0F);
-        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.ModelView.Scale((8.0F + 1.0F / squash) / 2.0F, (8.0F + squash) / 2.0F, (8.0F + 1.0F / squash) / 2.0F);
+        RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
     }
 }

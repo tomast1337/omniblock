@@ -148,12 +148,12 @@ public class GameRenderer
     public void SetupWorldCamera(float tickDelta)
     {
         _viewDistance = _client.Options.RenderDistance * 16.0f;
-        GLManager.Projection.LoadIdentity();
+        RenderSystem.Projection.LoadIdentity();
 
         if (CameraController.CameraZoom != 1.0D)
         {
-            GLManager.Projection.Translate((float)CameraController.CameraYaw, (float)-CameraController.CameraPitch, 0.0F);
-            GLManager.Projection.Scale((float)CameraController.CameraZoom, (float)CameraController.CameraZoom, 1.0F);
+            RenderSystem.Projection.Translate((float)CameraController.CameraYaw, (float)-CameraController.CameraPitch, 0.0F);
+            RenderSystem.Projection.Scale((float)CameraController.CameraZoom, (float)CameraController.CameraZoom, 1.0F);
             GLU.gluPerspective(CameraController.GetFov(tickDelta), _client.DisplayWidth / (float)_client.DisplayHeight, 0.05F, _viewDistance * 2.0F);
         }
         else
@@ -161,7 +161,7 @@ public class GameRenderer
             GLU.gluPerspective(CameraController.GetFov(tickDelta), _client.DisplayWidth / (float)_client.DisplayHeight, 0.05F, _viewDistance * 2.0F);
         }
 
-        GLManager.ModelView.LoadIdentity();
+        RenderSystem.ModelView.LoadIdentity();
 
         CameraController.ApplyDamageTiltEffect(tickDelta);
         if (_client.Options.ViewBobbing)
@@ -174,9 +174,9 @@ public class GameRenderer
         {
             var distortionScale = 5.0F / (screenDistortion * screenDistortion + 5.0F) - screenDistortion * 0.04F;
             distortionScale *= distortionScale;
-            GLManager.ModelView.Rotate((_ticks + tickDelta) * 20.0F, 0.0F, 1.0F, 1.0F);
-            GLManager.ModelView.Scale(1.0F / distortionScale, 1.0F, 1.0F);
-            GLManager.ModelView.Rotate(-(_ticks + tickDelta) * 20.0F, 0.0F, 1.0F, 1.0F);
+            RenderSystem.ModelView.Rotate((_ticks + tickDelta) * 20.0F, 0.0F, 1.0F, 1.0F);
+            RenderSystem.ModelView.Scale(1.0F / distortionScale, 1.0F, 1.0F);
+            RenderSystem.ModelView.Rotate(-(_ticks + tickDelta) * 20.0F, 0.0F, 1.0F, 1.0F);
         }
 
         CameraController.ApplyCameraTransform(tickDelta);
@@ -184,17 +184,17 @@ public class GameRenderer
 
     private void RenderFirstPersonHand(float tickDelta)
     {
-        GLManager.Projection.LoadIdentity();
+        RenderSystem.Projection.LoadIdentity();
         if (CameraController.CameraZoom != 1.0D)
         {
-            GLManager.Projection.Translate((float)CameraController.CameraYaw, (float)-CameraController.CameraPitch, 0.0F);
-            GLManager.Projection.Scale((float)CameraController.CameraZoom, (float)CameraController.CameraZoom, 1.0F);
+            RenderSystem.Projection.Translate((float)CameraController.CameraYaw, (float)-CameraController.CameraPitch, 0.0F);
+            RenderSystem.Projection.Scale((float)CameraController.CameraZoom, (float)CameraController.CameraZoom, 1.0F);
         }
 
         GLU.gluPerspective(CameraController.GetFov(tickDelta, true), _client.DisplayWidth / (float)_client.DisplayHeight, 0.05F, _viewDistance * 2.0F);
-        GLManager.ModelView.LoadIdentity();
+        RenderSystem.ModelView.LoadIdentity();
 
-        GLManager.ModelView.Push();
+        RenderSystem.ModelView.Push();
         CameraController.ApplyDamageTiltEffect(tickDelta);
         if (_client.Options.ViewBobbing)
         {
@@ -206,7 +206,7 @@ public class GameRenderer
             ItemRenderer.renderItemInFirstPerson(tickDelta);
         }
 
-        GLManager.ModelView.Pop();
+        RenderSystem.ModelView.Pop();
         if (_client.Options.CameraMode == CameraMode.FirstPerson && !_client.Camera.IsSleeping)
         {
             ItemRenderer.renderOverlays(tickDelta);
@@ -295,7 +295,7 @@ public class GameRenderer
         // the depth write mask, which the two enables it replaces did not: a depth clear is masked
         // by that mask, and the interface pass this frame follows leaves it off, so the clear
         // below only does anything because this turns it back on.
-        GLManager.State.Apply(RenderState.Opaque);
+        RenderSystem.State.Apply(RenderState.Opaque);
 
         using (Profiler.Begin("GetMouseOver"))
         {
@@ -329,8 +329,8 @@ public class GameRenderer
         SetupWorldCamera(tickDelta);
         // Capture the camera transforms once. Later entity, particle, selection, and hand draws
         // mutate the compatibility stacks; both terrain passes must use this same world view.
-        var worldModelView = GLManager.ModelView.Top;
-        var worldProjection = GLManager.Projection.Top;
+        var worldModelView = RenderSystem.ModelView.Top;
+        var worldProjection = RenderSystem.Projection.Top;
         Frustum.Instance();
         if (_client.Options.RenderDistance >= 8)
         {
@@ -338,14 +338,14 @@ public class GameRenderer
             worldRenderer.RenderSky(tickDelta);
         }
 
-        GLManager.FogEnabled = true;
+        RenderSystem.FogEnabled = true;
         ApplyFog(1);
 
         FrustrumCuller frustrumCuller = new();
         frustrumCuller.SetPosition(entX, entY, entZ);
 
         ApplyFog(0);
-        GLManager.FogEnabled = true;
+        RenderSystem.FogEnabled = true;
         _client.TextureManager.BindTexture(_client.TextureManager.GetTextureId("/terrain.png"));
         Lighting.turnOff();
 
@@ -355,7 +355,7 @@ public class GameRenderer
                 entity, 0, tickDelta, frustrumCuller, worldModelView, worldProjection);
         }
 
-        GLManager.ShadeModel = ShadeModel.Flat;
+        RenderSystem.ShadeModel = ShadeModel.Flat;
         Lighting.turnOn();
 
         using (Profiler.Begin("RenderEntities"))
@@ -377,10 +377,10 @@ public class GameRenderer
         if (_client.ObjectMouseOver.Type != HitResultType.Miss && entity.IsInFluid(Material.Water) && entity is EntityPlayer)
         {
             entityPlayer = (EntityPlayer)entity;
-            GLManager.AlphaTestEnabled = false;
+            RenderSystem.AlphaTestEnabled = false;
             worldRenderer.DrawBlockBreaking(entityPlayer, _client.ObjectMouseOver, entityPlayer.Inventory.ItemInHand, tickDelta);
             worldRenderer.DrawSelectionBox(entityPlayer, _client.ObjectMouseOver, 0, entityPlayer.Inventory.ItemInHand, tickDelta);
-            GLManager.AlphaTestEnabled = true;
+            RenderSystem.AlphaTestEnabled = true;
         }
 
         ApplyFog(0);
@@ -389,7 +389,7 @@ public class GameRenderer
         // still depth writing. The depth write was previously inherited rather than stated — the
         // entity pass before this leaves it on only because shadows put it back — which is what
         // the DepthMask below is cleaning up after.
-        GLManager.State.Apply(RenderState.Entity with
+        RenderSystem.State.Apply(RenderState.Entity with
         {
             Blend = BlendMode.Alpha
         });
@@ -400,29 +400,29 @@ public class GameRenderer
             worldRenderer.SortAndRender(
                 entity, 1, tickDelta, frustrumCuller, worldModelView, worldProjection);
 
-            GLManager.ShadeModel = ShadeModel.Flat;
+            RenderSystem.ShadeModel = ShadeModel.Flat;
         }
 
         //TODO: SELCTION BOX/BLOCK BREAKING VISUALIZATON DON'T APPEAR PROPERLY MOST OF THE TIME, SAME WITH ENTITY SHADOWS. VIEW BOBBING MAKES ENTITES BOB UP AND DOWN
 
-        GLManager.State.Apply(RenderState.Opaque);
+        RenderSystem.State.Apply(RenderState.Opaque);
         if (!CameraController.IsZoomActive && entity is EntityPlayer && _client.ObjectMouseOver.Type != HitResultType.Miss && !entity.IsInFluid(Material.Water))
         {
             entityPlayer = (EntityPlayer)entity;
-            GLManager.AlphaTestEnabled = false;
+            RenderSystem.AlphaTestEnabled = false;
             worldRenderer.DrawBlockBreaking(entityPlayer, _client.ObjectMouseOver, entityPlayer.Inventory.ItemInHand, tickDelta);
             worldRenderer.DrawSelectionBox(entityPlayer, _client.ObjectMouseOver, 0, entityPlayer.Inventory.ItemInHand, tickDelta);
-            GLManager.AlphaTestEnabled = true;
+            RenderSystem.AlphaTestEnabled = true;
         }
 
         RenderSnow(tickDelta);
-        GLManager.FogEnabled = false;
+        RenderSystem.FogEnabled = false;
         if (_targetedEntity != null)
         {
         }
 
         ApplyFog(0);
-        GLManager.FogEnabled = true;
+        RenderSystem.FogEnabled = true;
 
         if (_client.ShowChunkBorders)
         {
@@ -430,12 +430,12 @@ public class GameRenderer
         }
 
         var cloudBlurPass = _client.Options is { SoftClouds: true, CloudsQuality: >= 2 }
-                            && GLManager.CloudBlurPassOrNull is not null;
+                            && RenderSystem.CloudBlurPassOrNull is not null;
 
-        if (cloudBlurPass) GLManager.CloudBlurPassOrNull!.Begin();
+        if (cloudBlurPass) RenderSystem.CloudBlurPassOrNull!.Begin();
         worldRenderer.RenderClouds(tickDelta);
-        if (cloudBlurPass) GLManager.CloudBlurPassOrNull!.End();
-        GLManager.FogEnabled = false;
+        if (cloudBlurPass) RenderSystem.CloudBlurPassOrNull!.End();
+        RenderSystem.FogEnabled = false;
         ApplyFog(1);
 
         if (includeHand)
@@ -473,16 +473,16 @@ public class GameRenderer
         var playerChunkX = _client.Player.ChunkX;
         var playerChunkZ = _client.Player.ChunkZ;
 
-        GLManager.ModelView.Push();
-        GLManager.ModelView.Translate((float)-camX, (float)-camY, (float)-camZ);
+        RenderSystem.ModelView.Push();
+        RenderSystem.ModelView.Translate((float)-camX, (float)-camY, (float)-camZ);
 
-        GLManager.TextureEnabled = false;
-        GLManager.LightingEnabled = false;
-        GLManager.FogEnabled = false;
+        RenderSystem.TextureEnabled = false;
+        RenderSystem.LightingEnabled = false;
+        RenderSystem.FogEnabled = false;
 
         // What the world pass already left set — this only ever asserted half of it, and the half
         // it left out is what decided whether the lines were blended.
-        GLManager.State.Apply(RenderState.Opaque);
+        RenderSystem.State.Apply(RenderState.Opaque);
 
         var minX = playerChunkX * 16.0;
         var maxX = (playerChunkX + 1) * 16.0;
@@ -555,8 +555,8 @@ public class GameRenderer
         }
 
         tess.draw(ProgramSlot.Line);
-        GLManager.ModelView.Pop();
-        GLManager.TextureEnabled = true;
+        RenderSystem.ModelView.Pop();
+        RenderSystem.TextureEnabled = true;
     }
 
     private void RenderRain()
@@ -638,14 +638,14 @@ public class GameRenderer
 
             // Culling off because the rain and snow quads are camera-facing strips with no
             // meaningful back, and still depth writing, which is what they have always done.
-            GLManager.State.Apply(RenderState.Entity with
+            RenderSystem.State.Apply(RenderState.Entity with
             {
                 Blend = BlendMode.Alpha
             });
-            GLManager.Normal = new Vector3D<float>(0.0F, 1.0F, 0.0F);
+            RenderSystem.Normal = new Vector3D<float>(0.0F, 1.0F, 0.0F);
 
             // Lower than the usual 0.1 so the faint tail of a raindrop is not cut off.
-            GLManager.AlphaThreshold = 0.01F;
+            RenderSystem.AlphaThreshold = 0.01F;
             _client.TextureManager.BindTexture(_client.TextureManager.GetTextureId("/environment/snow.png"));
             var renderX = camera.LastTickX + (camera.X - camera.LastTickX) * tickDelta;
             var renderY = camera.LastTickY + (camera.Y - camera.LastTickY) * tickDelta;
@@ -707,7 +707,7 @@ public class GameRenderer
                             var distanceFactor = MathHelper.Sqrt(dx * dx + dz * dz) / renderRadius;
                             tessellator.startDrawingQuads();
                             var brightness = world.GetLuminance(sampleX, minY, sampleZ);
-                            GLManager.Color = new Vector4D<float>(brightness, brightness, brightness, ((1.0F - distanceFactor * distanceFactor) * 0.3F + 0.5F) * rainGradient);
+                            RenderSystem.Color = new Vector4D<float>(brightness, brightness, brightness, ((1.0F - distanceFactor * distanceFactor) * 0.3F + 0.5F) * rainGradient);
                             tessellator.setTranslationD(-renderX * 1.0D, -renderY * 1.0D, -renderZ * 1.0D);
                             tessellator.addVertexWithUV(sampleX + 0, maxY, sampleZ + 0.5D, 0.0F * textureScroll + textureUDrift, maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift);
                             tessellator.addVertexWithUV(sampleX + 1, maxY, sampleZ + 0.5D, 1.0F * textureScroll + textureUDrift, maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift);
@@ -759,7 +759,7 @@ public class GameRenderer
                             var rainDistanceFactor = MathHelper.Sqrt(rainDx * rainDx + rainDz * rainDz) / renderRadius;
                             tessellator.startDrawingQuads();
                             var rainBrightness = world.GetLuminance(sampleX, 128, sampleZ) * 0.85F + 0.15F;
-                            GLManager.Color = new Vector4D<float>(rainBrightness, rainBrightness, rainBrightness, ((1.0F - rainDistanceFactor * rainDistanceFactor) * 0.5F + 0.5F) * rainGradient);
+                            RenderSystem.Color = new Vector4D<float>(rainBrightness, rainBrightness, rainBrightness, ((1.0F - rainDistanceFactor * rainDistanceFactor) * 0.5F + 0.5F) * rainGradient);
                             tessellator.setTranslationD(-renderX * 1.0D, -renderY * 1.0D, -renderZ * 1.0D);
                             tessellator.addVertexWithUV(sampleX + 0, minY, sampleZ + 0.5D, 0, minY * rainUvScale / 4.0F + textureScroll * rainUvScale);
                             tessellator.addVertexWithUV(sampleX + 1, minY, sampleZ + 0.5D, rainUvScale, minY * rainUvScale / 4.0F + textureScroll * rainUvScale);
@@ -776,8 +776,8 @@ public class GameRenderer
                 }
             }
 
-            GLManager.State.Apply(RenderState.Opaque);
-            GLManager.AlphaThreshold = 0.1F;
+            RenderSystem.State.Apply(RenderState.Opaque);
+            RenderSystem.AlphaThreshold = 0.1F;
         }
     }
 
@@ -810,8 +810,8 @@ public class GameRenderer
         }
         else
         {
-            GLManager.Projection.LoadIdentity();
-            GLManager.ModelView.LoadIdentity();
+            RenderSystem.Projection.LoadIdentity();
+            RenderSystem.ModelView.LoadIdentity();
             SetupHudRender();
         }
 
@@ -854,22 +854,22 @@ public class GameRenderer
         ScaledResolution sr = new(_client.Options, _client.DisplayWidth, _client.DisplayHeight);
 
         // See RenderInterface: the pass clears its own depth.
-        GLManager.Projection.LoadIdentity();
-        GLManager.Projection.Ortho(0.0D, sr.ScaledWidthDouble, sr.ScaledHeightDouble, 0.0D, 1000.0D, 3000.0D);
-        GLManager.ModelView.LoadIdentity();
-        GLManager.ModelView.Translate(0.0F, 0.0F, -2000.0F);
+        RenderSystem.Projection.LoadIdentity();
+        RenderSystem.Projection.Ortho(0.0D, sr.ScaledWidthDouble, sr.ScaledHeightDouble, 0.0D, 1000.0D, 3000.0D);
+        RenderSystem.ModelView.LoadIdentity();
+        RenderSystem.ModelView.Translate(0.0F, 0.0F, -2000.0F);
     }
 
     public void DrawVirtualCursor(int x, int y)
     {
         if (_client.IsControllerMode && _client.CurrentScreen?.IsEditingSlider != true)
         {
-            GLManager.LightingEnabled = false;
+            RenderSystem.LightingEnabled = false;
 
             // Drawn over the screen the pointer is pointing at, so it takes no part in the depth
             // buffer at all. Same state as everything else in the interface.
-            GLManager.State.Apply(RenderState.Interface);
-            GLManager.Color = new Vector4D<float>(1.0f, 1.0f, 1.0f, 1.0f);
+            RenderSystem.State.Apply(RenderState.Interface);
+            RenderSystem.Color = new Vector4D<float>(1.0f, 1.0f, 1.0f, 1.0f);
 
             var textureId = _client.TextureManager.GetTextureId("/gui/Pointer.png");
             _client.TextureManager.BindTexture(textureId);
@@ -891,7 +891,7 @@ public class GameRenderer
 
             // Leaving the interface state named here is still better than leaving half of it
             // toggled back for whatever draws next.
-            GLManager.State.Apply(RenderState.Interface);
+            RenderSystem.State.Apply(RenderState.Interface);
         }
     }
 
@@ -966,12 +966,12 @@ public class GameRenderer
     {
         var camera = _client.Camera;
         Vector4D<float> color = new(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0f);
-        GLManager.Normal = new Vector3D<float>(0.0F, -1.0F, 0.0F);
-        GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.Normal = new Vector3D<float>(0.0F, -1.0F, 0.0F);
+        RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
 
         if (_cloudFog || camera.IsInFluid(Material.Water))
         {
-            GLManager.Fog = GLManager.Fog with
+            RenderSystem.Fog = RenderSystem.Fog with
             {
                 Color = color,
                 Curve = FogCurve.Exponential,
@@ -980,7 +980,7 @@ public class GameRenderer
         }
         else if (camera.IsInFluid(Material.Lava))
         {
-            GLManager.Fog = GLManager.Fog with
+            RenderSystem.Fog = RenderSystem.Fog with
             {
                 Color = color,
                 Curve = FogCurve.Exponential,
@@ -1003,7 +1003,7 @@ public class GameRenderer
                 start = 0.0F;
             }
 
-            GLManager.Fog = GLManager.Fog with
+            RenderSystem.Fog = RenderSystem.Fog with
             {
                 Color = color,
                 Curve = FogCurve.Linear,

@@ -29,11 +29,11 @@ public class LivingEntityRenderer : EntityRenderer
 
     public virtual void DoRenderLiving(EntityLiving entity, double x, double y, double z, float yaw, float tickDelta)
     {
-        GLManager.ModelView.Push();
+        RenderSystem.ModelView.Push();
 
         // Establishes the state the whole of this method and its passes assume, rather than
         // switching culling off and leaving everything else to whatever drew last.
-        GLManager.State.Apply(RenderState.Entity);
+        RenderSystem.State.Apply(RenderState.Entity);
         Main.OnGround = func_167_c(entity, tickDelta);
         if (renderPassModel != null)
         {
@@ -55,9 +55,9 @@ public class LivingEntityRenderer : EntityRenderer
             var animationProgress = getAnimationProgress(entity, tickDelta);
             RotateCorpse(entity, animationProgress, bodyYaw, tickDelta);
             var modelScale = 1.0F / 16.0F;
-            GLManager.ModelView.Scale(-1.0F, -1.0F, 1.0F);
+            RenderSystem.ModelView.Scale(-1.0F, -1.0F, 1.0F);
             PreRenderCallback(entity, tickDelta);
-            GLManager.ModelView.Translate(0.0F, -24.0F * modelScale - 1 / 128f, 0.0F);
+            RenderSystem.ModelView.Translate(0.0F, -24.0F * modelScale - 1 / 128f, 0.0F);
             var walkSpeed = entity.LastWalkAnimationSpeed + (entity.WalkAnimationSpeed - entity.LastWalkAnimationSpeed) * tickDelta;
             var walkPhase = entity.AnimationPhase - entity.WalkAnimationSpeed * (1.0F - tickDelta);
             if (walkSpeed > 1.0F)
@@ -66,7 +66,7 @@ public class LivingEntityRenderer : EntityRenderer
             }
 
             LoadDownloadableImageTexture((entity as EntityPlayer)?.Name, entity.GetTexture());
-            GLManager.AlphaTestEnabled = true;
+            RenderSystem.AlphaTestEnabled = true;
             Main.SetLivingAnimations(entity, walkPhase, walkSpeed, tickDelta);
             Main.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
 
@@ -75,8 +75,8 @@ public class LivingEntityRenderer : EntityRenderer
                 if (ShouldRenderPass(entity, renderPass, tickDelta))
                 {
                     renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
-                    GLManager.State.Apply(RenderState.Entity);
-                    GLManager.AlphaTestEnabled = true;
+                    RenderSystem.State.Apply(RenderState.Entity);
+                    RenderSystem.AlphaTestEnabled = true;
                 }
             }
 
@@ -92,23 +92,23 @@ public class LivingEntityRenderer : EntityRenderer
                 // front of them. Nothing is flushed to arrange that — the body was submitted first,
                 // so its bucket is drawn first, and the overlay's is a separate bucket because the
                 // depth comparison it carries differs.
-                GLManager.TextureEnabled = false;
-                GLManager.AlphaTestEnabled = false;
-                GLManager.State.Apply(RenderState.Entity with
+                RenderSystem.TextureEnabled = false;
+                RenderSystem.AlphaTestEnabled = false;
+                RenderSystem.State.Apply(RenderState.Entity with
                 {
                     Blend = BlendMode.Alpha,
                     DepthCompare = DepthCompare.Equal
                 });
                 if (entity.HurtTime > 0 || entity.DeathTime > 0)
                 {
-                    GLManager.Color = new Vector4D<float>(brightness, 0.0F, 0.0F, 0.4F);
+                    RenderSystem.Color = new Vector4D<float>(brightness, 0.0F, 0.0F, 0.4F);
                     Main.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
 
                     for (var damagePass = 0; damagePass < 4; ++damagePass)
                     {
                         if (func_27005_b(entity, damagePass, tickDelta))
                         {
-                            GLManager.Color = new Vector4D<float>(brightness, 0.0F, 0.0F, 0.4F);
+                            RenderSystem.Color = new Vector4D<float>(brightness, 0.0F, 0.0F, 0.4F);
                             renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
                         }
                     }
@@ -120,22 +120,22 @@ public class LivingEntityRenderer : EntityRenderer
                     var green = ((colorMultiplier >> 8) & 255) / 255.0F;
                     var blue = (colorMultiplier & 255) / 255.0F;
                     var alpha = ((colorMultiplier >> 24) & 255) / 255.0F;
-                    GLManager.Color = new Vector4D<float>(red, green, blue, alpha);
+                    RenderSystem.Color = new Vector4D<float>(red, green, blue, alpha);
                     Main.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
 
                     for (var overlayPass = 0; overlayPass < 4; ++overlayPass)
                     {
                         if (func_27005_b(entity, overlayPass, tickDelta))
                         {
-                            GLManager.Color = new Vector4D<float>(red, green, blue, alpha);
+                            RenderSystem.Color = new Vector4D<float>(red, green, blue, alpha);
                             renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
                         }
                     }
                 }
 
-                GLManager.State.Apply(RenderState.Entity);
-                GLManager.AlphaTestEnabled = true;
-                GLManager.TextureEnabled = true;
+                RenderSystem.State.Apply(RenderState.Entity);
+                RenderSystem.AlphaTestEnabled = true;
+                RenderSystem.TextureEnabled = true;
             }
         }
         catch (Exception e)
@@ -146,15 +146,15 @@ public class LivingEntityRenderer : EntityRenderer
             }
         }
 
-        GLManager.ModelView.Pop();
+        RenderSystem.ModelView.Pop();
         PassSpecialRender(entity, x, y, z);
     }
 
-    protected virtual void Func_22012_b(EntityLiving entity, double x, double y, double z) => GLManager.ModelView.Translate((float)x, (float)y, (float)z);
+    protected virtual void Func_22012_b(EntityLiving entity, double x, double y, double z) => RenderSystem.ModelView.Translate((float)x, (float)y, (float)z);
 
     protected virtual void RotateCorpse(EntityLiving entity, float animationProgress, float bodyYaw, float tickDelta)
     {
-        GLManager.ModelView.Rotate(180.0F - bodyYaw, 0.0F, 1.0F, 0.0F);
+        RenderSystem.ModelView.Rotate(180.0F - bodyYaw, 0.0F, 1.0F, 0.0F);
         if (entity.DeathTime > 0)
         {
             var deathRotation = (entity.DeathTime + tickDelta - 1.0F) / 20.0F * 1.6F;
@@ -164,7 +164,7 @@ public class LivingEntityRenderer : EntityRenderer
                 deathRotation = 1.0F;
             }
 
-            GLManager.ModelView.Rotate(deathRotation * getDeathMaxRotation(entity), 0.0F, 0.0F, 1.0F);
+            RenderSystem.ModelView.Rotate(deathRotation * getDeathMaxRotation(entity), 0.0F, 0.0F, 1.0F);
         }
     }
 
@@ -204,16 +204,16 @@ public class LivingEntityRenderer : EntityRenderer
             var fontRenderer = TextRenderer;
             var labelScale = 1.6F;
             var renderScale = (float)(1.0D / 60.0D) * labelScale;
-            GLManager.ModelView.Push();
-            GLManager.ModelView.Translate((float)x + 0.0F, (float)y + 2.3F, (float)z);
-            GLManager.Normal = new Vector3D<float>(0.0F, 1.0F, 0.0F);
-            GLManager.ModelView.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
-            GLManager.ModelView.Rotate(Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
-            GLManager.ModelView.Scale(-renderScale, -renderScale, renderScale);
+            RenderSystem.ModelView.Push();
+            RenderSystem.ModelView.Translate((float)x + 0.0F, (float)y + 2.3F, (float)z);
+            RenderSystem.Normal = new Vector3D<float>(0.0F, 1.0F, 0.0F);
+            RenderSystem.ModelView.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
+            RenderSystem.ModelView.Rotate(Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
+            RenderSystem.ModelView.Scale(-renderScale, -renderScale, renderScale);
             // Drawn twice on purpose. This first pass ignores depth entirely, so the plate and the
             // text behind it show through whatever the label is standing in front of.
-            GLManager.LightingEnabled = false;
-            GLManager.State.Apply(RenderState.Entity with
+            RenderSystem.LightingEnabled = false;
+            RenderSystem.State.Apply(RenderState.Entity with
             {
                 Blend = BlendMode.Alpha,
                 DepthTest = false,
@@ -226,7 +226,7 @@ public class LivingEntityRenderer : EntityRenderer
                 yOffset = -10;
             }
 
-            GLManager.TextureEnabled = false;
+            RenderSystem.TextureEnabled = false;
             tessellator.startDrawingQuads();
             var labelHalfWidth = fontRenderer.GetStringWidth(label) / 2;
             tessellator.setColorRGBA_F(0.0F, 0.0F, 0.0F, 0.25F);
@@ -235,19 +235,19 @@ public class LivingEntityRenderer : EntityRenderer
             tessellator.addVertex(labelHalfWidth + 1, 8 + yOffset, 0.0D);
             tessellator.addVertex(labelHalfWidth + 1, -1 + yOffset, 0.0D);
             tessellator.draw(ProgramSlot.Basic);
-            GLManager.TextureEnabled = true;
+            RenderSystem.TextureEnabled = true;
             fontRenderer.DrawString(label, -fontRenderer.GetStringWidth(label) / 2, yOffset, Color.WhiteAlpha20);
             // And again with depth restored, so the part of the label that is genuinely in front
             // draws solidly over the faint copy laid down above.
-            GLManager.State.Apply(RenderState.Entity with
+            RenderSystem.State.Apply(RenderState.Entity with
             {
                 Blend = BlendMode.Alpha
             });
             fontRenderer.DrawString(label, -fontRenderer.GetStringWidth(label) / 2, yOffset, Color.WhiteAlpha20);
-            GLManager.LightingEnabled = true;
-            GLManager.State.Apply(RenderState.Entity);
-            GLManager.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
-            GLManager.ModelView.Pop();
+            RenderSystem.LightingEnabled = true;
+            RenderSystem.State.Apply(RenderState.Entity);
+            RenderSystem.Color = new Vector4D<float>(1.0F, 1.0F, 1.0F, 1.0F);
+            RenderSystem.ModelView.Pop();
         }
     }
 

@@ -44,7 +44,7 @@ public class EntityPickupFX : EntityFX
         renderX -= interpPosX;
         renderY -= interpPosY;
         renderZ -= interpPosZ;
-        GLManager.Color = new Vector4D<float>(luminance, luminance, luminance, 1.0F);
+        RenderSystem.Color = new Vector4D<float>(luminance, luminance, luminance, 1.0F);
         EntityRenderDispatcher.Instance.RenderEntityWithPosYaw(target, (float)renderX, (float)renderY, (float)renderZ, target.Yaw, partialTick);
     }
 
