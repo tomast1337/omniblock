@@ -327,6 +327,10 @@ public class GameRenderer
         var entZ = entity.LastTickZ + (entity.Z - entity.LastTickZ) * tickDelta;
 
         SetupWorldCamera(tickDelta);
+        // Capture the camera transforms once. Later entity, particle, selection, and hand draws
+        // mutate the compatibility stacks; both terrain passes must use this same world view.
+        var worldModelView = GLManager.ModelView.Top;
+        var worldProjection = GLManager.Projection.Top;
         Frustum.Instance();
         if (_client.Options.RenderDistance >= 8)
         {
@@ -347,7 +351,8 @@ public class GameRenderer
 
         using (Profiler.Begin("SortAndRender"))
         {
-            worldRenderer.SortAndRender(entity, 0, tickDelta, frustrumCuller);
+            worldRenderer.SortAndRender(
+                entity, 0, tickDelta, frustrumCuller, worldModelView, worldProjection);
         }
 
         GLManager.ShadeModel = ShadeModel.Flat;
@@ -392,7 +397,8 @@ public class GameRenderer
 
         using (Profiler.Begin("SortAndRenderTranslucent"))
         {
-            worldRenderer.SortAndRender(entity, 1, tickDelta, frustrumCuller);
+            worldRenderer.SortAndRender(
+                entity, 1, tickDelta, frustrumCuller, worldModelView, worldProjection);
 
             GLManager.ShadeModel = ShadeModel.Flat;
         }

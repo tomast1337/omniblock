@@ -192,7 +192,12 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     {
     }
 
-    public void NotifyAmbientDarknessChanged() => ChunkRenderer.UpdateAllRenderers();
+    public void NotifyAmbientDarknessChanged()
+    {
+        // Chunk vertices carry raw sky and block light independently. Ambient darkness is applied
+        // by chunk.wgsl from the per-frame WorldLight uniform, so sunrise and sunset require no
+        // geometry rebuild. Actual light propagation still reaches BlockUpdate/SetBlocksDirty.
+    }
 
     public void UpdateBlockEntity(int x, int y, int z, BlockEntity blockEntity)
     {
@@ -517,7 +522,13 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         }
     }
 
-    public int SortAndRender(EntityLiving camera, int pass, double partialTicks, ICuller cam)
+    public int SortAndRender(
+        EntityLiving camera,
+        int pass,
+        double partialTicks,
+        ICuller cam,
+        Matrix4X4<float> modelView,
+        Matrix4X4<float> projection)
     {
         if (_game.Options.RenderDistance != _renderDistance)
         {
@@ -533,6 +544,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         var renderParams = new ChunkRenderParams
         {
             Camera = cam,
+            ModelView = modelView,
+            Projection = projection,
             ViewPos = new Vector3D<double>(viewX, viewY, viewZ),
             RenderDistance = _renderDistance,
             Ticks = _world.GetTime(),

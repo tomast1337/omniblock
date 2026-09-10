@@ -152,8 +152,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     public void Visit(SubChunkRenderer renderer) => _visibleRenderers.Add(renderer);
 
     /// <summary>
-    ///     Chooses which sub-chunks the frame draws and takes the view matrices the draw will
-    ///     transform by off the matrix stacks.
+    ///     Chooses which sub-chunks the frame draws and records the explicitly supplied world-view
+    ///     matrices used by both terrain passes.
     /// </summary>
     /// <remarks>
     ///     Separate from <see cref="Render" /> because none of it is OpenGL, and the WebGPU pass
@@ -166,8 +166,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _lastViewPos = renderParams.ViewPos;
         _lastCamera = renderParams.Camera;
 
-        _modelView = GLManager.ModelView.Top;
-        _projection = GLManager.Projection.Top;
+        _modelView = renderParams.ModelView;
+        _projection = renderParams.Projection;
 
         // The frame that took buffers out of these pools has been submitted by now, so they are
         // free to hand out again. Both terrain passes of this frame draw from them.
