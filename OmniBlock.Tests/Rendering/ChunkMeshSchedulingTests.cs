@@ -61,6 +61,27 @@ public sealed class ChunkMeshSchedulingTests
     }
 
     [Fact]
+    public void Equal_distance_discovery_pairs_opposite_directions()
+    {
+        List<Vector2D<int>> offsets =
+        [
+            new(-2, -2),
+            new(-2, 2),
+            new(2, -2),
+            new(2, 2),
+            new(-3, 0),
+            new(0, -3),
+            new(0, 3),
+            new(3, 0)
+        ];
+
+        offsets.Sort(ChunkRenderer.CompareBalancedHorizontalOffsets);
+
+        for (var i = 0; i < offsets.Count; i += 2)
+            Assert.Equal(-offsets[i], offsets[i + 1]);
+    }
+
+    [Fact]
     public void Urgent_work_outranks_the_safety_ring()
     {
         var urgent = ChunkRenderer.GetMeshSchedulingRank(new Vector3D<int>(16 * 10, 64, 0), View,

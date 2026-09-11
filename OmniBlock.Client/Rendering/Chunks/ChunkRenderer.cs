@@ -42,10 +42,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private static readonly Vector2D<int>[] s_safetyColumnOffsets;
     private readonly Dictionary<Vector3D<int>, ChunkMeshVersion> _chunkVersions = [];
     private readonly List<Vector3D<int>> _chunkVersionsToRemove = [];
-    private readonly List<ChunkToMeshInfo> _dirtyChunks = [];
     private readonly HashSet<Vector3D<int>> _everPresentedMeshes = [];
-    private readonly MeshPriorityFairness _dispatchFairness = new();
-    private readonly List<ChunkToMeshInfo> _lightingUpdates = [];
     private readonly ILogger<ChunkRenderer> _logger = Log.Instance.For<ChunkRenderer>();
     private readonly ChunkMeshGenerator _meshGenerator;
     private readonly List<SubChunkRenderer> _occludedRenderersBuffer = [];
@@ -58,6 +55,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly HashSet<Vector3D<int>> _presentedThisFrame = [];
     private readonly Dictionary<Vector3D<int>, long> _requestEnqueuedTicks = [];
     private readonly Dictionary<Vector3D<int>, MeshWorkPriority> _requestedPriorities = [];
+    private readonly SectionMeshRequestQueue _pendingMeshUpdates = new();
     private readonly TranslucentDistanceComparer _translucentDistanceComparer = new();
     private readonly List<SubChunkRenderer> _translucentRenderers = [];
     private readonly List<SubChunkRenderer> _visibleRenderers = [];
@@ -85,6 +83,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private int _frameIndex;
     private ICuller? _lastCamera;
     private int _lastRenderDistance;
+    private Vector3D<int>? _lastRequestRankCenter;
     private Vector3D<double> _lastViewPos;
     private int _meshReadyRadius = int.MaxValue;
     private Matrix4X4<float> _modelView;
@@ -114,8 +113,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             }
         }
 
-        offsets.Sort((a, b) =>
-            (a.X * a.X + a.Y * a.Y + a.Z * a.Z).CompareTo(b.X * b.X + b.Y * b.Y + b.Z * b.Z));
+        offsets.Sort(CompareDiscoveryOffsets);
 
         s_spiralOffsets = [.. offsets];
 
@@ -127,9 +125,48 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 safetyColumns.Add(new Vector2D<int>(x, z));
         }
 
-        safetyColumns.Sort((a, b) =>
-            (a.X * a.X + a.Y * a.Y).CompareTo(b.X * b.X + b.Y * b.Y));
+        safetyColumns.Sort(CompareBalancedHorizontalOffsets);
         s_safetyColumnOffsets = [.. safetyColumns];
+    }
+
+    /// <summary>
+    ///     Orders an equal-distance horizontal offset beside its opposite before moving to the
+    ///     next direction. Plain stable distance sorting inherited the nested x/z construction
+    ///     order, so a bounded discovery pass repeatedly filled one screen quadrant last.
+    /// </summary>
+    internal static int CompareBalancedHorizontalOffsets(Vector2D<int> left, Vector2D<int> right)
+    {
+        var distance = (left.X * left.X + left.Y * left.Y)
+            .CompareTo(right.X * right.X + right.Y * right.Y);
+        if (distance != 0) return distance;
+
+        var leftKey = AntipodalKey(left.X, left.Y);
+        var rightKey = AntipodalKey(right.X, right.Y);
+        var x = leftKey.X.CompareTo(rightKey.X);
+        if (x != 0) return x;
+        var z = leftKey.Z.CompareTo(rightKey.Z);
+        return z != 0 ? z : leftKey.Phase.CompareTo(rightKey.Phase);
+    }
+
+    private static int CompareDiscoveryOffsets(Vector3D<int> left, Vector3D<int> right)
+    {
+        var distance = (left.X * left.X + left.Y * left.Y + left.Z * left.Z)
+            .CompareTo(right.X * right.X + right.Y * right.Y + right.Z * right.Z);
+        if (distance != 0) return distance;
+
+        var verticalDistance = Math.Abs(left.Y).CompareTo(Math.Abs(right.Y));
+        if (verticalDistance != 0) return verticalDistance;
+        var verticalSide = left.Y.CompareTo(right.Y);
+        if (verticalSide != 0) return verticalSide;
+        return CompareBalancedHorizontalOffsets(
+            new Vector2D<int>(left.X, left.Z),
+            new Vector2D<int>(right.X, right.Z));
+    }
+
+    private static (int X, int Z, int Phase) AntipodalKey(int x, int z)
+    {
+        if (x < 0 || x == 0 && z <= 0) return (x, z, 0);
+        return (-x, -z, 1);
     }
 
     public ChunkRenderer(World world, GameOptions options)
@@ -159,7 +196,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         get
         {
             var profile = MeshProfile;
-            return _dirtyChunks.Count + _lightingUpdates.Count + profile.Outstanding;
+            return _pendingMeshUpdates.Count + profile.Outstanding;
         }
     }
 
@@ -239,7 +276,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         var centerZ = (int)Math.Floor(viewPosition.Z / SubChunkRenderer.Size);
         var radius = Math.Max(MeshSafetyRingRadius, _lastRenderDistance);
         var visible = _visibleRenderers.Select(static renderer => renderer.Position).ToHashSet();
-        var dirty = _dirtyChunks.Select(static item => item.Pos).ToHashSet();
+        var dirty = _pendingMeshUpdates.Items.Select(static item => item.Pos).ToHashSet();
         var text = new StringBuilder(256 + (radius * 2 + 1) * (radius * 2 + 1) * 48);
 
         text.Append("center\t").Append(centerX).Append('\t').Append(centerZ).AppendLine();
@@ -446,7 +483,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         _renderersToRemove.Clear();
 
-        DispatchPendingMeshUpdates(camera);
+        DispatchPendingMeshUpdates();
         LoadNewMeshes(_lastViewPos);
     }
 
@@ -762,105 +799,44 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     ///     could go; a wall-clock budget lets it drain as fast as those actually allow, and still
     ///     bounds the frame-thread cost of dispatching regardless of how large the backlog gets.
     /// </summary>
-    private void DispatchPendingMeshUpdates(ICuller? camera)
+    private void DispatchPendingMeshUpdates()
     {
-        _dirtyChunks.RemoveAll(c => !IsChunkInMeshRetentionDistance(c.Pos, _lastViewPos));
-        _lightingUpdates.RemoveAll(c => !IsChunkInMeshRetentionDistance(c.Pos, _lastViewPos));
+        _pendingMeshUpdates.RemoveWhere(c => !IsChunkInMeshRetentionDistance(c.Pos, _lastViewPos));
 
         var stopwatch = Stopwatch.StartNew();
         while (stopwatch.Elapsed.TotalMilliseconds < MeshDispatchBudgetMs)
         {
-            var dispatchedDirty = TryDispatchBestDirtyMeshUpdate(camera);
-            var dispatchedLighting = TryDispatchBestLightingMeshUpdate();
-
-            if (!dispatchedDirty && !dispatchedLighting)
-            {
-                break;
-            }
+            if (!_pendingMeshUpdates.TryDequeue(out var request)) break;
+            _meshGenerator.MeshChunk(
+                _world,
+                request.Pos,
+                request.Version,
+                _options.AlternateBlocksEnabled,
+                request.Priority);
         }
     }
 
-    private bool TryDispatchBestDirtyMeshUpdate(ICuller? camera)
+    private (int Tier, double DistanceSquared, long EnqueuedAt) RankPendingMesh(
+        ChunkToMeshInfo info,
+        ICuller? camera)
     {
-        var criticalIndex = -1;
-        var foregroundIndex = -1;
-        var backgroundIndex = -1;
-        var criticalRank = (Tier: int.MaxValue, DistanceSquared: double.MaxValue, EnqueuedAt: long.MaxValue);
-        var foregroundRank = criticalRank;
-        var backgroundRank = criticalRank;
-
-        for (var i = 0; i < _dirtyChunks.Count; i++)
-        {
-            var info = _dirtyChunks[i];
-            var aabb = new Box(
-                info.Pos.X, info.Pos.Y, info.Pos.Z,
-                info.Pos.X + SubChunkRenderer.Size,
-                info.Pos.Y + SubChunkRenderer.Size,
-                info.Pos.Z + SubChunkRenderer.Size
-            );
-
-            // Expand only the scheduling frustum. Drawing still tests the exact mesh bounds.
-            var prefetched = camera?.IsBoundingBoxInFrustum(aabb.Expand(
-                MeshPrefetchMargin, MeshPrefetchMargin, MeshPrefetchMargin)) ?? false;
-            var rank = GetMeshSchedulingRank(
-                info.Pos,
-                _lastViewPos,
-                _predictedViewPos,
-                info.Priority,
-                prefetched,
-                !IsChunkInRenderDistance(info.Pos, _lastViewPos),
-                info.EnqueuedAt,
-                _schedulerTick);
-
-            switch (EffectiveWorkerPriority(info))
-            {
-                case MeshWorkPriority.Critical when rank.CompareTo(criticalRank) < 0:
-                    criticalIndex = i;
-                    criticalRank = rank;
-                    break;
-                case MeshWorkPriority.Foreground when rank.CompareTo(foregroundRank) < 0:
-                    foregroundIndex = i;
-                    foregroundRank = rank;
-                    break;
-                case MeshWorkPriority.Background when rank.CompareTo(backgroundRank) < 0:
-                    backgroundIndex = i;
-                    backgroundRank = rank;
-                    break;
-            }
-        }
-
-        if (criticalIndex == -1 && foregroundIndex == -1 && backgroundIndex == -1)
-        {
-            return false;
-        }
-
-        var selectedPriority = _dispatchFairness.Select(
-            criticalIndex != -1,
-            foregroundIndex != -1,
-            backgroundIndex != -1);
-        var bestIndex = selectedPriority switch
-        {
-            MeshWorkPriority.Critical => criticalIndex,
-            MeshWorkPriority.Foreground => foregroundIndex,
-            _ => backgroundIndex
-        };
-        var closest = _dirtyChunks[bestIndex];
-        _meshGenerator.MeshChunk(
-            _world,
-            closest.Pos,
-            closest.Version,
-            _options.AlternateBlocksEnabled,
-            selectedPriority);
-        _dirtyChunks.RemoveAt(bestIndex);
-        return true;
+        var aabb = new Box(
+            info.Pos.X, info.Pos.Y, info.Pos.Z,
+            info.Pos.X + SubChunkRenderer.Size,
+            info.Pos.Y + SubChunkRenderer.Size,
+            info.Pos.Z + SubChunkRenderer.Size);
+        var prefetched = camera?.IsBoundingBoxInFrustum(aabb.Expand(
+            MeshPrefetchMargin, MeshPrefetchMargin, MeshPrefetchMargin)) ?? false;
+        return GetMeshSchedulingRank(
+            info.Pos,
+            _lastViewPos,
+            _predictedViewPos,
+            info.Priority,
+            prefetched,
+            !IsChunkInRenderDistance(info.Pos, _lastViewPos),
+            info.EnqueuedAt,
+            _schedulerTick);
     }
-
-    private MeshWorkPriority EffectiveWorkerPriority(ChunkToMeshInfo info) =>
-        info.Priority != MeshWorkPriority.Background
-            ? info.Priority
-            : IsInMeshSafetyRing(info.Pos, _lastViewPos)
-                ? MeshWorkPriority.Foreground
-                : MeshWorkPriority.Background;
 
     internal static (int Tier, double DistanceSquared, long EnqueuedAt) GetMeshSchedulingRank(
         Vector3D<int> position,
@@ -942,32 +918,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         return deltaX * deltaX + deltaZ * deltaZ <= MeshSafetyRingRadius * MeshSafetyRingRadius;
     }
 
-    private bool TryDispatchBestLightingMeshUpdate()
-    {
-        var bestIndex = -1;
-        var bestDist = double.MaxValue;
-        for (var i = 0; i < _lightingUpdates.Count; i++)
-        {
-            var dist = Vector3D.DistanceSquared(ToDoubleVec(_lightingUpdates[i].Pos), _lastViewPos);
-            if (dist < bestDist)
-            {
-                bestDist = dist;
-                bestIndex = i;
-            }
-        }
-
-        if (bestIndex == -1)
-        {
-            return false;
-        }
-
-        var update = _lightingUpdates[bestIndex];
-        _meshGenerator.MeshChunk(_world, update.Pos, update.Version, _options.AlternateBlocksEnabled,
-            update.Priority);
-        _lightingUpdates.RemoveAt(bestIndex);
-        return true;
-    }
-
     public void UpdateAllRenderers()
     {
         foreach (var state in _renderers.Values)
@@ -986,10 +936,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 var snapshot = version.SnapshotIfNeeded();
                 if (snapshot.HasValue)
                 {
-                    _lightingUpdates.Add(new ChunkToMeshInfo(
+                    var request = new ChunkToMeshInfo(
                         state.Renderer.Position,
                         snapshot.Value,
-                        MeshWorkPriority.Background));
+                        MeshWorkPriority.Background,
+                        _schedulerTick);
+                    _pendingMeshUpdates.Enqueue(request, RankPendingMesh(request, _lastCamera));
                 }
             }
         }
@@ -1004,6 +956,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _predictedViewPos = PredictMeshCenter(viewPos, velocity);
 
         var currentChunk = GetMeshDiscoveryCenter(viewPos);
+
+        if (_lastRequestRankCenter != currentChunk || _schedulerTick % MeshAgePromotionTicks == 0)
+        {
+            _pendingMeshUpdates.Reprioritize(info => RankPendingMesh(info, _lastCamera));
+            _lastRequestRankCenter = currentChunk;
+        }
 
         // Requests were ordered for an earlier camera position when they entered the bounded
         // worker backlog. Re-sort the small queues as the player moves so a distant request cannot
@@ -1036,8 +994,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         // The general backlog may already be full of work selected before the player moved. If the
         // safety ring shared that capacity, flying into a loaded-but-unmeshed area could not even
         // promote its nearby sections until distant work drained.
-        var foregroundPending = _requestedPriorities.Count(static entry =>
-            entry.Value == MeshWorkPriority.Foreground);
+        var foregroundPending = ForegroundPending;
         var safetyDiscoveryBudget = GetMeshSafetyDiscoveryCapacity(
             foregroundPending,
             _meshGenerator.MaxConcurrentTasks);
@@ -1085,7 +1042,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         // world into a ten-thousand-entry dirty list, making the scheduler's priority scan itself
         // a frame stall. Keep only a small multiple of worker count buffered; urgent notifications
         // and startup prerequisites above are never rejected by this background limit.
-        var pendingMeshWork = _dirtyChunks.Count + _lightingUpdates.Count + _meshGenerator.Profile.Outstanding;
+        var pendingMeshWork = _pendingMeshUpdates.Count + _meshGenerator.Profile.Outstanding;
         var discoveryBudget = Math.Min(
             MAX_CHUNKS_PER_FRAME,
             GetMeshDiscoveryCapacity(pendingMeshWork, _meshGenerator.MaxConcurrentTasks));
@@ -1176,7 +1133,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         // post-pass path so mesh replacement remains outside command recording.
         if (_world is ClientWorld loadingWorld && !loadingWorld.NetworkHandler.Preload.IsReady)
         {
-            DispatchPendingMeshUpdates(null);
+            DispatchPendingMeshUpdates();
             LoadNewMeshes(_lastViewPos);
         }
     }
@@ -1257,20 +1214,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         var snapshot = version.SnapshotIfNeeded();
         if (snapshot.HasValue)
         {
-            for (var i = 0; i < _dirtyChunks.Count; i++)
-            {
-                if (_dirtyChunks[i].Pos == chunkPos)
-                {
-                    _dirtyChunks[i] = new ChunkToMeshInfo(
-                        chunkPos,
-                        snapshot.Value,
-                        MaxPriority(requestedPriority, _dirtyChunks[i].Priority),
-                        _dirtyChunks[i].EnqueuedAt);
-                    return true;
-                }
-            }
-
-            _dirtyChunks.Add(new ChunkToMeshInfo(chunkPos, snapshot.Value, requestedPriority, _schedulerTick));
+            var request = new ChunkToMeshInfo(
+                chunkPos,
+                snapshot.Value,
+                RequestedPriority(chunkPos),
+                _schedulerTick);
+            _pendingMeshUpdates.Enqueue(request, RankPendingMesh(request, _lastCamera));
             return true;
         }
 
@@ -1278,21 +1227,17 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         {
             // SnapshotIfNeeded also reports pending while the request is still in our local
             // list. Promoting only the worker queue silently loses priority in that interval.
-            for (var i = 0; i < _dirtyChunks.Count; i++)
-            {
-                if (_dirtyChunks[i].Pos == chunkPos)
-                {
-                    var pending = _dirtyChunks[i];
-                    _dirtyChunks[i] = new ChunkToMeshInfo(
-                        pending.Pos,
-                        pending.Version,
-                        MaxPriority(pending.Priority, requestedPriority),
-                        pending.EnqueuedAt);
-                    return false;
-                }
-            }
+            if (_pendingMeshUpdates.Promote(
+                    chunkPos,
+                    RequestedPriority(chunkPos),
+                    RankPendingMesh(
+                        new ChunkToMeshInfo(chunkPos, version.State.Pending,
+                            RequestedPriority(chunkPos),
+                            _requestEnqueuedTicks.GetValueOrDefault(chunkPos, _schedulerTick)),
+                        _lastCamera)))
+                return false;
 
-            _meshGenerator.Promote(chunkPos, requestedPriority);
+            _meshGenerator.Promote(chunkPos, RequestedPriority(chunkPos));
         }
 
         return false;
@@ -1351,8 +1296,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private void RecoverOrphanedMesh(Vector3D<int> chunkPos)
     {
         if (!_chunkVersions.TryGetValue(chunkPos, out var version)) return;
-        if (_dirtyChunks.Any(entry => entry.Pos == chunkPos) ||
-            _lightingUpdates.Any(entry => entry.Pos == chunkPos) ||
+        if (_pendingMeshUpdates.Contains(chunkPos) ||
             _meshGenerator.HasOutstanding(chunkPos))
             return;
 
@@ -1374,28 +1318,23 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         if (!HasRenderableSourceChunk(_world, chunkPos))
             return;
 
-        if (_chunkVersions.ContainsKey(chunkPos))
+        if (_chunkVersions.TryGetValue(chunkPos, out var version))
         {
             RememberPriority(chunkPos, MeshWorkPriority.Foreground);
 
-            for (var i = 0; i < _dirtyChunks.Count; i++)
+            if (_pendingMeshUpdates.Contains(chunkPos))
             {
-                if (_dirtyChunks[i].Pos == chunkPos)
-                {
-                    if (_dirtyChunks[i].Priority < MeshWorkPriority.Foreground)
-                    {
-                        _dirtyChunks[i] = new ChunkToMeshInfo(
-                            _dirtyChunks[i].Pos,
-                            _dirtyChunks[i].Version,
+                _pendingMeshUpdates.Promote(
+                    chunkPos,
+                    MeshWorkPriority.Foreground,
+                    RankPendingMesh(
+                        new ChunkToMeshInfo(chunkPos, version.State.Pending,
                             MeshWorkPriority.Foreground,
-                            _dirtyChunks[i].EnqueuedAt);
-                    }
-
-                    return;
-                }
+                            _requestEnqueuedTicks.GetValueOrDefault(chunkPos, _schedulerTick)),
+                        _lastCamera));
+                return;
             }
 
-            var version = _chunkVersions[chunkPos];
             if (version.State.Pending != -1)
             {
                 // A queued job can be promoted; an already-running job cannot, but remains the
@@ -1431,19 +1370,16 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         {
             RememberPriority(chunkPos, MeshWorkPriority.Foreground);
 
-            for (var i = 0; i < _dirtyChunks.Count; i++)
+            if (_pendingMeshUpdates.Contains(chunkPos))
             {
-                if (_dirtyChunks[i].Pos != chunkPos) continue;
-                var pending = _dirtyChunks[i];
-                if (pending.Priority < MeshWorkPriority.Foreground)
-                {
-                    _dirtyChunks[i] = new ChunkToMeshInfo(
-                        pending.Pos,
-                        pending.Version,
-                        MeshWorkPriority.Foreground,
-                        pending.EnqueuedAt);
-                }
-
+                _pendingMeshUpdates.Promote(
+                    chunkPos,
+                    MeshWorkPriority.Foreground,
+                    RankPendingMesh(
+                        new ChunkToMeshInfo(chunkPos, version.State.Pending,
+                            MeshWorkPriority.Foreground,
+                            _requestEnqueuedTicks.GetValueOrDefault(chunkPos, _schedulerTick)),
+                        _lastCamera));
                 return previousPriority < MeshWorkPriority.Foreground;
             }
 
@@ -1472,7 +1408,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 pos,
                 HasRenderableSourceChunk(_world, pos),
                 state,
-                _dirtyChunks.Any(entry => entry.Pos == pos),
+                _pendingMeshUpdates.Contains(pos),
                 _renderers.ContainsKey(pos),
                 RequestedPriority(pos));
         }
@@ -1906,6 +1842,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         _translucentRenderers.Clear();
         _renderersToRemove.Clear();
+        _pendingMeshUpdates.Clear();
         _requestedPriorities.Clear();
         _requestEnqueuedTicks.Clear();
         _everPresentedMeshes.Clear();
@@ -1925,18 +1862,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         public bool IsLit { get; set; } = isLit;
         public SubChunkRenderer Renderer { get; } = renderer;
-    }
-
-    private struct ChunkToMeshInfo(
-        Vector3D<int> pos,
-        long version,
-        MeshWorkPriority priority,
-        long enqueuedAt = 0)
-    {
-        public readonly Vector3D<int> Pos = pos;
-        public readonly long Version = version;
-        public readonly MeshWorkPriority Priority = priority;
-        public readonly long EnqueuedAt = enqueuedAt;
     }
 
     private sealed class TranslucentDistanceComparer : IComparer<SubChunkRenderer>
