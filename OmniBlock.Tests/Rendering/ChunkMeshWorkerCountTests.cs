@@ -43,4 +43,14 @@ public sealed class ChunkMeshWorkerCountTests
     public void Foreground_ring_admission_is_bounded(
         int foregroundPending, int workers, int expected) =>
         Assert.Equal(expected, ChunkRenderer.GetMeshForegroundDiscoveryCapacity(foregroundPending, workers));
+
+    [Theory]
+    [InlineData(0, 8, 16)]
+    [InlineData(9, 8, 7)]
+    [InlineData(16, 8, 0)]
+    [InlineData(100, 8, 0)]
+    public void Streaming_boundary_admission_has_an_independent_bounded_window(
+        int streamingPending, int workers, int expected) =>
+        Assert.Equal(expected,
+            ChunkRenderer.GetStreamingBoundaryAdmissionCapacity(streamingPending, workers));
 }

@@ -49,4 +49,56 @@ public sealed class SectionRenderStateTests
         Assert.Equal(12, state.FirstUploadedAt);
         Assert.Equal(37, state.LastUploadedAt);
     }
+
+    [Fact]
+    public void Deferred_invalidations_coalesce_without_mutating_the_active_request()
+    {
+        using var state = new SectionRenderState(new Vector3D<int>(16, 32, 48));
+        state.RememberRequest(SectionDirtyReason.BlockChange, MeshWorkPriority.Critical, 20);
+
+        state.DeferRequest(SectionDirtyReason.StreamingBoundary, 30);
+        state.DeferRequest(SectionDirtyReason.StreamingBoundary, 40);
+
+        Assert.Equal(SectionDirtyReason.BlockChange, state.DirtyReasons);
+        Assert.Equal(20, state.RequestedAt);
+        Assert.Equal(SectionDirtyReason.StreamingBoundary, state.DeferredDirtyReasons);
+        Assert.Equal(30, state.DeferredAt);
+
+        Assert.True(state.TryConsumeDeferredRequest(out var reasons, out var requestedAt));
+        Assert.Equal(SectionDirtyReason.StreamingBoundary, reasons);
+        Assert.Equal(30, requestedAt);
+        Assert.Equal(SectionDirtyReason.None, state.DeferredDirtyReasons);
+        Assert.Equal(-1, state.DeferredAt);
+        Assert.Equal(SectionDirtyReason.BlockChange, state.DirtyReasons);
+    }
+
+    [Fact]
+    public void Clearing_an_uploaded_request_preserves_a_later_deferred_invalidation()
+    {
+        using var state = new SectionRenderState(new Vector3D<int>(16, 32, 48));
+        state.RememberRequest(SectionDirtyReason.InitialTerrain, MeshWorkPriority.Foreground, 10);
+        state.DeferRequest(SectionDirtyReason.StreamingBoundary, 20);
+
+        state.ClearRequest();
+
+        Assert.Equal(SectionDirtyReason.None, state.DirtyReasons);
+        Assert.Equal(SectionDirtyReason.StreamingBoundary, state.DeferredDirtyReasons);
+        Assert.Equal(20, state.DeferredAt);
+    }
+
+    [Fact]
+    public void Abandoning_a_removed_queue_entry_releases_its_pending_epoch()
+    {
+        using var state = new SectionRenderState(new Vector3D<int>(16, 32, 48));
+        state.Version.MarkDirty();
+        Assert.NotNull(state.Version.SnapshotIfNeeded());
+        state.RememberRequest(SectionDirtyReason.InitialTerrain, MeshWorkPriority.Background, 10);
+
+        state.AbandonRequest();
+
+        Assert.Equal(-1, state.Version.State.Pending);
+        Assert.Equal(-1, state.RequestedAt);
+        Assert.Equal(SectionDirtyReason.None, state.DirtyReasons);
+        Assert.NotNull(state.Version.SnapshotIfNeeded());
+    }
 }

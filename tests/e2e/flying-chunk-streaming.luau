@@ -59,6 +59,9 @@ for chunk = 1, 10 do
     end, 10, 0.05)
     assert(OMNI.client.state.playerY > 240,
         "player lost altitude before flight chunk " .. tostring(chunk))
+    assert(OMNI.client.state.meshPending <= 160,
+        "mesh work escaped bounded admission at flight chunk " .. tostring(chunk) ..
+        ": " .. tostring(OMNI.client.state.meshPending))
     OMNI.test.dumpTerrain("flight-chunk-" .. tostring(chunk))
 end
 

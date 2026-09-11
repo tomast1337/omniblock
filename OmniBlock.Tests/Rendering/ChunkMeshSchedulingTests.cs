@@ -188,6 +188,27 @@ public sealed class ChunkMeshSchedulingTests
         Assert.Equal(expected, ChunkRenderer.IsInMeshForegroundRing(position, View));
     }
 
+    [Theory]
+    [InlineData((int)SectionDirtyReason.BlockChange, false, false, false, true)]
+    [InlineData((int)SectionDirtyReason.StreamingBoundary, false, false, false, true)]
+    [InlineData((int)SectionDirtyReason.BlockChange, true, false, false, false)]
+    [InlineData((int)SectionDirtyReason.BlockChange, false, true, false, false)]
+    [InlineData((int)SectionDirtyReason.BlockChange, false, false, true, false)]
+    [InlineData((int)SectionDirtyReason.InitialTerrain, false, false, false, false)]
+    public void Unmeshed_updates_wait_for_bounded_discovery_unless_a_build_must_be_superseded(
+        int reason,
+        bool hasRenderer,
+        bool requiredForStartup,
+        bool hasPendingBuild,
+        bool expected)
+    {
+        Assert.Equal(expected, ChunkRenderer.ShouldWaitForMissingMeshDiscovery(
+            (SectionDirtyReason)reason,
+            hasRenderer,
+            requiredForStartup,
+            hasPendingBuild));
+    }
+
     [Fact]
     public void Prediction_favors_meshes_ahead_of_player_motion()
     {

@@ -27,6 +27,8 @@ internal sealed class SectionRenderState(Vector3D<int> position) : IDisposable
     public MeshWorkPriority RequestedPriority { get; private set; } = MeshWorkPriority.Background;
     public long RequestedAt { get; private set; } = -1;
     public SectionDirtyReason DirtyReasons { get; private set; }
+    public SectionDirtyReason DeferredDirtyReasons { get; private set; }
+    public long DeferredAt { get; private set; } = -1;
     public long FirstUploadedAt { get; private set; } = -1;
     public long LastUploadedAt { get; private set; } = -1;
 
@@ -45,6 +47,34 @@ internal sealed class SectionRenderState(Vector3D<int> position) : IDisposable
         RequestedPriority = MeshWorkPriority.Background;
         RequestedAt = -1;
         DirtyReasons = SectionDirtyReason.None;
+    }
+
+    public void AbandonRequest()
+    {
+        Version.AbandonPendingMesh();
+        ClearRequest();
+    }
+
+    /// <summary>
+    ///     Records invalidation without creating a mesh epoch or snapshot. Streaming-neighbor
+    ///     arrivals use this path so repeated boundary notifications collapse into one eventual
+    ///     cleanup build and cannot flood the active worker backlog.
+    /// </summary>
+    public void DeferRequest(SectionDirtyReason reason, long requestedAt)
+    {
+        DeferredDirtyReasons |= reason;
+        if (DeferredAt < 0) DeferredAt = requestedAt;
+    }
+
+    public bool TryConsumeDeferredRequest(out SectionDirtyReason reasons, out long requestedAt)
+    {
+        reasons = DeferredDirtyReasons;
+        requestedAt = DeferredAt;
+        if (reasons == SectionDirtyReason.None) return false;
+
+        DeferredDirtyReasons = SectionDirtyReason.None;
+        DeferredAt = -1;
+        return true;
     }
 
     public void Install(SubChunkRenderer renderer, bool isLit)

@@ -30,6 +30,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     internal const int MeshDiscoveryBacklogPerWorker = 8;
     internal const int MeshSafetyBacklogPerWorker = 2;
     internal const int MeshForegroundBacklogPerWorker = 4;
+    internal const int MeshStreamingBoundaryBacklogPerWorker = 2;
 
     //TODO: MAKE THIS CONFIGURABLE
     private const double MeshUploadBudgetMs = 1.5;
@@ -53,6 +54,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     // Iteration index only. SectionRenderState remains the residency authority; excluding
     // scheduling-only states keeps per-frame culling independent of background queue size.
     private readonly HashSet<SectionRenderState> _residentSections = [];
+    // Boundary arrivals are cheap invalidations until admitted. Keeping only section keys here
+    // coalesces repeated neighbor notifications without allocating snapshots or worker jobs.
+    private readonly Queue<Vector3D<int>> _deferredStreamingBoundaries = [];
+    private readonly HashSet<Vector3D<int>> _deferredStreamingBoundaryKeys = [];
     private readonly List<Vector3D<int>> _sectionsToRemove = [];
     private readonly List<SubChunkRenderer> _renderersToRemove = [];
     private readonly HashSet<Vector3D<int>> _activePresentationRegressions = [];
@@ -225,6 +230,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     internal int PresentedMeshCount => _visibleRenderers.Count;
     internal int ForegroundPending => CountPending(MeshWorkPriority.Foreground);
     internal int BackgroundPending => CountPending(MeshWorkPriority.Background);
+    internal int DeferredStreamingBoundaryCount => CountDeferred(SectionDirtyReason.StreamingBoundary);
     internal long OldestForegroundAge => OldestPendingAge(MeshWorkPriority.Foreground);
     internal long PresentationRegressionCount => _presentationRegressionCount;
 
@@ -250,6 +256,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     internal static int GetMeshForegroundDiscoveryCapacity(int foregroundPending, int workerCount) =>
         Math.Max(0, workerCount * MeshForegroundBacklogPerWorker - foregroundPending);
+
+    internal static int GetStreamingBoundaryAdmissionCapacity(int streamingPending, int workerCount) =>
+        Math.Max(0, workerCount * MeshStreamingBoundaryBacklogPerWorker - streamingPending);
 
     internal void ResetMeshProfile() => _meshGenerator.ResetProfile();
 
@@ -305,10 +314,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("presentedMeshes\t").Append(PresentedMeshCount).AppendLine();
         text.Append("foregroundPending\t").Append(ForegroundPending).AppendLine();
         text.Append("backgroundPending\t").Append(BackgroundPending).AppendLine();
+        text.Append("deferredStreamingBoundaries\t").Append(DeferredStreamingBoundaryCount).AppendLine();
         text.Append("oldestForegroundAge\t").Append(OldestForegroundAge).AppendLine();
         text.Append("presentationRegressions\t").Append(PresentationRegressionCount).AppendLine();
         text.Append("pendingWork\t").Append(PendingMeshWork).AppendLine();
-        text.AppendLine("chunkX\tchunkZ\tdistance2\tloaded\tmeshes\tvisible\tpending\tdirty\tforeground\tcritical\tbackground\tinitial\tstreamingBoundary\tblockChange\tlighting\tmaintenance\tyoungestMeshAge");
+        text.AppendLine("chunkX\tchunkZ\tdistance2\tloaded\tmeshes\tvisible\tpending\tdirty\tforeground\tcritical\tbackground\tinitial\tstreamingBoundary\tdeferredStreamingBoundary\tblockChange\tlighting\tmaintenance\tyoungestMeshAge");
 
         for (var dz = -radius; dz <= radius; dz++)
         for (var dx = -radius; dx <= radius; dx++)
@@ -327,6 +337,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             var background = 0;
             var initial = 0;
             var streamingBoundary = 0;
+            var deferredStreamingBoundary = 0;
             var blockChange = 0;
             var lighting = 0;
             var maintenance = 0;
@@ -343,6 +354,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     if (section.Version.State.Pending != -1) pending++;
                     if ((section.DirtyReasons & SectionDirtyReason.InitialTerrain) != 0) initial++;
                     if ((section.DirtyReasons & SectionDirtyReason.StreamingBoundary) != 0) streamingBoundary++;
+                    if ((section.DeferredDirtyReasons & SectionDirtyReason.StreamingBoundary) != 0)
+                        deferredStreamingBoundary++;
                     if ((section.DirtyReasons & SectionDirtyReason.BlockChange) != 0) blockChange++;
                     if ((section.DirtyReasons & SectionDirtyReason.Lighting) != 0) lighting++;
                     if ((section.DirtyReasons & SectionDirtyReason.Maintenance) != 0) maintenance++;
@@ -366,6 +379,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 .Append(pending).Append('\t').Append(dirtyMeshes).Append('\t')
                 .Append(foreground).Append('\t').Append(critical).Append('\t').Append(background).Append('\t')
                 .Append(initial).Append('\t').Append(streamingBoundary).Append('\t')
+                .Append(deferredStreamingBoundary).Append('\t')
                 .Append(blockChange).Append('\t').Append(lighting).Append('\t').Append(maintenance).Append('\t')
                 .Append(youngestMeshAge == long.MaxValue ? -1 : youngestMeshAge)
                 .AppendLine();
@@ -635,7 +649,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 // Finished after the chunk fell out of render distance — UploadMeshData (which
                 // would normally return these to the pool) never runs for it.
                 mesh.Dispose();
-                if (_sections.TryGetValue(mesh.Pos, out var section)) section.ClearRequest();
+                if (_sections.TryGetValue(mesh.Pos, out var section) &&
+                    section.Version.State.Pending == mesh.Version)
+                    section.AbandonRequest();
             }
 
             var uploadedAt = Stopwatch.GetTimestamp();
@@ -773,6 +789,29 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         return count;
     }
 
+    private int CountDeferred(SectionDirtyReason reason)
+    {
+        var count = 0;
+        foreach (var section in _sections.Values)
+        {
+            if ((section.DeferredDirtyReasons & reason) != 0) count++;
+        }
+
+        return count;
+    }
+
+    private int CountPendingWithReason(SectionDirtyReason reason)
+    {
+        var count = 0;
+        foreach (var section in _sections.Values)
+        {
+            if (section.Version.State.Pending != -1 && (section.DirtyReasons & reason) != 0)
+                count++;
+        }
+
+        return count;
+    }
+
     private int CountPendingInHorizontalRing(MeshWorkPriority priority, int radius)
     {
         var count = 0;
@@ -856,7 +895,14 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private void DispatchPendingMeshUpdates()
     {
         _pendingMeshUpdates.RemoveWhere(state =>
-            !IsChunkInMeshRetentionDistance(state.Position, _lastViewPos));
+        {
+            if (IsChunkInMeshRetentionDistance(state.Position, _lastViewPos)) return false;
+            // This request has not reached a worker, so removing its keyed queue entry also has to
+            // release the version's pending epoch. Leaving it set creates an immortal phantom job
+            // that inflates backlog counts and prevents the section from ever snapshotting again.
+            state.AbandonRequest();
+            return true;
+        });
 
         var stopwatch = Stopwatch.StartNew();
         while (stopwatch.Elapsed.TotalMilliseconds < MeshDispatchBudgetMs)
@@ -1076,6 +1122,14 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             GetMeshForegroundDiscoveryCapacity(ForegroundPending, _meshGenerator.MaxConcurrentTasks));
         AdmitMissingMeshes(currentChunk, s_foregroundColumnOffsets, foregroundDiscoveryBudget);
 
+        // Neighbor arrivals invalidate already-presented boundaries, but those cosmetic cleanup
+        // builds must not bypass admission control. Keep only a small admitted window; the cheap,
+        // keyed deferred queue retains the rest and repeated arrivals coalesce per section.
+        var streamingBoundaryBudget = GetStreamingBoundaryAdmissionCapacity(
+            CountPendingWithReason(SectionDirtyReason.StreamingBoundary),
+            _meshGenerator.MaxConcurrentTasks);
+        AdmitDeferredStreamingBoundaries(streamingBoundaryBudget);
+
         // Discovery is a producer and the mesh workers/uploads are the consumers. Letting the
         // producer run 32 sections every frame regardless of consumer progress grows a distance-32
         // world into a ten-thousand-entry dirty list, making the scheduler's priority scan itself
@@ -1228,16 +1282,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         if (!IsChunkInMeshRetentionDistance(chunkPos, _lastViewPos))
             return false;
 
-        // Full chunk arrival uses the same dirty notification as player edits. Only updates to
-        // an existing mesh are critical. Startup meshes are foreground work: they beat ordinary
-        // streaming without making a newly placed block wait behind the whole safety ring.
-        var requestedPriority = ClassifyRequestedMeshPriority(
-            reason,
-            HasRenderer(chunkPos),
-            _world is ClientWorld clientWorld && clientWorld.NetworkHandler.Preload.RequiresMesh(chunkPos),
-            IsInMeshSafetyRing(chunkPos, _lastViewPos),
-            IsInMeshForegroundRing(chunkPos, _lastViewPos));
-
         // The snapshot needs one cell of neighbor padding, but it already reads a missing column
         // through ChunkSource's empty-chunk fallback. Requiring the whole neighbor ring here made
         // a fully received, interactive chunk invisible until every adjacent streaming placeholder
@@ -1246,11 +1290,37 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         if (!HasRenderableSourceChunk(_world, chunkPos))
             return false;
 
+        var hasRenderer = HasRenderer(chunkPos);
+        var requiredForStartup = _world is ClientWorld startupWorld &&
+                                 startupWorld.NetworkHandler.Preload.RequiresMesh(chunkPos);
+        var hasPendingBuild = _sections.TryGetValue(chunkPos, out var existingSection) &&
+                              existingSection.Version.State.Pending != -1;
+        if (ShouldWaitForMissingMeshDiscovery(
+                reason, hasRenderer, requiredForStartup, hasPendingBuild))
+            return false;
+
         var section = GetOrCreateSection(chunkPos);
+        var requestedAt = _schedulerTick;
+        if (section.TryConsumeDeferredRequest(out var deferredReasons, out var deferredAt))
+        {
+            reason |= deferredReasons;
+            if (deferredAt >= 0) requestedAt = Math.Min(requestedAt, deferredAt);
+        }
+
+        // Full chunk arrival uses the same dirty notification as player edits. Only updates to
+        // an existing mesh are critical. Startup meshes are foreground work: they beat ordinary
+        // streaming without making a newly placed block wait behind the whole safety ring.
+        var requestedPriority = ClassifyRequestedMeshPriority(
+            reason,
+            hasRenderer,
+            requiredForStartup,
+            IsInMeshSafetyRing(chunkPos, _lastViewPos),
+            IsInMeshForegroundRing(chunkPos, _lastViewPos));
+
         var version = section.Version;
 
         version.MarkDirty();
-        section.RememberRequest(reason, requestedPriority, _schedulerTick);
+        section.RememberRequest(reason, requestedPriority, requestedAt);
 
         var snapshot = version.SnapshotIfNeeded();
         if (snapshot.HasValue)
@@ -1275,6 +1345,20 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     }
 
     /// <summary>
+    ///     An update to terrain which has never been presented needs no replacement build: the
+    ///     bounded radial discovery pass will eventually snapshot its latest authoritative state.
+    ///     Eagerly snapshotting every network delta in an unmeshed distance-32 world bypasses all
+    ///     scheduler admission limits and creates thousands of invisible background jobs.
+    /// </summary>
+    internal static bool ShouldWaitForMissingMeshDiscovery(
+        SectionDirtyReason reason,
+        bool hasRenderer,
+        bool requiredForStartup,
+        bool hasPendingBuild) =>
+        !hasRenderer && !requiredForStartup && !hasPendingBuild &&
+        (reason & (SectionDirtyReason.BlockChange | SectionDirtyReason.StreamingBoundary)) != 0;
+
+    /// <summary>
     ///     Rebuilds an already presented boundary when an adjacent streamed chunk arrives, while
     ///     leaving brand-new, off-screen sections to the bounded radial discovery pass. Bulk chunk
     ///     arrival previously inserted every section in a 3x3-column region directly into the
@@ -1286,15 +1370,27 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                                  clientWorld.NetworkHandler.Preload.RequiresMesh(chunkPos);
         if (!HasRenderer(chunkPos) && !requiredForStartup) return;
 
-        // A neighboring full-chunk arrival can touch this boundary repeatedly while the streaming
-        // wave crosses it. Do not invalidate a build already using a coherent snapshot: doing so
-        // every arrival makes each result stale before upload and can permanently starve nearby
-        // holes. At worst that snapshot contains an internal face against the formerly absent
-        // neighbor; it is hidden by the neighbor and a later ordinary update can clean it up.
-        if (_sections.TryGetValue(chunkPos, out var section) && section.Version.State.Pending != -1)
-            return;
+        // Startup has a small explicit contract and must not wait behind deferred maintenance.
+        if (requiredForStartup)
+        {
+            if (!_sections.TryGetValue(chunkPos, out var startupSection) ||
+                startupSection.Version.State.Pending == -1)
+            {
+                MarkDirty(chunkPos, SectionDirtyReason.StreamingBoundary);
+                return;
+            }
 
-        MarkDirty(chunkPos, SectionDirtyReason.StreamingBoundary);
+            // Do not invalidate the initial coherent snapshot while it is building. Remember one
+            // boundary cleanup for after installation instead of making startup chase a moving
+            // epoch as adjacent chunks arrive.
+            startupSection.DeferRequest(SectionDirtyReason.StreamingBoundary, _schedulerTick);
+            RequeueDeferredStreamingBoundary(chunkPos);
+            return;
+        }
+
+        var section = GetOrCreateSection(chunkPos);
+        section.DeferRequest(SectionDirtyReason.StreamingBoundary, _schedulerTick);
+        RequeueDeferredStreamingBoundary(chunkPos);
     }
 
     internal static MeshWorkPriority ClassifyRequestedMeshPriority(
@@ -1376,7 +1472,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             _meshGenerator.HasOutstanding(chunkPos))
             return;
 
-        section.Version.AbandonPendingMesh();
+        section.AbandonRequest();
         if (_sections.Remove(chunkPos, out section)) section.Dispose();
     }
 
@@ -1430,6 +1526,47 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             RecoverOrphanedMesh(chunkPos);
             if (PrioritizeMissingMesh(chunkPos)) admitted++;
         }
+    }
+
+    private int AdmitDeferredStreamingBoundaries(int budget)
+    {
+        var admitted = 0;
+        // Inspect each currently queued key at most once. Entries whose section already has a
+        // queued/running build go to the tail and wait for that coherent snapshot to install.
+        // Stale keys are discarded lazily, keeping producer-side invalidation O(1).
+        var attempts = _deferredStreamingBoundaries.Count;
+        while (admitted < budget && attempts-- > 0 &&
+               _deferredStreamingBoundaries.TryDequeue(out var chunkPos))
+        {
+            _deferredStreamingBoundaryKeys.Remove(chunkPos);
+            if (!_sections.TryGetValue(chunkPos, out var section) ||
+                (section.DeferredDirtyReasons & SectionDirtyReason.StreamingBoundary) == 0)
+                continue;
+
+            if (!IsChunkInMeshRetentionDistance(chunkPos, _lastViewPos) ||
+                !HasRenderableSourceChunk(_world, chunkPos))
+            {
+                section.TryConsumeDeferredRequest(out _, out _);
+                continue;
+            }
+
+            if (section.Version.State.Pending != -1)
+            {
+                RequeueDeferredStreamingBoundary(chunkPos);
+                continue;
+            }
+
+            // MarkDirty folds all deferred reasons and their original age into this one epoch.
+            if (MarkDirty(chunkPos, SectionDirtyReason.None)) admitted++;
+        }
+
+        return admitted;
+    }
+
+    private void RequeueDeferredStreamingBoundary(Vector3D<int> chunkPos)
+    {
+        if (_deferredStreamingBoundaryKeys.Add(chunkPos))
+            _deferredStreamingBoundaries.Enqueue(chunkPos);
     }
 
     private void PrioritizeMesh(Vector3D<int> chunkPos)
@@ -1960,6 +2097,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _translucentRenderers.Clear();
         _renderersToRemove.Clear();
         _pendingMeshUpdates.Clear();
+        _deferredStreamingBoundaries.Clear();
+        _deferredStreamingBoundaryKeys.Clear();
         _sectionsToRemove.Clear();
         _everPresentedMeshes.Clear();
         _activePresentationRegressions.Clear();
