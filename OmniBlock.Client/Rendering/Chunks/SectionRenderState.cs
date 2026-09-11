@@ -43,7 +43,7 @@ internal sealed class SectionRenderState(Vector3D<int> position, MeshLifecycleDi
     public Vector3D<int> Position { get; } = position;
     public ChunkMeshVersion Version { get; } = ChunkMeshVersion.Get();
     public SubChunkRenderer? Renderer { get; private set; }
-    public bool IsLit { get; set; }
+    public bool IsLit => Renderer?.IsLit == true;
     public MeshWorkPriority RequestedPriority { get; private set; } = MeshWorkPriority.Background;
     public long RequestedAt { get; private set; } = -1;
     public int RequestedDeadlineFrame { get; private set; } = -1;
@@ -123,10 +123,24 @@ internal sealed class SectionRenderState(Vector3D<int> position, MeshLifecycleDi
         return true;
     }
 
-    public void Install(SubChunkRenderer renderer, bool isLit)
+    /// <summary>
+    ///     Commits the mesh-derived state and its epoch as one render-thread transaction. The
+    ///     presentation has already allocated every GPU resource, so nothing in this method is
+    ///     expected to fail after the reference exchange.
+    /// </summary>
+    public void CommitPresentation(SubChunkRenderer renderer, SectionPresentation presentation)
     {
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+        if (renderer.Position != Position)
+            throw new InvalidOperationException(
+                $"Renderer at {renderer.Position} cannot be installed into section {Position}.");
+        if (presentation.Epoch != Version.State.Pending)
+            throw new InvalidOperationException(
+                $"Section {Position} expects pending epoch {Version.State.Pending}, got {presentation.Epoch}.");
+
+        renderer.InstallPresentation(presentation);
+        Version.CompleteMesh(presentation.Epoch);
         Renderer = renderer;
-        IsLit = isLit;
     }
 
     public void RecordUploaded(long uploadedAt, MeshLifecycleRequest? trace = null, bool empty = false)

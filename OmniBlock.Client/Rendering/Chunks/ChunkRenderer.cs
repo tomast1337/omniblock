@@ -734,31 +734,51 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 // A critical section which changes faster than one build must still advance
                 // visually. Accept this coherent snapshot, then build the coalesced latest epoch;
                 // discarding every stale result makes fluids and piston bursts freeze indefinitely.
-                version.CompleteMesh(mesh.Version);
                 var followUpReasons = section.DirtyReasons;
                 var followUpPriority = section.RequestedPriority;
 
-                if (section.Renderer is { } existingRenderer)
+                var device = WebGpuDevice.Current;
+                if (device == null)
                 {
-                    existingRenderer.UploadMeshData(mesh.Solid, mesh.Translucent);
-                    section.IsLit = mesh.IsLit;
-                    existingRenderer.VisibilityData = mesh.VisibilityData;
-                }
-                else
-                {
-                    var renderer = new SubChunkRenderer(mesh.Pos);
-                    renderer.UploadMeshData(mesh.Solid, mesh.Translucent);
-                    renderer.VisibilityData = mesh.VisibilityData;
-                    section.Install(renderer, mesh.IsLit);
-                    _residentSections.Add(section);
-                    UpdateAdjacency(renderer, true);
+                    mesh.Dispose();
+                    throw new InvalidOperationException("Cannot install a chunk presentation without a WebGPU device.");
                 }
 
-                var resident = section.Renderer!;
-                var empty = resident.SolidMeshSizeBytes == 0 && resident.TranslucentMeshSizeBytes == 0;
+                // Construct all buffers and mesh-derived metadata before touching live state. If
+                // any allocation/upload fails, Create disposes the partial candidate and the old
+                // presentation remains fully authoritative.
+                var presentation = SectionPresentation.Create(
+                    device,
+                    mesh.Solid,
+                    mesh.Translucent,
+                    mesh.VisibilityData,
+                    mesh.IsLit,
+                    mesh.Version,
+                    _meshLifecycle,
+                    mesh.Trace);
+
+                var isNewResident = section.Renderer == null;
+                var resident = section.Renderer ?? new SubChunkRenderer(mesh.Pos);
+                try
+                {
+                    section.CommitPresentation(resident, presentation);
+                }
+                catch
+                {
+                    // Commit validates before publishing. Ownership transfers only on success.
+                    presentation.Dispose();
+                    if (isNewResident) resident.Dispose();
+                    throw;
+                }
+
+                if (isNewResident)
+                {
+                    _residentSections.Add(section);
+                    UpdateAdjacency(resident, true);
+                }
+
+                var empty = presentation.IsEmpty;
                 section.RecordUploaded(_schedulerTick, mesh.Trace, empty);
-                resident.Lifecycle = _meshLifecycle;
-                resident.FirstDrawTrace = empty ? null : mesh.Trace;
                 section.ClearRequest();
                 if (_world is ClientWorld clientWorld)
                     clientWorld.NetworkHandler.NotifyMeshUploaded(mesh.Pos);
@@ -782,8 +802,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             else
             {
                 _meshLifecycle.Cancel(mesh.Trace, MeshCancellationReason.OutsideRetention);
-                // Finished after the chunk fell out of render distance — UploadMeshData (which
-                // would normally return these to the pool) never runs for it.
+                // Finished after the chunk fell out of render distance — SectionPresentation.Create
+                // (which normally returns these CPU lists to the pool) never runs for it.
                 mesh.Dispose();
                 if (_sections.TryGetValue(mesh.Pos, out var section) &&
                     section.OwnsResult(mesh.SectionId) &&

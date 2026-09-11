@@ -1,7 +1,5 @@
 using OmniBlock.Client.Rendering.Chunks.Occlusion;
-using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.WebGPU;
-using OmniBlock.Util;
 using OmniBlock.Util.Maths;
 using Silk.NET.Maths;
 using Silk.NET.WebGPU;
@@ -13,20 +11,7 @@ public class SubChunkRenderer : IDisposable
     public const int Size = 16;
     public const float FadeDuration = 1.0f;
 
-    private readonly WgpuMesh?[] _meshes = new WgpuMesh?[2];
-
-    private readonly int[] vertexCounts = new int[2];
-
-    /// <summary>
-    ///     Debug wireframe companion to the solid mesh (index 0 only — translucent geometry has no
-    ///     wireframe view). Built alongside the normal upload, from the same triangle vertices, so
-    ///     the debug toggle is instant with no remesh: each triangle's 3 edges become 6 line-list
-    ///     vertices, reusing <see cref="ChunkVertex" /> as-is since <c>fs_wireframe</c> ignores every
-    ///     field but position.
-    /// </summary>
-    private WgpuMesh? _wireframeMesh;
-    internal MeshLifecycleDiagnostics? Lifecycle;
-    internal MeshLifecycleRequest? FirstDrawTrace;
+    private SectionPresentation? _presentation;
 
     public SubChunkRenderer? AdjacentDown;
     public SubChunkRenderer? AdjacentEast;
@@ -37,8 +22,6 @@ public class SubChunkRenderer : IDisposable
     private bool disposed;
     public ChunkDirectionMask IncomingDirections;
     public int LastVisibleFrame = -1;
-
-    public ChunkVisibilityStore VisibilityData;
 
     public SubChunkRenderer(Vector3D<int> position)
     {
@@ -59,12 +42,9 @@ public class SubChunkRenderer : IDisposable
             position.Y + Size + padding,
             position.Z + Size + padding
         );
-
-        vertexCounts[0] = 0;
-        vertexCounts[1] = 0;
     }
 
-    public bool HasTranslucentMesh => vertexCounts[1] > 0;
+    public bool HasTranslucentMesh => _presentation?.HasTranslucentMesh == true;
     public Vector3D<int> Position { get; }
     public Vector3D<int> PositionPlus { get; }
     public Vector3D<int> PositionMinus { get; }
@@ -74,8 +54,12 @@ public class SubChunkRenderer : IDisposable
     public float Age { get; private set; }
     public bool HasFadedIn => Age >= FadeDuration;
 
-    public int SolidMeshSizeBytes => vertexCounts[0] * (int)WgpuMesh.ChunkVertexStride;
-    public int TranslucentMeshSizeBytes => vertexCounts[1] * (int)WgpuMesh.ChunkVertexStride;
+    public int SolidMeshSizeBytes => _presentation?.SolidMeshSizeBytes ?? 0;
+    public int TranslucentMeshSizeBytes => _presentation?.TranslucentMeshSizeBytes ?? 0;
+    public ChunkVisibilityStore VisibilityData => _presentation?.VisibilityData ?? default;
+    public long PresentedEpoch => _presentation?.Epoch ?? -1;
+    public bool IsLit => _presentation?.IsLit == true;
+    internal SectionPresentation? Presentation => _presentation;
 
     public void Dispose()
     {
@@ -84,12 +68,7 @@ public class SubChunkRenderer : IDisposable
 
         GC.SuppressFinalize(this);
 
-        _meshes[0]?.Dispose();
-        _meshes[1]?.Dispose();
-        _wireframeMesh?.Dispose();
-
-        vertexCounts[0] = 0;
-        vertexCounts[1] = 0;
+        Interlocked.Exchange(ref _presentation, null)?.Dispose();
 
         disposed = true;
     }
@@ -110,80 +89,20 @@ public class SubChunkRenderer : IDisposable
         return dx * dx + dz * dz < renderDistance * renderDistance && Math.Abs(dy) < renderDistance;
     }
 
-    public void UploadMeshData(PooledList<ChunkVertex>? solidMesh, PooledList<ChunkVertex>? translucentMesh)
-    {
-        vertexCounts[0] = 0;
-        vertexCounts[1] = 0;
-
-        if (solidMesh != null)
-        {
-            if (solidMesh.Count > 0)
-            {
-                var solidMeshData = solidMesh.Span;
-                UploadMesh(0, solidMeshData);
-            }
-
-            solidMesh.Dispose();
-        }
-
-        if (translucentMesh != null)
-        {
-            if (translucentMesh.Count > 0)
-            {
-                var translucentMeshData = translucentMesh.Span;
-                UploadMesh(1, translucentMeshData);
-            }
-
-            translucentMesh.Dispose();
-        }
-    }
-
-    private void UploadMesh(int bufferIdx, Span<ChunkVertex> meshData)
-    {
-        vertexCounts[bufferIdx] = meshData.Length;
-
-        _meshes[bufferIdx]?.Dispose();
-        _meshes[bufferIdx] = WgpuMesh.FromChunkQuads(WebGpuDevice.Current!, meshData);
-
-        if (bufferIdx == 0)
-        {
-            _wireframeMesh?.Dispose();
-            _wireframeMesh = BuildWireframeMesh(meshData);
-        }
-    }
-
     /// <summary>
-    ///     Expands four unique vertices per quad into the edges of its two indexed triangles.
-    ///     Includes the diagonal, matching a triangle-level wireframe.
+    ///     Publishes one already-complete presentation with a single reference exchange. The old
+    ///     presentation remains authoritative until this point and its WebGPU buffers retire at a
+    ///     later presentation boundary through <see cref="WgpuMesh.Dispose" />.
     /// </summary>
-    private static WgpuMesh? BuildWireframeMesh(Span<ChunkVertex> quads)
+    internal void InstallPresentation(SectionPresentation presentation)
     {
-        if (quads.Length == 0) return null;
-        if (quads.Length % 4 != 0)
-        {
-            throw new ArgumentException("Wireframe terrain input requires four vertices per quad.", nameof(quads));
-        }
+        ObjectDisposedException.ThrowIf(disposed, this);
+        ArgumentNullException.ThrowIfNull(presentation);
+        if (_presentation != null && presentation.Epoch < _presentation.Epoch)
+            throw new InvalidOperationException(
+                $"Cannot replace section presentation epoch {_presentation.Epoch} with older epoch {presentation.Epoch}.");
 
-        var lines = new ChunkVertex[quads.Length * 3];
-        var outIdx = 0;
-        for (var i = 0; i < quads.Length; i += 4)
-        {
-            ChunkVertex a = quads[i], b = quads[i + 1], c = quads[i + 2], d = quads[i + 3];
-            lines[outIdx++] = a;
-            lines[outIdx++] = b;
-            lines[outIdx++] = b;
-            lines[outIdx++] = c;
-            lines[outIdx++] = c;
-            lines[outIdx++] = a;
-            lines[outIdx++] = c;
-            lines[outIdx++] = d;
-            lines[outIdx++] = d;
-            lines[outIdx++] = a;
-            lines[outIdx++] = a;
-            lines[outIdx++] = c;
-        }
-
-        return WgpuMesh.FromChunkVertices(WebGpuDevice.Current!, lines, PrimitiveTopology.LineList);
+        Interlocked.Exchange(ref _presentation, presentation)?.Dispose();
     }
 
     public void Update(float deltaTime)
@@ -203,28 +122,20 @@ public class SubChunkRenderer : IDisposable
     {
         if (disposed) return;
         if (pass < 0 || pass > 1) return;
-        if (vertexCounts[pass] == 0) return;
-
-        if (_meshes[pass] is not { } mesh) return;
+        var presentation = _presentation;
+        var mesh = pass == 0 ? presentation?.Solid : presentation?.Translucent;
+        if (mesh == null) return;
         mesh.Draw(passEncoder);
-        RecordFirstDraw();
+        presentation!.RecordFirstDraw();
     }
 
-    /// <summary>Draws the solid pass's wireframe companion — see <see cref="_wireframeMesh" />.</summary>
+    /// <summary>Draws the installed presentation's solid-pass wireframe companion.</summary>
     public unsafe void RenderWireframeWebGpu(RenderPassEncoder* passEncoder)
     {
         if (disposed) return;
-        if (vertexCounts[0] == 0) return;
-
-        if (_wireframeMesh is not { } mesh) return;
+        var presentation = _presentation;
+        if (presentation?.Wireframe is not { } mesh) return;
         mesh.Draw(passEncoder);
-        RecordFirstDraw();
-    }
-
-    private void RecordFirstDraw()
-    {
-        if (FirstDrawTrace == null) return;
-        Lifecycle?.Move(FirstDrawTrace, MeshLifecycleStage.DrawRecorded);
-        FirstDrawTrace = null;
+        presentation.RecordFirstDraw();
     }
 }

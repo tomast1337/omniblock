@@ -38,8 +38,8 @@ public sealed class ChunkOcclusionCullerTests
         bridge.AdjacentWest = camera;
         bridge.AdjacentEast = terrain;
         terrain.AdjacentWest = bridge;
-        camera.VisibilityData.SetVisible(ChunkDirection.West, ChunkDirection.East);
-        bridge.VisibilityData.SetVisible(ChunkDirection.West, ChunkDirection.East);
+        SetVisible(camera, ChunkDirection.West, ChunkDirection.East);
+        SetVisible(bridge, ChunkDirection.West, ChunkDirection.East);
 
         var drawn = Find([camera, bridge, terrain], camera, true, new TestFrustum(bridge.BoundingBox));
 
@@ -61,11 +61,11 @@ public sealed class ChunkOcclusionCullerTests
         detour.AdjacentEast = returnPath;
         returnPath.AdjacentDown = junction;
         junction.AdjacentEast = terrain;
-        camera.VisibilityData.SetVisible(ChunkDirection.West, ChunkDirection.East);
-        camera.VisibilityData.SetVisible(ChunkDirection.West, ChunkDirection.South);
-        detour.VisibilityData.SetVisible(ChunkDirection.North, ChunkDirection.East);
-        returnPath.VisibilityData.SetVisible(ChunkDirection.West, ChunkDirection.Down);
-        junction.VisibilityData.SetVisible(ChunkDirection.Up, ChunkDirection.East);
+        SetVisible(camera, ChunkDirection.West, ChunkDirection.East);
+        SetVisible(camera, ChunkDirection.West, ChunkDirection.South);
+        SetVisible(detour, ChunkDirection.North, ChunkDirection.East);
+        SetVisible(returnPath, ChunkDirection.West, ChunkDirection.Down);
+        SetVisible(junction, ChunkDirection.Up, ChunkDirection.East);
 
         Assert.Contains(terrain, Find([camera, junction, detour, returnPath, terrain], camera, true));
     }
@@ -78,7 +78,7 @@ public sealed class ChunkOcclusionCullerTests
         using var terrain = Node(32, true);
         camera.AdjacentEast = wall;
         wall.AdjacentEast = terrain;
-        camera.VisibilityData.SetVisible(ChunkDirection.West, ChunkDirection.East);
+        SetVisible(camera, ChunkDirection.West, ChunkDirection.East);
 
         var drawn = Find([camera, wall, terrain], camera, true);
 
@@ -142,6 +142,18 @@ public sealed class ChunkOcclusionCullerTests
         }
 
         return node;
+    }
+
+    private static void SetVisible(
+        SubChunkRenderer renderer,
+        ChunkDirection from,
+        ChunkDirection to)
+    {
+        var visibility = renderer.VisibilityData;
+        visibility.SetVisible(from, to);
+        renderer.InstallPresentation(SectionPresentation.MetadataOnly(
+            renderer.PresentedEpoch + 1,
+            visibility));
     }
 
     private static List<SubChunkRenderer> Find(SubChunkRenderer[] nodes, SubChunkRenderer? camera,
