@@ -142,6 +142,10 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text($"Frustum:  {MetricRegistry.Get(RenderMetrics.ChunksFrustum)}");
         ImGuiTextSafe.Text($"Occluded: {MetricRegistry.Get(RenderMetrics.ChunksOccluded)}");
         ImGuiTextSafe.Text($"Rendered: {MetricRegistry.Get(RenderMetrics.ChunksRendered)}");
+        ImGuiTextSafe.Text(
+            $"Draws:    solid {MetricRegistry.Get(RenderMetrics.SolidDraws)}  translucent {MetricRegistry.Get(RenderMetrics.TranslucentDraws)}");
+        ImGuiTextSafe.Text(
+            $"Uploads:  geometry {MetricRegistry.Get(RenderMetrics.GeometryUploads)}  light {MetricRegistry.Get(RenderMetrics.LightUploads)}");
 
         ImGui.Spacing();
         ImGuiTextSafe.Text($"Mesh Version Alloc: {MetricRegistry.Get(RenderMetrics.MeshVersionAllocated)}");

@@ -118,12 +118,21 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private long _presentationRegressionCount;
     private long _lightRefreshCompletedCount;
     private long _schedulerTick;
+    private int _geometryUploadsThisFrame;
+    private int _geometryUploadsLastFrame;
+    private int _lightUploadsThisFrame;
+    private int _lightUploadsLastFrame;
+    private int _solidDrawsThisFrame;
+    private int _solidDrawsLastFrame;
+    private int _translucentDrawsThisFrame;
+    private int _translucentDrawsLastFrame;
 
     /// <summary>
     ///     Reused across frames so the solid pass's per-chunk uniform batch (see
     ///     <see cref="RenderSolidWebGpu" />) doesn't allocate one every frame — grown, never shrunk.
     /// </summary>
     private ChunkUniforms[] _solidUniformScratch = [];
+    private ChunkUniforms[] _translucentUniformScratch = [];
 
     static ChunkRenderer()
     {
@@ -276,6 +285,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     internal long PresentationRegressionCount => _presentationRegressionCount;
     internal int LightRefreshPending => _pendingLightUpdateKeys.Count;
     internal long LightRefreshCompletedCount => _lightRefreshCompletedCount;
+    internal int GeometryUploadsLastFrame => _geometryUploadsLastFrame;
+    internal int LightUploadsLastFrame => _lightUploadsLastFrame;
+    internal int SolidDrawsLastFrame => _solidDrawsLastFrame;
+    internal int TranslucentDrawsLastFrame => _translucentDrawsLastFrame;
 
     internal int MeshReadyRadius => _meshReadyRadius == int.MaxValue
         ? Math.Max(0, _lastRenderDistance)
@@ -362,6 +375,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("backgroundPending\t").Append(BackgroundPending).AppendLine();
         text.Append("lightRefreshPending\t").Append(LightRefreshPending).AppendLine();
         text.Append("lightRefreshCompleted\t").Append(LightRefreshCompletedCount).AppendLine();
+        text.Append("geometryUploadsLastFrame\t").Append(GeometryUploadsLastFrame).AppendLine();
+        text.Append("lightUploadsLastFrame\t").Append(LightUploadsLastFrame).AppendLine();
+        text.Append("solidDrawsLastFrame\t").Append(SolidDrawsLastFrame).AppendLine();
+        text.Append("translucentDrawsLastFrame\t").Append(TranslucentDrawsLastFrame).AppendLine();
         text.Append("deferredStreamingBoundaries\t").Append(DeferredStreamingBoundaryCount).AppendLine();
         text.Append("leadingEdgeQueued\t").Append(_leadingEdgeSections.Count).AppendLine();
         text.Append("leadingEdgePending\t").Append(LeadingEdgePending).AppendLine();
@@ -462,6 +479,15 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     /// </remarks>
     public void PrepareFrame(ChunkRenderParams renderParams)
     {
+        _geometryUploadsLastFrame = _geometryUploadsThisFrame;
+        _geometryUploadsThisFrame = 0;
+        _lightUploadsLastFrame = _lightUploadsThisFrame;
+        _lightUploadsThisFrame = 0;
+        _solidDrawsLastFrame = _solidDrawsThisFrame;
+        _solidDrawsThisFrame = 0;
+        _translucentDrawsLastFrame = _translucentDrawsThisFrame;
+        _translucentDrawsThisFrame = 0;
+
         var prepareFrameAt = Stopwatch.GetTimestamp();
         if (_lastPrepareFrameAt != 0)
         {
@@ -792,6 +818,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
                 var empty = presentation.IsEmpty;
                 section.RecordUploaded(_schedulerTick, mesh.Trace, empty);
+                _geometryUploadsThisFrame++;
                 section.ClearRequest();
                 if (_world is ClientWorld clientWorld)
                     clientWorld.NetworkHandler.NotifyMeshUploaded(mesh.Pos);
@@ -1257,6 +1284,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 continue;
             presentation.RefreshLighting(device, _world.Lighting);
             _lightRefreshCompletedCount++;
+            _lightUploadsThisFrame++;
             refreshed++;
         }
     }
@@ -2384,7 +2412,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         for (var i = 0; i < count; i++)
         {
             pipeline.BindDynamicUniforms(pass, i);
-            _visibleRenderers[i].RenderWebGpu(pass, 0);
+            if (_visibleRenderers[i].RenderWebGpu(pass, 0)) _solidDrawsThisFrame++;
         }
 
         var t2 = Stopwatch.GetTimestamp();
@@ -2394,7 +2422,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     /// <summary>
     ///     Draws the solid pass as flat-green triangle edges instead of textured terrain, under
     ///     <see cref="WireframeEnabled" />. Same chunk set, transforms and uniforms as
-    ///     <see cref="RenderSolidWebGpu" /> — only the pipeline and the mesh slot it draws differ.
+    ///     <see cref="RenderSolidWebGpu" /> — the ordinary vertex streams are drawn through the
+    ///     line pipeline and the device-wide quad-wireframe indices.
     /// </summary>
     private unsafe void RenderWireframeWebGpu(
         RenderPassEncoder* pass, WgpuPipeline pipeline, WgpuTextureArray textureArray)
@@ -2419,7 +2448,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
             pipeline.BindNextUniforms(pass, BuildChunkUniforms(modelView, renderer.Position, fadeProgress));
 
-            renderer.RenderWireframeWebGpu(pass);
+            if (renderer.RenderWireframeWebGpu(pass)) _solidDrawsThisFrame++;
         }
     }
 
@@ -2437,8 +2466,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _translucentDistanceComparer.Origin = viewPos;
         _translucentRenderers.Sort(_translucentDistanceComparer);
 
-        foreach (var renderer in _translucentRenderers)
+        var count = _translucentRenderers.Count;
+        if (_translucentUniformScratch.Length < count)
+            _translucentUniformScratch = new ChunkUniforms[count];
+
+        for (var i = 0; i < count; i++)
         {
+            var renderer = _translucentRenderers[i];
             var fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
 
             var camRel = new Vector3D<double>(
@@ -2451,9 +2485,15 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 new Vector3D<float>((float)camRel.X, (float)camRel.Y, (float)camRel.Z));
             var modelView = translation * _modelView;
 
-            pipeline.BindNextUniforms(pass, BuildChunkUniforms(modelView, renderer.Position, fadeProgress));
+            _translucentUniformScratch[i] = BuildChunkUniforms(modelView, renderer.Position, fadeProgress);
+        }
 
-            renderer.RenderWebGpu(pass, 1);
+        pipeline.WriteDynamicUniforms(_translucentUniformScratch.AsSpan(0, count));
+
+        for (var i = 0; i < count; i++)
+        {
+            pipeline.BindDynamicUniforms(pass, i);
+            if (_translucentRenderers[i].RenderWebGpu(pass, 1)) _translucentDrawsThisFrame++;
         }
 
         _translucentRenderers.Clear();

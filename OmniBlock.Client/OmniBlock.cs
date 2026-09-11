@@ -476,6 +476,14 @@ public partial class OmniBlock :
             LuauClientStateHost.LightRefreshPending = () => WorldRenderer?.ChunkRenderer.LightRefreshPending ?? 0;
             LuauClientStateHost.LightRefreshCompletedCount = () =>
                 WorldRenderer?.ChunkRenderer.LightRefreshCompletedCount ?? 0;
+            LuauClientStateHost.GeometryUploadsLastFrame = () =>
+                WorldRenderer?.ChunkRenderer.GeometryUploadsLastFrame ?? 0;
+            LuauClientStateHost.LightUploadsLastFrame = () =>
+                WorldRenderer?.ChunkRenderer.LightUploadsLastFrame ?? 0;
+            LuauClientStateHost.SolidDrawsLastFrame = () =>
+                WorldRenderer?.ChunkRenderer.SolidDrawsLastFrame ?? 0;
+            LuauClientStateHost.TranslucentDrawsLastFrame = () =>
+                WorldRenderer?.ChunkRenderer.TranslucentDrawsLastFrame ?? 0;
             LuauClientStateHost.OldestForegroundAge = () => WorldRenderer?.ChunkRenderer.OldestForegroundAge ?? 0;
             LuauClientStateHost.PresentationRegressionCount = () =>
                 WorldRenderer?.ChunkRenderer.PresentationRegressionCount ?? 0;
@@ -878,6 +886,10 @@ public partial class OmniBlock :
             LuauClientStateHost.BackgroundPending = null;
             LuauClientStateHost.LightRefreshPending = null;
             LuauClientStateHost.LightRefreshCompletedCount = null;
+            LuauClientStateHost.GeometryUploadsLastFrame = null;
+            LuauClientStateHost.LightUploadsLastFrame = null;
+            LuauClientStateHost.SolidDrawsLastFrame = null;
+            LuauClientStateHost.TranslucentDrawsLastFrame = null;
             LuauClientStateHost.OldestForegroundAge = null;
             LuauClientStateHost.PresentationRegressionCount = null;
             LuauClientStateHost.PlayerX = null;
@@ -1212,6 +1224,10 @@ public partial class OmniBlock :
         MetricRegistry.Set(RenderMetrics.ChunksFrustum, cr.ChunksInFrustum);
         MetricRegistry.Set(RenderMetrics.ChunksOccluded, cr.ChunksOccluded);
         MetricRegistry.Set(RenderMetrics.ChunksRendered, cr.ChunksRendered);
+        MetricRegistry.Set(RenderMetrics.GeometryUploads, cr.GeometryUploadsLastFrame);
+        MetricRegistry.Set(RenderMetrics.LightUploads, cr.LightUploadsLastFrame);
+        MetricRegistry.Set(RenderMetrics.SolidDraws, cr.SolidDrawsLastFrame);
+        MetricRegistry.Set(RenderMetrics.TranslucentDraws, cr.TranslucentDrawsLastFrame);
         MetricRegistry.Set(RenderMetrics.MeshVersionAllocated, ChunkMeshVersion.TotalAllocated);
         MetricRegistry.Set(RenderMetrics.MeshVersionReleased, ChunkMeshVersion.TotalReleased);
         MetricRegistry.Set(RenderMetrics.TextureBindsLastFrame, TextureStats.BindsLastFrame);

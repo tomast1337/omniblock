@@ -39,6 +39,10 @@ public static unsafe class LuauClientStateHost
                                             if key == "backgroundPending" then return __ClientState.backgroundPending() end
                                             if key == "lightRefreshPending" then return __ClientState.lightRefreshPending() end
                                             if key == "lightRefreshCompletedCount" then return __ClientState.lightRefreshCompletedCount() end
+                                            if key == "geometryUploadsLastFrame" then return __ClientState.geometryUploadsLastFrame() end
+                                            if key == "lightUploadsLastFrame" then return __ClientState.lightUploadsLastFrame() end
+                                            if key == "solidDrawsLastFrame" then return __ClientState.solidDrawsLastFrame() end
+                                            if key == "translucentDrawsLastFrame" then return __ClientState.translucentDrawsLastFrame() end
                                             if key == "oldestForegroundAge" then return __ClientState.oldestForegroundAge() end
                                             if key == "presentationRegressionCount" then return __ClientState.presentationRegressionCount() end
                                             if key == "playerX" then return __ClientState.playerX() end
@@ -81,6 +85,10 @@ public static unsafe class LuauClientStateHost
     public static Func<double>? BackgroundPending;
     public static Func<double>? LightRefreshPending;
     public static Func<double>? LightRefreshCompletedCount;
+    public static Func<double>? GeometryUploadsLastFrame;
+    public static Func<double>? LightUploadsLastFrame;
+    public static Func<double>? SolidDrawsLastFrame;
+    public static Func<double>? TranslucentDrawsLastFrame;
     public static Func<double>? OldestForegroundAge;
     public static Func<double>? PresentationRegressionCount;
     public static Func<double>? PlayerX;
@@ -89,7 +97,7 @@ public static unsafe class LuauClientStateHost
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 32);
+        LuauNative.lua_createtable(l, 0, 40);
         Add(l, "worldLoaded", &WorldLoadedClosure);
         Add(l, "playerReady", &PlayerReadyClosure);
         Add(l, "worldId", &WorldIdClosure);
@@ -119,6 +127,10 @@ public static unsafe class LuauClientStateHost
         Add(l, "backgroundPending", &BackgroundPendingClosure);
         Add(l, "lightRefreshPending", &LightRefreshPendingClosure);
         Add(l, "lightRefreshCompletedCount", &LightRefreshCompletedCountClosure);
+        Add(l, "geometryUploadsLastFrame", &GeometryUploadsLastFrameClosure);
+        Add(l, "lightUploadsLastFrame", &LightUploadsLastFrameClosure);
+        Add(l, "solidDrawsLastFrame", &SolidDrawsLastFrameClosure);
+        Add(l, "translucentDrawsLastFrame", &TranslucentDrawsLastFrameClosure);
         Add(l, "oldestForegroundAge", &OldestForegroundAgeClosure);
         Add(l, "presentationRegressionCount", &PresentationRegressionCountClosure);
         Add(l, "playerX", &PlayerXClosure);
@@ -260,6 +272,34 @@ public static unsafe class LuauClientStateHost
     private static int LightRefreshCompletedCountClosure(IntPtr l)
     {
         LuauNative.lua_pushnumber(l, ReadNumber(LightRefreshCompletedCount));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int GeometryUploadsLastFrameClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(GeometryUploadsLastFrame));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int LightUploadsLastFrameClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(LightUploadsLastFrame));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int SolidDrawsLastFrameClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(SolidDrawsLastFrame));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int TranslucentDrawsLastFrameClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(TranslucentDrawsLastFrame));
         return 1;
     }
 

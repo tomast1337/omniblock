@@ -151,6 +151,22 @@ public sealed unsafe class WgpuMesh : IDisposable
     }
 
     /// <summary>
+    ///     Draws the triangle edges of a quad terrain mesh using its existing geometry and light
+    ///     streams and the device-wide lazy wireframe index buffer.
+    /// </summary>
+    public void DrawQuadWireframe(RenderPassEncoder* pass, WgpuBuffer* lightBuffer = null)
+    {
+        if (!_usesSharedQuadIndices)
+            throw new InvalidOperationException("Only four-vertices-per-quad meshes support shared wireframe indices.");
+
+        var api = _device.Api;
+        api.RenderPassEncoderSetVertexBuffer(pass, 0, VertexBuffer, 0, WgpuWholeSize.Value);
+        if (lightBuffer != null)
+            api.RenderPassEncoderSetVertexBuffer(pass, 1, lightBuffer, 0, WgpuWholeSize.Value);
+        _device.QuadWireframeIndices.BindAndDraw(pass, VertexCount / 4, 1);
+    }
+
+    /// <summary>
     ///     Draws a sub-range of vertices with instancing. Used when multiple buckets share one
     ///     static geometry buffer — each bucket draws its own range with its own instance count.
     /// </summary>

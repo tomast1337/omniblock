@@ -18,7 +18,6 @@ internal sealed unsafe class SectionLighting : IDisposable
 {
     private readonly WebGpuDevice _device;
     private bool _disposed;
-    private bool _ownsWireframe = true;
 
     private SectionLighting(
         WebGpuDevice device,
@@ -26,7 +25,6 @@ internal sealed unsafe class SectionLighting : IDisposable
         SectionLightModel? translucentModel,
         WgpuBuffer* solid,
         WgpuBuffer* translucent,
-        WgpuBuffer* wireframe,
         long epoch)
     {
         _device = device;
@@ -34,13 +32,11 @@ internal sealed unsafe class SectionLighting : IDisposable
         TranslucentModel = translucentModel;
         Solid = solid;
         Translucent = translucent;
-        Wireframe = wireframe;
         Epoch = epoch;
     }
 
     public WgpuBuffer* Solid { get; }
     public WgpuBuffer* Translucent { get; }
-    public WgpuBuffer* Wireframe { get; }
     public long Epoch { get; }
 
     private SectionLightModel? SolidModel { get; }
@@ -50,7 +46,7 @@ internal sealed unsafe class SectionLighting : IDisposable
         SectionLightModel? solidModel,
         SectionLightModel? translucentModel)
     {
-        var result = Create(device, solidModel, translucentModel, null, null, 0);
+        var result = Create(device, solidModel, translucentModel, null, 0);
         solidModel?.ReleaseInitialValues();
         translucentModel?.ReleaseInitialValues();
         return result;
@@ -58,12 +54,7 @@ internal sealed unsafe class SectionLighting : IDisposable
 
     public SectionLighting Refresh(ILightProvider lighting)
     {
-        // Wireframe shading is a fixed debug green; its vertex stage merely requires a valid
-        // same-length slot-1 stream. Transfer that stable buffer instead of expanding/uploading a
-        // 3x light array for every lava update.
-        var replacement = Create(_device, SolidModel, TranslucentModel, lighting, Wireframe, Epoch + 1);
-        _ownsWireframe = false;
-        return replacement;
+        return Create(_device, SolidModel, TranslucentModel, lighting, Epoch + 1);
     }
 
     private static SectionLighting Create(
@@ -71,28 +62,21 @@ internal sealed unsafe class SectionLighting : IDisposable
         SectionLightModel? solidModel,
         SectionLightModel? translucentModel,
         ILightProvider? lighting,
-        WgpuBuffer* existingWireframe,
         long epoch)
     {
         WgpuBuffer* solid = null;
         WgpuBuffer* translucent = null;
-        WgpuBuffer* wireframe = null;
         try
         {
             solid = CreateBuffer(device, solidModel, lighting);
             translucent = CreateBuffer(device, translucentModel, lighting);
-            wireframe = existingWireframe != null
-                ? existingWireframe
-                : CreateBuffer(device, solidModel, lighting, wireframe: true);
             return new SectionLighting(
                 device, solidModel, translucentModel,
-                solid, translucent, wireframe, epoch);
+                solid, translucent, epoch);
         }
         catch
         {
-            WgpuRelease.DeferredBuffers(
-                device, (nint)solid, (nint)translucent,
-                existingWireframe == null ? (nint)wireframe : 0);
+            WgpuRelease.DeferredBuffers(device, (nint)solid, (nint)translucent);
             throw;
         }
     }
@@ -100,12 +84,10 @@ internal sealed unsafe class SectionLighting : IDisposable
     private static WgpuBuffer* CreateBuffer(
         WebGpuDevice device,
         SectionLightModel? model,
-        ILightProvider? lighting,
-        bool wireframe = false)
+        ILightProvider? lighting)
     {
         if (model == null) return null;
         var values = lighting == null ? model.InitialValues : model.Evaluate(lighting);
-        if (wireframe) values = ExpandWireframe(values);
         var bytes = MemoryMarshal.AsBytes(values.AsSpan());
         BufferDescriptor descriptor = new()
         {
@@ -118,30 +100,11 @@ internal sealed unsafe class SectionLighting : IDisposable
         return buffer;
     }
 
-    private static ChunkLightVertex[] ExpandWireframe(ReadOnlySpan<ChunkLightVertex> quads)
-    {
-        var lines = new ChunkLightVertex[quads.Length * 3];
-        var outIdx = 0;
-        for (var i = 0; i < quads.Length; i += 4)
-        {
-            ChunkLightVertex a = quads[i], b = quads[i + 1], c = quads[i + 2], d = quads[i + 3];
-            lines[outIdx++] = a; lines[outIdx++] = b;
-            lines[outIdx++] = b; lines[outIdx++] = c;
-            lines[outIdx++] = c; lines[outIdx++] = a;
-            lines[outIdx++] = c; lines[outIdx++] = d;
-            lines[outIdx++] = d; lines[outIdx++] = a;
-            lines[outIdx++] = a; lines[outIdx++] = c;
-        }
-        return lines;
-    }
-
     public void Dispose()
     {
         if (_disposed) return;
         _disposed = true;
-        WgpuRelease.DeferredBuffers(
-            _device, (nint)Solid, (nint)Translucent,
-            _ownsWireframe ? (nint)Wireframe : 0);
+        WgpuRelease.DeferredBuffers(_device, (nint)Solid, (nint)Translucent);
     }
 }
 

@@ -118,24 +118,26 @@ public class SubChunkRenderer : IDisposable
     ///     The caller has already bound the terrain pipeline and texture-array bind group,
     ///     and uploaded the per-chunk uniforms.
     /// </summary>
-    public unsafe void RenderWebGpu(RenderPassEncoder* passEncoder, int pass)
+    public unsafe bool RenderWebGpu(RenderPassEncoder* passEncoder, int pass)
     {
-        if (disposed) return;
-        if (pass < 0 || pass > 1) return;
+        if (disposed) return false;
+        if (pass < 0 || pass > 1) return false;
         var presentation = _presentation;
         var mesh = pass == 0 ? presentation?.Solid : presentation?.Translucent;
-        if (mesh == null) return;
+        if (mesh == null) return false;
         mesh.Draw(passEncoder, lightBuffer: presentation!.LightBufferFor(pass));
         presentation!.RecordFirstDraw();
+        return true;
     }
 
-    /// <summary>Draws the installed presentation's solid-pass wireframe companion.</summary>
-    public unsafe void RenderWireframeWebGpu(RenderPassEncoder* passEncoder)
+    /// <summary>Draws the solid mesh through the device-wide quad wireframe indices.</summary>
+    public unsafe bool RenderWireframeWebGpu(RenderPassEncoder* passEncoder)
     {
-        if (disposed) return;
+        if (disposed) return false;
         var presentation = _presentation;
-        if (presentation?.Wireframe is not { } mesh) return;
-        mesh.Draw(passEncoder, lightBuffer: presentation.WireframeLightBuffer);
+        if (presentation?.Solid is not { } mesh) return false;
+        mesh.DrawQuadWireframe(passEncoder, presentation.LightBufferFor(0));
         presentation.RecordFirstDraw();
+        return true;
     }
 }

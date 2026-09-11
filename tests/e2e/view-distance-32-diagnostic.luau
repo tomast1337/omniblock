@@ -18,6 +18,10 @@ for sample = 1, 6 do
 
     print("distance32 frame=" .. tostring(frameTimeMs) ..
         "ms pending=" .. tostring(meshPending) ..
-        " requestToGpu=" .. tostring(OMNI.client.state.meshRequestToGpuMs) .. "ms")
+        " requestToGpu=" .. tostring(OMNI.client.state.meshRequestToGpuMs) .. "ms" ..
+        " uploads=" .. tostring(OMNI.client.state.geometryUploadsLastFrame) ..
+        "/" .. tostring(OMNI.client.state.lightUploadsLastFrame) ..
+        " draws=" .. tostring(OMNI.client.state.solidDrawsLastFrame) ..
+        "/" .. tostring(OMNI.client.state.translucentDrawsLastFrame))
 end
 OMNI.test.pass()

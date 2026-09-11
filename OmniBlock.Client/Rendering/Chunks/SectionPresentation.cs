@@ -20,7 +20,6 @@ internal sealed class SectionPresentation : IDisposable
     private SectionPresentation(
         WgpuMesh? solid,
         WgpuMesh? translucent,
-        WgpuMesh? wireframe,
         SectionLighting? lighting,
         int solidVertexCount,
         int translucentVertexCount,
@@ -32,7 +31,6 @@ internal sealed class SectionPresentation : IDisposable
     {
         Solid = solid;
         Translucent = translucent;
-        Wireframe = wireframe;
         _lighting = lighting;
         SolidVertexCount = solidVertexCount;
         TranslucentVertexCount = translucentVertexCount;
@@ -45,7 +43,6 @@ internal sealed class SectionPresentation : IDisposable
 
     public WgpuMesh? Solid { get; }
     public WgpuMesh? Translucent { get; }
-    public WgpuMesh? Wireframe { get; }
     public int SolidVertexCount { get; }
     public int TranslucentVertexCount { get; }
     public ChunkVisibilityStore VisibilityData { get; }
@@ -77,7 +74,6 @@ internal sealed class SectionPresentation : IDisposable
     {
         WgpuMesh? solid = null;
         WgpuMesh? translucent = null;
-        WgpuMesh? wireframe = null;
         SectionLighting? lighting = null;
         var solidCount = solidVertices?.Count ?? 0;
         var translucentCount = translucentVertices?.Count ?? 0;
@@ -89,11 +85,7 @@ internal sealed class SectionPresentation : IDisposable
                 throw new ArgumentException("Terrain geometry and light models must have matching vertex counts.");
 
             if (solidCount > 0)
-            {
-                var data = solidVertices!.Span;
-                solid = WgpuMesh.FromChunkQuads(device, data);
-                wireframe = BuildWireframeMesh(device, data);
-            }
+                solid = WgpuMesh.FromChunkQuads(device, solidVertices!.Span);
 
             if (translucentCount > 0)
                 translucent = WgpuMesh.FromChunkQuads(device, translucentVertices!.Span);
@@ -105,7 +97,7 @@ internal sealed class SectionPresentation : IDisposable
                 device, solidLighting, translucentLighting);
 
             return new SectionPresentation(
-                solid, translucent, wireframe, lighting,
+                solid, translucent, lighting,
                 solidCount, translucentCount,
                 visibilityData, isLit, epoch,
                 lifecycle, firstDrawTrace);
@@ -114,7 +106,6 @@ internal sealed class SectionPresentation : IDisposable
         {
             solid?.Dispose();
             translucent?.Dispose();
-            wireframe?.Dispose();
             lighting?.Dispose();
             throw;
         }
@@ -132,52 +123,10 @@ internal sealed class SectionPresentation : IDisposable
         int solidVertexCount = 0,
         int translucentVertexCount = 0) =>
         new(
-            null, null, null, null,
+            null, null, null,
             solidVertexCount, translucentVertexCount,
             visibilityData, isLit, epoch,
             null, null);
-
-    /// <summary>
-    ///     Expands four unique vertices per quad into the edges of its two indexed triangles.
-    ///     Includes the diagonal, matching the terrain debug wireframe.
-    /// </summary>
-    private static WgpuMesh? BuildWireframeMesh(WebGpuDevice device, ReadOnlySpan<ChunkVertex> quads)
-    {
-        if (quads.Length == 0) return null;
-        if (quads.Length % 4 != 0)
-            throw new ArgumentException("Wireframe terrain input requires four vertices per quad.", nameof(quads));
-
-        var lines = BuildWireframeVertices(quads);
-        return WgpuMesh.FromChunkVertices(device, lines, PrimitiveTopology.LineList);
-    }
-
-    private static ChunkVertex[] BuildWireframeVertices(ReadOnlySpan<ChunkVertex> quads)
-    {
-        if (quads.Length == 0) return [];
-        if (quads.Length % 4 != 0)
-            throw new ArgumentException("Wireframe terrain input requires four vertices per quad.", nameof(quads));
-
-        var lines = new ChunkVertex[quads.Length * 3];
-        var outIdx = 0;
-        for (var i = 0; i < quads.Length; i += 4)
-        {
-            ChunkVertex a = quads[i], b = quads[i + 1], c = quads[i + 2], d = quads[i + 3];
-            lines[outIdx++] = a;
-            lines[outIdx++] = b;
-            lines[outIdx++] = b;
-            lines[outIdx++] = c;
-            lines[outIdx++] = c;
-            lines[outIdx++] = a;
-            lines[outIdx++] = c;
-            lines[outIdx++] = d;
-            lines[outIdx++] = d;
-            lines[outIdx++] = a;
-            lines[outIdx++] = a;
-            lines[outIdx++] = c;
-        }
-
-        return lines;
-    }
 
     /// <summary>Builds and atomically publishes a replacement light snapshot only.</summary>
     public void RefreshLighting(WebGpuDevice device, ILightProvider provider)
@@ -195,15 +144,6 @@ internal sealed class SectionPresentation : IDisposable
         return lighting == null ? null : pass == 0 ? lighting.Solid : lighting.Translucent;
     }
 
-    public unsafe Silk.NET.WebGPU.Buffer* WireframeLightBuffer
-    {
-        get
-        {
-            var lighting = _lighting;
-            return lighting == null ? null : lighting.Wireframe;
-        }
-    }
-
     public void RecordFirstDraw()
     {
         var trace = _firstDrawTrace;
@@ -218,7 +158,6 @@ internal sealed class SectionPresentation : IDisposable
         _disposed = true;
         Solid?.Dispose();
         Translucent?.Dispose();
-        Wireframe?.Dispose();
         Interlocked.Exchange(ref _lighting, null)?.Dispose();
     }
 }

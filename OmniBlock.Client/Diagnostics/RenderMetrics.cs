@@ -8,6 +8,10 @@ internal static class RenderMetrics
     public static readonly MetricHandle<int> ChunksFrustum = MetricRegistry.Register<int>("render:chunks.frustum");
     public static readonly MetricHandle<int> ChunksOccluded = MetricRegistry.Register<int>("render:chunks.occluded");
     public static readonly MetricHandle<int> ChunksRendered = MetricRegistry.Register<int>("render:chunks.rendered");
+    public static readonly MetricHandle<int> GeometryUploads = MetricRegistry.Register<int>("render:chunks.geometry_uploads");
+    public static readonly MetricHandle<int> LightUploads = MetricRegistry.Register<int>("render:chunks.light_uploads");
+    public static readonly MetricHandle<int> SolidDraws = MetricRegistry.Register<int>("render:chunks.solid_draws");
+    public static readonly MetricHandle<int> TranslucentDraws = MetricRegistry.Register<int>("render:chunks.translucent_draws");
     public static readonly MetricHandle<int> MeshVersionAllocated = MetricRegistry.Register<int>("render:mesh.version.allocated");
     public static readonly MetricHandle<int> MeshVersionReleased = MetricRegistry.Register<int>("render:mesh.version.released");
     public static readonly MetricHandle<int> MeshActive = MetricRegistry.Register<int>("render:mesh.active");

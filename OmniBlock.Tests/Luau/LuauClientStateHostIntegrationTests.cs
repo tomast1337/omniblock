@@ -29,6 +29,10 @@ public sealed class LuauClientStateHostIntegrationTests
         double backgroundPending = 0;
         double oldestForegroundAge = 0;
         double presentationRegressionCount = 0;
+        double geometryUploadsLastFrame = 0;
+        double lightUploadsLastFrame = 0;
+        double solidDrawsLastFrame = 0;
+        double translucentDrawsLastFrame = 0;
         LuauClientStateHost.WorldLoaded = () => worldLoaded;
         LuauClientStateHost.PlayerReady = () => playerReady;
         LuauClientStateHost.WorldId = () => worldId;
@@ -46,6 +50,10 @@ public sealed class LuauClientStateHostIntegrationTests
         LuauClientStateHost.BackgroundPending = () => backgroundPending;
         LuauClientStateHost.OldestForegroundAge = () => oldestForegroundAge;
         LuauClientStateHost.PresentationRegressionCount = () => presentationRegressionCount;
+        LuauClientStateHost.GeometryUploadsLastFrame = () => geometryUploadsLastFrame;
+        LuauClientStateHost.LightUploadsLastFrame = () => lightUploadsLastFrame;
+        LuauClientStateHost.SolidDrawsLastFrame = () => solidDrawsLastFrame;
+        LuauClientStateHost.TranslucentDrawsLastFrame = () => translucentDrawsLastFrame;
 
         try
         {
@@ -63,6 +71,7 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.meshSafetyHoles", "0");
             AssertValue(state, "OMNI.client.state.residentMeshCount", "0");
             AssertValue(state, "OMNI.client.state.presentationRegressionCount", "0");
+            AssertValue(state, "OMNI.client.state.geometryUploadsLastFrame", "0");
 
             worldLoaded = true;
             playerReady = true;
@@ -81,6 +90,10 @@ public sealed class LuauClientStateHostIntegrationTests
             backgroundPending = 97;
             oldestForegroundAge = 24;
             presentationRegressionCount = 3;
+            geometryUploadsLastFrame = 2;
+            lightUploadsLastFrame = 4;
+            solidDrawsLastFrame = 751;
+            translucentDrawsLastFrame = 89;
 
             AssertValue(state, "OMNI.client.state.worldLoaded", "true");
             AssertValue(state, "OMNI.client.state.playerReady", "true");
@@ -99,6 +112,10 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.backgroundPending", "97");
             AssertValue(state, "OMNI.client.state.oldestForegroundAge", "24");
             AssertValue(state, "OMNI.client.state.presentationRegressionCount", "3");
+            AssertValue(state, "OMNI.client.state.geometryUploadsLastFrame", "2");
+            AssertValue(state, "OMNI.client.state.lightUploadsLastFrame", "4");
+            AssertValue(state, "OMNI.client.state.solidDrawsLastFrame", "751");
+            AssertValue(state, "OMNI.client.state.translucentDrawsLastFrame", "89");
             Assert.False(state.TryExecute("OMNI.client.state.worldLoaded = false", out var readOnlyError));
             Assert.Contains("read-only", readOnlyError);
         }
@@ -121,6 +138,10 @@ public sealed class LuauClientStateHostIntegrationTests
             LuauClientStateHost.BackgroundPending = null;
             LuauClientStateHost.OldestForegroundAge = null;
             LuauClientStateHost.PresentationRegressionCount = null;
+            LuauClientStateHost.GeometryUploadsLastFrame = null;
+            LuauClientStateHost.LightUploadsLastFrame = null;
+            LuauClientStateHost.SolidDrawsLastFrame = null;
+            LuauClientStateHost.TranslucentDrawsLastFrame = null;
         }
     }
 
