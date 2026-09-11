@@ -37,6 +37,8 @@ public static unsafe class LuauClientStateHost
                                             if key == "presentedMeshCount" then return __ClientState.presentedMeshCount() end
                                             if key == "foregroundPending" then return __ClientState.foregroundPending() end
                                             if key == "backgroundPending" then return __ClientState.backgroundPending() end
+                                            if key == "lightRefreshPending" then return __ClientState.lightRefreshPending() end
+                                            if key == "lightRefreshCompletedCount" then return __ClientState.lightRefreshCompletedCount() end
                                             if key == "oldestForegroundAge" then return __ClientState.oldestForegroundAge() end
                                             if key == "presentationRegressionCount" then return __ClientState.presentationRegressionCount() end
                                             if key == "playerX" then return __ClientState.playerX() end
@@ -77,6 +79,8 @@ public static unsafe class LuauClientStateHost
     public static Func<double>? PresentedMeshCount;
     public static Func<double>? ForegroundPending;
     public static Func<double>? BackgroundPending;
+    public static Func<double>? LightRefreshPending;
+    public static Func<double>? LightRefreshCompletedCount;
     public static Func<double>? OldestForegroundAge;
     public static Func<double>? PresentationRegressionCount;
     public static Func<double>? PlayerX;
@@ -113,6 +117,8 @@ public static unsafe class LuauClientStateHost
         Add(l, "presentedMeshCount", &PresentedMeshCountClosure);
         Add(l, "foregroundPending", &ForegroundPendingClosure);
         Add(l, "backgroundPending", &BackgroundPendingClosure);
+        Add(l, "lightRefreshPending", &LightRefreshPendingClosure);
+        Add(l, "lightRefreshCompletedCount", &LightRefreshCompletedCountClosure);
         Add(l, "oldestForegroundAge", &OldestForegroundAgeClosure);
         Add(l, "presentationRegressionCount", &PresentationRegressionCountClosure);
         Add(l, "playerX", &PlayerXClosure);
@@ -240,6 +246,20 @@ public static unsafe class LuauClientStateHost
     private static int BackgroundPendingClosure(IntPtr l)
     {
         LuauNative.lua_pushnumber(l, ReadNumber(BackgroundPending));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int LightRefreshPendingClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(LightRefreshPending));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int LightRefreshCompletedCountClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(LightRefreshCompletedCount));
         return 1;
     }
 

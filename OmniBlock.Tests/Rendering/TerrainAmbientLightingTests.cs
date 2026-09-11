@@ -47,6 +47,38 @@ public sealed class TerrainAmbientLightingTests
         Assert.Empty(forbiddenCalls);
     }
 
+    [Fact]
+    public void Pure_light_invalidation_cannot_advance_or_dispatch_geometry()
+    {
+        var root = FindRepositoryRoot();
+        var file = Path.Combine(root, "OmniBlock.Client", "Rendering", "Chunks", "ChunkRenderer.cs");
+        var syntax = CSharpSyntaxTree.ParseText(File.ReadAllText(file), path: file).GetRoot();
+        var method = syntax.DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .Single(candidate => candidate.Identifier.ValueText == "MarkLightDirty");
+
+        var calls = method.DescendantNodes().OfType<InvocationExpressionSyntax>()
+            .Select(call => call.Expression.ToString()).ToArray();
+        Assert.DoesNotContain(calls, call => call.Contains("MarkDirty", StringComparison.Ordinal));
+        Assert.DoesNotContain(calls, call => call.Contains("MeshChunk", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Network_light_snapshots_use_the_light_only_invalidation_path()
+    {
+        var root = FindRepositoryRoot();
+        var file = Path.Combine(root, "OmniBlock.Client", "Network", "ClientNetworkHandler.cs");
+        var syntax = CSharpSyntaxTree.ParseText(File.ReadAllText(file), path: file).GetRoot();
+        var method = syntax.DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .Single(candidate => candidate.Identifier.ValueText == "onLightSections");
+
+        var calls = method.DescendantNodes().OfType<InvocationExpressionSyntax>()
+            .Select(call => call.Expression.ToString()).ToArray();
+        Assert.Contains(calls, call => call.EndsWith("setLightDirty", StringComparison.Ordinal));
+        Assert.DoesNotContain(calls, call => call.EndsWith("setBlocksDirty", StringComparison.Ordinal));
+    }
+
     private static string FindRepositoryRoot()
     {
         DirectoryInfo? directory = new(AppContext.BaseDirectory);

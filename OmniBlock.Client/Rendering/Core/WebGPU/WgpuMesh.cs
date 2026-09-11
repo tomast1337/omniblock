@@ -32,6 +32,7 @@ public sealed unsafe class WgpuMesh : IDisposable
 {
     /// <summary>The stride of a <see cref="ChunkVertex" />, in bytes.</summary>
     public const uint ChunkVertexStride = 20;
+    public const uint ChunkLightVertexStride = 4;
 
     private readonly WebGpuDevice _device;
 
@@ -126,11 +127,13 @@ public sealed unsafe class WgpuMesh : IDisposable
     }
 
     /// <summary>Records the draw command on the current render pass.</summary>
-    public void Draw(RenderPassEncoder* pass, uint instanceCount = 1)
+    public void Draw(RenderPassEncoder* pass, uint instanceCount = 1, WgpuBuffer* lightBuffer = null)
     {
         var api = _device.Api;
 
         api.RenderPassEncoderSetVertexBuffer(pass, 0, VertexBuffer, 0, WgpuWholeSize.Value);
+        if (lightBuffer != null)
+            api.RenderPassEncoderSetVertexBuffer(pass, 1, lightBuffer, 0, WgpuWholeSize.Value);
 
         if (_usesSharedQuadIndices)
         {

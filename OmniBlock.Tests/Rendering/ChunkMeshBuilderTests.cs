@@ -12,22 +12,30 @@ public sealed class ChunkMeshBuilderTests
         using var builder = new ChunkMeshBuilder();
         builder.Begin(-16.0, 3.5, 32.0);
         EmitCharacterizationGeometry(builder);
-        using var vertices = builder.Finish();
-
-        Assert.Equal(20, Marshal.SizeOf<ChunkVertex>());
-        Assert.Equal(8, vertices.Count);
-
-        var firstColor = BitConverter.IsLittleEndian ? unchecked((int)0xFFBF7F3F) : 0x3F7FBFFF;
-        var secondColor = BitConverter.IsLittleEndian ? unchecked((int)0xFF001FFF) : unchecked((int)0xFF1F00FF);
-        var thirdColor = BitConverter.IsLittleEndian ? unchecked((int)0xFF54FF00) : 0x00FF54FF;
-
-        var expected = new[]
+        using var vertices = builder.Finish(out var lights);
+        using (lights)
         {
-            V(0, 2816, 0, 0, 0, firstColor, 49, 22, 3), V(0, 3328, 0, 0, 4095, firstColor, 49, 22, 3), V(512, 3328, 0, 4095, 4095, secondColor, 60, 0, 3), V(512, 2816, 0, 4095, 0, secondColor, 60, 0, 3),
-            V(2176, 3584, 1024, 0, 0, thirdColor, 0, 60, 251), V(2176, 4096, 1024, 0, 65520, thirdColor, 0, 60, 251), V(2688, 4096, 1024, 65520, 65520, thirdColor, 0, 60, 251), V(2688, 3584, 1024, 65520, 0, thirdColor, 0, 60, 251)
-        };
+            Assert.Equal(20, Marshal.SizeOf<ChunkVertex>());
+            Assert.Equal(4, Marshal.SizeOf<ChunkLightVertex>());
+            Assert.Equal(8, vertices.Count);
 
-        for (var i = 0; i < expected.Length; i++) AssertVertex(expected[i], vertices.Buffer[i]);
+            var firstColor = BitConverter.IsLittleEndian ? unchecked((int)0xFFBF7F3F) : 0x3F7FBFFF;
+            var secondColor = BitConverter.IsLittleEndian ? unchecked((int)0xFF001FFF) : unchecked((int)0xFF1F00FF);
+            var thirdColor = BitConverter.IsLittleEndian ? unchecked((int)0xFF54FF00) : 0x00FF54FF;
+
+            var expected = new[]
+            {
+                V(0, 2816, 0, 0, 0, firstColor, 49, 22, 3), V(0, 3328, 0, 0, 4095, firstColor, 49, 22, 3), V(512, 3328, 0, 4095, 4095, secondColor, 60, 0, 3), V(512, 2816, 0, 4095, 0, secondColor, 60, 0, 3),
+                V(2176, 3584, 1024, 0, 0, thirdColor, 0, 60, 251), V(2176, 4096, 1024, 0, 65520, thirdColor, 0, 60, 251), V(2688, 4096, 1024, 65520, 65520, thirdColor, 0, 60, 251), V(2688, 3584, 1024, 65520, 0, thirdColor, 0, 60, 251)
+            };
+
+            for (var i = 0; i < expected.Length; i++)
+            {
+                AssertVertex(expected[i], vertices.Buffer[i]);
+                Assert.Equal(expected[i].PadTail0, lights.Buffer[i].Sky);
+                Assert.Equal(expected[i].PadTail1, lights.Buffer[i].Block);
+            }
+        }
     }
 
     [Fact]
@@ -64,6 +72,29 @@ public sealed class ChunkMeshBuilderTests
         Assert.Empty(vertices.Span.ToArray());
     }
 
+    [Fact]
+    public void Full_bright_intent_is_kept_out_of_the_geometry_stream()
+    {
+        using var builder = new ChunkMeshBuilder();
+        builder.Begin(0, 0, 0);
+        builder.setFullBright();
+        builder.addVertexWithUV(0, 0, 0, 0, 0);
+        builder.addVertexWithUV(0, 1, 0, 0, 1);
+        builder.addVertexWithUV(1, 1, 0, 1, 1);
+        builder.addVertexWithUV(1, 0, 0, 1, 0);
+        using var vertices = builder.Finish(out var lights);
+        using (lights)
+        {
+            Assert.All(lights.Span.ToArray(), light => Assert.Equal(1, light.Pad0));
+            Assert.All(vertices.Span.ToArray(), vertex =>
+            {
+                Assert.Equal(0, vertex.PadTail0);
+                Assert.Equal(0, vertex.PadTail1);
+                Assert.Equal(0, vertex.PadTail2);
+            });
+        }
+    }
+
     private static void EmitCharacterizationGeometry(IBlockVertexSink sink)
     {
         sink.setArrayLayer(3);
@@ -97,9 +128,9 @@ public sealed class ChunkMeshBuilderTests
         U = u,
         V = v,
         Color = color,
-        SkyLight = skyLight,
-        BlockLight = blockLight,
-        ArrayLayer = arrayLayer
+        ArrayLayer = arrayLayer,
+        PadTail0 = skyLight,
+        PadTail1 = blockLight
     };
 
     private static void AssertVertex(ChunkVertex expected, ChunkVertex actual)
@@ -111,10 +142,10 @@ public sealed class ChunkMeshBuilderTests
         Assert.Equal(expected.Color, actual.Color);
         Assert.Equal(expected.U, actual.U);
         Assert.Equal(expected.V, actual.V);
-        Assert.Equal(expected.SkyLight, actual.SkyLight);
-        Assert.Equal(expected.BlockLight, actual.BlockLight);
         Assert.Equal(expected.ArrayLayer, actual.ArrayLayer);
-        Assert.Equal(expected.PadTail, actual.PadTail);
+        Assert.Equal(0, actual.PadTail0);
+        Assert.Equal(0, actual.PadTail1);
+        Assert.Equal(0, actual.PadTail2);
     }
 
     private static void AssertVertexPosition(ChunkVertex actual, float x, float y, float z)

@@ -515,7 +515,7 @@ public ref struct BlockRenderContext
     ///     This is what the torch and the repeater's torch used to get by forcing their luminance to
     ///     one before multiplying it into the colour.
     /// </remarks>
-    internal readonly void SetFullBright() => Tess.setLight(0.0f, 15.0f);
+    internal readonly void SetFullBright() => Tess.setFullBright();
 
     /// <summary>
     ///     Sets one light for a face whose context does not read the per-corner values.

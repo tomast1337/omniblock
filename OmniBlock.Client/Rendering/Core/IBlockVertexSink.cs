@@ -17,5 +17,8 @@ public interface IBlockVertexSink
 
     void setLight(float sky, float block);
 
+    /// <summary>Marks subsequent vertices as intentionally independent of world lighting.</summary>
+    void setFullBright() => setLight(0.0f, 15.0f);
+
     void setTranslationF(float x, float y, float z);
 }

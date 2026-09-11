@@ -44,6 +44,8 @@ assert(type(OMNI.client.state.meshCriticalOverdueCount) == "number",
     "critical overdue mesh count is unavailable")
 assert(type(OMNI.client.state.meshRequestToGpuMs) == "number", "mesh latency is unavailable")
 assert(OMNI.client.state.meshRequestToGpuMs >= 0, "mesh latency cannot be negative")
+assert(type(OMNI.client.state.lightRefreshPending) == "number", "light refresh backlog is unavailable")
+assert(type(OMNI.client.state.lightRefreshCompletedCount) == "number", "light refresh completion count is unavailable")
 -- Longer than the automatic focus-loss pause delay; also exercised with the window unfocused.
 OMNI.wait(1)
 assert(OMNI.client.state.playerReady, "gameplay paused after entry with background running enabled")

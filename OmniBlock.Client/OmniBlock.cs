@@ -473,6 +473,9 @@ public partial class OmniBlock :
             LuauClientStateHost.PresentedMeshCount = () => WorldRenderer?.ChunkRenderer.PresentedMeshCount ?? 0;
             LuauClientStateHost.ForegroundPending = () => WorldRenderer?.ChunkRenderer.ForegroundPending ?? 0;
             LuauClientStateHost.BackgroundPending = () => WorldRenderer?.ChunkRenderer.BackgroundPending ?? 0;
+            LuauClientStateHost.LightRefreshPending = () => WorldRenderer?.ChunkRenderer.LightRefreshPending ?? 0;
+            LuauClientStateHost.LightRefreshCompletedCount = () =>
+                WorldRenderer?.ChunkRenderer.LightRefreshCompletedCount ?? 0;
             LuauClientStateHost.OldestForegroundAge = () => WorldRenderer?.ChunkRenderer.OldestForegroundAge ?? 0;
             LuauClientStateHost.PresentationRegressionCount = () =>
                 WorldRenderer?.ChunkRenderer.PresentationRegressionCount ?? 0;
@@ -873,6 +876,8 @@ public partial class OmniBlock :
             LuauClientStateHost.PresentedMeshCount = null;
             LuauClientStateHost.ForegroundPending = null;
             LuauClientStateHost.BackgroundPending = null;
+            LuauClientStateHost.LightRefreshPending = null;
+            LuauClientStateHost.LightRefreshCompletedCount = null;
             LuauClientStateHost.OldestForegroundAge = null;
             LuauClientStateHost.PresentationRegressionCount = null;
             LuauClientStateHost.PlayerX = null;

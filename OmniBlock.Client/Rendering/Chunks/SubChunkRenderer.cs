@@ -125,7 +125,7 @@ public class SubChunkRenderer : IDisposable
         var presentation = _presentation;
         var mesh = pass == 0 ? presentation?.Solid : presentation?.Translucent;
         if (mesh == null) return;
-        mesh.Draw(passEncoder);
+        mesh.Draw(passEncoder, lightBuffer: presentation!.LightBufferFor(pass));
         presentation!.RecordFirstDraw();
     }
 
@@ -135,7 +135,7 @@ public class SubChunkRenderer : IDisposable
         if (disposed) return;
         var presentation = _presentation;
         if (presentation?.Wireframe is not { } mesh) return;
-        mesh.Draw(passEncoder);
+        mesh.Draw(passEncoder, lightBuffer: presentation.WireframeLightBuffer);
         presentation.RecordFirstDraw();
     }
 }

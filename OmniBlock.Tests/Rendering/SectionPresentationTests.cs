@@ -32,8 +32,8 @@ public sealed class SectionPresentationTests
         Assert.Same(replacement, renderer.Presentation);
         Assert.Equal(4, renderer.PresentedEpoch);
         Assert.True(renderer.IsLit);
-        Assert.Equal(8 * 20, renderer.SolidMeshSizeBytes);
-        Assert.Equal(4 * 20, renderer.TranslucentMeshSizeBytes);
+        Assert.Equal(8 * 24, renderer.SolidMeshSizeBytes);
+        Assert.Equal(4 * 24, renderer.TranslucentMeshSizeBytes);
         Assert.True(renderer.HasTranslucentMesh);
         Assert.Equal(
             ChunkDirectionMask.South,

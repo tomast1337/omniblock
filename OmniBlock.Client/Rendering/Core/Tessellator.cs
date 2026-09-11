@@ -25,7 +25,7 @@ public struct Vertex(float x, float y, float z, float u, float v, int color, int
     ///     <see cref="Tessellator.FullBrightLight" /> for a draw that sets none.
     /// </summary>
     /// <remarks>
-    ///     Alongside the colour rather than multiplied into it, the same way a <see cref="ChunkVertex" />
+    ///     Alongside the colour rather than multiplied into it, the same way the chunk light stream
     ///     carries it — a block drawn from the Tessellator is still a block, and the shader applies
     ///     the same ramp to it. Before this the field did not exist, and the light every block draw
     ///     was already setting reached the chunk mesh and nothing else, so a moving piston or a
@@ -55,19 +55,12 @@ public struct ChunkVertex
     [FieldOffset(12)] public ushort U;
     [FieldOffset(14)] public ushort V;
 
-    // The two light channels, in quarter levels: a smooth-lit corner is the mean of four cells each
-    // 0-15, so the value is a multiple of 0.25 and 0..60 holds it exactly.
-    [FieldOffset(16)] public byte SkyLight;
-    [FieldOffset(17)] public byte BlockLight;
-
     /// <summary>Which layer of the terrain array this vertex samples.</summary>
-    /// <remarks>
-    ///     Was a ushort at offset 16 in the 18-byte layout; now a byte at offset 18, which is
-    ///     read as the first component of a Uint8x2 attribute (the pad supplies the second).
-    /// </remarks>
-    [FieldOffset(18)] public byte ArrayLayer;
+    [FieldOffset(16)] public byte ArrayLayer;
 
-    [FieldOffset(19)] public byte PadTail; // 4-byte-stride alignment
+    [FieldOffset(17)] public byte PadTail0;
+    [FieldOffset(18)] public byte PadTail1;
+    [FieldOffset(19)] public byte PadTail2; // 4-byte-stride alignment
 }
 
 public static class ChunkVertexHelper
@@ -87,9 +80,7 @@ public static class ChunkVertexHelper
         float z,
         float u,
         float v,
-        int arrayLayer,
-        byte skyLight,
-        byte blockLight)
+        int arrayLayer)
     {
         return new ChunkVertex
         {
@@ -100,10 +91,10 @@ public static class ChunkVertexHelper
             U = FloatToShortUV(u),
             V = FloatToShortUV(v),
             ArrayLayer = (byte)arrayLayer,
-            SkyLight = skyLight,
-            BlockLight = blockLight,
             PadPosition = 0,
-            PadTail = 0
+            PadTail0 = 0,
+            PadTail1 = 0,
+            PadTail2 = 0
         };
     }
 

@@ -18,6 +18,8 @@ internal struct MeshBuildResult : IDisposable
 {
     public PooledList<ChunkVertex> Solid;
     public PooledList<ChunkVertex> Translucent;
+    public SectionLightModel? SolidLighting;
+    public SectionLightModel? TranslucentLighting;
     public bool IsLit;
     public ChunkVisibilityStore VisibilityData;
     public Vector3D<int> Pos;
@@ -393,21 +395,30 @@ internal class ChunkMeshGenerator : IDisposable
                 }
             }
 
-            var verts = mesh.Finish();
-            if (verts.Count > 0)
+            var verts = mesh.Finish(out var lights);
+            try
             {
-                if (pass == 0)
+                if (verts.Count > 0)
                 {
-                    result.Solid = verts;
+                    if (pass == 0)
+                    {
+                        result.Solid = verts;
+                        result.SolidLighting = SectionLightModel.Create(pos, verts.Span, lights.Span);
+                    }
+                    else
+                    {
+                        result.Translucent = verts;
+                        result.TranslucentLighting = SectionLightModel.Create(pos, verts.Span, lights.Span);
+                    }
                 }
                 else
                 {
-                    result.Translucent = verts;
+                    verts.Dispose();
                 }
             }
-            else
+            finally
             {
-                verts.Dispose();
+                lights.Dispose();
             }
 
             if (!hasNextPass) break;

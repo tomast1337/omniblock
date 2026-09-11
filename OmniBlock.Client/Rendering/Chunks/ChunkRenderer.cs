@@ -39,6 +39,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     internal const int MeshLeadingEdgeInspectionPerTick = 64;
     internal const int CriticalDispatchReserve = MaxMeshWorkers;
     internal const int CriticalUploadReserve = MaxMeshWorkers * 2;
+    internal const int LightUploadLimitPerFrame = 4;
 
     //TODO: MAKE THIS CONFIGURABLE
     private const double MeshUploadBudgetMs = 1.5;
@@ -74,6 +75,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly HashSet<Vector3D<int>> _activePresentationRegressions = [];
     private readonly HashSet<Vector3D<int>> _currentPresentationRegressions = [];
     private readonly HashSet<Vector3D<int>> _presentedThisFrame = [];
+    private readonly Queue<Vector3D<int>> _pendingLightUpdates = [];
+    private readonly HashSet<Vector3D<int>> _pendingLightUpdateKeys = [];
     private readonly SectionMeshRequestQueue _pendingMeshUpdates = new();
     private readonly TranslucentDistanceComparer _translucentDistanceComparer = new();
     private readonly List<SubChunkRenderer> _translucentRenderers = [];
@@ -113,6 +116,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private Vector3D<double> _predictedViewPos;
     private Matrix4X4<float> _projection;
     private long _presentationRegressionCount;
+    private long _lightRefreshCompletedCount;
     private long _schedulerTick;
 
     /// <summary>
@@ -270,6 +274,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         section.OutsideRetentionSinceFrame >= 0);
     internal long OldestForegroundAge => OldestPendingAge(MeshWorkPriority.Foreground);
     internal long PresentationRegressionCount => _presentationRegressionCount;
+    internal int LightRefreshPending => _pendingLightUpdateKeys.Count;
+    internal long LightRefreshCompletedCount => _lightRefreshCompletedCount;
 
     internal int MeshReadyRadius => _meshReadyRadius == int.MaxValue
         ? Math.Max(0, _lastRenderDistance)
@@ -354,6 +360,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("presentedMeshes\t").Append(PresentedMeshCount).AppendLine();
         text.Append("foregroundPending\t").Append(ForegroundPending).AppendLine();
         text.Append("backgroundPending\t").Append(BackgroundPending).AppendLine();
+        text.Append("lightRefreshPending\t").Append(LightRefreshPending).AppendLine();
+        text.Append("lightRefreshCompleted\t").Append(LightRefreshCompletedCount).AppendLine();
         text.Append("deferredStreamingBoundaries\t").Append(DeferredStreamingBoundaryCount).AppendLine();
         text.Append("leadingEdgeQueued\t").Append(_leadingEdgeSections.Count).AppendLine();
         text.Append("leadingEdgePending\t").Append(LeadingEdgePending).AppendLine();
@@ -610,6 +618,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         DispatchPendingMeshUpdates();
         LoadNewMeshes(_lastViewPos);
+        // Lighting has independent storage and runs after geometry admission/upload. A lava cast
+        // can coalesce here, but cannot spend the frame budget before a critical block change.
+        RefreshPendingLights();
     }
 
     public unsafe void Render(ChunkRenderParams renderParams)
@@ -751,6 +762,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     device,
                     mesh.Solid,
                     mesh.Translucent,
+                    mesh.SolidLighting,
+                    mesh.TranslucentLighting,
                     mesh.VisibilityData,
                     mesh.IsLit,
                     mesh.Version,
@@ -1216,22 +1229,35 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         {
             var renderer = state.Renderer!;
             if (IsChunkInMeshPrepareDistance(renderer.Position, _lastViewPos) && state.IsLit)
-            {
-                var version = state.Version;
-                version.MarkDirty();
-                state.RememberRequest(
-                    SectionDirtyReason.Lighting,
-                    MeshWorkPriority.Background,
-                    _schedulerTick);
-                state.RecordInvalidation(SectionDirtyReason.Lighting);
+                MarkLightDirty(renderer.Position);
+        }
+    }
 
-                var snapshot = version.SnapshotIfNeeded();
-                if (snapshot.HasValue)
-                {
-                    state.BeginTrace(snapshot.Value, _frameIndex);
-                    _pendingMeshUpdates.Enqueue(state, RankPendingMesh(state, _lastCamera));
-                }
-            }
+    /// <summary>Coalesces a pure light invalidation without advancing the geometry epoch.</summary>
+    public bool MarkLightDirty(Vector3D<int> sectionPosition)
+    {
+        if (!_sections.TryGetValue(sectionPosition, out var section) || section.Renderer == null)
+            return false;
+        if (!_pendingLightUpdateKeys.Add(sectionPosition)) return false;
+        _pendingLightUpdates.Enqueue(sectionPosition);
+        section.RecordInvalidation(SectionDirtyReason.Lighting);
+        return true;
+    }
+
+    private void RefreshPendingLights()
+    {
+        var device = WebGpuDevice.Current;
+        if (device == null) return;
+
+        var refreshed = 0;
+        while (refreshed < LightUploadLimitPerFrame && _pendingLightUpdates.TryDequeue(out var pos))
+        {
+            _pendingLightUpdateKeys.Remove(pos);
+            if (!_sections.TryGetValue(pos, out var section) || section.Renderer?.Presentation is not { } presentation)
+                continue;
+            presentation.RefreshLighting(device, _world.Lighting);
+            _lightRefreshCompletedCount++;
+            refreshed++;
         }
     }
 
@@ -1438,6 +1464,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         {
             DispatchPendingMeshUpdates();
             LoadNewMeshes(_lastViewPos);
+            RefreshPendingLights();
         }
     }
 
@@ -2197,7 +2224,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         var source = AssetManager.Instance.GetAsset("shaders/chunk.wgsl").GetTextContent();
 
-        var attrs = stackalloc VertexAttribute[5];
+        var attrs = stackalloc VertexAttribute[4];
         attrs[0] = new VertexAttribute
         {
             Format = VertexFormat.Sint16x4,
@@ -2220,21 +2247,31 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         {
             Format = VertexFormat.Uint8x2,
             Offset = 16,
-            ShaderLocation = 3
-        };
-        attrs[4] = new VertexAttribute
-        {
-            Format = VertexFormat.Uint8x2,
-            Offset = 18,
             ShaderLocation = 4
         };
 
-        VertexBufferLayout bufferLayout = new()
+        var lightAttr = stackalloc VertexAttribute[1];
+        lightAttr[0] = new VertexAttribute
+        {
+            Format = VertexFormat.Uint8x2,
+            Offset = 0,
+            ShaderLocation = 3
+        };
+
+        var bufferLayouts = stackalloc VertexBufferLayout[2];
+        bufferLayouts[0] = new VertexBufferLayout
         {
             ArrayStride = 20,
             StepMode = VertexStepMode.Vertex,
-            AttributeCount = 5,
+            AttributeCount = 4,
             Attributes = attrs
+        };
+        bufferLayouts[1] = new VertexBufferLayout
+        {
+            ArrayStride = WgpuMesh.ChunkLightVertexStride,
+            StepMode = VertexStepMode.Vertex,
+            AttributeCount = 1,
+            Attributes = lightAttr
         };
 
         BindGroupLayoutEntry[] uniformEntries =
@@ -2285,7 +2322,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             ChunkUniformSize,
             uniformEntries,
             texEntries,
-            &bufferLayout, 1,
+            bufferLayouts, 2,
             state,
             device.SurfaceFormat,
             TextureFormat.Depth32float,

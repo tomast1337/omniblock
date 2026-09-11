@@ -1,7 +1,7 @@
 // Terrain rendered from chunk meshes — the WGSL equivalent of chunk.{vert,frag}.
-// ChunkVertex: packed shorts for position and UVs, RGBA8 colour, two u8 light channels, and the
-// texture-array layer as a ushort. Position is Sint16x4 (w padded, 20-byte stride) because WGSL
-// has no Sint16x3 vertex format.
+// Geometry and light are separate vertex streams. The stable 20-byte ChunkVertex carries packed
+// position/UV/colour/layer; a replaceable 4-byte ChunkLightVertex carries sky and block light.
+// A propagated-light update can therefore replace lighting without touching geometry.
 
 struct Uniforms {
     modelViewMatrix: mat4x4<f32>,

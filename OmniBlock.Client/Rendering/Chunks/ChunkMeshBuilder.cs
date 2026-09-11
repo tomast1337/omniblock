@@ -18,9 +18,11 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
     private int _color = unchecked((int)0xFFFFFFFF);
     private bool _hasColor;
     private bool _hasLight;
+    private bool _fullBright;
     private int _quadVertexCount;
     private byte _skyLight;
     private PooledList<ChunkVertex>? _vertices = new();
+    private PooledList<ChunkLightVertex>? _lights = new();
     private double _xOffset;
     private double _yOffset;
     private double _zOffset;
@@ -38,7 +40,8 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
             _hasColor ? _color : 0,
             _arrayLayer,
             _hasLight ? _skyLight : (byte)0,
-            _hasLight ? _blockLight : (byte)0);
+            _hasLight ? _blockLight : (byte)0,
+            _fullBright);
 
         if (_quadVertexCount != 4) return;
 
@@ -68,6 +71,13 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
         _skyLight = ChunkVertexHelper.ToQuarterLevels(sky);
         _blockLight = ChunkVertexHelper.ToQuarterLevels(block);
         _hasLight = true;
+        _fullBright = false;
+    }
+
+    public void setFullBright()
+    {
+        setLight(0.0f, 15.0f);
+        _fullBright = true;
     }
 
     public void setTranslationF(float x, float y, float z)
@@ -80,18 +90,23 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
     public void Dispose()
     {
         _vertices?.Dispose();
+        _lights?.Dispose();
         _vertices = null;
+        _lights = null;
     }
 
     public void Begin(double xOffset, double yOffset, double zOffset)
     {
         ObjectDisposedException.ThrowIf(_vertices is null, this);
+        ObjectDisposedException.ThrowIf(_lights is null, this);
         _vertices.Clear();
+        _lights.Clear();
         _quadVertexCount = 0;
         _arrayLayer = Tessellator.NoArrayLayer;
         _color = unchecked((int)0xFFFFFFFF);
         _hasColor = false;
         _hasLight = false;
+        _fullBright = false;
         _skyLight = 0;
         _blockLight = 0;
         _xOffset = xOffset;
@@ -99,7 +114,7 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
         _zOffset = zOffset;
     }
 
-    public PooledList<ChunkVertex> Finish()
+    public PooledList<ChunkVertex> Finish(out PooledList<ChunkLightVertex> lights)
     {
         ObjectDisposedException.ThrowIf(_vertices is null, this);
 
@@ -109,8 +124,17 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
         _quadVertexCount = 0;
 
         var result = _vertices;
+        lights = _lights!;
         _vertices = null;
+        _lights = null;
         return result;
+    }
+
+    internal PooledList<ChunkVertex> Finish()
+    {
+        var vertices = Finish(out var lights);
+        lights.Dispose();
+        return vertices;
     }
 
     private void Emit(int index)
@@ -123,9 +147,8 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
             vertex.Z,
             vertex.U,
             vertex.V,
-            vertex.ArrayLayer,
-            vertex.SkyLight,
-            vertex.BlockLight));
+            vertex.ArrayLayer));
+        _lights!.Add(new ChunkLightVertex(vertex.SkyLight, vertex.BlockLight, vertex.FullBright ? (byte)1 : (byte)0));
     }
 
     private readonly record struct PendingVertex(
@@ -137,5 +160,6 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
         int Color,
         int ArrayLayer,
         byte SkyLight,
-        byte BlockLight);
+        byte BlockLight,
+        bool FullBright);
 }

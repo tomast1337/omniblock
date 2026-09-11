@@ -1110,7 +1110,7 @@ public class ClientNetworkHandler : NetHandler
             if ((changedSections & (1u << section)) == 0) continue;
 
             var minY = section * Chunk.LightSectionHeight;
-            _worldClient.setBlocksDirty(
+            _worldClient.setLightDirty(
                 worldX, minY, worldZ,
                 worldX + 15, minY + Chunk.LightSectionHeight - 1, worldZ + 15);
         }

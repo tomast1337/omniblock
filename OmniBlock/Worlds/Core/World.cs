@@ -757,4 +757,10 @@ public abstract class World : IWorldContext
                 EventListeners[i].SetBlocksDirty(minX, minY, minZ, maxX, maxY, maxZ);
         }
     }
+
+    public void setLightDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
+    {
+        for (var i = 0; i < EventListeners.Count; ++i)
+            EventListeners[i].SetLightDirty(minX, minY, minZ, maxX, maxY, maxZ);
+    }
 }

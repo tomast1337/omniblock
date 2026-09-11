@@ -9,6 +9,10 @@ public interface IWorldEventListener
 
     void SetBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ);
 
+    /// <summary>Announces propagated-light changes which do not alter block geometry.</summary>
+    void SetLightDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) =>
+        SetBlocksDirty(minX, minY, minZ, maxX, maxY, maxZ);
+
     /// <summary>
     ///     Announces bulk terrain streaming. Presentation listeners may defer meshes that do not
     ///     exist yet; ordinary gameplay updates must continue to use <see cref="SetBlocksDirty" />.

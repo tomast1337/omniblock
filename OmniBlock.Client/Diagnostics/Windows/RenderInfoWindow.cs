@@ -165,6 +165,8 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
             ImGuiTextSafe.Text($"Upload:    {mesh.UploadMs:F3} ms avg");
             ImGuiTextSafe.Text($"Done->GPU: {mesh.FinishedToUploadMs:F3} ms avg");
             ImGuiTextSafe.Text($"Request->GPU: {mesh.RequestToUploadMs:F3} ms avg");
+            ImGuiTextSafe.Text(
+                $"Relight:   pending {ctx.ChunkRenderer.LightRefreshPending}  completed {ctx.ChunkRenderer.LightRefreshCompletedCount}");
             var lifecycle = chunkRenderer.MeshLifecycle;
             ImGuiTextSafe.Text(
                 $"Critical:  completed {lifecycle.CriticalCompleted}  late {lifecycle.CriticalDeadlineMisses}  overdue {lifecycle.CriticalOverdue}");
