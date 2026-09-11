@@ -38,6 +38,22 @@ click("#option.difficulty")
 assert(OMNI.config.difficulty ~= oldDifficulty, "difficulty option did not cycle")
 node("#options.video")
 node("#options.ui")
+click("#options.ui")
+screen("UISettingsScreen")
+assert(OMNI.config.captureMouse == true, "mouse capture should default to enabled")
+click("#option.captureMouse")
+assert(OMNI.config.captureMouse == false, "UI toggle did not disable mouse capture")
+OMNI.config.captureMouse = true
+assert(OMNI.config.captureMouse == true, "script could not enable mouse capture")
+OMNI.config.captureMouse = false
+assert(OMNI.config.pauseOnFocusLoss == true, "pause on focus loss should default to enabled")
+click("#option.pauseOnFocusLoss")
+assert(OMNI.config.pauseOnFocusLoss == false, "UI toggle did not disable focus-loss pausing")
+OMNI.config.pauseOnFocusLoss = true
+assert(OMNI.config.pauseOnFocusLoss == true, "script could not enable focus-loss pausing")
+OMNI.config.pauseOnFocusLoss = false
+click("#options.done")
+screen("OptionsScreen")
 node("#options.audio")
 node("#options.controls")
 click("#options.done")

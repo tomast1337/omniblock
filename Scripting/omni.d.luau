@@ -49,6 +49,8 @@ export type OmniConfig = {
     anisotropicLevel: number,
     bobView: boolean,
     cameraMode: number,
+    -- Release the cursor without opening a screen or pausing. Scripted camera controls still work.
+    captureMouse: boolean,
     chatScale: number,
     chatWidth: number,
     chunkFade: boolean,
@@ -67,6 +69,8 @@ export type OmniConfig = {
     mouseSensitivity: number,
     msaaLevel: number,
     music: number,
+    -- Disable automatic pausing and extra background sleep when the window loses focus.
+    pauseOnFocusLoss: boolean,
     showCoordinates: boolean,
     skin: string,
     softClouds: boolean,

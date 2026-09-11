@@ -17,6 +17,17 @@ tests/e2e/run-local.sh
 tests/e2e/run-local.sh multiplayer
 ```
 
+World scenarios set `OMNI.config.pauseOnFocusLoss = false` before loading so the game continues
+when another window has focus. This is the persisted **Pause on Focus Loss** toggle under
+Options → UI Settings; it defaults to enabled. Disabling it also removes the extra background
+sleep. Opening the pause menu explicitly still pauses single-player normally.
+
+They also set `OMNI.config.captureMouse = false` to release the cursor without opening a screen
+or pausing the world. **Capture Mouse** is a separate persisted toggle in UI Settings, enabled by
+default. `OMNI.test.setLook()` and `OMNI.test.flyPath()` remain available with capture disabled.
+These settings control input focus and cursor capture; a compositor may still suspend rendering
+for a hidden or minimized window. Keep the test window visible when measuring background rendering.
+
 The opt-in `view-distance-32-diagnostic` scenario holds a real single-player session at the maximum
 distance for 30 seconds and logs frame time plus mesh pressure. It is intentionally outside the
 default suite because it is a sustained performance regression rather than a fast functional check.

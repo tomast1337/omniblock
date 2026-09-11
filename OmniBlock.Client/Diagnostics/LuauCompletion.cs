@@ -27,10 +27,10 @@ internal sealed partial class LuauCompletion
 
     private static readonly string[] s_configMembers =
     [
-        "advancedItemTooltips", "alternateBlocks", "anisotropicLevel", "bobView", "cameraMode",
+        "advancedItemTooltips", "alternateBlocks", "anisotropicLevel", "bobView", "cameraMode", "captureMouse",
         "chatScale", "chatWidth", "chunkFade", "cloudsQuality", "controllerSensitivity",
         "controllerType", "difficulty", "fov", "fpsLimit", "gamma", "guiScale", "invertYMouse",
-        "language", "lastServer", "menuMusic", "mouseSensitivity", "msaaLevel", "music", "options", "showCoordinates",
+        "language", "lastServer", "menuMusic", "mouseSensitivity", "msaaLevel", "music", "options", "pauseOnFocusLoss", "showCoordinates",
         "skin", "softClouds", "sound", "uiCursors", "useMipmaps", "viewDistance", "vsync"
     ];
 

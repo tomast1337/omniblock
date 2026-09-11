@@ -231,10 +231,15 @@ public class GameRenderer
     {
         if (!Display.isActive())
         {
-            if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - _prevFrameTime > 500L)
+            if (_client.Options.PauseOnFocusLossOption.Value &&
+                DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - _prevFrameTime > 500L)
             {
                 _client.DisplayInGameMenu();
             }
+
+            // Background simulation and scripting may continue, but physical look input belongs
+            // to the focused window only.
+            return;
         }
         else
         {

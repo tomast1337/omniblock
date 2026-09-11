@@ -1,3 +1,6 @@
+OMNI.config.pauseOnFocusLoss = false
+OMNI.config.captureMouse = false
+
 local function node(selector)
     local result = OMNI.ui.querySelector(selector)
     assert(result ~= nil, "missing UI node: " .. selector)

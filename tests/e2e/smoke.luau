@@ -1,3 +1,6 @@
+OMNI.config.pauseOnFocusLoss = false
+OMNI.config.captureMouse = false
+
 local function node(selector)
     local result = OMNI.ui.querySelector(selector)
     assert(result ~= nil, "missing UI node: " .. selector)
@@ -33,4 +36,7 @@ assert(type(OMNI.client.state.meshPending) == "number", "mesh backlog is unavail
 assert(OMNI.client.state.meshPending >= 0, "mesh backlog cannot be negative")
 assert(type(OMNI.client.state.meshRequestToGpuMs) == "number", "mesh latency is unavailable")
 assert(OMNI.client.state.meshRequestToGpuMs >= 0, "mesh latency cannot be negative")
+-- Longer than the automatic focus-loss pause delay; also exercised with the window unfocused.
+OMNI.wait(1)
+assert(OMNI.client.state.playerReady, "gameplay paused after entry with background running enabled")
 OMNI.test.pass()

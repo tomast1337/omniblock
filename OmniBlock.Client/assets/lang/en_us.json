@@ -270,6 +270,8 @@
         },
         "showCoordinates": "Show Coordinates",
         "uiCursors": "UI Cursors",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse",
         "gamma": "Gamma",
         "vSync": "VSync",
         "mipmaps": "Mipmaps",

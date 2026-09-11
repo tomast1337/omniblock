@@ -1087,7 +1087,7 @@ public partial class OmniBlock :
                     if (!Display.isActive())
                     {
                         if (_fullscreen) ToggleFullscreen();
-                        Thread.Sleep(10);
+                        if (Options.PauseOnFocusLossOption.Value) Thread.Sleep(10);
                     }
 
                     _prevFrameTime = Stopwatch.GetTimestamp();
@@ -2018,7 +2018,7 @@ public partial class OmniBlock :
         var isMp = IsMultiplayerWorld() && InternalServer == null;
         var quitText = isMp ? Translations.Get("menu.disconnect") : Translations.Get("menu.saveAndQuitToTitle");
         var saveStep = 0;
-        Navigate(new IngameMenuScreen(UIContext, StatFileWriter, SetIngameFocus, quitText, () =>
+        Navigate(new IngameMenuScreen(UIContext, StatFileWriter, () => Navigate(null), quitText, () =>
         {
             if (IsMultiplayerWorld()) World.Disconnect();
             StopInternalServer();
@@ -2028,7 +2028,7 @@ public partial class OmniBlock :
 
     public void SetIngameFocus()
     {
-        if (!Display.isActive())
+        if (!Options.CaptureMouseOption.Value || !Display.isActive())
         {
             return;
         }
@@ -2044,6 +2044,14 @@ public partial class OmniBlock :
         Navigate(null);
         _leftClickCounter = 10000;
         MouseTicksRan = TicksRan + 10000;
+    }
+
+    internal void RefreshMouseCapture()
+    {
+        if (!Options.CaptureMouseOption.Value)
+            SetIngameNotInFocus();
+        else if (World != null && CurrentScreen == null)
+            SetIngameFocus();
     }
 
     private void SetIngameNotInFocus()

@@ -1,4 +1,6 @@
 OMNI.config.viewDistance = 1.0
+OMNI.config.pauseOnFocusLoss = false
+OMNI.config.captureMouse = false
 
 assert(OMNI.client.worlds.load("e2e-smoke"), "could not launch fixture world")
 OMNI.waitUntil(function()

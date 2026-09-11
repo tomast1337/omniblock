@@ -167,12 +167,14 @@ public class GameOptions
     public BoolOption ShowCoordinatesOption { get; private set; }
     public StringOption LanguageOption { get; private set; }
     public BoolOption UICursorsOption { get; private set; }
+    public BoolOption PauseOnFocusLossOption { get; private set; }
+    public BoolOption CaptureMouseOption { get; private set; }
 
 
     public GameOption[] MainScreenOptions => [FovOption, DifficultyOption];
     public GameOption[] AudioScreenOptions => [MusicVolumeOption, SoundVolumeOption, MenuMusicOption];
 
-    public GameOption[] UIScreenOptions => [GuiScaleOption, GammaOption, ShowCoordinatesOption, UICursorsOption, ChatScaleOption, ChatWidthOption];
+    public GameOption[] UIScreenOptions => [GuiScaleOption, GammaOption, ShowCoordinatesOption, UICursorsOption, PauseOnFocusLossOption, CaptureMouseOption, ChatScaleOption, ChatWidthOption];
 
 
     public float MusicVolume
@@ -293,6 +295,8 @@ public class GameOptions
         nameof(ShowCoordinatesOption),
         nameof(LanguageOption),
         nameof(UICursorsOption),
+        nameof(PauseOnFocusLossOption),
+        nameof(CaptureMouseOption),
         nameof(_allOptions))]
     private void InitializeOptions()
     {
@@ -346,6 +350,11 @@ public class GameOptions
         };
         ShowCoordinatesOption = new BoolOption("options.showCoordinates", "showCoordinates");
         UICursorsOption = new BoolOption("options.uiCursors", "uiCursors", true);
+        PauseOnFocusLossOption = new BoolOption("options.pauseOnFocusLoss", "pauseOnFocusLoss", true);
+        CaptureMouseOption = new BoolOption("options.captureMouse", "captureMouse", true)
+        {
+            OnChanged = _ => _game?.RefreshMouseCapture()
+        };
         GammaOption = new FloatOption("options.gamma", "gamma", 0.5F)
         {
             Steps = 100,
@@ -467,6 +476,8 @@ public class GameOptions
         yield return MsaaOption;
         yield return ShowCoordinatesOption;
         yield return UICursorsOption;
+        yield return PauseOnFocusLossOption;
+        yield return CaptureMouseOption;
         yield return LanguageOption;
     }
 

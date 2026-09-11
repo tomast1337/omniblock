@@ -13,6 +13,8 @@ public sealed class LuauCompletionTests
     [InlineData("OMNI.ui.root.cli", "click")]
     [InlineData("OMNI.ui.root.i", "id")]
     [InlineData("OMNI.config.mu", "music")]
+    [InlineData("OMNI.config.pause", "pauseOnFocusLoss")]
+    [InlineData("OMNI.config.capture", "captureMouse")]
     [InlineData("OMNI.config.opt", "options")]
     [InlineData("OMNI.cli", "client")]
     [InlineData("OMNI.client.wor", "worlds")]

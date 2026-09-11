@@ -233,6 +233,8 @@
         },
         "showCoordinates": "Mostrar Coordenadas",
         "uiCursors": "Cursores da Interface",
+        "pauseOnFocusLoss": "Pausar ao perder o foco",
+        "captureMouse": "Capturar o mouse",
         "gamma": "Brilho",
         "vSync": "VSync",
         "mipmaps": "Mipmaps",
