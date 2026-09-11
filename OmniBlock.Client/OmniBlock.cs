@@ -455,6 +455,13 @@ public partial class OmniBlock :
             LuauClientStateHost.MeshSafetyExpectedSections = () => CurrentMeshSafetyRingState().ExpectedSections;
             LuauClientStateHost.MeshSafetyHoles = () => CurrentMeshSafetyRingState().MissingMeshes;
             LuauClientStateHost.MeshReadyRadius = () => WorldRenderer?.ChunkRenderer.MeshReadyRadius ?? 0;
+            LuauClientStateHost.ResidentMeshCount = () => WorldRenderer?.ChunkRenderer.ResidentMeshCount ?? 0;
+            LuauClientStateHost.PresentedMeshCount = () => WorldRenderer?.ChunkRenderer.PresentedMeshCount ?? 0;
+            LuauClientStateHost.ForegroundPending = () => WorldRenderer?.ChunkRenderer.ForegroundPending ?? 0;
+            LuauClientStateHost.BackgroundPending = () => WorldRenderer?.ChunkRenderer.BackgroundPending ?? 0;
+            LuauClientStateHost.OldestForegroundAge = () => WorldRenderer?.ChunkRenderer.OldestForegroundAge ?? 0;
+            LuauClientStateHost.PresentationRegressionCount = () =>
+                WorldRenderer?.ChunkRenderer.PresentationRegressionCount ?? 0;
             LuauClientStateHost.PlayerX = () => Player?.X ?? 0;
             LuauClientStateHost.PlayerY = () => Player?.Y ?? 0;
             LuauClientStateHost.PlayerZ = () => Player?.Z ?? 0;
@@ -479,6 +486,8 @@ public partial class OmniBlock :
                 };
                 LuauTestHost.SetMovement = (forward, strafe, vertical) =>
                     Player?.SetMovementForTest((float)forward, (float)strafe, (float)vertical);
+                LuauTestHost.FlyPath = (ax, ay, az, bx, by, bz, seconds) =>
+                    Player?.StartFlightPathForTest(ax, ay, az, bx, by, bz, seconds);
                 LuauTestHost.Screenshot = () => WebGpuRenderer.ScreenshotRequested = true;
                 LuauTestHost.DumpTerrain = label =>
                 {
@@ -812,6 +821,12 @@ public partial class OmniBlock :
             LuauClientStateHost.MeshSafetyExpectedSections = null;
             LuauClientStateHost.MeshSafetyHoles = null;
             LuauClientStateHost.MeshReadyRadius = null;
+            LuauClientStateHost.ResidentMeshCount = null;
+            LuauClientStateHost.PresentedMeshCount = null;
+            LuauClientStateHost.ForegroundPending = null;
+            LuauClientStateHost.BackgroundPending = null;
+            LuauClientStateHost.OldestForegroundAge = null;
+            LuauClientStateHost.PresentationRegressionCount = null;
             LuauClientStateHost.PlayerX = null;
             LuauClientStateHost.PlayerY = null;
             LuauClientStateHost.PlayerZ = null;
@@ -822,6 +837,7 @@ public partial class OmniBlock :
             LuauTestHost.Teleport = null;
             LuauTestHost.SetLook = null;
             LuauTestHost.SetMovement = null;
+            LuauTestHost.FlyPath = null;
             LuauTestHost.Screenshot = null;
             LuauTestHost.DumpTerrain = null;
             _luauWorldService = null;

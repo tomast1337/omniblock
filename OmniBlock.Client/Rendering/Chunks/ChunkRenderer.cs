@@ -43,6 +43,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly Dictionary<Vector3D<int>, ChunkMeshVersion> _chunkVersions = [];
     private readonly List<Vector3D<int>> _chunkVersionsToRemove = [];
     private readonly List<ChunkToMeshInfo> _dirtyChunks = [];
+    private readonly HashSet<Vector3D<int>> _everPresentedMeshes = [];
     private readonly MeshPriorityFairness _dispatchFairness = new();
     private readonly List<ChunkToMeshInfo> _lightingUpdates = [];
     private readonly ILogger<ChunkRenderer> _logger = Log.Instance.For<ChunkRenderer>();
@@ -52,6 +53,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly GameOptions _options;
     private readonly Dictionary<Vector3D<int>, SubChunkState> _renderers = [];
     private readonly List<SubChunkRenderer> _renderersToRemove = [];
+    private readonly HashSet<Vector3D<int>> _activePresentationRegressions = [];
+    private readonly HashSet<Vector3D<int>> _currentPresentationRegressions = [];
+    private readonly HashSet<Vector3D<int>> _presentedThisFrame = [];
+    private readonly Dictionary<Vector3D<int>, long> _requestEnqueuedTicks = [];
     private readonly Dictionary<Vector3D<int>, MeshWorkPriority> _requestedPriorities = [];
     private readonly TranslucentDistanceComparer _translucentDistanceComparer = new();
     private readonly List<SubChunkRenderer> _translucentRenderers = [];
@@ -85,6 +90,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private Matrix4X4<float> _modelView;
     private Vector3D<double> _predictedViewPos;
     private Matrix4X4<float> _projection;
+    private long _presentationRegressionCount;
     private long _schedulerTick;
 
     /// <summary>
@@ -162,6 +168,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     public int ChunksOccluded { get; private set; }
     public int ChunksRendered { get; private set; }
     public int TranslucentMeshes { get; private set; }
+    internal int ResidentMeshCount => _renderers.Count;
+    internal int PresentedMeshCount => _visibleRenderers.Count;
+    internal int ForegroundPending => CountPending(MeshWorkPriority.Foreground);
+    internal int BackgroundPending => CountPending(MeshWorkPriority.Background);
+    internal long OldestForegroundAge => OldestPendingAge(MeshWorkPriority.Foreground);
+    internal long PresentationRegressionCount => _presentationRegressionCount;
 
     internal int MeshReadyRadius => _meshReadyRadius == int.MaxValue
         ? Math.Max(0, _lastRenderDistance)
@@ -234,6 +246,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("viewDistance\t").Append(_lastRenderDistance).AppendLine();
         text.Append("meshReadyRadius\t").Append(MeshReadyRadius).AppendLine();
         text.Append("totalRenderers\t").Append(_renderers.Count).AppendLine();
+        text.Append("presentedMeshes\t").Append(PresentedMeshCount).AppendLine();
+        text.Append("foregroundPending\t").Append(ForegroundPending).AppendLine();
+        text.Append("backgroundPending\t").Append(BackgroundPending).AppendLine();
+        text.Append("oldestForegroundAge\t").Append(OldestForegroundAge).AppendLine();
+        text.Append("presentationRegressions\t").Append(PresentationRegressionCount).AppendLine();
         text.Append("pendingWork\t").Append(PendingMeshWork).AppendLine();
         text.AppendLine("chunkX\tchunkZ\tdistance2\tloaded\tmeshes\tvisible\tpending\tdirty\tforeground\tcritical\tbackground");
 
@@ -376,6 +393,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             ChunksRendered = _visibleRenderers.Count;
         }
 
+        RecordPresentationState(cameraChunkPos, renderParams.Camera);
+
         var translucentCount = 0;
         foreach (var renderer in _visibleRenderers)
         {
@@ -421,6 +440,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             renderer.Dispose();
 
             _chunkVersions.Remove(renderer.Position);
+            _requestedPriorities.Remove(renderer.Position);
+            _requestEnqueuedTicks.Remove(renderer.Position);
         }
 
         _renderersToRemove.Clear();
@@ -528,6 +549,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 }
 
                 _requestedPriorities.Remove(mesh.Pos);
+                _requestEnqueuedTicks.Remove(mesh.Pos);
                 if (_world is ClientWorld clientWorld)
                     clientWorld.NetworkHandler.NotifyMeshUploaded(mesh.Pos);
             }
@@ -537,6 +559,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 // would normally return these to the pool) never runs for it.
                 mesh.Dispose();
                 _requestedPriorities.Remove(mesh.Pos);
+                _requestEnqueuedTicks.Remove(mesh.Pos);
             }
 
             var uploadedAt = Stopwatch.GetTimestamp();
@@ -660,6 +683,75 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
 
         return true;
+    }
+
+    private int CountPending(MeshWorkPriority priority)
+    {
+        var count = 0;
+        foreach (var (pos, version) in _chunkVersions)
+        {
+            if (version.State.Pending != -1 && RequestedPriority(pos) == priority) count++;
+        }
+
+        return count;
+    }
+
+    private long OldestPendingAge(MeshWorkPriority priority)
+    {
+        var oldest = 0L;
+        foreach (var (pos, requestedAt) in _requestEnqueuedTicks)
+        {
+            if (RequestedPriority(pos) != priority ||
+                !_chunkVersions.TryGetValue(pos, out var version) ||
+                version.State.Pending == -1) continue;
+
+            oldest = Math.Max(oldest, _schedulerTick - requestedAt);
+        }
+
+        return oldest;
+    }
+
+    /// <summary>
+    ///     Records only conservative near-field regressions. A normal frustum exit or a distant
+    ///     occlusion is not a regression; a loaded mesh that was presented before, lies inside the
+    ///     safety ring and current frustum, but is absent from this frame's presentation set is.
+    /// </summary>
+    private void RecordPresentationState(Vector3D<int> cameraChunkPos, ICuller camera)
+    {
+        _presentedThisFrame.Clear();
+        foreach (var renderer in _visibleRenderers) _presentedThisFrame.Add(renderer.Position);
+
+        _currentPresentationRegressions.Clear();
+        var size = SubChunkRenderer.Size;
+        for (var chunkX = -MeshSafetyRingRadius; chunkX <= MeshSafetyRingRadius; chunkX++)
+        for (var chunkZ = -MeshSafetyRingRadius; chunkZ <= MeshSafetyRingRadius; chunkZ++)
+        {
+            if (chunkX * chunkX + chunkZ * chunkZ > MeshSafetyRingRadius * MeshSafetyRingRadius)
+                continue;
+
+            for (var y = 0; y < ChuckFormat.WorldHeight; y += size)
+            {
+                var pos = new Vector3D<int>(
+                    cameraChunkPos.X + chunkX * size,
+                    y,
+                    cameraChunkPos.Z + chunkZ * size);
+                if (!_everPresentedMeshes.Contains(pos) ||
+                    !HasRenderableSourceChunk(_world, pos) ||
+                    _presentedThisFrame.Contains(pos)) continue;
+
+                var bounds = _renderers.TryGetValue(pos, out var state)
+                    ? state.Renderer.BoundingBox
+                    : new Box(pos.X - 6, pos.Y - 6, pos.Z - 6,
+                        pos.X + size + 6, pos.Y + size + 6, pos.Z + size + 6);
+                if (!camera.IsBoundingBoxInFrustum(bounds)) continue;
+
+                _currentPresentationRegressions.Add(pos);
+                if (_activePresentationRegressions.Add(pos)) _presentationRegressionCount++;
+            }
+        }
+
+        _activePresentationRegressions.RemoveWhere(pos => !_currentPresentationRegressions.Contains(pos));
+        _everPresentedMeshes.UnionWith(_presentedThisFrame);
     }
 
     /// <summary>
@@ -889,6 +981,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 }
 
                 version.MarkDirty();
+                _requestEnqueuedTicks.TryAdd(state.Renderer.Position, _schedulerTick);
 
                 var snapshot = version.SnapshotIfNeeded();
                 if (snapshot.HasValue)
@@ -1071,6 +1164,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 _chunkVersions[pos].Release();
                 _chunkVersions.Remove(pos);
                 _requestedPriorities.Remove(pos);
+                _requestEnqueuedTicks.Remove(pos);
             }
 
             _chunkVersionsToRemove.Clear();
@@ -1157,6 +1251,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
 
         version.MarkDirty();
+        _requestEnqueuedTicks.TryAdd(chunkPos, _schedulerTick);
         RememberPriority(chunkPos, requestedPriority);
 
         var snapshot = version.SnapshotIfNeeded();
@@ -1265,6 +1360,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         version.Release();
         _chunkVersions.Remove(chunkPos);
         _requestedPriorities.Remove(chunkPos);
+        _requestEnqueuedTicks.Remove(chunkPos);
     }
 
     private void PrioritizeMesh(Vector3D<int> chunkPos)
@@ -1811,6 +1907,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _translucentRenderers.Clear();
         _renderersToRemove.Clear();
         _requestedPriorities.Clear();
+        _requestEnqueuedTicks.Clear();
+        _everPresentedMeshes.Clear();
+        _activePresentationRegressions.Clear();
+        _currentPresentationRegressions.Clear();
+        _presentedThisFrame.Clear();
 
         foreach (var version in _chunkVersions.Values)
         {

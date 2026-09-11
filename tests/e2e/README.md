@@ -21,11 +21,11 @@ The opt-in `view-distance-32-diagnostic` scenario holds a real single-player ses
 distance for 30 seconds and logs frame time plus mesh pressure. It is intentionally outside the
 default suite because it is a sustained performance regression rather than a fast functional check.
 
-The opt-in `flying-chunk-streaming` scenario teleports a persistently flying creative player ten
-chunks away and above the world ceiling, points the camera straight down, requires all 29 loaded
-columns (232 vertical sections) in the radial safety ring to have completed meshes, and verifies a
-scripted movement-and-release cycle. It captures CPU-side terrain-state TSV grids instead of
-screenshots, avoiding GPU readback while measuring the pipeline.
+The opt-in `flying-chunk-streaming` scenario teleports a persistently flying creative player above
+the world ceiling, points the camera straight down, requires all 29 loaded columns (232 vertical
+sections) in the radial safety ring to have completed meshes, then flies a full ten-chunk/160-block
+path before releasing movement. It captures a CPU-side terrain-state TSV at every chunk crossing
+instead of screenshots, avoiding GPU readback while measuring the pipeline.
 
 Restricted E2E scripts can control a flying player without synthesizing keyboard or mouse events:
 
@@ -34,10 +34,13 @@ OMNI.test.setFlying(true)
 OMNI.test.setLook(yaw, pitch)
 OMNI.test.setMovement(forward, strafe, vertical)
 OMNI.test.setMovement(0, 0, 0) -- release every movement axis
+OMNI.test.flyPath(ax, ay, az, bx, by, bz, seconds)
 ```
 
 Movement values are clamped to `[-1, 1]`. The controls persist until changed, which lets a script
-sample streaming state while the player follows a repeatable path.
+sample streaming state while the player follows a repeatable path. `flyPath` linearly interpolates
+the player and camera from A to B on the normal 20 Hz client ticks, while preserving path velocity
+for the renderer's movement prediction.
 
 Every scenario gets a fresh disposable game-data directory and its own artifact
 subdirectory. The suite covers main-menu structure and navigation, world
@@ -52,6 +55,12 @@ World scenarios can observe the renderer without controlling renderer internals:
 OMNI.client.state.meshPending         -- queued, dirty, or awaiting-upload meshes
 OMNI.client.state.meshRequestToGpuMs  -- average request-to-upload latency in milliseconds
 OMNI.client.state.frameTimeMs         -- latest full client frame time in milliseconds
+OMNI.client.state.residentMeshCount   -- uploaded sub-chunk meshes retained by the renderer
+OMNI.client.state.presentedMeshCount  -- resident meshes selected for the current frame
+OMNI.client.state.foregroundPending   -- unresolved foreground mesh requests
+OMNI.client.state.backgroundPending   -- unresolved background mesh requests
+OMNI.client.state.oldestForegroundAge -- age in client scheduler ticks (20 ticks/second)
+OMNI.client.state.presentationRegressionCount -- cumulative near-field presentation regressions
 ```
 
 These values are live and read-only. They are intended for streaming-health assertions and

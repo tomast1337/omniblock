@@ -24,6 +24,15 @@ public class ClientPlayerEntity : EntityPlayer
     private float _testForward;
     private float _testStrafe;
     private float _testVertical;
+    private bool _testFlightPathActive;
+    private double _testFlightStartX;
+    private double _testFlightStartY;
+    private double _testFlightStartZ;
+    private double _testFlightEndX;
+    private double _testFlightEndY;
+    private double _testFlightEndZ;
+    private int _testFlightPathTick;
+    private int _testFlightPathTicks;
     protected OmniBlock Game;
     public MovementInput movementInput;
 
@@ -85,6 +94,13 @@ public class ClientPlayerEntity : EntityPlayer
             _isFlying = true;
             OnGround = false;
             VelocityY = 0;
+        }
+
+        if (_testFlightPathActive)
+        {
+            // Physics still ticks, but the cinematic controller owns the exact endpoint for this
+            // tick. Clear the preceding path velocity before ordinary travel is evaluated.
+            VelocityX = VelocityY = VelocityZ = 0;
         }
 
         if (!Game.StatFileWriter.HasAchievementUnlocked(Achievements.OpenInventory))
@@ -194,6 +210,31 @@ public class ClientPlayerEntity : EntityPlayer
         PushOutOfBlocks(X + Width * 0.35D, BoundingBox.MinY + 0.5D, Z - Width * 0.35D);
         PushOutOfBlocks(X + Width * 0.35D, BoundingBox.MinY + 0.5D, Z + Width * 0.35D);
         base.TickMovement();
+
+        if (_testFlightPathActive)
+        {
+            _testFlightPathTick++;
+            var progress = Math.Min(1.0, _testFlightPathTick / (double)_testFlightPathTicks);
+            var nextX = Lerp(_testFlightStartX, _testFlightEndX, progress);
+            var nextY = Lerp(_testFlightStartY, _testFlightEndY, progress);
+            var nextZ = Lerp(_testFlightStartZ, _testFlightEndZ, progress);
+            SetPosition(nextX, nextY, nextZ);
+            OnGround = false;
+
+            if (_testFlightPathTick >= _testFlightPathTicks)
+            {
+                _testFlightPathActive = false;
+                VelocityX = VelocityY = VelocityZ = 0;
+            }
+            else
+            {
+                // Preserve the real path velocity for chunk look-ahead and other observers. It is
+                // cleared before physics on the next tick so it cannot perturb the interpolation.
+                VelocityX = (_testFlightEndX - _testFlightStartX) / _testFlightPathTicks;
+                VelocityY = (_testFlightEndY - _testFlightStartY) / _testFlightPathTicks;
+                VelocityZ = (_testFlightEndZ - _testFlightStartZ) / _testFlightPathTicks;
+            }
+        }
     }
 
     public void resetPlayerKeyState() => movementInput.resetKeyState();
@@ -202,6 +243,7 @@ public class ClientPlayerEntity : EntityPlayer
     internal void SetFlyingForTest(bool flying)
     {
         _testFlying = _isFlying = flying;
+        if (!flying) _testFlightPathActive = false;
         if (!flying) return;
         OnGround = false;
         VelocityY = 0;
@@ -210,11 +252,41 @@ public class ClientPlayerEntity : EntityPlayer
     /// <summary>Sets persistent restricted-E2E movement axes; zeroes release all movement.</summary>
     internal void SetMovementForTest(float forward, float strafe, float vertical)
     {
+        _testFlightPathActive = false;
         _testMovementEnabled = true;
         _testForward = Math.Clamp(forward, -1.0F, 1.0F);
         _testStrafe = Math.Clamp(strafe, -1.0F, 1.0F);
         _testVertical = Math.Clamp(vertical, -1.0F, 1.0F);
     }
+
+    /// <summary>Starts a deterministic linear E2E flight segment between two world positions.</summary>
+    internal void StartFlightPathForTest(
+        double ax, double ay, double az,
+        double bx, double by, double bz,
+        double seconds)
+    {
+        if (!double.IsFinite(seconds) || seconds <= 0)
+            throw new ArgumentOutOfRangeException(nameof(seconds), "Flight duration must be positive and finite.");
+
+        _testFlightStartX = ax;
+        _testFlightStartY = ay;
+        _testFlightStartZ = az;
+        _testFlightEndX = bx;
+        _testFlightEndY = by;
+        _testFlightEndZ = bz;
+        _testFlightPathTick = 0;
+        _testFlightPathTicks = Math.Max(1, (int)Math.Ceiling(seconds * 20.0));
+        _testFlightPathActive = true;
+        _testMovementEnabled = true;
+        _testForward = _testStrafe = _testVertical = 0;
+        SetFlyingForTest(true);
+        SetPosition(ax, ay, az);
+        OnGround = false;
+        VelocityX = VelocityY = VelocityZ = 0;
+    }
+
+    private static double Lerp(double start, double end, double progress) =>
+        start + (end - start) * progress;
 
     public void handleKeyPress(int scanCode, bool isPressed) => movementInput.checkKeyForMovementInput(scanCode, isPressed);
 

@@ -19,9 +19,9 @@ internal sealed partial class LuauCompletion
     private static readonly string[] s_clientMembers = ["state", "worlds"];
 
     private static readonly string[] s_clientStateMembers =
-        ["frameTimeMs", "meshPending", "meshReadyRadius", "meshRequestToGpuMs", "meshSafetyExpectedSections", "meshSafetyHoles", "meshSafetyLoadedColumns", "playerReady", "playerX", "playerY", "playerZ", "worldId", "worldLoaded"];
+        ["backgroundPending", "foregroundPending", "frameTimeMs", "meshPending", "meshReadyRadius", "meshRequestToGpuMs", "meshSafetyExpectedSections", "meshSafetyHoles", "meshSafetyLoadedColumns", "oldestForegroundAge", "playerReady", "playerX", "playerY", "playerZ", "presentationRegressionCount", "presentedMeshCount", "residentMeshCount", "worldId", "worldLoaded"];
 
-    private static readonly string[] s_testMembers = ["creative", "dumpTerrain", "fail", "pass", "screenshot", "setFlying", "setLook", "setMovement", "teleport"];
+    private static readonly string[] s_testMembers = ["creative", "dumpTerrain", "fail", "flyPath", "pass", "screenshot", "setFlying", "setLook", "setMovement", "teleport"];
     private static readonly string[] s_worldMembers = ["list", "load"];
     private static readonly string[] s_uiMembers = ["hud", "querySelector", "root", "screen"];
 

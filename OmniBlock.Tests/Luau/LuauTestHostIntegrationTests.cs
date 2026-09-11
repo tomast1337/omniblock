@@ -19,6 +19,7 @@ public sealed class LuauTestHostIntegrationTests
         var teleport = (X: 0, Y: 0, Z: 0);
         var look = (Yaw: 0.0, Pitch: 0.0);
         var movement = (Forward: 0.0, Strafe: 0.0, Vertical: 0.0);
+        var path = (AX: 0.0, AY: 0.0, AZ: 0.0, BX: 0.0, BY: 0.0, BZ: 0.0, Seconds: 0.0);
         var screenshots = 0;
         string? terrainDump = null;
         LuauTestHost.Pass = () => passes++;
@@ -28,6 +29,8 @@ public sealed class LuauTestHostIntegrationTests
         LuauTestHost.Teleport = (x, y, z) => teleport = (x, y, z);
         LuauTestHost.SetLook = (yaw, pitch) => look = (yaw, pitch);
         LuauTestHost.SetMovement = (forward, strafe, vertical) => movement = (forward, strafe, vertical);
+        LuauTestHost.FlyPath = (ax, ay, az, bx, by, bz, seconds) =>
+            path = (ax, ay, az, bx, by, bz, seconds);
         LuauTestHost.Screenshot = () => screenshots++;
         LuauTestHost.DumpTerrain = label => terrainDump = label;
 
@@ -43,6 +46,7 @@ public sealed class LuauTestHostIntegrationTests
                 "OMNI.test.pass(); OMNI.test.fail('broken'); OMNI.test.creative(); " +
                 "OMNI.test.setFlying(true); OMNI.test.teleport(160, 164, 0); " +
                 "OMNI.test.setLook(45.5, 90); OMNI.test.setMovement(1, -0.5, 0.25); " +
+                "OMNI.test.flyPath(160, 256, 0, 160, 256, 160, 20); " +
                 "OMNI.test.screenshot(); OMNI.test.dumpTerrain('airborne'); " +
                 "return OMNI.has('test')",
                 out var hasTest), hasTest);
@@ -54,6 +58,7 @@ public sealed class LuauTestHostIntegrationTests
             Assert.Equal((160, 164, 0), teleport);
             Assert.Equal((45.5, 90.0), look);
             Assert.Equal((1.0, -0.5, 0.25), movement);
+            Assert.Equal((160.0, 256.0, 0.0, 160.0, 256.0, 160.0, 20.0), path);
             Assert.Equal(1, screenshots);
             Assert.Equal("airborne", terrainDump);
             Assert.Equal("true", hasTest);
@@ -67,6 +72,7 @@ public sealed class LuauTestHostIntegrationTests
             LuauTestHost.Teleport = null;
             LuauTestHost.SetLook = null;
             LuauTestHost.SetMovement = null;
+            LuauTestHost.FlyPath = null;
             LuauTestHost.Screenshot = null;
             LuauTestHost.DumpTerrain = null;
         }

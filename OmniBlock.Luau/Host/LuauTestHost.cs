@@ -16,6 +16,7 @@ public static unsafe class LuauTestHost
                                         teleport = function(x, y, z) __Test.teleport(x, y, z) end,
                                         setLook = function(yaw, pitch) __Test.setLook(yaw, pitch) end,
                                         setMovement = function(forward, strafe, vertical) __Test.setMovement(forward, strafe, vertical) end,
+                                        flyPath = function(ax, ay, az, bx, by, bz, seconds) __Test.flyPath(ax, ay, az, bx, by, bz, seconds) end,
                                         screenshot = function() __Test.screenshot() end,
                                         dumpTerrain = function(label) __Test.dumpTerrain(tostring(label or "terrain")) end,
                                     }
@@ -32,12 +33,13 @@ public static unsafe class LuauTestHost
     public static Action<int, int, int>? Teleport;
     public static Action<double, double>? SetLook;
     public static Action<double, double, double>? SetMovement;
+    public static Action<double, double, double, double, double, double, double>? FlyPath;
     public static Action? Screenshot;
     public static Action<string>? DumpTerrain;
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 9);
+        LuauNative.lua_createtable(l, 0, 10);
         Add(l, "pass", &PassClosure);
         Add(l, "fail", &FailClosure);
         Add(l, "creative", &CreativeClosure);
@@ -45,6 +47,7 @@ public static unsafe class LuauTestHost
         Add(l, "teleport", &TeleportClosure);
         Add(l, "setLook", &SetLookClosure);
         Add(l, "setMovement", &SetMovementClosure);
+        Add(l, "flyPath", &FlyPathClosure);
         Add(l, "screenshot", &ScreenshotClosure);
         Add(l, "dumpTerrain", &DumpTerrainClosure);
         LuauNative.lua_setfield(l, LuauNative.GlobalsIndex, "__Test");
@@ -147,6 +150,27 @@ public static unsafe class LuauTestHost
                 LuauNative.luaL_checknumber(l, 1),
                 LuauNative.luaL_checknumber(l, 2),
                 LuauNative.luaL_checknumber(l, 3));
+        }
+        catch
+        {
+        }
+
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int FlyPathClosure(IntPtr l)
+    {
+        try
+        {
+            FlyPath?.Invoke(
+                LuauNative.luaL_checknumber(l, 1),
+                LuauNative.luaL_checknumber(l, 2),
+                LuauNative.luaL_checknumber(l, 3),
+                LuauNative.luaL_checknumber(l, 4),
+                LuauNative.luaL_checknumber(l, 5),
+                LuauNative.luaL_checknumber(l, 6),
+                LuauNative.luaL_checknumber(l, 7));
         }
         catch
         {

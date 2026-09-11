@@ -30,7 +30,13 @@ for sample = 1, 9 do
         " expected=" .. tostring(OMNI.client.state.meshSafetyExpectedSections) ..
         " holes=" .. tostring(OMNI.client.state.meshSafetyHoles) ..
         " radius=" .. tostring(OMNI.client.state.meshReadyRadius) ..
-        " pending=" .. tostring(OMNI.client.state.meshPending))
+        " pending=" .. tostring(OMNI.client.state.meshPending) ..
+        " resident=" .. tostring(OMNI.client.state.residentMeshCount) ..
+        " presented=" .. tostring(OMNI.client.state.presentedMeshCount) ..
+        " foreground=" .. tostring(OMNI.client.state.foregroundPending) ..
+        " background=" .. tostring(OMNI.client.state.backgroundPending) ..
+        " oldestForeground=" .. tostring(OMNI.client.state.oldestForegroundAge) ..
+        " presentationRegressions=" .. tostring(OMNI.client.state.presentationRegressionCount))
     safetyReady = OMNI.client.state.meshSafetyLoadedColumns == 29 and
         OMNI.client.state.meshSafetyExpectedSections == 232 and
         OMNI.client.state.meshSafetyHoles == 0 and
@@ -42,17 +48,41 @@ assert(safetyReady, "aerial safety ring did not become complete")
 
 local movementStartX = OMNI.client.state.playerX
 local movementStartZ = OMNI.client.state.playerZ
-OMNI.test.setMovement(1, 0, 0)
-OMNI.waitUntil(function()
-    local dx = OMNI.client.state.playerX - movementStartX
-    local dz = OMNI.client.state.playerZ - movementStartZ
-    return dx * dx + dz * dz >= 4
-end, 5, 0.05)
-OMNI.test.setMovement(0, 0, 0)
+OMNI.test.flyPath(movementStartX, 256, movementStartZ,
+    movementStartX, 256, movementStartZ + 160, 20)
+for chunk = 1, 10 do
+    local distance = chunk * 16
+    OMNI.waitUntil(function()
+        local dx = OMNI.client.state.playerX - movementStartX
+        local dz = OMNI.client.state.playerZ - movementStartZ
+        return dx * dx + dz * dz >= distance * distance
+    end, 10, 0.05)
+    assert(OMNI.client.state.playerY > 240,
+        "player lost altitude before flight chunk " .. tostring(chunk))
+    OMNI.test.dumpTerrain("flight-chunk-" .. tostring(chunk))
+end
 
 OMNI.wait(0.5)
 assert(OMNI.client.state.playerY > 240, "player fell while waiting for safety-ring meshes")
+assert(OMNI.client.state.presentationRegressionCount == 0,
+    "a previously presented near-field mesh disappeared")
+OMNI.test.dumpTerrain("flight-arrival")
+
+local destinationReady = false
+for sample = 1, 6 do
+    destinationReady = OMNI.client.state.meshSafetyLoadedColumns == 29 and
+        OMNI.client.state.meshSafetyExpectedSections == 232 and
+        OMNI.client.state.meshSafetyHoles == 0
+    if destinationReady then break end
+    OMNI.wait(5)
+end
+OMNI.test.dumpTerrain(destinationReady and "flight-recovered" or "flight-incomplete")
+assert(destinationReady, "destination safety ring did not recover after cinematic flight")
+
 print("flying streaming ready: loaded=" .. tostring(OMNI.client.state.meshSafetyLoadedColumns) ..
     " expected=" .. tostring(OMNI.client.state.meshSafetyExpectedSections) ..
-    " holes=" .. tostring(OMNI.client.state.meshSafetyHoles))
+    " holes=" .. tostring(OMNI.client.state.meshSafetyHoles) ..
+    " distance=" .. tostring(math.sqrt(
+        (OMNI.client.state.playerX - movementStartX) ^ 2 +
+        (OMNI.client.state.playerZ - movementStartZ) ^ 2)))
 OMNI.test.pass()

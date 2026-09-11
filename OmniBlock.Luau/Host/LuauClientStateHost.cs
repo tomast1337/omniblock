@@ -20,6 +20,12 @@ public static unsafe class LuauClientStateHost
                                             if key == "meshSafetyExpectedSections" then return __ClientState.meshSafetyExpectedSections() end
                                             if key == "meshSafetyHoles" then return __ClientState.meshSafetyHoles() end
                                             if key == "meshReadyRadius" then return __ClientState.meshReadyRadius() end
+                                            if key == "residentMeshCount" then return __ClientState.residentMeshCount() end
+                                            if key == "presentedMeshCount" then return __ClientState.presentedMeshCount() end
+                                            if key == "foregroundPending" then return __ClientState.foregroundPending() end
+                                            if key == "backgroundPending" then return __ClientState.backgroundPending() end
+                                            if key == "oldestForegroundAge" then return __ClientState.oldestForegroundAge() end
+                                            if key == "presentationRegressionCount" then return __ClientState.presentationRegressionCount() end
                                             if key == "playerX" then return __ClientState.playerX() end
                                             if key == "playerY" then return __ClientState.playerY() end
                                             if key == "playerZ" then return __ClientState.playerZ() end
@@ -41,13 +47,19 @@ public static unsafe class LuauClientStateHost
     public static Func<double>? MeshSafetyExpectedSections;
     public static Func<double>? MeshSafetyHoles;
     public static Func<double>? MeshReadyRadius;
+    public static Func<double>? ResidentMeshCount;
+    public static Func<double>? PresentedMeshCount;
+    public static Func<double>? ForegroundPending;
+    public static Func<double>? BackgroundPending;
+    public static Func<double>? OldestForegroundAge;
+    public static Func<double>? PresentationRegressionCount;
     public static Func<double>? PlayerX;
     public static Func<double>? PlayerY;
     public static Func<double>? PlayerZ;
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 13);
+        LuauNative.lua_createtable(l, 0, 19);
         Add(l, "worldLoaded", &WorldLoadedClosure);
         Add(l, "playerReady", &PlayerReadyClosure);
         Add(l, "worldId", &WorldIdClosure);
@@ -58,6 +70,12 @@ public static unsafe class LuauClientStateHost
         Add(l, "meshSafetyExpectedSections", &MeshSafetyExpectedSectionsClosure);
         Add(l, "meshSafetyHoles", &MeshSafetyHolesClosure);
         Add(l, "meshReadyRadius", &MeshReadyRadiusClosure);
+        Add(l, "residentMeshCount", &ResidentMeshCountClosure);
+        Add(l, "presentedMeshCount", &PresentedMeshCountClosure);
+        Add(l, "foregroundPending", &ForegroundPendingClosure);
+        Add(l, "backgroundPending", &BackgroundPendingClosure);
+        Add(l, "oldestForegroundAge", &OldestForegroundAgeClosure);
+        Add(l, "presentationRegressionCount", &PresentationRegressionCountClosure);
         Add(l, "playerX", &PlayerXClosure);
         Add(l, "playerY", &PlayerYClosure);
         Add(l, "playerZ", &PlayerZClosure);
@@ -148,6 +166,48 @@ public static unsafe class LuauClientStateHost
     private static int MeshReadyRadiusClosure(IntPtr l)
     {
         LuauNative.lua_pushnumber(l, ReadNumber(MeshReadyRadius));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int ResidentMeshCountClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(ResidentMeshCount));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int PresentedMeshCountClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(PresentedMeshCount));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int ForegroundPendingClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(ForegroundPending));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int BackgroundPendingClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(BackgroundPending));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int OldestForegroundAgeClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(OldestForegroundAge));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int PresentationRegressionCountClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(PresentationRegressionCount));
         return 1;
     }
 

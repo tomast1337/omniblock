@@ -22,6 +22,12 @@ public sealed class LuauClientStateHostIntegrationTests
         double safetyExpected = 0;
         double safetyHoles = 0;
         double meshReadyRadius = 0;
+        double residentMeshCount = 0;
+        double presentedMeshCount = 0;
+        double foregroundPending = 0;
+        double backgroundPending = 0;
+        double oldestForegroundAge = 0;
+        double presentationRegressionCount = 0;
         LuauClientStateHost.WorldLoaded = () => worldLoaded;
         LuauClientStateHost.PlayerReady = () => playerReady;
         LuauClientStateHost.WorldId = () => worldId;
@@ -32,6 +38,12 @@ public sealed class LuauClientStateHostIntegrationTests
         LuauClientStateHost.MeshSafetyExpectedSections = () => safetyExpected;
         LuauClientStateHost.MeshSafetyHoles = () => safetyHoles;
         LuauClientStateHost.MeshReadyRadius = () => meshReadyRadius;
+        LuauClientStateHost.ResidentMeshCount = () => residentMeshCount;
+        LuauClientStateHost.PresentedMeshCount = () => presentedMeshCount;
+        LuauClientStateHost.ForegroundPending = () => foregroundPending;
+        LuauClientStateHost.BackgroundPending = () => backgroundPending;
+        LuauClientStateHost.OldestForegroundAge = () => oldestForegroundAge;
+        LuauClientStateHost.PresentationRegressionCount = () => presentationRegressionCount;
 
         try
         {
@@ -46,6 +58,8 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.meshRequestToGpuMs", "0");
             AssertValue(state, "OMNI.client.state.frameTimeMs", "0");
             AssertValue(state, "OMNI.client.state.meshSafetyHoles", "0");
+            AssertValue(state, "OMNI.client.state.residentMeshCount", "0");
+            AssertValue(state, "OMNI.client.state.presentationRegressionCount", "0");
 
             worldLoaded = true;
             playerReady = true;
@@ -57,6 +71,12 @@ public sealed class LuauClientStateHostIntegrationTests
             safetyExpected = 232;
             safetyHoles = 3;
             meshReadyRadius = 2;
+            residentMeshCount = 412;
+            presentedMeshCount = 73;
+            foregroundPending = 11;
+            backgroundPending = 97;
+            oldestForegroundAge = 24;
+            presentationRegressionCount = 3;
 
             AssertValue(state, "OMNI.client.state.worldLoaded", "true");
             AssertValue(state, "OMNI.client.state.playerReady", "true");
@@ -68,6 +88,12 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.meshSafetyExpectedSections", "232");
             AssertValue(state, "OMNI.client.state.meshSafetyHoles", "3");
             AssertValue(state, "OMNI.client.state.meshReadyRadius", "2");
+            AssertValue(state, "OMNI.client.state.residentMeshCount", "412");
+            AssertValue(state, "OMNI.client.state.presentedMeshCount", "73");
+            AssertValue(state, "OMNI.client.state.foregroundPending", "11");
+            AssertValue(state, "OMNI.client.state.backgroundPending", "97");
+            AssertValue(state, "OMNI.client.state.oldestForegroundAge", "24");
+            AssertValue(state, "OMNI.client.state.presentationRegressionCount", "3");
             Assert.False(state.TryExecute("OMNI.client.state.worldLoaded = false", out var readOnlyError));
             Assert.Contains("read-only", readOnlyError);
         }
@@ -83,6 +109,12 @@ public sealed class LuauClientStateHostIntegrationTests
             LuauClientStateHost.MeshSafetyExpectedSections = null;
             LuauClientStateHost.MeshSafetyHoles = null;
             LuauClientStateHost.MeshReadyRadius = null;
+            LuauClientStateHost.ResidentMeshCount = null;
+            LuauClientStateHost.PresentedMeshCount = null;
+            LuauClientStateHost.ForegroundPending = null;
+            LuauClientStateHost.BackgroundPending = null;
+            LuauClientStateHost.OldestForegroundAge = null;
+            LuauClientStateHost.PresentationRegressionCount = null;
         }
     }
 
