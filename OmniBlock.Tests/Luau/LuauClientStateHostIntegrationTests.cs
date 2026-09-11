@@ -118,6 +118,50 @@ public sealed class LuauClientStateHostIntegrationTests
         }
     }
 
+    [SkippableFact]
+    public void Lifecycle_counters_are_live_read_only_and_safe_when_no_renderer_exists()
+    {
+        Skip.IfNot(LuauQuickRun.IsAvailable(), "native library not resolvable for this checkout.");
+        using LuauState state = new();
+        state.ResetInstructionBudget(100_000);
+        double value = 0;
+        LuauClientStateHost.MeshCancelledCount = () => value;
+        LuauClientStateHost.MeshSupersededCount = () => value;
+        LuauClientStateHost.MeshBuildFailureCount = () => value;
+        LuauClientStateHost.MeshAwaitingUpload = () => value;
+        LuauClientStateHost.MeshAwaitingDraw = () => value;
+        try
+        {
+            Assert.True(state.TryExecute(LuauDomHost.Bootstrap, out var error), error);
+            LuauClientStateHost.Install(state.Handle);
+            Assert.True(state.TryExecute(LuauClientStateHost.Bootstrap, out error), error);
+            AssertValue(state, "OMNI.client.state.meshCancelledCount", "0");
+            AssertValue(state, "OMNI.client.state.meshSupersededCount", "0");
+            AssertValue(state, "OMNI.client.state.meshBuildFailureCount", "0");
+            AssertValue(state, "OMNI.client.state.meshAwaitingUpload", "0");
+            AssertValue(state, "OMNI.client.state.meshAwaitingDraw", "0");
+            value = 7;
+            AssertValue(state, "OMNI.client.state.meshCancelledCount", "7");
+            AssertValue(state, "OMNI.client.state.meshSupersededCount", "7");
+            AssertValue(state, "OMNI.client.state.meshBuildFailureCount", "7");
+            AssertValue(state, "OMNI.client.state.meshAwaitingUpload", "7");
+            AssertValue(state, "OMNI.client.state.meshAwaitingDraw", "7");
+            Assert.False(state.TryExecute("OMNI.client.state.meshCancelledCount = 0", out error));
+            Assert.Contains("read-only", error);
+            LuauClientStateHost.MeshAwaitingUpload = () => throw new InvalidOperationException();
+            AssertValue(state, "OMNI.client.state.meshAwaitingUpload", "0");
+        }
+        finally
+        {
+            LuauClientStateHost.MeshCancelledCount = null;
+            LuauClientStateHost.MeshSupersededCount = null;
+            LuauClientStateHost.MeshBuildFailureCount = null;
+            LuauClientStateHost.MeshAwaitingUpload = null;
+            LuauClientStateHost.MeshAwaitingDraw = null;
+        }
+        AssertValue(state, "OMNI.client.state.meshCancelledCount", "0");
+    }
+
     private static void AssertValue(LuauState state, string expression, string expected)
     {
         Assert.True(state.TryExecute(expression, out var value), value);

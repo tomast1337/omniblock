@@ -18,8 +18,14 @@ internal enum SectionDirtyReason : byte
 ///     Authoritative main-thread lifecycle state for one render section. Scheduling collections
 ///     contain only its position; version, request metadata, and the resident mesh live here.
 /// </summary>
-internal sealed class SectionRenderState(Vector3D<int> position) : IDisposable
+internal sealed class SectionRenderState(Vector3D<int> position, MeshLifecycleDiagnostics? diagnostics = null) : IDisposable
 {
+    private static long s_nextLifetimeId;
+    public long LifetimeId { get; } = Interlocked.Increment(ref s_nextLifetimeId);
+    public MeshLifecycleRequest? PendingTrace { get; private set; }
+    public MeshLifecycleRequest? ResidentTrace { get; private set; }
+    public bool IsDisposed { get; private set; }
+    public bool OwnsResult(long sectionId) => !IsDisposed && LifetimeId == sectionId;
     public Vector3D<int> Position { get; } = position;
     public ChunkMeshVersion Version { get; } = ChunkMeshVersion.Get();
     public SubChunkRenderer? Renderer { get; private set; }
@@ -42,6 +48,15 @@ internal sealed class SectionRenderState(Vector3D<int> position) : IDisposable
         if (priority > RequestedPriority) RequestedPriority = priority;
     }
 
+    public void RecordInvalidation(SectionDirtyReason reason) =>
+        diagnostics?.Note(LifetimeId, Position, Version.State.Epoch, RequestedPriority, reason, MeshLifecycleStage.Invalidated);
+
+    public MeshLifecycleRequest? BeginTrace(long epoch)
+    {
+        diagnostics?.Cancel(PendingTrace, MeshCancellationReason.Superseded);
+        return PendingTrace = diagnostics?.Queue(LifetimeId, Position, epoch, RequestedPriority, DirtyReasons);
+    }
+
     public void ClearRequest()
     {
         RequestedPriority = MeshWorkPriority.Background;
@@ -49,8 +64,12 @@ internal sealed class SectionRenderState(Vector3D<int> position) : IDisposable
         DirtyReasons = SectionDirtyReason.None;
     }
 
-    public void AbandonRequest()
+    public void AbandonRequest(MeshCancellationReason reason = MeshCancellationReason.Orphaned)
     {
+        // A queued state may outlive eviction; never touch its returned-to-pool version.
+        if (IsDisposed) return;
+        diagnostics?.Cancel(PendingTrace, reason);
+        PendingTrace = null;
         Version.AbandonPendingMesh();
         ClearRequest();
     }
@@ -62,6 +81,8 @@ internal sealed class SectionRenderState(Vector3D<int> position) : IDisposable
     /// </summary>
     public void DeferRequest(SectionDirtyReason reason, long requestedAt)
     {
+        if (DeferredAt < 0)
+            diagnostics?.Note(LifetimeId, Position, Version.State.Epoch, RequestedPriority, reason, MeshLifecycleStage.Deferred);
         DeferredDirtyReasons |= reason;
         if (DeferredAt < 0) DeferredAt = requestedAt;
     }
@@ -83,8 +104,13 @@ internal sealed class SectionRenderState(Vector3D<int> position) : IDisposable
         IsLit = isLit;
     }
 
-    public void RecordUploaded(long uploadedAt)
+    public void RecordUploaded(long uploadedAt, MeshLifecycleRequest? trace = null, bool empty = false)
     {
+        diagnostics?.Cancel(ResidentTrace, MeshCancellationReason.Superseded);
+        ResidentTrace = trace;
+        if (ReferenceEquals(PendingTrace, trace)) PendingTrace = null;
+        diagnostics?.Move(trace, MeshLifecycleStage.Uploaded);
+        if (empty) diagnostics?.Move(trace, MeshLifecycleStage.EmptyReady);
         if (FirstUploadedAt < 0) FirstUploadedAt = uploadedAt;
         LastUploadedAt = uploadedAt;
     }
@@ -97,7 +123,16 @@ internal sealed class SectionRenderState(Vector3D<int> position) : IDisposable
     }
 
     public void Dispose()
+        => Dispose(MeshCancellationReason.OutsideRetention);
+
+    public void Dispose(MeshCancellationReason reason)
     {
+        if (IsDisposed) return;
+        IsDisposed = true;
+        diagnostics?.Cancel(PendingTrace, reason);
+        diagnostics?.Cancel(ResidentTrace, reason);
+        diagnostics?.Note(LifetimeId, Position, Version.State.Epoch, RequestedPriority,
+            DirtyReasons | DeferredDirtyReasons, MeshLifecycleStage.Evicted, reason);
         Renderer?.Dispose();
         Renderer = null;
         Version.Release();

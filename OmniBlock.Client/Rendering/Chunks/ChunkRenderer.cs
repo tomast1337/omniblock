@@ -47,6 +47,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly HashSet<Vector3D<int>> _everPresentedMeshes = [];
     private readonly ILogger<ChunkRenderer> _logger = Log.Instance.For<ChunkRenderer>();
     private readonly ChunkMeshGenerator _meshGenerator;
+    private readonly MeshLifecycleDiagnostics _meshLifecycle = new();
     private readonly List<SubChunkRenderer> _occludedRenderersBuffer = [];
     private readonly ChunkOcclusionCuller _occlusionCuller = new();
     private readonly GameOptions _options;
@@ -197,7 +198,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         // Meshes are CPU-heavy. Reserving two logical processors is not enough on high-core-count
         // machines: dozens of workers contend with entity rendering, simulation and networking
         // even when the mesh queue is already draining immediately.
-        _meshGenerator = new ChunkMeshGenerator((ushort)GetMeshWorkerCount(Environment.ProcessorCount));
+        _meshGenerator = new ChunkMeshGenerator((ushort)GetMeshWorkerCount(Environment.ProcessorCount), _meshLifecycle);
         _world = world;
     }
 
@@ -211,6 +212,23 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     public bool UseOcclusionCulling { get; set; } = true;
     internal ChunkMeshProfileSnapshot MeshProfile => _meshGenerator.Profile;
+    internal MeshLifecycleSnapshot MeshLifecycle => _meshLifecycle.Snapshot();
+    internal string CreateMeshLifecycleDump() => _meshLifecycle.CreateDump();
+    internal string CreateMeshSectionDump()
+    {
+        var text = new StringBuilder("sectionId\tx\ty\tz\tepoch\tlastMeshed\tpendingEpoch\tdirtyReasons\tdeferredReasons\trequestId\trequestStage\trequestAgeMs\trequestStageAgeMs\tresidentRequestId\tresidentStage\tresidentAgeMs\tresidentStageAgeMs\n");
+        foreach (var section in _sections.Values.OrderBy(s => s.LifetimeId))
+        {
+            var version = section.Version.State;
+            text.Append(section.LifetimeId).Append('\t').Append(section.Position.X).Append('\t')
+                .Append(section.Position.Y).Append('\t').Append(section.Position.Z).Append('\t')
+                .Append(version.Epoch).Append('\t').Append(version.LastMeshed).Append('\t').Append(version.Pending).Append('\t')
+                .Append(section.DirtyReasons).Append('\t').Append(section.DeferredDirtyReasons).Append('\t')
+                .Append(_meshLifecycle.Describe(section.PendingTrace)).Append('\t')
+                .Append(_meshLifecycle.Describe(section.ResidentTrace)).AppendLine();
+        }
+        return text.ToString();
+    }
 
     internal int PendingMeshWork
     {
@@ -318,6 +336,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("oldestForegroundAge\t").Append(OldestForegroundAge).AppendLine();
         text.Append("presentationRegressions\t").Append(PresentationRegressionCount).AppendLine();
         text.Append("pendingWork\t").Append(PendingMeshWork).AppendLine();
+        text.Append("meshLifecycle\t").Append(MeshLifecycle).AppendLine();
         text.AppendLine("chunkX\tchunkZ\tdistance2\tloaded\tmeshes\tvisible\tpending\tdirty\tforeground\tcritical\tbackground\tinitial\tstreamingBoundary\tdeferredStreamingBoundary\tblockChange\tlighting\tmaintenance\tyoungestMeshAge");
 
         for (var dz = -radius; dz <= radius; dz++)
@@ -602,18 +621,28 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
             if (IsChunkInMeshRetentionDistance(mesh.Pos, viewPos))
             {
-                var section = GetOrCreateSection(mesh.Pos);
+                // Pooled epochs can be reused after eviction. Do not confuse the old lifetime's
+                // completed result with a new section occupying the same coordinates.
+                if (!_sections.TryGetValue(mesh.Pos, out var owner) || !owner.OwnsResult(mesh.SectionId))
+                {
+                    _meshLifecycle.Cancel(mesh.Trace, MeshCancellationReason.SectionReplaced);
+                    mesh.Dispose();
+                    continue;
+                }
+                var section = owner;
                 var version = section.Version;
 
                 version.CompleteMesh(mesh.Version);
 
                 if (version.IsStale(mesh.Version))
                 {
+                    _meshLifecycle.Cancel(mesh.Trace, MeshCancellationReason.Superseded);
                     var snapshot = version.SnapshotIfNeeded();
                     if (snapshot.HasValue)
                     {
                         var priority = MaxPriority(mesh.Priority, RequestedPriority(mesh.Pos));
-                        _meshGenerator.MeshChunk(_world, mesh.Pos, snapshot.Value, _options.AlternateBlocksEnabled, priority);
+                        _meshGenerator.MeshChunk(_world, mesh.Pos, snapshot.Value, _options.AlternateBlocksEnabled, priority,
+                            section.BeginTrace(snapshot.Value), section.LifetimeId);
                     }
 
                     // Superseded by the requeue above (or by whichever in-flight build already
@@ -639,19 +668,26 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     UpdateAdjacency(renderer, true);
                 }
 
-                section.RecordUploaded(_schedulerTick);
+                var resident = section.Renderer!;
+                var empty = resident.SolidMeshSizeBytes == 0 && resident.TranslucentMeshSizeBytes == 0;
+                section.RecordUploaded(_schedulerTick, mesh.Trace, empty);
+                resident.Lifecycle = _meshLifecycle;
+                resident.FirstDrawTrace = empty ? null : mesh.Trace;
                 section.ClearRequest();
                 if (_world is ClientWorld clientWorld)
                     clientWorld.NetworkHandler.NotifyMeshUploaded(mesh.Pos);
             }
             else
             {
+                _meshLifecycle.Cancel(mesh.Trace, MeshCancellationReason.OutsideRetention);
                 // Finished after the chunk fell out of render distance — UploadMeshData (which
                 // would normally return these to the pool) never runs for it.
                 mesh.Dispose();
                 if (_sections.TryGetValue(mesh.Pos, out var section) &&
+                    section.OwnsResult(mesh.SectionId) &&
                     section.Version.State.Pending == mesh.Version)
-                    section.AbandonRequest();
+                    section.AbandonRequest(MeshCancellationReason.OutsideRetention);
+                continue;
             }
 
             var uploadedAt = Stopwatch.GetTimestamp();
@@ -896,11 +932,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         _pendingMeshUpdates.RemoveWhere(state =>
         {
+            if (state.IsDisposed) return true;
             if (IsChunkInMeshRetentionDistance(state.Position, _lastViewPos)) return false;
             // This request has not reached a worker, so removing its keyed queue entry also has to
             // release the version's pending epoch. Leaving it set creates an immortal phantom job
             // that inflates backlog counts and prevents the section from ever snapshotting again.
-            state.AbandonRequest();
+            state.AbandonRequest(MeshCancellationReason.OutsideRetention);
             return true;
         });
 
@@ -915,7 +952,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 section.Position,
                 pendingEpoch,
                 _options.AlternateBlocksEnabled,
-                section.RequestedPriority);
+                section.RequestedPriority,
+                section.PendingTrace,
+                section.LifetimeId);
         }
     }
 
@@ -1043,10 +1082,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     SectionDirtyReason.Lighting,
                     MeshWorkPriority.Background,
                     _schedulerTick);
+                state.RecordInvalidation(SectionDirtyReason.Lighting);
 
                 var snapshot = version.SnapshotIfNeeded();
                 if (snapshot.HasValue)
                 {
+                    state.BeginTrace(snapshot.Value);
                     _pendingMeshUpdates.Enqueue(state, RankPendingMesh(state, _lastCamera));
                 }
             }
@@ -1321,10 +1362,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         version.MarkDirty();
         section.RememberRequest(reason, requestedPriority, requestedAt);
+        section.RecordInvalidation(reason);
 
         var snapshot = version.SnapshotIfNeeded();
         if (snapshot.HasValue)
         {
+            section.BeginTrace(snapshot.Value);
             _pendingMeshUpdates.Enqueue(section, RankPendingMesh(section, _lastCamera));
             return true;
         }
@@ -1432,7 +1475,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private SectionRenderState GetOrCreateSection(Vector3D<int> chunkPos)
     {
         if (_sections.TryGetValue(chunkPos, out var section)) return section;
-        section = new SectionRenderState(chunkPos);
+        section = new SectionRenderState(chunkPos, _meshLifecycle);
         _sections.Add(chunkPos, section);
         return section;
     }
@@ -1473,7 +1516,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             return;
 
         section.AbandonRequest();
-        if (_sections.Remove(chunkPos, out section)) section.Dispose();
+        if (_sections.Remove(chunkPos, out section)) section.Dispose(MeshCancellationReason.Orphaned);
     }
 
     private int AdmitMissingMeshes(
@@ -2075,7 +2118,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         _meshGenerator.Dispose();
 
-        foreach (var state in _sections.Values) state.Dispose();
+        foreach (var state in _sections.Values) state.Dispose(MeshCancellationReason.RendererDisposed);
 
         foreach (var pipeline in _wgpuPipelines.Values)
         {

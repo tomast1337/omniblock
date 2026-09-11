@@ -25,6 +25,8 @@ public class SubChunkRenderer : IDisposable
     ///     field but position.
     /// </summary>
     private WgpuMesh? _wireframeMesh;
+    internal MeshLifecycleDiagnostics? Lifecycle;
+    internal MeshLifecycleRequest? FirstDrawTrace;
 
     public SubChunkRenderer? AdjacentDown;
     public SubChunkRenderer? AdjacentEast;
@@ -203,7 +205,9 @@ public class SubChunkRenderer : IDisposable
         if (pass < 0 || pass > 1) return;
         if (vertexCounts[pass] == 0) return;
 
-        _meshes[pass]?.Draw(passEncoder);
+        if (_meshes[pass] is not { } mesh) return;
+        mesh.Draw(passEncoder);
+        RecordFirstDraw();
     }
 
     /// <summary>Draws the solid pass's wireframe companion — see <see cref="_wireframeMesh" />.</summary>
@@ -212,6 +216,15 @@ public class SubChunkRenderer : IDisposable
         if (disposed) return;
         if (vertexCounts[0] == 0) return;
 
-        _wireframeMesh?.Draw(passEncoder);
+        if (_wireframeMesh is not { } mesh) return;
+        mesh.Draw(passEncoder);
+        RecordFirstDraw();
+    }
+
+    private void RecordFirstDraw()
+    {
+        if (FirstDrawTrace == null) return;
+        Lifecycle?.Move(FirstDrawTrace, MeshLifecycleStage.DrawRecorded);
+        FirstDrawTrace = null;
     }
 }

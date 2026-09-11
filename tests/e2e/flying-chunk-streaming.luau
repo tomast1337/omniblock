@@ -65,6 +65,11 @@ for chunk = 1, 10 do
         "mesh work escaped bounded admission at flight chunk " .. tostring(chunk) ..
         ": " .. tostring(OMNI.client.state.meshPending))
     OMNI.test.dumpTerrain("flight-chunk-" .. tostring(chunk))
+    assert(OMNI.client.state.meshBuildFailureCount == 0, "mesh snapshot/build failed during flight")
+    assert(OMNI.client.state.meshAwaitingUpload >= 0, "negative completed-mesh gauge")
+    assert(OMNI.client.state.meshAwaitingDraw >= 0, "negative uploaded-mesh gauge")
+    assert(OMNI.client.state.meshCancelledCount >= OMNI.client.state.meshSupersededCount,
+        "superseded mesh count exceeds all cancellations")
 end
 
 OMNI.wait(0.5)

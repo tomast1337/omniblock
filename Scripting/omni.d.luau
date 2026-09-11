@@ -37,6 +37,12 @@ export type OmniClientState = {
     playerReady: boolean,
     worldId: string?,
     meshPending: number,
+    -- Lifetime counters, independent of Reset mesh profile; cancellations include discarded work.
+    meshCancelledCount: number,
+    meshSupersededCount: number,
+    meshBuildFailureCount: number,
+    meshAwaitingUpload: number,
+    meshAwaitingDraw: number,
     meshRequestToGpuMs: number,
 }
 

@@ -22,9 +22,11 @@ internal struct MeshBuildResult : IDisposable
     public ChunkVisibilityStore VisibilityData;
     public Vector3D<int> Pos;
     public long Version;
+    public long SectionId;
     public MeshWorkPriority Priority;
     public long RequestedAt;
     public long FinishedAt;
+    public MeshLifecycleRequest? Trace;
 
     public readonly void Dispose()
     {
@@ -61,9 +63,11 @@ internal class ChunkMeshGenerator : IDisposable
     private readonly CancellationTokenSource _shutdown = new();
     private readonly PriorityWorkScheduler<Vector3D<int>, MeshBuildRequest> _work = new();
     private readonly Task[] _workers;
+    private readonly MeshLifecycleDiagnostics? _lifecycle;
 
-    public ChunkMeshGenerator(ushort maxConcurrentTasks = 0)
+    public ChunkMeshGenerator(ushort maxConcurrentTasks = 0, MeshLifecycleDiagnostics? lifecycle = null)
     {
+        _lifecycle = lifecycle;
         MaxConcurrentTasks = maxConcurrentTasks == 0 ? (ushort)1 : maxConcurrentTasks;
         _workers = new Task[MaxConcurrentTasks];
         for (var i = 0; i < _workers.Length; i++)
@@ -88,12 +92,19 @@ internal class ChunkMeshGenerator : IDisposable
         {
         }
 
-        foreach (var pending in _work.Drain()) pending.Cache.Dispose();
+        foreach (var pending in _work.Drain())
+        {
+            _lifecycle?.Cancel(pending.Trace, MeshCancellationReason.RendererDisposed);
+            pending.Cache.Dispose();
+        }
         _shutdown.Dispose();
         _work.Dispose();
-        while (_criticalResults.TryDequeue(out var critical)) critical.Dispose();
-        while (_foregroundResults.TryDequeue(out var foreground)) foreground.Dispose();
-        while (_backgroundResults.TryDequeue(out var background)) background.Dispose();
+        foreach (var queue in new[] { _criticalResults, _foregroundResults, _backgroundResults })
+            while (queue.TryDequeue(out var result))
+            {
+                _lifecycle?.Cancel(result.Trace, MeshCancellationReason.RendererDisposed);
+                result.Dispose();
+            }
         _outstanding.Clear();
     }
 
@@ -128,27 +139,43 @@ internal class ChunkMeshGenerator : IDisposable
         Vector3D<int> pos,
         long version,
         bool alternateBlocks,
-        MeshWorkPriority priority = MeshWorkPriority.Background)
+        MeshWorkPriority priority = MeshWorkPriority.Background,
+        MeshLifecycleRequest? trace = null,
+        long sectionId = 0)
     {
         var requestedAt = Stopwatch.GetTimestamp();
+        _lifecycle?.Move(trace, MeshLifecycleStage.Snapshotting, priority);
         // 1 block of padding on every side of the 16-block sub-chunk (18x18x18 total) — exactly
         // what face culling and AO need to look at a block's immediate neighbours.
-        WorldRegionSnapshot cache = new(
-            world,
-            pos.X - 1, pos.Y - 1, pos.Z - 1,
-            pos.X + SubChunkRenderer.Size, pos.Y + SubChunkRenderer.Size, pos.Z + SubChunkRenderer.Size
-        );
+        WorldRegionSnapshot cache;
+        try
+        {
+            cache = new(
+                world,
+                pos.X - 1, pos.Y - 1, pos.Z - 1,
+                pos.X + SubChunkRenderer.Size, pos.Y + SubChunkRenderer.Size, pos.Z + SubChunkRenderer.Size
+            );
+        }
+        catch
+        {
+            _lifecycle?.Cancel(trace, MeshCancellationReason.SnapshotFailed);
+            throw;
+        }
         _profile.RecordSnapshot(Stopwatch.GetTimestamp() - requestedAt);
 
-        var request = new MeshBuildRequest(pos, version, cache, alternateBlocks, requestedAt, Stopwatch.GetTimestamp());
+        var request = new MeshBuildRequest(pos, version, cache, alternateBlocks, requestedAt, Stopwatch.GetTimestamp(), trace, sectionId);
         if (!_outstanding.TryAdd(pos, 0))
         {
+            _lifecycle?.Cancel(trace, MeshCancellationReason.DuplicateRequest);
             cache.Dispose();
             return;
         }
 
+        // Record before publishing to workers, otherwise Building could race ahead of WorkerQueued.
+        _lifecycle?.Move(trace, MeshLifecycleStage.WorkerQueued);
         if (!_work.Enqueue(pos, request, priority))
         {
+            _lifecycle?.Cancel(trace, MeshCancellationReason.DuplicateRequest);
             _outstanding.TryRemove(pos, out _);
             cache.Dispose();
         }
@@ -184,6 +211,7 @@ internal class ChunkMeshGenerator : IDisposable
             try
             {
                 var (request, priority) = await _work.TakeAsync(_shutdown.Token);
+                _lifecycle?.Move(request.Trace, MeshLifecycleStage.Building, priority);
                 _profile.RecordQueueWait(Stopwatch.GetTimestamp() - request.EnqueuedAt);
                 try
                 {
@@ -191,10 +219,14 @@ internal class ChunkMeshGenerator : IDisposable
                     mesh.Priority = priority;
                     mesh.RequestedAt = request.RequestedAt;
                     mesh.FinishedAt = Stopwatch.GetTimestamp();
+                    mesh.Trace = request.Trace;
+                    mesh.SectionId = request.SectionId;
+                    _lifecycle?.Move(request.Trace, MeshLifecycleStage.AwaitingUpload);
                     ResultQueueFor(priority).Enqueue(mesh);
                 }
                 catch (Exception ex)
                 {
+                    _lifecycle?.Cancel(request.Trace, MeshCancellationReason.BuildFailed);
                     _outstanding.TryRemove(request.Pos, out _);
                     _logger.LogError(ex, "Error generating chunk mesh at {Pos}", request.Pos);
                 }
@@ -772,7 +804,9 @@ internal class ChunkMeshGenerator : IDisposable
         WorldRegionSnapshot Cache,
         bool AlternateBlocks,
         long RequestedAt,
-        long EnqueuedAt);
+        long EnqueuedAt,
+        MeshLifecycleRequest? Trace,
+        long SectionId);
 
     /// <summary>One corner of a quad about to be emitted: world position, tiled UV, and its light.</summary>
     private readonly record struct QuadCorner(float X, float Y, float Z, float U, float V, CornerLight Light);

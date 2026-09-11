@@ -449,6 +449,11 @@ public partial class OmniBlock :
                 CurrentScreen is not (LevelLoadingScreen or ConnectingScreen or DownloadingTerrainScreen);
             LuauClientStateHost.WorldId = () => World != null && InternalServer != null ? _singleplayerWorldId : null;
             LuauClientStateHost.MeshPending = () => WorldRenderer?.ChunkRenderer.PendingMeshWork ?? 0;
+            LuauClientStateHost.MeshSupersededCount = () => WorldRenderer?.ChunkRenderer.MeshLifecycle.Superseded ?? 0;
+            LuauClientStateHost.MeshBuildFailureCount = () => WorldRenderer?.ChunkRenderer.MeshLifecycle.BuildFailures ?? 0;
+            LuauClientStateHost.MeshAwaitingUpload = () => WorldRenderer?.ChunkRenderer.MeshLifecycle.AwaitingUpload ?? 0;
+            LuauClientStateHost.MeshAwaitingDraw = () => WorldRenderer?.ChunkRenderer.MeshLifecycle.AwaitingDraw ?? 0;
+            LuauClientStateHost.MeshCancelledCount = () => WorldRenderer?.ChunkRenderer.MeshLifecycle.Cancelled ?? 0;
             LuauClientStateHost.MeshRequestToGpuMs = () => WorldRenderer?.ChunkRenderer.MeshProfile.RequestToUploadMs ?? 0;
             LuauClientStateHost.FrameTimeMs = () => MetricRegistry.Get(ClientMetrics.FrameTimeMs);
             LuauClientStateHost.MeshSafetyLoadedColumns = () => CurrentMeshSafetyRingState().LoadedColumns;
@@ -496,6 +501,10 @@ public partial class OmniBlock :
                         $"terrain-{label}.tsv",
                         WorldRenderer.ChunkRenderer.CreateTerrainStateDump(
                             new Vector3D<double>(Player.X, Player.Y, Player.Z)));
+                    _e2eTestController.WriteTextArtifact(
+                        $"mesh-lifecycle-{label}.tsv", WorldRenderer.ChunkRenderer.CreateMeshLifecycleDump());
+                    _e2eTestController.WriteTextArtifact(
+                        $"mesh-sections-{label}.tsv", WorldRenderer.ChunkRenderer.CreateMeshSectionDump());
                 };
                 LuauTestHost.Install(LuauState.Handle);
                 if (!LuauState.TryExecute(LuauTestHost.Bootstrap, out var testBootstrapError))
@@ -815,6 +824,11 @@ public partial class OmniBlock :
             LuauClientStateHost.PlayerReady = null;
             LuauClientStateHost.WorldId = null;
             LuauClientStateHost.MeshPending = null;
+            LuauClientStateHost.MeshCancelledCount = null;
+            LuauClientStateHost.MeshSupersededCount = null;
+            LuauClientStateHost.MeshBuildFailureCount = null;
+            LuauClientStateHost.MeshAwaitingUpload = null;
+            LuauClientStateHost.MeshAwaitingDraw = null;
             LuauClientStateHost.MeshRequestToGpuMs = null;
             LuauClientStateHost.FrameTimeMs = null;
             LuauClientStateHost.MeshSafetyLoadedColumns = null;

@@ -14,6 +14,11 @@ public static unsafe class LuauClientStateHost
                                             if key == "playerReady" then return __ClientState.playerReady() end
                                             if key == "worldId" then return __ClientState.worldId() end
                                             if key == "meshPending" then return __ClientState.meshPending() end
+                                            if key == "meshCancelledCount" then return __ClientState.meshCancelledCount() end
+                                            if key == "meshSupersededCount" then return __ClientState.meshSupersededCount() end
+                                            if key == "meshBuildFailureCount" then return __ClientState.meshBuildFailureCount() end
+                                            if key == "meshAwaitingUpload" then return __ClientState.meshAwaitingUpload() end
+                                            if key == "meshAwaitingDraw" then return __ClientState.meshAwaitingDraw() end
                                             if key == "meshRequestToGpuMs" then return __ClientState.meshRequestToGpuMs() end
                                             if key == "frameTimeMs" then return __ClientState.frameTimeMs() end
                                             if key == "meshSafetyLoadedColumns" then return __ClientState.meshSafetyLoadedColumns() end
@@ -41,6 +46,11 @@ public static unsafe class LuauClientStateHost
     public static Func<bool>? PlayerReady;
     public static Func<string?>? WorldId;
     public static Func<double>? MeshPending;
+    public static Func<double>? MeshCancelledCount;
+    public static Func<double>? MeshSupersededCount;
+    public static Func<double>? MeshBuildFailureCount;
+    public static Func<double>? MeshAwaitingUpload;
+    public static Func<double>? MeshAwaitingDraw;
     public static Func<double>? MeshRequestToGpuMs;
     public static Func<double>? FrameTimeMs;
     public static Func<double>? MeshSafetyLoadedColumns;
@@ -59,11 +69,16 @@ public static unsafe class LuauClientStateHost
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 19);
+        LuauNative.lua_createtable(l, 0, 24);
         Add(l, "worldLoaded", &WorldLoadedClosure);
         Add(l, "playerReady", &PlayerReadyClosure);
         Add(l, "worldId", &WorldIdClosure);
         Add(l, "meshPending", &MeshPendingClosure);
+        Add(l, "meshCancelledCount", &MeshCancelledCountClosure);
+        Add(l, "meshSupersededCount", &MeshSupersededCountClosure);
+        Add(l, "meshBuildFailureCount", &MeshBuildFailureCountClosure);
+        Add(l, "meshAwaitingUpload", &MeshAwaitingUploadClosure);
+        Add(l, "meshAwaitingDraw", &MeshAwaitingDrawClosure);
         Add(l, "meshRequestToGpuMs", &MeshRequestToGpuMsClosure);
         Add(l, "frameTimeMs", &FrameTimeMsClosure);
         Add(l, "meshSafetyLoadedColumns", &MeshSafetyLoadedColumnsClosure);
@@ -229,6 +244,41 @@ public static unsafe class LuauClientStateHost
     private static int PlayerZClosure(IntPtr l)
     {
         LuauNative.lua_pushnumber(l, ReadNumber(PlayerZ));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int MeshCancelledCountClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(MeshCancelledCount));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int MeshSupersededCountClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(MeshSupersededCount));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int MeshBuildFailureCountClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(MeshBuildFailureCount));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int MeshAwaitingUploadClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(MeshAwaitingUpload));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int MeshAwaitingDrawClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(MeshAwaitingDraw));
         return 1;
     }
 

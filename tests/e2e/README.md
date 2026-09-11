@@ -72,10 +72,43 @@ OMNI.client.state.foregroundPending   -- unresolved foreground mesh requests
 OMNI.client.state.backgroundPending   -- unresolved background mesh requests
 OMNI.client.state.oldestForegroundAge -- age in client scheduler ticks (20 ticks/second)
 OMNI.client.state.presentationRegressionCount -- cumulative near-field presentation regressions
+OMNI.client.state.meshCancelledCount  -- discarded/abandoned requests, including superseded work
+OMNI.client.state.meshSupersededCount -- subset discarded due to a newer revision/replacement
+OMNI.client.state.meshBuildFailureCount -- snapshot or worker exceptions (normally zero)
+OMNI.client.state.meshAwaitingUpload  -- completed requests awaiting installation
+OMNI.client.state.meshAwaitingDraw    -- nonempty uploaded revisions not yet drawn (can be offscreen)
 ```
 
 These values are live and read-only. They are intended for streaming-health assertions and
 diagnostics; performance budgets should account for the CI renderer and host hardware.
+
+`OMNI.test.dumpTerrain("label")` writes three CPU-only TSV artifacts:
+
+- `terrain-label.tsv`: the column grid and aggregate lifecycle counters/gauges.
+- `mesh-lifecycle-label.tsv`: the latest 8,192 lifecycle events, with monotonic timestamps,
+  section lifetime ID, request ID, coordinates, epoch, priority, dirty reasons, and discard reason.
+- `mesh-sections-label.tsv`: current per-section epochs, deferred reasons, pending/resident request
+  IDs and stages, plus request/stage ages in milliseconds. This remains useful when a stalled
+  request's original events have rolled out of the bounded history.
+
+Lifecycle stages distinguish invalidation, deferred production, queue admission, snapshotting,
+worker queueing, building, awaiting upload, upload, and first draw recording. `EmptyReady` completes
+empty meshes without pretending they need a draw. Events with request ID zero describe the section
+(invalidation, deferred production, eviction), rather than a particular build. Request ages start
+at admission; invalidation/deferred timestamps remain separate so deferred production is not
+mistaken for worker queue time. Repeated deferred notifications coalesce into one event.
+
+`DrawRecorded` means the CPU recorded a draw command, **not** that the GPU finished or the display
+presented it. Cancellation records request abandonment or result discard; it does not imply
+cooperative interruption of a running worker. Reasons distinguish supersession, leaving retention,
+renderer disposal, orphan recovery, duplicate admission, build/snapshot failure, and section
+lifetime replacement. A section's identity does not reset when its pooled version object is reused.
+An undrawn resident replaced by a newer mesh counts as superseded; an already drawn mesh does not.
+
+Counters are cumulative for one `ChunkRenderer` lifetime and independent of **Reset mesh profile**.
+The trace reports overwritten-event count explicitly. No per-frame filesystem writes or GPU
+readbacks are involved; dumps are generated only on request. Trace-derived timing distributions
+are diagnostic samples, not unbiased lifetime percentiles once history has rolled over.
 
 The following environment variables are optional:
 
