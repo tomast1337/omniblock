@@ -151,4 +151,49 @@ public sealed class MeshLifecycleDiagnosticsTests
         Assert.Equal(0, diagnostics.Snapshot().AwaitingUpload);
         Assert.Equal(64, diagnostics.ReadEvents().Select(e => e.Sequence).Distinct().Count());
     }
+
+    [Fact]
+    public void Critical_deadline_is_met_on_the_deadline_frame_and_missed_after_it()
+    {
+        var diagnostics = new MeshLifecycleDiagnostics();
+        diagnostics.SetFrame(10);
+        var met = diagnostics.Queue(1, default, 1, MeshWorkPriority.Critical,
+            SectionDirtyReason.BlockChange, queuedFrame: 10, deadlineFrame: 12);
+        diagnostics.SetFrame(12);
+        diagnostics.Move(met, MeshLifecycleStage.Uploaded);
+        diagnostics.Move(met, MeshLifecycleStage.DrawRecorded);
+        Assert.Equal(1, diagnostics.Snapshot().CriticalCompleted);
+        Assert.Equal(0, diagnostics.Snapshot().CriticalDeadlineMisses);
+
+        var late = diagnostics.Queue(1, default, 2, MeshWorkPriority.Critical,
+            SectionDirtyReason.BlockChange, queuedFrame: 20, deadlineFrame: 22);
+        diagnostics.SetFrame(23);
+        Assert.Equal(1, diagnostics.Snapshot().CriticalOverdue);
+        diagnostics.Move(late, MeshLifecycleStage.EmptyReady);
+        Assert.Equal(2, diagnostics.Snapshot().CriticalCompleted);
+        Assert.Equal(1, diagnostics.Snapshot().CriticalDeadlineMisses);
+        Assert.Equal(0, diagnostics.Snapshot().CriticalOverdue);
+    }
+
+    [Fact]
+    public void Promotion_assigns_a_deadline_and_cooperative_observation_is_distinct_from_request_cancellation()
+    {
+        var diagnostics = new MeshLifecycleDiagnostics();
+        var request = diagnostics.Queue(1, default, 1, MeshWorkPriority.Background,
+            SectionDirtyReason.InitialTerrain, queuedFrame: 5);
+        diagnostics.Promote(request, MeshWorkPriority.Critical, deadlineFrame: 7);
+        diagnostics.Cancel(request, MeshCancellationReason.Superseded);
+        diagnostics.ObserveCancellation(request, buildStarted: true, MeshCancellationReason.Superseded);
+
+        var snapshot = diagnostics.Snapshot();
+        Assert.Equal(1, snapshot.Cancelled);
+        Assert.Equal(1, snapshot.CooperativeCancellations);
+        Assert.Equal(0, snapshot.CancelledBeforeBuild);
+        Assert.Equal(1, snapshot.CancelledDuringBuild);
+        Assert.Equal(0, snapshot.CriticalCompleted);
+        var observed = diagnostics.ReadEvents()[^1];
+        Assert.Equal(MeshLifecycleStage.CancellationObserved, observed.Stage);
+        Assert.Equal(MeshWorkPriority.Critical, observed.Priority);
+        Assert.Equal(7, observed.DeadlineFrame);
+    }
 }

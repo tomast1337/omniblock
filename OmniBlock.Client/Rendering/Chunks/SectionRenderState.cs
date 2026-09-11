@@ -46,6 +46,7 @@ internal sealed class SectionRenderState(Vector3D<int> position, MeshLifecycleDi
     public bool IsLit { get; set; }
     public MeshWorkPriority RequestedPriority { get; private set; } = MeshWorkPriority.Background;
     public long RequestedAt { get; private set; } = -1;
+    public int RequestedDeadlineFrame { get; private set; } = -1;
     public SectionDirtyReason DirtyReasons { get; private set; }
     public SectionDirtyReason DeferredDirtyReasons { get; private set; }
     public long DeferredAt { get; private set; } = -1;
@@ -55,26 +56,36 @@ internal sealed class SectionRenderState(Vector3D<int> position, MeshLifecycleDi
     public void RememberRequest(
         SectionDirtyReason reason,
         MeshWorkPriority priority,
-        long requestedAt)
+        long requestedAt,
+        int deadlineFrame = -1)
     {
         DirtyReasons |= reason;
         if (RequestedAt < 0) RequestedAt = requestedAt;
         if (priority > RequestedPriority) RequestedPriority = priority;
+        if (deadlineFrame >= 0 &&
+            (RequestedDeadlineFrame < 0 || deadlineFrame < RequestedDeadlineFrame))
+            RequestedDeadlineFrame = deadlineFrame;
     }
 
     public void RecordInvalidation(SectionDirtyReason reason) =>
         diagnostics?.Note(LifetimeId, Position, Version.State.Epoch, RequestedPriority, reason, MeshLifecycleStage.Invalidated);
 
-    public MeshLifecycleRequest? BeginTrace(long epoch)
+    public MeshLifecycleRequest? BeginTrace(long epoch, int queuedFrame = 0)
     {
         diagnostics?.Cancel(PendingTrace, MeshCancellationReason.Superseded);
-        return PendingTrace = diagnostics?.Queue(LifetimeId, Position, epoch, RequestedPriority, DirtyReasons);
+        return PendingTrace = diagnostics?.Queue(
+            LifetimeId, Position, epoch, RequestedPriority, DirtyReasons,
+            queuedFrame, RequestedDeadlineFrame);
     }
+
+    public void PromoteTrace(MeshWorkPriority priority, int deadlineFrame) =>
+        diagnostics?.Promote(PendingTrace, priority, deadlineFrame);
 
     public void ClearRequest()
     {
         RequestedPriority = MeshWorkPriority.Background;
         RequestedAt = -1;
+        RequestedDeadlineFrame = -1;
         DirtyReasons = SectionDirtyReason.None;
     }
 

@@ -124,4 +124,18 @@ public sealed class SectionRenderStateTests
         Assert.False(state.ShouldEvict(false, 169, 30));
         Assert.True(state.ShouldEvict(false, 170, 30));
     }
+
+    [Fact]
+    public void Critical_revisions_inherit_the_earliest_deadline_until_completion()
+    {
+        using var state = new SectionRenderState(default);
+        state.RememberRequest(SectionDirtyReason.InitialTerrain, MeshWorkPriority.Background, 1);
+        state.RememberRequest(SectionDirtyReason.BlockChange, MeshWorkPriority.Critical, 2, 14);
+        state.RememberRequest(SectionDirtyReason.BlockChange, MeshWorkPriority.Critical, 3, 18);
+
+        Assert.Equal(MeshWorkPriority.Critical, state.RequestedPriority);
+        Assert.Equal(14, state.RequestedDeadlineFrame);
+        state.ClearRequest();
+        Assert.Equal(-1, state.RequestedDeadlineFrame);
+    }
 }

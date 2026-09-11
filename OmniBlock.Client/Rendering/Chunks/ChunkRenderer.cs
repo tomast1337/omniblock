@@ -29,6 +29,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     internal const int MeshSpeculativeRadius = 1;
     internal const int MeshRetentionMargin = 2;
     internal const int MeshEvictionGraceFrames = 30;
+    internal const int CriticalMeshDeadlineFrames = 2;
     internal const int MeshDiscoveryBacklogPerWorker = 8;
     internal const int MeshSafetyBacklogPerWorker = 2;
     internal const int MeshForegroundBacklogPerWorker = 4;
@@ -223,7 +224,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     internal string CreateMeshLifecycleDump() => _meshLifecycle.CreateDump();
     internal string CreateMeshSectionDump()
     {
-        var text = new StringBuilder("sectionId\tx\ty\tz\tepoch\tlastMeshed\tpendingEpoch\tdirtyReasons\tdeferredReasons\toutsideRetentionSinceFrame\trequestId\trequestStage\trequestAgeMs\trequestStageAgeMs\tresidentRequestId\tresidentStage\tresidentAgeMs\tresidentStageAgeMs\n");
+        var text = new StringBuilder("sectionId\tx\ty\tz\tepoch\tlastMeshed\tpendingEpoch\tdirtyReasons\tdeferredReasons\toutsideRetentionSinceFrame\trequestId\trequestStage\trequestAgeMs\trequestStageAgeMs\trequestDeadlineFrame\tresidentRequestId\tresidentStage\tresidentAgeMs\tresidentStageAgeMs\tresidentDeadlineFrame\n");
         foreach (var section in _sections.Values.OrderBy(s => s.LifetimeId))
         {
             var version = section.Version.State;
@@ -354,7 +355,14 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("oldestForegroundAge\t").Append(OldestForegroundAge).AppendLine();
         text.Append("presentationRegressions\t").Append(PresentationRegressionCount).AppendLine();
         text.Append("pendingWork\t").Append(PendingMeshWork).AppendLine();
-        text.Append("meshLifecycle\t").Append(MeshLifecycle).AppendLine();
+        var lifecycle = MeshLifecycle;
+        text.Append("meshLifecycle\t").Append(lifecycle).AppendLine();
+        text.Append("criticalCompleted\t").Append(lifecycle.CriticalCompleted).AppendLine();
+        text.Append("criticalDeadlineMisses\t").Append(lifecycle.CriticalDeadlineMisses).AppendLine();
+        text.Append("criticalOverdue\t").Append(lifecycle.CriticalOverdue).AppendLine();
+        text.Append("cooperativeCancellations\t").Append(lifecycle.CooperativeCancellations).AppendLine();
+        text.Append("cancelledBeforeBuild\t").Append(lifecycle.CancelledBeforeBuild).AppendLine();
+        text.Append("cancelledDuringBuild\t").Append(lifecycle.CancelledDuringBuild).AppendLine();
         text.AppendLine("chunkX\tchunkZ\tdistance2\tloaded\tmeshes\tvisible\tpending\tdirty\tforeground\tcritical\tbackground\tinitial\tleadingEdge\tstreamingBoundary\tdeferredStreamingBoundary\tblockChange\tlighting\tmaintenance\tyoungestMeshAge");
 
         for (var dz = -radius; dz <= radius; dz++)
@@ -459,6 +467,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         _visibleRenderers.Clear();
         _frameIndex++;
+        _meshLifecycle.SetFrame(_frameIndex);
 
         Vector3D<int> cameraChunkPos = new(
             (int)Math.Floor(renderParams.ViewPos.X / SubChunkRenderer.Size) * SubChunkRenderer.Size,
@@ -655,6 +664,21 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 var section = owner;
                 var version = section.Version;
 
+                if (mesh.Cancelled)
+                {
+                    version.CancelMesh(mesh.Version);
+                    var cancelledRetry = version.SnapshotIfNeeded();
+                    if (cancelledRetry.HasValue)
+                    {
+                        var priority = MaxPriority(mesh.Priority, RequestedPriority(mesh.Pos));
+                        _meshGenerator.MeshChunk(
+                            _world, mesh.Pos, cancelledRetry.Value, _options.AlternateBlocksEnabled,
+                            priority, section.BeginTrace(cancelledRetry.Value, _frameIndex), section.LifetimeId);
+                    }
+                    mesh.Dispose();
+                    continue;
+                }
+
                 version.CompleteMesh(mesh.Version);
 
                 if (version.IsStale(mesh.Version))
@@ -665,7 +689,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     {
                         var priority = MaxPriority(mesh.Priority, RequestedPriority(mesh.Pos));
                         _meshGenerator.MeshChunk(_world, mesh.Pos, snapshot.Value, _options.AlternateBlocksEnabled, priority,
-                            section.BeginTrace(snapshot.Value), section.LifetimeId);
+                            section.BeginTrace(snapshot.Value, _frameIndex), section.LifetimeId);
                     }
 
                     // Superseded by the requeue above (or by whichever in-flight build already
@@ -981,7 +1005,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
     }
 
-    private (int Tier, double DistanceSquared, long EnqueuedAt) RankPendingMesh(
+    private (int Tier, int DeadlineFrame, double DistanceSquared, long EnqueuedAt) RankPendingMesh(
         SectionRenderState section,
         ICuller? camera)
     {
@@ -997,13 +1021,14 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             _lastViewPos,
             _predictedViewPos,
             section.RequestedPriority,
+            section.RequestedDeadlineFrame,
             prefetched,
             !IsChunkInRenderDistance(section.Position, _lastViewPos),
             section.RequestedAt,
             _schedulerTick);
     }
 
-    internal static (int Tier, double DistanceSquared, long EnqueuedAt) GetMeshSchedulingRank(
+    internal static (int Tier, int DeadlineFrame, double DistanceSquared, long EnqueuedAt) GetMeshSchedulingRank(
         Vector3D<int> position,
         Vector3D<double> viewPosition,
         bool urgent,
@@ -1012,18 +1037,20 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         long schedulerTick) => GetMeshSchedulingRank(
         position, viewPosition, viewPosition,
         urgent ? MeshWorkPriority.Critical : MeshWorkPriority.Background,
+        int.MaxValue,
         visible, false, enqueuedAt, schedulerTick);
 
-    internal static (int Tier, double DistanceSquared, long EnqueuedAt) GetMeshSchedulingRank(
+    internal static (int Tier, int DeadlineFrame, double DistanceSquared, long EnqueuedAt) GetMeshSchedulingRank(
         Vector3D<int> position,
         Vector3D<double> viewPosition,
         MeshWorkPriority priority,
         bool visible,
         long enqueuedAt,
         long schedulerTick) => GetMeshSchedulingRank(
-        position, viewPosition, viewPosition, priority, visible, false, enqueuedAt, schedulerTick);
+        position, viewPosition, viewPosition, priority, int.MaxValue,
+        visible, false, enqueuedAt, schedulerTick);
 
-    internal static (int Tier, double DistanceSquared, long EnqueuedAt) GetMeshSchedulingRank(
+    internal static (int Tier, int DeadlineFrame, double DistanceSquared, long EnqueuedAt) GetMeshSchedulingRank(
         Vector3D<int> position,
         Vector3D<double> viewPosition,
         Vector3D<double> predictedViewPosition,
@@ -1034,13 +1061,15 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         long schedulerTick) => GetMeshSchedulingRank(
         position, viewPosition, predictedViewPosition,
         urgent ? MeshWorkPriority.Critical : MeshWorkPriority.Background,
+        int.MaxValue,
         prefetched, speculative, enqueuedAt, schedulerTick);
 
-    private static (int Tier, double DistanceSquared, long EnqueuedAt) GetMeshSchedulingRank(
+    private static (int Tier, int DeadlineFrame, double DistanceSquared, long EnqueuedAt) GetMeshSchedulingRank(
         Vector3D<int> position,
         Vector3D<double> viewPosition,
         Vector3D<double> predictedViewPosition,
         MeshWorkPriority priority,
+        int deadlineFrame,
         bool prefetched,
         bool speculative,
         long enqueuedAt,
@@ -1069,7 +1098,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         // Distance dominates inside a tier. Enqueue time is only a tie-breaker because age already
         // earns explicit tier promotion above. Comparing age first made an old frontier mesh beat
         // a newly discovered hole beside a moving player.
-        return (promotedTier, distance, enqueuedAt);
+        return (promotedTier,
+            priority == MeshWorkPriority.Critical && deadlineFrame >= 0 ? deadlineFrame : int.MaxValue,
+            distance, enqueuedAt);
     }
 
     internal static bool IsInMeshSafetyRing(Vector3D<int> position, Vector3D<double> viewPosition)
@@ -1110,7 +1141,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 var snapshot = version.SnapshotIfNeeded();
                 if (snapshot.HasValue)
                 {
-                    state.BeginTrace(snapshot.Value);
+                    state.BeginTrace(snapshot.Value, _frameIndex);
                     _pendingMeshUpdates.Enqueue(state, RankPendingMesh(state, _lastCamera));
                 }
             }
@@ -1412,27 +1443,47 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         var version = section.Version;
 
         version.MarkDirty();
-        section.RememberRequest(reason, requestedPriority, requestedAt);
+        var deadlineFrame = requestedPriority == MeshWorkPriority.Critical
+            ? _frameIndex + CriticalMeshDeadlineFrames
+            : -1;
+        section.RememberRequest(reason, requestedPriority, requestedAt, deadlineFrame);
         section.RecordInvalidation(reason);
 
         var snapshot = version.SnapshotIfNeeded();
         if (snapshot.HasValue)
         {
-            section.BeginTrace(snapshot.Value);
+            section.BeginTrace(snapshot.Value, _frameIndex);
             _pendingMeshUpdates.Enqueue(section, RankPendingMesh(section, _lastCamera));
             return true;
         }
 
-        if (requestedPriority != MeshWorkPriority.Background)
-        {
-            // SnapshotIfNeeded also reports pending while the request is still in our local
-            // list. Promoting only the worker queue silently loses priority in that interval.
-            if (_pendingMeshUpdates.Promote(
-                    chunkPos,
-                    RankPendingMesh(section, _lastCamera)))
-                return false;
+        section.PromoteTrace(section.RequestedPriority, section.RequestedDeadlineFrame);
 
-            _meshGenerator.Promote(chunkPos, section.RequestedPriority);
+        // A local request owns no world snapshot yet: advance that one keyed entry to the latest
+        // desired epoch in place. Once dispatched, signal its worker and let the cancellation
+        // completion release Pending before starting the newest authoritative revision.
+        if (_pendingMeshUpdates.Contains(chunkPos))
+        {
+            var latestEpoch = version.ReplaceQueuedSnapshotWithLatest();
+            section.BeginTrace(latestEpoch, _frameIndex);
+            _pendingMeshUpdates.Promote(chunkPos, RankPendingMesh(section, _lastCamera));
+            return false;
+        }
+
+        if (_meshGenerator.CancelObsolete(chunkPos, section.RequestedPriority))
+        {
+            _meshLifecycle.Cancel(section.PendingTrace, MeshCancellationReason.Superseded);
+            return false;
+        }
+
+        // No queue, worker, or completed-result slot owns the pending epoch. Recover it here for
+        // resident meshes too; missing-mesh discovery has a separate orphan recovery path.
+        version.AbandonPendingMesh();
+        var recovered = version.SnapshotIfNeeded();
+        if (recovered.HasValue)
+        {
+            section.BeginTrace(recovered.Value, _frameIndex);
+            _pendingMeshUpdates.Enqueue(section, RankPendingMesh(section, _lastCamera));
         }
 
         return false;

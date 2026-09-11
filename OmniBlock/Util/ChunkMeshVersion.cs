@@ -62,6 +62,19 @@ public class ChunkMeshVersion
         return null;
     }
 
+    /// <summary>
+    ///     Advances a revision which is still in the render-thread queue to the latest epoch.
+    ///     No world snapshot exists yet, so replacing it loses no work and avoids deliberately
+    ///     building a result already known to be stale.
+    /// </summary>
+    public long ReplaceQueuedSnapshotWithLatest()
+    {
+        if (_pendingMesh == -1)
+            throw new InvalidOperationException("Cannot replace a mesh revision when none is pending.");
+        _pendingMesh = _epoch;
+        return _pendingMesh;
+    }
+
     public void CompleteMesh(long snapshotEpoch)
     {
         if (_pendingMesh == snapshotEpoch)
@@ -73,6 +86,12 @@ public class ChunkMeshVersion
                 _lastMeshed = snapshotEpoch;
             }
         }
+    }
+
+    /// <summary>Releases a cancelled revision without claiming that it produced a mesh.</summary>
+    public void CancelMesh(long snapshotEpoch)
+    {
+        if (_pendingMesh == snapshotEpoch) _pendingMesh = -1;
     }
 
     /// <summary>

@@ -8,7 +8,7 @@ namespace OmniBlock.Client.Rendering.Chunks;
 /// </summary>
 internal sealed class SectionMeshRequestQueue
 {
-    internal delegate (int Tier, double DistanceSquared, long EnqueuedAt) Ranker(SectionRenderState state);
+    internal delegate (int Tier, int DeadlineFrame, double DistanceSquared, long EnqueuedAt) Ranker(SectionRenderState state);
 
     private readonly PriorityQueue<QueueNode, QueueRank>[] _lanes =
     [
@@ -28,7 +28,7 @@ internal sealed class SectionMeshRequestQueue
 
     public bool Contains(Vector3D<int> position) => _entries.ContainsKey(position);
 
-    public bool Enqueue(SectionRenderState state, in (int Tier, double DistanceSquared, long EnqueuedAt) rank)
+    public bool Enqueue(SectionRenderState state, in (int Tier, int DeadlineFrame, double DistanceSquared, long EnqueuedAt) rank)
     {
         if (_entries.TryGetValue(state.Position, out var existing))
         {
@@ -46,7 +46,7 @@ internal sealed class SectionMeshRequestQueue
 
     public bool Promote(
         Vector3D<int> position,
-        in (int Tier, double DistanceSquared, long EnqueuedAt) rank)
+        in (int Tier, int DeadlineFrame, double DistanceSquared, long EnqueuedAt) rank)
     {
         if (!_entries.TryGetValue(position, out var entry) ||
             entry.State.RequestedPriority <= entry.QueuedPriority)
@@ -114,12 +114,12 @@ internal sealed class SectionMeshRequestQueue
             lane.Dequeue();
     }
 
-    private void Push(Entry entry, in (int Tier, double DistanceSquared, long EnqueuedAt) rank)
+    private void Push(Entry entry, in (int Tier, int DeadlineFrame, double DistanceSquared, long EnqueuedAt) rank)
     {
         entry.Token = ++_token;
         _lanes[(int)entry.QueuedPriority].Enqueue(
             new QueueNode(entry.State.Position, entry.Token),
-            new QueueRank(rank.Tier, rank.DistanceSquared, rank.EnqueuedAt, entry.Token));
+            new QueueRank(rank.Tier, rank.DeadlineFrame, rank.DistanceSquared, rank.EnqueuedAt, entry.Token));
     }
 
     private sealed class Entry(SectionRenderState state)
@@ -133,6 +133,7 @@ internal sealed class SectionMeshRequestQueue
 
     private readonly record struct QueueRank(
         int Tier,
+        int DeadlineFrame,
         double DistanceSquared,
         long EnqueuedAt,
         long Token) : IComparable<QueueRank>
@@ -141,6 +142,8 @@ internal sealed class SectionMeshRequestQueue
         {
             var tier = Tier.CompareTo(other.Tier);
             if (tier != 0) return tier;
+            var deadline = DeadlineFrame.CompareTo(other.DeadlineFrame);
+            if (deadline != 0) return deadline;
             var distance = DistanceSquared.CompareTo(other.DistanceSquared);
             if (distance != 0) return distance;
             var age = EnqueuedAt.CompareTo(other.EnqueuedAt);

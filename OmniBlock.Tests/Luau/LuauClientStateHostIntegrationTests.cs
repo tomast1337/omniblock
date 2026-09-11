@@ -133,6 +133,10 @@ public sealed class LuauClientStateHostIntegrationTests
         LuauClientStateHost.MeshLeadingEdgeQueued = () => value;
         LuauClientStateHost.MeshLeadingEdgePending = () => value;
         LuauClientStateHost.MeshEvictionGraceCount = () => value;
+        LuauClientStateHost.MeshCooperativeCancellationCount = () => value;
+        LuauClientStateHost.MeshCriticalCompletedCount = () => value;
+        LuauClientStateHost.MeshCriticalDeadlineMissCount = () => value;
+        LuauClientStateHost.MeshCriticalOverdueCount = () => value;
         try
         {
             Assert.True(state.TryExecute(LuauDomHost.Bootstrap, out var error), error);
@@ -146,6 +150,10 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.meshLeadingEdgeQueued", "0");
             AssertValue(state, "OMNI.client.state.meshLeadingEdgePending", "0");
             AssertValue(state, "OMNI.client.state.meshEvictionGraceCount", "0");
+            AssertValue(state, "OMNI.client.state.meshCooperativeCancellationCount", "0");
+            AssertValue(state, "OMNI.client.state.meshCriticalCompletedCount", "0");
+            AssertValue(state, "OMNI.client.state.meshCriticalDeadlineMissCount", "0");
+            AssertValue(state, "OMNI.client.state.meshCriticalOverdueCount", "0");
             value = 7;
             AssertValue(state, "OMNI.client.state.meshCancelledCount", "7");
             AssertValue(state, "OMNI.client.state.meshSupersededCount", "7");
@@ -155,6 +163,10 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.meshLeadingEdgeQueued", "7");
             AssertValue(state, "OMNI.client.state.meshLeadingEdgePending", "7");
             AssertValue(state, "OMNI.client.state.meshEvictionGraceCount", "7");
+            AssertValue(state, "OMNI.client.state.meshCooperativeCancellationCount", "7");
+            AssertValue(state, "OMNI.client.state.meshCriticalCompletedCount", "7");
+            AssertValue(state, "OMNI.client.state.meshCriticalDeadlineMissCount", "7");
+            AssertValue(state, "OMNI.client.state.meshCriticalOverdueCount", "7");
             Assert.False(state.TryExecute("OMNI.client.state.meshCancelledCount = 0", out error));
             Assert.Contains("read-only", error);
             LuauClientStateHost.MeshAwaitingUpload = () => throw new InvalidOperationException();
@@ -170,6 +182,10 @@ public sealed class LuauClientStateHostIntegrationTests
             LuauClientStateHost.MeshLeadingEdgeQueued = null;
             LuauClientStateHost.MeshLeadingEdgePending = null;
             LuauClientStateHost.MeshEvictionGraceCount = null;
+            LuauClientStateHost.MeshCooperativeCancellationCount = null;
+            LuauClientStateHost.MeshCriticalCompletedCount = null;
+            LuauClientStateHost.MeshCriticalDeadlineMissCount = null;
+            LuauClientStateHost.MeshCriticalOverdueCount = null;
         }
         AssertValue(state, "OMNI.client.state.meshCancelledCount", "0");
     }

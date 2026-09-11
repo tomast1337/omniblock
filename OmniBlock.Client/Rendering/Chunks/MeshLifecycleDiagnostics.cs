@@ -8,7 +8,8 @@ namespace OmniBlock.Client.Rendering.Chunks;
 internal enum MeshLifecycleStage
 {
     Invalidated, Deferred, Queued, Snapshotting, WorkerQueued, Building,
-    AwaitingUpload, Uploaded, DrawRecorded, EmptyReady, Cancelled, Evicted
+    AwaitingUpload, Uploaded, DrawRecorded, EmptyReady, Cancelled, Evicted,
+    CancellationObserved
 }
 
 internal enum MeshCancellationReason
@@ -20,7 +21,7 @@ internal enum MeshCancellationReason
 internal readonly record struct MeshLifecycleEvent(
     long Sequence, long Timestamp, long SectionId, long RequestId, Vector3D<int> Position,
     long Epoch, MeshWorkPriority Priority, SectionDirtyReason DirtyReasons,
-    MeshLifecycleStage Stage, MeshCancellationReason Reason);
+    int QueuedFrame, int DeadlineFrame, MeshLifecycleStage Stage, MeshCancellationReason Reason);
 
 /// <summary>
 ///     A diagnostic identity, never a scheduling/cancellation token. Workers hold this rather than
@@ -29,7 +30,8 @@ internal readonly record struct MeshLifecycleEvent(
 /// </summary>
 internal sealed class MeshLifecycleRequest(
     long id, long sectionId, Vector3D<int> position, long epoch,
-    MeshWorkPriority priority, SectionDirtyReason reasons)
+    MeshWorkPriority priority, SectionDirtyReason reasons,
+    int queuedFrame, int deadlineFrame)
 {
     internal readonly long Id = id;
     internal readonly long SectionId = sectionId;
@@ -37,6 +39,8 @@ internal sealed class MeshLifecycleRequest(
     internal readonly long Epoch = epoch;
     internal MeshWorkPriority Priority = priority;
     internal readonly SectionDirtyReason Reasons = reasons;
+    internal readonly int QueuedFrame = queuedFrame;
+    internal int DeadlineFrame = deadlineFrame;
     internal MeshLifecycleStage Stage = MeshLifecycleStage.Queued;
     internal readonly long QueuedAt = Stopwatch.GetTimestamp();
     internal long StageAt = Stopwatch.GetTimestamp();
@@ -46,14 +50,17 @@ internal sealed class MeshLifecycleRequest(
 internal readonly record struct MeshLifecycleSnapshot(
     long Events, long OverwrittenEvents, long Cancelled, long Superseded, long BuildFailures,
     long Queued, long Snapshotting, long WorkerQueued, long Building, long AwaitingUpload,
-    long AwaitingDraw, long DrawRecorded, long EmptyReady);
+    long AwaitingDraw, long DrawRecorded, long EmptyReady, long CooperativeCancellations,
+    long CancelledBeforeBuild, long CancelledDuringBuild, long CriticalCompleted,
+    long CriticalDeadlineMisses, long CriticalOverdue);
 
 /// <summary>
 ///     Bounded cross-thread event history. The stack profiler cannot correlate a dirty notification
 ///     with a later worker and render frame. Record only lifecycle transitions, never vertices or
 ///     every draw; no file I/O or string formatting occurs on worker threads. Cumulative counters
-///     survive ring rollover. Cancellation means the request will not be installed/presented, NOT
-///     that a running worker was preempted. DrawRecorded is CPU command recording, not GPU completion.
+///     survive ring rollover. Cancelled records logical abandonment; CancellationObserved proves a
+///     worker cooperatively stopped obsolete work. DrawRecorded is CPU command recording, not GPU
+///     completion.
 /// </summary>
 internal sealed class MeshLifecycleDiagnostics(int capacity = 8192)
 {
@@ -61,17 +68,25 @@ internal sealed class MeshLifecycleDiagnostics(int capacity = 8192)
     private readonly MeshLifecycleEvent[] _events = new MeshLifecycleEvent[
         capacity > 0 ? capacity : throw new ArgumentOutOfRangeException(nameof(capacity))];
     private readonly long[] _active = new long[Enum.GetValues<MeshLifecycleStage>().Length];
+    private readonly HashSet<MeshLifecycleRequest> _live = [];
     private readonly long _origin = Stopwatch.GetTimestamp();
     private long _sequence;
     private long _requestId;
     private long _cancelled, _superseded, _buildFailures, _drawRecorded, _emptyReady;
+    private long _cooperativeCancellations, _cancelledBeforeBuild, _cancelledDuringBuild;
+    private long _criticalCompleted, _criticalDeadlineMisses;
+    private int _currentFrame;
 
     public MeshLifecycleRequest Queue(long sectionId, Vector3D<int> position, long epoch,
-        MeshWorkPriority priority, SectionDirtyReason reasons)
+        MeshWorkPriority priority, SectionDirtyReason reasons,
+        int queuedFrame = 0, int deadlineFrame = -1)
     {
         lock (_gate)
         {
-            var request = new MeshLifecycleRequest(++_requestId, sectionId, position, epoch, priority, reasons);
+            var request = new MeshLifecycleRequest(
+                ++_requestId, sectionId, position, epoch, priority, reasons,
+                queuedFrame, deadlineFrame);
+            _live.Add(request);
             _active[(int)MeshLifecycleStage.Queued]++;
             Append(request, MeshLifecycleStage.Queued, MeshCancellationReason.None);
             return request;
@@ -91,6 +106,15 @@ internal sealed class MeshLifecycleDiagnostics(int capacity = 8192)
             if (priority.HasValue) request.Priority = priority.Value;
             request.Terminal = stage is MeshLifecycleStage.DrawRecorded or MeshLifecycleStage.EmptyReady;
             if (!request.Terminal) _active[(int)stage]++;
+            else
+            {
+                _live.Remove(request);
+                if (request.Priority == MeshWorkPriority.Critical && request.DeadlineFrame >= 0)
+                {
+                    _criticalCompleted++;
+                    if (_currentFrame > request.DeadlineFrame) _criticalDeadlineMisses++;
+                }
+            }
             if (stage == MeshLifecycleStage.DrawRecorded) _drawRecorded++;
             if (stage == MeshLifecycleStage.EmptyReady) _emptyReady++;
             Append(request, stage, MeshCancellationReason.None);
@@ -106,6 +130,7 @@ internal sealed class MeshLifecycleDiagnostics(int capacity = 8192)
             if (request.Terminal) return;
             _active[(int)request.Stage]--;
             request.Terminal = true;
+            _live.Remove(request);
             request.Stage = MeshLifecycleStage.Cancelled;
             request.StageAt = Stopwatch.GetTimestamp();
             _cancelled++;
@@ -115,16 +140,46 @@ internal sealed class MeshLifecycleDiagnostics(int capacity = 8192)
         }
     }
 
+    public void SetFrame(int frame) => Volatile.Write(ref _currentFrame, frame);
+
+    public void Promote(MeshLifecycleRequest? request, MeshWorkPriority priority, int deadlineFrame)
+    {
+        if (request == null) return;
+        lock (_gate)
+        {
+            if (request.Terminal) return;
+            if (priority > request.Priority) request.Priority = priority;
+            if (deadlineFrame >= 0 &&
+                (request.DeadlineFrame < 0 || deadlineFrame < request.DeadlineFrame))
+                request.DeadlineFrame = deadlineFrame;
+        }
+    }
+
+    public void ObserveCancellation(
+        MeshLifecycleRequest? request, bool buildStarted, MeshCancellationReason reason)
+    {
+        if (request == null) return;
+        lock (_gate)
+        {
+            _cooperativeCancellations++;
+            if (buildStarted) _cancelledDuringBuild++;
+            else _cancelledBeforeBuild++;
+            Append(request, MeshLifecycleStage.CancellationObserved, reason);
+        }
+    }
+
     public void Note(long sectionId, Vector3D<int> position, long epoch, MeshWorkPriority priority,
         SectionDirtyReason reasons, MeshLifecycleStage stage, MeshCancellationReason reason = MeshCancellationReason.None)
     {
         lock (_gate)
-            Append(new MeshLifecycleEvent(0, 0, sectionId, 0, position, epoch, priority, reasons, stage, reason));
+            Append(new MeshLifecycleEvent(0, 0, sectionId, 0, position, epoch, priority, reasons,
+                -1, -1, stage, reason));
     }
 
     private void Append(MeshLifecycleRequest request, MeshLifecycleStage stage, MeshCancellationReason reason) =>
         Append(new MeshLifecycleEvent(0, 0, request.SectionId, request.Id, request.Position,
-            request.Epoch, request.Priority, request.Reasons, stage, reason));
+            request.Epoch, request.Priority, request.Reasons, request.QueuedFrame,
+            request.DeadlineFrame, stage, reason));
 
     private void Append(MeshLifecycleEvent entry)
     {
@@ -135,11 +190,18 @@ internal sealed class MeshLifecycleDiagnostics(int capacity = 8192)
     public MeshLifecycleSnapshot Snapshot()
     {
         lock (_gate)
+        {
+            var currentFrame = _currentFrame;
+            var overdue = _live.LongCount(request =>
+                request.Priority == MeshWorkPriority.Critical && request.DeadlineFrame >= 0 &&
+                currentFrame > request.DeadlineFrame);
             return new(_sequence, Math.Max(0, _sequence - _events.Length), _cancelled, _superseded,
                 _buildFailures, _active[(int)MeshLifecycleStage.Queued], _active[(int)MeshLifecycleStage.Snapshotting],
                 _active[(int)MeshLifecycleStage.WorkerQueued], _active[(int)MeshLifecycleStage.Building],
                 _active[(int)MeshLifecycleStage.AwaitingUpload], _active[(int)MeshLifecycleStage.Uploaded],
-                _drawRecorded, _emptyReady);
+                _drawRecorded, _emptyReady, _cooperativeCancellations, _cancelledBeforeBuild,
+                _cancelledDuringBuild, _criticalCompleted, _criticalDeadlineMisses, overdue);
+        }
     }
 
     public MeshLifecycleEvent[] ReadEvents()
@@ -166,13 +228,14 @@ internal sealed class MeshLifecycleDiagnostics(int capacity = 8192)
         var text = new StringBuilder();
         text.AppendLine("# Bounded recent history; times are monotonic ms since recorder creation. DrawRecorded is not GPU completion.");
         text.Append("# counters ").AppendLine(snapshot.ToString());
-        text.AppendLine("sequence\ttimeMs\tsectionId\trequestId\tx\ty\tz\tepoch\tpriority\tdirtyReasons\tstage\treason");
+        text.AppendLine("sequence\ttimeMs\tsectionId\trequestId\tx\ty\tz\tepoch\tpriority\tdirtyReasons\tqueuedFrame\tdeadlineFrame\tstage\treason");
         foreach (var e in events)
             text.Append(e.Sequence).Append('\t')
                 .Append(((e.Timestamp - _origin) * 1000.0 / Stopwatch.Frequency).ToString("F3", CultureInfo.InvariantCulture)).Append('\t')
                 .Append(e.SectionId).Append('\t').Append(e.RequestId).Append('\t')
                 .Append(e.Position.X).Append('\t').Append(e.Position.Y).Append('\t').Append(e.Position.Z).Append('\t')
                 .Append(e.Epoch).Append('\t').Append(e.Priority).Append('\t').Append(e.DirtyReasons).Append('\t')
+                .Append(e.QueuedFrame).Append('\t').Append(e.DeadlineFrame).Append('\t')
                 .Append(e.Stage).Append('\t').Append(e.Reason).AppendLine();
         return text.ToString();
     }
@@ -181,9 +244,10 @@ internal sealed class MeshLifecycleDiagnostics(int capacity = 8192)
     {
         lock (_gate)
         {
-            if (request == null) return "0\tNone\t0\t0";
+            if (request == null) return "0\tNone\t0\t0\t-1";
             var now = Stopwatch.GetTimestamp();
-            return FormattableString.Invariant($"{request.Id}\t{request.Stage}\t{(now - request.QueuedAt) * 1000.0 / Stopwatch.Frequency:F3}\t{(now - request.StageAt) * 1000.0 / Stopwatch.Frequency:F3}");
+            return FormattableString.Invariant($"{request.Id}\t{request.Stage}\t{(now - request.QueuedAt) * 1000.0 / Stopwatch.Frequency:F3}\t{(now - request.StageAt) * 1000.0 / Stopwatch.Frequency:F3}\t{request.DeadlineFrame}");
         }
     }
+
 }

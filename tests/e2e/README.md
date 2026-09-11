@@ -77,6 +77,10 @@ OMNI.client.state.meshSupersededCount -- subset discarded due to a newer revisio
 OMNI.client.state.meshBuildFailureCount -- snapshot or worker exceptions (normally zero)
 OMNI.client.state.meshAwaitingUpload  -- completed requests awaiting installation
 OMNI.client.state.meshAwaitingDraw    -- nonempty uploaded revisions not yet drawn (can be offscreen)
+OMNI.client.state.meshCooperativeCancellationCount -- obsolete builds that observed cancellation
+OMNI.client.state.meshCriticalCompletedCount -- completed critical revisions with a deadline
+OMNI.client.state.meshCriticalDeadlineMissCount -- completed critical revisions after their deadline
+OMNI.client.state.meshCriticalOverdueCount -- currently live critical revisions past their deadline
 ```
 
 These values are live and read-only. They are intended for streaming-health assertions and
@@ -86,7 +90,8 @@ diagnostics; performance budgets should account for the CI renderer and host har
 
 - `terrain-label.tsv`: the column grid and aggregate lifecycle counters/gauges.
 - `mesh-lifecycle-label.tsv`: the latest 8,192 lifecycle events, with monotonic timestamps,
-  section lifetime ID, request ID, coordinates, epoch, priority, dirty reasons, and discard reason.
+  section lifetime ID, request ID, coordinates, epoch, priority, queued/deadline frames, dirty
+  reasons, and discard reason.
 - `mesh-sections-label.tsv`: current per-section epochs, deferred reasons, pending/resident request
   IDs and stages, plus request/stage ages in milliseconds. This remains useful when a stalled
   request's original events have rolled out of the bounded history.

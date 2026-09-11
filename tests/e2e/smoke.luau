@@ -34,6 +34,14 @@ end, 60, 0.05)
 assert(OMNI.client.state.worldId == "e2e-smoke", "the wrong world was loaded")
 assert(type(OMNI.client.state.meshPending) == "number", "mesh backlog is unavailable")
 assert(OMNI.client.state.meshPending >= 0, "mesh backlog cannot be negative")
+assert(type(OMNI.client.state.meshCooperativeCancellationCount) == "number",
+    "cooperative mesh cancellation count is unavailable")
+assert(type(OMNI.client.state.meshCriticalCompletedCount) == "number",
+    "critical mesh completion count is unavailable")
+assert(type(OMNI.client.state.meshCriticalDeadlineMissCount) == "number",
+    "critical mesh deadline miss count is unavailable")
+assert(type(OMNI.client.state.meshCriticalOverdueCount) == "number",
+    "critical overdue mesh count is unavailable")
 assert(type(OMNI.client.state.meshRequestToGpuMs) == "number", "mesh latency is unavailable")
 assert(OMNI.client.state.meshRequestToGpuMs >= 0, "mesh latency cannot be negative")
 -- Longer than the automatic focus-loss pause delay; also exercised with the window unfocused.

@@ -22,6 +22,10 @@ public static unsafe class LuauClientStateHost
                                             if key == "meshLeadingEdgeQueued" then return __ClientState.meshLeadingEdgeQueued() end
                                             if key == "meshLeadingEdgePending" then return __ClientState.meshLeadingEdgePending() end
                                             if key == "meshEvictionGraceCount" then return __ClientState.meshEvictionGraceCount() end
+                                            if key == "meshCooperativeCancellationCount" then return __ClientState.meshCooperativeCancellationCount() end
+                                            if key == "meshCriticalCompletedCount" then return __ClientState.meshCriticalCompletedCount() end
+                                            if key == "meshCriticalDeadlineMissCount" then return __ClientState.meshCriticalDeadlineMissCount() end
+                                            if key == "meshCriticalOverdueCount" then return __ClientState.meshCriticalOverdueCount() end
                                             if key == "meshRequestToGpuMs" then return __ClientState.meshRequestToGpuMs() end
                                             if key == "frameTimeMs" then return __ClientState.frameTimeMs() end
                                             if key == "meshSafetyLoadedColumns" then return __ClientState.meshSafetyLoadedColumns() end
@@ -57,6 +61,10 @@ public static unsafe class LuauClientStateHost
     public static Func<double>? MeshLeadingEdgeQueued;
     public static Func<double>? MeshLeadingEdgePending;
     public static Func<double>? MeshEvictionGraceCount;
+    public static Func<double>? MeshCooperativeCancellationCount;
+    public static Func<double>? MeshCriticalCompletedCount;
+    public static Func<double>? MeshCriticalDeadlineMissCount;
+    public static Func<double>? MeshCriticalOverdueCount;
     public static Func<double>? MeshRequestToGpuMs;
     public static Func<double>? FrameTimeMs;
     public static Func<double>? MeshSafetyLoadedColumns;
@@ -75,7 +83,7 @@ public static unsafe class LuauClientStateHost
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 27);
+        LuauNative.lua_createtable(l, 0, 31);
         Add(l, "worldLoaded", &WorldLoadedClosure);
         Add(l, "playerReady", &PlayerReadyClosure);
         Add(l, "worldId", &WorldIdClosure);
@@ -88,6 +96,10 @@ public static unsafe class LuauClientStateHost
         Add(l, "meshLeadingEdgeQueued", &MeshLeadingEdgeQueuedClosure);
         Add(l, "meshLeadingEdgePending", &MeshLeadingEdgePendingClosure);
         Add(l, "meshEvictionGraceCount", &MeshEvictionGraceCountClosure);
+        Add(l, "meshCooperativeCancellationCount", &MeshCooperativeCancellationCountClosure);
+        Add(l, "meshCriticalCompletedCount", &MeshCriticalCompletedCountClosure);
+        Add(l, "meshCriticalDeadlineMissCount", &MeshCriticalDeadlineMissCountClosure);
+        Add(l, "meshCriticalOverdueCount", &MeshCriticalOverdueCountClosure);
         Add(l, "meshRequestToGpuMs", &MeshRequestToGpuMsClosure);
         Add(l, "frameTimeMs", &FrameTimeMsClosure);
         Add(l, "meshSafetyLoadedColumns", &MeshSafetyLoadedColumnsClosure);
@@ -309,6 +321,34 @@ public static unsafe class LuauClientStateHost
     private static int MeshEvictionGraceCountClosure(IntPtr l)
     {
         LuauNative.lua_pushnumber(l, ReadNumber(MeshEvictionGraceCount));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int MeshCooperativeCancellationCountClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(MeshCooperativeCancellationCount));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int MeshCriticalCompletedCountClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(MeshCriticalCompletedCount));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int MeshCriticalDeadlineMissCountClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(MeshCriticalDeadlineMissCount));
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int MeshCriticalOverdueCountClosure(IntPtr l)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(MeshCriticalOverdueCount));
         return 1;
     }
 

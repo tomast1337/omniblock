@@ -46,6 +46,10 @@ export type OmniClientState = {
     meshLeadingEdgeQueued: number,
     meshLeadingEdgePending: number,
     meshEvictionGraceCount: number,
+    meshCooperativeCancellationCount: number,
+    meshCriticalCompletedCount: number,
+    meshCriticalDeadlineMissCount: number,
+    meshCriticalOverdueCount: number,
     meshRequestToGpuMs: number,
 }
 

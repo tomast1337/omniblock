@@ -148,6 +148,12 @@ internal sealed class PriorityWorkScheduler<TKey, TValue> : IDisposable where TK
         }
     }
 
+    public void ReorderValuesWithinPriorities(Comparison<TValue> comparison)
+    {
+        ReorderWithinPriorities((left, right) =>
+            comparison(_entries[left].Value, _entries[right].Value));
+    }
+
     public async ValueTask<(TValue Value, MeshWorkPriority Priority)> TakeAsync(CancellationToken cancellationToken)
     {
         await _available.WaitAsync(cancellationToken);

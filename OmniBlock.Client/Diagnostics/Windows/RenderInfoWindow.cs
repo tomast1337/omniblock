@@ -165,6 +165,11 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
             ImGuiTextSafe.Text($"Upload:    {mesh.UploadMs:F3} ms avg");
             ImGuiTextSafe.Text($"Done->GPU: {mesh.FinishedToUploadMs:F3} ms avg");
             ImGuiTextSafe.Text($"Request->GPU: {mesh.RequestToUploadMs:F3} ms avg");
+            var lifecycle = chunkRenderer.MeshLifecycle;
+            ImGuiTextSafe.Text(
+                $"Critical:  completed {lifecycle.CriticalCompleted}  late {lifecycle.CriticalDeadlineMisses}  overdue {lifecycle.CriticalOverdue}");
+            ImGuiTextSafe.Text(
+                $"Cancelled: cooperative {lifecycle.CooperativeCancellations}  before {lifecycle.CancelledBeforeBuild}  during {lifecycle.CancelledDuringBuild}");
             if (ImGui.Button("Reset mesh profile")) chunkRenderer.ResetMeshProfile();
             ImGui.Spacing();
 

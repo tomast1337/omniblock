@@ -27,6 +27,8 @@ internal struct MeshBuildResult : IDisposable
     public long RequestedAt;
     public long FinishedAt;
     public MeshLifecycleRequest? Trace;
+    public bool Cancelled;
+    public MeshCancellationReason CancellationReason;
 
     public readonly void Dispose()
     {
@@ -57,7 +59,7 @@ internal class ChunkMeshGenerator : IDisposable
     private readonly ConcurrentQueue<MeshBuildResult> _foregroundResults = new();
 
     private readonly ILogger<ChunkMeshGenerator> _logger = Log.Instance.For<ChunkMeshGenerator>();
-    private readonly ConcurrentDictionary<Vector3D<int>, byte> _outstanding = new();
+    private readonly ConcurrentDictionary<Vector3D<int>, MeshBuildCancellation> _outstanding = new();
     private readonly ChunkMeshProfiler _profile = new();
     private readonly MeshPriorityFairness _resultFairness = new();
     private readonly CancellationTokenSource _shutdown = new();
@@ -83,6 +85,8 @@ internal class ChunkMeshGenerator : IDisposable
 
     public void Dispose()
     {
+        foreach (var control in _outstanding.Values)
+            control.Cancel(MeshCancellationReason.RendererDisposed, MeshWorkPriority.Critical);
         _shutdown.Cancel();
         try
         {
@@ -95,6 +99,7 @@ internal class ChunkMeshGenerator : IDisposable
         foreach (var pending in _work.Drain())
         {
             _lifecycle?.Cancel(pending.Trace, MeshCancellationReason.RendererDisposed);
+            CompleteOutstanding(pending.Pos);
             pending.Cache.Dispose();
         }
         _shutdown.Dispose();
@@ -105,6 +110,7 @@ internal class ChunkMeshGenerator : IDisposable
                 _lifecycle?.Cancel(result.Trace, MeshCancellationReason.RendererDisposed);
                 result.Dispose();
             }
+        foreach (var control in _outstanding.Values) control.Dispose();
         _outstanding.Clear();
     }
 
@@ -118,7 +124,7 @@ internal class ChunkMeshGenerator : IDisposable
             !_backgroundResults.IsEmpty);
         if (ResultQueueFor(priority).TryDequeue(out result))
         {
-            _outstanding.TryRemove(result.Pos, out _);
+            CompleteOutstanding(result.Pos);
             return true;
         }
 
@@ -127,11 +133,27 @@ internal class ChunkMeshGenerator : IDisposable
         var found = _criticalResults.TryDequeue(out result)
                     || _foregroundResults.TryDequeue(out result)
                     || _backgroundResults.TryDequeue(out result);
-        if (found) _outstanding.TryRemove(result.Pos, out _);
+        if (found) CompleteOutstanding(result.Pos);
         return found;
     }
 
+    private void CompleteOutstanding(Vector3D<int> pos)
+    {
+        if (_outstanding.TryRemove(pos, out var control)) control.Dispose();
+    }
+
     public bool HasOutstanding(Vector3D<int> pos) => _outstanding.ContainsKey(pos);
+
+    public bool CancelObsolete(
+        Vector3D<int> pos,
+        MeshWorkPriority replacementPriority,
+        MeshCancellationReason reason = MeshCancellationReason.Superseded)
+    {
+        if (!_outstanding.TryGetValue(pos, out var control)) return false;
+        var cancelled = control.Cancel(reason, replacementPriority);
+        _work.Promote(pos, replacementPriority);
+        return cancelled || control.IsCancellationRequested;
+    }
 
     //TODO: Make a chunk mesh config struct for alternateBlocks and other flags
     public void MeshChunk(
@@ -163,10 +185,13 @@ internal class ChunkMeshGenerator : IDisposable
         }
         _profile.RecordSnapshot(Stopwatch.GetTimestamp() - requestedAt);
 
-        var request = new MeshBuildRequest(pos, version, cache, alternateBlocks, requestedAt, Stopwatch.GetTimestamp(), trace, sectionId);
-        if (!_outstanding.TryAdd(pos, 0))
+        var control = new MeshBuildCancellation(priority);
+        var request = new MeshBuildRequest(pos, version, cache, alternateBlocks, requestedAt,
+            Stopwatch.GetTimestamp(), trace, sectionId, control);
+        if (!_outstanding.TryAdd(pos, control))
         {
             _lifecycle?.Cancel(trace, MeshCancellationReason.DuplicateRequest);
+            control.Dispose();
             cache.Dispose();
             return;
         }
@@ -177,6 +202,7 @@ internal class ChunkMeshGenerator : IDisposable
         {
             _lifecycle?.Cancel(trace, MeshCancellationReason.DuplicateRequest);
             _outstanding.TryRemove(pos, out _);
+            control.Dispose();
             cache.Dispose();
         }
     }
@@ -185,10 +211,13 @@ internal class ChunkMeshGenerator : IDisposable
 
     public void Reprioritize(Vector3D<double> viewPosition, Vector3D<double> predictedViewPosition)
     {
-        _work.ReorderWithinPriorities((left, right) =>
+        _work.ReorderValuesWithinPriorities((left, right) =>
         {
-            var leftDistance = DistanceToEither(left, viewPosition, predictedViewPosition);
-            var rightDistance = DistanceToEither(right, viewPosition, predictedViewPosition);
+            var deadline = (left.Trace?.DeadlineFrame ?? int.MaxValue)
+                .CompareTo(right.Trace?.DeadlineFrame ?? int.MaxValue);
+            if (deadline != 0) return deadline;
+            var leftDistance = DistanceToEither(left.Pos, viewPosition, predictedViewPosition);
+            var rightDistance = DistanceToEither(right.Pos, viewPosition, predictedViewPosition);
             return leftDistance.CompareTo(rightDistance);
         });
     }
@@ -211,23 +240,46 @@ internal class ChunkMeshGenerator : IDisposable
             try
             {
                 var (request, priority) = await _work.TakeAsync(_shutdown.Token);
-                _lifecycle?.Move(request.Trace, MeshLifecycleStage.Building, priority);
                 _profile.RecordQueueWait(Stopwatch.GetTimestamp() - request.EnqueuedAt);
+                var buildStarted = false;
                 try
                 {
-                    var mesh = GenerateMesh(request.Pos, request.Version, request.Cache, request.AlternateBlocks);
-                    mesh.Priority = priority;
+                    request.Control.Token.ThrowIfCancellationRequested();
+                    buildStarted = true;
+                    _lifecycle?.Move(request.Trace, MeshLifecycleStage.Building, priority);
+                    var mesh = GenerateMesh(
+                        request.Pos, request.Version, request.Cache, request.AlternateBlocks,
+                        request.Control.Token);
+                    request.Control.Token.ThrowIfCancellationRequested();
+                    mesh.Priority = request.Control.Priority;
                     mesh.RequestedAt = request.RequestedAt;
                     mesh.FinishedAt = Stopwatch.GetTimestamp();
                     mesh.Trace = request.Trace;
                     mesh.SectionId = request.SectionId;
                     _lifecycle?.Move(request.Trace, MeshLifecycleStage.AwaitingUpload);
-                    ResultQueueFor(priority).Enqueue(mesh);
+                    ResultQueueFor(mesh.Priority).Enqueue(mesh);
+                }
+                catch (OperationCanceledException) when (request.Control.IsCancellationRequested)
+                {
+                    var reason = request.Control.Reason;
+                    _lifecycle?.ObserveCancellation(request.Trace, buildStarted, reason);
+                    ResultQueueFor(request.Control.Priority).Enqueue(new MeshBuildResult
+                    {
+                        Pos = request.Pos,
+                        Version = request.Version,
+                        SectionId = request.SectionId,
+                        Priority = request.Control.Priority,
+                        RequestedAt = request.RequestedAt,
+                        FinishedAt = Stopwatch.GetTimestamp(),
+                        Trace = request.Trace,
+                        Cancelled = true,
+                        CancellationReason = reason
+                    });
                 }
                 catch (Exception ex)
                 {
                     _lifecycle?.Cancel(request.Trace, MeshCancellationReason.BuildFailed);
-                    _outstanding.TryRemove(request.Pos, out _);
+                    CompleteOutstanding(request.Pos);
                     _logger.LogError(ex, "Error generating chunk mesh at {Pos}", request.Pos);
                 }
                 finally
@@ -249,7 +301,9 @@ internal class ChunkMeshGenerator : IDisposable
         _ => _backgroundResults
     };
 
-    private MeshBuildResult GenerateMesh(Vector3D<int> pos, long version, WorldRegionSnapshot cache, bool alternateBlocks)
+    private MeshBuildResult GenerateMesh(
+        Vector3D<int> pos, long version, WorldRegionSnapshot cache, bool alternateBlocks,
+        CancellationToken cancellationToken)
     {
         var generationStart = Stopwatch.GetTimestamp();
         var minX = pos.X;
@@ -265,6 +319,8 @@ internal class ChunkMeshGenerator : IDisposable
             Version = version
         };
 
+        try
+        {
         // Full 1x1x1 Standard blocks (minus grass, minus anything using texture variance) are
         // pulled out of the per-block loop below and merged into larger quads instead — see
         // EmitGreedyMesh. Precomputed once so the sweep and the loop's skip check agree on
@@ -273,6 +329,7 @@ internal class ChunkMeshGenerator : IDisposable
         var classificationStart = Stopwatch.GetTimestamp();
         for (var y = minY; y < maxY; y++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             for (var z = minZ; z < maxZ; z++)
             {
                 for (var x = minX; x < maxX; x++)
@@ -297,11 +354,12 @@ internal class ChunkMeshGenerator : IDisposable
 
             if (pass == 0)
             {
-                EmitGreedyMesh(cache, ctx, mesh, greedyEligible, minX, minY, minZ);
+                EmitGreedyMesh(cache, ctx, mesh, greedyEligible, minX, minY, minZ, cancellationToken);
             }
 
             for (var y = minY; y < maxY; y++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 for (var z = minZ; z < maxZ; z++)
                 {
                     for (var x = minX; x < maxX; x++)
@@ -347,11 +405,19 @@ internal class ChunkMeshGenerator : IDisposable
         _profile.RecordGeometry(Stopwatch.GetTimestamp() - geometryStart);
 
         result.IsLit = cache.IsLit;
+        cancellationToken.ThrowIfCancellationRequested();
         var visibilityStart = Stopwatch.GetTimestamp();
         result.VisibilityData = ChunkVisibilityComputer.Compute(cache, pos.X, pos.Y, pos.Z);
+        cancellationToken.ThrowIfCancellationRequested();
         _profile.RecordVisibility(Stopwatch.GetTimestamp() - visibilityStart);
         _profile.RecordGeneration(Stopwatch.GetTimestamp() - generationStart);
         return result;
+        }
+        catch
+        {
+            result.Dispose();
+            throw;
+        }
     }
 
     public void RecordUpload(long elapsedTicks, long finishedToUploadTicks, long requestToUploadTicks) =>
@@ -411,13 +477,21 @@ internal class ChunkMeshGenerator : IDisposable
         return true;
     }
 
-    private static void EmitGreedyMesh(WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess, Block?[] eligible, int minX, int minY, int minZ)
+    private static void EmitGreedyMesh(
+        WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess,
+        Block?[] eligible, int minX, int minY, int minZ, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         EmitGreedyTop(cache, ctx, tess, eligible, minX, minY, minZ);
+        cancellationToken.ThrowIfCancellationRequested();
         EmitGreedyBottom(cache, ctx, tess, eligible, minX, minY, minZ);
+        cancellationToken.ThrowIfCancellationRequested();
         EmitGreedyEast(cache, ctx, tess, eligible, minX, minY, minZ);
+        cancellationToken.ThrowIfCancellationRequested();
         EmitGreedyWest(cache, ctx, tess, eligible, minX, minY, minZ);
+        cancellationToken.ThrowIfCancellationRequested();
         EmitGreedyNorth(cache, ctx, tess, eligible, minX, minY, minZ);
+        cancellationToken.ThrowIfCancellationRequested();
         EmitGreedySouth(cache, ctx, tess, eligible, minX, minY, minZ);
     }
 
@@ -806,7 +880,8 @@ internal class ChunkMeshGenerator : IDisposable
         long RequestedAt,
         long EnqueuedAt,
         MeshLifecycleRequest? Trace,
-        long SectionId);
+        long SectionId,
+        MeshBuildCancellation Control);
 
     /// <summary>One corner of a quad about to be emitted: world position, tiled UV, and its light.</summary>
     private readonly record struct QuadCorner(float X, float Y, float Z, float U, float V, CornerLight Light);
