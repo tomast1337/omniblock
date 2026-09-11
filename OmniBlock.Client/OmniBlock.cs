@@ -212,6 +212,7 @@ public partial class OmniBlock :
     private readonly DebugTelemetry _debugTelemetry = new();
 
     private DebugWindowManager _debugWindowManager;
+    private nint _imguiIniFilename;
     private LuauWorldService? _luauWorldService;
     private string? _singleplayerWorldId;
     private bool _luauSchedulerFailed;
@@ -448,6 +449,7 @@ public partial class OmniBlock :
                 World != null && Player != null &&
                 CurrentScreen is not (LevelLoadingScreen or ConnectingScreen or DownloadingTerrainScreen);
             LuauClientStateHost.WorldId = () => World != null && InternalServer != null ? _singleplayerWorldId : null;
+            LuauClientStateHost.DebugOpen = () => Options.ShowDebugInfo;
             LuauClientStateHost.MeshPending = () => WorldRenderer?.ChunkRenderer.PendingMeshWork ?? 0;
             LuauClientStateHost.MeshSupersededCount = () => WorldRenderer?.ChunkRenderer.MeshLifecycle.Superseded ?? 0;
             LuauClientStateHost.MeshBuildFailureCount = () => WorldRenderer?.ChunkRenderer.MeshLifecycle.BuildFailures ?? 0;
@@ -488,6 +490,14 @@ public partial class OmniBlock :
                 LuauTestHost.Pass = _e2eTestController.Pass;
                 LuauTestHost.Fail = reason => _e2eTestController.Fail(reason);
                 LuauTestHost.Creative = () => Player?.SendChatMessage("/gm c");
+                LuauTestHost.BreakBlock = (x, y, z) =>
+                {
+                    if (PlayerController == null || World == null ||
+                        World.Reader.GetBlockId(x, y, z) == 0)
+                        return false;
+                    PlayerController.ClickBlock(x, y, z, 1);
+                    return true;
+                };
                 LuauTestHost.SetFlying = flying => Player?.SetFlyingForTest(flying);
                 LuauTestHost.Teleport = (x, y, z) => Player?.SendChatMessage($"/tp {x} {y} {z}");
                 LuauTestHost.SetLook = (yaw, pitch) =>
@@ -670,6 +680,11 @@ public partial class OmniBlock :
 
         ImGuiIO* io = ImGui.GetIO();
         io->ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard | ImGuiConfigFlags.DockingEnable;
+        // ImGui defaults to ./imgui.ini, which makes layout state depend on the launch directory
+        // and lets source-tree tools accidentally rewrite it. Keep it with the rest of this
+        // profile instead; disposable E2E data roots then isolate debug UI state as promised.
+        _imguiIniFilename = Marshal.StringToCoTaskMemUTF8(Path.Combine(GameDataDir, "imgui.ini"));
+        io->IniFilename = (byte*)_imguiIniFilename;
 
         // Install game input callbacks first so the ImGui GLFW backend can chain to them.
         Keyboard.create(Display.getGlfw(), Display.GetWindowHandle());
@@ -830,6 +845,7 @@ public partial class OmniBlock :
             LuauClientStateHost.WorldLoaded = null;
             LuauClientStateHost.PlayerReady = null;
             LuauClientStateHost.WorldId = null;
+            LuauClientStateHost.DebugOpen = null;
             LuauClientStateHost.MeshPending = null;
             LuauClientStateHost.MeshCancelledCount = null;
             LuauClientStateHost.MeshSupersededCount = null;
@@ -861,6 +877,7 @@ public partial class OmniBlock :
             LuauTestHost.Pass = null;
             LuauTestHost.Fail = null;
             LuauTestHost.Creative = null;
+            LuauTestHost.BreakBlock = null;
             LuauTestHost.SetFlying = null;
             LuauTestHost.Teleport = null;
             LuauTestHost.SetLook = null;
@@ -875,6 +892,11 @@ public partial class OmniBlock :
             Keyboard.destroy();
 
             Texture2D.LogLeakReport();
+            if (_imguiIniFilename != 0)
+            {
+                Marshal.FreeCoTaskMem(_imguiIniFilename);
+                _imguiIniFilename = 0;
+            }
         }
         finally
         {

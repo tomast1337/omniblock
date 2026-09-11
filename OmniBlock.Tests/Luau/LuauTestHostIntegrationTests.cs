@@ -15,6 +15,7 @@ public sealed class LuauTestHostIntegrationTests
         var passes = 0;
         string? failure = null;
         var creative = 0;
+        var brokenBlock = (X: 0, Y: 0, Z: 0);
         var flying = false;
         var teleport = (X: 0, Y: 0, Z: 0);
         var look = (Yaw: 0.0, Pitch: 0.0);
@@ -25,6 +26,11 @@ public sealed class LuauTestHostIntegrationTests
         LuauTestHost.Pass = () => passes++;
         LuauTestHost.Fail = reason => failure = reason;
         LuauTestHost.Creative = () => creative++;
+        LuauTestHost.BreakBlock = (x, y, z) =>
+        {
+            brokenBlock = (x, y, z);
+            return true;
+        };
         LuauTestHost.SetFlying = value => flying = value;
         LuauTestHost.Teleport = (x, y, z) => teleport = (x, y, z);
         LuauTestHost.SetLook = (yaw, pitch) => look = (yaw, pitch);
@@ -44,6 +50,7 @@ public sealed class LuauTestHostIntegrationTests
             Assert.True(state.TryExecute(LuauTestHost.Bootstrap, out var bootstrapError), bootstrapError);
             Assert.True(state.TryExecute(
                 "OMNI.test.pass(); OMNI.test.fail('broken'); OMNI.test.creative(); " +
+                "assert(OMNI.test.breakBlock(4, 61, 7)); " +
                 "OMNI.test.setFlying(true); OMNI.test.teleport(160, 164, 0); " +
                 "OMNI.test.setLook(45.5, 90); OMNI.test.setMovement(1, -0.5, 0.25); " +
                 "OMNI.test.flyPath(160, 256, 0, 160, 256, 160, 20); " +
@@ -54,6 +61,7 @@ public sealed class LuauTestHostIntegrationTests
             Assert.Equal(1, passes);
             Assert.Equal("broken", failure);
             Assert.Equal(1, creative);
+            Assert.Equal((4, 61, 7), brokenBlock);
             Assert.True(flying);
             Assert.Equal((160, 164, 0), teleport);
             Assert.Equal((45.5, 90.0), look);
@@ -68,6 +76,7 @@ public sealed class LuauTestHostIntegrationTests
             LuauTestHost.Pass = null;
             LuauTestHost.Fail = null;
             LuauTestHost.Creative = null;
+            LuauTestHost.BreakBlock = null;
             LuauTestHost.SetFlying = null;
             LuauTestHost.Teleport = null;
             LuauTestHost.SetLook = null;

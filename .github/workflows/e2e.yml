@@ -61,7 +61,7 @@ jobs:
                   fi
 
                   env VK_ICD_FILENAMES="$lavapipe_icd" \
-                      timeout --signal=INT --kill-after=15s 180s \
+                      timeout --signal=INT --kill-after=15s 300s \
                       tests/e2e/run-with-display.sh
 
             - name: Upload E2E artifacts

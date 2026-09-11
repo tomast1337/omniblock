@@ -27,6 +27,7 @@ public sealed class LuauCompletionTests
     [InlineData("OMNI.client.state.background", "backgroundPending")]
     [InlineData("OMNI.client.state.oldest", "oldestForegroundAge")]
     [InlineData("OMNI.client.state.presentation", "presentationRegressionCount")]
+    [InlineData("OMNI.client.state.debug", "debugOpen")]
     [InlineData("OMNI.client.state.meshCoop", "meshCooperativeCancellationCount")]
     [InlineData("OMNI.client.state.meshCriticalDeadline", "meshCriticalDeadlineMissCount")]
     [InlineData("OMNI.client.worlds.lo", "load")]
@@ -35,6 +36,7 @@ public sealed class LuauCompletionTests
     [InlineData("OMNI.waitU", "waitUntil")]
     [InlineData("OMNI.test.pa", "pass")]
     [InlineData("OMNI.test.fly", "flyPath")]
+    [InlineData("OMNI.test.break", "breakBlock")]
     [InlineData("OMNI.test.setL", "setLook")]
     [InlineData("OMNI.test.setM", "setMovement")]
     public void CompletesGlobalsAndDomMembers(string source, string expected)

@@ -36,6 +36,7 @@ export type OmniClientState = {
     worldLoaded: boolean,
     playerReady: boolean,
     worldId: string?,
+    debugOpen: boolean,
     meshPending: number,
     -- Lifetime counters, independent of Reset mesh profile; cancellations include discarded work.
     meshCancelledCount: number,
@@ -51,6 +52,20 @@ export type OmniClientState = {
     meshCriticalDeadlineMissCount: number,
     meshCriticalOverdueCount: number,
     meshRequestToGpuMs: number,
+    frameTimeMs: number,
+    meshSafetyLoadedColumns: number,
+    meshSafetyExpectedSections: number,
+    meshSafetyHoles: number,
+    meshReadyRadius: number,
+    residentMeshCount: number,
+    presentedMeshCount: number,
+    foregroundPending: number,
+    backgroundPending: number,
+    oldestForegroundAge: number,
+    presentationRegressionCount: number,
+    playerX: number,
+    playerY: number,
+    playerZ: number,
 }
 
 export type OmniConfig = {
@@ -119,6 +134,15 @@ export type OmniConfig = {
 export type OmniTest = {
     pass: () -> (),
     fail: (reason: unknown?) -> (),
+    creative: () -> (),
+    breakBlock: (x: number, y: number, z: number) -> boolean,
+    setFlying: (value: boolean) -> (),
+    teleport: (x: number, y: number, z: number) -> (),
+    setLook: (yaw: number, pitch: number) -> (),
+    setMovement: (forward: number, strafe: number, vertical: number) -> (),
+    flyPath: (ax: number, ay: number, az: number, bx: number, by: number, bz: number, seconds: number) -> (),
+    screenshot: () -> (),
+    dumpTerrain: (label: unknown?) -> (),
 }
 
 declare OMNI: {

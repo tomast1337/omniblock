@@ -13,6 +13,7 @@ public static unsafe class LuauClientStateHost
                                             if key == "worldLoaded" then return __ClientState.worldLoaded() end
                                             if key == "playerReady" then return __ClientState.playerReady() end
                                             if key == "worldId" then return __ClientState.worldId() end
+                                            if key == "debugOpen" then return __ClientState.debugOpen() end
                                             if key == "meshPending" then return __ClientState.meshPending() end
                                             if key == "meshCancelledCount" then return __ClientState.meshCancelledCount() end
                                             if key == "meshSupersededCount" then return __ClientState.meshSupersededCount() end
@@ -52,6 +53,7 @@ public static unsafe class LuauClientStateHost
     public static Func<bool>? WorldLoaded;
     public static Func<bool>? PlayerReady;
     public static Func<string?>? WorldId;
+    public static Func<bool>? DebugOpen;
     public static Func<double>? MeshPending;
     public static Func<double>? MeshCancelledCount;
     public static Func<double>? MeshSupersededCount;
@@ -83,10 +85,11 @@ public static unsafe class LuauClientStateHost
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 31);
+        LuauNative.lua_createtable(l, 0, 32);
         Add(l, "worldLoaded", &WorldLoadedClosure);
         Add(l, "playerReady", &PlayerReadyClosure);
         Add(l, "worldId", &WorldIdClosure);
+        Add(l, "debugOpen", &DebugOpenClosure);
         Add(l, "meshPending", &MeshPendingClosure);
         Add(l, "meshCancelledCount", &MeshCancelledCountClosure);
         Add(l, "meshSupersededCount", &MeshSupersededCountClosure);
@@ -135,6 +138,13 @@ public static unsafe class LuauClientStateHost
     private static int PlayerReadyClosure(IntPtr l)
     {
         LuauNative.lua_pushboolean(l, ReadBool(PlayerReady) ? 1 : 0);
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int DebugOpenClosure(IntPtr l)
+    {
+        LuauNative.lua_pushboolean(l, ReadBool(DebugOpen) ? 1 : 0);
         return 1;
     }
 

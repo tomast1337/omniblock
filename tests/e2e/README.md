@@ -32,11 +32,20 @@ The opt-in `view-distance-32-diagnostic` scenario holds a real single-player ses
 distance for 30 seconds and logs frame time plus mesh pressure. It is intentionally outside the
 default suite because it is a sustained performance regression rather than a fast functional check.
 
-The opt-in `flying-chunk-streaming` scenario teleports a persistently flying creative player above
+The `flying-chunk-streaming` scenario teleports a persistently flying creative player above
 the world ceiling, points the camera straight down, requires all 29 loaded columns (232 vertical
 sections) in the radial safety ring to have completed meshes, then flies a full ten-chunk/160-block
 path before releasing movement. It captures a CPU-side terrain-state TSV at every chunk crossing
 instead of screenshots, avoiding GPU readback while measuring the pipeline.
+
+`chunk-mesh-deadlines` breaks a compact patch of nearby fixture terrain through the normal
+multiplayer player-controller path. It verifies critical forward progress, deadline-accounting
+invariants, bounded cancellation counters, and that no resident near-field mesh disappears. Missed
+and currently overdue two-frame deadlines remain visible in the output and terrain artifacts; they
+are performance signals while Phase 5 adaptive frame budgets remain outstanding. `debug-smoke` is
+launched with `--debug`, proves the
+dashboard is actually open through `OMNI.client.state.debugOpen`, enters the fixture world, and
+keeps it running long enough to exercise both ImGui and world rendering.
 
 Restricted E2E scripts can control a flying player without synthesizing keyboard or mouse events:
 
@@ -46,6 +55,7 @@ OMNI.test.setLook(yaw, pitch)
 OMNI.test.setMovement(forward, strafe, vertical)
 OMNI.test.setMovement(0, 0, 0) -- release every movement axis
 OMNI.test.flyPath(ax, ay, az, bx, by, bz, seconds)
+OMNI.test.breakBlock(x, y, z) -- true when a non-air block was submitted for breaking
 ```
 
 Movement values are clamped to `[-1, 1]`. The controls persist until changed, which lets a script
@@ -63,6 +73,7 @@ are written under `artifacts/e2e-local/` by default.
 World scenarios can observe the renderer without controlling renderer internals:
 
 ```lua
+OMNI.client.state.debugOpen           -- whether the debug dashboard is active
 OMNI.client.state.meshPending         -- queued, dirty, or awaiting-upload meshes
 OMNI.client.state.meshRequestToGpuMs  -- average request-to-upload latency in milliseconds
 OMNI.client.state.frameTimeMs         -- latest full client frame time in milliseconds
@@ -109,8 +120,9 @@ at admission; invalidation/deferred timestamps remain separate so deferred produ
 mistaken for worker queue time. Repeated deferred notifications coalesce into one event.
 
 `DrawRecorded` means the CPU recorded a draw command, **not** that the GPU finished or the display
-presented it. Cancellation records request abandonment or result discard; it does not imply
-cooperative interruption of a running worker. Reasons distinguish supersession, leaving retention,
+presented it. Cancellation records request abandonment or result discard; a separate
+`CancellationObserved` event and counter prove when a worker cooperatively stopped. Reasons
+distinguish supersession, leaving retention,
 renderer disposal, orphan recovery, duplicate admission, build/snapshot failure, and section
 lifetime replacement. A section's identity does not reset when its pooled version object is reused.
 An undrawn resident replaced by a newer mesh counts as superseded; an already drawn mesh does not.

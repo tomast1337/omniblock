@@ -15,6 +15,7 @@ public sealed class LuauClientStateHostIntegrationTests
         var worldLoaded = false;
         var playerReady = false;
         string? worldId = null;
+        var debugOpen = false;
         double meshPending = 0;
         double meshRequestToGpuMs = 0;
         double frameTimeMs = 0;
@@ -31,6 +32,7 @@ public sealed class LuauClientStateHostIntegrationTests
         LuauClientStateHost.WorldLoaded = () => worldLoaded;
         LuauClientStateHost.PlayerReady = () => playerReady;
         LuauClientStateHost.WorldId = () => worldId;
+        LuauClientStateHost.DebugOpen = () => debugOpen;
         LuauClientStateHost.MeshPending = () => meshPending;
         LuauClientStateHost.MeshRequestToGpuMs = () => meshRequestToGpuMs;
         LuauClientStateHost.FrameTimeMs = () => frameTimeMs;
@@ -54,6 +56,7 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.worldLoaded", "false");
             AssertValue(state, "OMNI.client.state.playerReady", "false");
             AssertValue(state, "OMNI.client.state.worldId", "nil");
+            AssertValue(state, "OMNI.client.state.debugOpen", "false");
             AssertValue(state, "OMNI.client.state.meshPending", "0");
             AssertValue(state, "OMNI.client.state.meshRequestToGpuMs", "0");
             AssertValue(state, "OMNI.client.state.frameTimeMs", "0");
@@ -64,6 +67,7 @@ public sealed class LuauClientStateHostIntegrationTests
             worldLoaded = true;
             playerReady = true;
             worldId = "e2e-smoke";
+            debugOpen = true;
             meshPending = 7;
             meshRequestToGpuMs = 12.5;
             frameTimeMs = 6.25;
@@ -81,6 +85,7 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.worldLoaded", "true");
             AssertValue(state, "OMNI.client.state.playerReady", "true");
             AssertValue(state, "OMNI.client.state.worldId", "e2e-smoke");
+            AssertValue(state, "OMNI.client.state.debugOpen", "true");
             AssertValue(state, "OMNI.client.state.meshPending", "7");
             AssertValue(state, "OMNI.client.state.meshRequestToGpuMs", "12.5");
             AssertValue(state, "OMNI.client.state.frameTimeMs", "6.25");
@@ -102,6 +107,7 @@ public sealed class LuauClientStateHostIntegrationTests
             LuauClientStateHost.WorldLoaded = null;
             LuauClientStateHost.PlayerReady = null;
             LuauClientStateHost.WorldId = null;
+            LuauClientStateHost.DebugOpen = null;
             LuauClientStateHost.MeshPending = null;
             LuauClientStateHost.MeshRequestToGpuMs = null;
             LuauClientStateHost.FrameTimeMs = null;

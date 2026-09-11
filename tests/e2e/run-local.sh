@@ -7,7 +7,7 @@ artifact_dir="${E2E_ARTIFACTS_DIR:-$repo_root/artifacts/e2e-local/$(date -u +%Y%
 timeout_seconds="${E2E_TIMEOUT_SECONDS:-90}"
 configuration="${CONFIGURATION:-Debug}"
 requested_scenario="${1:-all}"
-scenarios=(menu world-management multiplayer language-options create-world smoke)
+scenarios=(menu world-management multiplayer language-options create-world smoke debug-smoke chunk-mesh-deadlines flying-chunk-streaming)
 run_roots=()
 
 cleanup() {
@@ -49,6 +49,9 @@ for scenario in "${scenarios[@]}"; do
     if [[ "$scenario" == "multiplayer" ]]; then
         launch_args+=(--token e2e-session)
     fi
+    if [[ "$scenario" == "debug-smoke" ]]; then
+        launch_args+=(--debug)
+    fi
     set +e
     (
         cd "$repo_root/OmniBlock.Client"
@@ -60,6 +63,7 @@ for scenario in "${scenarios[@]}"; do
     )
     status=$?
     set -e
+    echo "Client process exit status: $status"
 
     if [[ -d "$game_data_dir/screenshots" ]]; then
         mkdir -p "$scenario_artifacts/screenshots"

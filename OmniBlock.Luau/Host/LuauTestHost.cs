@@ -12,6 +12,7 @@ public static unsafe class LuauTestHost
                                         pass = function() __Test.pass() end,
                                         fail = function(reason) __Test.fail(tostring(reason or "Test failed")) end,
                                         creative = function() __Test.creative() end,
+                                        breakBlock = function(x, y, z) return __Test.breakBlock(x, y, z) end,
                                         setFlying = function(value) __Test.setFlying(value) end,
                                         teleport = function(x, y, z) __Test.teleport(x, y, z) end,
                                         setLook = function(yaw, pitch) __Test.setLook(yaw, pitch) end,
@@ -29,6 +30,7 @@ public static unsafe class LuauTestHost
     public static Action? Pass;
     public static Action<string>? Fail;
     public static Action? Creative;
+    public static Func<int, int, int, bool>? BreakBlock;
     public static Action<bool>? SetFlying;
     public static Action<int, int, int>? Teleport;
     public static Action<double, double>? SetLook;
@@ -39,10 +41,11 @@ public static unsafe class LuauTestHost
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 10);
+        LuauNative.lua_createtable(l, 0, 11);
         Add(l, "pass", &PassClosure);
         Add(l, "fail", &FailClosure);
         Add(l, "creative", &CreativeClosure);
+        Add(l, "breakBlock", &BreakBlockClosure);
         Add(l, "setFlying", &SetFlyingClosure);
         Add(l, "teleport", &TeleportClosure);
         Add(l, "setLook", &SetLookClosure);
@@ -92,6 +95,25 @@ public static unsafe class LuauTestHost
     {
         Invoke(Creative);
         return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int BreakBlockClosure(IntPtr l)
+    {
+        var result = false;
+        try
+        {
+            result = BreakBlock?.Invoke(
+                LuauNative.luaL_checkinteger(l, 1),
+                LuauNative.luaL_checkinteger(l, 2),
+                LuauNative.luaL_checkinteger(l, 3)) == true;
+        }
+        catch
+        {
+        }
+
+        LuauNative.lua_pushboolean(l, result ? 1 : 0);
+        return 1;
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
