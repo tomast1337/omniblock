@@ -253,6 +253,9 @@ internal static unsafe partial class LuauNative
     [LibraryImport(LibraryName)]
     internal static partial int luaL_checkinteger(IntPtr L, int numArg);
 
+    [LibraryImport(LibraryName)]
+    internal static partial double luaL_checknumber(IntPtr L, int numArg);
+
     private static IntPtr LoadLibrary()
     {
         NativeLibrary.SetDllImportResolver(typeof(LuauNative).Assembly, ResolveLibrary);

@@ -13,7 +13,7 @@ OMNI.waitUntil(function()
     return OMNI.client.state.playerX > 150 and OMNI.client.state.playerY > 240
 end, 10, 0.05)
 OMNI.test.setFlying(true)
-OMNI.test.lookDown()
+OMNI.test.setLook(0, 90)
 
 OMNI.wait(0.25)
 OMNI.test.dumpTerrain("initial")
@@ -39,6 +39,16 @@ for sample = 1, 9 do
 end
 OMNI.test.dumpTerrain(safetyReady and "ready" or "incomplete")
 assert(safetyReady, "aerial safety ring did not become complete")
+
+local movementStartX = OMNI.client.state.playerX
+local movementStartZ = OMNI.client.state.playerZ
+OMNI.test.setMovement(1, 0, 0)
+OMNI.waitUntil(function()
+    local dx = OMNI.client.state.playerX - movementStartX
+    local dz = OMNI.client.state.playerZ - movementStartZ
+    return dx * dx + dz * dz >= 4
+end, 5, 0.05)
+OMNI.test.setMovement(0, 0, 0)
 
 OMNI.wait(0.5)
 assert(OMNI.client.state.playerY > 240, "player fell while waiting for safety-ring meshes")

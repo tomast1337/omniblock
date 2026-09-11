@@ -22,9 +22,22 @@ distance for 30 seconds and logs frame time plus mesh pressure. It is intentiona
 default suite because it is a sustained performance regression rather than a fast functional check.
 
 The opt-in `flying-chunk-streaming` scenario teleports a persistently flying creative player ten
-chunks away and above the world ceiling, then looks straight down and requires all 29 loaded columns
-(232 vertical sections) in the radial safety ring to have completed meshes. It captures CPU-side
-terrain-state TSV grids instead of screenshots, avoiding GPU readback while measuring the pipeline.
+chunks away and above the world ceiling, points the camera straight down, requires all 29 loaded
+columns (232 vertical sections) in the radial safety ring to have completed meshes, and verifies a
+scripted movement-and-release cycle. It captures CPU-side terrain-state TSV grids instead of
+screenshots, avoiding GPU readback while measuring the pipeline.
+
+Restricted E2E scripts can control a flying player without synthesizing keyboard or mouse events:
+
+```lua
+OMNI.test.setFlying(true)
+OMNI.test.setLook(yaw, pitch)
+OMNI.test.setMovement(forward, strafe, vertical)
+OMNI.test.setMovement(0, 0, 0) -- release every movement axis
+```
+
+Movement values are clamped to `[-1, 1]`. The controls persist until changed, which lets a script
+sample streaming state while the player follows a repeatable path.
 
 Every scenario gets a fresh disposable game-data directory and its own artifact
 subdirectory. The suite covers main-menu structure and navigation, world

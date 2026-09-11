@@ -18,12 +18,14 @@ public sealed class LuauCompletionTests
     [InlineData("OMNI.client.wor", "worlds")]
     [InlineData("OMNI.client.sta", "state")]
     [InlineData("OMNI.client.state.worldL", "worldLoaded")]
-    [InlineData("OMNI.client.state.player", "playerReady")]
+    [InlineData("OMNI.client.state.playerR", "playerReady")]
     [InlineData("OMNI.client.worlds.lo", "load")]
     [InlineData("OMNI.ru", "run")]
     [InlineData("OMNI.wa", "wait")]
     [InlineData("OMNI.waitU", "waitUntil")]
     [InlineData("OMNI.test.pa", "pass")]
+    [InlineData("OMNI.test.setL", "setLook")]
+    [InlineData("OMNI.test.setM", "setMovement")]
     public void CompletesGlobalsAndDomMembers(string source, string expected)
     {
         LuauCompletion completion = new();

@@ -20,6 +20,10 @@ public class ClientPlayerEntity : EntityPlayer
     private bool _isFlying;
     private byte _lastJump;
     private bool _testFlying;
+    private bool _testMovementEnabled;
+    private float _testForward;
+    private float _testStrafe;
+    private float _testVertical;
     protected OmniBlock Game;
     public MovementInput movementInput;
 
@@ -133,6 +137,13 @@ public class ClientPlayerEntity : EntityPlayer
         }
 
         movementInput.updatePlayerMoveState(this);
+        if (_testMovementEnabled)
+        {
+            movementInput.moveForward = _testForward;
+            movementInput.moveStrafe = _testStrafe;
+            movementInput.jump = false;
+            movementInput.sneak = false;
+        }
 
         if (!GameMode.DisallowFlying && (_isFlying || !GameMode.CanWalk))
         {
@@ -164,6 +175,13 @@ public class ClientPlayerEntity : EntityPlayer
                 // limit flying decent speed
                 VelocityY = Math.Max(VelocityY, -0.5);
             }
+
+            // Unlike keyboard flight, the E2E axis is analog and deterministic. Keeping it
+            // independent of jump/sneak also prevents the normal double-jump flight toggle.
+            if (_testMovementEnabled && _testFlying)
+            {
+                VelocityY = _testVertical * 0.5F;
+            }
         }
 
         if (movementInput.sneak && CameraOffset < 0.2F)
@@ -187,6 +205,15 @@ public class ClientPlayerEntity : EntityPlayer
         if (!flying) return;
         OnGround = false;
         VelocityY = 0;
+    }
+
+    /// <summary>Sets persistent restricted-E2E movement axes; zeroes release all movement.</summary>
+    internal void SetMovementForTest(float forward, float strafe, float vertical)
+    {
+        _testMovementEnabled = true;
+        _testForward = Math.Clamp(forward, -1.0F, 1.0F);
+        _testStrafe = Math.Clamp(strafe, -1.0F, 1.0F);
+        _testVertical = Math.Clamp(vertical, -1.0F, 1.0F);
     }
 
     public void handleKeyPress(int scanCode, bool isPressed) => movementInput.checkKeyForMovementInput(scanCode, isPressed);

@@ -14,7 +14,8 @@ public static unsafe class LuauTestHost
                                         creative = function() __Test.creative() end,
                                         setFlying = function(value) __Test.setFlying(value) end,
                                         teleport = function(x, y, z) __Test.teleport(x, y, z) end,
-                                        lookDown = function() __Test.lookDown() end,
+                                        setLook = function(yaw, pitch) __Test.setLook(yaw, pitch) end,
+                                        setMovement = function(forward, strafe, vertical) __Test.setMovement(forward, strafe, vertical) end,
                                         screenshot = function() __Test.screenshot() end,
                                         dumpTerrain = function(label) __Test.dumpTerrain(tostring(label or "terrain")) end,
                                     }
@@ -29,19 +30,21 @@ public static unsafe class LuauTestHost
     public static Action? Creative;
     public static Action<bool>? SetFlying;
     public static Action<int, int, int>? Teleport;
-    public static Action? LookDown;
+    public static Action<double, double>? SetLook;
+    public static Action<double, double, double>? SetMovement;
     public static Action? Screenshot;
     public static Action<string>? DumpTerrain;
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 8);
+        LuauNative.lua_createtable(l, 0, 9);
         Add(l, "pass", &PassClosure);
         Add(l, "fail", &FailClosure);
         Add(l, "creative", &CreativeClosure);
         Add(l, "setFlying", &SetFlyingClosure);
         Add(l, "teleport", &TeleportClosure);
-        Add(l, "lookDown", &LookDownClosure);
+        Add(l, "setLook", &SetLookClosure);
+        Add(l, "setMovement", &SetMovementClosure);
         Add(l, "screenshot", &ScreenshotClosure);
         Add(l, "dumpTerrain", &DumpTerrainClosure);
         LuauNative.lua_setfield(l, LuauNative.GlobalsIndex, "__Test");
@@ -120,9 +123,35 @@ public static unsafe class LuauTestHost
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int LookDownClosure(IntPtr l)
+    private static int SetLookClosure(IntPtr l)
     {
-        Invoke(LookDown);
+        try
+        {
+            SetLook?.Invoke(
+                LuauNative.luaL_checknumber(l, 1),
+                LuauNative.luaL_checknumber(l, 2));
+        }
+        catch
+        {
+        }
+
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int SetMovementClosure(IntPtr l)
+    {
+        try
+        {
+            SetMovement?.Invoke(
+                LuauNative.luaL_checknumber(l, 1),
+                LuauNative.luaL_checknumber(l, 2),
+                LuauNative.luaL_checknumber(l, 3));
+        }
+        catch
+        {
+        }
+
         return 0;
     }
 

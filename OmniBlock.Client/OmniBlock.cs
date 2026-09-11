@@ -471,11 +471,14 @@ public partial class OmniBlock :
                 LuauTestHost.Creative = () => Player?.SendChatMessage("/gm c");
                 LuauTestHost.SetFlying = flying => Player?.SetFlyingForTest(flying);
                 LuauTestHost.Teleport = (x, y, z) => Player?.SendChatMessage($"/tp {x} {y} {z}");
-                LuauTestHost.LookDown = () =>
+                LuauTestHost.SetLook = (yaw, pitch) =>
                 {
                     if (Player == null) return;
-                    Player.PrevPitch = Player.Pitch = 90.0F;
+                    Player.PrevYaw = Player.Yaw = (float)yaw;
+                    Player.PrevPitch = Player.Pitch = Math.Clamp((float)pitch, -90.0F, 90.0F);
                 };
+                LuauTestHost.SetMovement = (forward, strafe, vertical) =>
+                    Player?.SetMovementForTest((float)forward, (float)strafe, (float)vertical);
                 LuauTestHost.Screenshot = () => WebGpuRenderer.ScreenshotRequested = true;
                 LuauTestHost.DumpTerrain = label =>
                 {
@@ -817,7 +820,8 @@ public partial class OmniBlock :
             LuauTestHost.Creative = null;
             LuauTestHost.SetFlying = null;
             LuauTestHost.Teleport = null;
-            LuauTestHost.LookDown = null;
+            LuauTestHost.SetLook = null;
+            LuauTestHost.SetMovement = null;
             LuauTestHost.Screenshot = null;
             LuauTestHost.DumpTerrain = null;
             _luauWorldService = null;
