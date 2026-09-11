@@ -7,6 +7,16 @@ public sealed class ChunkMeshSchedulingTests
 {
     private static readonly Vector3D<double> View = new(8, 72, 8);
 
+    [Theory]
+    [InlineData(50, 2)]
+    [InlineData(16.6666667, 3)]
+    [InlineData(6.25, 8)]
+    [InlineData(double.NaN, 3)]
+    public void Critical_deadline_preserves_wall_time_across_render_rates(double frameMs, int expectedFrames)
+    {
+        Assert.Equal(expectedFrames, ChunkRenderer.CriticalDeadlineFramesFor(frameMs));
+    }
+
     [Fact]
     public void Streamed_chunk_notifications_cannot_overtake_a_missing_safety_ring_mesh()
     {
@@ -153,9 +163,11 @@ public sealed class ChunkMeshSchedulingTests
     [InlineData((int)SectionDirtyReason.StreamingBoundary, true, false, true, true,
         (int)MeshWorkPriority.Background)]
     [InlineData((int)SectionDirtyReason.BlockChange, true, false, true, true,
-        (int)MeshWorkPriority.Critical)]
+        (int)MeshWorkPriority.Background)]
+    [InlineData((int)SectionDirtyReason.BlockChange, true, false, false, true,
+        (int)MeshWorkPriority.Background)]
     [InlineData((int)SectionDirtyReason.Lighting, true, false, true, true,
-        (int)MeshWorkPriority.Critical)]
+        (int)MeshWorkPriority.Background)]
     [InlineData((int)SectionDirtyReason.Lighting, true, false, false, true,
         (int)MeshWorkPriority.Background)]
     public void Dirty_reason_controls_lane_without_displacing_missing_foreground_terrain(
@@ -174,6 +186,20 @@ public sealed class ChunkMeshSchedulingTests
                 requiredForStartup,
                 withinSafetyRing,
                 withinForegroundRing));
+    }
+
+    [Fact]
+    public void Recently_presented_changes_are_critical_outside_the_radial_safety_ring()
+    {
+        Assert.Equal(
+            MeshWorkPriority.Critical,
+            ChunkRenderer.ClassifyRequestedMeshPriority(
+                SectionDirtyReason.BlockChange,
+                hasRenderer: true,
+                requiredForStartup: false,
+                withinSafetyRing: false,
+                withinForegroundRing: true,
+                recentlyPresented: true));
     }
 
     [Theory]

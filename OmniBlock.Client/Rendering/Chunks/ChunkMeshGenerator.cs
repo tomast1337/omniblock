@@ -137,12 +137,23 @@ internal class ChunkMeshGenerator : IDisposable
         return found;
     }
 
+    /// <summary>Takes one completed result from an exact lane for the renderer's critical reserve.</summary>
+    public bool TryDequeueMesh(MeshWorkPriority priority, out MeshBuildResult result)
+    {
+        if (!ResultQueueFor(priority).TryDequeue(out result)) return false;
+        CompleteOutstanding(result.Pos);
+        return true;
+    }
+
     private void CompleteOutstanding(Vector3D<int> pos)
     {
         if (_outstanding.TryRemove(pos, out var control)) control.Dispose();
     }
 
     public bool HasOutstanding(Vector3D<int> pos) => _outstanding.ContainsKey(pos);
+
+    public bool HasOutstandingAtPriority(Vector3D<int> pos, MeshWorkPriority priority) =>
+        _outstanding.TryGetValue(pos, out var control) && control.Priority >= priority;
 
     public bool CancelObsolete(
         Vector3D<int> pos,

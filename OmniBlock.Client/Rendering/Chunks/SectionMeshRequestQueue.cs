@@ -77,6 +77,26 @@ internal sealed class SectionMeshRequestQueue
         return true;
     }
 
+    /// <summary>
+    ///     Takes one exact lane without advancing the fairness counters. Used only by the bounded
+    ///     critical reserve after the ordinary frame-time budget has expired.
+    /// </summary>
+    public bool TryDequeue(MeshWorkPriority priority, out SectionRenderState state)
+    {
+        var lane = _lanes[(int)priority];
+        Prune(lane);
+        if (lane.Count == 0)
+        {
+            state = null!;
+            return false;
+        }
+
+        var node = lane.Dequeue();
+        state = _entries[node.Position].State;
+        _entries.Remove(node.Position);
+        return true;
+    }
+
     public bool Remove(Vector3D<int> position) => _entries.Remove(position);
 
     public void RemoveWhere(Predicate<SectionRenderState> predicate)

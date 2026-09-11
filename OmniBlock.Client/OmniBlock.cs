@@ -498,6 +498,10 @@ public partial class OmniBlock :
                     PlayerController.ClickBlock(x, y, z, 1);
                     return true;
                 };
+                LuauTestHost.IsMeshCurrent = (x, y, z) =>
+                    WorldRenderer?.ChunkRenderer.IsMeshCurrent(x, y, z) == true;
+                LuauTestHost.MeshDeadlineMissCount = (x, y, z) =>
+                    WorldRenderer?.ChunkRenderer.CriticalDeadlineMissesAt(x, y, z) ?? 0;
                 LuauTestHost.SetFlying = flying => Player?.SetFlyingForTest(flying);
                 LuauTestHost.Teleport = (x, y, z) => Player?.SendChatMessage($"/tp {x} {y} {z}");
                 LuauTestHost.SetLook = (yaw, pitch) =>
@@ -878,6 +882,8 @@ public partial class OmniBlock :
             LuauTestHost.Fail = null;
             LuauTestHost.Creative = null;
             LuauTestHost.BreakBlock = null;
+            LuauTestHost.IsMeshCurrent = null;
+            LuauTestHost.MeshDeadlineMissCount = null;
             LuauTestHost.SetFlying = null;
             LuauTestHost.Teleport = null;
             LuauTestHost.SetLook = null;

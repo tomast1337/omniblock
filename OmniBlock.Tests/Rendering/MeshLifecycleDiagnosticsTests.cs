@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using OmniBlock.Client.Rendering.Chunks;
 using Silk.NET.Maths;
 
@@ -153,13 +154,14 @@ public sealed class MeshLifecycleDiagnosticsTests
     }
 
     [Fact]
-    public void Critical_deadline_is_met_on_the_deadline_frame_and_missed_after_it()
+    public void Critical_deadline_is_measured_by_monotonic_time_not_render_rate()
     {
-        var diagnostics = new MeshLifecycleDiagnostics();
-        diagnostics.SetFrame(10);
+        long now = 0;
+        var diagnostics = new MeshLifecycleDiagnostics(clock: () => now);
+        var deadlineTicks = (long)(ChunkRenderer.CriticalMeshDeadlineMs * Stopwatch.Frequency / 1000.0);
         var met = diagnostics.Queue(1, default, 1, MeshWorkPriority.Critical,
             SectionDirtyReason.BlockChange, queuedFrame: 10, deadlineFrame: 12);
-        diagnostics.SetFrame(12);
+        now += deadlineTicks;
         diagnostics.Move(met, MeshLifecycleStage.Uploaded);
         diagnostics.Move(met, MeshLifecycleStage.DrawRecorded);
         Assert.Equal(1, diagnostics.Snapshot().CriticalCompleted);
@@ -167,12 +169,14 @@ public sealed class MeshLifecycleDiagnosticsTests
 
         var late = diagnostics.Queue(1, default, 2, MeshWorkPriority.Critical,
             SectionDirtyReason.BlockChange, queuedFrame: 20, deadlineFrame: 22);
-        diagnostics.SetFrame(23);
+        now += deadlineTicks + 1;
         Assert.Equal(1, diagnostics.Snapshot().CriticalOverdue);
         diagnostics.Move(late, MeshLifecycleStage.EmptyReady);
         Assert.Equal(2, diagnostics.Snapshot().CriticalCompleted);
         Assert.Equal(1, diagnostics.Snapshot().CriticalDeadlineMisses);
         Assert.Equal(0, diagnostics.Snapshot().CriticalOverdue);
+        Assert.Equal(1, diagnostics.CriticalDeadlineMissesAt(default));
+        Assert.Equal(0, diagnostics.CriticalDeadlineMissesAt(new Vector3D<int>(16, 0, 0)));
     }
 
     [Fact]

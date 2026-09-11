@@ -136,6 +136,8 @@ export type OmniTest = {
     fail: (reason: unknown?) -> (),
     creative: () -> (),
     breakBlock: (x: number, y: number, z: number) -> boolean,
+    isMeshCurrent: (x: number, y: number, z: number) -> boolean,
+    meshDeadlineMissCount: (x: number, y: number, z: number) -> number,
     setFlying: (value: boolean) -> (),
     teleport: (x: number, y: number, z: number) -> (),
     setLook: (yaw: number, pitch: number) -> (),

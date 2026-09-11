@@ -28,14 +28,34 @@ local px = math.floor(OMNI.client.state.playerX)
 local py = math.floor(OMNI.client.state.playerY)
 local pz = math.floor(OMNI.client.state.playerZ)
 local broken = 0
+local touchedSections = {}
+local touchedSectionCount = 0
+
+local function recordDirtySections(x, y, z)
+    for sx = math.floor((x - 1) / 16), math.floor((x + 1) / 16) do
+        for sy = math.floor((y - 1) / 16), math.floor((y + 1) / 16) do
+            for sz = math.floor((z - 1) / 16), math.floor((z + 1) / 16) do
+                local key = tostring(sx) .. ":" .. tostring(sy) .. ":" .. tostring(sz)
+                if not touchedSections[key] then
+                    touchedSections[key] = { x = sx * 16, y = sy * 16, z = sz * 16 }
+                    touchedSectionCount += 1
+                end
+            end
+        end
+    end
+end
 
 -- All edits land in the near-field section and travel through the normal player/network path.
 -- Searching three layers makes the fixture robust to the exact fractional spawn height.
 for dz = -2, 2 do
     for dx = -2, 2 do
         for depth = 1, 3 do
-            if OMNI.test.breakBlock(px + dx, py - depth, pz + dz) then
+            local x = px + dx
+            local y = py - depth
+            local z = pz + dz
+            if OMNI.test.breakBlock(x, y, z) then
                 broken += 1
+                recordDirtySections(x, y, z)
                 break
             end
         end
@@ -43,20 +63,31 @@ for dz = -2, 2 do
 end
 
 assert(broken > 0, "deadline workload found no nearby blocks to break")
+local targetMissesBefore = 0
+for _, section in touchedSections do
+    targetMissesBefore += OMNI.test.meshDeadlineMissCount(section.x, section.y, section.z)
+end
 OMNI.test.dumpTerrain("critical-issued")
 
 OMNI.waitUntil(function()
-    return OMNI.client.state.meshCriticalCompletedCount > completedBefore
+    for _, section in touchedSections do
+        if not OMNI.test.isMeshCurrent(section.x, section.y, section.z) then
+            return false
+        end
+    end
+    return true
 end, 15, 0.02)
-OMNI.wait(0.5)
 OMNI.test.dumpTerrain("critical-settled")
 
 local completedDelta = OMNI.client.state.meshCriticalCompletedCount - completedBefore
 local missedDelta = OMNI.client.state.meshCriticalDeadlineMissCount - missesBefore
+local targetMissesAfter = 0
+for _, section in touchedSections do
+    targetMissesAfter += OMNI.test.meshDeadlineMissCount(section.x, section.y, section.z)
+end
 assert(completedDelta > 0, "critical mesh work made no observable progress")
-assert(missedDelta >= 0, "critical deadline miss counter regressed")
-assert(missedDelta <= completedDelta,
-    "new deadline misses exceed newly completed critical revisions")
+assert(targetMissesAfter == targetMissesBefore,
+    "near-field block changes missed the critical presentation deadline")
 assert(OMNI.client.state.meshCriticalDeadlineMissCount <=
     OMNI.client.state.meshCriticalCompletedCount,
     "deadline misses exceed completed critical revisions")
@@ -77,6 +108,7 @@ assert(OMNI.client.state.meshBuildFailureCount == 0,
     "mesh snapshot/build failed during critical updates")
 
 print("critical mesh workload: broken=" .. tostring(broken) ..
+    " sections=" .. tostring(touchedSectionCount) ..
     " completed=" .. tostring(completedDelta) ..
     " missed=" .. tostring(missedDelta) ..
     " overdue=" .. tostring(OMNI.client.state.meshCriticalOverdueCount) ..

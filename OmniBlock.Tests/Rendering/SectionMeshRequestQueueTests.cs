@@ -6,6 +6,21 @@ namespace OmniBlock.Tests.Rendering;
 public sealed class SectionMeshRequestQueueTests
 {
     [Fact]
+    public void Exact_lane_dequeue_supports_a_bounded_critical_reserve()
+    {
+        var queue = new SectionMeshRequestQueue();
+        using var background = State(new Vector3D<int>(0, 64, 0), MeshWorkPriority.Background, 1);
+        using var critical = State(new Vector3D<int>(160, 64, 0), MeshWorkPriority.Critical, 2);
+        queue.Enqueue(background, (3, int.MaxValue, 0, 1));
+        queue.Enqueue(critical, (0, 4, 100, 2));
+
+        Assert.True(queue.TryDequeue(MeshWorkPriority.Critical, out var selected));
+        Assert.Same(critical, selected);
+        Assert.Equal(1, queue.Count);
+        Assert.False(queue.TryDequeue(MeshWorkPriority.Critical, out _));
+    }
+
+    [Fact]
     public void Repeated_section_is_coalesced_and_promoted_without_a_scan()
     {
         SectionMeshRequestQueue queue = new();

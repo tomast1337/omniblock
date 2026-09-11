@@ -31,7 +31,7 @@ internal readonly record struct MeshLifecycleEvent(
 internal sealed class MeshLifecycleRequest(
     long id, long sectionId, Vector3D<int> position, long epoch,
     MeshWorkPriority priority, SectionDirtyReason reasons,
-    int queuedFrame, int deadlineFrame)
+    int queuedFrame, int deadlineFrame, long queuedAt, long deadlineAt)
 {
     internal readonly long Id = id;
     internal readonly long SectionId = sectionId;
@@ -41,9 +41,10 @@ internal sealed class MeshLifecycleRequest(
     internal readonly SectionDirtyReason Reasons = reasons;
     internal readonly int QueuedFrame = queuedFrame;
     internal int DeadlineFrame = deadlineFrame;
+    internal long DeadlineAt = deadlineAt;
     internal MeshLifecycleStage Stage = MeshLifecycleStage.Queued;
-    internal readonly long QueuedAt = Stopwatch.GetTimestamp();
-    internal long StageAt = Stopwatch.GetTimestamp();
+    internal readonly long QueuedAt = queuedAt;
+    internal long StageAt = queuedAt;
     internal bool Terminal;
 }
 
@@ -62,20 +63,24 @@ internal readonly record struct MeshLifecycleSnapshot(
 ///     worker cooperatively stopped obsolete work. DrawRecorded is CPU command recording, not GPU
 ///     completion.
 /// </summary>
-internal sealed class MeshLifecycleDiagnostics(int capacity = 8192)
+internal sealed class MeshLifecycleDiagnostics(int capacity = 8192, Func<long>? clock = null)
 {
+    private readonly Func<long> _clock = clock ?? Stopwatch.GetTimestamp;
     private readonly object _gate = new();
     private readonly MeshLifecycleEvent[] _events = new MeshLifecycleEvent[
         capacity > 0 ? capacity : throw new ArgumentOutOfRangeException(nameof(capacity))];
     private readonly long[] _active = new long[Enum.GetValues<MeshLifecycleStage>().Length];
+    private readonly Dictionary<Vector3D<int>, long> _criticalDeadlineMissesBySection = [];
     private readonly HashSet<MeshLifecycleRequest> _live = [];
-    private readonly long _origin = Stopwatch.GetTimestamp();
+    private readonly long _origin = (clock ?? Stopwatch.GetTimestamp)();
     private long _sequence;
     private long _requestId;
     private long _cancelled, _superseded, _buildFailures, _drawRecorded, _emptyReady;
     private long _cooperativeCancellations, _cancelledBeforeBuild, _cancelledDuringBuild;
     private long _criticalCompleted, _criticalDeadlineMisses;
-    private int _currentFrame;
+
+    private static long CriticalDeadlineTicks =>
+        (long)(ChunkRenderer.CriticalMeshDeadlineMs * Stopwatch.Frequency / 1000.0);
 
     public MeshLifecycleRequest Queue(long sectionId, Vector3D<int> position, long epoch,
         MeshWorkPriority priority, SectionDirtyReason reasons,
@@ -83,9 +88,13 @@ internal sealed class MeshLifecycleDiagnostics(int capacity = 8192)
     {
         lock (_gate)
         {
+            var queuedAt = _clock();
+            var deadlineAt = priority == MeshWorkPriority.Critical && deadlineFrame >= 0
+                ? queuedAt + CriticalDeadlineTicks
+                : long.MaxValue;
             var request = new MeshLifecycleRequest(
                 ++_requestId, sectionId, position, epoch, priority, reasons,
-                queuedFrame, deadlineFrame);
+                queuedFrame, deadlineFrame, queuedAt, deadlineAt);
             _live.Add(request);
             _active[(int)MeshLifecycleStage.Queued]++;
             Append(request, MeshLifecycleStage.Queued, MeshCancellationReason.None);
@@ -102,7 +111,7 @@ internal sealed class MeshLifecycleDiagnostics(int capacity = 8192)
             if (request.Terminal || stage <= request.Stage) return;
             _active[(int)request.Stage]--;
             request.Stage = stage;
-            request.StageAt = Stopwatch.GetTimestamp();
+            request.StageAt = _clock();
             if (priority.HasValue) request.Priority = priority.Value;
             request.Terminal = stage is MeshLifecycleStage.DrawRecorded or MeshLifecycleStage.EmptyReady;
             if (!request.Terminal) _active[(int)stage]++;
@@ -112,7 +121,12 @@ internal sealed class MeshLifecycleDiagnostics(int capacity = 8192)
                 if (request.Priority == MeshWorkPriority.Critical && request.DeadlineFrame >= 0)
                 {
                     _criticalCompleted++;
-                    if (_currentFrame > request.DeadlineFrame) _criticalDeadlineMisses++;
+                    if (_clock() > request.DeadlineAt)
+                    {
+                        _criticalDeadlineMisses++;
+                        _criticalDeadlineMissesBySection.TryGetValue(request.Position, out var misses);
+                        _criticalDeadlineMissesBySection[request.Position] = misses + 1;
+                    }
                 }
             }
             if (stage == MeshLifecycleStage.DrawRecorded) _drawRecorded++;
@@ -132,15 +146,13 @@ internal sealed class MeshLifecycleDiagnostics(int capacity = 8192)
             request.Terminal = true;
             _live.Remove(request);
             request.Stage = MeshLifecycleStage.Cancelled;
-            request.StageAt = Stopwatch.GetTimestamp();
+            request.StageAt = _clock();
             _cancelled++;
             if (reason == MeshCancellationReason.Superseded) _superseded++;
             if (reason is MeshCancellationReason.BuildFailed or MeshCancellationReason.SnapshotFailed) _buildFailures++;
             Append(request, MeshLifecycleStage.Cancelled, reason);
         }
     }
-
-    public void SetFrame(int frame) => Volatile.Write(ref _currentFrame, frame);
 
     public void Promote(MeshLifecycleRequest? request, MeshWorkPriority priority, int deadlineFrame)
     {
@@ -149,6 +161,8 @@ internal sealed class MeshLifecycleDiagnostics(int capacity = 8192)
         {
             if (request.Terminal) return;
             if (priority > request.Priority) request.Priority = priority;
+            if (deadlineFrame >= 0 && request.DeadlineFrame < 0)
+                request.DeadlineAt = _clock() + CriticalDeadlineTicks;
             if (deadlineFrame >= 0 &&
                 (request.DeadlineFrame < 0 || deadlineFrame < request.DeadlineFrame))
                 request.DeadlineFrame = deadlineFrame;
@@ -184,17 +198,17 @@ internal sealed class MeshLifecycleDiagnostics(int capacity = 8192)
     private void Append(MeshLifecycleEvent entry)
     {
         var index = (int)(_sequence % _events.Length);
-        _events[index] = entry with { Sequence = ++_sequence, Timestamp = Stopwatch.GetTimestamp() };
+        _events[index] = entry with { Sequence = ++_sequence, Timestamp = _clock() };
     }
 
     public MeshLifecycleSnapshot Snapshot()
     {
         lock (_gate)
         {
-            var currentFrame = _currentFrame;
+            var now = _clock();
             var overdue = _live.LongCount(request =>
                 request.Priority == MeshWorkPriority.Critical && request.DeadlineFrame >= 0 &&
-                currentFrame > request.DeadlineFrame);
+                now > request.DeadlineAt);
             return new(_sequence, Math.Max(0, _sequence - _events.Length), _cancelled, _superseded,
                 _buildFailures, _active[(int)MeshLifecycleStage.Queued], _active[(int)MeshLifecycleStage.Snapshotting],
                 _active[(int)MeshLifecycleStage.WorkerQueued], _active[(int)MeshLifecycleStage.Building],
@@ -214,6 +228,12 @@ internal sealed class MeshLifecycleDiagnostics(int capacity = 8192)
             for (var i = 0; i < count; i++) result[i] = _events[(int)((start + i) % _events.Length)];
             return result;
         }
+    }
+
+    public long CriticalDeadlineMissesAt(Vector3D<int> position)
+    {
+        lock (_gate)
+            return _criticalDeadlineMissesBySection.GetValueOrDefault(position);
     }
 
     public string CreateDump()
@@ -245,7 +265,7 @@ internal sealed class MeshLifecycleDiagnostics(int capacity = 8192)
         lock (_gate)
         {
             if (request == null) return "0\tNone\t0\t0\t-1";
-            var now = Stopwatch.GetTimestamp();
+            var now = _clock();
             return FormattableString.Invariant($"{request.Id}\t{request.Stage}\t{(now - request.QueuedAt) * 1000.0 / Stopwatch.Frequency:F3}\t{(now - request.StageAt) * 1000.0 / Stopwatch.Frequency:F3}\t{request.DeadlineFrame}");
         }
     }

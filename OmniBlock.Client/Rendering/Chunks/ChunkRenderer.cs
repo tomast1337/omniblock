@@ -29,13 +29,16 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     internal const int MeshSpeculativeRadius = 1;
     internal const int MeshRetentionMargin = 2;
     internal const int MeshEvictionGraceFrames = 30;
-    internal const int CriticalMeshDeadlineFrames = 2;
+    internal const int MinimumCriticalMeshDeadlineFrames = 2;
+    internal const double CriticalMeshDeadlineMs = 50.0;
     internal const int MeshDiscoveryBacklogPerWorker = 8;
     internal const int MeshSafetyBacklogPerWorker = 2;
     internal const int MeshForegroundBacklogPerWorker = 4;
     internal const int MeshStreamingBoundaryBacklogPerWorker = 2;
     internal const int MeshLeadingEdgeBacklogPerWorker = 2;
     internal const int MeshLeadingEdgeInspectionPerTick = 64;
+    internal const int CriticalDispatchReserve = MaxMeshWorkers;
+    internal const int CriticalUploadReserve = MaxMeshWorkers * 2;
 
     //TODO: MAKE THIS CONFIGURABLE
     private const double MeshUploadBudgetMs = 1.5;
@@ -95,8 +98,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly Dictionary<RenderState, WgpuPipeline> _wgpuWireframePipelines = [];
 
     private readonly World _world;
+    private double _averageFrameDurationMs = 1000.0 / 60.0;
+    private int _criticalDispatchesSincePump;
     private int _currentIndex;
     private int _frameIndex;
+    private long _lastPrepareFrameAt;
     private ICuller? _lastCamera;
     private int _lastRenderDistance;
     private Vector3D<int>? _lastRequestRankCenter;
@@ -360,6 +366,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("criticalCompleted\t").Append(lifecycle.CriticalCompleted).AppendLine();
         text.Append("criticalDeadlineMisses\t").Append(lifecycle.CriticalDeadlineMisses).AppendLine();
         text.Append("criticalOverdue\t").Append(lifecycle.CriticalOverdue).AppendLine();
+        text.Append("criticalDeadlineFrames\t")
+            .Append(CriticalDeadlineFramesFor(_averageFrameDurationMs)).AppendLine();
         text.Append("cooperativeCancellations\t").Append(lifecycle.CooperativeCancellations).AppendLine();
         text.Append("cancelledBeforeBuild\t").Append(lifecycle.CancelledBeforeBuild).AppendLine();
         text.Append("cancelledDuringBuild\t").Append(lifecycle.CancelledDuringBuild).AppendLine();
@@ -446,6 +454,17 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     /// </remarks>
     public void PrepareFrame(ChunkRenderParams renderParams)
     {
+        var prepareFrameAt = Stopwatch.GetTimestamp();
+        if (_lastPrepareFrameAt != 0)
+        {
+            var sampleMs = (prepareFrameAt - _lastPrepareFrameAt) * 1000.0 / Stopwatch.Frequency;
+            // Ignore debugger/suspend gaps. This average only converts a wall-time response
+            // target into scheduler frames; it is not the authoritative frame-time metric.
+            if (sampleMs is > 0 and < 250)
+                _averageFrameDurationMs = _averageFrameDurationMs * 0.9 + sampleMs * 0.1;
+        }
+        _lastPrepareFrameAt = prepareFrameAt;
+
         _lastRenderDistance = renderParams.RenderDistance;
         _lastViewPos = renderParams.ViewPos;
         _lastCamera = renderParams.Camera;
@@ -467,7 +486,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         _visibleRenderers.Clear();
         _frameIndex++;
-        _meshLifecycle.SetFrame(_frameIndex);
 
         Vector3D<int> cameraChunkPos = new(
             (int)Math.Floor(renderParams.ViewPos.X / SubChunkRenderer.Size) * SubChunkRenderer.Size,
@@ -646,9 +664,20 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private void LoadNewMeshes(Vector3D<double> viewPos)
     {
         var stopwatch = Stopwatch.StartNew();
-        while (stopwatch.Elapsed.TotalMilliseconds < MeshUploadBudgetMs)
+        var criticalUploads = 0;
+        while (true)
         {
-            if (!_meshGenerator.TryDequeueMesh(out var mesh)) break;
+            MeshBuildResult mesh;
+            if (stopwatch.Elapsed.TotalMilliseconds < MeshUploadBudgetMs)
+            {
+                if (!_meshGenerator.TryDequeueMesh(out mesh)) break;
+            }
+            else if (criticalUploads >= CriticalUploadReserve ||
+                     !_meshGenerator.TryDequeueMesh(MeshWorkPriority.Critical, out mesh))
+            {
+                break;
+            }
+            if (mesh.Priority == MeshWorkPriority.Critical) criticalUploads++;
             var uploadStart = Stopwatch.GetTimestamp();
 
             if (IsChunkInMeshRetentionDistance(mesh.Pos, viewPos))
@@ -679,10 +708,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     continue;
                 }
 
-                version.CompleteMesh(mesh.Version);
-
-                if (version.IsStale(mesh.Version))
+                var stale = version.IsStale(mesh.Version);
+                var installIntermediate = stale &&
+                                          mesh.Priority == MeshWorkPriority.Critical &&
+                                          section.Renderer != null;
+                if (stale && !installIntermediate)
                 {
+                    version.CancelMesh(mesh.Version);
                     _meshLifecycle.Cancel(mesh.Trace, MeshCancellationReason.Superseded);
                     var snapshot = version.SnapshotIfNeeded();
                     if (snapshot.HasValue)
@@ -698,6 +730,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     mesh.Dispose();
                     continue;
                 }
+
+                // A critical section which changes faster than one build must still advance
+                // visually. Accept this coherent snapshot, then build the coalesced latest epoch;
+                // discarding every stale result makes fluids and piston bursts freeze indefinitely.
+                version.CompleteMesh(mesh.Version);
+                var followUpReasons = section.DirtyReasons;
+                var followUpPriority = section.RequestedPriority;
 
                 if (section.Renderer is { } existingRenderer)
                 {
@@ -723,6 +762,22 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 section.ClearRequest();
                 if (_world is ClientWorld clientWorld)
                     clientWorld.NetworkHandler.NotifyMeshUploaded(mesh.Pos);
+
+                if (stale)
+                {
+                    var followUpDeadline = followUpPriority == MeshWorkPriority.Critical
+                        ? _frameIndex + CriticalDeadlineFramesFor(_averageFrameDurationMs)
+                        : -1;
+                    section.RememberRequest(
+                        followUpReasons, followUpPriority, _schedulerTick, followUpDeadline);
+                    var snapshot = version.SnapshotIfNeeded();
+                    if (snapshot.HasValue)
+                    {
+                        _meshGenerator.MeshChunk(
+                            _world, mesh.Pos, snapshot.Value, _options.AlternateBlocksEnabled,
+                            followUpPriority, section.BeginTrace(snapshot.Value, _frameIndex), section.LifetimeId);
+                    }
+                }
             }
             else
             {
@@ -989,9 +1044,20 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         });
 
         var stopwatch = Stopwatch.StartNew();
-        while (stopwatch.Elapsed.TotalMilliseconds < MeshDispatchBudgetMs)
+        var criticalDispatches = _criticalDispatchesSincePump;
+        while (true)
         {
-            if (!_pendingMeshUpdates.TryDequeue(out var section)) break;
+            SectionRenderState section;
+            if (stopwatch.Elapsed.TotalMilliseconds < MeshDispatchBudgetMs)
+            {
+                if (!_pendingMeshUpdates.TryDequeue(out section)) break;
+            }
+            else if (criticalDispatches >= CriticalDispatchReserve ||
+                     !_pendingMeshUpdates.TryDequeue(MeshWorkPriority.Critical, out section))
+            {
+                break;
+            }
+            if (section.RequestedPriority == MeshWorkPriority.Critical) criticalDispatches++;
             var pendingEpoch = section.Version.State.Pending;
             if (pendingEpoch == -1) continue;
             _meshGenerator.MeshChunk(
@@ -1003,6 +1069,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 section.PendingTrace,
                 section.LifetimeId);
         }
+        _criticalDispatchesSincePump = 0;
     }
 
     private (int Tier, int DeadlineFrame, double DistanceSquared, long EnqueuedAt) RankPendingMesh(
@@ -1395,6 +1462,19 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         return false;
     }
 
+    public bool IsMeshCurrent(int blockX, int blockY, int blockZ) =>
+        TryGetMeshState(blockX, blockY, blockZ, out var state, out var hasRenderer) &&
+        hasRenderer && state.Pending == -1 && state.Epoch == state.LastMeshed;
+
+    public long CriticalDeadlineMissesAt(int blockX, int blockY, int blockZ)
+    {
+        var pos = new Vector3D<int>(
+            (int)Math.Floor(blockX / (double)SubChunkRenderer.Size) * SubChunkRenderer.Size,
+            (int)Math.Floor(blockY / (double)SubChunkRenderer.Size) * SubChunkRenderer.Size,
+            (int)Math.Floor(blockZ / (double)SubChunkRenderer.Size) * SubChunkRenderer.Size);
+        return _meshLifecycle.CriticalDeadlineMissesAt(pos);
+    }
+
     public bool MarkDirty(Vector3D<int> chunkPos, bool priority = false) =>
         MarkDirty(
             chunkPos,
@@ -1438,13 +1518,15 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             hasRenderer,
             requiredForStartup,
             IsInMeshSafetyRing(chunkPos, _lastViewPos),
-            IsInMeshForegroundRing(chunkPos, _lastViewPos));
+            IsInMeshForegroundRing(chunkPos, _lastViewPos),
+            section.Renderer is { LastVisibleFrame: > 0 } renderer &&
+            renderer.LastVisibleFrame >= _frameIndex - 1);
 
         var version = section.Version;
 
         version.MarkDirty();
         var deadlineFrame = requestedPriority == MeshWorkPriority.Critical
-            ? _frameIndex + CriticalMeshDeadlineFrames
+            ? _frameIndex + CriticalDeadlineFramesFor(_averageFrameDurationMs)
             : -1;
         section.RememberRequest(reason, requestedPriority, requestedAt, deadlineFrame);
         section.RecordInvalidation(reason);
@@ -1453,15 +1535,25 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         if (snapshot.HasValue)
         {
             section.BeginTrace(snapshot.Value, _frameIndex);
-            _pendingMeshUpdates.Enqueue(section, RankPendingMesh(section, _lastCamera));
+            if (requestedPriority == MeshWorkPriority.Critical &&
+                _criticalDispatchesSincePump < CriticalDispatchReserve)
+            {
+                _criticalDispatchesSincePump++;
+                _meshGenerator.MeshChunk(
+                    _world, chunkPos, snapshot.Value, _options.AlternateBlocksEnabled,
+                    requestedPriority, section.PendingTrace, section.LifetimeId);
+            }
+            else
+            {
+                _pendingMeshUpdates.Enqueue(section, RankPendingMesh(section, _lastCamera));
+            }
             return true;
         }
 
         section.PromoteTrace(section.RequestedPriority, section.RequestedDeadlineFrame);
 
         // A local request owns no world snapshot yet: advance that one keyed entry to the latest
-        // desired epoch in place. Once dispatched, signal its worker and let the cancellation
-        // completion release Pending before starting the newest authoritative revision.
+        // desired epoch in place without building a result already known to be stale.
         if (_pendingMeshUpdates.Contains(chunkPos))
         {
             var latestEpoch = version.ReplaceQueuedSnapshotWithLatest();
@@ -1469,6 +1561,15 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             _pendingMeshUpdates.Promote(chunkPos, RankPendingMesh(section, _lastCamera));
             return false;
         }
+
+
+        // Once a critical revision has a snapshot, finishing it is normally cheaper than
+        // repeatedly throwing away partial geometry. Further changes coalesce in Version.Epoch;
+        // the completed coherent mesh is installed as intermediate progress and the latest epoch
+        // is scheduled immediately afterwards.
+        if (section.RequestedPriority == MeshWorkPriority.Critical &&
+            _meshGenerator.HasOutstandingAtPriority(chunkPos, MeshWorkPriority.Critical))
+            return false;
 
         if (_meshGenerator.CancelObsolete(chunkPos, section.RequestedPriority))
         {
@@ -1543,16 +1644,31 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         bool hasRenderer,
         bool requiredForStartup,
         bool withinSafetyRing,
-        bool withinForegroundRing)
+        bool withinForegroundRing,
+        bool recentlyPresented = false)
     {
-        if ((reason & SectionDirtyReason.BlockChange) != 0 && hasRenderer)
+        // Residency is not visibility. Random ticks and fluids behind the camera must keep their
+        // meshes current, but they do not share the presentation deadline of something the player
+        // can presently see. The radial safety ring remains foreground work through discovery.
+        var immediatePresentation = recentlyPresented;
+        if ((reason & SectionDirtyReason.BlockChange) != 0 && hasRenderer && immediatePresentation)
             return MeshWorkPriority.Critical;
-        if ((reason & SectionDirtyReason.Lighting) != 0 && hasRenderer && withinSafetyRing)
+        if ((reason & SectionDirtyReason.Lighting) != 0 && hasRenderer && immediatePresentation)
             return MeshWorkPriority.Critical;
         if (requiredForStartup ||
             (reason & SectionDirtyReason.InitialTerrain) != 0 && withinForegroundRing)
             return MeshWorkPriority.Foreground;
         return MeshWorkPriority.Background;
+    }
+
+    internal static int CriticalDeadlineFramesFor(double averageFrameDurationMs)
+    {
+        var safeFrameDuration = double.IsFinite(averageFrameDurationMs)
+            ? Math.Clamp(averageFrameDurationMs, 1.0, CriticalMeshDeadlineMs)
+            : 1000.0 / 60.0;
+        return Math.Max(
+            MinimumCriticalMeshDeadlineFrames,
+            (int)Math.Ceiling(CriticalMeshDeadlineMs / safeFrameDuration));
     }
 
     internal static MeshWorkPriority ClassifyRequestedMeshPriority(

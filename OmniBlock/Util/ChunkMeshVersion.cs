@@ -80,11 +80,7 @@ public class ChunkMeshVersion
         if (_pendingMesh == snapshotEpoch)
         {
             _pendingMesh = -1;
-
-            if (_epoch == snapshotEpoch)
-            {
-                _lastMeshed = snapshotEpoch;
-            }
+            _lastMeshed = Math.Max(_lastMeshed, snapshotEpoch);
         }
     }
 

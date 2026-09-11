@@ -64,4 +64,26 @@ public sealed class ChunkMeshVersionTests
             version.Release();
         }
     }
+
+    [Fact]
+    public void Accepted_stale_mesh_advances_visible_progress_and_leaves_latest_epoch_eligible()
+    {
+        var version = ChunkMeshVersion.Get();
+        try
+        {
+            version.MarkDirty();
+            Assert.Equal(1, version.SnapshotIfNeeded());
+            version.MarkDirty();
+
+            version.CompleteMesh(1);
+
+            Assert.Equal((2, 1, -1), version.State);
+            Assert.True(version.IsModified());
+            Assert.Equal(2, version.SnapshotIfNeeded());
+        }
+        finally
+        {
+            version.Release();
+        }
+    }
 }

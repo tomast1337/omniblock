@@ -31,6 +31,8 @@ public sealed class LuauTestHostIntegrationTests
             brokenBlock = (x, y, z);
             return true;
         };
+        LuauTestHost.IsMeshCurrent = (x, y, z) => (x, y, z) == (4, 61, 7);
+        LuauTestHost.MeshDeadlineMissCount = (x, y, z) => x + y + z;
         LuauTestHost.SetFlying = value => flying = value;
         LuauTestHost.Teleport = (x, y, z) => teleport = (x, y, z);
         LuauTestHost.SetLook = (yaw, pitch) => look = (yaw, pitch);
@@ -51,6 +53,8 @@ public sealed class LuauTestHostIntegrationTests
             Assert.True(state.TryExecute(
                 "OMNI.test.pass(); OMNI.test.fail('broken'); OMNI.test.creative(); " +
                 "assert(OMNI.test.breakBlock(4, 61, 7)); " +
+                "assert(OMNI.test.isMeshCurrent(4, 61, 7)); " +
+                "assert(OMNI.test.meshDeadlineMissCount(4, 61, 7) == 72); " +
                 "OMNI.test.setFlying(true); OMNI.test.teleport(160, 164, 0); " +
                 "OMNI.test.setLook(45.5, 90); OMNI.test.setMovement(1, -0.5, 0.25); " +
                 "OMNI.test.flyPath(160, 256, 0, 160, 256, 160, 20); " +
@@ -77,6 +81,8 @@ public sealed class LuauTestHostIntegrationTests
             LuauTestHost.Fail = null;
             LuauTestHost.Creative = null;
             LuauTestHost.BreakBlock = null;
+            LuauTestHost.IsMeshCurrent = null;
+            LuauTestHost.MeshDeadlineMissCount = null;
             LuauTestHost.SetFlying = null;
             LuauTestHost.Teleport = null;
             LuauTestHost.SetLook = null;

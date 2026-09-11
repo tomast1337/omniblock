@@ -41,8 +41,9 @@ instead of screenshots, avoiding GPU readback while measuring the pipeline.
 `chunk-mesh-deadlines` breaks a compact patch of nearby fixture terrain through the normal
 multiplayer player-controller path. It verifies critical forward progress, deadline-accounting
 invariants, bounded cancellation counters, and that no resident near-field mesh disappears. Missed
-and currently overdue two-frame deadlines remain visible in the output and terrain artifacts; they
-are performance signals while Phase 5 adaptive frame budgets remain outstanding. `debug-smoke` is
+deadlines fail the workload; currently overdue work remains visible in the output and terrain
+artifacts. The critical deadline is 50 ms and never fewer than two rendered frames, keeping the
+contract stable for uncapped, VSync, and software-rendered CI clients. `debug-smoke` is
 launched with `--debug`, proves the
 dashboard is actually open through `OMNI.client.state.debugOpen`, enters the fixture world, and
 keeps it running long enough to exercise both ImGui and world rendering.
@@ -56,6 +57,8 @@ OMNI.test.setMovement(forward, strafe, vertical)
 OMNI.test.setMovement(0, 0, 0) -- release every movement axis
 OMNI.test.flyPath(ax, ay, az, bx, by, bz, seconds)
 OMNI.test.breakBlock(x, y, z) -- true when a non-air block was submitted for breaking
+OMNI.test.isMeshCurrent(x, y, z) -- latest section epoch has an installed mesh
+OMNI.test.meshDeadlineMissCount(x, y, z) -- section-scoped lifetime counter
 ```
 
 Movement values are clamped to `[-1, 1]`. The controls persist until changed, which lets a script
