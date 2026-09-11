@@ -145,6 +145,49 @@ public sealed class ChunkMeshSchedulingTests
                 updateRequested, hasRenderer, requiredForStartup, withinSafetyRing));
     }
 
+    [Theory]
+    [InlineData((int)SectionDirtyReason.InitialTerrain, false, false, false, true,
+        (int)MeshWorkPriority.Foreground)]
+    [InlineData((int)SectionDirtyReason.InitialTerrain, false, false, false, false,
+        (int)MeshWorkPriority.Background)]
+    [InlineData((int)SectionDirtyReason.StreamingBoundary, true, false, true, true,
+        (int)MeshWorkPriority.Background)]
+    [InlineData((int)SectionDirtyReason.BlockChange, true, false, true, true,
+        (int)MeshWorkPriority.Critical)]
+    [InlineData((int)SectionDirtyReason.Lighting, true, false, true, true,
+        (int)MeshWorkPriority.Critical)]
+    [InlineData((int)SectionDirtyReason.Lighting, true, false, false, true,
+        (int)MeshWorkPriority.Background)]
+    public void Dirty_reason_controls_lane_without_displacing_missing_foreground_terrain(
+        int reason,
+        bool hasRenderer,
+        bool requiredForStartup,
+        bool withinSafetyRing,
+        bool withinForegroundRing,
+        int expected)
+    {
+        Assert.Equal(
+            (MeshWorkPriority)expected,
+            ChunkRenderer.ClassifyRequestedMeshPriority(
+                (SectionDirtyReason)reason,
+                hasRenderer,
+                requiredForStartup,
+                withinSafetyRing,
+                withinForegroundRing));
+    }
+
+    [Theory]
+    [InlineData(8, 0, true)]
+    [InlineData(-6, 5, true)]
+    [InlineData(8, 1, false)]
+    [InlineData(9, 0, false)]
+    public void Foreground_preparation_ring_is_radial(int chunkX, int chunkZ, bool expected)
+    {
+        var position = new Vector3D<int>(chunkX * 16, 64, chunkZ * 16);
+
+        Assert.Equal(expected, ChunkRenderer.IsInMeshForegroundRing(position, View));
+    }
+
     [Fact]
     public void Prediction_favors_meshes_ahead_of_player_motion()
     {

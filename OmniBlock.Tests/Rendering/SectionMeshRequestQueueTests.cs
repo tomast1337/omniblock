@@ -10,16 +10,18 @@ public sealed class SectionMeshRequestQueueTests
     {
         SectionMeshRequestQueue queue = new();
         var pos = new Vector3D<int>(16, 64, 16);
+        using var state = State(pos, MeshWorkPriority.Background, 1);
 
-        Assert.True(queue.Enqueue(Request(pos, 1, MeshWorkPriority.Background), (3, 100, 1)));
-        Assert.False(queue.Enqueue(Request(pos, 1, MeshWorkPriority.Background), (3, 100, 1)));
-        Assert.True(queue.Promote(pos, MeshWorkPriority.Foreground, (1, 100, 1)));
+        Assert.True(queue.Enqueue(state, (3, 100, 1)));
+        Assert.False(queue.Enqueue(state, (3, 100, 1)));
+        state.RememberRequest(SectionDirtyReason.InitialTerrain, MeshWorkPriority.Foreground, 2);
+        Assert.True(queue.Promote(pos, (1, 100, 1)));
 
         Assert.Equal(1, queue.Count);
         Assert.Equal(1, queue.CountPriority(MeshWorkPriority.Foreground));
         Assert.True(queue.TryDequeue(out var result));
-        Assert.Equal(pos, result.Pos);
-        Assert.Equal(MeshWorkPriority.Foreground, result.Priority);
+        Assert.Same(state, result);
+        Assert.Equal(MeshWorkPriority.Foreground, result.RequestedPriority);
         Assert.Equal(0, queue.Count);
     }
 
@@ -27,51 +29,64 @@ public sealed class SectionMeshRequestQueueTests
     public void Critical_and_foreground_lanes_overtake_closer_background_work()
     {
         SectionMeshRequestQueue queue = new();
-        queue.Enqueue(Request(new Vector3D<int>(0, 64, 0), 1, MeshWorkPriority.Background), (3, 0, 1));
-        queue.Enqueue(Request(new Vector3D<int>(160, 64, 0), 2, MeshWorkPriority.Foreground), (1, 100, 2));
-        queue.Enqueue(Request(new Vector3D<int>(320, 64, 0), 3, MeshWorkPriority.Critical), (0, 400, 3));
+        using var backgroundState = State(new Vector3D<int>(0, 64, 0), MeshWorkPriority.Background, 1);
+        using var foregroundState = State(new Vector3D<int>(160, 64, 0), MeshWorkPriority.Foreground, 2);
+        using var criticalState = State(new Vector3D<int>(320, 64, 0), MeshWorkPriority.Critical, 3);
+        queue.Enqueue(backgroundState, (3, 0, 1));
+        queue.Enqueue(foregroundState, (1, 100, 2));
+        queue.Enqueue(criticalState, (0, 400, 3));
 
         Assert.True(queue.TryDequeue(out var critical));
         Assert.True(queue.TryDequeue(out var foreground));
         Assert.True(queue.TryDequeue(out var background));
 
-        Assert.Equal(MeshWorkPriority.Critical, critical.Priority);
-        Assert.Equal(MeshWorkPriority.Foreground, foreground.Priority);
-        Assert.Equal(MeshWorkPriority.Background, background.Priority);
+        Assert.Equal(MeshWorkPriority.Critical, critical.RequestedPriority);
+        Assert.Equal(MeshWorkPriority.Foreground, foreground.RequestedPriority);
+        Assert.Equal(MeshWorkPriority.Background, background.RequestedPriority);
     }
 
     [Fact]
     public void Reprioritizing_after_camera_movement_changes_order_within_a_lane()
     {
         SectionMeshRequestQueue queue = new();
-        var formerlyNear = Request(new Vector3D<int>(0, 64, 0), 1, MeshWorkPriority.Background);
-        var newlyNear = Request(new Vector3D<int>(160, 64, 0), 2, MeshWorkPriority.Background);
+        using var formerlyNear = State(new Vector3D<int>(0, 64, 0), MeshWorkPriority.Background, 1);
+        using var newlyNear = State(new Vector3D<int>(160, 64, 0), MeshWorkPriority.Background, 2);
         queue.Enqueue(formerlyNear, (3, 0, 1));
         queue.Enqueue(newlyNear, (3, 100, 2));
 
-        queue.Reprioritize(info => (3, info.Pos == newlyNear.Pos ? 0 : 100, info.EnqueuedAt));
+        queue.Reprioritize(state =>
+            (3, state.Position == newlyNear.Position ? 0 : 100, state.RequestedAt));
 
         Assert.True(queue.TryDequeue(out var result));
-        Assert.Equal(newlyNear.Pos, result.Pos);
+        Assert.Same(newlyNear, result);
     }
 
     [Fact]
     public void Removing_evicted_sections_leaves_no_live_heap_entry()
     {
         SectionMeshRequestQueue queue = new();
-        queue.Enqueue(Request(new Vector3D<int>(0, 64, 0), 1, MeshWorkPriority.Background), (3, 0, 1));
-        queue.Enqueue(Request(new Vector3D<int>(160, 64, 0), 2, MeshWorkPriority.Background), (3, 100, 2));
+        using var removedState = State(new Vector3D<int>(0, 64, 0), MeshWorkPriority.Background, 1);
+        using var retainedState = State(new Vector3D<int>(160, 64, 0), MeshWorkPriority.Background, 2);
+        queue.Enqueue(removedState, (3, 0, 1));
+        queue.Enqueue(retainedState, (3, 100, 2));
 
-        queue.RemoveWhere(info => info.Pos.X == 0);
+        queue.RemoveWhere(state => state.Position.X == 0);
 
         Assert.Equal(1, queue.Count);
         Assert.True(queue.TryDequeue(out var result));
-        Assert.Equal(160, result.Pos.X);
+        Assert.Same(retainedState, result);
         Assert.False(queue.TryDequeue(out _));
     }
 
-    private static ChunkToMeshInfo Request(
+    private static SectionRenderState State(
         Vector3D<int> position,
-        long version,
-        MeshWorkPriority priority) => new(position, version, priority, version);
+        MeshWorkPriority priority,
+        long requestedAt)
+    {
+        var state = new SectionRenderState(position);
+        state.RememberRequest(SectionDirtyReason.InitialTerrain, priority, requestedAt);
+        state.Version.MarkDirty();
+        state.Version.SnapshotIfNeeded();
+        return state;
+    }
 }

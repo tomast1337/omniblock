@@ -34,4 +34,13 @@ public sealed class ChunkMeshWorkerCountTests
     public void Safety_discovery_keeps_a_small_reserved_foreground_window(
         int foregroundPending, int workers, int expected) =>
         Assert.Equal(expected, ChunkRenderer.GetMeshSafetyDiscoveryCapacity(foregroundPending, workers));
+
+    [Theory]
+    [InlineData(0, 8, 32)]
+    [InlineData(24, 8, 8)]
+    [InlineData(32, 8, 0)]
+    [InlineData(100, 8, 0)]
+    public void Foreground_ring_admission_is_bounded(
+        int foregroundPending, int workers, int expected) =>
+        Assert.Equal(expected, ChunkRenderer.GetMeshForegroundDiscoveryCapacity(foregroundPending, workers));
 }

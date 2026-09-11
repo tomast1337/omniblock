@@ -8,7 +8,7 @@ namespace OmniBlock.Client.Rendering.Chunks;
 /// </summary>
 internal sealed class SectionMeshRequestQueue
 {
-    internal delegate (int Tier, double DistanceSquared, long EnqueuedAt) Ranker(ChunkToMeshInfo info);
+    internal delegate (int Tier, double DistanceSquared, long EnqueuedAt) Ranker(SectionRenderState state);
 
     private readonly PriorityQueue<QueueNode, QueueRank>[] _lanes =
     [
@@ -21,58 +21,50 @@ internal sealed class SectionMeshRequestQueue
     private long _token;
 
     public int Count => _entries.Count;
-    public IEnumerable<ChunkToMeshInfo> Items => _entries.Values.Select(static entry => entry.Info);
+    public IEnumerable<SectionRenderState> Items => _entries.Values.Select(static entry => entry.State);
 
     public int CountPriority(MeshWorkPriority priority) =>
-        _entries.Values.Count(entry => entry.Info.Priority == priority);
+        _entries.Values.Count(entry => entry.State.RequestedPriority == priority);
 
     public bool Contains(Vector3D<int> position) => _entries.ContainsKey(position);
 
-    public bool Enqueue(ChunkToMeshInfo info, in (int Tier, double DistanceSquared, long EnqueuedAt) rank)
+    public bool Enqueue(SectionRenderState state, in (int Tier, double DistanceSquared, long EnqueuedAt) rank)
     {
-        if (_entries.TryGetValue(info.Pos, out var existing))
+        if (_entries.TryGetValue(state.Position, out var existing))
         {
-            var priority = MaxPriority(existing.Info.Priority, info.Priority);
-            existing.Info = new ChunkToMeshInfo(
-                info.Pos,
-                info.Version,
-                priority,
-                Math.Min(existing.Info.EnqueuedAt, info.EnqueuedAt));
-            Push(existing, (rank.Tier, rank.DistanceSquared, existing.Info.EnqueuedAt));
+            existing.State = state;
+            existing.QueuedPriority = state.RequestedPriority;
+            Push(existing, rank);
             return false;
         }
 
-        var entry = new Entry(info);
-        _entries.Add(info.Pos, entry);
+        var entry = new Entry(state);
+        _entries.Add(state.Position, entry);
         Push(entry, rank);
         return true;
     }
 
     public bool Promote(
         Vector3D<int> position,
-        MeshWorkPriority priority,
         in (int Tier, double DistanceSquared, long EnqueuedAt) rank)
     {
-        if (!_entries.TryGetValue(position, out var entry) || priority <= entry.Info.Priority)
+        if (!_entries.TryGetValue(position, out var entry) ||
+            entry.State.RequestedPriority <= entry.QueuedPriority)
             return false;
 
-        entry.Info = new ChunkToMeshInfo(
-            entry.Info.Pos,
-            entry.Info.Version,
-            priority,
-            entry.Info.EnqueuedAt);
-        Push(entry, (rank.Tier, rank.DistanceSquared, entry.Info.EnqueuedAt));
+        entry.QueuedPriority = entry.State.RequestedPriority;
+        Push(entry, rank);
         return true;
     }
 
-    public bool TryDequeue(out ChunkToMeshInfo info)
+    public bool TryDequeue(out SectionRenderState state)
     {
         var hasCritical = HasLive(MeshWorkPriority.Critical);
         var hasForeground = HasLive(MeshWorkPriority.Foreground);
         var hasBackground = HasLive(MeshWorkPriority.Background);
         if (!hasCritical && !hasForeground && !hasBackground)
         {
-            info = default;
+            state = null!;
             return false;
         }
 
@@ -80,18 +72,18 @@ internal sealed class SectionMeshRequestQueue
         var lane = _lanes[(int)priority];
         Prune(lane);
         var node = lane.Dequeue();
-        info = _entries[node.Position].Info;
+        state = _entries[node.Position].State;
         _entries.Remove(node.Position);
         return true;
     }
 
     public bool Remove(Vector3D<int> position) => _entries.Remove(position);
 
-    public void RemoveWhere(Predicate<ChunkToMeshInfo> predicate)
+    public void RemoveWhere(Predicate<SectionRenderState> predicate)
     {
         foreach (var (position, entry) in _entries.ToArray())
         {
-            if (predicate(entry.Info)) _entries.Remove(position);
+            if (predicate(entry.State)) _entries.Remove(position);
         }
     }
 
@@ -99,7 +91,7 @@ internal sealed class SectionMeshRequestQueue
     public void Reprioritize(Ranker ranker)
     {
         foreach (var lane in _lanes) lane.Clear();
-        foreach (var entry in _entries.Values) Push(entry, ranker(entry.Info));
+        foreach (var entry in _entries.Values) Push(entry, ranker(entry.State));
     }
 
     public void Clear()
@@ -125,17 +117,15 @@ internal sealed class SectionMeshRequestQueue
     private void Push(Entry entry, in (int Tier, double DistanceSquared, long EnqueuedAt) rank)
     {
         entry.Token = ++_token;
-        _lanes[(int)entry.Info.Priority].Enqueue(
-            new QueueNode(entry.Info.Pos, entry.Token),
+        _lanes[(int)entry.QueuedPriority].Enqueue(
+            new QueueNode(entry.State.Position, entry.Token),
             new QueueRank(rank.Tier, rank.DistanceSquared, rank.EnqueuedAt, entry.Token));
     }
 
-    private static MeshWorkPriority MaxPriority(MeshWorkPriority left, MeshWorkPriority right) =>
-        left >= right ? left : right;
-
-    private sealed class Entry(ChunkToMeshInfo info)
+    private sealed class Entry(SectionRenderState state)
     {
-        public ChunkToMeshInfo Info = info;
+        public SectionRenderState State = state;
+        public MeshWorkPriority QueuedPriority = state.RequestedPriority;
         public long Token;
     }
 
@@ -158,9 +148,3 @@ internal sealed class SectionMeshRequestQueue
         }
     }
 }
-
-internal readonly record struct ChunkToMeshInfo(
-    Vector3D<int> Pos,
-    long Version,
-    MeshWorkPriority Priority,
-    long EnqueuedAt = 0);
