@@ -91,6 +91,11 @@ diagnostics; performance budgets should account for the CI renderer and host har
   IDs and stages, plus request/stage ages in milliseconds. This remains useful when a stalled
   request's original events have rolled out of the bounded history.
 
+The terrain header also reports `leadingEdgeQueued`, `leadingEdgePending`, and
+`evictionGraceMeshes`. The first is the coalesced frontier waiting for loaded source data, the
+second is admitted frontier work, and the last counts resident meshes temporarily preserved outside
+the `R + 2` retention boundary during the 30-frame hysteresis window.
+
 Lifecycle stages distinguish invalidation, deferred production, queue admission, snapshotting,
 worker queueing, building, awaiting upload, upload, and first draw recording. `EmptyReady` completes
 empty meshes without pretending they need a draw. Events with request ID zero describe the section

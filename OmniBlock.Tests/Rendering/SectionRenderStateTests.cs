@@ -101,4 +101,27 @@ public sealed class SectionRenderStateTests
         Assert.Equal(SectionDirtyReason.None, state.DirtyReasons);
         Assert.NotNull(state.Version.SnapshotIfNeeded());
     }
+
+    [Fact]
+    public void Residency_requires_consecutive_frames_outside_the_retention_boundary()
+    {
+        using var state = new SectionRenderState(default);
+
+        Assert.False(state.ShouldEvict(false, 100, 30));
+        Assert.Equal(100, state.OutsideRetentionSinceFrame);
+        Assert.False(state.ShouldEvict(false, 129, 30));
+        Assert.True(state.ShouldEvict(false, 130, 30));
+    }
+
+    [Fact]
+    public void Reentering_retention_resets_the_eviction_grace_period()
+    {
+        using var state = new SectionRenderState(default);
+        Assert.False(state.ShouldEvict(false, 100, 30));
+        Assert.False(state.ShouldEvict(true, 125, 30));
+        Assert.Equal(-1, state.OutsideRetentionSinceFrame);
+        Assert.False(state.ShouldEvict(false, 140, 30));
+        Assert.False(state.ShouldEvict(false, 169, 30));
+        Assert.True(state.ShouldEvict(false, 170, 30));
+    }
 }

@@ -19,7 +19,7 @@ internal sealed partial class LuauCompletion
     private static readonly string[] s_clientMembers = ["state", "worlds"];
 
     private static readonly string[] s_clientStateMembers =
-        ["backgroundPending", "foregroundPending", "frameTimeMs", "meshAwaitingDraw", "meshAwaitingUpload", "meshBuildFailureCount", "meshCancelledCount", "meshPending", "meshReadyRadius", "meshRequestToGpuMs", "meshSafetyExpectedSections", "meshSafetyHoles", "meshSafetyLoadedColumns", "meshSupersededCount", "oldestForegroundAge", "playerReady", "playerX", "playerY", "playerZ", "presentationRegressionCount", "presentedMeshCount", "residentMeshCount", "worldId", "worldLoaded"];
+        ["backgroundPending", "foregroundPending", "frameTimeMs", "meshAwaitingDraw", "meshAwaitingUpload", "meshBuildFailureCount", "meshCancelledCount", "meshEvictionGraceCount", "meshLeadingEdgePending", "meshLeadingEdgeQueued", "meshPending", "meshReadyRadius", "meshRequestToGpuMs", "meshSafetyExpectedSections", "meshSafetyHoles", "meshSafetyLoadedColumns", "meshSupersededCount", "oldestForegroundAge", "playerReady", "playerX", "playerY", "playerZ", "presentationRegressionCount", "presentedMeshCount", "residentMeshCount", "worldId", "worldLoaded"];
 
     private static readonly string[] s_testMembers = ["creative", "dumpTerrain", "fail", "flyPath", "pass", "screenshot", "setFlying", "setLook", "setMovement", "teleport"];
     private static readonly string[] s_worldMembers = ["list", "load"];

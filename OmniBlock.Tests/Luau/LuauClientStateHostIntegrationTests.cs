@@ -130,6 +130,9 @@ public sealed class LuauClientStateHostIntegrationTests
         LuauClientStateHost.MeshBuildFailureCount = () => value;
         LuauClientStateHost.MeshAwaitingUpload = () => value;
         LuauClientStateHost.MeshAwaitingDraw = () => value;
+        LuauClientStateHost.MeshLeadingEdgeQueued = () => value;
+        LuauClientStateHost.MeshLeadingEdgePending = () => value;
+        LuauClientStateHost.MeshEvictionGraceCount = () => value;
         try
         {
             Assert.True(state.TryExecute(LuauDomHost.Bootstrap, out var error), error);
@@ -140,12 +143,18 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.meshBuildFailureCount", "0");
             AssertValue(state, "OMNI.client.state.meshAwaitingUpload", "0");
             AssertValue(state, "OMNI.client.state.meshAwaitingDraw", "0");
+            AssertValue(state, "OMNI.client.state.meshLeadingEdgeQueued", "0");
+            AssertValue(state, "OMNI.client.state.meshLeadingEdgePending", "0");
+            AssertValue(state, "OMNI.client.state.meshEvictionGraceCount", "0");
             value = 7;
             AssertValue(state, "OMNI.client.state.meshCancelledCount", "7");
             AssertValue(state, "OMNI.client.state.meshSupersededCount", "7");
             AssertValue(state, "OMNI.client.state.meshBuildFailureCount", "7");
             AssertValue(state, "OMNI.client.state.meshAwaitingUpload", "7");
             AssertValue(state, "OMNI.client.state.meshAwaitingDraw", "7");
+            AssertValue(state, "OMNI.client.state.meshLeadingEdgeQueued", "7");
+            AssertValue(state, "OMNI.client.state.meshLeadingEdgePending", "7");
+            AssertValue(state, "OMNI.client.state.meshEvictionGraceCount", "7");
             Assert.False(state.TryExecute("OMNI.client.state.meshCancelledCount = 0", out error));
             Assert.Contains("read-only", error);
             LuauClientStateHost.MeshAwaitingUpload = () => throw new InvalidOperationException();
@@ -158,6 +167,9 @@ public sealed class LuauClientStateHostIntegrationTests
             LuauClientStateHost.MeshBuildFailureCount = null;
             LuauClientStateHost.MeshAwaitingUpload = null;
             LuauClientStateHost.MeshAwaitingDraw = null;
+            LuauClientStateHost.MeshLeadingEdgeQueued = null;
+            LuauClientStateHost.MeshLeadingEdgePending = null;
+            LuauClientStateHost.MeshEvictionGraceCount = null;
         }
         AssertValue(state, "OMNI.client.state.meshCancelledCount", "0");
     }

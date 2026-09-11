@@ -43,6 +43,9 @@ export type OmniClientState = {
     meshBuildFailureCount: number,
     meshAwaitingUpload: number,
     meshAwaitingDraw: number,
+    meshLeadingEdgeQueued: number,
+    meshLeadingEdgePending: number,
+    meshEvictionGraceCount: number,
     meshRequestToGpuMs: number,
 }
 

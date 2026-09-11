@@ -269,4 +269,62 @@ public sealed class ChunkMeshSchedulingTests
         Assert.Equal(4, speculative.Tier);
         Assert.True(background.CompareTo(speculative) < 0);
     }
+
+    [Fact]
+    public void Leading_edge_contains_only_columns_newly_entering_the_predicted_prepare_disk()
+    {
+        Vector3D<int> previous = new(0, 4, 0);
+        Vector3D<int> current = new(1, 4, 0);
+        var edge = ChunkRenderer.GetLeadingEdgeColumns(previous, current, 4);
+
+        Assert.NotEmpty(edge);
+        Assert.Contains(new Vector2D<int>(6, 0), edge); // one cap column ahead of current R
+        Assert.DoesNotContain(new Vector2D<int>(-4, 0), edge); // retained trailing boundary
+        Assert.All(edge, column =>
+        {
+            var oldDx = column.X - previous.X;
+            var oldDz = column.Y - previous.Z;
+            Assert.True(oldDx * oldDx + oldDz * oldDz > 16);
+            var futureDx = column.X - 2;
+            var futureDz = column.Y;
+            Assert.True(futureDx * futureDx + futureDz * futureDz <= 16);
+            var currentDx = column.X - current.X;
+            var currentDz = column.Y - current.Z;
+            Assert.True(currentDx * currentDx + currentDz * currentDz <= 25);
+        });
+    }
+
+    [Fact]
+    public void Vertical_section_crossings_do_not_create_a_horizontal_leading_edge()
+    {
+        Assert.Empty(ChunkRenderer.GetLeadingEdgeColumns(
+            new Vector3D<int>(3, 4, -2),
+            new Vector3D<int>(3, 5, -2),
+            4));
+    }
+
+    [Fact]
+    public void Leading_edge_rotates_with_motion_and_orders_the_front_first()
+    {
+        Vector3D<int> previous = new(10, 4, 10);
+        Vector3D<int> current = new(9, 4, 11);
+        var edge = ChunkRenderer.GetLeadingEdgeColumns(previous, current, 4);
+
+        Assert.Contains(new Vector2D<int>(8, 15), edge);
+        var projections = edge.Select(column => -column.X + column.Y).ToArray();
+        Assert.Equal(projections.OrderDescending(), projections);
+    }
+
+    [Theory]
+    [InlineData(4, 0, 4, true)]
+    [InlineData(6, 0, 4, true)]
+    [InlineData(7, 0, 4, false)]
+    [InlineData(-6, 0, 4, true)]
+    public void Retention_boundary_has_a_two_chunk_margin(
+        int chunkX, int chunkZ, int prepareRadius, bool expected)
+    {
+        var position = new Vector3D<int>(chunkX * 16, 64, chunkZ * 16);
+        Assert.Equal(expected, ChunkRenderer.IsInHorizontalChunkRadius(
+            position, View, prepareRadius + ChunkRenderer.MeshRetentionMargin));
+    }
 }

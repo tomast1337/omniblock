@@ -37,6 +37,9 @@ for sample = 1, 9 do
         " presented=" .. tostring(OMNI.client.state.presentedMeshCount) ..
         " foreground=" .. tostring(OMNI.client.state.foregroundPending) ..
         " background=" .. tostring(OMNI.client.state.backgroundPending) ..
+        " leadingQueued=" .. tostring(OMNI.client.state.meshLeadingEdgeQueued) ..
+        " leadingPending=" .. tostring(OMNI.client.state.meshLeadingEdgePending) ..
+        " evictionGrace=" .. tostring(OMNI.client.state.meshEvictionGraceCount) ..
         " oldestForeground=" .. tostring(OMNI.client.state.oldestForegroundAge) ..
         " presentationRegressions=" .. tostring(OMNI.client.state.presentationRegressionCount))
     safetyReady = OMNI.client.state.meshSafetyLoadedColumns == 29 and
@@ -70,6 +73,8 @@ for chunk = 1, 10 do
     assert(OMNI.client.state.meshAwaitingDraw >= 0, "negative uploaded-mesh gauge")
     assert(OMNI.client.state.meshCancelledCount >= OMNI.client.state.meshSupersededCount,
         "superseded mesh count exceeds all cancellations")
+    assert(OMNI.client.state.meshLeadingEdgePending <= 16,
+        "leading-edge admission exceeded its two-per-worker bound")
 end
 
 OMNI.wait(0.5)

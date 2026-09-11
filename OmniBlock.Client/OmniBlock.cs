@@ -453,6 +453,9 @@ public partial class OmniBlock :
             LuauClientStateHost.MeshBuildFailureCount = () => WorldRenderer?.ChunkRenderer.MeshLifecycle.BuildFailures ?? 0;
             LuauClientStateHost.MeshAwaitingUpload = () => WorldRenderer?.ChunkRenderer.MeshLifecycle.AwaitingUpload ?? 0;
             LuauClientStateHost.MeshAwaitingDraw = () => WorldRenderer?.ChunkRenderer.MeshLifecycle.AwaitingDraw ?? 0;
+            LuauClientStateHost.MeshLeadingEdgeQueued = () => WorldRenderer?.ChunkRenderer.LeadingEdgeQueued ?? 0;
+            LuauClientStateHost.MeshLeadingEdgePending = () => WorldRenderer?.ChunkRenderer.LeadingEdgePending ?? 0;
+            LuauClientStateHost.MeshEvictionGraceCount = () => WorldRenderer?.ChunkRenderer.EvictionGraceMeshCount ?? 0;
             LuauClientStateHost.MeshCancelledCount = () => WorldRenderer?.ChunkRenderer.MeshLifecycle.Cancelled ?? 0;
             LuauClientStateHost.MeshRequestToGpuMs = () => WorldRenderer?.ChunkRenderer.MeshProfile.RequestToUploadMs ?? 0;
             LuauClientStateHost.FrameTimeMs = () => MetricRegistry.Get(ClientMetrics.FrameTimeMs);
@@ -829,6 +832,9 @@ public partial class OmniBlock :
             LuauClientStateHost.MeshBuildFailureCount = null;
             LuauClientStateHost.MeshAwaitingUpload = null;
             LuauClientStateHost.MeshAwaitingDraw = null;
+            LuauClientStateHost.MeshLeadingEdgeQueued = null;
+            LuauClientStateHost.MeshLeadingEdgePending = null;
+            LuauClientStateHost.MeshEvictionGraceCount = null;
             LuauClientStateHost.MeshRequestToGpuMs = null;
             LuauClientStateHost.FrameTimeMs = null;
             LuauClientStateHost.MeshSafetyLoadedColumns = null;

@@ -53,4 +53,14 @@ public sealed class ChunkMeshWorkerCountTests
         int streamingPending, int workers, int expected) =>
         Assert.Equal(expected,
             ChunkRenderer.GetStreamingBoundaryAdmissionCapacity(streamingPending, workers));
+
+    [Theory]
+    [InlineData(0, 8, 16)]
+    [InlineData(11, 8, 5)]
+    [InlineData(16, 8, 0)]
+    [InlineData(100, 8, 0)]
+    public void Leading_edge_has_an_independent_bounded_admission_window(
+        int leadingPending, int workers, int expected) =>
+        Assert.Equal(expected,
+            ChunkRenderer.GetLeadingEdgeAdmissionCapacity(leadingPending, workers));
 }

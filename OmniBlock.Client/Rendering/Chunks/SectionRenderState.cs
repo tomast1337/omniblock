@@ -11,7 +11,8 @@ internal enum SectionDirtyReason : byte
     StreamingBoundary = 1 << 1,
     BlockChange = 1 << 2,
     Lighting = 1 << 3,
-    Maintenance = 1 << 4
+    Maintenance = 1 << 4,
+    LeadingEdge = 1 << 5
 }
 
 /// <summary>
@@ -25,7 +26,20 @@ internal sealed class SectionRenderState(Vector3D<int> position, MeshLifecycleDi
     public MeshLifecycleRequest? PendingTrace { get; private set; }
     public MeshLifecycleRequest? ResidentTrace { get; private set; }
     public bool IsDisposed { get; private set; }
+    public int OutsideRetentionSinceFrame { get; private set; } = -1;
     public bool OwnsResult(long sectionId) => !IsDisposed && LifetimeId == sectionId;
+
+    public bool ShouldEvict(bool insideRetention, int frame, int graceFrames)
+    {
+        if (insideRetention)
+        {
+            OutsideRetentionSinceFrame = -1;
+            return false;
+        }
+
+        if (OutsideRetentionSinceFrame < 0) OutsideRetentionSinceFrame = frame;
+        return frame - OutsideRetentionSinceFrame >= graceFrames;
+    }
     public Vector3D<int> Position { get; } = position;
     public ChunkMeshVersion Version { get; } = ChunkMeshVersion.Get();
     public SubChunkRenderer? Renderer { get; private set; }
