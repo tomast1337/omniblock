@@ -63,6 +63,13 @@ public static unsafe class LuauClientStateHost
                                             if key == "terrainUniformArenaGrowths" then return __ClientState.terrainUniformArenaGrowths() end
                                             if key == "findVisibleMs" then return __ClientState.findVisibleMs() end
                                             if key == "terrainSubmitCpuMs" then return __ClientState.terrainSubmitCpuMs() end
+                                            if key == "entityLodObserved" or key == "entityLodIntendedImpostors" or
+                                                key == "entityLodModelSubmissions" or key == "entityLodImpostorSubmissions" or
+                                                key == "entityLodUnsupportedProvider" or key == "entityLodUnsupportedState" or
+                                                key == "entityLodInvalidView" or key == "entityLodCapacityFallbacks" or
+                                                key == "entityLodStateCount" or key == "entityLodResets" then
+                                                return __ClientState.entityLod(key)
+                                            end
                                             if key == "oldestForegroundAge" then return __ClientState.oldestForegroundAge() end
                                             if key == "presentationRegressionCount" then return __ClientState.presentationRegressionCount() end
                                             if key == "playerX" then return __ClientState.playerX() end
@@ -129,6 +136,7 @@ public static unsafe class LuauClientStateHost
     public static Func<double>? TerrainUniformArenaGrowths;
     public static Func<double>? FindVisibleMs;
     public static Func<double>? TerrainSubmitCpuMs;
+    public static Func<string, double>? EntityLodMetric;
     public static Func<double>? OldestForegroundAge;
     public static Func<double>? PresentationRegressionCount;
     public static Func<double>? PlayerX;
@@ -137,7 +145,7 @@ public static unsafe class LuauClientStateHost
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 60);
+        LuauNative.lua_createtable(l, 0, 61);
         Add(l, "worldLoaded", &WorldLoadedClosure);
         Add(l, "playerReady", &PlayerReadyClosure);
         Add(l, "worldId", &WorldIdClosure);
@@ -191,6 +199,7 @@ public static unsafe class LuauClientStateHost
         Add(l, "terrainUniformArenaGrowths", &TerrainUniformArenaGrowthsClosure);
         Add(l, "findVisibleMs", &FindVisibleMsClosure);
         Add(l, "terrainSubmitCpuMs", &TerrainSubmitCpuMsClosure);
+        Add(l, "entityLod", &EntityLodClosure);
         Add(l, "oldestForegroundAge", &OldestForegroundAgeClosure);
         Add(l, "presentationRegressionCount", &PresentationRegressionCountClosure);
         Add(l, "playerX", &PlayerXClosure);
@@ -422,6 +431,21 @@ public static unsafe class LuauClientStateHost
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int TerrainSubmitCpuMsClosure(IntPtr l) => PushNumber(l, TerrainSubmitCpuMs);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int EntityLodClosure(IntPtr l)
+    {
+        double value = 0;
+        try
+        {
+            var pointer = LuauNative.lua_tolstring(l, 1, out var length);
+            if (pointer != IntPtr.Zero)
+                value = EntityLodMetric?.Invoke(Marshal.PtrToStringUTF8(pointer, (int)length) ?? "") ?? 0;
+        }
+        catch { }
+        LuauNative.lua_pushnumber(l, value);
+        return 1;
+    }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int OldestForegroundAgeClosure(IntPtr l)

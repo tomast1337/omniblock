@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Diagnostics;
 using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Blocks.Entities;
@@ -82,6 +83,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     }
 
     public int CountEntitiesTotal { get; private set; }
+    internal EntityLodSelector EntityLod { get; } = new();
     public int CountEntitiesRendered { get; private set; }
     public int CountEntitiesHidden { get; private set; }
     public int CountBlockEntitiesTotal { get; private set; }
@@ -102,6 +104,9 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void Dispose()
     {
+        if (_world is Worlds.ClientWorld clientWorld)
+            clientWorld.NetworkHandler.PresentationRelocated -= OnPresentationRelocated;
+        EntityLod.Clear();
         ChunkRenderer?.Dispose();
 
         _stars.Dispose();
@@ -437,10 +442,15 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void ChangeWorld(World world)
     {
+        if (_world is Worlds.ClientWorld previousClientWorld)
+            previousClientWorld.NetworkHandler.PresentationRelocated -= OnPresentationRelocated;
+        EntityLod.Clear();
         _world?.EventListeners.Remove(this);
 
         EntityRenderDispatcher.Instance.World = world;
         _world = world;
+        if (_world is Worlds.ClientWorld clientWorld)
+            clientWorld.NetworkHandler.PresentationRelocated += OnPresentationRelocated;
         if (world != null)
         {
             world.EventListeners.Add(this);
@@ -480,10 +490,12 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     {
         if (_renderEntitiesStartupCounter > 0)
         {
+            EntityLod.Clear();
             --_renderEntitiesStartupCounter;
         }
         else
         {
+            using var entityMeasurement = EntityPresentationMetrics.Begin();
             BlockEntityRenderer.Instance.CacheActiveRenderInfo(_world, _textureManager, _game.TextRenderer, _game.Camera, partialTicks);
             EntityRenderDispatcher.Instance.CacheRenderInfo(_world, _textureManager, _game.TextRenderer, _game.Camera, _game.Options, partialTicks);
 
@@ -496,6 +508,15 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             CountBlockEntitiesRendered = 0;
             CountBlockEntitiesHidden = 0;
             var camera = _game.Camera;
+            var look = camera.GetLook(partialTicks);
+            var cameraForward = new Vector3((float)look.X, (float)look.Y, (float)look.Z);
+            var lodCamera = new LodPoint(cameraPos.X, cameraPos.Y, cameraPos.Z);
+            var controller = _game.GameRenderer.CameraController;
+            var lodFov = controller.GetFov(partialTicks);
+            var effectiveLodFov = controller.CameraZoom > 0 && double.IsFinite(controller.CameraZoom) ?
+                Math.Atan(Math.Tan(lodFov * Math.PI / 360) / controller.CameraZoom) * 360 / Math.PI : double.NaN;
+            EntityLod.BeginFrame(_world, _world.Content, _textureManager.ResourceGeneration, lodCamera);
+            double lodCpuMs = 0;
             var presentationPolicy = WorldPresentationPolicy.From(_game.Options);
             EntityRenderDispatcher.OffsetX = camera.LastTickX + (camera.X - camera.LastTickX) * partialTicks;
             EntityRenderDispatcher.OffsetY = camera.LastTickY + (camera.Y - camera.LastTickY) * partialTicks;
@@ -503,17 +524,21 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             BlockEntityRenderer.StaticPlayerX = camera.LastTickX + (camera.X - camera.LastTickX) * partialTicks;
             BlockEntityRenderer.StaticPlayerY = camera.LastTickY + (camera.Y - camera.LastTickY) * partialTicks;
             BlockEntityRenderer.StaticPlayerZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * partialTicks;
-            var entities = _world.Entities.Entities;
-            CountEntitiesTotal = entities.Count + _world.Entities.GlobalEntities.Count;
+            var baseline = _game.EntityBaseline;
+            if (baseline != null && !baseline.BelongsTo(_world)) baseline = null;
+            var entities = baseline?.Entities ?? _world.Entities.Entities;
+            var globalCount = baseline == null ? _world.Entities.GlobalEntities.Count : 0;
+            CountEntitiesTotal = entities.Count + globalCount;
 
             int index;
             Entity entity;
-            for (index = 0; index < _world.Entities.GlobalEntities.Count; ++index)
+            for (index = 0; index < globalCount; ++index)
             {
                 entity = _world.Entities.GlobalEntities[index];
                 if (presentationPolicy.ShouldRenderEntity(entity, cameraPos))
                 {
                     ++CountEntitiesRendered;
+                    ObserveLod(entity, partialTicks);
                     EntityRenderDispatcher.Instance.RenderEntity(entity, partialTicks);
                 }
                 else
@@ -560,7 +585,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                     if (_world.Reader.IsPosLoaded(MathHelper.Floor(entity.X), yFloor, MathHelper.Floor(entity.Z)))
                     {
                         ++CountEntitiesRendered;
-                        EntityRenderDispatcher.Instance.RenderEntity(entity, partialTicks);
+                        ObserveLod(entity, baseline == null ? partialTicks : 0);
+                        EntityRenderDispatcher.Instance.RenderEntity(entity, baseline == null ? partialTicks : 0);
                         continue;
                     }
                 }
@@ -568,8 +594,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                 ++CountEntitiesHidden;
             }
 
-            CountBlockEntitiesTotal = _world.Entities.BlockEntities.Count;
-            for (index = 0; index < _world.Entities.BlockEntities.Count; ++index)
+            CountBlockEntitiesTotal = baseline == null ? _world.Entities.BlockEntities.Count : 0;
+            for (index = 0; index < CountBlockEntitiesTotal; ++index)
             {
                 var blockEntity = _world.Entities.BlockEntities[index];
                 if (!blockEntity.IsRemoved() &&
@@ -590,7 +616,32 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
             EntityInstanceBatchRenderer.Instance.End();
             EntityBatchRenderer.Instance.End();
+            EntityLod.EndFrame();
+            Profiler.Record("EntityLodSelection", lodCpuMs);
+
+            void ObserveLod(Entity target, float delta)
+            {
+                var start = Stopwatch.GetTimestamp();
+                var provider = EntityRenderDispatcher.Instance.GetEntityRenderObject(target).LodProvider;
+                var position = new LodPoint(target.LastTickX + (target.X - target.LastTickX) * delta,
+                    target.LastTickY + (target.Y - target.LastTickY) * delta,
+                    target.LastTickZ + (target.Z - target.LastTickZ) * delta);
+                var yaw = target is EntityLiving living ?
+                    EntityLodDirections.InterpolateYaw(living.LastBodyYaw, living.BodyYaw, delta) : target.Yaw;
+                EntityLod.Select(target, position, provider != null, provider?.Supports(target, delta) == true,
+                    provider?.VariantKey ?? "", provider?.VisualDiameter ?? 0, yaw, cameraForward,
+                    effectiveLodFov, _game.Options.CameraMode == CameraMode.FirstPerson ? _game.DisplayHeight : 0);
+                lodCpuMs += Stopwatch.GetElapsedTime(start).TotalMilliseconds;
+                // Phase 1 observes only. No atlas exists, so BOTH intended tiers use the exact
+                // existing RenderEntity call. GUI/hand/spawner preview paths do not visit here.
+            }
         }
+    }
+
+    private void OnPresentationRelocated(Entity? entity)
+    {
+        if (entity == null) EntityLod.Clear();
+        else EntityLod.Forget(entity);
     }
 
     public int SortAndRender(

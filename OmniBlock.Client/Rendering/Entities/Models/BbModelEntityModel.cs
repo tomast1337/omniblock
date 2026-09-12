@@ -74,6 +74,7 @@ public class BbModelEntityModel : ModelBase
 
     public override void Render(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)
     {
+        var poseStart = EntityPresentationMetrics.StartTimer();
         SetRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale);
 
         if (EntityInstanceBatchRenderer.Instance.IsActive)
@@ -89,6 +90,7 @@ public class BbModelEntityModel : ModelBase
                 }
             }
 
+            EntityPresentationMetrics.PoseFinished(poseStart);
             var tint = RenderSystem.Color;
             // See EntityBatchRenderer's identical BoundTextureId: WebGPU has no binding point to
             // read back from, so what the caller bound is tracked on Texture2D itself.
@@ -97,6 +99,7 @@ public class BbModelEntityModel : ModelBase
         }
         else
         {
+            EntityPresentationMetrics.PoseFinished(poseStart);
             foreach (var boneName in _renderOrder)
             {
                 _parts[boneName].Render(scale);

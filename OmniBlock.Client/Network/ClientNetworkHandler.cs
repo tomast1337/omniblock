@@ -128,6 +128,8 @@ public class ClientNetworkHandler : NetHandler
     }
 
     public ClientWorldPreloadState Preload { get; } = new();
+    /// <summary>Main-thread presentation invalidation; null means the local camera/session moved.</summary>
+    public event Action<Entity?>? PresentationRelocated;
 
     public bool Disconnected { get; private set; }
     public PersistentStateManager ClientPersistentStateManager { get; } = new(null);
@@ -926,6 +928,7 @@ public class ClientNetworkHandler : NetHandler
         var ent = GetEntityById(packet.EntityId);
         if (ent != null)
         {
+            PresentationRelocated?.Invoke(ent);
             ent.TrackedPosX = packet.X;
             ent.TrackedPosY = packet.Y;
             ent.TrackedPosZ = packet.Z;
@@ -1015,6 +1018,8 @@ public class ClientNetworkHandler : NetHandler
         var relocation = false;
         if (packet is IPlayerMovePosition packetMove)
         {
+            // Even a short teleport/correction must not retain the old camera's LOD hysteresis.
+            PresentationRelocated?.Invoke(null);
             relocation = _terrainLoaded &&
                          (_awaitingRespawnPosition || IsRelocation(
                              ent.X, ent.Z, packetMove.X, packetMove.Z));
@@ -1344,6 +1349,7 @@ public class ClientNetworkHandler : NetHandler
 
     private void onPlayerRespawn(PlayerRespawnMessage packet)
     {
+        PresentationRelocated?.Invoke(null);
         _awaitingRespawnPosition = packet.DimensionId == _context.PlayerHost.Player.DimensionId;
         if (packet.DimensionId != _context.PlayerHost.Player.DimensionId)
         {

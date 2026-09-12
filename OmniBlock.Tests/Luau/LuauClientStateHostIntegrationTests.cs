@@ -94,6 +94,7 @@ public sealed class LuauClientStateHostIntegrationTests
         LuauClientStateHost.TerrainUniformArenaGrowths = () => terrainUniformArenaGrowths;
         LuauClientStateHost.FindVisibleMs = () => findVisibleMs;
         LuauClientStateHost.TerrainSubmitCpuMs = () => terrainSubmitCpuMs;
+        LuauClientStateHost.EntityLodMetric = key => key == "entityLodIntendedImpostors" ? 12 : 0;
 
         try
         {
@@ -198,6 +199,12 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.terrainUniformArenaGrowths", "3");
             AssertValue(state, "OMNI.client.state.findVisibleMs", "1.25");
             AssertValue(state, "OMNI.client.state.terrainSubmitCpuMs", "2.5");
+            AssertValue(state, "OMNI.client.state.entityLodIntendedImpostors", "12");
+            AssertValue(state, "OMNI.client.state.entityLodImpostorSubmissions", "0");
+            Assert.False(state.TryExecute("OMNI.client.state.entityLodIntendedImpostors = 0", out var lodReadOnly));
+            Assert.Contains("read-only", lodReadOnly);
+            LuauClientStateHost.EntityLodMetric = null;
+            AssertValue(state, "OMNI.client.state.entityLodIntendedImpostors", "0");
             Assert.False(state.TryExecute("OMNI.client.state.worldLoaded = false", out var readOnlyError));
             Assert.Contains("read-only", readOnlyError);
         }
@@ -244,6 +251,7 @@ public sealed class LuauClientStateHostIntegrationTests
             LuauClientStateHost.TerrainUniformArenaGrowths = null;
             LuauClientStateHost.FindVisibleMs = null;
             LuauClientStateHost.TerrainSubmitCpuMs = null;
+            LuauClientStateHost.EntityLodMetric = null;
         }
     }
 

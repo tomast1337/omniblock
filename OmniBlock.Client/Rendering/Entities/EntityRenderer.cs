@@ -9,6 +9,7 @@ namespace OmniBlock.Client.Rendering.Entities;
 
 public abstract class EntityRenderer
 {
+    internal IEntityLodProvider? LodProvider { get; init; }
     protected float ShadowRadius = 0.0F;
     protected float ShadowStrength = 1.0F;
     public EntityRenderDispatcher Dispatcher { get; set; } = null!;

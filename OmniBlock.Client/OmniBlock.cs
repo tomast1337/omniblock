@@ -206,6 +206,7 @@ public partial class OmniBlock :
     private readonly ClientLaunchOptions _launchOptions;
     private readonly ClientReadySignal _clientReady = new();
     private readonly E2ETestController? _e2eTestController;
+    internal EntityRenderBaseline? EntityBaseline { get; private set; }
     private readonly LoadingScreenRenderer _loadingScreen;
     private readonly WaterSprite _textureWaterFX;
     private readonly LavaSprite _textureLavaFX;
@@ -529,6 +530,24 @@ public partial class OmniBlock :
                 WorldRenderer?.ChunkRenderer.PresentationProfile.FindVisible.LastMs ?? 0;
             LuauClientStateHost.TerrainSubmitCpuMs = () =>
                 WorldRenderer?.ChunkRenderer.PresentationProfile.TerrainSubmit.LastMs ?? 0;
+            LuauClientStateHost.EntityLodMetric = key =>
+            {
+                var lod = WorldRenderer?.EntityLod.Last ?? default;
+                return key switch
+                {
+                    "entityLodObserved" => lod.Observed,
+                    "entityLodIntendedImpostors" => lod.IntendedImpostors,
+                    "entityLodModelSubmissions" => lod.ModelDraws,
+                    "entityLodImpostorSubmissions" => lod.ImpostorDraws,
+                    "entityLodUnsupportedProvider" => lod.UnsupportedProvider,
+                    "entityLodUnsupportedState" => lod.UnsupportedState,
+                    "entityLodInvalidView" => lod.InvalidView,
+                    "entityLodCapacityFallbacks" => lod.CapacityFallbacks,
+                    "entityLodStateCount" => lod.RetainedStates,
+                    "entityLodResets" => lod.Resets,
+                    _ => 0
+                };
+            };
             LuauClientStateHost.OldestForegroundAge = () => WorldRenderer?.ChunkRenderer.OldestForegroundAge ?? 0;
             LuauClientStateHost.PresentationRegressionCount = () =>
                 WorldRenderer?.ChunkRenderer.PresentationRegressionCount ?? 0;
@@ -576,6 +595,31 @@ public partial class OmniBlock :
                 LuauTestHost.FlyPath = (ax, ay, az, bx, by, bz, seconds) =>
                     Player?.StartFlightPathForTest(ax, ay, az, bx, by, bz, seconds);
                 LuauTestHost.Screenshot = () => WebGpuRenderer.ScreenshotRequested = true;
+                LuauTestHost.EntityBaseline = (scene, count, distance) =>
+                {
+                    EntityBaseline?.Dispose();
+                    EntityBaseline = null;
+                    EntityBaseline = new EntityRenderBaseline(this, scene, count, distance);
+                    return true;
+                };
+                LuauTestHost.BeginEntitySample = () =>
+                {
+                    if (EntityBaseline == null) return false;
+                    EntityBaseline.BeginSample();
+                    return true;
+                };
+                LuauTestHost.EndEntitySample = label =>
+                {
+                    if (EntityBaseline == null) return false;
+                    var result = EntityBaseline.FinishSample();
+                    _e2eTestController.WriteTextArtifact($"entity-baseline-{label}.json", result.Json);
+                    return result.Valid;
+                };
+                LuauTestHost.ClearEntityBaseline = () =>
+                {
+                    EntityBaseline?.Dispose();
+                    EntityBaseline = null;
+                };
                 LuauTestHost.DumpTerrain = label =>
                 {
                     if (Player == null || WorldRenderer?.ChunkRenderer == null) return;
@@ -960,6 +1004,7 @@ public partial class OmniBlock :
             LuauClientStateHost.TerrainUniformArenaGrowths = null;
             LuauClientStateHost.FindVisibleMs = null;
             LuauClientStateHost.TerrainSubmitCpuMs = null;
+            LuauClientStateHost.EntityLodMetric = null;
             LuauClientStateHost.OldestForegroundAge = null;
             LuauClientStateHost.PresentationRegressionCount = null;
             LuauClientStateHost.PlayerX = null;
@@ -979,6 +1024,12 @@ public partial class OmniBlock :
             LuauTestHost.FlyPath = null;
             LuauTestHost.Screenshot = null;
             LuauTestHost.DumpTerrain = null;
+            LuauTestHost.EntityBaseline = null;
+            LuauTestHost.BeginEntitySample = null;
+            LuauTestHost.EndEntitySample = null;
+            LuauTestHost.ClearEntityBaseline = null;
+            EntityBaseline?.Dispose();
+            EntityBaseline = null;
             _luauWorldService = null;
             LuauLogHost.WriteLine = null;
             LuauState?.Dispose();
@@ -1128,6 +1179,8 @@ public partial class OmniBlock :
                     }
 
                     var tickElapsedTime = Stopwatch.GetTimestamp() - tickStartTime;
+
+                    EntityBaseline?.PrepareFrame();
 
                     SoundManager.UpdateListener(Player, Timer.RenderPartialTicks);
 
@@ -1348,7 +1401,8 @@ public partial class OmniBlock :
     private void ReportFrameTelemetry(long frameStartNano)
     {
         var frameEndNano = Stopwatch.GetTimestamp();
-        var thisFrameTimeMs = (frameEndNano - frameStartNano) / 1000000.0;
+        var thisFrameTimeMs = Stopwatch.GetElapsedTime(frameStartNano, frameEndNano).TotalMilliseconds;
+        EntityBaseline?.RecordFrame(thisFrameTimeMs);
         _debugTelemetry.RecordFrameTime(thisFrameTimeMs);
         MetricRegistry.Set(ClientMetrics.FrameTimeMs, (float)thisFrameTimeMs);
 

@@ -43,6 +43,11 @@ public sealed class LuauTestHostIntegrationTests
             path = (ax, ay, az, bx, by, bz, seconds);
         LuauTestHost.Screenshot = () => screenshots++;
         LuauTestHost.DumpTerrain = label => terrainDump = label;
+        LuauTestHost.EntityBaseline = (scene, count, distance) => scene == "sheep" && count == 16 && distance == 32;
+        LuauTestHost.BeginEntitySample = () => true;
+        LuauTestHost.EndEntitySample = label => label == "reference";
+        var cleared = false;
+        LuauTestHost.ClearEntityBaseline = () => cleared = true;
 
         try
         {
@@ -62,6 +67,10 @@ public sealed class LuauTestHostIntegrationTests
                 "OMNI.test.setLook(45.5, 90); OMNI.test.setMovement(1, -0.5, 0.25); " +
                 "OMNI.test.flyPath(160, 256, 0, 160, 256, 160, 20); " +
                 "OMNI.test.screenshot(); OMNI.test.dumpTerrain('airborne'); " +
+                "assert(OMNI.test.entityBaseline('sheep', 16, 32)); " +
+                "assert(not OMNI.test.entityBaseline('bad', 16, 32)); " +
+                "assert(OMNI.test.beginEntitySample()); assert(OMNI.test.endEntitySample('reference')); " +
+                "OMNI.test.clearEntityBaseline(); " +
                 "return OMNI.has('test')",
                 out var hasTest), hasTest);
 
@@ -78,6 +87,7 @@ public sealed class LuauTestHostIntegrationTests
             Assert.Equal(1, screenshots);
             Assert.Equal("airborne", terrainDump);
             Assert.Equal("true", hasTest);
+            Assert.True(cleared);
         }
         finally
         {
@@ -95,6 +105,10 @@ public sealed class LuauTestHostIntegrationTests
             LuauTestHost.FlyPath = null;
             LuauTestHost.Screenshot = null;
             LuauTestHost.DumpTerrain = null;
+            LuauTestHost.EntityBaseline = null;
+            LuauTestHost.BeginEntitySample = null;
+            LuauTestHost.EndEntitySample = null;
+            LuauTestHost.ClearEntityBaseline = null;
         }
     }
 }

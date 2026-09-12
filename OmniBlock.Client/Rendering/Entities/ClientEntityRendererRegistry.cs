@@ -19,7 +19,15 @@ internal sealed class ClientEntityRendererRegistry
 
     public ClientEntityRendererRegistry()
     {
-        Register("living", (d, _) => new LivingEntityRenderer(Model(d), Shadow(d)));
+        Register("living", (d, _) =>
+        {
+            var model = Model(d);
+            return new LivingEntityRenderer(model, Shadow(d))
+            {
+                // Explicit client provider opt-in. Fleece, players and custom renderers stay 3D.
+                LodProvider = model is ModelCow ? new StandingCowLodProvider() : null
+            };
+        });
         Register("flapping", (d, _) => new FlappingEntityRenderer(Model(d), Shadow(d)));
         Register("glowing_eyes", (d, _) => new GlowingEyesEntityRenderer(
             Model(d), EntityModelRegistry.Create(Json(d).GetProperty("OverlayModel").GetString()!), Shadow(d),

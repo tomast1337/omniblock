@@ -184,6 +184,8 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
             Flush();
         }
 
+        // Start after a capacity flush so nested flush work is not counted twice.
+        var submitStart = EntityPresentationMetrics.StartTimer();
         var instanceIndex = _instanceCount++;
         var baseFloat = instanceIndex * FloatsPerInstance;
 
@@ -242,6 +244,7 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         }
 
         _bucketInstanceIndices[bucketIndex].Add(instanceIndex);
+        EntityPresentationMetrics.SubmitFinished(submitStart);
     }
 
     /// <summary>Draws every bucket queued since <see cref="Begin" /> and closes the pass.</summary>
@@ -267,12 +270,14 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         }
 
         _flushing = true;
+        var submitStart = EntityPresentationMetrics.StartTimer();
         try
         {
             FlushBucketsWebGpu();
         }
         finally
         {
+            EntityPresentationMetrics.SubmitFinished(submitStart);
             _flushing = false;
         }
     }
@@ -336,6 +341,7 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
             }
 
             storage.Write(new ReadOnlySpan<float>(_flushData, 0, cursor * FloatsPerInstance));
+            EntityPresentationMetrics.Uploaded(cursor * FloatsPerInstance * sizeof(float));
             pipeline.Bind(pass);
 
             for (var i = 0; i < stateBuckets.Count; i++)
@@ -353,6 +359,7 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
                 var instanceCount = (uint)_bucketInstanceIndices[stateBuckets[i]].Count;
                 _staticMesh!.DrawRange(pass, (uint)bucket.VertexBase, (uint)bucket.VertexCount,
                     instanceCount, (uint)bucketFirstInstance[i]);
+                EntityPresentationMetrics.Drew((int)instanceCount);
             }
         }
 

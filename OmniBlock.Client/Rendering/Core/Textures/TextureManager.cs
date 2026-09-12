@@ -30,6 +30,7 @@ public class TextureManager : IDisposable
     private NamedTextureArray? _itemsArray;
     private TextureHandle? _itemsHandle;
     private NamedTextureArray? _terrainArray;
+    internal long ResourceGeneration { get; private set; }
     private TextureHandle? _terrainHandle;
 
     public TextureManager(OmniBlock game, TexturePacks texturePacks, GameOptions options)
@@ -328,6 +329,8 @@ public class TextureManager : IDisposable
 
     public void Reload()
     {
+        // Invalidate remembered visual selections even if reload subsequently fails.
+        ResourceGeneration++;
         _atlasTileSizes.Clear();
         foreach (var entry in _textures)
         {

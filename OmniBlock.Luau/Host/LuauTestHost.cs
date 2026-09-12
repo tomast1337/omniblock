@@ -23,6 +23,10 @@ public static unsafe class LuauTestHost
                                         flyPath = function(ax, ay, az, bx, by, bz, seconds) __Test.flyPath(ax, ay, az, bx, by, bz, seconds) end,
                                         screenshot = function() __Test.screenshot() end,
                                         dumpTerrain = function(label) __Test.dumpTerrain(tostring(label or "terrain")) end,
+                                        entityBaseline = function(scene, count, distance) return __Test.entityBaseline(scene, count, distance) end,
+                                        beginEntitySample = function() return __Test.beginEntitySample() end,
+                                        endEntitySample = function(label) return __Test.endEntitySample(label) end,
+                                        clearEntityBaseline = function() __Test.clearEntityBaseline() end,
                                     }
                                     local previousHas = OMNI.has
                                     OMNI.has = function(capability)
@@ -44,10 +48,14 @@ public static unsafe class LuauTestHost
     public static Action<double, double, double, double, double, double, double>? FlyPath;
     public static Action? Screenshot;
     public static Action<string>? DumpTerrain;
+    public static Func<string, int, double, bool>? EntityBaseline;
+    public static Func<bool>? BeginEntitySample;
+    public static Func<string, bool>? EndEntitySample;
+    public static Action? ClearEntityBaseline;
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 14);
+        LuauNative.lua_createtable(l, 0, 18);
         Add(l, "pass", &PassClosure);
         Add(l, "fail", &FailClosure);
         Add(l, "creative", &CreativeClosure);
@@ -62,6 +70,10 @@ public static unsafe class LuauTestHost
         Add(l, "flyPath", &FlyPathClosure);
         Add(l, "screenshot", &ScreenshotClosure);
         Add(l, "dumpTerrain", &DumpTerrainClosure);
+        Add(l, "entityBaseline", &EntityBaselineClosure);
+        Add(l, "beginEntitySample", &BeginEntitySampleClosure);
+        Add(l, "endEntitySample", &EndEntitySampleClosure);
+        Add(l, "clearEntityBaseline", &ClearEntityBaselineClosure);
         LuauNative.lua_setfield(l, LuauNative.GlobalsIndex, "__Test");
     }
 
@@ -69,6 +81,44 @@ public static unsafe class LuauTestHost
     {
         LuauNative.lua_pushcclosurek(l, function, "__Test." + name, 0, IntPtr.Zero);
         LuauNative.lua_setfield(l, -2, name);
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int EntityBaselineClosure(IntPtr l)
+    {
+        var ok = false;
+        try { ok = EntityBaseline?.Invoke(ReadString(l, 1) ?? "", LuauNative.luaL_checkinteger(l, 2),
+            LuauNative.luaL_checknumber(l, 3)) == true; }
+        catch (Exception error) { Fail?.Invoke($"Entity baseline: {error.Message}"); }
+        LuauNative.lua_pushboolean(l, ok ? 1 : 0);
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int BeginEntitySampleClosure(IntPtr l)
+    {
+        var ok = false;
+        try { ok = BeginEntitySample?.Invoke() == true; }
+        catch (Exception error) { Fail?.Invoke($"Entity sample: {error.Message}"); }
+        LuauNative.lua_pushboolean(l, ok ? 1 : 0);
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int EndEntitySampleClosure(IntPtr l)
+    {
+        var ok = false;
+        try { ok = EndEntitySample?.Invoke(ReadString(l, 1) ?? "sample") == true; }
+        catch (Exception error) { Fail?.Invoke($"Entity sample: {error.Message}"); }
+        LuauNative.lua_pushboolean(l, ok ? 1 : 0);
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int ClearEntityBaselineClosure(IntPtr l)
+    {
+        Invoke(ClearEntityBaseline);
+        return 0;
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]

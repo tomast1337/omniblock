@@ -32,6 +32,22 @@ The opt-in `view-distance-32-diagnostic` scenario holds a real single-player ses
 distance for 30 seconds and logs frame time plus mesh pressure. It is intentionally outside the
 default suite because it is a sustained performance regression rather than a fast functional check.
 
+`entity-render-baseline` is an opt-in 300-second-watchdog benchmark for the existing GPU-instanced
+mob renderer. It uses deterministic client-only cow/sheep/mixed replicas (not server-spawned mobs),
+a stationary flying camera, and an empty-population control. It writes per-frame JSON, resource
+hashes, p50/p95 CPU/frame timings, actual draw/instance/upload counts, and six reference screenshots
+outside timed intervals. Run with `xvfb-run -a tests/e2e/run-local.sh entity-render-baseline` or use
+`CONFIGURATION=Release tests/e2e/run-local.sh entity-render-baseline` on your normal GPU. GPU timing
+is explicitly unavailable; no FPS assertion is made on software-rendered CI. See
+`docs/entity-render-baseline.md` for the capture contract, exclusions and visual acceptance budget.
+
+`entity-lod-selection` is the opt-in Phase 1 observer contract test. It checks near/far cow selection,
+projected-size changes through FOV, continued 3D instance submission for the intended impostor tier,
+unsupported sheep fallback, and expired cow state. Run with
+`xvfb-run -a tests/e2e/run-local.sh entity-lod-selection`. It writes a far-cow baseline JSON and
+screenshot; the read-only `OMNI.client.state.entityLod*` counters distinguish intended selection
+from actual representation. No sprites, atlas capture, or rendering-distance changes are enabled.
+
 `frustum-directional` disables VSync, samples the real client while looking at the horizon and
 straight down, and records average presented meshes, solid/translucent draws, and frame time. Its
 portable assertion is that camera direction materially changes terrain selection; timing remains

@@ -17,6 +17,12 @@ internal sealed partial class LuauCompletion
 
     private static readonly string[] s_omniMembers = ["client", "config", "environment", "has", "run", "test", "ui", "wait", "waitUntil"];
     private static readonly string[] s_clientMembers = ["state", "worlds"];
+    private static readonly string[] s_entityLodMembers =
+    [
+        "entityLodObserved", "entityLodIntendedImpostors", "entityLodModelSubmissions",
+        "entityLodImpostorSubmissions", "entityLodUnsupportedProvider", "entityLodUnsupportedState",
+        "entityLodInvalidView", "entityLodCapacityFallbacks", "entityLodStateCount", "entityLodResets"
+    ];
 
     private static readonly string[] s_clientStateMembers =
         ["backgroundPending", "debugOpen", "emptyLayersSubmitted", "findVisibleMs", "foregroundPending", "frameTimeMs", "frustumTests", "geometryUploadsLastFrame", "lightRefreshCompletedCount", "lightRefreshPending", "lightUploadsLastFrame", "meshAwaitingDraw", "meshAwaitingUpload", "meshBuildFailureCount", "meshCancelledCount", "meshCooperativeCancellationCount", "meshCriticalCompletedCount", "meshCriticalDeadlineMissCount", "meshCriticalOverdueCount", "meshEvictionGraceCount", "meshLeadingEdgePending", "meshLeadingEdgeQueued", "meshPending", "meshReadyRadius", "meshRequestToGpuMs", "meshSafetyExpectedSections", "meshSafetyHoles", "meshSafetyLoadedColumns", "meshSupersededCount", "oldestForegroundAge", "playerReady", "playerX", "playerY", "playerZ", "portalVisited", "presentationRegressionCount", "presentedMeshCount", "presentedSolidLayerCount", "presentedTranslucentLayerCount", "renderDistance", "residentMeshCount", "residentSolidLayerCount", "residentTranslucentLayerCount", "safetyRescued", "simulationDistance", "solidDrawsLastFrame", "terrainDrawCalls", "terrainPipelineBinds", "terrainSubmissionBatches", "terrainSubmitCpuMs", "terrainTextureBinds", "terrainUniformArenaCapacity", "terrainUniformArenaGrowths", "terrainUniformEntries", "translucentDrawsLastFrame", "visibilityCandidates", "worldId", "worldLoaded"];
@@ -85,7 +91,7 @@ internal sealed partial class LuauCompletion
         var receiver = source[start..end];
         if (receiver == "OMNI") return s_omniMembers;
         if (receiver.EndsWith("OMNI.client", StringComparison.Ordinal)) return s_clientMembers;
-        if (receiver.EndsWith("OMNI.client.state", StringComparison.Ordinal)) return s_clientStateMembers;
+        if (receiver.EndsWith("OMNI.client.state", StringComparison.Ordinal)) return s_clientStateMembers.Concat(s_entityLodMembers);
         if (receiver.EndsWith("OMNI.test", StringComparison.Ordinal)) return s_testMembers;
         if (receiver.EndsWith("OMNI.client.worlds", StringComparison.Ordinal)) return s_worldMembers;
         if (receiver.EndsWith("OMNI.ui", StringComparison.Ordinal)) return s_uiMembers;
