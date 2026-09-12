@@ -48,6 +48,10 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
             $"Rescue:     {profile.IncompleteAdjacencyRescued} adjacency  {profile.NewPresentationRescued} new  {profile.PresentationRegressionRescued} regression  oldest {profile.OldestSafetyRescueFrames} frames");
         ImGuiTextSafe.Text(
             $"Submission: {profile.TerrainDrawCalls} draws  {profile.TerrainUniformEntries} uniforms");
+        ImGuiTextSafe.Text(
+            $"Batches:    {profile.TerrainSubmissionBatches} writes  {profile.TerrainPipelineBinds} pipeline binds  {profile.TerrainTextureBinds} texture binds");
+        ImGuiTextSafe.Text(
+            $"Uniform arena: {profile.TerrainUniformArenaCapacity:N0} entries  {profile.TerrainUniformArenaGrowths} lifetime growths");
         DrawTiming("Find visible", profile.FindVisible);
         DrawTiming("Terrain submit", profile.TerrainSubmit);
     }

@@ -56,6 +56,11 @@ public static unsafe class LuauClientStateHost
                                             if key == "emptyLayersSubmitted" then return __ClientState.emptyLayersSubmitted() end
                                             if key == "terrainDrawCalls" then return __ClientState.terrainDrawCalls() end
                                             if key == "terrainUniformEntries" then return __ClientState.terrainUniformEntries() end
+                                            if key == "terrainSubmissionBatches" then return __ClientState.terrainSubmissionBatches() end
+                                            if key == "terrainPipelineBinds" then return __ClientState.terrainPipelineBinds() end
+                                            if key == "terrainTextureBinds" then return __ClientState.terrainTextureBinds() end
+                                            if key == "terrainUniformArenaCapacity" then return __ClientState.terrainUniformArenaCapacity() end
+                                            if key == "terrainUniformArenaGrowths" then return __ClientState.terrainUniformArenaGrowths() end
                                             if key == "findVisibleMs" then return __ClientState.findVisibleMs() end
                                             if key == "terrainSubmitCpuMs" then return __ClientState.terrainSubmitCpuMs() end
                                             if key == "oldestForegroundAge" then return __ClientState.oldestForegroundAge() end
@@ -117,6 +122,11 @@ public static unsafe class LuauClientStateHost
     public static Func<double>? EmptyLayersSubmitted;
     public static Func<double>? TerrainDrawCalls;
     public static Func<double>? TerrainUniformEntries;
+    public static Func<double>? TerrainSubmissionBatches;
+    public static Func<double>? TerrainPipelineBinds;
+    public static Func<double>? TerrainTextureBinds;
+    public static Func<double>? TerrainUniformArenaCapacity;
+    public static Func<double>? TerrainUniformArenaGrowths;
     public static Func<double>? FindVisibleMs;
     public static Func<double>? TerrainSubmitCpuMs;
     public static Func<double>? OldestForegroundAge;
@@ -127,7 +137,7 @@ public static unsafe class LuauClientStateHost
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 55);
+        LuauNative.lua_createtable(l, 0, 60);
         Add(l, "worldLoaded", &WorldLoadedClosure);
         Add(l, "playerReady", &PlayerReadyClosure);
         Add(l, "worldId", &WorldIdClosure);
@@ -174,6 +184,11 @@ public static unsafe class LuauClientStateHost
         Add(l, "emptyLayersSubmitted", &EmptyLayersSubmittedClosure);
         Add(l, "terrainDrawCalls", &TerrainDrawCallsClosure);
         Add(l, "terrainUniformEntries", &TerrainUniformEntriesClosure);
+        Add(l, "terrainSubmissionBatches", &TerrainSubmissionBatchesClosure);
+        Add(l, "terrainPipelineBinds", &TerrainPipelineBindsClosure);
+        Add(l, "terrainTextureBinds", &TerrainTextureBindsClosure);
+        Add(l, "terrainUniformArenaCapacity", &TerrainUniformArenaCapacityClosure);
+        Add(l, "terrainUniformArenaGrowths", &TerrainUniformArenaGrowthsClosure);
         Add(l, "findVisibleMs", &FindVisibleMsClosure);
         Add(l, "terrainSubmitCpuMs", &TerrainSubmitCpuMsClosure);
         Add(l, "oldestForegroundAge", &OldestForegroundAgeClosure);
@@ -386,6 +401,21 @@ public static unsafe class LuauClientStateHost
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int TerrainUniformEntriesClosure(IntPtr l) => PushNumber(l, TerrainUniformEntries);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int TerrainSubmissionBatchesClosure(IntPtr l) => PushNumber(l, TerrainSubmissionBatches);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int TerrainPipelineBindsClosure(IntPtr l) => PushNumber(l, TerrainPipelineBinds);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int TerrainTextureBindsClosure(IntPtr l) => PushNumber(l, TerrainTextureBinds);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int TerrainUniformArenaCapacityClosure(IntPtr l) => PushNumber(l, TerrainUniformArenaCapacity);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int TerrainUniformArenaGrowthsClosure(IntPtr l) => PushNumber(l, TerrainUniformArenaGrowths);
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int FindVisibleMsClosure(IntPtr l) => PushNumber(l, FindVisibleMs);

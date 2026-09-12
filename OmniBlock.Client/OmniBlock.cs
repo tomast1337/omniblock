@@ -515,6 +515,16 @@ public partial class OmniBlock :
                 WorldRenderer?.ChunkRenderer.PresentationProfile.TerrainDrawCalls ?? 0;
             LuauClientStateHost.TerrainUniformEntries = () =>
                 WorldRenderer?.ChunkRenderer.PresentationProfile.TerrainUniformEntries ?? 0;
+            LuauClientStateHost.TerrainSubmissionBatches = () =>
+                WorldRenderer?.ChunkRenderer.PresentationProfile.TerrainSubmissionBatches ?? 0;
+            LuauClientStateHost.TerrainPipelineBinds = () =>
+                WorldRenderer?.ChunkRenderer.PresentationProfile.TerrainPipelineBinds ?? 0;
+            LuauClientStateHost.TerrainTextureBinds = () =>
+                WorldRenderer?.ChunkRenderer.PresentationProfile.TerrainTextureBinds ?? 0;
+            LuauClientStateHost.TerrainUniformArenaCapacity = () =>
+                WorldRenderer?.ChunkRenderer.PresentationProfile.TerrainUniformArenaCapacity ?? 0;
+            LuauClientStateHost.TerrainUniformArenaGrowths = () =>
+                WorldRenderer?.ChunkRenderer.PresentationProfile.TerrainUniformArenaGrowths ?? 0;
             LuauClientStateHost.FindVisibleMs = () =>
                 WorldRenderer?.ChunkRenderer.PresentationProfile.FindVisible.LastMs ?? 0;
             LuauClientStateHost.TerrainSubmitCpuMs = () =>
@@ -943,6 +953,11 @@ public partial class OmniBlock :
             LuauClientStateHost.EmptyLayersSubmitted = null;
             LuauClientStateHost.TerrainDrawCalls = null;
             LuauClientStateHost.TerrainUniformEntries = null;
+            LuauClientStateHost.TerrainSubmissionBatches = null;
+            LuauClientStateHost.TerrainPipelineBinds = null;
+            LuauClientStateHost.TerrainTextureBinds = null;
+            LuauClientStateHost.TerrainUniformArenaCapacity = null;
+            LuauClientStateHost.TerrainUniformArenaGrowths = null;
             LuauClientStateHost.FindVisibleMs = null;
             LuauClientStateHost.TerrainSubmitCpuMs = null;
             LuauClientStateHost.OldestForegroundAge = null;
@@ -1306,6 +1321,11 @@ public partial class OmniBlock :
         MetricRegistry.Set(RenderMetrics.EmptyLayersSubmitted, presentation.EmptyLayersSubmitted);
         MetricRegistry.Set(RenderMetrics.TerrainDrawCalls, presentation.TerrainDrawCalls);
         MetricRegistry.Set(RenderMetrics.TerrainUniformEntries, presentation.TerrainUniformEntries);
+        MetricRegistry.Set(RenderMetrics.TerrainSubmissionBatches, presentation.TerrainSubmissionBatches);
+        MetricRegistry.Set(RenderMetrics.TerrainPipelineBinds, presentation.TerrainPipelineBinds);
+        MetricRegistry.Set(RenderMetrics.TerrainTextureBinds, presentation.TerrainTextureBinds);
+        MetricRegistry.Set(RenderMetrics.TerrainUniformArenaCapacity, presentation.TerrainUniformArenaCapacity);
+        MetricRegistry.Set(RenderMetrics.TerrainUniformArenaGrowths, presentation.TerrainUniformArenaGrowths);
         MetricRegistry.Set(RenderMetrics.FindVisibleMs, presentation.FindVisible.LastMs);
         MetricRegistry.Set(RenderMetrics.TerrainSubmitCpuMs, presentation.TerrainSubmit.LastMs);
         MetricRegistry.Set(RenderMetrics.MeshVersionAllocated, ChunkMeshVersion.TotalAllocated);

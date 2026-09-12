@@ -15,6 +15,26 @@ namespace OmniBlock.Client.Rendering.Core.WebGPU;
 internal static unsafe class WgpuRelease
 {
     /// <summary>
+    ///     Defers replacement of a buffer-backed bind group as one ordered retirement. The bind
+    ///     group is released before its buffer is destroyed, after the frame which may still have
+    ///     recorded either handle has been submitted.
+    /// </summary>
+    internal static void DeferredBufferBinding(WebGpuDevice device, nint bindGroup, nint buffer)
+    {
+        if (bindGroup == 0 && buffer == 0) return;
+
+        var api = device.Api;
+        device.Retire(() =>
+        {
+            if (bindGroup != 0) api.BindGroupRelease((BindGroup*)bindGroup);
+            if (buffer == 0) return;
+            var gpuBuffer = (WgpuBuffer*)buffer;
+            api.BufferDestroy(gpuBuffer);
+            api.BufferRelease(gpuBuffer);
+        });
+    }
+
+    /// <summary>
     ///     Defers destruction of vertex/index buffers until the frame using their previous contents
     ///     has been submitted. Replacing a chunk mesh while an encoder still references its old
     ///     buffer can otherwise make a recycled native handle point at a differently sized buffer.

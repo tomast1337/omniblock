@@ -149,6 +149,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private int _presentedSolidLayersThisFrame;
     private int _presentedTranslucentLayersThisFrame;
     private int _terrainUniformEntriesThisFrame;
+    private int _terrainSubmissionBatchesThisFrame;
+    private int _terrainPipelineBindsThisFrame;
+    private int _terrainTextureBindsThisFrame;
     private double _findVisibleMsThisFrame;
     private double _terrainSubmitMsThisFrame;
 
@@ -425,6 +428,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("emptyLayersSubmitted\t").Append(presentation.EmptyLayersSubmitted).AppendLine();
         text.Append("terrainDrawCalls\t").Append(presentation.TerrainDrawCalls).AppendLine();
         text.Append("terrainUniformEntries\t").Append(presentation.TerrainUniformEntries).AppendLine();
+        text.Append("terrainSubmissionBatches\t").Append(presentation.TerrainSubmissionBatches).AppendLine();
+        text.Append("terrainPipelineBinds\t").Append(presentation.TerrainPipelineBinds).AppendLine();
+        text.Append("terrainTextureBinds\t").Append(presentation.TerrainTextureBinds).AppendLine();
+        text.Append("terrainUniformArenaCapacity\t").Append(presentation.TerrainUniformArenaCapacity).AppendLine();
+        text.Append("terrainUniformArenaGrowths\t").Append(presentation.TerrainUniformArenaGrowths).AppendLine();
         AppendTiming("findVisible", presentation.FindVisible);
         AppendTiming("terrainSubmitCpu", presentation.TerrainSubmit);
         foreach (var state in _residentSections)
@@ -556,6 +564,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _translucentDrawsLastFrame = _translucentDrawsThisFrame;
         _translucentDrawsThisFrame = 0;
         _terrainUniformEntriesThisFrame = 0;
+        _terrainSubmissionBatchesThisFrame = 0;
+        _terrainPipelineBindsThisFrame = 0;
+        _terrainTextureBindsThisFrame = 0;
         _terrainSubmitMsThisFrame = 0;
 
         var prepareFrameAt = Stopwatch.GetTimestamp();
@@ -1221,6 +1232,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             Math.Max(0, _terrainUniformEntriesThisFrame - draws),
             draws,
             _terrainUniformEntriesThisFrame,
+            _terrainSubmissionBatchesThisFrame,
+            _terrainPipelineBindsThisFrame,
+            _terrainTextureBindsThisFrame,
+            _wgpuPipelines.Values.Sum(static pipeline => pipeline.DynamicUniformCapacity) +
+            _wgpuWireframePipelines.Values.Sum(static pipeline => pipeline.DynamicUniformCapacity),
+            _wgpuPipelines.Values.Sum(static pipeline => pipeline.DynamicUniformGrowthCount) +
+            _wgpuWireframePipelines.Values.Sum(static pipeline => pipeline.DynamicUniformGrowthCount),
             _findVisibleTimings.Snapshot(),
             _terrainSubmitTimings.Snapshot());
     }
@@ -2621,10 +2639,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         if (count == 0) return;
 
         pipeline.Bind(pass);
+        _terrainPipelineBindsThisFrame++;
         // Asked of the array per pass rather than held: a texture-pack switch rebuilds the array
         // underneath, and a bind group made against the old one points at a destroyed texture.
         WgpuPipeline.BindGroup(pass, 1,
             textureArray.BindGroupFor(pipeline.TextureBindGroupLayout), WebGpuDevice.Current!.Api);
+        _terrainTextureBindsThisFrame++;
 
         // The same set the GL pass draws, chosen by PrepareFrame — which the caller is responsible
         // for having run, since the view matrices this reads come off the stacks there too.
@@ -2661,6 +2681,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         var t0 = Stopwatch.GetTimestamp();
         pipeline.WriteDynamicUniforms(_solidUniformScratch.AsSpan(0, count));
+        _terrainSubmissionBatchesThisFrame++;
         var t1 = Stopwatch.GetTimestamp();
         Profiler.Record("UniformUpload", (t1 - t0) * 1000.0 / Stopwatch.Frequency);
 
@@ -2686,10 +2707,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         if (_solidRenderers.Count == 0) return;
 
         pipeline.Bind(pass);
+        _terrainPipelineBindsThisFrame++;
         WgpuPipeline.BindGroup(pass, 1,
             textureArray.BindGroupFor(pipeline.TextureBindGroupLayout), WebGpuDevice.Current!.Api);
+        _terrainTextureBindsThisFrame++;
 
         _terrainUniformEntriesThisFrame += _solidRenderers.Count;
+        _terrainSubmissionBatchesThisFrame += _solidRenderers.Count;
 
         foreach (var renderer in _solidRenderers)
         {
@@ -2720,10 +2744,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         if (count == 0) return;
 
         pipeline.Bind(pass);
+        _terrainPipelineBindsThisFrame++;
         // Asked of the array per pass rather than held: a texture-pack switch rebuilds the array
         // underneath, and a bind group made against the old one points at a destroyed texture.
         WgpuPipeline.BindGroup(pass, 1,
             textureArray.BindGroupFor(pipeline.TextureBindGroupLayout), WebGpuDevice.Current!.Api);
+        _terrainTextureBindsThisFrame++;
 
         _translucentDistanceComparer.Origin = viewPos;
         _translucentRenderers.Sort(_translucentDistanceComparer);
@@ -2751,6 +2777,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
 
         pipeline.WriteDynamicUniforms(_translucentUniformScratch.AsSpan(0, count));
+        _terrainSubmissionBatchesThisFrame++;
 
         for (var i = 0; i < count; i++)
         {

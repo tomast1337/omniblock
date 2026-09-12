@@ -19,6 +19,19 @@ for sample = 1, 6 do
 
     assert(frameTimeMs > 0, "frame-time metric did not advance")
     assert(meshPending < 8192, "distance-32 mesh backlog is unbounded: " .. tostring(meshPending))
+    local expectedBatches = 0
+    if OMNI.client.state.solidDrawsLastFrame > 0 then expectedBatches += 1 end
+    if OMNI.client.state.translucentDrawsLastFrame > 0 then expectedBatches += 1 end
+    assert(OMNI.client.state.terrainSubmissionBatches == expectedBatches,
+        "terrain uniforms were not uploaded once per non-empty layer")
+    assert(OMNI.client.state.terrainPipelineBinds == expectedBatches,
+        "terrain pipeline was rebound within a layer")
+    assert(OMNI.client.state.terrainTextureBinds == expectedBatches,
+        "terrain texture array was rebound within a layer")
+    assert(OMNI.client.state.terrainUniformArenaCapacity >=
+        math.max(OMNI.client.state.solidDrawsLastFrame,
+            OMNI.client.state.translucentDrawsLastFrame),
+        "terrain uniform arena is smaller than the submitted layer")
 
     print("distance32 frame=" .. tostring(frameTimeMs) ..
         "ms pending=" .. tostring(meshPending) ..
@@ -37,6 +50,11 @@ for sample = 1, 6 do
         " emptySubmitted=" .. tostring(OMNI.client.state.emptyLayersSubmitted) ..
         " terrainDraws=" .. tostring(OMNI.client.state.terrainDrawCalls) ..
         " uniforms=" .. tostring(OMNI.client.state.terrainUniformEntries) ..
+        " batches=" .. tostring(OMNI.client.state.terrainSubmissionBatches) ..
+        " binds=" .. tostring(OMNI.client.state.terrainPipelineBinds) ..
+        "/" .. tostring(OMNI.client.state.terrainTextureBinds) ..
+        " arena=" .. tostring(OMNI.client.state.terrainUniformArenaCapacity) ..
+        "/" .. tostring(OMNI.client.state.terrainUniformArenaGrowths) ..
         " findVisible=" .. tostring(OMNI.client.state.findVisibleMs) .. "ms" ..
         " submit=" .. tostring(OMNI.client.state.terrainSubmitCpuMs) .. "ms")
 end

@@ -31,6 +31,11 @@ internal static class RenderMetrics
     public static readonly MetricHandle<int> EmptyLayersSubmitted = MetricRegistry.Register<int>("render:chunks.empty_layers_submitted");
     public static readonly MetricHandle<int> TerrainDrawCalls = MetricRegistry.Register<int>("render:chunks.terrain_draw_calls");
     public static readonly MetricHandle<int> TerrainUniformEntries = MetricRegistry.Register<int>("render:chunks.terrain_uniform_entries");
+    public static readonly MetricHandle<int> TerrainSubmissionBatches = MetricRegistry.Register<int>("render:chunks.terrain_submission_batches");
+    public static readonly MetricHandle<int> TerrainPipelineBinds = MetricRegistry.Register<int>("render:chunks.terrain_pipeline_binds");
+    public static readonly MetricHandle<int> TerrainTextureBinds = MetricRegistry.Register<int>("render:chunks.terrain_texture_binds");
+    public static readonly MetricHandle<int> TerrainUniformArenaCapacity = MetricRegistry.Register<int>("render:chunks.terrain_uniform_arena_capacity");
+    public static readonly MetricHandle<int> TerrainUniformArenaGrowths = MetricRegistry.Register<int>("render:chunks.terrain_uniform_arena_growths");
     public static readonly MetricHandle<double> FindVisibleMs = MetricRegistry.Register<double>("render:chunks.find_visible_ms");
     public static readonly MetricHandle<double> TerrainSubmitCpuMs = MetricRegistry.Register<double>("render:chunks.terrain_submit_cpu_ms");
     public static readonly MetricHandle<int> MeshVersionAllocated = MetricRegistry.Register<int>("render:mesh.version.allocated");

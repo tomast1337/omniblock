@@ -33,6 +33,8 @@ public sealed class LuauCompletionTests
     [InlineData("OMNI.client.state.visibilityC", "visibilityCandidates")]
     [InlineData("OMNI.client.state.frustumT", "frustumTests")]
     [InlineData("OMNI.client.state.terrainSubmit", "terrainSubmitCpuMs")]
+    [InlineData("OMNI.client.state.terrainSubmission", "terrainSubmissionBatches")]
+    [InlineData("OMNI.client.state.terrainPipeline", "terrainPipelineBinds")]
     [InlineData("OMNI.client.state.debug", "debugOpen")]
     [InlineData("OMNI.client.state.meshCoop", "meshCooperativeCancellationCount")]
     [InlineData("OMNI.client.state.meshCriticalDeadline", "meshCriticalDeadlineMissCount")]

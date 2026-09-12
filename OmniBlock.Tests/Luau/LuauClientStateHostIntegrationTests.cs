@@ -46,6 +46,11 @@ public sealed class LuauClientStateHostIntegrationTests
         double emptyLayersSubmitted = 0;
         double terrainDrawCalls = 0;
         double terrainUniformEntries = 0;
+        double terrainSubmissionBatches = 0;
+        double terrainPipelineBinds = 0;
+        double terrainTextureBinds = 0;
+        double terrainUniformArenaCapacity = 0;
+        double terrainUniformArenaGrowths = 0;
         double findVisibleMs = 0;
         double terrainSubmitCpuMs = 0;
         LuauClientStateHost.WorldLoaded = () => worldLoaded;
@@ -82,6 +87,11 @@ public sealed class LuauClientStateHostIntegrationTests
         LuauClientStateHost.EmptyLayersSubmitted = () => emptyLayersSubmitted;
         LuauClientStateHost.TerrainDrawCalls = () => terrainDrawCalls;
         LuauClientStateHost.TerrainUniformEntries = () => terrainUniformEntries;
+        LuauClientStateHost.TerrainSubmissionBatches = () => terrainSubmissionBatches;
+        LuauClientStateHost.TerrainPipelineBinds = () => terrainPipelineBinds;
+        LuauClientStateHost.TerrainTextureBinds = () => terrainTextureBinds;
+        LuauClientStateHost.TerrainUniformArenaCapacity = () => terrainUniformArenaCapacity;
+        LuauClientStateHost.TerrainUniformArenaGrowths = () => terrainUniformArenaGrowths;
         LuauClientStateHost.FindVisibleMs = () => findVisibleMs;
         LuauClientStateHost.TerrainSubmitCpuMs = () => terrainSubmitCpuMs;
 
@@ -139,6 +149,11 @@ public sealed class LuauClientStateHostIntegrationTests
             emptyLayersSubmitted = 5;
             terrainDrawCalls = 82;
             terrainUniformEntries = 87;
+            terrainSubmissionBatches = 2;
+            terrainPipelineBinds = 2;
+            terrainTextureBinds = 2;
+            terrainUniformArenaCapacity = 1024;
+            terrainUniformArenaGrowths = 3;
             findVisibleMs = 1.25;
             terrainSubmitCpuMs = 2.5;
 
@@ -176,6 +191,11 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.emptyLayersSubmitted", "5");
             AssertValue(state, "OMNI.client.state.terrainDrawCalls", "82");
             AssertValue(state, "OMNI.client.state.terrainUniformEntries", "87");
+            AssertValue(state, "OMNI.client.state.terrainSubmissionBatches", "2");
+            AssertValue(state, "OMNI.client.state.terrainPipelineBinds", "2");
+            AssertValue(state, "OMNI.client.state.terrainTextureBinds", "2");
+            AssertValue(state, "OMNI.client.state.terrainUniformArenaCapacity", "1024");
+            AssertValue(state, "OMNI.client.state.terrainUniformArenaGrowths", "3");
             AssertValue(state, "OMNI.client.state.findVisibleMs", "1.25");
             AssertValue(state, "OMNI.client.state.terrainSubmitCpuMs", "2.5");
             Assert.False(state.TryExecute("OMNI.client.state.worldLoaded = false", out var readOnlyError));
@@ -217,6 +237,11 @@ public sealed class LuauClientStateHostIntegrationTests
             LuauClientStateHost.EmptyLayersSubmitted = null;
             LuauClientStateHost.TerrainDrawCalls = null;
             LuauClientStateHost.TerrainUniformEntries = null;
+            LuauClientStateHost.TerrainSubmissionBatches = null;
+            LuauClientStateHost.TerrainPipelineBinds = null;
+            LuauClientStateHost.TerrainTextureBinds = null;
+            LuauClientStateHost.TerrainUniformArenaCapacity = null;
+            LuauClientStateHost.TerrainUniformArenaGrowths = null;
             LuauClientStateHost.FindVisibleMs = null;
             LuauClientStateHost.TerrainSubmitCpuMs = null;
         }

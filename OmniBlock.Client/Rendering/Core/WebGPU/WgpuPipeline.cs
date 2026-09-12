@@ -20,6 +20,8 @@ namespace OmniBlock.Client.Rendering.Core.WebGPU;
 /// </remarks>
 public sealed unsafe class WgpuPipeline : IDisposable
 {
+    internal const int MaxDynamicUniformEntries = 65536;
+
     /// <summary>
     ///     WebGPU's guaranteed baseline for <c>minUniformBufferOffsetAlignment</c> — every conformant
     ///     adapter supports at least this without querying device limits.
@@ -54,6 +56,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
     private WgpuBuffer* _dynamicUniformBuffer;
 
     private int _dynamicUniformCapacity;
+    private int _dynamicUniformGrowthCount;
     private byte[] _dynamicUniformStaging = [];
     private int _uniformPoolNext;
 
@@ -159,6 +162,8 @@ public sealed unsafe class WgpuPipeline : IDisposable
     public BindGroup* UniformBindGroup { get; }
 
     private uint DynamicUniformStride => AlignUp(_uniformSize, DynamicUniformAlignment);
+    internal int DynamicUniformCapacity => _dynamicUniformCapacity;
+    internal int DynamicUniformGrowthCount => _dynamicUniformGrowthCount;
 
     public void Dispose()
     {
@@ -541,14 +546,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
     {
         if (count <= _dynamicUniformCapacity && _dynamicUniformBindGroup is not null) return;
 
-        if (_dynamicUniformBindGroup is not null) _device.Api.BindGroupRelease(_dynamicUniformBindGroup);
-        if (_dynamicUniformBuffer is not null)
-        {
-            _device.Api.BufferDestroy(_dynamicUniformBuffer);
-            _device.Api.BufferRelease(_dynamicUniformBuffer);
-        }
-
-        var newCapacity = Math.Max(count, Math.Max(_dynamicUniformCapacity * 2, 256));
+        var newCapacity = NextDynamicUniformCapacity(_dynamicUniformCapacity, count);
         var bufferSize = (ulong)newCapacity * stride;
 
         BufferDescriptor bufferDescriptor = new()
@@ -557,12 +555,14 @@ public sealed unsafe class WgpuPipeline : IDisposable
             Size = bufferSize
         };
 
-        _dynamicUniformBuffer = _device.Api.DeviceCreateBuffer(_device.Device, in bufferDescriptor);
+        var replacementBuffer = _device.Api.DeviceCreateBuffer(_device.Device, in bufferDescriptor);
+        if (replacementBuffer is null)
+            throw new InvalidOperationException("WebGPU failed to allocate the dynamic uniform arena.");
 
         BindGroupEntry entry = new()
         {
             Binding = 0,
-            Buffer = _dynamicUniformBuffer,
+            Buffer = replacementBuffer,
             Offset = 0,
             Size = _uniformSize
         };
@@ -574,8 +574,36 @@ public sealed unsafe class WgpuPipeline : IDisposable
             Entries = &entry
         };
 
-        _dynamicUniformBindGroup = _device.Api.DeviceCreateBindGroup(_device.Device, in descriptor);
+        var replacementBindGroup = _device.Api.DeviceCreateBindGroup(_device.Device, in descriptor);
+        if (replacementBindGroup is null)
+        {
+            _device.Api.BufferDestroy(replacementBuffer);
+            _device.Api.BufferRelease(replacementBuffer);
+            throw new InvalidOperationException("WebGPU failed to bind the dynamic uniform arena.");
+        }
+        var previousBuffer = _dynamicUniformBuffer;
+        var previousBindGroup = _dynamicUniformBindGroup;
+        _dynamicUniformBuffer = replacementBuffer;
+        _dynamicUniformBindGroup = replacementBindGroup;
         _dynamicUniformCapacity = newCapacity;
+        _dynamicUniformGrowthCount++;
+
+        WgpuRelease.DeferredBufferBinding(
+            _device, (nint)previousBindGroup, (nint)previousBuffer);
+    }
+
+    internal static int NextDynamicUniformCapacity(int current, int required)
+    {
+        if (current < 0) throw new ArgumentOutOfRangeException(nameof(current));
+        if (required <= 0) throw new ArgumentOutOfRangeException(nameof(required));
+        if (required > MaxDynamicUniformEntries)
+            throw new InvalidOperationException(
+                $"A terrain uniform batch cannot exceed {MaxDynamicUniformEntries:N0} entries.");
+
+        var doubled = current > MaxDynamicUniformEntries / 2
+            ? MaxDynamicUniformEntries
+            : current * 2;
+        return Math.Min(MaxDynamicUniformEntries, Math.Max(required, Math.Max(doubled, 256)));
     }
 
     private (nint Buffer, nint Group) AllocateUniforms()
