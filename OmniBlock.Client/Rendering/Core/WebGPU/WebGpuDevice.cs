@@ -456,6 +456,12 @@ public sealed unsafe class WebGpuDevice : IDisposable
         s_logger.LogInformation("WebGPU present mode changed to {PresentMode}.", _presentMode);
     }
 
-    private static void OnUncapturedError(ErrorType type, byte* message, void* _) =>
+    private long _errorCount;
+    public long ErrorCount => Interlocked.Read(ref _errorCount);
+
+    private void OnUncapturedError(ErrorType type, byte* message, void* _)
+    {
+        Interlocked.Increment(ref _errorCount);
         s_logger.LogError("WebGPU {ErrorType}: {Message}", type, Marshal.PtrToStringUTF8((nint)message));
+    }
 }

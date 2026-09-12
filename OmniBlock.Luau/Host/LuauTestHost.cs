@@ -27,6 +27,7 @@ public static unsafe class LuauTestHost
                                         beginEntitySample = function() return __Test.beginEntitySample() end,
                                         endEntitySample = function(label) return __Test.endEntitySample(label) end,
                                         clearEntityBaseline = function() __Test.clearEntityBaseline() end,
+                                        entityImpostors = function(enabled, forceForTest) return __Test.entityImpostors(enabled, forceForTest) end,
                                     }
                                     local previousHas = OMNI.has
                                     OMNI.has = function(capability)
@@ -52,6 +53,7 @@ public static unsafe class LuauTestHost
     public static Func<bool>? BeginEntitySample;
     public static Func<string, bool>? EndEntitySample;
     public static Action? ClearEntityBaseline;
+    public static Func<bool, bool, bool>? EntityImpostors;
 
     public static void Install(IntPtr l)
     {
@@ -74,6 +76,7 @@ public static unsafe class LuauTestHost
         Add(l, "beginEntitySample", &BeginEntitySampleClosure);
         Add(l, "endEntitySample", &EndEntitySampleClosure);
         Add(l, "clearEntityBaseline", &ClearEntityBaselineClosure);
+        Add(l, "entityImpostors", &EntityImpostorsClosure);
         LuauNative.lua_setfield(l, LuauNative.GlobalsIndex, "__Test");
     }
 
@@ -81,6 +84,15 @@ public static unsafe class LuauTestHost
     {
         LuauNative.lua_pushcclosurek(l, function, "__Test." + name, 0, IntPtr.Zero);
         LuauNative.lua_setfield(l, -2, name);
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int EntityImpostorsClosure(IntPtr l)
+    {
+        var ok = false;
+        try { ok = EntityImpostors?.Invoke(LuauNative.lua_toboolean(l, 1) != 0, LuauNative.lua_toboolean(l, 2) != 0) == true; } catch { }
+        LuauNative.lua_pushboolean(l, ok ? 1 : 0);
+        return 1;
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]

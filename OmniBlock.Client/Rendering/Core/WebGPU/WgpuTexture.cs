@@ -52,7 +52,7 @@ public sealed unsafe class WgpuTexture : IDisposable
 
     /// <summary>Creates an empty texture; the caller fills levels with <see cref="WriteLevel" />.</summary>
     public WgpuTexture(WebGpuDevice device, uint width, uint height, uint mipLevelCount,
-        WgpuSamplerDescription sampler)
+        WgpuSamplerDescription sampler, TextureUsage extraUsage = 0)
     {
         _device = device;
         Width = width;
@@ -62,7 +62,7 @@ public sealed unsafe class WgpuTexture : IDisposable
 
         TextureDescriptor texDesc = new()
         {
-            Usage = TextureUsage.TextureBinding | TextureUsage.CopyDst,
+            Usage = TextureUsage.TextureBinding | TextureUsage.CopyDst | extraUsage,
             Dimension = TextureDimension.Dimension2D,
             Size = new Extent3D(width, height, 1),
             Format = Format,

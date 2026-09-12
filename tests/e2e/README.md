@@ -48,6 +48,14 @@ unsupported sheep fallback, and expired cow state. Run with
 screenshot; the read-only `OMNI.client.state.entityLod*` counters distinguish intended selection
 from actual representation. No sprites, atlas capture, or rendering-distance changes are enabled.
 
+The opt-in Phase 2 scenarios are `entity-impostor-prototype` (capture/fallback/replacement and a
+64-cow instancing sample), `entity-impostor-orbit` (52 paired screenshots across 26 directions),
+and `entity-impostor-occlusion` (uncovered/half/full stone-wall screenshot pairs). Run each with
+`xvfb-run -a tests/e2e/run-local.sh <scenario>`. They use isolated fixtures and a 300-second watchdog,
+and assert zero `OMNI.client.state.webGpuErrorCount`. `OMNI.test.entityImpostors(true, true)` forces
+the tier for close visual inspection only; unsupported states/providers still fall back to 3D.
+The default remains disabled. Submission checks do not replace visual review of these artifacts.
+
 `frustum-directional` disables VSync, samples the real client while looking at the horizon and
 straight down, and records average presented meshes, solid/translucent draws, and frame time. Its
 portable assertion is that camera direction materially changes terrain selection; timing remains

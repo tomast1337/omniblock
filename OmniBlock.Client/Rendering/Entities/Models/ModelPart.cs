@@ -11,6 +11,7 @@ public class ModelPart
     public const int MaxPartsPerModel = 16;
 
     private static int s_nextStaticVertexOffset;
+    private readonly bool _reserveStaticGeometry;
 
     // Collapses to a point at the view-space origin instead of a zero matrix, which would leave
     // an undefined w=0 clip-space position.
@@ -38,8 +39,11 @@ public class ModelPart
     public float RotationPointZ;
     public bool Visible = true;
 
-    public ModelPart(int textureOffsetX, int textureOffsetY)
+    public ModelPart(int textureOffsetX, int textureOffsetY) : this(textureOffsetX, textureOffsetY, true) { }
+
+    internal ModelPart(int textureOffsetX, int textureOffsetY, bool reserveStaticGeometry)
     {
+        _reserveStaticGeometry = reserveStaticGeometry;
         TextureOffsetX = textureOffsetX;
         TextureOffsetY = textureOffsetY;
     }
@@ -316,7 +320,7 @@ public class ModelPart
             Faces[faceIndex].GetTriangles(_bakedVertices.AsSpan(faceIndex * 6, 6));
         }
 
-        if (StaticVertexOffset < 0)
+        if (_reserveStaticGeometry && StaticVertexOffset < 0)
         {
             StaticVertexOffset = s_nextStaticVertexOffset;
             s_nextStaticVertexOffset += _bakedVertices.Length;

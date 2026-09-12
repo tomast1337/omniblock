@@ -84,6 +84,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public int CountEntitiesTotal { get; private set; }
     internal EntityLodSelector EntityLod { get; } = new();
+    internal EntityImpostorPrototype EntityImpostors { get; } = new();
     public int CountEntitiesRendered { get; private set; }
     public int CountEntitiesHidden { get; private set; }
     public int CountBlockEntitiesTotal { get; private set; }
@@ -104,6 +105,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void Dispose()
     {
+        EntityImpostors.Dispose();
         if (_world is Worlds.ClientWorld clientWorld)
             clientWorld.NetworkHandler.PresentationRelocated -= OnPresentationRelocated;
         EntityLod.Clear();
@@ -442,6 +444,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void ChangeWorld(World world)
     {
+        EntityImpostors.Reset();
         if (_world is Worlds.ClientWorld previousClientWorld)
             previousClientWorld.NetworkHandler.PresentationRelocated -= OnPresentationRelocated;
         EntityLod.Clear();
@@ -538,8 +541,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                 if (presentationPolicy.ShouldRenderEntity(entity, cameraPos))
                 {
                     ++CountEntitiesRendered;
-                    ObserveLod(entity, partialTicks);
-                    EntityRenderDispatcher.Instance.RenderEntity(entity, partialTicks);
+                    if (!ObserveLod(entity, partialTicks))
+                        EntityRenderDispatcher.Instance.RenderEntity(entity, partialTicks);
                 }
                 else
                 {
@@ -585,8 +588,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                     if (_world.Reader.IsPosLoaded(MathHelper.Floor(entity.X), yFloor, MathHelper.Floor(entity.Z)))
                     {
                         ++CountEntitiesRendered;
-                        ObserveLod(entity, baseline == null ? partialTicks : 0);
-                        EntityRenderDispatcher.Instance.RenderEntity(entity, baseline == null ? partialTicks : 0);
+                        if (!ObserveLod(entity, baseline == null ? partialTicks : 0))
+                            EntityRenderDispatcher.Instance.RenderEntity(entity, baseline == null ? partialTicks : 0);
                         continue;
                     }
                 }
@@ -616,10 +619,11 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
             EntityInstanceBatchRenderer.Instance.End();
             EntityBatchRenderer.Instance.End();
-            EntityLod.EndFrame();
+            EntityImpostors.Draw();
+            EntityLod.EndFrame(EntityImpostors.LastSubmitted);
             Profiler.Record("EntityLodSelection", lodCpuMs);
 
-            void ObserveLod(Entity target, float delta)
+            bool ObserveLod(Entity target, float delta)
             {
                 var start = Stopwatch.GetTimestamp();
                 var provider = EntityRenderDispatcher.Instance.GetEntityRenderObject(target).LodProvider;
@@ -628,12 +632,17 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                     target.LastTickZ + (target.Z - target.LastTickZ) * delta);
                 var yaw = target is EntityLiving living ?
                     EntityLodDirections.InterpolateYaw(living.LastBodyYaw, living.BodyYaw, delta) : target.Yaw;
-                EntityLod.Select(target, position, provider != null, provider?.Supports(target, delta) == true,
+                // Debug labels/boxes belong to the 3D path. Normal accepted distances are beyond
+                // the existing 16-block shadow radius; never silently drop debug presentation.
+                var decision = EntityLod.Select(target, position, provider != null,
+                    !_game.Options.ShowDebugInfo && provider?.Supports(target, delta) == true,
                     provider?.VariantKey ?? "", provider?.VisualDiameter ?? 0, yaw, cameraForward,
-                    effectiveLodFov, _game.Options.CameraMode == CameraMode.FirstPerson ? _game.DisplayHeight : 0);
+                    effectiveLodFov, _game.Options.CameraMode == CameraMode.FirstPerson ? _game.DisplayHeight : 0,
+                    EntityImpostors.Enabled && EntityImpostors.ForceTierForTest);
                 lodCpuMs += Stopwatch.GetElapsedTime(start).TotalMilliseconds;
-                // Phase 1 observes only. No atlas exists, so BOTH intended tiers use the exact
-                // existing RenderEntity call. GUI/hand/spawner preview paths do not visit here.
+                return EntityImpostors.TrySubmit(provider, decision, position.DirectionFrom(new LodPoint(
+                    EntityRenderDispatcher.OffsetX, EntityRenderDispatcher.OffsetY, EntityRenderDispatcher.OffsetZ)),
+                    (float)yaw, target.GetBrightnessAtEyes(delta));
             }
         }
     }

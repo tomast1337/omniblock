@@ -3,7 +3,7 @@ using System.Numerics;
 namespace OmniBlock.Client.Rendering.Entities;
 
 internal enum EntityLodTier { Model, Impostor }
-internal enum EntityLodReason { NearOrLarge, PrototypeOnly, UnsupportedProvider, UnsupportedState, InvalidView, Capacity }
+internal enum EntityLodReason { NearOrLarge, ImpostorCandidate, UnsupportedProvider, UnsupportedState, InvalidView, Capacity }
 internal readonly record struct LodPoint(double X, double Y, double Z)
 {
     public bool IsFinite => double.IsFinite(X) && double.IsFinite(Y) && double.IsFinite(Z);
@@ -12,7 +12,7 @@ internal readonly record struct LodPoint(double X, double Y, double Z)
     public Vector3 DirectionFrom(LodPoint other) => new((float)(X - other.X), (float)(Y - other.Y), (float)(Z - other.Z));
 }
 
-/// <summary>World-pass observer only in Phase 1: a decision NEVER suppresses or replaces a draw.</summary>
+/// <summary>World-pass selection only. Confirm a valid atlas submission before skipping 3D.</summary>
 internal sealed class EntityLodSelector(int capacity = 2048)
 {
     internal const double EnterDistance = 80, ExitDistance = 64, EnterPixels = 24, ExitPixels = 32;
@@ -60,7 +60,7 @@ internal sealed class EntityLodSelector(int capacity = 2048)
 
     public Decision Select(object lifetime, LodPoint position, bool providerSupported, bool stateSupported,
         string variant, double visualDiameter, double bodyYaw, Vector3 cameraForward,
-        double verticalFovDegrees, int viewportHeight)
+        double verticalFovDegrees, int viewportHeight, bool forceImpostorForTest = false)
     {
         _observed++;
         Decision Fallback(EntityLodReason reason)
@@ -97,6 +97,8 @@ internal sealed class EntityLodSelector(int capacity = 2048)
         var tier = previous?.Tier ?? EntityLodTier.Model;
         if (tier == EntityLodTier.Model && distanceSquared > EnterDistance * EnterDistance && pixels <= EnterPixels) tier = EntityLodTier.Impostor;
         else if (tier == EntityLodTier.Impostor && (distanceSquared < ExitDistance * ExitDistance || pixels >= ExitPixels)) tier = EntityLodTier.Model;
+        // Restricted visual comparisons only; never bypass provider/state/projection/capacity gates.
+        if (forceImpostorForTest && double.IsFinite(pixels)) tier = EntityLodTier.Impostor;
 
         if (!_entries.ContainsKey(lifetime) && _entries.Count >= Math.Max(0, capacity))
             return Fallback(EntityLodReason.Capacity);
@@ -105,10 +107,10 @@ internal sealed class EntityLodSelector(int capacity = 2048)
         if (!_entries.TryGetValue(lifetime, out var entry)) _entries.Add(lifetime, entry = new Entry());
         entry.Tier = tier; entry.View = view; entry.Variant = variant; entry.Position = position; entry.Frame = _frame;
         if (tier == EntityLodTier.Impostor) _intended++;
-        return new Decision(tier, tier == EntityLodTier.Impostor ? EntityLodReason.PrototypeOnly : EntityLodReason.NearOrLarge, view, pixels);
+        return new Decision(tier, tier == EntityLodTier.Impostor ? EntityLodReason.ImpostorCandidate : EntityLodReason.NearOrLarge, view, pixels);
     }
 
-    public void EndFrame()
+    public void EndFrame(int impostorSubmissions = 0)
     {
         // Only eligible, visible lifetimes retain state. Removal/culling cannot leave tombstones.
         // Iteration is capped at capacity and never enumerates the whole simulation catalog.
@@ -117,7 +119,8 @@ internal sealed class EntityLodSelector(int capacity = 2048)
             if (entry.Frame != _frame) _expired.Add(key);
         foreach (var key in _expired) _entries.Remove(key);
         _expired.Clear();
-        Last = new Snapshot(_observed, _intended, _observed, 0, _unsupportedProvider, _unsupportedState,
+        if (impostorSubmissions < 0 || impostorSubmissions > _intended) throw new ArgumentOutOfRangeException(nameof(impostorSubmissions));
+        Last = new Snapshot(_observed, _intended, _observed - impostorSubmissions, impostorSubmissions, _unsupportedProvider, _unsupportedState,
             _invalid, _capacity, _entries.Count, ResetCount);
     }
 }

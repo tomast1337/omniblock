@@ -545,6 +545,12 @@ public partial class OmniBlock :
                     "entityLodCapacityFallbacks" => lod.CapacityFallbacks,
                     "entityLodStateCount" => lod.RetainedStates,
                     "entityLodResets" => lod.Resets,
+                    "entityImpostorViews" => WorldRenderer?.EntityImpostors.CompletedViews ?? 0,
+                    "entityImpostorReady" => WorldRenderer?.EntityImpostors.Ready == true ? 1 : 0,
+                    "entityImpostorFailures" => WorldRenderer?.EntityImpostors.Failures ?? 0,
+                    "entityImpostorReplacements" => WorldRenderer?.EntityImpostors.Replacements ?? 0,
+                    "entityImpostorPendingFallbacks" => WorldRenderer?.EntityImpostors.PendingFallbacks ?? 0,
+                    "webGpuErrorCount" => WebGpuDevice.Current?.ErrorCount ?? 0,
                     _ => 0
                 };
             };
@@ -595,6 +601,14 @@ public partial class OmniBlock :
                 LuauTestHost.FlyPath = (ax, ay, az, bx, by, bz, seconds) =>
                     Player?.StartFlightPathForTest(ax, ay, az, bx, by, bz, seconds);
                 LuauTestHost.Screenshot = () => WebGpuRenderer.ScreenshotRequested = true;
+                LuauTestHost.EntityImpostors = (enabled, forceForTest) =>
+                {
+                    if (WorldRenderer == null) return false;
+                    WorldRenderer.EntityImpostors.Enabled = enabled;
+                    WorldRenderer.EntityImpostors.ForceTierForTest = forceForTest;
+                    if (!enabled) WorldRenderer.EntityImpostors.Reset();
+                    return true;
+                };
                 LuauTestHost.EntityBaseline = (scene, count, distance) =>
                 {
                     EntityBaseline?.Dispose();
@@ -1028,6 +1042,7 @@ public partial class OmniBlock :
             LuauTestHost.BeginEntitySample = null;
             LuauTestHost.EndEntitySample = null;
             LuauTestHost.ClearEntityBaseline = null;
+            LuauTestHost.EntityImpostors = null;
             EntityBaseline?.Dispose();
             EntityBaseline = null;
             _luauWorldService = null;

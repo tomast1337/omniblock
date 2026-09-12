@@ -212,6 +212,9 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             _cloudBlurPass!.FogColor = new Vector3(fog.X, fog.Y, fog.Z);
         }
 
+        // Isolated offscreen capture must finish before opening any world render pass.
+        if (drawWorld) _game.WorldRenderer.EntityImpostors.Prepare(device, encoder, _game.TextureManager);
+
         // --- Offscreen pass: the world ---
         var worldPass = _offscreenFb.BeginPass(encoder, clear);
 

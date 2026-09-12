@@ -67,7 +67,10 @@ public static unsafe class LuauClientStateHost
                                                 key == "entityLodModelSubmissions" or key == "entityLodImpostorSubmissions" or
                                                 key == "entityLodUnsupportedProvider" or key == "entityLodUnsupportedState" or
                                                 key == "entityLodInvalidView" or key == "entityLodCapacityFallbacks" or
-                                                key == "entityLodStateCount" or key == "entityLodResets" then
+                                                key == "entityLodStateCount" or key == "entityLodResets" or
+                                                key == "entityImpostorViews" or key == "entityImpostorReady" or
+                                                key == "entityImpostorFailures" or key == "entityImpostorReplacements" or
+                                                key == "entityImpostorPendingFallbacks" or key == "webGpuErrorCount" then
                                                 return __ClientState.entityLod(key)
                                             end
                                             if key == "oldestForegroundAge" then return __ClientState.oldestForegroundAge() end
