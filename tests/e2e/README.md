@@ -68,6 +68,11 @@ changes, cancellation during capture/readback, rapid texture-pack switching, and
 recreation. Run `xvfb-run -a tests/e2e/run-local.sh entity-impostor-cache`. After the cold scenario
 succeeds, the runner automatically launches `entity-impostor-cache-warm.luau` in a fresh process
 using the same disposable game-data directory: it must load from disk and capture zero views.
+
+`entity-impostor-appearance` records paired 3D/impostor Phase 4 screenshots for daylight, night,
+hurt, a walking pose, and all sixteen sheep colors plus sheared state. Its restricted
+`entityBaselineEnvironment(day|night|storm)` control pins only the client presentation fixture; it
+does not change the integrated server or expose a gameplay scripting API.
 Do not run the warm script alone against an empty cache. Its result is under the cold artifact
 directory's `warm/` subdirectory; either process failing fails the runner.
 

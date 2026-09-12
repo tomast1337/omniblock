@@ -12,14 +12,19 @@ internal static class EntityImpostorShaders
             var o: Out;
             o.position = u.matrix * vec4(p, 1.0);
             o.uv = uv;
-            o.shade = min(1.0, 0.4 + 0.6 * max(0.0, dot(n, normalize(vec3(0.2,1.0,-0.7))))
-                + 0.6 * max(0.0, dot(n, normalize(vec3(-0.2,1.0,0.7)))));
+            o.shade = 0.4 + 0.6 * max(0.0, dot(n, normalize(vec3(0.2,1.0,-0.7))))
+                + 0.6 * max(0.0, dot(n, normalize(vec3(-0.2,1.0,0.7))));
             return o;
         }
         @fragment fn fs_main(o: Out) -> @location(0) vec4<f32> {
             let c = textureSample(skin, skinSampler, o.uv);
             if c.a < 0.1 { discard; }
-            return vec4(c.rgb * o.shade, c.a);
+            // Entity textures are alpha-tested and then written by an opaque pipeline, so their
+            // surviving alpha never represented translucency. Preserve that one-bit coverage by
+            // clearing discarded texels and use the covered texels' alpha to carry the bounded
+            // directional shade (0.4..1.6). Presentation can then apply live world brightness
+            // before the final target clamp, exactly like the 3D entity shader does.
+            return vec4(c.rgb, o.shade / 1.6);
         }
         """;
 
@@ -43,20 +48,20 @@ internal static class EntityImpostorShaders
             var o: Out;
             o.position = u.projection * eye;
             o.uv = i.uv.xy + vec2(c.x * 0.5 + 0.5, 0.5 - c.y * 0.5) * i.uv.zw;
-            o.light = i.center.w; o.distance = abs(eye.z); o.effects = i.effects;
+            o.light = i.center.w; o.distance = length(eye.xyz); o.effects = i.effects;
             o.overlayOffset = i.up.w; o.hurt = i.right.w;
             return o;
         }
         @fragment fn fs_main(o: Out) -> @location(0) vec4<f32> {
             let base = textureSample(atlas, atlasSampler, o.uv);
-            var color = base;
+            var color = vec4(base.rgb * (base.a * 1.6), select(0.0, 1.0, base.a > 0.0));
             if o.overlayOffset > 0.0 && o.effects.a > 0.0 {
                 let overlay = textureSample(atlas, atlasSampler, o.uv + vec2(0.0, o.overlayOffset));
-                let overlayAlpha = overlay.a * o.effects.a;
-                let combinedAlpha = overlayAlpha + base.a * (1.0 - overlayAlpha);
-                if combinedAlpha > 0.0 {
-                    color = vec4((overlay.rgb * o.effects.rgb * overlayAlpha +
-                        base.rgb * base.a * (1.0 - overlayAlpha)) / combinedAlpha, combinedAlpha);
+                if overlay.a > 0.0 {
+                    // The live fleece model is an opaque, slightly inflated replacement wherever
+                    // it has coverage. The capture pass already depth-rejected fleece hidden by
+                    // the body, so selecting it here matches that two-pass result.
+                    color = vec4(overlay.rgb * o.effects.rgb * (overlay.a * 1.6), 1.0);
                 }
             }
             if color.a < 0.1 { discard; }
@@ -66,7 +71,7 @@ internal static class EntityImpostorShaders
                 else if u.fog.w == 2.0 { visibility = exp(-u.fog.z * o.distance); }
                 else { visibility = exp(-pow(u.fog.z * o.distance, 2.0)); }
             }
-            var lit = color.rgb * o.light;
+            var lit = clamp(color.rgb * o.light, vec3(0.0), vec3(1.0));
             lit = mix(lit, vec3(o.light, 0.0, 0.0), o.hurt);
             return vec4(mix(u.fogColor.rgb, lit, clamp(visibility,0.0,1.0)), color.a);
         }

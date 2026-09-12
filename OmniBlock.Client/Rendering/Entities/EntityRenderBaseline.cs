@@ -8,6 +8,7 @@ using OmniBlock.Diagnostics;
 using OmniBlock.NBT;
 using OmniBlock.Client.Rendering.Entities.Models;
 using OmniBlock.Client.Resource.Pack;
+using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Client.Rendering.Entities;
@@ -30,6 +31,9 @@ internal sealed class EntityRenderBaseline : IDisposable
     private readonly double _x, _y, _z;
     private readonly int _width, _height;
     private readonly float _fov;
+    private long _worldTime = 6000;
+    private float _rain;
+    private float _thunder;
     private bool _changed;
     private readonly bool _previousHideGui;
     private readonly TexturePack _pack;
@@ -190,15 +194,36 @@ internal sealed class EntityRenderBaseline : IDisposable
         return true;
     }
 
+    /// <summary>Restricted deterministic environment states for paired Phase 4 screenshots.</summary>
+    public bool SetEnvironment(string state)
+    {
+        (_worldTime, _rain, _thunder) = state switch
+        {
+            "day" => (6000, 0f, 0f),
+            "night" => (18000, 0f, 0f),
+            "storm" => (6000, 1f, 1f),
+            _ => (_worldTime, _rain, _thunder)
+        };
+        return state is "day" or "night" or "storm";
+    }
+
     public void PrepareFrame()
     {
         // Pin client presentation only, never touch the integrated server's world/RNG.
         if (!BelongsTo(_game.World)) { _changed = true; return; }
-        _game.World.SetTime(6000);
-        _game.World.Environment.SetRainGradient(0);
-        _game.World.Environment.SetThunderGradient(0);
+        _game.World.SetTime(_worldTime);
+        _game.World.Environment.SetRainGradient(_rain);
+        _game.World.Environment.SetThunderGradient(_thunder);
         _game.World.Environment.UpdateSkyBrightness();
         var camera = _game.Camera;
+        if (camera != null)
+        {
+            var luminance = _game.World.GetLuminance(
+                MathHelper.Floor(camera.X), MathHelper.Floor(camera.Y), MathHelper.Floor(camera.Z));
+            var renderDistanceFactor = Math.Clamp((_game.Options.RenderDistance - 4f) / 28f, 0f, 1f);
+            _game.GameRenderer.CameraController.PinWorldBrightness(
+                luminance * (1 - renderDistanceFactor) + renderDistanceFactor);
+        }
         _changed |= camera == null || Math.Abs(camera.X - _x) > 0.001 ||
             Math.Abs(camera.Y - _y) > 0.001 || Math.Abs(camera.Z - _z) > 0.001 ||
             camera.Yaw != 0 || camera.Pitch != 0 || _game.Options.Fov != _fov ||

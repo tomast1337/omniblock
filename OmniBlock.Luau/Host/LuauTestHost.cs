@@ -25,6 +25,7 @@ public static unsafe class LuauTestHost
                                         dumpTerrain = function(label) __Test.dumpTerrain(tostring(label or "terrain")) end,
                                         entityBaseline = function(scene, count, distance) return __Test.entityBaseline(scene, count, distance) end,
                                         entityBaselineState = function(state) return __Test.entityBaselineState(tostring(state)) end,
+                                        entityBaselineEnvironment = function(state) return __Test.entityBaselineEnvironment(tostring(state)) end,
                                         beginEntitySample = function() return __Test.beginEntitySample() end,
                                         endEntitySample = function(label) return __Test.endEntitySample(label) end,
                                         clearEntityBaseline = function() __Test.clearEntityBaseline() end,
@@ -53,6 +54,7 @@ public static unsafe class LuauTestHost
     public static Action<string>? DumpTerrain;
     public static Func<string, int, double, bool>? EntityBaseline;
     public static Func<string, bool>? EntityBaselineState;
+    public static Func<string, bool>? EntityBaselineEnvironment;
     public static Func<bool>? BeginEntitySample;
     public static Func<string, bool>? EndEntitySample;
     public static Action? ClearEntityBaseline;
@@ -78,6 +80,7 @@ public static unsafe class LuauTestHost
         Add(l, "dumpTerrain", &DumpTerrainClosure);
         Add(l, "entityBaseline", &EntityBaselineClosure);
         Add(l, "entityBaselineState", &EntityBaselineStateClosure);
+        Add(l, "entityBaselineEnvironment", &EntityBaselineEnvironmentClosure);
         Add(l, "beginEntitySample", &BeginEntitySampleClosure);
         Add(l, "endEntitySample", &EndEntitySampleClosure);
         Add(l, "clearEntityBaseline", &ClearEntityBaselineClosure);
@@ -127,6 +130,16 @@ public static unsafe class LuauTestHost
         var ok = false;
         try { ok = EntityBaselineState?.Invoke(ReadString(l, 1) ?? "") == true; }
         catch (Exception error) { Fail?.Invoke($"Entity baseline state: {error.Message}"); }
+        LuauNative.lua_pushboolean(l, ok ? 1 : 0);
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int EntityBaselineEnvironmentClosure(IntPtr l)
+    {
+        var ok = false;
+        try { ok = EntityBaselineEnvironment?.Invoke(ReadString(l, 1) ?? "") == true; }
+        catch (Exception error) { Fail?.Invoke($"Entity baseline environment: {error.Message}"); }
         LuauNative.lua_pushboolean(l, ok ? 1 : 0);
         return 1;
     }

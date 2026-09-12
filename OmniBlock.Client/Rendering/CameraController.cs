@@ -49,6 +49,9 @@ public class CameraController
         ViewBob += (targetBob - ViewBob) * 0.1F;
     }
 
+    /// <summary>Removes adaptation drift from paired client-only visual fixtures.</summary>
+    internal void PinWorldBrightness(float value) => LastViewBob = ViewBob = Math.Clamp(value, 0, 1);
+
     public void SetZoomState(bool isHeld, float zoomScale)
     {
         IsZoomActive = isHeld;

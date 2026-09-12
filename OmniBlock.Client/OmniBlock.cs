@@ -632,6 +632,7 @@ public partial class OmniBlock :
                     return true;
                 };
                 LuauTestHost.EntityBaselineState = state => EntityBaseline?.SetImpostorState(state) == true;
+                LuauTestHost.EntityBaselineEnvironment = state => EntityBaseline?.SetEnvironment(state) == true;
                 LuauTestHost.BeginEntitySample = () =>
                 {
                     if (EntityBaseline == null) return false;
@@ -1057,6 +1058,7 @@ public partial class OmniBlock :
             LuauTestHost.DumpTerrain = null;
             LuauTestHost.EntityBaseline = null;
             LuauTestHost.EntityBaselineState = null;
+            LuauTestHost.EntityBaselineEnvironment = null;
             LuauTestHost.BeginEntitySample = null;
             LuauTestHost.EndEntitySample = null;
             LuauTestHost.ClearEntityBaseline = null;

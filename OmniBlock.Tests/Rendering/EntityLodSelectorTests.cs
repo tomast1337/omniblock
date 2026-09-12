@@ -174,6 +174,25 @@ public sealed class EntityLodSelectorTests
         Assert.Equal(8, EntityLodDirections.Select(Angle(-1), 0));
     }
 
+    [Fact]
+    public void Elevation_ring_and_pole_boundaries_have_angular_hysteresis()
+    {
+        static Vector3 Elevation(double degrees) => new(0,
+            (float)Math.Sin(degrees * Math.PI / 180),
+            (float)Math.Cos(degrees * Math.PI / 180));
+
+        Assert.Equal(8, EntityLodDirections.Select(Elevation(22), 0));
+        Assert.Equal(16, EntityLodDirections.Select(Elevation(23), 0));
+        Assert.Equal(8, EntityLodDirections.Select(Elevation(23), 0, 8));
+        Assert.Equal(16, EntityLodDirections.Select(Elevation(35), 0, 8));
+        Assert.Equal(24, EntityLodDirections.Select(Elevation(68), 0));
+        Assert.Equal(16, EntityLodDirections.Select(Elevation(68), 0, 16));
+        Assert.Equal(24, EntityLodDirections.Select(Elevation(80), 0, 16));
+
+        Assert.Equal(8, EntityLodDirections.Select(Elevation(-22), 0));
+        Assert.Equal(25, EntityLodDirections.Select(Elevation(-80), 0, 0));
+    }
+
     [Theory]
     [InlineData(0)] [InlineData(90)] [InlineData(-90)] [InlineData(360)] [InlineData(-720)]
     public void Direction_selection_matches_engine_entity_forward(float yaw)
