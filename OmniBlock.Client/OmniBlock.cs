@@ -552,6 +552,7 @@ public partial class OmniBlock :
                     "entityImpostorPendingFallbacks" => WorldRenderer?.EntityImpostors.PendingFallbacks ?? 0,
                     "entityImpostorPoseMask" => WorldRenderer?.EntityImpostors.LastPoseMask ?? 0,
                     "entityImpostorHurtSubmissions" => WorldRenderer?.EntityImpostors.LastHurtSubmitted ?? 0,
+                    "entityImpostorOverlaySubmissions" => WorldRenderer?.EntityImpostors.LastOverlaySubmitted ?? 0,
                     "entityImpostorMemoryHits" => WorldRenderer?.EntityImpostors.MemoryHits ?? 0,
                     "entityImpostorDiskHits" => WorldRenderer?.EntityImpostors.DiskHits ?? 0,
                     "entityImpostorCacheMisses" => WorldRenderer?.EntityImpostors.CacheMisses ?? 0,
@@ -717,7 +718,8 @@ public partial class OmniBlock :
         UiCommandRegistry.Freeze();
 
         TexturePackList = new TexturePacks(this, new DirectoryInfo(GameDataDir));
-        TextureManager = new TextureManager(this, TexturePackList, Options);
+        TextureManager = new TextureManager(this, TexturePackList, Options,
+            EntityRenderDispatcher.Instance.ImpostorTextureDependencies);
         TextRenderer = new TextRenderer(Options, TextureManager);
 
         var terrainTexture = TextureManager.GetTextureId("/terrain.png");
@@ -2349,8 +2351,10 @@ public partial class OmniBlock :
     {
         var candidate = Interlocked.Exchange(ref _pendingContent, null);
         if (candidate is null) return;
-        Content = candidate;
         EntityRenderDispatcher.Instance.ConfigureContent(candidate);
+        TextureManager.SetImpostorCaptureDependencies(
+            EntityRenderDispatcher.Instance.ImpostorTextureDependencies);
+        Content = candidate;
         World?.ReplaceContent(candidate);
     }
 

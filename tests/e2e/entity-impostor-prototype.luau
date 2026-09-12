@@ -69,10 +69,22 @@ assert(OMNI.test.beginEntitySample())
 OMNI.wait(1)
 assert(OMNI.test.endEntitySample("phase2-64-cows"), "instanced impostor population was incomplete")
 assert(OMNI.test.entityImpostors(false))
-assert(OMNI.test.entityBaseline("sheep", 1, 120))
-assert(OMNI.test.entityImpostors(true))
-OMNI.waitUntil(function() return OMNI.client.state.entityLodUnsupportedProvider == 1 end, 15, 0.05)
-assert(OMNI.client.state.entityLodImpostorSubmissions == 0)
+-- All 16 colors plus the same 16 sheared states share one two-layer atlas. Only the
+-- unsheared half submits the runtime-tinted fleece layer.
+assert(OMNI.test.entityBaseline("sheep", 32, 32))
+assert(OMNI.test.entityImpostors(true, true))
+OMNI.waitUntil(function()
+    local s = OMNI.client.state
+    assert(s.webGpuErrorCount == 0, "WebGPU reported validation errors during layered capture")
+    assert(s.entityImpostorFailures == 0, "layered sheep capture failed")
+    -- The first poll may still expose the preceding cow sample's completed-frame counters.
+    if s.entityLodObserved == 32 then
+        assert(s.entityLodModelSubmissions + s.entityLodImpostorSubmissions == 32,
+            "layered sheep disappeared or doubled")
+    end
+    return s.entityLodImpostorSubmissions == 32 and s.entityImpostorOverlaySubmissions == 16
+end, 30, 0.005)
+OMNI.test.screenshot()
 assert(OMNI.test.entityImpostors(false))
 OMNI.test.clearEntityBaseline()
 assert(OMNI.client.state.webGpuErrorCount == 0)

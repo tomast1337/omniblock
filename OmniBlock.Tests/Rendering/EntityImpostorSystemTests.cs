@@ -3,6 +3,8 @@ using System.Runtime.InteropServices;
 using OmniBlock.Client.Rendering.Entities;
 using OmniBlock.Client.Rendering.Entities.Models;
 using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.NBT;
 
 namespace OmniBlock.Tests.Rendering;
 
@@ -13,11 +15,12 @@ public class EntityImpostorSystemTests
         public ResourceLocation Id { get; } = new("test", "provider_" + id);
         public double VisualDiameter => 1;
         public string VariantKey => Id.ToString();
-        public string TexturePath => "/mob/cow.png";
+        public IReadOnlyList<string> TexturePaths { get; } = ["/mob/cow.png"];
         public string CacheIdentity => Id.ToString();
         public bool Supports(Entity entity, float partialTicks) => true;
         public int Pose(Entity entity, float partialTicks) => 0;
-        public EntityImpostorVertex[][] BuildPoses() => [CowImpostorGeometry.Build()];
+        public EntityImpostorCaptureLayer[] BuildLayers() => [new(TexturePaths[0], CowImpostorGeometry.BuildPoses())];
+        public Vector4 LayerEffects(Entity entity, float partialTicks) => new(1, 1, 1, 0);
     }
 
     [Fact]
@@ -27,9 +30,9 @@ public class EntityImpostorSystemTests
         var decision = new EntityLodSelector.Decision(EntityLodTier.Impostor,
             EntityLodReason.ImpostorCandidate, 0, 10);
         for (var i = 0; i < 12; i++)
-            Assert.False(system.TrySubmit(new FakeProvider(i), decision, Vector3.UnitZ, 0, 1, 0, false));
+            Assert.False(system.TrySubmit(new FakeProvider(i), decision, Vector3.UnitZ, 0, 1, 0, false, Vector4.One));
         Assert.Equal(8, system.ResidentAtlasCount);
-        Assert.False(system.TrySubmit(new FakeProvider(11), decision, Vector3.UnitZ, 0, 1, 0, false));
+        Assert.False(system.TrySubmit(new FakeProvider(11), decision, Vector3.UnitZ, 0, 1, 0, false, Vector4.One));
         Assert.Equal(8, system.ResidentAtlasCount);
     }
 
@@ -72,12 +75,43 @@ public class EntityImpostorSystemTests
     {
         for (var completed = 0; completed <= EntityImpostorLayout.Captures; completed++)
         {
-            Assert.Equal(completed == EntityImpostorLayout.Captures, EntityImpostorAtlas.MayPublish(completed, false));
-            Assert.False(EntityImpostorAtlas.MayPublish(completed, true));
+            Assert.Equal(completed == EntityImpostorLayout.Captures, EntityImpostorAtlas.MayPublish(completed, 1, false));
+            Assert.False(EntityImpostorAtlas.MayPublish(completed, 1, true));
             Assert.InRange(EntityImpostorAtlas.ViewsThisFrame(completed), 0, 2);
         }
         Assert.Equal(1, EntityImpostorAtlas.ViewsThisFrame(EntityImpostorLayout.Captures - 1));
         Assert.Equal(0, EntityImpostorAtlas.ViewsThisFrame(EntityImpostorLayout.Captures));
+        Assert.False(EntityImpostorAtlas.MayPublish(EntityImpostorLayout.Captures, 2, false));
+        Assert.True(EntityImpostorAtlas.MayPublish(EntityImpostorLayout.Captures * 2, 2, false));
+        Assert.Equal(2, EntityImpostorAtlas.ViewsThisFrame(EntityImpostorLayout.Captures, 2));
+    }
+
+    [Fact]
+    public void Sheep_uses_two_geometry_layers_and_runtime_fleece_state_not_cache_variants()
+    {
+        var sheep = (EntityLiving)EntityRenderBaseline.CreateEntities(
+            new FakeWorldContext(), "sheep", 1, 16, 0, 220, 0)[0];
+        var provider = new SheepImpostorProvider(new ClientEntityImpostorDescriptor(
+            new("test", "sheep"), new(Namespace.OmniBlock, "wool"), 3.1,
+            [new("sheep", "/mob/sheep.png"), new("sheepfur", "/mob/sheep_fur.png")]));
+        var layers = provider.BuildLayers();
+        Assert.Equal(2, layers.Length);
+        Assert.Equal("/mob/sheep.png", layers[0].TexturePath);
+        Assert.Equal("/mob/sheep_fur.png", layers[1].TexturePath);
+        Assert.All(layers, layer => Assert.Equal(EntityImpostorLayout.Poses, layer.Poses.Length));
+        Assert.True(provider.Supports(sheep, 1));
+
+        var wool = Assert.IsType<WoolBehavior>(sheep.Behaviors.Interactable);
+        for (var color = 0; color < WoolBehavior.ColorTable.Length; color++)
+        {
+            wool.SetColorOn(sheep, color);
+            var tint = WoolBehavior.ColorTable[color];
+            Assert.Equal(new Vector4(tint[0], tint[1], tint[2], 1), provider.LayerEffects(sheep, 1));
+        Assert.Equal("test:sheep:wool-v1", provider.VariantKey);
+        }
+        var nbt = new NBTTagCompound(); nbt.SetByte("Color", 11); nbt.SetBoolean("Sheared", true);
+        wool.OnReadNbt(sheep, nbt);
+        Assert.Equal(new Vector4(.2f, .4f, .8f, 0), provider.LayerEffects(sheep, 1));
     }
 
     [Fact]
@@ -86,13 +120,13 @@ public class EntityImpostorSystemTests
         var poses = CowImpostorGeometry.BuildPoses();
         Assert.Equal(EntityImpostorLayout.Poses, poses.Length);
         Assert.All(poses, pose => Assert.Equal(poses[0].Length, pose.Length));
-        Assert.Equal(0, CowImpostorProvider.SelectPose(0, 0, 100, .5f));
+        Assert.Equal(0, BasicEntityImpostorProvider.SelectPose(0, 0, 100, .5f));
         var stride = MathF.PI / 2 / .6662f;
-        Assert.Equal(1, CowImpostorProvider.SelectPose(1, 1, 0, 1));
-        Assert.Equal(2, CowImpostorProvider.SelectPose(1, 1, stride, 1));
-        Assert.Equal(3, CowImpostorProvider.SelectPose(1, 1, stride * 2, 1));
-        Assert.Equal(4, CowImpostorProvider.SelectPose(1, 1, stride * 3, 1));
-        Assert.Equal(1, CowImpostorProvider.SelectPose(1, 1, stride * 4, 1));
+        Assert.Equal(1, BasicEntityImpostorProvider.SelectPose(1, 1, 0, 1));
+        Assert.Equal(2, BasicEntityImpostorProvider.SelectPose(1, 1, stride, 1));
+        Assert.Equal(3, BasicEntityImpostorProvider.SelectPose(1, 1, stride * 2, 1));
+        Assert.Equal(4, BasicEntityImpostorProvider.SelectPose(1, 1, stride * 3, 1));
+        Assert.Equal(1, BasicEntityImpostorProvider.SelectPose(1, 1, stride * 4, 1));
         Assert.NotEqual(poses[0], poses[1]);
         Assert.NotEqual(poses[1], poses[2]);
     }

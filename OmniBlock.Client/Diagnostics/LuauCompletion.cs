@@ -23,7 +23,7 @@ internal sealed partial class LuauCompletion
         "entityLodImpostorSubmissions", "entityLodUnsupportedProvider", "entityLodUnsupportedState",
         "entityLodInvalidView", "entityLodCapacityFallbacks", "entityLodStateCount", "entityLodResets",
         "entityImpostorViews", "entityImpostorReady", "entityImpostorFailures", "entityImpostorReplacements", "entityImpostorPendingFallbacks",
-        "entityImpostorPoseMask", "entityImpostorHurtSubmissions", "webGpuErrorCount",
+        "entityImpostorPoseMask", "entityImpostorHurtSubmissions", "entityImpostorOverlaySubmissions", "webGpuErrorCount",
         "entityImpostorMemoryHits", "entityImpostorDiskHits", "entityImpostorCacheMisses", "entityImpostorCacheWrites",
         "entityImpostorCacheErrors", "entityImpostorCancellations", "entityImpostorStaleResults", "entityImpostorCapturedViews", "entityImpostorMemoryBytes", "entityImpostorReadbackPending"
     ];

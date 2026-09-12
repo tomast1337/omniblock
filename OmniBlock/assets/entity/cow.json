@@ -12,7 +12,15 @@
   "Renderer": {
     "Type": "living",
     "Model": "cow",
-    "Shadow": 0.7
+    "Shadow": 0.7,
+    "Impostor": {
+      "Id": "omniblock:cow",
+      "Provider": "omniblock:basic",
+      "VisualDiameter": 2.75,
+      "Layers": [
+        { "Model": "cow", "Texture": "/mob/cow.png" }
+      ]
+    }
   },
   "Behaviors": [
     {

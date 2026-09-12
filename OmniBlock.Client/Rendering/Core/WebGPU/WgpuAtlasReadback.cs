@@ -22,7 +22,8 @@ internal sealed unsafe class WgpuAtlasReadback : IDisposable
     public WgpuAtlasReadback(WebGpuDevice device, CommandEncoder* encoder, WgpuTexture texture)
     {
         _device = device; _width = texture.Width; _height = texture.Height;
-        if ((long)_width * _height * 4 > 4 * 1024 * 1024) throw new ArgumentOutOfRangeException(nameof(texture));
+        // Two-layer sheep atlases store base and fleece separately in one bounded image.
+        if ((long)_width * _height * 4 > 8 * 1024 * 1024) throw new ArgumentOutOfRangeException(nameof(texture));
         _rowBytes = (_width * 4 + 255) & ~255u;
         BufferDescriptor desc = new() { Size = _rowBytes * _height, Usage = BufferUsage.CopyDst | BufferUsage.MapRead };
         _buffer = device.Api.DeviceCreateBuffer(device.Device, in desc);

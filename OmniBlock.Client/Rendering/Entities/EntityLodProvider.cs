@@ -1,6 +1,7 @@
 using System.Numerics;
 using OmniBlock.Client.Rendering.Entities.Models;
 using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
 
 namespace OmniBlock.Client.Rendering.Entities;
 
@@ -16,52 +17,38 @@ internal interface IEntityLodProvider
 
 internal interface IEntityImpostorProvider : IEntityLodProvider
 {
-    string TexturePath { get; }
     string CacheIdentity { get; }
-    EntityImpostorVertex[][] BuildPoses();
+    IReadOnlyList<string> TexturePaths { get; }
+    EntityImpostorCaptureLayer[] BuildLayers();
+    Vector4 LayerEffects(Entity entity, float partialTicks);
 }
 
-internal sealed class CowImpostorProvider : IEntityImpostorProvider
+internal sealed class BasicEntityImpostorProvider : IEntityImpostorProvider
 {
-    public ResourceLocation Id { get; } = new(Namespace.OmniBlock, "standing_cow");
-    public double VisualDiameter { get; }
-    public string VariantKey => "omniblock:standing_cow:v1";
-    public string TexturePath => "/mob/cow.png";
-    public string CacheIdentity => "omniblock:standing_cow:canonical-v2:root24:inflate:RGBA8:cutout0.1:nearest:mip0";
-    public EntityImpostorVertex[][] BuildPoses() => CowImpostorGeometry.BuildPoses();
+    private readonly ClientEntityImpostorDescriptor _descriptor;
+    public ResourceLocation Id => _descriptor.Id;
+    public double VisualDiameter => _descriptor.VisualDiameter;
+    public string VariantKey => $"{Id}:basic-v1";
+    public IReadOnlyList<string> TexturePaths { get; }
+    public string CacheIdentity => "omniblock:basic-impostor-v1:root24:RGBA8:cutout0.1:nearest:mip0";
+    public EntityImpostorCaptureLayer[] BuildLayers() => _descriptor.Layers
+        .Select(layer => new EntityImpostorCaptureLayer(layer.Texture,
+            EntityImpostorGeometry.BuildPoses(layer.Model))).ToArray();
+    public Vector4 LayerEffects(Entity entity, float partialTicks) => new(1, 1, 1, 0);
 
-    public CowImpostorProvider()
+    public BasicEntityImpostorProvider(ClientEntityImpostorDescriptor descriptor)
     {
-        // Same cached geometry and conversion as ModelCow, without constructing/touching a live
-        // model or GPU buffers. Enclose all standing-pose corners in a sphere about entity origin;
-        // this deliberately overestimates projected height, including horns and modified models.
-        var document = BbModelLoader.LoadCached("cow");
-        var radius = 0.0;
-        foreach (var group in document.Groups.Where(g => g.Export))
-        {
-            var entry = document.Outliner.FirstOrDefault(e => e.Uuid == group.Uuid);
-            var element = document.Elements.FirstOrDefault(e => e.Uuid == entry?.Children.FirstOrDefault());
-            if (element == null || !element.Export || element.Type != "cube") continue;
-            var part = BbModelModelBuilder.ConvertElement(group, element, 0);
-            for (var corner = 0; corner < 8; corner++)
-            {
-                var vertex = new Vector3(
-                    part.BoxX + ((corner & 1) == 0 ? -part.Inflate : part.SizeX + part.Inflate),
-                    part.BoxY + ((corner & 2) == 0 ? -part.Inflate : part.SizeY + part.Inflate),
-                    part.BoxZ + ((corner & 4) == 0 ? -part.Inflate : part.SizeZ + part.Inflate));
-                if (part.Name is "body" or "udders") vertex = new Vector3(vertex.X, -vertex.Z, vertex.Y);
-                vertex += new Vector3(part.PivotX, part.PivotY - 24, part.PivotZ);
-                radius = Math.Max(radius, vertex.Length() / 16.0 + 1.0 / 128);
-            }
-        }
-        VisualDiameter = radius * 2;
+        if (descriptor.Layers.Length != 1)
+            throw new InvalidDataException($"Basic impostor '{descriptor.Id}' requires exactly one layer.");
+        _descriptor = descriptor;
+        TexturePaths = descriptor.Layers.Select(layer => layer.Texture).ToArray();
     }
 
     public bool Supports(Entity entity, float partialTicks)
     {
         if (entity is not EntityLiving living || entity.Dead || entity.HasVehicle || entity.Passenger != null ||
             entity.IsOnFire || living.Health <= 0 || living.DeathTime != 0 || living.HeldItem != null ||
-            living.GetTexture() != "/mob/cow.png" || entity.Type?.Definition?.Scale != 1) return false;
+            living.GetTexture() != TexturePaths[0] || entity.Type?.Definition?.Scale != 1) return false;
         var body = EntityLodDirections.InterpolateYaw(living.LastBodyYaw, living.BodyYaw, partialTicks);
         var head = EntityLodDirections.InterpolateYaw(entity.PrevYaw, entity.Yaw, partialTicks);
         var pitch = entity.PrevPitch + (entity.Pitch - entity.PrevPitch) * partialTicks;
@@ -83,5 +70,51 @@ internal sealed class CowImpostorProvider : IEntityImpostorProvider
         var cycle = phase * 0.6662f / (MathF.PI * 2);
         cycle -= MathF.Floor(cycle);
         return 1 + ((int)MathF.Floor(cycle * 4 + 0.5f) & 3);
+    }
+}
+
+internal sealed class SheepImpostorProvider : IEntityImpostorProvider
+{
+    private readonly ClientEntityImpostorDescriptor _descriptor;
+    public ResourceLocation Id => _descriptor.Id;
+    public double VisualDiameter => _descriptor.VisualDiameter;
+    public string VariantKey => $"{Id}:wool-v1";
+    public string CacheIdentity => "omniblock:sheep:layered-v1:RGBA8:cutout0.1:nearest:mip0";
+    public IReadOnlyList<string> TexturePaths { get; }
+
+    public SheepImpostorProvider(ClientEntityImpostorDescriptor descriptor)
+    {
+        if (descriptor.Layers.Length != 2)
+            throw new InvalidDataException($"Wool impostor '{descriptor.Id}' requires base and fleece layers.");
+        _descriptor = descriptor;
+        TexturePaths = descriptor.Layers.Select(layer => layer.Texture).ToArray();
+    }
+
+    public EntityImpostorCaptureLayer[] BuildLayers() => _descriptor.Layers
+        .Select(layer => new EntityImpostorCaptureLayer(layer.Texture,
+            EntityImpostorGeometry.BuildPoses(layer.Model))).ToArray();
+
+    public bool Supports(Entity entity, float partialTicks)
+    {
+        if (entity is not EntityLiving living || entity.Dead || entity.HasVehicle || entity.Passenger != null ||
+            entity.IsOnFire || living.Health <= 0 || living.DeathTime != 0 || living.HeldItem != null ||
+            living.GetTexture() != TexturePaths[0] || entity.Type?.Definition?.Scale != 1 ||
+            entity.Behaviors.Find<WoolBehavior>() is not { } wool || wool.ColorOf(entity) is < 0 or > 15) return false;
+        var body = EntityLodDirections.InterpolateYaw(living.LastBodyYaw, living.BodyYaw, partialTicks);
+        var head = EntityLodDirections.InterpolateYaw(entity.PrevYaw, entity.Yaw, partialTicks);
+        var pitch = entity.PrevPitch + (entity.Pitch - entity.PrevPitch) * partialTicks;
+        return Math.Abs(EntityLodDirections.InterpolateYaw(body, head, 1) - body) < 0.01 && Math.Abs(pitch) < 0.01;
+    }
+
+    public int Pose(Entity entity, float partialTicks) => entity is EntityLiving living
+        ? BasicEntityImpostorProvider.SelectPose(living.LastWalkAnimationSpeed, living.WalkAnimationSpeed,
+            living.AnimationPhase, partialTicks)
+        : 0;
+
+    public Vector4 LayerEffects(Entity entity, float partialTicks)
+    {
+        if (entity.Behaviors.Find<WoolBehavior>() is not { } wool) return new Vector4(1, 1, 1, 0);
+        var tint = WoolBehavior.ColorTable[wool.ColorOf(entity)];
+        return new Vector4(tint[0], tint[1], tint[2], wool.IsShearedOn(entity) ? 0 : 1);
     }
 }

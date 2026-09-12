@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using Microsoft.Extensions.Logging;
 using OmniBlock.Client.Options;
 using OmniBlock.Client.Rendering.Core;
@@ -53,6 +54,8 @@ public class EntityRenderDispatcher
     public float PlayerViewY { get; set; }
     public float PlayerViewX { get; private set; }
     public GameOptions Options { get; private set; }
+    internal IReadOnlySet<string> ImpostorTextureDependencies { get; private set; } =
+        Array.Empty<string>().ToFrozenSet(StringComparer.Ordinal);
 
     /// <summary>
     ///     Builds a renderer for every registered type whose definition declares one. These take
@@ -63,6 +66,9 @@ public class EntityRenderDispatcher
     {
         if (ReferenceEquals(_declaredRendererContent, content)) return;
         var renderers = _rendererRegistry.Build(content);
+        var impostorDependencies = renderers.Values
+            .SelectMany(renderer => (renderer.LodProvider as IEntityImpostorProvider)?.TexturePaths ?? [])
+            .ToFrozenSet(StringComparer.Ordinal);
         _declaredRenderMap.Clear();
         foreach (var (type, renderer) in renderers)
         {
@@ -70,6 +76,7 @@ public class EntityRenderDispatcher
             _declaredRenderMap[type] = renderer;
         }
 
+        ImpostorTextureDependencies = impostorDependencies;
         _declaredRendererContent = content;
     }
 

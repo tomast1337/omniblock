@@ -31,14 +31,16 @@ public class Texture2D : IDisposable
     private static uint s_nextWebGpuId;
 
     private WgpuSamplerDescription _sampler = WgpuSamplerDescription.Nearest;
-    // Phase 3 only opts the cow provider into resource snapshots. Bound the retained copy; an
-    // oversized/dynamically updated skin remains 3D rather than caching an unverifiable image.
+    private readonly bool _retainImpostorSource;
+    // Retention is explicitly selected by the compiled client content catalog. Bound the copy; an
+    // oversized/dynamically updated texture remains 3D rather than caching unverifiable pixels.
     internal sealed record CaptureSource(int Width, int Height, byte[] Pixels, WgpuSamplerDescription Sampler);
     internal CaptureSource? ImpostorSource { get; private set; }
 
-    public Texture2D(string source)
+    public Texture2D(string source, bool retainImpostorSource = false)
     {
         Source = source;
+        _retainImpostorSource = retainImpostorSource;
         Id = ++s_nextWebGpuId;
         s_activeTextures.Add(Id, (source, DateTime.Now));
         s_byId[Id] = this;
@@ -119,7 +121,7 @@ public class Texture2D : IDisposable
         {
             Width = width;
             Height = height;
-            ImpostorSource = Source == "/mob/cow.png" && width > 0 && height > 0 && (long)width * height <= 1024 * 1024
+            ImpostorSource = _retainImpostorSource && width > 0 && height > 0 && (long)width * height <= 1024 * 1024
                 ? new CaptureSource(width, height, new ReadOnlySpan<byte>(ptr, checked(width * height * 4)).ToArray(), _sampler)
                 : null;
         }

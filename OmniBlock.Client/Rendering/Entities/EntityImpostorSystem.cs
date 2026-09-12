@@ -37,6 +37,7 @@ internal sealed unsafe class EntityImpostorSystem : IDisposable
     public int PendingFallbacks => _entries.Values.Sum(e => e.Atlas.PendingFallbacks);
     public int LastPoseMask => _entries.Values.Aggregate(0, (mask, e) => mask | e.Atlas.LastPoseMask);
     public int LastHurtSubmitted => _entries.Values.Sum(e => e.Atlas.LastHurtSubmitted);
+    public int LastOverlaySubmitted => _entries.Values.Sum(e => e.Atlas.LastOverlaySubmitted);
     public int MemoryHits => _memoryHits + _entries.Values.Sum(e => e.Atlas.MemoryHits);
     public int DiskHits => _diskHits + _entries.Values.Sum(e => e.Atlas.DiskHits);
     public int CacheMisses => _cacheMisses + _entries.Values.Sum(e => e.Atlas.CacheMisses);
@@ -85,7 +86,7 @@ internal sealed unsafe class EntityImpostorSystem : IDisposable
     }
 
     public bool TrySubmit(IEntityLodProvider? provider, EntityLodSelector.Decision decision,
-        Vector3 cameraRelativePosition, float yaw, float light, int pose, bool hurt)
+        Vector3 cameraRelativePosition, float yaw, float light, int pose, bool hurt, Vector4 layerEffects)
     {
         if (!Enabled || provider is not IEntityImpostorProvider impostor) return false;
         if (!_entries.TryGetValue(impostor.Id, out var entry))
@@ -105,7 +106,7 @@ internal sealed unsafe class EntityImpostorSystem : IDisposable
             _entries.Add(impostor.Id, entry);
         }
         entry.LastUsed = _frame;
-        return entry.Atlas.TrySubmit(decision, cameraRelativePosition, yaw, light, pose, hurt);
+        return entry.Atlas.TrySubmit(decision, cameraRelativePosition, yaw, light, pose, hurt, layerEffects);
     }
 
     public void Draw()

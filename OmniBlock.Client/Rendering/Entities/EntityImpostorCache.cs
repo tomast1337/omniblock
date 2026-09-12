@@ -9,15 +9,20 @@ namespace OmniBlock.Client.Rendering.Entities;
 internal static class EntityImpostorCache
 {
     public const int PixelBytes = EntityImpostorLayout.Width * EntityImpostorLayout.Height * 4;
-    private const int HeaderBytes = 8 + 7 * 4 + 32 + 32;
+    private const int HeaderBytes = 8 + 8 * 4 + 32 + 32;
     public const int FileBytes = HeaderBytes + PixelBytes;
     public const long DiskBudget = 256L * 1024 * 1024;
     private static readonly byte[] s_magic = "OMNIIMP1"u8.ToArray();
-    internal sealed record Atlas(string Key, float Radius, byte[] Pixels);
+    internal sealed record Atlas(string Key, float Radius, int Layers, byte[] Pixels);
 
-    public static string Key(string providerIdentity, string texturePath, EntityImpostorVertex[][] geometry,
-        Texture2D.CaptureSource skin, float radius)
+    public static int PixelBytesFor(int layers) => checked(EntityImpostorLayout.Width * EntityImpostorLayout.AtlasHeight(layers) * 4);
+    public static int FileBytesFor(int layers) => checked(HeaderBytes + PixelBytesFor(layers));
+
+    public static string Key(string providerIdentity, EntityImpostorCaptureLayer[] layers,
+        Texture2D.CaptureSource[] sources, float radius)
     {
+        if (layers.Length is < 1 or > 2 || sources.Length != layers.Length)
+            throw new ArgumentException("Impostor capture layers and texture sources must match.");
         using var stream = new MemoryStream();
         using var writer = new BinaryWriter(stream, Encoding.UTF8, true);
         writer.Write(providerIdentity);
@@ -30,24 +35,31 @@ internal static class EntityImpostorCache
             foreach (var v in new[] { d, r, u }) { writer.Write(v.X); writer.Write(v.Y); writer.Write(v.Z); }
         }
         writer.Write(EntityImpostorShaders.Capture); writer.Write(EntityImpostorShaders.Present);
-        writer.Write(geometry.Length);
-        foreach (var pose in geometry)
+        writer.Write("overlay-depth-seeded-by-base-v1");
+        writer.Write(layers.Length);
+        for (var layerIndex = 0; layerIndex < layers.Length; layerIndex++)
         {
-            writer.Write(pose.Length);
-            foreach (var v in pose)
+            var layer = layers[layerIndex];
+            var source = sources[layerIndex];
+            writer.Write(layer.TexturePath);
+            writer.Write(layer.Poses.Length);
+            foreach (var pose in layer.Poses)
             {
-                writer.Write(v.Position.X); writer.Write(v.Position.Y); writer.Write(v.Position.Z);
-                writer.Write(v.UV.X); writer.Write(v.UV.Y);
-                writer.Write(v.Normal.X); writer.Write(v.Normal.Y); writer.Write(v.Normal.Z);
+                writer.Write(pose.Length);
+                foreach (var v in pose)
+                {
+                    writer.Write(v.Position.X); writer.Write(v.Position.Y); writer.Write(v.Position.Z);
+                    writer.Write(v.UV.X); writer.Write(v.UV.Y);
+                    writer.Write(v.Normal.X); writer.Write(v.Normal.Y); writer.Write(v.Normal.Z);
+                }
             }
+            // Hash exact uploaded RGBA bytes and sampler state. Display names/timestamps are not inputs.
+            writer.Write(source.Width); writer.Write(source.Height);
+            writer.Write((int)source.Sampler.Mag); writer.Write((int)source.Sampler.Min); writer.Write((int)source.Sampler.Mipmap);
+            writer.Write((int)source.Sampler.AddressU); writer.Write((int)source.Sampler.AddressV);
+            writer.Write(source.Sampler.LodMaxClamp); writer.Write(source.Sampler.MaxAnisotropy);
+            writer.Write(source.Pixels);
         }
-        // Hash the exact uploaded RGBA bytes, including renderer resource fallback. Pack display
-        // names/timestamps are irrelevant; two packs resolving identical inputs may share an atlas.
-        writer.Write(texturePath); writer.Write(skin.Width); writer.Write(skin.Height);
-        writer.Write((int)skin.Sampler.Mag); writer.Write((int)skin.Sampler.Min); writer.Write((int)skin.Sampler.Mipmap);
-        writer.Write((int)skin.Sampler.AddressU); writer.Write((int)skin.Sampler.AddressV);
-        writer.Write(skin.Sampler.LodMaxClamp); writer.Write(skin.Sampler.MaxAnisotropy);
-        writer.Write(skin.Pixels);
         return Convert.ToHexString(SHA256.HashData(stream.GetBuffer().AsSpan(0, checked((int)stream.Length))));
     }
 
@@ -57,31 +69,34 @@ internal static class EntityImpostorCache
         return Path.Combine(directory, key + ".atlas");
     }
 
-    public static Atlas? Read(string directory, string key, float radius, CancellationToken cancellation)
+    public static Atlas? Read(string directory, string key, float radius, int layers, CancellationToken cancellation)
     {
+        var pixelBytes = PixelBytesFor(layers);
         cancellation.ThrowIfCancellationRequested();
         var path = PathFor(directory, key);
         if (!File.Exists(path)) return null;
         using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
-        if (file.Length != FileBytes) throw new InvalidDataException("Wrong impostor cache length.");
+        if (file.Length != FileBytesFor(layers)) throw new InvalidDataException("Wrong impostor cache length.");
         using var reader = new BinaryReader(file);
-        if (!reader.ReadBytes(8).SequenceEqual(s_magic) || reader.ReadInt32() != 2 ||
-            reader.ReadInt32() != EntityImpostorLayout.Width || reader.ReadInt32() != EntityImpostorLayout.Height ||
-            reader.ReadInt32() != EntityImpostorLayout.Views || reader.ReadInt32() != EntityImpostorLayout.Poses || reader.ReadInt32() != PixelBytes ||
+        if (!reader.ReadBytes(8).SequenceEqual(s_magic) || reader.ReadInt32() != 3 ||
+            reader.ReadInt32() != EntityImpostorLayout.Width || reader.ReadInt32() != EntityImpostorLayout.AtlasHeight(layers) ||
+            reader.ReadInt32() != layers || reader.ReadInt32() != EntityImpostorLayout.Views ||
+            reader.ReadInt32() != EntityImpostorLayout.Poses || reader.ReadInt32() != pixelBytes ||
             reader.ReadSingle() != radius || !reader.ReadBytes(32).SequenceEqual(Convert.FromHexString(key)))
             throw new InvalidDataException("Incompatible impostor cache metadata.");
         var digest = reader.ReadBytes(32);
-        var pixels = reader.ReadBytes(PixelBytes);
+        var pixels = reader.ReadBytes(pixelBytes);
         cancellation.ThrowIfCancellationRequested();
-        if (pixels.Length != PixelBytes || !SHA256.HashData(pixels).SequenceEqual(digest))
+        if (pixels.Length != pixelBytes || !SHA256.HashData(pixels).SequenceEqual(digest))
             throw new InvalidDataException("Corrupt impostor cache pixels.");
         try { File.SetLastWriteTimeUtc(path, DateTime.UtcNow); } catch (IOException) { } catch (UnauthorizedAccessException) { }
-        return new Atlas(key, radius, pixels);
+        return new Atlas(key, radius, layers, pixels);
     }
 
     public static void Write(string directory, Atlas atlas, CancellationToken cancellation, long budget = DiskBudget)
     {
-        if (atlas.Pixels.Length != PixelBytes || !float.IsFinite(atlas.Radius) || atlas.Radius <= 0)
+        if (atlas.Layers is < 1 or > 2 || atlas.Pixels.Length != PixelBytesFor(atlas.Layers) ||
+            !float.IsFinite(atlas.Radius) || atlas.Radius <= 0)
             throw new InvalidDataException("Invalid atlas payload.");
         cancellation.ThrowIfCancellationRequested();
         Directory.CreateDirectory(directory);
@@ -92,8 +107,10 @@ internal static class EntityImpostorCache
             using (var file = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             using (var writer = new BinaryWriter(file))
             {
-                writer.Write(s_magic); writer.Write(2); writer.Write(EntityImpostorLayout.Width); writer.Write(EntityImpostorLayout.Height);
-                writer.Write(EntityImpostorLayout.Views); writer.Write(EntityImpostorLayout.Poses); writer.Write(PixelBytes); writer.Write(atlas.Radius);
+                writer.Write(s_magic); writer.Write(3); writer.Write(EntityImpostorLayout.Width);
+                writer.Write(EntityImpostorLayout.AtlasHeight(atlas.Layers)); writer.Write(atlas.Layers);
+                writer.Write(EntityImpostorLayout.Views); writer.Write(EntityImpostorLayout.Poses);
+                writer.Write(PixelBytesFor(atlas.Layers)); writer.Write(atlas.Radius);
                 writer.Write(Convert.FromHexString(atlas.Key)); writer.Write(SHA256.HashData(atlas.Pixels)); writer.Write(atlas.Pixels);
                 file.Flush(true);
             }

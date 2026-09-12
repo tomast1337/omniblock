@@ -71,7 +71,8 @@ public static unsafe class LuauClientStateHost
                                                 key == "entityImpostorViews" or key == "entityImpostorReady" or
                                                 key == "entityImpostorFailures" or key == "entityImpostorReplacements" or
                                                 key == "entityImpostorPendingFallbacks" or key == "entityImpostorPoseMask" or
-                                                key == "entityImpostorHurtSubmissions" or key == "webGpuErrorCount" or
+                                                key == "entityImpostorHurtSubmissions" or key == "entityImpostorOverlaySubmissions" or
+                                                key == "webGpuErrorCount" or
                                                 key == "entityImpostorMemoryHits" or key == "entityImpostorDiskHits" or
                                                 key == "entityImpostorCacheMisses" or key == "entityImpostorCacheWrites" or
                                                 key == "entityImpostorCacheErrors" or key == "entityImpostorCancellations" or

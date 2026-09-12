@@ -26,7 +26,7 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
     private Texture* _depth;
     private TextureView* _depthView;
     private WgpuMesh[]? _geometry;
-    private WgpuPipeline? _capture, _present;
+    private WgpuPipeline? _capture, _captureDepth, _present;
     private WgpuStorageBuffer? _instances;
     private readonly Instance[] _staging = new Instance[MaxInstances];
     private int _count;
@@ -38,8 +38,9 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
     private CancellationTokenSource _cancel = new();
     private long _epoch;
     private string? _key, _cacheDirectory;
-    private Texture2D.CaptureSource? _source;
-    private EntityImpostorVertex[][]? _vertices;
+    private Texture2D.CaptureSource[]? _sources;
+    private EntityImpostorCaptureLayer[]? _layers;
+    private int _layerCount = 1;
     private bool _lookupComplete, _persistenceStarted;
     private Task<CacheWork>? _work;
     private Task<CacheWrite>? _write;
@@ -64,13 +65,14 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
     internal bool HoldCaptureForTest { get; set; }
     public bool Enabled { get; set; }
     public int CompletedViews { get; private set; }
-    public bool Ready => _atlas != null && MayPublish(CompletedViews, _failed);
+    public bool Ready => _atlas != null && MayPublish(CompletedViews, _layerCount, _failed);
     public int LastSubmitted { get; private set; }
     public int Failures { get; private set; }
     public int Replacements { get; private set; }
     public int PendingFallbacks { get; private set; }
     public int LastPoseMask { get; private set; }
     public int LastHurtSubmitted { get; private set; }
+    public int LastOverlaySubmitted { get; private set; }
 
     [StructLayout(LayoutKind.Sequential)]
     private struct Instance { public Vector4 Center, Right, Up, UV, Effects; }
@@ -84,8 +86,10 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
     }
 
     // GPU-free state gates are also tested without a graphics device.
-    internal static bool MayPublish(int completed, bool failed) => completed == EntityImpostorLayout.Captures && !failed;
-    internal static int ViewsThisFrame(int completed) => Math.Clamp(EntityImpostorLayout.Captures - completed, 0, 2);
+    internal static bool MayPublish(int completed, int layers, bool failed) =>
+        completed == EntityImpostorLayout.CapturesFor(layers) && !failed;
+    internal static int ViewsThisFrame(int completed, int layers = 1) =>
+        Math.Clamp(EntityImpostorLayout.CapturesFor(layers) - completed, 0, 2);
 
     public void Reset()
     {
@@ -93,7 +97,8 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
         if (!_cancel.IsCancellationRequested && (_work is { IsCompleted: false } || _write is { IsCompleted: false } || _readback != null || (_atlas != null && !Ready))) Cancellations++;
         _cancel.Cancel(); _cancel.Dispose(); _cancel = new CancellationTokenSource();
         _readback?.Dispose(); _readback = null;
-        _key = null; _source = null; _vertices = null; _lookupComplete = _persistenceStarted = false;
+        _key = null; _sources = null; _layers = null; _layerCount = 1;
+        _lookupComplete = _persistenceStarted = false;
         if (_atlas != null) Replacements++;
         _atlas?.Dispose(); _atlas = null;
         if (_geometry != null) foreach (var geometry in _geometry) geometry.Dispose();
@@ -108,9 +113,10 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
         Reset();
         var instances = _instances; _instances = null;
         // Pipelines own bind-group layouts; retire after buffers/textures and recorded draws.
-        var capture = _capture; var present = _present;
-        if (_device != null) _device.Retire(() => { instances?.Dispose(); capture?.Dispose(); present?.Dispose(); });
-        _capture = _present = null;
+        var capture = _capture; var captureDepth = _captureDepth; var present = _present;
+        if (_device != null) _device.Retire(() =>
+        { instances?.Dispose(); capture?.Dispose(); captureDepth?.Dispose(); present?.Dispose(); });
+        _capture = _captureDepth = _present = null;
     }
 
     /// <summary>Before any world render pass, on the frame's command encoder.</summary>
@@ -119,18 +125,22 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
     {
         if (_device != null && !ReferenceEquals(_device, device)) Dispose();
         _device = device;
-        _cacheDirectory ??= Path.Combine(gameDataDirectory, "cache", "entity-impostors", "v2");
+        _cacheDirectory ??= Path.Combine(gameDataDirectory, "cache", "entity-impostors", "v3");
         if (_generation != textures.ResourceGeneration || (!Enabled && (_requested || _atlas != null)))
         {
             Reset(); _generation = textures.ResourceGeneration;
         }
-        _count = LastSubmitted = PendingFallbacks = LastPoseMask = LastHurtSubmitted = 0;
-        _capture?.ResetUniformPool(); _present?.ResetUniformPool();
+        _count = LastSubmitted = PendingFallbacks = LastPoseMask = LastHurtSubmitted = LastOverlaySubmitted = 0;
+        _capture?.ResetUniformPool(); _captureDepth?.ResetUniformPool(); _present?.ResetUniformPool();
         // Compare the effective upload snapshot as well as the pack token. This catches in-place
         // texture/sampler replacement without trusting a pack display name or mutable file path.
-        var texture = Enabled && _requested ? textures.GetTextureId(_provider.TexturePath).Texture : null;
-        var source = texture?.ImpostorSource;
-        if (_source != null && !ReferenceEquals(_source, source)) { Reset(); _requested = Enabled; }
+        var resolved = Enabled && _requested
+            ? _provider.TexturePaths.Select(path => textures.GetTextureId(path).Texture).ToArray()
+            : [];
+        var sources = resolved.Select(texture => texture?.ImpostorSource).ToArray();
+        if (_sources != null && (_sources.Length != sources.Length ||
+            _sources.Where((source, index) => !ReferenceEquals(source, sources[index])).Any()))
+        { Reset(); _requested = Enabled; }
         try { PollCacheWork(device); PollReadback(); }
         catch (Exception ex) { Dispose(); _failed = true; Failures++; s_log.LogError(ex, "Impostor cache installation failed; keeping 3D."); }
         if (_atlas != null && device.ErrorCount != _gpuErrors)
@@ -141,23 +151,29 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
         var now = Stopwatch.GetTimestamp();
         var frameMs = _lastPrepare == 0 ? 0 : Stopwatch.GetElapsedTime(_lastPrepare, now).TotalMilliseconds;
         _lastPrepare = now;
-        if (!Enabled || !_requested || _failed || source == null) return;
+        if (!Enabled || !_requested || _failed || sources.Length is < 1 or > 2 || sources.Any(source => source == null)) return;
         if (Ready) { StartReadback(device, encoder); return; }
         if (!allowCapture) return;
         using var captureTiming = Profiler.Begin("EntityImpostorCaptureCpu");
         try
         {
-            if (_source == null && _work == null)
+            if (_sources == null && _work == null)
             {
-                _source = source;
-                _vertices = _provider.BuildPoses();
-                _radius = _vertices.SelectMany(v => v).Max(v => v.Position.Length()) * 1.03f;
-                var vertices = _vertices; var radius = _radius; var epoch = _epoch; var cancel = _cancel.Token;
+                _layers = _provider.BuildLayers();
+                if (_layers.Length != sources.Length || _layers.Where((layer, index) =>
+                    layer.TexturePath != _provider.TexturePaths[index] || layer.Poses.Length != EntityImpostorLayout.Poses).Any())
+                    throw new InvalidDataException($"Provider '{_provider.Id}' returned an invalid layer layout.");
+                _layerCount = _layers.Length;
+                _sources = sources.Select(source => source!).ToArray();
+                _radius = _layers.SelectMany(layer => layer.Poses).SelectMany(pose => pose)
+                    .Max(vertex => vertex.Position.Length()) * 1.03f;
+                var layers = _layers; var capturedSources = _sources; var radius = _radius;
+                var epoch = _epoch; var cancel = _cancel.Token;
                 _workStarted = Stopwatch.GetTimestamp(); _workEpoch = epoch;
                 _work = Task.Run(() =>
                 {
                     try { cancel.ThrowIfCancellationRequested(); return new CacheWork(epoch,
-                        EntityImpostorCache.Key(_provider.CacheIdentity, _provider.TexturePath, vertices, source, radius), false, null, null); }
+                        EntityImpostorCache.Key(_provider.CacheIdentity, layers, capturedSources, radius), false, null, null); }
                     catch (OperationCanceledException) { return new CacheWork(epoch, "", false, null, null); }
                     catch (Exception ex) { return new CacheWork(epoch, "", false, null, ex.Message); }
                 });
@@ -171,14 +187,16 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
             var captureStarted = Stopwatch.GetTimestamp();
             EnsureResources(device);
             if (device.ErrorCount != _gpuErrors) throw new InvalidOperationException("GPU rejected the impostor resources.");
-            var skin = texture?.Wgpu;
-            if (skin == null) return;
-            var views = ViewsThisFrame(CompletedViews);
+            var skins = resolved.Select(texture => texture?.Wgpu).ToArray();
+            if (skins.Any(skin => skin == null)) return;
+            var views = ViewsThisFrame(CompletedViews, _layerCount);
             for (var n = 0; n < views; n++)
             {
                 var index = CompletedViews;
-                var pose = index / EntityImpostorLayout.Views;
-                var view = index % EntityImpostorLayout.Views;
+                var layer = index / EntityImpostorLayout.Captures;
+                var capture = index % EntityImpostorLayout.Captures;
+                var pose = capture / EntityImpostorLayout.Views;
+                var view = capture % EntityImpostorLayout.Views;
                 RenderPassColorAttachment color = new() { View = _atlas!.View, LoadOp = index == 0 ? LoadOp.Clear : LoadOp.Load,
                     StoreOp = StoreOp.Store, ClearValue = default, DepthSlice = uint.MaxValue };
                 RenderPassDepthStencilAttachment depth = new() { View = _depthView, DepthLoadOp = LoadOp.Clear,
@@ -188,7 +206,8 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
                 try
                 {
                     var x = (uint)(view % EntityImpostorLayout.Columns * EntityImpostorLayout.Cell + EntityImpostorLayout.Padding);
-                    var y = (uint)((pose * EntityImpostorLayout.RowsPerPose + view / EntityImpostorLayout.Columns) *
+                    var y = (uint)(layer * EntityImpostorLayout.Height +
+                        (pose * EntityImpostorLayout.RowsPerPose + view / EntityImpostorLayout.Columns) *
                         EntityImpostorLayout.Cell + EntityImpostorLayout.Padding);
                     device.Api.RenderPassEncoderSetViewport(pass, x, y, EntityImpostorLayout.Tile, EntityImpostorLayout.Tile, 0, 1);
                     device.Api.RenderPassEncoderSetScissorRect(pass, x, y, EntityImpostorLayout.Tile, EntityImpostorLayout.Tile);
@@ -196,10 +215,20 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
                     var (_, up) = EntityImpostorLayout.Basis(direction);
                     var matrix = Matrix4x4.CreateLookAt(direction * (_radius * 3), Vector3.Zero, up) *
                         Matrix4x4.CreateOrthographic(_radius * 2, _radius * 2, _radius, _radius * 5);
+                    if (layer > 0)
+                    {
+                        // Preserve the live renderer's layer visibility: body geometry seeds depth
+                        // without color, then only fleece pixels actually in front enter the mask.
+                        _captureDepth!.Bind(pass);
+                        _captureDepth.BindNextUniforms(pass, matrix);
+                        WgpuPipeline.BindGroup(pass, 1,
+                            skins[0]!.BindGroupFor(_captureDepth.TextureBindGroupLayout), device.Api);
+                        _geometry![pose].Draw(pass);
+                    }
                     _capture!.Bind(pass);
                     _capture.BindNextUniforms(pass, matrix);
-                    WgpuPipeline.BindGroup(pass, 1, skin.BindGroupFor(_capture.TextureBindGroupLayout), device.Api);
-                    _geometry![pose].Draw(pass);
+                    WgpuPipeline.BindGroup(pass, 1, skins[layer]!.BindGroupFor(_capture.TextureBindGroupLayout), device.Api);
+                    _geometry![layer * EntityImpostorLayout.Poses + pose].Draw(pass);
                 }
                 finally { device.Api.RenderPassEncoderEnd(pass); device.Api.RenderPassEncoderRelease(pass); }
                 CompletedViews++;
@@ -249,11 +278,13 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
         if (!work.DiskLookup)
         {
             if (_memory.Get(work.Key) is { } cached) { MemoryHits++; InstallCached(device, cached); return; }
-            var directory = _cacheDirectory!; var epoch = _epoch; var radius = _radius; var cancel = _cancel.Token;
+            var directory = _cacheDirectory!; var epoch = _epoch; var radius = _radius;
+            var layerCount = _layerCount; var cancel = _cancel.Token;
             _workStarted = Stopwatch.GetTimestamp(); _workEpoch = epoch;
             _work = Task.Run(() =>
             {
-                try { return new CacheWork(epoch, work.Key, true, EntityImpostorCache.Read(directory, work.Key, radius, cancel), null); }
+                try { return new CacheWork(epoch, work.Key, true,
+                    EntityImpostorCache.Read(directory, work.Key, radius, layerCount, cancel), null); }
                 catch (OperationCanceledException) { return new CacheWork(epoch, "", true, null, null); }
                 catch (Exception ex) { return new CacheWork(epoch, work.Key, true, null, ex.Message); }
             });
@@ -266,10 +297,14 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
     {
         // Only current-epoch jobs reach this call. Validate before GPU allocation, then publish
         // after the complete single-level upload has been queued ahead of this frame's draws.
+        _layerCount = atlas.Layers;
         EnsureResources(device, false);
         _atlas = CreateAtlas(device);
-        _atlas.WriteLevel(0, 0, 0, EntityImpostorLayout.Width, EntityImpostorLayout.Height, atlas.Pixels);
-        _radius = atlas.Radius; CompletedViews = EntityImpostorLayout.Captures; _persistenceStarted = true;
+        _atlas.WriteLevel(0, 0, 0, EntityImpostorLayout.Width,
+            (uint)EntityImpostorLayout.AtlasHeight(_layerCount), atlas.Pixels);
+        _radius = atlas.Radius;
+        CompletedViews = EntityImpostorLayout.CapturesFor(_layerCount);
+        _persistenceStarted = true;
     }
 
     private void StartReadback(WebGpuDevice device, CommandEncoder* encoder)
@@ -293,7 +328,7 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
         if (_readback == null || !_readback.TryComplete(out var pixels)) return;
         _readback = null;
         if (pixels == null || _key == null) { ReportCacheError("Atlas readback failed or timed out."); return; }
-        var atlas = new EntityImpostorCache.Atlas(_key, _radius, pixels);
+        var atlas = new EntityImpostorCache.Atlas(_key, _radius, _layerCount, pixels);
         _memory.Put(atlas);
         var directory = _cacheDirectory!; var epoch = _epoch; var cancel = _cancel.Token;
         _writeStarted = Stopwatch.GetTimestamp(); _writeEpoch = epoch;
@@ -306,7 +341,7 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
     }
 
     public bool TrySubmit(EntityLodSelector.Decision decision,
-        Vector3 cameraRelativePosition, float yaw, float light, int pose, bool hurt)
+        Vector3 cameraRelativePosition, float yaw, float light, int pose, bool hurt, Vector4 layerEffects)
     {
         if (!Enabled || decision.Intended != EntityLodTier.Impostor ||
             decision.ViewIndex < 0 || pose is < 0 or >= EntityImpostorLayout.Poses) return false;
@@ -315,12 +350,12 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
         var rotation = Matrix4x4.CreateRotationY(-yaw * MathF.PI / 180);
         var (right, up) = EntityImpostorLayout.Basis(EntityLodDirections.Get(decision.ViewIndex));
         _staging[_count++] = new Instance { Center = new Vector4(cameraRelativePosition, light),
-            Right = new Vector4(Vector3.TransformNormal(right, rotation) * _radius, 0),
-            Up = new Vector4(Vector3.TransformNormal(up, rotation) * _radius, 0),
-            UV = EntityImpostorLayout.UV(decision.ViewIndex, pose),
-            Effects = new Vector4(1, 1, 1, hurt ? 0.4f : 0) };
+            Right = new Vector4(Vector3.TransformNormal(right, rotation) * _radius, hurt ? 0.4f : 0),
+            Up = new Vector4(Vector3.TransformNormal(up, rotation) * _radius, _layerCount > 1 ? 1f / _layerCount : 0),
+            UV = EntityImpostorLayout.UV(decision.ViewIndex, pose, _layerCount), Effects = layerEffects };
         LastPoseMask |= 1 << pose;
         if (hurt) LastHurtSubmitted++;
+        if (_layerCount > 1 && layerEffects.W > 0) LastOverlaySubmitted++;
         return true;
     }
 
@@ -365,6 +400,9 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
             var state = RenderState.Opaque with { Cull = CullMode.None };
             _capture = new WgpuPipeline(device, EntityImpostorShaders.Capture, "vs_main", 64, uniforms, textures,
                 &layout, 1, state, WgpuTexture.Format, WgpuFramebuffer.DepthFormat, label: $"{_provider.Id} impostor capture");
+            _captureDepth = new WgpuPipeline(device, EntityImpostorShaders.Capture, "vs_main", 64, uniforms, textures,
+                &layout, 1, state with { ColorWrite = false }, WgpuTexture.Format, WgpuFramebuffer.DepthFormat,
+                label: $"{_provider.Id} impostor layer depth");
             uniforms[0].Buffer.MinBindingSize = 160;
             BindGroupLayoutEntry[] storage = [new() { Binding = 0, Visibility = ShaderStage.Vertex,
                 Buffer = new BufferBindingLayout { Type = BufferBindingType.ReadOnlyStorage } }];
@@ -374,18 +412,20 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
             _instances = new WgpuStorageBuffer(device, MaxInstances * 80, _present.TextureBindGroupLayout);
         }
         if (_atlas != null || !capture) return;
-        var vertices = _vertices!;
-        _geometry = vertices.Select(pose => new WgpuMesh(device, MemoryMarshal.AsBytes(pose.AsSpan()), 32)).ToArray();
+        _geometry = _layers!.SelectMany(layer => layer.Poses)
+            .Select(pose => new WgpuMesh(device, MemoryMarshal.AsBytes(pose.AsSpan()), 32)).ToArray();
         // Single mip + nearest sampling for this prototype: padded tiles cannot bleed into each
         // other. Alpha-aware mip generation and filtering are required before general rollout.
         _atlas = CreateAtlas(device);
         TextureDescriptor depth = new() { Usage = TextureUsage.RenderAttachment, Dimension = TextureDimension.Dimension2D,
-            Size = new Extent3D(EntityImpostorLayout.Width, EntityImpostorLayout.Height, 1), Format = WgpuFramebuffer.DepthFormat, MipLevelCount = 1, SampleCount = 1 };
+            Size = new Extent3D(EntityImpostorLayout.Width, (uint)EntityImpostorLayout.AtlasHeight(_layerCount), 1),
+            Format = WgpuFramebuffer.DepthFormat, MipLevelCount = 1, SampleCount = 1 };
         _depth = device.Api.DeviceCreateTexture(device.Device, in depth);
         _depthView = device.Api.TextureCreateView(_depth, null);
     }
 
-    private static WgpuTexture CreateAtlas(WebGpuDevice device) => new(device, EntityImpostorLayout.Width, EntityImpostorLayout.Height, 1,
+    private WgpuTexture CreateAtlas(WebGpuDevice device) => new(device, EntityImpostorLayout.Width,
+        (uint)EntityImpostorLayout.AtlasHeight(_layerCount), 1,
         WgpuSamplerDescription.Nearest with { AddressU = AddressMode.ClampToEdge, AddressV = AddressMode.ClampToEdge },
         TextureUsage.RenderAttachment | TextureUsage.CopySrc);
 }

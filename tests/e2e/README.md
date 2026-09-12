@@ -43,7 +43,7 @@ is explicitly unavailable; no FPS assertion is made on software-rendered CI. See
 
 `entity-lod-selection` is the opt-in Phase 1 observer contract test. It checks near/far cow selection,
 projected-size changes through FOV, continued 3D instance submission for the intended impostor tier,
-unsupported sheep fallback, and expired cow state. Run with
+layered-sheep provider selection, and expired cow state. Run with
 `xvfb-run -a tests/e2e/run-local.sh entity-lod-selection`. It writes a far-cow baseline JSON and
 screenshot; the read-only `OMNI.client.state.entityLod*` counters distinguish intended selection
 from actual representation. No sprites, atlas capture, or rendering-distance changes are enabled.
@@ -55,12 +55,13 @@ and `entity-impostor-occlusion` (uncovered/half/full stone-wall screenshot pairs
 and assert zero `OMNI.client.state.webGpuErrorCount`. `OMNI.test.entityImpostors(true, true)` forces
 the tier for close visual inspection only; unsupported states/providers still fall back to 3D.
 The default remains disabled. Submission checks do not replace visual review of these artifacts.
-The Phase 4 cow slice expands that atlas to idle plus four gait poses. The prototype scenario uses
+The Phase 4 slice expands each atlas to idle plus four gait poses. The prototype scenario uses
 the restricted `OMNI.test.entityBaselineState("idle"|"walk-0".."walk-3"|"hurt")` control and checks
 `entityImpostorPoseMask`/`entityImpostorHurtSubmissions`; this proves real GPU-path selection without
 turning the presentation fixture into a simulated entity. Hurt and movement must not silently fall
-back to 3D. Sheep remains deliberately unsupported until base color and fleece coverage can be
-represented separately.
+back to 3D. Sheep uses one two-layer atlas: base RGBA and separately captured fleece coverage. The
+same scenario creates all sixteen colors in both unsheared and sheared states and asserts that
+runtime tinting submits fleece only for the unsheared half.
 
 `entity-impostor-cache` exercises Phase 3 cold capture, memory reuse, disk reuse, effective cow-skin
 changes, cancellation during capture/readback, rapid texture-pack switching, and prototype GPU-resource

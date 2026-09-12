@@ -9,7 +9,8 @@ public sealed class EntityImpostorCacheTests : IDisposable
 {
     private readonly string _directory = Path.Combine(Path.GetTempPath(), "omniblock-atlas-test-" + Guid.NewGuid().ToString("N"));
     private static string Key(char c) => new(c, 64);
-    private static EntityImpostorCache.Atlas Atlas(char c = 'A') => new(Key(c), 2, new byte[EntityImpostorCache.PixelBytes]);
+    private static EntityImpostorCache.Atlas Atlas(char c = 'A', int layers = 1) =>
+        new(Key(c), 2, layers, new byte[EntityImpostorCache.PixelBytesFor(layers)]);
     public void Dispose() { if (Directory.Exists(_directory)) Directory.Delete(_directory, true); }
 
     [Fact]
@@ -17,10 +18,22 @@ public sealed class EntityImpostorCacheTests : IDisposable
     {
         var atlas = Atlas(); atlas.Pixels[1632] = 153; atlas.Pixels[^1] = 71;
         EntityImpostorCache.Write(_directory, atlas, default);
-        var loaded = EntityImpostorCache.Read(_directory, atlas.Key, atlas.Radius, default)!;
+        var loaded = EntityImpostorCache.Read(_directory, atlas.Key, atlas.Radius, 1, default)!;
         Assert.Equal(atlas.Pixels, loaded.Pixels);
         Assert.Equal(EntityImpostorCache.FileBytes, new FileInfo(EntityImpostorCache.PathFor(_directory, atlas.Key)).Length);
         Assert.Empty(Directory.GetFiles(_directory, "*.tmp"));
+    }
+
+    [Fact]
+    public void Two_layer_round_trip_preserves_the_complete_base_and_overlay_payload()
+    {
+        var atlas = Atlas(layers: 2); atlas.Pixels[EntityImpostorCache.PixelBytes] = 91;
+        EntityImpostorCache.Write(_directory, atlas, default);
+        var loaded = EntityImpostorCache.Read(_directory, atlas.Key, atlas.Radius, 2, default)!;
+        Assert.Equal(2, loaded.Layers);
+        Assert.Equal(91, loaded.Pixels[EntityImpostorCache.PixelBytes]);
+        Assert.Equal(EntityImpostorCache.FileBytesFor(2), new FileInfo(EntityImpostorCache.PathFor(_directory, atlas.Key)).Length);
+        Assert.Throws<InvalidDataException>(() => EntityImpostorCache.Read(_directory, atlas.Key, atlas.Radius, 1, default));
     }
 
     [Theory]
@@ -31,7 +44,7 @@ public sealed class EntityImpostorCacheTests : IDisposable
         var atlas = Atlas(); EntityImpostorCache.Write(_directory, atlas, default);
         var path = EntityImpostorCache.PathFor(_directory, atlas.Key);
         var bytes = File.ReadAllBytes(path); bytes[offset] ^= 127; File.WriteAllBytes(path, bytes);
-        Assert.Throws<InvalidDataException>(() => EntityImpostorCache.Read(_directory, atlas.Key, atlas.Radius, default));
+        Assert.Throws<InvalidDataException>(() => EntityImpostorCache.Read(_directory, atlas.Key, atlas.Radius, 1, default));
     }
 
     [Fact]
@@ -40,9 +53,9 @@ public sealed class EntityImpostorCacheTests : IDisposable
         var atlas = Atlas(); EntityImpostorCache.Write(_directory, atlas, default);
         var path = EntityImpostorCache.PathFor(_directory, atlas.Key);
         using (var stream = File.OpenWrite(path)) stream.SetLength(20);
-        Assert.Throws<InvalidDataException>(() => EntityImpostorCache.Read(_directory, atlas.Key, 2, default));
+        Assert.Throws<InvalidDataException>(() => EntityImpostorCache.Read(_directory, atlas.Key, 2, 1, default));
         using (var stream = File.OpenWrite(path)) stream.SetLength(EntityImpostorCache.FileBytes + 1);
-        Assert.Throws<InvalidDataException>(() => EntityImpostorCache.Read(_directory, atlas.Key, 2, default));
+        Assert.Throws<InvalidDataException>(() => EntityImpostorCache.Read(_directory, atlas.Key, 2, 1, default));
     }
 
     [Fact]
@@ -52,7 +65,7 @@ public sealed class EntityImpostorCacheTests : IDisposable
         using var cancellation = new CancellationTokenSource(); cancellation.Cancel();
         var replacement = Atlas(); replacement.Pixels[0] = 44;
         Assert.Throws<OperationCanceledException>(() => EntityImpostorCache.Write(_directory, replacement, cancellation.Token));
-        Assert.Equal(0, EntityImpostorCache.Read(_directory, atlas.Key, 2, default)!.Pixels[0]);
+        Assert.Equal(0, EntityImpostorCache.Read(_directory, atlas.Key, 2, 1, default)!.Pixels[0]);
         Assert.Empty(Directory.GetFiles(_directory, "*.tmp"));
     }
 
@@ -97,15 +110,19 @@ public sealed class EntityImpostorCacheTests : IDisposable
     {
         EntityImpostorVertex[][] vertices = [[new(Vector3.One, Vector2.One, Vector3.UnitY)]];
         Texture2D.CaptureSource skin = new(1, 1, [1, 2, 3, 4], WgpuSamplerDescription.Nearest);
-        var key = EntityImpostorCache.Key("test:v1", "/mob/test.png", vertices, skin, 2);
-        Assert.Equal(key, EntityImpostorCache.Key("test:v1", "/mob/test.png", vertices.Select(v => v.ToArray()).ToArray(), skin with { Pixels = skin.Pixels.ToArray() }, 2));
-        Assert.NotEqual(key, EntityImpostorCache.Key("test:v2", "/mob/test.png", vertices, skin, 2));
-        Assert.NotEqual(key, EntityImpostorCache.Key("test:v1", "/mob/other.png", vertices, skin, 2));
-        Assert.NotEqual(key, EntityImpostorCache.Key("test:v1", "/mob/test.png", vertices, skin with { Pixels = [1, 2, 3, 5] }, 2));
-        Assert.NotEqual(key, EntityImpostorCache.Key("test:v1", "/mob/test.png", vertices, skin with { Sampler = WgpuSamplerDescription.Linear }, 2));
-        Assert.NotEqual(key, EntityImpostorCache.Key("test:v1", "/mob/test.png", vertices, skin, 3));
+        EntityImpostorCaptureLayer[] layers = [new("/mob/test.png", vertices)];
+        var key = EntityImpostorCache.Key("test:v1", layers, [skin], 2);
+        Assert.Equal(key, EntityImpostorCache.Key("test:v1", [new("/mob/test.png", vertices.Select(v => v.ToArray()).ToArray())], [skin with { Pixels = skin.Pixels.ToArray() }], 2));
+        Assert.NotEqual(key, EntityImpostorCache.Key("test:v2", layers, [skin], 2));
+        Assert.NotEqual(key, EntityImpostorCache.Key("test:v1", [new("/mob/other.png", vertices)], [skin], 2));
+        Assert.NotEqual(key, EntityImpostorCache.Key("test:v1", layers, [skin with { Pixels = [1, 2, 3, 5] }], 2));
+        Assert.NotEqual(key, EntityImpostorCache.Key("test:v1", layers, [skin with { Sampler = WgpuSamplerDescription.Linear }], 2));
+        Assert.NotEqual(key, EntityImpostorCache.Key("test:v1", layers, [skin], 3));
         vertices[0][0] = vertices[0][0] with { Position = Vector3.Zero };
-        Assert.NotEqual(key, EntityImpostorCache.Key("test:v1", "/mob/test.png", vertices, skin, 2));
+        Assert.NotEqual(key, EntityImpostorCache.Key("test:v1", layers, [skin], 2));
+
+        Assert.NotEqual(key, EntityImpostorCache.Key("test:v1",
+            [new("/mob/test.png", vertices), new("/mob/fur.png", vertices)], [skin, skin], 2));
     }
 
     [Fact]

@@ -16,16 +16,18 @@ internal interface IClientEntityRendererProvider
 internal sealed class ClientEntityRendererRegistry
 {
     private readonly Dictionary<ResourceLocation, IClientEntityRendererProvider> _providers = [];
+    private readonly Dictionary<ResourceLocation, Func<ClientEntityImpostorDescriptor, IEntityLodProvider>> _impostorProviders = [];
 
     public ClientEntityRendererRegistry()
     {
+        RegisterImpostor("basic", descriptor => new BasicEntityImpostorProvider(descriptor));
+        RegisterImpostor("wool", descriptor => new SheepImpostorProvider(descriptor));
         Register("living", (d, _) =>
         {
             var model = Model(d);
             return new LivingEntityRenderer(model, Shadow(d))
             {
-                // Explicit client provider opt-in. Fleece, players and custom renderers stay 3D.
-                LodProvider = model is ModelCow ? new CowImpostorProvider() : null
+                LodProvider = Impostor(d)
             };
         });
         Register("flapping", (d, _) => new FlappingEntityRenderer(Model(d), Shadow(d)));
@@ -62,9 +64,16 @@ internal sealed class ClientEntityRendererRegistry
             Model(d), EntityModelRegistry.Create(Json(d).GetProperty("OverlayModel").GetString()!), Shadow(d),
             Json(d).GetProperty("OverlayTexture").GetString()!,
             Json(d).GetProperty("OverlayProperty").GetString()!));
-        Register("fleece", (d, _) => new FleeceEntityRenderer(
-            Model(d), EntityModelRegistry.Create(Json(d).GetProperty("OverlayModel").GetString()!), Shadow(d),
-            Json(d).GetProperty("OverlayTexture").GetString()!));
+        Register("fleece", (d, _) =>
+        {
+            var model = Model(d);
+            return new FleeceEntityRenderer(
+                model, EntityModelRegistry.Create(Json(d).GetProperty("OverlayModel").GetString()!), Shadow(d),
+                Json(d).GetProperty("OverlayTexture").GetString()!)
+            {
+                LodProvider = Impostor(d)
+            };
+        });
         Register("overlay", (d, _) => new OverlayEntityRenderer(
             Model(d), EntityModelRegistry.Create(Json(d).GetProperty("OverlayModel").GetString()!), Shadow(d),
             Json(d).GetProperty("OverlayProperty").GetString()!,
@@ -74,6 +83,7 @@ internal sealed class ClientEntityRendererRegistry
     public FrozenDictionary<EntityType, EntityRenderer> Build(ContentRuntime content)
     {
         var renderers = new Dictionary<EntityType, EntityRenderer>();
+        _ = CaptureDependencies(content);
         // Resolve the complete provider set first so a bad client mod cannot leave model/render
         // registrations half constructed before the catalog is rejected.
         foreach (var key in content.EntityTypes.Keys)
@@ -106,6 +116,41 @@ internal sealed class ClientEntityRendererRegistry
         return renderers.ToFrozenDictionary();
     }
 
+    internal FrozenSet<string> CaptureDependencies(ContentRuntime content)
+    {
+        HashSet<ResourceLocation> ids = [];
+        HashSet<string> textures = new(StringComparer.Ordinal);
+        foreach (var key in content.EntityTypes.Keys)
+        {
+            var renderer = content.EntityTypes.Get(key).RenderDescriptor;
+            if (renderer == null) continue;
+            ClientEntityImpostorDescriptor? impostor;
+            try { impostor = ClientEntityImpostorDescriptor.Compile(renderer.Definition); }
+            catch (Exception error)
+            {
+                throw CatalogError(key, renderer.ProviderType, $"Invalid impostor definition: {error.Message}");
+            }
+            if (impostor == null) continue;
+            if (!_impostorProviders.ContainsKey(impostor.ProviderType))
+                throw CatalogError(key, renderer.ProviderType,
+                    $"Unknown impostor provider '{impostor.ProviderType}'.");
+            if (!ids.Add(impostor.Id))
+                throw CatalogError(key, renderer.ProviderType,
+                    $"Duplicate impostor id '{impostor.Id}'.");
+            foreach (var layer in impostor.Layers)
+            {
+                try { _ = BbModelLoader.LoadCached(layer.Model); }
+                catch (Exception error)
+                {
+                    throw CatalogError(key, renderer.ProviderType,
+                        $"Unknown impostor model '{layer.Model}': {error.Message}");
+                }
+                textures.Add(layer.Texture);
+            }
+        }
+        return textures.ToFrozenSet(StringComparer.Ordinal);
+    }
+
     private static InvalidOperationException CatalogError(
         ResourceLocation owner, ResourceLocation provider, string message) =>
         new($"Client entity catalog rejected entity '{owner}' renderer '{provider}': {message}");
@@ -118,6 +163,15 @@ internal sealed class ClientEntityRendererRegistry
 
     private void Register(string path, Func<EntityRenderDescriptor, ContentRuntime, EntityRenderer> factory) =>
         Register(new ResourceLocation(Namespace.OmniBlock, path), new DelegateProvider(factory));
+
+    private void RegisterImpostor(string path, Func<ClientEntityImpostorDescriptor, IEntityLodProvider> factory) =>
+        _impostorProviders.Add(new ResourceLocation(Namespace.OmniBlock, path), factory);
+
+    private IEntityLodProvider? Impostor(EntityRenderDescriptor descriptor)
+    {
+        var compiled = ClientEntityImpostorDescriptor.Compile(descriptor.Definition);
+        return compiled == null ? null : _impostorProviders[compiled.ProviderType](compiled);
+    }
 
     private static JsonElement Json(EntityRenderDescriptor descriptor) => descriptor.Definition;
 

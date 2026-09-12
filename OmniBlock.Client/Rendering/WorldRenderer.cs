@@ -643,7 +643,10 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                 return EntityImpostors.TrySubmit(provider, decision, position.DirectionFrom(new LodPoint(
                     EntityRenderDispatcher.OffsetX, EntityRenderDispatcher.OffsetY, EntityRenderDispatcher.OffsetZ)),
                     (float)yaw, target.GetBrightnessAtEyes(delta), provider?.Pose(target, delta) ?? 0,
-                    target is EntityLiving hurt && hurt.HurtTime > 0);
+                    target is EntityLiving hurt && hurt.HurtTime > 0,
+                    provider is IEntityImpostorProvider impostor
+                        ? impostor.LayerEffects(target, delta)
+                        : new Vector4(1, 1, 1, 0));
             }
         }
     }

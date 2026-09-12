@@ -25,6 +25,7 @@ public class TextureManager : IDisposable
     private readonly Image<Rgba32> _missingTextureImage = new(256, 256);
     private readonly TexturePacks _texturePacks;
     private readonly Dictionary<string, TextureHandle> _textures = [];
+    private HashSet<string> _impostorCaptureDependencies;
     private bool _blur;
     private bool _clamp;
     private NamedTextureArray? _itemsArray;
@@ -33,11 +34,13 @@ public class TextureManager : IDisposable
     internal long ResourceGeneration { get; private set; }
     private TextureHandle? _terrainHandle;
 
-    public TextureManager(OmniBlock game, TexturePacks texturePacks, GameOptions options)
+    public TextureManager(OmniBlock game, TexturePacks texturePacks, GameOptions options,
+        IEnumerable<string>? impostorCaptureDependencies = null)
     {
         _game = game;
         _texturePacks = texturePacks;
         _gameOptions = options;
+        _impostorCaptureDependencies = impostorCaptureDependencies?.ToHashSet(StringComparer.Ordinal) ?? [];
         _missingTextureImage.Mutate(ctx =>
         {
             ctx.BackgroundColor(Color.Magenta);
@@ -134,7 +137,7 @@ public class TextureManager : IDisposable
     {
         if (_textures.TryGetValue(path, out var handle)) return handle;
 
-        var texture = new Texture2D(path);
+        var texture = new Texture2D(path, _impostorCaptureDependencies.Contains(path));
         handle = new TextureHandle(texture);
         _textures[path] = handle;
 
@@ -336,7 +339,7 @@ public class TextureManager : IDisposable
         {
             entry.Value.Texture?.Dispose();
 
-            var newTexture = new Texture2D(entry.Key);
+            var newTexture = new Texture2D(entry.Key, _impostorCaptureDependencies.Contains(entry.Key));
             entry.Value.Texture = newTexture;
 
             try
@@ -379,6 +382,15 @@ public class TextureManager : IDisposable
 
         _terrainHandle = null;
         _itemsHandle = null;
+    }
+
+    /// <summary>Atomically replaces the catalog-selected CPU capture sources and reloads changed residency.</summary>
+    internal void SetImpostorCaptureDependencies(IEnumerable<string> paths)
+    {
+        var replacement = paths.ToHashSet(StringComparer.Ordinal);
+        if (_impostorCaptureDependencies.SetEquals(replacement)) return;
+        _impostorCaptureDependencies = replacement;
+        Reload();
     }
 
     public unsafe void Tick()

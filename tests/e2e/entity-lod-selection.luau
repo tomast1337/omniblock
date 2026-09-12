@@ -50,8 +50,8 @@ OMNI.config.fov = 1
 waitForTier(1)
 
 assert(OMNI.test.entityBaseline("sheep", 1, 120))
-waitForTier(0)
-assert(OMNI.client.state.entityLodUnsupportedProvider == 1, "fleece was implicitly opted in")
-assert(OMNI.client.state.entityLodStateCount == 0, "removed cow retained lifetime state")
+waitForTier(1)
+assert(OMNI.client.state.entityLodUnsupportedProvider == 0, "layered fleece provider was not resolved")
+assert(OMNI.client.state.entityLodStateCount == 1, "removed cow retained lifetime state or sheep was not tracked")
 OMNI.test.clearEntityBaseline()
 OMNI.test.pass()

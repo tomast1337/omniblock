@@ -33,7 +33,8 @@ internal static class EntityImpostorShaders
         @group(2) @binding(0) var atlas: texture_2d<f32>;
         @group(2) @binding(1) var atlasSampler: sampler;
         struct Out { @builtin(position) position: vec4<f32>, @location(0) uv: vec2<f32>,
-            @location(1) light: f32, @location(2) distance: f32, @location(3) effects: vec4<f32> }
+            @location(1) light: f32, @location(2) distance: f32, @location(3) effects: vec4<f32>,
+            @location(4) overlayOffset: f32, @location(5) hurt: f32 }
         @vertex fn vs_main(@builtin(vertex_index) vertex: u32, @builtin(instance_index) instance: u32) -> Out {
             var corners = array<vec2<f32>,6>(vec2(-1.0,-1.0),vec2(1.0,-1.0),vec2(1.0,1.0),
                 vec2(-1.0,-1.0),vec2(1.0,1.0),vec2(-1.0,1.0));
@@ -43,20 +44,31 @@ internal static class EntityImpostorShaders
             o.position = u.projection * eye;
             o.uv = i.uv.xy + vec2(c.x * 0.5 + 0.5, 0.5 - c.y * 0.5) * i.uv.zw;
             o.light = i.center.w; o.distance = abs(eye.z); o.effects = i.effects;
+            o.overlayOffset = i.up.w; o.hurt = i.right.w;
             return o;
         }
         @fragment fn fs_main(o: Out) -> @location(0) vec4<f32> {
-            let c = textureSample(atlas, atlasSampler, o.uv);
-            if c.a < 0.1 { discard; }
+            let base = textureSample(atlas, atlasSampler, o.uv);
+            var color = base;
+            if o.overlayOffset > 0.0 && o.effects.a > 0.0 {
+                let overlay = textureSample(atlas, atlasSampler, o.uv + vec2(0.0, o.overlayOffset));
+                let overlayAlpha = overlay.a * o.effects.a;
+                let combinedAlpha = overlayAlpha + base.a * (1.0 - overlayAlpha);
+                if combinedAlpha > 0.0 {
+                    color = vec4((overlay.rgb * o.effects.rgb * overlayAlpha +
+                        base.rgb * base.a * (1.0 - overlayAlpha)) / combinedAlpha, combinedAlpha);
+                }
+            }
+            if color.a < 0.1 { discard; }
             var visibility = 1.0;
             if u.fog.w > 0.0 {
                 if u.fog.w == 1.0 { visibility = (u.fog.y - o.distance) / max(0.0001,u.fog.y-u.fog.x); }
                 else if u.fog.w == 2.0 { visibility = exp(-u.fog.z * o.distance); }
                 else { visibility = exp(-pow(u.fog.z * o.distance, 2.0)); }
             }
-            var lit = c.rgb * o.light * o.effects.rgb;
-            lit = mix(lit, vec3(o.light, 0.0, 0.0), o.effects.a);
-            return vec4(mix(u.fogColor.rgb, lit, clamp(visibility,0.0,1.0)), c.a);
+            var lit = color.rgb * o.light;
+            lit = mix(lit, vec3(o.light, 0.0, 0.0), o.hurt);
+            return vec4(mix(u.fogColor.rgb, lit, clamp(visibility,0.0,1.0)), color.a);
         }
         """;
 }
