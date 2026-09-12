@@ -40,6 +40,7 @@ public sealed class LuauCompletionTests
     [InlineData("OMNI.test.pa", "pass")]
     [InlineData("OMNI.test.fly", "flyPath")]
     [InlineData("OMNI.test.break", "breakBlock")]
+    [InlineData("OMNI.test.setB", "setBlock")]
     [InlineData("OMNI.test.isMesh", "isMeshCurrent")]
     [InlineData("OMNI.test.meshDeadline", "meshDeadlineMissCount")]
     [InlineData("OMNI.test.setL", "setLook")]

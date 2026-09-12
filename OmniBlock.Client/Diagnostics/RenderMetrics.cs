@@ -13,8 +13,12 @@ internal static class RenderMetrics
     public static readonly MetricHandle<int> SolidDraws = MetricRegistry.Register<int>("render:chunks.solid_draws");
     public static readonly MetricHandle<int> TranslucentDraws = MetricRegistry.Register<int>("render:chunks.translucent_draws");
     public static readonly MetricHandle<int> VisibilityCandidates = MetricRegistry.Register<int>("render:chunks.visibility_candidates");
+    public static readonly MetricHandle<int> SpatialRegionTests = MetricRegistry.Register<int>("render:chunks.spatial_region_tests");
+    public static readonly MetricHandle<int> SpatialColumnTests = MetricRegistry.Register<int>("render:chunks.spatial_column_tests");
+    public static readonly MetricHandle<int> SpatialSectionTests = MetricRegistry.Register<int>("render:chunks.spatial_section_tests");
     public static readonly MetricHandle<int> FrustumTests = MetricRegistry.Register<int>("render:chunks.frustum_tests");
     public static readonly MetricHandle<int> PortalVisited = MetricRegistry.Register<int>("render:chunks.portal_visited");
+    public static readonly MetricHandle<int> DisconnectedSeeds = MetricRegistry.Register<int>("render:chunks.disconnected_seeds");
     public static readonly MetricHandle<int> SafetyRescued = MetricRegistry.Register<int>("render:chunks.safety_rescued");
     public static readonly MetricHandle<int> ResidentSolidLayers = MetricRegistry.Register<int>("render:chunks.resident_solid_layers");
     public static readonly MetricHandle<int> ResidentTranslucentLayers = MetricRegistry.Register<int>("render:chunks.resident_translucent_layers");

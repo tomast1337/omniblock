@@ -43,6 +43,7 @@ local function sampleDirection(pitch)
     OMNI.wait(1)
 
     local presented = 0
+    local resident = 0
     local solidDraws = 0
     local translucentDraws = 0
     local frameTime = 0
@@ -63,6 +64,7 @@ local function sampleDirection(pitch)
     for _ = 1, samples do
         OMNI.wait(0.05)
         presented += OMNI.client.state.presentedMeshCount
+        resident += OMNI.client.state.residentMeshCount
         solidDraws += OMNI.client.state.solidDrawsLastFrame
         translucentDraws += OMNI.client.state.translucentDrawsLastFrame
         frameTime += OMNI.client.state.frameTimeMs
@@ -83,6 +85,7 @@ local function sampleDirection(pitch)
 
     return {
         presented = presented / samples,
+        resident = resident / samples,
         solidDraws = solidDraws / samples,
         translucentDraws = translucentDraws / samples,
         frameTime = frameTime / samples,
@@ -166,8 +169,8 @@ assert(math.abs(OMNI.client.state.playerX - playerX) < 0.01 and
     math.abs(OMNI.client.state.playerY - playerY) < 0.01 and
     math.abs(OMNI.client.state.playerZ - playerZ) < 0.01,
     "player moved while comparing camera directions")
-assert(math.abs(horizon.visibilityCandidates - down.visibilityCandidates) < 0.01,
-    "resident candidate set changed while comparing camera directions")
+assert(math.abs(horizon.resident - down.resident) < 0.01,
+    "resident mesh set changed while comparing camera directions")
 assert(OMNI.client.state.presentationRegressionCount == regressionsBefore,
     "directional baseline observed a presentation regression")
 OMNI.test.pass()

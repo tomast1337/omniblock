@@ -8,6 +8,19 @@ public sealed class ChunkMeshSchedulingTests
     private static readonly Vector3D<double> View = new(8, 72, 8);
 
     [Theory]
+    [InlineData(-16, false)]
+    [InlineData(0, true)]
+    [InlineData(16, true)]
+    [InlineData(112, true)]
+    [InlineData(120, false)]
+    [InlineData(128, false)]
+    [InlineData(192, false)]
+    public void Discovery_only_publishes_aligned_sections_inside_world_height(int blockY, bool expected)
+    {
+        Assert.Equal(expected, ChunkRenderer.IsValidWorldSectionY(blockY));
+    }
+
+    [Theory]
     [InlineData(50, 2)]
     [InlineData(16.6666667, 3)]
     [InlineData(6.25, 8)]

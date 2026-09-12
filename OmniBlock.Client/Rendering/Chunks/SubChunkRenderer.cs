@@ -10,6 +10,7 @@ public class SubChunkRenderer : IDisposable
 {
     public const int Size = 16;
     public const float FadeDuration = 1.0f;
+    internal const float BoundsPadding = 6.0f;
 
     private SectionPresentation? _presentation;
 
@@ -31,16 +32,14 @@ public class SubChunkRenderer : IDisposable
         ClipPosition = new Vector3D<int>(position.X & 1023, position.Y, position.Z & 1023);
         PositionMinus = position - ClipPosition;
 
-        const float padding = 6.0f;
-
         BoundingBox = new Box
         (
-            position.X - padding,
-            position.Y - padding,
-            position.Z - padding,
-            position.X + Size + padding,
-            position.Y + Size + padding,
-            position.Z + Size + padding
+            position.X - BoundsPadding,
+            position.Y - BoundsPadding,
+            position.Z - BoundsPadding,
+            position.X + Size + BoundsPadding,
+            position.Y + Size + BoundsPadding,
+            position.Z + Size + BoundsPadding
         );
     }
 

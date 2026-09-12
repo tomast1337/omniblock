@@ -536,6 +536,11 @@ public partial class OmniBlock :
                     PlayerController.ClickBlock(x, y, z, 1);
                     return true;
                 };
+                LuauTestHost.SetBlock = (id, x, y, z) =>
+                {
+                    if (string.IsNullOrWhiteSpace(id)) return;
+                    Player?.SendChatMessage($"/block set {id} {x} {y} {z}");
+                };
                 LuauTestHost.IsMeshCurrent = (x, y, z) =>
                     WorldRenderer?.ChunkRenderer.IsMeshCurrent(x, y, z) == true;
                 LuauTestHost.MeshDeadlineMissCount = (x, y, z) =>
@@ -939,6 +944,7 @@ public partial class OmniBlock :
             LuauTestHost.Fail = null;
             LuauTestHost.Creative = null;
             LuauTestHost.BreakBlock = null;
+            LuauTestHost.SetBlock = null;
             LuauTestHost.IsMeshCurrent = null;
             LuauTestHost.MeshDeadlineMissCount = null;
             LuauTestHost.SetFlying = null;
@@ -1272,8 +1278,12 @@ public partial class OmniBlock :
         MetricRegistry.Set(RenderMetrics.TranslucentDraws, cr.TranslucentDrawsLastFrame);
         var presentation = cr.PresentationProfile;
         MetricRegistry.Set(RenderMetrics.VisibilityCandidates, presentation.VisibilityCandidates);
+        MetricRegistry.Set(RenderMetrics.SpatialRegionTests, presentation.SpatialRegionTests);
+        MetricRegistry.Set(RenderMetrics.SpatialColumnTests, presentation.SpatialColumnTests);
+        MetricRegistry.Set(RenderMetrics.SpatialSectionTests, presentation.SpatialSectionTests);
         MetricRegistry.Set(RenderMetrics.FrustumTests, presentation.FrustumTests);
         MetricRegistry.Set(RenderMetrics.PortalVisited, presentation.PortalVisited);
+        MetricRegistry.Set(RenderMetrics.DisconnectedSeeds, presentation.DisconnectedSeeds);
         MetricRegistry.Set(RenderMetrics.SafetyRescued, presentation.SafetyRescued);
         MetricRegistry.Set(RenderMetrics.ResidentSolidLayers, presentation.ResidentSolidLayers);
         MetricRegistry.Set(RenderMetrics.ResidentTranslucentLayers, presentation.ResidentTranslucentLayers);

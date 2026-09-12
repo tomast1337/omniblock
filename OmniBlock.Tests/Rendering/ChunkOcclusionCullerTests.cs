@@ -156,6 +156,29 @@ public sealed class ChunkOcclusionCullerTests
         Assert.Equal([visible, other], visitor.Nodes);
     }
 
+    [Fact]
+    public void Disconnected_rescue_seeds_are_bounded_and_reported()
+    {
+        using var camera = Node(0, true);
+        using var disconnected = Node(48);
+        var visitor = new Collector();
+
+        var result = new ChunkOcclusionCuller().FindVisible(
+            visitor,
+            [camera, disconnected],
+            camera,
+            new Vector3D<double>(8, 72, 8),
+            new TestFrustum(),
+            256,
+            true,
+            1,
+            candidatesKnownInFrustum: true);
+
+        Assert.Equal(1, result.DisconnectedSeeds);
+        Assert.InRange(result.DisconnectedSeeds, 0, result.ResidentCandidates);
+        Assert.Contains(disconnected, visitor.Nodes);
+    }
+
     private static SubChunkRenderer Node(int x, bool sealedNeighbors = false)
     {
         var node = new SubChunkRenderer(new Vector3D<int>(x, 64, 0));

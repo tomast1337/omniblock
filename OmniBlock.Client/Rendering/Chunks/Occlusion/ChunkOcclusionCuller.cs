@@ -12,7 +12,8 @@ public readonly record struct ChunkVisibilityResult(
     int ResidentCandidates,
     int FrustumTests,
     int FrustumCandidates,
-    int PortalVisited);
+    int PortalVisited,
+    int DisconnectedSeeds = 0);
 
 public class ChunkOcclusionCuller
 {
@@ -28,11 +29,13 @@ public class ChunkOcclusionCuller
         ICuller culler,
         float renderDistance,
         bool useOcclusionCulling,
-        int frame)
+        int frame,
+        bool candidatesKnownInFrustum = false)
     {
         var residentCandidates = 0;
         var frustumTests = 0;
         var frustumCount = 0;
+        var disconnectedSeeds = 0;
 
         // A missing camera mesh is normal during streaming and when flying above the world.
         // With no reliable portal seed, conservatively draw the available meshes in view.
@@ -41,7 +44,7 @@ public class ChunkOcclusionCuller
             foreach (var renderer in renderers)
             {
                 residentCandidates++;
-                if (!IsInFrustum(renderer.BoundingBox)) continue;
+                if (!candidatesKnownInFrustum && !IsInFrustum(renderer.BoundingBox)) continue;
                 frustumCount++;
                 DrawIfVisible(renderer, true);
             }
@@ -58,7 +61,7 @@ public class ChunkOcclusionCuller
             // disconnected component. The old pass seeded every hole in the entire resident mesh
             // cache. At distance 32 that turns a visibility query into a graph walk over roughly
             // 34,000 sections every frame, including terrain behind the camera.
-            if (!IsInFrustum(renderer.BoundingBox)) continue;
+            if (!candidatesKnownInFrustum && !IsInFrustum(renderer.BoundingBox)) continue;
             frustumCount++;
 
             // An absent neighbor is unknown space, not an opaque wall. Seed its exposed face so
@@ -70,7 +73,7 @@ public class ChunkOcclusionCuller
             if (renderer.AdjacentSouth == null) unknown |= ChunkDirectionMask.South;
             if (renderer.AdjacentWest == null) unknown |= ChunkDirectionMask.West;
             if (renderer.AdjacentEast == null) unknown |= ChunkDirectionMask.East;
-            Reach(renderer, unknown);
+            if (Reach(renderer, unknown)) disconnectedSeeds++;
         }
 
         while (_queue.TryDequeue(out var current))
@@ -91,7 +94,7 @@ public class ChunkOcclusionCuller
         var portalVisited = _reached.Count;
         _reached.Clear();
         return new ChunkVisibilityResult(
-            residentCandidates, frustumTests, frustumCount, portalVisited);
+            residentCandidates, frustumTests, frustumCount, portalVisited, disconnectedSeeds);
 
         void DrawIfVisible(SubChunkRenderer renderer, bool knownInFrustum)
         {
@@ -119,14 +122,15 @@ public class ChunkOcclusionCuller
         }
     }
 
-    private void Reach(SubChunkRenderer? renderer, ChunkDirectionMask incoming)
+    private bool Reach(SubChunkRenderer? renderer, ChunkDirectionMask incoming)
     {
-        if (renderer == null || incoming == ChunkDirectionMask.None) return;
+        if (renderer == null || incoming == ChunkDirectionMask.None) return false;
         _reached.TryGetValue(renderer, out var previous);
-        if ((previous | incoming) == previous) return;
+        if ((previous | incoming) == previous) return false;
         _reached[renderer] = previous | incoming;
         // A second path may enter through a different face after the first path was processed.
         // Revisit on new incoming faces; there are at most six such changes per mesh.
         _queue.Enqueue(renderer);
+        return true;
     }
 }

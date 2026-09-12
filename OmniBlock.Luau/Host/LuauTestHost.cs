@@ -13,6 +13,7 @@ public static unsafe class LuauTestHost
                                         fail = function(reason) __Test.fail(tostring(reason or "Test failed")) end,
                                         creative = function() __Test.creative() end,
                                         breakBlock = function(x, y, z) return __Test.breakBlock(x, y, z) end,
+                                        setBlock = function(id, x, y, z) __Test.setBlock(tostring(id), x, y, z) end,
                                         isMeshCurrent = function(x, y, z) return __Test.isMeshCurrent(x, y, z) end,
                                         meshDeadlineMissCount = function(x, y, z) return __Test.meshDeadlineMissCount(x, y, z) end,
                                         setFlying = function(value) __Test.setFlying(value) end,
@@ -33,6 +34,7 @@ public static unsafe class LuauTestHost
     public static Action<string>? Fail;
     public static Action? Creative;
     public static Func<int, int, int, bool>? BreakBlock;
+    public static Action<string, int, int, int>? SetBlock;
     public static Func<int, int, int, bool>? IsMeshCurrent;
     public static Func<int, int, int, double>? MeshDeadlineMissCount;
     public static Action<bool>? SetFlying;
@@ -45,11 +47,12 @@ public static unsafe class LuauTestHost
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 13);
+        LuauNative.lua_createtable(l, 0, 14);
         Add(l, "pass", &PassClosure);
         Add(l, "fail", &FailClosure);
         Add(l, "creative", &CreativeClosure);
         Add(l, "breakBlock", &BreakBlockClosure);
+        Add(l, "setBlock", &SetBlockClosure);
         Add(l, "isMeshCurrent", &IsMeshCurrentClosure);
         Add(l, "meshDeadlineMissCount", &MeshDeadlineMissCountClosure);
         Add(l, "setFlying", &SetFlyingClosure);
@@ -120,6 +123,23 @@ public static unsafe class LuauTestHost
 
         LuauNative.lua_pushboolean(l, result ? 1 : 0);
         return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int SetBlockClosure(IntPtr l)
+    {
+        try
+        {
+            SetBlock?.Invoke(
+                ReadString(l, 1) ?? string.Empty,
+                LuauNative.luaL_checkinteger(l, 2),
+                LuauNative.luaL_checkinteger(l, 3),
+                LuauNative.luaL_checkinteger(l, 4));
+        }
+        catch
+        {
+        }
+        return 0;
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]

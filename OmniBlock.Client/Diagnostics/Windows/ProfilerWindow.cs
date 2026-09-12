@@ -41,7 +41,9 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"Visibility: {profile.VisibilityCandidates} candidates  {profile.FrustumTests} frustum tests  {profile.PortalVisited} portal visited");
         ImGuiTextSafe.Text(
-            $"Fallback:   {profile.SafetyRescued} safety rescued  {profile.EmptyLayersSubmitted} empty submitted");
+            $"Spatial:    {profile.SpatialRegionTests} regions  {profile.SpatialColumnTests} columns  {profile.SpatialSectionTests} sections");
+        ImGuiTextSafe.Text(
+            $"Fallback:   {profile.DisconnectedSeeds} disconnected seeds  {profile.SafetyRescued} safety rescued  {profile.EmptyLayersSubmitted} empty submitted");
         ImGuiTextSafe.Text(
             $"Submission: {profile.TerrainDrawCalls} draws  {profile.TerrainUniformEntries} uniforms");
         DrawTiming("Find visible", profile.FindVisible);

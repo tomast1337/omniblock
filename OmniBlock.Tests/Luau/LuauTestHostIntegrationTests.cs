@@ -16,6 +16,7 @@ public sealed class LuauTestHostIntegrationTests
         string? failure = null;
         var creative = 0;
         var brokenBlock = (X: 0, Y: 0, Z: 0);
+        (string Id, int X, int Y, int Z)? setBlock = null;
         var flying = false;
         var teleport = (X: 0, Y: 0, Z: 0);
         var look = (Yaw: 0.0, Pitch: 0.0);
@@ -31,6 +32,7 @@ public sealed class LuauTestHostIntegrationTests
             brokenBlock = (x, y, z);
             return true;
         };
+        LuauTestHost.SetBlock = (id, x, y, z) => setBlock = (id, x, y, z);
         LuauTestHost.IsMeshCurrent = (x, y, z) => (x, y, z) == (4, 61, 7);
         LuauTestHost.MeshDeadlineMissCount = (x, y, z) => x + y + z;
         LuauTestHost.SetFlying = value => flying = value;
@@ -53,6 +55,7 @@ public sealed class LuauTestHostIntegrationTests
             Assert.True(state.TryExecute(
                 "OMNI.test.pass(); OMNI.test.fail('broken'); OMNI.test.creative(); " +
                 "assert(OMNI.test.breakBlock(4, 61, 7)); " +
+                "OMNI.test.setBlock('omniblock:flowing_water', 15, 70, 0); " +
                 "assert(OMNI.test.isMeshCurrent(4, 61, 7)); " +
                 "assert(OMNI.test.meshDeadlineMissCount(4, 61, 7) == 72); " +
                 "OMNI.test.setFlying(true); OMNI.test.teleport(160, 164, 0); " +
@@ -66,6 +69,7 @@ public sealed class LuauTestHostIntegrationTests
             Assert.Equal("broken", failure);
             Assert.Equal(1, creative);
             Assert.Equal((4, 61, 7), brokenBlock);
+            Assert.Equal(("omniblock:flowing_water", 15, 70, 0), setBlock);
             Assert.True(flying);
             Assert.Equal((160, 164, 0), teleport);
             Assert.Equal((45.5, 90.0), look);
@@ -81,6 +85,7 @@ public sealed class LuauTestHostIntegrationTests
             LuauTestHost.Fail = null;
             LuauTestHost.Creative = null;
             LuauTestHost.BreakBlock = null;
+            LuauTestHost.SetBlock = null;
             LuauTestHost.IsMeshCurrent = null;
             LuauTestHost.MeshDeadlineMissCount = null;
             LuauTestHost.SetFlying = null;

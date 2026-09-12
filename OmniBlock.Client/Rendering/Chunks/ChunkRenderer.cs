@@ -61,6 +61,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly ChunkOcclusionCuller _occlusionCuller = new();
     private readonly GameOptions _options;
     private readonly Dictionary<Vector3D<int>, SectionRenderState> _sections = [];
+    private readonly ResidentSectionSpatialIndex _residentSpatialIndex = new();
     // Iteration index only. SectionRenderState remains the residency authority; excluding
     // scheduling-only states keeps per-frame culling independent of background queue size.
     private readonly HashSet<SectionRenderState> _residentSections = [];
@@ -80,6 +81,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly SectionMeshRequestQueue _pendingMeshUpdates = new();
     private readonly TranslucentDistanceComparer _translucentDistanceComparer = new();
     private readonly List<SubChunkRenderer> _solidRenderers = [];
+    private readonly List<SubChunkRenderer> _spatialCandidates = [];
     private readonly List<SubChunkRenderer> _translucentRenderers = [];
     // Includes empty presentations because portal traversal and near-field presentation
     // diagnostics operate on resident sections, not only drawable geometry layers.
@@ -133,6 +135,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly FrameTimingWindow _terrainSubmitTimings = new();
     private ChunkPresentationProfileSnapshot _presentationProfile;
     private ChunkVisibilityResult _visibilityThisFrame;
+    private SpatialQueryDiagnostics _spatialQueryThisFrame;
     private bool _hasPreparedFrame;
     private int _safetyRescuedThisFrame;
     private int _residentSolidLayersThisFrame;
@@ -400,8 +403,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("residentSolidLayers\t").Append(presentation.ResidentSolidLayers).AppendLine();
         text.Append("residentTranslucentLayers\t").Append(presentation.ResidentTranslucentLayers).AppendLine();
         text.Append("visibilityCandidates\t").Append(presentation.VisibilityCandidates).AppendLine();
+        text.Append("spatialRegionTests\t").Append(presentation.SpatialRegionTests).AppendLine();
+        text.Append("spatialColumnTests\t").Append(presentation.SpatialColumnTests).AppendLine();
+        text.Append("spatialSectionTests\t").Append(presentation.SpatialSectionTests).AppendLine();
         text.Append("frustumTests\t").Append(presentation.FrustumTests).AppendLine();
         text.Append("portalVisited\t").Append(presentation.PortalVisited).AppendLine();
+        text.Append("disconnectedSeeds\t").Append(presentation.DisconnectedSeeds).AppendLine();
         text.Append("safetyRescued\t").Append(presentation.SafetyRescued).AppendLine();
         text.Append("presentedSolidLayers\t").Append(presentation.PresentedSolidLayers).AppendLine();
         text.Append("presentedTranslucentLayers\t").Append(presentation.PresentedTranslucentLayers).AppendLine();
@@ -592,16 +599,24 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         var findVisibleAt = Stopwatch.GetTimestamp();
         using (Profiler.Begin("FindVisible"))
         {
-            _visibilityThisFrame = _occlusionCuller.FindVisible(
+            var spatial = _residentSpatialIndex.Query(
+                renderParams.Camera, renderParams.ViewPos, _spatialCandidates);
+            _spatialQueryThisFrame = spatial;
+            var visibility = _occlusionCuller.FindVisible(
                 this,
-                ResidentRenderers(),
+                _spatialCandidates,
                 cameraState?.Renderer,
                 renderParams.ViewPos,
                 renderParams.Camera,
                 renderDistWorld,
                 UseOcclusionCulling,
-                _frameIndex
+                _frameIndex,
+                candidatesKnownInFrustum: true
             );
+            _visibilityThisFrame = visibility with
+            {
+                FrustumTests = visibility.FrustumTests + spatial.FrustumTests
+            };
         }
         _findVisibleMsThisFrame = Stopwatch.GetElapsedTime(findVisibleAt).TotalMilliseconds;
         ChunksInFrustum = _visibilityThisFrame.FrustumCandidates;
@@ -620,12 +635,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         if (renderParams.RenderOccluded)
         {
             _occludedRenderersBuffer.Clear();
-            foreach (var state in _residentSections)
+            foreach (var renderer in _spatialCandidates)
             {
-                var renderer = state.Renderer!;
                 if (renderer.LastVisibleFrame != _frameIndex)
                 {
-                    if (renderer.IsVisible(renderParams.Camera, renderParams.ViewPos, renderDistWorld))
+                    if (renderer.IsWithinRenderDistance(renderParams.ViewPos, renderDistWorld))
                     {
                         _occludedRenderersBuffer.Add(renderer);
                     }
@@ -639,13 +653,14 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         RecordPresentationState(cameraChunkPos, renderParams.Camera);
 
-        _residentSolidLayersThisFrame = 0;
-        _residentTranslucentLayersThisFrame = 0;
-        foreach (var state in _residentSections)
-        {
-            if (state.Renderer!.HasSolidGeometry) _residentSolidLayersThisFrame++;
-            if (state.Renderer.HasTranslucentGeometry) _residentTranslucentLayersThisFrame++;
-        }
+        _residentSolidLayersThisFrame = _residentSpatialIndex.SolidLayerCount;
+        _residentTranslucentLayersThisFrame = _residentSpatialIndex.TranslucentLayerCount;
+
+#if DEBUG
+        // Full validation is deliberately sampled: membership mutations perform immediate local
+        // checks, while this catches a stale unrelated slot without restoring a per-frame scan.
+        if ((_frameIndex & 255) == 0) _residentSpatialIndex.Validate(_residentSections);
+#endif
 
         foreach (var renderer in _visibleRenderers)
         {
@@ -702,13 +717,16 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         foreach (var renderer in _renderersToRemove)
         {
+            if (!_sections.TryGetValue(renderer.Position, out var section)) continue;
+            if (!_residentSpatialIndex.Remove(renderer))
+                throw new InvalidOperationException(
+                    $"Resident spatial index did not contain evicted section {renderer.Position}.");
+
             UpdateAdjacency(renderer, false);
-            if (_sections.Remove(renderer.Position, out var section))
-            {
-                _residentSections.Remove(section);
-                section.DetachRenderer();
-                section.Dispose();
-            }
+            _sections.Remove(renderer.Position);
+            _residentSections.Remove(section);
+            section.DetachRenderer();
+            section.Dispose();
             renderer.Dispose();
         }
 
@@ -894,6 +912,14 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     UpdateAdjacency(resident, true);
                 }
 
+                _residentSpatialIndex.AddOrUpdate(resident);
+#if DEBUG
+                if (_residentSpatialIndex.Count != _residentSections.Count ||
+                    !_residentSpatialIndex.Contains(resident))
+                    throw new InvalidOperationException(
+                        $"Resident spatial index diverged while installing {resident.Position}.");
+#endif
+
                 var empty = presentation.IsEmpty;
                 section.RecordUploaded(_schedulerTick, mesh.Trace, empty);
                 _geometryUploadsThisFrame++;
@@ -1039,12 +1065,16 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _terrainSubmitTimings.Record(_terrainSubmitMsThisFrame);
         var draws = _solidDrawsThisFrame + _translucentDrawsThisFrame;
         _presentationProfile = new ChunkPresentationProfileSnapshot(
-            _visibilityThisFrame.ResidentCandidates,
+            ResidentMeshCount,
             _residentSolidLayersThisFrame,
             _residentTranslucentLayersThisFrame,
             _visibilityThisFrame.ResidentCandidates,
+            _spatialQueryThisFrame.RegionTests,
+            _spatialQueryThisFrame.ColumnTests,
+            _spatialQueryThisFrame.SectionTests,
             _visibilityThisFrame.FrustumTests,
             _visibilityThisFrame.PortalVisited,
+            _visibilityThisFrame.DisconnectedSeeds,
             _safetyRescuedThisFrame,
             _visibleRenderers.Count,
             _presentedSolidLayersThisFrame,
@@ -1528,7 +1558,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
             var chunkPos = (currentChunk + offset) * SubChunkRenderer.Size;
 
-            if (chunkPos.Y < 0 || chunkPos.Y >= ChuckFormat.WorldHeight)
+            if (!IsValidWorldSectionY(chunkPos.Y))
                 continue;
 
             if (HasRenderer(chunkPos))
@@ -1560,6 +1590,14 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 if (distSq <= radiusSq)
                 {
                     var chunkPos = (currentChunk + offset) * SubChunkRenderer.Size;
+                    // Match the priority pass above. The old background cursor could publish
+                    // empty render sections above/below the finite world while the camera flew
+                    // outside its height, wasting mesh work and violating fixed column slots.
+                    if (!IsValidWorldSectionY(chunkPos.Y))
+                    {
+                        _currentIndex = (_currentIndex + 1) % s_spiralOffsets.Length;
+                        continue;
+                    }
                     if (!HasRenderer(chunkPos))
                     {
                         RecoverOrphanedMesh(chunkPos);
@@ -1622,6 +1660,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             0,
             (ChuckFormat.WorldHeight - 1) / SubChunkRenderer.Size),
         (int)Math.Floor(viewPosition.Z / SubChunkRenderer.Size));
+
+    internal static bool IsValidWorldSectionY(int blockY) =>
+        blockY >= 0 && blockY < ChuckFormat.WorldHeight &&
+        blockY % SubChunkRenderer.Size == 0;
 
     public void MarkAllVisibleChunksDirty()
     {
@@ -1900,11 +1942,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         if (_sections.TryGetValue(chunkPos, out state!) && state.Renderer is not null) return true;
         state = null!;
         return false;
-    }
-
-    private IEnumerable<SubChunkRenderer> ResidentRenderers()
-    {
-        foreach (var section in _residentSections) yield return section.Renderer!;
     }
 
     private void RememberPriority(Vector3D<int> chunkPos, MeshWorkPriority priority)
@@ -2685,8 +2722,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         _sections.Clear();
         _residentSections.Clear();
+        _residentSpatialIndex.Clear();
 
         _solidRenderers.Clear();
+        _spatialCandidates.Clear();
         _translucentRenderers.Clear();
         _renderersToRemove.Clear();
         _pendingMeshUpdates.Clear();

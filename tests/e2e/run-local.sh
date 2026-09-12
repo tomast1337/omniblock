@@ -10,7 +10,7 @@ requested_scenario="${1:-all}"
 if [[ "$requested_scenario" == "chunk-visibility-baseline" && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
     timeout_seconds=300
 fi
-scenarios=(menu world-management multiplayer language-options create-world smoke debug-smoke fps-limit chunk-mesh-deadlines teleport-preload flying-chunk-streaming frustum-directional)
+scenarios=(menu world-management multiplayer language-options create-world smoke debug-smoke fps-limit chunk-mesh-deadlines teleport-preload flying-chunk-streaming frustum-directional liquid-boundary-visibility)
 run_roots=()
 
 cleanup() {
