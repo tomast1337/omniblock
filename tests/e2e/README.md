@@ -32,6 +32,16 @@ The opt-in `view-distance-32-diagnostic` scenario holds a real single-player ses
 distance for 30 seconds and logs frame time plus mesh pressure. It is intentionally outside the
 default suite because it is a sustained performance regression rather than a fast functional check.
 
+`frustum-directional` disables VSync, samples the real client while looking at the horizon and
+straight down, and records average presented meshes, solid/translucent draws, and frame time. Its
+portable assertion is that camera direction materially changes terrain selection; timing remains
+diagnostic because CI commonly uses a software renderer. This also exercises WebGPU's uncapped
+Mailbox/Immediate presentation selection instead of silently remaining in FIFO mode.
+
+`fps-limit` runs at the main menu with VSync disabled, verifies that the minimum slider value paces
+complete client frames to 30 FPS, then switches the slider to Unlimited and verifies that the cap
+is released. Frame telemetry includes the pacing wait, matching the rate users actually observe.
+
 The `flying-chunk-streaming` scenario teleports a persistently flying creative player above
 the world ceiling, points the camera straight down, requires all 29 loaded columns (232 vertical
 sections) in the radial safety ring to have completed meshes, then flies a full ten-chunk/160-block

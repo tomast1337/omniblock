@@ -7,7 +7,7 @@ artifact_dir="${E2E_ARTIFACTS_DIR:-$repo_root/artifacts/e2e-local/$(date -u +%Y%
 timeout_seconds="${E2E_TIMEOUT_SECONDS:-90}"
 configuration="${CONFIGURATION:-Debug}"
 requested_scenario="${1:-all}"
-scenarios=(menu world-management multiplayer language-options create-world smoke debug-smoke chunk-mesh-deadlines teleport-preload flying-chunk-streaming)
+scenarios=(menu world-management multiplayer language-options create-world smoke debug-smoke fps-limit chunk-mesh-deadlines teleport-preload flying-chunk-streaming frustum-directional)
 run_roots=()
 
 cleanup() {

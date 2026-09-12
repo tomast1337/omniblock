@@ -210,6 +210,7 @@ public partial class OmniBlock :
     private readonly WaterSprite _textureWaterFX;
     private readonly LavaSprite _textureLavaFX;
     private readonly DebugTelemetry _debugTelemetry = new();
+    private readonly FramePacer _framePacer = new();
 
     private DebugWindowManager _debugWindowManager;
     private nint _imguiIniFilename;
@@ -379,7 +380,7 @@ public partial class OmniBlock :
             // everything measured against a render target — the clip rectangles the interface
             // computes above all — is in the former.
             WebGpuDevice.Create(Display.getWindow()!,
-                Display.getFramebufferWidth(), Display.getFramebufferHeight());
+                Display.getFramebufferWidth(), Display.getFramebufferHeight(), Options.VSync);
             RenderSystem.Initialize();
             WebGpuRenderer = new WebGpuGameRenderer(this);
         }
@@ -1191,6 +1192,8 @@ public partial class OmniBlock :
                         MetricRegistry.Set(ClientMetrics.Fps, frameCounter);
                         lastFpsCheckTime += 1000L;
                     }
+
+                    _framePacer.WaitUntilFrameBudget(frameStartNano, Options.MaxFramesPerSecond);
                 }
                 catch (OutOfMemoryException)
                 {

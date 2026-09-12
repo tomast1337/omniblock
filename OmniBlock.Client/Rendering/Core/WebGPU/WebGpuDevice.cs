@@ -29,7 +29,8 @@ public sealed unsafe class WebGpuDevice : IDisposable
     /// <summary>Held so the GC cannot collect the thunk while wgpu still holds the pointer.</summary>
     private readonly PfnErrorCallback _errorCallback;
 
-    private readonly PresentMode _presentMode;
+    private PresentMode _presentMode;
+    private bool? _pendingVSync;
 
     /// <summary>Releases waiting for the frame that may have recorded against them to be submitted.</summary>
     private readonly List<Action> _retired = [];
@@ -49,7 +50,7 @@ public sealed unsafe class WebGpuDevice : IDisposable
     /// </remarks>
     private Texture* _frameTexture;
 
-    private WebGpuDevice(INativeWindowSource window, uint width, uint height)
+    private WebGpuDevice(INativeWindowSource window, uint width, uint height, bool vsync)
     {
         Api = Silk.NET.WebGPU.WebGPU.GetApi();
 
@@ -77,7 +78,7 @@ public sealed unsafe class WebGpuDevice : IDisposable
         _errorCallback = new PfnErrorCallback(OnUncapturedError);
         Api.DeviceSetUncapturedErrorCallback(Device, _errorCallback, null);
 
-        (SurfaceFormat, _presentMode, _alphaMode) = ChooseSurfaceConfiguration();
+        (SurfaceFormat, _presentMode, _alphaMode) = ChooseSurfaceConfiguration(vsync);
 
         s_logger.LogInformation(
             "WebGPU device ready: surface format {Format}, present mode {PresentMode}, surface {Width}x{Height}.",
@@ -156,12 +157,19 @@ public sealed unsafe class WebGpuDevice : IDisposable
         return _commandEncoder;
     }
 
-    public static WebGpuDevice Create(INativeWindowSource window, int width, int height)
+    public static WebGpuDevice Create(INativeWindowSource window, int width, int height, bool vsync = true)
     {
-        WebGpuDevice device = new(window, (uint)Math.Max(1, width), (uint)Math.Max(1, height));
+        WebGpuDevice device = new(window, (uint)Math.Max(1, width), (uint)Math.Max(1, height), vsync);
         Current = device;
         return device;
     }
+
+    /// <summary>
+    ///     Requests a presentation-mode change at the next acquire boundary. Reconfiguring while
+    ///     the current surface texture is being encoded is invalid, so option changes are not
+    ///     applied synchronously from the UI callback.
+    /// </summary>
+    public void SetVSyncEnabled(bool enabled) => _pendingVSync = enabled;
 
     /// <summary>Points the surface at a new size. Must be called after every resize, or acquiring a texture fails.</summary>
     public void Configure(uint width, uint height)
@@ -194,6 +202,7 @@ public sealed unsafe class WebGpuDevice : IDisposable
     public TextureView* AcquireFrame()
     {
         ReleaseFrameTexture();
+        ApplyPendingPresentMode();
 
         SurfaceTexture surfaceTexture = default;
         Api.SurfaceGetCurrentTexture(Surface, ref surfaceTexture);
@@ -367,7 +376,8 @@ public sealed unsafe class WebGpuDevice : IDisposable
     ///     gamma-corrected twice and washes out. Only if no linear format is offered does the sRGB
     ///     one get taken, and then the difference is visible.
     /// </remarks>
-    private (TextureFormat Format, PresentMode PresentMode, CompositeAlphaMode AlphaMode) ChooseSurfaceConfiguration()
+    private (TextureFormat Format, PresentMode PresentMode, CompositeAlphaMode AlphaMode) ChooseSurfaceConfiguration(
+        bool vsync)
     {
         SurfaceCapabilities capabilities = default;
         Api.SurfaceGetCapabilities(Surface, Adapter, ref capabilities);
@@ -395,10 +405,7 @@ public sealed unsafe class WebGpuDevice : IDisposable
                     : Api.SurfaceGetPreferredFormat(Surface, Adapter);
             }
 
-            // Fifo is the only mode WebGPU guarantees, and is what a vsynced GL swap did anyway.
-            var presentMode = presentModes.Contains(PresentMode.Fifo) || presentModes.Length == 0
-                ? PresentMode.Fifo
-                : presentModes[0];
+            var presentMode = ChoosePresentMode(presentModes, vsync);
 
             // Opaque explicitly, not alphaModes[0]: the window is never meant to be see-through, and
             // whatever ends up in the swap chain's alpha channel — the cloud blur composite writes
@@ -417,6 +424,36 @@ public sealed unsafe class WebGpuDevice : IDisposable
         {
             Api.SurfaceCapabilitiesFreeMembers(capabilities);
         }
+    }
+
+    internal static PresentMode ChoosePresentMode(ReadOnlySpan<PresentMode> supported, bool vsync)
+    {
+        if (vsync)
+            return supported.Contains(PresentMode.Fifo) || supported.IsEmpty
+                ? PresentMode.Fifo
+                : supported[0];
+
+        // Mailbox renders without blocking on the display while retaining tear-free presentation.
+        // Immediate is the next best uncapped choice; FIFO variants remain the portable fallback.
+        if (supported.Contains(PresentMode.Mailbox)) return PresentMode.Mailbox;
+        if (supported.Contains(PresentMode.Immediate)) return PresentMode.Immediate;
+        if (supported.Contains(PresentMode.FifoRelaxed)) return PresentMode.FifoRelaxed;
+        return supported.Contains(PresentMode.Fifo) || supported.IsEmpty
+            ? PresentMode.Fifo
+            : supported[0];
+    }
+
+    private void ApplyPendingPresentMode()
+    {
+        if (_pendingVSync is not { } vsync) return;
+        _pendingVSync = null;
+
+        var (_, requestedMode, _) = ChooseSurfaceConfiguration(vsync);
+        if (requestedMode == _presentMode) return;
+
+        _presentMode = requestedMode;
+        Configure(Width, Height);
+        s_logger.LogInformation("WebGPU present mode changed to {PresentMode}.", _presentMode);
     }
 
     private static void OnUncapturedError(ErrorType type, byte* message, void* _) =>

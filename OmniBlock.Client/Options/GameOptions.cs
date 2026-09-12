@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using OmniBlock.Client.Input;
+using OmniBlock.Client.Rendering.Core.WebGPU;
 using OmniBlock.Client.UI;
 using OmniBlock.Luau.Host;
 using Silk.NET.GLFW;
@@ -202,6 +203,7 @@ public class GameOptions
     public float MouseSensitivity => MouseSensitivityOption.Value;
     public float ControllerSensitivity => ControllerSensitivityOption.Value;
     public float LimitFramerate => FramerateLimitOption.Value;
+    public int? MaxFramesPerSecond => DecodeFrameRateLimit(FramerateLimitOption.Value);
     public float Fov => FovOption.Value;
     public float Gamma => GammaOption.Value * 100f;
 
@@ -339,8 +341,10 @@ public class GameOptions
             Steps = 210,
             Formatter = v =>
             {
-                var fps = 30 + (int)(v * 210.0f);
-                return fps == 240 ? Translations.Get("options.fps.unlimited") : fps + " " + Translations.Get("options.fps.text");
+                var fps = DecodeFrameRateLimit(v);
+                return fps == null
+                    ? Translations.Get("options.fps.unlimited")
+                    : fps + " " + Translations.Get("options.fps.text");
             }
         };
         FovOption = new FloatOption("options.fov", "fov", 0.44444445F)
@@ -365,7 +369,11 @@ public class GameOptions
         ViewBobbingOption = new BoolOption("options.viewBobbing", "bobView", true);
         VSyncOption = new BoolOption("options.vSync", "vsync")
         {
-            OnChanged = v => Display.getGlfw().SwapInterval(v ? 1 : 0)
+            OnChanged = v =>
+            {
+                Display.setVSyncEnabled(v);
+                WebGpuDevice.Current?.SetVSyncEnabled(v);
+            }
         };
         MipmapsOption = new BoolOption("options.mipmaps", "useMipmaps", true)
         {
@@ -446,6 +454,12 @@ public class GameOptions
         {
             _allOptions[option.SaveKey] = option;
         }
+    }
+
+    internal static int? DecodeFrameRateLimit(float normalized)
+    {
+        var fps = 30 + (int)(Math.Clamp(normalized, 0f, 1f) * 210.0f);
+        return fps >= 240 ? null : fps;
     }
 
     private IEnumerable<GameOption> GetAllOptions()
