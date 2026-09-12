@@ -16,10 +16,8 @@ namespace OmniBlock.Client.Rendering.Chunks;
 
 internal struct MeshBuildResult : IDisposable
 {
-    public PooledList<ChunkVertex> Solid;
-    public PooledList<ChunkVertex> Translucent;
-    public SectionLightModel? SolidLighting;
-    public SectionLightModel? TranslucentLighting;
+    public MeshPageBuildResult[] Pages;
+    public SectionMeshRebuildPlan RebuildPlan;
     public bool IsLit;
     public ChunkVisibilityStore VisibilityData;
     public Vector3D<int> Pos;
@@ -34,8 +32,25 @@ internal struct MeshBuildResult : IDisposable
 
     public readonly void Dispose()
     {
+        if (Pages == null) return;
+        foreach (var page in Pages) page?.Dispose();
+    }
+}
+
+internal sealed class MeshPageBuildResult(int page)
+{
+    public int Page { get; } = page;
+    public PooledList<ChunkVertex>? Solid { get; set; }
+    public PooledList<ChunkVertex>? Translucent { get; set; }
+    public SectionLightModel? SolidLighting { get; set; }
+    public SectionLightModel? TranslucentLighting { get; set; }
+
+    public void Dispose()
+    {
         Solid?.Dispose();
         Translucent?.Dispose();
+        Solid = null;
+        Translucent = null;
     }
 }
 
@@ -176,8 +191,10 @@ internal class ChunkMeshGenerator : IDisposable
         bool alternateBlocks,
         MeshWorkPriority priority = MeshWorkPriority.Background,
         MeshLifecycleRequest? trace = null,
-        long sectionId = 0)
+        long sectionId = 0,
+        SectionMeshRebuildPlan rebuildPlan = default)
     {
+        if (rebuildPlan.PageMask == 0) rebuildPlan = SectionMeshRebuildPlan.Full;
         var requestedAt = Stopwatch.GetTimestamp();
         _lifecycle?.Move(trace, MeshLifecycleStage.Snapshotting, priority);
         // 1 block of padding on every side of the 16-block sub-chunk (18x18x18 total) — exactly
@@ -200,7 +217,7 @@ internal class ChunkMeshGenerator : IDisposable
 
         var control = new MeshBuildCancellation(priority);
         var request = new MeshBuildRequest(pos, version, cache, alternateBlocks, requestedAt,
-            Stopwatch.GetTimestamp(), trace, sectionId, control);
+            Stopwatch.GetTimestamp(), trace, sectionId, rebuildPlan, control);
         if (!_outstanding.TryAdd(pos, control))
         {
             _lifecycle?.Cancel(trace, MeshCancellationReason.DuplicateRequest);
@@ -262,7 +279,7 @@ internal class ChunkMeshGenerator : IDisposable
                     _lifecycle?.Move(request.Trace, MeshLifecycleStage.Building, priority);
                     var mesh = GenerateMesh(
                         request.Pos, request.Version, request.Cache, request.AlternateBlocks,
-                        request.Control.Token);
+                        request.RebuildPlan, request.Control.Token);
                     request.Control.Token.ThrowIfCancellationRequested();
                     mesh.Priority = request.Control.Priority;
                     mesh.RequestedAt = request.RequestedAt;
@@ -316,124 +333,41 @@ internal class ChunkMeshGenerator : IDisposable
 
     private MeshBuildResult GenerateMesh(
         Vector3D<int> pos, long version, WorldRegionSnapshot cache, bool alternateBlocks,
-        CancellationToken cancellationToken)
+        SectionMeshRebuildPlan rebuildPlan, CancellationToken cancellationToken)
     {
         var generationStart = Stopwatch.GetTimestamp();
-        var minX = pos.X;
-        var minY = pos.Y;
-        var minZ = pos.Z;
-        var maxX = pos.X + SubChunkRenderer.Size;
-        var maxY = pos.Y + SubChunkRenderer.Size;
-        var maxZ = pos.Z + SubChunkRenderer.Size;
-
         var result = new MeshBuildResult
         {
             Pos = pos,
-            Version = version
+            Version = version,
+            RebuildPlan = rebuildPlan,
+            Pages = new MeshPageBuildResult[rebuildPlan.PageBuildCount]
         };
 
         try
         {
-        // Full 1x1x1 Standard blocks (minus grass, minus anything using texture variance) are
-        // pulled out of the per-block loop below and merged into larger quads instead — see
-        // EmitGreedyMesh. Precomputed once so the sweep and the loop's skip check agree on
-        // exactly which cells were handled the fast way.
-        Block?[] greedyEligible = new Block[SubChunkRenderer.Size * SubChunkRenderer.Size * SubChunkRenderer.Size];
-        var classificationStart = Stopwatch.GetTimestamp();
-        for (var y = minY; y < maxY; y++)
-        {
+            var classificationTicks = 0L;
+            var geometryTicks = 0L;
+            var resultIndex = 0;
+            for (var page = 0; page < SectionMeshRebuildPlan.PageCount; page++)
+            {
+                if (!rebuildPlan.Includes(page)) continue;
+                result.Pages[resultIndex++] = GeneratePage(
+                    pos, page, cache, alternateBlocks, cancellationToken,
+                    ref classificationTicks, ref geometryTicks);
+            }
+
+            _profile.RecordClassification(classificationTicks);
+            _profile.RecordGeometry(geometryTicks);
+
+            result.IsLit = cache.IsLit;
             cancellationToken.ThrowIfCancellationRequested();
-            for (var z = minZ; z < maxZ; z++)
-            {
-                for (var x = minX; x < maxX; x++)
-                {
-                    if (TryGetGreedyEligibleBlock(cache, x, y, z, alternateBlocks, out var eligible))
-                    {
-                        greedyEligible[LocalIndex(x - minX, y - minY, z - minZ)] = eligible;
-                    }
-                }
-            }
-        }
-
-        _profile.RecordClassification(Stopwatch.GetTimestamp() - classificationStart);
-
-        var geometryStart = Stopwatch.GetTimestamp();
-        for (var pass = 0; pass < 2; pass++)
-        {
-            var hasNextPass = false;
-            using var mesh = new ChunkMeshBuilder();
-            mesh.Begin(-pos.X, -pos.Y, -pos.Z);
-            var ctx = new BlockRenderContext(cache, cache.ContentBlocks, mesh, cache);
-
-            if (pass == 0)
-            {
-                EmitGreedyMesh(cache, ctx, mesh, greedyEligible, minX, minY, minZ, cancellationToken);
-            }
-
-            for (var y = minY; y < maxY; y++)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                for (var z = minZ; z < maxZ; z++)
-                {
-                    for (var x = minX; x < maxX; x++)
-                    {
-                        var id = cache.GetBlockId(x, y, z);
-                        if (id <= 0) continue;
-
-                        var b = cache.ContentBlocks.GetByProtocolId(id);
-                        var blockPass = b.RenderLayer;
-
-                        if (blockPass != pass)
-                        {
-                            hasNextPass = true;
-                        }
-                        else if (pass != 0 || greedyEligible[LocalIndex(x - minX, y - minY, z - minZ)] is null)
-                        {
-                            BlockRenderer.RenderBlockByRenderType(cache, cache.ContentBlocks, cache, b, new BlockPos(x, y, z), mesh, doVariance: alternateBlocks);
-                        }
-                    }
-                }
-            }
-
-            var verts = mesh.Finish(out var lights);
-            try
-            {
-                if (verts.Count > 0)
-                {
-                    if (pass == 0)
-                    {
-                        result.Solid = verts;
-                        result.SolidLighting = SectionLightModel.Create(pos, verts.Span, lights.Span);
-                    }
-                    else
-                    {
-                        result.Translucent = verts;
-                        result.TranslucentLighting = SectionLightModel.Create(pos, verts.Span, lights.Span);
-                    }
-                }
-                else
-                {
-                    verts.Dispose();
-                }
-            }
-            finally
-            {
-                lights.Dispose();
-            }
-
-            if (!hasNextPass) break;
-        }
-
-        _profile.RecordGeometry(Stopwatch.GetTimestamp() - geometryStart);
-
-        result.IsLit = cache.IsLit;
-        cancellationToken.ThrowIfCancellationRequested();
-        var visibilityStart = Stopwatch.GetTimestamp();
-        result.VisibilityData = ChunkVisibilityComputer.Compute(cache, pos.X, pos.Y, pos.Z);
-        cancellationToken.ThrowIfCancellationRequested();
-        _profile.RecordVisibility(Stopwatch.GetTimestamp() - visibilityStart);
-        _profile.RecordGeneration(Stopwatch.GetTimestamp() - generationStart);
-        return result;
+            var visibilityStart = Stopwatch.GetTimestamp();
+            result.VisibilityData = ChunkVisibilityComputer.Compute(cache, pos.X, pos.Y, pos.Z);
+            cancellationToken.ThrowIfCancellationRequested();
+            _profile.RecordVisibility(Stopwatch.GetTimestamp() - visibilityStart);
+            _profile.RecordGeneration(Stopwatch.GetTimestamp() - generationStart, rebuildPlan);
+            return result;
         }
         catch
         {
@@ -442,11 +376,127 @@ internal class ChunkMeshGenerator : IDisposable
         }
     }
 
+    private static MeshPageBuildResult GeneratePage(
+        Vector3D<int> pos,
+        int page,
+        WorldRegionSnapshot cache,
+        bool alternateBlocks,
+        CancellationToken cancellationToken,
+        ref long classificationTicks,
+        ref long geometryTicks)
+    {
+        var minX = pos.X;
+        var minY = pos.Y + page * SectionMeshRebuildPlan.PageHeight;
+        var minZ = pos.Z;
+        var maxX = pos.X + SubChunkRenderer.Size;
+        var maxY = minY + SectionMeshRebuildPlan.PageHeight;
+        var maxZ = pos.Z + SubChunkRenderer.Size;
+        var pageResult = new MeshPageBuildResult(page);
+
+        // Full 1x1x1 Standard blocks (minus grass and texture variance) are classified only in
+        // the selected page. The compact page-local eligibility table avoids restoring a
+        // section-sized allocation on the partial-rebuild path.
+        Block?[] greedyEligible =
+            new Block[SubChunkRenderer.Size * SubChunkRenderer.Size * SectionMeshRebuildPlan.PageHeight];
+        var classificationStart = Stopwatch.GetTimestamp();
+        for (var y = minY; y < maxY; y++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            for (var z = minZ; z < maxZ; z++)
+            for (var x = minX; x < maxX; x++)
+            {
+                if (TryGetGreedyEligibleBlock(cache, x, y, z, alternateBlocks, out var eligible))
+                    greedyEligible[PageLocalIndex(x - pos.X, y - minY, z - pos.Z)] = eligible;
+            }
+        }
+        classificationTicks += Stopwatch.GetTimestamp() - classificationStart;
+
+        var geometryStart = Stopwatch.GetTimestamp();
+        try
+        {
+            for (var pass = 0; pass < 2; pass++)
+            {
+                var hasNextPass = false;
+                using var mesh = new ChunkMeshBuilder();
+                mesh.Begin(-pos.X, -pos.Y, -pos.Z);
+                var ctx = new BlockRenderContext(cache, cache.ContentBlocks, mesh, cache);
+
+                if (pass == 0)
+                    EmitGreedyMesh(cache, ctx, mesh, greedyEligible, pos.X, pos.Y, pos.Z,
+                        minY, maxY, cancellationToken);
+
+                for (var y = minY; y < maxY; y++)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    for (var z = minZ; z < maxZ; z++)
+                    for (var x = minX; x < maxX; x++)
+                    {
+                        var id = cache.GetBlockId(x, y, z);
+                        if (id <= 0) continue;
+
+                        var block = cache.ContentBlocks.GetByProtocolId(id);
+                        if (block.RenderLayer != pass)
+                        {
+                            hasNextPass = true;
+                        }
+                        else if (pass != 0 ||
+                                 greedyEligible[PageLocalIndex(x - pos.X, y - minY, z - pos.Z)] is null)
+                        {
+                            BlockRenderer.RenderBlockByRenderType(
+                                cache, cache.ContentBlocks, cache, block, new BlockPos(x, y, z), mesh,
+                                doVariance: alternateBlocks);
+                        }
+                    }
+                }
+
+                var vertices = mesh.Finish(out var lights);
+                try
+                {
+                    if (vertices.Count > 0)
+                    {
+                        if (pass == 0)
+                        {
+                            pageResult.Solid = vertices;
+                            pageResult.SolidLighting = SectionLightModel.Create(pos, vertices.Span, lights.Span);
+                        }
+                        else
+                        {
+                            pageResult.Translucent = vertices;
+                            pageResult.TranslucentLighting = SectionLightModel.Create(pos, vertices.Span, lights.Span);
+                        }
+                    }
+                    else
+                    {
+                        vertices.Dispose();
+                    }
+                }
+                finally
+                {
+                    lights.Dispose();
+                }
+
+                if (!hasNextPass) break;
+            }
+
+            return pageResult;
+        }
+        catch
+        {
+            pageResult.Dispose();
+            throw;
+        }
+        finally
+        {
+            geometryTicks += Stopwatch.GetTimestamp() - geometryStart;
+        }
+    }
+
     public void RecordUpload(long elapsedTicks, long finishedToUploadTicks, long requestToUploadTicks) =>
         _profile.RecordUpload(elapsedTicks, finishedToUploadTicks, requestToUploadTicks);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static int LocalIndex(int lx, int ly, int lz) => (lx * SubChunkRenderer.Size + lz) * SubChunkRenderer.Size + ly;
+    private static int PageLocalIndex(int lx, int ly, int lz) =>
+        (lx * SubChunkRenderer.Size + lz) * SectionMeshRebuildPlan.PageHeight + ly;
 
     /// <summary>
     ///     Whether the block at this cell can take the greedy-meshing fast path: a full 1x1x1
@@ -501,31 +551,32 @@ internal class ChunkMeshGenerator : IDisposable
 
     private static void EmitGreedyMesh(
         WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess,
-        Block?[] eligible, int minX, int minY, int minZ, CancellationToken cancellationToken)
+        Block?[] eligible, int minX, int sectionMinY, int minZ,
+        int pageMinY, int pageMaxY, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        EmitGreedyTop(cache, ctx, tess, eligible, minX, minY, minZ);
+        EmitGreedyTop(cache, ctx, tess, eligible, minX, sectionMinY, minZ, pageMinY, pageMaxY);
         cancellationToken.ThrowIfCancellationRequested();
-        EmitGreedyBottom(cache, ctx, tess, eligible, minX, minY, minZ);
+        EmitGreedyBottom(cache, ctx, tess, eligible, minX, sectionMinY, minZ, pageMinY, pageMaxY);
         cancellationToken.ThrowIfCancellationRequested();
-        EmitGreedyEast(cache, ctx, tess, eligible, minX, minY, minZ);
+        EmitGreedyEast(cache, ctx, tess, eligible, minX, sectionMinY, minZ, pageMinY, pageMaxY);
         cancellationToken.ThrowIfCancellationRequested();
-        EmitGreedyWest(cache, ctx, tess, eligible, minX, minY, minZ);
+        EmitGreedyWest(cache, ctx, tess, eligible, minX, sectionMinY, minZ, pageMinY, pageMaxY);
         cancellationToken.ThrowIfCancellationRequested();
-        EmitGreedyNorth(cache, ctx, tess, eligible, minX, minY, minZ);
+        EmitGreedyNorth(cache, ctx, tess, eligible, minX, sectionMinY, minZ, pageMinY, pageMaxY);
         cancellationToken.ThrowIfCancellationRequested();
-        EmitGreedySouth(cache, ctx, tess, eligible, minX, minY, minZ);
+        EmitGreedySouth(cache, ctx, tess, eligible, minX, sectionMinY, minZ, pageMinY, pageMaxY);
     }
 
-    private static void EmitGreedyTop(WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess, Block?[] eligible, int minX, int minY, int minZ)
+    private static void EmitGreedyTop(WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess, Block?[] eligible, int minX, int sectionMinY, int minZ, int pageMinY, int pageMaxY)
     {
         var size = SubChunkRenderer.Size;
         var grid = new FaceMergeKey?[size * size];
         List<(int U, int V, int W, int H, FaceMergeKey Key)> rects = [];
 
-        for (var depth = 0; depth < size; depth++)
+        for (var y = pageMinY; y < pageMaxY; y++)
         {
-            var y = minY + depth;
+            var localY = y - pageMinY;
             Array.Clear(grid);
 
             for (var v = 0; v < size; v++)
@@ -534,7 +585,7 @@ internal class ChunkMeshGenerator : IDisposable
                 for (var u = 0; u < size; u++)
                 {
                     var x = minX + u;
-                    if (eligible[LocalIndex(u, depth, v)] is not { } block) continue;
+                    if (eligible[PageLocalIndex(u, localY, v)] is not { } block) continue;
                     if (!block.IsSideVisible(cache, x, y + 1, z, Side.Up)) continue;
 
                     var (v0, v1, v2, v3, _) = ctx.ComputeTopFaceLight(block, new BlockPos(x, y, z));
@@ -547,7 +598,7 @@ internal class ChunkMeshGenerator : IDisposable
             }
 
             rects.Clear();
-            GreedyMergeLayer(grid, size, rects);
+            GreedyMergeLayer(grid, size, size, rects);
 
             foreach (var (u0, v0i, w, h, key) in rects)
             {
@@ -566,15 +617,15 @@ internal class ChunkMeshGenerator : IDisposable
         }
     }
 
-    private static void EmitGreedyBottom(WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess, Block?[] eligible, int minX, int minY, int minZ)
+    private static void EmitGreedyBottom(WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess, Block?[] eligible, int minX, int sectionMinY, int minZ, int pageMinY, int pageMaxY)
     {
         var size = SubChunkRenderer.Size;
         var grid = new FaceMergeKey?[size * size];
         List<(int U, int V, int W, int H, FaceMergeKey Key)> rects = [];
 
-        for (var depth = 0; depth < size; depth++)
+        for (var y = pageMinY; y < pageMaxY; y++)
         {
-            var y = minY + depth;
+            var localY = y - pageMinY;
             Array.Clear(grid);
 
             for (var v = 0; v < size; v++)
@@ -583,7 +634,7 @@ internal class ChunkMeshGenerator : IDisposable
                 for (var u = 0; u < size; u++)
                 {
                     var x = minX + u;
-                    if (eligible[LocalIndex(u, depth, v)] is not { } block) continue;
+                    if (eligible[PageLocalIndex(u, localY, v)] is not { } block) continue;
                     if (!block.IsSideVisible(cache, x, y - 1, z, Side.Down)) continue;
 
                     var (v0, v1, v2, v3, _) = ctx.ComputeBottomFaceLight(block, new BlockPos(x, y, z));
@@ -596,7 +647,7 @@ internal class ChunkMeshGenerator : IDisposable
             }
 
             rects.Clear();
-            GreedyMergeLayer(grid, size, rects);
+            GreedyMergeLayer(grid, size, size, rects);
 
             foreach (var (u0, v0i, w, h, key) in rects)
             {
@@ -615,10 +666,11 @@ internal class ChunkMeshGenerator : IDisposable
         }
     }
 
-    private static void EmitGreedyEast(WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess, Block?[] eligible, int minX, int minY, int minZ)
+    private static void EmitGreedyEast(WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess, Block?[] eligible, int minX, int sectionMinY, int minZ, int pageMinY, int pageMaxY)
     {
         var size = SubChunkRenderer.Size;
-        var grid = new FaceMergeKey?[size * size];
+        var pageHeight = pageMaxY - pageMinY;
+        var grid = new FaceMergeKey?[size * pageHeight];
         List<(int U, int V, int W, int H, FaceMergeKey Key)> rects = [];
 
         for (var depth = 0; depth < size; depth++)
@@ -626,13 +678,14 @@ internal class ChunkMeshGenerator : IDisposable
             var z = minZ + depth;
             Array.Clear(grid);
 
-            for (var v = 0; v < size; v++)
+            for (var v = 0; v < pageHeight; v++)
             {
-                var y = minY + v;
+                var y = pageMinY + v;
+                var localY = y - pageMinY;
                 for (var u = 0; u < size; u++)
                 {
                     var x = minX + u;
-                    if (eligible[LocalIndex(u, v, depth)] is not { } block) continue;
+                    if (eligible[PageLocalIndex(u, localY, depth)] is not { } block) continue;
                     if (!block.IsSideVisible(cache, x, y, z - 1, Side.North)) continue;
 
                     var (v0, v1, v2, v3, _) = ctx.ComputeEastFaceLight(block, new BlockPos(x, y, z));
@@ -646,12 +699,12 @@ internal class ChunkMeshGenerator : IDisposable
             }
 
             rects.Clear();
-            GreedyMergeLayer(grid, size, rects);
+            GreedyMergeLayer(grid, size, pageHeight, rects);
 
             foreach (var (u0, v0i, w, h, key) in rects)
             {
                 float x0 = minX + u0, x1 = x0 + w;
-                float y0 = minY + v0i, y1 = y0 + h;
+                float y0 = pageMinY + v0i, y1 = y0 + h;
                 float zFace = z;
 
                 // DrawEastFace's TopLeft/BottomLeft/BottomRight/TopRight land on v1/v2/v3/v0 (see
@@ -668,10 +721,11 @@ internal class ChunkMeshGenerator : IDisposable
         }
     }
 
-    private static void EmitGreedyWest(WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess, Block?[] eligible, int minX, int minY, int minZ)
+    private static void EmitGreedyWest(WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess, Block?[] eligible, int minX, int sectionMinY, int minZ, int pageMinY, int pageMaxY)
     {
         var size = SubChunkRenderer.Size;
-        var grid = new FaceMergeKey?[size * size];
+        var pageHeight = pageMaxY - pageMinY;
+        var grid = new FaceMergeKey?[size * pageHeight];
         List<(int U, int V, int W, int H, FaceMergeKey Key)> rects = [];
 
         for (var depth = 0; depth < size; depth++)
@@ -679,13 +733,14 @@ internal class ChunkMeshGenerator : IDisposable
             var z = minZ + depth;
             Array.Clear(grid);
 
-            for (var v = 0; v < size; v++)
+            for (var v = 0; v < pageHeight; v++)
             {
-                var y = minY + v;
+                var y = pageMinY + v;
+                var localY = y - pageMinY;
                 for (var u = 0; u < size; u++)
                 {
                     var x = minX + u;
-                    if (eligible[LocalIndex(u, v, depth)] is not { } block) continue;
+                    if (eligible[PageLocalIndex(u, localY, depth)] is not { } block) continue;
                     if (!block.IsSideVisible(cache, x, y, z + 1, Side.South)) continue;
 
                     var (v0, v1, v2, v3, _) = ctx.ComputeWestFaceLight(block, new BlockPos(x, y, z));
@@ -699,12 +754,12 @@ internal class ChunkMeshGenerator : IDisposable
             }
 
             rects.Clear();
-            GreedyMergeLayer(grid, size, rects);
+            GreedyMergeLayer(grid, size, pageHeight, rects);
 
             foreach (var (u0, v0i, w, h, key) in rects)
             {
                 float x0 = minX + u0, x1 = x0 + w;
-                float y0 = minY + v0i, y1 = y0 + h;
+                float y0 = pageMinY + v0i, y1 = y0 + h;
                 float zFace = z + 1;
 
                 QuadCorner tl = new(x0, y1, zFace, 0, 0, key.L0);
@@ -718,10 +773,11 @@ internal class ChunkMeshGenerator : IDisposable
         }
     }
 
-    private static void EmitGreedyNorth(WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess, Block?[] eligible, int minX, int minY, int minZ)
+    private static void EmitGreedyNorth(WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess, Block?[] eligible, int minX, int sectionMinY, int minZ, int pageMinY, int pageMaxY)
     {
         var size = SubChunkRenderer.Size;
-        var grid = new FaceMergeKey?[size * size];
+        var pageHeight = pageMaxY - pageMinY;
+        var grid = new FaceMergeKey?[size * pageHeight];
         List<(int U, int V, int W, int H, FaceMergeKey Key)> rects = [];
 
         for (var depth = 0; depth < size; depth++)
@@ -729,13 +785,14 @@ internal class ChunkMeshGenerator : IDisposable
             var x = minX + depth;
             Array.Clear(grid);
 
-            for (var v = 0; v < size; v++)
+            for (var v = 0; v < pageHeight; v++)
             {
-                var y = minY + v;
+                var y = pageMinY + v;
+                var localY = y - pageMinY;
                 for (var u = 0; u < size; u++)
                 {
                     var z = minZ + u;
-                    if (eligible[LocalIndex(depth, v, u)] is not { } block) continue;
+                    if (eligible[PageLocalIndex(depth, localY, u)] is not { } block) continue;
                     if (!block.IsSideVisible(cache, x - 1, y, z, Side.West)) continue;
 
                     var (v0, v1, v2, v3, _) = ctx.ComputeNorthFaceLight(block, new BlockPos(x, y, z));
@@ -749,12 +806,12 @@ internal class ChunkMeshGenerator : IDisposable
             }
 
             rects.Clear();
-            GreedyMergeLayer(grid, size, rects);
+            GreedyMergeLayer(grid, size, pageHeight, rects);
 
             foreach (var (u0, v0i, w, h, key) in rects)
             {
                 float z0 = minZ + u0, z1 = z0 + w;
-                float y0 = minY + v0i, y1 = y0 + h;
+                float y0 = pageMinY + v0i, y1 = y0 + h;
                 float xFace = x;
 
                 // Same one-step rotation as EmitGreedyEast — DrawNorthFace's corners land on
@@ -770,10 +827,11 @@ internal class ChunkMeshGenerator : IDisposable
         }
     }
 
-    private static void EmitGreedySouth(WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess, Block?[] eligible, int minX, int minY, int minZ)
+    private static void EmitGreedySouth(WorldRegionSnapshot cache, BlockRenderContext ctx, IBlockVertexSink tess, Block?[] eligible, int minX, int sectionMinY, int minZ, int pageMinY, int pageMaxY)
     {
         var size = SubChunkRenderer.Size;
-        var grid = new FaceMergeKey?[size * size];
+        var pageHeight = pageMaxY - pageMinY;
+        var grid = new FaceMergeKey?[size * pageHeight];
         List<(int U, int V, int W, int H, FaceMergeKey Key)> rects = [];
 
         for (var depth = 0; depth < size; depth++)
@@ -781,13 +839,14 @@ internal class ChunkMeshGenerator : IDisposable
             var x = minX + depth;
             Array.Clear(grid);
 
-            for (var v = 0; v < size; v++)
+            for (var v = 0; v < pageHeight; v++)
             {
-                var y = minY + v;
+                var y = pageMinY + v;
+                var localY = y - pageMinY;
                 for (var u = 0; u < size; u++)
                 {
                     var z = minZ + u;
-                    if (eligible[LocalIndex(depth, v, u)] is not { } block) continue;
+                    if (eligible[PageLocalIndex(depth, localY, u)] is not { } block) continue;
                     if (!block.IsSideVisible(cache, x + 1, y, z, Side.East)) continue;
 
                     var (v0, v1, v2, v3, _) = ctx.ComputeSouthFaceLight(block, new BlockPos(x, y, z));
@@ -801,12 +860,12 @@ internal class ChunkMeshGenerator : IDisposable
             }
 
             rects.Clear();
-            GreedyMergeLayer(grid, size, rects);
+            GreedyMergeLayer(grid, size, pageHeight, rects);
 
             foreach (var (u0, v0i, w, h, key) in rects)
             {
                 float z0 = minZ + u0, z1 = z0 + w;
-                float y0 = minY + v0i, y1 = y0 + h;
+                float y0 = pageMinY + v0i, y1 = y0 + h;
                 float xFace = x + 1;
 
                 // DrawSouthFace's corners land on v3/v0/v1/v2 (DrawBlock's SOUTH FACE:
@@ -828,25 +887,25 @@ internal class ChunkMeshGenerator : IDisposable
     ///     matching going down. Consumed cells are nulled out of <paramref name="grid" /> in place, so
     ///     no separate visited mask is needed.
     /// </summary>
-    private static void GreedyMergeLayer(FaceMergeKey?[] grid, int size, List<(int U, int V, int W, int H, FaceMergeKey Key)> rects)
+    private static void GreedyMergeLayer(FaceMergeKey?[] grid, int width, int height, List<(int U, int V, int W, int H, FaceMergeKey Key)> rects)
     {
-        for (var v = 0; v < size; v++)
+        for (var v = 0; v < height; v++)
         {
-            for (var u = 0; u < size; u++)
+            for (var u = 0; u < width; u++)
             {
-                var idx = v * size + u;
+                var idx = v * width + u;
                 if (grid[idx] is not { } key) continue;
 
                 var w = 1;
-                while (u + w < size && grid[v * size + u + w] is { } wk && wk.Equals(key)) w++;
+                while (u + w < width && grid[v * width + u + w] is { } wk && wk.Equals(key)) w++;
 
                 var h = 1;
                 var canExpand = true;
-                while (canExpand && v + h < size)
+                while (canExpand && v + h < height)
                 {
                     for (var du = 0; du < w; du++)
                     {
-                        if (grid[(v + h) * size + u + du] is not { } hk || !hk.Equals(key))
+                        if (grid[(v + h) * width + u + du] is not { } hk || !hk.Equals(key))
                         {
                             canExpand = false;
                             break;
@@ -860,7 +919,7 @@ internal class ChunkMeshGenerator : IDisposable
                 {
                     for (var du = 0; du < w; du++)
                     {
-                        grid[(v + dv) * size + u + du] = null;
+                        grid[(v + dv) * width + u + du] = null;
                     }
                 }
 
@@ -903,6 +962,7 @@ internal class ChunkMeshGenerator : IDisposable
         long EnqueuedAt,
         MeshLifecycleRequest? Trace,
         long SectionId,
+        SectionMeshRebuildPlan RebuildPlan,
         MeshBuildCancellation Control);
 
     /// <summary>One corner of a quad about to be emitted: world position, tiled UV, and its light.</summary>

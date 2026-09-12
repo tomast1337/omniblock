@@ -57,6 +57,7 @@ internal sealed class SectionRenderState(Vector3D<int> position, MeshLifecycleDi
     public long RequestedAt { get; private set; } = -1;
     public int RequestedDeadlineFrame { get; private set; } = -1;
     public SectionDirtyReason DirtyReasons { get; private set; }
+    public SectionMeshRebuildPlan RebuildPlan { get; private set; }
     public SectionDirtyReason DeferredDirtyReasons { get; private set; }
     public long DeferredAt { get; private set; } = -1;
     public long FirstUploadedAt { get; private set; } = -1;
@@ -96,9 +97,14 @@ internal sealed class SectionRenderState(Vector3D<int> position, MeshLifecycleDi
         SectionDirtyReason reason,
         MeshWorkPriority priority,
         long requestedAt,
-        int deadlineFrame = -1)
+        int deadlineFrame = -1,
+        SectionMeshRebuildPlan rebuildPlan = default)
     {
+        if (rebuildPlan.PageMask == 0) rebuildPlan = SectionMeshRebuildPlan.Full;
         DirtyReasons |= reason;
+        RebuildPlan = RebuildPlan.PageMask == 0
+            ? rebuildPlan
+            : RebuildPlan.Union(rebuildPlan);
         if (RequestedAt < 0) RequestedAt = requestedAt;
         if (priority > RequestedPriority) RequestedPriority = priority;
         if (deadlineFrame >= 0 &&
@@ -126,6 +132,7 @@ internal sealed class SectionRenderState(Vector3D<int> position, MeshLifecycleDi
         RequestedAt = -1;
         RequestedDeadlineFrame = -1;
         DirtyReasons = SectionDirtyReason.None;
+        RebuildPlan = default;
     }
 
     public void AbandonRequest(MeshCancellationReason reason = MeshCancellationReason.Orphaned)

@@ -10,6 +10,10 @@ internal readonly record struct ChunkMeshProfileSnapshot(
     int ForegroundResults,
     int BackgroundResults,
     long Meshes,
+    long Pages,
+    long BlockCellsVisited,
+    long FullSectionBuilds,
+    long PartialSectionBuilds,
     double SnapshotMs,
     double QueueWaitMs,
     double ClassificationMs,
@@ -37,6 +41,10 @@ internal sealed class ChunkMeshProfiler
     private long _generationTicks;
     private long _geometryTicks;
     private long _meshes;
+    private long _pages;
+    private long _blockCellsVisited;
+    private long _fullSectionBuilds;
+    private long _partialSectionBuilds;
     private long _queueWaitTicks;
     private long _requestToUploadTicks;
     private long _snapshotCount;
@@ -56,9 +64,15 @@ internal sealed class ChunkMeshProfiler
     public void RecordGeometry(long ticks) => Interlocked.Add(ref _geometryTicks, ticks);
     public void RecordVisibility(long ticks) => Interlocked.Add(ref _visibilityTicks, ticks);
 
-    public void RecordGeneration(long ticks)
+    public void RecordGeneration(long ticks, SectionMeshRebuildPlan rebuildPlan)
     {
         Interlocked.Add(ref _generationTicks, ticks);
+        Interlocked.Add(ref _pages, rebuildPlan.PageBuildCount);
+        Interlocked.Add(ref _blockCellsVisited, rebuildPlan.BlockVisitCount);
+        if (rebuildPlan.IsFull)
+            Interlocked.Increment(ref _fullSectionBuilds);
+        else
+            Interlocked.Increment(ref _partialSectionBuilds);
         Interlocked.Increment(ref _meshes);
     }
 
@@ -83,6 +97,10 @@ internal sealed class ChunkMeshProfiler
         var uploads = Interlocked.Read(ref _uploadCount);
         return new ChunkMeshProfileSnapshot(
             workers, queued, outstanding, criticalResults, foregroundResults, backgroundResults, meshes,
+            Interlocked.Read(ref _pages),
+            Interlocked.Read(ref _blockCellsVisited),
+            Interlocked.Read(ref _fullSectionBuilds),
+            Interlocked.Read(ref _partialSectionBuilds),
             AverageMs(_snapshotTicks, snapshots),
             AverageMs(_queueWaitTicks, meshes),
             AverageMs(_classificationTicks, meshes),
@@ -100,6 +118,10 @@ internal sealed class ChunkMeshProfiler
         Interlocked.Exchange(ref _generationTicks, 0);
         Interlocked.Exchange(ref _geometryTicks, 0);
         Interlocked.Exchange(ref _meshes, 0);
+        Interlocked.Exchange(ref _pages, 0);
+        Interlocked.Exchange(ref _blockCellsVisited, 0);
+        Interlocked.Exchange(ref _fullSectionBuilds, 0);
+        Interlocked.Exchange(ref _partialSectionBuilds, 0);
         Interlocked.Exchange(ref _queueWaitTicks, 0);
         Interlocked.Exchange(ref _snapshotCount, 0);
         Interlocked.Exchange(ref _snapshotTicks, 0);

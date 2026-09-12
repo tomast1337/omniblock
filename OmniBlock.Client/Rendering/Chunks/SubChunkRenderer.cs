@@ -118,26 +118,42 @@ public class SubChunkRenderer : IDisposable
     ///     The caller has already bound the terrain pipeline and texture-array bind group,
     ///     and uploaded the per-chunk uniforms.
     /// </summary>
-    public unsafe bool RenderWebGpu(RenderPassEncoder* passEncoder, int pass)
+    public unsafe int RenderWebGpu(RenderPassEncoder* passEncoder, int pass)
     {
-        if (disposed) return false;
-        if (pass < 0 || pass > 1) return false;
+        if (disposed) return 0;
+        if (pass < 0 || pass > 1) return 0;
         var presentation = _presentation;
-        var mesh = pass == 0 ? presentation?.Solid : presentation?.Translucent;
-        if (mesh == null) return false;
-        mesh.Draw(passEncoder, lightBuffer: presentation!.LightBufferFor(pass));
-        presentation!.RecordFirstDraw();
-        return true;
+        if (presentation == null) return 0;
+
+        var draws = 0;
+        foreach (var page in presentation.Pages)
+        {
+            var mesh = pass == 0 ? page?.Solid : page?.Translucent;
+            if (mesh == null) continue;
+            mesh.Draw(passEncoder, lightBuffer: page!.LightBufferFor(pass));
+            draws++;
+        }
+
+        if (draws > 0) presentation.RecordFirstDraw();
+        return draws;
     }
 
     /// <summary>Draws the solid mesh through the device-wide quad wireframe indices.</summary>
-    public unsafe bool RenderWireframeWebGpu(RenderPassEncoder* passEncoder)
+    public unsafe int RenderWireframeWebGpu(RenderPassEncoder* passEncoder)
     {
-        if (disposed) return false;
+        if (disposed) return 0;
         var presentation = _presentation;
-        if (presentation?.Solid is not { } mesh) return false;
-        mesh.DrawQuadWireframe(passEncoder, presentation.LightBufferFor(0));
-        presentation.RecordFirstDraw();
-        return true;
+        if (presentation == null) return 0;
+
+        var draws = 0;
+        foreach (var page in presentation.Pages)
+        {
+            if (page?.Solid is not { } mesh) continue;
+            mesh.DrawQuadWireframe(passEncoder, page.LightBufferFor(0));
+            draws++;
+        }
+
+        if (draws > 0) presentation.RecordFirstDraw();
+        return draws;
     }
 }

@@ -452,6 +452,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("oldestForegroundAge\t").Append(OldestForegroundAge).AppendLine();
         text.Append("presentationRegressions\t").Append(PresentationRegressionCount).AppendLine();
         text.Append("pendingWork\t").Append(PendingMeshWork).AppendLine();
+        var meshProfile = MeshProfile;
+        text.Append("meshBuilds\t").Append(meshProfile.Meshes).AppendLine();
+        text.Append("meshPagesBuilt\t").Append(meshProfile.Pages).AppendLine();
+        text.Append("meshBlockCellsVisited\t").Append(meshProfile.BlockCellsVisited).AppendLine();
+        text.Append("meshFullSectionBuilds\t").Append(meshProfile.FullSectionBuilds).AppendLine();
+        text.Append("meshPartialSectionBuilds\t").Append(meshProfile.PartialSectionBuilds).AppendLine();
         var lifecycle = MeshLifecycle;
         text.Append("meshLifecycle\t").Append(lifecycle).AppendLine();
         text.Append("criticalCompleted\t").Append(lifecycle.CriticalCompleted).AppendLine();
@@ -870,7 +876,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                         var priority = MaxPriority(mesh.Priority, RequestedPriority(mesh.Pos));
                         _meshGenerator.MeshChunk(
                             _world, mesh.Pos, cancelledRetry.Value, _options.AlternateBlocksEnabled,
-                            priority, section.BeginTrace(cancelledRetry.Value, _frameIndex), section.LifetimeId);
+                            priority, section.BeginTrace(cancelledRetry.Value, _frameIndex), section.LifetimeId,
+                            section.RebuildPlan);
                     }
                     mesh.Dispose();
                     continue;
@@ -889,7 +896,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     {
                         var priority = MaxPriority(mesh.Priority, RequestedPriority(mesh.Pos));
                         _meshGenerator.MeshChunk(_world, mesh.Pos, snapshot.Value, _options.AlternateBlocksEnabled, priority,
-                            section.BeginTrace(snapshot.Value, _frameIndex), section.LifetimeId);
+                            section.BeginTrace(snapshot.Value, _frameIndex), section.LifetimeId, section.RebuildPlan);
                     }
 
                     // Superseded by the requeue above (or by whichever in-flight build already
@@ -904,6 +911,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 // discarding every stale result makes fluids and piston bursts freeze indefinitely.
                 var followUpReasons = section.DirtyReasons;
                 var followUpPriority = section.RequestedPriority;
+                var followUpPlan = section.RebuildPlan;
 
                 var device = WebGpuDevice.Current;
                 if (device == null)
@@ -917,10 +925,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 // presentation remains fully authoritative.
                 var presentation = SectionPresentation.Create(
                     device,
-                    mesh.Solid,
-                    mesh.Translucent,
-                    mesh.SolidLighting,
-                    mesh.TranslucentLighting,
+                    mesh.Pages,
+                    section.Renderer?.Presentation,
+                    mesh.RebuildPlan,
                     mesh.VisibilityData,
                     mesh.IsLit,
                     mesh.Version,
@@ -969,13 +976,14 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                         ? _frameIndex + CriticalDeadlineFramesFor(_averageFrameDurationMs)
                         : -1;
                     section.RememberRequest(
-                        followUpReasons, followUpPriority, _schedulerTick, followUpDeadline);
+                        followUpReasons, followUpPriority, _schedulerTick, followUpDeadline, followUpPlan);
                     var snapshot = version.SnapshotIfNeeded();
                     if (snapshot.HasValue)
                     {
                         _meshGenerator.MeshChunk(
                             _world, mesh.Pos, snapshot.Value, _options.AlternateBlocksEnabled,
-                            followUpPriority, section.BeginTrace(snapshot.Value, _frameIndex), section.LifetimeId);
+                            followUpPriority, section.BeginTrace(snapshot.Value, _frameIndex), section.LifetimeId,
+                            section.RebuildPlan);
                     }
                 }
             }
@@ -1387,7 +1395,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 _options.AlternateBlocksEnabled,
                 section.RequestedPriority,
                 section.PendingTrace,
-                section.LifetimeId);
+                section.LifetimeId,
+                section.RebuildPlan);
         }
         _criticalDispatchesSincePump = 0;
     }
@@ -1827,7 +1836,19 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             chunkPos,
             priority ? SectionDirtyReason.BlockChange : SectionDirtyReason.InitialTerrain);
 
-    private bool MarkDirty(Vector3D<int> chunkPos, SectionDirtyReason reason)
+    internal bool MarkDirty(
+        Vector3D<int> chunkPos,
+        bool priority,
+        SectionMeshRebuildPlan rebuildPlan) =>
+        MarkDirty(
+            chunkPos,
+            priority ? SectionDirtyReason.BlockChange : SectionDirtyReason.InitialTerrain,
+            rebuildPlan);
+
+    private bool MarkDirty(
+        Vector3D<int> chunkPos,
+        SectionDirtyReason reason,
+        SectionMeshRebuildPlan rebuildPlan = default)
     {
         if (!IsChunkInMeshPrepareDistance(chunkPos, _lastViewPos))
             return false;
@@ -1857,6 +1878,14 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             if (deferredAt >= 0) requestedAt = Math.Min(requestedAt, deferredAt);
         }
 
+        // Only an exact local block invalidation has dependency bounds precise enough for a page
+        // rebuild. Initial terrain, lighting, streaming boundaries and maintenance all retain the
+        // conservative full-section fallback. A missing presentation also needs all four pages.
+        if (!hasRenderer || (reason & ~SectionDirtyReason.BlockChange) != 0)
+            rebuildPlan = SectionMeshRebuildPlan.Full;
+        else if (rebuildPlan.PageMask == 0)
+            rebuildPlan = SectionMeshRebuildPlan.Full;
+
         // Full chunk arrival uses the same dirty notification as player edits. Only updates to
         // an existing mesh are critical. Startup meshes are foreground work: they beat ordinary
         // streaming without making a newly placed block wait behind the whole safety ring.
@@ -1875,7 +1904,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         var deadlineFrame = requestedPriority == MeshWorkPriority.Critical
             ? _frameIndex + CriticalDeadlineFramesFor(_averageFrameDurationMs)
             : -1;
-        section.RememberRequest(reason, requestedPriority, requestedAt, deadlineFrame);
+        section.RememberRequest(reason, requestedPriority, requestedAt, deadlineFrame, rebuildPlan);
         section.RecordInvalidation(reason);
 
         var snapshot = version.SnapshotIfNeeded();
@@ -1888,7 +1917,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 _criticalDispatchesSincePump++;
                 _meshGenerator.MeshChunk(
                     _world, chunkPos, snapshot.Value, _options.AlternateBlocksEnabled,
-                    requestedPriority, section.PendingTrace, section.LifetimeId);
+                    requestedPriority, section.PendingTrace, section.LifetimeId, section.RebuildPlan);
             }
             else
             {
@@ -2688,7 +2717,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         for (var i = 0; i < count; i++)
         {
             pipeline.BindDynamicUniforms(pass, i);
-            if (_solidRenderers[i].RenderWebGpu(pass, 0)) _solidDrawsThisFrame++;
+            _solidDrawsThisFrame += _solidRenderers[i].RenderWebGpu(pass, 0);
         }
 
         var t2 = Stopwatch.GetTimestamp();
@@ -2731,7 +2760,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
             pipeline.BindNextUniforms(pass, BuildChunkUniforms(modelView, renderer.Position, fadeProgress));
 
-            if (renderer.RenderWireframeWebGpu(pass)) _solidDrawsThisFrame++;
+            _solidDrawsThisFrame += renderer.RenderWireframeWebGpu(pass);
         }
     }
 
@@ -2782,7 +2811,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         for (var i = 0; i < count; i++)
         {
             pipeline.BindDynamicUniforms(pass, i);
-            if (_translucentRenderers[i].RenderWebGpu(pass, 1)) _translucentDrawsThisFrame++;
+            _translucentDrawsThisFrame += _translucentRenderers[i].RenderWebGpu(pass, 1);
         }
 
         _translucentRenderers.Clear();

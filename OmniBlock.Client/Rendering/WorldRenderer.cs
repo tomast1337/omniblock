@@ -1232,6 +1232,18 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     }
 
     public void MarkBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
+        => MarkBlocksDirty(minX, minY, minZ, maxX, maxY, maxZ, dependenciesKnown: true);
+
+    /// <summary>
+    ///     Invalidates geometry whose renderer has dependencies beyond the ordinary one-cell
+    ///     block/AO/liquid halo. Mod render providers with undeclared bounds must use this
+    ///     conservative entry point until they can report an exact dependency range.
+    /// </summary>
+    public void MarkBlocksDirtyUnbounded(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
+        => MarkBlocksDirty(minX, minY, minZ, maxX, maxY, maxZ, dependenciesKnown: false);
+
+    private void MarkBlocksDirty(
+        int minX, int minY, int minZ, int maxX, int maxY, int maxZ, bool dependenciesKnown)
     {
         if (maxY < 0 || minY >= ChuckFormat.WorldHeight) return;
 
@@ -1245,7 +1257,10 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             {
                 for (var z = start.Z; z <= end.Z; z++)
                 {
-                    ChunkRenderer.MarkDirty(new Vector3D<int>(x, y, z) * SubChunkRenderer.Size, true);
+                    var sectionPos = new Vector3D<int>(x, y, z) * SubChunkRenderer.Size;
+                    var rebuildPlan = SectionMeshRebuildPlan.FromWorldYBounds(
+                        sectionPos.Y, minY, maxY, dependenciesKnown);
+                    ChunkRenderer.MarkDirty(sectionPos, true, rebuildPlan);
                 }
             }
         }

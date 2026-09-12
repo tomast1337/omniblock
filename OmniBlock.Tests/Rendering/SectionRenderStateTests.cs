@@ -36,6 +36,25 @@ public sealed class SectionRenderStateTests
         Assert.Equal(-1, state.RequestedAt);
         Assert.Equal(MeshWorkPriority.Background, state.RequestedPriority);
         Assert.Equal(SectionDirtyReason.None, state.DirtyReasons);
+        Assert.Equal(default, state.RebuildPlan);
+    }
+
+    [Fact]
+    public void Repeated_micro_updates_coalesce_their_bounded_rebuild_pages()
+    {
+        using var state = new SectionRenderState(default);
+        var lower = SectionMeshRebuildPlan.FromWorldYBounds(0, 1, 3);
+        var upper = SectionMeshRebuildPlan.FromWorldYBounds(0, 13, 15);
+
+        state.RememberRequest(
+            SectionDirtyReason.BlockChange, MeshWorkPriority.Critical, 10,
+            rebuildPlan: lower);
+        state.RememberRequest(
+            SectionDirtyReason.BlockChange, MeshWorkPriority.Critical, 11,
+            rebuildPlan: upper);
+
+        Assert.Equal(lower.Union(upper), state.RebuildPlan);
+        Assert.Equal(2, state.RebuildPlan.PageBuildCount);
     }
 
     [Fact]

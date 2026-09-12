@@ -72,6 +72,9 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"Results:   critical {mesh.CriticalResults}  foreground {mesh.ForegroundResults}  background {mesh.BackgroundResults}");
         ImGuiTextSafe.Text($"Built:     {mesh.Meshes:N0}");
+        ImGuiTextSafe.Text(
+            $"Rebuilds:  {mesh.PartialSectionBuilds:N0} partial  {mesh.FullSectionBuilds:N0} full  {mesh.Pages:N0} pages");
+        ImGuiTextSafe.Text($"Cells:     {mesh.BlockCellsVisited:N0} classified/rendered");
         ImGuiTextSafe.Text($"Snapshot:  {mesh.SnapshotMs:F3} ms avg");
         ImGuiTextSafe.Text($"Queue wait:{mesh.QueueWaitMs,7:F3} ms avg");
         ImGuiTextSafe.Text($"Classify:  {mesh.ClassificationMs:F3} ms avg");
