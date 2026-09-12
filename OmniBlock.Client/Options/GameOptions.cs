@@ -37,6 +37,8 @@ public class GameOptions
 
     private static readonly string[] s_anisoLabels = ["options.off", "2x", "4x", "8x", "16x"];
     private static readonly string[] s_msaaLabels = ["options.off", "2x", "4x", "8x"];
+    private static readonly string[] s_presentationQualityLabels =
+        ["options.graphics.fast", "performance.balanced", "options.graphics.fancy"];
 
     public static float MaxAnisotropy = 1.0f;
     private readonly int _initialMsaa;
@@ -166,6 +168,7 @@ public class GameOptions
     public CycleOption GuiScaleOption { get; private set; }
     public CycleOption AnisotropicOption { get; private set; }
     public CycleOption MsaaOption { get; private set; }
+    public CycleOption PresentationQualityOption { get; private set; }
     public BoolOption ShowCoordinatesOption { get; private set; }
     public StringOption LanguageOption { get; private set; }
     public BoolOption UICursorsOption { get; private set; }
@@ -224,6 +227,7 @@ public class GameOptions
     public int GuiScale => GuiScaleOption.Value;
     public int AnisotropicLevel => AnisotropicOption.Value;
     public int MSAALevel => MsaaOption.Value;
+    public int PresentationQuality => PresentationQualityOption.Value;
     public float ChatScale => ChatScaleOption.Value;
     public float ChatWidth => ChatWidthOption.Value;
     public bool ShowCoordinates => ShowCoordinatesOption.Value;
@@ -297,6 +301,7 @@ public class GameOptions
         nameof(GuiScaleOption),
         nameof(AnisotropicOption),
         nameof(MsaaOption),
+        nameof(PresentationQualityOption),
         nameof(ShowCoordinatesOption),
         nameof(LanguageOption),
         nameof(UICursorsOption),
@@ -451,6 +456,8 @@ public class GameOptions
                 return result;
             }
         };
+        PresentationQualityOption = new CycleOption(
+            "options.graphics.text", "presentationQuality", s_presentationQualityLabels, 1);
         LanguageOption = new StringOption("Language", "language", "en_us")
         {
             // Takes the new value from the callback rather than reading it back off the option,
@@ -499,6 +506,7 @@ public class GameOptions
         yield return ChatWidthOption;
         yield return AnisotropicOption;
         yield return MsaaOption;
+        yield return PresentationQualityOption;
         yield return ShowCoordinatesOption;
         yield return UICursorsOption;
         yield return PauseOnFocusLossOption;

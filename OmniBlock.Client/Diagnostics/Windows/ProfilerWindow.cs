@@ -29,6 +29,9 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
 
         if (ImGui.CollapsingHeader("Chunk streaming lifecycle", ImGuiTreeNodeFlags.DefaultOpen))
             DrawChunkLifecycle(chunkRenderer);
+
+        if (ImGui.CollapsingHeader("Non-terrain presentation", ImGuiTreeNodeFlags.DefaultOpen))
+            DrawNonTerrainPresentation();
     }
 
     private static void DrawChunkPresentation(ChunkRenderer chunkRenderer)
@@ -62,6 +65,27 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
     {
         ImGuiTextSafe.Text(
             $"{label}: {timing.LastMs:F3} ms  avg {timing.AverageMs:F3}  p50 {timing.P50Ms:F3}  p95 {timing.P95Ms:F3}  max {timing.MaxMs:F3}");
+    }
+
+    private static void DrawNonTerrainPresentation()
+    {
+        ImGuiTextSafe.Text(
+            $"Entities: {MetricRegistry.Get(RenderMetrics.EntitiesRendered)} rendered  " +
+            $"{MetricRegistry.Get(RenderMetrics.EntitiesHidden)} hidden  " +
+            $"{MetricRegistry.Get(RenderMetrics.EntitiesTotal)} total");
+        ImGuiTextSafe.Text(
+            $"Block entities: {MetricRegistry.Get(RenderMetrics.BlockEntitiesRendered)} rendered  " +
+            $"{MetricRegistry.Get(RenderMetrics.BlockEntitiesHidden)} hidden  " +
+            $"{MetricRegistry.Get(RenderMetrics.BlockEntitiesTotal)} total");
+        ImGuiTextSafe.Text(
+            $"Particles: {MetricRegistry.Get(RenderMetrics.ParticlesRendered)} rendered  " +
+            $"{MetricRegistry.Get(RenderMetrics.ParticlesHidden)} hidden  " +
+            $"{MetricRegistry.Get(RenderMetrics.ParticlesActive)} active");
+        ImGuiTextSafe.Text(
+            $"Presentation quality: {MetricRegistry.Get(RenderMetrics.PresentationQuality)} " +
+            "(0 fast, 1 balanced, 2 fancy)");
+        ImGuiTextSafe.TextDisabled(
+            "Frame timings above separate terrain, entities, and particles.");
     }
 
     private static void DrawChunkMeshConstruction(ChunkRenderer chunkRenderer)

@@ -31,7 +31,7 @@ internal sealed partial class LuauCompletion
         "chatScale", "chatWidth", "chunkFade", "cloudsQuality", "controllerSensitivity",
         "controllerType", "difficulty", "fov", "fpsLimit", "gamma", "guiScale", "invertYMouse",
         "language", "lastServer", "menuMusic", "mouseSensitivity", "msaaLevel", "music", "options", "pauseOnFocusLoss", "showCoordinates",
-        "simulationDistance", "skin", "softClouds", "sound", "uiCursors", "useMipmaps", "viewDistance", "vsync"
+        "presentationQuality", "simulationDistance", "skin", "softClouds", "sound", "uiCursors", "useMipmaps", "viewDistance", "vsync"
     ];
 
     private static readonly string[] s_nodeMembers =

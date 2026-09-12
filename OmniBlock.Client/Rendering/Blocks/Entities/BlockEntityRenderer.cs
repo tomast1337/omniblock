@@ -70,12 +70,17 @@ public class BlockEntityRenderer
 
     public void RenderTileEntity(BlockEntity blockEntity, float tickDelta)
     {
-        if (blockEntity.distanceFrom(PlayerX, PlayerY, PlayerZ) < 4096.0D)
-        {
-            var brightness = World.GetLuminance(blockEntity.X, blockEntity.Y, blockEntity.Z);
-            RenderSystem.Color = new Vector4D<float>(brightness, brightness, brightness, 1.0F);
-            RenderTileEntityAt(blockEntity, blockEntity.X - StaticPlayerX, blockEntity.Y - StaticPlayerY, blockEntity.Z - StaticPlayerZ, tickDelta);
-        }
+        // WorldRenderer applies the session's explicit block-entity distance and frustum policy
+        // before reaching this renderer. Keeping a second hard-coded 64-block check here made the
+        // configured policy misleading and prevented the high-quality range from taking effect.
+        var brightness = World.GetLuminance(blockEntity.X, blockEntity.Y, blockEntity.Z);
+        RenderSystem.Color = new Vector4D<float>(brightness, brightness, brightness, 1.0F);
+        RenderTileEntityAt(
+            blockEntity,
+            blockEntity.X - StaticPlayerX,
+            blockEntity.Y - StaticPlayerY,
+            blockEntity.Z - StaticPlayerZ,
+            tickDelta);
     }
 
     public void RenderTileEntityAt(BlockEntity blockEntity, double x, double y, double z, float tickDelta)

@@ -7,6 +7,8 @@ using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Client.Rendering.Particles;
 
+public readonly record struct ParticleRenderStats(int Rendered, int Hidden);
+
 public static class ParticleRenderer
 {
     private static readonly string[] s_layerTextures =
@@ -23,14 +25,15 @@ public static class ParticleRenderer
     // this exists to avoid a CPU-side per-frame allocation for in the first place.
     private static readonly ParticleInstance[] s_instanceScratch = new ParticleInstance[ParticleBuffer.MaxParticles];
 
-    public static void Render(
+    internal static ParticleRenderStats Render(
         ParticleBuffer[] layers,
         float yaw, float pitch,
         double x, double y, double z,
         double lastTickX, double lastTickY, double lastTickZ,
         float partialTick,
         TextureManager textureManager,
-        IWorldContext world)
+        IWorldContext world,
+        WorldPresentationPolicy policy)
     {
         var radYaw = yaw * MathF.PI / 180.0f;
         var radPitch = pitch * MathF.PI / 180.0f;
@@ -48,8 +51,8 @@ public static class ParticleRenderer
         var interpY = lastTickY + (y - lastTickY) * partialTick;
         var interpZ = lastTickZ + (z - lastTickZ) * partialTick;
 
-        RenderWebGpu(layers, cosYaw, sinYaw, cosPitch, upX, upZ,
-            interpX, interpY, interpZ, partialTick, textureManager, world);
+        return RenderWebGpu(layers, cosYaw, sinYaw, cosPitch, upX, upZ,
+            interpX, interpY, interpZ, partialTick, textureManager, world, policy);
     }
 
     /// <summary>
@@ -57,11 +60,12 @@ public static class ParticleRenderer
     ///     (no quad expansion) and hands the whole layer to <see cref="WgpuParticleRenderer" /> as a
     ///     single instanced draw.
     /// </summary>
-    private static void RenderWebGpu(
+    private static ParticleRenderStats RenderWebGpu(
         ParticleBuffer[] layers,
         float cosYaw, float sinYaw, float cosPitch, float upX, float upZ,
         double interpX, double interpY, double interpZ,
-        float partialTick, TextureManager textureManager, IWorldContext world)
+        float partialTick, TextureManager textureManager, IWorldContext world,
+        WorldPresentationPolicy policy)
     {
         s_wgpuRenderer ??= new WgpuParticleRenderer();
         s_wgpuRenderer.BeginFrame();
@@ -70,10 +74,13 @@ public static class ParticleRenderer
         Vector3 up = new(upX, cosPitch, upZ);
 
         var device = WebGpuDevice.Current!;
+        var active = 0;
+        var rendered = 0;
 
         for (var layer = 0; layer < 3; layer++)
         {
             var buf = layers[layer];
+            active += buf.Count;
             if (buf.Count == 0)
             {
                 continue;
@@ -85,8 +92,14 @@ public static class ParticleRenderer
                 continue;
             }
 
-            for (var i = 0; i < buf.Count; i++)
+            var written = 0;
+            for (var i = 0; i < buf.Count && rendered + written < policy.MaxParticleInstances; i++)
             {
+                var dx = buf.X[i] - interpX;
+                var dy = buf.Y[i] - interpY;
+                var dz = buf.Z[i] - interpZ;
+                if (!policy.ShouldRenderParticle(dx, dy, dz)) continue;
+
                 ref readonly var config = ref ParticleTypeConfig.Configs[(int)buf.Type[i]];
 
                 var rx = (float)(buf.PrevX[i] + (buf.X[i] - buf.PrevX[i]) * partialTick - interpX);
@@ -101,7 +114,7 @@ public static class ParticleRenderer
                 ComputeUVs(config.UV, buf.TextureIndex[i], buf.TexJitterX[i], buf.TexJitterY[i],
                     out var minU, out var maxU, out var minV, out var maxV);
 
-                s_instanceScratch[i] = new ParticleInstance
+                s_instanceScratch[written++] = new ParticleInstance
                 {
                     Pos = new Vector3(rx, ry, rz),
                     Size = size,
@@ -114,20 +127,27 @@ public static class ParticleRenderer
                 };
             }
 
-            s_wgpuRenderer.DrawLayer(device, texture,
-                RenderSystem.ModelView.Top, RenderSystem.Projection.Top,
-                right, up, layer, s_instanceScratch.AsSpan(0, buf.Count));
+            if (written > 0)
+            {
+                s_wgpuRenderer.DrawLayer(device, texture,
+                    RenderSystem.ModelView.Top, RenderSystem.Projection.Top,
+                    right, up, layer, s_instanceScratch.AsSpan(0, written));
+                rendered += written;
+            }
         }
+
+        return new ParticleRenderStats(rendered, active - rendered);
     }
 
-    public static void RenderSpecial(List<ISpecialParticle> specialParticles,
+    internal static ParticleRenderStats RenderSpecial(List<ISpecialParticle> specialParticles,
         double x, double y, double z,
         double lastTickX, double lastTickY, double lastTickZ,
-        float partialTick)
+        float partialTick,
+        WorldPresentationPolicy policy)
     {
         if (specialParticles.Count == 0)
         {
-            return;
+            return default;
         }
 
         var interpX = lastTickX + (x - lastTickX) * partialTick;
@@ -135,10 +155,17 @@ public static class ParticleRenderer
         var interpZ = lastTickZ + (z - lastTickZ) * partialTick;
 
         var t = Tessellator.instance;
-        for (var i = 0; i < specialParticles.Count; i++)
+        var rendered = 0;
+        for (var i = 0; i < specialParticles.Count && rendered < policy.MaxParticleInstances; i++)
         {
-            specialParticles[i].Render(t, partialTick, interpX, interpY, interpZ);
+            var particle = specialParticles[i];
+            if (!policy.ShouldRenderParticle(
+                    particle.X - interpX, particle.Y - interpY, particle.Z - interpZ))
+                continue;
+            particle.Render(t, partialTick, interpX, interpY, interpZ);
+            rendered++;
         }
+        return new ParticleRenderStats(rendered, specialParticles.Count - rendered);
     }
 
     private static float ComputeScale(ScaleModel model, ParticleBuffer buf, int i, float partialTick)

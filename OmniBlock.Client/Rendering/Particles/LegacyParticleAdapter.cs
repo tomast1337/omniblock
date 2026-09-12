@@ -6,6 +6,9 @@ namespace OmniBlock.Client.Rendering.Particles;
 public class LegacyParticleAdapter(EntityFX fx) : ISpecialParticle
 {
     public bool IsDead => fx.Dead;
+    public double X => fx.X;
+    public double Y => fx.Y;
+    public double Z => fx.Z;
     public void Tick() => fx.Tick();
 
     public void Render(Tessellator t, float partialTick, double interpX, double interpY, double interpZ)

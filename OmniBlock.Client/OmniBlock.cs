@@ -816,7 +816,7 @@ public partial class OmniBlock :
         TextureManager.AddDynamicTexture(new FireSprite("fire_layer_1", "custom_fire_n_s.png"));
 
         WorldRenderer = new WorldRenderer(this, TextureManager);
-        ParticleManager = new ParticleManager(World, TextureManager);
+        ParticleManager = new ParticleManager(World, TextureManager, Options);
 
         _ = new ResourceManager()
             .Add(new BetaResourceDownloader(this, GameDataDir))
@@ -1337,6 +1337,12 @@ public partial class OmniBlock :
         MetricRegistry.Set(RenderMetrics.EntitiesHidden, WorldRenderer.CountEntitiesHidden);
         MetricRegistry.Set(RenderMetrics.EntitiesTotal, WorldRenderer.CountEntitiesTotal);
         MetricRegistry.Set(RenderMetrics.ParticlesActive, ParticleManager.ActiveParticleCount);
+        MetricRegistry.Set(RenderMetrics.ParticlesRendered, ParticleManager.RenderedParticleCount);
+        MetricRegistry.Set(RenderMetrics.ParticlesHidden, ParticleManager.HiddenParticleCount);
+        MetricRegistry.Set(RenderMetrics.BlockEntitiesTotal, WorldRenderer.CountBlockEntitiesTotal);
+        MetricRegistry.Set(RenderMetrics.BlockEntitiesRendered, WorldRenderer.CountBlockEntitiesRendered);
+        MetricRegistry.Set(RenderMetrics.BlockEntitiesHidden, WorldRenderer.CountBlockEntitiesHidden);
+        MetricRegistry.Set(RenderMetrics.PresentationQuality, Options.PresentationQuality);
     }
 
     private void ReportFrameTelemetry(long frameStartNano)

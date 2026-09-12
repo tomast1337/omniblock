@@ -84,6 +84,9 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     public int CountEntitiesTotal { get; private set; }
     public int CountEntitiesRendered { get; private set; }
     public int CountEntitiesHidden { get; private set; }
+    public int CountBlockEntitiesTotal { get; private set; }
+    public int CountBlockEntitiesRendered { get; private set; }
+    public int CountBlockEntitiesHidden { get; private set; }
     public ChunkRenderer ChunkRenderer { get; private set; }
     public float DamagePartialTime { get; set; }
 
@@ -489,7 +492,11 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             CountEntitiesTotal = 0;
             CountEntitiesRendered = 0;
             CountEntitiesHidden = 0;
+            CountBlockEntitiesTotal = 0;
+            CountBlockEntitiesRendered = 0;
+            CountBlockEntitiesHidden = 0;
             var camera = _game.Camera;
+            var presentationPolicy = WorldPresentationPolicy.From(_game.Options);
             EntityRenderDispatcher.OffsetX = camera.LastTickX + (camera.X - camera.LastTickX) * partialTicks;
             EntityRenderDispatcher.OffsetY = camera.LastTickY + (camera.Y - camera.LastTickY) * partialTicks;
             EntityRenderDispatcher.OffsetZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * partialTicks;
@@ -497,17 +504,21 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             BlockEntityRenderer.StaticPlayerY = camera.LastTickY + (camera.Y - camera.LastTickY) * partialTicks;
             BlockEntityRenderer.StaticPlayerZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * partialTicks;
             var entities = _world.Entities.Entities;
-            CountEntitiesTotal = entities.Count;
+            CountEntitiesTotal = entities.Count + _world.Entities.GlobalEntities.Count;
 
             int index;
             Entity entity;
             for (index = 0; index < _world.Entities.GlobalEntities.Count; ++index)
             {
                 entity = _world.Entities.GlobalEntities[index];
-                ++CountEntitiesRendered;
-                if (entity.ShouldRender(cameraPos))
+                if (presentationPolicy.ShouldRenderEntity(entity, cameraPos))
                 {
+                    ++CountEntitiesRendered;
                     EntityRenderDispatcher.Instance.RenderEntity(entity, partialTicks);
+                }
+                else
+                {
+                    ++CountEntitiesHidden;
                 }
             }
 
@@ -531,7 +542,10 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                     }
                 }
 
-                if (entity.ShouldRender(cameraPos) && (entity.IgnoreFrustumCheck || culler.IsBoundingBoxInFrustum(entity.BoundingBox)) && (entity != _game.Camera || _game.Options.CameraMode != CameraMode.FirstPerson || _game.Camera.IsSleeping))
+                if (presentationPolicy.ShouldRenderEntity(entity, cameraPos) &&
+                    (entity.IgnoreFrustumCheck || culler.IsBoundingBoxInFrustum(entity.BoundingBox)) &&
+                    (entity != _game.Camera || _game.Options.CameraMode != CameraMode.FirstPerson ||
+                     _game.Camera.IsSleeping))
                 {
                     var yFloor = MathHelper.Floor(entity.Y);
                     if (yFloor < 0)
@@ -547,16 +561,30 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                     {
                         ++CountEntitiesRendered;
                         EntityRenderDispatcher.Instance.RenderEntity(entity, partialTicks);
+                        continue;
                     }
                 }
+
+                ++CountEntitiesHidden;
             }
 
+            CountBlockEntitiesTotal = _world.Entities.BlockEntities.Count;
             for (index = 0; index < _world.Entities.BlockEntities.Count; ++index)
             {
                 var blockEntity = _world.Entities.BlockEntities[index];
-                if (!blockEntity.IsRemoved() && culler.IsBoundingBoxInFrustum(new Box(blockEntity.X, blockEntity.Y, blockEntity.Z, blockEntity.X + 1, blockEntity.Y + 1, blockEntity.Z + 1)))
+                if (!blockEntity.IsRemoved() &&
+                    presentationPolicy.ShouldRenderBlockEntity(
+                        blockEntity.distanceFrom(cameraPos.X, cameraPos.Y, cameraPos.Z)) &&
+                    culler.IsBoundingBoxInFrustum(new Box(
+                        blockEntity.X, blockEntity.Y, blockEntity.Z,
+                        blockEntity.X + 1, blockEntity.Y + 1, blockEntity.Z + 1)))
                 {
+                    ++CountBlockEntitiesRendered;
                     BlockEntityRenderer.Instance.RenderTileEntity(blockEntity, partialTicks);
+                }
+                else
+                {
+                    ++CountBlockEntitiesHidden;
                 }
             }
 

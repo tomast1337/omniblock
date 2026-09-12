@@ -1,6 +1,7 @@
 using OmniBlock.Blocks;
 using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.Rendering.Particles;
+using OmniBlock.Client.Options;
 using OmniBlock.Entities;
 using OmniBlock.Items;
 using OmniBlock.Util.Maths;
@@ -18,12 +19,14 @@ public class ParticleManager
     private readonly JavaRandom _rand = new();
     private readonly List<ISpecialParticle> _specialParticles = [];
     private readonly TextureManager _textureManager;
+    private readonly GameOptions _options;
     protected World worldObj;
 
-    public ParticleManager(World world, TextureManager textureManager)
+    public ParticleManager(World world, TextureManager textureManager, GameOptions options)
     {
         worldObj = world;
         _textureManager = textureManager;
+        _options = options;
 
         for (var i = 0; i < 3; i++)
         {
@@ -32,6 +35,8 @@ public class ParticleManager
     }
 
     public int ActiveParticleCount => _layers[0].Count + _layers[1].Count + _layers[2].Count;
+    public int RenderedParticleCount { get; private set; }
+    public int HiddenParticleCount { get; private set; }
 
     public void updateEffects()
     {
@@ -59,19 +64,25 @@ public class ParticleManager
 
     public void renderParticles(Entity camera, float partialTick)
     {
-        ParticleRenderer.Render(_layers,
+        var stats = ParticleRenderer.Render(_layers,
             camera.Yaw, camera.Pitch,
             camera.X, camera.Y, camera.Z,
             camera.LastTickX, camera.LastTickY, camera.LastTickZ,
-            partialTick, _textureManager, worldObj);
+            partialTick, _textureManager, worldObj, WorldPresentationPolicy.From(_options));
+        RenderedParticleCount += stats.Rendered;
+        HiddenParticleCount += stats.Hidden;
     }
 
     public void renderSpecialParticles(Entity camera, float partialTick)
     {
-        ParticleRenderer.RenderSpecial(_specialParticles,
+        var stats = ParticleRenderer.RenderSpecial(_specialParticles,
             camera.X, camera.Y, camera.Z,
             camera.LastTickX, camera.LastTickY, camera.LastTickZ,
-            partialTick);
+            partialTick, WorldPresentationPolicy.From(_options));
+        // The special-particle pass is the first particle pass in GameRenderer, so it starts the
+        // frame's accounting; the ordinary instanced layers add to it immediately afterwards.
+        RenderedParticleCount = stats.Rendered;
+        HiddenParticleCount = stats.Hidden;
     }
 
     public void clearEffects(World world)

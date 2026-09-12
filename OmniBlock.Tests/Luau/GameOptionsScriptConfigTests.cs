@@ -60,4 +60,27 @@ public sealed class GameOptionsScriptConfigTests
         Assert.False(GameOptions.SetOptionValue(cycle, LuauConfigValue.From(2.0)));
         Assert.False(GameOptions.SetOptionValue(cycle, LuauConfigValue.From(0.5)));
     }
+
+    [Fact]
+    public void Presentation_quality_is_scriptable_and_persistent()
+    {
+        var directory = Directory.CreateTempSubdirectory("omniblock-presentation-options-");
+        try
+        {
+            var options = new GameOptions(null!, directory.FullName);
+
+            Assert.Equal(1, options.PresentationQuality);
+            Assert.True(options.SetScriptConfig(
+                "presentationQuality", LuauConfigValue.From(0.0)));
+            Assert.Equal(0, options.PresentationQuality);
+            Assert.Equal(3, options.GetScriptConfigOptions("presentationQuality")!.Count);
+
+            var reloaded = new GameOptions(null!, directory.FullName);
+            Assert.Equal(0, reloaded.PresentationQuality);
+        }
+        finally
+        {
+            directory.Delete(true);
+        }
+    }
 }

@@ -575,13 +575,16 @@ public class GameRenderer
             var cameraBlockX = MathHelper.Floor(camera.X);
             var cameraBlockY = MathHelper.Floor(camera.Y);
             var cameraBlockZ = MathHelper.Floor(camera.Z);
-            byte searchRadius = 10;
+            var presentationPolicy = WorldPresentationPolicy.From(_client.Options);
+            var searchRadius = presentationPolicy.WeatherRadius;
             var rainSoundX = 0.0D;
             var rainSoundY = 0.0D;
             var rainSoundZ = 0.0D;
             var validDropCount = 0;
 
-            for (var sampleIndex = 0; sampleIndex < (int)(100.0F * rainGradient * rainGradient); ++sampleIndex)
+            var weatherSamples = (int)(100.0F * rainGradient * rainGradient *
+                                       presentationPolicy.WeatherSpawnDensity);
+            for (var sampleIndex = 0; sampleIndex < weatherSamples; ++sampleIndex)
             {
                 var sampleX = cameraBlockX + _random.NextInt(searchRadius) - _random.NextInt(searchRadius);
                 var sampleZ = cameraBlockZ + _random.NextInt(searchRadius) - _random.NextInt(searchRadius);
@@ -655,7 +658,7 @@ public class GameRenderer
             var renderY = camera.LastTickY + (camera.Y - camera.LastTickY) * tickDelta;
             var renderZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * tickDelta;
             var cameraYFloor = MathHelper.Floor(renderY);
-            byte renderRadius = 10;
+            var renderRadius = WorldPresentationPolicy.From(_client.Options).WeatherRadius;
 
             var biomes = world.GetBiomeSource().GetBiomesInArea(cameraBlockX - renderRadius, cameraBlockZ - renderRadius, renderRadius * 2 + 1, renderRadius * 2 + 1);
             var biomeIndex = 0;
@@ -729,8 +732,6 @@ public class GameRenderer
             }
 
             _client.TextureManager.BindTexture(_client.TextureManager.GetTextureId("/environment/rain.png"));
-            renderRadius = 10;
-
             biomeIndex = 0;
 
             for (sampleX = cameraBlockX - renderRadius; sampleX <= cameraBlockX + renderRadius; ++sampleX)

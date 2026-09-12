@@ -1,5 +1,8 @@
 OMNI.config.pauseOnFocusLoss = false
 OMNI.config.captureMouse = false
+OMNI.config.presentationQuality = 0
+assert(OMNI.config.presentationQuality == 0,
+    "non-terrain presentation quality was not scriptable")
 
 assert(OMNI.ui.screen == "MainMenuScreen", "debug client did not reach the main menu")
 assert(OMNI.client.state.debugOpen, "--debug did not open the debug dashboard")
