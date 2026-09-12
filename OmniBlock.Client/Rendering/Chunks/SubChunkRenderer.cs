@@ -44,8 +44,8 @@ public class SubChunkRenderer : IDisposable
         );
     }
 
-    public bool HasSolidMesh => _presentation?.SolidVertexCount > 0;
-    public bool HasTranslucentMesh => _presentation?.HasTranslucentMesh == true;
+    public bool HasSolidGeometry => _presentation?.HasSolidGeometry == true;
+    public bool HasTranslucentGeometry => _presentation?.HasTranslucentGeometry == true;
     public Vector3D<int> Position { get; }
     public Vector3D<int> PositionPlus { get; }
     public Vector3D<int> PositionMinus { get; }

@@ -48,8 +48,13 @@ internal sealed class SectionPresentation : IDisposable
     public ChunkVisibilityStore VisibilityData { get; }
     public bool IsLit { get; }
     public long Epoch { get; }
-    public bool HasTranslucentMesh => TranslucentVertexCount > 0;
-    public bool IsEmpty => SolidVertexCount == 0 && TranslucentVertexCount == 0;
+    /// <summary>
+    ///     Immutable layer-presence flags published atomically with the meshes and visibility
+    ///     metadata. Submission can inspect these without touching mutable GPU resource state.
+    /// </summary>
+    public bool HasSolidGeometry => SolidVertexCount > 0;
+    public bool HasTranslucentGeometry => TranslucentVertexCount > 0;
+    public bool IsEmpty => !HasSolidGeometry && !HasTranslucentGeometry;
     public int SolidMeshSizeBytes => SolidVertexCount * (int)(WgpuMesh.ChunkVertexStride + WgpuMesh.ChunkLightVertexStride);
     public int TranslucentMeshSizeBytes => TranslucentVertexCount * (int)(WgpuMesh.ChunkVertexStride + WgpuMesh.ChunkLightVertexStride);
     internal MeshLifecycleDiagnostics? Lifecycle { get; }

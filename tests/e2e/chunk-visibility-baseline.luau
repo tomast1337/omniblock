@@ -119,7 +119,10 @@ for _, distance in ipairs(distances) do
         "visibility counters did not advance at view " .. tostring(distance.chunks))
     assert(horizon.frustumTests >= horizon.candidates and down.frustumTests >= down.candidates,
         "frustum accounting is incomplete at view " .. tostring(distance.chunks))
-    assert(horizon.uniforms >= horizon.draws and down.uniforms >= down.draws,
+    assert(horizon.emptySubmitted == 0 and down.emptySubmitted == 0,
+        "empty terrain layers were submitted at view " .. tostring(distance.chunks))
+    assert(math.abs(horizon.uniforms - horizon.draws) < 0.01 and
+        math.abs(down.uniforms - down.draws) < 0.01,
         "uniform/draw accounting is inconsistent at view " .. tostring(distance.chunks))
 
     printSample(distance.chunks, "horizon", horizon)

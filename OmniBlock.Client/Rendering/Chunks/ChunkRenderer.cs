@@ -79,7 +79,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly HashSet<Vector3D<int>> _pendingLightUpdateKeys = [];
     private readonly SectionMeshRequestQueue _pendingMeshUpdates = new();
     private readonly TranslucentDistanceComparer _translucentDistanceComparer = new();
+    private readonly List<SubChunkRenderer> _solidRenderers = [];
     private readonly List<SubChunkRenderer> _translucentRenderers = [];
+    // Includes empty presentations because portal traversal and near-field presentation
+    // diagnostics operate on resident sections, not only drawable geometry layers.
     private readonly List<SubChunkRenderer> _visibleRenderers = [];
 
     /// <summary>
@@ -559,6 +562,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
 
         _visibleRenderers.Clear();
+        _solidRenderers.Clear();
+        _translucentRenderers.Clear();
         _frameIndex++;
 
         Vector3D<int> cameraChunkPos = new(
@@ -638,28 +643,34 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _residentTranslucentLayersThisFrame = 0;
         foreach (var state in _residentSections)
         {
-            if (state.Renderer!.HasSolidMesh) _residentSolidLayersThisFrame++;
-            if (state.Renderer.HasTranslucentMesh) _residentTranslucentLayersThisFrame++;
+            if (state.Renderer!.HasSolidGeometry) _residentSolidLayersThisFrame++;
+            if (state.Renderer.HasTranslucentGeometry) _residentTranslucentLayersThisFrame++;
         }
 
-        _presentedSolidLayersThisFrame = 0;
-        _presentedTranslucentLayersThisFrame = 0;
-        var translucentCount = 0;
         foreach (var renderer in _visibleRenderers)
         {
             renderer.Update(renderParams.DeltaTime);
-
-            if (renderer.HasSolidMesh) _presentedSolidLayersThisFrame++;
-
-            if (renderer.HasTranslucentMesh)
-            {
-                _presentedTranslucentLayersThisFrame++;
-                translucentCount++;
-                _translucentRenderers.Add(renderer);
-            }
         }
 
-        TranslucentMeshes = translucentCount;
+        BuildLayerVisibleLists(_visibleRenderers, _solidRenderers, _translucentRenderers);
+        _presentedSolidLayersThisFrame = _solidRenderers.Count;
+        _presentedTranslucentLayersThisFrame = _translucentRenderers.Count;
+        TranslucentMeshes = _translucentRenderers.Count;
+    }
+
+    internal static void BuildLayerVisibleLists(
+        IReadOnlyList<SubChunkRenderer> visible,
+        List<SubChunkRenderer> solid,
+        List<SubChunkRenderer> translucent)
+    {
+        solid.Clear();
+        translucent.Clear();
+        for (var i = 0; i < visible.Count; i++)
+        {
+            var renderer = visible[i];
+            if (renderer.HasSolidGeometry) solid.Add(renderer);
+            if (renderer.HasTranslucentGeometry) translucent.Add(renderer);
+        }
     }
 
     /// <summary>
@@ -714,7 +725,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         PrepareFrame(renderParams);
 
-        if (TryGetWebGpuFrame(out var pass, out var array))
+        // Reject an absent solid layer before even resolving/binding its pipeline. Empty sections
+        // remain in _visibleRenderers for traversal, but never enter render submission.
+        if (_solidRenderers.Count > 0 && TryGetWebGpuFrame(out var pass, out var array))
         {
             using (Profiler.Begin("DrawChunks"))
             {
@@ -737,7 +750,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     public unsafe void RenderTransparent(ChunkRenderParams renderParams)
     {
-        if (TryGetWebGpuFrame(out var pass, out var array))
+        if (_translucentRenderers.Count > 0 && TryGetWebGpuFrame(out var pass, out var array))
         {
             using (Profiler.Begin("DrawChunksTranslucent"))
             {
@@ -2471,6 +2484,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private unsafe void RenderSolidWebGpu(
         RenderPassEncoder* pass, WgpuPipeline pipeline, WgpuTextureArray textureArray)
     {
+        var count = _solidRenderers.Count;
+        if (count == 0) return;
+
         pipeline.Bind(pass);
         // Asked of the array per pass rather than held: a texture-pack switch rebuilds the array
         // underneath, and a bind group made against the old one points at a destroyed texture.
@@ -2486,7 +2502,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         // triangle-count optimization) can't touch. Building every chunk's ChunkUniforms into one
         // scratch array and writing it with a single WriteDynamicUniforms call amortizes that away;
         // the second loop only binds a dynamic offset and issues the draw, both cheap.
-        var count = _visibleRenderers.Count;
         _terrainUniformEntriesThisFrame += count;
         if (_solidUniformScratch.Length < count)
         {
@@ -2495,7 +2510,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         for (var i = 0; i < count; i++)
         {
-            var renderer = _visibleRenderers[i];
+            var renderer = _solidRenderers[i];
             var fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
 
             var camRel = new Vector3D<double>(
@@ -2519,7 +2534,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         for (var i = 0; i < count; i++)
         {
             pipeline.BindDynamicUniforms(pass, i);
-            if (_visibleRenderers[i].RenderWebGpu(pass, 0)) _solidDrawsThisFrame++;
+            if (_solidRenderers[i].RenderWebGpu(pass, 0)) _solidDrawsThisFrame++;
         }
 
         var t2 = Stopwatch.GetTimestamp();
@@ -2535,13 +2550,15 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private unsafe void RenderWireframeWebGpu(
         RenderPassEncoder* pass, WgpuPipeline pipeline, WgpuTextureArray textureArray)
     {
+        if (_solidRenderers.Count == 0) return;
+
         pipeline.Bind(pass);
         WgpuPipeline.BindGroup(pass, 1,
             textureArray.BindGroupFor(pipeline.TextureBindGroupLayout), WebGpuDevice.Current!.Api);
 
-        _terrainUniformEntriesThisFrame += _visibleRenderers.Count;
+        _terrainUniformEntriesThisFrame += _solidRenderers.Count;
 
-        foreach (var renderer in _visibleRenderers)
+        foreach (var renderer in _solidRenderers)
         {
             var fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
 
@@ -2566,6 +2583,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         RenderPassEncoder* pass, WgpuPipeline pipeline, WgpuTextureArray textureArray,
         Vector3D<double> viewPos)
     {
+        var count = _translucentRenderers.Count;
+        if (count == 0) return;
+
         pipeline.Bind(pass);
         // Asked of the array per pass rather than held: a texture-pack switch rebuilds the array
         // underneath, and a bind group made against the old one points at a destroyed texture.
@@ -2575,7 +2595,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _translucentDistanceComparer.Origin = viewPos;
         _translucentRenderers.Sort(_translucentDistanceComparer);
 
-        var count = _translucentRenderers.Count;
         _terrainUniformEntriesThisFrame += count;
         if (_translucentUniformScratch.Length < count)
             _translucentUniformScratch = new ChunkUniforms[count];
@@ -2667,6 +2686,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _sections.Clear();
         _residentSections.Clear();
 
+        _solidRenderers.Clear();
         _translucentRenderers.Clear();
         _renderersToRemove.Clear();
         _pendingMeshUpdates.Clear();
