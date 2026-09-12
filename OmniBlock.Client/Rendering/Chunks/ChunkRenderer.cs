@@ -126,6 +126,19 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private int _solidDrawsLastFrame;
     private int _translucentDrawsThisFrame;
     private int _translucentDrawsLastFrame;
+    private readonly FrameTimingWindow _findVisibleTimings = new();
+    private readonly FrameTimingWindow _terrainSubmitTimings = new();
+    private ChunkPresentationProfileSnapshot _presentationProfile;
+    private ChunkVisibilityResult _visibilityThisFrame;
+    private bool _hasPreparedFrame;
+    private int _safetyRescuedThisFrame;
+    private int _residentSolidLayersThisFrame;
+    private int _residentTranslucentLayersThisFrame;
+    private int _presentedSolidLayersThisFrame;
+    private int _presentedTranslucentLayersThisFrame;
+    private int _terrainUniformEntriesThisFrame;
+    private double _findVisibleMsThisFrame;
+    private double _terrainSubmitMsThisFrame;
 
     /// <summary>
     ///     Reused across frames so the solid pass's per-chunk uniform batch (see
@@ -289,6 +302,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     internal int LightUploadsLastFrame => _lightUploadsLastFrame;
     internal int SolidDrawsLastFrame => _solidDrawsLastFrame;
     internal int TranslucentDrawsLastFrame => _translucentDrawsLastFrame;
+    internal ChunkPresentationProfileSnapshot PresentationProfile => _presentationProfile;
 
     internal int MeshReadyRadius => _meshReadyRadius == int.MaxValue
         ? Math.Max(0, _lastRenderDistance)
@@ -379,6 +393,20 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("lightUploadsLastFrame\t").Append(LightUploadsLastFrame).AppendLine();
         text.Append("solidDrawsLastFrame\t").Append(SolidDrawsLastFrame).AppendLine();
         text.Append("translucentDrawsLastFrame\t").Append(TranslucentDrawsLastFrame).AppendLine();
+        var presentation = PresentationProfile;
+        text.Append("residentSolidLayers\t").Append(presentation.ResidentSolidLayers).AppendLine();
+        text.Append("residentTranslucentLayers\t").Append(presentation.ResidentTranslucentLayers).AppendLine();
+        text.Append("visibilityCandidates\t").Append(presentation.VisibilityCandidates).AppendLine();
+        text.Append("frustumTests\t").Append(presentation.FrustumTests).AppendLine();
+        text.Append("portalVisited\t").Append(presentation.PortalVisited).AppendLine();
+        text.Append("safetyRescued\t").Append(presentation.SafetyRescued).AppendLine();
+        text.Append("presentedSolidLayers\t").Append(presentation.PresentedSolidLayers).AppendLine();
+        text.Append("presentedTranslucentLayers\t").Append(presentation.PresentedTranslucentLayers).AppendLine();
+        text.Append("emptyLayersSubmitted\t").Append(presentation.EmptyLayersSubmitted).AppendLine();
+        text.Append("terrainDrawCalls\t").Append(presentation.TerrainDrawCalls).AppendLine();
+        text.Append("terrainUniformEntries\t").Append(presentation.TerrainUniformEntries).AppendLine();
+        AppendTiming("findVisible", presentation.FindVisible);
+        AppendTiming("terrainSubmitCpu", presentation.TerrainSubmit);
         text.Append("deferredStreamingBoundaries\t").Append(DeferredStreamingBoundaryCount).AppendLine();
         text.Append("leadingEdgeQueued\t").Append(_leadingEdgeSections.Count).AppendLine();
         text.Append("leadingEdgePending\t").Append(LeadingEdgePending).AppendLine();
@@ -466,6 +494,15 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
 
         return text.ToString();
+
+        void AppendTiming(string name, FrameTimingSnapshot timing)
+        {
+            text.Append(name).Append("Ms\t").Append(timing.LastMs.ToString("F3")).AppendLine();
+            text.Append(name).Append("AverageMs\t").Append(timing.AverageMs.ToString("F3")).AppendLine();
+            text.Append(name).Append("P50Ms\t").Append(timing.P50Ms.ToString("F3")).AppendLine();
+            text.Append(name).Append("P95Ms\t").Append(timing.P95Ms.ToString("F3")).AppendLine();
+            text.Append(name).Append("MaxMs\t").Append(timing.MaxMs.ToString("F3")).AppendLine();
+        }
     }
 
     /// <summary>
@@ -479,6 +516,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     /// </remarks>
     public void PrepareFrame(ChunkRenderParams renderParams)
     {
+        FinalizePresentationProfile();
         _geometryUploadsLastFrame = _geometryUploadsThisFrame;
         _geometryUploadsThisFrame = 0;
         _lightUploadsLastFrame = _lightUploadsThisFrame;
@@ -487,6 +525,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _solidDrawsThisFrame = 0;
         _translucentDrawsLastFrame = _translucentDrawsThisFrame;
         _translucentDrawsThisFrame = 0;
+        _terrainUniformEntriesThisFrame = 0;
+        _terrainSubmitMsThisFrame = 0;
 
         var prepareFrameAt = Stopwatch.GetTimestamp();
         if (_lastPrepareFrameAt != 0)
@@ -544,9 +584,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         float renderDistWorld = renderParams.RenderDistance * SubChunkRenderer.Size;
 
+        var findVisibleAt = Stopwatch.GetTimestamp();
         using (Profiler.Begin("FindVisible"))
         {
-            ChunksInFrustum = _occlusionCuller.FindVisible(
+            _visibilityThisFrame = _occlusionCuller.FindVisible(
                 this,
                 ResidentRenderers(),
                 cameraState?.Renderer,
@@ -557,8 +598,15 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 _frameIndex
             );
         }
+        _findVisibleMsThisFrame = Stopwatch.GetElapsedTime(findVisibleAt).TotalMilliseconds;
+        ChunksInFrustum = _visibilityThisFrame.FrustumCandidates;
 
-        AddOcclusionSafetyRing(cameraChunkPos, _frameIndex, renderParams.Camera);
+        var safetyDiagnostics = AddOcclusionSafetyRing(cameraChunkPos, _frameIndex, renderParams.Camera);
+        _safetyRescuedThisFrame = safetyDiagnostics.Rescued;
+        _visibilityThisFrame = _visibilityThisFrame with
+        {
+            FrustumTests = _visibilityThisFrame.FrustumTests + safetyDiagnostics.FrustumTests
+        };
 
         var visitedVisibleCount = _visibleRenderers.Count;
         ChunksOccluded = ChunksInFrustum - visitedVisibleCount;
@@ -586,13 +634,26 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         RecordPresentationState(cameraChunkPos, renderParams.Camera);
 
+        _residentSolidLayersThisFrame = 0;
+        _residentTranslucentLayersThisFrame = 0;
+        foreach (var state in _residentSections)
+        {
+            if (state.Renderer!.HasSolidMesh) _residentSolidLayersThisFrame++;
+            if (state.Renderer.HasTranslucentMesh) _residentTranslucentLayersThisFrame++;
+        }
+
+        _presentedSolidLayersThisFrame = 0;
+        _presentedTranslucentLayersThisFrame = 0;
         var translucentCount = 0;
         foreach (var renderer in _visibleRenderers)
         {
             renderer.Update(renderParams.DeltaTime);
 
+            if (renderer.HasSolidMesh) _presentedSolidLayersThisFrame++;
+
             if (renderer.HasTranslucentMesh)
             {
+                _presentedTranslucentLayersThisFrame++;
                 translucentCount++;
                 _translucentRenderers.Add(renderer);
             }
@@ -657,6 +718,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         {
             using (Profiler.Begin("DrawChunks"))
             {
+                var submitAt = Stopwatch.GetTimestamp();
                 if (WireframeEnabled)
                 {
                     RenderWireframeWebGpu(pass, WgpuWireframePipelineFor(RenderSystem.State.Current), array);
@@ -665,6 +727,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 {
                     RenderSolidWebGpu(pass, WgpuPipelineFor(RenderSystem.State.Current), array);
                 }
+                _terrainSubmitMsThisFrame += Stopwatch.GetElapsedTime(submitAt).TotalMilliseconds;
             }
         }
 
@@ -678,8 +741,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         {
             using (Profiler.Begin("DrawChunksTranslucent"))
             {
+                var submitAt = Stopwatch.GetTimestamp();
                 RenderTranslucentWebGpu(pass, WgpuPipelineFor(RenderSystem.State.Current), array,
                     renderParams.ViewPos);
+                _terrainSubmitMsThisFrame += Stopwatch.GetElapsedTime(submitAt).TotalMilliseconds;
             }
         }
         else
@@ -908,8 +973,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     ///     whether nearby loaded terrain exists; a temporarily incomplete adjacency graph must not
     ///     turn collision-bearing terrain invisible until the player enters its immediate section.
     /// </summary>
-    private void AddOcclusionSafetyRing(Vector3D<int> cameraChunkPos, int frame, ICuller camera)
+    private (int Rescued, int FrustumTests) AddOcclusionSafetyRing(
+        Vector3D<int> cameraChunkPos,
+        int frame,
+        ICuller camera)
     {
+        var rescued = 0;
+        var frustumTests = 0;
         var size = SubChunkRenderer.Size;
         for (var chunkX = -MeshSafetyRingRadius; chunkX <= MeshSafetyRingRadius; chunkX++)
         {
@@ -929,15 +999,48 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                         if (state.Renderer!.LastVisibleFrame != frame)
                         {
                             state.Renderer.LastVisibleFrame = frame;
+                            frustumTests++;
                             if (camera.IsBoundingBoxInFrustum(state.Renderer.BoundingBox))
                             {
                                 Visit(state.Renderer);
+                                rescued++;
                             }
                         }
                     }
                 }
             }
         }
+
+        return (rescued, frustumTests);
+    }
+
+    private void FinalizePresentationProfile()
+    {
+        if (!_hasPreparedFrame)
+        {
+            _hasPreparedFrame = true;
+            return;
+        }
+
+        _findVisibleTimings.Record(_findVisibleMsThisFrame);
+        _terrainSubmitTimings.Record(_terrainSubmitMsThisFrame);
+        var draws = _solidDrawsThisFrame + _translucentDrawsThisFrame;
+        _presentationProfile = new ChunkPresentationProfileSnapshot(
+            _visibilityThisFrame.ResidentCandidates,
+            _residentSolidLayersThisFrame,
+            _residentTranslucentLayersThisFrame,
+            _visibilityThisFrame.ResidentCandidates,
+            _visibilityThisFrame.FrustumTests,
+            _visibilityThisFrame.PortalVisited,
+            _safetyRescuedThisFrame,
+            _visibleRenderers.Count,
+            _presentedSolidLayersThisFrame,
+            _presentedTranslucentLayersThisFrame,
+            Math.Max(0, _terrainUniformEntriesThisFrame - draws),
+            draws,
+            _terrainUniformEntriesThisFrame,
+            _findVisibleTimings.Snapshot(),
+            _terrainSubmitTimings.Snapshot());
     }
 
     /// <summary>
@@ -2384,6 +2487,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         // scratch array and writing it with a single WriteDynamicUniforms call amortizes that away;
         // the second loop only binds a dynamic offset and issues the draw, both cheap.
         var count = _visibleRenderers.Count;
+        _terrainUniformEntriesThisFrame += count;
         if (_solidUniformScratch.Length < count)
         {
             _solidUniformScratch = new ChunkUniforms[count];
@@ -2435,6 +2539,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         WgpuPipeline.BindGroup(pass, 1,
             textureArray.BindGroupFor(pipeline.TextureBindGroupLayout), WebGpuDevice.Current!.Api);
 
+        _terrainUniformEntriesThisFrame += _visibleRenderers.Count;
+
         foreach (var renderer in _visibleRenderers)
         {
             var fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
@@ -2470,6 +2576,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _translucentRenderers.Sort(_translucentDistanceComparer);
 
         var count = _translucentRenderers.Count;
+        _terrainUniformEntriesThisFrame += count;
         if (_translucentUniformScratch.Length < count)
             _translucentUniformScratch = new ChunkUniforms[count];
 

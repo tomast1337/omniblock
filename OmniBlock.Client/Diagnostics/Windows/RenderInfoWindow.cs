@@ -147,38 +147,9 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"Uploads:  geometry {MetricRegistry.Get(RenderMetrics.GeometryUploads)}  light {MetricRegistry.Get(RenderMetrics.LightUploads)}");
 
-        ImGui.Spacing();
-        ImGuiTextSafe.Text($"Mesh Version Alloc: {MetricRegistry.Get(RenderMetrics.MeshVersionAllocated)}");
-        ImGuiTextSafe.Text($"Mesh Version Free:  {MetricRegistry.Get(RenderMetrics.MeshVersionReleased)}");
-
-        ImGui.Spacing();
         if (ctx.ChunkRenderer is { } chunkRenderer)
         {
-            var mesh = chunkRenderer.MeshProfile;
-            ImGuiTextSafe.Text(
-                $"Workers:   {mesh.Workers}  queued {mesh.Queued}  outstanding {mesh.Outstanding}");
-            ImGuiTextSafe.Text(
-                $"Results:   critical {mesh.CriticalResults}  foreground {mesh.ForegroundResults}  background {mesh.BackgroundResults}");
-            ImGuiTextSafe.Text($"Built:     {mesh.Meshes:N0}");
-            ImGuiTextSafe.Text($"Snapshot:  {mesh.SnapshotMs:F3} ms avg");
-            ImGuiTextSafe.Text($"Queue wait:{mesh.QueueWaitMs,7:F3} ms avg");
-            ImGuiTextSafe.Text($"Classify:  {mesh.ClassificationMs:F3} ms avg");
-            ImGuiTextSafe.Text($"Geometry:  {mesh.GeometryMs:F3} ms avg");
-            ImGuiTextSafe.Text($"Visibility:{mesh.VisibilityMs,7:F3} ms avg");
-            ImGuiTextSafe.Text($"Generate:  {mesh.GenerationMs:F3} ms avg");
-            ImGuiTextSafe.Text($"Upload:    {mesh.UploadMs:F3} ms avg");
-            ImGuiTextSafe.Text($"Done->GPU: {mesh.FinishedToUploadMs:F3} ms avg");
-            ImGuiTextSafe.Text($"Request->GPU: {mesh.RequestToUploadMs:F3} ms avg");
-            ImGuiTextSafe.Text(
-                $"Relight:   pending {ctx.ChunkRenderer.LightRefreshPending}  completed {ctx.ChunkRenderer.LightRefreshCompletedCount}");
-            var lifecycle = chunkRenderer.MeshLifecycle;
-            ImGuiTextSafe.Text(
-                $"Critical:  completed {lifecycle.CriticalCompleted}  late {lifecycle.CriticalDeadlineMisses}  overdue {lifecycle.CriticalOverdue}");
-            ImGuiTextSafe.Text(
-                $"Cancelled: cooperative {lifecycle.CooperativeCancellations}  before {lifecycle.CancelledBeforeBuild}  during {lifecycle.CancelledDuringBuild}");
-            if (ImGui.Button("Reset mesh profile")) chunkRenderer.ResetMeshProfile();
             ImGui.Spacing();
-
             var wireframe = chunkRenderer.WireframeEnabled;
             if (ImGui.Checkbox("Wireframe", ref wireframe))
             {

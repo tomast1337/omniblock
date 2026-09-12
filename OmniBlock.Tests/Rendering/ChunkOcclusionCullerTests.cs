@@ -131,6 +131,31 @@ public sealed class ChunkOcclusionCullerTests
         }
     }
 
+    [Fact]
+    public void Visibility_result_accounts_for_candidates_and_frustum_work()
+    {
+        using var visible = Node(0);
+        using var rejected = Node(16);
+        using var other = Node(32);
+        var visitor = new Collector();
+
+        var result = new ChunkOcclusionCuller().FindVisible(
+            visitor,
+            [visible, rejected, other],
+            null,
+            new Vector3D<double>(8, 72, 8),
+            new TestFrustum(rejected.BoundingBox),
+            256,
+            false,
+            1);
+
+        Assert.Equal(3, result.ResidentCandidates);
+        Assert.Equal(3, result.FrustumTests);
+        Assert.Equal(2, result.FrustumCandidates);
+        Assert.Equal(0, result.PortalVisited);
+        Assert.Equal([visible, other], visitor.Nodes);
+    }
+
     private static SubChunkRenderer Node(int x, bool sealedNeighbors = false)
     {
         var node = new SubChunkRenderer(new Vector3D<int>(x, 64, 0));

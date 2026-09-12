@@ -38,6 +38,13 @@ portable assertion is that camera direction materially changes terrain selection
 diagnostic because CI commonly uses a software renderer. This also exercises WebGPU's uncapped
 Mailbox/Immediate presentation selection instead of silently remaining in FIFO mode.
 
+`chunk-visibility-baseline` is an opt-in long-running benchmark for stable view distances 4 and 16.
+It is excluded from the default suite so CI is not extended by several minutes. Run it with
+`xvfb-run -a tests/e2e/run-local.sh chunk-visibility-baseline`. Distance 32 deliberately uses the
+fixed 30-second warm-up in `view-distance-32-diagnostic`; waiting for full residency there measures
+world-generation throughput as much as renderer traversal. Both scenarios write the counters and
+terrain dumps used by the chunk performance plan.
+
 `fps-limit` runs at the main menu with VSync disabled, verifies that the minimum slider value paces
 complete client frames to 30 FPS, then switches the slider to Unlimited and verifies that the cap
 is released. Frame telemetry includes the pacing wait, matching the rate users actually observe.
@@ -96,6 +103,19 @@ OMNI.client.state.foregroundPending   -- unresolved foreground mesh requests
 OMNI.client.state.backgroundPending   -- unresolved background mesh requests
 OMNI.client.state.oldestForegroundAge -- age in client scheduler ticks (20 ticks/second)
 OMNI.client.state.presentationRegressionCount -- cumulative near-field presentation regressions
+OMNI.client.state.residentSolidLayerCount      -- resident sections with solid geometry
+OMNI.client.state.residentTranslucentLayerCount -- resident sections with translucent geometry
+OMNI.client.state.visibilityCandidates         -- resident sections classified by the culler
+OMNI.client.state.frustumTests                  -- exact bounding-box/frustum tests in the last frame
+OMNI.client.state.portalVisited                 -- distinct sections reached by portal traversal
+OMNI.client.state.safetyRescued                 -- near sections conservatively restored after traversal
+OMNI.client.state.presentedSolidLayerCount      -- selected solid render layers
+OMNI.client.state.presentedTranslucentLayerCount -- selected translucent render layers
+OMNI.client.state.emptyLayersSubmitted          -- uniforms submitted for layers with no draw
+OMNI.client.state.terrainDrawCalls              -- solid plus translucent terrain draws
+OMNI.client.state.terrainUniformEntries         -- per-section uniforms submitted to WebGPU
+OMNI.client.state.findVisibleMs                 -- last completed visibility-selection CPU time
+OMNI.client.state.terrainSubmitCpuMs             -- last completed terrain command-recording CPU time
 OMNI.client.state.meshCancelledCount  -- discarded/abandoned requests, including superseded work
 OMNI.client.state.meshSupersededCount -- subset discarded due to a newer revision/replacement
 OMNI.client.state.meshBuildFailureCount -- snapshot or worker exceptions (normally zero)

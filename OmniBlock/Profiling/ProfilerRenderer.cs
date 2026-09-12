@@ -11,6 +11,18 @@ public static class ProfilerRenderer
     {
         ImGui.Begin("Profiler");
 
+        DrawContents();
+
+        ImGui.End();
+    }
+
+    /// <summary>
+    ///     Draws the profiler table without owning an ImGui window. Client diagnostics use this to
+    ///     compose the general timing tree with subsystem-specific profiler sections.
+    /// </summary>
+    public static void DrawContents()
+    {
+
         ImGui.Text("Sort by:");
         ImGui.SameLine();
         if (ImGui.RadioButton("Section", s_sortColumn == 0)) s_sortColumn = 0;
@@ -38,7 +50,6 @@ public static class ProfilerRenderer
             ImGui.EndTable();
         }
 
-        ImGui.End();
     }
 
     private static ProfilerNode BuildTree(IEnumerable<(string Name, double Last, double Avg, double Max, double[] History, int HistoryHead)> stats)

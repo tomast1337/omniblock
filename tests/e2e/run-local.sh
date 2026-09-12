@@ -7,6 +7,9 @@ artifact_dir="${E2E_ARTIFACTS_DIR:-$repo_root/artifacts/e2e-local/$(date -u +%Y%
 timeout_seconds="${E2E_TIMEOUT_SECONDS:-90}"
 configuration="${CONFIGURATION:-Debug}"
 requested_scenario="${1:-all}"
+if [[ "$requested_scenario" == "chunk-visibility-baseline" && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
+    timeout_seconds=300
+fi
 scenarios=(menu world-management multiplayer language-options create-world smoke debug-smoke fps-limit chunk-mesh-deadlines teleport-preload flying-chunk-streaming frustum-directional)
 run_roots=()
 
@@ -25,6 +28,14 @@ fi
 
 echo "Running OmniBlock client E2E suite: ${scenarios[*]}"
 echo "Artifacts: $artifact_dir"
+
+# Build once before replacing XDG_DATA_HOME with each isolated game-data directory. `dotnet run`
+# otherwise attempts a restore under that temporary environment for every scenario; recent SDKs
+# can fail that project walk without emitting a useful error, and rebuilding per scenario also
+# distorts the suite runtime.
+env LUAU_NATIVE_LOCAL=1 dotnet build "$repo_root/OmniBlock.Client/OmniBlock.Client.csproj" \
+    --configuration "$configuration" --no-restore -m:1 --nologo --verbosity:quiet \
+    -p:WarningLevel=0
 
 suite_status=0
 for scenario in "${scenarios[@]}"; do
@@ -56,7 +67,7 @@ for scenario in "${scenarios[@]}"; do
     (
         cd "$repo_root/OmniBlock.Client"
         env XDG_DATA_HOME="$data_root" LUAU_NATIVE_LOCAL=1 dotnet run \
-            --project . --configuration "$configuration" --no-launch-profile -- \
+            --project . --configuration "$configuration" --no-launch-profile --no-build --no-restore -- \
             "${launch_args[@]}" \
             --e2e-script "$script" --e2e-timeout "$timeout_seconds" \
             --e2e-artifacts "$scenario_artifacts"

@@ -43,6 +43,19 @@ public static unsafe class LuauClientStateHost
                                             if key == "lightUploadsLastFrame" then return __ClientState.lightUploadsLastFrame() end
                                             if key == "solidDrawsLastFrame" then return __ClientState.solidDrawsLastFrame() end
                                             if key == "translucentDrawsLastFrame" then return __ClientState.translucentDrawsLastFrame() end
+                                            if key == "residentSolidLayerCount" then return __ClientState.residentSolidLayerCount() end
+                                            if key == "residentTranslucentLayerCount" then return __ClientState.residentTranslucentLayerCount() end
+                                            if key == "visibilityCandidates" then return __ClientState.visibilityCandidates() end
+                                            if key == "frustumTests" then return __ClientState.frustumTests() end
+                                            if key == "portalVisited" then return __ClientState.portalVisited() end
+                                            if key == "safetyRescued" then return __ClientState.safetyRescued() end
+                                            if key == "presentedSolidLayerCount" then return __ClientState.presentedSolidLayerCount() end
+                                            if key == "presentedTranslucentLayerCount" then return __ClientState.presentedTranslucentLayerCount() end
+                                            if key == "emptyLayersSubmitted" then return __ClientState.emptyLayersSubmitted() end
+                                            if key == "terrainDrawCalls" then return __ClientState.terrainDrawCalls() end
+                                            if key == "terrainUniformEntries" then return __ClientState.terrainUniformEntries() end
+                                            if key == "findVisibleMs" then return __ClientState.findVisibleMs() end
+                                            if key == "terrainSubmitCpuMs" then return __ClientState.terrainSubmitCpuMs() end
                                             if key == "oldestForegroundAge" then return __ClientState.oldestForegroundAge() end
                                             if key == "presentationRegressionCount" then return __ClientState.presentationRegressionCount() end
                                             if key == "playerX" then return __ClientState.playerX() end
@@ -89,6 +102,19 @@ public static unsafe class LuauClientStateHost
     public static Func<double>? LightUploadsLastFrame;
     public static Func<double>? SolidDrawsLastFrame;
     public static Func<double>? TranslucentDrawsLastFrame;
+    public static Func<double>? ResidentSolidLayerCount;
+    public static Func<double>? ResidentTranslucentLayerCount;
+    public static Func<double>? VisibilityCandidates;
+    public static Func<double>? FrustumTests;
+    public static Func<double>? PortalVisited;
+    public static Func<double>? SafetyRescued;
+    public static Func<double>? PresentedSolidLayerCount;
+    public static Func<double>? PresentedTranslucentLayerCount;
+    public static Func<double>? EmptyLayersSubmitted;
+    public static Func<double>? TerrainDrawCalls;
+    public static Func<double>? TerrainUniformEntries;
+    public static Func<double>? FindVisibleMs;
+    public static Func<double>? TerrainSubmitCpuMs;
     public static Func<double>? OldestForegroundAge;
     public static Func<double>? PresentationRegressionCount;
     public static Func<double>? PlayerX;
@@ -97,7 +123,7 @@ public static unsafe class LuauClientStateHost
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 40);
+        LuauNative.lua_createtable(l, 0, 53);
         Add(l, "worldLoaded", &WorldLoadedClosure);
         Add(l, "playerReady", &PlayerReadyClosure);
         Add(l, "worldId", &WorldIdClosure);
@@ -131,6 +157,19 @@ public static unsafe class LuauClientStateHost
         Add(l, "lightUploadsLastFrame", &LightUploadsLastFrameClosure);
         Add(l, "solidDrawsLastFrame", &SolidDrawsLastFrameClosure);
         Add(l, "translucentDrawsLastFrame", &TranslucentDrawsLastFrameClosure);
+        Add(l, "residentSolidLayerCount", &ResidentSolidLayerCountClosure);
+        Add(l, "residentTranslucentLayerCount", &ResidentTranslucentLayerCountClosure);
+        Add(l, "visibilityCandidates", &VisibilityCandidatesClosure);
+        Add(l, "frustumTests", &FrustumTestsClosure);
+        Add(l, "portalVisited", &PortalVisitedClosure);
+        Add(l, "safetyRescued", &SafetyRescuedClosure);
+        Add(l, "presentedSolidLayerCount", &PresentedSolidLayerCountClosure);
+        Add(l, "presentedTranslucentLayerCount", &PresentedTranslucentLayerCountClosure);
+        Add(l, "emptyLayersSubmitted", &EmptyLayersSubmittedClosure);
+        Add(l, "terrainDrawCalls", &TerrainDrawCallsClosure);
+        Add(l, "terrainUniformEntries", &TerrainUniformEntriesClosure);
+        Add(l, "findVisibleMs", &FindVisibleMsClosure);
+        Add(l, "terrainSubmitCpuMs", &TerrainSubmitCpuMsClosure);
         Add(l, "oldestForegroundAge", &OldestForegroundAgeClosure);
         Add(l, "presentationRegressionCount", &PresentationRegressionCountClosure);
         Add(l, "playerX", &PlayerXClosure);
@@ -304,6 +343,45 @@ public static unsafe class LuauClientStateHost
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int ResidentSolidLayerCountClosure(IntPtr l) => PushNumber(l, ResidentSolidLayerCount);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int ResidentTranslucentLayerCountClosure(IntPtr l) => PushNumber(l, ResidentTranslucentLayerCount);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int VisibilityCandidatesClosure(IntPtr l) => PushNumber(l, VisibilityCandidates);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int FrustumTestsClosure(IntPtr l) => PushNumber(l, FrustumTests);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int PortalVisitedClosure(IntPtr l) => PushNumber(l, PortalVisited);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int SafetyRescuedClosure(IntPtr l) => PushNumber(l, SafetyRescued);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int PresentedSolidLayerCountClosure(IntPtr l) => PushNumber(l, PresentedSolidLayerCount);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int PresentedTranslucentLayerCountClosure(IntPtr l) => PushNumber(l, PresentedTranslucentLayerCount);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int EmptyLayersSubmittedClosure(IntPtr l) => PushNumber(l, EmptyLayersSubmitted);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int TerrainDrawCallsClosure(IntPtr l) => PushNumber(l, TerrainDrawCalls);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int TerrainUniformEntriesClosure(IntPtr l) => PushNumber(l, TerrainUniformEntries);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int FindVisibleMsClosure(IntPtr l) => PushNumber(l, FindVisibleMs);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int TerrainSubmitCpuMsClosure(IntPtr l) => PushNumber(l, TerrainSubmitCpuMs);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int OldestForegroundAgeClosure(IntPtr l)
     {
         LuauNative.lua_pushnumber(l, ReadNumber(OldestForegroundAge));
@@ -433,6 +511,12 @@ public static unsafe class LuauClientStateHost
             // Managed exceptions must never cross an unmanaged Luau callback boundary.
             return false;
         }
+    }
+
+    private static int PushNumber(IntPtr l, Func<double>? getter)
+    {
+        LuauNative.lua_pushnumber(l, ReadNumber(getter));
+        return 1;
     }
 
     private static double ReadNumber(Func<double>? getter)

@@ -485,6 +485,32 @@ public partial class OmniBlock :
                 WorldRenderer?.ChunkRenderer.SolidDrawsLastFrame ?? 0;
             LuauClientStateHost.TranslucentDrawsLastFrame = () =>
                 WorldRenderer?.ChunkRenderer.TranslucentDrawsLastFrame ?? 0;
+            LuauClientStateHost.ResidentSolidLayerCount = () =>
+                WorldRenderer?.ChunkRenderer.PresentationProfile.ResidentSolidLayers ?? 0;
+            LuauClientStateHost.ResidentTranslucentLayerCount = () =>
+                WorldRenderer?.ChunkRenderer.PresentationProfile.ResidentTranslucentLayers ?? 0;
+            LuauClientStateHost.VisibilityCandidates = () =>
+                WorldRenderer?.ChunkRenderer.PresentationProfile.VisibilityCandidates ?? 0;
+            LuauClientStateHost.FrustumTests = () =>
+                WorldRenderer?.ChunkRenderer.PresentationProfile.FrustumTests ?? 0;
+            LuauClientStateHost.PortalVisited = () =>
+                WorldRenderer?.ChunkRenderer.PresentationProfile.PortalVisited ?? 0;
+            LuauClientStateHost.SafetyRescued = () =>
+                WorldRenderer?.ChunkRenderer.PresentationProfile.SafetyRescued ?? 0;
+            LuauClientStateHost.PresentedSolidLayerCount = () =>
+                WorldRenderer?.ChunkRenderer.PresentationProfile.PresentedSolidLayers ?? 0;
+            LuauClientStateHost.PresentedTranslucentLayerCount = () =>
+                WorldRenderer?.ChunkRenderer.PresentationProfile.PresentedTranslucentLayers ?? 0;
+            LuauClientStateHost.EmptyLayersSubmitted = () =>
+                WorldRenderer?.ChunkRenderer.PresentationProfile.EmptyLayersSubmitted ?? 0;
+            LuauClientStateHost.TerrainDrawCalls = () =>
+                WorldRenderer?.ChunkRenderer.PresentationProfile.TerrainDrawCalls ?? 0;
+            LuauClientStateHost.TerrainUniformEntries = () =>
+                WorldRenderer?.ChunkRenderer.PresentationProfile.TerrainUniformEntries ?? 0;
+            LuauClientStateHost.FindVisibleMs = () =>
+                WorldRenderer?.ChunkRenderer.PresentationProfile.FindVisible.LastMs ?? 0;
+            LuauClientStateHost.TerrainSubmitCpuMs = () =>
+                WorldRenderer?.ChunkRenderer.PresentationProfile.TerrainSubmit.LastMs ?? 0;
             LuauClientStateHost.OldestForegroundAge = () => WorldRenderer?.ChunkRenderer.OldestForegroundAge ?? 0;
             LuauClientStateHost.PresentationRegressionCount = () =>
                 WorldRenderer?.ChunkRenderer.PresentationRegressionCount ?? 0;
@@ -891,6 +917,19 @@ public partial class OmniBlock :
             LuauClientStateHost.LightUploadsLastFrame = null;
             LuauClientStateHost.SolidDrawsLastFrame = null;
             LuauClientStateHost.TranslucentDrawsLastFrame = null;
+            LuauClientStateHost.ResidentSolidLayerCount = null;
+            LuauClientStateHost.ResidentTranslucentLayerCount = null;
+            LuauClientStateHost.VisibilityCandidates = null;
+            LuauClientStateHost.FrustumTests = null;
+            LuauClientStateHost.PortalVisited = null;
+            LuauClientStateHost.SafetyRescued = null;
+            LuauClientStateHost.PresentedSolidLayerCount = null;
+            LuauClientStateHost.PresentedTranslucentLayerCount = null;
+            LuauClientStateHost.EmptyLayersSubmitted = null;
+            LuauClientStateHost.TerrainDrawCalls = null;
+            LuauClientStateHost.TerrainUniformEntries = null;
+            LuauClientStateHost.FindVisibleMs = null;
+            LuauClientStateHost.TerrainSubmitCpuMs = null;
             LuauClientStateHost.OldestForegroundAge = null;
             LuauClientStateHost.PresentationRegressionCount = null;
             LuauClientStateHost.PlayerX = null;
@@ -1231,6 +1270,20 @@ public partial class OmniBlock :
         MetricRegistry.Set(RenderMetrics.LightUploads, cr.LightUploadsLastFrame);
         MetricRegistry.Set(RenderMetrics.SolidDraws, cr.SolidDrawsLastFrame);
         MetricRegistry.Set(RenderMetrics.TranslucentDraws, cr.TranslucentDrawsLastFrame);
+        var presentation = cr.PresentationProfile;
+        MetricRegistry.Set(RenderMetrics.VisibilityCandidates, presentation.VisibilityCandidates);
+        MetricRegistry.Set(RenderMetrics.FrustumTests, presentation.FrustumTests);
+        MetricRegistry.Set(RenderMetrics.PortalVisited, presentation.PortalVisited);
+        MetricRegistry.Set(RenderMetrics.SafetyRescued, presentation.SafetyRescued);
+        MetricRegistry.Set(RenderMetrics.ResidentSolidLayers, presentation.ResidentSolidLayers);
+        MetricRegistry.Set(RenderMetrics.ResidentTranslucentLayers, presentation.ResidentTranslucentLayers);
+        MetricRegistry.Set(RenderMetrics.PresentedSolidLayers, presentation.PresentedSolidLayers);
+        MetricRegistry.Set(RenderMetrics.PresentedTranslucentLayers, presentation.PresentedTranslucentLayers);
+        MetricRegistry.Set(RenderMetrics.EmptyLayersSubmitted, presentation.EmptyLayersSubmitted);
+        MetricRegistry.Set(RenderMetrics.TerrainDrawCalls, presentation.TerrainDrawCalls);
+        MetricRegistry.Set(RenderMetrics.TerrainUniformEntries, presentation.TerrainUniformEntries);
+        MetricRegistry.Set(RenderMetrics.FindVisibleMs, presentation.FindVisible.LastMs);
+        MetricRegistry.Set(RenderMetrics.TerrainSubmitCpuMs, presentation.TerrainSubmit.LastMs);
         MetricRegistry.Set(RenderMetrics.MeshVersionAllocated, ChunkMeshVersion.TotalAllocated);
         MetricRegistry.Set(RenderMetrics.MeshVersionReleased, ChunkMeshVersion.TotalReleased);
         MetricRegistry.Set(RenderMetrics.TextureBindsLastFrame, TextureStats.BindsLastFrame);

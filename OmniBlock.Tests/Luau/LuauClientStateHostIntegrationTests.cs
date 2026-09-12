@@ -33,6 +33,19 @@ public sealed class LuauClientStateHostIntegrationTests
         double lightUploadsLastFrame = 0;
         double solidDrawsLastFrame = 0;
         double translucentDrawsLastFrame = 0;
+        double residentSolidLayerCount = 0;
+        double residentTranslucentLayerCount = 0;
+        double visibilityCandidates = 0;
+        double frustumTests = 0;
+        double portalVisited = 0;
+        double safetyRescued = 0;
+        double presentedSolidLayerCount = 0;
+        double presentedTranslucentLayerCount = 0;
+        double emptyLayersSubmitted = 0;
+        double terrainDrawCalls = 0;
+        double terrainUniformEntries = 0;
+        double findVisibleMs = 0;
+        double terrainSubmitCpuMs = 0;
         LuauClientStateHost.WorldLoaded = () => worldLoaded;
         LuauClientStateHost.PlayerReady = () => playerReady;
         LuauClientStateHost.WorldId = () => worldId;
@@ -54,6 +67,19 @@ public sealed class LuauClientStateHostIntegrationTests
         LuauClientStateHost.LightUploadsLastFrame = () => lightUploadsLastFrame;
         LuauClientStateHost.SolidDrawsLastFrame = () => solidDrawsLastFrame;
         LuauClientStateHost.TranslucentDrawsLastFrame = () => translucentDrawsLastFrame;
+        LuauClientStateHost.ResidentSolidLayerCount = () => residentSolidLayerCount;
+        LuauClientStateHost.ResidentTranslucentLayerCount = () => residentTranslucentLayerCount;
+        LuauClientStateHost.VisibilityCandidates = () => visibilityCandidates;
+        LuauClientStateHost.FrustumTests = () => frustumTests;
+        LuauClientStateHost.PortalVisited = () => portalVisited;
+        LuauClientStateHost.SafetyRescued = () => safetyRescued;
+        LuauClientStateHost.PresentedSolidLayerCount = () => presentedSolidLayerCount;
+        LuauClientStateHost.PresentedTranslucentLayerCount = () => presentedTranslucentLayerCount;
+        LuauClientStateHost.EmptyLayersSubmitted = () => emptyLayersSubmitted;
+        LuauClientStateHost.TerrainDrawCalls = () => terrainDrawCalls;
+        LuauClientStateHost.TerrainUniformEntries = () => terrainUniformEntries;
+        LuauClientStateHost.FindVisibleMs = () => findVisibleMs;
+        LuauClientStateHost.TerrainSubmitCpuMs = () => terrainSubmitCpuMs;
 
         try
         {
@@ -72,6 +98,8 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.residentMeshCount", "0");
             AssertValue(state, "OMNI.client.state.presentationRegressionCount", "0");
             AssertValue(state, "OMNI.client.state.geometryUploadsLastFrame", "0");
+            AssertValue(state, "OMNI.client.state.visibilityCandidates", "0");
+            AssertValue(state, "OMNI.client.state.findVisibleMs", "0");
 
             worldLoaded = true;
             playerReady = true;
@@ -94,6 +122,19 @@ public sealed class LuauClientStateHostIntegrationTests
             lightUploadsLastFrame = 4;
             solidDrawsLastFrame = 751;
             translucentDrawsLastFrame = 89;
+            residentSolidLayerCount = 401;
+            residentTranslucentLayerCount = 57;
+            visibilityCandidates = 412;
+            frustumTests = 527;
+            portalVisited = 96;
+            safetyRescued = 7;
+            presentedSolidLayerCount = 68;
+            presentedTranslucentLayerCount = 14;
+            emptyLayersSubmitted = 5;
+            terrainDrawCalls = 82;
+            terrainUniformEntries = 87;
+            findVisibleMs = 1.25;
+            terrainSubmitCpuMs = 2.5;
 
             AssertValue(state, "OMNI.client.state.worldLoaded", "true");
             AssertValue(state, "OMNI.client.state.playerReady", "true");
@@ -116,6 +157,19 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.lightUploadsLastFrame", "4");
             AssertValue(state, "OMNI.client.state.solidDrawsLastFrame", "751");
             AssertValue(state, "OMNI.client.state.translucentDrawsLastFrame", "89");
+            AssertValue(state, "OMNI.client.state.residentSolidLayerCount", "401");
+            AssertValue(state, "OMNI.client.state.residentTranslucentLayerCount", "57");
+            AssertValue(state, "OMNI.client.state.visibilityCandidates", "412");
+            AssertValue(state, "OMNI.client.state.frustumTests", "527");
+            AssertValue(state, "OMNI.client.state.portalVisited", "96");
+            AssertValue(state, "OMNI.client.state.safetyRescued", "7");
+            AssertValue(state, "OMNI.client.state.presentedSolidLayerCount", "68");
+            AssertValue(state, "OMNI.client.state.presentedTranslucentLayerCount", "14");
+            AssertValue(state, "OMNI.client.state.emptyLayersSubmitted", "5");
+            AssertValue(state, "OMNI.client.state.terrainDrawCalls", "82");
+            AssertValue(state, "OMNI.client.state.terrainUniformEntries", "87");
+            AssertValue(state, "OMNI.client.state.findVisibleMs", "1.25");
+            AssertValue(state, "OMNI.client.state.terrainSubmitCpuMs", "2.5");
             Assert.False(state.TryExecute("OMNI.client.state.worldLoaded = false", out var readOnlyError));
             Assert.Contains("read-only", readOnlyError);
         }
@@ -142,6 +196,19 @@ public sealed class LuauClientStateHostIntegrationTests
             LuauClientStateHost.LightUploadsLastFrame = null;
             LuauClientStateHost.SolidDrawsLastFrame = null;
             LuauClientStateHost.TranslucentDrawsLastFrame = null;
+            LuauClientStateHost.ResidentSolidLayerCount = null;
+            LuauClientStateHost.ResidentTranslucentLayerCount = null;
+            LuauClientStateHost.VisibilityCandidates = null;
+            LuauClientStateHost.FrustumTests = null;
+            LuauClientStateHost.PortalVisited = null;
+            LuauClientStateHost.SafetyRescued = null;
+            LuauClientStateHost.PresentedSolidLayerCount = null;
+            LuauClientStateHost.PresentedTranslucentLayerCount = null;
+            LuauClientStateHost.EmptyLayersSubmitted = null;
+            LuauClientStateHost.TerrainDrawCalls = null;
+            LuauClientStateHost.TerrainUniformEntries = null;
+            LuauClientStateHost.FindVisibleMs = null;
+            LuauClientStateHost.TerrainSubmitCpuMs = null;
         }
     }
 

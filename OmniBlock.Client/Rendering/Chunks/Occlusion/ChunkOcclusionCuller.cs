@@ -1,4 +1,5 @@
 using Silk.NET.Maths;
+using OmniBlock.Util.Maths;
 
 namespace OmniBlock.Client.Rendering.Chunks.Occlusion;
 
@@ -7,13 +8,19 @@ public interface IChunkVisibilityVisitor
     void Visit(SubChunkRenderer renderer);
 }
 
+public readonly record struct ChunkVisibilityResult(
+    int ResidentCandidates,
+    int FrustumTests,
+    int FrustumCandidates,
+    int PortalVisited);
+
 public class ChunkOcclusionCuller
 {
     private const double TraversalMargin = SubChunkRenderer.Size;
     private readonly Queue<SubChunkRenderer> _queue = new();
     private readonly Dictionary<SubChunkRenderer, ChunkDirectionMask> _reached = new();
 
-    public int FindVisible(
+    public ChunkVisibilityResult FindVisible(
         IChunkVisibilityVisitor visitor,
         IEnumerable<SubChunkRenderer> renderers,
         SubChunkRenderer? startNode,
@@ -23,6 +30,8 @@ public class ChunkOcclusionCuller
         bool useOcclusionCulling,
         int frame)
     {
+        var residentCandidates = 0;
+        var frustumTests = 0;
         var frustumCount = 0;
 
         // A missing camera mesh is normal during streaming and when flying above the world.
@@ -31,22 +40,25 @@ public class ChunkOcclusionCuller
         {
             foreach (var renderer in renderers)
             {
-                if (!culler.IsBoundingBoxInFrustum(renderer.BoundingBox)) continue;
+                residentCandidates++;
+                if (!IsInFrustum(renderer.BoundingBox)) continue;
                 frustumCount++;
                 DrawIfVisible(renderer, true);
             }
 
-            return frustumCount;
+            return new ChunkVisibilityResult(
+                residentCandidates, frustumTests, frustumCount, 0);
         }
 
         Reach(startNode, ChunkDirectionMask.All);
         foreach (var renderer in renderers)
         {
+            residentCandidates++;
             // Only an exposed mesh that can actually contribute to this frame needs to seed a
             // disconnected component. The old pass seeded every hole in the entire resident mesh
             // cache. At distance 32 that turns a visibility query into a graph walk over roughly
             // 34,000 sections every frame, including terrain behind the camera.
-            if (!culler.IsBoundingBoxInFrustum(renderer.BoundingBox)) continue;
+            if (!IsInFrustum(renderer.BoundingBox)) continue;
             frustumCount++;
 
             // An absent neighbor is unknown space, not an opaque wall. Seed its exposed face so
@@ -76,15 +88,18 @@ public class ChunkOcclusionCuller
             if ((outgoing & ChunkDirectionMask.East) != 0) ReachIfNearFrustum(current.AdjacentEast, ChunkDirectionMask.West);
         }
 
+        var portalVisited = _reached.Count;
         _reached.Clear();
-        return frustumCount;
+        return new ChunkVisibilityResult(
+            residentCandidates, frustumTests, frustumCount, portalVisited);
 
         void DrawIfVisible(SubChunkRenderer renderer, bool knownInFrustum)
         {
             if (renderer.LastVisibleFrame == frame ||
                 !(knownInFrustum
                     ? renderer.IsWithinRenderDistance(viewPos, renderDistance)
-                    : renderer.IsVisible(culler, viewPos, renderDistance))) return;
+                    : IsInFrustum(renderer.BoundingBox) &&
+                      renderer.IsWithinRenderDistance(viewPos, renderDistance))) return;
             renderer.LastVisibleFrame = frame;
             visitor.Visit(renderer);
         }
@@ -92,9 +107,15 @@ public class ChunkOcclusionCuller
         void ReachIfNearFrustum(SubChunkRenderer? renderer, ChunkDirectionMask incoming)
         {
             if (renderer == null ||
-                !culler.IsBoundingBoxInFrustum(renderer.BoundingBox.Expand(
+                !IsInFrustum(renderer.BoundingBox.Expand(
                     TraversalMargin, TraversalMargin, TraversalMargin))) return;
             Reach(renderer, incoming);
+        }
+
+        bool IsInFrustum(Box bounds)
+        {
+            frustumTests++;
+            return culler.IsBoundingBoxInFrustum(bounds);
         }
     }
 
