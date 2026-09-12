@@ -2,11 +2,37 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using OmniBlock.Client.Rendering.Entities;
 using OmniBlock.Client.Rendering.Entities.Models;
+using OmniBlock.Entities;
 
 namespace OmniBlock.Tests.Rendering;
 
-public class EntityImpostorPrototypeTests
+public class EntityImpostorSystemTests
 {
+    private sealed class FakeProvider(int id) : IEntityImpostorProvider
+    {
+        public ResourceLocation Id { get; } = new("test", "provider_" + id);
+        public double VisualDiameter => 1;
+        public string VariantKey => Id.ToString();
+        public string TexturePath => "/mob/cow.png";
+        public string CacheIdentity => Id.ToString();
+        public bool Supports(Entity entity, float partialTicks) => true;
+        public int Pose(Entity entity, float partialTicks) => 0;
+        public EntityImpostorVertex[][] BuildPoses() => [CowImpostorGeometry.Build()];
+    }
+
+    [Fact]
+    public void System_bounds_provider_atlas_residency_and_reuses_provider_ids()
+    {
+        using EntityImpostorSystem system = new() { Enabled = true };
+        var decision = new EntityLodSelector.Decision(EntityLodTier.Impostor,
+            EntityLodReason.ImpostorCandidate, 0, 10);
+        for (var i = 0; i < 12; i++)
+            Assert.False(system.TrySubmit(new FakeProvider(i), decision, Vector3.UnitZ, 0, 1, 0, false));
+        Assert.Equal(8, system.ResidentAtlasCount);
+        Assert.False(system.TrySubmit(new FakeProvider(11), decision, Vector3.UnitZ, 0, 1, 0, false));
+        Assert.Equal(8, system.ResidentAtlasCount);
+    }
+
     [Fact]
     public void Every_view_has_an_orthonormal_right_handed_basis_including_both_poles()
     {
@@ -46,12 +72,12 @@ public class EntityImpostorPrototypeTests
     {
         for (var completed = 0; completed <= EntityImpostorLayout.Captures; completed++)
         {
-            Assert.Equal(completed == EntityImpostorLayout.Captures, EntityImpostorPrototype.MayPublish(completed, false));
-            Assert.False(EntityImpostorPrototype.MayPublish(completed, true));
-            Assert.InRange(EntityImpostorPrototype.ViewsThisFrame(completed), 0, 2);
+            Assert.Equal(completed == EntityImpostorLayout.Captures, EntityImpostorAtlas.MayPublish(completed, false));
+            Assert.False(EntityImpostorAtlas.MayPublish(completed, true));
+            Assert.InRange(EntityImpostorAtlas.ViewsThisFrame(completed), 0, 2);
         }
-        Assert.Equal(1, EntityImpostorPrototype.ViewsThisFrame(EntityImpostorLayout.Captures - 1));
-        Assert.Equal(0, EntityImpostorPrototype.ViewsThisFrame(EntityImpostorLayout.Captures));
+        Assert.Equal(1, EntityImpostorAtlas.ViewsThisFrame(EntityImpostorLayout.Captures - 1));
+        Assert.Equal(0, EntityImpostorAtlas.ViewsThisFrame(EntityImpostorLayout.Captures));
     }
 
     [Fact]
@@ -60,13 +86,13 @@ public class EntityImpostorPrototypeTests
         var poses = CowImpostorGeometry.BuildPoses();
         Assert.Equal(EntityImpostorLayout.Poses, poses.Length);
         Assert.All(poses, pose => Assert.Equal(poses[0].Length, pose.Length));
-        Assert.Equal(0, StandingCowLodProvider.SelectPose(0, 0, 100, .5f));
+        Assert.Equal(0, CowImpostorProvider.SelectPose(0, 0, 100, .5f));
         var stride = MathF.PI / 2 / .6662f;
-        Assert.Equal(1, StandingCowLodProvider.SelectPose(1, 1, 0, 1));
-        Assert.Equal(2, StandingCowLodProvider.SelectPose(1, 1, stride, 1));
-        Assert.Equal(3, StandingCowLodProvider.SelectPose(1, 1, stride * 2, 1));
-        Assert.Equal(4, StandingCowLodProvider.SelectPose(1, 1, stride * 3, 1));
-        Assert.Equal(1, StandingCowLodProvider.SelectPose(1, 1, stride * 4, 1));
+        Assert.Equal(1, CowImpostorProvider.SelectPose(1, 1, 0, 1));
+        Assert.Equal(2, CowImpostorProvider.SelectPose(1, 1, stride, 1));
+        Assert.Equal(3, CowImpostorProvider.SelectPose(1, 1, stride * 2, 1));
+        Assert.Equal(4, CowImpostorProvider.SelectPose(1, 1, stride * 3, 1));
+        Assert.Equal(1, CowImpostorProvider.SelectPose(1, 1, stride * 4, 1));
         Assert.NotEqual(poses[0], poses[1]);
         Assert.NotEqual(poses[1], poses[2]);
     }
@@ -82,7 +108,7 @@ public class EntityImpostorPrototypeTests
         isolated.AddBox(0, 0, 0, 1, 1, 1, 0);
         Assert.Equal(-1, isolated.StaticVertexOffset);
         Assert.Equal(first, second);
-        Assert.Equal(32, Marshal.SizeOf<CowImpostorGeometry.Vertex>());
+        Assert.Equal(32, Marshal.SizeOf<EntityImpostorVertex>());
         Assert.Equal(9 * 36, first.Length);
         foreach (var vertex in first)
         {

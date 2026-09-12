@@ -12,14 +12,15 @@ using CullMode = OmniBlock.Client.Rendering.Core.CullMode;
 namespace OmniBlock.Client.Rendering.Entities;
 
 /// <summary>
-/// Opt-in, one-model/bounded-pose prototype with portable memory/disk caching. All GPU work is on the render thread;
+/// One provider's bounded-pose atlas with portable memory/disk caching. All GPU work is on the render thread;
 /// candidates become sampleable only after every view of every bounded pose has been recorded.
 /// Does not bake in a live entity/renderer or rewrite a buffer referenced by another draw.
 /// </summary>
-internal sealed unsafe class EntityImpostorPrototype : IDisposable
+internal sealed unsafe class EntityImpostorAtlas : IDisposable
 {
     private const int MaxInstances = 2048;
-    private static readonly ILogger s_log = Log.Instance.For<EntityImpostorPrototype>();
+    private static readonly ILogger s_log = Log.Instance.For<EntityImpostorAtlas>();
+    private readonly IEntityImpostorProvider _provider;
     private WebGpuDevice? _device;
     private WgpuTexture? _atlas;
     private Texture* _depth;
@@ -33,12 +34,12 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
     private long _generation = -1;
     private long _gpuErrors;
     private float _radius;
-    private readonly EntityImpostorMemoryCache _memory = new();
+    private readonly EntityImpostorMemoryCache _memory;
     private CancellationTokenSource _cancel = new();
     private long _epoch;
     private string? _key, _cacheDirectory;
     private Texture2D.CaptureSource? _source;
-    private CowImpostorGeometry.Vertex[][]? _vertices;
+    private EntityImpostorVertex[][]? _vertices;
     private bool _lookupComplete, _persistenceStarted;
     private Task<CacheWork>? _work;
     private Task<CacheWrite>? _write;
@@ -58,10 +59,10 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
     public int CapturedViews { get; private set; }
     public long MemoryBytes => _memory.Bytes;
     public bool ReadbackPending => _readback != null;
+    public bool CapturePending => Enabled && _requested && !Ready && !_failed;
     internal bool HoldReadbackForTest { get; set; }
     internal bool HoldCaptureForTest { get; set; }
     public bool Enabled { get; set; }
-    public bool ForceTierForTest { get; set; }
     public int CompletedViews { get; private set; }
     public bool Ready => _atlas != null && MayPublish(CompletedViews, _failed);
     public int LastSubmitted { get; private set; }
@@ -75,6 +76,12 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
     private struct Instance { public Vector4 Center, Right, Up, UV, Effects; }
     [StructLayout(LayoutKind.Sequential)]
     private struct Uniforms { public Matrix4x4 View, Projection; public Vector4 FogColor, Fog; }
+
+    public EntityImpostorAtlas(IEntityImpostorProvider provider, EntityImpostorMemoryCache memory)
+    {
+        _provider = provider;
+        _memory = memory;
+    }
 
     // GPU-free state gates are also tested without a graphics device.
     internal static bool MayPublish(int completed, bool failed) => completed == EntityImpostorLayout.Captures && !failed;
@@ -104,11 +111,11 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
         var capture = _capture; var present = _present;
         if (_device != null) _device.Retire(() => { instances?.Dispose(); capture?.Dispose(); present?.Dispose(); });
         _capture = _present = null;
-        _memory.Clear();
     }
 
     /// <summary>Before any world render pass, on the frame's command encoder.</summary>
-    public void Prepare(WebGpuDevice device, CommandEncoder* encoder, TextureManager textures, string gameDataDirectory)
+    public void Prepare(WebGpuDevice device, CommandEncoder* encoder, TextureManager textures,
+        string gameDataDirectory, bool allowCapture)
     {
         if (_device != null && !ReferenceEquals(_device, device)) Dispose();
         _device = device;
@@ -121,7 +128,7 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
         _capture?.ResetUniformPool(); _present?.ResetUniformPool();
         // Compare the effective upload snapshot as well as the pack token. This catches in-place
         // texture/sampler replacement without trusting a pack display name or mutable file path.
-        var texture = Enabled && _requested ? textures.GetTextureId("/mob/cow.png").Texture : null;
+        var texture = Enabled && _requested ? textures.GetTextureId(_provider.TexturePath).Texture : null;
         var source = texture?.ImpostorSource;
         if (_source != null && !ReferenceEquals(_source, source)) { Reset(); _requested = Enabled; }
         try { PollCacheWork(device); PollReadback(); }
@@ -129,26 +136,28 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
         if (_atlas != null && device.ErrorCount != _gpuErrors)
         {
             Dispose(); _failed = true; Failures++;
-            s_log.LogError("GPU error during cow impostor lifetime; falling back to 3D.");
+            s_log.LogError("GPU error during {Provider} impostor lifetime; falling back to 3D.", _provider.Id);
         }
         var now = Stopwatch.GetTimestamp();
         var frameMs = _lastPrepare == 0 ? 0 : Stopwatch.GetElapsedTime(_lastPrepare, now).TotalMilliseconds;
         _lastPrepare = now;
         if (!Enabled || !_requested || _failed || source == null) return;
         if (Ready) { StartReadback(device, encoder); return; }
+        if (!allowCapture) return;
         using var captureTiming = Profiler.Begin("EntityImpostorCaptureCpu");
         try
         {
             if (_source == null && _work == null)
             {
                 _source = source;
-                _vertices = CowImpostorGeometry.BuildPoses();
+                _vertices = _provider.BuildPoses();
                 _radius = _vertices.SelectMany(v => v).Max(v => v.Position.Length()) * 1.03f;
                 var vertices = _vertices; var radius = _radius; var epoch = _epoch; var cancel = _cancel.Token;
                 _workStarted = Stopwatch.GetTimestamp(); _workEpoch = epoch;
                 _work = Task.Run(() =>
                 {
-                    try { cancel.ThrowIfCancellationRequested(); return new CacheWork(epoch, EntityImpostorCache.Key(vertices, source, radius), false, null, null); }
+                    try { cancel.ThrowIfCancellationRequested(); return new CacheWork(epoch,
+                        EntityImpostorCache.Key(_provider.CacheIdentity, _provider.TexturePath, vertices, source, radius), false, null, null); }
                     catch (OperationCanceledException) { return new CacheWork(epoch, "", false, null, null); }
                     catch (Exception ex) { return new CacheWork(epoch, "", false, null, ex.Message); }
                 });
@@ -202,7 +211,7 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
         catch (Exception ex)
         {
             Dispose(); _failed = true; Failures++;
-            s_log.LogError(ex, "Cow impostor capture failed; keeping 3D until reset/resource reload.");
+            s_log.LogError(ex, "{Provider} impostor capture failed; keeping 3D until reset/resource reload.", _provider.Id);
         }
     }
 
@@ -296,12 +305,10 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
         });
     }
 
-    internal void ClearMemoryForTest() { Reset(); _memory.Clear(); }
-
-    public bool TrySubmit(IEntityLodProvider? provider, EntityLodSelector.Decision decision,
+    public bool TrySubmit(EntityLodSelector.Decision decision,
         Vector3 cameraRelativePosition, float yaw, float light, int pose, bool hurt)
     {
-        if (!Enabled || provider is not StandingCowLodProvider || decision.Intended != EntityLodTier.Impostor ||
+        if (!Enabled || decision.Intended != EntityLodTier.Impostor ||
             decision.ViewIndex < 0 || pose is < 0 or >= EntityImpostorLayout.Poses) return false;
         _requested = true;
         if (!Ready || _count == MaxInstances) { PendingFallbacks++; return false; }
@@ -357,12 +364,13 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
             VertexBufferLayout layout = new() { ArrayStride = 32, StepMode = VertexStepMode.Vertex, AttributeCount = 3, Attributes = attributes };
             var state = RenderState.Opaque with { Cull = CullMode.None };
             _capture = new WgpuPipeline(device, EntityImpostorShaders.Capture, "vs_main", 64, uniforms, textures,
-                &layout, 1, state, WgpuTexture.Format, WgpuFramebuffer.DepthFormat, label: "Cow impostor capture");
+                &layout, 1, state, WgpuTexture.Format, WgpuFramebuffer.DepthFormat, label: $"{_provider.Id} impostor capture");
             uniforms[0].Buffer.MinBindingSize = 160;
             BindGroupLayoutEntry[] storage = [new() { Binding = 0, Visibility = ShaderStage.Vertex,
                 Buffer = new BufferBindingLayout { Type = BufferBindingType.ReadOnlyStorage } }];
             _present = new WgpuPipeline(device, EntityImpostorShaders.Present, "vs_main", 160, uniforms, storage,
-                null, 0, state, device.SurfaceFormat, WgpuFramebuffer.DepthFormat, textureArrayEntries: textures, label: "Cow impostor cutout");
+                null, 0, state, device.SurfaceFormat, WgpuFramebuffer.DepthFormat, textureArrayEntries: textures,
+                label: $"{_provider.Id} impostor cutout");
             _instances = new WgpuStorageBuffer(device, MaxInstances * 80, _present.TextureBindGroupLayout);
         }
         if (_atlas != null || !capture) return;

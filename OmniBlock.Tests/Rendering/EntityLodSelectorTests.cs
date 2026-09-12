@@ -196,7 +196,7 @@ public sealed class EntityLodSelectorTests
     public void Cow_provider_bounds_cover_visual_model_not_only_collision_height_and_reject_head_pose()
     {
         var cow = EntityRenderBaseline.CreateEntities(new FakeWorldContext(), "cow", 1, 16, 0, 220, 0)[0];
-        StandingCowLodProvider provider = new();
+        CowImpostorProvider provider = new();
         Assert.True(provider.VisualDiameter > cow.Height);
         Assert.True(provider.Supports(cow, 0));
         cow.PrevPitch = cow.Pitch = 20;

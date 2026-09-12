@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Runtime.InteropServices;
 using OmniBlock.Client.Rendering.Entities.Models;
 
 namespace OmniBlock.Client.Rendering.Entities;
@@ -7,25 +6,22 @@ namespace OmniBlock.Client.Rendering.Entities;
 /// <summary>Owned CPU geometry: no gameplay entity, shared pose, static geometry reservation or renderer state.</summary>
 internal static class CowImpostorGeometry
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal readonly record struct Vertex(Vector3 Position, Vector2 UV, Vector3 Normal);
-
-    public static Vertex[] Build() => BuildPose(0, 0);
+    public static EntityImpostorVertex[] Build() => BuildPose(0, 0);
 
     /// <summary>One idle pose and four full-stride samples matching <see cref="ModelCow"/>.</summary>
-    public static Vertex[][] BuildPoses()
+    public static EntityImpostorVertex[][] BuildPoses()
     {
-        var result = new Vertex[EntityImpostorLayout.Poses][];
+        var result = new EntityImpostorVertex[EntityImpostorLayout.Poses][];
         result[0] = Build();
         for (var pose = 1; pose < result.Length; pose++)
             result[pose] = BuildPose((pose - 1) * MathF.PI / 2, 1);
         return result;
     }
 
-    private static Vertex[] BuildPose(float gaitAngle, float gaitAmount)
+    private static EntityImpostorVertex[] BuildPose(float gaitAngle, float gaitAmount)
     {
         var document = BbModelLoader.LoadCached("cow");
-        List<Vertex> vertices = [];
+        List<EntityImpostorVertex> vertices = [];
         foreach (var entry in document.Outliner)
         {
             var group = document.Groups.FirstOrDefault(g => g.Uuid == entry.Uuid && g.Export);
@@ -48,7 +44,7 @@ internal static class CowImpostorGeometry
                 Matrix4x4.CreateScale(1 / 16f) * Matrix4x4.CreateTranslation(0, -1.5f - 1 / 128f, 0) *
                 Matrix4x4.CreateScale(1, -1, -1);
             foreach (var v in part.GetBakedVertices())
-                vertices.Add(new Vertex(Vector3.Transform(new Vector3(v.Position.X, v.Position.Y, v.Position.Z), transform), new Vector2(v.U, v.V),
+                vertices.Add(new EntityImpostorVertex(Vector3.Transform(new Vector3(v.Position.X, v.Position.Y, v.Position.Z), transform), new Vector2(v.U, v.V),
                     Vector3.Normalize(Vector3.TransformNormal(new Vector3(v.Normal.X, v.Normal.Y, v.Normal.Z), transform))));
         }
         if (vertices.Count == 0 || vertices.Count > 65536) throw new InvalidDataException("Invalid cow capture geometry.");

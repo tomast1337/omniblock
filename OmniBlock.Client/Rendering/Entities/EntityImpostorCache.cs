@@ -15,11 +15,12 @@ internal static class EntityImpostorCache
     private static readonly byte[] s_magic = "OMNIIMP1"u8.ToArray();
     internal sealed record Atlas(string Key, float Radius, byte[] Pixels);
 
-    public static string Key(CowImpostorGeometry.Vertex[][] geometry, Texture2D.CaptureSource skin, float radius)
+    public static string Key(string providerIdentity, string texturePath, EntityImpostorVertex[][] geometry,
+        Texture2D.CaptureSource skin, float radius)
     {
         using var stream = new MemoryStream();
         using var writer = new BinaryWriter(stream, Encoding.UTF8, true);
-        writer.Write("omniblock:standing_cow:canonical-v2:root24:inflate:RGBA8:cutout0.1:nearest:mip0");
+        writer.Write(providerIdentity);
         writer.Write(EntityImpostorLayout.Version); writer.Write(EntityImpostorLayout.Views); writer.Write(EntityImpostorLayout.Poses);
         writer.Write(EntityImpostorLayout.Tile); writer.Write(EntityImpostorLayout.Padding);
         writer.Write(EntityImpostorLayout.Width); writer.Write(EntityImpostorLayout.Height); writer.Write(radius);
@@ -42,7 +43,7 @@ internal static class EntityImpostorCache
         }
         // Hash the exact uploaded RGBA bytes, including renderer resource fallback. Pack display
         // names/timestamps are irrelevant; two packs resolving identical inputs may share an atlas.
-        writer.Write("/mob/cow.png"); writer.Write(skin.Width); writer.Write(skin.Height);
+        writer.Write(texturePath); writer.Write(skin.Width); writer.Write(skin.Height);
         writer.Write((int)skin.Sampler.Mag); writer.Write((int)skin.Sampler.Min); writer.Write((int)skin.Sampler.Mipmap);
         writer.Write((int)skin.Sampler.AddressU); writer.Write((int)skin.Sampler.AddressV);
         writer.Write(skin.Sampler.LodMaxClamp); writer.Write(skin.Sampler.MaxAnisotropy);

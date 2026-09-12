@@ -25,7 +25,7 @@ internal sealed class ClientEntityRendererRegistry
             return new LivingEntityRenderer(model, Shadow(d))
             {
                 // Explicit client provider opt-in. Fleece, players and custom renderers stay 3D.
-                LodProvider = model is ModelCow ? new StandingCowLodProvider() : null
+                LodProvider = model is ModelCow ? new CowImpostorProvider() : null
             };
         });
         Register("flapping", (d, _) => new FlappingEntityRenderer(Model(d), Shadow(d)));

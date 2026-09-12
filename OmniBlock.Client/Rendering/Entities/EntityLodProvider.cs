@@ -14,13 +14,23 @@ internal interface IEntityLodProvider
     int Pose(Entity entity, float partialTicks);
 }
 
-internal sealed class StandingCowLodProvider : IEntityLodProvider
+internal interface IEntityImpostorProvider : IEntityLodProvider
+{
+    string TexturePath { get; }
+    string CacheIdentity { get; }
+    EntityImpostorVertex[][] BuildPoses();
+}
+
+internal sealed class CowImpostorProvider : IEntityImpostorProvider
 {
     public ResourceLocation Id { get; } = new(Namespace.OmniBlock, "standing_cow");
     public double VisualDiameter { get; }
     public string VariantKey => "omniblock:standing_cow:v1";
+    public string TexturePath => "/mob/cow.png";
+    public string CacheIdentity => "omniblock:standing_cow:canonical-v2:root24:inflate:RGBA8:cutout0.1:nearest:mip0";
+    public EntityImpostorVertex[][] BuildPoses() => CowImpostorGeometry.BuildPoses();
 
-    public StandingCowLodProvider()
+    public CowImpostorProvider()
     {
         // Same cached geometry and conversion as ModelCow, without constructing/touching a live
         // model or GPU buffers. Enclose all standing-pose corners in a sphere about entity origin;

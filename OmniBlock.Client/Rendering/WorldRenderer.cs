@@ -84,7 +84,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public int CountEntitiesTotal { get; private set; }
     internal EntityLodSelector EntityLod { get; } = new();
-    internal EntityImpostorPrototype EntityImpostors { get; } = new();
+    internal EntityImpostorSystem EntityImpostors { get; } = new();
     public int CountEntitiesRendered { get; private set; }
     public int CountEntitiesHidden { get; private set; }
     public int CountBlockEntitiesTotal { get; private set; }

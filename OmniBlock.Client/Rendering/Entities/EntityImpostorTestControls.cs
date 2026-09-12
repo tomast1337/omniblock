@@ -16,7 +16,7 @@ internal sealed class EntityImpostorTestControls(OmniBlock game)
         switch (action)
         {
             case "clear-memory": prototype.ClearMemoryForTest(); return true;
-            case "dispose-session": prototype.Dispose(); return true;
+            case "dispose-session": prototype.RecreateGpuForTest(); return true;
             case "hold-readback": prototype.HoldReadbackForTest = true; return true;
             case "release-readback": prototype.HoldReadbackForTest = false; return true;
             case "hold-capture": prototype.HoldCaptureForTest = true; return true;
