@@ -181,6 +181,8 @@ public class ClientNetworkHandler : NetHandler
     ///     "stamped once, long ago".
     /// </summary>
     public long TickStampsReceived { get; private set; }
+    public int ServerRenderDistance { get; private set; }
+    public int ServerSimulationDistance { get; private set; }
 
     /// <summary>
     ///     Registers the same set the server does. Both sides go through
@@ -446,6 +448,7 @@ public class ClientNetworkHandler : NetHandler
         MessageHandlers.On<TimeSyncResponseMessage>(onTimeSyncResponse);
         MessageHandlers.On<TickStampMessage>(onTickStamp);
         MessageHandlers.On<ServerStatusMessage>(onServerStatus);
+        MessageHandlers.On<SessionDistanceMessage>(onSessionDistance);
         MessageHandlers.On<ChunkDataMessage>(onChunkData);
         MessageHandlers.On<RegionDataMessage>(onRegionData);
         MessageHandlers.On<PlayerMoveMessage>(onPlayerMove);
@@ -516,6 +519,12 @@ public class ClientNetworkHandler : NetHandler
         MetricRegistry.Set(ServerMetrics.Mspt, message.Mspt);
         MetricRegistry.Set(ServerMetrics.EntityCount, message.EntityCount);
         MetricRegistry.Set(ServerMetrics.PlayerCount, message.PlayerCount);
+    }
+
+    private void onSessionDistance(SessionDistanceMessage message)
+    {
+        ServerRenderDistance = Math.Clamp(message.RenderDistance, 4, 32);
+        ServerSimulationDistance = Math.Clamp(message.SimulationDistance, 2, ServerRenderDistance);
     }
 
     /// <summary>

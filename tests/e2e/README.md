@@ -55,6 +55,10 @@ sections) in the radial safety ring to have completed meshes, then flies a full 
 path before releasing movement. It captures a CPU-side terrain-state TSV at every chunk crossing
 instead of screenshots, avoiding GPU readback while measuring the pipeline.
 
+`simulation-distance.luau` starts an integrated session with render distance 32 and simulation
+distance 8, verifies the server-authoritative values returned by the session protocol, then changes
+simulation distance to 2 and proves the terrain streaming distance remains 32.
+
 `chunk-mesh-deadlines` breaks a compact patch of nearby fixture terrain through the normal
 multiplayer player-controller path. It verifies critical forward progress, deadline-accounting
 invariants, bounded cancellation counters, and that no resident near-field mesh disappears. Missed
@@ -110,6 +114,8 @@ OMNI.client.state.visibilityCandidates         -- resident sections classified b
 OMNI.client.state.frustumTests                  -- exact bounding-box/frustum tests in the last frame
 OMNI.client.state.portalVisited                 -- distinct sections reached by portal traversal
 OMNI.client.state.safetyRescued                 -- near sections conservatively restored after traversal
+OMNI.client.state.renderDistance                -- server-authoritative terrain streaming radius in chunks
+OMNI.client.state.simulationDistance            -- server-authoritative gameplay ticking radius in chunks
 OMNI.client.state.presentedSolidLayerCount      -- selected solid render layers
 OMNI.client.state.presentedTranslucentLayerCount -- selected translucent render layers
 OMNI.client.state.emptyLayersSubmitted          -- uniforms submitted for layers with no draw

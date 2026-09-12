@@ -9,7 +9,7 @@ namespace OmniBlock;
 
 internal static class NaturalSpawner
 {
-    private const int SpawnMaxRadius = 8; // Expressed in chunks
+    internal const int SpawnMaxRadius = 8; // Expressed in chunks
     private const float SpawnMinRadius = 24.0F; // Expressed in blocks
     private const int SpawnCloseness = 6;
 
@@ -29,7 +29,12 @@ internal static class NaturalSpawner
         return new BlockPos(x, y, z);
     }
 
-    internal static void DoSpawning(IWorldContext world, PathFinder pathFinder, bool spawnHostile, bool spawnPeaceful)
+    internal static void DoSpawning(
+        IWorldContext world,
+        PathFinder pathFinder,
+        bool spawnHostile,
+        bool spawnPeaceful,
+        int spawnRadius = SpawnMaxRadius)
     {
         pathFinder.SetWorld(world.Reader);
         if (!spawnHostile && !spawnPeaceful) return;
@@ -43,9 +48,9 @@ internal static class NaturalSpawner
             var chunkX = MathHelper.Floor(p.X / 16.0D);
             var chunkZ = MathHelper.Floor(p.Z / 16.0D);
 
-            for (var x = -SpawnMaxRadius; x <= SpawnMaxRadius; ++x)
+            for (var x = -spawnRadius; x <= spawnRadius; ++x)
             {
-                for (var z = -SpawnMaxRadius; z <= SpawnMaxRadius; ++z)
+                for (var z = -spawnRadius; z <= spawnRadius; ++z)
                 {
                     chunksForSpawning.Add(new ChunkPos(chunkX + x, chunkZ + z));
                 }

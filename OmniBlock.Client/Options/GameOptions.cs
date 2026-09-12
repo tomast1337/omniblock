@@ -159,6 +159,7 @@ public class GameOptions
 
 
     public FloatOption RenderDistanceOption { get; private set; }
+    public FloatOption SimulationDistanceOption { get; private set; }
     public CycleOption CloudsQualityOption { get; private set; }
     public BoolOption SoftCloudsOption { get; private set; }
     public CycleOption DifficultyOption { get; private set; }
@@ -214,6 +215,7 @@ public class GameOptions
     }
 
     public int RenderDistance => 4 + (int)(RenderDistanceOption.Value * 28.0f);
+    public int SimulationDistance => 2 + (int)(SimulationDistanceOption.Value * 30.0f);
     public int CloudsQuality => CloudsQualityOption.Value;
     public bool SoftClouds => SoftCloudsOption.Value;
     public bool ViewBobbing => ViewBobbingOption.Value;
@@ -288,6 +290,7 @@ public class GameOptions
         nameof(AlternateBlocksOption),
         nameof(MenuMusicOption),
         nameof(RenderDistanceOption),
+        nameof(SimulationDistanceOption),
         nameof(CloudsQualityOption),
         nameof(SoftCloudsOption),
         nameof(DifficultyOption),
@@ -399,6 +402,13 @@ public class GameOptions
                 }
             }
         };
+        SimulationDistanceOption = new FloatOption(
+            "options.simulationDistance.text", "simulationDistance", 7.0f / 30.0f)
+        {
+            Steps = 30,
+            Formatter = v => $"{2 + (int)(v * 30.0f)} " + Translations.Get("options.renderDistance.chunks"),
+            OnChanged = _ => _game?.InternalServer?.SetSimulationDistance(SimulationDistance)
+        };
         ChatScaleOption = new FloatOption("options.chatScale.text", "chatScale", 1f / 3f)
         {
             Steps = 30,
@@ -480,6 +490,7 @@ public class GameOptions
         yield return AlternateBlocksOption;
         yield return MenuMusicOption;
         yield return RenderDistanceOption;
+        yield return SimulationDistanceOption;
         yield return DifficultyOption;
         yield return CloudsQualityOption;
         yield return SoftCloudsOption;

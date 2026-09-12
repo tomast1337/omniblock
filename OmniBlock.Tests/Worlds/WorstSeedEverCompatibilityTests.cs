@@ -86,6 +86,7 @@ public sealed class WorstSeedEverCompatibilityTests
         public bool GetAllowNether(bool fallback) => false;
         public int GetMaxPlayers(int fallback) => 1;
         public int GetViewDistance(int fallback) => 4;
+        public int GetSimulationDistance(int fallback) => 4;
         public bool GetWhiteList(bool fallback) => false;
         public int GetSpawnRegionSize(int fallback) => 64;
         public string GetDefaultGamemode(string fallback) => fallback;

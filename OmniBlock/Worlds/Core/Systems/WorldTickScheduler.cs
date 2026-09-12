@@ -1,4 +1,5 @@
 using OmniBlock.Blocks;
+using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Chunks;
 
 namespace OmniBlock.Worlds.Core.Systems;
@@ -10,6 +11,7 @@ public class WorldTickScheduler
 
     private readonly Lock _queueLock = new();
     private readonly PriorityQueue<BlockUpdate, (long, long)> _scheduledUpdates = new();
+    private readonly Dictionary<ChunkPos, List<BlockUpdate>> _pausedBySimulation = [];
 
     public WorldTickScheduler(IWorldContext context) => _context = context;
 
@@ -19,7 +21,7 @@ public class WorldTickScheduler
         {
             lock (_queueLock)
             {
-                return _scheduledUpdates.Count;
+                return _scheduledUpdates.Count + _pausedBySimulation.Sum(static pair => pair.Value.Count);
             }
         }
     }
@@ -86,6 +88,7 @@ public class WorldTickScheduler
         lock (_queueLock)
         {
             _scheduledUpdates.Clear();
+            _pausedBySimulation.Clear();
             _pendingScheduledKeys.Clear();
             Console.WriteLine("[Scheduler] Logic Reset: All pending keys and updates have been purged.");
         }
@@ -102,6 +105,7 @@ public class WorldTickScheduler
 
         lock (_queueLock)
         {
+            ReactivateSimulationTicks(forceFlush);
             var proportionalLimit = Math.Clamp(_scheduledUpdates.Count / 10, 1000, 8192);
             var maxTicksPerFrame = forceFlush ? _scheduledUpdates.Count : proportionalLimit;
             var h = ChuckFormat.WorldHeight - 1;
@@ -113,6 +117,19 @@ public class WorldTickScheduler
 
                 var blockUpdate = _scheduledUpdates.Dequeue();
                 var key = new ScheduledBlockTick(blockUpdate.X, blockUpdate.Y, blockUpdate.Z, blockUpdate.BlockId);
+
+                // Park due work outside simulation instead of continually recycling it through the
+                // hot priority queue. Its original due time and monotonic order are retained, so it
+                // runs immediately and deterministically when the chunk becomes active again.
+                if (!forceFlush && !_context.IsChunkSimulationActive(blockUpdate.X >> 4, blockUpdate.Z >> 4))
+                {
+                    var chunk = new ChunkPos(blockUpdate.X >> 4, blockUpdate.Z >> 4);
+                    if (!_pausedBySimulation.TryGetValue(chunk, out var paused))
+                        _pausedBySimulation.Add(chunk, paused = []);
+                    paused.Add(blockUpdate);
+                    continue;
+                }
+
                 _pendingScheduledKeys.Remove(key);
 
                 if (!_context.Reader.IsPosLoaded(blockUpdate.X, blockUpdate.Y, blockUpdate.Z))
@@ -146,6 +163,21 @@ public class WorldTickScheduler
                 var key = new ScheduledBlockTick(def.X, def.Y, def.Z, def.BlockId);
                 _pendingScheduledKeys.Add(key);
                 _scheduledUpdates.Enqueue(def, (def.ScheduledTime, def.ScheduledOrder));
+            }
+
+            void ReactivateSimulationTicks(bool forceAll)
+            {
+                if (_pausedBySimulation.Count == 0) return;
+                List<ChunkPos> activated = [];
+                foreach (var (chunk, paused) in _pausedBySimulation)
+                {
+                    if (!forceAll && !_context.IsChunkSimulationActive(chunk.X, chunk.Z)) continue;
+                    foreach (var update in paused)
+                        _scheduledUpdates.Enqueue(update, (update.ScheduledTime, update.ScheduledOrder));
+                    activated.Add(chunk);
+                }
+
+                foreach (var chunk in activated) _pausedBySimulation.Remove(chunk);
             }
         }
 
@@ -183,6 +215,14 @@ public class WorldTickScheduler
                 {
                     pending.Add((blockUpdate.X, blockUpdate.Y, blockUpdate.Z, blockUpdate.BlockId, blockUpdate.ScheduledTime, blockUpdate.ScheduledOrder));
                 }
+            }
+
+            var chunkPos = new ChunkPos(chunkX, chunkZ);
+            if (_pausedBySimulation.TryGetValue(chunkPos, out var paused))
+            {
+                foreach (var blockUpdate in paused)
+                    pending.Add((blockUpdate.X, blockUpdate.Y, blockUpdate.Z, blockUpdate.BlockId,
+                        blockUpdate.ScheduledTime, blockUpdate.ScheduledOrder));
             }
         }
 

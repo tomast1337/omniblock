@@ -68,6 +68,7 @@ public sealed class FakeWorldContext : IWorldContext
     public WorldTickScheduler TickScheduler => TickSchedulerSpy;
     public long Seed => 0;
     public bool IsRemote { get; set; }
+    public Func<int, int, bool>? SimulationActive { get; set; }
     public RuleSet Rules { get; }
     public PersistentStateManager StateManager => throw new NotSupportedException();
     public int Difficulty { get; set; } = 1;
@@ -83,6 +84,8 @@ public sealed class FakeWorldContext : IWorldContext
     public JavaRandom Random { get; } = new(1234L);
     PathFinder IWorldContext.Pathing => _pathFinder;
     PathingCoordinator IWorldContext.PathingRequests => _pathingRequests;
+    public bool IsChunkSimulationActive(int chunkX, int chunkZ) =>
+        SimulationActive?.Invoke(chunkX, chunkZ) ?? true;
 
     public void SetDifficulty(int difficulty) => throw new NotSupportedException();
     public long GetTime() => SimulatedWorldTime;

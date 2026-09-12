@@ -66,6 +66,7 @@ internal static class MessageRegistrations
         registry.Register(ScreenHandlerSlotMessage.Id, 1, () => new ScreenHandlerSlotMessage(items));
         registry.Register(SelectedSlotMessage.Id, 1, static () => new SelectedSlotMessage());
         registry.Register(ServerStatusMessage.Id, 1, static () => new ServerStatusMessage());
+        registry.Register(SessionDistanceMessage.Id, 1, static () => new SessionDistanceMessage());
         registry.Register(SnapshotAckMessage.Id, 1, static () => new SnapshotAckMessage());
         registry.Register(TickStampMessage.Id, 1, static () => new TickStampMessage());
         registry.Register(TimeSyncRequestMessage.Id, 1, static () => new TimeSyncRequestMessage());

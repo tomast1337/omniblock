@@ -49,6 +49,8 @@ public static unsafe class LuauClientStateHost
                                             if key == "frustumTests" then return __ClientState.frustumTests() end
                                             if key == "portalVisited" then return __ClientState.portalVisited() end
                                             if key == "safetyRescued" then return __ClientState.safetyRescued() end
+                                            if key == "renderDistance" then return __ClientState.renderDistance() end
+                                            if key == "simulationDistance" then return __ClientState.simulationDistance() end
                                             if key == "presentedSolidLayerCount" then return __ClientState.presentedSolidLayerCount() end
                                             if key == "presentedTranslucentLayerCount" then return __ClientState.presentedTranslucentLayerCount() end
                                             if key == "emptyLayersSubmitted" then return __ClientState.emptyLayersSubmitted() end
@@ -108,6 +110,8 @@ public static unsafe class LuauClientStateHost
     public static Func<double>? FrustumTests;
     public static Func<double>? PortalVisited;
     public static Func<double>? SafetyRescued;
+    public static Func<double>? RenderDistance;
+    public static Func<double>? SimulationDistance;
     public static Func<double>? PresentedSolidLayerCount;
     public static Func<double>? PresentedTranslucentLayerCount;
     public static Func<double>? EmptyLayersSubmitted;
@@ -123,7 +127,7 @@ public static unsafe class LuauClientStateHost
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 53);
+        LuauNative.lua_createtable(l, 0, 55);
         Add(l, "worldLoaded", &WorldLoadedClosure);
         Add(l, "playerReady", &PlayerReadyClosure);
         Add(l, "worldId", &WorldIdClosure);
@@ -163,6 +167,8 @@ public static unsafe class LuauClientStateHost
         Add(l, "frustumTests", &FrustumTestsClosure);
         Add(l, "portalVisited", &PortalVisitedClosure);
         Add(l, "safetyRescued", &SafetyRescuedClosure);
+        Add(l, "renderDistance", &RenderDistanceClosure);
+        Add(l, "simulationDistance", &SimulationDistanceClosure);
         Add(l, "presentedSolidLayerCount", &PresentedSolidLayerCountClosure);
         Add(l, "presentedTranslucentLayerCount", &PresentedTranslucentLayerCountClosure);
         Add(l, "emptyLayersSubmitted", &EmptyLayersSubmittedClosure);
@@ -359,6 +365,12 @@ public static unsafe class LuauClientStateHost
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int SafetyRescuedClosure(IntPtr l) => PushNumber(l, SafetyRescued);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int RenderDistanceClosure(IntPtr l) => PushNumber(l, RenderDistance);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int SimulationDistanceClosure(IntPtr l) => PushNumber(l, SimulationDistance);
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int PresentedSolidLayerCountClosure(IntPtr l) => PushNumber(l, PresentedSolidLayerCount);

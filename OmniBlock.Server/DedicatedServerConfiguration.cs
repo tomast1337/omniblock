@@ -104,6 +104,7 @@ internal class DedicatedServerConfiguration : IServerConfiguration
     public bool GetAllowNether(bool fallback) => GetProperty("allow-nether", fallback);
     public int GetMaxPlayers(int fallback) => GetProperty("max-players", fallback);
     public int GetViewDistance(int fallback) => GetProperty("view-distance", fallback);
+    public int GetSimulationDistance(int fallback) => GetProperty("simulation-distance", fallback);
     public bool GetWhiteList(bool fallback) => GetProperty("white-list", fallback);
     public int GetSpawnRegionSize(int fallback) => GetProperty("spawn-region-size", fallback);
     public string GetDefaultGamemode(string fallback) => GetProperty("default-gamemode", fallback);

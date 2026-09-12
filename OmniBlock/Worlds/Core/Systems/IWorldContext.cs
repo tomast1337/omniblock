@@ -30,6 +30,7 @@ public interface IWorldContext
     public int Difficulty { get; }
     public WorldProperties Properties { get; }
     public JavaRandom Random { get; }
+    public bool IsChunkSimulationActive(int chunkX, int chunkZ) => true;
     internal PathFinder Pathing { get; }
     internal PathingCoordinator PathingRequests { get; }
     public void SetDifficulty(int difficulty);

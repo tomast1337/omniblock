@@ -17,8 +17,17 @@ public class InternalServer : OmniBlockServer
 
     public volatile bool isReady;
 
-    public InternalServer(string worldPath, string levelName, WorldSettings settings, int viewDistance, int initialDifficulty, ContentRuntime content) :
-        base(new InternalServerConfiguration(levelName, settings.TerrainType.Name, settings.Seed.ToString(), settings.GeneratorOptions, viewDistance), content)
+    public InternalServer(
+        string worldPath,
+        string levelName,
+        WorldSettings settings,
+        int viewDistance,
+        int simulationDistance,
+        int initialDifficulty,
+        ContentRuntime content) :
+        base(new InternalServerConfiguration(
+            levelName, settings.TerrainType.Name, settings.Seed.ToString(), settings.GeneratorOptions,
+            viewDistance, simulationDistance), content)
     {
         _worldPath = worldPath;
         logHelp = false;
@@ -31,6 +40,14 @@ public class InternalServer : OmniBlockServer
         var serverConfiguration = (InternalServerConfiguration)config;
         serverConfiguration.SetViewDistance(viewDistanceChunks);
         playerManager?.SetViewDistance(viewDistanceChunks);
+        RequestSimulationDistance(serverConfiguration.GetSimulationDistance(9));
+    }
+
+    public void SetSimulationDistance(int simulationDistanceChunks)
+    {
+        var serverConfiguration = (InternalServerConfiguration)config;
+        serverConfiguration.SetSimulationDistance(simulationDistanceChunks);
+        RequestSimulationDistance(simulationDistanceChunks);
     }
 
     protected override bool Init()

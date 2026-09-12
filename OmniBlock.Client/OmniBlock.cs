@@ -497,6 +497,14 @@ public partial class OmniBlock :
                 WorldRenderer?.ChunkRenderer.PresentationProfile.PortalVisited ?? 0;
             LuauClientStateHost.SafetyRescued = () =>
                 WorldRenderer?.ChunkRenderer.PresentationProfile.SafetyRescued ?? 0;
+            LuauClientStateHost.RenderDistance = () =>
+                World is ClientWorld renderWorld && renderWorld.NetworkHandler.ServerRenderDistance > 0
+                    ? renderWorld.NetworkHandler.ServerRenderDistance
+                    : Options.RenderDistance;
+            LuauClientStateHost.SimulationDistance = () =>
+                World is ClientWorld simulationWorld && simulationWorld.NetworkHandler.ServerSimulationDistance > 0
+                    ? simulationWorld.NetworkHandler.ServerSimulationDistance
+                    : Options.SimulationDistance;
             LuauClientStateHost.PresentedSolidLayerCount = () =>
                 WorldRenderer?.ChunkRenderer.PresentationProfile.PresentedSolidLayers ?? 0;
             LuauClientStateHost.PresentedTranslucentLayerCount = () =>
@@ -928,6 +936,8 @@ public partial class OmniBlock :
             LuauClientStateHost.FrustumTests = null;
             LuauClientStateHost.PortalVisited = null;
             LuauClientStateHost.SafetyRescued = null;
+            LuauClientStateHost.RenderDistance = null;
+            LuauClientStateHost.SimulationDistance = null;
             LuauClientStateHost.PresentedSolidLayerCount = null;
             LuauClientStateHost.PresentedTranslucentLayerCount = null;
             LuauClientStateHost.EmptyLayersSubmitted = null;
@@ -2031,7 +2041,9 @@ public partial class OmniBlock :
 
     public void StartInternalServer(string worldDir, WorldSettings worldSettings)
     {
-        InternalServer = new InternalServer(Path.Combine(OmniBlockDir, "saves"), worldDir, worldSettings, Options.RenderDistance, Options.Difficulty, Content);
+        InternalServer = new InternalServer(
+            Path.Combine(OmniBlockDir, "saves"), worldDir, worldSettings,
+            Options.RenderDistance, Options.SimulationDistance, Options.Difficulty, Content);
         InternalServer.RegistryAccess = RegistryAccess;
         InternalServer.RunThreaded("Internal Server");
     }

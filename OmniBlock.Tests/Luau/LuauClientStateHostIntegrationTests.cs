@@ -39,6 +39,8 @@ public sealed class LuauClientStateHostIntegrationTests
         double frustumTests = 0;
         double portalVisited = 0;
         double safetyRescued = 0;
+        double renderDistance = 0;
+        double simulationDistance = 0;
         double presentedSolidLayerCount = 0;
         double presentedTranslucentLayerCount = 0;
         double emptyLayersSubmitted = 0;
@@ -73,6 +75,8 @@ public sealed class LuauClientStateHostIntegrationTests
         LuauClientStateHost.FrustumTests = () => frustumTests;
         LuauClientStateHost.PortalVisited = () => portalVisited;
         LuauClientStateHost.SafetyRescued = () => safetyRescued;
+        LuauClientStateHost.RenderDistance = () => renderDistance;
+        LuauClientStateHost.SimulationDistance = () => simulationDistance;
         LuauClientStateHost.PresentedSolidLayerCount = () => presentedSolidLayerCount;
         LuauClientStateHost.PresentedTranslucentLayerCount = () => presentedTranslucentLayerCount;
         LuauClientStateHost.EmptyLayersSubmitted = () => emptyLayersSubmitted;
@@ -128,6 +132,8 @@ public sealed class LuauClientStateHostIntegrationTests
             frustumTests = 527;
             portalVisited = 96;
             safetyRescued = 7;
+            renderDistance = 24;
+            simulationDistance = 8;
             presentedSolidLayerCount = 68;
             presentedTranslucentLayerCount = 14;
             emptyLayersSubmitted = 5;
@@ -163,6 +169,8 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.frustumTests", "527");
             AssertValue(state, "OMNI.client.state.portalVisited", "96");
             AssertValue(state, "OMNI.client.state.safetyRescued", "7");
+            AssertValue(state, "OMNI.client.state.renderDistance", "24");
+            AssertValue(state, "OMNI.client.state.simulationDistance", "8");
             AssertValue(state, "OMNI.client.state.presentedSolidLayerCount", "68");
             AssertValue(state, "OMNI.client.state.presentedTranslucentLayerCount", "14");
             AssertValue(state, "OMNI.client.state.emptyLayersSubmitted", "5");
@@ -202,6 +210,8 @@ public sealed class LuauClientStateHostIntegrationTests
             LuauClientStateHost.FrustumTests = null;
             LuauClientStateHost.PortalVisited = null;
             LuauClientStateHost.SafetyRescued = null;
+            LuauClientStateHost.RenderDistance = null;
+            LuauClientStateHost.SimulationDistance = null;
             LuauClientStateHost.PresentedSolidLayerCount = null;
             LuauClientStateHost.PresentedTranslucentLayerCount = null;
             LuauClientStateHost.EmptyLayersSubmitted = null;

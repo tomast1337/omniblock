@@ -7,14 +7,22 @@ internal class InternalServerConfiguration : IServerConfiguration
     private readonly string _levelType;
     private readonly string _seed;
     private int _viewDistance;
+    private int _simulationDistance;
 
-    public InternalServerConfiguration(string levelName, string levelType, string seed, string levelOptions, int viewDistance)
+    public InternalServerConfiguration(
+        string levelName,
+        string levelType,
+        string seed,
+        string levelOptions,
+        int viewDistance,
+        int simulationDistance)
     {
         _levelName = levelName;
         _levelType = levelType;
         _seed = seed;
         _levelOptions = levelOptions;
         _viewDistance = viewDistance;
+        _simulationDistance = simulationDistance;
     }
 
     public bool GetAllowFlight(bool fallback) => true;
@@ -53,6 +61,8 @@ internal class InternalServerConfiguration : IServerConfiguration
 
     public int GetViewDistance(int fallback) => _viewDistance;
 
+    public int GetSimulationDistance(int fallback) => _simulationDistance;
+
     public bool GetWhiteList(bool fallback) => false;
 
     public int GetSpawnRegionSize(int fallback) => fallback;
@@ -68,4 +78,6 @@ internal class InternalServerConfiguration : IServerConfiguration
     }
 
     public void SetViewDistance(int distance) => _viewDistance = distance;
+
+    public void SetSimulationDistance(int distance) => _simulationDistance = distance;
 }

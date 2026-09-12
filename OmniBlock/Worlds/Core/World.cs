@@ -175,6 +175,13 @@ public abstract class World : IWorldContext
     public WorldProperties Properties { get; protected init; }
     public bool IsRemote { get; init; }
     public JavaRandom Random { get; }
+    public int SimulationDistance { get; private set; } = 9;
+
+    public void SetSimulationDistance(int chunks) =>
+        SimulationDistance = Math.Clamp(chunks, 2, 32);
+
+    public bool IsChunkSimulationActive(int chunkX, int chunkZ) =>
+        IsRemote || _activeChunks.Contains(new ChunkPos(chunkX, chunkZ));
 
     ChunkHost IWorldContext.ChunkHost => BlockHost;
     WorldEventBroadcaster IWorldContext.Broadcaster => Broadcaster;
@@ -468,6 +475,7 @@ public abstract class World : IWorldContext
 
     public virtual void Tick()
     {
+        RefreshActiveSimulationChunks();
         Environment.UpdateWeatherCycles();
 
         long nextWorldTime;
@@ -490,7 +498,9 @@ public abstract class World : IWorldContext
 
         using (Profiler.Begin("PerformSpawning"))
         {
-            NaturalSpawner.DoSpawning(this, Pathing, _spawnHostileMobs, _spawnPeacefulMobs);
+            NaturalSpawner.DoSpawning(
+                this, Pathing, _spawnHostileMobs, _spawnPeacefulMobs,
+                Math.Min(NaturalSpawner.SpawnMaxRadius, SimulationDistance));
         }
 
         using (Profiler.Begin("UnloadOldChunks"))
@@ -533,24 +543,6 @@ public abstract class World : IWorldContext
 
     protected virtual void ManageChunkUpdatesAndEvents()
     {
-        _activeChunks.Clear();
-
-        for (var i = 0; i < Entities.Players.Count; ++i)
-        {
-            var player = Entities.Players[i];
-            var playerChunkX = MathHelper.Floor(player.X / 16.0D);
-            var playerChunkZ = MathHelper.Floor(player.Z / 16.0D);
-            const byte viewDistance = 9;
-
-            for (var xOffset = -viewDistance; xOffset <= viewDistance; ++xOffset)
-            {
-                for (var zOffset = -viewDistance; zOffset <= viewDistance; ++zOffset)
-                {
-                    _activeChunks.Add(new ChunkPos(xOffset + playerChunkX, zOffset + playerChunkZ));
-                }
-            }
-        }
-
         if (_soundCounter > 0)
         {
             --_soundCounter;
@@ -644,6 +636,20 @@ public abstract class World : IWorldContext
 
                 RandomTickBlock(currentChunk, localX, localY, localZ, worldXBase, worldZBase);
             }
+        }
+    }
+
+    private void RefreshActiveSimulationChunks()
+    {
+        _activeChunks.Clear();
+        for (var i = 0; i < Entities.Players.Count; ++i)
+        {
+            var player = Entities.Players[i];
+            var playerChunkX = MathHelper.Floor(player.X / 16.0D);
+            var playerChunkZ = MathHelper.Floor(player.Z / 16.0D);
+            for (var xOffset = -SimulationDistance; xOffset <= SimulationDistance; ++xOffset)
+            for (var zOffset = -SimulationDistance; zOffset <= SimulationDistance; ++zOffset)
+                _activeChunks.Add(new ChunkPos(xOffset + playerChunkX, zOffset + playerChunkZ));
         }
     }
 

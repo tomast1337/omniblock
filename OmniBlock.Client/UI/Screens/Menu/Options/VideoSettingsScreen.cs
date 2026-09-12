@@ -8,6 +8,7 @@ public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOpti
     [
         new(Translations.Get("options.video.performance"), [
             Options.RenderDistanceOption,
+            Options.SimulationDistanceOption,
             Options.FramerateLimitOption,
             Options.VSyncOption,
             Options.MsaaOption,

@@ -19,7 +19,7 @@ internal sealed partial class LuauCompletion
     private static readonly string[] s_clientMembers = ["state", "worlds"];
 
     private static readonly string[] s_clientStateMembers =
-        ["backgroundPending", "debugOpen", "emptyLayersSubmitted", "findVisibleMs", "foregroundPending", "frameTimeMs", "frustumTests", "geometryUploadsLastFrame", "lightRefreshCompletedCount", "lightRefreshPending", "lightUploadsLastFrame", "meshAwaitingDraw", "meshAwaitingUpload", "meshBuildFailureCount", "meshCancelledCount", "meshCooperativeCancellationCount", "meshCriticalCompletedCount", "meshCriticalDeadlineMissCount", "meshCriticalOverdueCount", "meshEvictionGraceCount", "meshLeadingEdgePending", "meshLeadingEdgeQueued", "meshPending", "meshReadyRadius", "meshRequestToGpuMs", "meshSafetyExpectedSections", "meshSafetyHoles", "meshSafetyLoadedColumns", "meshSupersededCount", "oldestForegroundAge", "playerReady", "playerX", "playerY", "playerZ", "portalVisited", "presentationRegressionCount", "presentedMeshCount", "presentedSolidLayerCount", "presentedTranslucentLayerCount", "residentMeshCount", "residentSolidLayerCount", "residentTranslucentLayerCount", "safetyRescued", "solidDrawsLastFrame", "terrainDrawCalls", "terrainSubmitCpuMs", "terrainUniformEntries", "translucentDrawsLastFrame", "visibilityCandidates", "worldId", "worldLoaded"];
+        ["backgroundPending", "debugOpen", "emptyLayersSubmitted", "findVisibleMs", "foregroundPending", "frameTimeMs", "frustumTests", "geometryUploadsLastFrame", "lightRefreshCompletedCount", "lightRefreshPending", "lightUploadsLastFrame", "meshAwaitingDraw", "meshAwaitingUpload", "meshBuildFailureCount", "meshCancelledCount", "meshCooperativeCancellationCount", "meshCriticalCompletedCount", "meshCriticalDeadlineMissCount", "meshCriticalOverdueCount", "meshEvictionGraceCount", "meshLeadingEdgePending", "meshLeadingEdgeQueued", "meshPending", "meshReadyRadius", "meshRequestToGpuMs", "meshSafetyExpectedSections", "meshSafetyHoles", "meshSafetyLoadedColumns", "meshSupersededCount", "oldestForegroundAge", "playerReady", "playerX", "playerY", "playerZ", "portalVisited", "presentationRegressionCount", "presentedMeshCount", "presentedSolidLayerCount", "presentedTranslucentLayerCount", "renderDistance", "residentMeshCount", "residentSolidLayerCount", "residentTranslucentLayerCount", "safetyRescued", "simulationDistance", "solidDrawsLastFrame", "terrainDrawCalls", "terrainSubmitCpuMs", "terrainUniformEntries", "translucentDrawsLastFrame", "visibilityCandidates", "worldId", "worldLoaded"];
 
     private static readonly string[] s_testMembers = ["breakBlock", "creative", "dumpTerrain", "fail", "flyPath", "isMeshCurrent", "meshDeadlineMissCount", "pass", "screenshot", "setBlock", "setFlying", "setLook", "setMovement", "teleport"];
     private static readonly string[] s_worldMembers = ["list", "load"];
@@ -31,7 +31,7 @@ internal sealed partial class LuauCompletion
         "chatScale", "chatWidth", "chunkFade", "cloudsQuality", "controllerSensitivity",
         "controllerType", "difficulty", "fov", "fpsLimit", "gamma", "guiScale", "invertYMouse",
         "language", "lastServer", "menuMusic", "mouseSensitivity", "msaaLevel", "music", "options", "pauseOnFocusLoss", "showCoordinates",
-        "skin", "softClouds", "sound", "uiCursors", "useMipmaps", "viewDistance", "vsync"
+        "simulationDistance", "skin", "softClouds", "sound", "uiCursors", "useMipmaps", "viewDistance", "vsync"
     ];
 
     private static readonly string[] s_nodeMembers =

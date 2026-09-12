@@ -53,6 +53,7 @@ public abstract class OmniBlockServer : ICommandOutput
     private long _tickLength = 50L;
     private int _ticks;
     private int _ticksThisSecond;
+    private volatile int _pendingSimulationDistance = -1;
     public IServerConfiguration config;
     public ConnectionListener connections;
     public EntityTracker[] entityTrackers = new EntityTracker[2];
@@ -77,6 +78,8 @@ public abstract class OmniBlockServer : ICommandOutput
     }
 
     public ContentRuntime Content { get; private set; }
+    public int SimulationDistance { get; private set; } = 9;
+    public int RenderDistance => Math.Clamp(config.GetViewDistance(10), 4, 32);
     public RegistryAccess RegistryAccess { get; set; } = RegistryAccess.Empty;
 
     /// <summary>
@@ -206,6 +209,8 @@ public abstract class OmniBlockServer : ICommandOutput
     private void loadWorld(string worldDir, WorldSettings settings)
     {
         worlds = new ServerWorld[2];
+        SimulationDistance = GetEffectiveSimulationDistance(
+            config.GetSimulationDistance(9), config.GetViewDistance(10));
         var dir = new DirectoryInfo(Path.Combine(GetFile(".").FullName, worldDir));
         RegionWorldStorage worldStorage = new(dir, true);
         RegistryAccess = RegistryAccess.WithWorldDatapacks(dir.FullName);
@@ -224,6 +229,7 @@ public abstract class OmniBlockServer : ICommandOutput
             worlds[i].EventListeners.Add(new ServerWorldEventListener(this, worlds[i]));
             worlds[i].SetDifficulty(config.GetSpawnMonsters(true) ? 1 : 0);
             worlds[i].allowSpawning(config.GetSpawnMonsters(true), spawnAnimals);
+            worlds[i].SetSimulationDistance(SimulationDistance);
             playerManager.saveAllPlayers(worlds);
         }
 
@@ -585,6 +591,7 @@ public abstract class OmniBlockServer : ICommandOutput
 
     public void Tick()
     {
+        ApplyPendingSimulationDistance();
         CommitPendingContent();
         _ticks++;
 
@@ -621,6 +628,30 @@ public abstract class OmniBlockServer : ICommandOutput
             }
         }
     }
+
+    public void RequestSimulationDistance(int chunks) =>
+        _pendingSimulationDistance = Math.Clamp(chunks, 2, 32);
+
+    private void ApplyPendingSimulationDistance()
+    {
+        var requested = Interlocked.Exchange(ref _pendingSimulationDistance, -1);
+        if (requested < 0) return;
+
+        SimulationDistance = GetEffectiveSimulationDistance(requested, config.GetViewDistance(10));
+        if (worlds == null) return;
+        foreach (var world in worlds)
+            world?.SetSimulationDistance(SimulationDistance);
+
+        if (playerManager != null)
+            playerManager.sendToAll(new SessionDistanceMessage
+            {
+                RenderDistance = RenderDistance,
+                SimulationDistance = SimulationDistance
+            });
+    }
+
+    internal static int GetEffectiveSimulationDistance(int requested, int renderDistance) =>
+        Math.Min(Math.Clamp(requested, 2, 32), Math.Clamp(renderDistance, 4, 32));
 
     internal void StageContent(ContentRuntime candidate)
     {
@@ -692,6 +723,12 @@ public abstract class OmniBlockServer : ICommandOutput
         {
             send(OmniMessagePacket.For(Messages, message)!);
         }
+
+        send(OmniMessagePacket.For(Messages, new SessionDistanceMessage
+        {
+            RenderDistance = config.GetViewDistance(10),
+            SimulationDistance = SimulationDistance
+        })!);
 
         send(OmniMessagePacket.For(Messages, new FinishConfigurationMessage())!);
     }

@@ -289,6 +289,14 @@ public class EntityManager
                     continue;
                 }
 
+                // Players are activation centers and must always tick. Ordinary entities remain
+                // resident for rendering/networking but pause when their chunk leaves simulation.
+                if (!entity.Dead && !_world.IsRemote && entity is not EntityPlayer &&
+                    !_world.IsChunkSimulationActive(
+                        MathHelper.Floor(entity.X / 16.0D),
+                        MathHelper.Floor(entity.Z / 16.0D)))
+                    continue;
+
                 if (!entity.Dead)
                 {
                     UpdateEntity(entity, true);
@@ -312,6 +320,11 @@ public class EntityManager
             for (var i = BlockEntities.Count - 1; i >= 0; i--)
             {
                 var blockEntity = BlockEntities[i];
+                // Block entities own progress rather than catch-up timestamps. Pausing preserves
+                // their exact state; re-entry continues with the next ordinary tick.
+                if (!_world.IsRemote && !_world.IsChunkSimulationActive(
+                        blockEntity.X >> 4, blockEntity.Z >> 4))
+                    continue;
                 if (!blockEntity.IsRemoved())
                 {
                     blockEntity.Tick(this);
