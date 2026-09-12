@@ -15,12 +15,12 @@ internal static class EntityImpostorCache
     private static readonly byte[] s_magic = "OMNIIMP1"u8.ToArray();
     internal sealed record Atlas(string Key, float Radius, byte[] Pixels);
 
-    public static string Key(CowImpostorGeometry.Vertex[] geometry, Texture2D.CaptureSource skin, float radius)
+    public static string Key(CowImpostorGeometry.Vertex[][] geometry, Texture2D.CaptureSource skin, float radius)
     {
         using var stream = new MemoryStream();
         using var writer = new BinaryWriter(stream, Encoding.UTF8, true);
-        writer.Write("omniblock:standing_cow:canonical-v1:root24:inflate:RGBA8:cutout0.1:nearest:mip0");
-        writer.Write(EntityImpostorLayout.Version); writer.Write(EntityImpostorLayout.Views);
+        writer.Write("omniblock:standing_cow:canonical-v2:root24:inflate:RGBA8:cutout0.1:nearest:mip0");
+        writer.Write(EntityImpostorLayout.Version); writer.Write(EntityImpostorLayout.Views); writer.Write(EntityImpostorLayout.Poses);
         writer.Write(EntityImpostorLayout.Tile); writer.Write(EntityImpostorLayout.Padding);
         writer.Write(EntityImpostorLayout.Width); writer.Write(EntityImpostorLayout.Height); writer.Write(radius);
         for (var i = 0; i < 26; i++)
@@ -30,11 +30,15 @@ internal static class EntityImpostorCache
         }
         writer.Write(EntityImpostorShaders.Capture); writer.Write(EntityImpostorShaders.Present);
         writer.Write(geometry.Length);
-        foreach (var v in geometry)
+        foreach (var pose in geometry)
         {
-            writer.Write(v.Position.X); writer.Write(v.Position.Y); writer.Write(v.Position.Z);
-            writer.Write(v.UV.X); writer.Write(v.UV.Y);
-            writer.Write(v.Normal.X); writer.Write(v.Normal.Y); writer.Write(v.Normal.Z);
+            writer.Write(pose.Length);
+            foreach (var v in pose)
+            {
+                writer.Write(v.Position.X); writer.Write(v.Position.Y); writer.Write(v.Position.Z);
+                writer.Write(v.UV.X); writer.Write(v.UV.Y);
+                writer.Write(v.Normal.X); writer.Write(v.Normal.Y); writer.Write(v.Normal.Z);
+            }
         }
         // Hash the exact uploaded RGBA bytes, including renderer resource fallback. Pack display
         // names/timestamps are irrelevant; two packs resolving identical inputs may share an atlas.
@@ -60,9 +64,9 @@ internal static class EntityImpostorCache
         using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
         if (file.Length != FileBytes) throw new InvalidDataException("Wrong impostor cache length.");
         using var reader = new BinaryReader(file);
-        if (!reader.ReadBytes(8).SequenceEqual(s_magic) || reader.ReadInt32() != 1 ||
+        if (!reader.ReadBytes(8).SequenceEqual(s_magic) || reader.ReadInt32() != 2 ||
             reader.ReadInt32() != EntityImpostorLayout.Width || reader.ReadInt32() != EntityImpostorLayout.Height ||
-            reader.ReadInt32() != 26 || reader.ReadInt32() != 1 || reader.ReadInt32() != PixelBytes ||
+            reader.ReadInt32() != EntityImpostorLayout.Views || reader.ReadInt32() != EntityImpostorLayout.Poses || reader.ReadInt32() != PixelBytes ||
             reader.ReadSingle() != radius || !reader.ReadBytes(32).SequenceEqual(Convert.FromHexString(key)))
             throw new InvalidDataException("Incompatible impostor cache metadata.");
         var digest = reader.ReadBytes(32);
@@ -87,8 +91,8 @@ internal static class EntityImpostorCache
             using (var file = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             using (var writer = new BinaryWriter(file))
             {
-                writer.Write(s_magic); writer.Write(1); writer.Write(EntityImpostorLayout.Width); writer.Write(EntityImpostorLayout.Height);
-                writer.Write(26); writer.Write(1); writer.Write(PixelBytes); writer.Write(atlas.Radius);
+                writer.Write(s_magic); writer.Write(2); writer.Write(EntityImpostorLayout.Width); writer.Write(EntityImpostorLayout.Height);
+                writer.Write(EntityImpostorLayout.Views); writer.Write(EntityImpostorLayout.Poses); writer.Write(PixelBytes); writer.Write(atlas.Radius);
                 writer.Write(Convert.FromHexString(atlas.Key)); writer.Write(SHA256.HashData(atlas.Pixels)); writer.Write(atlas.Pixels);
                 file.Flush(true);
             }

@@ -95,14 +95,14 @@ public sealed class EntityImpostorCacheTests : IDisposable
     [Fact]
     public void Fingerprint_uses_effective_geometry_texture_sampler_and_capture_bounds()
     {
-        CowImpostorGeometry.Vertex[] vertices = [new(Vector3.One, Vector2.One, Vector3.UnitY)];
+        CowImpostorGeometry.Vertex[][] vertices = [[new(Vector3.One, Vector2.One, Vector3.UnitY)]];
         Texture2D.CaptureSource skin = new(1, 1, [1, 2, 3, 4], WgpuSamplerDescription.Nearest);
         var key = EntityImpostorCache.Key(vertices, skin, 2);
-        Assert.Equal(key, EntityImpostorCache.Key(vertices.ToArray(), skin with { Pixels = skin.Pixels.ToArray() }, 2));
+        Assert.Equal(key, EntityImpostorCache.Key(vertices.Select(v => v.ToArray()).ToArray(), skin with { Pixels = skin.Pixels.ToArray() }, 2));
         Assert.NotEqual(key, EntityImpostorCache.Key(vertices, skin with { Pixels = [1, 2, 3, 5] }, 2));
         Assert.NotEqual(key, EntityImpostorCache.Key(vertices, skin with { Sampler = WgpuSamplerDescription.Linear }, 2));
         Assert.NotEqual(key, EntityImpostorCache.Key(vertices, skin, 3));
-        vertices[0] = vertices[0] with { Position = Vector3.Zero };
+        vertices[0][0] = vertices[0][0] with { Position = Vector3.Zero };
         Assert.NotEqual(key, EntityImpostorCache.Key(vertices, skin, 2));
     }
 

@@ -32,13 +32,31 @@ for replacement = 1, 3 do
         assert(s.webGpuErrorCount == 0, "WebGPU reported validation errors")
         assert(s.entityImpostorFailures == 0, "capture failed")
         assert(s.entityLodModelSubmissions + s.entityLodImpostorSubmissions == 1, "entity disappeared or doubled")
-        if s.entityImpostorViews < 26 then
+        if s.entityImpostorViews < 130 then
             assert(s.entityLodImpostorSubmissions == 0, "published a partial atlas")
         end
         return s.entityLodImpostorSubmissions == 1
     end, 20, 0.001)
     assert(OMNI.client.state.entityImpostorReady == 1)
-    if replacement == 1 then OMNI.test.screenshot(); OMNI.wait(1.1) end
+    if replacement == 1 then
+        OMNI.test.screenshot(); OMNI.wait(1.1)
+        assert(OMNI.test.entityBaselineState("idle"))
+        OMNI.waitUntil(function() return OMNI.client.state.entityImpostorPoseMask == 1 end, 5, 0.005)
+        for pose = 0, 3 do
+            assert(OMNI.test.entityBaselineState("walk-" .. tostring(pose)))
+            local expected = 2 ^ (pose + 1)
+            OMNI.waitUntil(function()
+                return OMNI.client.state.entityImpostorPoseMask == expected and
+                    OMNI.client.state.entityLodImpostorSubmissions == 1
+            end, 5, 0.005)
+        end
+        assert(OMNI.test.entityBaselineState("hurt"))
+        OMNI.waitUntil(function()
+            return OMNI.client.state.entityImpostorHurtSubmissions == 1 and
+                OMNI.client.state.entityLodImpostorSubmissions == 1
+        end, 5, 0.005)
+        assert(OMNI.test.entityBaselineState("idle"))
+    end
     assert(OMNI.test.entityImpostors(false))
     OMNI.waitUntil(function() return OMNI.client.state.entityLodModelSubmissions == 1 end, 10, 0.01)
 end

@@ -642,7 +642,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                 lodCpuMs += Stopwatch.GetElapsedTime(start).TotalMilliseconds;
                 return EntityImpostors.TrySubmit(provider, decision, position.DirectionFrom(new LodPoint(
                     EntityRenderDispatcher.OffsetX, EntityRenderDispatcher.OffsetY, EntityRenderDispatcher.OffsetZ)),
-                    (float)yaw, target.GetBrightnessAtEyes(delta));
+                    (float)yaw, target.GetBrightnessAtEyes(delta), provider?.Pose(target, delta) ?? 0,
+                    target is EntityLiving hurt && hurt.HurtTime > 0);
             }
         }
     }

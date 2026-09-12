@@ -550,6 +550,8 @@ public partial class OmniBlock :
                     "entityImpostorFailures" => WorldRenderer?.EntityImpostors.Failures ?? 0,
                     "entityImpostorReplacements" => WorldRenderer?.EntityImpostors.Replacements ?? 0,
                     "entityImpostorPendingFallbacks" => WorldRenderer?.EntityImpostors.PendingFallbacks ?? 0,
+                    "entityImpostorPoseMask" => WorldRenderer?.EntityImpostors.LastPoseMask ?? 0,
+                    "entityImpostorHurtSubmissions" => WorldRenderer?.EntityImpostors.LastHurtSubmitted ?? 0,
                     "entityImpostorMemoryHits" => WorldRenderer?.EntityImpostors.MemoryHits ?? 0,
                     "entityImpostorDiskHits" => WorldRenderer?.EntityImpostors.DiskHits ?? 0,
                     "entityImpostorCacheMisses" => WorldRenderer?.EntityImpostors.CacheMisses ?? 0,
@@ -628,6 +630,7 @@ public partial class OmniBlock :
                     EntityBaseline = new EntityRenderBaseline(this, scene, count, distance);
                     return true;
                 };
+                LuauTestHost.EntityBaselineState = state => EntityBaseline?.SetImpostorState(state) == true;
                 LuauTestHost.BeginEntitySample = () =>
                 {
                     if (EntityBaseline == null) return false;
@@ -1051,6 +1054,7 @@ public partial class OmniBlock :
             LuauTestHost.Screenshot = null;
             LuauTestHost.DumpTerrain = null;
             LuauTestHost.EntityBaseline = null;
+            LuauTestHost.EntityBaselineState = null;
             LuauTestHost.BeginEntitySample = null;
             LuauTestHost.EndEntitySample = null;
             LuauTestHost.ClearEntityBaseline = null;

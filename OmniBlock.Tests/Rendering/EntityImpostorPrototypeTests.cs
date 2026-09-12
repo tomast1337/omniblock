@@ -28,28 +28,47 @@ public class EntityImpostorPrototypeTests
     public void All_view_tiles_are_disjoint_padded_and_inside_the_atlas()
     {
         List<Vector4> rectangles = [];
-        for (var i = 0; i < 26; i++)
+        for (var pose = 0; pose < EntityImpostorLayout.Poses; pose++)
+        for (var i = 0; i < EntityImpostorLayout.Views; i++)
         {
-            var uv = EntityImpostorLayout.UV(i);
+            var uv = EntityImpostorLayout.UV(i, pose);
             Assert.True(uv.X > 0 && uv.Y > 0 && uv.X + uv.Z < 1 && uv.Y + uv.W < 1);
             foreach (var other in rectangles)
                 Assert.True(uv.X + uv.Z < other.X || other.X + other.Z < uv.X || uv.Y + uv.W < other.Y || other.Y + other.W < uv.Y);
             rectangles.Add(uv);
         }
         Assert.Throws<ArgumentOutOfRangeException>(() => EntityImpostorLayout.UV(26));
+        Assert.Throws<ArgumentOutOfRangeException>(() => EntityImpostorLayout.UV(0, EntityImpostorLayout.Poses));
     }
 
     [Fact]
     public void Only_a_complete_successful_candidate_can_publish_and_capture_is_bounded()
     {
-        for (var completed = 0; completed <= 26; completed++)
+        for (var completed = 0; completed <= EntityImpostorLayout.Captures; completed++)
         {
-            Assert.Equal(completed == 26, EntityImpostorPrototype.MayPublish(completed, false));
+            Assert.Equal(completed == EntityImpostorLayout.Captures, EntityImpostorPrototype.MayPublish(completed, false));
             Assert.False(EntityImpostorPrototype.MayPublish(completed, true));
             Assert.InRange(EntityImpostorPrototype.ViewsThisFrame(completed), 0, 2);
         }
-        Assert.Equal(1, EntityImpostorPrototype.ViewsThisFrame(25));
-        Assert.Equal(0, EntityImpostorPrototype.ViewsThisFrame(26));
+        Assert.Equal(1, EntityImpostorPrototype.ViewsThisFrame(EntityImpostorLayout.Captures - 1));
+        Assert.Equal(0, EntityImpostorPrototype.ViewsThisFrame(EntityImpostorLayout.Captures));
+    }
+
+    [Fact]
+    public void Bounded_walk_poses_are_distinct_and_selector_wraps_the_live_gait_cycle()
+    {
+        var poses = CowImpostorGeometry.BuildPoses();
+        Assert.Equal(EntityImpostorLayout.Poses, poses.Length);
+        Assert.All(poses, pose => Assert.Equal(poses[0].Length, pose.Length));
+        Assert.Equal(0, StandingCowLodProvider.SelectPose(0, 0, 100, .5f));
+        var stride = MathF.PI / 2 / .6662f;
+        Assert.Equal(1, StandingCowLodProvider.SelectPose(1, 1, 0, 1));
+        Assert.Equal(2, StandingCowLodProvider.SelectPose(1, 1, stride, 1));
+        Assert.Equal(3, StandingCowLodProvider.SelectPose(1, 1, stride * 2, 1));
+        Assert.Equal(4, StandingCowLodProvider.SelectPose(1, 1, stride * 3, 1));
+        Assert.Equal(1, StandingCowLodProvider.SelectPose(1, 1, stride * 4, 1));
+        Assert.NotEqual(poses[0], poses[1]);
+        Assert.NotEqual(poses[1], poses[2]);
     }
 
     [Fact]

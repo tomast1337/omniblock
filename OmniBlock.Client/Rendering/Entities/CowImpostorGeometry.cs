@@ -10,7 +10,19 @@ internal static class CowImpostorGeometry
     [StructLayout(LayoutKind.Sequential)]
     internal readonly record struct Vertex(Vector3 Position, Vector2 UV, Vector3 Normal);
 
-    public static Vertex[] Build()
+    public static Vertex[] Build() => BuildPose(0, 0);
+
+    /// <summary>One idle pose and four full-stride samples matching <see cref="ModelCow"/>.</summary>
+    public static Vertex[][] BuildPoses()
+    {
+        var result = new Vertex[EntityImpostorLayout.Poses][];
+        result[0] = Build();
+        for (var pose = 1; pose < result.Length; pose++)
+            result[pose] = BuildPose((pose - 1) * MathF.PI / 2, 1);
+        return result;
+    }
+
+    private static Vertex[] BuildPose(float gaitAngle, float gaitAmount)
     {
         var document = BbModelLoader.LoadCached("cow");
         List<Vertex> vertices = [];
@@ -22,7 +34,14 @@ internal static class CowImpostorGeometry
             var g = BbModelModelBuilder.ConvertElement(group, element, 0);
             var part = new ModelPart(g.UvU, g.UvV, reserveStaticGeometry: false) { Mirror = g.Mirror };
             part.AddBox(g.BoxX, g.BoxY, g.BoxZ, g.SizeX, g.SizeY, g.SizeZ, g.Inflate);
-            var rotation = g.Name is "body" or "udders" ? Matrix4x4.CreateRotationX(MathF.PI / 2) : Matrix4x4.Identity;
+            var angleX = g.Name switch
+            {
+                "body" or "udders" => MathF.PI / 2,
+                "leg1" or "leg4" => MathF.Cos(gaitAngle) * 1.4f * gaitAmount,
+                "leg2" or "leg3" => MathF.Cos(gaitAngle + MathF.PI) * 1.4f * gaitAmount,
+                _ => 0
+            };
+            var rotation = Matrix4x4.CreateRotationX(angleX);
             // LivingEntityRenderer at body yaw 0: rotate Y 180, scale (-1,-1,1),
             // translate root down 24/16 + 1/128, then bone pivot and model scale.
             var transform = rotation * Matrix4x4.CreateTranslation(g.PivotX, g.PivotY, g.PivotZ) *
@@ -37,12 +56,13 @@ internal static class CowImpostorGeometry
     }
 }
 
-/// <summary>Version 1 orthographic capture basis. Poles have a fixed tangent, never a zero cross product.</summary>
+/// <summary>Version 2 orthographic capture basis and bounded cow pose atlas.</summary>
 internal static class EntityImpostorLayout
 {
-    public const int Version = 1;
-    public const int Views = 26, Tile = 64, Padding = 2, Cell = Tile + Padding * 2, Columns = 6, Rows = 5;
-    public const int Width = Columns * Cell, Height = Rows * Cell;
+    public const int Version = 2;
+    public const int Views = 26, Poses = 5, Captures = Views * Poses;
+    public const int Tile = 64, Padding = 2, Cell = Tile + Padding * 2, Columns = 6, RowsPerPose = 5;
+    public const int Width = Columns * Cell, Height = RowsPerPose * Poses * Cell;
     public static (Vector3 Right, Vector3 Up) Basis(Vector3 direction)
     {
         direction = Vector3.Normalize(direction);
@@ -50,10 +70,12 @@ internal static class EntityImpostorLayout
         var right = Vector3.Normalize(Vector3.Cross(reference, direction));
         return (right, Vector3.Normalize(Vector3.Cross(direction, right)));
     }
-    public static Vector4 UV(int view)
+    public static Vector4 UV(int view, int pose = 0)
     {
         if (view is < 0 or >= Views) throw new ArgumentOutOfRangeException(nameof(view));
+        if (pose is < 0 or >= Poses) throw new ArgumentOutOfRangeException(nameof(pose));
         return new Vector4((view % Columns * Cell + Padding) / (float)Width,
-            (view / Columns * Cell + Padding) / (float)Height, Tile / (float)Width, Tile / (float)Height);
+            ((pose * RowsPerPose + view / Columns) * Cell + Padding) / (float)Height,
+            Tile / (float)Width, Tile / (float)Height);
     }
 }

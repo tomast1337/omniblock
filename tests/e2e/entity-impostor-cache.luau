@@ -34,7 +34,7 @@ end
 assert(OMNI.test.entityImpostors(true, true))
 ready()
 OMNI.waitUntil(function() return OMNI.client.state.entityImpostorCacheWrites >= 1 end, 15, 0.01)
-assert(OMNI.client.state.entityImpostorCapturedViews == 26)
+assert(OMNI.client.state.entityImpostorCapturedViews == 130)
 local baked = OMNI.client.state.entityImpostorCapturedViews
 assert(OMNI.test.entityImpostors(false))
 assert(OMNI.test.entityImpostors(true, true))
@@ -65,7 +65,7 @@ assert(OMNI.client.state.entityImpostorCancellations >= 1, "pending readback was
 -- Start another uncached red capture and invalidate it partway through.
 assert(OMNI.test.impostorCache("hold-capture"))
 assert(OMNI.test.impostorCache("pack-red"))
-OMNI.waitUntil(function() return OMNI.client.state.entityImpostorViews > 0 and OMNI.client.state.entityImpostorViews < 26 end, 15, 0.001)
+OMNI.waitUntil(function() return OMNI.client.state.entityImpostorViews > 0 and OMNI.client.state.entityImpostorViews < 130 end, 15, 0.001)
 assert(OMNI.test.impostorCache("pack-original"))
 assert(OMNI.test.impostorCache("release-capture"))
 ready()

@@ -44,6 +44,7 @@ public sealed class LuauTestHostIntegrationTests
         LuauTestHost.Screenshot = () => screenshots++;
         LuauTestHost.DumpTerrain = label => terrainDump = label;
         LuauTestHost.EntityBaseline = (scene, count, distance) => scene == "sheep" && count == 16 && distance == 32;
+        LuauTestHost.EntityBaselineState = state => state == "walk-2";
         LuauTestHost.BeginEntitySample = () => true;
         LuauTestHost.EndEntitySample = label => label == "reference";
         var cleared = false;
@@ -71,6 +72,7 @@ public sealed class LuauTestHostIntegrationTests
                 "OMNI.test.screenshot(); OMNI.test.dumpTerrain('airborne'); " +
                 "assert(OMNI.test.entityBaseline('sheep', 16, 32)); " +
                 "assert(not OMNI.test.entityBaseline('bad', 16, 32)); " +
+                "assert(OMNI.test.entityBaselineState('walk-2')); assert(not OMNI.test.entityBaselineState('bad')); " +
                 "assert(OMNI.test.beginEntitySample()); assert(OMNI.test.endEntitySample('reference')); " +
                 "OMNI.test.clearEntityBaseline(); " +
                 "assert(OMNI.test.entityImpostors(true, true)); assert(not OMNI.test.entityImpostors(false)); " +
@@ -110,6 +112,7 @@ public sealed class LuauTestHostIntegrationTests
             LuauTestHost.Screenshot = null;
             LuauTestHost.DumpTerrain = null;
             LuauTestHost.EntityBaseline = null;
+            LuauTestHost.EntityBaselineState = null;
             LuauTestHost.BeginEntitySample = null;
             LuauTestHost.EndEntitySample = null;
             LuauTestHost.ClearEntityBaseline = null;

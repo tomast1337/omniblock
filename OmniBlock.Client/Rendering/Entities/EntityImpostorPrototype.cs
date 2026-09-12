@@ -12,8 +12,8 @@ using CullMode = OmniBlock.Client.Rendering.Core.CullMode;
 namespace OmniBlock.Client.Rendering.Entities;
 
 /// <summary>
-/// Opt-in, one-model/one-pose prototype with portable memory/disk caching. All GPU work is on the render thread;
-/// candidates become sampleable only after all 26 passes have been recorded before the world pass.
+/// Opt-in, one-model/bounded-pose prototype with portable memory/disk caching. All GPU work is on the render thread;
+/// candidates become sampleable only after every view of every bounded pose has been recorded.
 /// Does not bake in a live entity/renderer or rewrite a buffer referenced by another draw.
 /// </summary>
 internal sealed unsafe class EntityImpostorPrototype : IDisposable
@@ -24,7 +24,7 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
     private WgpuTexture? _atlas;
     private Texture* _depth;
     private TextureView* _depthView;
-    private WgpuMesh? _geometry;
+    private WgpuMesh[]? _geometry;
     private WgpuPipeline? _capture, _present;
     private WgpuStorageBuffer? _instances;
     private readonly Instance[] _staging = new Instance[MaxInstances];
@@ -38,7 +38,7 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
     private long _epoch;
     private string? _key, _cacheDirectory;
     private Texture2D.CaptureSource? _source;
-    private CowImpostorGeometry.Vertex[]? _vertices;
+    private CowImpostorGeometry.Vertex[][]? _vertices;
     private bool _lookupComplete, _persistenceStarted;
     private Task<CacheWork>? _work;
     private Task<CacheWrite>? _write;
@@ -68,15 +68,17 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
     public int Failures { get; private set; }
     public int Replacements { get; private set; }
     public int PendingFallbacks { get; private set; }
+    public int LastPoseMask { get; private set; }
+    public int LastHurtSubmitted { get; private set; }
 
     [StructLayout(LayoutKind.Sequential)]
-    private struct Instance { public Vector4 Center, Right, Up, UV; }
+    private struct Instance { public Vector4 Center, Right, Up, UV, Effects; }
     [StructLayout(LayoutKind.Sequential)]
     private struct Uniforms { public Matrix4x4 View, Projection; public Vector4 FogColor, Fog; }
 
     // GPU-free state gates are also tested without a graphics device.
-    internal static bool MayPublish(int completed, bool failed) => completed == EntityImpostorLayout.Views && !failed;
-    internal static int ViewsThisFrame(int completed) => Math.Clamp(EntityImpostorLayout.Views - completed, 0, 2);
+    internal static bool MayPublish(int completed, bool failed) => completed == EntityImpostorLayout.Captures && !failed;
+    internal static int ViewsThisFrame(int completed) => Math.Clamp(EntityImpostorLayout.Captures - completed, 0, 2);
 
     public void Reset()
     {
@@ -87,7 +89,8 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
         _key = null; _source = null; _vertices = null; _lookupComplete = _persistenceStarted = false;
         if (_atlas != null) Replacements++;
         _atlas?.Dispose(); _atlas = null;
-        _geometry?.Dispose(); _geometry = null;
+        if (_geometry != null) foreach (var geometry in _geometry) geometry.Dispose();
+        _geometry = null;
         if (_device != null) WgpuRelease.Deferred(_device, [], 0, (nint)_depthView, (nint)_depth);
         _depthView = null; _depth = null;
         CompletedViews = 0; _requested = _failed = false; _count = LastSubmitted = 0;
@@ -109,12 +112,12 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
     {
         if (_device != null && !ReferenceEquals(_device, device)) Dispose();
         _device = device;
-        _cacheDirectory ??= Path.Combine(gameDataDirectory, "cache", "entity-impostors", "v1");
+        _cacheDirectory ??= Path.Combine(gameDataDirectory, "cache", "entity-impostors", "v2");
         if (_generation != textures.ResourceGeneration || (!Enabled && (_requested || _atlas != null)))
         {
             Reset(); _generation = textures.ResourceGeneration;
         }
-        _count = LastSubmitted = PendingFallbacks = 0;
+        _count = LastSubmitted = PendingFallbacks = LastPoseMask = LastHurtSubmitted = 0;
         _capture?.ResetUniformPool(); _present?.ResetUniformPool();
         // Compare the effective upload snapshot as well as the pack token. This catches in-place
         // texture/sampler replacement without trusting a pack display name or mutable file path.
@@ -139,8 +142,8 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
             if (_source == null && _work == null)
             {
                 _source = source;
-                _vertices = CowImpostorGeometry.Build();
-                _radius = _vertices.Max(v => v.Position.Length()) * 1.03f;
+                _vertices = CowImpostorGeometry.BuildPoses();
+                _radius = _vertices.SelectMany(v => v).Max(v => v.Position.Length()) * 1.03f;
                 var vertices = _vertices; var radius = _radius; var epoch = _epoch; var cancel = _cancel.Token;
                 _workStarted = Stopwatch.GetTimestamp(); _workEpoch = epoch;
                 _work = Task.Run(() =>
@@ -165,6 +168,8 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
             for (var n = 0; n < views; n++)
             {
                 var index = CompletedViews;
+                var pose = index / EntityImpostorLayout.Views;
+                var view = index % EntityImpostorLayout.Views;
                 RenderPassColorAttachment color = new() { View = _atlas!.View, LoadOp = index == 0 ? LoadOp.Clear : LoadOp.Load,
                     StoreOp = StoreOp.Store, ClearValue = default, DepthSlice = uint.MaxValue };
                 RenderPassDepthStencilAttachment depth = new() { View = _depthView, DepthLoadOp = LoadOp.Clear,
@@ -173,18 +178,19 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
                 var pass = device.Api.CommandEncoderBeginRenderPass(encoder, in desc);
                 try
                 {
-                    var x = (uint)(index % EntityImpostorLayout.Columns * EntityImpostorLayout.Cell + EntityImpostorLayout.Padding);
-                    var y = (uint)(index / EntityImpostorLayout.Columns * EntityImpostorLayout.Cell + EntityImpostorLayout.Padding);
+                    var x = (uint)(view % EntityImpostorLayout.Columns * EntityImpostorLayout.Cell + EntityImpostorLayout.Padding);
+                    var y = (uint)((pose * EntityImpostorLayout.RowsPerPose + view / EntityImpostorLayout.Columns) *
+                        EntityImpostorLayout.Cell + EntityImpostorLayout.Padding);
                     device.Api.RenderPassEncoderSetViewport(pass, x, y, EntityImpostorLayout.Tile, EntityImpostorLayout.Tile, 0, 1);
                     device.Api.RenderPassEncoderSetScissorRect(pass, x, y, EntityImpostorLayout.Tile, EntityImpostorLayout.Tile);
-                    var direction = EntityLodDirections.Get(index);
+                    var direction = EntityLodDirections.Get(view);
                     var (_, up) = EntityImpostorLayout.Basis(direction);
                     var matrix = Matrix4x4.CreateLookAt(direction * (_radius * 3), Vector3.Zero, up) *
                         Matrix4x4.CreateOrthographic(_radius * 2, _radius * 2, _radius, _radius * 5);
                     _capture!.Bind(pass);
                     _capture.BindNextUniforms(pass, matrix);
                     WgpuPipeline.BindGroup(pass, 1, skin.BindGroupFor(_capture.TextureBindGroupLayout), device.Api);
-                    _geometry!.Draw(pass);
+                    _geometry![pose].Draw(pass);
                 }
                 finally { device.Api.RenderPassEncoderEnd(pass); device.Api.RenderPassEncoderRelease(pass); }
                 CompletedViews++;
@@ -254,7 +260,7 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
         EnsureResources(device, false);
         _atlas = CreateAtlas(device);
         _atlas.WriteLevel(0, 0, 0, EntityImpostorLayout.Width, EntityImpostorLayout.Height, atlas.Pixels);
-        _radius = atlas.Radius; CompletedViews = 26; _persistenceStarted = true;
+        _radius = atlas.Radius; CompletedViews = EntityImpostorLayout.Captures; _persistenceStarted = true;
     }
 
     private void StartReadback(WebGpuDevice device, CommandEncoder* encoder)
@@ -293,16 +299,21 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
     internal void ClearMemoryForTest() { Reset(); _memory.Clear(); }
 
     public bool TrySubmit(IEntityLodProvider? provider, EntityLodSelector.Decision decision,
-        Vector3 cameraRelativePosition, float yaw, float light)
+        Vector3 cameraRelativePosition, float yaw, float light, int pose, bool hurt)
     {
-        if (!Enabled || provider is not StandingCowLodProvider || decision.Intended != EntityLodTier.Impostor || decision.ViewIndex < 0) return false;
+        if (!Enabled || provider is not StandingCowLodProvider || decision.Intended != EntityLodTier.Impostor ||
+            decision.ViewIndex < 0 || pose is < 0 or >= EntityImpostorLayout.Poses) return false;
         _requested = true;
         if (!Ready || _count == MaxInstances) { PendingFallbacks++; return false; }
         var rotation = Matrix4x4.CreateRotationY(-yaw * MathF.PI / 180);
         var (right, up) = EntityImpostorLayout.Basis(EntityLodDirections.Get(decision.ViewIndex));
         _staging[_count++] = new Instance { Center = new Vector4(cameraRelativePosition, light),
             Right = new Vector4(Vector3.TransformNormal(right, rotation) * _radius, 0),
-            Up = new Vector4(Vector3.TransformNormal(up, rotation) * _radius, 0), UV = EntityImpostorLayout.UV(decision.ViewIndex) };
+            Up = new Vector4(Vector3.TransformNormal(up, rotation) * _radius, 0),
+            UV = EntityImpostorLayout.UV(decision.ViewIndex, pose),
+            Effects = new Vector4(1, 1, 1, hurt ? 0.4f : 0) };
+        LastPoseMask |= 1 << pose;
+        if (hurt) LastHurtSubmitted++;
         return true;
     }
 
@@ -312,7 +323,7 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
         var started = EntityPresentationMetrics.StartTimer();
         var fog = RenderSystem.Fog;
         _instances!.Write<Instance>(_staging.AsSpan(0, _count));
-        EntityPresentationMetrics.Uploaded(_count * 64);
+        EntityPresentationMetrics.Uploaded(_count * 80);
         var pass = target.CurrentPass;
         _present!.Bind(pass);
         _present.BindNextUniforms(pass, new Uniforms {
@@ -352,11 +363,11 @@ internal sealed unsafe class EntityImpostorPrototype : IDisposable
                 Buffer = new BufferBindingLayout { Type = BufferBindingType.ReadOnlyStorage } }];
             _present = new WgpuPipeline(device, EntityImpostorShaders.Present, "vs_main", 160, uniforms, storage,
                 null, 0, state, device.SurfaceFormat, WgpuFramebuffer.DepthFormat, textureArrayEntries: textures, label: "Cow impostor cutout");
-            _instances = new WgpuStorageBuffer(device, MaxInstances * 64, _present.TextureBindGroupLayout);
+            _instances = new WgpuStorageBuffer(device, MaxInstances * 80, _present.TextureBindGroupLayout);
         }
         if (_atlas != null || !capture) return;
         var vertices = _vertices!;
-        _geometry = new WgpuMesh(device, MemoryMarshal.AsBytes(vertices.AsSpan()), 32);
+        _geometry = vertices.Select(pose => new WgpuMesh(device, MemoryMarshal.AsBytes(pose.AsSpan()), 32)).ToArray();
         // Single mip + nearest sampling for this prototype: padded tiles cannot bleed into each
         // other. Alpha-aware mip generation and filtering are required before general rollout.
         _atlas = CreateAtlas(device);

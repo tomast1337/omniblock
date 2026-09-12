@@ -11,6 +11,7 @@ internal interface IEntityLodProvider
     double VisualDiameter { get; }
     string VariantKey { get; }
     bool Supports(Entity entity, float partialTicks);
+    int Pose(Entity entity, float partialTicks);
 }
 
 internal sealed class StandingCowLodProvider : IEntityLodProvider
@@ -49,14 +50,28 @@ internal sealed class StandingCowLodProvider : IEntityLodProvider
     public bool Supports(Entity entity, float partialTicks)
     {
         if (entity is not EntityLiving living || entity.Dead || entity.HasVehicle || entity.Passenger != null ||
-            entity.IsOnFire || living.Health <= 0 || living.DeathTime != 0 || living.HurtTime != 0 || living.HeldItem != null ||
+            entity.IsOnFire || living.Health <= 0 || living.DeathTime != 0 || living.HeldItem != null ||
             living.GetTexture() != "/mob/cow.png" || entity.Type?.Definition?.Scale != 1) return false;
         var body = EntityLodDirections.InterpolateYaw(living.LastBodyYaw, living.BodyYaw, partialTicks);
         var head = EntityLodDirections.InterpolateYaw(entity.PrevYaw, entity.Yaw, partialTicks);
         var pitch = entity.PrevPitch + (entity.Pitch - entity.PrevPitch) * partialTicks;
-        return Math.Abs(EntityLodDirections.InterpolateYaw(body, head, 1) - body) < 0.01 && Math.Abs(pitch) < 0.01 &&
-            Math.Abs(living.WalkAnimationSpeed) < 0.0001 && Math.Abs(living.LastWalkAnimationSpeed) < 0.0001 &&
-            Math.Abs(entity.X - entity.LastTickX) < 0.0001 && Math.Abs(entity.Y - entity.LastTickY) < 0.0001 &&
-            Math.Abs(entity.Z - entity.LastTickZ) < 0.0001;
+        return Math.Abs(EntityLodDirections.InterpolateYaw(body, head, 1) - body) < 0.01 && Math.Abs(pitch) < 0.01;
+    }
+
+    public int Pose(Entity entity, float partialTicks)
+    {
+        if (entity is not EntityLiving living) return 0;
+        return SelectPose(living.LastWalkAnimationSpeed, living.WalkAnimationSpeed,
+            living.AnimationPhase, partialTicks);
+    }
+
+    internal static int SelectPose(float lastAmount, float amountNow, float animationPhase, float partialTicks)
+    {
+        var amount = lastAmount + (amountNow - lastAmount) * partialTicks;
+        if (Math.Abs(amount) < 0.05f) return 0;
+        var phase = animationPhase - amountNow * (1 - partialTicks);
+        var cycle = phase * 0.6662f / (MathF.PI * 2);
+        cycle -= MathF.Floor(cycle);
+        return 1 + ((int)MathF.Floor(cycle * 4 + 0.5f) & 3);
     }
 }

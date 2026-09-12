@@ -160,6 +160,36 @@ internal sealed class EntityRenderBaseline : IDisposable
 
     public bool BelongsTo(IWorldContext? world) => ReferenceEquals(_world, world);
 
+    /// <summary>Restricted deterministic animation/effect state for impostor E2E coverage.</summary>
+    public bool SetImpostorState(string state)
+    {
+        if (Entities.Count == 0 || Entities.Any(e => e is not EntityLiving)) return false;
+        static void Set(EntityLiving entity, string property, object value) =>
+            typeof(EntityLiving).GetProperty(property, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!
+                .SetValue(entity, value);
+        foreach (var entity in Entities.Cast<EntityLiving>())
+        {
+            if (state == "idle")
+            {
+                Set(entity, nameof(EntityLiving.LastWalkAnimationSpeed), 0f);
+                Set(entity, nameof(EntityLiving.WalkAnimationSpeed), 0f);
+                Set(entity, nameof(EntityLiving.AnimationPhase), 0f);
+                Set(entity, nameof(EntityLiving.HurtTime), 0);
+            }
+            else if (state is "walk-0" or "walk-1" or "walk-2" or "walk-3")
+            {
+                var phase = state[^1] - '0';
+                Set(entity, nameof(EntityLiving.LastWalkAnimationSpeed), 1f);
+                Set(entity, nameof(EntityLiving.WalkAnimationSpeed), 1f);
+                Set(entity, nameof(EntityLiving.AnimationPhase), phase * MathF.PI / 2 / .6662f);
+                Set(entity, nameof(EntityLiving.HurtTime), 0);
+            }
+            else if (state == "hurt") entity.AnimateHurt();
+            else return false;
+        }
+        return true;
+    }
+
     public void PrepareFrame()
     {
         // Pin client presentation only, never touch the integrated server's world/RNG.
