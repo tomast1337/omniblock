@@ -150,3 +150,7 @@ It currently supports `E2E_DISPLAY_BACKEND=xvfb`. The reserved `headless` branch
 fails explicitly until an in-process headless client backend exists. When that
 backend lands, only this launcher branch and client bootstrap should change;
 `smoke.luau`, its selectors, waits, and assertions stay unchanged.
+
+`teleport-preload.luau` performs a ten-chunk same-dimension relocation. It asserts that gameplay is
+covered by the terrain-loading screen while the destination is incomplete, then waits for the same
+decoded-column and uploaded-mesh contract used by initial world entry before accepting the player.

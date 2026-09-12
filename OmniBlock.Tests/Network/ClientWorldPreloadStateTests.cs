@@ -54,6 +54,38 @@ public sealed class ClientWorldPreloadStateTests
     }
 
     [Fact]
+    public void Unloading_a_column_discards_its_old_mesh_observations()
+    {
+        ClientWorldPreloadState state = new();
+        state.SetSpawn(8, 64, 8);
+        state.MarkChunkDecoded(1, 1);
+        state.MarkMeshUploaded(new Vector3D<int>(16, 64, 16));
+
+        state.MarkChunkUnloaded(1, 1);
+
+        Assert.False(state.IsChunkDecoded(1, 1));
+        Assert.False(state.HasMesh(1, 1));
+    }
+
+    [Fact]
+    public void Retargeting_spawn_reuses_only_observations_at_the_destination()
+    {
+        ClientWorldPreloadState state = new();
+        state.SetSpawn(8, 64, 8);
+        state.MarkChunkDecoded(0, 0);
+        state.MarkChunkDecoded(10, 10);
+        state.MarkMeshUploaded(new Vector3D<int>(0, 64, 0));
+        state.MarkMeshUploaded(new Vector3D<int>(160, 64, 160));
+
+        state.SetSpawn(168, 64, 168);
+
+        Assert.True(state.IsChunkDecoded(0, 0));
+        Assert.True(state.HasMesh(0, 0));
+        Assert.Equal(1, state.DecodedChunks);
+        Assert.Equal(1, state.UploadedMeshes);
+    }
+
+    [Fact]
     public void Required_unmeshed_startup_sections_are_identified_for_priority()
     {
         ClientWorldPreloadState state = new();

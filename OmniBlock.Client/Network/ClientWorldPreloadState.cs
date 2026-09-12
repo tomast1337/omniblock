@@ -31,7 +31,11 @@ public sealed class ClientWorldPreloadState
     }
 
     public void MarkChunkDecoded(int x, int z) => _decodedChunks.Add(new ChunkPos(x, z));
-    public void MarkChunkUnloaded(int x, int z) => _decodedChunks.Remove(new ChunkPos(x, z));
+    public void MarkChunkUnloaded(int x, int z)
+    {
+        _decodedChunks.Remove(new ChunkPos(x, z));
+        _uploadedSections.RemoveWhere(section => section.X == x && section.Z == z);
+    }
 
     public void MarkMeshUploaded(Vector3D<int> pos) =>
         _uploadedSections.Add(new Vector3D<int>(pos.X >> 4, pos.Y >> 4, pos.Z >> 4));

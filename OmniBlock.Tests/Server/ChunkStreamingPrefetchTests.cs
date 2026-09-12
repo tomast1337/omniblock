@@ -51,4 +51,15 @@ public sealed class ChunkStreamingPrefetchTests
         Assert.Contains(new ChunkPos(-5, 0), west);
         Assert.DoesNotContain(new ChunkPos(-5, 0), east);
     }
+
+    [Theory]
+    [InlineData(0, 0, false)]
+    [InlineData(1, -1, false)]
+    [InlineData(2, 0, true)]
+    [InlineData(0, -2, true)]
+    [InlineData(40, 35, true)]
+    public void Multi_chunk_jumps_are_relocations(int deltaX, int deltaZ, bool expected)
+    {
+        Assert.Equal(expected, ChunkMap.IsRelocation(deltaX, deltaZ));
+    }
 }

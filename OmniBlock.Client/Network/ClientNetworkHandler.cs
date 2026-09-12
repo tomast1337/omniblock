@@ -79,6 +79,7 @@ public class ClientNetworkHandler : NetHandler
 
     private long _snapshotRecords;
     private bool _terrainLoaded;
+    private bool _awaitingRespawnPosition;
 
     private int _ticks;
     private ClientWorld _worldClient;
@@ -1002,8 +1003,12 @@ public class ClientNetworkHandler : NetHandler
 
         ent.CameraOffset = 0.0F;
 
+        var relocation = false;
         if (packet is IPlayerMovePosition packetMove)
         {
+            relocation = _terrainLoaded &&
+                         (_awaitingRespawnPosition || IsRelocation(
+                             ent.X, ent.Z, packetMove.X, packetMove.Z));
             ent.PrevX = ent.X = packetMove.X;
             ent.PrevY = ent.Y = packetMove.Y;
             ent.PrevZ = ent.Z = packetMove.Z;
@@ -1030,7 +1035,27 @@ public class ClientNetworkHandler : NetHandler
             ent.PrevZ = ent.Z;
             _terrainLoaded = true;
             Preload.SetSpawn(ent.X, ent.Y, ent.Z);
+            _awaitingRespawnPosition = false;
         }
+        else if (relocation)
+        {
+            // Keep observations for still-resident overlap columns; SetSpawn changes which keys
+            // count toward readiness. Chunk unload messages remove both their decoded and mesh
+            // observations, so stale old-world terrain cannot satisfy the destination contract.
+            Preload.SetSpawn(ent.X, ent.Y, ent.Z);
+            _awaitingRespawnPosition = false;
+            if (!Preload.IsReady)
+                _context.Navigator.Navigate(_context.Factory.CreateTerrainScreen(this));
+        }
+    }
+
+    internal static bool IsRelocation(double oldX, double oldZ, double newX, double newZ)
+    {
+        var oldChunkX = (int)Math.Floor(oldX / 16.0);
+        var oldChunkZ = (int)Math.Floor(oldZ / 16.0);
+        var newChunkX = (int)Math.Floor(newX / 16.0);
+        var newChunkZ = (int)Math.Floor(newZ / 16.0);
+        return Math.Abs(newChunkX - oldChunkX) > 1 || Math.Abs(newChunkZ - oldChunkZ) > 1;
     }
 
     private void onChunkStatusUpdate(ChunkStatusUpdateMessage packet)
@@ -1310,6 +1335,7 @@ public class ClientNetworkHandler : NetHandler
 
     private void onPlayerRespawn(PlayerRespawnMessage packet)
     {
+        _awaitingRespawnPosition = packet.DimensionId == _context.PlayerHost.Player.DimensionId;
         if (packet.DimensionId != _context.PlayerHost.Player.DimensionId)
         {
             // Every entity in the old world is about to go away without a destroy packet each, so

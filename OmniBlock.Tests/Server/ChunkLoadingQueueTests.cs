@@ -35,4 +35,15 @@ public sealed class ChunkLoadingQueueTests
         Assert.Equal(expected,
             ChunkLoadingQueue.CanPublishRing(completedRing, nearestOutstandingRing));
     }
+
+    [Fact]
+    public void Relocation_destination_precedes_every_ordinary_distance_ring()
+    {
+        var relocation = new ChunkPriority(-1, 0, 10);
+        var currentChunk = new ChunkPriority(0, 0, 0);
+        var nearbyChunk = new ChunkPriority(1, -1, 0);
+
+        Assert.True(relocation.CompareTo(currentChunk) < 0);
+        Assert.True(relocation.CompareTo(nearbyChunk) < 0);
+    }
 }

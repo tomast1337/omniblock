@@ -188,7 +188,30 @@ internal class ChunkMap
         }
 
         var previous = GetChunksAt(player, playerLastChunkCenterX, playerLastChunkCenterZ, _viewDistance);
-        player.UpdateChunkStreamingMotion(playerChunkCenterDeltaX, playerChunkCenterDeltaZ);
+        var relocation = IsRelocation(playerChunkCenterDeltaX, playerChunkCenterDeltaZ);
+        if (relocation)
+        {
+            // A teleport is not velocity. Using its potentially enormous delta as prefetch motion
+            // produces a speculative strip in an arbitrary direction and lets ordinary streaming
+            // compete with the chunk the player is already standing in.
+            player.UpdateChunkStreamingMotion(0, 0);
+
+            // Existing loader jobs may already occupy every worker and cannot yet be cancelled
+            // cooperatively. Put the destination centre in a distinct priority ring so it is the
+            // first request claimed and published as soon as any worker becomes available.
+            if (GetOrCreateChunk(playerChunkCenterX, playerChunkCenterZ, false) is { } center)
+            {
+                if (!center.HasPlayer(player)) center.addPlayer(player);
+            }
+            else
+            {
+                loadQueue.Add(playerChunkCenterX, playerChunkCenterZ, player, relocationCritical: true);
+            }
+        }
+        else
+        {
+            player.UpdateChunkStreamingMotion(playerChunkCenterDeltaX, playerChunkCenterDeltaZ);
+        }
         var desired = GetChunksAt(player, playerChunkCenterX, playerChunkCenterZ, _viewDistance);
         ReconcilePlayerChunks(player, previous, desired);
         loadQueue.ReprioritizeAll();
@@ -196,6 +219,9 @@ internal class ChunkMap
         player.LastX = player.X;
         player.LastZ = player.Z;
     }
+
+    internal static bool IsRelocation(int chunkDeltaX, int chunkDeltaZ) =>
+        Math.Abs(chunkDeltaX) > 1 || Math.Abs(chunkDeltaZ) > 1;
 
     public int getBlockViewDistance() => _viewDistance * 16 - 16;
 
@@ -370,6 +396,10 @@ internal class ChunkMap
 
                 if (player.ActiveChunks.Remove(_chunkPos))
                 {
+                    // Receipt is scoped to the active residency. Retaining this marker after an
+                    // unload lets light/block deltas race ahead of the full chunk when a player
+                    // teleports away and later returns.
+                    player.ChunksTerrainSentToClient.Remove(_chunkPos);
                     player.NetworkHandler.SendMessage(new ChunkStatusUpdateMessage
                     {
                         X = _chunkPos.X,

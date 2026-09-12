@@ -61,7 +61,7 @@ internal class ChunkLoadingQueue
             ? Math.Clamp((processorCount - 2) / 2, 1, MaxChunkLoadWorkers / 2)
             : Math.Clamp(processorCount - 2, 1, MaxChunkLoadWorkers);
 
-    public void Add(int x, int z, ServerPlayerEntity player)
+    public void Add(int x, int z, ServerPlayerEntity player, bool relocationCritical = false)
     {
         var hash = ChunkMap.GetChunkHash(x, z);
 
@@ -70,10 +70,14 @@ internal class ChunkLoadingQueue
             if (_inFlightChunks.TryGetValue(hash, out var existing))
             {
                 existing.AddPlayer(player);
+                if (relocationCritical && existing.PromoteRelocationCritical() &&
+                    _queue.Remove(existing, out _, out _))
+                    _queue.Enqueue(existing, ToQueuePriority(existing.GetPriority()));
                 return;
             }
 
             var pending = new PendingChunk(hash, x, z, _nextSequence++, player);
+            if (relocationCritical) pending.PromoteRelocationCritical();
             _inFlightChunks[hash] = pending;
             _queue.Enqueue(pending, ToQueuePriority(pending.GetPriority()));
             Monitor.Pulse(_queueLock);
@@ -308,13 +312,24 @@ internal class ChunkLoadingQueue
         public HashSet<ServerPlayerEntity> Players { get; } = [];
         public long Sequence { get; }
         public bool IsEmpty => Players.Count == 0;
+        public bool RelocationCritical { get; private set; }
 
         public void AddPlayer(ServerPlayerEntity player) => Players.Add(player);
 
         public void RemovePlayer(ServerPlayerEntity player) => Players.Remove(player);
 
+        public bool PromoteRelocationCritical()
+        {
+            if (RelocationCritical) return false;
+            RelocationCritical = true;
+            return true;
+        }
+
         public ChunkPriority GetPriority()
         {
+            if (RelocationCritical && !IsEmpty)
+                return new ChunkPriority(-1, 0.0, Sequence);
+
             var hasAny = false;
             ChunkPriority bestPriority = default;
 
