@@ -138,4 +138,23 @@ public sealed class SectionRenderStateTests
         state.ClearRequest();
         Assert.Equal(-1, state.RequestedDeadlineFrame);
     }
+
+    [Fact]
+    public void Near_field_rescue_duration_is_consecutive_and_expires_deterministically()
+    {
+        using var state = new SectionRenderState(default);
+
+        state.RecordNearFieldRescue(NearFieldRescueReason.NewPresentation, 10);
+        state.RecordNearFieldRescue(NearFieldRescueReason.IncompleteAdjacency, 11);
+
+        Assert.Equal(NearFieldRescueReason.IncompleteAdjacency, state.ActiveRescueReasons);
+        Assert.Equal(2, state.RescueDurationFrames);
+        state.ClearNearFieldRescue();
+        Assert.Equal(NearFieldRescueReason.None, state.ActiveRescueReasons);
+        Assert.Equal(0, state.RescueDurationFrames);
+
+        state.RecordNearFieldRescue(NearFieldRescueReason.PresentationRegression, 20);
+        Assert.Equal(1, state.RescueDurationFrames);
+        Assert.Equal(20, state.RescueStartedFrame);
+    }
 }

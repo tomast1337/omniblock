@@ -179,6 +179,58 @@ public sealed class ChunkOcclusionCullerTests
         Assert.Contains(disconnected, visitor.Nodes);
     }
 
+    [Fact]
+    public void Complete_near_field_graph_needs_no_rescue_after_install_grace()
+    {
+        using var state = ResidentState(frame: 10, sealedNeighbors: true);
+
+        Assert.Equal(
+            NearFieldRescueReason.NewPresentation,
+            ChunkRenderer.GetNearFieldRescueReasons(state, 11));
+        Assert.Equal(
+            NearFieldRescueReason.None,
+            ChunkRenderer.GetNearFieldRescueReasons(state, 12));
+    }
+
+    [Fact]
+    public void Missing_adjacency_and_recent_graph_regression_are_explicit_rescue_reasons()
+    {
+        using var state = ResidentState(frame: 1, sealedNeighbors: false);
+        state.NoteAdjacencyChanged(20);
+        state.Renderer!.LastVisibleFrame = 20;
+
+        var reasons = ChunkRenderer.GetNearFieldRescueReasons(state, 21);
+
+        Assert.True((reasons & NearFieldRescueReason.IncompleteAdjacency) != 0);
+        Assert.True((reasons & NearFieldRescueReason.PresentationRegression) != 0);
+        Assert.True((reasons & NearFieldRescueReason.NewPresentation) == 0);
+    }
+
+    [Fact]
+    public void World_vertical_boundaries_do_not_require_out_of_world_neighbors()
+    {
+        using var bottom = new SubChunkRenderer(new Vector3D<int>(0, 0, 0));
+        bottom.AdjacentUp = bottom.AdjacentNorth = bottom.AdjacentSouth =
+            bottom.AdjacentWest = bottom.AdjacentEast = bottom;
+        Assert.True(ChunkRenderer.HasCompleteAdjacency(bottom));
+
+        using var top = new SubChunkRenderer(new Vector3D<int>(0, 112, 0));
+        top.AdjacentDown = top.AdjacentNorth = top.AdjacentSouth =
+            top.AdjacentWest = top.AdjacentEast = top;
+        Assert.True(ChunkRenderer.HasCompleteAdjacency(top));
+    }
+
+    private static SectionRenderState ResidentState(int frame, bool sealedNeighbors)
+    {
+        var state = new SectionRenderState(new Vector3D<int>(0, 64, 0));
+        state.Version.MarkDirty();
+        var epoch = state.Version.SnapshotIfNeeded()!.Value;
+        var renderer = Node(0, sealedNeighbors);
+        state.CommitPresentation(renderer, SectionPresentation.MetadataOnly(epoch));
+        state.NotePresentationInstalled(frame);
+        return state;
+    }
+
     private static SubChunkRenderer Node(int x, bool sealedNeighbors = false)
     {
         var node = new SubChunkRenderer(new Vector3D<int>(x, 64, 0));

@@ -15,6 +15,15 @@ internal enum SectionDirtyReason : byte
     LeadingEdge = 1 << 5
 }
 
+[Flags]
+internal enum NearFieldRescueReason : byte
+{
+    None = 0,
+    IncompleteAdjacency = 1 << 0,
+    NewPresentation = 1 << 1,
+    PresentationRegression = 1 << 2
+}
+
 /// <summary>
 ///     Authoritative main-thread lifecycle state for one render section. Scheduling collections
 ///     contain only its position; version, request metadata, and the resident mesh live here.
@@ -52,6 +61,36 @@ internal sealed class SectionRenderState(Vector3D<int> position, MeshLifecycleDi
     public long DeferredAt { get; private set; } = -1;
     public long FirstUploadedAt { get; private set; } = -1;
     public long LastUploadedAt { get; private set; } = -1;
+    public int PresentationInstalledFrame { get; private set; } = -1;
+    public int AdjacencyChangedFrame { get; private set; } = -1;
+    public NearFieldRescueReason ActiveRescueReasons { get; private set; }
+    public int RescueStartedFrame { get; private set; } = -1;
+    public int RescueDurationFrames { get; private set; }
+
+    public void NotePresentationInstalled(int frame) => PresentationInstalledFrame = frame;
+
+    public void NoteAdjacencyChanged(int frame) => AdjacencyChangedFrame = frame;
+
+    public void RecordNearFieldRescue(NearFieldRescueReason reasons, int frame)
+    {
+        if (reasons == NearFieldRescueReason.None)
+        {
+            ClearNearFieldRescue();
+            return;
+        }
+
+        if (ActiveRescueReasons == NearFieldRescueReason.None || frame > RescueStartedFrame + RescueDurationFrames)
+            RescueStartedFrame = frame;
+        ActiveRescueReasons = reasons;
+        RescueDurationFrames = frame - RescueStartedFrame + 1;
+    }
+
+    public void ClearNearFieldRescue()
+    {
+        ActiveRescueReasons = NearFieldRescueReason.None;
+        RescueStartedFrame = -1;
+        RescueDurationFrames = 0;
+    }
 
     public void RememberRequest(
         SectionDirtyReason reason,

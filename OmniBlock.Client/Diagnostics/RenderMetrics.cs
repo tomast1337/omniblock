@@ -20,6 +20,10 @@ internal static class RenderMetrics
     public static readonly MetricHandle<int> PortalVisited = MetricRegistry.Register<int>("render:chunks.portal_visited");
     public static readonly MetricHandle<int> DisconnectedSeeds = MetricRegistry.Register<int>("render:chunks.disconnected_seeds");
     public static readonly MetricHandle<int> SafetyRescued = MetricRegistry.Register<int>("render:chunks.safety_rescued");
+    public static readonly MetricHandle<int> IncompleteAdjacencyRescued = MetricRegistry.Register<int>("render:chunks.rescue.incomplete_adjacency");
+    public static readonly MetricHandle<int> NewPresentationRescued = MetricRegistry.Register<int>("render:chunks.rescue.new_presentation");
+    public static readonly MetricHandle<int> PresentationRegressionRescued = MetricRegistry.Register<int>("render:chunks.rescue.presentation_regression");
+    public static readonly MetricHandle<int> OldestSafetyRescueFrames = MetricRegistry.Register<int>("render:chunks.rescue.oldest_frames");
     public static readonly MetricHandle<int> ResidentSolidLayers = MetricRegistry.Register<int>("render:chunks.resident_solid_layers");
     public static readonly MetricHandle<int> ResidentTranslucentLayers = MetricRegistry.Register<int>("render:chunks.resident_translucent_layers");
     public static readonly MetricHandle<int> PresentedSolidLayers = MetricRegistry.Register<int>("render:chunks.presented_solid_layers");

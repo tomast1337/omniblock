@@ -40,6 +40,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     internal const int CriticalDispatchReserve = MaxMeshWorkers;
     internal const int CriticalUploadReserve = MaxMeshWorkers * 2;
     internal const int LightUploadLimitPerFrame = 4;
+    internal const int NearFieldGraphGraceFrames = 2;
 
     //TODO: MAKE THIS CONFIGURABLE
     private const double MeshUploadBudgetMs = 1.5;
@@ -75,7 +76,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly List<SubChunkRenderer> _renderersToRemove = [];
     private readonly HashSet<Vector3D<int>> _activePresentationRegressions = [];
     private readonly HashSet<Vector3D<int>> _currentPresentationRegressions = [];
-    private readonly HashSet<Vector3D<int>> _presentedThisFrame = [];
+    private readonly HashSet<SectionRenderState> _activeNearFieldRescues = [];
+    private readonly HashSet<SectionRenderState> _nearFieldRescuesThisFrame = [];
     private readonly Queue<Vector3D<int>> _pendingLightUpdates = [];
     private readonly HashSet<Vector3D<int>> _pendingLightUpdateKeys = [];
     private readonly SectionMeshRequestQueue _pendingMeshUpdates = new();
@@ -138,6 +140,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private SpatialQueryDiagnostics _spatialQueryThisFrame;
     private bool _hasPreparedFrame;
     private int _safetyRescuedThisFrame;
+    private int _incompleteAdjacencyRescuedThisFrame;
+    private int _newPresentationRescuedThisFrame;
+    private int _presentationRegressionRescuedThisFrame;
+    private int _oldestSafetyRescueFramesThisFrame;
     private int _residentSolidLayersThisFrame;
     private int _residentTranslucentLayersThisFrame;
     private int _presentedSolidLayersThisFrame;
@@ -410,6 +416,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("portalVisited\t").Append(presentation.PortalVisited).AppendLine();
         text.Append("disconnectedSeeds\t").Append(presentation.DisconnectedSeeds).AppendLine();
         text.Append("safetyRescued\t").Append(presentation.SafetyRescued).AppendLine();
+        text.Append("incompleteAdjacencyRescued\t").Append(presentation.IncompleteAdjacencyRescued).AppendLine();
+        text.Append("newPresentationRescued\t").Append(presentation.NewPresentationRescued).AppendLine();
+        text.Append("presentationRegressionRescued\t").Append(presentation.PresentationRegressionRescued).AppendLine();
+        text.Append("oldestSafetyRescueFrames\t").Append(presentation.OldestSafetyRescueFrames).AppendLine();
         text.Append("presentedSolidLayers\t").Append(presentation.PresentedSolidLayers).AppendLine();
         text.Append("presentedTranslucentLayers\t").Append(presentation.PresentedTranslucentLayers).AppendLine();
         text.Append("emptyLayersSubmitted\t").Append(presentation.EmptyLayersSubmitted).AppendLine();
@@ -417,6 +427,16 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("terrainUniformEntries\t").Append(presentation.TerrainUniformEntries).AppendLine();
         AppendTiming("findVisible", presentation.FindVisible);
         AppendTiming("terrainSubmitCpu", presentation.TerrainSubmit);
+        foreach (var state in _residentSections)
+        {
+            if (state.ActiveRescueReasons == NearFieldRescueReason.None) continue;
+            text.Append("nearFieldRescue\t")
+                .Append(state.Position.X).Append('\t')
+                .Append(state.Position.Y).Append('\t')
+                .Append(state.Position.Z).Append('\t')
+                .Append(state.ActiveRescueReasons).Append('\t')
+                .Append(state.RescueDurationFrames).AppendLine();
+        }
         text.Append("deferredStreamingBoundaries\t").Append(DeferredStreamingBoundaryCount).AppendLine();
         text.Append("leadingEdgeQueued\t").Append(_leadingEdgeSections.Count).AppendLine();
         text.Append("leadingEdgePending\t").Append(LeadingEdgePending).AppendLine();
@@ -621,12 +641,18 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _findVisibleMsThisFrame = Stopwatch.GetElapsedTime(findVisibleAt).TotalMilliseconds;
         ChunksInFrustum = _visibilityThisFrame.FrustumCandidates;
 
-        var safetyDiagnostics = AddOcclusionSafetyRing(cameraChunkPos, _frameIndex, renderParams.Camera);
+        var safetyDiagnostics = RescueUntrustedNearField(cameraChunkPos, _frameIndex, renderParams.Camera);
         _safetyRescuedThisFrame = safetyDiagnostics.Rescued;
+        _incompleteAdjacencyRescuedThisFrame = safetyDiagnostics.IncompleteAdjacency;
+        _newPresentationRescuedThisFrame = safetyDiagnostics.NewPresentation;
+        _presentationRegressionRescuedThisFrame = safetyDiagnostics.PresentationRegression;
+        _oldestSafetyRescueFramesThisFrame = safetyDiagnostics.OldestDurationFrames;
         _visibilityThisFrame = _visibilityThisFrame with
         {
             FrustumTests = _visibilityThisFrame.FrustumTests + safetyDiagnostics.FrustumTests
         };
+
+        RecordMissingNearFieldRegressions(cameraChunkPos, renderParams.Camera);
 
         var visitedVisibleCount = _visibleRenderers.Count;
         ChunksOccluded = ChunksInFrustum - visitedVisibleCount;
@@ -650,8 +676,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             _visibleRenderers.AddRange(_occludedRenderersBuffer);
             ChunksRendered = _visibleRenderers.Count;
         }
-
-        RecordPresentationState(cameraChunkPos, renderParams.Camera);
 
         _residentSolidLayersThisFrame = _residentSpatialIndex.SolidLayerCount;
         _residentTranslucentLayersThisFrame = _residentSpatialIndex.TranslucentLayerCount;
@@ -912,6 +936,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     UpdateAdjacency(resident, true);
                 }
 
+                section.NotePresentationInstalled(_frameIndex);
                 _residentSpatialIndex.AddOrUpdate(resident);
 #if DEBUG
                 if (_residentSpatialIndex.Count != _residentSections.Count ||
@@ -1004,21 +1029,39 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             west?.AdjacentEast = null;
             east?.AdjacentWest = null;
         }
+
+        NoteGraphChanged(renderer);
+        NoteGraphChanged(down);
+        NoteGraphChanged(up);
+        NoteGraphChanged(north);
+        NoteGraphChanged(south);
+        NoteGraphChanged(west);
+        NoteGraphChanged(east);
+
+        void NoteGraphChanged(SubChunkRenderer? changed)
+        {
+            if (changed != null && _sections.TryGetValue(changed.Position, out var state))
+                state.NoteAdjacencyChanged(_frameIndex);
+        }
     }
 
     /// <summary>
-    ///     Conservatively draws completed meshes in the radial safety ring when they are inside
-    ///     the camera frustum. Portal-style chunk occlusion is an optimization, not an authority on
-    ///     whether nearby loaded terrain exists; a temporarily incomplete adjacency graph must not
-    ///     turn collision-bearing terrain invisible until the player enters its immediate section.
+    ///     Rescues only near-field presentations whose portal result is not yet trustworthy. The
+    ///     safety ring remains prepared and resident independently; a stable, complete graph is
+    ///     subject to normal frustum and portal occlusion even inside that ring.
     /// </summary>
-    private (int Rescued, int FrustumTests) AddOcclusionSafetyRing(
+    private NearFieldRescueDiagnostics RescueUntrustedNearField(
         Vector3D<int> cameraChunkPos,
         int frame,
         ICuller camera)
     {
+        _nearFieldRescuesThisFrame.Clear();
         var rescued = 0;
         var frustumTests = 0;
+        var incompleteAdjacency = 0;
+        var newPresentation = 0;
+        var presentationRegression = 0;
+        var oldestDuration = 0;
         var size = SubChunkRenderer.Size;
         for (var chunkX = -MeshSafetyRingRadius; chunkX <= MeshSafetyRingRadius; chunkX++)
         {
@@ -1035,22 +1078,114 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                         cameraChunkPos.Z + chunkZ * size);
                     if (TryGetResidentState(pos, out var state))
                     {
-                        if (state.Renderer!.LastVisibleFrame != frame)
+                        var renderer = state.Renderer!;
+                        if (renderer.LastVisibleFrame == frame)
                         {
-                            state.Renderer.LastVisibleFrame = frame;
-                            frustumTests++;
-                            if (camera.IsBoundingBoxInFrustum(state.Renderer.BoundingBox))
-                            {
-                                Visit(state.Renderer);
-                                rescued++;
-                            }
+                            state.ClearNearFieldRescue();
+                            continue;
+                        }
+
+                        var reasons = GetNearFieldRescueReasons(state, frame);
+                        if (reasons == NearFieldRescueReason.None)
+                        {
+                            state.ClearNearFieldRescue();
+                            continue;
+                        }
+
+                        frustumTests++;
+                        if (!camera.IsBoundingBoxInFrustum(renderer.BoundingBox))
+                        {
+                            state.ClearNearFieldRescue();
+                            continue;
+                        }
+
+                        renderer.LastVisibleFrame = frame;
+                        Visit(renderer);
+                        state.RecordNearFieldRescue(reasons, frame);
+                        _nearFieldRescuesThisFrame.Add(state);
+                        rescued++;
+                        oldestDuration = Math.Max(oldestDuration, state.RescueDurationFrames);
+                        if ((reasons & NearFieldRescueReason.IncompleteAdjacency) != 0) incompleteAdjacency++;
+                        if ((reasons & NearFieldRescueReason.NewPresentation) != 0) newPresentation++;
+                        if ((reasons & NearFieldRescueReason.PresentationRegression) != 0)
+                        {
+                            presentationRegression++;
                         }
                     }
                 }
             }
         }
 
-        return (rescued, frustumTests);
+        foreach (var state in _activeNearFieldRescues)
+        {
+            if (!_nearFieldRescuesThisFrame.Contains(state)) state.ClearNearFieldRescue();
+        }
+        _activeNearFieldRescues.Clear();
+        _activeNearFieldRescues.UnionWith(_nearFieldRescuesThisFrame);
+
+        return new NearFieldRescueDiagnostics(
+            rescued, frustumTests, incompleteAdjacency, newPresentation,
+            presentationRegression, oldestDuration);
+    }
+
+    internal static NearFieldRescueReason GetNearFieldRescueReasons(SectionRenderState state, int frame)
+    {
+        var renderer = state.Renderer!;
+        var reasons = NearFieldRescueReason.None;
+        if (!HasCompleteAdjacency(renderer)) reasons |= NearFieldRescueReason.IncompleteAdjacency;
+        if (IsWithinNearFieldGrace(state.PresentationInstalledFrame, frame))
+            reasons |= NearFieldRescueReason.NewPresentation;
+        if (renderer.LastVisibleFrame == frame - 1 &&
+            IsWithinNearFieldGrace(state.AdjacencyChangedFrame, frame))
+            reasons |= NearFieldRescueReason.PresentationRegression;
+        return reasons;
+    }
+
+    private static bool IsWithinNearFieldGrace(int eventFrame, int frame) =>
+        eventFrame >= 0 && frame >= eventFrame && frame - eventFrame < NearFieldGraphGraceFrames;
+
+    internal static bool HasCompleteAdjacency(SubChunkRenderer renderer) =>
+        (renderer.Position.Y == 0 || renderer.AdjacentDown != null) &&
+        (renderer.Position.Y + SubChunkRenderer.Size >= ChuckFormat.WorldHeight || renderer.AdjacentUp != null) &&
+        renderer.AdjacentNorth != null && renderer.AdjacentSouth != null &&
+        renderer.AdjacentWest != null && renderer.AdjacentEast != null;
+
+    /// <summary>
+    ///     Tracks an actual near-field hole: source terrain that had a resident presentation but
+    ///     no longer has one. Portal-occluded residents and successfully rescued graph transitions
+    ///     are deliberately not regressions.
+    /// </summary>
+    private void RecordMissingNearFieldRegressions(Vector3D<int> cameraChunkPos, ICuller camera)
+    {
+        _currentPresentationRegressions.Clear();
+        var size = SubChunkRenderer.Size;
+        for (var chunkX = -MeshSafetyRingRadius; chunkX <= MeshSafetyRingRadius; chunkX++)
+        for (var chunkZ = -MeshSafetyRingRadius; chunkZ <= MeshSafetyRingRadius; chunkZ++)
+        {
+            if (chunkX * chunkX + chunkZ * chunkZ > MeshSafetyRingRadius * MeshSafetyRingRadius)
+                continue;
+
+            for (var y = 0; y < ChuckFormat.WorldHeight; y += size)
+            {
+                var pos = new Vector3D<int>(
+                    cameraChunkPos.X + chunkX * size,
+                    y,
+                    cameraChunkPos.Z + chunkZ * size);
+                if (!_everPresentedMeshes.Contains(pos) ||
+                    TryGetResidentState(pos, out _) ||
+                    !HasRenderableSourceChunk(_world, pos)) continue;
+
+                var bounds = new Box(pos.X - 6, pos.Y - 6, pos.Z - 6,
+                    pos.X + size + 6, pos.Y + size + 6, pos.Z + size + 6);
+                if (!camera.IsBoundingBoxInFrustum(bounds)) continue;
+
+                _currentPresentationRegressions.Add(pos);
+                if (_activePresentationRegressions.Add(pos)) _presentationRegressionCount++;
+            }
+        }
+
+        _activePresentationRegressions.RemoveWhere(pos => !_currentPresentationRegressions.Contains(pos));
+        foreach (var renderer in _visibleRenderers) _everPresentedMeshes.Add(renderer.Position);
     }
 
     private void FinalizePresentationProfile()
@@ -1076,6 +1211,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             _visibilityThisFrame.PortalVisited,
             _visibilityThisFrame.DisconnectedSeeds,
             _safetyRescuedThisFrame,
+            _incompleteAdjacencyRescuedThisFrame,
+            _newPresentationRescuedThisFrame,
+            _presentationRegressionRescuedThisFrame,
+            _oldestSafetyRescueFramesThisFrame,
             _visibleRenderers.Count,
             _presentedSolidLayersThisFrame,
             _presentedTranslucentLayersThisFrame,
@@ -1183,49 +1322,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
 
         return oldest;
-    }
-
-    /// <summary>
-    ///     Records only conservative near-field regressions. A normal frustum exit or a distant
-    ///     occlusion is not a regression; a loaded mesh that was presented before, lies inside the
-    ///     safety ring and current frustum, but is absent from this frame's presentation set is.
-    /// </summary>
-    private void RecordPresentationState(Vector3D<int> cameraChunkPos, ICuller camera)
-    {
-        _presentedThisFrame.Clear();
-        foreach (var renderer in _visibleRenderers) _presentedThisFrame.Add(renderer.Position);
-
-        _currentPresentationRegressions.Clear();
-        var size = SubChunkRenderer.Size;
-        for (var chunkX = -MeshSafetyRingRadius; chunkX <= MeshSafetyRingRadius; chunkX++)
-        for (var chunkZ = -MeshSafetyRingRadius; chunkZ <= MeshSafetyRingRadius; chunkZ++)
-        {
-            if (chunkX * chunkX + chunkZ * chunkZ > MeshSafetyRingRadius * MeshSafetyRingRadius)
-                continue;
-
-            for (var y = 0; y < ChuckFormat.WorldHeight; y += size)
-            {
-                var pos = new Vector3D<int>(
-                    cameraChunkPos.X + chunkX * size,
-                    y,
-                    cameraChunkPos.Z + chunkZ * size);
-                if (!_everPresentedMeshes.Contains(pos) ||
-                    !HasRenderableSourceChunk(_world, pos) ||
-                    _presentedThisFrame.Contains(pos)) continue;
-
-                var bounds = TryGetResidentState(pos, out var state)
-                    ? state.Renderer!.BoundingBox
-                    : new Box(pos.X - 6, pos.Y - 6, pos.Z - 6,
-                        pos.X + size + 6, pos.Y + size + 6, pos.Z + size + 6);
-                if (!camera.IsBoundingBoxInFrustum(bounds)) continue;
-
-                _currentPresentationRegressions.Add(pos);
-                if (_activePresentationRegressions.Add(pos)) _presentationRegressionCount++;
-            }
-        }
-
-        _activePresentationRegressions.RemoveWhere(pos => !_currentPresentationRegressions.Contains(pos));
-        _everPresentedMeshes.UnionWith(_presentedThisFrame);
     }
 
     /// <summary>
@@ -2732,10 +2828,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _deferredStreamingBoundaries.Clear();
         _deferredStreamingBoundaryKeys.Clear();
         _sectionsToRemove.Clear();
-        _everPresentedMeshes.Clear();
         _activePresentationRegressions.Clear();
         _currentPresentationRegressions.Clear();
-        _presentedThisFrame.Clear();
+        _everPresentedMeshes.Clear();
+        _activeNearFieldRescues.Clear();
+        _nearFieldRescuesThisFrame.Clear();
 
     }
 
@@ -2757,6 +2854,14 @@ internal readonly record struct MeshSafetyRingState(
     int LoadedColumns,
     int ExpectedSections,
     int MissingMeshes);
+
+internal readonly record struct NearFieldRescueDiagnostics(
+    int Rescued,
+    int FrustumTests,
+    int IncompleteAdjacency,
+    int NewPresentation,
+    int PresentationRegression,
+    int OldestDurationFrames);
 
 /// <summary>
 ///     Mirror of the WGSL <c>Uniforms</c> struct in <c>chunk.wgsl</c>, laid out to match

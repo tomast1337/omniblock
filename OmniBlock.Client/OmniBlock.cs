@@ -1285,6 +1285,10 @@ public partial class OmniBlock :
         MetricRegistry.Set(RenderMetrics.PortalVisited, presentation.PortalVisited);
         MetricRegistry.Set(RenderMetrics.DisconnectedSeeds, presentation.DisconnectedSeeds);
         MetricRegistry.Set(RenderMetrics.SafetyRescued, presentation.SafetyRescued);
+        MetricRegistry.Set(RenderMetrics.IncompleteAdjacencyRescued, presentation.IncompleteAdjacencyRescued);
+        MetricRegistry.Set(RenderMetrics.NewPresentationRescued, presentation.NewPresentationRescued);
+        MetricRegistry.Set(RenderMetrics.PresentationRegressionRescued, presentation.PresentationRegressionRescued);
+        MetricRegistry.Set(RenderMetrics.OldestSafetyRescueFrames, presentation.OldestSafetyRescueFrames);
         MetricRegistry.Set(RenderMetrics.ResidentSolidLayers, presentation.ResidentSolidLayers);
         MetricRegistry.Set(RenderMetrics.ResidentTranslucentLayers, presentation.ResidentTranslucentLayers);
         MetricRegistry.Set(RenderMetrics.PresentedSolidLayers, presentation.PresentedSolidLayers);
