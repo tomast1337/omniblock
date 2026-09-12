@@ -95,6 +95,33 @@ for scenario in "${scenarios[@]}"; do
         status=1
     fi
 
+    # This scenario needs a genuinely new process, not only a cleared in-memory registry.
+    # Keep the same mktemp-owned data directory until the warm launch has verified disk reuse.
+    if [[ "$scenario" == "entity-impostor-cache" && "$status" == 0 ]]; then
+        warm_artifacts="$scenario_artifacts/warm"
+        mkdir -p "$warm_artifacts"
+        set +e
+        (
+            cd "$repo_root/OmniBlock.Client"
+            env XDG_DATA_HOME="$data_root" LUAU_NATIVE_LOCAL=1 dotnet run \
+                --project . --configuration "$configuration" --no-launch-profile --no-build --no-restore -- \
+                "${launch_args[@]}" --e2e-script "$script_dir/entity-impostor-cache-warm.luau" \
+                --e2e-timeout "$timeout_seconds" --e2e-artifacts "$warm_artifacts"
+        )
+        status=$?
+        set -e
+        if [[ -f "$warm_artifacts/result.json" ]]; then
+            warm_exit_code="$(sed -n 's/^[[:space:]]*"exitCode":[[:space:]]*\([0-9][0-9]*\),\{0,1\}[[:space:]]*$/\1/p' "$warm_artifacts/result.json" | head -n 1)"
+            if [[ -n "$warm_exit_code" && "$status" == 0 ]]; then status="$warm_exit_code"; else status=1; fi
+        else
+            status=1
+        fi
+        if [[ -d "$game_data_dir/screenshots" ]]; then
+            mkdir -p "$warm_artifacts/screenshots"
+            cp -a "$game_data_dir/screenshots/." "$warm_artifacts/screenshots/"
+        fi
+    fi
+
     if (( status == 0 )); then
         echo "Scenario passed: $scenario"
     else

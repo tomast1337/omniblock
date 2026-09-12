@@ -28,6 +28,7 @@ public static unsafe class LuauTestHost
                                         endEntitySample = function(label) return __Test.endEntitySample(label) end,
                                         clearEntityBaseline = function() __Test.clearEntityBaseline() end,
                                         entityImpostors = function(enabled, forceForTest) return __Test.entityImpostors(enabled, forceForTest) end,
+                                        impostorCache = function(action) return __Test.impostorCache(action) end,
                                     }
                                     local previousHas = OMNI.has
                                     OMNI.has = function(capability)
@@ -54,6 +55,7 @@ public static unsafe class LuauTestHost
     public static Func<string, bool>? EndEntitySample;
     public static Action? ClearEntityBaseline;
     public static Func<bool, bool, bool>? EntityImpostors;
+    public static Func<string, bool>? ImpostorCache;
 
     public static void Install(IntPtr l)
     {
@@ -77,6 +79,7 @@ public static unsafe class LuauTestHost
         Add(l, "endEntitySample", &EndEntitySampleClosure);
         Add(l, "clearEntityBaseline", &ClearEntityBaselineClosure);
         Add(l, "entityImpostors", &EntityImpostorsClosure);
+        Add(l, "impostorCache", &ImpostorCacheClosure);
         LuauNative.lua_setfield(l, LuauNative.GlobalsIndex, "__Test");
     }
 
@@ -93,6 +96,15 @@ public static unsafe class LuauTestHost
         try { ok = EntityImpostors?.Invoke(LuauNative.lua_toboolean(l, 1) != 0, LuauNative.lua_toboolean(l, 2) != 0) == true; } catch { }
         LuauNative.lua_pushboolean(l, ok ? 1 : 0);
         return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int ImpostorCacheClosure(IntPtr l)
+    {
+        var ok = false;
+        try { ok = ImpostorCache?.Invoke(ReadString(l, 1) ?? "") == true; }
+        catch (Exception ex) { Fail?.Invoke("Impostor cache test: " + ex.Message); }
+        LuauNative.lua_pushboolean(l, ok ? 1 : 0); return 1;
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]

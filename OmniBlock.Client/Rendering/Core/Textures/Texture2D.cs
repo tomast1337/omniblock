@@ -31,6 +31,10 @@ public class Texture2D : IDisposable
     private static uint s_nextWebGpuId;
 
     private WgpuSamplerDescription _sampler = WgpuSamplerDescription.Nearest;
+    // Phase 3 only opts the cow provider into resource snapshots. Bound the retained copy; an
+    // oversized/dynamically updated skin remains 3D rather than caching an unverifiable image.
+    internal sealed record CaptureSource(int Width, int Height, byte[] Pixels, WgpuSamplerDescription Sampler);
+    internal CaptureSource? ImpostorSource { get; private set; }
 
     public Texture2D(string source)
     {
@@ -115,6 +119,9 @@ public class Texture2D : IDisposable
         {
             Width = width;
             Height = height;
+            ImpostorSource = Source == "/mob/cow.png" && width > 0 && height > 0 && (long)width * height <= 1024 * 1024
+                ? new CaptureSource(width, height, new ReadOnlySpan<byte>(ptr, checked(width * height * 4)).ToArray(), _sampler)
+                : null;
         }
 
         // Level 0 is the one that fixes the size, so it is also what creates the texture. Levels
@@ -123,7 +130,11 @@ public class Texture2D : IDisposable
         WriteWgpu(level, 0, 0, width, height, ptr);
     }
 
-    public unsafe void UploadSubImage(int x, int y, int width, int height, byte* ptr, int level = 0, PixelFormat format = PixelFormat.Rgba) => WriteWgpu(level, x, y, width, height, ptr);
+    public unsafe void UploadSubImage(int x, int y, int width, int height, byte* ptr, int level = 0, PixelFormat format = PixelFormat.Rgba)
+    {
+        ImpostorSource = null; // animated/partial skins need a provider-specific dependency policy
+        WriteWgpu(level, x, y, width, height, ptr);
+    }
 
     public void SetAnisotropicFilter(float level) => UpdateSampler(_sampler with
     {
@@ -167,6 +178,7 @@ public class Texture2D : IDisposable
     private void UpdateSampler(WgpuSamplerDescription sampler)
     {
         _sampler = sampler;
+        if (ImpostorSource is { } source) ImpostorSource = source with { Sampler = sampler };
         Wgpu?.SetSampler(sampler);
     }
 

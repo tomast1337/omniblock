@@ -56,6 +56,23 @@ and assert zero `OMNI.client.state.webGpuErrorCount`. `OMNI.test.entityImpostors
 the tier for close visual inspection only; unsupported states/providers still fall back to 3D.
 The default remains disabled. Submission checks do not replace visual review of these artifacts.
 
+`entity-impostor-cache` exercises Phase 3 cold capture, memory reuse, disk reuse, effective cow-skin
+changes, cancellation during capture/readback, rapid texture-pack switching, and prototype GPU-resource
+recreation. Run `xvfb-run -a tests/e2e/run-local.sh entity-impostor-cache`. After the cold scenario
+succeeds, the runner automatically launches `entity-impostor-cache-warm.luau` in a fresh process
+using the same disposable game-data directory: it must load from disk and capture zero views.
+Do not run the warm script alone against an empty cache. Its result is under the cold artifact
+directory's `warm/` subdirectory; either process failing fails the runner.
+
+Restricted `OMNI.test.impostorCache(action)` supports `clear-memory`, `dispose-session`,
+`hold-capture`/`release-capture`, `hold-readback`/`release-readback`, `reload`, and
+`pack-red`/`pack-green`/`pack-original`. The synthetic packs tint only the effective cow texture;
+holds make cancellation points deterministic. These controls exist only in the E2E test host.
+Read-only `OMNI.client.state.entityImpostor*` diagnostics expose `MemoryHits`, `DiskHits`,
+`CacheMisses`, `CacheWrites`, `CacheErrors`, `Cancellations`, `StaleResults`, `CapturedViews`,
+`MemoryBytes`, and `ReadbackPending` (for example `entityImpostorDiskHits`). All rendering scenarios
+assert zero WebGPU errors. Physical device-loss recovery is not simulated by `dispose-session`.
+
 `frustum-directional` disables VSync, samples the real client while looking at the horizon and
 straight down, and records average presented meshes, solid/translucent draws, and frame time. Its
 portable assertion is that camera direction materially changes terrain selection; timing remains

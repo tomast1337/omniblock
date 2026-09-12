@@ -49,6 +49,7 @@ public sealed class LuauTestHostIntegrationTests
         var cleared = false;
         LuauTestHost.ClearEntityBaseline = () => cleared = true;
         LuauTestHost.EntityImpostors = (enabled, forced) => enabled && forced;
+        LuauTestHost.ImpostorCache = action => action == "reload";
 
         try
         {
@@ -73,6 +74,7 @@ public sealed class LuauTestHostIntegrationTests
                 "assert(OMNI.test.beginEntitySample()); assert(OMNI.test.endEntitySample('reference')); " +
                 "OMNI.test.clearEntityBaseline(); " +
                 "assert(OMNI.test.entityImpostors(true, true)); assert(not OMNI.test.entityImpostors(false)); " +
+                "assert(OMNI.test.impostorCache('reload')); assert(not OMNI.test.impostorCache('unknown')); " +
                 "return OMNI.has('test')",
                 out var hasTest), hasTest);
 
@@ -112,6 +114,7 @@ public sealed class LuauTestHostIntegrationTests
             LuauTestHost.EndEntitySample = null;
             LuauTestHost.ClearEntityBaseline = null;
             LuauTestHost.EntityImpostors = null;
+            LuauTestHost.ImpostorCache = null;
         }
     }
 }

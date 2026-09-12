@@ -287,6 +287,8 @@ public sealed unsafe class WebGpuDevice : IDisposable
     ///     loaded from exports it all the same.
     /// </remarks>
     public void Poll() => WgpuDevicePoll(Device, 1, 0);
+    /// <summary>Dispatch ready callbacks without waiting for GPU completion.</summary>
+    internal void PollNonBlocking() => WgpuDevicePoll(Device, 0, 0);
 
     [DllImport("wgpu_native", EntryPoint = "wgpuDevicePoll")]
     private static extern void WgpuDevicePoll(Device* device, uint wait, nint wrappedSubmissionIndex);

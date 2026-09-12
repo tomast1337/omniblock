@@ -550,6 +550,16 @@ public partial class OmniBlock :
                     "entityImpostorFailures" => WorldRenderer?.EntityImpostors.Failures ?? 0,
                     "entityImpostorReplacements" => WorldRenderer?.EntityImpostors.Replacements ?? 0,
                     "entityImpostorPendingFallbacks" => WorldRenderer?.EntityImpostors.PendingFallbacks ?? 0,
+                    "entityImpostorMemoryHits" => WorldRenderer?.EntityImpostors.MemoryHits ?? 0,
+                    "entityImpostorDiskHits" => WorldRenderer?.EntityImpostors.DiskHits ?? 0,
+                    "entityImpostorCacheMisses" => WorldRenderer?.EntityImpostors.CacheMisses ?? 0,
+                    "entityImpostorCacheWrites" => WorldRenderer?.EntityImpostors.CacheWrites ?? 0,
+                    "entityImpostorCacheErrors" => WorldRenderer?.EntityImpostors.CacheErrors ?? 0,
+                    "entityImpostorCancellations" => WorldRenderer?.EntityImpostors.Cancellations ?? 0,
+                    "entityImpostorStaleResults" => WorldRenderer?.EntityImpostors.StaleResults ?? 0,
+                    "entityImpostorCapturedViews" => WorldRenderer?.EntityImpostors.CapturedViews ?? 0,
+                    "entityImpostorMemoryBytes" => WorldRenderer?.EntityImpostors.MemoryBytes ?? 0,
+                    "entityImpostorReadbackPending" => WorldRenderer?.EntityImpostors.ReadbackPending == true ? 1 : 0,
                     "webGpuErrorCount" => WebGpuDevice.Current?.ErrorCount ?? 0,
                     _ => 0
                 };
@@ -601,6 +611,8 @@ public partial class OmniBlock :
                 LuauTestHost.FlyPath = (ax, ay, az, bx, by, bz, seconds) =>
                     Player?.StartFlightPathForTest(ax, ay, az, bx, by, bz, seconds);
                 LuauTestHost.Screenshot = () => WebGpuRenderer.ScreenshotRequested = true;
+                var impostorTestControls = new EntityImpostorTestControls(this);
+                LuauTestHost.ImpostorCache = impostorTestControls.Apply;
                 LuauTestHost.EntityImpostors = (enabled, forceForTest) =>
                 {
                     if (WorldRenderer == null) return false;
@@ -1043,6 +1055,7 @@ public partial class OmniBlock :
             LuauTestHost.EndEntitySample = null;
             LuauTestHost.ClearEntityBaseline = null;
             LuauTestHost.EntityImpostors = null;
+            LuauTestHost.ImpostorCache = null;
             EntityBaseline?.Dispose();
             EntityBaseline = null;
             _luauWorldService = null;

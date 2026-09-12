@@ -213,7 +213,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         }
 
         // Isolated offscreen capture must finish before opening any world render pass.
-        if (drawWorld) _game.WorldRenderer.EntityImpostors.Prepare(device, encoder, _game.TextureManager);
+        if (drawWorld) _game.WorldRenderer.EntityImpostors.Prepare(device, encoder, _game.TextureManager, _game.GameDataDir);
 
         // --- Offscreen pass: the world ---
         var worldPass = _offscreenFb.BeginPass(encoder, clear);
@@ -364,6 +364,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         var cmdBuf = api.CommandEncoderFinish(encoder, null);
         api.QueueSubmit(device.Queue, 1, &cmdBuf);
         api.CommandBufferRelease(cmdBuf);
+        _game.WorldRenderer?.EntityImpostors.AfterSubmit(device);
 
         // The swapchain view is an attachment of the pass just submitted, so it stays alive until
         // the submit has taken its own reference.
