@@ -31,7 +31,7 @@ internal readonly record struct WorldPresentationPolicy(
         return quality switch
         {
             0 => new(
-                Math.Min(terrainDistance, 64.0),
+                Math.Min(terrainDistance, 96.0),
                 Math.Min(terrainDistance, 48.0),
                 24.0,
                 1_000,
@@ -47,7 +47,7 @@ internal readonly record struct WorldPresentationPolicy(
                 1.0f,
                 1),
             _ => new(
-                Math.Min(terrainDistance, 128.0),
+                Math.Min(terrainDistance, 160.0),
                 Math.Min(terrainDistance, 80.0),
                 40.0,
                 2_500,
@@ -59,7 +59,7 @@ internal readonly record struct WorldPresentationPolicy(
 
     public bool ShouldRenderEntity(Entity entity, Vec3D cameraPosition) =>
         entity.GetSquaredDistance(cameraPosition.X, cameraPosition.Y, cameraPosition.Z) <=
-        EntityDistanceSquared && entity.ShouldRender(cameraPosition);
+        EntityDistanceSquared && entity.ShouldRenderWithin(cameraPosition, EntityDistance);
 
     public bool ShouldRenderBlockEntity(double squaredDistance) =>
         squaredDistance <= BlockEntityDistanceSquared;

@@ -381,12 +381,20 @@ public abstract partial class Entity : IEntity
     {
     }
 
-    public virtual bool ShouldRender(Vec3D vec) => ShouldRender(GetSquaredDistance(vec.X, vec.Y, vec.Z));
+    public virtual bool ShouldRender(Vec3D vec) => ShouldRenderWithin(vec, 64.0D);
 
-    protected virtual bool ShouldRender(double sqDist)
+    /// <summary>
+    ///     Applies this entity's size and declared distance weight to a client-selected base
+    ///     presentation distance. The parameterized form lets render quality and terrain residency
+    ///     replace the old fixed 64-block scale without changing simulation or tracking ranges.
+    /// </summary>
+    public virtual bool ShouldRenderWithin(Vec3D vec, double baseDistance) =>
+        ShouldRender(GetSquaredDistance(vec.X, vec.Y, vec.Z), baseDistance);
+
+    protected virtual bool ShouldRender(double sqDist, double baseDistance)
     {
         var edgeLength = BoundingBox.AverageEdgeLength;
-        edgeLength *= 64.0D * RenderDistanceWeight;
+        edgeLength *= baseDistance * RenderDistanceWeight;
         return sqDist < edgeLength * edgeLength;
     }
 

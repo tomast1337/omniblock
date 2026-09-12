@@ -108,6 +108,9 @@ public class EntityObject : Entity
 
     public override bool ShouldRender(Vec3D vec) => Physics?.ShouldRender(this) ?? base.ShouldRender(vec);
 
+    public override bool ShouldRenderWithin(Vec3D vec, double baseDistance) =>
+        Physics?.ShouldRender(this) ?? base.ShouldRenderWithin(vec, baseDistance);
+
     public override void SetVelocityClient(double vx, double vy, double vz)
     {
         if (Physics?.OnVelocityFromServer(this, vx, vy, vz) != true)
