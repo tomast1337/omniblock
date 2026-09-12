@@ -143,18 +143,29 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void SetBlocksDirtyForStreaming(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
-        if (!_world.BlockHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ)) return;
-
-        var (start, end) = GetSectionRange(
-            minX - 1, minY - 1, minZ - 1,
-            maxX + 1, maxY + 1, maxZ + 1);
-        start.Y = Math.Max(0, start.Y);
-        end.Y = Math.Min(ChuckFormat.WorldHeight / SubChunkRenderer.Size - 1, end.Y);
+        // A streamed chunk is allowed to arrive before any of its neighbors. Do not reject the
+        // whole notification based on that incomplete neighborhood: MarkStreamingDirty checks the
+        // source column per section, while the expanded range below invalidates any already
+        // resident mesh on either side of each newly available boundary.
+        var (start, end) = GetStreamingSectionRange(
+            minX, minY, minZ,
+            maxX, maxY, maxZ);
 
         for (var x = start.X; x <= end.X; x++)
         for (var y = start.Y; y <= end.Y; y++)
         for (var z = start.Z; z <= end.Z; z++)
             ChunkRenderer.MarkStreamingDirty(new Vector3D<int>(x, y, z) * SubChunkRenderer.Size);
+    }
+
+    internal static (Vector3D<int> Start, Vector3D<int> End) GetStreamingSectionRange(
+        int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
+    {
+        var (start, end) = GetSectionRange(
+            minX - 1, minY - 1, minZ - 1,
+            maxX + 1, maxY + 1, maxZ + 1);
+        start.Y = Math.Max(0, start.Y);
+        end.Y = Math.Min(ChuckFormat.WorldHeight / SubChunkRenderer.Size - 1, end.Y);
+        return (start, end);
     }
 
     public void PlayStreaming(string soundName, int x, int y, int z)

@@ -1730,8 +1730,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             return MeshWorkPriority.Critical;
         if ((reason & SectionDirtyReason.Lighting) != 0 && hasRenderer && immediatePresentation)
             return MeshWorkPriority.Critical;
+        if ((reason & SectionDirtyReason.StreamingBoundary) != 0 && hasRenderer && immediatePresentation)
+            return MeshWorkPriority.Critical;
         if (requiredForStartup ||
-            (reason & SectionDirtyReason.InitialTerrain) != 0 && withinForegroundRing)
+            ((reason & SectionDirtyReason.InitialTerrain) != 0 && withinForegroundRing) ||
+            ((reason & SectionDirtyReason.StreamingBoundary) != 0 && hasRenderer && withinSafetyRing))
             return MeshWorkPriority.Foreground;
         return MeshWorkPriority.Background;
     }

@@ -161,6 +161,8 @@ public sealed class ChunkMeshSchedulingTests
     [InlineData((int)SectionDirtyReason.InitialTerrain, false, false, false, false,
         (int)MeshWorkPriority.Background)]
     [InlineData((int)SectionDirtyReason.StreamingBoundary, true, false, true, true,
+        (int)MeshWorkPriority.Foreground)]
+    [InlineData((int)SectionDirtyReason.StreamingBoundary, true, false, false, true,
         (int)MeshWorkPriority.Background)]
     [InlineData((int)SectionDirtyReason.BlockChange, true, false, true, true,
         (int)MeshWorkPriority.Background)]
@@ -195,6 +197,20 @@ public sealed class ChunkMeshSchedulingTests
             MeshWorkPriority.Critical,
             ChunkRenderer.ClassifyRequestedMeshPriority(
                 SectionDirtyReason.BlockChange,
+                hasRenderer: true,
+                requiredForStartup: false,
+                withinSafetyRing: false,
+                withinForegroundRing: true,
+                recentlyPresented: true));
+    }
+
+    [Fact]
+    public void Recently_presented_streaming_boundary_repairs_are_critical()
+    {
+        Assert.Equal(
+            MeshWorkPriority.Critical,
+            ChunkRenderer.ClassifyRequestedMeshPriority(
+                SectionDirtyReason.StreamingBoundary,
                 hasRenderer: true,
                 requiredForStartup: false,
                 withinSafetyRing: false,

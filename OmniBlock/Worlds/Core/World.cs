@@ -696,7 +696,9 @@ public abstract class World : IWorldContext
 
         setBlocksDirty(
             chunkX * 16, 0, chunkZ * 16,
-            chunkX * 16 + 16, ChuckFormat.WorldHeight, chunkZ * 16 + 16,
+            InclusiveUpdateEnd(chunkX * 16, 16),
+            InclusiveUpdateEnd(0, ChuckFormat.WorldHeight),
+            InclusiveUpdateEnd(chunkZ * 16, 16),
             true);
     }
 
@@ -729,10 +731,23 @@ public abstract class World : IWorldContext
 
                 setBlocksDirty(
                     chunkX * 16 + localStartX, minY, chunkZ * 16 + localStartZ,
-                    chunkX * 16 + localEndX, maxY, chunkZ * 16 + localEndZ,
+                    InclusiveUpdateEnd(chunkX * 16 + localStartX, localEndX - localStartX),
+                    InclusiveUpdateEnd(minY, maxY - minY),
+                    InclusiveUpdateEnd(chunkZ * 16 + localStartZ, localEndZ - localStartZ),
                     true);
             }
         }
+    }
+
+    /// <summary>
+    ///     Packet and blob dimensions are counts, while world dirty notifications use inclusive
+    ///     maxima. Keeping that conversion explicit prevents a 16-cell chunk update from claiming
+    ///     cell 16 in the neighboring chunk (and height 128 above the world).
+    /// </summary>
+    internal static int InclusiveUpdateEnd(int start, int length)
+    {
+        if (length <= 0) throw new ArgumentOutOfRangeException(nameof(length));
+        return checked(start + length - 1);
     }
 
     public virtual void Disconnect()

@@ -31,4 +31,13 @@ public sealed class ChunkDirtySectionRangeTests
         Assert.Equal(new Vector3D<int>(-1, 0, -2), range.Start);
         Assert.Equal(new Vector3D<int>(-1, 0, -1), range.End);
     }
+
+    [Fact]
+    public void Full_streamed_chunk_invalidates_resident_sections_on_both_boundaries()
+    {
+        var range = WorldRenderer.GetStreamingSectionRange(0, 0, 0, 15, 127, 15);
+
+        Assert.Equal(new Vector3D<int>(-1, 0, -1), range.Start);
+        Assert.Equal(new Vector3D<int>(1, 7, 1), range.End);
+    }
 }
