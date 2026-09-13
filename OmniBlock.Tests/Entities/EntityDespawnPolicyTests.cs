@@ -30,6 +30,17 @@ public sealed class EntityDespawnPolicyTests
         Assert.True(CanDespawn(mob));
     }
 
+    [Fact]
+    public void Despawn_records_a_distinct_removal_reason_without_redefining_death()
+    {
+        var mob = (EntityLiving)TestEntityCatalog.ByName("creeper").Create(new FakeWorldContext());
+
+        mob.Despawn();
+
+        Assert.True(mob.Dead);
+        Assert.Equal(EntityRemovalReason.DistanceDespawn, mob.RemovalReason);
+    }
+
     private static bool CanDespawn(EntityLiving entity) =>
         (bool)typeof(EntityLiving).GetProperty("CanDespawn",
             BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(entity)!;

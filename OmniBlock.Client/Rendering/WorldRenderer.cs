@@ -609,6 +609,27 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                 ++CountEntitiesHidden;
             }
 
+            if (baseline == null && _world is ClientWorld despawnWorld)
+            {
+                CountEntitiesTotal += despawnWorld.DistanceDespawnVisuals.Count;
+                foreach (var visual in despawnWorld.DistanceDespawnVisuals)
+                {
+                    var despawning = visual.Entity;
+                    if (!presentationPolicy.ShouldRenderEntity(despawning, cameraPos) ||
+                        !culler.IsBoundingBoxInFrustum(despawning.BoundingBox))
+                    {
+                        ++CountEntitiesHidden;
+                        continue;
+                    }
+
+                    var progress = visual.Progress(partialTicks);
+                    var eased = progress * progress * (3.0f - 2.0f * progress);
+                    EntityRenderDispatcher.Instance.RenderDistanceDespawn(
+                        despawning, partialTicks, eased * 0.65f, 1.0f - eased * 0.82f, 1.0f - eased);
+                    ++CountEntitiesRendered;
+                }
+            }
+
             CountBlockEntitiesTotal = baseline == null ? _world.Entities.BlockEntities.Count : 0;
             for (index = 0; index < CountBlockEntitiesTotal; ++index)
             {

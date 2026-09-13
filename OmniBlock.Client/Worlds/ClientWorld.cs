@@ -15,6 +15,7 @@ namespace OmniBlock.Client.Worlds;
 public class ClientWorld : World
 {
     private readonly List<BlockReset> _blockResets = [];
+    private readonly List<ClientEntityDespawnVisual> _distanceDespawnVisuals = [];
     private readonly HashSet<Entity> forcedEntities = [];
     private readonly HashSet<Entity> pendingEntities = [];
     private MultiplayerChunkCache _chunkCache;
@@ -36,6 +37,8 @@ public class ClientWorld : World
     ///     interpolation sample, which has no other route to it.
     /// </summary>
     public ClientNetworkHandler NetworkHandler { get; }
+    internal IReadOnlyList<ClientEntityDespawnVisual> DistanceDespawnVisuals => _distanceDespawnVisuals;
+    internal int DistanceDespawnPresentationCount { get; private set; }
 
     public override void Tick()
     {
@@ -64,6 +67,12 @@ public class ClientWorld : World
         }
 
         NetworkHandler.Tick();
+
+        for (var i = _distanceDespawnVisuals.Count - 1; i >= 0; --i)
+        {
+            if (!_distanceDespawnVisuals[i].Tick())
+                _distanceDespawnVisuals.RemoveAt(i);
+        }
 
         for (var i = 0; i < _blockResets.Count; ++i)
         {
@@ -203,6 +212,32 @@ public class ClientWorld : World
     }
 
     /// <summary>
+    ///     Retains no gameplay entity: only a bounded render snapshot that sinks and fades after a
+    ///     genuine population despawn. Tracking-range removal must never enter this path.
+    /// </summary>
+    public void BeginDistanceDespawnPresentation(Entity entity)
+    {
+        const int maximumVisuals = 256;
+        if (_distanceDespawnVisuals.Count == maximumVisuals)
+            _distanceDespawnVisuals.RemoveAt(0);
+        _distanceDespawnVisuals.Add(new ClientEntityDespawnVisual(entity));
+        DistanceDespawnPresentationCount++;
+
+        for (var i = 0; i < 7; i++)
+        {
+            var angle = entity.Random.NextFloat() * MathF.PI * 2;
+            var radius = entity.Random.NextFloat() * entity.Width * 0.6;
+            Broadcaster.AddParticle("smoke",
+                entity.X + Math.Cos(angle) * radius,
+                entity.Y + entity.Random.NextFloat() * entity.Height * 0.8,
+                entity.Z + Math.Sin(angle) * radius,
+                Math.Cos(angle) * 0.015,
+                0.015 + entity.Random.NextFloat() * 0.02,
+                Math.Sin(angle) * 0.015);
+        }
+    }
+
+    /// <summary>
     ///     Applies one position's worth of server state: its block.
     /// </summary>
     /// <remarks>
@@ -233,4 +268,16 @@ public class ClientWorld : World
         });
         NetworkHandler.Disconnect();
     }
+}
+
+internal sealed class ClientEntityDespawnVisual(Entity entity)
+{
+    internal const int DurationTicks = 12;
+    public Entity Entity { get; } = entity;
+    public int Age { get; private set; }
+
+    public bool Tick() => ++Age < DurationTicks;
+
+    public float Progress(float partialTicks) =>
+        Math.Clamp((Age + partialTicks) / DurationTicks, 0.0f, 1.0f);
 }

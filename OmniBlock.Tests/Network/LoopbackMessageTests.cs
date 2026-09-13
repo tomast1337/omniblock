@@ -1,3 +1,4 @@
+using OmniBlock.Entities;
 using OmniBlock.Network;
 using OmniBlock.Network.Messages;
 using OmniBlock.Network.Packets;
@@ -66,11 +67,14 @@ public sealed class LoopbackMessageTests
 
         sender.sendMessage(new MessageRegistry(), new EntityDestroyMessage
         {
-            EntityId = 3
+            EntityId = 3,
+            Reason = EntityRemovalReason.DistanceDespawn
         });
         sender.RemoteConnection.tick();
 
-        Assert.Equal(3, Assert.IsType<EntityDestroyMessage>(Assert.Single(handler.Received)).EntityId);
+        var received = Assert.IsType<EntityDestroyMessage>(Assert.Single(handler.Received));
+        Assert.Equal(3, received.EntityId);
+        Assert.Equal(EntityRemovalReason.DistanceDespawn, received.Reason);
     }
 
     /// <summary>

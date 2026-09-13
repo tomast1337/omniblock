@@ -576,6 +576,10 @@ public partial class OmniBlock :
                     "entityImpostorStagingBytes" => WorldRenderer?.EntityImpostors.StagingBytes ?? 0,
                     "entityImpostorDrawBatches" => WorldRenderer?.EntityImpostors.LastDrawBatches ?? 0,
                     "entityImpostorResidentAtlases" => WorldRenderer?.EntityImpostors.ResidentAtlasCount ?? 0,
+                    "entityDistanceDespawnVisuals" => World is ClientWorld clientWorld
+                        ? clientWorld.DistanceDespawnVisuals.Count : 0,
+                    "entityDistanceDespawnPresentationCount" => World is ClientWorld despawnWorld
+                        ? despawnWorld.DistanceDespawnPresentationCount : 0,
                     "webGpuErrorCount" => WebGpuDevice.Current?.ErrorCount ?? 0,
                     _ => 0
                 };

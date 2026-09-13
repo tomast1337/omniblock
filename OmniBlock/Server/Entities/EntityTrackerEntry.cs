@@ -326,7 +326,8 @@ internal class EntityTrackerEntry
 
         sendToListeners(new EntityDestroyMessage
         {
-            EntityId = currentTrackedEntity.ID
+            EntityId = currentTrackedEntity.ID,
+            Reason = currentTrackedEntity.RemovalReason
         });
     }
 
@@ -401,7 +402,8 @@ internal class EntityTrackerEntry
                 player.SnapshotStream.Forget(currentTrackedEntity.ID);
                 player.NetworkHandler.SendMessage(new EntityDestroyMessage
                 {
-                    EntityId = currentTrackedEntity.ID
+                    EntityId = currentTrackedEntity.ID,
+                    Reason = EntityRemovalReason.TrackingRange
                 });
             }
         }
@@ -584,7 +586,8 @@ internal class EntityTrackerEntry
             player.SnapshotStream.Forget(currentTrackedEntity.ID);
             player.NetworkHandler.SendMessage(new EntityDestroyMessage
             {
-                EntityId = currentTrackedEntity.ID
+                EntityId = currentTrackedEntity.ID,
+                Reason = EntityRemovalReason.TrackingRange
             });
         }
     }

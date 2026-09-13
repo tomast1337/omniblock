@@ -907,7 +907,7 @@ public class EntityLiving : Entity
         var squaredDistance = dx * dx + dy * dy + dz * dz;
         if (squaredDistance > 16384.0D)
         {
-            MarkDead();
+            Despawn();
         }
 
         if (EntityAge <= 600 || Random.NextInt(800) != 0)
@@ -921,7 +921,7 @@ public class EntityLiving : Entity
         }
         else
         {
-            MarkDead();
+            Despawn();
         }
     }
 

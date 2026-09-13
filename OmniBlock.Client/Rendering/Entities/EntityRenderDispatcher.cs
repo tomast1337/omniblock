@@ -147,6 +147,20 @@ public class EntityRenderDispatcher
             presentationPose);
     }
 
+    internal void RenderDistanceDespawn(Entity target, float tickDelta, float sink, float darkness, float opacity)
+    {
+        var renderer = GetEntityRenderObject(target);
+        renderer.PresentationOpacity = Math.Clamp(opacity, 0.0f, 1.0f);
+        renderer.PresentationOnly = true;
+        var x = target.LastTickX + (target.X - target.LastTickX) * tickDelta;
+        var y = target.LastTickY + (target.Y - target.LastTickY) * tickDelta - sink;
+        var z = target.LastTickZ + (target.Z - target.LastTickZ) * tickDelta;
+        var yaw = target.PrevYaw + (target.Yaw - target.PrevYaw) * tickDelta;
+        var light = target.GetBrightnessAtEyes(tickDelta) * Math.Clamp(darkness, 0.0f, 1.0f);
+        RenderSystem.Color = new Vector4D<float>(light, light, light, renderer.PresentationOpacity);
+        RenderEntityWithPosYaw(target, x - OffsetX, y - OffsetY, z - OffsetZ, yaw, tickDelta);
+    }
+
     public void RenderEntityWithPosYaw(Entity target, double x, double y, double z, float yaw, float tickDelta) =>
         RenderEntityWithPosYaw(target, x, y, z, yaw, tickDelta, null);
 
@@ -179,6 +193,8 @@ public class EntityRenderDispatcher
         finally
         {
             entityRenderer.PresentationPose = null;
+            entityRenderer.PresentationOpacity = 1.0f;
+            entityRenderer.PresentationOnly = false;
         }
     }
 

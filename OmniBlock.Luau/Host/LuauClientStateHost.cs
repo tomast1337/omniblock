@@ -83,7 +83,9 @@ public static unsafe class LuauClientStateHost
                                                 key == "entityImpostorLastBakeMs" or key == "entityImpostorAverageBakeMs" or
                                                 key == "entityImpostorCaptureCpuMs" or key == "entityImpostorResidentGpuBytes" or
                                                 key == "entityImpostorStagingBytes" or key == "entityImpostorDrawBatches" or
-                                                key == "entityImpostorResidentAtlases" then
+                                                key == "entityImpostorResidentAtlases" or
+                                                key == "entityDistanceDespawnVisuals" or
+                                                key == "entityDistanceDespawnPresentationCount" then
                                                 return __ClientState.entityLod(key)
                                             end
                                             if key == "oldestForegroundAge" then return __ClientState.oldestForegroundAge() end

@@ -25,12 +25,22 @@ OMNI.waitUntil(function() return OMNI.client.state.playerZ < -90 end, 10, 0.02)
 OMNI.test.setFlying(true)
 OMNI.test.setLook(0, 8)
 OMNI.waitUntil(function()
-    return OMNI.test.countEntities("omniblock:creeper", 80, 112) >= 1
+    return OMNI.test.countEntities("omniblock:creeper", 80, 124) >= 1
 end, 20, 0.02)
 OMNI.waitUntil(function()
     local state = OMNI.client.state
     return state.entityLodObserved >= 1 and state.entityLodImpostorSubmissions >= 1
 end, 30, 0.02)
+
+-- Teleport preload can outlive the 12-tick effect, so assert the monotonic creation counter rather
+-- than requiring the transient visual to remain alive when gameplay resumes.
+local presentations = OMNI.client.state.entityDistanceDespawnPresentationCount
+OMNI.test.teleport(0, 100, -160)
+OMNI.waitUntil(function() return OMNI.client.state.playerZ < -154 end, 10, 0.02)
+OMNI.waitUntil(function()
+    return OMNI.client.state.entityDistanceDespawnPresentationCount > presentations
+end, 10, 0.01)
+OMNI.waitUntil(function() return OMNI.client.state.entityDistanceDespawnVisuals == 0 end, 5, 0.01)
 
 assert(OMNI.client.state.webGpuErrorCount == 0)
 OMNI.test.pass()

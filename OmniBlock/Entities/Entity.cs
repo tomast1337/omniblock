@@ -9,6 +9,13 @@ using DroppedItemBehavior = OmniBlock.Entities.Behaviors.DroppedItemBehavior;
 
 namespace OmniBlock.Entities;
 
+public enum EntityRemovalReason : byte
+{
+    Removed,
+    DistanceDespawn,
+    TrackingRange
+}
+
 public abstract partial class Entity : IEntity
 {
     private static int s_nextEntityId;
@@ -116,6 +123,7 @@ public abstract partial class Entity : IEntity
     public bool VelocityModified { get; set; }
     public bool Slowed { get; set; }
     public bool Dead { get; set; }
+    public EntityRemovalReason RemovalReason { get; private set; }
     public float Width { get; private set; } = 0.6F;
     public float Height { get; private set; } = 1.8F;
     public float PrevHorizontalSpeed { get; private set; }
@@ -221,6 +229,13 @@ public abstract partial class Entity : IEntity
     }
 
     public virtual void MarkDead() => Dead = true;
+
+    /// <summary>Stops gameplay immediately while preserving why clients should present removal.</summary>
+    protected internal void Despawn()
+    {
+        RemovalReason = EntityRemovalReason.DistanceDespawn;
+        MarkDead();
+    }
 
     public virtual void BaseTick()
     {

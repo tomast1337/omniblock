@@ -33,7 +33,7 @@ public class LivingEntityRenderer : EntityRenderer
 
         // Establishes the state the whole of this method and its passes assume, rather than
         // switching culling off and leaving everything else to whatever drew last.
-        RenderSystem.State.Apply(RenderState.Entity);
+        RenderSystem.State.Apply(PresentationState(RenderState.Entity));
         Main.OnGround = func_167_c(entity, tickDelta);
         if (renderPassModel != null)
         {
@@ -78,7 +78,7 @@ public class LivingEntityRenderer : EntityRenderer
                 if (ShouldRenderPass(entity, renderPass, tickDelta))
                 {
                     renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
-                    RenderSystem.State.Apply(RenderState.Entity);
+                    RenderSystem.State.Apply(PresentationState(RenderState.Entity));
                     RenderSystem.AlphaTestEnabled = true;
                 }
             }
@@ -136,7 +136,7 @@ public class LivingEntityRenderer : EntityRenderer
                     }
                 }
 
-                RenderSystem.State.Apply(RenderState.Entity);
+                RenderSystem.State.Apply(PresentationState(RenderState.Entity));
                 RenderSystem.AlphaTestEnabled = true;
                 RenderSystem.TextureEnabled = true;
             }
@@ -150,7 +150,7 @@ public class LivingEntityRenderer : EntityRenderer
         }
 
         RenderSystem.ModelView.Pop();
-        PassSpecialRender(entity, x, y, z);
+        if (!PresentationOnly) PassSpecialRender(entity, x, y, z);
     }
 
     protected virtual void Func_22012_b(EntityLiving entity, double x, double y, double z) => RenderSystem.ModelView.Translate((float)x, (float)y, (float)z);

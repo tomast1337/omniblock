@@ -295,7 +295,16 @@ public class EntityManager
                     !_world.IsChunkSimulationActive(
                         MathHelper.Floor(entity.X / 16.0D),
                         MathHelper.Floor(entity.Z / 16.0D)))
+                {
+                    // Pausing distant AI/pathfinding must not also disable population cleanup.
+                    // This check is deliberately tiny: persistent mobs return immediately, while
+                    // ordinary hostiles still obey their 128-block despawn contract.
+                    if (entity is EntityLiving dormantLiving)
+                        dormantLiving.TickDespawn();
+                    if (entity.Dead)
+                        RemoveEntityNow(entity);
                     continue;
+                }
 
                 if (!entity.Dead)
                 {

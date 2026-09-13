@@ -1003,7 +1003,10 @@ public class ClientNetworkHandler : NetHandler
         // entity is present, which the delta encoding has no way to detect.
         Snapshots.Forget(packet.EntityId);
 
-        _worldClient.RemoveEntityFromWorld(packet.EntityId);
+        var removed = _worldClient.RemoveEntityFromWorld(packet.EntityId);
+        if (packet.Reason == EntityRemovalReason.DistanceDespawn && removed is EntityLiving living &&
+            living.Type?.Definition.SpawnCategory == CreatureKind.MonsterCategory)
+            _worldClient.BeginDistanceDespawnPresentation(removed);
     }
 
     private void onPlayerMove(IPlayerMove packet)

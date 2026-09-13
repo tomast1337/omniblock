@@ -14,6 +14,12 @@ public abstract class EntityRenderer
     protected float ShadowStrength = 1.0F;
     public EntityRenderDispatcher Dispatcher { get; set; } = null!;
     internal EntityPresentationPose? PresentationPose { get; set; }
+    internal float PresentationOpacity { get; set; } = 1.0f;
+    internal bool PresentationOnly { get; set; }
+
+    protected RenderState PresentationState(RenderState state) => PresentationOpacity < 1.0f
+        ? state with { Blend = BlendMode.Alpha }
+        : state;
 
     protected World World => Dispatcher.World;
     public TextRenderer TextRenderer => Dispatcher.getTextRenderer();
@@ -313,6 +319,7 @@ public abstract class EntityRenderer
 
     public void PostRender(Entity target, Vec3D pos, float yaw, float tickDelta)
     {
+        if (PresentationOnly) return;
         if (ShadowRadius > 0.0F)
         {
             var distance = Dispatcher.GetSquareDistanceTo(target.X, target.Y, target.Z);
@@ -331,7 +338,7 @@ public abstract class EntityRenderer
 
     public void RenderBoundingBox(Entity target, Vec3D pos, float yaw, float tickDelta)
     {
-        if (!Dispatcher.Options.ShowDebugInfo) return;
+        if (PresentationOnly || !Dispatcher.Options.ShowDebugInfo) return;
 
         RenderSystem.LightingEnabled = false;
         RenderSystem.TextureEnabled = false;

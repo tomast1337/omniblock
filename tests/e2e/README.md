@@ -136,7 +136,8 @@ client presentation, and expensive AI/pathfinding ticks.
 
 `entity-hostile-tracking-distance` covers the distinct hostile lifecycle. It spawns a real creeper,
 moves 96 blocks away, and requires an actual impostor submission while the creeper remains below
-the intentional 128-block gameplay despawn boundary.
+the intentional 128-block gameplay despawn boundary. It then crosses that boundary and proves the
+reason-coded removal created and completed the bounded client-only sink/darken/fade/puff visual.
 
 `chunk-mesh-deadlines` breaks a compact patch of nearby fixture terrain through the normal
 multiplayer player-controller path. It verifies critical forward progress, deadline-accounting
