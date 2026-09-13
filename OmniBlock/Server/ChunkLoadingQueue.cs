@@ -29,6 +29,7 @@ internal class ChunkLoadingQueue : IDisposable
     private readonly List<LoadedChunk> _readyChunks = [];
     private readonly ThreadLocal<IChunkSource?> _workerGenerators = new();
     private readonly WorldGenerationCoordinator<Chunk> _generationCoordinator;
+    private readonly WorldDecorationCoordinator _decorationCoordinator;
     private bool _disposed;
     private long _nextSequence;
 
@@ -42,6 +43,7 @@ internal class ChunkLoadingQueue : IDisposable
         // networking. A bounded pool preserves parallel generation without flooding the scheduler.
         var workerCount = GetWorkerCount(Environment.ProcessorCount, chunkMap.SharesProcessWithClient);
         _generationCoordinator = new WorldGenerationCoordinator<Chunk>(workerCount, ProduceChunk);
+        _decorationCoordinator = new WorldDecorationCoordinator(ProduceInactiveDecoration);
     }
 
     internal static int GetWorkerCount(int processorCount, bool sharesProcessWithClient = false) =>
@@ -138,6 +140,19 @@ internal class ChunkLoadingQueue : IDisposable
             GenerationDesiredStage.Terrain,
             GenerationRequestPriority.BackgroundAt(radialDistance),
             revision);
+
+    /// <summary>
+    ///     Admits one isolated region-decoration transaction through the dimension's sole
+    ///     decoration owner. The result remains inactive until its job durably saves it.
+    /// </summary>
+    internal WorldDecorationCoordinator.DecorationRequest RequestBackgroundDecoration(
+        IEnumerable<ChunkPos> targets,
+        string owner,
+        int radialDistance) =>
+        _decorationCoordinator.Request(
+            targets,
+            owner,
+            GenerationRequestPriority.BackgroundAt(radialDistance));
 
     public void Remove(int x, int z, ServerPlayerEntity player)
     {
@@ -307,6 +322,12 @@ internal class ChunkLoadingQueue : IDisposable
         }
     }
 
+    private InactiveGenerationBatch ProduceInactiveDecoration(
+        IReadOnlyList<ChunkPos> targets,
+        CancellationToken cancellationToken) =>
+        new InactiveGenerationWorkspace(_chunkMap.getWorld())
+            .GenerateCompletedRegion(targets, cancellationToken);
+
     private void OnGenerationCompleted(PendingChunk pending, Task<Chunk> task)
     {
         if (task.IsCanceled) return;
@@ -326,6 +347,7 @@ internal class ChunkLoadingQueue : IDisposable
                 pending.ReleaseGenerationRequests();
             _inFlightChunks.Clear();
         }
+        _decorationCoordinator.Dispose();
         _generationCoordinator.Dispose();
         _workerGenerators.Dispose();
     }

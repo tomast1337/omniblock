@@ -46,6 +46,12 @@ internal class ChunkMap
         RequestBackgroundTerrain(int x, int z, string owner, int radialDistance, long revision = 0) =>
         loadQueue.RequestBackgroundTerrain(x, z, owner, radialDistance, revision);
 
+    internal WorldDecorationCoordinator.DecorationRequest RequestBackgroundDecoration(
+        IEnumerable<ChunkPos> targets,
+        string owner,
+        int radialDistance) =>
+        loadQueue.RequestBackgroundDecoration(targets, owner, radialDistance);
+
     public ServerWorld getWorld() => _server.getWorld(_dimensionId);
 
     public void SetViewDistance(int newDistance)

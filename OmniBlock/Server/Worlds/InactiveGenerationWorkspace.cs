@@ -19,7 +19,7 @@ namespace OmniBlock.Server.Worlds;
 ///     event listeners belong to a private world and cannot enter the live world until a snapshot
 ///     is explicitly materialized and published on the server thread.
 /// </summary>
-public sealed class InactiveGenerationWorkspace
+internal sealed class InactiveGenerationWorkspace
 {
     private readonly WorkspaceWorld _world;
     private readonly IChunkSource _generator;
