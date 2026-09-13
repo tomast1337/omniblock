@@ -33,6 +33,8 @@ public sealed class LuauTestHostIntegrationTests
             summoned = (id, count);
             return true;
         };
+        LuauTestHost.CountEntities = (id, min, max) =>
+            id == "omniblock:cow" && min == 32 && max == 128 ? 3 : 0;
         LuauTestHost.BreakBlock = (x, y, z) =>
         {
             brokenBlock = (x, y, z);
@@ -69,6 +71,7 @@ public sealed class LuauTestHostIntegrationTests
             Assert.True(state.TryExecute(
                 "OMNI.test.pass(); OMNI.test.fail('broken'); OMNI.test.creative(); " +
                 "assert(OMNI.test.summon('omniblock:cow', 2)); " +
+                "assert(OMNI.test.countEntities('omniblock:cow', 32, 128) == 3); " +
                 "assert(OMNI.test.breakBlock(4, 61, 7)); " +
                 "OMNI.test.setBlock('omniblock:flowing_water', 15, 70, 0); " +
                 "assert(OMNI.test.isMeshCurrent(4, 61, 7)); " +
@@ -109,6 +112,7 @@ public sealed class LuauTestHostIntegrationTests
             LuauTestHost.Fail = null;
             LuauTestHost.Creative = null;
             LuauTestHost.Summon = null;
+            LuauTestHost.CountEntities = null;
             LuauTestHost.BreakBlock = null;
             LuauTestHost.SetBlock = null;
             LuauTestHost.IsMeshCurrent = null;

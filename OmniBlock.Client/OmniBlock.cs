@@ -604,6 +604,20 @@ public partial class OmniBlock :
                     Player.SendChatMessage($"/summon {entity} {count}");
                     return true;
                 };
+                LuauTestHost.CountEntities = (entity, minDistance, maxDistance) =>
+                {
+                    if (World == null || Player == null || minDistance < 0 || maxDistance < minDistance ||
+                        !ResourceLocation.TryParse(entity, out var key) ||
+                        !World.Content.EntityTypes.TryGet(key!, out var type)) return 0;
+                    var minSquared = minDistance * minDistance;
+                    var maxSquared = maxDistance * maxDistance;
+                    return World.Entities.Entities.Count(candidate =>
+                    {
+                        if (!ReferenceEquals(candidate.Type, type)) return false;
+                        var squared = candidate.GetSquaredDistance(Player.X, Player.Y, Player.Z);
+                        return squared >= minSquared && squared <= maxSquared;
+                    });
+                };
                 LuauTestHost.BreakBlock = (x, y, z) =>
                 {
                     if (PlayerController == null || World == null ||
@@ -1075,6 +1089,7 @@ public partial class OmniBlock :
             LuauTestHost.Fail = null;
             LuauTestHost.Creative = null;
             LuauTestHost.Summon = null;
+            LuauTestHost.CountEntities = null;
             LuauTestHost.BreakBlock = null;
             LuauTestHost.SetBlock = null;
             LuauTestHost.IsMeshCurrent = null;

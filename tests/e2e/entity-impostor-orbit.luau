@@ -9,15 +9,15 @@ OMNI.config.fov = 0
 OMNI.config.bobView = false
 OMNI.config.pauseOnFocusLoss = false
 OMNI.config.captureMouse = false
-assert(OMNI.client.worlds.load("e2e-smoke"))
+assert(OMNI.client.worlds.load("e2e-flat"))
 OMNI.waitUntil(function() return OMNI.client.state.playerReady end, 75, 0.05)
 OMNI.test.creative()
 OMNI.wait(0.5)
-OMNI.test.teleport(0, 220, 0)
-OMNI.waitUntil(function() return OMNI.client.state.playerY > 210 end, 10, 0.01)
+OMNI.test.teleport(0, 32, 0)
+OMNI.waitUntil(function() return OMNI.client.state.playerY > 26 and OMNI.client.state.playerY < 40 end, 10, 0.01)
 OMNI.test.setFlying(true)
 OMNI.waitUntil(function() return OMNI.client.state.playerReady end, 45, 0.05)
-OMNI.test.flyPath(0, 220, 0, 0, 220, 0, 0.5)
+OMNI.test.flyPath(0, 32, 0, 0, 32, 0, 0.5)
 OMNI.wait(1)
 OMNI.test.setMovement(0, 0, 0)
 OMNI.test.setLook(0, 0)
@@ -35,7 +35,7 @@ table.insert(views, {0, 1, 0})
 table.insert(views, {0, -1, 0})
 for index, direction in ipairs(views) do
     assert(OMNI.test.entityImpostors(false))
-    local x, y, z = direction[1]*20, 220 + direction[2]*20, 32 + direction[3]*20
+    local x, y, z = direction[1]*20, 32 + direction[2]*20, 32 + direction[3]*20
     OMNI.test.flyPath(OMNI.client.state.playerX, OMNI.client.state.playerY, OMNI.client.state.playerZ, x, y, z, 0.35)
     OMNI.wait(0.5)
     OMNI.test.setLook(math.deg(math.atan2(direction[1], -direction[3])), math.deg(math.asin(direction[2])))

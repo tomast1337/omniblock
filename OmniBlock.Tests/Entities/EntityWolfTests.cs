@@ -159,7 +159,7 @@ public sealed class EntityWolfTests
         var wolf = TamedWolf(world, owner);
 
         Assert.False(Tame.CanDespawn(wolf));
-        Assert.True(Tame.CanDespawn(Wolf(world, 40.5, 40.5)));
+        Assert.Null(Tame.CanDespawn(Wolf(world, 40.5, 40.5)));
     }
 
     /// <summary>Sitting stops the mob where it is, which is what the AI reads before it paths.</summary>

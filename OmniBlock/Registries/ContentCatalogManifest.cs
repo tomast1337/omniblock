@@ -282,8 +282,10 @@ public sealed record EntityCatalogEntry(
 
 public sealed record EntityCatalogMismatch(ResourceLocation Key, EntityCatalogEntry Required, EntityCatalogEntry Actual)
 {
-    public bool DefinitionChanged => Required.ConstructorProviderType != Actual.ConstructorProviderType
-                                     || Required.DefinitionHash != Actual.DefinitionHash;
+    public bool ConstructorProviderChanged =>
+        Required.ConstructorProviderType != Actual.ConstructorProviderType;
+
+    public bool DefinitionChanged => Required.DefinitionHash != Actual.DefinitionHash;
 
     public bool TransportMappingChanged => Required.ProtocolId != Actual.ProtocolId
                                            || Required.ObjectSpawnId != Actual.ObjectSpawnId
@@ -317,10 +319,16 @@ public sealed record CatalogCompatibility(
     public IReadOnlyList<ResourceLocation> MissingEntries => [.. MissingBlocks, .. MissingItems, .. MissingProcesses, .. MissingEntities];
     public IReadOnlyList<ResourceLocation> AdditionalEntries => [.. AdditionalBlocks, .. AdditionalItems, .. AdditionalProcesses, .. AdditionalEntities];
 
-    /// <summary>Additional content is safe for a save; missing or remapped content is not.</summary>
+    /// <summary>
+    /// Additional content and ordinary entity-definition updates are safe for a save. Entity saves
+    /// use their resource name and are decoded by the constructor provider; changing that provider
+    /// remains incompatible, while gameplay/presentation defaults may evolve between releases.
+    /// Exact definition hashes still participate in network synchronization and diagnostics.
+    /// </summary>
     public bool CanLoadWorld => MissingEntries.Count == 0 && IdMismatches.Count == 0
                                                           && ChangedProcesses.Count == 0
-                                                          && ChangedEntities.All(static mismatch => !mismatch.DefinitionChanged);
+                                                          && ChangedEntities.All(static mismatch =>
+                                                              !mismatch.ConstructorProviderChanged);
 
     /// <summary>Network peers require precisely the same numeric catalog.</summary>
     public bool CanSynchronizeClient => IsExactMatch;

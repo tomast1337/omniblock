@@ -13,6 +13,7 @@ public static unsafe class LuauTestHost
                                         fail = function(reason) __Test.fail(tostring(reason or "Test failed")) end,
                                         creative = function() __Test.creative() end,
                                         summon = function(entity, count) return __Test.summon(tostring(entity), count or 1) end,
+                                        countEntities = function(entity, minDistance, maxDistance) return __Test.countEntities(tostring(entity), minDistance or 0, maxDistance or 1000000) end,
                                         breakBlock = function(x, y, z) return __Test.breakBlock(x, y, z) end,
                                         setBlock = function(id, x, y, z) __Test.setBlock(tostring(id), x, y, z) end,
                                         isMeshCurrent = function(x, y, z) return __Test.isMeshCurrent(x, y, z) end,
@@ -43,6 +44,7 @@ public static unsafe class LuauTestHost
     public static Action<string>? Fail;
     public static Action? Creative;
     public static Func<string, int, bool>? Summon;
+    public static Func<string, double, double, int>? CountEntities;
     public static Func<int, int, int, bool>? BreakBlock;
     public static Action<string, int, int, int>? SetBlock;
     public static Func<int, int, int, bool>? IsMeshCurrent;
@@ -70,6 +72,7 @@ public static unsafe class LuauTestHost
         Add(l, "fail", &FailClosure);
         Add(l, "creative", &CreativeClosure);
         Add(l, "summon", &SummonClosure);
+        Add(l, "countEntities", &CountEntitiesClosure);
         Add(l, "breakBlock", &BreakBlockClosure);
         Add(l, "setBlock", &SetBlockClosure);
         Add(l, "isMeshCurrent", &IsMeshCurrentClosure);
@@ -224,6 +227,25 @@ public static unsafe class LuauTestHost
         }
 
         LuauNative.lua_pushboolean(l, result ? 1 : 0);
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int CountEntitiesClosure(IntPtr l)
+    {
+        var result = 0;
+        try
+        {
+            result = CountEntities?.Invoke(
+                ReadString(l, 1) ?? string.Empty,
+                LuauNative.luaL_checknumber(l, 2),
+                LuauNative.luaL_checknumber(l, 3)) ?? 0;
+        }
+        catch
+        {
+        }
+
+        LuauNative.lua_pushinteger(l, result);
         return 1;
     }
 

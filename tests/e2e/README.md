@@ -4,6 +4,10 @@
 directory. It does not read or write the normal OmniBlock saves, options, logs,
 statistics, or chunk cache.
 
+Each isolated run installs `e2e-smoke` for ordinary streaming/gameplay coverage and `e2e-flat`
+for repeatable entity/impostor visual scenes. The latter keeps the presentation camera close to a
+level surface so distant mobs remain locatable in screenshots instead of floating in empty sky.
+
 Before the first run, build the local Luau runtime:
 
 ```sh
@@ -149,6 +153,7 @@ OMNI.test.flyPath(ax, ay, az, bx, by, bz, seconds)
 OMNI.test.breakBlock(x, y, z) -- true when a non-air block was submitted for breaking
 OMNI.test.setBlock("omniblock:flowing_water", x, y, z) -- E2E-only server command
 OMNI.test.summon("omniblock:cow", 1) -- E2E-only server command; maximum count is 256
+OMNI.test.countEntities("omniblock:cow", 180, 220) -- client-resident entities in a distance band
 OMNI.test.isMeshCurrent(x, y, z) -- latest section epoch has an installed mesh
 OMNI.test.meshDeadlineMissCount(x, y, z) -- section-scoped lifetime counter
 ```

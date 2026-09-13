@@ -50,9 +50,11 @@ for scenario in "${scenarios[@]}"; do
     data_root="$run_root/data"
     game_data_dir="$data_root/OmniBlock"
     world_dir="$game_data_dir/saves/e2e-smoke"
+    flat_world_dir="$game_data_dir/saves/e2e-flat"
     scenario_artifacts="$artifact_dir/$scenario"
-    mkdir -p "$world_dir" "$scenario_artifacts"
+    mkdir -p "$world_dir" "$flat_world_dir" "$scenario_artifacts"
     base64 --decode "$script_dir/fixtures/e2e-smoke/level.dat.base64" > "$world_dir/level.dat"
+    base64 --decode "$script_dir/fixtures/e2e-flat/level.dat.base64" > "$flat_world_dir/level.dat"
     touch "$game_data_dir/options.txt"
 
     echo "Running scenario: $scenario"

@@ -10,23 +10,24 @@ OMNI.config.bobView = false
 OMNI.config.pauseOnFocusLoss = false
 OMNI.config.captureMouse = false
 
-assert(OMNI.client.worlds.load("e2e-smoke"), "could not launch fixture world")
+assert(OMNI.client.worlds.load("e2e-flat"), "could not launch flat fixture world")
 OMNI.waitUntil(function()
     return OMNI.client.state.worldLoaded and OMNI.client.state.playerReady
 end, 75, 0.05)
 OMNI.test.creative()
 OMNI.wait(0.5)
-OMNI.test.teleport(0, 220, 0)
+OMNI.test.teleport(0, 16, 0)
 OMNI.waitUntil(function()
     return math.abs(OMNI.client.state.playerX) < 2 and
-        OMNI.client.state.playerY > 210 and math.abs(OMNI.client.state.playerZ) < 2
+        OMNI.client.state.playerY > 10 and OMNI.client.state.playerY < 24 and
+        math.abs(OMNI.client.state.playerZ) < 2
 end, 10, 0.01)
 OMNI.test.setFlying(true)
 OMNI.waitUntil(function()
     return OMNI.client.state.playerReady
 end, 45, 0.05)
 -- Normalize the endpoint after the server teleport's stance adjustment.
-OMNI.test.flyPath(0, 220, 0, 0, 220, 0, 0.5)
+OMNI.test.flyPath(0, 16, 0, 0, 16, 0, 0.5)
 OMNI.wait(1)
 OMNI.test.setMovement(0, 0, 0)
 OMNI.test.setLook(0, 0)

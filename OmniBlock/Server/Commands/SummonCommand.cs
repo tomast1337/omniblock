@@ -35,6 +35,14 @@ public class SummonCommand : Command.Command
             return 0;
         }
 
+        // A newly connected or just-teleported player can be active before the asynchronous chunk
+        // send queue has made its column resident in ServerChunkCache. Summoning at the player's
+        // own feet is an explicit request, so materialize that one column before EntityManager's
+        // normal loaded-chunk guard instead of silently failing the command.
+        world.BlockHost.GetChunk(
+            (int)Math.Floor(player.X / 16.0),
+            (int)Math.Floor(player.Z / 16.0));
+
         var summoned = 0;
 
         for (var i = 0; i < count; i++)

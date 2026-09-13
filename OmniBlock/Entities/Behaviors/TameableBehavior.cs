@@ -120,8 +120,11 @@ public sealed class TameableBehavior : IEntityInteractable, IEntityPersistence, 
 
     // Persistence
 
-    /// <summary>A tamed mob is never despawned.</summary>
-    public bool? CanDespawn(EntityLiving self) => !IsTamed(self);
+    /// <summary>
+    ///     Taming always makes a mob persistent. An untamed mob retains its type's declared policy;
+    ///     this lets passive wolves persist while a future tameable hostile can still despawn.
+    /// </summary>
+    public bool? CanDespawn(EntityLiving self) => IsTamed(self) ? false : null;
 
     public void OnWriteNbt(Entity self, NBTTagCompound nbt)
     {

@@ -1,6 +1,7 @@
 {
   "ProtocolId": 93,
   "SpawnCategory": "creature",
+  "CanDespawn": false,
   "Health": 4,
   "Width": 0.3,
   "Height": 0.4,

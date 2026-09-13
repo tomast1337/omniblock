@@ -1,6 +1,7 @@
 {
   "ProtocolId": 92,
   "SpawnCategory": "creature",
+  "CanDespawn": false,
   "Width": 0.9,
   "Height": 1.3,
   "Texture": "/mob/cow.png",

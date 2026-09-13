@@ -219,6 +219,30 @@ public sealed class ContentIdAllocationTests
         Assert.False(missing.CanSynchronizeClient);
     }
 
+    [Fact]
+    public void Entity_definition_updates_can_load_saves_but_constructor_changes_cannot()
+    {
+        var saved = EntityManifest(
+            ("omniblock:cow", "omniblock:creature", "old-definition", 92, null, null));
+        var updatedDefaults = EntityManifest(
+            ("omniblock:cow", "omniblock:creature", "new-definition", 92, null, null));
+        var changedConstructor = EntityManifest(
+            ("omniblock:cow", "example:custom_creature", "new-definition", 92, null, null));
+
+        var compatible = updatedDefaults.CompareTo(saved);
+        var incompatible = changedConstructor.CompareTo(saved);
+
+        var definitionChange = Assert.Single(compatible.ChangedEntities);
+        Assert.True(definitionChange.DefinitionChanged);
+        Assert.False(definitionChange.ConstructorProviderChanged);
+        Assert.True(compatible.CanLoadWorld);
+        Assert.False(compatible.CanSynchronizeClient);
+
+        var constructorChange = Assert.Single(incompatible.ChangedEntities);
+        Assert.True(constructorChange.ConstructorProviderChanged);
+        Assert.False(incompatible.CanLoadWorld);
+    }
+
     private static BlockDefinition Definition(string name, int id = -1, string ns = "omniblock") => new()
     {
         Name = name,

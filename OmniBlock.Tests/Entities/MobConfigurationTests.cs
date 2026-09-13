@@ -5,9 +5,8 @@ using OmniBlock.Worlds.Core.Systems;
 namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-///     Characterization test pinning every mob's resolved configuration to the values Beta 1.7.3 gives
-///     it. Written against a dump of the real values, not assumed ones, so it catches transcription
-///     errors in <c>assets/entity/*.json</c>.
+///     Characterization test pinning every mob's resolved shipped configuration. Most values retain
+///     Beta 1.7.3 behavior; passive persistence intentionally follows the modern lifetime policy.
 ///     <para>
 ///         Excluded, because they are genuinely dynamic rather than configuration: the slime (stats derive
 ///         from a randomly chosen size), the wolf's living sound (a random roll over four clips), and the
@@ -26,10 +25,10 @@ public sealed class MobConfigurationTests
         { "creeper", new MobConfig(20, 0.7f, 2, 0.6f, 1.8f, "/mob/creeper.png", null, "mob.creeper", "mob.creeperdeath", 1f, false, 4, true, 80) },
         { "spider", new MobConfig(20, 0.8f, 2, 1.4f, 0.9f, "/mob/spider.png", "mob.spider", "mob.spider", "mob.spiderdeath", 1f, false, 4, true, 80) },
         { "ghast", new MobConfig(10, 0.7f, null, 4f, 4f, "/mob/ghast.png", "mob.ghast.moan", "mob.ghast.scream", "mob.ghast.death", 10f, true, 1, true, 80) },
-        { "pig", new MobConfig(10, 0.7f, 2, 0.9f, 0.9f, "/mob/pig.png", "mob.pig", "mob.pig", "mob.pigdeath", 1f, false, 4, true, 120) },
-        { "cow", new MobConfig(10, 0.7f, 2, 0.9f, 1.3f, "/mob/cow.png", "mob.cow", "mob.cowhurt", "mob.cowhurt", 0.4f, false, 4, true, 120) },
-        { "sheep", new MobConfig(10, 0.7f, 2, 0.9f, 1.3f, "/mob/sheep.png", "mob.sheep", "mob.sheep", "mob.sheep", 1f, false, 4, true, 120) },
-        { "chicken", new MobConfig(4, 0.7f, 2, 0.3f, 0.4f, "/mob/chicken.png", "mob.chicken", "mob.chickenhurt", "mob.chickenhurt", 1f, false, 4, true, 120) },
+        { "pig", new MobConfig(10, 0.7f, 2, 0.9f, 0.9f, "/mob/pig.png", "mob.pig", "mob.pig", "mob.pigdeath", 1f, false, 4, false, 120) },
+        { "cow", new MobConfig(10, 0.7f, 2, 0.9f, 1.3f, "/mob/cow.png", "mob.cow", "mob.cowhurt", "mob.cowhurt", 0.4f, false, 4, false, 120) },
+        { "sheep", new MobConfig(10, 0.7f, 2, 0.9f, 1.3f, "/mob/sheep.png", "mob.sheep", "mob.sheep", "mob.sheep", 1f, false, 4, false, 120) },
+        { "chicken", new MobConfig(4, 0.7f, 2, 0.3f, 0.4f, "/mob/chicken.png", "mob.chicken", "mob.chickenhurt", "mob.chickenhurt", 1f, false, 4, false, 120) },
         // AttackStrength is null where it was 2: the squid is no longer an EntityCreature, and the
         // value was never reachable — it has neither an attack nor targeting to spend it on.
         { "squid", new MobConfig(10, 0.7f, null, 0.95f, 0.95f, "/mob/squid.png", null, null, null, 0.4f, false, 4, true, 120) }
@@ -70,7 +69,7 @@ public sealed class MobConfigurationTests
         var actual = Describe(wolf);
 
         Assert.Equal(
-            new MobConfig(8, 1.1f, 2, 0.8f, 0.8f, "/mob/wolf.png", actual.LivingSound, "mob.wolf.hurt", "mob.wolf.death", 0.4f, false, 8, true, 120),
+            new MobConfig(8, 1.1f, 2, 0.8f, 0.8f, "/mob/wolf.png", actual.LivingSound, "mob.wolf.hurt", "mob.wolf.death", 0.4f, false, 8, false, 120),
             actual);
 
         Assert.Contains(actual.LivingSound, new[] { "mob.wolf.bark", "mob.wolf.panting", "mob.wolf.whine", "mob.wolf.growl" });

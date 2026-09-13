@@ -12,14 +12,14 @@ OMNI.config.pauseOnFocusLoss = false
 OMNI.config.captureMouse = false
 OMNI.config.entityImpostors = false
 
-assert(OMNI.client.worlds.load("e2e-smoke"))
+assert(OMNI.client.worlds.load("e2e-flat"))
 OMNI.waitUntil(function() return OMNI.client.state.playerReady end, 75, 0.05)
 OMNI.test.creative()
 OMNI.wait(0.5)
-OMNI.test.teleport(0, 220, 0)
-OMNI.waitUntil(function() return OMNI.client.state.playerY > 210 end, 10, 0.01)
+OMNI.test.teleport(0, 16, 0)
+OMNI.waitUntil(function() return OMNI.client.state.playerY > 10 and OMNI.client.state.playerY < 24 end, 10, 0.01)
 OMNI.test.setFlying(true)
-OMNI.test.flyPath(0, 220, 0, 0, 220, 0, 0.5)
+OMNI.test.flyPath(0, 16, 0, 0, 16, 0, 0.5)
 OMNI.wait(1)
 OMNI.test.setMovement(0, 0, 0)
 OMNI.test.setLook(0, 0)
@@ -86,13 +86,13 @@ OMNI.config.fov = 1
 OMNI.waitUntil(function() return OMNI.client.state.entityLodImpostorSubmissions == 1 end, 20, 0.02)
 
 -- Movement and teleport invalidate selector history but never remove the fallback/presentation.
-OMNI.test.flyPath(0, 220, 0, 12, 224, 8, 1.0)
+OMNI.test.flyPath(0, 16, 0, 12, 20, 8, 1.0)
 OMNI.waitUntil(function()
     local s = OMNI.client.state
     return s.entityLodObserved == 1 and
         s.entityLodModelSubmissions + s.entityLodImpostorSubmissions == 1
 end, 20, 0.02)
-OMNI.test.teleport(0, 220, 0)
+OMNI.test.teleport(0, 16, 0)
 OMNI.waitUntil(function() return math.abs(OMNI.client.state.playerX) < 2 end, 10, 0.02)
 assert(OMNI.test.entityBaseline("cow", 1, 120))
 OMNI.waitUntil(function()

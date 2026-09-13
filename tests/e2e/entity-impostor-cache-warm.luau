@@ -8,15 +8,15 @@ OMNI.config.fov = 0
 OMNI.config.bobView = false
 OMNI.config.pauseOnFocusLoss = false
 OMNI.config.captureMouse = false
-assert(OMNI.client.worlds.load("e2e-smoke"))
+assert(OMNI.client.worlds.load("e2e-flat"))
 OMNI.waitUntil(function() return OMNI.client.state.playerReady end, 75, 0.05)
 OMNI.test.creative()
 OMNI.wait(0.5)
-OMNI.test.teleport(0, 220, 0)
-OMNI.waitUntil(function() return OMNI.client.state.playerY > 210 end, 10, 0.01)
+OMNI.test.teleport(0, 16, 0)
+OMNI.waitUntil(function() return OMNI.client.state.playerY > 10 and OMNI.client.state.playerY < 24 end, 10, 0.01)
 OMNI.test.setFlying(true)
 OMNI.waitUntil(function() return OMNI.client.state.playerReady end, 45, 0.05)
-OMNI.test.flyPath(0, 220, 0, 0, 220, 0, 0.5)
+OMNI.test.flyPath(0, 16, 0, 0, 16, 0, 0.5)
 OMNI.wait(1)
 OMNI.test.setMovement(0, 0, 0)
 OMNI.test.setLook(0, 0)

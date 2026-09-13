@@ -1,6 +1,7 @@
 {
   "ProtocolId": 90,
   "SpawnCategory": "creature",
+  "CanDespawn": false,
   "SyncedProperties": [
     {
       "Name": "saddled",
