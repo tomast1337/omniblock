@@ -135,6 +135,101 @@ public sealed record InactiveGenerationBatch(IReadOnlyList<InactiveChunkSnapshot
     public InactiveChunkSnapshot Get(int x, int z) =>
         Chunks.FirstOrDefault(chunk => chunk.X == x && chunk.Z == z)
         ?? throw new KeyNotFoundException($"Inactive batch does not contain chunk {x},{z}.");
+
+    /// <summary>
+    ///     Writes every snapshot and returns only after the storage has durably flushed the batch.
+    ///     Callers may advance a persistent job checkpoint only after this method returns.
+    /// </summary>
+    public InactiveGenerationCommit SaveDurably(
+        IWorldContext target,
+        IChunkStorage storage,
+        long firstSequence = 0,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        ArgumentNullException.ThrowIfNull(storage);
+        var saved = new List<InactiveChunkSave>(Chunks.Count);
+
+        foreach (var snapshot in Chunks.OrderBy(static chunk => chunk.X).ThenBy(static chunk => chunk.Z))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                var chunk = snapshot.Materialize(target);
+                var result = storage.SaveChunk(target, chunk, null, firstSequence + saved.Count);
+                saved.Add(new InactiveChunkSave(snapshot.X, snapshot.Z, result.SizeDeltaBytes));
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception error)
+            {
+                throw new InactiveGenerationCommitException(
+                    InactiveGenerationCommitStage.WriteChunk,
+                    snapshot.X,
+                    snapshot.Z,
+                    saved.Count,
+                    error);
+            }
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        try
+        {
+            storage.FlushToDisk();
+        }
+        catch (Exception error)
+        {
+            throw new InactiveGenerationCommitException(
+                InactiveGenerationCommitStage.Flush,
+                null,
+                null,
+                saved.Count,
+                error);
+        }
+
+        return new InactiveGenerationCommit(
+            saved.AsReadOnly(),
+            saved.Sum(static chunk => chunk.SizeDeltaBytes));
+    }
+}
+
+public readonly record struct InactiveChunkSave(int X, int Z, long SizeDeltaBytes);
+
+public sealed record InactiveGenerationCommit(
+    IReadOnlyList<InactiveChunkSave> Chunks,
+    long SizeDeltaBytes);
+
+public enum InactiveGenerationCommitStage
+{
+    WriteChunk,
+    Flush
+}
+
+public sealed class InactiveGenerationCommitException : IOException
+{
+    public InactiveGenerationCommitException(
+        InactiveGenerationCommitStage stage,
+        int? chunkX,
+        int? chunkZ,
+        int completedWrites,
+        Exception innerException)
+        : base(stage == InactiveGenerationCommitStage.WriteChunk
+                ? $"Inactive generation failed while writing chunk {chunkX},{chunkZ} after {completedWrites} writes."
+                : $"Inactive generation failed while flushing {completedWrites} written chunks.",
+            innerException)
+    {
+        Stage = stage;
+        ChunkX = chunkX;
+        ChunkZ = chunkZ;
+        CompletedWrites = completedWrites;
+    }
+
+    public InactiveGenerationCommitStage Stage { get; }
+    public int? ChunkX { get; }
+    public int? ChunkZ { get; }
+    public int CompletedWrites { get; }
 }
 
 /// <summary>An immutable serialized boundary between an isolated workspace and a live world.</summary>

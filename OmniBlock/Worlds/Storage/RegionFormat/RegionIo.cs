@@ -41,16 +41,31 @@ internal static class RegionIo
         }
     }
 
-    public static void Flush()
+    public static void Flush(bool flushToDisk = false)
     {
         lock (gate)
         {
             foreach (var regionFile in cache.Values)
             {
-                regionFile.Flush();
+                regionFile.Flush(flushToDisk);
+                regionFile.Dispose();
             }
 
             cache.Clear();
+        }
+    }
+
+    /// <summary>Flushes cached region files belonging to one dimension without evicting them.</summary>
+    public static void FlushWorld(string worldDir, bool flushToDisk)
+    {
+        var regionDir = Path.GetFullPath(Path.Combine(worldDir, "region")) + Path.DirectorySeparatorChar;
+        lock (gate)
+        {
+            foreach (var (path, regionFile) in cache)
+            {
+                if (Path.GetFullPath(path).StartsWith(regionDir, StringComparison.Ordinal))
+                    regionFile.Flush(flushToDisk);
+            }
         }
     }
 

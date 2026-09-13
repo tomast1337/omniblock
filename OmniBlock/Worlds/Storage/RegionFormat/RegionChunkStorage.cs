@@ -113,10 +113,12 @@ internal class RegionChunkStorage : IChunkStorage
 
     public void Flush()
     {
+        RegionIo.FlushWorld(_dir, flushToDisk: false);
     }
 
     public void FlushToDisk()
     {
+        RegionIo.FlushWorld(_dir, flushToDisk: true);
     }
 
     internal static bool HasExpectedCoordinates(NBTTagCompound levelTag, int chunkX, int chunkZ) =>

@@ -81,7 +81,7 @@ internal class RegionFile
         }
         catch (IOException ex)
         {
-            Console.WriteLine(ex);
+            throw new IOException($"Failed to open region file '{input}'.", ex);
         }
     }
 
@@ -171,7 +171,8 @@ internal class RegionFile
                 var requiredSectorCount = (length + 5) / 4096 + 1;
                 if (requiredSectorCount >= 256)
                 {
-                    return;
+                    throw new InvalidDataException(
+                        $"Chunk {chunkX},{chunkZ} requires {requiredSectorCount} sectors; maximum is 255.");
                 }
 
                 if (sectorNumber != 0 && allocatedSectorCount == requiredSectorCount)
@@ -251,6 +252,7 @@ internal class RegionFile
             catch (IOException ex)
             {
                 _logger.LogError(ex, "Exception");
+                throw;
             }
         }
     }
@@ -281,10 +283,17 @@ internal class RegionFile
         _dataFile.WriteInt(timestamp);
     }
 
-    public void Flush()
+    public void Flush(bool flushToDisk = false)
     {
-        _dataFile.Flush();
-        _dataFile.Dispose();
+        lock (this)
+        {
+            _dataFile.Flush(flushToDisk);
+        }
+    }
+
+    public void Dispose()
+    {
+        lock (this) _dataFile.Dispose();
     }
 
     internal enum CompressionType : byte

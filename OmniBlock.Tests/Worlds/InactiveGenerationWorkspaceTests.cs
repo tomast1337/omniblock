@@ -91,6 +91,74 @@ public sealed class InactiveGenerationWorkspaceTests
         }
     }
 
+    [Fact]
+    public void Completed_batch_is_durably_saved_reopened_and_stays_inactive_until_load()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"omniblock-inactive-commit-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var world = new SourceWorld(246813579L);
+            var batch = new InactiveGenerationWorkspace(world).GenerateCompletedNeighborhood(0, 0);
+            var expected = batch.Get(0, 0).Materialize(world);
+            var storage = new RegionChunkStorage(root);
+
+            var commit = batch.SaveDurably(world, storage, firstSequence: 100);
+
+            Assert.Equal(16, commit.Chunks.Count);
+            Assert.True(commit.SizeDeltaBytes > 0);
+            var reopened = new RegionChunkStorage(root).LoadChunk(world, 0, 0);
+            Assert.NotNull(reopened);
+            Assert.False(reopened.Loaded);
+            Assert.Equal(expected.Blocks, reopened.Blocks);
+            Assert.Equal(expected.Meta.Bytes, reopened.Meta.Bytes);
+            Assert.Equal(expected.HeightMap, reopened.HeightMap);
+            Assert.Equal(expected.TerrainPopulated, reopened.TerrainPopulated);
+
+            reopened.Load();
+            Assert.True(reopened.Loaded);
+        }
+        finally
+        {
+            RegionIo.Flush();
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void Failed_batch_write_identifies_chunk_and_never_reports_a_durable_commit()
+    {
+        var world = new SourceWorld(1L);
+        var batch = new InactiveGenerationWorkspace(world).GenerateCompletedNeighborhood(0, 0);
+        var storage = new RecordingChunkStorage(failWriteNumber: 2);
+
+        var error = Assert.Throws<InactiveGenerationCommitException>(() =>
+            batch.SaveDurably(world, storage));
+
+        Assert.Equal(InactiveGenerationCommitStage.WriteChunk, error.Stage);
+        Assert.Equal(-1, error.ChunkX);
+        Assert.Equal(0, error.ChunkZ);
+        Assert.Equal(1, error.CompletedWrites);
+        Assert.False(storage.FlushedToDisk);
+    }
+
+    [Fact]
+    public void Failed_durable_flush_is_distinct_from_completed_chunk_writes()
+    {
+        var world = new SourceWorld(1L);
+        var batch = new InactiveGenerationWorkspace(world).GenerateCompletedNeighborhood(0, 0);
+        var storage = new RecordingChunkStorage(failFlush: true);
+
+        var error = Assert.Throws<InactiveGenerationCommitException>(() =>
+            batch.SaveDurably(world, storage));
+
+        Assert.Equal(InactiveGenerationCommitStage.Flush, error.Stage);
+        Assert.Null(error.ChunkX);
+        Assert.Null(error.ChunkZ);
+        Assert.Equal(16, error.CompletedWrites);
+        Assert.True(storage.FlushedToDisk);
+    }
+
     private sealed class SourceWorld : World
     {
         public SourceWorld(long seed)
@@ -131,5 +199,32 @@ public sealed class InactiveGenerationWorkspaceTests
         public void ForceSave() { }
         public IPlayerStorage? GetPlayerStorage() => null;
         public FileInfo? GetWorldPropertiesFile(string name) => null;
+    }
+
+    private sealed class RecordingChunkStorage(int failWriteNumber = -1, bool failFlush = false)
+        : IChunkStorage
+    {
+        private int _writes;
+        public bool FlushedToDisk { get; private set; }
+
+        public Chunk? LoadChunk(IWorldContext world, int chunkX, int chunkZ) => null;
+
+        public ChunkSaveResult SaveChunk(IWorldContext world, Chunk chunk, Action? onSave, long sequence)
+        {
+            _writes++;
+            if (_writes == failWriteNumber) throw new IOException("Injected write failure.");
+            onSave?.Invoke();
+            return new ChunkSaveResult(1);
+        }
+
+        public void SaveEntities(IWorldContext world, Chunk chunk) { }
+        public void Tick() { }
+        public void Flush() { }
+
+        public void FlushToDisk()
+        {
+            FlushedToDisk = true;
+            if (failFlush) throw new IOException("Injected flush failure.");
+        }
     }
 }

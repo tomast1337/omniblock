@@ -3,7 +3,9 @@ using OmniBlock.Blocks.Entities;
 using OmniBlock.Entities;
 using OmniBlock.Network.Messages;
 using OmniBlock.Server.Internal;
+using OmniBlock.Server.Worlds;
 using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core;
 
 namespace OmniBlock.Server;
@@ -38,6 +40,11 @@ internal class ChunkMap
     }
 
     internal bool SharesProcessWithClient => _server is InternalServer;
+    internal int DimensionId => _dimensionId;
+
+    internal WorldGenerationCoordinator<Chunk>.GenerationRequest<Chunk>
+        RequestBackgroundTerrain(int x, int z, string owner, int radialDistance, long revision = 0) =>
+        loadQueue.RequestBackgroundTerrain(x, z, owner, radialDistance, revision);
 
     public ServerWorld getWorld() => _server.getWorld(_dimensionId);
 

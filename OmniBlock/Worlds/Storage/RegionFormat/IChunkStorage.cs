@@ -15,6 +15,7 @@ public interface IChunkStorage
 
     void Flush();
 
+    /// <summary>Completes pending writes and requests an operating-system durable flush.</summary>
     void FlushToDisk();
 }
 
