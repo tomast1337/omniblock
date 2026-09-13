@@ -330,7 +330,10 @@
                 "high": "สูง",
                 "ultra": "สูงสุด"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "FPS สูงสุด",
@@ -1303,7 +1306,6 @@
         "useItem": "ใช้ {0}",
         "breakItem": "ทำ {0} พัง"
     },
-    "achievements.title": "ความสำเร็จ",
     "achievement": {
         "get": "ได้รับความสำเร็จ!",
         "taken": "รับแล้ว!",

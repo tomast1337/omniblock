@@ -330,7 +330,10 @@
                 "high": "Visoko",
                 "ultra": "Ultra"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "Največji FPS",
@@ -1303,7 +1306,6 @@
         "useItem": "Uporabljeno: {0}",
         "breakItem": "Izrabljeno: {0}"
     },
-    "achievements.title": "Dosežki",
     "achievement": {
         "get": "Dosežek osvojen!",
         "taken": "Osvojeno!",

@@ -330,7 +330,10 @@
                 "high": "Għoli",
                 "ultra": "Ultra"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "FPS Massimu",
@@ -1303,7 +1306,6 @@
         "useItem": "{0} Użati",
         "breakItem": "{0} Mikula"
     },
-    "achievements.title": "Kisbiet",
     "achievement": {
         "get": "Kisba Miksuba!",
         "taken": "Meħuda!",

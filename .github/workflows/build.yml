@@ -26,5 +26,8 @@ jobs:
             - name: Build
               run: dotnet build --configuration Release --no-restore
 
+            - name: Validate translation catalogs
+              run: dotnet test OmniBlock.Tests/OmniBlock.Tests.csproj --configuration Release --no-build --filter FullyQualifiedName~TranslationCompletenessTests --verbosity normal
+
             - name: Test
               run: dotnet test --configuration Release --no-build --verbosity normal

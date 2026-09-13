@@ -151,7 +151,8 @@
         "backToGame": "o musi"
     },
     "sign": {
-        "title": "o sitelen lon lipu sitelen:"
+        "title": "o sitelen lon lipu sitelen:",
+        "done": "Done"
     },
     "stats": {
         "title": "sona nanpa",
@@ -320,8 +321,23 @@
                 "medium": "pona",
                 "high": "wawa",
                 "ultra": "wawa mute"
+            },
+            "chunkVert": {
+                "text": "World",
+                "WavyLeavesStrength": "Wavy Leaves Strength",
+                "WavyLeavesSpeed": "Wavy Leaves Speed",
+                "WavyPlantStrength": "Wavy Plant Strength",
+                "WavyPlantSpeed": "Wavy Plant Speed",
+                "WavyPlantMode": "Wavy Plant Mode"
+            },
+            "ui": {
+                "text": "UI",
+                "darkMode": "Dark Mode"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "mute pi sitelen tenpo",
@@ -1254,6 +1270,38 @@
         "shears": {
             "name": "ilo kipisi lili",
             "desc": ""
+        },
+        "diamond": {
+            "name": "Diamond",
+            "desc": ""
+        },
+        "gunpowder": {
+            "name": "Gunpowder",
+            "desc": ""
+        },
+        "helmetLeather": {
+            "name": "Leather Cap",
+            "desc": ""
+        },
+        "chestplateLeather": {
+            "name": "Leather Tunic",
+            "desc": ""
+        },
+        "leggingsLeather": {
+            "name": "Leather Pants",
+            "desc": ""
+        },
+        "bootsLeather": {
+            "name": "Leather Boots",
+            "desc": ""
+        },
+        "sugarCanes": {
+            "name": "Sugar Canes",
+            "desc": ""
+        },
+        "redstoneRepeater": {
+            "name": "Redstone Repeater",
+            "desc": ""
         }
     },
     "stat": {
@@ -1292,7 +1340,6 @@
         "useItem": "{0} kepeken",
         "breakItem": "{0} kepeken ale"
     },
-    "achievements.title": "pali pona",
     "achievement": {
         "get": "pali li pini!",
         "taken": "kama jo!",
@@ -1364,5 +1411,17 @@
             "title": "soweli li waso",
             "desc": "o tawa anpa kepeken soweli"
         }
+    },
+    "credits": {
+        "version": "OmniBlock Version %1$s",
+        "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
+        "github": "On GitHub",
+        "author": "Made by Fazin85",
+        "libs": "Libraries",
+        "slik": "Slik.NET - Graphics",
+        "imgui": "ImGui - Debug UI",
+        "sfml": "SFML.NET - Audio",
+        "sixlabors": "SixLabors - Fonts, image processing",
+        "translations": "Translations Credits"
     }
 }

@@ -330,7 +330,10 @@
                 "high": "Augsts",
                 "ultra": "Ultra"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "Maks. FPS",
@@ -1303,7 +1306,6 @@
         "useItem": "Izmantots: {0}",
         "breakItem": "Nolietots: {0}"
     },
-    "achievements.title": "Sasniegumi",
     "achievement": {
         "get": "Sasniegums iegūts!",
         "taken": "Iegūts!",

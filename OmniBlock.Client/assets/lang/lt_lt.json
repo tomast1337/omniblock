@@ -318,8 +318,23 @@
                 "medium": "Medium",
                 "high": "High",
                 "ultra": "Ultra"
+            },
+            "chunkVert": {
+                "text": "World",
+                "WavyLeavesStrength": "Wavy Leaves Strength",
+                "WavyLeavesSpeed": "Wavy Leaves Speed",
+                "WavyPlantStrength": "Wavy Plant Strength",
+                "WavyPlantSpeed": "Wavy Plant Speed",
+                "WavyPlantMode": "Wavy Plant Mode"
+            },
+            "ui": {
+                "text": "UI",
+                "darkMode": "Dark Mode"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "Maksimalus kadrų dažnis",
@@ -1254,6 +1269,38 @@
         "shears": {
             "name": "Žirklės",
             "desc": ""
+        },
+        "diamond": {
+            "name": "Diamond",
+            "desc": ""
+        },
+        "gunpowder": {
+            "name": "Gunpowder",
+            "desc": ""
+        },
+        "helmetLeather": {
+            "name": "Leather Cap",
+            "desc": ""
+        },
+        "chestplateLeather": {
+            "name": "Leather Tunic",
+            "desc": ""
+        },
+        "leggingsLeather": {
+            "name": "Leather Pants",
+            "desc": ""
+        },
+        "bootsLeather": {
+            "name": "Leather Boots",
+            "desc": ""
+        },
+        "sugarCanes": {
+            "name": "Sugar Canes",
+            "desc": ""
+        },
+        "redstoneRepeater": {
+            "name": "Redstone Repeater",
+            "desc": ""
         }
     },
     "stat": {
@@ -1292,7 +1339,6 @@
         "useItem": "Panaudota {0}",
         "breakItem": "Sunaudota {0}"
     },
-    "achievements.title": "Pasiekimai",
     "achievement": {
         "get": "Gautas pasiekimas!",
         "taken": "Paimta!",
@@ -1365,5 +1411,17 @@
             "desc": "Nuskriskite su kiaule nuo skardžio"
         }
     },
-    "demo": {}
+    "demo": {},
+    "credits": {
+        "version": "OmniBlock Version %1$s",
+        "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
+        "github": "On GitHub",
+        "author": "Made by Fazin85",
+        "libs": "Libraries",
+        "slik": "Slik.NET - Graphics",
+        "imgui": "ImGui - Debug UI",
+        "sfml": "SFML.NET - Audio",
+        "sixlabors": "SixLabors - Fonts, image processing",
+        "translations": "Translations Credits"
+    }
 }

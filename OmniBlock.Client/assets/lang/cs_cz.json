@@ -330,7 +330,10 @@
                 "high": "Vysoká",
                 "ultra": "Ultra"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "Max. FPS",
@@ -1303,7 +1306,6 @@
         "useItem": "Použito {0}",
         "breakItem": "Spotřebováno {0}"
     },
-    "achievements.title": "Ocenění",
     "achievement": {
         "get": "Získal jsi ocenění!",
         "taken": "Získáno!",

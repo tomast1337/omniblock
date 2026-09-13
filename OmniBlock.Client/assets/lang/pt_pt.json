@@ -330,7 +330,10 @@
                 "high": "Alto",
                 "ultra": "Ultra"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "FPS máximos",
@@ -1303,7 +1306,6 @@
         "useItem": "{0} usados",
         "breakItem": "{0} consumidos"
     },
-    "achievements.title": "Conquistas",
     "achievement": {
         "get": "Conquista desbloqueada!",
         "taken": "Obtida!",

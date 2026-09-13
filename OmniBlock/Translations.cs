@@ -28,12 +28,9 @@ public class Translations
     {
         get
         {
-            if (CurrentLanguage is null)
-            {
-                return DefaultLanguage is null ? key : DefaultLanguage.Get(key);
-            }
-
-            return CurrentLanguage.Get(key);
+            if (CurrentLanguage?.TryGet(key, out var current) == true) return current;
+            if (DefaultLanguage?.TryGet(key, out var fallback) == true) return fallback;
+            return key;
         }
     }
 

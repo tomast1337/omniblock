@@ -48,7 +48,8 @@
                 "place": "Place",
                 "placeOne": "Place One"
             }
-        }
+        },
+        "joinServer": "Join Server"
     },
     "menu": {
         "singleplayer": "シングルプレイ",
@@ -82,7 +83,21 @@
         "selectWorldType": "ワールドタイプ:",
         "worldType": "ワールドタイプ",
         "customize": "カスタマイズ",
-        "moreWorldOptions": "その他のワールド設定…"
+        "moreWorldOptions": "その他のワールド設定…",
+        "type": {
+            "default": {
+                "title": "Default",
+                "description": "The standard Minecraft world."
+            },
+            "flat": {
+                "title": "Flat",
+                "description": "A completely flat world."
+            },
+            "sky": {
+                "title": "Sky",
+                "description": "A world floating in the sky."
+            }
+        }
     },
     "newWorld": {
         "customize": {
@@ -90,7 +105,9 @@
                 "title": "スーパーフラットのカスタマイズ"
             },
             "removeLayer": "地層を削除",
-            "presets": "プリセット"
+            "presets": "プリセット",
+            "height": "Height",
+            "unknown": "???"
         }
     },
     "world": {
@@ -106,11 +123,16 @@
         "deleteQuestion": "このサーバーを削除してもよろしいですか？",
         "deleteWarning": "は完全に削除され、二度と元に戻せません！",
         "downloadingTerrain": "地形情報をダウンロード中",
-        "stopSleeping": "ベッドから出る"
+        "stopSleeping": "ベッドから出る",
+        "editServerTitle": "Edit Server Info",
+        "addServerTitle": "Add Server Info",
+        "serverName": "Server Name",
+        "serverAddress": "Server Address"
     },
     "loading": {
         "loadingLevel": "ロード中",
-        "startingServer": "サーバーを起動中…"
+        "startingServer": "サーバーを起動中…",
+        "preparingSpawnArea": "Preparing spawn area"
     },
     "achievements": {
         "title": "実績"
@@ -250,7 +272,69 @@
         },
         "editBindings": "割り当てを編集…",
         "resetBindings": "割り当てのリセット…",
-        "controllerBindings": "コントローラーの割り当て"
+        "controllerBindings": "コントローラーの割り当て",
+        "disabled": "Disabled",
+        "entityImpostors": "Entity Impostor Distance",
+        "cloudsQuality": {
+            "text": "Clouds Quality",
+            "off": "No Clouds",
+            "legacy": "Old Clouds",
+            "shader": "Shader"
+        },
+        "softClouds": {
+            "text": "Soft Clouds"
+        },
+        "chatScale": {
+            "text": "Chat Scale"
+        },
+        "chatWidth": {
+            "text": "Chat Width"
+        },
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse",
+        "shader": {
+            "text": "Shader Options",
+            "chunkVert": {
+                "text": "World",
+                "WavyLeavesStrength": "Wavy Leaves Strength",
+                "WavyLeavesSpeed": "Wavy Leaves Speed",
+                "WavyPlantStrength": "Wavy Plant Strength",
+                "WavyPlantSpeed": "Wavy Plant Speed",
+                "WavyPlantMode": "Wavy Plant Mode"
+            },
+            "cloud": {
+                "text": "Clouds",
+                "minParallax": "Min Parallax",
+                "maxParallax": "Max Parallax",
+                "minGradient": "Min Gradient",
+                "maxGradient": "Max Gradient",
+                "cloudHeight": "Cloud Height",
+                "shadow": "Shadow Color",
+                "smoothWidth": "Smooth Width",
+                "smoothSamples": "Smooth Samples",
+                "closeFade": "Close Fade",
+                "smoothTop": "Smooth Top",
+                "smoothEdge": "Smooth Edge",
+                "smoothBottom": "Smooth Bottom",
+                "smoothBottomTopDown": "Smooth Bottom Top Down"
+            },
+            "ui": {
+                "text": "UI",
+                "darkMode": "Dark Mode"
+            },
+            "preset": {
+                "text": "Preset",
+                "disabled": "Disabled",
+                "default": "Default",
+                "custom": "Custom",
+                "2d": "2D",
+                "3d": "3D",
+                "low": "Low",
+                "medium": "Medium",
+                "high": "High",
+                "ultra": "Ultra"
+            }
+        }
     },
     "performance": {
         "max": "最高",
@@ -688,6 +772,10 @@
         },
         "pistonStickyBase": {
             "name": "粘着ピストン",
+            "desc": ""
+        },
+        "tallgrass": {
+            "name": "Tallgrass",
             "desc": ""
         }
     },
@@ -1181,6 +1269,38 @@
         "shears": {
             "name": "ハサミ",
             "desc": ""
+        },
+        "diamond": {
+            "name": "Diamond",
+            "desc": ""
+        },
+        "gunpowder": {
+            "name": "Gunpowder",
+            "desc": ""
+        },
+        "helmetLeather": {
+            "name": "Leather Cap",
+            "desc": ""
+        },
+        "chestplateLeather": {
+            "name": "Leather Tunic",
+            "desc": ""
+        },
+        "leggingsLeather": {
+            "name": "Leather Pants",
+            "desc": ""
+        },
+        "bootsLeather": {
+            "name": "Leather Boots",
+            "desc": ""
+        },
+        "sugarCanes": {
+            "name": "Sugar Canes",
+            "desc": ""
+        },
+        "redstoneRepeater": {
+            "name": "Redstone Repeater",
+            "desc": ""
         }
     },
     "stat": {
@@ -1219,7 +1339,6 @@
         "useItem": "{0}を使った回数",
         "breakItem": "{0}を消耗した回数"
     },
-    "achievements.title": "実績",
     "achievement": {
         "get": "実績解除！",
         "taken": "獲得済！",
@@ -1291,5 +1410,17 @@
             "title": "ブタさんの飛ぶ頃に",
             "desc": "ブタに乗って崖から落ちる"
         }
+    },
+    "credits": {
+        "version": "OmniBlock Version %1$s",
+        "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
+        "github": "On GitHub",
+        "author": "Made by Fazin85",
+        "libs": "Libraries",
+        "slik": "Slik.NET - Graphics",
+        "imgui": "ImGui - Debug UI",
+        "sfml": "SFML.NET - Audio",
+        "sixlabors": "SixLabors - Fonts, image processing",
+        "translations": "Translations Credits"
     }
 }

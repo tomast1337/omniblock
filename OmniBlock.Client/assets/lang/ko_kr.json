@@ -330,7 +330,10 @@
                 "high": "높음",
                 "ultra": "울트라"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "최대 FPS",
@@ -1303,7 +1306,6 @@
         "useItem": "{0} 사용함",
         "breakItem": "{0} 부서짐"
     },
-    "achievements.title": "도전 과제",
     "achievement": {
         "get": "도전 과제 달성!",
         "taken": "달성됨!",

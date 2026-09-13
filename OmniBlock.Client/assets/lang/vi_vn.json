@@ -330,7 +330,10 @@
                 "high": "Cao",
                 "ultra": "Siêu cao"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "FPS tối đa",
@@ -1303,7 +1306,6 @@
         "useItem": "Đã dùng {0}",
         "breakItem": "Đã làm hỏng {0}"
     },
-    "achievements.title": "Thành tựu",
     "achievement": {
         "get": "Đã đạt Thành tựu!",
         "taken": "Đã nhận!",

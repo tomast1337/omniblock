@@ -127,7 +127,9 @@
         "editServerInfo": "𓇋𓂧𓇋𓏏 𓋴𓇋𓂋𓃀𓇋𓂋 𓇋𓈖𓆑𓅱",
         "addServerInfo": "𓄿𓂧𓂧 𓋴𓇋𓂋𓃀𓇋𓂋 𓇋𓈖𓆑𓅱",
         "serverName": "𓋴𓇋𓂋𓃀𓇋𓂋 𓈖𓄿𓅓𓇋",
-        "serverAddress": "𓋴𓇋𓂋𓃀𓇋𓂋 𓄿𓂧𓂧𓂋𓇋𓋴𓋴"
+        "serverAddress": "𓋴𓇋𓂋𓃀𓇋𓂋 𓄿𓂧𓂧𓂋𓇋𓋴𓋴",
+        "editServerTitle": "Edit Server Info",
+        "addServerTitle": "Add Server Info"
     },
     "loading": {
         "loadingLevel": "𓃭𓅱𓄿𓂧𓇋𓈖 𓃭𓇋𓃀𓇋𓃭",
@@ -330,7 +332,10 @@
                 "high": "𓉔𓇋",
                 "ultra": "𓅱𓃭𓏏𓂋𓄿"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "𓅓𓄿𓎡 𓆑𓊪𓋴",
@@ -1303,7 +1308,6 @@
         "useItem": "{0} 𓅱",
         "breakItem": "{0} 𓃀"
     },
-    "achievements.title": "𓄿𓎡",
     "achievement": {
         "get": "𓎼 𓏏",
         "taken": "𓏏 𓎡",

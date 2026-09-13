@@ -330,7 +330,10 @@
                 "high": "Korkea",
                 "ultra": "Ultra"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "Maksimi FPS",
@@ -1303,7 +1306,6 @@
         "useItem": "{0} käytetty",
         "breakItem": "{0} kulutettu"
     },
-    "achievements.title": "Saavutukset",
     "achievement": {
         "get": "Saavutus saavutettu!",
         "taken": "Otettu!",

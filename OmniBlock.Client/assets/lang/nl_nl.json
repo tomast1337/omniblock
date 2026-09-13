@@ -330,7 +330,10 @@
                 "high": "Hoog",
                 "ultra": "Ultra"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "Max FPS",
@@ -1303,7 +1306,6 @@
         "useItem": "{0} gebruikt",
         "breakItem": "{0} versleten"
     },
-    "achievements.title": "Prestaties",
     "achievement": {
         "get": "Prestatie behaald!",
         "taken": "Behaald!",

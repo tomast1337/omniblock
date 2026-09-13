@@ -330,7 +330,10 @@
                 "high": "Ard",
                 "ultra": "Ultra"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "Uasmhéid FPS",
@@ -1303,7 +1306,6 @@
         "useItem": "{0} Úsáidte",
         "breakItem": "{0} Ídithe"
     },
-    "achievements.title": "Éachtaí",
     "achievement": {
         "get": "Éacht faighte!",
         "taken": "Tógtha!",

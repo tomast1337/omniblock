@@ -330,7 +330,10 @@
                 "high": "مرتفع",
                 "ultra": "فائق"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "أقصى FPS",
@@ -1303,7 +1306,6 @@
         "useItem": "تم استخدام {0}",
         "breakItem": "تم استنفاد {0}"
     },
-    "achievements.title": "الإنجازات",
     "achievement": {
         "get": "تم الحصول على إنجاز!",
         "taken": "تم!",

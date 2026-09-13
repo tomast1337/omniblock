@@ -330,7 +330,10 @@
                 "high": "Høy",
                 "ultra": "Ultra"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "Maks FPS",
@@ -1303,7 +1306,6 @@
         "useItem": "{0} brukt",
         "breakItem": "{0} oppbrukt"
     },
-    "achievements.title": "Prestasjoner",
     "achievement": {
         "get": "Prestasjon oppnådd!",
         "taken": "Tatt!",

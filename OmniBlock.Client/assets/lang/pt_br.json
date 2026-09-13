@@ -48,7 +48,8 @@
                 "place": "Colocar",
                 "placeOne": "Colocar Um"
             }
-        }
+        },
+        "joinServer": "Entrar no servidor"
     },
     "menu": {
         "singleplayer": "Um Jogador",
@@ -82,7 +83,21 @@
         "selectWorldType": "Selecionar Tipo de Mundo",
         "worldType": "Tipo de Mundo",
         "customize": "Personalizar",
-        "moreWorldOptions": "Mais Opções de Mundo..."
+        "moreWorldOptions": "Mais Opções de Mundo...",
+        "type": {
+            "default": {
+                "title": "Predefinição",
+                "description": "O mundo padrão de Minecraft."
+            },
+            "flat": {
+                "title": "Plano",
+                "description": "Um mundo totalmente plano."
+            },
+            "sky": {
+                "title": "Céu",
+                "description": "Um mundo a flutuar no céu."
+            }
+        }
     },
     "newWorld": {
         "customize": {
@@ -90,7 +105,9 @@
                 "title": "Personalizar Mundo Superplano"
             },
             "removeLayer": "Remover Camada",
-            "presets": "Predefinições"
+            "presets": "Predefinições",
+            "height": "Altura",
+            "unknown": "???"
         }
     },
     "world": {
@@ -106,11 +123,16 @@
         "deleteQuestion": "Tem certeza que deseja excluir este servidor?",
         "deleteWarning": "será perdido para sempre! (Muito tempo!)",
         "downloadingTerrain": "Baixando terreno",
-        "stopSleeping": "Levantar-se da Cama"
+        "stopSleeping": "Levantar-se da Cama",
+        "editServerTitle": "Editar informações do servidor",
+        "addServerTitle": "Adicionar informações do servidor",
+        "serverName": "Nome do servidor",
+        "serverAddress": "Endereço do servidor"
     },
     "loading": {
         "loadingLevel": "Carregando fase",
-        "startingServer": "Iniciando servidor..."
+        "startingServer": "Iniciando servidor...",
+        "preparingSpawnArea": "A preparar a zona de aparecimento"
     },
     "achievements": {
         "title": "Conquistas"
@@ -253,7 +275,66 @@
         },
         "editBindings": "Editar Teclas...",
         "resetBindings": "Redefinir Teclas...",
-        "controllerBindings": "Botões do Controle"
+        "controllerBindings": "Botões do Controle",
+        "disabled": "Desativado",
+        "cloudsQuality": {
+            "text": "Qualidade das nuvens",
+            "off": "Sem nuvens",
+            "legacy": "Nuvens antigas",
+            "shader": "Shader"
+        },
+        "softClouds": {
+            "text": "Nuvens suaves"
+        },
+        "chatScale": {
+            "text": "Escala do chat"
+        },
+        "chatWidth": {
+            "text": "Largura do chat"
+        },
+        "shader": {
+            "text": "Opções de shader",
+            "chunkVert": {
+                "text": "Mundo",
+                "WavyLeavesStrength": "Intensidade das folhas ondulantes",
+                "WavyLeavesSpeed": "Velocidade das folhas ondulantes",
+                "WavyPlantStrength": "Intensidade das plantas ondulantes",
+                "WavyPlantSpeed": "Velocidade das plantas ondulantes",
+                "WavyPlantMode": "Modo das plantas ondulantes"
+            },
+            "cloud": {
+                "text": "Nuvens",
+                "minParallax": "Paralaxe mínima",
+                "maxParallax": "Paralaxe máxima",
+                "minGradient": "Gradiente mínimo",
+                "maxGradient": "Gradiente máximo",
+                "cloudHeight": "Altura das nuvens",
+                "shadow": "Cor da sombra",
+                "smoothWidth": "Largura do suavizado",
+                "smoothSamples": "Amostras de suavizado",
+                "closeFade": "Desvanecimento próximo",
+                "smoothTop": "Topo suavizado",
+                "smoothEdge": "Borda suavizada",
+                "smoothBottom": "Fundo suavizado",
+                "smoothBottomTopDown": "Fundo suavizado de cima para baixo"
+            },
+            "ui": {
+                "text": "Interface",
+                "darkMode": "Modo escuro"
+            },
+            "preset": {
+                "text": "Predefinição",
+                "disabled": "Desativado",
+                "default": "Predefinição",
+                "custom": "Personalizado",
+                "2d": "2D",
+                "3d": "3D",
+                "low": "Baixo",
+                "medium": "Médio",
+                "high": "Alto",
+                "ultra": "Ultra"
+            }
+        }
     },
     "performance": {
         "max": "FPS Máximo",
@@ -691,6 +772,10 @@
         },
         "pistonStickyBase": {
             "name": "Pistão Grudento",
+            "desc": ""
+        },
+        "tallgrass": {
+            "name": "Erva alta",
             "desc": ""
         }
     },
@@ -1184,6 +1269,38 @@
         "shears": {
             "name": "Tesoura",
             "desc": ""
+        },
+        "diamond": {
+            "name": "Diamante",
+            "desc": ""
+        },
+        "gunpowder": {
+            "name": "Pólvora",
+            "desc": ""
+        },
+        "helmetLeather": {
+            "name": "Barrete de couro",
+            "desc": ""
+        },
+        "chestplateLeather": {
+            "name": "Túnica de couro",
+            "desc": ""
+        },
+        "leggingsLeather": {
+            "name": "Calças de couro",
+            "desc": ""
+        },
+        "bootsLeather": {
+            "name": "Botas de couro",
+            "desc": ""
+        },
+        "sugarCanes": {
+            "name": "Cana-de-açúcar",
+            "desc": ""
+        },
+        "redstoneRepeater": {
+            "name": "Repetidor de redstone",
+            "desc": ""
         }
     },
     "stat": {
@@ -1222,7 +1339,6 @@
         "useItem": "{0} Usados",
         "breakItem": "{0} Esgotados"
     },
-    "achievements.title": "Conquistas",
     "achievement": {
         "get": "Conquista obtida!",
         "taken": "Obtida!",
@@ -1294,5 +1410,17 @@
             "title": "Quando os Porcos Voam",
             "desc": "Voe com um porco de um penhasco"
         }
+    },
+    "credits": {
+        "version": "Versão OmniBlock %1$s",
+        "description": "Uma versão melhorada de Minecraft Beta 1.7.3, escrita em C#.",
+        "github": "No GitHub",
+        "author": "Feito por Fazin85",
+        "libs": "Bibliotecas",
+        "slik": "Slik.NET - Gráficos",
+        "imgui": "ImGui - Interface de depuração",
+        "sfml": "SFML.NET - Áudio",
+        "sixlabors": "SixLabors - Tipos de letra, processamento de imagens",
+        "translations": "Créditos de traduções"
     }
 }

@@ -330,7 +330,10 @@
                 "high": "Tinggi",
                 "ultra": "Ultra"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "FPS Maks",
@@ -1303,7 +1306,6 @@
         "useItem": "{0} Digunakan",
         "breakItem": "{0} Habis"
     },
-    "achievements.title": "Pencapaian",
     "achievement": {
         "get": "Pencapaian didapat!",
         "taken": "Didapat!",

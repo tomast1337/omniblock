@@ -330,7 +330,10 @@
                 "high": "高",
                 "ultra": "极高"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "最大帧数",
@@ -1303,7 +1306,6 @@
         "useItem": "{0} 已使用",
         "breakItem": "{0} 已耗尽"
     },
-    "achievements.title": "成就",
     "achievement": {
         "get": "成就已获得！",
         "taken": "已获得！",

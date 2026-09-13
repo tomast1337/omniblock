@@ -330,7 +330,10 @@
                 "high": "Ridicat",
                 "ultra": "Ultra"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "FPS maxim",
@@ -1303,7 +1306,6 @@
         "useItem": "{0} folosite",
         "breakItem": "{0} epuizate"
     },
-    "achievements.title": "Realizări",
     "achievement": {
         "get": "Realizare obținută!",
         "taken": "Obținută!",

@@ -330,7 +330,10 @@
                 "high": "Alt",
                 "ultra": "Ultra"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "FPS màxims",
@@ -1303,7 +1306,6 @@
         "useItem": "{0} utilitzats",
         "breakItem": "{0} esgotats"
     },
-    "achievements.title": "Assoliments",
     "achievement": {
         "get": "Assoliment desbloquejat!",
         "taken": "Aconseguit!",

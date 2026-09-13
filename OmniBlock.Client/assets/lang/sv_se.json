@@ -330,7 +330,10 @@
                 "high": "Hög",
                 "ultra": "Ultra"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "Max FPS",
@@ -1303,7 +1306,6 @@
         "useItem": "{0} använda",
         "breakItem": "{0} uttömda"
     },
-    "achievements.title": "Bedrifter",
     "achievement": {
         "get": "Bedrift upplåst!",
         "taken": "Upptagen!",

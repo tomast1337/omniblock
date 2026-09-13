@@ -158,13 +158,15 @@
             "text": "Bloki",
             "mined": "Wykopane",
             "crafted": "Stworzone",
-            "used": "Użyte"
+            "used": "Użyte",
+            "name": "Blocks"
         },
         "items": {
             "text": "Przedmioty",
             "broken": "Zniszczone",
             "crafted": "Stworzone",
-            "used": "Użyte"
+            "used": "Użyte",
+            "name": "Items"
         },
         "item": "Przedmiot"
     },
@@ -272,7 +274,69 @@
         },
         "editBindings": "Edytuj przypisania...",
         "resetBindings": "Resetuj przypisania...",
-        "controllerBindings": "Controller Bindings"
+        "controllerBindings": "Controller Bindings",
+        "disabled": "Disabled",
+        "entityImpostors": "Entity Impostor Distance",
+        "cloudsQuality": {
+            "text": "Clouds Quality",
+            "off": "No Clouds",
+            "legacy": "Old Clouds",
+            "shader": "Shader"
+        },
+        "softClouds": {
+            "text": "Soft Clouds"
+        },
+        "chatScale": {
+            "text": "Chat Scale"
+        },
+        "chatWidth": {
+            "text": "Chat Width"
+        },
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse",
+        "shader": {
+            "text": "Shader Options",
+            "chunkVert": {
+                "text": "World",
+                "WavyLeavesStrength": "Wavy Leaves Strength",
+                "WavyLeavesSpeed": "Wavy Leaves Speed",
+                "WavyPlantStrength": "Wavy Plant Strength",
+                "WavyPlantSpeed": "Wavy Plant Speed",
+                "WavyPlantMode": "Wavy Plant Mode"
+            },
+            "cloud": {
+                "text": "Clouds",
+                "minParallax": "Min Parallax",
+                "maxParallax": "Max Parallax",
+                "minGradient": "Min Gradient",
+                "maxGradient": "Max Gradient",
+                "cloudHeight": "Cloud Height",
+                "shadow": "Shadow Color",
+                "smoothWidth": "Smooth Width",
+                "smoothSamples": "Smooth Samples",
+                "closeFade": "Close Fade",
+                "smoothTop": "Smooth Top",
+                "smoothEdge": "Smooth Edge",
+                "smoothBottom": "Smooth Bottom",
+                "smoothBottomTopDown": "Smooth Bottom Top Down"
+            },
+            "ui": {
+                "text": "UI",
+                "darkMode": "Dark Mode"
+            },
+            "preset": {
+                "text": "Preset",
+                "disabled": "Disabled",
+                "default": "Default",
+                "custom": "Custom",
+                "2d": "2D",
+                "3d": "3D",
+                "low": "Low",
+                "medium": "Medium",
+                "high": "High",
+                "ultra": "Ultra"
+            }
+        }
     },
     "performance": {
         "max": "Maks. FPS",
@@ -1207,6 +1271,38 @@
         "shears": {
             "name": "Nożyce",
             "desc": ""
+        },
+        "diamond": {
+            "name": "Diamond",
+            "desc": ""
+        },
+        "gunpowder": {
+            "name": "Gunpowder",
+            "desc": ""
+        },
+        "helmetLeather": {
+            "name": "Leather Cap",
+            "desc": ""
+        },
+        "chestplateLeather": {
+            "name": "Leather Tunic",
+            "desc": ""
+        },
+        "leggingsLeather": {
+            "name": "Leather Pants",
+            "desc": ""
+        },
+        "bootsLeather": {
+            "name": "Leather Boots",
+            "desc": ""
+        },
+        "sugarCanes": {
+            "name": "Sugar Canes",
+            "desc": ""
+        },
+        "redstoneRepeater": {
+            "name": "Redstone Repeater",
+            "desc": ""
         }
     },
     "stat": {
@@ -1245,7 +1341,6 @@
         "useItem": "{0} Użyto",
         "breakItem": "{0} Wyczerpano"
     },
-    "achievements.title": "Osiągnięcia",
     "achievement": {
         "get": "Osiągnięcie zdobyte!",
         "taken": "Zdobyte!",
@@ -1317,5 +1412,17 @@
             "title": "Gdy świnie zaczną latać",
             "desc": "Spadnij świnią z klifu"
         }
+    },
+    "credits": {
+        "version": "OmniBlock Version %1$s",
+        "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
+        "github": "On GitHub",
+        "author": "Made by Fazin85",
+        "libs": "Libraries",
+        "slik": "Slik.NET - Graphics",
+        "imgui": "ImGui - Debug UI",
+        "sfml": "SFML.NET - Audio",
+        "sixlabors": "SixLabors - Fonts, image processing",
+        "translations": "Translations Credits"
     }
 }

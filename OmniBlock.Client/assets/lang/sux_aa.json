@@ -330,7 +330,10 @@
                 "high": "𒃲",
                 "ultra": "𒁁𒁁"
             }
-        }
+        },
+        "entityImpostors": "Entity Impostor Distance",
+        "pauseOnFocusLoss": "Pause on Focus Loss",
+        "captureMouse": "Capture Mouse"
     },
     "performance": {
         "max": "𒃲𒌋𒀜",
@@ -1303,7 +1306,6 @@
         "useItem": "{0}𒃻",
         "breakItem": "{0}𒄷𒄭"
     },
-    "achievements.title": "𒌦𒀀𒋼",
     "achievement": {
         "get": "𒌦𒀀𒋼𒌋",
         "taken": "𒌋",
