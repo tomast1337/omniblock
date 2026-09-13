@@ -19,7 +19,10 @@ namespace OmniBlock.Client.Rendering.Entities;
 internal sealed unsafe class EntityImpostorAtlas : IDisposable
 {
     private const int MaxInstances = 2048;
-    internal const float GroundClearance = 1f / 32f;
+    // Natural snow has no collision but renders 2/16 blocks above the supporting block, leaving
+    // an entity's feet (and a top-view impostor centred on them) inside the snow. Clear one snow
+    // layer plus a small depth epsilon; the view-direction weighting keeps side views grounded.
+    internal const float GroundClearance = 2f / 16f + 1f / 64f;
     private static readonly ILogger s_log = Log.Instance.For<EntityImpostorAtlas>();
     private readonly IEntityImpostorProvider _provider;
     private WebGpuDevice? _device;

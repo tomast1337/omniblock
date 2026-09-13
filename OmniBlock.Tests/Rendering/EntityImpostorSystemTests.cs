@@ -58,6 +58,8 @@ public class EntityImpostorSystemTests
     {
         var center = new Vector3(4, 12, -7);
 
+        Assert.True(EntityImpostorAtlas.GroundClearance > 2f / 16f,
+            "Top-view impostors must clear the rendered height of a natural snow layer.");
         Assert.Equal(
             center + Vector3.UnitY * EntityImpostorAtlas.GroundClearance,
             EntityImpostorAtlas.ApplyGroundClearance(center, Vector3.UnitY));
