@@ -9,7 +9,7 @@ OMNI.config.bobView = false
 OMNI.config.pauseOnFocusLoss = false
 OMNI.config.captureMouse = false
 -- This historical Phase 1 scenario observes tier selection while retaining the 3D fallback.
-OMNI.config.entityImpostors = false
+OMNI.config.entityImpostorDistance = 2 / 15
 assert(OMNI.client.worlds.load("e2e-flat"))
 OMNI.waitUntil(function() return OMNI.client.state.playerReady end, 75, 0.05)
 OMNI.test.creative()
@@ -22,6 +22,7 @@ OMNI.test.flyPath(0, 16, 0, 0, 16, 0, 0.5)
 OMNI.wait(1)
 OMNI.test.setMovement(0, 0, 0)
 OMNI.test.setLook(0, 0)
+assert(OMNI.test.entityImpostors(false))
 
 local function waitForTier(intended)
     OMNI.waitUntil(function()
@@ -46,6 +47,10 @@ OMNI.test.screenshot()
 OMNI.wait(1.5)
 
 -- Effective projection is a quality constraint even when distance did not change.
+-- Fifty blocks is just beyond the default transition: normal FOV uses the impostor, while the
+-- minimum FOV makes the same cow large enough on screen to retain its model.
+assert(OMNI.test.entityBaseline("cow", 1, 50))
+waitForTier(1)
 OMNI.config.fov = 0
 waitForTier(0)
 OMNI.config.fov = 1

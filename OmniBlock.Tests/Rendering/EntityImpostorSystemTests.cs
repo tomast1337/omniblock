@@ -131,6 +131,18 @@ public class EntityImpostorSystemTests
         Assert.NotEqual(poses[1], poses[2]);
     }
 
+    [Theory]
+    [InlineData("zombie", "zombie")]
+    [InlineData("creeper", "creeper")]
+    public void Hostile_pose_providers_compile_finite_distinct_walk_frames(string model, string provider)
+    {
+        var poses = EntityImpostorGeometry.BuildPoses(model, new ResourceLocation(Namespace.OmniBlock, provider));
+        Assert.Equal(EntityImpostorLayout.Poses, poses.Length);
+        Assert.All(poses, pose => Assert.All(pose, vertex =>
+            Assert.True(float.IsFinite(vertex.Position.Length()))));
+        Assert.NotEqual(poses[0], poses[1]);
+    }
+
     [Fact]
     public void Capture_geometry_is_deterministic_finite_and_does_not_reserve_shared_model_offsets()
     {

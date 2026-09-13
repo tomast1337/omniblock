@@ -21,6 +21,7 @@ internal sealed class ClientEntityRendererRegistry
     public ClientEntityRendererRegistry()
     {
         RegisterImpostor("basic", descriptor => new BasicEntityImpostorProvider(descriptor));
+        RegisterImpostor("creeper", descriptor => new CreeperImpostorProvider(descriptor));
         RegisterImpostor("wool", descriptor => new SheepImpostorProvider(descriptor));
         Register("living", (d, _) =>
         {
@@ -59,11 +60,17 @@ internal sealed class ClientEntityRendererRegistry
             content.Blocks.Get(Json(d).GetProperty("Block").GetString()!), Shadow(d)));
         Register("scaled", (d, _) => new ScaledEntityRenderer(
             Model(d), Shadow(d), Json(d).GetProperty("Scale").GetSingle()));
-        Register("undead", (d, _) => new UndeadEntityRenderer((ModelBiped)Model(d), Shadow(d)));
+        Register("undead", (d, _) => new UndeadEntityRenderer((ModelBiped)Model(d), Shadow(d))
+        {
+            LodProvider = Impostor(d)
+        });
         Register("creeper", (d, _) => new FuseEntityRenderer(
             Model(d), EntityModelRegistry.Create(Json(d).GetProperty("OverlayModel").GetString()!), Shadow(d),
             Json(d).GetProperty("OverlayTexture").GetString()!,
-            Json(d).GetProperty("OverlayProperty").GetString()!));
+            Json(d).GetProperty("OverlayProperty").GetString()!)
+        {
+            LodProvider = Impostor(d)
+        });
         Register("fleece", (d, _) =>
         {
             var model = Model(d);
@@ -139,6 +146,9 @@ internal sealed class ClientEntityRendererRegistry
                     $"Duplicate impostor id '{impostor.Id}'.");
             foreach (var layer in impostor.Layers)
             {
+                if (!EntityImpostorGeometry.Supports(layer.PoseProvider))
+                    throw CatalogError(key, renderer.ProviderType,
+                        $"Unknown impostor pose provider '{layer.PoseProvider}'.");
                 try { _ = BbModelLoader.LoadCached(layer.Model); }
                 catch (Exception error)
                 {

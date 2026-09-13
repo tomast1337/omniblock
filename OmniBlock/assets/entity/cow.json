@@ -19,7 +19,7 @@
       "Provider": "omniblock:basic",
       "VisualDiameter": 2.75,
       "Layers": [
-        { "Model": "cow", "Texture": "/mob/cow.png" }
+        { "Model": "cow", "Texture": "/mob/cow.png", "PoseProvider": "omniblock:quadruped" }
       ]
     }
   },

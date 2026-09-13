@@ -18,11 +18,11 @@ public sealed class EntityLodSelectorTests
     public void Distance_band_uses_hysteresis_without_changing_actual_representation()
     {
         Begin();
-        Assert.Equal(EntityLodTier.Model, Select(80).Intended);
-        Assert.Equal(EntityLodTier.Impostor, Select(81).Intended);
-        Assert.Equal(EntityLodTier.Impostor, Select(70).Intended);
-        Assert.Equal(EntityLodTier.Impostor, Select(64).Intended);
-        Assert.Equal(EntityLodTier.Model, Select(63).Intended);
+        Assert.Equal(EntityLodTier.Model, Select(48).Intended);
+        Assert.Equal(EntityLodTier.Impostor, Select(49).Intended);
+        Assert.Equal(EntityLodTier.Impostor, Select(40).Intended);
+        Assert.Equal(EntityLodTier.Impostor, Select(32).Intended);
+        Assert.Equal(EntityLodTier.Model, Select(31).Intended);
         _selector.EndFrame();
         Assert.Equal(5, _selector.Last.ModelDraws);
         Assert.Equal(0, _selector.Last.ImpostorDraws);
@@ -32,9 +32,9 @@ public sealed class EntityLodSelectorTests
     [Theory]
     [InlineData(2, 70, 480, true)]
     [InlineData(0.1, 70, 480, true)]
-    [InlineData(12, 70, 480, false)]
-    [InlineData(2, 10, 480, false)]
-    [InlineData(2, 70, 2160, false)]
+    [InlineData(12, 70, 480, true)]
+    [InlineData(2, 5, 480, false)]
+    [InlineData(2, 70, 2160, true)]
     public void Projected_bounds_account_for_model_size_viewport_and_zoom(double size, double fov, int height, bool impostor)
     {
         Begin();
@@ -46,10 +46,10 @@ public sealed class EntityLodSelectorTests
     {
         Begin();
         Assert.Equal(EntityLodTier.Impostor, Select().Intended);
-        // 2 * 1700 / (2 * 99 * tan(35)) ~24.5: between pixel thresholds.
-        Assert.Equal(EntityLodTier.Impostor, Select(height: 1700).Intended);
-        Assert.Equal(EntityLodTier.Model, Select(height: 2300).Intended);
-        Assert.Equal(EntityLodTier.Model, Select(height: 1700).Intended);
+        // At 100 blocks, 5000 px produces roughly 72 projected pixels: between the 64/80 gates.
+        Assert.Equal(EntityLodTier.Impostor, Select(height: 5000).Intended);
+        Assert.Equal(EntityLodTier.Model, Select(height: 6000).Intended);
+        Assert.Equal(EntityLodTier.Model, Select(height: 5000).Intended);
         Assert.Equal(EntityLodTier.Impostor, Select().Intended);
         Assert.Equal(EntityLodTier.Model, Select(fov: 5).Intended);
     }
@@ -79,17 +79,17 @@ public sealed class EntityLodSelectorTests
     [Fact]
     public void Unsupported_state_is_rechecked_and_forgets_previous_intended_tier()
     {
-        Begin(); Select(81);
-        Assert.Equal(EntityLodReason.UnsupportedState, Select(75, supported: false).Reason);
+        Begin(); Select(49);
+        Assert.Equal(EntityLodReason.UnsupportedState, Select(40, supported: false).Reason);
         Assert.Equal(0, _selector.StateCount);
-        Assert.Equal(EntityLodTier.Model, Select(75).Intended);
+        Assert.Equal(EntityLodTier.Model, Select(40).Intended);
     }
 
     [Fact]
     public void Variant_change_resets_hysteresis()
     {
-        Begin(); Select(81);
-        Assert.Equal(EntityLodTier.Model, Select(75, variant: "changed").Intended);
+        Begin(); Select(49);
+        Assert.Equal(EntityLodTier.Model, Select(40, variant: "changed").Intended);
     }
 
     [Theory]
@@ -99,27 +99,27 @@ public sealed class EntityLodSelectorTests
     [InlineData("cameraTeleport")]
     public void Session_and_generation_boundaries_clear_state(string cause)
     {
-        Begin(); Select(81); _selector.EndFrame();
+        Begin(); Select(49); _selector.EndFrame();
         _selector.BeginFrame(cause == "world" ? new object() : _world,
             cause == "content" ? new object() : _content, cause == "resources" ? 1 : 0,
             cause == "cameraTeleport" ? new LodPoint(0, 0, 40) : default);
         Assert.Equal(0, _selector.StateCount);
-        Assert.Equal(EntityLodTier.Model, Select(75).Intended);
+        Assert.Equal(EntityLodTier.Model, Select(40).Intended);
     }
 
     [Fact]
     public void Teleported_entity_forgets_tier_even_without_camera_motion()
     {
         Begin(); Select(100);
-        Assert.Equal(EntityLodTier.Model, Select(75).Intended);
+        Assert.Equal(EntityLodTier.Model, Select(40).Intended);
     }
 
     [Fact]
     public void Explicit_short_teleport_does_not_depend_on_displacement_threshold()
     {
-        Begin(); Select(81);
+        Begin(); Select(49);
         _selector.Forget(_entity);
-        Assert.Equal(EntityLodTier.Model, Select(79).Intended);
+        Assert.Equal(EntityLodTier.Model, Select(40).Intended);
     }
 
     private sealed record NetworkIdentity(int Id);
@@ -127,11 +127,24 @@ public sealed class EntityLodSelectorTests
     public void Equal_network_ids_do_not_share_lifetime_state_and_unseen_entries_are_removed()
     {
         var first = new NetworkIdentity(7); var replacement = new NetworkIdentity(7);
-        Begin(); Select(81, entity: first); _selector.EndFrame();
+        Begin(); Select(49, entity: first); _selector.EndFrame();
         Begin();
-        Assert.Equal(EntityLodTier.Model, Select(75, entity: replacement).Intended);
+        Assert.Equal(EntityLodTier.Model, Select(40, entity: replacement).Intended);
         _selector.EndFrame(); Assert.Equal(1, _selector.StateCount);
         Begin(); _selector.EndFrame(); Assert.Equal(0, _selector.StateCount);
+    }
+
+    [Fact]
+    public void Configured_distance_controls_transition_and_zero_disables_selection()
+    {
+        Begin();
+        Assert.Equal(EntityLodTier.Model, _selector.Select(_entity, new LodPoint(0, 0, 80), true, true,
+            "standing", 2, 0, Vector3.UnitZ, 70, 480, enterDistance: 96).Intended);
+        Assert.Equal(EntityLodTier.Impostor, _selector.Select(_entity, new LodPoint(0, 0, 97), true, true,
+            "standing", 2, 0, Vector3.UnitZ, 70, 480, enterDistance: 96).Intended);
+        Assert.Equal(EntityLodTier.Model, _selector.Select(_entity, new LodPoint(0, 0, 120), true, true,
+            "standing", 2, 0, Vector3.UnitZ, 70, 480, enterDistance: 0).Intended);
+        Assert.Equal(0, _selector.StateCount);
     }
 
     [Fact]
@@ -213,7 +226,7 @@ public sealed class EntityLodSelectorTests
     }
 
     [Fact]
-    public void Cow_provider_bounds_cover_visual_model_not_only_collision_height_and_reject_head_pose()
+    public void Cow_provider_bounds_cover_visual_model_and_reduces_normal_head_pose()
     {
         var cow = EntityRenderBaseline.CreateEntities(new FakeWorldContext(), "cow", 1, 16, 0, 220, 0)[0];
         BasicEntityImpostorProvider provider = new(new ClientEntityImpostorDescriptor(
@@ -221,8 +234,9 @@ public sealed class EntityLodSelectorTests
             [new("cow", "/mob/cow.png")]));
         Assert.True(provider.VisualDiameter > cow.Height);
         Assert.True(provider.Supports(cow, 0));
+        cow.PrevYaw = cow.Yaw = 35;
         cow.PrevPitch = cow.Pitch = 20;
-        Assert.False(provider.Supports(cow, 0));
+        Assert.True(provider.Supports(cow, 0));
         cow.PrevPitch = cow.Pitch = 0;
         cow.Passenger = cow;
         Assert.False(provider.Supports(cow, 0));

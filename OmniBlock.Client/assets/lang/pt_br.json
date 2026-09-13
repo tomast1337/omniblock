@@ -187,7 +187,7 @@
         "invertMouse": "Inverter Mouse",
         "alternateBlocks": "Blocos Alternativos",
         "chunkFade": "Transição de Chunks",
-        "entityImpostors": "Impostores de Entidades Distantes",
+        "entityImpostors": "Distância dos Impostores de Entidades",
         "environmentAnim": "Animações do Ambiente",
         "sensitivity": {
             "text": "Sensibilidade",

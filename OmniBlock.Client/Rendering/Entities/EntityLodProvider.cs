@@ -33,7 +33,7 @@ internal sealed class BasicEntityImpostorProvider : IEntityImpostorProvider
     public string CacheIdentity => "omniblock:basic-impostor-v1:root24:RGBA8:cutout0.1:nearest:mip0";
     public EntityImpostorCaptureLayer[] BuildLayers() => _descriptor.Layers
         .Select(layer => new EntityImpostorCaptureLayer(layer.Texture,
-            EntityImpostorGeometry.BuildPoses(layer.Model))).ToArray();
+            EntityImpostorGeometry.BuildPoses(layer.Model, layer.PoseProvider))).ToArray();
     public Vector4 LayerEffects(Entity entity, float partialTicks) => new(1, 1, 1, 0);
 
     public BasicEntityImpostorProvider(ClientEntityImpostorDescriptor descriptor)
@@ -49,10 +49,10 @@ internal sealed class BasicEntityImpostorProvider : IEntityImpostorProvider
         if (entity is not EntityLiving living || entity.Dead || entity.HasVehicle || entity.Passenger != null ||
             entity.IsOnFire || living.Health <= 0 || living.DeathTime != 0 || living.HeldItem != null ||
             living.GetTexture() != TexturePaths[0] || entity.Type?.Definition?.Scale != 1) return false;
-        var body = EntityLodDirections.InterpolateYaw(living.LastBodyYaw, living.BodyYaw, partialTicks);
-        var head = EntityLodDirections.InterpolateYaw(entity.PrevYaw, entity.Yaw, partialTicks);
-        var pitch = entity.PrevPitch + (entity.Pitch - entity.PrevPitch) * partialTicks;
-        return Math.Abs(EntityLodDirections.InterpolateYaw(body, head, 1) - body) < 0.01 && Math.Abs(pitch) < 0.01;
+        // Head yaw/pitch is deliberately reduced to the captured pose at this LOD. Requiring exact
+        // alignment made naturally spawned animals almost permanently ineligible: AI commonly
+        // leaves the head turned when its distant simulation pauses, unlike the canonical E2E mob.
+        return true;
     }
 
     public int Pose(Entity entity, float partialTicks)
@@ -71,6 +71,26 @@ internal sealed class BasicEntityImpostorProvider : IEntityImpostorProvider
         cycle -= MathF.Floor(cycle);
         return 1 + ((int)MathF.Floor(cycle * 4 + 0.5f) & 3);
     }
+}
+
+/// <summary>Basic silhouette plus the creeper states that require its animated/charged 3D renderer.</summary>
+internal sealed class CreeperImpostorProvider : IEntityImpostorProvider
+{
+    private readonly BasicEntityImpostorProvider _basic;
+    public CreeperImpostorProvider(ClientEntityImpostorDescriptor descriptor) =>
+        _basic = new BasicEntityImpostorProvider(descriptor);
+    public ResourceLocation Id => _basic.Id;
+    public double VisualDiameter => _basic.VisualDiameter;
+    public string VariantKey => $"{Id}:creeper-v1";
+    public string CacheIdentity => "omniblock:creeper-impostor-v1";
+    public IReadOnlyList<string> TexturePaths => _basic.TexturePaths;
+    public EntityImpostorCaptureLayer[] BuildLayers() => _basic.BuildLayers();
+    public Vector4 LayerEffects(Entity entity, float partialTicks) => _basic.LayerEffects(entity, partialTicks);
+    public int Pose(Entity entity, float partialTicks) => _basic.Pose(entity, partialTicks);
+    public bool Supports(Entity entity, float partialTicks) =>
+        _basic.Supports(entity, partialTicks) &&
+        entity.Synced<bool>("powered")?.Value == false &&
+        entity.Synced<byte>("state")?.Value == byte.MaxValue;
 }
 
 internal sealed class SheepImpostorProvider : IEntityImpostorProvider
@@ -92,7 +112,7 @@ internal sealed class SheepImpostorProvider : IEntityImpostorProvider
 
     public EntityImpostorCaptureLayer[] BuildLayers() => _descriptor.Layers
         .Select(layer => new EntityImpostorCaptureLayer(layer.Texture,
-            EntityImpostorGeometry.BuildPoses(layer.Model))).ToArray();
+            EntityImpostorGeometry.BuildPoses(layer.Model, layer.PoseProvider))).ToArray();
 
     public bool Supports(Entity entity, float partialTicks)
     {
@@ -100,10 +120,9 @@ internal sealed class SheepImpostorProvider : IEntityImpostorProvider
             entity.IsOnFire || living.Health <= 0 || living.DeathTime != 0 || living.HeldItem != null ||
             living.GetTexture() != TexturePaths[0] || entity.Type?.Definition?.Scale != 1 ||
             entity.Behaviors.Find<WoolBehavior>() is not { } wool || wool.ColorOf(entity) is < 0 or > 15) return false;
-        var body = EntityLodDirections.InterpolateYaw(living.LastBodyYaw, living.BodyYaw, partialTicks);
-        var head = EntityLodDirections.InterpolateYaw(entity.PrevYaw, entity.Yaw, partialTicks);
-        var pitch = entity.PrevPitch + (entity.Pitch - entity.PrevPitch) * partialTicks;
-        return Math.Abs(EntityLodDirections.InterpolateYaw(body, head, 1) - body) < 0.01 && Math.Abs(pitch) < 0.01;
+        // As with the basic provider, normal head motion is detail-reduced rather than treated as
+        // an unsupported state. Wool color and shearing still remain exact per-instance state.
+        return true;
     }
 
     public int Pose(Entity entity, float partialTicks) => entity is EntityLiving living

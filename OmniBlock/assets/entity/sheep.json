@@ -27,8 +27,8 @@
       "Provider": "omniblock:wool",
       "VisualDiameter": 3.1,
       "Layers": [
-        { "Model": "sheep", "Texture": "/mob/sheep.png" },
-        { "Model": "sheepfur", "Texture": "/mob/sheep_fur.png" }
+        { "Model": "sheep", "Texture": "/mob/sheep.png", "PoseProvider": "omniblock:quadruped" },
+        { "Model": "sheepfur", "Texture": "/mob/sheep_fur.png", "PoseProvider": "omniblock:quadruped" }
       ]
     }
   },

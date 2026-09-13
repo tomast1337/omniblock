@@ -41,7 +41,7 @@ internal sealed partial class LuauCompletion
     [
         "advancedItemTooltips", "alternateBlocks", "anisotropicLevel", "bobView", "cameraMode", "captureMouse",
         "chatScale", "chatWidth", "chunkFade", "cloudsQuality", "controllerSensitivity",
-        "controllerType", "difficulty", "entityImpostors", "fov", "fpsLimit", "gamma", "guiScale", "invertYMouse",
+        "controllerType", "difficulty", "entityImpostorDistance", "fov", "fpsLimit", "gamma", "guiScale", "invertYMouse",
         "language", "lastServer", "menuMusic", "mouseSensitivity", "msaaLevel", "music", "options", "pauseOnFocusLoss", "showCoordinates",
         "presentationQuality", "simulationDistance", "skin", "softClouds", "sound", "uiCursors", "useMipmaps", "viewDistance", "vsync"
     ];

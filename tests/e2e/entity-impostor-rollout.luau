@@ -10,7 +10,7 @@ OMNI.config.fov = 1
 OMNI.config.bobView = false
 OMNI.config.pauseOnFocusLoss = false
 OMNI.config.captureMouse = false
-OMNI.config.entityImpostors = false
+OMNI.config.entityImpostorDistance = 0
 
 assert(OMNI.client.worlds.load("e2e-flat"))
 OMNI.waitUntil(function() return OMNI.client.state.playerReady end, 75, 0.05)
@@ -37,7 +37,7 @@ OMNI.test.screenshot()
 OMNI.wait(1.1)
 
 -- Exercise the persistent production option, not the force-tier test override.
-OMNI.config.entityImpostors = true
+OMNI.config.entityImpostorDistance = 2 / 15
 OMNI.waitUntil(function()
     local s = OMNI.client.state
     assert(s.webGpuErrorCount == 0, "WebGPU validation failed during cold bake")
@@ -58,7 +58,7 @@ OMNI.wait(1.1)
 
 -- Near entities retain the full model while the production gate remains enabled.
 assert(OMNI.test.entityBaseline("cow", 64, 32))
-OMNI.config.entityImpostors = false
+OMNI.config.entityImpostorDistance = 0
 OMNI.waitUntil(function()
     return OMNI.client.state.entityLodObserved == 64 and
         OMNI.client.state.entityLodModelSubmissions == 64
@@ -66,7 +66,7 @@ end, 20, 0.02)
 assert(OMNI.test.beginEntitySample())
 OMNI.wait(2)
 assert(OMNI.test.endEntitySample("phase5-cow-near-disabled"), "near control scene was invalid")
-OMNI.config.entityImpostors = true
+OMNI.config.entityImpostorDistance = 2 / 15
 OMNI.waitUntil(function()
     return OMNI.client.state.entityLodObserved == 64 and
         OMNI.client.state.entityLodModelSubmissions == 64
@@ -104,6 +104,6 @@ end, 20, 0.02)
 assert(OMNI.client.state.entityLodTransitions >= 0)
 assert(OMNI.client.state.entityImpostorStaleResults == 0)
 assert(OMNI.client.state.webGpuErrorCount == 0)
-OMNI.config.entityImpostors = false
+OMNI.config.entityImpostorDistance = 0
 OMNI.test.clearEntityBaseline()
 OMNI.test.pass()

@@ -59,7 +59,8 @@ and `entity-impostor-occlusion` (uncovered/half/full stone-wall screenshot pairs
 and assert zero `OMNI.client.state.webGpuErrorCount`. `OMNI.test.entityImpostors(true, true)` forces
 the tier for close visual inspection only; unsupported states/providers still fall back to 3D.
 Validated providers are now enabled by default; these historical force-tier scenarios still isolate
-specific comparisons. Submission checks do not replace visual review of their artifacts.
+specific comparisons. The appearance matrix includes cow, layered sheep, zombie, and creeper pairs.
+Submission checks do not replace visual review of their artifacts.
 The Phase 4 slice expands each atlas to idle plus four gait poses. The prototype scenario uses
 the restricted `OMNI.test.entityBaselineState("idle"|"walk-0".."walk-3"|"hurt")` control and checks
 `entityImpostorPoseMask`/`entityImpostorHurtSubmissions`; this proves real GPU-path selection without

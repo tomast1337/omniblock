@@ -102,7 +102,7 @@ internal sealed class EntityRenderBaseline : IDisposable
             gpuEntityPassMs = (double?)null,
             gpuTimingStatus = "unavailable: device does not request timestamp queries",
             population = "client-only replicas; server simulation continues independently",
-            tracking = new { ordinaryMobRange = 160, clamp = "server view-distance cap; fixture bypasses tracking" },
+            tracking = new { ordinaryMobRange = 512, clamp = "server view-distance cap; fixture bypasses tracking" },
             uploadScope = "pose instance storage only; excludes uniforms, static geometry, textures",
             geometryPath = "selected client presentation; per-frame EntityLod records 3D/impostor use"
         };
@@ -123,16 +123,19 @@ internal sealed class EntityRenderBaseline : IDisposable
     {
         "sheep_fur" => "sheepfur",
         "pig_saddle" => "pig", // ModelPig with inflation, same source geometry
+        "creeper_charged" => "creeper", // ModelCreeper with inflation, same source geometry
         _ => model
     });
 
     internal static List<Entity> CreateEntities(IWorldContext world, string scene, int count,
         double distance, double x, double y, double z)
     {
-        if (scene is not ("cow" or "sheep" or "mixed" or "empty") || count is < 0 or > 256 ||
+        if (scene is not ("cow" or "sheep" or "zombie" or "creeper" or "mixed" or "empty") ||
+            count is < 0 or > 256 ||
             !double.IsFinite(distance) || distance is < 8 or > 120 ||
             (scene == "empty" ? count != 0 : count == 0))
-            throw new ArgumentException("Use cow/sheep/mixed (1..256) or empty (0), distance 8..120.");
+            throw new ArgumentException(
+                "Use cow/sheep/zombie/creeper/mixed (1..256) or empty (0), distance 8..120.");
         var entities = new List<Entity>(count);
         var columns = (int)Math.Ceiling(Math.Sqrt(count));
         var rows = columns == 0 ? 0 : (count + columns - 1) / columns;

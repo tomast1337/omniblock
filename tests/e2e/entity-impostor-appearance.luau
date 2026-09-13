@@ -39,7 +39,7 @@ local function pair(label, expected)
     OMNI.wait(1.1)
 end
 
--- Use a near inspection distance and force the tier. Actual 64/80-block switching remains covered
+-- Use a near inspection distance and force the tier. Actual distance switching remains covered
 -- by selector tests; at that size one cow is too small for useful screenshot review at 850x480.
 assert(OMNI.test.entityBaseline("cow", 1, 32))
 assert(OMNI.test.entityBaselineState("idle"))
@@ -53,6 +53,14 @@ pair("cow-day-hurt", 1)
 assert(OMNI.test.entityBaselineEnvironment("day"))
 assert(OMNI.test.entityBaselineState("walk-2"))
 pair("cow-day-walk", 1)
+
+assert(OMNI.test.entityBaseline("zombie", 1, 32))
+assert(OMNI.test.entityBaselineState("walk-2"))
+pair("zombie-day-walk", 1)
+
+assert(OMNI.test.entityBaseline("creeper", 1, 32))
+assert(OMNI.test.entityBaselineState("walk-2"))
+pair("creeper-day-walk", 1)
 
 assert(OMNI.test.entityBaseline("sheep", 32, 32))
 assert(OMNI.test.entityBaselineEnvironment("night"))

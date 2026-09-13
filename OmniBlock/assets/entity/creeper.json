@@ -26,7 +26,15 @@
     "Shadow": 0.5,
     "OverlayModel": "creeper_charged",
     "OverlayTexture": "/armor/power.png",
-    "OverlayProperty": "powered"
+    "OverlayProperty": "powered",
+    "Impostor": {
+      "Id": "omniblock:creeper",
+      "Provider": "omniblock:creeper",
+      "VisualDiameter": 3.0,
+      "Layers": [
+        { "Model": "creeper", "Texture": "/mob/creeper.png", "PoseProvider": "omniblock:creeper" }
+      ]
+    }
   },
   "Behaviors": [
     {

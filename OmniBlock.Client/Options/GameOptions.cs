@@ -157,7 +157,7 @@ public class GameOptions
     public BoolOption MipmapsOption { get; private set; }
     public BoolOption ChunkFadeOption { get; private set; }
     public BoolOption AlternateBlocksOption { get; private set; }
-    public BoolOption EntityImpostorsOption { get; private set; }
+    public FloatOption EntityImpostorDistanceOption { get; private set; }
     public BoolOption MenuMusicOption { get; private set; }
 
 
@@ -223,7 +223,8 @@ public class GameOptions
     public int CloudsQuality => CloudsQualityOption.Value;
     public bool SoftClouds => SoftCloudsOption.Value;
     public bool ViewBobbing => ViewBobbingOption.Value;
-    public bool EntityImpostors => EntityImpostorsOption.Value;
+    public int EntityImpostorDistance => DecodeEntityImpostorDistance(EntityImpostorDistanceOption.Value);
+    public bool EntityImpostors => EntityImpostorDistance > 0;
     public bool VSync => VSyncOption.Value;
     public int Difficulty => DifficultyOption.Value;
     public int GuiScale => GuiScaleOption.Value;
@@ -395,9 +396,14 @@ public class GameOptions
         {
             OnChanged = _ => ReloadChunks.Invoke()
         };
-        EntityImpostorsOption = new BoolOption("options.entityImpostors", "entityImpostors", true)
+        EntityImpostorDistanceOption = new FloatOption(
+            "options.entityImpostors", "entityImpostorDistance", 2f / 15f)
         {
-            OnChanged = enabled => _game?.ApplyEntityImpostorOption(enabled)
+            Steps = 15,
+            Formatter = value => DecodeEntityImpostorDistance(value) is var distance && distance > 0
+                ? $"{distance} blocks"
+                : Translations.Get("options.off"),
+            OnChanged = _ => _game?.ApplyEntityImpostorOption(EntityImpostors)
         };
         MenuMusicOption = new BoolOption("options.menuMusic", "menuMusic", true);
 
@@ -485,6 +491,13 @@ public class GameOptions
         return fps >= 240 ? null : fps;
     }
 
+    /// <summary>Slider step zero disables impostors; the remaining steps cover 32..256 blocks.</summary>
+    internal static int DecodeEntityImpostorDistance(float normalized)
+    {
+        var step = (int)MathF.Round(Math.Clamp(normalized, 0f, 1f) * 15f);
+        return step == 0 ? 0 : 16 + step * 16;
+    }
+
     private IEnumerable<GameOption> GetAllOptions()
     {
         yield return MusicVolumeOption;
@@ -501,7 +514,7 @@ public class GameOptions
         yield return MipmapsOption;
         yield return ChunkFadeOption;
         yield return AlternateBlocksOption;
-        yield return EntityImpostorsOption;
+        yield return EntityImpostorDistanceOption;
         yield return MenuMusicOption;
         yield return RenderDistanceOption;
         yield return SimulationDistanceOption;
@@ -534,6 +547,10 @@ public class GameOptions
 
     internal LuauConfigValue GetScriptConfig(string key)
     {
+        // Retain the old boolean key as a read-only compatibility view for startup scripts. New
+        // scripts should use entityImpostorDistance so they can select the transition distance.
+        if (key == "entityImpostors") return LuauConfigValue.From(EntityImpostors);
+
         if (_allOptions.TryGetValue(key, out var option))
         {
             return option switch
@@ -615,6 +632,11 @@ public class GameOptions
     {
         switch (key, value.Kind)
         {
+            // Migrate old Luau macros just as options.txt migration does. Saving writes only the
+            // new numeric option because this alias is not part of _allOptions.
+            case ("entityImpostors", LuauConfigValueKind.Boolean):
+                EntityImpostorDistanceOption.Set(value.Boolean ? 2f / 15f : 0f);
+                return true;
             case ("skin", LuauConfigValueKind.String):
                 Skin = value.String!;
                 return true;
@@ -694,6 +716,11 @@ public class GameOptions
 
         switch (key)
         {
+            // One-time migration from the original boolean rollout gate. Enabled becomes the new
+            // balanced 48-block default rather than the slider's maximum value.
+            case "entityImpostors":
+                EntityImpostorDistanceOption.Set(value == "true" ? 2f / 15f : 0f);
+                break;
             case "skin": Skin = value; break;
             case "advancedItemTooltips": AdvancedItemTooltips = value == "true"; break;
             case "lastServer": LastServer = value; break;

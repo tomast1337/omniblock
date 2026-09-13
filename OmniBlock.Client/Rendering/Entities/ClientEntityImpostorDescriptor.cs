@@ -2,7 +2,14 @@ using System.Text.Json;
 
 namespace OmniBlock.Client.Rendering.Entities;
 
-internal sealed record ClientEntityImpostorLayer(string Model, string Texture);
+internal sealed record ClientEntityImpostorLayer(
+    string Model,
+    string Texture,
+    ResourceLocation PoseProvider)
+{
+    public ClientEntityImpostorLayer(string model, string texture)
+        : this(model, texture, EntityImpostorGeometry.QuadrupedPoseProvider) { }
+}
 
 /// <summary>Validated client-only impostor schema compiled from an entity renderer definition.</summary>
 internal sealed record ClientEntityImpostorDescriptor(
@@ -30,7 +37,11 @@ internal sealed record ClientEntityImpostorDescriptor(
             if (string.IsNullOrWhiteSpace(model) || string.IsNullOrWhiteSpace(texture) ||
                 !texture.StartsWith('/'))
                 throw new InvalidDataException("Every impostor layer requires a model and absolute texture path.");
-            return new ClientEntityImpostorLayer(model, texture);
+            if (!layer.TryGetProperty("PoseProvider", out var pose))
+                throw new InvalidDataException("Every impostor layer requires a namespaced 'PoseProvider'.");
+            var poseProvider = ResourceLocation.Parse(pose.GetString()
+                ?? throw new InvalidDataException("Impostor layer 'PoseProvider' cannot be null."));
+            return new ClientEntityImpostorLayer(model, texture, poseProvider);
         }).ToArray();
         if (layers.Length is < 1 or > 2)
             throw new InvalidDataException("This impostor format supports one or two layers.");

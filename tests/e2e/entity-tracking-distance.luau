@@ -4,7 +4,7 @@
 OMNI.config.viewDistance = 12 / 28 -- 16 chunks
 OMNI.config.simulationDistance = 0 -- 2 chunks
 OMNI.config.presentationQuality = 1
-OMNI.config.entityImpostors = true
+OMNI.config.entityImpostorDistance = 2 / 15
 OMNI.config.pauseOnFocusLoss = false
 OMNI.config.captureMouse = false
 
@@ -37,6 +37,10 @@ assert(initial.entityLodObserved >= 1 and
     ", presented=" .. tostring(initial.entityPresented) ..
     ", hidden=" .. tostring(initial.entityHidden) ..
     ", observed=" .. tostring(initial.entityLodObserved))
+assert(initial.entityLodImpostorSubmissions >= 1,
+    "server-tracked distant cow did not use its impostor: intended=" ..
+    tostring(initial.entityLodIntendedImpostors) ..
+    ", unsupportedState=" .. tostring(initial.entityLodUnsupportedState))
 
 -- Distant mobs are paused server-side, not despawned. Hold long enough to catch accidental
 -- tracker removal or a presentation-distance regression.

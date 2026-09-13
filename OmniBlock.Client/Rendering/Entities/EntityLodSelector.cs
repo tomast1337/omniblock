@@ -15,7 +15,7 @@ internal readonly record struct LodPoint(double X, double Y, double Z)
 /// <summary>World-pass selection only. Confirm a valid atlas submission before skipping 3D.</summary>
 internal sealed class EntityLodSelector(int capacity = 2048)
 {
-    internal const double EnterDistance = 80, ExitDistance = 64, EnterPixels = 24, ExitPixels = 32;
+    internal const double DefaultEnterDistance = 48, EnterPixels = 64, ExitPixels = 80;
     private readonly Dictionary<object, Entry> _entries = new(ReferenceEqualityComparer.Instance);
     private readonly List<object> _expired = [];
     private object? _world, _content;
@@ -60,7 +60,8 @@ internal sealed class EntityLodSelector(int capacity = 2048)
 
     public Decision Select(object lifetime, LodPoint position, bool providerSupported, bool stateSupported,
         string variant, double visualDiameter, double bodyYaw, Vector3 cameraForward,
-        double verticalFovDegrees, int viewportHeight, bool forceImpostorForTest = false)
+        double verticalFovDegrees, int viewportHeight, bool forceImpostorForTest = false,
+        double enterDistance = DefaultEnterDistance)
     {
         _observed++;
         Decision Fallback(EntityLodReason reason)
@@ -75,6 +76,8 @@ internal sealed class EntityLodSelector(int capacity = 2048)
             }
             return new Decision(EntityLodTier.Model, reason, -1, double.PositiveInfinity);
         }
+        if (enterDistance <= 0 && !forceImpostorForTest)
+            return Fallback(EntityLodReason.NearOrLarge);
         if (!providerSupported) return Fallback(EntityLodReason.UnsupportedProvider);
         if (!stateSupported) return Fallback(EntityLodReason.UnsupportedState);
         if (!position.IsFinite || !_camera.IsFinite || !double.IsFinite(bodyYaw) ||
@@ -91,12 +94,13 @@ internal sealed class EntityLodSelector(int capacity = 2048)
         var pixels = depth <= 0 ? double.PositiveInfinity : visualDiameter * viewportHeight /
             (2 * depth * Math.Tan(verticalFovDegrees * Math.PI / 360));
         var distanceSquared = position.DistanceSquared(_camera);
+        var exitDistance = Math.Max(16, enterDistance - 16);
         _entries.TryGetValue(lifetime, out var previous);
         if (previous != null && (previous.Variant != variant || previous.Position.DistanceSquared(position) > 16 * 16))
             previous = null;
         var tier = previous?.Tier ?? EntityLodTier.Model;
-        if (tier == EntityLodTier.Model && distanceSquared > EnterDistance * EnterDistance && pixels <= EnterPixels) tier = EntityLodTier.Impostor;
-        else if (tier == EntityLodTier.Impostor && (distanceSquared < ExitDistance * ExitDistance || pixels >= ExitPixels)) tier = EntityLodTier.Model;
+        if (tier == EntityLodTier.Model && distanceSquared > enterDistance * enterDistance && pixels <= EnterPixels) tier = EntityLodTier.Impostor;
+        else if (tier == EntityLodTier.Impostor && (distanceSquared < exitDistance * exitDistance || pixels >= ExitPixels)) tier = EntityLodTier.Model;
         // Restricted visual comparisons only; never bypass provider/state/projection/capacity gates.
         if (forceImpostorForTest && double.IsFinite(pixels)) tier = EntityLodTier.Impostor;
 

@@ -85,18 +85,30 @@ public sealed class GameOptionsScriptConfigTests
     }
 
     [Fact]
-    public void Entity_impostor_rollout_gate_is_enabled_by_default_scriptable_and_persistent()
+    public void Entity_impostor_distance_is_aggressive_scriptable_persistent_and_migrates_boolean_gate()
     {
         var directory = Directory.CreateTempSubdirectory("omniblock-impostor-option-");
         try
         {
             var options = new GameOptions(null!, directory.FullName);
+            Assert.Equal(0, GameOptions.DecodeEntityImpostorDistance(0));
+            Assert.Equal(32, GameOptions.DecodeEntityImpostorDistance(1f / 15));
+            Assert.Equal(256, GameOptions.DecodeEntityImpostorDistance(1));
             Assert.True(options.EntityImpostors);
-            Assert.True(options.SetScriptConfig("entityImpostors", LuauConfigValue.From(false)));
+            Assert.Equal(48, options.EntityImpostorDistance);
+            Assert.True(options.SetScriptConfig("entityImpostorDistance", LuauConfigValue.From(0.0)));
             Assert.False(options.EntityImpostors);
 
             var reloaded = new GameOptions(null!, directory.FullName);
             Assert.False(reloaded.EntityImpostors);
+
+            File.WriteAllText(Path.Combine(directory.FullName, "options.txt"), "entityImpostors:true\n");
+            var migrated = new GameOptions(null!, directory.FullName);
+            Assert.Equal(48, migrated.EntityImpostorDistance);
+
+            Assert.True(migrated.SetScriptConfig("entityImpostors", LuauConfigValue.From(false)));
+            Assert.False(migrated.GetScriptConfig("entityImpostors").Boolean);
+            Assert.Contains("entityImpostorDistance:0", File.ReadAllText(Path.Combine(directory.FullName, "options.txt")));
         }
         finally
         {

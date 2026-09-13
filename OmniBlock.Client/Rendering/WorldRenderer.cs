@@ -650,7 +650,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                     !_game.Options.ShowDebugInfo && provider?.Supports(target, delta) == true,
                     provider?.VariantKey ?? "", provider?.VisualDiameter ?? 0, yaw, cameraForward,
                     effectiveLodFov, _game.Options.CameraMode == CameraMode.FirstPerson ? _game.DisplayHeight : 0,
-                    EntityImpostors.Enabled && EntityImpostors.ForceTierForTest);
+                    EntityImpostors.Enabled && EntityImpostors.ForceTierForTest,
+                    _game.Options.EntityImpostorDistance);
                 lodCpuMs += Stopwatch.GetElapsedTime(start).TotalMilliseconds;
                 return EntityImpostors.TrySubmit(provider, decision, position.DirectionFrom(new LodPoint(
                     EntityRenderDispatcher.OffsetX, EntityRenderDispatcher.OffsetY, EntityRenderDispatcher.OffsetZ)),

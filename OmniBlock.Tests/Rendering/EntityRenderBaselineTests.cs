@@ -11,6 +11,9 @@ public sealed class EntityRenderBaselineTests
     [InlineData("sheep_fur")]
     [InlineData("pig")]
     [InlineData("pig_saddle")]
+    [InlineData("zombie")]
+    [InlineData("creeper")]
+    [InlineData("creeper_charged")]
     public void Every_fixture_model_dependency_resolves_including_renderer_aliases(string model)
     {
         using var source = File.OpenRead(EntityRenderBaseline.ModelAssetPath(model));

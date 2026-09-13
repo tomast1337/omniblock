@@ -11,7 +11,15 @@
   "Renderer": {
     "Type": "undead",
     "Model": "zombie",
-    "Shadow": 0.5
+    "Shadow": 0.5,
+    "Impostor": {
+      "Id": "omniblock:zombie",
+      "Provider": "omniblock:basic",
+      "VisualDiameter": 3.2,
+      "Layers": [
+        { "Model": "zombie", "Texture": "/mob/zombie.png", "PoseProvider": "omniblock:zombie" }
+      ]
+    }
   },
   "Behaviors": [
     {
