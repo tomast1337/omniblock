@@ -395,9 +395,7 @@ public class GameOptions
         {
             OnChanged = _ => ReloadChunks.Invoke()
         };
-        // Kept out of the user-facing options screen until Phase 5 measurements justify rollout.
-        // It is persistent and script-configurable so paired E2E runs exercise the production gate.
-        EntityImpostorsOption = new BoolOption("options.entityImpostors", "entityImpostors")
+        EntityImpostorsOption = new BoolOption("options.entityImpostors", "entityImpostors", true)
         {
             OnChanged = enabled => _game?.ApplyEntityImpostorOption(enabled)
         };

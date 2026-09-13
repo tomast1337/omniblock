@@ -210,6 +210,7 @@
         "invertMouse": "Invert Mouse",
         "alternateBlocks": "Alternate Blocks",
         "chunkFade": "Chunk Fade",
+        "entityImpostors": "Distant Entity Impostors",
         "sensitivity": {
             "text": "Sensitivity",
             "controllerText": "Controller Sensitivity",

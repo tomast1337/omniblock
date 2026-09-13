@@ -17,6 +17,7 @@ public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOpti
             Options.AnisotropicOption,
             Options.CloudsQualityOption,
             Options.SoftCloudsOption,
+            Options.EntityImpostorsOption,
             new NavigationOption("options.shader.text",
                 () => Context.Navigator.Navigate(new ShaderOptionsScreen(Context, this)))
         ]),

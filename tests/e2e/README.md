@@ -54,7 +54,8 @@ and `entity-impostor-occlusion` (uncovered/half/full stone-wall screenshot pairs
 `xvfb-run -a tests/e2e/run-local.sh <scenario>`. They use isolated fixtures and a 300-second watchdog,
 and assert zero `OMNI.client.state.webGpuErrorCount`. `OMNI.test.entityImpostors(true, true)` forces
 the tier for close visual inspection only; unsupported states/providers still fall back to 3D.
-The default remains disabled. Submission checks do not replace visual review of these artifacts.
+Validated providers are now enabled by default; these historical force-tier scenarios still isolate
+specific comparisons. Submission checks do not replace visual review of their artifacts.
 The Phase 4 slice expands each atlas to idle plus four gait poses. The prototype scenario uses
 the restricted `OMNI.test.entityBaselineState("idle"|"walk-0".."walk-3"|"hurt")` control and checks
 `entityImpostorPoseMask`/`entityImpostorHurtSubmissions`; this proves real GPU-path selection without

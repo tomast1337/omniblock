@@ -58,6 +58,15 @@ OMNI.wait(1.1)
 
 -- Near entities retain the full model while the production gate remains enabled.
 assert(OMNI.test.entityBaseline("cow", 64, 32))
+OMNI.config.entityImpostors = false
+OMNI.waitUntil(function()
+    return OMNI.client.state.entityLodObserved == 64 and
+        OMNI.client.state.entityLodModelSubmissions == 64
+end, 20, 0.02)
+assert(OMNI.test.beginEntitySample())
+OMNI.wait(2)
+assert(OMNI.test.endEntitySample("phase5-cow-near-disabled"), "near control scene was invalid")
+OMNI.config.entityImpostors = true
 OMNI.waitUntil(function()
     return OMNI.client.state.entityLodObserved == 64 and
         OMNI.client.state.entityLodModelSubmissions == 64
