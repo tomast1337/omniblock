@@ -15,6 +15,7 @@ public sealed class LuauTestHostIntegrationTests
         var passes = 0;
         string? failure = null;
         var creative = 0;
+        (string Id, int Count)? summoned = null;
         var brokenBlock = (X: 0, Y: 0, Z: 0);
         (string Id, int X, int Y, int Z)? setBlock = null;
         var flying = false;
@@ -27,6 +28,11 @@ public sealed class LuauTestHostIntegrationTests
         LuauTestHost.Pass = () => passes++;
         LuauTestHost.Fail = reason => failure = reason;
         LuauTestHost.Creative = () => creative++;
+        LuauTestHost.Summon = (id, count) =>
+        {
+            summoned = (id, count);
+            return true;
+        };
         LuauTestHost.BreakBlock = (x, y, z) =>
         {
             brokenBlock = (x, y, z);
@@ -62,6 +68,7 @@ public sealed class LuauTestHostIntegrationTests
             Assert.True(state.TryExecute(LuauTestHost.Bootstrap, out var bootstrapError), bootstrapError);
             Assert.True(state.TryExecute(
                 "OMNI.test.pass(); OMNI.test.fail('broken'); OMNI.test.creative(); " +
+                "assert(OMNI.test.summon('omniblock:cow', 2)); " +
                 "assert(OMNI.test.breakBlock(4, 61, 7)); " +
                 "OMNI.test.setBlock('omniblock:flowing_water', 15, 70, 0); " +
                 "assert(OMNI.test.isMeshCurrent(4, 61, 7)); " +
@@ -83,6 +90,7 @@ public sealed class LuauTestHostIntegrationTests
             Assert.Equal(1, passes);
             Assert.Equal("broken", failure);
             Assert.Equal(1, creative);
+            Assert.Equal(("omniblock:cow", 2), summoned);
             Assert.Equal((4, 61, 7), brokenBlock);
             Assert.Equal(("omniblock:flowing_water", 15, 70, 0), setBlock);
             Assert.True(flying);
@@ -100,6 +108,7 @@ public sealed class LuauTestHostIntegrationTests
             LuauTestHost.Pass = null;
             LuauTestHost.Fail = null;
             LuauTestHost.Creative = null;
+            LuauTestHost.Summon = null;
             LuauTestHost.BreakBlock = null;
             LuauTestHost.SetBlock = null;
             LuauTestHost.IsMeshCurrent = null;

@@ -297,6 +297,8 @@ public class PlayerManager
         {
             _chunkMaps[0].SetViewDistance(viewDistanceUpdate);
             _chunkMaps[1].SetViewDistance(viewDistanceUpdate);
+            var blockDistance = _chunkMaps[0].getBlockViewDistance();
+            foreach (var tracker in _server.entityTrackers) tracker?.SetViewDistance(blockDistance);
             _pendingViewDistance = -1;
         }
 

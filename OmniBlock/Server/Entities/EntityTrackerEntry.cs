@@ -12,6 +12,7 @@ namespace OmniBlock.Server.Entities;
 internal class EntityTrackerEntry
 {
     private readonly bool alwaysUpdateVelocity;
+    private readonly int requestedTrackingDistance;
     public Entity currentTrackedEntity;
     private bool isInitialized;
     public int lastPitch;
@@ -32,18 +33,23 @@ internal class EntityTrackerEntry
     private double y;
     private double z;
 
-    public EntityTrackerEntry(Entity entity, int trackedDistance, int trackedFrequency, bool alwaysUpdateVelocity)
+    public EntityTrackerEntry(Entity entity, int trackedDistance, int trackedFrequency,
+        bool alwaysUpdateVelocity, int requestedTrackingDistance)
     {
         currentTrackedEntity = entity;
         this.trackedDistance = trackedDistance;
         trackingFrequency = trackedFrequency;
         this.alwaysUpdateVelocity = alwaysUpdateVelocity;
+        this.requestedTrackingDistance = requestedTrackingDistance;
         lastX = MathHelper.Floor(entity.X * 32.0);
         lastY = MathHelper.Floor(entity.Y * 32.0);
         lastZ = MathHelper.Floor(entity.Z * 32.0);
         lastYaw = MathHelper.Floor(entity.Yaw * 256.0F / 360.0F);
         lastPitch = MathHelper.Floor(entity.Pitch * 256.0F / 360.0F);
     }
+
+    public void SetViewDistance(int terrainDistance) =>
+        trackedDistance = Math.Min(requestedTrackingDistance, Math.Max(0, terrainDistance));
 
     /// <summary>
     ///     Where this entity has been for the last couple of seconds, for lag-compensated hit

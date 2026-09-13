@@ -535,6 +535,9 @@ public partial class OmniBlock :
                 var lod = WorldRenderer?.EntityLod.Last ?? default;
                 return key switch
                 {
+                    "entityClientResident" => WorldRenderer?.CountEntitiesTotal ?? 0,
+                    "entityPresented" => WorldRenderer?.CountEntitiesRendered ?? 0,
+                    "entityHidden" => WorldRenderer?.CountEntitiesHidden ?? 0,
                     "entityLodObserved" => lod.Observed,
                     "entityLodIntendedImpostors" => lod.IntendedImpostors,
                     "entityLodModelSubmissions" => lod.ModelDraws,
@@ -594,6 +597,13 @@ public partial class OmniBlock :
                 LuauTestHost.Pass = _e2eTestController.Pass;
                 LuauTestHost.Fail = reason => _e2eTestController.Fail(reason);
                 LuauTestHost.Creative = () => Player?.SendChatMessage("/gm c");
+                LuauTestHost.Summon = (entity, count) =>
+                {
+                    if (Player == null || count is < 1 or > 256 || !ResourceLocation.TryParse(entity, out _))
+                        return false;
+                    Player.SendChatMessage($"/summon {entity} {count}");
+                    return true;
+                };
                 LuauTestHost.BreakBlock = (x, y, z) =>
                 {
                     if (PlayerController == null || World == null ||
@@ -1064,6 +1074,7 @@ public partial class OmniBlock :
             LuauTestHost.Pass = null;
             LuauTestHost.Fail = null;
             LuauTestHost.Creative = null;
+            LuauTestHost.Summon = null;
             LuauTestHost.BreakBlock = null;
             LuauTestHost.SetBlock = null;
             LuauTestHost.IsMeshCurrent = null;

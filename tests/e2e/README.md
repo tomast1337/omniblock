@@ -92,6 +92,8 @@ Read-only `OMNI.client.state.entityImpostor*` diagnostics expose `MemoryHits`, `
 `MemoryBytes`, `ReadbackPending`, bake age/timing, invalidations, known GPU/staging bytes, atlas and
 draw-batch counts (for example `entityImpostorDiskHits`). All rendering scenarios
 assert zero WebGPU errors. Physical device-loss recovery is not simulated by `dispose-session`.
+`entityClientResident`, `entityPresented`, and `entityHidden` separate network residency from the
+per-frame presentation decision when diagnosing entity-distance failures.
 
 `frustum-directional` disables VSync, samples the real client while looking at the horizon and
 straight down, and records average presented meshes, solid/translucent draws, and frame time. Its
@@ -120,6 +122,12 @@ instead of screenshots, avoiding GPU readback while measuring the pipeline.
 distance 8, verifies the server-authoritative values returned by the session protocol, then changes
 simulation distance to 2 and proves the terrain streaming distance remains 32.
 
+`entity-tracking-distance` is an opt-in integrated-server regression test for distant mob
+persistence. It spawns a real cow, moves the player 200 blocks away while retaining the cow's chunk
+inside a 16-chunk terrain radius, and proves the cow remains networked and presented outside the
+two-chunk simulation radius. This guards the separation between terrain streaming, mob tracking,
+client presentation, and expensive AI/pathfinding ticks.
+
 `chunk-mesh-deadlines` breaks a compact patch of nearby fixture terrain through the normal
 multiplayer player-controller path. It verifies critical forward progress, deadline-accounting
 invariants, bounded cancellation counters, and that no resident near-field mesh disappears. Missed
@@ -140,6 +148,7 @@ OMNI.test.setMovement(0, 0, 0) -- release every movement axis
 OMNI.test.flyPath(ax, ay, az, bx, by, bz, seconds)
 OMNI.test.breakBlock(x, y, z) -- true when a non-air block was submitted for breaking
 OMNI.test.setBlock("omniblock:flowing_water", x, y, z) -- E2E-only server command
+OMNI.test.summon("omniblock:cow", 1) -- E2E-only server command; maximum count is 256
 OMNI.test.isMeshCurrent(x, y, z) -- latest section epoch has an installed mesh
 OMNI.test.meshDeadlineMissCount(x, y, z) -- section-scoped lifetime counter
 ```

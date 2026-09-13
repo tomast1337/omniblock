@@ -39,7 +39,7 @@ internal readonly record struct WorldPresentationPolicy(
                 0.35f,
                 1),
             2 => new(
-                Math.Min(terrainDistance, 256.0),
+                terrainDistance,
                 Math.Min(terrainDistance, 128.0),
                 64.0,
                 ParticleBuffer.MaxParticles,
@@ -47,7 +47,7 @@ internal readonly record struct WorldPresentationPolicy(
                 1.0f,
                 1),
             _ => new(
-                Math.Min(terrainDistance, 160.0),
+                terrainDistance,
                 Math.Min(terrainDistance, 80.0),
                 40.0,
                 2_500,

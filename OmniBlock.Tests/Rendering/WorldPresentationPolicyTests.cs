@@ -9,8 +9,8 @@ public sealed class WorldPresentationPolicyTests
 {
     [Theory]
     [InlineData(0, 32, 96, 48, 24, 1_000, 6)]
-    [InlineData(1, 32, 160, 80, 40, 2_500, 8)]
-    [InlineData(2, 32, 256, 128, 64, ParticleBuffer.MaxParticles, 10)]
+    [InlineData(1, 32, 512, 80, 40, 2_500, 8)]
+    [InlineData(2, 32, 512, 128, 64, ParticleBuffer.MaxParticles, 10)]
     public void Quality_profiles_bound_non_terrain_work_independently_of_large_view_distance(
         int quality,
         int renderDistance,
@@ -48,11 +48,13 @@ public sealed class WorldPresentationPolicyTests
         var cow = (EntityCreature)TestEntityCatalog.ByName("cow").Create(world);
         cow.SetPosition(0, 64, 0);
         var cameraAt120Blocks = new Vec3D(120, 64, 0);
-        var cameraBeyondPolicy = new Vec3D(161, 64, 0);
+        var cameraAt400Blocks = new Vec3D(400, 64, 0);
+        var cameraBeyondPolicy = new Vec3D(513, 64, 0);
         var policy = WorldPresentationPolicy.From(1, 32);
 
         Assert.False(cow.ShouldRender(cameraAt120Blocks));
         Assert.True(policy.ShouldRenderEntity(cow, cameraAt120Blocks));
+        Assert.True(policy.ShouldRenderEntity(cow, cameraAt400Blocks));
         Assert.False(policy.ShouldRenderEntity(cow, cameraBeyondPolicy));
     }
 }

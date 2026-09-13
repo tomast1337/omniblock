@@ -63,7 +63,8 @@ public static unsafe class LuauClientStateHost
                                             if key == "terrainUniformArenaGrowths" then return __ClientState.terrainUniformArenaGrowths() end
                                             if key == "findVisibleMs" then return __ClientState.findVisibleMs() end
                                             if key == "terrainSubmitCpuMs" then return __ClientState.terrainSubmitCpuMs() end
-                                            if key == "entityLodObserved" or key == "entityLodIntendedImpostors" or
+                                            if key == "entityClientResident" or key == "entityPresented" or key == "entityHidden" or
+                                                key == "entityLodObserved" or key == "entityLodIntendedImpostors" or
                                                 key == "entityLodModelSubmissions" or key == "entityLodImpostorSubmissions" or
                                                 key == "entityLodUnsupportedProvider" or key == "entityLodUnsupportedState" or
                                                 key == "entityLodInvalidView" or key == "entityLodCapacityFallbacks" or

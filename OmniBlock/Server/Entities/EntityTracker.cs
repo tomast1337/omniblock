@@ -8,6 +8,7 @@ namespace OmniBlock.Server.Entities;
 
 public class EntityTracker
 {
+    private const int LivingTrackingRange = 512;
     /// <summary>
     ///     Scratch for <see cref="broadcastSnapshots" />: this pass's states, grouped by recipient.
     ///     A field rather than a local so the dictionary's buckets survive between ticks; the lists
@@ -18,7 +19,7 @@ public class EntityTracker
     private readonly int dimensionId;
     private readonly HashSet<EntityTrackerEntry> entries = [];
     private readonly Dictionary<int, EntityTrackerEntry> entriesById = new();
-    private readonly int viewDistance;
+    private int viewDistance;
 
     private readonly OmniBlockServer world;
 
@@ -49,7 +50,9 @@ public class EntityTracker
         // declaration — a mob whose motion the server imposes says so in its definition.
         else if (entity is EntityLiving mob and not EntityPlayer)
         {
-            startTracking(entity, 160, 3, mob.Definition.TracksVelocity);
+            // Living entities remain visible throughout received terrain. Simulation distance is
+            // enforced independently by EntityManager, so this does not run distant AI/pathing.
+            startTracking(entity, LivingTrackingRange, 3, mob.Definition.TracksVelocity);
         }
         // Non-living entities whose tracking parameters are declared rather than matched by class —
         // primed TNT and falling sand so far.
@@ -61,20 +64,26 @@ public class EntityTracker
 
     public void startTracking(Entity entity, int trackedDistance, int tracingFrequency, bool alwaysUpdateVelocity = false)
     {
-        if (trackedDistance > viewDistance)
-        {
-            trackedDistance = viewDistance;
-        }
+        var requestedDistance = trackedDistance;
+        trackedDistance = Math.Min(trackedDistance, viewDistance);
 
         if (entriesById.ContainsKey(entity.ID))
         {
             throw new InvalidOperationException("Entity is already tracked!");
         }
 
-        EntityTrackerEntry trackerEntry = new(entity, trackedDistance, tracingFrequency, alwaysUpdateVelocity);
+        EntityTrackerEntry trackerEntry = new(entity, trackedDistance, tracingFrequency,
+            alwaysUpdateVelocity, requestedDistance);
         entries.Add(trackerEntry);
         entriesById[entity.ID] = trackerEntry;
         trackerEntry.updateListeners(world.getWorld(dimensionId).Entities.Players.Cast<ServerPlayerEntity>());
+    }
+
+    /// <summary>Updates existing entries when the server terrain distance changes at runtime.</summary>
+    public void SetViewDistance(int blocks)
+    {
+        viewDistance = Math.Max(0, blocks);
+        foreach (var entry in entries) entry.SetViewDistance(viewDistance);
     }
 
     public void onEntityRemoved(Entity entity)
