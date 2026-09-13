@@ -224,7 +224,8 @@ OMNI.client.state.meshCriticalOverdueCount -- currently live critical revisions 
 These values are live and read-only. They are intended for streaming-health assertions and
 diagnostics; performance budgets should account for the CI renderer and host hardware.
 
-`OMNI.test.dumpTerrain("label")` writes three CPU-only TSV artifacts:
+`OMNI.test.dumpTerrain("label")` writes three CPU-only TSV artifacts and, for an integrated
+server, one JSON generation profile:
 
 - `terrain-label.tsv`: the column grid and aggregate lifecycle counters/gauges.
 - `mesh-lifecycle-label.tsv`: the latest 8,192 lifecycle events, with monotonic timestamps,
@@ -233,6 +234,13 @@ diagnostics; performance budgets should account for the CI renderer and host har
 - `mesh-sections-label.tsv`: current per-section epochs, deferred reasons, pending/resident request
   IDs and stages, plus request/stage ages in milliseconds. This remains useful when a stalled
   request's original events have rolled out of the bounded history.
+- `world-generation-label.json`: bounded timing/allocation distributions per generation stage,
+  queue depths and peak, failures, and a conservative retained chunk-payload lower bound.
+
+`world-generation-control.luau` is the Phase 0 control workload: minimum view distance, a fixed
+near-field edit and lava update, and a 32-block diagonal cinematic flight. Automatic background
+pregeneration is absent/disabled by construction. Its start, pressure, and settled dumps provide
+repeatable evidence before a background generation service is introduced.
 
 The terrain header also reports `leadingEdgeQueued`, `leadingEdgePending`, and
 `evictionGraceMeshes`. The first is the coalesced frontier waiting for loaded source data, the

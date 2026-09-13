@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Runtime;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGui.Backends.GLFW;
 using Microsoft.Extensions.Logging;
@@ -700,6 +701,17 @@ public partial class OmniBlock :
                         $"mesh-lifecycle-{label}.tsv", WorldRenderer.ChunkRenderer.CreateMeshLifecycleDump());
                     _e2eTestController.WriteTextArtifact(
                         $"mesh-sections-{label}.tsv", WorldRenderer.ChunkRenderer.CreateMeshSectionDump());
+                    var worldGeneration = InternalServer?.worlds?
+                        .FirstOrDefault(world => world.Dimension.Id == World.Dimension.Id)?
+                        .ChunkCache.GenerationTelemetry.Snapshot()
+                        ?? InternalServer?.worlds?.FirstOrDefault()?.ChunkCache.GenerationTelemetry.Snapshot();
+                    if (worldGeneration is not null)
+                        _e2eTestController.WriteTextArtifact(
+                            $"world-generation-{label}.json",
+                            JsonSerializer.Serialize(worldGeneration, new JsonSerializerOptions
+                            {
+                                WriteIndented = true
+                            }));
                 };
                 LuauTestHost.Install(LuauState.Handle);
                 if (!LuauState.TryExecute(LuauTestHost.Bootstrap, out var testBootstrapError))

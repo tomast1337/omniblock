@@ -6,6 +6,7 @@ using OmniBlock.Entities;
 using OmniBlock.Server.Worlds;
 using OmniBlock.Worlds;
 using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Chunks.Storage;
 using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Dimensions;
@@ -38,6 +39,14 @@ public sealed class ChunkGeneratorCharacterizationTests
         { "sky", 987654321L, 12, -7, "973c0d62712d2f90a42ea13b68913ce9571970a035e61ca94d49688a2d5b8903" },
         { "nether", 1L, 0, 0, "576c8d52b344dd3d7540f934c45b64e12ab5847e51868aa869cb33d672052922" },
         { "nether", 987654321L, 12, -7, "b450e52898dc6184e2df870ca6abe096a83187aef1c1a249942265bfd198bb2a" }
+    };
+
+    public static TheoryData<string, long, int, int, string> GoldenCompletedNeighborhoods => new()
+    {
+        { "default", 246813579L, -33, 31, "3243eec63e6652fdb476fbad9f04049475e90c6afe688aedd696de1cd9fac709" },
+        { "flat", 246813579L, -33, 31, "e10fc05d6ac7cbd6e614880cb404a2082f8aafcd286aa4368a1c8b0d25d06206" },
+        { "sky", 246813579L, -33, 31, "df577d0336b57a4a68f5bef55735df492b45c3750b01dafd0a58bf1447106a2c" },
+        { "nether", 246813579L, -33, 31, "dfcb7e8e43c3bae5b8ba44a904f182b2f08b854ace29cb51f8e77aa55c332bc5" }
     };
 
     [Theory]
@@ -169,6 +178,188 @@ public sealed class ChunkGeneratorCharacterizationTests
     }
 
     [Theory]
+    [MemberData(nameof(GoldenCompletedNeighborhoods))]
+    public void Completed_negative_region_boundary_neighborhood_matches_the_shipped_snapshot(
+        string profile,
+        long seed,
+        int centerX,
+        int centerZ,
+        string expected)
+    {
+        var fixture = GeneratorFixture.Create(profile, seed);
+        PopulateCompletedNeighborhood(fixture, centerX, centerZ);
+
+        var actual = CompletedFingerprint(fixture.World.Chunks.All);
+        Assert.True(expected == actual, $"Expected {expected}; actual {actual}");
+    }
+
+    [Theory]
+    [InlineData("default")]
+    [InlineData("flat")]
+    [InlineData("sky")]
+    [InlineData("nether")]
+    public void Worker_completion_order_does_not_change_a_prescribed_history(string profile)
+    {
+        const long seed = 0x1357_2468_1234_567L;
+        var canonical = GeneratorFixture.Create(profile, seed);
+        var reversed = GeneratorFixture.Create(profile, seed);
+        var canonicalWorker = canonical.Generator.CreateParallelInstance();
+        var reversedWorker = reversed.Generator.CreateParallelInstance();
+        var positions = NeighborhoodPositions(0, 0).ToArray();
+
+        var canonicalChunks = positions
+            .Select(position => canonicalWorker.GetChunk(position.X, position.Z))
+            .ToArray();
+        var completedChunks = positions
+            .Select(position => reversedWorker.GetChunk(position.X, position.Z))
+            .ToArray();
+        foreach (var chunk in canonicalChunks)
+            canonical.World.Chunks.Store(chunk);
+        foreach (var chunk in completedChunks.Reverse())
+            reversed.World.Chunks.Store(chunk);
+
+        InitializeLighting(canonical);
+        InitializeLighting(reversed);
+        CompleteDecoration(canonical, 0, 0);
+        CompleteDecoration(reversed, 0, 0);
+
+        Assert.Equal(
+            CompletedFingerprint(canonical.World.Chunks.All),
+            CompletedFingerprint(reversed.World.Chunks.All));
+    }
+
+    [Theory]
+    [InlineData("default", true)]
+    [InlineData("flat", true)]
+    [InlineData("sky", true)]
+    [InlineData("nether", true)]
+    public void Generator_traversal_order_dependency_is_explicit(string profile, bool expectedEqual)
+    {
+        const long seed = 0x1357_2468_1234_567L;
+        var forward = GeneratorFixture.Create(profile, seed);
+        var reverse = GeneratorFixture.Create(profile, seed);
+        var positions = NeighborhoodPositions(0, 0).ToArray();
+
+        foreach (var (x, z) in positions)
+            forward.World.Chunks.Store(forward.Generator.GetChunk(x, z));
+        foreach (var (x, z) in positions.Reverse())
+            reverse.World.Chunks.Store(reverse.Generator.GetChunk(x, z));
+
+        Assert.Equal(expectedEqual,
+            Fingerprint(forward.World.Chunks.All) == Fingerprint(reverse.World.Chunks.All));
+    }
+
+    [Theory]
+    [InlineData("default", true)]
+    [InlineData("flat", true)]
+    [InlineData("sky", true)]
+    [InlineData("nether", true)]
+    public void Parallel_generator_instance_dependency_is_explicit(string profile, bool expectedEqual)
+    {
+        const long seed = 0x1357_2468_1234_567L;
+        var primary = GeneratorFixture.Create(profile, seed);
+        var parallel = GeneratorFixture.Create(profile, seed);
+        var worker = parallel.Generator.CreateParallelInstance();
+
+        foreach (var (x, z) in NeighborhoodPositions(0, 0))
+        {
+            primary.World.Chunks.Store(primary.Generator.GetChunk(x, z));
+            parallel.World.Chunks.Store(worker.GetChunk(x, z));
+        }
+
+        Assert.Equal(expectedEqual,
+            Fingerprint(primary.World.Chunks.All) == Fingerprint(parallel.World.Chunks.All));
+    }
+
+    [Theory]
+    [InlineData("default", true)]
+    [InlineData("flat", true)]
+    [InlineData("sky", true)]
+    [InlineData("nether", false)]
+    public void Decoration_dependency_on_previous_generator_terrain_calls_is_explicit(
+        string profile,
+        bool expectedEqual)
+    {
+        const long seed = 0x1357_2468_1234_567L;
+        var coupled = GeneratorFixture.Create(profile, seed);
+        var isolated = GeneratorFixture.Create(profile, seed);
+        var isolatedWorker = isolated.Generator.CreateParallelInstance();
+
+        foreach (var (x, z) in NeighborhoodPositions(0, 0))
+        {
+            coupled.World.Chunks.Store(coupled.Generator.GetChunk(x, z));
+            isolated.World.Chunks.Store(isolatedWorker.GetChunk(x, z));
+        }
+
+        InitializeLighting(coupled);
+        InitializeLighting(isolated);
+        CompleteDecoration(coupled, 0, 0);
+        CompleteDecoration(isolated, 0, 0);
+
+        Assert.Equal(expectedEqual,
+            CompletedFingerprint(coupled.World.Chunks.All) ==
+            CompletedFingerprint(isolated.World.Chunks.All));
+    }
+
+    [Theory]
+    [InlineData("default", true)]
+    [InlineData("flat", true)]
+    [InlineData("sky", true)]
+    [InlineData("nether", false)]
+    public void Decoration_traversal_order_dependency_is_explicit(string profile, bool expectedEqual)
+    {
+        const long seed = 0x2468_1357_7654_321L;
+        var forward = GeneratorFixture.Create(profile, seed);
+        var reverse = GeneratorFixture.Create(profile, seed);
+        var positions = NeighborhoodPositions(0, 0)
+            .Concat(NeighborhoodPositions(1, 0))
+            .Distinct()
+            .ToArray();
+        foreach (var (x, z) in positions)
+        {
+            forward.World.Chunks.Store(forward.Generator.GetChunk(x, z));
+            reverse.World.Chunks.Store(reverse.Generator.GetChunk(x, z));
+        }
+
+        InitializeLighting(forward);
+        InitializeLighting(reverse);
+        CompleteDecoration(forward, 0, 0);
+        CompleteDecoration(forward, 1, 0);
+        CompleteDecoration(reverse, 1, 0);
+        CompleteDecoration(reverse, 0, 0);
+
+        Assert.Equal(expectedEqual,
+            CompletedFingerprint(forward.World.Chunks.All) ==
+            CompletedFingerprint(reverse.World.Chunks.All));
+    }
+
+    [Theory]
+    [InlineData(31, -33)]
+    [InlineData(32, -32)]
+    public void Region_storage_round_trip_preserves_generated_boundary_chunks(int chunkX, int chunkZ)
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"omniblock-generation-region-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var fixture = GeneratorFixture.Create("default", 987654321L);
+            var original = fixture.Generator.GetChunk(chunkX, chunkZ);
+            original.PopulateBlockLight();
+            var storage = new RegionChunkStorage(root);
+
+            storage.SaveChunk(fixture.World, original, () => { }, 0);
+            var loaded = storage.LoadChunk(fixture.World, chunkX, chunkZ);
+
+            Assert.NotNull(loaded);
+            Assert.Equal(CompletedFingerprint([original]), CompletedFingerprint([loaded!]));
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Theory]
     [InlineData("default", 1L, 0, 0, "Desert")]
     [InlineData("default", 987654321L, 197, -113, "Shrubland")]
     [InlineData("flat", 1L, 0, 0, "Desert")]
@@ -240,6 +431,66 @@ public sealed class ChunkGeneratorCharacterizationTests
         for (var chunkX = -1; chunkX <= 2; chunkX++)
         for (var chunkZ = -1; chunkZ <= 2; chunkZ++)
             world.Chunks.Store(generator.GetChunk(chunkX, chunkZ));
+    }
+
+    private static void PopulateCompletedNeighborhood(GeneratorFixture fixture, int centerX, int centerZ)
+    {
+        foreach (var (x, z) in NeighborhoodPositions(centerX, centerZ))
+            fixture.World.Chunks.Store(fixture.Generator.GetChunk(x, z));
+        InitializeLighting(fixture);
+        CompleteDecoration(fixture, centerX, centerZ);
+    }
+
+    private static IEnumerable<(int X, int Z)> NeighborhoodPositions(int centerX, int centerZ)
+    {
+        for (var x = centerX - 1; x <= centerX + 2; x++)
+        for (var z = centerZ - 1; z <= centerZ + 2; z++)
+            yield return (x, z);
+    }
+
+    private static void InitializeLighting(GeneratorFixture fixture)
+    {
+        // Completion timing may alter insertion order; the prescribed publication history does
+        // not. Initialize in coordinate order so this test varies worker completion only.
+        foreach (var chunk in fixture.World.Chunks.All
+                     .OrderBy(static chunk => chunk.X)
+                     .ThenBy(static chunk => chunk.Z))
+            chunk.PopulateBlockLight();
+    }
+
+    private static void CompleteDecoration(GeneratorFixture fixture, int x, int z)
+    {
+        fixture.World.Chunks.GetChunk(x, z).TerrainPopulated = true;
+        fixture.Generator.DecorateTerrain(fixture.World.Chunks, x, z);
+        var passes = 0;
+        while (fixture.World.Lighting.DoLightingUpdates())
+        {
+            passes++;
+            Assert.True(passes < 10000, "Lighting did not converge in the characterization fixture.");
+        }
+    }
+
+    private static string CompletedFingerprint(IEnumerable<Chunk> chunks)
+    {
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        foreach (var chunk in chunks.OrderBy(static chunk => chunk.X).ThenBy(static chunk => chunk.Z))
+        {
+            hash.AppendData(Encoding.UTF8.GetBytes(
+                $"{chunk.X},{chunk.Z}:{chunk.TerrainPopulated}:{chunk.BlockEntities.Count}:"));
+            hash.AppendData(chunk.Blocks);
+            hash.AppendData(chunk.Meta.Bytes);
+            hash.AppendData(chunk.HeightMap);
+            hash.AppendData(chunk.SkyLight.Bytes);
+            hash.AppendData(chunk.BlockLight.Bytes);
+            foreach (var blockEntity in chunk.BlockEntities.Values
+                         .OrderBy(static entity => entity.X)
+                         .ThenBy(static entity => entity.Y)
+                         .ThenBy(static entity => entity.Z))
+                hash.AppendData(Encoding.UTF8.GetBytes(
+                    $"{blockEntity.GetType().FullName}@{blockEntity.X},{blockEntity.Y},{blockEntity.Z};"));
+        }
+
+        return Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
     }
 
     private static string Fingerprint(IEnumerable<Chunk> chunks)

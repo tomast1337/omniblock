@@ -10,7 +10,7 @@ requested_scenario="${1:-all}"
 if [[ ( "$requested_scenario" == "chunk-visibility-baseline" || "$requested_scenario" == "entity-render-baseline" || "$requested_scenario" == "entity-lod-selection" || "$requested_scenario" == "entity-tracking-distance" || "$requested_scenario" == entity-impostor-* ) && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
     timeout_seconds=300
 fi
-scenarios=(menu world-management multiplayer language-options create-world smoke debug-smoke fps-limit simulation-distance chunk-mesh-deadlines teleport-preload flying-chunk-streaming frustum-directional liquid-boundary-visibility)
+scenarios=(menu world-management multiplayer language-options create-world smoke debug-smoke fps-limit simulation-distance chunk-mesh-deadlines teleport-preload flying-chunk-streaming frustum-directional liquid-boundary-visibility world-generation-control)
 run_roots=()
 
 cleanup() {

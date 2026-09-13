@@ -22,6 +22,8 @@ public class ServerChunkCache : IChunkSource
     private readonly object _storageLoadLock = new();
     private readonly ServerWorld _world;
     private int _generationScopes;
+    private int _retainedChunks;
+    private long _retainedPayloadBytes;
 
     public ServerChunkCache(ServerWorld world, IChunkStorage storage, IChunkSource generator)
     {
@@ -30,6 +32,8 @@ public class ServerChunkCache : IChunkSource
         _storage = storage;
         _generator = generator;
     }
+
+    public WorldGenerationTelemetry GenerationTelemetry { get; } = new();
 
 
     public bool IsChunkLoaded(int x, int z) => _chunksByPos.ContainsKey(ChunkPos.GetHashCode(x, z));
@@ -51,7 +55,9 @@ public class ServerChunkCache : IChunkSource
                 }
                 else
                 {
-                    chunk = _generator.GetChunk(chunkX, chunkZ);
+                    chunk = GenerationTelemetry.Measure(
+                        WorldGenerationStage.Terrain,
+                        () => _generator.GetChunk(chunkX, chunkZ));
                 }
             }
 
@@ -61,8 +67,7 @@ public class ServerChunkCache : IChunkSource
             _chunks.Add(chunk);
             if (chunk != null)
             {
-                chunk.PopulateBlockLight();
-                chunk.Load();
+                PrepareLoadedChunk(chunk);
             }
 
             if (!chunk.TerrainPopulated
@@ -125,7 +130,9 @@ public class ServerChunkCache : IChunkSource
             chunk.TerrainPopulated = true;
             if (_generator != null)
             {
-                _generator.DecorateTerrain(source, x, z);
+                GenerationTelemetry.Measure(
+                    WorldGenerationStage.Decoration,
+                    () => _generator.DecorateTerrain(source, x, z));
                 chunk.MarkDirty();
                 _world.ChunkMap.OnChunkDecorated(x, z);
             }
@@ -179,12 +186,18 @@ public class ServerChunkCache : IChunkSource
                 {
                     var chunkHash = _chunksToUnload.First();
                     var chunk = _chunksByPos[chunkHash];
-                    chunk.Unload();
+                    GenerationTelemetry.Measure(WorldGenerationStage.Unload, chunk.Unload);
                     saveChunk(chunk);
                     saveEntities(chunk);
                     _chunksToUnload.Remove(chunkHash);
                     _chunksByPos.Remove(chunkHash);
                     _chunks.Remove(chunk);
+                    if (!ReferenceEquals(chunk, _empty))
+                    {
+                        _retainedChunks--;
+                        _retainedPayloadBytes -= EstimatePayloadBytes(chunk);
+                    }
+                    UpdateResidencyTelemetry();
                 }
             }
 
@@ -197,7 +210,13 @@ public class ServerChunkCache : IChunkSource
 
     public bool CanSave() => !_world.savingDisabled;
 
-    public string GetDebugInfo() => "NOP";
+    public string GetDebugInfo()
+    {
+        var snapshot = GenerationTelemetry.Snapshot();
+        return $"ServerChunkCache: {snapshot.RetainedChunks} chunks, " +
+               $"queue {snapshot.Queued}/{snapshot.InFlight}/{snapshot.Ready}, " +
+               $"payload>={snapshot.RetainedPayloadBytes}B";
+    }
 
     public void isLoaded(int chunkX, int chunkZ)
     {
@@ -220,11 +239,13 @@ public class ServerChunkCache : IChunkSource
 
         try
         {
-            Chunk? loadedChunk;
-            lock (_storageLoadLock)
+            var loadedChunk = GenerationTelemetry.Measure(WorldGenerationStage.StorageDecode, () =>
             {
-                loadedChunk = _storage.LoadChunk(_world, chunkX, chunkZ);
-            }
+                lock (_storageLoadLock)
+                {
+                    return _storage.LoadChunk(_world, chunkX, chunkZ);
+                }
+            });
 
             loadedChunk?.LastSaveTime = _world.GetTime();
 
@@ -259,7 +280,9 @@ public class ServerChunkCache : IChunkSource
             try
             {
                 chunk.LastSaveTime = _world.GetTime();
-                _storage.SaveChunk(_world, chunk, null, -1);
+                GenerationTelemetry.Measure(
+                    WorldGenerationStage.EncodeSave,
+                    () => _storage.SaveChunk(_world, chunk, null, -1));
             }
             catch (IOException ex)
             {
@@ -281,7 +304,12 @@ public class ServerChunkCache : IChunkSource
     ///     relies on via <see cref="InsertPreGeneratedChunk" />.
     /// </summary>
     public Chunk LoadOrGenerateChunkOffThread(int chunkX, int chunkZ, IChunkSource? generator) =>
-        LoadChunkFromStorage(chunkX, chunkZ) ?? generator?.GetChunk(chunkX, chunkZ) ?? _empty;
+        LoadChunkFromStorage(chunkX, chunkZ) ??
+        (generator is null
+            ? _empty
+            : GenerationTelemetry.Measure(
+                WorldGenerationStage.Terrain,
+                () => generator.GetChunk(chunkX, chunkZ)));
 
     /// <summary>
     ///     Inserts a chunk produced by <see cref="LoadOrGenerateChunkOffThread" />, running the
@@ -300,8 +328,7 @@ public class ServerChunkCache : IChunkSource
         _chunksToUnload.Remove(hash);
         _chunksByPos.Add(hash, chunk);
         _chunks.Add(chunk);
-        chunk.PopulateBlockLight();
-        chunk.Load();
+        PrepareLoadedChunk(chunk);
         DecorateIfReady(chunkX, chunkZ);
     }
 
@@ -316,8 +343,7 @@ public class ServerChunkCache : IChunkSource
         ValidateChunkCoordinates(chunk, chunkX, chunkZ);
         _chunksByPos.Add(key, chunk);
         _chunks.Add(chunk);
-        chunk.PopulateBlockLight();
-        chunk.Load();
+        PrepareLoadedChunk(chunk);
     }
 
     private static void ValidateChunkCoordinates(Chunk chunk, int expectedX, int expectedZ)
@@ -328,6 +354,29 @@ public class ServerChunkCache : IChunkSource
                 $"Refusing to cache chunk {chunk.X},{chunk.Z} under key {expectedX},{expectedZ}.");
         }
     }
+
+    private void PrepareLoadedChunk(Chunk chunk)
+    {
+        GenerationTelemetry.Measure(WorldGenerationStage.LightInitialization, chunk.PopulateBlockLight);
+        GenerationTelemetry.Measure(WorldGenerationStage.Activation, chunk.Load);
+        if (!ReferenceEquals(chunk, _empty))
+        {
+            _retainedChunks++;
+            _retainedPayloadBytes += EstimatePayloadBytes(chunk);
+        }
+        UpdateResidencyTelemetry();
+    }
+
+    private void UpdateResidencyTelemetry() =>
+        GenerationTelemetry.SetResidency(_retainedChunks, _retainedPayloadBytes);
+
+    /// <summary>
+    ///     Counts the large, directly owned chunk buffers. Managed object/list overhead is excluded,
+    ///     so the gauge is a stable lower bound rather than a claim about total process memory.
+    /// </summary>
+    internal static long EstimatePayloadBytes(Chunk chunk) =>
+        chunk.Blocks.LongLength + chunk.Meta.Bytes.LongLength + chunk.SkyLight.Bytes.LongLength +
+        chunk.BlockLight.Bytes.LongLength + chunk.HeightMap.LongLength;
 
     // Runs the 4 decoration neighbour checks for a newly inserted chunk,
     // mirroring the logic in LoadChunk but without re-generating terrain.

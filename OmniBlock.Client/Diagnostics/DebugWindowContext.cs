@@ -7,6 +7,7 @@ using OmniBlock.Client.UI;
 using OmniBlock.Client.UI.Screens.InGame;
 using OmniBlock.Luau;
 using OmniBlock.Registries;
+using OmniBlock.Server.Worlds;
 using OmniBlock.Util.Hit;
 using OmniBlock.Worlds.Core;
 
@@ -57,6 +58,8 @@ internal sealed class DebugWindowContext(OmniBlock game)
     public LuauState? LuauState => game.LuauState;
     public string GameDataDir => game.GameDataDir;
     public ContentRuntime Content => game.Content;
+    public WorldGenerationSnapshot? WorldGeneration =>
+        game.InternalServer?.worlds?.FirstOrDefault()?.ChunkCache.GenerationTelemetry.Snapshot();
 
     /// <summary>
     ///     The top-left screen position (in ImGui/window pixels) of the game viewport when the

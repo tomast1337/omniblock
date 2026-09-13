@@ -2,6 +2,7 @@ using Hexa.NET.ImGui;
 using OmniBlock.Client.Rendering.Chunks;
 using OmniBlock.Diagnostics;
 using OmniBlock.Profiling;
+using OmniBlock.Server.Worlds;
 
 namespace OmniBlock.Client.Diagnostics.Windows;
 
@@ -14,6 +15,9 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
     {
         if (ImGui.CollapsingHeader("Frame timings", ImGuiTreeNodeFlags.DefaultOpen))
             ProfilerRenderer.DrawContents();
+
+        if (ImGui.CollapsingHeader("World generation"))
+            DrawWorldGeneration(ctx.WorldGeneration);
 
         if (ctx.ChunkRenderer is not { } chunkRenderer)
         {
@@ -33,6 +37,37 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         if (ImGui.CollapsingHeader("Non-terrain presentation", ImGuiTreeNodeFlags.DefaultOpen))
             DrawNonTerrainPresentation();
     }
+
+    private static void DrawWorldGeneration(WorldGenerationSnapshot? profile)
+    {
+        if (profile is null)
+        {
+            ImGuiTextSafe.TextDisabled("World generation profiling is available for the integrated server.");
+            return;
+        }
+
+        ImGuiTextSafe.Text(
+            $"Work: queued {profile.Queued}  running {profile.InFlight}  ready {profile.Ready}  peak {profile.QueuePeak}");
+        ImGuiTextSafe.Text(
+            $"Resident: {profile.RetainedChunks:N0} chunks  payload >= {FormatBytes(profile.RetainedPayloadBytes)}  failures {profile.Failures:N0}");
+
+        foreach (var stage in Enum.GetValues<WorldGenerationStage>())
+        {
+            var timing = profile.Stages[stage];
+            if (timing.Count == 0) continue;
+            ImGuiTextSafe.Text(
+                $"{stage}: {timing.Count:N0}  avg {timing.AverageMs:F3} ms  p50 {timing.P50Ms:F3}  p95 {timing.P95Ms:F3}  p99 {timing.P99Ms:F3}  max {timing.MaxMs:F3}");
+            ImGuiTextSafe.TextDisabled(
+                $"  allocated avg {FormatBytes(timing.AverageAllocatedBytes)}  p95 {FormatBytes(timing.P95AllocatedBytes)}  max {FormatBytes(timing.MaxAllocatedBytes)}");
+        }
+    }
+
+    private static string FormatBytes(long bytes) => bytes switch
+    {
+        >= 1024L * 1024L => $"{bytes / (1024.0 * 1024.0):F1} MiB",
+        >= 1024L => $"{bytes / 1024.0:F1} KiB",
+        _ => $"{bytes} B"
+    };
 
     private static void DrawChunkPresentation(ChunkRenderer chunkRenderer)
     {

@@ -272,7 +272,9 @@ public abstract class OmniBlockServer : ICommandOutput
                     }
 
                     var chunkPos = chunkList[idx];
-                    preGenerated[idx] = threadLocalGen.Value!.GetChunk(chunkPos.X, chunkPos.Y);
+                    preGenerated[idx] = world.ChunkCache.GenerationTelemetry.Measure(
+                        WorldGenerationStage.Terrain,
+                        () => threadLocalGen.Value!.GetChunk(chunkPos.X, chunkPos.Y));
                 });
 
                 threadLocalGen.Dispose();
@@ -302,9 +304,12 @@ public abstract class OmniBlockServer : ICommandOutput
                 // Lighting last, in one drain. Every neighbour is loaded by now, so sky light
                 // propagates across borders once instead of being re-queued at each edge.
                 var sw3 = Stopwatch.StartNew();
-                while (world.Lighting.DoLightingUpdates() && running)
+                world.ChunkCache.GenerationTelemetry.Measure(WorldGenerationStage.LightPropagation, () =>
                 {
-                }
+                    while (world.Lighting.DoLightingUpdates() && running)
+                    {
+                    }
+                });
 
                 sw3.Stop();
                 _logger.LogInformation("  Level {Level} lighting: {ElapsedMs}ms", i, sw3.ElapsedMilliseconds);
@@ -619,10 +624,14 @@ public abstract class OmniBlockServer : ICommandOutput
                 // of lighting entries per tick; processing them all in one go causes
                 // >2-second stalls and "Can't keep up" spam. Any remaining work
                 // carries over and is processed across subsequent ticks.
-                var lightSw = Stopwatch.StartNew();
-                while (lightSw.ElapsedMilliseconds < 15L && world.Lighting.DoLightingUpdates())
+                if (world.Lighting.PendingUpdateCount > 0)
+                    world.ChunkCache.GenerationTelemetry.Measure(WorldGenerationStage.LightPropagation, () =>
                 {
-                }
+                    var lightSw = Stopwatch.StartNew();
+                    while (lightSw.ElapsedMilliseconds < 15L && world.Lighting.DoLightingUpdates())
+                    {
+                    }
+                });
 
                 world.Entities.TickEntities();
             }

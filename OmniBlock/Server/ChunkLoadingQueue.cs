@@ -34,6 +34,11 @@ internal class ChunkLoadingQueue
     private readonly List<LoadedChunk> _readyChunks = [];
     private readonly Thread[] _workers;
     private long _nextSequence;
+    // Workers report queue telemetry too, but _inFlightChunks and _readyChunks are owned
+    // exclusively by the tick thread. Mirror their counts so workers never race collection reads
+    // against publication.
+    private int _pendingDepth;
+    private int _readyDepth;
 
     public ChunkLoadingQueue(ChunkMap chunkMap)
     {
@@ -79,7 +84,9 @@ internal class ChunkLoadingQueue
             var pending = new PendingChunk(hash, x, z, _nextSequence++, player);
             if (relocationCritical) pending.PromoteRelocationCritical();
             _inFlightChunks[hash] = pending;
+            Volatile.Write(ref _pendingDepth, _inFlightChunks.Count);
             _queue.Enqueue(pending, ToQueuePriority(pending.GetPriority()));
+            UpdateTelemetryLocked();
             Monitor.Pulse(_queueLock);
         }
     }
@@ -102,6 +109,8 @@ internal class ChunkLoadingQueue
             {
                 DropIfStillQueued(chunk);
             }
+
+            UpdateTelemetryLocked();
         }
     }
 
@@ -121,6 +130,8 @@ internal class ChunkLoadingQueue
             {
                 DropIfStillQueued(chunk);
             }
+
+            UpdateTelemetryLocked();
         }
     }
 
@@ -135,6 +146,7 @@ internal class ChunkLoadingQueue
         if (_queue.Remove(chunk, out _, out _))
         {
             _inFlightChunks.Remove(chunk.Hash);
+            Volatile.Write(ref _pendingDepth, _inFlightChunks.Count);
         }
     }
 
@@ -165,6 +177,9 @@ internal class ChunkLoadingQueue
     {
         while (_completedChunks.TryDequeue(out var completed))
             _readyChunks.Add(completed);
+        Volatile.Write(ref _readyDepth, _readyChunks.Count);
+
+        UpdateTelemetry();
 
         var started = Stopwatch.GetTimestamp();
         var applied = 0;
@@ -174,6 +189,7 @@ internal class ChunkLoadingQueue
         {
             var chunkToLoad = loaded.Pending;
             _inFlightChunks.Remove(chunkToLoad.Hash);
+            Volatile.Write(ref _pendingDepth, _inFlightChunks.Count);
 
             if (loaded.Error is not null)
             {
@@ -204,6 +220,8 @@ internal class ChunkLoadingQueue
 
             applied++;
         }
+
+        UpdateTelemetry();
     }
 
     /// <summary>
@@ -237,6 +255,7 @@ internal class ChunkLoadingQueue
 
         loaded = _readyChunks[bestReadyIndex];
         _readyChunks.RemoveAt(bestReadyIndex);
+        Volatile.Write(ref _readyDepth, _readyChunks.Count);
         return true;
     }
 
@@ -259,6 +278,7 @@ internal class ChunkLoadingQueue
                 }
 
                 chunkToLoad = _queue.Dequeue();
+                UpdateTelemetryLocked();
             }
 
             // Resolved on first use rather than at thread start: threads are spawned from
@@ -281,6 +301,8 @@ internal class ChunkLoadingQueue
                 _completedChunks.Enqueue(new LoadedChunk(chunkToLoad, null, ex));
                 generator = null;
             }
+
+            UpdateTelemetry();
         }
     }
 
@@ -290,6 +312,21 @@ internal class ChunkLoadingQueue
     // whatever order the heap happens to hold them in rather than strict FIFO.
     private static float ToQueuePriority(ChunkPriority priority) =>
         priority.Ring * 1000f + (float)priority.DirectionPenalty;
+
+    private void UpdateTelemetry()
+    {
+        lock (_queueLock)
+            UpdateTelemetryLocked();
+    }
+
+    private void UpdateTelemetryLocked()
+    {
+        var ready = Volatile.Read(ref _readyDepth) + _completedChunks.Count;
+        _chunkMap.getWorld().ChunkCache.GenerationTelemetry.SetQueueDepths(
+            _queue.Count,
+            Math.Max(0, Volatile.Read(ref _pendingDepth) - _queue.Count - ready),
+            ready);
+    }
 
     private sealed record LoadedChunk(PendingChunk Pending, Chunk? Chunk, Exception? Error);
 
