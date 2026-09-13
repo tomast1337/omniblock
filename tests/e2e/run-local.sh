@@ -55,8 +55,6 @@ for scenario in "${scenarios[@]}"; do
     mkdir -p "$world_dir" "$flat_world_dir" "$scenario_artifacts"
     base64 --decode "$script_dir/fixtures/e2e-smoke/level.dat.base64" > "$world_dir/level.dat"
     base64 --decode "$script_dir/fixtures/e2e-flat/level.dat.base64" > "$flat_world_dir/level.dat"
-    touch "$game_data_dir/options.txt"
-
     echo "Running scenario: $scenario"
     launch_args=(--username OmniE2E)
     if [[ "$scenario" == "multiplayer" ]]; then

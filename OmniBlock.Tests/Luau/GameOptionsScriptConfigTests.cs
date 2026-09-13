@@ -1,3 +1,4 @@
+using System.Text.Json;
 using OmniBlock.Client.Options;
 using OmniBlock.Luau.Host;
 
@@ -13,8 +14,7 @@ public sealed class GameOptionsScriptConfigTests
         var directory = Directory.CreateTempSubdirectory("omniblock-focus-options-");
         try
         {
-            var path = Path.Combine(directory.FullName, "options.txt");
-            File.WriteAllText(path, "music:0.5\n");
+            var path = Path.Combine(directory.FullName, "options.json");
             var options = new GameOptions(null!, directory.FullName);
 
             Assert.True(options.GetScriptConfig(key).Boolean);
@@ -25,7 +25,8 @@ public sealed class GameOptionsScriptConfigTests
 
             var reloaded = new GameOptions(null!, directory.FullName);
             Assert.False(reloaded.GetScriptConfig(key).Boolean);
-            Assert.Contains(key + ":false", File.ReadAllText(path));
+            using var document = JsonDocument.Parse(File.ReadAllText(path));
+            Assert.False(document.RootElement.GetProperty("options").GetProperty(key).GetBoolean());
         }
         finally
         {
@@ -102,13 +103,123 @@ public sealed class GameOptionsScriptConfigTests
             var reloaded = new GameOptions(null!, directory.FullName);
             Assert.False(reloaded.EntityImpostors);
 
-            File.WriteAllText(Path.Combine(directory.FullName, "options.txt"), "entityImpostors:true\n");
-            var migrated = new GameOptions(null!, directory.FullName);
+            var legacyDirectory = Directory.CreateDirectory(Path.Combine(directory.FullName, "legacy"));
+            File.WriteAllText(Path.Combine(legacyDirectory.FullName, "options.txt"), "entityImpostors:true\n");
+            var migrated = new GameOptions(null!, legacyDirectory.FullName);
             Assert.Equal(48, migrated.EntityImpostorDistance);
 
             Assert.True(migrated.SetScriptConfig("entityImpostors", LuauConfigValue.From(false)));
             Assert.False(migrated.GetScriptConfig("entityImpostors").Boolean);
-            Assert.Contains("entityImpostorDistance:0", File.ReadAllText(Path.Combine(directory.FullName, "options.txt")));
+            using var document = JsonDocument.Parse(
+                File.ReadAllText(Path.Combine(legacyDirectory.FullName, "options.json")));
+            Assert.Equal(0, document.RootElement.GetProperty("options")
+                .GetProperty("entityImpostorDistance").GetSingle());
+        }
+        finally
+        {
+            directory.Delete(true);
+        }
+    }
+
+    [Fact]
+    public void Json_round_trip_preserves_native_types_case_colons_and_bindings()
+    {
+        var directory = Directory.CreateTempSubdirectory("omniblock-json-options-");
+        try
+        {
+            var options = new GameOptions(null!, directory.FullName)
+            {
+                Skin = "CaseSensitiveSkin",
+                LastServer = "example.test:25565"
+            };
+            options.AdvancedItemTooltips = true;
+            options.MusicVolume = 0.25f;
+            options.SetKeyBinding(options.KeyBindForward, 123);
+            options.SetKeyBinding(options.KeyBindCommand, 124);
+            options.ControllerBindings[0].Button = (Silk.NET.GLFW.GamepadButton)7;
+            options.SaveOptions();
+
+            var jsonPath = Path.Combine(directory.FullName, "options.json");
+            using (var document = JsonDocument.Parse(File.ReadAllText(jsonPath)))
+            {
+                var root = document.RootElement;
+                Assert.Equal(1, root.GetProperty("version").GetInt32());
+                Assert.Equal(JsonValueKind.Number,
+                    root.GetProperty("options").GetProperty("music").ValueKind);
+                Assert.Equal(JsonValueKind.True,
+                    root.GetProperty("client").GetProperty("advancedItemTooltips").ValueKind);
+                Assert.Equal("CaseSensitiveSkin", root.GetProperty("client").GetProperty("skin").GetString());
+                Assert.Equal("example.test:25565", root.GetProperty("client").GetProperty("lastServer").GetString());
+            }
+
+            var reloaded = new GameOptions(null!, directory.FullName);
+            Assert.Equal(0.25f, reloaded.MusicVolume);
+            Assert.Equal("CaseSensitiveSkin", reloaded.Skin);
+            Assert.Equal("example.test:25565", reloaded.LastServer);
+            Assert.True(reloaded.AdvancedItemTooltips);
+            Assert.Equal(123, reloaded.KeyBindForward.ScanCode);
+            Assert.Equal(124, reloaded.KeyBindCommand.ScanCode);
+            Assert.Equal(7, (int)reloaded.ControllerBindings[0].Button);
+        }
+        finally
+        {
+            directory.Delete(true);
+        }
+    }
+
+    [Fact]
+    public void Legacy_file_is_imported_once_and_preserves_values_containing_colons()
+    {
+        var directory = Directory.CreateTempSubdirectory("omniblock-legacy-options-");
+        try
+        {
+            var legacyPath = Path.Combine(directory.FullName, "options.txt");
+            File.WriteAllText(legacyPath,
+                "music:0.375\nlastServer:localhost:25565\nskin:MixedCase\nkey_key.forward:91\n");
+
+            var imported = new GameOptions(null!, directory.FullName);
+
+            Assert.Equal(0.375f, imported.MusicVolume);
+            Assert.Equal("localhost:25565", imported.LastServer);
+            Assert.Equal("MixedCase", imported.Skin);
+            Assert.Equal(91, imported.KeyBindForward.ScanCode);
+            Assert.True(File.Exists(Path.Combine(directory.FullName, "options.json")));
+            Assert.True(File.Exists(legacyPath));
+
+            File.WriteAllText(legacyPath, "music:1\n");
+            var reloaded = new GameOptions(null!, directory.FullName);
+            Assert.Equal(0.375f, reloaded.MusicVolume);
+        }
+        finally
+        {
+            directory.Delete(true);
+        }
+    }
+
+    [Fact]
+    public void Invalid_json_entry_does_not_discard_valid_entries_or_defaults()
+    {
+        var directory = Directory.CreateTempSubdirectory("omniblock-invalid-json-options-");
+        try
+        {
+            File.WriteAllText(Path.Combine(directory.FullName, "options.json"), """
+                {
+                  "version": 1,
+                  "options": {
+                    "music": 0.125,
+                    "sound": "not-a-number",
+                    "difficulty": 999,
+                    "pauseOnFocusLoss": false
+                  }
+                }
+                """);
+
+            var options = new GameOptions(null!, directory.FullName);
+
+            Assert.Equal(0.125f, options.MusicVolume);
+            Assert.Equal(1f, options.SoundVolume);
+            Assert.Equal(2, options.Difficulty);
+            Assert.False(options.PauseOnFocusLossOption.Value);
         }
         finally
         {

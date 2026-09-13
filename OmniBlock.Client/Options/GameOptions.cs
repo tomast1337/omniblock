@@ -1,4 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using OmniBlock.Client.Input;
 using OmniBlock.Client.Rendering.Core.WebGPU;
@@ -6,7 +8,6 @@ using OmniBlock.Client.UI;
 using OmniBlock.Luau.Host;
 using Silk.NET.GLFW;
 using File = System.IO.File;
-using FileNotFoundException = System.IO.FileNotFoundException;
 
 namespace OmniBlock.Client.Options;
 
@@ -44,6 +45,7 @@ public class GameOptions
     private readonly int _initialMsaa;
     private readonly KeyBinding[] _keyBindings;
     private readonly ILogger<GameOptions> _logger = Log.Instance.For<GameOptions>();
+    private readonly string _legacyOptionsPath;
     private readonly string _optionsPath;
 
 
@@ -70,7 +72,8 @@ public class GameOptions
     public GameOptions(OmniBlock game, string gameDataDir)
     {
         _game = game;
-        _optionsPath = Path.Combine(gameDataDir, "options.txt");
+        _optionsPath = Path.Combine(gameDataDir, "options.json");
+        _legacyOptionsPath = Path.Combine(gameDataDir, "options.txt");
 
         InitializeOptions();
 
@@ -85,6 +88,7 @@ public class GameOptions
             KeyBindDrop,
             KeyBindInventory,
             KeyBindChat,
+            KeyBindCommand,
             KeyBindToggleFog,
             KeyBindZoom
         ];
@@ -632,7 +636,7 @@ public class GameOptions
     {
         switch (key, value.Kind)
         {
-            // Migrate old Luau macros just as options.txt migration does. Saving writes only the
+            // Migrate old Luau macros just as the legacy options migration does. Saving writes only the
             // new numeric option because this alias is not part of _allOptions.
             case ("entityImpostors", LuauConfigValueKind.Boolean):
                 EntityImpostorDistanceOption.Set(value.Boolean ? 2f / 15f : 0f);
@@ -669,37 +673,105 @@ public class GameOptions
 
     public void LoadOptions()
     {
+        if (File.Exists(_optionsPath))
+        {
+            LoadJsonOptions();
+            return;
+        }
+
+        if (!File.Exists(_legacyOptionsPath)) return;
+
+        if (LoadLegacyOptions())
+        {
+            SaveOptions();
+            _logger.LogInformation("Imported legacy options from {LegacyPath} into {OptionsPath}",
+                _legacyOptionsPath, _optionsPath);
+        }
+    }
+
+    private void LoadJsonOptions()
+    {
         try
         {
-            if (!File.Exists(_optionsPath)) throw new FileNotFoundException($"Options file not found at {_optionsPath}");
-            using var reader = new StreamReader(_optionsPath);
+            using var document = JsonDocument.Parse(File.ReadAllText(_optionsPath));
+            var root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object)
+                throw new JsonException("The options root must be an object.");
+
+            if (root.TryGetProperty("options", out var options) && options.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var property in options.EnumerateObject())
+                    LoadJsonEntry("option", property.Name,
+                        () => LoadJsonOption(property.Name, property.Value));
+            }
+
+            if (root.TryGetProperty("client", out var client) && client.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var property in client.EnumerateObject())
+                    LoadJsonEntry("client option", property.Name,
+                        () => LoadJsonClientValue(property.Name, property.Value));
+            }
+
+            LoadJsonIntegerMap(root, "keyboard", (key, value) =>
+            {
+                var binding = _keyBindings.FirstOrDefault(candidate => candidate.KeyDescription == key);
+                if (binding != null) binding.ScanCode = value;
+            });
+            LoadJsonIntegerMap(root, "controller", (key, value) =>
+            {
+                var binding = ControllerBindings.FirstOrDefault(candidate => candidate.ActionKey == key);
+                if (binding != null) binding.Button = (GamepadButton)value;
+            });
+
+            if (root.TryGetProperty("shaders", out var shaders) && shaders.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var shader in shaders.EnumerateObject())
+                {
+                    if (shader.Value.ValueKind != JsonValueKind.Object) continue;
+                    foreach (var option in shader.Value.EnumerateObject())
+                    {
+                        LoadJsonEntry("shader option", $"{shader.Name}.{option.Name}", () =>
+                            ShaderOptions.Load(shader.Name, option.Name, JsonScalarToString(option.Value)));
+                    }
+                }
+            }
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Failed to load options from {OptionsPath}", _optionsPath);
+        }
+    }
+
+    private bool LoadLegacyOptions()
+    {
+        try
+        {
+            using var reader = new StreamReader(_legacyOptionsPath);
 
             while (reader.ReadLine() is { } line)
             {
                 try
                 {
-                    var parts = line.Split(':');
-                    if (parts.Length >= 2) LoadOptionFromParts(parts);
+                    var separator = line.IndexOf(':');
+                    if (separator > 0) LoadLegacyOption(line[..separator], line[(separator + 1)..]);
                 }
-                catch (Exception)
+                catch (Exception exception)
                 {
-                    _logger.LogError($"Skipping bad option: {line}");
+                    _logger.LogWarning(exception, "Skipping invalid legacy option {OptionLine}", line);
                 }
             }
+
+            return true;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
-            _logger.LogError("Failed to load options");
+            _logger.LogError(exception, "Failed to load legacy options from {OptionsPath}", _legacyOptionsPath);
+            return false;
         }
     }
 
-    private void LoadOptionFromParts(string[] parts)
+    private void LoadLegacyOption(string key, string value)
     {
-        if (parts.Length < 2) return;
-
-        var key = parts[0];
-        var value = parts[1];
-
         if (_allOptions.TryGetValue(key, out var option))
         {
             option.Load(value);
@@ -761,47 +833,183 @@ public class GameOptions
         }
     }
 
-    public void SaveOptions()
+    private void LoadJsonOption(string key, JsonElement value)
+    {
+        if (!_allOptions.TryGetValue(key, out var option)) return;
+
+        switch (option)
+        {
+            case BoolOption boolean when value.ValueKind is JsonValueKind.True or JsonValueKind.False:
+                boolean.Value = value.GetBoolean();
+                break;
+            case FloatOption number when value.ValueKind == JsonValueKind.Number && value.TryGetSingle(out var single)
+                                         && float.IsFinite(single) && single is >= 0f and <= 1f:
+                number.Value = single;
+                break;
+            case CycleOption cycle when value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var index)
+                                        && index >= 0 && index < cycle.Length:
+                cycle.Value = index;
+                break;
+            case StringOption text when value.ValueKind == JsonValueKind.String:
+                text.Value = value.GetString()!;
+                break;
+            default:
+                throw new JsonException($"Value has the wrong type or range for option '{key}'.");
+        }
+    }
+
+    private void LoadJsonClientValue(string key, JsonElement value)
+    {
+        switch (key)
+        {
+            case "skin" when value.ValueKind == JsonValueKind.String:
+                Skin = value.GetString()!;
+                break;
+            case "advancedItemTooltips" when value.ValueKind is JsonValueKind.True or JsonValueKind.False:
+                AdvancedItemTooltips = value.GetBoolean();
+                break;
+            case "lastServer" when value.ValueKind == JsonValueKind.String:
+                LastServer = value.GetString()!;
+                break;
+            case "cameraMode" when value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var mode)
+                                   && Enum.IsDefined((CameraMode)mode):
+                CameraMode = (CameraMode)mode;
+                break;
+            default:
+                if (key is "skin" or "advancedItemTooltips" or "lastServer" or "cameraMode")
+                    throw new JsonException($"Value has the wrong type or range for client option '{key}'.");
+                break;
+        }
+    }
+
+    private void LoadJsonIntegerMap(JsonElement root, string propertyName, Action<string, int> load)
+    {
+        if (!root.TryGetProperty(propertyName, out var map) || map.ValueKind != JsonValueKind.Object) return;
+        foreach (var property in map.EnumerateObject())
+        {
+            LoadJsonEntry(propertyName + " binding", property.Name, () =>
+            {
+                if (!property.Value.TryGetInt32(out var value))
+                    throw new JsonException("Binding must be an integer.");
+                load(property.Name, value);
+            });
+        }
+    }
+
+    private void LoadJsonEntry(string kind, string key, Action load)
     {
         try
         {
-            using var writer = new StreamWriter(_optionsPath);
-
-            foreach (var option in GetAllOptions())
-            {
-                writer.WriteLine($"{option.SaveKey}:{option.Save()}");
-            }
-
-            foreach (var (key, val) in ShaderOptions.Save())
-                writer.WriteLine($"{key}:{val}");
-
-            writer.WriteLine($"skin:{Skin}");
-            writer.WriteLine($"advancedItemTooltips:{AdvancedItemTooltips.ToString().ToLower()}");
-            writer.WriteLine($"lastServer:{LastServer}");
-            writer.WriteLine($"cameraMode:{(int)CameraMode}");
-
-            foreach (var bind in _keyBindings)
-            {
-                // Don't save default key bindings to avoid cluttering the options file
-                // and to allow for future changes to default key bindings without overwriting user preferences.
-                if (bind.IsDefault) continue;
-                writer.WriteLine($"key_{bind.KeyDescription}:{bind.ScanCode}");
-            }
-
-            if (ControllerBindings != null)
-            {
-                foreach (var cb in ControllerBindings)
-                {
-                    writer.WriteLine($"controllerButton_{cb.ActionKey}:{(int)cb.Button}");
-                }
-            }
-
-            writer.Close();
+            load();
         }
         catch (Exception exception)
         {
-            _logger.LogError($"Failed to save options: {exception.Message}");
+            _logger.LogWarning(exception, "Skipping invalid {OptionKind} {OptionKey}", kind, key);
         }
+    }
+
+    private static string JsonScalarToString(JsonElement value) => value.ValueKind switch
+    {
+        JsonValueKind.String => value.GetString()!,
+        JsonValueKind.Number => value.GetRawText(),
+        JsonValueKind.True => "true",
+        JsonValueKind.False => "false",
+        _ => throw new JsonException("Shader option must be a scalar value.")
+    };
+
+    public void SaveOptions()
+    {
+        string? temporaryPath = null;
+        try
+        {
+            var root = new JsonObject
+            {
+                ["version"] = 1,
+                ["options"] = BuildOptionsJson(),
+                ["client"] = new JsonObject
+                {
+                    ["skin"] = Skin,
+                    ["advancedItemTooltips"] = AdvancedItemTooltips,
+                    ["lastServer"] = LastServer,
+                    ["cameraMode"] = (int)CameraMode
+                },
+                ["keyboard"] = BuildKeyboardJson(),
+                ["controller"] = BuildControllerJson(),
+                ["shaders"] = BuildShadersJson()
+            };
+
+            var directory = Path.GetDirectoryName(_optionsPath)!;
+            Directory.CreateDirectory(directory);
+            temporaryPath = Path.Combine(directory, $".{Path.GetFileName(_optionsPath)}.{Guid.NewGuid():N}.tmp");
+            File.WriteAllText(temporaryPath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+            File.Move(temporaryPath, _optionsPath, true);
+            temporaryPath = null;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Failed to save options to {OptionsPath}", _optionsPath);
+        }
+        finally
+        {
+            if (temporaryPath != null)
+            {
+                try { File.Delete(temporaryPath); }
+                catch { /* Best-effort cleanup; the authoritative file was not replaced. */ }
+            }
+        }
+    }
+
+    private JsonObject BuildOptionsJson()
+    {
+        var result = new JsonObject();
+        foreach (var option in GetAllOptions())
+        {
+            result[option.SaveKey] = option switch
+            {
+                BoolOption value => JsonValue.Create(value.Value),
+                FloatOption value => JsonValue.Create(value.Value),
+                CycleOption value => JsonValue.Create(value.Value),
+                StringOption value => JsonValue.Create(value.Value),
+                _ => throw new InvalidOperationException($"Unsupported game option type {option.GetType().Name}.")
+            };
+        }
+        return result;
+    }
+
+    private JsonObject BuildKeyboardJson()
+    {
+        var result = new JsonObject();
+        foreach (var binding in _keyBindings)
+            if (!binding.IsDefault) result[binding.KeyDescription] = binding.ScanCode;
+        return result;
+    }
+
+    private JsonObject BuildControllerJson()
+    {
+        var result = new JsonObject();
+        foreach (var binding in ControllerBindings)
+            result[binding.ActionKey] = (int)binding.Button;
+        return result;
+    }
+
+    private JsonObject BuildShadersJson()
+    {
+        var result = new JsonObject();
+        foreach (var (key, value) in ShaderOptions.Save())
+        {
+            var rest = key["shaderOpt_".Length..];
+            var separator = rest.IndexOf('.');
+            if (separator <= 0) continue;
+            var shaderName = rest[..separator];
+            var optionName = rest[(separator + 1)..];
+            if (result[shaderName] is not JsonObject shader)
+            {
+                shader = new JsonObject();
+                result[shaderName] = shader;
+            }
+            shader[optionName] = value;
+        }
+        return result;
     }
 
     public void OnSoundOptionsChanged() => _game?.SoundManager.OnSoundOptionsChanged();
