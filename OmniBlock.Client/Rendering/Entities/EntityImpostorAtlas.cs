@@ -19,6 +19,7 @@ namespace OmniBlock.Client.Rendering.Entities;
 internal sealed unsafe class EntityImpostorAtlas : IDisposable
 {
     private const int MaxInstances = 2048;
+    internal const float GroundClearance = 1f / 32f;
     private static readonly ILogger s_log = Log.Instance.For<EntityImpostorAtlas>();
     private readonly IEntityImpostorProvider _provider;
     private WebGpuDevice? _device;
@@ -380,8 +381,10 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
         if (_requestStarted == 0) _requestStarted = Stopwatch.GetTimestamp();
         if (!Ready || _count == MaxInstances) { PendingFallbacks++; return false; }
         var rotation = Matrix4x4.CreateRotationY(-yaw * MathF.PI / 180);
-        var (right, up) = EntityImpostorLayout.Basis(EntityLodDirections.Get(decision.ViewIndex));
-        _staging[_count++] = new Instance { Center = new Vector4(cameraRelativePosition, light),
+        var viewDirection = EntityLodDirections.Get(decision.ViewIndex);
+        var (right, up) = EntityImpostorLayout.Basis(viewDirection);
+        var center = ApplyGroundClearance(cameraRelativePosition, viewDirection);
+        _staging[_count++] = new Instance { Center = new Vector4(center, light),
             Right = new Vector4(Vector3.TransformNormal(right, rotation) * _radius, hurt ? 0.4f : 0),
             Up = new Vector4(Vector3.TransformNormal(up, rotation) * _radius, _layerCount > 1 ? 1f / _layerCount : 0),
             UV = EntityImpostorLayout.UV(decision.ViewIndex, pose, _layerCount), Effects = layerEffects };
@@ -390,6 +393,14 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
         if (_layerCount > 1 && layerEffects.W > 0) LastOverlaySubmitted++;
         return true;
     }
+
+    /// <summary>
+    ///     Pole and upper-ring billboards approach the terrain plane when viewed from above.
+    ///     Lift only those views, proportionally to their upward-facing component, so ordinary
+    ///     side views do not make the entity appear to float.
+    /// </summary>
+    internal static Vector3 ApplyGroundClearance(Vector3 center, Vector3 entityToCameraDirection) =>
+        center + Vector3.UnitY * (GroundClearance * MathF.Max(0, entityToCameraDirection.Y));
 
     public void Draw()
     {

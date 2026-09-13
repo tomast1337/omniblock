@@ -54,6 +54,25 @@ public class EntityImpostorSystemTests
     }
 
     [Fact]
+    public void Upper_impostor_views_receive_ground_clearance_without_floating_side_views()
+    {
+        var center = new Vector3(4, 12, -7);
+
+        Assert.Equal(
+            center + Vector3.UnitY * EntityImpostorAtlas.GroundClearance,
+            EntityImpostorAtlas.ApplyGroundClearance(center, Vector3.UnitY));
+        Assert.Equal(
+            center + Vector3.UnitY * (EntityImpostorAtlas.GroundClearance / MathF.Sqrt(2)),
+            EntityImpostorAtlas.ApplyGroundClearance(
+                center,
+                Vector3.Normalize(new Vector3(0, 1, 1))));
+        Assert.Equal(center,
+            EntityImpostorAtlas.ApplyGroundClearance(center, Vector3.UnitZ));
+        Assert.Equal(center,
+            EntityImpostorAtlas.ApplyGroundClearance(center, -Vector3.UnitY));
+    }
+
+    [Fact]
     public void All_view_tiles_are_disjoint_padded_and_inside_the_atlas()
     {
         List<Vector4> rectangles = [];
