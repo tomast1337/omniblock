@@ -98,6 +98,14 @@
   "Renderer": {
     "Type": "tamed",
     "Model": "wolf",
-    "Shadow": 0.5
+    "Shadow": 0.5,
+    "Impostor": {
+      "Id": "omniblock:wolf",
+      "Provider": "omniblock:wolf",
+      "VisualDiameter": 2.5,
+      "Layers": [
+        { "Model": "wolf", "Texture": "/mob/wolf.png", "PoseProvider": "omniblock:wolf" }
+      ]
+    }
   }
 }

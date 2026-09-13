@@ -59,7 +59,8 @@ and `entity-impostor-occlusion` (uncovered/half/full stone-wall screenshot pairs
 and assert zero `OMNI.client.state.webGpuErrorCount`. `OMNI.test.entityImpostors(true, true)` forces
 the tier for close visual inspection only; unsupported states/providers still fall back to 3D.
 Validated providers are now enabled by default; these historical force-tier scenarios still isolate
-specific comparisons. The appearance matrix includes cow, layered sheep, zombie, and creeper pairs.
+specific comparisons. The appearance matrix includes cow, layered sheep, wild wolf, zombie, and
+creeper pairs. Tamed, angry, sitting, or shaking wolves deliberately retain their 3D renderer.
 Submission checks do not replace visual review of their artifacts.
 The Phase 4 slice expands each atlas to idle plus four gait poses. The prototype scenario uses
 the restricted `OMNI.test.entityBaselineState("idle"|"walk-0".."walk-3"|"hurt")` control and checks
@@ -132,6 +133,10 @@ persistence. It spawns a real cow, moves the player 200 blocks away while retain
 inside a 16-chunk terrain radius, and proves the cow remains networked and presented outside the
 two-chunk simulation radius. This guards the separation between terrain streaming, mob tracking,
 client presentation, and expensive AI/pathfinding ticks.
+
+`entity-hostile-tracking-distance` covers the distinct hostile lifecycle. It spawns a real creeper,
+moves 96 blocks away, and requires an actual impostor submission while the creeper remains below
+the intentional 128-block gameplay despawn boundary.
 
 `chunk-mesh-deadlines` breaks a compact patch of nearby fixture terrain through the normal
 multiplayer player-controller path. It verifies critical forward progress, deadline-accounting

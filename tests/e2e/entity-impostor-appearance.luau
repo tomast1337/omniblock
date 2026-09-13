@@ -62,6 +62,10 @@ assert(OMNI.test.entityBaseline("creeper", 1, 32))
 assert(OMNI.test.entityBaselineState("walk-2"))
 pair("creeper-day-walk", 1)
 
+assert(OMNI.test.entityBaseline("wolf", 1, 32))
+assert(OMNI.test.entityBaselineState("walk-2"))
+pair("wild-wolf-day-walk", 1)
+
 assert(OMNI.test.entityBaseline("sheep", 32, 32))
 assert(OMNI.test.entityBaselineEnvironment("night"))
 assert(OMNI.test.entityBaselineState("idle"))

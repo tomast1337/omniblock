@@ -134,7 +134,8 @@ public class EntityImpostorSystemTests
     [Theory]
     [InlineData("zombie", "zombie")]
     [InlineData("creeper", "creeper")]
-    public void Hostile_pose_providers_compile_finite_distinct_walk_frames(string model, string provider)
+    [InlineData("wolf", "wolf")]
+    public void Specialized_pose_providers_compile_finite_distinct_walk_frames(string model, string provider)
     {
         var poses = EntityImpostorGeometry.BuildPoses(model, new ResourceLocation(Namespace.OmniBlock, provider));
         Assert.Equal(EntityImpostorLayout.Poses, poses.Length);

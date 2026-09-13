@@ -130,12 +130,12 @@ internal sealed class EntityRenderBaseline : IDisposable
     internal static List<Entity> CreateEntities(IWorldContext world, string scene, int count,
         double distance, double x, double y, double z)
     {
-        if (scene is not ("cow" or "sheep" or "zombie" or "creeper" or "mixed" or "empty") ||
+        if (scene is not ("cow" or "sheep" or "wolf" or "zombie" or "creeper" or "mixed" or "empty") ||
             count is < 0 or > 256 ||
             !double.IsFinite(distance) || distance is < 8 or > 120 ||
             (scene == "empty" ? count != 0 : count == 0))
             throw new ArgumentException(
-                "Use cow/sheep/zombie/creeper/mixed (1..256) or empty (0), distance 8..120.");
+                "Use cow/sheep/wolf/zombie/creeper/mixed (1..256) or empty (0), distance 8..120.");
         var entities = new List<Entity>(count);
         var columns = (int)Math.Ceiling(Math.Sqrt(count));
         var rows = columns == 0 ? 0 : (count + columns - 1) / columns;

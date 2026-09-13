@@ -22,6 +22,7 @@ internal sealed class ClientEntityRendererRegistry
     {
         RegisterImpostor("basic", descriptor => new BasicEntityImpostorProvider(descriptor));
         RegisterImpostor("creeper", descriptor => new CreeperImpostorProvider(descriptor));
+        RegisterImpostor("wolf", descriptor => new WolfImpostorProvider(descriptor));
         RegisterImpostor("wool", descriptor => new SheepImpostorProvider(descriptor));
         Register("living", (d, _) =>
         {
@@ -38,7 +39,10 @@ internal sealed class ClientEntityRendererRegistry
             Json(d).TryGetProperty("DeathRotation", out var death) ? death.GetSingle() : 90.0F));
         Register("charging", (d, _) => new ChargingEntityRenderer(Model(d), Shadow(d)));
         Register("swimming", (d, _) => new SwimmingEntityRenderer(Model(d), Shadow(d)));
-        Register("tamed", (d, _) => new TamedEntityRenderer(Model(d), Shadow(d)));
+        Register("tamed", (d, _) => new TamedEntityRenderer(Model(d), Shadow(d))
+        {
+            LodProvider = Impostor(d)
+        });
         Register("squishy", (d, _) => new SquishyEntityRenderer(
             Model(d), EntityModelRegistry.Create(Json(d).GetProperty("OverlayModel").GetString()!), Shadow(d)));
         Register("falling_block", (d, _) => new FallingBlockEntityRenderer(Shadow(d)));

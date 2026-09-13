@@ -9,9 +9,11 @@ internal static class EntityImpostorGeometry
     internal static readonly ResourceLocation QuadrupedPoseProvider = new(Namespace.OmniBlock, "quadruped");
     internal static readonly ResourceLocation ZombiePoseProvider = new(Namespace.OmniBlock, "zombie");
     internal static readonly ResourceLocation CreeperPoseProvider = new(Namespace.OmniBlock, "creeper");
+    internal static readonly ResourceLocation WolfPoseProvider = new(Namespace.OmniBlock, "wolf");
 
     internal static bool Supports(ResourceLocation provider) =>
-        provider == QuadrupedPoseProvider || provider == ZombiePoseProvider || provider == CreeperPoseProvider;
+        provider == QuadrupedPoseProvider || provider == ZombiePoseProvider ||
+        provider == CreeperPoseProvider || provider == WolfPoseProvider;
 
     public static EntityImpostorVertex[][] BuildPoses(string modelName) =>
         BuildPoses(modelName, QuadrupedPoseProvider);
@@ -50,6 +52,12 @@ internal static class EntityImpostorGeometry
                 ("zombie", "bipedRightLeg") => MathF.Cos(gaitAngle) * 1.4f * gaitAmount,
                 ("zombie", "bipedLeftLeg") => MathF.Cos(gaitAngle + MathF.PI) * 1.4f * gaitAmount,
                 ("zombie", "bipedRightArm" or "bipedLeftArm") => -MathF.PI / 2,
+                ("wolf", "wolfBody" or "wolfMane") => MathF.PI / 2,
+                ("wolf", "wolfLeg1" or "wolfLeg4") =>
+                    MathF.Cos(gaitAngle) * 1.4f * gaitAmount,
+                ("wolf", "wolfLeg2" or "wolfLeg3") =>
+                    MathF.Cos(gaitAngle + MathF.PI) * 1.4f * gaitAmount,
+                ("wolf", "wolfTail") => MathF.PI * 0.2f,
                 _ => 0
             };
             var rotation = Matrix4x4.CreateRotationX(angleX);

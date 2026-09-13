@@ -93,6 +93,34 @@ internal sealed class CreeperImpostorProvider : IEntityImpostorProvider
         entity.Synced<byte>("state")?.Value == byte.MaxValue;
 }
 
+/// <summary>
+/// Uses the canonical standing wild-wolf capture. Tamed, angry, sitting, and shaking wolves retain
+/// their 3D renderer because those states change the texture or silhouette.
+/// </summary>
+internal sealed class WolfImpostorProvider : IEntityImpostorProvider
+{
+    private readonly BasicEntityImpostorProvider _basic;
+    public WolfImpostorProvider(ClientEntityImpostorDescriptor descriptor) =>
+        _basic = new BasicEntityImpostorProvider(descriptor);
+    public ResourceLocation Id => _basic.Id;
+    public double VisualDiameter => _basic.VisualDiameter;
+    public string VariantKey => $"{Id}:wild-wolf-v1";
+    public string CacheIdentity => "omniblock:wild-wolf-impostor-v1";
+    public IReadOnlyList<string> TexturePaths => _basic.TexturePaths;
+    public EntityImpostorCaptureLayer[] BuildLayers() => _basic.BuildLayers();
+    public Vector4 LayerEffects(Entity entity, float partialTicks) => _basic.LayerEffects(entity, partialTicks);
+    public int Pose(Entity entity, float partialTicks) => _basic.Pose(entity, partialTicks);
+
+    public bool Supports(Entity entity, float partialTicks)
+    {
+        if (!_basic.Supports(entity, partialTicks) ||
+            entity.Behaviors.Find<TameableBehavior>() is not { } tame)
+            return false;
+        return !tame.IsTamed(entity) && !tame.IsAngry(entity) && !tame.IsSitting(entity) &&
+               entity.Behaviors.Find<ShakeOffWaterBehavior>()?.IsShaking(entity) != true;
+    }
+}
+
 internal sealed class SheepImpostorProvider : IEntityImpostorProvider
 {
     private readonly ClientEntityImpostorDescriptor _descriptor;

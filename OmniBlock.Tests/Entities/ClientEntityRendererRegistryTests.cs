@@ -1,6 +1,7 @@
 using System.Text.Json;
 using OmniBlock.Client.Rendering.Entities;
 using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
 
 namespace OmniBlock.Tests.Entities;
 
@@ -26,12 +27,28 @@ public sealed class ClientEntityRendererRegistryTests
     {
         var dependencies = new ClientEntityRendererRegistry().CaptureDependencies(ContentRuntime.Current);
 
-        Assert.Equal(5, dependencies.Count);
+        Assert.Equal(6, dependencies.Count);
         Assert.True(dependencies.Contains("/mob/cow.png"));
         Assert.True(dependencies.Contains("/mob/creeper.png"));
         Assert.True(dependencies.Contains("/mob/sheep.png"));
         Assert.True(dependencies.Contains("/mob/sheep_fur.png"));
         Assert.True(dependencies.Contains("/mob/zombie.png"));
+        Assert.True(dependencies.Contains("/mob/wolf.png"));
+    }
+
+    [Fact]
+    public void Wild_wolf_uses_an_impostor_but_texture_and_pose_changing_states_keep_3d()
+    {
+        var wolfType = ContentRuntime.Current.EntityTypes.Get("omniblock:wolf");
+        var descriptor = Assert.IsType<ClientEntityImpostorDescriptor>(
+            ClientEntityImpostorDescriptor.Compile(wolfType.RenderDescriptor!.Definition));
+        var provider = new WolfImpostorProvider(descriptor);
+        var wolf = wolfType.Create(new FakeWorldContext());
+        var tame = Assert.IsType<TameableBehavior>(wolf.Behaviors.Find<TameableBehavior>());
+
+        Assert.True(provider.Supports(wolf, 0));
+        tame.SetSitting(wolf, true);
+        Assert.False(provider.Supports(wolf, 0));
     }
 
     [Fact]

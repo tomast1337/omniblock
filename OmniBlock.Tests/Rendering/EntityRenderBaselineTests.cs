@@ -11,6 +11,7 @@ public sealed class EntityRenderBaselineTests
     [InlineData("sheep_fur")]
     [InlineData("pig")]
     [InlineData("pig_saddle")]
+    [InlineData("wolf")]
     [InlineData("zombie")]
     [InlineData("creeper")]
     [InlineData("creeper_charged")]
