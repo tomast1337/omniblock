@@ -8,7 +8,7 @@ using OmniBlock.Worlds.Chunks;
 
 namespace OmniBlock.Server;
 
-internal class ChunkLoadingQueue
+internal class ChunkLoadingQueue : IDisposable
 {
     internal const int MaxChunkLoadWorkers = 8;
     internal const int MaxCompletedLoadsPerTick = 8;
@@ -33,6 +33,7 @@ internal class ChunkLoadingQueue
     // them as a near-to-far wavefront.
     private readonly List<LoadedChunk> _readyChunks = [];
     private readonly Thread[] _workers;
+    private readonly CancellationTokenSource _shutdown = new();
     private long _nextSequence;
     // Workers report queue telemetry too, but _inFlightChunks and _readyChunks are owned
     // exclusively by the tick thread. Mirror their counts so workers never race collection reads
@@ -68,6 +69,17 @@ internal class ChunkLoadingQueue
 
     public void Add(int x, int z, ServerPlayerEntity player, bool relocationCritical = false)
     {
+        // Spawn preparation may have populated the world cache before any per-player tracking
+        // object exists. Adopt that resident chunk synchronously instead of starting a second
+        // storage/generation job whose result would be discarded at publication.
+        var chunkCache = _chunkMap.getWorld().ChunkCache;
+        if (chunkCache.IsChunkLoaded(x, z))
+        {
+            var tracked = _chunkMap.GetOrCreateChunk(x, z, true)!;
+            if (!tracked.HasPlayer(player)) tracked.addPlayer(player);
+            return;
+        }
+
         var hash = ChunkMap.GetChunkHash(x, z);
 
         lock (_queueLock)
@@ -267,13 +279,14 @@ internal class ChunkLoadingQueue
         IChunkSource? generator = null;
         ServerChunkCache? chunkCache = null;
 
-        while (true)
+        while (!_shutdown.IsCancellationRequested)
         {
             PendingChunk chunkToLoad;
             lock (_queueLock)
             {
                 while (_queue.Count == 0)
                 {
+                    if (_shutdown.IsCancellationRequested) return;
                     Monitor.Wait(_queueLock);
                 }
 
@@ -292,6 +305,7 @@ internal class ChunkLoadingQueue
             try
             {
                 var chunk = chunkCache.LoadOrGenerateChunkOffThread(chunkToLoad.X, chunkToLoad.Z, generator);
+                if (_shutdown.IsCancellationRequested) return;
                 _completedChunks.Enqueue(new LoadedChunk(chunkToLoad, chunk, null));
             }
             catch (Exception ex)
@@ -304,6 +318,16 @@ internal class ChunkLoadingQueue
 
             UpdateTelemetry();
         }
+    }
+
+    public void Dispose()
+    {
+        if (_shutdown.IsCancellationRequested) return;
+        _shutdown.Cancel();
+        lock (_queueLock) Monitor.PulseAll(_queueLock);
+        foreach (var worker in _workers)
+            if (worker != Thread.CurrentThread) worker.Join(TimeSpan.FromSeconds(5));
+        _shutdown.Dispose();
     }
 
     // PriorityQueue needs one totally-ordered key; ChunkPriority's Sequence tie-break doesn't

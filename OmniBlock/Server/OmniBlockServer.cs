@@ -357,6 +357,9 @@ public abstract class OmniBlockServer : ICommandOutput
         // and leaving those behind makes a restart on the same port fail.
         connections?.StopAsync().GetAwaiter().GetResult();
 
+        foreach (var world in worlds)
+            world?.ChunkMap.Shutdown();
+
         playerManager?.savePlayers();
 
         foreach (var world in worlds)

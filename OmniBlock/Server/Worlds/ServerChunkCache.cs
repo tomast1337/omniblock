@@ -284,7 +284,7 @@ public class ServerChunkCache : IChunkSource
                     WorldGenerationStage.EncodeSave,
                     () => _storage.SaveChunk(_world, chunk, null, -1));
             }
-            catch (IOException ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "Exception");
             }

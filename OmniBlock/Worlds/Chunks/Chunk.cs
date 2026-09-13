@@ -62,6 +62,7 @@ public class Chunk
     public ChunkNibbleArray SkyLight;
     public bool TerrainPopulated;
     public IWorldContext World;
+    private readonly List<PendingActivationTick> _pendingActivationTicks = [];
 
     public Chunk(IWorldContext world, int x, int z)
     {
@@ -722,6 +723,10 @@ public class Chunk
         if (Loaded) return;
 
         Loaded = true;
+        foreach (var tick in _pendingActivationTicks)
+            World.TickScheduler.ScheduleBlockUpdateFromChunkLoad(
+                tick.X, tick.Y, tick.Z, tick.BlockId, tick.Delay);
+        _pendingActivationTicks.Clear();
         World.Entities.ProcessBlockUpdates(BlockEntities.Values);
 
         foreach (var list in Entities)
@@ -729,6 +734,17 @@ public class Chunk
             World.Entities.AddEntities(list);
         }
     }
+
+    internal void QueueActivationTick(int x, int y, int z, int blockId, int delay) =>
+        _pendingActivationTicks.Add(new PendingActivationTick(x, y, z, blockId, delay));
+
+    internal int PendingActivationTickCount => _pendingActivationTicks.Count;
+
+    internal IEnumerable<(int X, int Y, int Z, int BlockId, int Delay)> GetPendingActivationTicks() =>
+        _pendingActivationTicks.Select(static tick =>
+            (tick.X, tick.Y, tick.Z, tick.BlockId, tick.Delay));
+
+    private readonly record struct PendingActivationTick(int X, int Y, int Z, int BlockId, int Delay);
 
     public virtual void Unload()
     {

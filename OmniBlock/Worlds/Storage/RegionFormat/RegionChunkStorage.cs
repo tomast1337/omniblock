@@ -80,28 +80,27 @@ internal class RegionChunkStorage : IChunkStorage
         return null;
     }
 
-    public void SaveChunk(IWorldContext world, Chunk chunk, Action unused1, long unused2)
+    public ChunkSaveResult SaveChunk(IWorldContext world, Chunk chunk, Action? onSave, long sequence)
     {
-        try
+        var stream = RegionIo.GetChunkOutputStream(_dir, chunk.X, chunk.Z);
+        if (stream == null)
         {
-            using var stream = RegionIo.GetChunkOutputStream(_dir, chunk.X, chunk.Z);
-            if (stream == null)
-            {
-                return;
-            }
+            throw new IOException($"Could not open region output for chunk {chunk.X},{chunk.Z}.");
+        }
 
+        using (stream)
+        {
             NBTTagCompound tag = new();
             NBTTagCompound levelTag = new();
             tag.SetTag("Level", levelTag);
             storeChunkInCompound(chunk, world, levelTag);
             NbtIo.Write(tag, stream);
-            var properties = world.Properties;
-            properties.SizeOnDisk += RegionIo.GetSizeDelta(_dir, chunk.X, chunk.Z);
         }
-        catch (Exception exception)
-        {
-            _logger.LogError(exception, "Exception");
-        }
+
+        var sizeDelta = RegionIo.GetSizeDelta(_dir, chunk.X, chunk.Z);
+        world.Properties.SizeOnDisk += sizeDelta;
+        onSave?.Invoke();
+        return new ChunkSaveResult(Math.Max(0, sizeDelta));
     }
 
     public void SaveEntities(IWorldContext world, Chunk chunk)
@@ -178,6 +177,18 @@ internal class RegionChunkStorage : IChunkStorage
             tickTag.SetInteger("z", z);
             tickTag.SetInteger("t", t);
             tickTag.SetInteger("p", p);
+            tickTag.SetInteger("i", blockId);
+            tileTickTags.SetTag(tickTag);
+        }
+
+        foreach (var (x, y, z, blockId, delay) in chunk.GetPendingActivationTicks())
+        {
+            NBTTagCompound tickTag = new();
+            tickTag.SetInteger("x", x);
+            tickTag.SetInteger("y", y);
+            tickTag.SetInteger("z", z);
+            tickTag.SetInteger("t", delay);
+            tickTag.SetInteger("p", 0);
             tickTag.SetInteger("i", blockId);
             tileTickTags.SetTag(tickTag);
         }
@@ -289,7 +300,7 @@ internal class RegionChunkStorage : IChunkStorage
                 }
 
                 var t = tickTag.GetInteger("t");
-                world.TickScheduler.ScheduleBlockUpdateFromChunkLoad(x, y, z, blockId, t);
+                chunk.QueueActivationTick(x, y, z, blockId, t);
             }
             catch (InvalidCastException)
             {

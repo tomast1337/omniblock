@@ -146,7 +146,8 @@ internal class ChunkMap
             // synchronously — the async worker pool gives no per-tick guarantee it'll be ready
             // before gameplay starts, and without this the player can fall through unloaded
             // terrain under their own feet.
-            if (GetOrCreateChunk(item.X, item.Z, isHomeChunk) is { } centerChunk)
+            var alreadyResident = getWorld().ChunkCache.IsChunkLoaded(item.X, item.Z);
+            if (GetOrCreateChunk(item.X, item.Z, isHomeChunk || alreadyResident) is { } centerChunk)
             {
                 centerChunk.addPlayer(player);
             }
@@ -199,7 +200,8 @@ internal class ChunkMap
             // Existing loader jobs may already occupy every worker and cannot yet be cancelled
             // cooperatively. Put the destination centre in a distinct priority ring so it is the
             // first request claimed and published as soon as any worker becomes available.
-            if (GetOrCreateChunk(playerChunkCenterX, playerChunkCenterZ, false) is { } center)
+            var centerResident = getWorld().ChunkCache.IsChunkLoaded(playerChunkCenterX, playerChunkCenterZ);
+            if (GetOrCreateChunk(playerChunkCenterX, playerChunkCenterZ, centerResident) is { } center)
             {
                 if (!center.HasPlayer(player)) center.addPlayer(player);
             }
@@ -287,7 +289,8 @@ internal class ChunkMap
         foreach (var pos in desired)
         {
             if (previousSet.Contains(pos)) continue;
-            if (GetOrCreateChunk(pos.X, pos.Z, false) is { } chunk)
+            var alreadyResident = getWorld().ChunkCache.IsChunkLoaded(pos.X, pos.Z);
+            if (GetOrCreateChunk(pos.X, pos.Z, alreadyResident) is { } chunk)
             {
                 if (!chunk.HasPlayer(player)) chunk.addPlayer(player);
             }
@@ -311,6 +314,8 @@ internal class ChunkMap
             }
         }
     }
+
+    internal void Shutdown() => loadQueue.Dispose();
 
     internal class TrackedChunk
     {

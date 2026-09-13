@@ -7,7 +7,7 @@ public interface IChunkStorage
 {
     Chunk? LoadChunk(IWorldContext world, int chunkX, int chunkZ);
 
-    void SaveChunk(IWorldContext world, Chunk chunk, Action onSave, long sequence);
+    ChunkSaveResult SaveChunk(IWorldContext world, Chunk chunk, Action? onSave, long sequence);
 
     void SaveEntities(IWorldContext world, Chunk chunk);
 
@@ -17,3 +17,6 @@ public interface IChunkStorage
 
     void FlushToDisk();
 }
+
+/// <summary>Confirmation that a synchronous chunk write reached its region stream.</summary>
+public readonly record struct ChunkSaveResult(long SizeDeltaBytes);
