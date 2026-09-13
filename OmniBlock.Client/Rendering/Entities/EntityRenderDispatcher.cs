@@ -133,7 +133,9 @@ public class EntityRenderDispatcher
         _z = camera.LastTickZ + (camera.Z - camera.LastTickZ) * tickDelta;
     }
 
-    public void RenderEntity(Entity target, float tickDelta)
+    public void RenderEntity(Entity target, float tickDelta) => RenderEntity(target, tickDelta, null);
+
+    internal void RenderEntity(Entity target, float tickDelta, EntityPresentationPose? presentationPose)
     {
         var x = target.LastTickX + (target.X - target.LastTickX) * tickDelta;
         var y = target.LastTickY + (target.Y - target.LastTickY) * tickDelta;
@@ -141,10 +143,15 @@ public class EntityRenderDispatcher
         var yaw = target.PrevYaw + (target.Yaw - target.PrevYaw) * tickDelta;
         var brightness = target.GetBrightnessAtEyes(tickDelta);
         RenderSystem.Color = new Vector4D<float>(brightness, brightness, brightness, 1.0F);
-        RenderEntityWithPosYaw(target, x - OffsetX, y - OffsetY, z - OffsetZ, yaw, tickDelta);
+        RenderEntityWithPosYaw(target, x - OffsetX, y - OffsetY, z - OffsetZ, yaw, tickDelta,
+            presentationPose);
     }
 
-    public void RenderEntityWithPosYaw(Entity target, double x, double y, double z, float yaw, float tickDelta)
+    public void RenderEntityWithPosYaw(Entity target, double x, double y, double z, float yaw, float tickDelta) =>
+        RenderEntityWithPosYaw(target, x, y, z, yaw, tickDelta, null);
+
+    internal void RenderEntityWithPosYaw(Entity target, double x, double y, double z, float yaw, float tickDelta,
+        EntityPresentationPose? presentationPose)
     {
         var entityRenderer = GetEntityRenderObject(target);
         if (entityRenderer == null) return;
@@ -156,6 +163,7 @@ public class EntityRenderDispatcher
         // swallowed outright, so the gap stays visible without drowning every other log line.
         try
         {
+            entityRenderer.PresentationPose = presentationPose;
             entityRenderer.Render(target, x, y, z, yaw, tickDelta);
             entityRenderer.PostRender(target, new Vec3D(x, y, z), yaw, tickDelta);
             entityRenderer.RenderBoundingBox(target, new Vec3D(x, y, z), yaw, tickDelta);
@@ -167,6 +175,10 @@ public class EntityRenderDispatcher
                 s_logger.LogWarning(ex, "Skipping {Renderer} for the rest of this session: {Message}",
                     entityRenderer.GetType().Name, ex.Message);
             }
+        }
+        finally
+        {
+            entityRenderer.PresentationPose = null;
         }
     }
 

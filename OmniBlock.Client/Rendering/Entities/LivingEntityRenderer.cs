@@ -48,9 +48,12 @@ public class LivingEntityRenderer : EntityRenderer
 
         try
         {
-            var bodyYaw = entity.LastBodyYaw + (entity.BodyYaw - entity.LastBodyYaw) * tickDelta;
-            var headYaw = entity.PrevYaw + (entity.Yaw - entity.PrevYaw) * tickDelta;
-            var pitch = entity.PrevPitch + (entity.Pitch - entity.PrevPitch) * tickDelta;
+            var bodyYaw = PresentationPose?.BodyYaw ??
+                entity.LastBodyYaw + (entity.BodyYaw - entity.LastBodyYaw) * tickDelta;
+            var headYaw = PresentationPose?.HeadYaw ??
+                entity.PrevYaw + (entity.Yaw - entity.PrevYaw) * tickDelta;
+            var pitch = PresentationPose?.Pitch ??
+                entity.PrevPitch + (entity.Pitch - entity.PrevPitch) * tickDelta;
             Func_22012_b(entity, x, y, z);
             var animationProgress = getAnimationProgress(entity, tickDelta);
             RotateCorpse(entity, animationProgress, bodyYaw, tickDelta);

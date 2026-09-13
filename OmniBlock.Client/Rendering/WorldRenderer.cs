@@ -13,6 +13,7 @@ using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.Rendering.Core.WebGPU;
 using OmniBlock.Client.Rendering.Entities;
 using OmniBlock.Client.Rendering.Particles;
+using OmniBlock.Client.Worlds;
 using OmniBlock.Entities;
 using OmniBlock.Items;
 using OmniBlock.Items.Behaviors;
@@ -521,6 +522,10 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             EntityLod.BeginFrame(_world, _world.Content, _textureManager.ResourceGeneration, lodCamera);
             double lodCpuMs = 0;
             var presentationPolicy = WorldPresentationPolicy.From(_game.Options);
+            var simulationDistance = _world is ClientWorld clientWorld &&
+                                     clientWorld.NetworkHandler.ServerSimulationDistance > 0
+                ? clientWorld.NetworkHandler.ServerSimulationDistance
+                : _game.Options.SimulationDistance;
             EntityRenderDispatcher.OffsetX = camera.LastTickX + (camera.X - camera.LastTickX) * partialTicks;
             EntityRenderDispatcher.OffsetY = camera.LastTickY + (camera.Y - camera.LastTickY) * partialTicks;
             EntityRenderDispatcher.OffsetZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * partialTicks;
@@ -538,11 +543,13 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             for (index = 0; index < globalCount; ++index)
             {
                 entity = _world.Entities.GlobalEntities[index];
+                var idlePose = DistantMobIdlePose.Sample(entity, _game.Player, simulationDistance,
+                    _world.GetTime(), partialTicks);
                 if (presentationPolicy.ShouldRenderEntity(entity, cameraPos))
                 {
                     ++CountEntitiesRendered;
-                    if (!ObserveLod(entity, partialTicks))
-                        EntityRenderDispatcher.Instance.RenderEntity(entity, partialTicks);
+                    if (!ObserveLod(entity, partialTicks, idlePose))
+                        EntityRenderDispatcher.Instance.RenderEntity(entity, partialTicks, idlePose);
                 }
                 else
                 {
@@ -553,6 +560,10 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             for (index = 0; index < entities.Count; ++index)
             {
                 entity = entities[index];
+                var idlePose = baseline == null
+                    ? DistantMobIdlePose.Sample(entity, _game.Player, simulationDistance,
+                        _world.GetTime(), partialTicks)
+                    : null;
                 if (entities[index].Dead)
                 {
                     if (entities[index] is EntityLiving living)
@@ -588,8 +599,9 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                     if (_world.Reader.IsPosLoaded(MathHelper.Floor(entity.X), yFloor, MathHelper.Floor(entity.Z)))
                     {
                         ++CountEntitiesRendered;
-                        if (!ObserveLod(entity, baseline == null ? partialTicks : 0))
-                            EntityRenderDispatcher.Instance.RenderEntity(entity, baseline == null ? partialTicks : 0);
+                        if (!ObserveLod(entity, baseline == null ? partialTicks : 0, idlePose))
+                            EntityRenderDispatcher.Instance.RenderEntity(entity,
+                                baseline == null ? partialTicks : 0, idlePose);
                         continue;
                     }
                 }
@@ -623,15 +635,15 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             EntityLod.EndFrame(EntityImpostors.LastSubmitted);
             Profiler.Record("EntityLodSelection", lodCpuMs);
 
-            bool ObserveLod(Entity target, float delta)
+            bool ObserveLod(Entity target, float delta, EntityPresentationPose? presentationPose)
             {
                 var start = Stopwatch.GetTimestamp();
                 var provider = EntityRenderDispatcher.Instance.GetEntityRenderObject(target).LodProvider;
                 var position = new LodPoint(target.LastTickX + (target.X - target.LastTickX) * delta,
                     target.LastTickY + (target.Y - target.LastTickY) * delta,
                     target.LastTickZ + (target.Z - target.LastTickZ) * delta);
-                var yaw = target is EntityLiving living ?
-                    EntityLodDirections.InterpolateYaw(living.LastBodyYaw, living.BodyYaw, delta) : target.Yaw;
+                var yaw = presentationPose?.BodyYaw ?? (target is EntityLiving living ?
+                    EntityLodDirections.InterpolateYaw(living.LastBodyYaw, living.BodyYaw, delta) : target.Yaw);
                 // Debug labels/boxes belong to the 3D path. Normal accepted distances are beyond
                 // the existing 16-block shadow radius; never silently drop debug presentation.
                 var decision = EntityLod.Select(target, position, provider != null,

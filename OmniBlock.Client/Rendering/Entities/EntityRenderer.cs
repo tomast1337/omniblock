@@ -13,6 +13,7 @@ public abstract class EntityRenderer
     protected float ShadowRadius = 0.0F;
     protected float ShadowStrength = 1.0F;
     public EntityRenderDispatcher Dispatcher { get; set; } = null!;
+    internal EntityPresentationPose? PresentationPose { get; set; }
 
     protected World World => Dispatcher.World;
     public TextRenderer TextRenderer => Dispatcher.getTextRenderer();
