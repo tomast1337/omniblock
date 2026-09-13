@@ -178,6 +178,13 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
 
     public FileInfo GetWorldPropertiesFile(string name) => new(Path.Combine(_dataDir.FullName, $"{name}.dat"));
 
+    public DirectoryInfo GetWorldGenerationStateDirectory()
+    {
+        var directory = new DirectoryInfo(Path.Combine(_dataDir.FullName, "worldgen"));
+        if (!directory.Exists) directory.Create();
+        return directory;
+    }
+
     public IPlayerStorage GetPlayerStorage() => this;
 
     public void ForceSave()

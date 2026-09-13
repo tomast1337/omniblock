@@ -23,4 +23,10 @@ public interface IWorldStorage
     IPlayerStorage? GetPlayerStorage();
 
     FileInfo? GetWorldPropertiesFile(string name);
+
+    /// <summary>
+    ///     Durable metadata owned by offline/background world-generation jobs. Implementations
+    ///     without persistent storage may return <see langword="null" />.
+    /// </summary>
+    DirectoryInfo? GetWorldGenerationStateDirectory() => null;
 }
