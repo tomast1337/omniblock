@@ -47,6 +47,9 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
     private WgpuAtlasReadback? _readback;
     private long _lastPrepare;
     private long _workStarted, _workEpoch, _writeStarted, _writeEpoch;
+    private long _requestStarted;
+    private double _captureCpuMs;
+    private bool _readyLatencyRecorded;
     private int _deferredFrames;
     private sealed record CacheWork(long Epoch, string Key, bool DiskLookup, EntityImpostorCache.Atlas? Atlas, string? Error);
     private sealed record CacheWrite(long Epoch, bool Saved, string? Error);
@@ -58,6 +61,29 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
     public int Cancellations { get; private set; }
     public int StaleResults { get; private set; }
     public int CapturedViews { get; private set; }
+    public int Invalidations { get; private set; }
+    public double BakeQueueAgeMs => _requested && !Ready && _requestStarted != 0
+        ? Stopwatch.GetElapsedTime(_requestStarted).TotalMilliseconds : 0;
+    public double LastBakeLatencyMs { get; private set; }
+    public double TotalBakeLatencyMs { get; private set; }
+    public int CompletedBakes { get; private set; }
+    public double CaptureCpuMs => _captureCpuMs;
+    /// <summary>Known atlas/depth, geometry, and instance-buffer bytes; excludes driver/pipeline overhead.</summary>
+    public long ResidentGpuBytes
+    {
+        get
+        {
+            var pixels = _atlas == null ? 0L : (long)EntityImpostorLayout.Width *
+                EntityImpostorLayout.AtlasHeight(_layerCount);
+            var geometry = _geometry == null || _layers == null ? 0L :
+                _layers.SelectMany(layer => layer.Poses).Sum(pose => (long)pose.Length * 32);
+            return pixels * 8 + geometry + (_instances == null ? 0 : MaxInstances * 80L);
+        }
+    }
+    /// <summary>Managed source, geometry, and fixed instance-staging bytes retained by this atlas.</summary>
+    public long StagingBytes => (_sources?.Sum(source => (long)source.Pixels.Length) ?? 0) +
+        (_layers?.SelectMany(layer => layer.Poses).Sum(pose => (long)pose.Length * 32) ?? 0) +
+        MaxInstances * 80L;
     public long MemoryBytes => _memory.Bytes;
     public bool ReadbackPending => _readback != null;
     public bool CapturePending => Enabled && _requested && !Ready && !_failed;
@@ -73,6 +99,7 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
     public int LastPoseMask { get; private set; }
     public int LastHurtSubmitted { get; private set; }
     public int LastOverlaySubmitted { get; private set; }
+    public int LastDrawBatches { get; private set; }
 
     [StructLayout(LayoutKind.Sequential)]
     private struct Instance { public Vector4 Center, Right, Up, UV, Effects; }
@@ -93,6 +120,7 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
 
     public void Reset()
     {
+        if (_requested || _atlas != null || _work != null || _write != null || _readback != null) Invalidations++;
         _epoch++;
         if (!_cancel.IsCancellationRequested && (_work is { IsCompleted: false } || _write is { IsCompleted: false } || _readback != null || (_atlas != null && !Ready))) Cancellations++;
         _cancel.Cancel(); _cancel.Dispose(); _cancel = new CancellationTokenSource();
@@ -105,7 +133,8 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
         _geometry = null;
         if (_device != null) WgpuRelease.Deferred(_device, [], 0, (nint)_depthView, (nint)_depth);
         _depthView = null; _depth = null;
-        CompletedViews = 0; _requested = _failed = false; _count = LastSubmitted = 0;
+        CompletedViews = 0; _requested = _failed = false; _count = LastSubmitted = LastDrawBatches = 0;
+        _requestStarted = 0; _readyLatencyRecorded = false;
     }
 
     public void Dispose()
@@ -130,7 +159,7 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
         {
             Reset(); _generation = textures.ResourceGeneration;
         }
-        _count = LastSubmitted = PendingFallbacks = LastPoseMask = LastHurtSubmitted = LastOverlaySubmitted = 0;
+        _count = LastSubmitted = LastDrawBatches = PendingFallbacks = LastPoseMask = LastHurtSubmitted = LastOverlaySubmitted = 0;
         _capture?.ResetUniformPool(); _captureDepth?.ResetUniformPool(); _present?.ResetUniformPool();
         // Compare the effective upload snapshot as well as the pack token. This catches in-place
         // texture/sampler replacement without trusting a pack display name or mutable file path.
@@ -141,7 +170,7 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
         if (_sources != null && (_sources.Length != sources.Length ||
             _sources.Where((source, index) => !ReferenceEquals(source, sources[index])).Any()))
         { Reset(); _requested = Enabled; }
-        try { PollCacheWork(device); PollReadback(); }
+        try { PollCacheWork(device); PollReadback(); RecordReadyLatency(); }
         catch (Exception ex) { Dispose(); _failed = true; Failures++; s_log.LogError(ex, "Impostor cache installation failed; keeping 3D."); }
         if (_atlas != null && device.ErrorCount != _gpuErrors)
         {
@@ -235,6 +264,8 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
                 CapturedViews++;
                 if (Stopwatch.GetElapsedTime(captureStarted).TotalMilliseconds >= .5) break;
             }
+            _captureCpuMs += Stopwatch.GetElapsedTime(captureStarted).TotalMilliseconds;
+            RecordReadyLatency();
             if (Ready) StartReadback(device, encoder);
         }
         catch (Exception ex)
@@ -346,6 +377,7 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
         if (!Enabled || decision.Intended != EntityLodTier.Impostor ||
             decision.ViewIndex < 0 || pose is < 0 or >= EntityImpostorLayout.Poses) return false;
         _requested = true;
+        if (_requestStarted == 0) _requestStarted = Stopwatch.GetTimestamp();
         if (!Ready || _count == MaxInstances) { PendingFallbacks++; return false; }
         var rotation = Matrix4x4.CreateRotationY(-yaw * MathF.PI / 180);
         var (right, up) = EntityImpostorLayout.Basis(EntityLodDirections.Get(decision.ViewIndex));
@@ -379,7 +411,17 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
         EntityPresentationMetrics.Drew(_count);
         EntityPresentationMetrics.SubmitFinished(started);
         LastSubmitted = _count;
+        LastDrawBatches = 1;
         _count = 0;
+    }
+
+    private void RecordReadyLatency()
+    {
+        if (!Ready || _readyLatencyRecorded || _requestStarted == 0) return;
+        _readyLatencyRecorded = true;
+        LastBakeLatencyMs = Stopwatch.GetElapsedTime(_requestStarted).TotalMilliseconds;
+        TotalBakeLatencyMs += LastBakeLatencyMs;
+        CompletedBakes++;
     }
 
     private void EnsureResources(WebGpuDevice device, bool capture = true)

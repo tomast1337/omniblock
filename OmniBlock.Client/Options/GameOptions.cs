@@ -157,6 +157,7 @@ public class GameOptions
     public BoolOption MipmapsOption { get; private set; }
     public BoolOption ChunkFadeOption { get; private set; }
     public BoolOption AlternateBlocksOption { get; private set; }
+    public BoolOption EntityImpostorsOption { get; private set; }
     public BoolOption MenuMusicOption { get; private set; }
 
 
@@ -222,6 +223,7 @@ public class GameOptions
     public int CloudsQuality => CloudsQualityOption.Value;
     public bool SoftClouds => SoftCloudsOption.Value;
     public bool ViewBobbing => ViewBobbingOption.Value;
+    public bool EntityImpostors => EntityImpostorsOption.Value;
     public bool VSync => VSyncOption.Value;
     public int Difficulty => DifficultyOption.Value;
     public int GuiScale => GuiScaleOption.Value;
@@ -393,6 +395,12 @@ public class GameOptions
         {
             OnChanged = _ => ReloadChunks.Invoke()
         };
+        // Kept out of the user-facing options screen until Phase 5 measurements justify rollout.
+        // It is persistent and script-configurable so paired E2E runs exercise the production gate.
+        EntityImpostorsOption = new BoolOption("options.entityImpostors", "entityImpostors")
+        {
+            OnChanged = enabled => _game?.ApplyEntityImpostorOption(enabled)
+        };
         MenuMusicOption = new BoolOption("options.menuMusic", "menuMusic", true);
 
         RenderDistanceOption = new FloatOption("options.renderDistance.text", "viewDistance", 0.2f)
@@ -495,6 +503,7 @@ public class GameOptions
         yield return MipmapsOption;
         yield return ChunkFadeOption;
         yield return AlternateBlocksOption;
+        yield return EntityImpostorsOption;
         yield return MenuMusicOption;
         yield return RenderDistanceOption;
         yield return SimulationDistanceOption;

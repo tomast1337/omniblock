@@ -19,7 +19,8 @@ internal sealed unsafe class EntityImpostorSystem : IDisposable
     private int _captureCursor;
     private bool _holdReadback, _holdCapture;
     private int _failures, _replacements, _memoryHits, _diskHits, _cacheMisses, _cacheWrites,
-        _cacheErrors, _cancellations, _staleResults, _capturedViews;
+        _cacheErrors, _cancellations, _staleResults, _capturedViews, _invalidations, _completedBakes;
+    private double _totalBakeLatencyMs, _captureCpuMs;
 
     private sealed class Entry(IEntityImpostorProvider provider, EntityImpostorMemoryCache memory)
     {
@@ -46,6 +47,22 @@ internal sealed unsafe class EntityImpostorSystem : IDisposable
     public int Cancellations => _cancellations + _entries.Values.Sum(e => e.Atlas.Cancellations);
     public int StaleResults => _staleResults + _entries.Values.Sum(e => e.Atlas.StaleResults);
     public int CapturedViews => _capturedViews + _entries.Values.Sum(e => e.Atlas.CapturedViews);
+    public int Invalidations => _invalidations + _entries.Values.Sum(e => e.Atlas.Invalidations);
+    public double OldestBakeQueueAgeMs => _entries.Values.Select(e => e.Atlas.BakeQueueAgeMs).DefaultIfEmpty().Max();
+    public double LastBakeLatencyMs => _entries.Values.Select(e => e.Atlas.LastBakeLatencyMs).DefaultIfEmpty().Max();
+    public double AverageBakeLatencyMs
+    {
+        get
+        {
+            var count = _completedBakes + _entries.Values.Sum(e => e.Atlas.CompletedBakes);
+            var total = _totalBakeLatencyMs + _entries.Values.Sum(e => e.Atlas.TotalBakeLatencyMs);
+            return count == 0 ? 0 : total / count;
+        }
+    }
+    public double CaptureCpuMs => _captureCpuMs + _entries.Values.Sum(e => e.Atlas.CaptureCpuMs);
+    public long ResidentGpuBytes => _entries.Values.Sum(e => e.Atlas.ResidentGpuBytes);
+    public long StagingBytes => _entries.Values.Sum(e => e.Atlas.StagingBytes);
+    public int LastDrawBatches => _entries.Values.Sum(e => e.Atlas.LastDrawBatches);
     public long MemoryBytes => _memory.Bytes;
     public bool ReadbackPending => _entries.Values.Any(e => e.Atlas.ReadbackPending);
     internal int ResidentAtlasCount => _entries.Count;
@@ -158,5 +175,7 @@ internal sealed unsafe class EntityImpostorSystem : IDisposable
         _cacheMisses += atlas.CacheMisses; _cacheWrites += atlas.CacheWrites;
         _cacheErrors += atlas.CacheErrors; _cancellations += atlas.Cancellations;
         _staleResults += atlas.StaleResults; _capturedViews += atlas.CapturedViews;
+        _invalidations += atlas.Invalidations; _completedBakes += atlas.CompletedBakes;
+        _totalBakeLatencyMs += atlas.TotalBakeLatencyMs; _captureCpuMs += atlas.CaptureCpuMs;
     }
 }

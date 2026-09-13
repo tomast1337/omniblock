@@ -104,7 +104,7 @@ internal sealed class EntityRenderBaseline : IDisposable
             population = "client-only replicas; server simulation continues independently",
             tracking = new { ordinaryMobRange = 160, clamp = "server view-distance cap; fixture bypasses tracking" },
             uploadScope = "pose instance storage only; excludes uniforms, static geometry, textures",
-            geometryPath = "existing GPU-instanced 3D; no impostors"
+            geometryPath = "selected client presentation; per-frame EntityLod records 3D/impostor use"
         };
         _previousHideGui = game.Options.HideGUI;
         game.Options.HideGUI = true; // keep HUD, arm and screenshot chat out of reference pixels
@@ -258,12 +258,25 @@ internal sealed class EntityRenderBaseline : IDisposable
     public (bool Valid, string Json) FinishSample()
     {
         _sampling = false;
+        var impostors = _game.WorldRenderer.EntityImpostors;
         var valid = !_changed && !_overflow && _frames.Count >= 30 &&
             _frames.All(f => f.VisibleEntities == Entities.Count && f.Instances == _expectedInstances);
         var json = JsonSerializer.Serialize(new
         {
             manifest = _manifest, valid, environmentChanged = _changed, overflow = _overflow,
             sampleCount = _frames.Count,
+            impostorDiagnostics = new
+            {
+                impostors.Enabled, impostors.Ready, impostors.CompletedViews,
+                impostors.Failures, impostors.Invalidations, impostors.PendingFallbacks,
+                impostors.MemoryHits, impostors.DiskHits, impostors.CacheMisses,
+                impostors.CacheWrites, impostors.CacheErrors, impostors.Cancellations,
+                impostors.StaleResults, impostors.CapturedViews,
+                impostors.OldestBakeQueueAgeMs, impostors.LastBakeLatencyMs,
+                impostors.AverageBakeLatencyMs, impostors.CaptureCpuMs,
+                impostors.MemoryBytes, impostors.ResidentGpuBytes, impostors.StagingBytes,
+                impostors.ResidentAtlasCount, impostors.LastDrawBatches
+            },
             summary = new
             {
                 frameMs = Summarize(_frames.Select(f => f.FrameMs)),

@@ -26,6 +26,7 @@ public sealed class EntityLodSelectorTests
         _selector.EndFrame();
         Assert.Equal(5, _selector.Last.ModelDraws);
         Assert.Equal(0, _selector.Last.ImpostorDraws);
+        Assert.Equal(2, _selector.Last.TierTransitions);
     }
 
     [Theory]

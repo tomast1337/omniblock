@@ -67,7 +67,7 @@ public static unsafe class LuauClientStateHost
                                                 key == "entityLodModelSubmissions" or key == "entityLodImpostorSubmissions" or
                                                 key == "entityLodUnsupportedProvider" or key == "entityLodUnsupportedState" or
                                                 key == "entityLodInvalidView" or key == "entityLodCapacityFallbacks" or
-                                                key == "entityLodStateCount" or key == "entityLodResets" or
+                                                key == "entityLodStateCount" or key == "entityLodResets" or key == "entityLodTransitions" or
                                                 key == "entityImpostorViews" or key == "entityImpostorReady" or
                                                 key == "entityImpostorFailures" or key == "entityImpostorReplacements" or
                                                 key == "entityImpostorPendingFallbacks" or key == "entityImpostorPoseMask" or
@@ -77,7 +77,12 @@ public static unsafe class LuauClientStateHost
                                                 key == "entityImpostorCacheMisses" or key == "entityImpostorCacheWrites" or
                                                 key == "entityImpostorCacheErrors" or key == "entityImpostorCancellations" or
                                                 key == "entityImpostorStaleResults" or key == "entityImpostorCapturedViews" or
-                                                key == "entityImpostorMemoryBytes" or key == "entityImpostorReadbackPending" then
+                                                key == "entityImpostorMemoryBytes" or key == "entityImpostorReadbackPending" or
+                                                key == "entityImpostorInvalidations" or key == "entityImpostorBakeQueueAgeMs" or
+                                                key == "entityImpostorLastBakeMs" or key == "entityImpostorAverageBakeMs" or
+                                                key == "entityImpostorCaptureCpuMs" or key == "entityImpostorResidentGpuBytes" or
+                                                key == "entityImpostorStagingBytes" or key == "entityImpostorDrawBatches" or
+                                                key == "entityImpostorResidentAtlases" then
                                                 return __ClientState.entityLod(key)
                                             end
                                             if key == "oldestForegroundAge" then return __ClientState.oldestForegroundAge() end

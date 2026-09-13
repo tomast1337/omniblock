@@ -21,13 +21,13 @@ internal sealed class EntityLodSelector(int capacity = 2048)
     private object? _world, _content;
     private long _resources, _frame;
     private LodPoint _camera;
-    private int _observed, _intended, _unsupportedProvider, _unsupportedState, _invalid, _capacity;
+    private int _observed, _intended, _unsupportedProvider, _unsupportedState, _invalid, _capacity, _transitions;
     public Snapshot Last { get; private set; }
     public int StateCount => _entries.Count;
     public long ResetCount { get; private set; }
     internal readonly record struct Snapshot(int Observed, int IntendedImpostors, int ModelDraws,
         int ImpostorDraws, int UnsupportedProvider, int UnsupportedState, int InvalidView,
-        int CapacityFallbacks, int RetainedStates, long Resets);
+        int CapacityFallbacks, int TierTransitions, int RetainedStates, long Resets);
     internal readonly record struct Decision(EntityLodTier Intended, EntityLodReason Reason, int ViewIndex, double ProjectedPixels);
     private sealed class Entry
     {
@@ -55,7 +55,7 @@ internal sealed class EntityLodSelector(int capacity = 2048)
             Clear();
         _world = world; _content = content; _resources = resources; _camera = camera;
         _frame++;
-        _observed = _intended = _unsupportedProvider = _unsupportedState = _invalid = _capacity = 0;
+        _observed = _intended = _unsupportedProvider = _unsupportedState = _invalid = _capacity = _transitions = 0;
     }
 
     public Decision Select(object lifetime, LodPoint position, bool providerSupported, bool stateSupported,
@@ -100,6 +100,8 @@ internal sealed class EntityLodSelector(int capacity = 2048)
         // Restricted visual comparisons only; never bypass provider/state/projection/capacity gates.
         if (forceImpostorForTest && double.IsFinite(pixels)) tier = EntityLodTier.Impostor;
 
+        if (previous != null && previous.Tier != tier) _transitions++;
+
         if (!_entries.ContainsKey(lifetime) && _entries.Count >= Math.Max(0, capacity))
             return Fallback(EntityLodReason.Capacity);
         var view = tier == EntityLodTier.Impostor ?
@@ -121,7 +123,7 @@ internal sealed class EntityLodSelector(int capacity = 2048)
         _expired.Clear();
         if (impostorSubmissions < 0 || impostorSubmissions > _intended) throw new ArgumentOutOfRangeException(nameof(impostorSubmissions));
         Last = new Snapshot(_observed, _intended, _observed - impostorSubmissions, impostorSubmissions, _unsupportedProvider, _unsupportedState,
-            _invalid, _capacity, _entries.Count, ResetCount);
+            _invalid, _capacity, _transitions, _entries.Count, ResetCount);
     }
 }
 

@@ -543,6 +543,7 @@ public partial class OmniBlock :
                     "entityLodUnsupportedState" => lod.UnsupportedState,
                     "entityLodInvalidView" => lod.InvalidView,
                     "entityLodCapacityFallbacks" => lod.CapacityFallbacks,
+                    "entityLodTransitions" => lod.TierTransitions,
                     "entityLodStateCount" => lod.RetainedStates,
                     "entityLodResets" => lod.Resets,
                     "entityImpostorViews" => WorldRenderer?.EntityImpostors.CompletedViews ?? 0,
@@ -563,6 +564,15 @@ public partial class OmniBlock :
                     "entityImpostorCapturedViews" => WorldRenderer?.EntityImpostors.CapturedViews ?? 0,
                     "entityImpostorMemoryBytes" => WorldRenderer?.EntityImpostors.MemoryBytes ?? 0,
                     "entityImpostorReadbackPending" => WorldRenderer?.EntityImpostors.ReadbackPending == true ? 1 : 0,
+                    "entityImpostorInvalidations" => WorldRenderer?.EntityImpostors.Invalidations ?? 0,
+                    "entityImpostorBakeQueueAgeMs" => WorldRenderer?.EntityImpostors.OldestBakeQueueAgeMs ?? 0,
+                    "entityImpostorLastBakeMs" => WorldRenderer?.EntityImpostors.LastBakeLatencyMs ?? 0,
+                    "entityImpostorAverageBakeMs" => WorldRenderer?.EntityImpostors.AverageBakeLatencyMs ?? 0,
+                    "entityImpostorCaptureCpuMs" => WorldRenderer?.EntityImpostors.CaptureCpuMs ?? 0,
+                    "entityImpostorResidentGpuBytes" => WorldRenderer?.EntityImpostors.ResidentGpuBytes ?? 0,
+                    "entityImpostorStagingBytes" => WorldRenderer?.EntityImpostors.StagingBytes ?? 0,
+                    "entityImpostorDrawBatches" => WorldRenderer?.EntityImpostors.LastDrawBatches ?? 0,
+                    "entityImpostorResidentAtlases" => WorldRenderer?.EntityImpostors.ResidentAtlasCount ?? 0,
                     "webGpuErrorCount" => WebGpuDevice.Current?.ErrorCount ?? 0,
                     _ => 0
                 };
@@ -892,6 +902,7 @@ public partial class OmniBlock :
         TextureManager.AddDynamicTexture(new FireSprite("fire_layer_1", "custom_fire_n_s.png"));
 
         WorldRenderer = new WorldRenderer(this, TextureManager);
+        ApplyEntityImpostorOption(Options.EntityImpostors);
         ParticleManager = new ParticleManager(World, TextureManager, Options);
 
         _ = new ResourceManager()
@@ -915,6 +926,14 @@ public partial class OmniBlock :
         ));
 
         EntityRenderDispatcher.Instance.SkinManager.RequestDownload(Session.username);
+    }
+
+    internal void ApplyEntityImpostorOption(bool enabled)
+    {
+        if (WorldRenderer == null) return;
+        WorldRenderer.EntityImpostors.Enabled = enabled;
+        WorldRenderer.EntityImpostors.ForceTierForTest = false;
+        if (!enabled) WorldRenderer.EntityImpostors.Reset();
     }
 
     private void LoadVersion()

@@ -21,11 +21,13 @@ internal sealed partial class LuauCompletion
     [
         "entityLodObserved", "entityLodIntendedImpostors", "entityLodModelSubmissions",
         "entityLodImpostorSubmissions", "entityLodUnsupportedProvider", "entityLodUnsupportedState",
-        "entityLodInvalidView", "entityLodCapacityFallbacks", "entityLodStateCount", "entityLodResets",
+        "entityLodInvalidView", "entityLodCapacityFallbacks", "entityLodTransitions", "entityLodStateCount", "entityLodResets",
         "entityImpostorViews", "entityImpostorReady", "entityImpostorFailures", "entityImpostorReplacements", "entityImpostorPendingFallbacks",
         "entityImpostorPoseMask", "entityImpostorHurtSubmissions", "entityImpostorOverlaySubmissions", "webGpuErrorCount",
         "entityImpostorMemoryHits", "entityImpostorDiskHits", "entityImpostorCacheMisses", "entityImpostorCacheWrites",
-        "entityImpostorCacheErrors", "entityImpostorCancellations", "entityImpostorStaleResults", "entityImpostorCapturedViews", "entityImpostorMemoryBytes", "entityImpostorReadbackPending"
+        "entityImpostorCacheErrors", "entityImpostorCancellations", "entityImpostorStaleResults", "entityImpostorCapturedViews", "entityImpostorMemoryBytes", "entityImpostorReadbackPending",
+        "entityImpostorInvalidations", "entityImpostorBakeQueueAgeMs", "entityImpostorLastBakeMs", "entityImpostorAverageBakeMs", "entityImpostorCaptureCpuMs",
+        "entityImpostorResidentGpuBytes", "entityImpostorStagingBytes", "entityImpostorDrawBatches", "entityImpostorResidentAtlases"
     ];
 
     private static readonly string[] s_clientStateMembers =
@@ -39,7 +41,7 @@ internal sealed partial class LuauCompletion
     [
         "advancedItemTooltips", "alternateBlocks", "anisotropicLevel", "bobView", "cameraMode", "captureMouse",
         "chatScale", "chatWidth", "chunkFade", "cloudsQuality", "controllerSensitivity",
-        "controllerType", "difficulty", "fov", "fpsLimit", "gamma", "guiScale", "invertYMouse",
+        "controllerType", "difficulty", "entityImpostors", "fov", "fpsLimit", "gamma", "guiScale", "invertYMouse",
         "language", "lastServer", "menuMusic", "mouseSensitivity", "msaaLevel", "music", "options", "pauseOnFocusLoss", "showCoordinates",
         "presentationQuality", "simulationDistance", "skin", "softClouds", "sound", "uiCursors", "useMipmaps", "viewDistance", "vsync"
     ];

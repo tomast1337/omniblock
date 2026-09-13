@@ -83,4 +83,24 @@ public sealed class GameOptionsScriptConfigTests
             directory.Delete(true);
         }
     }
+
+    [Fact]
+    public void Entity_impostor_rollout_gate_is_disabled_by_default_scriptable_and_persistent()
+    {
+        var directory = Directory.CreateTempSubdirectory("omniblock-impostor-option-");
+        try
+        {
+            var options = new GameOptions(null!, directory.FullName);
+            Assert.False(options.EntityImpostors);
+            Assert.True(options.SetScriptConfig("entityImpostors", LuauConfigValue.From(true)));
+            Assert.True(options.EntityImpostors);
+
+            var reloaded = new GameOptions(null!, directory.FullName);
+            Assert.True(reloaded.EntityImpostors);
+        }
+        finally
+        {
+            directory.Delete(true);
+        }
+    }
 }

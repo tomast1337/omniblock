@@ -73,6 +73,12 @@ using the same disposable game-data directory: it must load from disk and captur
 hurt, a walking pose, and all sixteen sheep colors plus sheared state. Its restricted
 `entityBaselineEnvironment(day|night|storm)` control pins only the client presentation fixture; it
 does not change the integrated server or expose a gameplay scripting API.
+
+`entity-impostor-rollout` exercises the persistent, script-configurable production gate without
+forcing the tier. It writes paired 256-cow 3D/warmed-impostor timings, an enabled near-scene sample,
+and selected screenshots, then checks zoom, moving flight and teleport. The impostor timing JSON
+also contains cold-bake, cache, memory, invalidation and draw-batch diagnostics. Run with
+`xvfb-run -a tests/e2e/run-local.sh entity-impostor-rollout`; screenshots remain outside samples.
 Do not run the warm script alone against an empty cache. Its result is under the cold artifact
 directory's `warm/` subdirectory; either process failing fails the runner.
 
@@ -82,7 +88,8 @@ Restricted `OMNI.test.impostorCache(action)` supports `clear-memory`, `dispose-s
 holds make cancellation points deterministic. These controls exist only in the E2E test host.
 Read-only `OMNI.client.state.entityImpostor*` diagnostics expose `MemoryHits`, `DiskHits`,
 `CacheMisses`, `CacheWrites`, `CacheErrors`, `Cancellations`, `StaleResults`, `CapturedViews`,
-`MemoryBytes`, and `ReadbackPending` (for example `entityImpostorDiskHits`). All rendering scenarios
+`MemoryBytes`, `ReadbackPending`, bake age/timing, invalidations, known GPU/staging bytes, atlas and
+draw-batch counts (for example `entityImpostorDiskHits`). All rendering scenarios
 assert zero WebGPU errors. Physical device-loss recovery is not simulated by `dispose-session`.
 
 `frustum-directional` disables VSync, samples the real client while looking at the horizon and
