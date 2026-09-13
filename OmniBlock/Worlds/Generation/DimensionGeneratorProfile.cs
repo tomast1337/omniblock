@@ -35,6 +35,8 @@ public sealed class DimensionGeneratorProfile
     public ResourceLocation Key { get; }
     public int DimensionId { get; }
     public ResourceLocation GeneratorProviderType { get; }
+    internal InactiveDecorationPolicy InactiveDecorationPolicy =>
+        _generator.InactiveDecorationPolicy;
 
     internal IChunkSource CreateGenerator(in WorldGeneratorBuildContext context) =>
         _generator.Create(context);

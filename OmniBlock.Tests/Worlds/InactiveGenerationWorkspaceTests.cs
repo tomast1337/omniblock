@@ -1,12 +1,17 @@
+using System.Security.Cryptography;
+using System.Text;
+using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Entities;
 using OmniBlock.Server.Worlds;
 using OmniBlock.Tests.TestSupport;
+using OmniBlock.Util.Maths;
 using OmniBlock.Worlds;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Chunks.Storage;
 using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Dimensions;
+using OmniBlock.Worlds.Generation;
 using OmniBlock.Worlds.Storage;
 using OmniBlock.Worlds.Storage.RegionFormat;
 
@@ -15,6 +20,22 @@ namespace OmniBlock.Tests.Worlds;
 [Collection(ChunkGeneratorCharacterizationCollection.Name)]
 public sealed class InactiveGenerationWorkspaceTests
 {
+    public static TheoryData<string, string> GoldenInactiveNeighborhoods => new()
+    {
+        { "default", "3243eec63e6652fdb476fbad9f04049475e90c6afe688aedd696de1cd9fac709" },
+        { "flat", "e10fc05d6ac7cbd6e614880cb404a2082f8aafcd286aa4368a1c8b0d25d06206" },
+        { "sky", "df577d0336b57a4a68f5bef55735df492b45c3750b01dafd0a58bf1447106a2c" },
+        { "nether", "dfcb7e8e43c3bae5b8ba44a904f182b2f08b854ace29cb51f8e77aa55c332bc5" }
+    };
+
+    public static TheoryData<string, string> GoldenOverlappingInactiveRegions => new()
+    {
+        { "default", "d8919fbab609fe7633917bd53fcf6e3a9ba8ba1eb682befd4ac128e9b682440f" },
+        { "flat", "8d10226948fa2e9ca654fd08c185510a316ae92cea906030a6585b1164cf7dcb" },
+        { "sky", "0ec98af116718511df4de18195352cfcac64631f46f36776f0c46acade3544e7" },
+        { "nether", "d63ec9920646ffa8d9157685a198efcd286c241ad91cf55b2976b214b1a2d033" }
+    };
+
     [Fact]
     public void Stored_ticks_do_not_reach_the_world_before_chunk_activation()
     {
@@ -159,12 +180,115 @@ public sealed class InactiveGenerationWorkspaceTests
         Assert.True(storage.FlushedToDisk);
     }
 
+    [Theory]
+    [MemberData(nameof(GoldenInactiveNeighborhoods))]
+    public void Single_target_inactive_decoration_preserves_the_shipped_fingerprint(
+        string profile,
+        string expected)
+    {
+        var world = new SourceWorld(246813579L, profile);
+        var batch = new InactiveGenerationWorkspace(world)
+            .GenerateCompletedNeighborhood(-33, 31);
+
+        Assert.Equal(expected, Fingerprint(batch, world));
+    }
+
+    [Theory]
+    [MemberData(nameof(GoldenOverlappingInactiveRegions))]
+    public void Overlapping_targets_share_dependencies_and_ignore_input_completion_order(
+        string profile,
+        string expected)
+    {
+        ChunkPos[] forwardTargets = [new(0, 0), new(1, 0), new(0, 0)];
+        ChunkPos[] reversedTargets = [new(1, 0), new(0, 0)];
+        var forwardWorld = new SourceWorld(0x2468_1357_7654_321L, profile);
+        var reversedWorld = new SourceWorld(0x2468_1357_7654_321L, profile);
+
+        var forward = new InactiveGenerationWorkspace(forwardWorld)
+            .GenerateCompletedRegion(forwardTargets);
+        var reversed = new InactiveGenerationWorkspace(reversedWorld)
+            .GenerateCompletedRegion(reversedTargets);
+
+        Assert.Equal([new ChunkPos(0, 0), new ChunkPos(1, 0)], forward.DecoratedTargets);
+        Assert.Equal(20, forward.Chunks.Count);
+        var actual = Fingerprint(forward, forwardWorld);
+        Assert.Equal(actual, Fingerprint(reversed, reversedWorld));
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void Unknown_generator_provider_fails_before_inactive_work_starts()
+    {
+        var source = new FakeWorldContext();
+        source.Properties.TerrainType = new WorldType("example:custom", "example:custom");
+
+        var error = Assert.Throws<NotSupportedException>(() =>
+            new InactiveGenerationWorkspace(source));
+
+        Assert.Contains("example:custom", error.Message);
+        Assert.Contains("deterministic inactive-decoration", error.Message);
+    }
+
+    [Fact]
+    public void Instant_fall_scope_is_nested_and_restored()
+    {
+        FallingBlockBehavior.FallInstantly = false;
+        using (FallingBlockBehavior.BeginInstantFallScope())
+        {
+            Assert.True(FallingBlockBehavior.FallInstantly);
+            using (FallingBlockBehavior.BeginInstantFallScope())
+                Assert.True(FallingBlockBehavior.FallInstantly);
+            Assert.True(FallingBlockBehavior.FallInstantly);
+        }
+
+        Assert.False(FallingBlockBehavior.FallInstantly);
+    }
+
+    [Fact]
+    public void Instant_fall_scope_is_restored_when_decoration_throws()
+    {
+        FallingBlockBehavior.FallInstantly = false;
+
+        Assert.Throws<InvalidOperationException>((Action)(() =>
+        {
+            using var scope = FallingBlockBehavior.BeginInstantFallScope();
+            Assert.True(FallingBlockBehavior.FallInstantly);
+            throw new InvalidOperationException("fixture");
+        }));
+
+        Assert.False(FallingBlockBehavior.FallInstantly);
+    }
+
+    private static string Fingerprint(InactiveGenerationBatch batch, IWorldContext world)
+    {
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        foreach (var snapshot in batch.Chunks.OrderBy(static chunk => chunk.X).ThenBy(static chunk => chunk.Z))
+        {
+            var chunk = snapshot.Materialize(world);
+            hash.AppendData(Encoding.UTF8.GetBytes(
+                $"{chunk.X},{chunk.Z}:{chunk.TerrainPopulated}:{chunk.BlockEntities.Count}:"));
+            hash.AppendData(chunk.Blocks);
+            hash.AppendData(chunk.Meta.Bytes);
+            hash.AppendData(chunk.HeightMap);
+            hash.AppendData(chunk.SkyLight.Bytes);
+            hash.AppendData(chunk.BlockLight.Bytes);
+            foreach (var blockEntity in chunk.BlockEntities.Values
+                         .OrderBy(static entity => entity.X)
+                         .ThenBy(static entity => entity.Y)
+                         .ThenBy(static entity => entity.Z))
+                hash.AppendData(Encoding.UTF8.GetBytes(
+                    $"{blockEntity.GetType().FullName}@{blockEntity.X},{blockEntity.Y},{blockEntity.Z};"));
+        }
+
+        return Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
+    }
+
     private sealed class SourceWorld : World
     {
-        public SourceWorld(long seed)
+        public SourceWorld(long seed, string profile = "default")
             : base(new MemoryStorage(), "inactive-source",
-                new WorldSettings(seed, ContentRuntime.Current.WorldTypes.Get("default")),
-                null, ContentRuntime.Current)
+                new WorldSettings(seed, ResolveWorldType(profile)),
+                ResolveDimension(profile), ContentRuntime.Current)
         {
             Generator = Dimension.CreateChunkGenerator();
         }
@@ -172,6 +296,12 @@ public sealed class InactiveGenerationWorkspaceTests
         public MemorySource Chunks { get; private set; } = null!;
         public IChunkSource Generator { get; }
         protected override IChunkSource CreateChunkCache() => Chunks = new MemorySource(this);
+
+        private static WorldType ResolveWorldType(string profile) =>
+            ContentRuntime.Current.WorldTypes.Get(profile == "nether" ? "default" : profile);
+
+        private static Dimension? ResolveDimension(string profile) =>
+            profile == "nether" ? Dimension.FromId(-1, ContentRuntime.Current) : null;
     }
 
     private sealed class MemorySource(IWorldContext world) : IChunkSource

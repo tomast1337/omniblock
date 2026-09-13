@@ -8,6 +8,7 @@ using OmniBlock.Worlds.Chunks.Storage;
 using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Dimensions;
+using OmniBlock.Worlds.Generation;
 using OmniBlock.Worlds.Storage;
 using OmniBlock.Worlds.Storage.RegionFormat;
 
@@ -27,6 +28,8 @@ public sealed class InactiveGenerationWorkspace
     public InactiveGenerationWorkspace(IWorldContext source)
     {
         ArgumentNullException.ThrowIfNull(source);
+        var (providerType, decorationPolicy) = ResolveProvider(source);
+        EnsureProviderSupported(providerType, decorationPolicy);
         var dimension = source.Dimension.Id == -1
             ? Dimension.FromId(-1, source.Content)
             : null;
@@ -46,17 +49,42 @@ public sealed class InactiveGenerationWorkspace
     public InactiveGenerationBatch GenerateCompletedNeighborhood(
         int chunkX,
         int chunkZ,
+        CancellationToken cancellationToken = default) =>
+        GenerateCompletedRegion([new ChunkPos(chunkX, chunkZ)], cancellationToken);
+
+    /// <summary>
+    ///     Completes a set of decoration targets as one deterministic transaction. Dependency
+    ///     chunks are generated once, and all mutating decoration is deliberately serialized.
+    /// </summary>
+    public InactiveGenerationBatch GenerateCompletedRegion(
+        IEnumerable<ChunkPos> targets,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(targets);
         cancellationToken.ThrowIfCancellationRequested();
         if (Interlocked.Exchange(ref _started, 1) != 0)
             throw new InvalidOperationException("An inactive generation workspace is single-use.");
 
-        for (var x = chunkX - 1; x <= chunkX + 2; x++)
-        for (var z = chunkZ - 1; z <= chunkZ + 2; z++)
+        var orderedTargets = targets
+            .Distinct()
+            .OrderBy(static target => target.X)
+            .ThenBy(static target => target.Z)
+            .ToArray();
+        if (orderedTargets.Length == 0)
+            throw new ArgumentException("At least one decoration target is required.", nameof(targets));
+
+        var dependencies = new HashSet<ChunkPos>();
+        foreach (var target in orderedTargets)
+        for (var x = target.X - 1; x <= target.X + 2; x++)
+        for (var z = target.Z - 1; z <= target.Z + 2; z++)
+            dependencies.Add(new ChunkPos(x, z));
+
+        foreach (var position in dependencies
+                     .OrderBy(static position => position.X)
+                     .ThenBy(static position => position.Z))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            _world.Chunks.Store(_generator.GetChunk(x, z));
+            _world.Chunks.Store(_generator.GetChunk(position.X, position.Z));
         }
 
         foreach (var chunk in _world.Chunks.All
@@ -67,20 +95,48 @@ public sealed class InactiveGenerationWorkspace
             chunk.PopulateBlockLight();
         }
 
-        cancellationToken.ThrowIfCancellationRequested();
-        var decorated = _world.Chunks.GetChunk(chunkX, chunkZ);
-        decorated.TerrainPopulated = true;
-        _generator.DecorateTerrain(_world.Chunks, chunkX, chunkZ);
-
-        while (_world.Lighting.DoLightingUpdates())
+        foreach (var target in orderedTargets)
+        {
             cancellationToken.ThrowIfCancellationRequested();
+            var decorated = _world.Chunks.GetChunk(target.X, target.Z);
+            decorated.TerrainPopulated = true;
+            _generator.DecorateTerrain(_world.Chunks, target.X, target.Z);
+
+            while (_world.Lighting.DoLightingUpdates())
+                cancellationToken.ThrowIfCancellationRequested();
+        }
 
         return new InactiveGenerationBatch(
             _world.Chunks.All
                 .OrderBy(static chunk => chunk.X)
                 .ThenBy(static chunk => chunk.Z)
                 .Select(chunk => InactiveChunkSnapshot.Capture(chunk, _world))
-                .ToArray());
+                .ToArray())
+        {
+            DecoratedTargets = orderedTargets
+        };
+    }
+
+    private static (ResourceLocation ProviderType, InactiveDecorationPolicy Policy) ResolveProvider(
+        IWorldContext source)
+    {
+        if (source.Dimension.Id == -1)
+        {
+            var profile = source.Content.DimensionGeneratorProfiles.GetByDimensionId(source.Dimension.Id);
+            return (profile.GeneratorProviderType, profile.InactiveDecorationPolicy);
+        }
+
+        var worldType = source.Properties.TerrainType;
+        return (worldType.GeneratorProviderType, worldType.InactiveDecorationPolicy);
+    }
+
+    private static void EnsureProviderSupported(
+        ResourceLocation providerType,
+        InactiveDecorationPolicy policy)
+    {
+        if (policy == InactiveDecorationPolicy.DeterministicSerial) return;
+        throw new NotSupportedException(
+            $"World-generator provider '{providerType}' has not declared deterministic inactive-decoration support.");
     }
 
     private sealed class WorkspaceWorld : World
@@ -132,6 +188,7 @@ public sealed class InactiveGenerationWorkspace
 
 public sealed record InactiveGenerationBatch(IReadOnlyList<InactiveChunkSnapshot> Chunks)
 {
+    public IReadOnlyList<ChunkPos> DecoratedTargets { get; init; } = [];
     public InactiveChunkSnapshot Get(int x, int z) =>
         Chunks.FirstOrDefault(chunk => chunk.X == x && chunk.Z == z)
         ?? throw new KeyNotFoundException($"Inactive batch does not contain chunk {x},{z}.");

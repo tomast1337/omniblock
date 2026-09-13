@@ -32,6 +32,8 @@ public class WorldType
     public string IconPath { get; }
     public bool CanBeCreated { get; }
     internal ICompiledWorldGenerator? CompiledGenerator { get; }
+    internal InactiveDecorationPolicy InactiveDecorationPolicy =>
+        CompiledGenerator?.InactiveDecorationPolicy ?? InactiveDecorationPolicy.Unsupported;
 
     internal IChunkSource CreateGenerator(in WorldGeneratorBuildContext context) =>
         CompiledGenerator?.Create(context)

@@ -20,12 +20,22 @@ namespace OmniBlock.Blocks.Behaviors;
 /// </summary>
 public class FallingBlockBehavior(Block[] passable, int regionLoadCheckRadius) : BlockRuntimeBehavior, IBlockTicker, IBlockLifecycle, IBlockPhysics
 {
-    private static readonly ThreadLocal<bool> s_fallInstantly = new(() => false);
+    private static readonly ThreadLocal<int> s_instantFallScopes = new(() => 0);
 
     public static bool FallInstantly
     {
-        get => s_fallInstantly.Value;
-        set => s_fallInstantly.Value = value;
+        get => s_instantFallScopes.Value > 0;
+        set => s_instantFallScopes.Value = value ? 1 : 0;
+    }
+
+    /// <summary>
+    ///     Scopes generation-only falling behavior to the current worker and restores it even when
+    ///     a feature throws. The counter makes nested decoration helpers safe.
+    /// </summary>
+    public static IDisposable BeginInstantFallScope()
+    {
+        s_instantFallScopes.Value++;
+        return new InstantFallScope();
     }
 
     public void OnPlaced(Block block, OnPlacedEvent @event) => @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
@@ -69,5 +79,16 @@ public class FallingBlockBehavior(Block[] passable, int regionLoadCheckRadius) :
 
         var material = Blocks.GetByProtocolId(blockId).Material;
         return material == Material.Water || material == Material.Lava;
+    }
+
+    private sealed class InstantFallScope : IDisposable
+    {
+        private int _disposed;
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) != 0) return;
+            s_instantFallScopes.Value = Math.Max(0, s_instantFallScopes.Value - 1);
+        }
     }
 }

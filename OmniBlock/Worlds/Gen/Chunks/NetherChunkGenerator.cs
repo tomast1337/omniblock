@@ -76,7 +76,7 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
 
     public void DecorateTerrain(IChunkSource source, int x, int z)
     {
-        FallingBlockBehavior.FallInstantly = true;
+        using var instantFall = FallingBlockBehavior.BeginInstantFallScope();
         var blockX = x * 16;
         var blockZ = z * 16;
 
@@ -137,7 +137,6 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
             _featureRedMushroom.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        FallingBlockBehavior.FallInstantly = false;
     }
 
     public bool Save(bool bl, LoadingDisplay display) => true;

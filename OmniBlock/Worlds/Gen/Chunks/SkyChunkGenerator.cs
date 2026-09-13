@@ -108,7 +108,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
 
     public void DecorateTerrain(IChunkSource source, int chunkX, int chunkZ)
     {
-        FallingBlockBehavior.FallInstantly = true;
+        using var instantFall = FallingBlockBehavior.BeginInstantFallScope();
         var blockX = chunkX * 16;
         var blockZ = chunkZ * 16;
         var chunkBiome = _biomeSource.GetBiome(blockX + 16, blockZ + 16);
@@ -376,7 +376,6 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
             }
         }
 
-        FallingBlockBehavior.FallInstantly = false;
     }
 
     public bool Save(bool b, LoadingDisplay display) => true;

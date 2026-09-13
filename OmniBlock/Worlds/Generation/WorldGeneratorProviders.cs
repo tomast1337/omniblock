@@ -18,8 +18,15 @@ public readonly record struct WorldGeneratorCompileContext(
     IBlockRuntimeView Blocks,
     RuntimeBiomeGenerationRegistry? BiomeGeneration = null);
 
+public enum InactiveDecorationPolicy
+{
+    Unsupported,
+    DeterministicSerial
+}
+
 public interface ICompiledWorldGenerator
 {
+    InactiveDecorationPolicy InactiveDecorationPolicy => InactiveDecorationPolicy.Unsupported;
     IChunkSource Create(in WorldGeneratorBuildContext context);
 }
 
@@ -201,6 +208,9 @@ public static class BuiltInWorldGeneratorProviders
             OverworldChunkGenerator.Settings settings)
             : ICompiledWorldGenerator
         {
+            public InactiveDecorationPolicy InactiveDecorationPolicy =>
+                InactiveDecorationPolicy.DeterministicSerial;
+
             public IChunkSource Create(in WorldGeneratorBuildContext context) =>
                 blocks is null
                     ? new OverworldChunkGenerator(
@@ -272,6 +282,9 @@ public static class BuiltInWorldGeneratorProviders
             SkyChunkGenerator.BlockIds? blocks,
             SkyChunkGenerator.Settings settings) : ICompiledWorldGenerator
         {
+            public InactiveDecorationPolicy InactiveDecorationPolicy =>
+                InactiveDecorationPolicy.DeterministicSerial;
+
             public IChunkSource Create(in WorldGeneratorBuildContext context) =>
                 blocks is null
                     ? new SkyChunkGenerator(
@@ -333,6 +346,9 @@ public static class BuiltInWorldGeneratorProviders
             FlatChunkGenerator.BlockIds? blocks,
             FlatChunkGenerator.Settings settings) : ICompiledWorldGenerator
         {
+            public InactiveDecorationPolicy InactiveDecorationPolicy =>
+                InactiveDecorationPolicy.DeterministicSerial;
+
             public IChunkSource Create(in WorldGeneratorBuildContext context) =>
                 blocks is null
                     ? new FlatChunkGenerator(
@@ -432,6 +448,9 @@ public static class BuiltInWorldGeneratorProviders
             NetherChunkGenerator.BlockIds? blocks,
             NetherChunkGenerator.Settings settings) : ICompiledWorldGenerator
         {
+            public InactiveDecorationPolicy InactiveDecorationPolicy =>
+                InactiveDecorationPolicy.DeterministicSerial;
+
             public IChunkSource Create(in WorldGeneratorBuildContext context) =>
                 blocks is null
                     ? new NetherChunkGenerator(
