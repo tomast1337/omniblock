@@ -9,6 +9,7 @@ using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Dimensions;
 using OmniBlock.Worlds.Generation;
+using OmniBlock.Worlds.Lod;
 using OmniBlock.Worlds.Storage;
 using OmniBlock.Worlds.Storage.RegionFormat;
 
@@ -353,5 +354,19 @@ public sealed class InactiveChunkSnapshot
             throw new InvalidDataException(
                 $"Inactive snapshot for {X},{Z} materialized as {chunk.X},{chunk.Z}.");
         return chunk;
+    }
+
+    /// <summary>Extracts immutable terrain for LOD conversion without creating entities.</summary>
+    public TerrainLodSourceSnapshot CaptureTerrain(long terrainRevision = 0)
+    {
+        using MemoryStream input = new(_nbt, writable: false);
+        var root = NbtIo.Read(input);
+        var snapshot = TerrainLodSourceSnapshot.FromRegionNbt(
+            root.GetCompoundTag("Level"), terrainRevision);
+        if (snapshot.ChunkX != X || snapshot.ChunkZ != Z)
+            throw new InvalidDataException(
+                $"Inactive snapshot for {X},{Z} contains terrain for " +
+                $"{snapshot.ChunkX},{snapshot.ChunkZ}.");
+        return snapshot;
     }
 }
