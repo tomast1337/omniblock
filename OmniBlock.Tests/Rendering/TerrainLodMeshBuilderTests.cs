@@ -98,7 +98,7 @@ public sealed class TerrainLodMeshBuilderTests
     }
 
     [Fact]
-    public void Resident_air_neighbor_authorizes_an_outer_boundary_wall()
+    public void Solid_column_mesh_does_not_own_its_outer_boundary_wall()
     {
         var world = new FakeWorldContext();
         var stone = world.Content.Blocks.Get("omniblock:stone").Id;
@@ -112,7 +112,7 @@ public sealed class TerrainLodMeshBuilderTests
             terrain, 2, world.Content.Blocks, true, neighbors:
             new TerrainLodNeighborBoundaries(null, null, null, airBoundary));
 
-        Assert.Equal(128, withEastAir.Vertices.Length - withoutEvidence.Vertices.Length);
+        Assert.Equal(withoutEvidence.Vertices.Length, withEastAir.Vertices.Length);
     }
 
     [Fact]
@@ -146,7 +146,7 @@ public sealed class TerrainLodMeshBuilderTests
     }
 
     [Fact]
-    public void Fine_boundary_uses_a_covering_coarse_neighbor_until_matching_detail_arrives()
+    public void Fine_column_leaves_mixed_level_boundary_to_the_seam_artifact()
     {
         var world = new FakeWorldContext();
         var stone = world.Content.Blocks.Get("omniblock:stone").Id;
@@ -160,8 +160,7 @@ public sealed class TerrainLodMeshBuilderTests
             fineTerrain, 1, world.Content.Blocks, true, neighbors:
             new TerrainLodNeighborBoundaries(null, null, null, coarseAirBoundary));
 
-        Assert.Equal(512,
-            withCoarseEastAir.Vertices.Length - withoutEvidence.Vertices.Length);
+        Assert.Equal(withoutEvidence.Vertices.Length, withCoarseEastAir.Vertices.Length);
     }
 
     [Fact]
