@@ -1,9 +1,33 @@
 using OmniBlock.Client.Rendering.Chunks.Lod;
+using OmniBlock.Client.Rendering.Core;
+using Silk.NET.Maths;
 
 namespace OmniBlock.Tests.Rendering;
 
 public sealed class TerrainLodHandoffTests
 {
+    [Fact]
+    public void Linear_fog_is_extended_once_for_both_near_and_lod_terrain()
+    {
+        var source = new FogState(
+            FogCurve.Linear, new Vector4D<float>(0.2f, 0.3f, 0.4f, 1), 32, 128, 1);
+
+        var resolved = TerrainLodFog.Resolve(source, renderDistance: 8);
+
+        Assert.Equal(96, resolved.Start);
+        Assert.Equal(ClientTerrainLodRenderer.MaximumDistanceBlocks, resolved.End);
+        Assert.Equal(source.Color, resolved.Color);
+    }
+
+    [Fact]
+    public void Submersion_fog_is_not_reinterpreted_as_horizon_fog()
+    {
+        var source = new FogState(
+            FogCurve.Exponential, new Vector4D<float>(0.02f, 0.02f, 0.2f, 1), 0, 1, 0.1f);
+
+        Assert.Equal(source, TerrainLodFog.Resolve(source, renderDistance: 8));
+    }
+
     [Fact]
     public void Incomplete_near_column_keeps_complete_lod_coverage()
     {

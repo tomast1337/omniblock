@@ -155,6 +155,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private int _terrainTextureBindsThisFrame;
     private double _findVisibleMsThisFrame;
     private double _terrainSubmitMsThisFrame;
+    private FogState _terrainFog = FogState.Default;
     internal ITerrainPresentationHandoff? PresentationHandoff { get; set; }
 
     /// <summary>
@@ -594,6 +595,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         _modelView = renderParams.ModelView;
         _projection = renderParams.Projection;
+        _terrainFog = renderParams.Fog;
 
         // The frame that took buffers out of these pools has been submitted by now, so they are
         // free to hand out again. Both terrain passes of this frame draw from them.
@@ -2835,7 +2837,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         bool translucent,
         bool applyHandoff = true)
     {
-        var fog = RenderSystem.Fog;
+        var fog = _terrainFog;
         var light = RenderSystem.WorldLight;
         var handoff = applyHandoff
             ? PresentationHandoff?.GetNearHandoff(

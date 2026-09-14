@@ -740,7 +740,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             VerticalFovDegrees = _game.GameRenderer.CameraController.GetFov((float)partialTicks),
             ViewportHeight = _game.DisplayHeight,
             ChunkFade = _game.Options.ChunkFade,
-            RenderOccluded = false
+            RenderOccluded = false,
+            Fog = TerrainLodFog.Resolve(RenderSystem.Fog, _renderDistance)
         };
 
         if (pass == 0)

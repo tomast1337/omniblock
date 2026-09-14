@@ -1,3 +1,4 @@
+using OmniBlock.Client.Rendering.Core;
 using Silk.NET.Maths;
 
 namespace OmniBlock.Client.Rendering.Chunks;
@@ -16,4 +17,5 @@ public struct ChunkRenderParams
     public int ViewportHeight;
     public bool ChunkFade;
     public bool RenderOccluded;
+    public FogState Fog;
 }

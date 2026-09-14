@@ -643,7 +643,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             (float)(ChuckFormat.WorldHeight / 2.0 - parameters.ViewPos.Y),
             (float)(key.Z * 16 - parameters.ViewPos.Z));
         var modelView = Matrix4X4.CreateTranslation(relative) * parameters.ModelView;
-        var fog = RenderSystem.Fog;
+        var fog = parameters.Fog;
         var light = RenderSystem.WorldLight;
         return new ChunkUniforms
         {
@@ -653,10 +653,10 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             ChunkPosY = key.Z * 16,
             AmbientDarkness = light.AmbientDarkness,
             LuminanceOffset = light.LuminanceOffset,
-            FogMode = (uint)FogCurve.Linear,
+            FogMode = (uint)fog.Curve,
             FogDensity = fog.Density,
-            FogStart = Math.Max(fog.Start, parameters.RenderDistance * 16 * 0.75f),
-            FogEnd = MaximumDistanceBlocks,
+            FogStart = fog.Start,
+            FogEnd = fog.End,
             FogColorR = fog.Color.X,
             FogColorG = fog.Color.Y,
             FogColorB = fog.Color.Z,
@@ -898,6 +898,25 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             TranslucentMesh?.Dispose();
             Lighting?.Dispose();
         }
+    }
+}
+
+/// <summary>
+///     Extends ordinary linear terrain fog across the distant horizon. Both exact and reduced
+///     terrain consume this resolved state, so their overlap cannot reveal two different fog
+///     depths for the same surface.
+/// </summary>
+internal static class TerrainLodFog
+{
+    public static FogState Resolve(FogState source, int renderDistance)
+    {
+        if (source.Curve != FogCurve.Linear) return source;
+
+        var nearDistance = Math.Max(1, renderDistance) * (float)SubChunkRenderer.Size;
+        var end = Math.Max(source.End, ClientTerrainLodRenderer.MaximumDistanceBlocks);
+        var start = Math.Clamp(
+            Math.Max(source.Start, nearDistance * 0.75f), 0, end - 1);
+        return source with { Start = start, End = end };
     }
 }
 
