@@ -167,6 +167,10 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"Presented: solid {lod.PresentedColumns:N0}  translucent {lod.PresentedTranslucentColumns:N0} columns");
         ImGuiTextSafe.Text(
+            $"Handoff:   preparing {lod.HandoffPreparingColumns:N0}  overlap {lod.HandoffOverlapColumns:N0}  started {lod.HandoffsStarted:N0}  reversed {lod.HandoffReversals:N0}");
+        ImGuiTextSafe.Text(
+            $"LOD level: transitioning {lod.LevelTransitionColumns:N0}  started {lod.LevelTransitionsStarted:N0}  reversed {lod.LevelTransitionReversals:N0}");
+        ImGuiTextSafe.Text(
             $"Lifecycle: stale {lod.StaleResults:N0}  rejected {lod.RejectedAdmissions:N0}  evicted {lod.Evictions:N0}");
     }
 

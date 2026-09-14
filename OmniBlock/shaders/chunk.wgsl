@@ -29,6 +29,8 @@ struct Uniforms {
     fogMode: u32,              // 0=linear, else=exponential
     chunkFadeEnabled: u32,     // bool as u32
     fadeProgress: f32,
+    presentationFadeMode: u32, // 0=none, 1=near fade-in, 2=LOD fade-out
+    presentationFadeSeed: u32,
 };
 
 @group(0) @binding(0) var<uniform> u: Uniforms;
@@ -162,6 +164,34 @@ fn fs_wireframe(in: VertexOutput) -> @location(0) vec4<f32> {
     return vec4<f32>(0.0, 1.0, 0.0, 1.0);
 }
 
+fn presentationDitherThreshold(position: vec2<f32>, seed: u32) -> f32 {
+    let x = (u32(position.x) + seed) & 3u;
+    let y = (u32(position.y) + (seed >> 2u)) & 3u;
+    var value = 0u;
+    if (y == 0u) {
+        if (x == 0u) { value = 0u; }
+        else if (x == 1u) { value = 8u; }
+        else if (x == 2u) { value = 2u; }
+        else { value = 10u; }
+    } else if (y == 1u) {
+        if (x == 0u) { value = 12u; }
+        else if (x == 1u) { value = 4u; }
+        else if (x == 2u) { value = 14u; }
+        else { value = 6u; }
+    } else if (y == 2u) {
+        if (x == 0u) { value = 3u; }
+        else if (x == 1u) { value = 11u; }
+        else if (x == 2u) { value = 1u; }
+        else { value = 9u; }
+    } else {
+        if (x == 0u) { value = 15u; }
+        else if (x == 1u) { value = 7u; }
+        else if (x == 2u) { value = 13u; }
+        else { value = 5u; }
+    }
+    return (f32(value) + 0.5) / 16.0;
+}
+
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let texColor = textureSample(terrainArray, terrainSampler, in.texCoord, in.arrayLayer);
@@ -169,6 +199,16 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
 
     if (finalColor.a < 0.001) {
         discard;
+    }
+
+    if (u.presentationFadeMode != 0u) {
+        let threshold = presentationDitherThreshold(in.position.xy, u.presentationFadeSeed);
+        if (u.presentationFadeMode == 1u && threshold >= u.fadeProgress) {
+            discard;
+        }
+        if (u.presentationFadeMode == 2u && threshold < u.fadeProgress) {
+            discard;
+        }
     }
 
     var fogFactor: f32;

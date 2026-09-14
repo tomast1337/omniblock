@@ -497,6 +497,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         ChunkRenderer = new ChunkRenderer(_world, _game.Options);
         TerrainLod?.Dispose();
         TerrainLod = new ClientTerrainLodRenderer(_world);
+        ChunkRenderer.PresentationHandoff = TerrainLod;
         ChunkMeshVersion.ClearPool();
 
         _renderEntitiesStartupCounter = 2;

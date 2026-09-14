@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using OmniBlock.Client.Options;
+using OmniBlock.Client.Rendering.Chunks.Lod;
 using OmniBlock.Client.Rendering.Chunks.Occlusion;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.WebGPU;
@@ -154,6 +155,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private int _terrainTextureBindsThisFrame;
     private double _findVisibleMsThisFrame;
     private double _terrainSubmitMsThisFrame;
+    internal ITerrainPresentationHandoff? PresentationHandoff { get; set; }
 
     /// <summary>
     ///     Reused across frames so the solid pass's per-chunk uniform batch (see
@@ -2705,7 +2707,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 new Vector3D<float>((float)camRel.X, (float)camRel.Y, (float)camRel.Z));
             var modelView = translation * _modelView;
 
-            _solidUniformScratch[i] = BuildChunkUniforms(modelView, renderer.Position, fadeProgress);
+            _solidUniformScratch[i] = BuildChunkUniforms(
+                modelView, renderer.Position, fadeProgress, translucent: false);
         }
 
         var t0 = Stopwatch.GetTimestamp();
@@ -2758,7 +2761,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 new Vector3D<float>((float)camRel.X, (float)camRel.Y, (float)camRel.Z));
             var modelView = translation * _modelView;
 
-            pipeline.BindNextUniforms(pass, BuildChunkUniforms(modelView, renderer.Position, fadeProgress));
+            pipeline.BindNextUniforms(pass, BuildChunkUniforms(
+                modelView, renderer.Position, fadeProgress,
+                translucent: false, applyHandoff: false));
 
             _solidDrawsThisFrame += renderer.RenderWireframeWebGpu(pass);
         }
@@ -2802,7 +2807,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 new Vector3D<float>((float)camRel.X, (float)camRel.Y, (float)camRel.Z));
             var modelView = translation * _modelView;
 
-            _translucentUniformScratch[i] = BuildChunkUniforms(modelView, renderer.Position, fadeProgress);
+            _translucentUniformScratch[i] = BuildChunkUniforms(
+                modelView, renderer.Position, fadeProgress, translucent: true);
         }
 
         pipeline.WriteDynamicUniforms(_translucentUniformScratch.AsSpan(0, count));
@@ -2822,10 +2828,19 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     ///     of this renderer's own — the GL terrain shader is fed from the same two, so a chunk drawn
     ///     by either backend is lit and fogged alike.
     /// </summary>
-    private ChunkUniforms BuildChunkUniforms(Matrix4X4<float> modelView, Vector3D<int> chunkPos, float fadeProgress)
+    private ChunkUniforms BuildChunkUniforms(
+        Matrix4X4<float> modelView,
+        Vector3D<int> chunkPos,
+        float fadeProgress,
+        bool translucent,
+        bool applyHandoff = true)
     {
         var fog = RenderSystem.Fog;
         var light = RenderSystem.WorldLight;
+        var handoff = applyHandoff
+            ? PresentationHandoff?.GetNearHandoff(
+                chunkPos.X >> 4, chunkPos.Z >> 4, translucent) ?? TerrainNearHandoff.Inactive
+            : TerrainNearHandoff.Inactive;
 
         return new ChunkUniforms
         {
@@ -2837,8 +2852,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             TimeX = 0,
             TimeY = 0,
             TimeZ = 0,
-            FadeProgress = fadeProgress,
-            ChunkFadeEnabled = 1,
+            FadeProgress = handoff.Active ? handoff.Progress : fadeProgress,
+            ChunkFadeEnabled = handoff.Active ? 0u : 1u,
+            PresentationFadeMode = handoff.Active ? 1u : 0u,
+            PresentationFadeSeed = handoff.Seed,
             AmbientDarkness = light.AmbientDarkness,
             LuminanceOffset = light.LuminanceOffset,
             FogMode = (uint)fog.Curve,
@@ -3015,4 +3032,10 @@ public struct ChunkUniforms
 
     // f32 fadeProgress at offset 324
     [FieldOffset(324)] public float FadeProgress;
+
+    // u32 presentationFadeMode at offset 328
+    [FieldOffset(328)] public uint PresentationFadeMode;
+
+    // u32 presentationFadeSeed at offset 332
+    [FieldOffset(332)] public uint PresentationFadeSeed;
 }

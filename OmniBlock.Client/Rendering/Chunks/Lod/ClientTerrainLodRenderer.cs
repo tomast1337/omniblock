@@ -19,11 +19,18 @@ internal readonly record struct ClientTerrainLodSnapshot(
     int TransitionLevelColumns,
     int PresentedColumns,
     int PresentedTranslucentColumns,
+    int HandoffPreparingColumns,
+    int HandoffOverlapColumns,
+    int LevelTransitionColumns,
     int UploadsThisFrame,
     long ResidentGpuBytes,
     long StaleResults,
     long RejectedAdmissions,
-    long Evictions);
+    long Evictions,
+    long HandoffsStarted,
+    long HandoffReversals,
+    long LevelTransitionsStarted,
+    long LevelTransitionReversals);
 
 /// <summary>
 ///     Client owner for the first terrain-horizon slice. It compiles immutable chunk snapshots on
@@ -35,7 +42,7 @@ internal readonly record struct ClientTerrainLodSnapshot(
 ///     renderer and is hidden only after that renderer has a complete column presentation. An old
 ///     LOD mesh remains valid coverage while a newer revision is being built.
 /// </remarks>
-internal sealed class ClientTerrainLodRenderer : IDisposable
+internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentationHandoff
 {
     public const float MaximumDistanceBlocks = 1024.0f;
     private const int ConversionCapacity = 16;
@@ -65,6 +72,10 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
     private long _staleResults;
     private long _rejectedAdmissions;
     private long _evictions;
+    private long _handoffsStarted;
+    private long _handoffReversals;
+    private long _levelTransitionsStarted;
+    private long _levelTransitionReversals;
     private bool _disposed;
     private ClientTerrainLodSnapshot _snapshot;
 
@@ -79,6 +90,16 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
     }
 
     public ClientTerrainLodSnapshot Snapshot => _snapshot;
+
+    public TerrainNearHandoff GetNearHandoff(int chunkX, int chunkZ, bool translucent)
+    {
+        if (!_resident.TryGetValue((chunkX, chunkZ), out var presentation) ||
+            !presentation.HasLayer(translucent)) return TerrainNearHandoff.Inactive;
+        return new TerrainNearHandoff(
+            true,
+            presentation.HandoffFor(translucent).Progress,
+            FadeSeed((chunkX, chunkZ)));
+    }
 
     /// <summary>Coalesces terrain changes by chunk coordinate without retaining source arrays.</summary>
     public void ObserveRegion(int minX, int minZ, int maxX, int maxZ)
@@ -147,7 +168,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
         ArgumentNullException.ThrowIfNull(nearRenderer);
         using var _lodRender = Profiler.Begin("TerrainLodRender");
         var uploads = InstallCompleted(UploadsPerFrame, parameters.ViewPos,
-            parameters.VerticalFovDegrees, parameters.ViewportHeight);
+            parameters.VerticalFovDegrees, parameters.ViewportHeight,
+            parameters.RenderDistance, nearRenderer);
         EvictDistant(parameters.ViewPos);
 
         if (RenderSystem.Fog.Curve != FogCurve.Linear ||
@@ -170,21 +192,24 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
                     key.X * 16 + 16, ChuckFormat.WorldHeight, key.Z * 16 + 16)))
                 continue;
 
-            var nearComplete = _world.BlockHost.HasChunk(key.X, key.Z) &&
-                               _world.BlockHost.GetChunk(key.X, key.Z).Loaded &&
-                               nearRenderer.IsMeshColumnReady(key.X, key.Z);
-            if (nearComplete) continue;
+            if (!presentation.HasLayer(translucent: false)) continue;
+            var (nearPresent, nearReady) = NearState(
+                key, distanceSquared, parameters.RenderDistance, nearRenderer);
+            var handoff = UpdateHandoff(presentation,
+                translucent: false, nearPresent, nearReady,
+                parameters.DeltaTime, parameters.ChunkFade);
+            if (handoff.Progress >= 1) continue;
 
             var requestedLevel = TerrainLodDetailSelector.SelectLevel(
-                Math.Sqrt(distanceSquared), presentation.MaximumLevel, presentation.LastLevel,
+                Math.Sqrt(distanceSquared), presentation.MaximumLevel,
+                presentation.SelectionLevel(translucent: false),
                 parameters.VerticalFovDegrees, parameters.ViewportHeight);
             if (requestedLevel < presentation.MinimumLevel)
                 RequestDetailLevel(key, requestedLevel);
-            if (!presentation.TryGetNearestLevel(
-                    requestedLevel, translucent: false, out var level, out var gpu)) continue;
-            presentation.LastLevel = level;
-            presentation.LastPresentedTick = _tick;
-            _visible.Add(new VisibleColumn(key, distanceSquared, gpu));
+            AppendVisibleLevels(
+                presentation, key, distanceSquared, requestedLevel,
+                translucent: false, handoff.Progress,
+                parameters.DeltaTime, parameters.ChunkFade);
         }
 
         _visible.Sort(static (a, b) =>
@@ -192,7 +217,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
             var distance = a.DistanceSquared.CompareTo(b.DistanceSquared);
             if (distance != 0) return distance;
             var x = a.Key.X.CompareTo(b.Key.X);
-            return x != 0 ? x : a.Key.Z.CompareTo(b.Key.Z);
+            if (x != 0) return x;
+            var z = a.Key.Z.CompareTo(b.Key.Z);
+            return z != 0 ? z : a.Level.CompareTo(b.Level);
         });
         if (_visible.Count > DrawsPerFrame)
             _visible.RemoveRange(DrawsPerFrame, _visible.Count - DrawsPerFrame);
@@ -209,7 +236,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
 
         if (_uniforms.Length < _visible.Count) _uniforms = new ChunkUniforms[_visible.Count];
         for (var i = 0; i < _visible.Count; i++)
-            _uniforms[i] = BuildUniforms(parameters, _visible[i].Key);
+            _uniforms[i] = BuildUniforms(
+                parameters, _visible[i].Key, _visible[i].FadeProgress,
+                _visible[i].FadeMode, _visible[i].FadeSeed);
         _opaquePipeline.WriteDynamicUniforms(_uniforms.AsSpan(0, _visible.Count));
 
         for (var i = 0; i < _visible.Count; i++)
@@ -250,21 +279,24 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
                     key.X * 16 + 16, ChuckFormat.WorldHeight, key.Z * 16 + 16)))
                 continue;
 
-            var nearComplete = _world.BlockHost.HasChunk(key.X, key.Z) &&
-                               _world.BlockHost.GetChunk(key.X, key.Z).Loaded &&
-                               nearRenderer.IsMeshColumnReady(key.X, key.Z);
-            if (nearComplete) continue;
+            if (!presentation.HasLayer(translucent: true)) continue;
+            var (nearPresent, nearReady) = NearState(
+                key, distanceSquared, parameters.RenderDistance, nearRenderer);
+            var handoff = UpdateHandoff(presentation,
+                translucent: true, nearPresent, nearReady,
+                parameters.DeltaTime, parameters.ChunkFade);
+            if (handoff.Progress >= 1) continue;
 
             var requestedLevel = TerrainLodDetailSelector.SelectLevel(
-                Math.Sqrt(distanceSquared), presentation.MaximumLevel, presentation.LastLevel,
+                Math.Sqrt(distanceSquared), presentation.MaximumLevel,
+                presentation.SelectionLevel(translucent: true),
                 parameters.VerticalFovDegrees, parameters.ViewportHeight);
             if (requestedLevel < presentation.MinimumLevel)
                 RequestDetailLevel(key, requestedLevel);
-            if (!presentation.TryGetNearestLevel(
-                    requestedLevel, translucent: true, out var level, out var gpu)) continue;
-            presentation.LastLevel = level;
-            presentation.LastPresentedTick = _tick;
-            _visible.Add(new VisibleColumn(key, distanceSquared, gpu));
+            AppendVisibleLevels(
+                presentation, key, distanceSquared, requestedLevel,
+                translucent: true, handoff.Progress,
+                parameters.DeltaTime, parameters.ChunkFade);
         }
 
         _visible.Sort(static (a, b) =>
@@ -272,7 +304,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
             var distance = b.DistanceSquared.CompareTo(a.DistanceSquared);
             if (distance != 0) return distance;
             var x = a.Key.X.CompareTo(b.Key.X);
-            return x != 0 ? x : a.Key.Z.CompareTo(b.Key.Z);
+            if (x != 0) return x;
+            var z = a.Key.Z.CompareTo(b.Key.Z);
+            return z != 0 ? z : b.Level.CompareTo(a.Level);
         });
         if (_visible.Count > DrawsPerFrame)
             _visible.RemoveRange(DrawsPerFrame, _visible.Count - DrawsPerFrame);
@@ -289,7 +323,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
 
         if (_uniforms.Length < _visible.Count) _uniforms = new ChunkUniforms[_visible.Count];
         for (var i = 0; i < _visible.Count; i++)
-            _uniforms[i] = BuildUniforms(parameters, _visible[i].Key);
+            _uniforms[i] = BuildUniforms(
+                parameters, _visible[i].Key, _visible[i].FadeProgress,
+                _visible[i].FadeMode, _visible[i].FadeSeed);
         _translucentPipeline.WriteDynamicUniforms(_uniforms.AsSpan(0, _visible.Count));
 
         for (var i = 0; i < _visible.Count; i++)
@@ -349,7 +385,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
         int budget,
         Vector3D<double> viewPosition,
         double verticalFovDegrees,
-        int viewportHeight)
+        int viewportHeight,
+        int renderDistance,
+        ChunkRenderer nearRenderer)
     {
         var installed = 0;
         while (installed < budget && _conversion.TryTakeCompleted(out var result) && result is not null)
@@ -374,12 +412,24 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
                 _resident.TryGetValue(key, out var previous);
                 var selectedLevel = TerrainLodDetailSelector.SelectLevel(
                     Math.Sqrt(DistanceSquared(key, viewPosition)), MaximumMeshLevel,
-                    previous?.LastLevel ?? -1, verticalFovDegrees, viewportHeight);
+                    previous?.SelectionLevel(translucent: false) ?? -1,
+                    verticalFovDegrees, viewportHeight);
                 var minimumLevel = Math.Min(
                     Math.Min(selectedLevel, previous?.MinimumLevel ?? MinimumHorizonMeshLevel),
                     _detailLevelRequests.GetValueOrDefault(key, MinimumHorizonMeshLevel));
                 candidate = ColumnPresentation.Create(
                     _world, result, lighting, minimumLevel);
+                if (previous is not null)
+                {
+                    candidate.CopyHandoffsFrom(previous);
+                }
+                else
+                {
+                    var distanceSquared = DistanceSquared(key, viewPosition);
+                    var (nearPresent, nearReady) = NearState(
+                        key, distanceSquared, renderDistance, nearRenderer);
+                    if (nearPresent && nearReady) candidate.InitializeNearOnly();
+                }
                 if (_resident.Remove(key, out var old)) old.Dispose();
                 _resident.Add(key, candidate);
                 if (_detailLevelRequests.TryGetValue(key, out var requestedMinimum) &&
@@ -451,6 +501,12 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
     private void PublishSnapshot(int uploads, int draws)
     {
         var conversion = _conversion.Snapshot();
+        var preparing = _resident.Values.Count(static value =>
+            value.IsInState(TerrainLodHandoffState.NearPreparing));
+        var overlap = _resident.Values.Count(static value =>
+            value.IsInState(TerrainLodHandoffState.Overlap));
+        var levelTransitions = _resident.Values.Count(static value =>
+            value.HasActiveLevelTransition);
         _snapshot = new ClientTerrainLodSnapshot(
             _pending.Count,
             conversion.OwnedChunks,
@@ -459,11 +515,18 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
             _resident.Values.Count(static value => value.HasLevel(TransitionMeshLevel)),
             draws,
             _snapshot.PresentedTranslucentColumns,
+            preparing,
+            overlap,
+            levelTransitions,
             uploads,
             _resident.Values.Sum(static value => value.EstimatedBytes),
             _staleResults,
             _rejectedAdmissions,
-            _evictions);
+            _evictions,
+            _handoffsStarted,
+            _handoffReversals,
+            _levelTransitionsStarted,
+            _levelTransitionReversals);
     }
 
     private static double DistanceSquared((int X, int Z) key, Vector3D<double> point)
@@ -473,7 +536,107 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
         return dx * dx + dz * dz;
     }
 
-    private static ChunkUniforms BuildUniforms(in ChunkRenderParams parameters, (int X, int Z) key)
+    private (bool Present, bool Ready) NearState(
+        (int X, int Z) key,
+        double distanceSquared,
+        int renderDistance,
+        ChunkRenderer nearRenderer)
+    {
+        var nearDistance = Math.Max(0, renderDistance) * (double)SubChunkRenderer.Size;
+        var nearPresent = distanceSquared < nearDistance * nearDistance &&
+                          _world.BlockHost.HasChunk(key.X, key.Z) &&
+                          _world.BlockHost.GetChunk(key.X, key.Z).Loaded;
+        return (nearPresent,
+            nearPresent && nearRenderer.IsMeshColumnReady(key.X, key.Z));
+    }
+
+    private TerrainLodHandoffTransition UpdateHandoff(
+        ColumnPresentation presentation,
+        bool translucent,
+        bool nearPresent,
+        bool nearReady,
+        float deltaTime,
+        bool fadeEnabled)
+    {
+        var before = presentation.HandoffFor(translucent);
+        var after = presentation.UpdateHandoff(
+            translucent, nearPresent, nearReady, deltaTime, fadeEnabled);
+        _handoffsStarted += after.Started - before.Started;
+        _handoffReversals += after.Reversals - before.Reversals;
+        return after;
+    }
+
+    private TerrainLodLevelBlend UpdateLevelTransition(
+        ColumnPresentation presentation,
+        bool translucent,
+        int requestedLevel,
+        float deltaTime,
+        bool fadeEnabled)
+    {
+        var before = presentation.LevelTransitionFor(translucent);
+        var blend = presentation.UpdateLevelTransition(
+            translucent, requestedLevel, deltaTime, fadeEnabled);
+        var after = presentation.LevelTransitionFor(translucent);
+        _levelTransitionsStarted += after.Started - before.Started;
+        _levelTransitionReversals += after.Reversals - before.Reversals;
+        return blend;
+    }
+
+    private static uint FadeSeed((int X, int Z) key) => unchecked(
+        (uint)(key.X * 73_856_093 ^ key.Z * 19_349_663));
+
+    private void AppendVisibleLevels(
+        ColumnPresentation presentation,
+        (int X, int Z) key,
+        double distanceSquared,
+        int requestedLevel,
+        bool translucent,
+        float nearHandoffProgress,
+        float deltaTime,
+        bool fadeEnabled)
+    {
+        if (!presentation.TryGetNearestLevel(
+                requestedLevel, translucent, out var selectedLevel, out _)) return;
+
+        // The exact/LOD handoff owns the single dither mask while it is active. Freeze a hierarchy
+        // level transition during that short interval rather than trying to compose two masks.
+        var blend = UpdateLevelTransition(presentation,
+            translucent, selectedLevel,
+            nearHandoffProgress > 0 ? 0 : deltaTime,
+            fadeEnabled);
+        presentation.LastPresentedTick = _tick;
+        var seed = FadeSeed(key);
+
+        if (nearHandoffProgress > 0)
+        {
+            Add(blend.DominantLevel, fadeMode: 2, nearHandoffProgress);
+            return;
+        }
+
+        if (blend.Active)
+        {
+            Add(blend.PrimaryLevel, fadeMode: 2, blend.Progress);
+            Add(blend.SecondaryLevel, fadeMode: 1, blend.Progress);
+            return;
+        }
+
+        Add(blend.PrimaryLevel, fadeMode: 0, fadeProgress: 1);
+        return;
+
+        void Add(int level, uint fadeMode, float fadeProgress)
+        {
+            if (!presentation.TryGetLevel(level, translucent, out var gpu)) return;
+            _visible.Add(new VisibleColumn(
+                key, distanceSquared, level, gpu, fadeProgress, fadeMode, seed));
+        }
+    }
+
+    private static ChunkUniforms BuildUniforms(
+        in ChunkRenderParams parameters,
+        (int X, int Z) key,
+        float fadeProgress,
+        uint fadeMode,
+        uint fadeSeed)
     {
         var relative = new Vector3D<float>(
             (float)(key.X * 16 - parameters.ViewPos.X),
@@ -499,7 +662,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
             FogColorB = fog.Color.Z,
             FogColorA = fog.Color.W,
             ChunkFadeEnabled = 0,
-            FadeProgress = 1
+            FadeProgress = fadeProgress,
+            PresentationFadeMode = fadeMode,
+            PresentationFadeSeed = fadeSeed
         };
     }
 
@@ -507,7 +672,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
     private readonly record struct VisibleColumn(
         (int X, int Z) Key,
         double DistanceSquared,
-        GpuLevel Gpu);
+        int Level,
+        GpuLevel Gpu,
+        float FadeProgress,
+        uint FadeMode,
+        uint FadeSeed);
 
     private sealed class ColumnPresentation : IDisposable
     {
@@ -523,10 +692,79 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
         public Dictionary<int, GpuLevel> Levels { get; }
         public int MinimumLevel { get; }
         public int MaximumLevel { get; }
-        public int LastLevel { get; set; } = -1;
         public long LastPresentedTick { get; set; }
         public long EstimatedBytes => Levels.Values.Sum(static level => level.EstimatedBytes);
+        private TerrainLodHandoffTransition SolidHandoff;
+        private TerrainLodHandoffTransition TranslucentHandoff;
+        private TerrainLodLevelTransition SolidLevelTransition;
+        private TerrainLodLevelTransition TranslucentLevelTransition;
         public bool HasLevel(int level) => Levels.ContainsKey(level);
+
+        public bool HasLayer(bool translucent) => Levels.Values.Any(level => translucent
+            ? level.TranslucentMesh is not null
+            : level.SolidMesh is not null);
+
+        public TerrainLodHandoffTransition HandoffFor(bool translucent) =>
+            translucent ? TranslucentHandoff : SolidHandoff;
+
+        public int SelectionLevel(bool translucent) => translucent
+            ? TranslucentLevelTransition.SelectionLevel
+            : SolidLevelTransition.SelectionLevel;
+        public bool HasActiveLevelTransition =>
+            SolidLevelTransition.Active || TranslucentLevelTransition.Active;
+        public TerrainLodLevelTransition LevelTransitionFor(bool translucent) =>
+            translucent ? TranslucentLevelTransition : SolidLevelTransition;
+
+        public TerrainLodLevelBlend UpdateLevelTransition(
+            bool translucent,
+            int requestedLevel,
+            float deltaTime,
+            bool fadeEnabled)
+        {
+            return translucent
+                ? TranslucentLevelTransition.Update(requestedLevel, deltaTime, fadeEnabled)
+                : SolidLevelTransition.Update(requestedLevel, deltaTime, fadeEnabled);
+        }
+
+        public TerrainLodHandoffTransition UpdateHandoff(
+            bool translucent,
+            bool nearPresent,
+            bool nearReady,
+            float deltaTime,
+            bool fadeEnabled)
+        {
+            if (translucent)
+            {
+                TranslucentHandoff.Update(nearPresent, nearReady, deltaTime, fadeEnabled);
+                return TranslucentHandoff;
+            }
+
+            SolidHandoff.Update(nearPresent, nearReady, deltaTime, fadeEnabled);
+            return SolidHandoff;
+        }
+
+        public bool IsInState(TerrainLodHandoffState state) =>
+            SolidHandoff.State == state || TranslucentHandoff.State == state;
+
+        public void InitializeNearOnly()
+        {
+            SolidHandoff.InitializeNearOnly();
+            TranslucentHandoff.InitializeNearOnly();
+        }
+
+        public void CopyHandoffsFrom(ColumnPresentation previous)
+        {
+            SolidHandoff.CopyFrom(previous.SolidHandoff);
+            TranslucentHandoff.CopyFrom(previous.TranslucentHandoff);
+            SolidLevelTransition.CopyFrom(previous.SolidLevelTransition);
+            TranslucentLevelTransition.CopyFrom(previous.TranslucentLevelTransition);
+        }
+
+        public bool TryGetLevel(int level, bool translucent, out GpuLevel gpu)
+        {
+            if (!Levels.TryGetValue(level, out gpu!)) return false;
+            return translucent ? gpu.TranslucentMesh is not null : gpu.SolidMesh is not null;
+        }
 
         public bool TryGetNearestLevel(
             int requested,

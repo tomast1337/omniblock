@@ -18,6 +18,20 @@ assert(type(OMNI.client.state.terrainLodPresented) == "number", "LOD presentatio
 assert(type(OMNI.client.state.terrainLodTranslucentPresented) == "number",
     "LOD translucent presentation gauge is unavailable")
 assert(type(OMNI.client.state.terrainLodGpuBytes) == "number", "LOD memory gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodHandoffPreparing) == "number",
+    "LOD handoff preparation gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodHandoffOverlap) == "number",
+    "LOD handoff overlap gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodHandoffsStarted) == "number",
+    "LOD handoff counter is unavailable")
+assert(type(OMNI.client.state.terrainLodHandoffReversals) == "number",
+    "LOD handoff reversal gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodLevelTransitions) == "number",
+    "LOD level-transition gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodLevelTransitionsStarted) == "number",
+    "LOD level-transition counter is unavailable")
+assert(type(OMNI.client.state.terrainLodLevelTransitionReversals) == "number",
+    "LOD level-transition reversal gauge is unavailable")
 
 OMNI.waitUntil(function()
     return OMNI.client.state.terrainLodResident > 0 and
@@ -64,9 +78,10 @@ end, 45, 0.05)
 OMNI.waitUntil(function()
     return OMNI.client.state.terrainLodLevel0Resident > 0 and
         OMNI.client.state.terrainLodLevel1Resident > 0 and
+        OMNI.client.state.terrainLodHandoffsStarted > 0 and
         OMNI.client.state.terrainLodPresented > 0 and
-        OMNI.client.state.terrainLodTranslucentPresented > 0
-end, 10, 0.05)
+    OMNI.client.state.terrainLodTranslucentPresented > 0
+end, 20, 0.05)
 OMNI.wait(0.25)
 OMNI.test.screenshot()
 
@@ -75,6 +90,10 @@ print("terrain LOD: resident=" .. tostring(OMNI.client.state.terrainLodResident)
     " level1=" .. tostring(OMNI.client.state.terrainLodLevel1Resident) ..
     " presented=" .. tostring(OMNI.client.state.terrainLodPresented) ..
     " translucent=" .. tostring(OMNI.client.state.terrainLodTranslucentPresented) ..
+    " handoffs=" .. tostring(OMNI.client.state.terrainLodHandoffsStarted) ..
+    " overlap=" .. tostring(OMNI.client.state.terrainLodHandoffOverlap) ..
+    " levelTransitions=" .. tostring(OMNI.client.state.terrainLodLevelTransitionsStarted) ..
+    " levelReversals=" .. tostring(OMNI.client.state.terrainLodLevelTransitionReversals) ..
     " gpuBytes=" .. tostring(OMNI.client.state.terrainLodGpuBytes) ..
     " pending=" .. tostring(OMNI.client.state.terrainLodPending) ..
     " converting=" .. tostring(OMNI.client.state.terrainLodConverting))
