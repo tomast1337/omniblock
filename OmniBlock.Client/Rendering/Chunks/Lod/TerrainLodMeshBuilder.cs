@@ -66,6 +66,7 @@ internal sealed class TerrainLodBoundarySummary
     public int MinimumLevel { get; }
     public long EstimatedBytes { get; }
     public TerrainLodBoundaryIdentity Identity => new(TerrainRevision, MinimumLevel);
+    public bool HasLevel(int level) => _levels.ContainsKey(level);
 
     public static TerrainLodBoundarySummary Capture(
         TerrainLodHierarchy hierarchy, int minimumLevel, int maximumLevel)

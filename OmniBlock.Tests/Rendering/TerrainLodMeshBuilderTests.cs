@@ -1,4 +1,5 @@
 using OmniBlock.Client.Rendering.Chunks.Lod;
+using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Tests.TestSupport;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core;
@@ -161,6 +162,94 @@ public sealed class TerrainLodMeshBuilderTests
 
         Assert.Equal(512,
             withCoarseEastAir.Vertices.Length - withoutEvidence.Vertices.Length);
+    }
+
+    [Fact]
+    public void Mixed_level_seam_emits_fine_patches_without_rebuilding_either_column()
+    {
+        var world = new FakeWorldContext();
+        var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+        var west = Build(world, (x, y, z) => y < 32 ? (byte)stone : (byte)0,
+            chunkX: -3, chunkZ: 5);
+        var east = Build(world, (x, y, z) => 0, chunkX: -2, chunkZ: 5);
+        var westBoundary = TerrainLodBoundarySummary.Capture(west, 1, 4);
+        var eastBoundary = TerrainLodBoundarySummary.Capture(east, 2, 4);
+
+        var seam = TerrainLodSeamMeshBuilder.BuildSolid(
+            westBoundary, 1, eastBoundary, 2, OmniBlock.Blocks.Side.East,
+            world.Content.Blocks, true);
+
+        // 8 cells along the edge x 16 vertical cells x one quad x four vertices.
+        Assert.Equal(512, seam.Vertices.Length);
+        Assert.Equal(seam.Vertices.Length, seam.Lights.Length);
+        Assert.All(seam.Vertices, vertex =>
+            Assert.InRange(vertex.X * 64.0f / 32767.0f, 15.99f, 16.01f));
+        Assert.All(seam.Lights, light => Assert.Equal(60, light.Sky));
+    }
+
+    [Fact]
+    public void Shared_opaque_boundary_has_no_double_surface()
+    {
+        var world = new FakeWorldContext();
+        var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+        var west = Build(world, (x, y, z) => y < 32 ? (byte)stone : (byte)0,
+            chunkX: 8, chunkZ: -11);
+        var east = Build(world, (x, y, z) => y < 32 ? (byte)stone : (byte)0,
+            chunkX: 9, chunkZ: -11);
+
+        var seam = TerrainLodSeamMeshBuilder.BuildSolid(
+            TerrainLodBoundarySummary.Capture(west, 1, 4), 1,
+            TerrainLodBoundarySummary.Capture(east, 2, 4), 2,
+            OmniBlock.Blocks.Side.East, world.Content.Blocks, true);
+
+        Assert.Empty(seam.Vertices);
+        Assert.Empty(seam.Lights);
+    }
+
+    [Fact]
+    public void Seam_result_is_independent_of_which_side_contains_the_visible_material()
+    {
+        var world = new FakeWorldContext();
+        var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+        var solidWest = Build(world, (x, y, z) => y < 16 ? (byte)stone : (byte)0,
+            chunkX: 0, chunkZ: 0);
+        var airEast = Build(world, (x, y, z) => 0, chunkX: 1, chunkZ: 0);
+        var airWest = Build(world, (x, y, z) => 0, chunkX: 0, chunkZ: 0);
+        var solidEast = Build(world, (x, y, z) => y < 16 ? (byte)stone : (byte)0,
+            chunkX: 1, chunkZ: 0);
+
+        var facingEast = TerrainLodSeamMeshBuilder.BuildSolid(
+            TerrainLodBoundarySummary.Capture(solidWest, 1, 4), 1,
+            TerrainLodBoundarySummary.Capture(airEast, 2, 4), 2,
+            OmniBlock.Blocks.Side.East, world.Content.Blocks, true);
+        var facingWest = TerrainLodSeamMeshBuilder.BuildSolid(
+            TerrainLodBoundarySummary.Capture(airWest, 1, 4), 1,
+            TerrainLodBoundarySummary.Capture(solidEast, 2, 4), 2,
+            OmniBlock.Blocks.Side.East, world.Content.Blocks, true);
+
+        Assert.Equal(facingEast.Vertices.Length, facingWest.Vertices.Length);
+        Assert.Equal(256, facingEast.Vertices.Length);
+        Assert.True(FaceNormalX(facingEast.Vertices) > 0);
+        Assert.True(FaceNormalX(facingWest.Vertices) < 0);
+    }
+
+    [Fact]
+    public void Seam_rejects_non_adjacent_levels_and_columns()
+    {
+        var world = new FakeWorldContext();
+        var first = TerrainLodBoundarySummary.Capture(
+            Build(world, (x, y, z) => 0, chunkX: 0, chunkZ: 0), 0, 4);
+        var adjacent = TerrainLodBoundarySummary.Capture(
+            Build(world, (x, y, z) => 0, chunkX: 1, chunkZ: 0), 0, 4);
+        var distant = TerrainLodBoundarySummary.Capture(
+            Build(world, (x, y, z) => 0, chunkX: 2, chunkZ: 0), 0, 4);
+
+        Assert.Throws<ArgumentException>(() => TerrainLodSeamMeshBuilder.BuildSolid(
+            first, 0, adjacent, 2, OmniBlock.Blocks.Side.East,
+            world.Content.Blocks, true));
+        Assert.Throws<ArgumentException>(() => TerrainLodSeamMeshBuilder.BuildSolid(
+            first, 0, distant, 1, OmniBlock.Blocks.Side.East,
+            world.Content.Blocks, true));
     }
 
     [Fact]
@@ -374,7 +463,9 @@ public sealed class TerrainLodMeshBuilderTests
     private static TerrainLodHierarchy Build(
         FakeWorldContext world,
         Func<int, int, int, byte> block,
-        Func<int, int, int, byte>? metadataAt = null)
+        Func<int, int, int, byte>? metadataAt = null,
+        int chunkX = 0,
+        int chunkZ = 0)
     {
         var blocks = new byte[ChuckFormat.ChunkSize];
         var metadata = new byte[ChuckFormat.ChunkSize];
@@ -386,11 +477,21 @@ public sealed class TerrainLodMeshBuilderTests
             metadata[ChuckFormat.GetIndex(x, y, z)] = metadataAt?.Invoke(x, y, z) ?? 0;
         }
         var source = new TerrainLodSourceSnapshot(
-            0, 0, 16, ChuckFormat.WorldHeight, 16, blocks, metadata, 7);
+            chunkX, chunkZ, 16, ChuckFormat.WorldHeight, 16, blocks, metadata, 7);
         return TerrainLodReducer.Build(
             source,
             TerrainLodMaterialCatalog.FromRuntime(world.Content),
             TerrainLodReductionStrategy.SurfacePreserving);
+    }
+
+    private static long FaceNormalX(ChunkVertex[] vertices)
+    {
+        Assert.True(vertices.Length >= 3);
+        var abY = (long)vertices[1].Y - vertices[0].Y;
+        var abZ = (long)vertices[1].Z - vertices[0].Z;
+        var acY = (long)vertices[2].Y - vertices[0].Y;
+        var acZ = (long)vertices[2].Z - vertices[0].Z;
+        return abY * acZ - abZ * acY;
     }
 
     private sealed class ConstantLight(byte sky, byte block) : ILightProvider
