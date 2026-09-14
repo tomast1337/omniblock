@@ -1,6 +1,8 @@
 using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Tests.TestSupport;
 using OmniBlock.Textures;
+using OmniBlock.Worlds.Colors;
 
 namespace OmniBlock.Tests.Blocks;
 
@@ -64,5 +66,19 @@ public class BlockVisualsTests
     {
         Assert.NotEqual(0xFFFFFF, TestBlocks.Get("grass_block").GetColorForFace(0, 1));
         Assert.Equal(0xFFFFFF, TestBlocks.Get("grass_block").GetColorForFace(0, 0));
+    }
+
+    [Fact]
+    public void Leaves_KnownMetadataTintDoesNotReadMissingLiveBlockState()
+    {
+        var world = new FakeWorldContext();
+        var leaves = TestBlocks.Get("leaves");
+
+        Assert.Equal(
+            FoliageColors.getSpruceColor(),
+            leaves.GetColorMultiplier(world.Reader, 40, 90, -12, 1));
+        Assert.Equal(
+            FoliageColors.getBirchColor(),
+            leaves.GetColorMultiplier(world.Reader, 40, 90, -12, 2));
     }
 }

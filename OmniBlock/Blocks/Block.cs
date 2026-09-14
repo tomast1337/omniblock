@@ -427,11 +427,8 @@ public class Block
 
     public int GetColorMultiplier(IBlockReader iBlockReader, int x, int y, int z) => Visuals?.GetColorMultiplier(this, iBlockReader, x, y, z, 0xFFFFFF) ?? 0xFFFFFF;
 
-    public int GetColorMultiplier(IBlockReader iBlockReader, int x, int y, int z, int knownMeta)
-    {
-        var baseColor = GetColorMultiplier(iBlockReader, x, y, z);
-        return Visuals?.GetColorMultiplier(this, iBlockReader, x, y, z, knownMeta, baseColor) ?? baseColor;
-    }
+    public int GetColorMultiplier(IBlockReader iBlockReader, int x, int y, int z, int knownMeta) =>
+        Visuals?.GetColorMultiplier(this, iBlockReader, x, y, z, knownMeta, 0xFFFFFF) ?? 0xFFFFFF;
 
     public bool IsPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side) => Redstone != null && Redstone.IsPoweringSide(this, iBlockReader, x, y, z, side);
 

@@ -64,7 +64,10 @@ public static unsafe class LuauClientStateHost
                                             if key == "findVisibleMs" then return __ClientState.findVisibleMs() end
                                             if key == "terrainSubmitCpuMs" then return __ClientState.terrainSubmitCpuMs() end
                                             if key == "terrainLodPending" or key == "terrainLodConverting" or
-                                                key == "terrainLodResident" or key == "terrainLodPresented" or
+                                                key == "terrainLodResident" or key == "terrainLodLevel0Resident" or
+                                                key == "terrainLodLevel1Resident" or
+                                                key == "terrainLodPresented" or
+                                                key == "terrainLodTranslucentPresented" or
                                                 key == "terrainLodUploads" or key == "terrainLodGpuBytes" or
                                                 key == "terrainLodStaleResults" or key == "terrainLodRejected" or
                                                 key == "terrainLodEvictions" then

@@ -15,7 +15,10 @@ internal readonly record struct ClientTerrainLodSnapshot(
     int PendingColumns,
     int ConversionOwnedColumns,
     int ResidentColumns,
+    int ExactVoxelLevelColumns,
+    int TransitionLevelColumns,
     int PresentedColumns,
+    int PresentedTranslucentColumns,
     int UploadsThisFrame,
     long ResidentGpuBytes,
     long StaleResults,
@@ -24,7 +27,8 @@ internal readonly record struct ClientTerrainLodSnapshot(
 
 /// <summary>
 ///     Client owner for the first terrain-horizon slice. It compiles immutable chunk snapshots on
-///     the LOD worker and publishes opaque GPU presentations atomically on the render thread.
+///     the LOD worker and publishes solid/translucent GPU presentations atomically on the render
+///     thread. Fine Level 1 GPU data is admitted only around the near-renderer transition band.
 /// </summary>
 /// <remarks>
 ///     A LOD presentation is coverage, never authority: it is drawn before the ordinary chunk
@@ -42,7 +46,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
     private const int UploadsPerFrame = 2;
     private const int DrawsPerFrame = 768;
     private const int QuietTicks = 2;
-    private const int MinimumMeshLevel = 2;
+    private const int ExactVoxelMeshLevel = 0;
+    private const int TransitionMeshLevel = 1;
+    private const int MinimumHorizonMeshLevel = 2;
     private const int MaximumMeshLevel = 4;
 
     private readonly World _world;
@@ -50,9 +56,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
     private readonly Dictionary<(int X, int Z), PendingColumn> _pending = [];
     private readonly Dictionary<(int X, int Z), CapturedChunkLighting> _capturedLighting = [];
     private readonly Dictionary<(int X, int Z), ColumnPresentation> _resident = [];
+    private readonly Dictionary<(int X, int Z), int> _detailLevelRequests = [];
     private readonly List<VisibleColumn> _visible = [];
     private ChunkUniforms[] _uniforms = [];
-    private WgpuPipeline? _pipeline;
+    private WgpuPipeline? _opaquePipeline;
+    private WgpuPipeline? _translucentPipeline;
     private long _tick;
     private long _staleResults;
     private long _rejectedAdmissions;
@@ -138,7 +146,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(nearRenderer);
         using var _lodRender = Profiler.Begin("TerrainLodRender");
-        var uploads = InstallCompleted(UploadsPerFrame);
+        var uploads = InstallCompleted(UploadsPerFrame, parameters.ViewPos,
+            parameters.VerticalFovDegrees, parameters.ViewportHeight);
         EvictDistant(parameters.ViewPos);
 
         if (RenderSystem.Fog.Curve != FogCurve.Linear ||
@@ -166,10 +175,13 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
                                nearRenderer.IsMeshColumnReady(key.X, key.Z);
             if (nearComplete) continue;
 
-            var level = TerrainLodDetailSelector.SelectLevel(
+            var requestedLevel = TerrainLodDetailSelector.SelectLevel(
                 Math.Sqrt(distanceSquared), presentation.MaximumLevel, presentation.LastLevel,
                 parameters.VerticalFovDegrees, parameters.ViewportHeight);
-            if (!presentation.Levels.TryGetValue(level, out var gpu) || gpu.Mesh is null) continue;
+            if (requestedLevel < presentation.MinimumLevel)
+                RequestDetailLevel(key, requestedLevel);
+            if (!presentation.TryGetNearestLevel(
+                    requestedLevel, translucent: false, out var level, out var gpu)) continue;
             presentation.LastLevel = level;
             presentation.LastPresentedTick = _tick;
             _visible.Add(new VisibleColumn(key, distanceSquared, gpu));
@@ -190,24 +202,105 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
             return;
         }
 
-        _pipeline ??= ChunkRenderer.CreateWgpuPipeline(device, RenderState.Opaque);
-        _pipeline.Bind(target.CurrentPass);
+        _opaquePipeline ??= ChunkRenderer.CreateWgpuPipeline(device, RenderState.Opaque);
+        _opaquePipeline.Bind(target.CurrentPass);
         WgpuPipeline.BindGroup(target.CurrentPass, 1,
-            terrainArray.BindGroupFor(_pipeline.TextureBindGroupLayout), device.Api);
+            terrainArray.BindGroupFor(_opaquePipeline.TextureBindGroupLayout), device.Api);
 
         if (_uniforms.Length < _visible.Count) _uniforms = new ChunkUniforms[_visible.Count];
         for (var i = 0; i < _visible.Count; i++)
             _uniforms[i] = BuildUniforms(parameters, _visible[i].Key);
-        _pipeline.WriteDynamicUniforms(_uniforms.AsSpan(0, _visible.Count));
+        _opaquePipeline.WriteDynamicUniforms(_uniforms.AsSpan(0, _visible.Count));
 
         for (var i = 0; i < _visible.Count; i++)
         {
-            _pipeline.BindDynamicUniforms(target.CurrentPass, i);
+            _opaquePipeline.BindDynamicUniforms(target.CurrentPass, i);
             var gpu = _visible[i].Gpu;
-            gpu.Mesh!.Draw(target.CurrentPass, lightBuffer: gpu.Lighting!.Solid);
+            gpu.SolidMesh!.Draw(target.CurrentPass, lightBuffer: gpu.Lighting!.Solid);
         }
 
         PublishSnapshot(uploads, _visible.Count);
+    }
+
+    /// <summary>
+    ///     Draws the independently owned liquid/glass layer in back-to-front column order. The
+    ///     caller supplies the same blended terrain state used by the full-detail translucent pass.
+    /// </summary>
+    public unsafe void RenderTransparent(in ChunkRenderParams parameters, ChunkRenderer nearRenderer)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(nearRenderer);
+        if (RenderSystem.Fog.Curve != FogCurve.Linear ||
+            RenderSystem.DrawTargetOrNull is not WebGpuDrawTarget target ||
+            target.CurrentPass is null || target.TerrainArray is not { } terrainArray ||
+            WebGpuDevice.Current is not { } device)
+        {
+            _snapshot = _snapshot with { PresentedTranslucentColumns = 0 };
+            return;
+        }
+
+        _visible.Clear();
+        var maximumDistanceSquared = MaximumDistanceBlocks * MaximumDistanceBlocks;
+        foreach (var (key, presentation) in _resident)
+        {
+            var distanceSquared = DistanceSquared(key, parameters.ViewPos);
+            if (distanceSquared > maximumDistanceSquared ||
+                !parameters.Camera.IsBoundingBoxInFrustum(new Box(
+                    key.X * 16, 0, key.Z * 16,
+                    key.X * 16 + 16, ChuckFormat.WorldHeight, key.Z * 16 + 16)))
+                continue;
+
+            var nearComplete = _world.BlockHost.HasChunk(key.X, key.Z) &&
+                               _world.BlockHost.GetChunk(key.X, key.Z).Loaded &&
+                               nearRenderer.IsMeshColumnReady(key.X, key.Z);
+            if (nearComplete) continue;
+
+            var requestedLevel = TerrainLodDetailSelector.SelectLevel(
+                Math.Sqrt(distanceSquared), presentation.MaximumLevel, presentation.LastLevel,
+                parameters.VerticalFovDegrees, parameters.ViewportHeight);
+            if (requestedLevel < presentation.MinimumLevel)
+                RequestDetailLevel(key, requestedLevel);
+            if (!presentation.TryGetNearestLevel(
+                    requestedLevel, translucent: true, out var level, out var gpu)) continue;
+            presentation.LastLevel = level;
+            presentation.LastPresentedTick = _tick;
+            _visible.Add(new VisibleColumn(key, distanceSquared, gpu));
+        }
+
+        _visible.Sort(static (a, b) =>
+        {
+            var distance = b.DistanceSquared.CompareTo(a.DistanceSquared);
+            if (distance != 0) return distance;
+            var x = a.Key.X.CompareTo(b.Key.X);
+            return x != 0 ? x : a.Key.Z.CompareTo(b.Key.Z);
+        });
+        if (_visible.Count > DrawsPerFrame)
+            _visible.RemoveRange(DrawsPerFrame, _visible.Count - DrawsPerFrame);
+        if (_visible.Count == 0)
+        {
+            _snapshot = _snapshot with { PresentedTranslucentColumns = 0 };
+            return;
+        }
+
+        _translucentPipeline ??= ChunkRenderer.CreateWgpuPipeline(device, RenderSystem.State.Current);
+        _translucentPipeline.Bind(target.CurrentPass);
+        WgpuPipeline.BindGroup(target.CurrentPass, 1,
+            terrainArray.BindGroupFor(_translucentPipeline.TextureBindGroupLayout), device.Api);
+
+        if (_uniforms.Length < _visible.Count) _uniforms = new ChunkUniforms[_visible.Count];
+        for (var i = 0; i < _visible.Count; i++)
+            _uniforms[i] = BuildUniforms(parameters, _visible[i].Key);
+        _translucentPipeline.WriteDynamicUniforms(_uniforms.AsSpan(0, _visible.Count));
+
+        for (var i = 0; i < _visible.Count; i++)
+        {
+            _translucentPipeline.BindDynamicUniforms(target.CurrentPass, i);
+            var gpu = _visible[i].Gpu;
+            gpu.TranslucentMesh!.Draw(
+                target.CurrentPass, lightBuffer: gpu.Lighting!.Translucent);
+        }
+
+        _snapshot = _snapshot with { PresentedTranslucentColumns = _visible.Count };
     }
 
     public void Dispose()
@@ -219,8 +312,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
         _resident.Clear();
         _pending.Clear();
         _capturedLighting.Clear();
-        _pipeline?.Dispose();
-        _pipeline = null;
+        _detailLevelRequests.Clear();
+        _opaquePipeline?.Dispose();
+        _opaquePipeline = null;
+        _translucentPipeline?.Dispose();
+        _translucentPipeline = null;
     }
 
     private void ObserveColumn(int chunkX, int chunkZ)
@@ -249,7 +345,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
         _pending.Add(key, new PendingColumn(_tick + QuietTicks));
     }
 
-    private int InstallCompleted(int budget)
+    private int InstallCompleted(
+        int budget,
+        Vector3D<double> viewPosition,
+        double verticalFovDegrees,
+        int viewportHeight)
     {
         var installed = 0;
         while (installed < budget && _conversion.TryTakeCompleted(out var result) && result is not null)
@@ -271,9 +371,20 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
             try
             {
                 _capturedLighting.TryGetValue(key, out var lighting);
-                candidate = ColumnPresentation.Create(_world, result, lighting);
+                _resident.TryGetValue(key, out var previous);
+                var selectedLevel = TerrainLodDetailSelector.SelectLevel(
+                    Math.Sqrt(DistanceSquared(key, viewPosition)), MaximumMeshLevel,
+                    previous?.LastLevel ?? -1, verticalFovDegrees, viewportHeight);
+                var minimumLevel = Math.Min(
+                    Math.Min(selectedLevel, previous?.MinimumLevel ?? MinimumHorizonMeshLevel),
+                    _detailLevelRequests.GetValueOrDefault(key, MinimumHorizonMeshLevel));
+                candidate = ColumnPresentation.Create(
+                    _world, result, lighting, minimumLevel);
                 if (_resident.Remove(key, out var old)) old.Dispose();
                 _resident.Add(key, candidate);
+                if (_detailLevelRequests.TryGetValue(key, out var requestedMinimum) &&
+                    candidate.MinimumLevel <= requestedMinimum)
+                    _detailLevelRequests.Remove(key);
                 candidate = null;
                 installed++;
             }
@@ -284,6 +395,32 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
             }
         }
         return installed;
+    }
+
+    private void RequestDetailLevel((int X, int Z) key, int requestedLevel)
+    {
+        requestedLevel = Math.Clamp(
+            requestedLevel, ExactVoxelMeshLevel, MinimumHorizonMeshLevel);
+        if (_detailLevelRequests.TryGetValue(key, out var existingRequest) &&
+            existingRequest <= requestedLevel) return;
+        if (_pending.ContainsKey(key))
+        {
+            _detailLevelRequests[key] = requestedLevel;
+            return;
+        }
+        if (!_world.BlockHost.HasChunk(key.X, key.Z)) return;
+        var chunk = _world.BlockHost.GetChunk(key.X, key.Z);
+        if (!chunk.Loaded) return;
+        if (_pending.Count >= PendingCapacity)
+        {
+            _rejectedAdmissions++;
+            return;
+        }
+
+        _detailLevelRequests[key] = requestedLevel;
+        // This is a presentation-detail upgrade of an already valid LOD, not a terrain edit. It may
+        // enter the bounded conversion queue on the next tick without the edit quiet period.
+        _pending.Add(key, new PendingColumn(_tick));
     }
 
     private void RemoveCapturedLighting((int X, int Z) key, long terrainRevision)
@@ -318,7 +455,10 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
             _pending.Count,
             conversion.OwnedChunks,
             _resident.Count,
+            _resident.Values.Count(static value => value.HasLevel(ExactVoxelMeshLevel)),
+            _resident.Values.Count(static value => value.HasLevel(TransitionMeshLevel)),
             draws,
+            _snapshot.PresentedTranslucentColumns,
             uploads,
             _resident.Values.Sum(static value => value.EstimatedBytes),
             _staleResults,
@@ -375,20 +515,56 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
         {
             TerrainRevision = terrainRevision;
             Levels = levels;
-            MaximumLevel = levels.Count == 0 ? MinimumMeshLevel : levels.Keys.Max();
+            MinimumLevel = levels.Count == 0 ? MinimumHorizonMeshLevel : levels.Keys.Min();
+            MaximumLevel = levels.Count == 0 ? MinimumHorizonMeshLevel : levels.Keys.Max();
         }
 
         public long TerrainRevision { get; }
         public Dictionary<int, GpuLevel> Levels { get; }
+        public int MinimumLevel { get; }
         public int MaximumLevel { get; }
         public int LastLevel { get; set; } = -1;
         public long LastPresentedTick { get; set; }
         public long EstimatedBytes => Levels.Values.Sum(static level => level.EstimatedBytes);
+        public bool HasLevel(int level) => Levels.ContainsKey(level);
+
+        public bool TryGetNearestLevel(
+            int requested,
+            bool translucent,
+            out int selected,
+            out GpuLevel gpu)
+        {
+            if (Levels.TryGetValue(requested, out gpu!) && HasRequestedLayer(gpu))
+            {
+                selected = requested;
+                return true;
+            }
+
+            foreach (var candidate in Levels.Keys
+                         .OrderBy(level => Math.Abs(level - requested))
+                         .ThenBy(level => level))
+            {
+                var candidateGpu = Levels[candidate];
+                if (!HasRequestedLayer(candidateGpu)) continue;
+                selected = candidate;
+                gpu = candidateGpu;
+                return true;
+            }
+
+            selected = -1;
+            gpu = null!;
+            return false;
+
+            bool HasRequestedLayer(GpuLevel candidate) => translucent
+                ? candidate.TranslucentMesh is not null
+                : candidate.SolidMesh is not null;
+        }
 
         public static ColumnPresentation Create(
             World world,
             TerrainLodConversionResult result,
-            ILightProvider? lighting)
+            ILightProvider? lighting,
+            int minimumLevel)
         {
             var device = WebGpuDevice.Current
                 ?? throw new InvalidOperationException("Terrain LOD upload requires a WebGPU device.");
@@ -396,11 +572,13 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
             try
             {
                 var maximum = Math.Min(MaximumMeshLevel, result.Hierarchy.Levels.Count - 1);
-                for (var level = MinimumMeshLevel; level <= maximum; level++)
+                var minimum = Math.Clamp(
+                    minimumLevel, ExactVoxelMeshLevel, MinimumHorizonMeshLevel);
+                for (var level = minimum; level <= maximum; level++)
                 {
                     var data = TerrainLodMeshBuilder.Build(
                         result.Hierarchy, level, world.Content.Blocks, !world.Dimension.HasCeiling,
-                        lighting);
+                        lighting, world.Reader);
                     levels.Add(level, GpuLevel.Create(device, result.ChunkX, result.ChunkZ, data));
                 }
                 return new ColumnPresentation(result.TerrainRevision, levels);
@@ -421,35 +599,56 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
 
     private sealed class GpuLevel : IDisposable
     {
-        private GpuLevel(WgpuMesh? mesh, SectionLighting? lighting, long estimatedBytes)
+        private GpuLevel(
+            WgpuMesh? solidMesh,
+            WgpuMesh? translucentMesh,
+            SectionLighting? lighting,
+            long estimatedBytes)
         {
-            Mesh = mesh;
+            SolidMesh = solidMesh;
+            TranslucentMesh = translucentMesh;
             Lighting = lighting;
             EstimatedBytes = estimatedBytes;
         }
 
-        public WgpuMesh? Mesh { get; }
+        public WgpuMesh? SolidMesh { get; }
+        public WgpuMesh? TranslucentMesh { get; }
         public SectionLighting? Lighting { get; }
         public long EstimatedBytes { get; }
 
         public static GpuLevel Create(
             WebGpuDevice device, int chunkX, int chunkZ, TerrainLodMeshData data)
         {
-            if (data.Vertices.Length == 0) return new GpuLevel(null, null, 0);
-            WgpuMesh? mesh = null;
+            if (data.Vertices.Length == 0 && data.TranslucentVertices.Length == 0)
+                return new GpuLevel(null, null, null, 0);
+            WgpuMesh? solidMesh = null;
+            WgpuMesh? translucentMesh = null;
             SectionLighting? lighting = null;
             try
             {
-                mesh = WgpuMesh.FromChunkQuads(device, data.Vertices);
-                var model = SectionLightModel.Create(
-                    new Vector3D<int>(chunkX * 16, ChuckFormat.WorldHeight / 2, chunkZ * 16),
-                    data.Vertices, data.Lights);
-                lighting = SectionLighting.CreateInitial(device, model, null);
-                return new GpuLevel(mesh, lighting, data.EstimatedBytes);
+                var origin = new Vector3D<int>(
+                    chunkX * 16, ChuckFormat.WorldHeight / 2, chunkZ * 16);
+                SectionLightModel? solidLight = null;
+                SectionLightModel? translucentLight = null;
+                if (data.Vertices.Length > 0)
+                {
+                    solidMesh = WgpuMesh.FromChunkQuads(device, data.Vertices);
+                    solidLight = SectionLightModel.Create(origin, data.Vertices, data.Lights);
+                }
+                if (data.TranslucentVertices.Length > 0)
+                {
+                    translucentMesh = WgpuMesh.FromChunkQuads(device, data.TranslucentVertices);
+                    translucentLight = SectionLightModel.Create(
+                        origin, data.TranslucentVertices, data.TranslucentLights);
+                }
+                lighting = SectionLighting.CreateInitial(device, solidLight, translucentLight);
+                return new GpuLevel(
+                    solidMesh, translucentMesh, lighting, data.EstimatedBytes);
             }
             catch
             {
-                mesh?.Dispose();
+                solidMesh?.Dispose();
+                translucentMesh?.Dispose();
                 lighting?.Dispose();
                 throw;
             }
@@ -457,7 +656,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
 
         public void Dispose()
         {
-            Mesh?.Dispose();
+            SolidMesh?.Dispose();
+            TranslucentMesh?.Dispose();
             Lighting?.Dispose();
         }
     }
@@ -551,6 +751,10 @@ internal static class TerrainLodDetailSelector
 {
     private const double TargetProjectedCellPixels = 5;
     private const double Hysteresis = 0.10;
+    // Fine tiers are deliberately bounded even on high-resolution displays. They are transition
+    // coverage, not a second full-resolution copy of the entire render distance.
+    private const double MaximumExactVoxelDistance = 96;
+    private const double MaximumTransitionDistance = 256;
 
     public static int SelectLevel(
         double distance,
@@ -561,20 +765,42 @@ internal static class TerrainLodDetailSelector
     {
         if (!double.IsFinite(distance) || distance < 0)
             throw new ArgumentOutOfRangeException(nameof(distance));
-        var maximum = Math.Clamp(maximumLevel, 2, 4);
+        var maximum = Math.Clamp(maximumLevel, 0, 4);
         if (!double.IsFinite(verticalFovDegrees) || verticalFovDegrees is <= 1 or >= 179)
             verticalFovDegrees = 70;
         if (viewportHeight <= 0) viewportHeight = 480;
 
         var focalLength = viewportHeight /
                           (2 * Math.Tan(verticalFovDegrees * Math.PI / 360));
+        var exactToTransition = Math.Min(
+            2 * focalLength / TargetProjectedCellPixels, MaximumExactVoxelDistance);
+        var transitionToFine = Math.Min(
+            4 * focalLength / TargetProjectedCellPixels, MaximumTransitionDistance);
         var fineToMedium = 8 * focalLength / TargetProjectedCellPixels;
         var mediumToCoarse = 16 * focalLength / TargetProjectedCellPixels;
-        var desired = distance < fineToMedium ? 2 : distance < mediumToCoarse ? 3 : 4;
+        var desired = distance < exactToTransition
+            ? 0
+            : distance < transitionToFine
+                ? 1
+                : distance < fineToMedium
+                    ? 2
+                    : distance < mediumToCoarse
+                        ? 3
+                        : 4;
         desired = Math.Min(desired, maximum);
 
-        if (previousLevel == 2 && desired > 2 && distance < fineToMedium * (1 + Hysteresis))
-            return 2;
+        if (previousLevel == 0 && desired > 0 &&
+            distance < exactToTransition * (1 + Hysteresis)) return 0;
+        if (previousLevel == 1)
+        {
+            if (desired < 1 && distance > exactToTransition * (1 - Hysteresis)) return 1;
+            if (desired > 1 && distance < transitionToFine * (1 + Hysteresis)) return 1;
+        }
+        if (previousLevel == 2)
+        {
+            if (desired < 2 && distance > transitionToFine * (1 - Hysteresis)) return 2;
+            if (desired > 2 && distance < fineToMedium * (1 + Hysteresis)) return 2;
+        }
         if (previousLevel == 3)
         {
             if (desired < 3 && distance > fineToMedium * (1 - Hysteresis)) return 3;

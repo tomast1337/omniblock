@@ -10,7 +10,13 @@ end, 75, 0.05)
 assert(type(OMNI.client.state.terrainLodPending) == "number", "LOD pending gauge is unavailable")
 assert(type(OMNI.client.state.terrainLodConverting) == "number", "LOD conversion gauge is unavailable")
 assert(type(OMNI.client.state.terrainLodResident) == "number", "LOD residency gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodLevel0Resident) == "number",
+    "LOD exact-voxel residency gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodLevel1Resident) == "number",
+    "LOD transition-level residency gauge is unavailable")
 assert(type(OMNI.client.state.terrainLodPresented) == "number", "LOD presentation gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodTranslucentPresented) == "number",
+    "LOD translucent presentation gauge is unavailable")
 assert(type(OMNI.client.state.terrainLodGpuBytes) == "number", "LOD memory gauge is unavailable")
 
 OMNI.waitUntil(function()
@@ -56,13 +62,19 @@ OMNI.waitUntil(function()
     return OMNI.client.state.playerReady
 end, 45, 0.05)
 OMNI.waitUntil(function()
-    return OMNI.client.state.terrainLodPresented > 0
+    return OMNI.client.state.terrainLodLevel0Resident > 0 and
+        OMNI.client.state.terrainLodLevel1Resident > 0 and
+        OMNI.client.state.terrainLodPresented > 0 and
+        OMNI.client.state.terrainLodTranslucentPresented > 0
 end, 10, 0.05)
 OMNI.wait(0.25)
 OMNI.test.screenshot()
 
 print("terrain LOD: resident=" .. tostring(OMNI.client.state.terrainLodResident) ..
+    " level0=" .. tostring(OMNI.client.state.terrainLodLevel0Resident) ..
+    " level1=" .. tostring(OMNI.client.state.terrainLodLevel1Resident) ..
     " presented=" .. tostring(OMNI.client.state.terrainLodPresented) ..
+    " translucent=" .. tostring(OMNI.client.state.terrainLodTranslucentPresented) ..
     " gpuBytes=" .. tostring(OMNI.client.state.terrainLodGpuBytes) ..
     " pending=" .. tostring(OMNI.client.state.terrainLodPending) ..
     " converting=" .. tostring(OMNI.client.state.terrainLodConverting))

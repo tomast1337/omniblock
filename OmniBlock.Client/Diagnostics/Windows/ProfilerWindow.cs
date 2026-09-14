@@ -163,8 +163,9 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"Work:      pending {lod.PendingColumns}  converting {lod.ConversionOwnedColumns}  uploads {lod.UploadsThisFrame}");
         ImGuiTextSafe.Text(
-            $"Resident:  {lod.ResidentColumns:N0} columns  {FormatBytes(lod.ResidentGpuBytes)} GPU estimate");
-        ImGuiTextSafe.Text($"Presented: {lod.PresentedColumns:N0} columns");
+            $"Resident:  {lod.ResidentColumns:N0} columns  level-0 {lod.ExactVoxelLevelColumns:N0}  level-1 {lod.TransitionLevelColumns:N0}  {FormatBytes(lod.ResidentGpuBytes)} GPU estimate");
+        ImGuiTextSafe.Text(
+            $"Presented: solid {lod.PresentedColumns:N0}  translucent {lod.PresentedTranslucentColumns:N0} columns");
         ImGuiTextSafe.Text(
             $"Lifecycle: stale {lod.StaleResults:N0}  rejected {lod.RejectedAdmissions:N0}  evicted {lod.Evictions:N0}");
     }

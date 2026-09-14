@@ -135,6 +135,19 @@ public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestT
     public int GetColorMultiplier(Block block, IBlockReader reader, int x, int y, int z, int defaultColor)
     {
         var meta = reader.GetBlockMeta(x, y, z);
+        return GetColorMultiplier(block, reader, x, y, z, meta, defaultColor);
+    }
+
+    public int GetColorMultiplier(
+        Block block,
+        IBlockReader reader,
+        int x,
+        int y,
+        int z,
+        int knownMeta,
+        int defaultColor)
+    {
+        var meta = knownMeta;
         if ((meta & 1) == 1) return FoliageColors.getSpruceColor();
         if ((meta & 2) == 2) return FoliageColors.getBirchColor();
         reader.GetBiomeSource().GetBiomesInArea(x, z, 1, 1);

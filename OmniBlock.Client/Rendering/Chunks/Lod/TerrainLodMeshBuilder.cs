@@ -1,4 +1,5 @@
 using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.WebGPU;
 using OmniBlock.Registries;
@@ -13,16 +14,27 @@ namespace OmniBlock.Client.Rendering.Chunks.Lod;
 internal sealed record TerrainLodMeshData(
     int Level,
     ChunkVertex[] Vertices,
-    ChunkLightVertex[] Lights)
+    ChunkLightVertex[] Lights,
+    ChunkVertex[] TranslucentVertices,
+    ChunkLightVertex[] TranslucentLights)
 {
     public long EstimatedBytes =>
         (long)Vertices.Length * WgpuMesh.ChunkVertexStride +
-        (long)Lights.Length * WgpuMesh.ChunkLightVertexStride;
+        (long)Lights.Length * WgpuMesh.ChunkLightVertexStride +
+        (long)TranslucentVertices.Length * WgpuMesh.ChunkVertexStride +
+        (long)TranslucentLights.Length * WgpuMesh.ChunkLightVertexStride;
 }
 
+internal readonly record struct TerrainLodFaceAppearance(
+    int Texture,
+    int Tint,
+    int OverlayTexture = -1,
+    int OverlayTint = 0xFFFFFF);
+
 /// <summary>
-///     Compiles the resource-pack-independent hierarchy into ordinary terrain-array quads. Phase 5
-///     starts with depth-writing materials; translucent terrain and liquids remain separate later passes.
+///     Compiles the resource-pack-independent hierarchy into independent depth-writing and
+///     translucent terrain-array quad streams. Keeping the streams separate lets the renderer retain
+///     ordinary depth semantics and order blended distant columns back to front.
 /// </summary>
 internal static class TerrainLodMeshBuilder
 {
@@ -33,12 +45,35 @@ internal static class TerrainLodMeshBuilder
         int levelIndex,
         IBlockRuntimeView blocks,
         bool hasSkyLight,
-        ILightProvider? lighting = null)
+        ILightProvider? lighting = null,
+        IBlockReader? visuals = null)
     {
         ArgumentNullException.ThrowIfNull(hierarchy);
         ArgumentNullException.ThrowIfNull(blocks);
         if ((uint)levelIndex >= (uint)hierarchy.Levels.Count)
             throw new ArgumentOutOfRangeException(nameof(levelIndex));
+
+        var solid = BuildLayer(
+            hierarchy, levelIndex, blocks, hasSkyLight, lighting, visuals, false);
+        var translucent = BuildLayer(
+            hierarchy, levelIndex, blocks, hasSkyLight, lighting, visuals, true);
+        return new TerrainLodMeshData(
+            levelIndex,
+            solid.Vertices,
+            solid.Lights,
+            translucent.Vertices,
+            translucent.Lights);
+    }
+
+    private static TerrainLodLayerData BuildLayer(
+        TerrainLodHierarchy hierarchy,
+        int levelIndex,
+        IBlockRuntimeView blocks,
+        bool hasSkyLight,
+        ILightProvider? lighting,
+        IBlockReader? visuals,
+        bool translucent)
+    {
 
         var level = hierarchy.Levels[levelIndex];
         List<ChunkVertex> vertices = [];
@@ -46,13 +81,20 @@ internal static class TerrainLodMeshBuilder
         var fallbackLight = hasSkyLight
             ? new ChunkLightVertex(ChunkVertexHelper.ToQuarterLevels(15), 0)
             : new ChunkLightVertex(0, 0);
+        blocks.TryGet("omniblock:grass_block", out var grassBlock);
+        var grassOverlayTexture = grassBlock is null
+            ? -1
+            : Atlases.Terrain.IndexOf("omniblock:grass_block_side_overlay");
 
         for (var x = 0; x < level.Width; x++)
         for (var z = 0; z < level.Depth; z++)
         for (var y = 0; y < level.Height; y++)
         {
             var cell = level[x, y, z];
-            if (cell.IsEmpty || !TrySelectDepthMaterial(cell, out var material)) continue;
+            TerrainLodMaterial material;
+            if (cell.IsEmpty || !(translucent
+                    ? TrySelectTranslucentMaterial(cell, out material)
+                    : TrySelectDepthMaterial(cell, out material))) continue;
             if (!blocks.TryGet(material.BlockId, out var block) || block is null) continue;
 
             var minX = x * level.Scale;
@@ -61,8 +103,15 @@ internal static class TerrainLodMeshBuilder
             var maxX = Math.Min((x + 1) * level.Scale, 16);
             var maxY = Math.Min((y + 1) * level.Scale, ChuckFormat.WorldHeight) - VerticalOrigin;
             var maxZ = Math.Min((z + 1) * level.Scale, 16);
+            // The ordinary fluid renderer lowers an exposed surface according to its level. The
+            // coarse cell stays axis-aligned, but retaining that height prevents distant water
+            // and lava from becoming a stack of completely full cubes.
+            var renderMaxY = maxY;
+            if (material.Geometry == TerrainLodGeometryClass.Liquid &&
+                (cell.ExposedFaces & TerrainLodFaceMask.Up) != 0)
+                renderMaxY -= FluidMath.GetFluidHeightFromMeta(material.Metadata);
             var tileX = maxX - minX;
-            var tileY = maxY - minY;
+            var tileY = renderMaxY - minY;
             var tileZ = maxZ - minZ;
 
             if ((cell.ExposedFaces & TerrainLodFaceMask.Down) != 0)
@@ -71,28 +120,28 @@ internal static class TerrainLodMeshBuilder
                     (maxX, minY, minZ), (maxX, minY, maxZ));
             if ((cell.ExposedFaces & TerrainLodFaceMask.Up) != 0)
                 AddFace(Side.Up, 1.0f, tileX, tileZ,
-                    (maxX, maxY, maxZ), (maxX, maxY, minZ),
-                    (minX, maxY, minZ), (minX, maxY, maxZ));
+                    (maxX, renderMaxY, maxZ), (maxX, renderMaxY, minZ),
+                    (minX, renderMaxY, minZ), (minX, renderMaxY, maxZ));
             // A single-column hierarchy has no neighbor evidence at its horizontal boundary.
             // Emitting those faces creates enormous dark curtains wherever an adjacent LOD is not
             // installed yet. Interior cliffs are authoritative; cross-column boundary faces wait
             // for the later seam builder that can inspect both columns.
             if (x > 0 && (cell.ExposedFaces & TerrainLodFaceMask.West) != 0)
                 AddFace(Side.West, 0.6f, tileZ, tileY,
-                    (minX, maxY, minZ), (minX, minY, minZ),
-                    (minX, minY, maxZ), (minX, maxY, maxZ));
+                    (minX, renderMaxY, minZ), (minX, minY, minZ),
+                    (minX, minY, maxZ), (minX, renderMaxY, maxZ));
             if (x < level.Width - 1 && (cell.ExposedFaces & TerrainLodFaceMask.East) != 0)
                 AddFace(Side.East, 0.6f, tileZ, tileY,
-                    (maxX, maxY, maxZ), (maxX, minY, maxZ),
-                    (maxX, minY, minZ), (maxX, maxY, minZ));
+                    (maxX, renderMaxY, maxZ), (maxX, minY, maxZ),
+                    (maxX, minY, minZ), (maxX, renderMaxY, minZ));
             if (z > 0 && (cell.ExposedFaces & TerrainLodFaceMask.North) != 0)
                 AddFace(Side.North, 0.8f, tileX, tileY,
-                    (maxX, maxY, minZ), (maxX, minY, minZ),
-                    (minX, minY, minZ), (minX, maxY, minZ));
+                    (maxX, renderMaxY, minZ), (maxX, minY, minZ),
+                    (minX, minY, minZ), (minX, renderMaxY, minZ));
             if (z < level.Depth - 1 && (cell.ExposedFaces & TerrainLodFaceMask.South) != 0)
                 AddFace(Side.South, 0.8f, tileX, tileY,
-                    (minX, maxY, maxZ), (minX, minY, maxZ),
-                    (maxX, minY, maxZ), (maxX, maxY, maxZ));
+                    (minX, renderMaxY, maxZ), (minX, minY, maxZ),
+                    (maxX, minY, maxZ), (maxX, renderMaxY, maxZ));
 
             void AddFace(
                 Side side,
@@ -104,19 +153,35 @@ internal static class TerrainLodMeshBuilder
                 (float X, float Y, float Z) c,
                 (float X, float Y, float Z) d)
             {
-                var texture = block.GetTexture(side, material.Metadata);
-                var layer = Atlases.Terrain.LayerOfGridIndex(texture);
-                var channel = (byte)Math.Clamp((int)MathF.Round(shade * 255.0f), 0, 255);
-                var color = PackColor(channel, channel, channel, byte.MaxValue);
-                vertices.Add(ChunkVertexHelper.Create(color, a.X, a.Y, a.Z, tileU, 0, layer));
-                vertices.Add(ChunkVertexHelper.Create(color, b.X, b.Y, b.Z, tileU, tileV, layer));
-                vertices.Add(ChunkVertexHelper.Create(color, c.X, c.Y, c.Z, 0, tileV, layer));
-                vertices.Add(ChunkVertexHelper.Create(color, d.X, d.Y, d.Z, 0, 0, layer));
                 var light = SampleFaceLight(side, block.LightEmission);
-                lights.Add(light);
-                lights.Add(light);
-                lights.Add(light);
-                lights.Add(light);
+                var sampleX = hierarchy.ChunkX * 16 + (minX + maxX) / 2;
+                var sampleY = (int)MathF.Floor((minY + maxY) * 0.5f + VerticalOrigin);
+                var sampleZ = hierarchy.ChunkZ * 16 + (minZ + maxZ) / 2;
+                var tint = visuals is null
+                    ? block.GetColorForFace(material.Metadata, (int)side)
+                    : block.GetColorMultiplier(
+                        visuals, sampleX, sampleY, sampleZ, material.Metadata);
+                var appearance = ResolveFaceAppearance(
+                    block, material.Metadata, side, tint,
+                    ReferenceEquals(block, grassBlock), grassOverlayTexture);
+
+                EmitQuad(appearance.Texture, appearance.Tint);
+                if (appearance.OverlayTexture >= 0)
+                    EmitQuad(appearance.OverlayTexture, appearance.OverlayTint);
+
+                void EmitQuad(int texture, int faceTint)
+                {
+                    var layer = Atlases.Terrain.LayerOfGridIndex(texture);
+                    var color = PackTintedColor(faceTint, shade);
+                    vertices.Add(ChunkVertexHelper.Create(color, a.X, a.Y, a.Z, tileU, 0, layer));
+                    vertices.Add(ChunkVertexHelper.Create(color, b.X, b.Y, b.Z, tileU, tileV, layer));
+                    vertices.Add(ChunkVertexHelper.Create(color, c.X, c.Y, c.Z, 0, tileV, layer));
+                    vertices.Add(ChunkVertexHelper.Create(color, d.X, d.Y, d.Z, 0, 0, layer));
+                    lights.Add(light);
+                    lights.Add(light);
+                    lights.Add(light);
+                    lights.Add(light);
+                }
             }
 
             ChunkLightVertex SampleFaceLight(Side side, int minimumBlockLight)
@@ -146,13 +211,17 @@ internal static class TerrainLodMeshBuilder
             }
         }
 
-        return new TerrainLodMeshData(levelIndex, [.. vertices], [.. lights]);
+        return new TerrainLodLayerData([.. vertices], [.. lights]);
     }
 
     internal static bool IsDepthWriting(TerrainLodMaterial material) =>
         material.Geometry is TerrainLodGeometryClass.Opaque or
             TerrainLodGeometryClass.Cutout or
             TerrainLodGeometryClass.ConservativeCube;
+
+    internal static bool IsTranslucent(TerrainLodMaterial material) =>
+        material.Geometry is TerrainLodGeometryClass.Liquid or
+            TerrainLodGeometryClass.Translucent;
 
     internal static bool TrySelectDepthMaterial(
         in TerrainLodCell cell,
@@ -180,8 +249,61 @@ internal static class TerrainLodMeshBuilder
         return false;
     }
 
+    internal static bool TrySelectTranslucentMaterial(
+        in TerrainLodCell cell,
+        out TerrainLodMaterial material)
+    {
+        if (IsTranslucent(cell.Primary))
+        {
+            material = cell.Primary;
+            return true;
+        }
+        if (cell.HasSecondary && IsTranslucent(cell.Secondary))
+        {
+            material = cell.Secondary;
+            return true;
+        }
+        if (cell.HasTertiary && IsTranslucent(cell.Tertiary))
+        {
+            material = cell.Tertiary;
+            return true;
+        }
+        material = default;
+        return false;
+    }
+
+    internal static TerrainLodFaceAppearance ResolveFaceAppearance(
+        Block block,
+        int metadata,
+        Side side,
+        int tint,
+        bool isGrassBlock,
+        int grassOverlayTexture)
+    {
+        var texture = block.GetTexture(side, metadata);
+        if (!isGrassBlock) return new TerrainLodFaceAppearance(texture, tint);
+        if (side == Side.Up) return new TerrainLodFaceAppearance(texture, tint);
+        if (side == Side.Down) return new TerrainLodFaceAppearance(texture, 0xFFFFFF);
+        return new TerrainLodFaceAppearance(texture, 0xFFFFFF, grassOverlayTexture, tint);
+    }
+
+    internal static int PackTintedColor(int tint, float shade)
+    {
+        var red = Shade((tint >> 16) & 255);
+        var green = Shade((tint >> 8) & 255);
+        var blue = Shade(tint & 255);
+        return PackColor(red, green, blue, byte.MaxValue);
+
+        byte Shade(int channel) =>
+            (byte)Math.Clamp((int)MathF.Round(channel * shade), 0, byte.MaxValue);
+    }
+
     private static int PackColor(byte red, byte green, byte blue, byte alpha) =>
         BitConverter.IsLittleEndian
             ? alpha << 24 | blue << 16 | green << 8 | red
             : red << 24 | green << 16 | blue << 8 | alpha;
+
+    private readonly record struct TerrainLodLayerData(
+        ChunkVertex[] Vertices,
+        ChunkLightVertex[] Lights);
 }

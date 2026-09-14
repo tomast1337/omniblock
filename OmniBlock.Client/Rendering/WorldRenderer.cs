@@ -749,6 +749,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         }
         else
         {
+            TerrainLod?.RenderTransparent(renderParams, ChunkRenderer);
             ChunkRenderer.RenderTransparent(renderParams);
         }
 

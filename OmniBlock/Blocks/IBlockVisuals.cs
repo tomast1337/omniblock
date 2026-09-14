@@ -24,7 +24,8 @@ public interface IBlockVisuals
 
     int GetColorMultiplier(Block block, IBlockReader reader, int x, int y, int z, int defaultColor) => defaultColor;
 
-    int GetColorMultiplier(Block block, IBlockReader reader, int x, int y, int z, int knownMeta, int defaultColor) => defaultColor;
+    int GetColorMultiplier(Block block, IBlockReader reader, int x, int y, int z, int knownMeta, int defaultColor) =>
+        GetColorMultiplier(block, reader, x, y, z, defaultColor);
 
     bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility) => defaultVisibility;
 

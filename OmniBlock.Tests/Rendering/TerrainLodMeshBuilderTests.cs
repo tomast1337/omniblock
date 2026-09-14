@@ -1,6 +1,7 @@
 using OmniBlock.Client.Rendering.Chunks.Lod;
 using OmniBlock.Tests.TestSupport;
 using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Lod;
 using Silk.NET.Maths;
@@ -23,10 +24,44 @@ public sealed class TerrainLodMeshBuilderTests
         Assert.Equal(0, mesh.Vertices.Length % 4);
         Assert.Equal(mesh.Vertices.Length, mesh.Lights.Length);
         Assert.All(mesh.Lights, light => Assert.True(light.Sky > 0));
+        Assert.Empty(mesh.TranslucentVertices);
+        Assert.Empty(mesh.TranslucentLights);
     }
 
     [Fact]
-    public void Liquid_only_hierarchy_is_not_submitted_by_the_opaque_slice()
+    public void Transition_level_preserves_two_block_surface_detail()
+    {
+        var world = new FakeWorldContext();
+        var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+        var hierarchy = Build(world, (x, y, z) => y < 32 ? (byte)stone : (byte)0);
+
+        var transition = TerrainLodMeshBuilder.Build(hierarchy, 1, world.Content.Blocks, true);
+        var horizon = TerrainLodMeshBuilder.Build(hierarchy, 2, world.Content.Blocks, true);
+
+        Assert.Equal(2, hierarchy.Levels[1].Scale);
+        Assert.Equal(512, transition.Vertices.Length);
+        Assert.True(transition.Vertices.Length > horizon.Vertices.Length);
+        Assert.Equal(transition.Vertices.Length, transition.Lights.Length);
+    }
+
+    [Fact]
+    public void Exact_voxel_level_preserves_one_cell_per_block()
+    {
+        var world = new FakeWorldContext();
+        var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+        var hierarchy = Build(world, (x, y, z) => y < 32 ? (byte)stone : (byte)0);
+
+        var exactVoxel = TerrainLodMeshBuilder.Build(hierarchy, 0, world.Content.Blocks, true);
+        var transition = TerrainLodMeshBuilder.Build(hierarchy, 1, world.Content.Blocks, true);
+
+        Assert.Equal(1, hierarchy.Levels[0].Scale);
+        Assert.Equal(2048, exactVoxel.Vertices.Length);
+        Assert.True(exactVoxel.Vertices.Length > transition.Vertices.Length);
+        Assert.Equal(exactVoxel.Vertices.Length, exactVoxel.Lights.Length);
+    }
+
+    [Fact]
+    public void Liquid_only_hierarchy_uses_only_the_translucent_slice()
     {
         var world = new FakeWorldContext();
         var water = world.Content.Blocks.Get("omniblock:flowing_water").Id;
@@ -36,6 +71,42 @@ public sealed class TerrainLodMeshBuilderTests
 
         Assert.Empty(mesh.Vertices);
         Assert.Empty(mesh.Lights);
+        Assert.NotEmpty(mesh.TranslucentVertices);
+        Assert.Equal(mesh.TranslucentVertices.Length, mesh.TranslucentLights.Length);
+
+        var highestWorldY = mesh.TranslucentVertices.Max(vertex =>
+            vertex.Y * 64.0f / 32767.0f + ChuckFormat.WorldHeight / 2.0f);
+        Assert.InRange(highestWorldY, 7.8f, 7.95f);
+    }
+
+    [Fact]
+    public void Solid_and_liquid_materials_compile_into_independent_layers()
+    {
+        var world = new FakeWorldContext();
+        var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+        var water = world.Content.Blocks.Get("omniblock:water").Id;
+        var hierarchy = Build(world, (x, y, z) =>
+            y < 12 ? (byte)stone : y < 16 ? (byte)water : (byte)0);
+
+        var mesh = TerrainLodMeshBuilder.Build(hierarchy, 2, world.Content.Blocks, true);
+
+        Assert.NotEmpty(mesh.Vertices);
+        Assert.NotEmpty(mesh.TranslucentVertices);
+        Assert.Equal(0, mesh.Vertices.Length % 4);
+        Assert.Equal(0, mesh.TranslucentVertices.Length % 4);
+    }
+
+    [Fact]
+    public void Glass_is_retained_by_the_translucent_slice()
+    {
+        var world = new FakeWorldContext();
+        var glass = world.Content.Blocks.Get("omniblock:glass").Id;
+        var hierarchy = Build(world, (x, y, z) => y < 4 ? (byte)glass : (byte)0);
+
+        var mesh = TerrainLodMeshBuilder.Build(hierarchy, 2, world.Content.Blocks, true);
+
+        Assert.Empty(mesh.Vertices);
+        Assert.NotEmpty(mesh.TranslucentVertices);
     }
 
     [Fact]
@@ -51,6 +122,8 @@ public sealed class TerrainLodMeshBuilderTests
 
         Assert.True(TerrainLodMeshBuilder.TrySelectDepthMaterial(cell, out var selected));
         Assert.Equal(stone, selected);
+        Assert.True(TerrainLodMeshBuilder.TrySelectTranslucentMaterial(cell, out var translucent));
+        Assert.Equal(water, translucent);
     }
 
     [Fact]
@@ -64,6 +137,55 @@ public sealed class TerrainLodMeshBuilderTests
 
         Assert.True(TerrainLodMeshBuilder.TrySelectDepthMaterial(cell, out var selected));
         Assert.Equal(leaves, selected);
+    }
+
+    [Theory]
+    [InlineData("omniblock:grass_block", 0)]
+    [InlineData("omniblock:leaves", 0)]
+    [InlineData("omniblock:leaves", 1)]
+    public void Biome_and_metadata_tint_reaches_lod_vertices(string blockName, int metadata)
+    {
+        var world = new FakeWorldContext();
+        var block = world.Content.Blocks.Get(blockName);
+        var hierarchy = Build(
+            world,
+            (x, y, z) => y < 32 ? (byte)block.Id : (byte)0,
+            (x, y, z) => y < 32 ? (byte)metadata : (byte)0);
+        var chunk = world.ChunkHost.GetChunk(0, 0);
+        for (var x = 0; x < 16; x++)
+        for (var z = 0; z < 16; z++)
+        for (var y = 0; y < 32; y++)
+        {
+            chunk.Blocks[ChuckFormat.GetIndex(x, y, z)] = (byte)block.Id;
+            chunk.Meta.SetNibble(x, y, z, metadata);
+        }
+
+        using var visuals = new WorldRegionSnapshot(
+            world, 0, 0, 0, 15, ChuckFormat.WorldHeight - 1, 15);
+        var tint = block.GetColorMultiplier(visuals, 2, 30, 2, metadata);
+        var expected = TerrainLodMeshBuilder.PackTintedColor(tint, 1.0f);
+
+        var mesh = TerrainLodMeshBuilder.Build(
+            hierarchy, 2, world.Content.Blocks, true, visuals, visuals);
+
+        Assert.Contains(mesh.Vertices, vertex => vertex.Color == expected);
+    }
+
+    [Fact]
+    public void Grass_side_keeps_untinted_base_and_adds_tinted_overlay()
+    {
+        var world = new FakeWorldContext();
+        var grass = world.Content.Blocks.Get("omniblock:grass_block");
+        var overlay = OmniBlock.Textures.Atlases.Terrain.IndexOf(
+            "omniblock:grass_block_side_overlay");
+
+        var appearance = TerrainLodMeshBuilder.ResolveFaceAppearance(
+            grass, 0, OmniBlock.Blocks.Side.North, 0x317F22, true, overlay);
+
+        Assert.Equal(grass.GetTexture(OmniBlock.Blocks.Side.North, 0), appearance.Texture);
+        Assert.Equal(0xFFFFFF, appearance.Tint);
+        Assert.Equal(overlay, appearance.OverlayTexture);
+        Assert.Equal(0x317F22, appearance.OverlayTint);
     }
 
     [Fact]
@@ -104,9 +226,13 @@ public sealed class TerrainLodMeshBuilderTests
     }
 
     [Theory]
-    [InlineData(100, -1, 2)]
+    [InlineData(50, -1, 0)]
+    [InlineData(100, -1, 1)]
+    [InlineData(300, -1, 2)]
     [InlineData(600, -1, 3)]
     [InlineData(1200, -1, 4)]
+    [InlineData(270, 1, 1)]
+    [InlineData(260, 2, 2)]
     [InlineData(570, 2, 2)]
     [InlineData(530, 3, 3)]
     [InlineData(1050, 4, 4)]
@@ -121,6 +247,7 @@ public sealed class TerrainLodMeshBuilderTests
     public void Detail_selection_never_requests_an_unavailable_level()
     {
         Assert.Equal(3, TerrainLodDetailSelector.SelectLevel(900, 3));
+        Assert.Equal(1, TerrainLodDetailSelector.SelectLevel(900, 1));
     }
 
     [Fact]
@@ -143,14 +270,18 @@ public sealed class TerrainLodMeshBuilderTests
 
     private static TerrainLodHierarchy Build(
         FakeWorldContext world,
-        Func<int, int, int, byte> block)
+        Func<int, int, int, byte> block,
+        Func<int, int, int, byte>? metadataAt = null)
     {
         var blocks = new byte[ChuckFormat.ChunkSize];
         var metadata = new byte[ChuckFormat.ChunkSize];
         for (var x = 0; x < 16; x++)
         for (var z = 0; z < 16; z++)
         for (var y = 0; y < ChuckFormat.WorldHeight; y++)
+        {
             blocks[ChuckFormat.GetIndex(x, y, z)] = block(x, y, z);
+            metadata[ChuckFormat.GetIndex(x, y, z)] = metadataAt?.Invoke(x, y, z) ?? 0;
+        }
         var source = new TerrainLodSourceSnapshot(
             0, 0, 16, ChuckFormat.WorldHeight, 16, blocks, metadata, 7);
         return TerrainLodReducer.Build(
