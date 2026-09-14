@@ -108,11 +108,8 @@ public sealed class TerrainLodMeshBuilderTests
 
         var withoutEvidence = TerrainLodMeshBuilder.Build(
             terrain, 2, world.Content.Blocks, true);
-        var withEastAir = TerrainLodMeshBuilder.Build(
-            terrain, 2, world.Content.Blocks, true, neighbors:
-            new TerrainLodNeighborBoundaries(null, null, null, airBoundary));
-
-        Assert.Equal(withoutEvidence.Vertices.Length, withEastAir.Vertices.Length);
+        Assert.True(airBoundary.HasLevel(2));
+        Assert.False(HasQuadOnPlane(withoutEvidence.Vertices, axis: 0, position: 16));
     }
 
     [Fact]
@@ -138,11 +135,8 @@ public sealed class TerrainLodMeshBuilderTests
 
         var withoutEvidence = TerrainLodMeshBuilder.Build(
             terrain, 2, world.Content.Blocks, true);
-        var withEastTerrain = TerrainLodMeshBuilder.Build(
-            terrain, 2, world.Content.Blocks, true, neighbors:
-            new TerrainLodNeighborBoundaries(null, null, null, opaqueBoundary));
-
-        Assert.Equal(withoutEvidence.Vertices.Length, withEastTerrain.Vertices.Length);
+        Assert.True(opaqueBoundary.HasLevel(2));
+        Assert.NotEmpty(withoutEvidence.Vertices);
     }
 
     [Fact]
@@ -156,11 +150,8 @@ public sealed class TerrainLodMeshBuilderTests
 
         var withoutEvidence = TerrainLodMeshBuilder.Build(
             fineTerrain, 1, world.Content.Blocks, true);
-        var withCoarseEastAir = TerrainLodMeshBuilder.Build(
-            fineTerrain, 1, world.Content.Blocks, true, neighbors:
-            new TerrainLodNeighborBoundaries(null, null, null, coarseAirBoundary));
-
-        Assert.Equal(withoutEvidence.Vertices.Length, withCoarseEastAir.Vertices.Length);
+        Assert.True(coarseAirBoundary.HasLevel(2));
+        Assert.False(HasQuadOnPlane(withoutEvidence.Vertices, axis: 0, position: 16));
     }
 
     [Fact]
@@ -252,7 +243,75 @@ public sealed class TerrainLodMeshBuilderTests
     }
 
     [Fact]
-    public void Liquid_boundary_uses_the_translucent_neighbor_plane()
+    public void Equal_liquid_boundaries_do_not_create_an_internal_blended_wall()
+    {
+        var world = new FakeWorldContext();
+        var water = world.Content.Blocks.Get("omniblock:flowing_water").Id;
+        var west = Build(world, (x, y, z) => y == 12 ? (byte)water : (byte)0,
+            chunkX: 0, chunkZ: 0);
+        var east = Build(world, (x, y, z) => y == 12 ? (byte)water : (byte)0,
+            chunkX: 1, chunkZ: 0);
+
+        var seam = TerrainLodSeamMeshBuilder.BuildTranslucent(
+            TerrainLodBoundarySummary.Capture(west, 0, 4), 0,
+            TerrainLodBoundarySummary.Capture(east, 0, 4), 0,
+            OmniBlock.Blocks.Side.East, world.Content.Blocks, true);
+
+        Assert.Empty(seam.Vertices);
+        Assert.Empty(seam.Lights);
+    }
+
+    [Fact]
+    public void Different_liquid_heights_create_only_the_reconciliation_strip()
+    {
+        var world = new FakeWorldContext();
+        var water = world.Content.Blocks.Get("omniblock:flowing_water").Id;
+        var west = Build(
+            world, (x, y, z) => y == 12 ? (byte)water : (byte)0,
+            (x, y, z) => y == 12 ? (byte)0 : (byte)0,
+            chunkX: -4, chunkZ: 7);
+        var east = Build(
+            world, (x, y, z) => y == 12 ? (byte)water : (byte)0,
+            (x, y, z) => y == 12 ? (byte)6 : (byte)0,
+            chunkX: -3, chunkZ: 7);
+
+        var seam = TerrainLodSeamMeshBuilder.BuildTranslucent(
+            TerrainLodBoundarySummary.Capture(west, 0, 4), 0,
+            TerrainLodBoundarySummary.Capture(east, 0, 4), 0,
+            OmniBlock.Blocks.Side.East, world.Content.Blocks, true);
+
+        Assert.Equal(16 * 4, seam.Vertices.Length);
+        Assert.Equal(seam.Vertices.Length, seam.Lights.Length);
+        var worldY = seam.Vertices
+            .Select(vertex => vertex.Y * 64.0f / 32767.0f + ChuckFormat.WorldHeight / 2.0f)
+            .ToArray();
+        Assert.InRange(worldY.Max() - worldY.Min(), 0.65f, 0.68f);
+    }
+
+    [Fact]
+    public void Liquid_to_air_seam_preserves_the_metadata_surface_height()
+    {
+        var world = new FakeWorldContext();
+        var water = world.Content.Blocks.Get("omniblock:flowing_water").Id;
+        var west = Build(
+            world, (x, y, z) => y == 20 ? (byte)water : (byte)0,
+            (x, y, z) => y == 20 ? (byte)4 : (byte)0,
+            chunkX: 2, chunkZ: -5);
+        var east = Build(world, (x, y, z) => 0, chunkX: 3, chunkZ: -5);
+
+        var seam = TerrainLodSeamMeshBuilder.BuildTranslucent(
+            TerrainLodBoundarySummary.Capture(west, 0, 4), 0,
+            TerrainLodBoundarySummary.Capture(east, 1, 4), 1,
+            OmniBlock.Blocks.Side.East, world.Content.Blocks, true);
+
+        Assert.Equal(16 * 4, seam.Vertices.Length);
+        var highestWorldY = seam.Vertices.Max(vertex =>
+            vertex.Y * 64.0f / 32767.0f + ChuckFormat.WorldHeight / 2.0f);
+        Assert.InRange(highestWorldY, 20.43f, 20.46f);
+    }
+
+    [Fact]
+    public void Translucent_column_mesh_leaves_its_boundary_to_the_seam_artifact()
     {
         var world = new FakeWorldContext();
         var water = world.Content.Blocks.Get("omniblock:flowing_water").Id;
@@ -262,14 +321,11 @@ public sealed class TerrainLodMeshBuilderTests
 
         var withoutEvidence = TerrainLodMeshBuilder.Build(
             liquid, 2, world.Content.Blocks, true);
-        var withSouthAir = TerrainLodMeshBuilder.Build(
-            liquid, 2, world.Content.Blocks, true, neighbors:
-            new TerrainLodNeighborBoundaries(null, airBoundary, null, null));
-
-        Assert.True(withSouthAir.TranslucentVertices.Length >
-                    withoutEvidence.TranslucentVertices.Length);
-        Assert.Equal(withSouthAir.TranslucentVertices.Length,
-            withSouthAir.TranslucentLights.Length);
+        Assert.True(airBoundary.HasLevel(2));
+        Assert.False(HasQuadOnPlane(
+            withoutEvidence.TranslucentVertices, axis: 2, position: 16));
+        Assert.Equal(withoutEvidence.TranslucentVertices.Length,
+            withoutEvidence.TranslucentLights.Length);
     }
 
     [Fact]
@@ -491,6 +547,27 @@ public sealed class TerrainLodMeshBuilderTests
         var acY = (long)vertices[2].Y - vertices[0].Y;
         var acZ = (long)vertices[2].Z - vertices[0].Z;
         return abY * acZ - abZ * acY;
+    }
+
+    private static bool HasQuadOnPlane(ChunkVertex[] vertices, int axis, float position)
+    {
+        for (var i = 0; i < vertices.Length; i += 4)
+        {
+            var onPlane = true;
+            for (var corner = 0; corner < 4; corner++)
+            {
+                var vertex = vertices[i + corner];
+                var coordinate = axis switch
+                {
+                    0 => vertex.X,
+                    1 => vertex.Y,
+                    _ => vertex.Z
+                } * 64.0f / 32767.0f;
+                onPlane &= Math.Abs(coordinate - position) < 0.01f;
+            }
+            if (onPlane) return true;
+        }
+        return false;
     }
 
     private sealed class ConstantLight(byte sky, byte block) : ILightProvider

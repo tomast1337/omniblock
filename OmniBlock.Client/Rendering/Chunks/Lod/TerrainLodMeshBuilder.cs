@@ -191,37 +191,6 @@ internal sealed class TerrainLodBoundarySummary
 
 internal readonly record struct TerrainLodBoundaryIdentity(long TerrainRevision, int MinimumLevel);
 
-internal readonly record struct TerrainLodNeighborBoundaries(
-    TerrainLodBoundarySummary? North,
-    TerrainLodBoundarySummary? South,
-    TerrainLodBoundarySummary? West,
-    TerrainLodBoundarySummary? East)
-{
-    public bool TryGet(
-        int level,
-        Side side,
-        int along,
-        int y,
-        bool translucent,
-        out TerrainLodMaterial material)
-    {
-        var (neighbor, neighborSide) = side switch
-        {
-            Side.North => (North, Side.South),
-            Side.South => (South, Side.North),
-            Side.West => (West, Side.East),
-            Side.East => (East, Side.West),
-            _ => (null, side)
-        };
-        if (neighbor is null)
-        {
-            material = TerrainLodMaterial.Air;
-            return false;
-        }
-        return neighbor.TryGet(level, neighborSide, along, y, translucent, out material);
-    }
-}
-
 /// <summary>
 ///     Compiles the resource-pack-independent hierarchy into independent depth-writing and
 ///     translucent terrain-array quad streams. Keeping the streams separate lets the renderer retain
@@ -237,8 +206,7 @@ internal static class TerrainLodMeshBuilder
         IBlockRuntimeView blocks,
         bool hasSkyLight,
         ILightProvider? lighting = null,
-        IBlockReader? visuals = null,
-        TerrainLodNeighborBoundaries neighbors = default)
+        IBlockReader? visuals = null)
     {
         ArgumentNullException.ThrowIfNull(hierarchy);
         ArgumentNullException.ThrowIfNull(blocks);
@@ -246,9 +214,9 @@ internal static class TerrainLodMeshBuilder
             throw new ArgumentOutOfRangeException(nameof(levelIndex));
 
         var solid = BuildLayer(
-            hierarchy, levelIndex, blocks, hasSkyLight, lighting, visuals, neighbors, false);
+            hierarchy, levelIndex, blocks, hasSkyLight, lighting, visuals, false);
         var translucent = BuildLayer(
-            hierarchy, levelIndex, blocks, hasSkyLight, lighting, visuals, neighbors, true);
+            hierarchy, levelIndex, blocks, hasSkyLight, lighting, visuals, true);
         return new TerrainLodMeshData(
             levelIndex,
             solid.Vertices,
@@ -264,7 +232,6 @@ internal static class TerrainLodMeshBuilder
         bool hasSkyLight,
         ILightProvider? lighting,
         IBlockReader? visuals,
-        TerrainLodNeighborBoundaries neighbors,
         bool translucent)
     {
 
@@ -316,35 +283,25 @@ internal static class TerrainLodMeshBuilder
                     (maxX, renderMaxY, maxZ), (maxX, renderMaxY, minZ),
                     (minX, renderMaxY, minZ), (minX, renderMaxY, maxZ));
             if ((cell.ExposedFaces & TerrainLodFaceMask.West) != 0 &&
-                (x > 0 || translucent && BoundaryExposed(Side.West, z, y, material)))
+                x > 0)
                 AddFace(Side.West, 0.6f, tileZ, tileY,
                     (minX, renderMaxY, minZ), (minX, minY, minZ),
                     (minX, minY, maxZ), (minX, renderMaxY, maxZ));
             if ((cell.ExposedFaces & TerrainLodFaceMask.East) != 0 &&
-                (x < level.Width - 1 || translucent &&
-                    BoundaryExposed(Side.East, z, y, material)))
+                x < level.Width - 1)
                 AddFace(Side.East, 0.6f, tileZ, tileY,
                     (maxX, renderMaxY, maxZ), (maxX, minY, maxZ),
                     (maxX, minY, minZ), (maxX, renderMaxY, minZ));
             if ((cell.ExposedFaces & TerrainLodFaceMask.North) != 0 &&
-                (z > 0 || translucent && BoundaryExposed(Side.North, x, y, material)))
+                z > 0)
                 AddFace(Side.North, 0.8f, tileX, tileY,
                     (maxX, renderMaxY, minZ), (maxX, minY, minZ),
                     (minX, minY, minZ), (minX, renderMaxY, minZ));
             if ((cell.ExposedFaces & TerrainLodFaceMask.South) != 0 &&
-                (z < level.Depth - 1 || translucent &&
-                    BoundaryExposed(Side.South, x, y, material)))
+                z < level.Depth - 1)
                 AddFace(Side.South, 0.8f, tileX, tileY,
                     (minX, renderMaxY, maxZ), (minX, minY, maxZ),
                     (maxX, minY, maxZ), (maxX, renderMaxY, maxZ));
-
-            bool BoundaryExposed(Side side, int along, int cellY, TerrainLodMaterial current)
-            {
-                if (!neighbors.TryGet(levelIndex, side, along, cellY, translucent,
-                        out var neighbor)) return false;
-                return neighbor.IsAir || !neighbor.OccludesFaces ||
-                       current.Geometry == TerrainLodGeometryClass.Liquid && neighbor != current;
-            }
 
             void AddFace(
                 Side side,

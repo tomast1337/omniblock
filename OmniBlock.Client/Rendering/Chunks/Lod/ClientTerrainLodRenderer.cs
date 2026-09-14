@@ -37,30 +37,6 @@ internal readonly record struct ClientTerrainLodSnapshot(
     long LevelTransitionReversals,
     long BoundaryRefreshes);
 
-internal readonly record struct TerrainLodNeighborIdentities(
-    TerrainLodBoundaryIdentity? North,
-    TerrainLodBoundaryIdentity? South,
-    TerrainLodBoundaryIdentity? West,
-    TerrainLodBoundaryIdentity? East)
-{
-    public bool HasAny => North.HasValue || South.HasValue || West.HasValue || East.HasValue;
-
-    public static TerrainLodNeighborIdentities From(TerrainLodNeighborBoundaries neighbors) => new(
-        neighbors.North?.Identity,
-        neighbors.South?.Identity,
-        neighbors.West?.Identity,
-        neighbors.East?.Identity);
-
-    public TerrainLodBoundaryIdentity? Get(Side side) => side switch
-    {
-        Side.North => North,
-        Side.South => South,
-        Side.West => West,
-        Side.East => East,
-        _ => null
-    };
-}
-
 /// <summary>
 ///     Client owner for the first terrain-horizon slice. It compiles immutable chunk snapshots on
 ///     the LOD worker and publishes solid/translucent GPU presentations atomically on the render
@@ -92,15 +68,19 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private readonly World _world;
     private readonly TerrainLodConversionService _conversion;
     private readonly Dictionary<(int X, int Z), PendingColumn> _pending = [];
-    private readonly HashSet<(int X, int Z)> _boundaryRefreshPending = [];
     private readonly Dictionary<(int X, int Z), CapturedChunkLighting> _capturedLighting = [];
     private readonly Dictionary<(int X, int Z), ColumnPresentation> _resident = [];
     private readonly Dictionary<(int X, int Z), int> _detailLevelRequests = [];
     private readonly Dictionary<TerrainLodSeamKey, TerrainLodSeamSelection> _desiredSolidSeams = [];
     private readonly Dictionary<TerrainLodSeamKey, GpuSeam> _solidSeams = [];
     private readonly Dictionary<(int X, int Z), int> _selectedSolidLevels = [];
+    private readonly Dictionary<TerrainLodSeamKey, TerrainLodSeamSelection> _desiredTranslucentSeams = [];
+    private readonly Dictionary<TerrainLodSeamKey, GpuSeam> _translucentSeams = [];
+    private readonly Dictionary<(int X, int Z), int> _selectedTranslucentLevels = [];
     private readonly List<VisibleColumn> _visible = [];
     private readonly List<VisibleSeam> _visibleSeams = [];
+    private readonly List<VisibleSeam> _visibleTranslucentSeams = [];
+    private readonly List<VisibleTranslucentDraw> _visibleTranslucentDraws = [];
     private ChunkUniforms[] _uniforms = [];
     private WgpuPipeline? _opaquePipeline;
     private WgpuPipeline? _translucentPipeline;
@@ -156,28 +136,23 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         ObjectDisposedException.ThrowIf(_disposed, this);
         _tick++;
 
-        _boundaryRefreshPending.ExceptWith(_pending.Keys);
         var due = TerrainLodAdmissionOrder.TakeNearest(
             _pending
             .Where(pair => pair.Value.DueTick <= _tick)
             .Select(pair => pair.Key), viewPosition, SnapshotsPerTick);
-        var boundaryDue = TerrainLodAdmissionOrder.TakeNearest(
-            _boundaryRefreshPending, viewPosition, SnapshotsPerTick - due.Length);
 
-        foreach (var (key, isBoundaryRefresh) in due.Select(static key => (key, false))
-                     .Concat(boundaryDue.Select(static key => (key, true))))
+        foreach (var key in due)
         {
             if (!_world.BlockHost.HasChunk(key.X, key.Z))
             {
-                CompletePending(key, isBoundaryRefresh);
+                _pending.Remove(key);
                 continue;
             }
 
             var chunk = _world.BlockHost.GetChunk(key.X, key.Z);
             if (!chunk.Loaded)
             {
-                if (isBoundaryRefresh) _boundaryRefreshPending.Remove(key);
-                else _pending[key] = _pending[key] with { DueTick = _tick + 1 };
+                _pending[key] = _pending[key] with { DueTick = _tick + 1 };
                 continue;
             }
 
@@ -186,26 +161,18 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             if (result == TerrainLodAdmissionResult.RejectedAtCapacity)
             {
                 _rejectedAdmissions++;
-                if (!isBoundaryRefresh)
-                    _pending[key] = _pending[key] with { DueTick = _tick + 1 };
+                _pending[key] = _pending[key] with { DueTick = _tick + 1 };
                 continue;
             }
 
             if (result != TerrainLodAdmissionResult.RejectedStaleRevision)
                 _capturedLighting[key] = CapturedChunkLighting.Capture(
                     chunk, source.TerrainRevision, !_world.Dimension.HasCeiling);
-            CompletePending(key, isBoundaryRefresh);
+            _pending.Remove(key);
         }
 
         EvictDistant(viewPosition);
         PublishSnapshot(0, 0);
-        return;
-
-        void CompletePending((int X, int Z) key, bool boundaryRefresh)
-        {
-            if (boundaryRefresh) _boundaryRefreshPending.Remove(key);
-            else _pending.Remove(key);
-        }
     }
 
     /// <summary>
@@ -282,9 +249,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         foreach (var key in _selectedSolidLevels.Keys
                      .Where(key => !drawnColumns.Contains(key)).ToArray())
             _selectedSolidLevels.Remove(key);
-        BuildDesiredSolidSeams();
-        uploads += UpdateSolidSeams(device, parameters.ViewPos, SeamUploadsPerFrame);
-        CollectVisibleSolidSeams(parameters.ViewPos);
+        BuildDesiredSeams(_selectedSolidLevels, _desiredSolidSeams);
+        uploads += UpdateSeams(device, parameters.ViewPos, SeamUploadsPerFrame,
+            translucent: false, _desiredSolidSeams, _solidSeams);
+        CollectVisibleSeams(parameters.ViewPos, backToFront: false,
+            _desiredSolidSeams, _solidSeams, _visibleSeams);
         var seamDrawBudget = Math.Min(
             SeamDrawsPerFrame, Math.Max(0, DrawsPerFrame - _visible.Count));
         if (_visibleSeams.Count > seamDrawBudget)
@@ -348,6 +317,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         }
 
         _visible.Clear();
+        _visibleTranslucentSeams.Clear();
+        _selectedTranslucentLevels.Clear();
         var maximumDistanceSquared = MaximumDistanceBlocks * MaximumDistanceBlocks;
         foreach (var (key, presentation) in _resident)
         {
@@ -374,10 +345,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 key, requestedLevel, translucent: true);
             if (requestedLevel < presentation.MinimumLevel)
                 RequestDetailLevel(key, requestedLevel);
-            AppendVisibleLevels(
+            var presentedLevel = AppendVisibleLevels(
                 presentation, key, distanceSquared, requestedLevel,
                 translucent: true, handoff.Progress,
                 parameters.DeltaTime, parameters.ChunkFade);
+            if (presentedLevel >= 0) _selectedTranslucentLevels[key] = presentedLevel;
         }
 
         _visible.Sort(static (a, b) =>
@@ -391,6 +363,32 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         });
         if (_visible.Count > DrawsPerFrame)
             _visible.RemoveRange(DrawsPerFrame, _visible.Count - DrawsPerFrame);
+        var drawnColumns = _visible.Select(static item => item.Key).ToHashSet();
+        foreach (var key in _selectedTranslucentLevels.Keys
+                     .Where(key => !drawnColumns.Contains(key)).ToArray())
+            _selectedTranslucentLevels.Remove(key);
+        BuildDesiredSeams(_selectedTranslucentLevels, _desiredTranslucentSeams);
+        var seamUploads = UpdateSeams(device, parameters.ViewPos, SeamUploadsPerFrame,
+            translucent: true, _desiredTranslucentSeams, _translucentSeams);
+        CollectVisibleSeams(parameters.ViewPos, backToFront: true,
+            _desiredTranslucentSeams, _translucentSeams, _visibleTranslucentSeams);
+        var seamDrawBudget = Math.Min(
+            SeamDrawsPerFrame, Math.Max(0, DrawsPerFrame - _visible.Count));
+        if (_visibleTranslucentSeams.Count > seamDrawBudget)
+            _visibleTranslucentSeams.RemoveRange(
+                seamDrawBudget, _visibleTranslucentSeams.Count - seamDrawBudget);
+        _visibleTranslucentDraws.Clear();
+        _visibleTranslucentDraws.AddRange(_visible.Select(static column =>
+            new VisibleTranslucentDraw(column, null, column.Key, column.DistanceSquared)));
+        _visibleTranslucentDraws.AddRange(_visibleTranslucentSeams.Select(static seam =>
+            new VisibleTranslucentDraw(null, seam.Gpu, seam.Key.Owner, seam.DistanceSquared)));
+        _visibleTranslucentDraws.Sort(static (a, b) =>
+        {
+            var distance = b.DistanceSquared.CompareTo(a.DistanceSquared);
+            if (distance != 0) return distance;
+            var x = a.Key.X.CompareTo(b.Key.X);
+            return x != 0 ? x : a.Key.Z.CompareTo(b.Key.Z);
+        });
         if (_visible.Count == 0)
         {
             _snapshot = _snapshot with { PresentedTranslucentColumns = 0 };
@@ -402,22 +400,37 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         WgpuPipeline.BindGroup(target.CurrentPass, 1,
             terrainArray.BindGroupFor(_translucentPipeline.TextureBindGroupLayout), device.Api);
 
-        if (_uniforms.Length < _visible.Count) _uniforms = new ChunkUniforms[_visible.Count];
-        for (var i = 0; i < _visible.Count; i++)
+        var drawCount = _visibleTranslucentDraws.Count;
+        if (_uniforms.Length < drawCount) _uniforms = new ChunkUniforms[drawCount];
+        for (var i = 0; i < drawCount; i++)
+        {
+            var draw = _visibleTranslucentDraws[i];
+            var column = draw.Column;
             _uniforms[i] = BuildUniforms(
-                parameters, _visible[i].Key, _visible[i].FadeProgress,
-                _visible[i].FadeMode, _visible[i].FadeSeed);
-        _translucentPipeline.WriteDynamicUniforms(_uniforms.AsSpan(0, _visible.Count));
+                parameters, draw.Key,
+                column?.FadeProgress ?? 1,
+                column?.FadeMode ?? 0,
+                column?.FadeSeed ?? FadeSeed(draw.Key));
+        }
+        _translucentPipeline.WriteDynamicUniforms(_uniforms.AsSpan(0, drawCount));
 
-        for (var i = 0; i < _visible.Count; i++)
+        for (var i = 0; i < drawCount; i++)
         {
             _translucentPipeline.BindDynamicUniforms(target.CurrentPass, i);
-            var gpu = _visible[i].Gpu;
-            gpu.TranslucentMesh!.Draw(
-                target.CurrentPass, lightBuffer: gpu.Lighting!.Translucent);
+            var draw = _visibleTranslucentDraws[i];
+            if (draw.Column is { } column)
+                column.Gpu.TranslucentMesh!.Draw(
+                    target.CurrentPass, lightBuffer: column.Gpu.Lighting!.Translucent);
+            else
+                draw.Seam!.Mesh!.Draw(
+                    target.CurrentPass, lightBuffer: draw.Seam.Lighting!.Translucent);
         }
 
-        _snapshot = _snapshot with { PresentedTranslucentColumns = _visible.Count };
+        _snapshot = _snapshot with
+        {
+            PresentedTranslucentColumns = _visible.Count,
+            UploadsThisFrame = _snapshot.UploadsThisFrame + seamUploads
+        };
     }
 
     public void Dispose()
@@ -427,12 +440,15 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _conversion.Dispose();
         foreach (var presentation in _resident.Values) presentation.Dispose();
         foreach (var seam in _solidSeams.Values) seam.Dispose();
+        foreach (var seam in _translucentSeams.Values) seam.Dispose();
         _resident.Clear();
         _solidSeams.Clear();
+        _translucentSeams.Clear();
         _desiredSolidSeams.Clear();
+        _desiredTranslucentSeams.Clear();
         _selectedSolidLevels.Clear();
+        _selectedTranslucentLevels.Clear();
         _pending.Clear();
-        _boundaryRefreshPending.Clear();
         _capturedLighting.Clear();
         _detailLevelRequests.Clear();
         _opaquePipeline?.Dispose();
@@ -458,8 +474,6 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             _pending[key] = new PendingColumn(_tick + QuietTicks);
             return;
         }
-
-        _boundaryRefreshPending.Remove(key);
 
         if (_pending.Count >= PendingCapacity)
         {
@@ -505,9 +519,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 var minimumLevel = Math.Min(
                     Math.Min(selectedLevel, previous?.MinimumLevel ?? MinimumHorizonMeshLevel),
                     _detailLevelRequests.GetValueOrDefault(key, MinimumHorizonMeshLevel));
-                var neighbors = GetNeighborBoundaries(key);
                 candidate = ColumnPresentation.Create(
-                    _world, result, lighting, minimumLevel, neighbors);
+                    _world, result, lighting, minimumLevel);
                 if (previous is not null)
                 {
                     candidate.CopyHandoffsFrom(previous);
@@ -521,7 +534,6 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 }
                 if (_resident.Remove(key, out var old)) old.Dispose();
                 _resident.Add(key, candidate);
-                RefreshOutdatedBoundaryNeighbors(key, candidate);
                 if (_detailLevelRequests.TryGetValue(key, out var requestedMinimum) &&
                     candidate.MinimumLevel <= requestedMinimum)
                     _detailLevelRequests.Remove(key);
@@ -563,27 +575,23 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _pending.Add(key, new PendingColumn(_tick));
     }
 
-    private TerrainLodNeighborBoundaries GetNeighborBoundaries((int X, int Z) key) => new(
-        _resident.GetValueOrDefault((key.X, key.Z - 1))?.Boundaries,
-        _resident.GetValueOrDefault((key.X, key.Z + 1))?.Boundaries,
-        _resident.GetValueOrDefault((key.X - 1, key.Z))?.Boundaries,
-        _resident.GetValueOrDefault((key.X + 1, key.Z))?.Boundaries);
-
-    private void BuildDesiredSolidSeams()
+    private void BuildDesiredSeams(
+        Dictionary<(int X, int Z), int> selectedLevels,
+        Dictionary<TerrainLodSeamKey, TerrainLodSeamSelection> desired)
     {
-        _desiredSolidSeams.Clear();
-        foreach (var (ownerKey, ownerLevel) in _selectedSolidLevels)
+        desired.Clear();
+        foreach (var (ownerKey, ownerLevel) in selectedLevels)
         {
             Add(Side.East, (ownerKey.X + 1, ownerKey.Z));
             Add(Side.South, (ownerKey.X, ownerKey.Z + 1));
 
             void Add(Side side, (int X, int Z) neighborKey)
             {
-                if (!_selectedSolidLevels.TryGetValue(neighborKey, out var neighborLevel) ||
+                if (!selectedLevels.TryGetValue(neighborKey, out var neighborLevel) ||
                     Math.Abs(ownerLevel - neighborLevel) > 1 ||
                     !_resident.TryGetValue(ownerKey, out var owner) ||
                     !_resident.TryGetValue(neighborKey, out var neighbor)) return;
-                _desiredSolidSeams[new TerrainLodSeamKey(ownerKey, side)] = new(
+                desired[new TerrainLodSeamKey(ownerKey, side)] = new(
                     owner.Boundaries.Identity,
                     neighbor.Boundaries.Identity,
                     ownerLevel,
@@ -592,61 +600,78 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         }
     }
 
-    private int UpdateSolidSeams(
+    private int UpdateSeams(
         WebGpuDevice device,
         Vector3D<double> viewPosition,
-        int uploadBudget)
+        int uploadBudget,
+        bool translucent,
+        Dictionary<TerrainLodSeamKey, TerrainLodSeamSelection> desired,
+        Dictionary<TerrainLodSeamKey, GpuSeam> installed)
     {
-        foreach (var (key, seam) in _solidSeams.ToArray())
+        foreach (var (key, seam) in installed.ToArray())
         {
             if (_resident.TryGetValue(key.Owner, out var owner) &&
                 _resident.TryGetValue(key.Neighbor, out var neighbor) &&
                 seam.Selection.OwnerIdentity == owner.Boundaries.Identity &&
                 seam.Selection.NeighborIdentity == neighbor.Boundaries.Identity) continue;
-            _solidSeams.Remove(key);
+            installed.Remove(key);
             seam.Dispose();
         }
 
         var uploads = 0;
-        foreach (var (key, selection) in _desiredSolidSeams
+        foreach (var (key, selection) in desired
                      .OrderBy(pair => DistanceSquared(pair.Key.Owner, viewPosition))
                      .ThenBy(static pair => pair.Key.Owner.X)
                      .ThenBy(static pair => pair.Key.Owner.Z)
                      .ThenBy(static pair => pair.Key.BoundarySide))
         {
-            if (_solidSeams.TryGetValue(key, out var current) &&
+            if (installed.TryGetValue(key, out var current) &&
                 current.Selection == selection) continue;
             if (uploads >= uploadBudget) break;
             var owner = _resident[key.Owner];
             var neighbor = _resident[key.Neighbor];
-            var data = TerrainLodSeamMeshBuilder.BuildSolid(
-                owner.Boundaries, selection.OwnerLevel,
-                neighbor.Boundaries, selection.NeighborLevel,
-                key.BoundarySide, _world.Content.Blocks,
-                !_world.Dimension.HasCeiling,
-                lighting: _world.Lighting,
-                visuals: _world.Reader);
-            var candidate = GpuSeam.Create(device, key.Owner, selection, data);
-            if (_solidSeams.Remove(key, out var previous)) previous.Dispose();
-            _solidSeams.Add(key, candidate);
+            var data = translucent
+                ? TerrainLodSeamMeshBuilder.BuildTranslucent(
+                    owner.Boundaries, selection.OwnerLevel,
+                    neighbor.Boundaries, selection.NeighborLevel,
+                    key.BoundarySide, _world.Content.Blocks,
+                    !_world.Dimension.HasCeiling,
+                    lighting: _world.Lighting, visuals: _world.Reader)
+                : TerrainLodSeamMeshBuilder.BuildSolid(
+                    owner.Boundaries, selection.OwnerLevel,
+                    neighbor.Boundaries, selection.NeighborLevel,
+                    key.BoundarySide, _world.Content.Blocks,
+                    !_world.Dimension.HasCeiling,
+                    lighting: _world.Lighting, visuals: _world.Reader);
+            var candidate = GpuSeam.Create(
+                device, key.Owner, selection, data, translucent);
+            if (installed.Remove(key, out var previous)) previous.Dispose();
+            installed.Add(key, candidate);
             _boundaryRefreshes++;
             uploads++;
         }
         return uploads;
     }
 
-    private void CollectVisibleSolidSeams(Vector3D<double> viewPosition)
+    private static void CollectVisibleSeams(
+        Vector3D<double> viewPosition,
+        bool backToFront,
+        Dictionary<TerrainLodSeamKey, TerrainLodSeamSelection> desired,
+        Dictionary<TerrainLodSeamKey, GpuSeam> installed,
+        List<VisibleSeam> destination)
     {
-        foreach (var (key, selection) in _desiredSolidSeams)
+        foreach (var (key, selection) in desired)
         {
-            if (!_solidSeams.TryGetValue(key, out var seam) ||
+            if (!installed.TryGetValue(key, out var seam) ||
                 seam.Selection != selection || seam.Mesh is null) continue;
-            _visibleSeams.Add(new VisibleSeam(
+            destination.Add(new VisibleSeam(
                 key, seam, DistanceSquared(key.Owner, viewPosition)));
         }
-        _visibleSeams.Sort(static (a, b) =>
+        destination.Sort((a, b) =>
         {
-            var distance = a.DistanceSquared.CompareTo(b.DistanceSquared);
+            var distance = backToFront
+                ? b.DistanceSquared.CompareTo(a.DistanceSquared)
+                : a.DistanceSquared.CompareTo(b.DistanceSquared);
             if (distance != 0) return distance;
             var x = a.Key.Owner.X.CompareTo(b.Key.Owner.X);
             if (x != 0) return x;
@@ -683,36 +708,6 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         return count;
     }
 
-    private void RefreshOutdatedBoundaryNeighbors(
-        (int X, int Z) key,
-        ColumnPresentation installed)
-    {
-        Refresh((key.X, key.Z - 1), Side.South);
-        Refresh((key.X, key.Z + 1), Side.North);
-        Refresh((key.X - 1, key.Z), Side.East);
-        Refresh((key.X + 1, key.Z), Side.West);
-        return;
-
-        void Refresh((int X, int Z) neighborKey, Side installedSide)
-        {
-            if (!_resident.TryGetValue(neighborKey, out var neighbor) ||
-                neighbor.HasNeighbor(installedSide, installed.Boundaries.Identity) ||
-                _pending.ContainsKey(neighborKey) ||
-                _boundaryRefreshPending.Contains(neighborKey)) return;
-            if (!_world.BlockHost.HasChunk(neighborKey.X, neighborKey.Z)) return;
-            var chunk = _world.BlockHost.GetChunk(neighborKey.X, neighborKey.Z);
-            if (!chunk.Loaded) return;
-            if (_boundaryRefreshPending.Count >= PendingCapacity)
-            {
-                _rejectedAdmissions++;
-                return;
-            }
-
-            _boundaryRefreshPending.Add(neighborKey);
-            _boundaryRefreshes++;
-        }
-    }
-
     private void RemoveCapturedLighting((int X, int Z) key, long terrainRevision)
     {
         if (_capturedLighting.TryGetValue(key, out var lighting) &&
@@ -723,7 +718,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private void EvictDistant(Vector3D<double> viewPosition)
     {
         var residentBytes = _resident.Values.Sum(static value => value.EstimatedBytes) +
-                            _solidSeams.Values.Sum(static value => value.EstimatedBytes);
+                            _solidSeams.Values.Sum(static value => value.EstimatedBytes) +
+                            _translucentSeams.Values.Sum(static value => value.EstimatedBytes);
         if (_resident.Count <= ResidentCapacity && residentBytes <= ResidentGpuByteCapacity) return;
         var remove = _resident
             .OrderByDescending(pair => DistanceSquared(pair.Key, viewPosition))
@@ -735,19 +731,28 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             if (!_resident.Remove(candidate.Key, out var presentation)) continue;
             residentBytes -= presentation.EstimatedBytes;
             residentBytes -= RemoveSolidSeamsForColumn(candidate.Key);
+            residentBytes -= RemoveTranslucentSeamsForColumn(candidate.Key);
             presentation.Dispose();
             _evictions++;
         }
     }
 
     private long RemoveSolidSeamsForColumn((int X, int Z) key)
+        => RemoveSeamsForColumn(_solidSeams, key);
+
+    private long RemoveTranslucentSeamsForColumn((int X, int Z) key)
+        => RemoveSeamsForColumn(_translucentSeams, key);
+
+    private static long RemoveSeamsForColumn(
+        Dictionary<TerrainLodSeamKey, GpuSeam> seams,
+        (int X, int Z) key)
     {
         long removedBytes = 0;
-        foreach (var (seamKey, seam) in _solidSeams
+        foreach (var (seamKey, seam) in seams
                      .Where(pair => pair.Key.Owner == key || pair.Key.Neighbor == key)
                      .ToArray())
         {
-            _solidSeams.Remove(seamKey);
+            seams.Remove(seamKey);
             removedBytes += seam.EstimatedBytes;
             seam.Dispose();
         }
@@ -774,13 +779,17 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             preparing,
             overlap,
             levelTransitions,
-            _solidSeams.Count,
-            _boundaryRefreshPending.Count + _desiredSolidSeams.Count(pair =>
+            _solidSeams.Count + _translucentSeams.Count,
+            _desiredSolidSeams.Count(pair =>
                 !_solidSeams.TryGetValue(pair.Key, out var seam) ||
+                seam.Selection != pair.Value) +
+            _desiredTranslucentSeams.Count(pair =>
+                !_translucentSeams.TryGetValue(pair.Key, out var seam) ||
                 seam.Selection != pair.Value),
             uploads,
             _resident.Values.Sum(static value => value.EstimatedBytes) +
-            _solidSeams.Values.Sum(static value => value.EstimatedBytes),
+            _solidSeams.Values.Sum(static value => value.EstimatedBytes) +
+            _translucentSeams.Values.Sum(static value => value.EstimatedBytes),
             _resident.Values.Sum(static value => value.Boundaries.EstimatedBytes),
             _staleResults,
             _rejectedAdmissions,
@@ -946,6 +955,12 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         GpuSeam Gpu,
         double DistanceSquared);
 
+    private readonly record struct VisibleTranslucentDraw(
+        VisibleColumn? Column,
+        GpuSeam? Seam,
+        (int X, int Z) Key,
+        double DistanceSquared);
+
     private readonly record struct TerrainLodSeamKey(
         (int X, int Z) Owner,
         Side BoundarySide)
@@ -966,13 +981,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         private ColumnPresentation(
             long terrainRevision,
             Dictionary<int, GpuLevel> levels,
-            TerrainLodBoundarySummary boundaries,
-            TerrainLodNeighborIdentities neighbors)
+            TerrainLodBoundarySummary boundaries)
         {
             TerrainRevision = terrainRevision;
             Levels = levels;
             Boundaries = boundaries;
-            Neighbors = neighbors;
             MinimumLevel = levels.Count == 0 ? MinimumHorizonMeshLevel : levels.Keys.Min();
             MaximumLevel = levels.Count == 0 ? MinimumHorizonMeshLevel : levels.Keys.Max();
         }
@@ -980,7 +993,6 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         public long TerrainRevision { get; }
         public Dictionary<int, GpuLevel> Levels { get; }
         public TerrainLodBoundarySummary Boundaries { get; }
-        private TerrainLodNeighborIdentities Neighbors { get; }
         public int MinimumLevel { get; }
         public int MaximumLevel { get; }
         public long LastPresentedTick { get; set; }
@@ -990,11 +1002,6 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         private TerrainLodLevelTransition SolidLevelTransition;
         private TerrainLodLevelTransition TranslucentLevelTransition;
         public bool HasLevel(int level) => Levels.ContainsKey(level);
-        public bool HasAnyNeighbor => Neighbors.HasAny;
-
-        public bool HasNeighbor(Side side, TerrainLodBoundaryIdentity identity) =>
-            Neighbors.Get(side) == identity;
-
         public bool HasLayer(bool translucent) => Levels.Values.Any(level => translucent
             ? level.TranslucentMesh is not null
             : level.SolidMesh is not null);
@@ -1097,8 +1104,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             World world,
             TerrainLodConversionResult result,
             ILightProvider? lighting,
-            int minimumLevel,
-            TerrainLodNeighborBoundaries neighbors)
+            int minimumLevel)
         {
             var device = WebGpuDevice.Current
                 ?? throw new InvalidOperationException("Terrain LOD upload requires a WebGPU device.");
@@ -1114,12 +1120,10 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 {
                     var data = TerrainLodMeshBuilder.Build(
                         result.Hierarchy, level, world.Content.Blocks, !world.Dimension.HasCeiling,
-                        lighting, world.Reader, neighbors);
+                        lighting, world.Reader);
                     levels.Add(level, GpuLevel.Create(device, result.ChunkX, result.ChunkZ, data));
                 }
-                return new ColumnPresentation(
-                    result.TerrainRevision, levels, boundaries,
-                    TerrainLodNeighborIdentities.From(neighbors));
+                return new ColumnPresentation(result.TerrainRevision, levels, boundaries);
             }
             catch
             {
@@ -1223,7 +1227,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             WebGpuDevice device,
             (int X, int Z) owner,
             TerrainLodSeamSelection selection,
-            TerrainLodSeamMeshData data)
+            TerrainLodSeamMeshData data,
+            bool translucent)
         {
             if (data.Vertices.Length == 0)
                 return new GpuSeam(selection, null, null, 0);
@@ -1235,7 +1240,10 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 var origin = new Vector3D<int>(
                     owner.X * 16, ChuckFormat.WorldHeight / 2, owner.Z * 16);
                 var lightModel = SectionLightModel.Create(origin, data.Vertices, data.Lights);
-                lighting = SectionLighting.CreateInitial(device, lightModel, null);
+                lighting = SectionLighting.CreateInitial(
+                    device,
+                    translucent ? null : lightModel,
+                    translucent ? lightModel : null);
                 return new GpuSeam(selection, mesh, lighting, data.EstimatedBytes);
             }
             catch

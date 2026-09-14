@@ -1,10 +1,12 @@
 using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.WebGPU;
 using OmniBlock.Registries;
 using OmniBlock.Textures;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Lod;
 
 namespace OmniBlock.Client.Rendering.Chunks.Lod;
 
@@ -43,6 +45,33 @@ internal static class TerrainLodSeamMeshBuilder
         bool hasSkyLight,
         ILightProvider? lighting = null,
         IBlockReader? visuals = null)
+        => Build(owner, ownerLevel, neighbor, neighborLevel, ownerSide, blocks,
+            hasSkyLight, lighting, visuals, translucent: false);
+
+    public static TerrainLodSeamMeshData BuildTranslucent(
+        TerrainLodBoundarySummary owner,
+        int ownerLevel,
+        TerrainLodBoundarySummary neighbor,
+        int neighborLevel,
+        Side ownerSide,
+        IBlockRuntimeView blocks,
+        bool hasSkyLight,
+        ILightProvider? lighting = null,
+        IBlockReader? visuals = null)
+        => Build(owner, ownerLevel, neighbor, neighborLevel, ownerSide, blocks,
+            hasSkyLight, lighting, visuals, translucent: true);
+
+    private static TerrainLodSeamMeshData Build(
+        TerrainLodBoundarySummary owner,
+        int ownerLevel,
+        TerrainLodBoundarySummary neighbor,
+        int neighborLevel,
+        Side ownerSide,
+        IBlockRuntimeView blocks,
+        bool hasSkyLight,
+        ILightProvider? lighting,
+        IBlockReader? visuals,
+        bool translucent)
     {
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentNullException.ThrowIfNull(neighbor);
@@ -74,29 +103,61 @@ internal static class TerrainLodSeamMeshBuilder
         for (var y = 0; y < ChuckFormat.WorldHeight; y += fineScale)
         {
             if (!owner.TryGet(ownerLevel, ownerSide,
-                    along / ownerScale, y / ownerScale, false, out var ownerMaterial) ||
+                    along / ownerScale, y / ownerScale, translucent, out var ownerMaterial) ||
                 !neighbor.TryGet(neighborLevel, neighborSide,
-                    along / neighborScale, y / neighborScale, false, out var neighborMaterial))
+                    along / neighborScale, y / neighborScale, translucent, out var neighborMaterial))
                 continue;
 
-            var ownerVisible = TerrainLodMeshBuilder.IsDepthWriting(ownerMaterial) &&
-                               (neighborMaterial.IsAir || !neighborMaterial.OccludesFaces);
-            var neighborVisible = TerrainLodMeshBuilder.IsDepthWriting(neighborMaterial) &&
-                                  (ownerMaterial.IsAir || !ownerMaterial.OccludesFaces);
+            var ownerVisible = translucent
+                ? TerrainLodMeshBuilder.IsTranslucent(ownerMaterial)
+                : TerrainLodMeshBuilder.IsDepthWriting(ownerMaterial) &&
+                  (neighborMaterial.IsAir || !neighborMaterial.OccludesFaces);
+            var neighborVisible = translucent
+                ? TerrainLodMeshBuilder.IsTranslucent(neighborMaterial)
+                : TerrainLodMeshBuilder.IsDepthWriting(neighborMaterial) &&
+                  (ownerMaterial.IsAir || !ownerMaterial.OccludesFaces);
             if (!ownerVisible && !neighborVisible) continue;
 
-            // Two non-occluding depth materials could each request the same coplanar boundary.
-            // Select the canonical owner's face so arrival order cannot create double surfaces or
-            // z-fighting. An opaque material still wins over a cutout material on either side.
-            var useOwner = ownerVisible && (!neighborVisible || ownerMaterial.OccludesFaces ||
+            var minY = y - VerticalOrigin;
+            var maxY = Math.Min(y + fineScale, ChuckFormat.WorldHeight) - VerticalOrigin;
+            bool useOwner;
+            if (translucent)
+            {
+                if (ownerVisible && neighborVisible && ownerMaterial == neighborMaterial) continue;
+                if (ownerVisible && neighborVisible &&
+                    ownerMaterial.Geometry == TerrainLodGeometryClass.Liquid &&
+                    neighborMaterial.Geometry == TerrainLodGeometryClass.Liquid &&
+                    ownerMaterial.BlockId == neighborMaterial.BlockId)
+                {
+                    var ownerTop = maxY - FluidMath.GetFluidHeightFromMeta(ownerMaterial.Metadata);
+                    var neighborTop = maxY - FluidMath.GetFluidHeightFromMeta(neighborMaterial.Metadata);
+                    if (Math.Abs(ownerTop - neighborTop) < 0.001f) continue;
+                    useOwner = ownerTop > neighborTop;
+                    minY = Math.Min(ownerTop, neighborTop);
+                    maxY = Math.Max(ownerTop, neighborTop);
+                }
+                else
+                {
+                    // Different translucent materials share one canonical coplanar face. This is
+                    // deterministic and avoids double blending regardless of arrival order.
+                    useOwner = ownerVisible;
+                    var selected = useOwner ? ownerMaterial : neighborMaterial;
+                    if (selected.Geometry == TerrainLodGeometryClass.Liquid)
+                        maxY -= FluidMath.GetFluidHeightFromMeta(selected.Metadata);
+                }
+            }
+            else
+            {
+                // Two non-occluding depth materials could each request the same coplanar boundary.
+                // Select the canonical owner's face so arrival order cannot create double surfaces.
+                useOwner = ownerVisible && (!neighborVisible || ownerMaterial.OccludesFaces ||
                                             !neighborMaterial.OccludesFaces);
+            }
             var material = useOwner ? ownerMaterial : neighborMaterial;
             if (!blocks.TryGet(material.BlockId, out var block) || block is null) continue;
 
             var minAlong = (float)along;
             var maxAlong = Math.Min(along + fineScale, 16);
-            var minY = y - VerticalOrigin;
-            var maxY = Math.Min(y + fineScale, ChuckFormat.WorldHeight) - VerticalOrigin;
             var faceSide = useOwner ? ownerSide : neighborSide;
             var sampleX = owner.ChunkX * 16 + (ownerSide == Side.East ? 16 : (minAlong + maxAlong) * 0.5f);
             var sampleZ = owner.ChunkZ * 16 + (ownerSide == Side.South ? 16 : (minAlong + maxAlong) * 0.5f);
