@@ -186,6 +186,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         using var _lodRender = Profiler.Begin("TerrainLodRender");
         var uploads = InstallCompleted(UploadsPerFrame, parameters.ViewPos,
             parameters.VerticalFovDegrees, parameters.ViewportHeight,
+            parameters.TerrainLodDropoffScale,
             parameters.RenderDistance, nearRenderer);
         EvictDistant(parameters.ViewPos);
 
@@ -224,7 +225,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             var requestedLevel = TerrainLodDetailSelector.SelectLevel(
                 Math.Sqrt(distanceSquared), presentation.MaximumLevel,
                 presentation.SelectionLevel(translucent: false),
-                parameters.VerticalFovDegrees, parameters.ViewportHeight);
+                parameters.VerticalFovDegrees, parameters.ViewportHeight,
+                parameters.TerrainLodDropoffScale);
             requestedLevel = ConstrainLevelToNeighbors(
                 key, requestedLevel, translucent: false);
             if (requestedLevel < presentation.MinimumLevel)
@@ -344,7 +346,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             var requestedLevel = TerrainLodDetailSelector.SelectLevel(
                 Math.Sqrt(distanceSquared), presentation.MaximumLevel,
                 presentation.SelectionLevel(translucent: true),
-                parameters.VerticalFovDegrees, parameters.ViewportHeight);
+                parameters.VerticalFovDegrees, parameters.ViewportHeight,
+                parameters.TerrainLodDropoffScale);
             requestedLevel = ConstrainLevelToNeighbors(
                 key, requestedLevel, translucent: true);
             if (requestedLevel < presentation.MinimumLevel)
@@ -492,6 +495,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         Vector3D<double> viewPosition,
         double verticalFovDegrees,
         int viewportHeight,
+        float detailDropoffScale,
         int renderDistance,
         ChunkRenderer nearRenderer)
     {
@@ -519,7 +523,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 var selectedLevel = TerrainLodDetailSelector.SelectLevel(
                     Math.Sqrt(DistanceSquared(key, viewPosition)), MaximumMeshLevel,
                     previous?.SelectionLevel(translucent: false) ?? -1,
-                    verticalFovDegrees, viewportHeight);
+                    verticalFovDegrees, viewportHeight, detailDropoffScale);
                 var minimumLevel = Math.Min(
                     Math.Min(selectedLevel, previous?.MinimumLevel ?? MinimumHorizonMeshLevel),
                     _detailLevelRequests.GetValueOrDefault(key, MinimumHorizonMeshLevel));
@@ -1390,7 +1394,8 @@ internal static class TerrainLodDetailSelector
         int maximumLevel,
         int previousLevel = -1,
         double verticalFovDegrees = 70,
-        int viewportHeight = 480)
+        int viewportHeight = 480,
+        double detailDropoffScale = 1)
     {
         if (!double.IsFinite(distance) || distance < 0)
             throw new ArgumentOutOfRangeException(nameof(distance));
@@ -1398,15 +1403,19 @@ internal static class TerrainLodDetailSelector
         if (!double.IsFinite(verticalFovDegrees) || verticalFovDegrees is <= 1 or >= 179)
             verticalFovDegrees = 70;
         if (viewportHeight <= 0) viewportHeight = 480;
+        if (!double.IsFinite(detailDropoffScale) || detailDropoffScale <= 0)
+            detailDropoffScale = 1;
 
         var focalLength = viewportHeight /
                           (2 * Math.Tan(verticalFovDegrees * Math.PI / 360));
         var exactToTransition = Math.Min(
-            2 * focalLength / TargetProjectedCellPixels, MaximumExactVoxelDistance);
+            2 * focalLength / TargetProjectedCellPixels, MaximumExactVoxelDistance) *
+            detailDropoffScale;
         var transitionToFine = Math.Min(
-            4 * focalLength / TargetProjectedCellPixels, MaximumTransitionDistance);
-        var fineToMedium = 8 * focalLength / TargetProjectedCellPixels;
-        var mediumToCoarse = 16 * focalLength / TargetProjectedCellPixels;
+            4 * focalLength / TargetProjectedCellPixels, MaximumTransitionDistance) *
+            detailDropoffScale;
+        var fineToMedium = 8 * focalLength / TargetProjectedCellPixels * detailDropoffScale;
+        var mediumToCoarse = 16 * focalLength / TargetProjectedCellPixels * detailDropoffScale;
         var desired = distance < exactToTransition
             ? 0
             : distance < transitionToFine

@@ -86,6 +86,7 @@ options.sensitivity.max=HYPERSPEED!!!
 options.renderDistance=Render Distance
 options.renderDistance.text=Detailed Distance
 options.simulationDistance.text=Simulation Distance
+options.terrainLodDropoff.text=LOD Detail Distance
 options.renderDistance.chunks=chunks
 options.renderDistance.tiny=Tiny
 options.renderDistance.short=Short

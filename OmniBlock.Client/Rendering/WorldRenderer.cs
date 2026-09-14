@@ -735,6 +735,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             ViewPos = new Vector3D<double>(viewX, viewY, viewZ),
             RenderDistance = _renderDistance,
             TerrainHorizonDistance = _game.Options.TerrainHorizonDistance,
+            TerrainLodDropoffScale = _game.Options.TerrainLodDropoffScale,
             Ticks = _world.GetTime(),
             PartialTicks = (float)partialTicks,
             DeltaTime = _game.Timer.DeltaTime,

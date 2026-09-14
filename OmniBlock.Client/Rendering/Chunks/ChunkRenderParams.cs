@@ -11,6 +11,7 @@ public struct ChunkRenderParams
     public Vector3D<double> ViewPos;
     public int RenderDistance;
     public int TerrainHorizonDistance;
+    public float TerrainLodDropoffScale;
     public long Ticks;
     public float PartialTicks;
     public float DeltaTime;

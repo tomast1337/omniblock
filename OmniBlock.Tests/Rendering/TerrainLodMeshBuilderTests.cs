@@ -490,6 +490,19 @@ public sealed class TerrainLodMeshBuilderTests
     }
 
     [Theory]
+    [InlineData(0.5, 4)]
+    [InlineData(1.0, 3)]
+    [InlineData(2.0, 2)]
+    public void Dropoff_scale_moves_the_detail_boundaries_without_skipping_levels(
+        double scale, int expected)
+    {
+        Assert.Equal(expected,
+            TerrainLodDetailSelector.SelectLevel(
+                600, 4, verticalFovDegrees: 70, viewportHeight: 480,
+                detailDropoffScale: scale));
+    }
+
+    [Theory]
     [InlineData(0, new[] { 2 }, 1)]
     [InlineData(4, new[] { 2 }, 3)]
     [InlineData(2, new[] { 1, 3 }, 2)]

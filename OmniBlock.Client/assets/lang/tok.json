@@ -223,6 +223,9 @@
         "simulationDistance": {
             "text": "Simulation Distance"
         },
+        "terrainLodDropoff": {
+            "text": "LOD Detail Distance"
+        },
         "renderDistance": {
             "text": "suli pi ken lukin",
             "chunks": "leko suli",

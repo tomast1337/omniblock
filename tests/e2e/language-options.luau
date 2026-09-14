@@ -42,12 +42,16 @@ click("#options.video")
 screen("VideoSettingsScreen")
 node("#option.viewDistance")
 node("#option.terrainHorizonDistance")
+node("#option.terrainLodDropoffDistance")
 node("#option.fogDistance")
 node("#option.simulationDistance")
 OMNI.config.terrainHorizonDistance = 1
+OMNI.config.terrainLodDropoffDistance = 1
 OMNI.config.fogDistance = 0
 assert(OMNI.config.terrainHorizonDistance == 1,
     "terrain horizon slider was not script-configurable")
+assert(OMNI.config.terrainLodDropoffDistance == 1,
+    "terrain LOD dropoff slider was not script-configurable")
 assert(OMNI.config.fogDistance == 0,
     "automatic fog slider was not script-configurable")
 click("#options.done")

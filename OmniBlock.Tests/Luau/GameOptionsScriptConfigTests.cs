@@ -94,27 +94,36 @@ public sealed class GameOptionsScriptConfigTests
             var options = new GameOptions(null!, directory.FullName);
             Assert.Equal(16, GameOptions.DecodeTerrainHorizonDistance(0));
             Assert.Equal(64, GameOptions.DecodeTerrainHorizonDistance(1));
+            Assert.Equal(
+                new[] { 0.5f, 0.75f, 1f, 1.5f, 2f, 3f },
+                Enumerable.Range(0, 6)
+                    .Select(index => GameOptions.DecodeTerrainLodDropoffScale(index / 5f))
+                    .ToArray());
             Assert.Null(GameOptions.DecodeFogDistance(0));
             Assert.Equal(8, GameOptions.DecodeFogDistance(1f / 57));
             Assert.Equal(64, GameOptions.DecodeFogDistance(1));
             Assert.Equal(9, options.RenderDistance);
             Assert.Equal(64, options.TerrainHorizonDistance);
+            Assert.Equal(1f, options.TerrainLodDropoffScale);
             Assert.Equal(64, options.FogDistance);
             Assert.Equal(9, options.SimulationDistance);
 
             Assert.True(options.SetScriptConfig("viewDistance", LuauConfigValue.From(0.5)));
             Assert.True(options.SetScriptConfig("terrainHorizonDistance", LuauConfigValue.From(0.0)));
+            Assert.True(options.SetScriptConfig("terrainLodDropoffDistance", LuauConfigValue.From(1.0)));
             Assert.True(options.SetScriptConfig("fogDistance", LuauConfigValue.From(0.1)));
             Assert.True(options.SetScriptConfig("simulationDistance", LuauConfigValue.From(1.0)));
 
             Assert.Equal(18, options.RenderDistance);
             Assert.Equal(18, options.TerrainHorizonDistance);
+            Assert.Equal(3f, options.TerrainLodDropoffScale);
             Assert.Equal(18, options.FogDistance);
             Assert.Equal(18, options.SimulationDistance);
 
             var reloaded = new GameOptions(null!, directory.FullName);
             Assert.Equal(18, reloaded.RenderDistance);
             Assert.Equal(18, reloaded.TerrainHorizonDistance);
+            Assert.Equal(3f, reloaded.TerrainLodDropoffScale);
             Assert.Equal(18, reloaded.FogDistance);
             Assert.Equal(18, reloaded.SimulationDistance);
         }

@@ -9,6 +9,7 @@ public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOpti
         new("World Distance", [
             Options.RenderDistanceOption,
             Options.TerrainHorizonDistanceOption,
+            Options.TerrainLodDropoffDistanceOption,
             Options.FogDistanceOption,
             Options.SimulationDistanceOption,
             Options.EntityImpostorDistanceOption

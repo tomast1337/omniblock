@@ -220,6 +220,9 @@
         "simulationDistance": {
             "text": "Simulation Distance"
         },
+        "terrainLodDropoff": {
+            "text": "LOD Detail Distance"
+        },
         "renderDistance": {
             "text": "Dist. de Renderização",
             "chunks": "Chunks",

@@ -219,6 +219,9 @@
         "simulationDistance": {
             "text": "Simulation Distance"
         },
+        "terrainLodDropoff": {
+            "text": "LOD Detail Distance"
+        },
         "renderDistance": {
             "text": "顯示距離",
             "chunks": "區塊",

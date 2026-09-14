@@ -40,6 +40,8 @@ public class GameOptions
     private static readonly string[] s_msaaLabels = ["options.off", "2x", "4x", "8x"];
     private static readonly string[] s_presentationQualityLabels =
         ["options.graphics.fast", "performance.balanced", "options.graphics.fancy"];
+    private static readonly float[] s_terrainLodDropoffScales =
+        [0.5f, 0.75f, 1f, 1.5f, 2f, 3f];
 
     public static float MaxAnisotropy = 1.0f;
     private readonly int _initialMsaa;
@@ -167,6 +169,7 @@ public class GameOptions
 
     public FloatOption RenderDistanceOption { get; private set; }
     public FloatOption TerrainHorizonDistanceOption { get; private set; }
+    public FloatOption TerrainLodDropoffDistanceOption { get; private set; }
     public FloatOption FogDistanceOption { get; private set; }
     public FloatOption SimulationDistanceOption { get; private set; }
     public CycleOption CloudsQualityOption { get; private set; }
@@ -227,6 +230,8 @@ public class GameOptions
     public int RenderDistance => 4 + (int)(RenderDistanceOption.Value * 28.0f);
     public int TerrainHorizonDistance => Math.Max(
         RenderDistance, DecodeTerrainHorizonDistance(TerrainHorizonDistanceOption.Value));
+    public float TerrainLodDropoffScale =>
+        DecodeTerrainLodDropoffScale(TerrainLodDropoffDistanceOption.Value);
     public int FogDistance => Math.Clamp(
         DecodeFogDistance(FogDistanceOption.Value) ?? TerrainHorizonDistance,
         RenderDistance, TerrainHorizonDistance);
@@ -442,6 +447,14 @@ public class GameOptions
             Formatter = _ => $"{TerrainHorizonDistance} " +
                                Translations.Get("options.renderDistance.chunks")
         };
+        TerrainLodDropoffDistanceOption = new FloatOption(
+            "options.terrainLodDropoff.text", "terrainLodDropoffDistance", 2f / 5f)
+        {
+            // Six discrete profiles alter the spacing between every 1:1 -> 1:16 hierarchy
+            // transition. One coherent scale cannot create inverted or zero-width detail bands.
+            Steps = 5,
+            Formatter = value => $"{DecodeTerrainLodDropoffScale(value):0.##}x"
+        };
         FogDistanceOption = new FloatOption("options.fogDistance.text", "fogDistance", 0f)
         {
             LabelOverride = "Fog Distance",
@@ -532,6 +545,13 @@ public class GameOptions
     internal static int DecodeTerrainHorizonDistance(float normalized) =>
         16 + (int)MathF.Round(Math.Clamp(normalized, 0f, 1f) * 48f);
 
+    internal static float DecodeTerrainLodDropoffScale(float normalized)
+    {
+        var index = (int)MathF.Round(
+            Math.Clamp(normalized, 0f, 1f) * (s_terrainLodDropoffScales.Length - 1));
+        return s_terrainLodDropoffScales[index];
+    }
+
     internal static int? DecodeFogDistance(float normalized)
     {
         var step = (int)MathF.Round(Math.Clamp(normalized, 0f, 1f) * 57f);
@@ -558,6 +578,7 @@ public class GameOptions
         yield return MenuMusicOption;
         yield return RenderDistanceOption;
         yield return TerrainHorizonDistanceOption;
+        yield return TerrainLodDropoffDistanceOption;
         yield return FogDistanceOption;
         yield return SimulationDistanceOption;
         yield return DifficultyOption;

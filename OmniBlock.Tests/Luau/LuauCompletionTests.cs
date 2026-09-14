@@ -16,6 +16,7 @@ public sealed class LuauCompletionTests
     [InlineData("OMNI.config.pause", "pauseOnFocusLoss")]
     [InlineData("OMNI.config.capture", "captureMouse")]
     [InlineData("OMNI.config.sim", "simulationDistance")]
+    [InlineData("OMNI.config.terrainLod", "terrainLodDropoffDistance")]
     [InlineData("OMNI.config.opt", "options")]
     [InlineData("OMNI.cli", "client")]
     [InlineData("OMNI.client.wor", "worlds")]
