@@ -40,6 +40,8 @@ public abstract class OmniBlockServer : ICommandOutput
 
     private volatile bool _isPaused;
     private long _lastTpsTime;
+    private float _integratedClientFrameTimeMs;
+    private long _integratedClientFrameTimeUpdatedMs;
     private ContentRuntime? _pendingContent;
 
     /// <summary>
@@ -569,7 +571,10 @@ public abstract class OmniBlockServer : ICommandOutput
         }
 
         connections.Tick();
-        playerManager.updateAllChunks();
+        // Chunk streaming and packet flushing must continue while an integrated game is paused.
+        // Only the conservative play pregeneration profile follows simulation pause; preparation
+        // keeps advancing its isolated work.
+        playerManager.updateAllChunks(includePlayProfile: !_isPaused);
         playerManager.flushPendingChunkUpdates();
 
         // Ahead of the tracker, so that TCP's ordering guarantee makes the stamp cover every entity
@@ -695,6 +700,23 @@ public abstract class OmniBlockServer : ICommandOutput
     /// </summary>
     public IReadOnlyList<FixedAreaPregenerationSnapshot> GetPregenerationSnapshots() =>
         playerManager?.GetPregenerationSnapshots() ?? [];
+
+    public IReadOnlyList<AutomaticPregenerationSnapshot> GetAutomaticPregenerationSnapshots() =>
+        playerManager?.GetAutomaticPregenerationSnapshots() ?? [];
+
+    /// <summary>Feeds same-process presentation pressure into optional background generation.</summary>
+    public void ReportIntegratedClientFrameTime(double frameTimeMs)
+    {
+        if (this is not InternalServer || !double.IsFinite(frameTimeMs)) return;
+        Volatile.Write(ref _integratedClientFrameTimeMs, (float)Math.Max(0, frameTimeMs));
+        Volatile.Write(ref _integratedClientFrameTimeUpdatedMs, Environment.TickCount64);
+    }
+
+    internal double? GetRecentIntegratedClientFrameTimeMs() =>
+        this is InternalServer &&
+        Environment.TickCount64 - Volatile.Read(ref _integratedClientFrameTimeUpdatedMs) <= 2_000
+            ? Volatile.Read(ref _integratedClientFrameTimeMs)
+            : null;
 
     private void RunPendingCommands()
     {

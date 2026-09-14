@@ -313,38 +313,20 @@ internal sealed class FixedAreaPregenerationService : IDisposable
         IChunkStorage storage,
         Job job,
         ChunkPos position,
-        CancellationToken cancellationToken)
-    {
-        var owner = $"pregen:{job.Record.Definition.Id}";
-        using var request = chunkMap.RequestBackgroundDecoration(
-            [position], owner, CircularChunkTraversal.RingDistance(
+        CancellationToken cancellationToken) =>
+        await InactiveGenerationTargetExecutor.Execute(
+            world,
+            chunkMap,
+            storage,
+            _directory,
+            job.Record.Definition.Id,
+            $"pregen:{job.Record.Definition.Id}",
+            position,
+            CircularChunkTraversal.RingDistance(
                 job.Record.Definition.CenterChunkX,
                 job.Record.Definition.CenterChunkZ,
-                position));
-        using var registration = cancellationToken.Register(request.Dispose);
-        var batch = await request.Completion.WaitAsync(cancellationToken).ConfigureAwait(false);
-        cancellationToken.ThrowIfCancellationRequested();
-        var skipped = batch.SkippedTargets.Contains(position);
-        var writableStored = batch.WritableStoredTargets.ToHashSet();
-
-        // A player save can race the isolated workspace. Discard and rediscover rather than let
-        // stale background output overwrite the newer authoritative chunk.
-        if (batch.Chunks.Any(chunk =>
-                !writableStored.Contains(new ChunkPos(chunk.X, chunk.Z)) &&
-                storage.ContainsChunk(chunk.X, chunk.Z)))
-            return new FixedAreaPregenerationWorkResult(false, true, 0, 0, 0);
-
-        var retainedBytes = batch.RetainedBytes;
-        var checkpoint = new InactiveGenerationCheckpointStore(_directory, job.Record.Definition.Id);
-        var sequence = checked(checkpoint.Recover().Checkpoint.LastCommittedBatch + 1);
-        var commit = checkpoint.CommitBatch(sequence, batch, world, storage, cancellationToken);
-        return new FixedAreaPregenerationWorkResult(
-            skipped,
-            false,
-            commit.TerrainCommit.Chunks.Count,
-            retainedBytes,
-            commit.TerrainCommit.SizeDeltaBytes);
-    }
+                position),
+            cancellationToken).ConfigureAwait(false);
 
     private void CompleteActiveWork()
     {
@@ -689,6 +671,52 @@ internal sealed class FixedAreaPregenerationService : IDisposable
 
     [DllImport("libc", EntryPoint = "close")]
     private static extern int LinuxClose(int descriptor);
+}
+
+/// <summary>Shared durable one-target transaction used by fixed and moving preparation owners.</summary>
+internal static class InactiveGenerationTargetExecutor
+{
+    public static async Task<FixedAreaPregenerationWorkResult> Execute(
+        ServerWorld world,
+        ChunkMap chunkMap,
+        IChunkStorage storage,
+        DirectoryInfo stateDirectory,
+        string checkpointId,
+        string owner,
+        ChunkPos position,
+        int radialDistance,
+        CancellationToken cancellationToken)
+    {
+        if (chunkMap.HasGameplayOwnershipInDecorationHalo(position))
+            return new FixedAreaPregenerationWorkResult(false, true, 0, 0, 0);
+
+        using var request = chunkMap.RequestBackgroundDecoration(
+            [position], owner, radialDistance);
+        using var registration = cancellationToken.Register(request.Dispose);
+        var batch = await request.Completion.WaitAsync(cancellationToken).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+        var skipped = batch.SkippedTargets.Contains(position);
+        var writableStored = batch.WritableStoredTargets.ToHashSet();
+
+        // A player save can race the isolated workspace. Discard and rediscover rather than let
+        // stale background output overwrite the newer authoritative chunk.
+        if (batch.Chunks.Any(chunk =>
+                chunkMap.HasGameplayOwnership(chunk.X, chunk.Z) ||
+                (!writableStored.Contains(new ChunkPos(chunk.X, chunk.Z)) &&
+                 storage.ContainsChunk(chunk.X, chunk.Z))))
+            return new FixedAreaPregenerationWorkResult(false, true, 0, 0, 0);
+
+        var retainedBytes = batch.RetainedBytes;
+        var checkpoint = new InactiveGenerationCheckpointStore(stateDirectory, checkpointId);
+        var sequence = checked(checkpoint.Recover().Checkpoint.LastCommittedBatch + 1);
+        var commit = checkpoint.CommitBatch(sequence, batch, world, storage, cancellationToken);
+        return new FixedAreaPregenerationWorkResult(
+            skipped,
+            false,
+            commit.TerrainCommit.Chunks.Count,
+            retainedBytes,
+            commit.TerrainCommit.SizeDeltaBytes);
+    }
 }
 
 internal static class CircularChunkTraversal

@@ -15,9 +15,11 @@ public sealed class WorldPreparationScreen(
     UIContext context,
     UIScreen? parent,
     Func<IReadOnlyList<FixedAreaPregenerationSnapshot>> getSnapshots,
+    Func<IReadOnlyList<AutomaticPregenerationSnapshot>> getAutomaticSnapshots,
     Action<string, string> queueAction) : UIScreen(context)
 {
     private Panel _jobList = null!;
+    private Label _automaticSummary = null!;
     private Label _summary = null!;
     private int _refreshTicks;
 
@@ -49,6 +51,14 @@ public sealed class WorldPreparationScreen(
         };
         _summary.Style.MarginBottom = 6;
         Root.AddChild(_summary);
+
+        _automaticSummary = new Label
+        {
+            TextColor = Color.GrayA0,
+            AutomationId = "worldPreparation.automatic"
+        };
+        _automaticSummary.Style.MarginBottom = 6;
+        Root.AddChild(_automaticSummary);
 
         var content = new Panel();
         content.Style.Width = 440;
@@ -90,9 +100,15 @@ public sealed class WorldPreparationScreen(
     private void Refresh()
     {
         var snapshots = getSnapshots();
+        var automatic = getAutomaticSnapshots();
         _summary.Text = snapshots.Count == 0
             ? "No fixed-area jobs. Start one with /worldgen start."
             : $"{snapshots.Count} persistent job{(snapshots.Count == 1 ? "" : "s")}";
+        var enabled = automatic.FirstOrDefault(static snapshot => snapshot.Options.Enabled);
+        _automaticSummary.Text = enabled is null
+            ? "Automatic generation: disabled (/worldgen auto on <radius> play)"
+            : $"Automatic: {enabled.Options.Profile.ToString().ToLowerInvariant()} " +
+              $"radius {enabled.Options.RadiusChunks}; {enabled.ThrottleReason}";
 
         foreach (var child in _jobList.Children.ToArray()) _jobList.RemoveChild(child);
         foreach (var snapshot in snapshots) _jobList.AddChild(CreateJobCard(snapshot));

@@ -160,6 +160,8 @@ OMNI.test.flyPath(ax, ay, az, bx, by, bz, seconds)
 OMNI.test.breakBlock(x, y, z) -- true when a non-air block was submitted for breaking
 OMNI.test.setBlock("omniblock:flowing_water", x, y, z) -- E2E-only server command
 OMNI.test.summon("omniblock:cow", 1) -- E2E-only server command; maximum count is 256
+OMNI.test.worldGenerationAuto("prepare", 8) -- E2E-only integrated-server control
+OMNI.test.worldGenerationMetric("saved") -- read-only moving-generation diagnostic
 OMNI.test.countEntities("omniblock:cow", 180, 220) -- client-resident entities in a distance band
 OMNI.test.isMeshCurrent(x, y, z) -- latest section epoch has an installed mesh
 OMNI.test.meshDeadlineMissCount(x, y, z) -- section-scoped lifetime counter

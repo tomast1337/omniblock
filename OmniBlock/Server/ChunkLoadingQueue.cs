@@ -8,6 +8,12 @@ using OmniBlock.Worlds.Chunks;
 
 namespace OmniBlock.Server;
 
+internal readonly record struct ChunkGenerationPressure(
+    int GameplayPending,
+    int GameplayReady,
+    int BackgroundQueued,
+    int BackgroundRunning);
+
 internal class ChunkLoadingQueue : IDisposable
 {
     internal const int MaxChunkLoadWorkers = 8;
@@ -195,6 +201,25 @@ internal class ChunkLoadingQueue : IDisposable
                 pending.UpdateGenerationDemand();
             UpdateTelemetryLocked();
         }
+    }
+
+    internal ChunkGenerationPressure SnapshotPressure()
+    {
+        lock (_queueLock)
+        {
+            var decoration = _decorationCoordinator.Snapshot();
+            return new ChunkGenerationPressure(
+                _inFlightChunks.Count,
+                _readyChunks.Count + _completedChunks.Count,
+                decoration.Queued,
+                decoration.Running);
+        }
+    }
+
+    internal bool IsPending(int chunkX, int chunkZ)
+    {
+        lock (_queueLock)
+            return _inFlightChunks.ContainsKey(ChunkMap.GetChunkHash(chunkX, chunkZ));
     }
 
     /// <summary>Publishes a bounded batch of chunks completed by background workers.</summary>

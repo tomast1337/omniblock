@@ -25,6 +25,8 @@ public static unsafe class LuauTestHost
                                         flyPath = function(ax, ay, az, bx, by, bz, seconds) __Test.flyPath(ax, ay, az, bx, by, bz, seconds) end,
                                         screenshot = function() __Test.screenshot() end,
                                         dumpTerrain = function(label) __Test.dumpTerrain(tostring(label or "terrain")) end,
+                                        worldGenerationAuto = function(profile, radius) return __Test.worldGenerationAuto(tostring(profile), radius or 32) end,
+                                        worldGenerationMetric = function(metric) return __Test.worldGenerationMetric(tostring(metric)) end,
                                         entityBaseline = function(scene, count, distance) return __Test.entityBaseline(scene, count, distance) end,
                                         entityBaselineState = function(state) return __Test.entityBaselineState(tostring(state)) end,
                                         entityBaselineEnvironment = function(state) return __Test.entityBaselineEnvironment(tostring(state)) end,
@@ -56,6 +58,8 @@ public static unsafe class LuauTestHost
     public static Action<double, double, double, double, double, double, double>? FlyPath;
     public static Action? Screenshot;
     public static Action<string>? DumpTerrain;
+    public static Func<string, int, bool>? WorldGenerationAuto;
+    public static Func<string, double>? WorldGenerationMetric;
     public static Func<string, int, double, bool>? EntityBaseline;
     public static Func<string, bool>? EntityBaselineState;
     public static Func<string, bool>? EntityBaselineEnvironment;
@@ -67,7 +71,7 @@ public static unsafe class LuauTestHost
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 23);
+        LuauNative.lua_createtable(l, 0, 25);
         Add(l, "pass", &PassClosure);
         Add(l, "fail", &FailClosure);
         Add(l, "creative", &CreativeClosure);
@@ -84,6 +88,8 @@ public static unsafe class LuauTestHost
         Add(l, "flyPath", &FlyPathClosure);
         Add(l, "screenshot", &ScreenshotClosure);
         Add(l, "dumpTerrain", &DumpTerrainClosure);
+        Add(l, "worldGenerationAuto", &WorldGenerationAutoClosure);
+        Add(l, "worldGenerationMetric", &WorldGenerationMetricClosure);
         Add(l, "entityBaseline", &EntityBaselineClosure);
         Add(l, "entityBaselineState", &EntityBaselineStateClosure);
         Add(l, "entityBaselineEnvironment", &EntityBaselineEnvironmentClosure);
@@ -421,6 +427,34 @@ public static unsafe class LuauTestHost
         }
 
         return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int WorldGenerationAutoClosure(IntPtr l)
+    {
+        var result = false;
+        try
+        {
+            result = WorldGenerationAuto?.Invoke(
+                ReadString(l, 1) ?? string.Empty,
+                LuauNative.luaL_checkinteger(l, 2)) == true;
+        }
+        catch (Exception error)
+        {
+            Fail?.Invoke($"Automatic world generation: {error.Message}");
+        }
+        LuauNative.lua_pushboolean(l, result ? 1 : 0);
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int WorldGenerationMetricClosure(IntPtr l)
+    {
+        double result = 0;
+        try { result = WorldGenerationMetric?.Invoke(ReadString(l, 1) ?? string.Empty) ?? 0; }
+        catch (Exception error) { Fail?.Invoke($"Automatic generation metric: {error.Message}"); }
+        LuauNative.lua_pushnumber(l, result);
+        return 1;
     }
 
     private static void Invoke(Action? action)

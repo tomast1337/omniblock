@@ -75,6 +75,15 @@ public class PlayerManager
             .OrderBy(static snapshot => snapshot.Definition.Id, StringComparer.Ordinal)
             .ToArray();
 
+    public void ConfigureAutomaticPregeneration(AutomaticPregenerationOptions options)
+    {
+        foreach (var chunkMap in _chunkMaps)
+            chunkMap.ConfigureAutomaticPregeneration(options);
+    }
+
+    public IReadOnlyList<AutomaticPregenerationSnapshot> GetAutomaticPregenerationSnapshots() =>
+        _chunkMaps.Select(static chunkMap => chunkMap.AutomaticPregenerationSnapshot).ToArray();
+
     public void loadPlayerData(ServerPlayerEntity player) => _saveHandler.LoadPlayerData(player);
 
     public void addPlayer(ServerPlayerEntity player)
@@ -299,7 +308,7 @@ public class PlayerManager
         sendPlayerStatus(player);
     }
 
-    public void updateAllChunks()
+    public void updateAllChunks(bool includePlayProfile = true)
     {
         var viewDistanceUpdate = _pendingViewDistance;
         if (viewDistanceUpdate != -1)
@@ -313,7 +322,7 @@ public class PlayerManager
 
         for (var chunkMapIndex = 0; chunkMapIndex < _chunkMaps.Length; chunkMapIndex++)
         {
-            _chunkMaps[chunkMapIndex].updateChunks();
+            _chunkMaps[chunkMapIndex].updateChunks(includePlayProfile);
         }
     }
 

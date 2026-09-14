@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using OmniBlock.Blocks.Entities;
+using OmniBlock.Diagnostics;
 using OmniBlock.Entities;
 using OmniBlock.Network.Messages;
 using OmniBlock.Server.Internal;
@@ -17,6 +18,7 @@ internal class ChunkMap
     private readonly int _dimensionId;
     private readonly ILogger<ChunkMap> _logger = Log.Instance.For<ChunkMap>();
     private readonly OmniBlockServer _server;
+    private AutomaticPregenerationService? _automaticPregeneration;
     private FixedAreaPregenerationService? _pregeneration;
     public readonly ChunkLoadingQueue loadQueue;
     private int _viewDistance;
@@ -62,6 +64,26 @@ internal class ChunkMap
         }
     }
 
+    internal void ConfigureAutomaticPregeneration(AutomaticPregenerationOptions options)
+    {
+        _automaticPregeneration ??= new AutomaticPregenerationService(
+            getWorld(), this, CaptureAutomaticGenerationPressure);
+        _automaticPregeneration.Configure(options);
+    }
+
+    internal AutomaticPregenerationSnapshot AutomaticPregenerationSnapshot =>
+        _automaticPregeneration?.Snapshot() ?? new AutomaticPregenerationSnapshot(
+            _dimensionId,
+            AutomaticPregenerationOptions.Disabled,
+            players.Count,
+            0,
+            0, 0, 0, 0, 0, 0, 0,
+            null,
+            false,
+            "disabled",
+            null,
+            new AutomaticPregenerationPressure(0, 0, 0, 0, null, 0, long.MaxValue));
+
     internal WorldGenerationCoordinator<Chunk>.GenerationRequest<Chunk>
         RequestBackgroundTerrain(int x, int z, string owner, int radialDistance, long revision = 0) =>
         loadQueue.RequestBackgroundTerrain(x, z, owner, radialDistance, revision);
@@ -71,6 +93,17 @@ internal class ChunkMap
         string owner,
         int radialDistance) =>
         loadQueue.RequestBackgroundDecoration(targets, owner, radialDistance);
+
+    internal bool HasGameplayOwnership(int chunkX, int chunkZ) =>
+        getWorld().ChunkCache.IsChunkLoaded(chunkX, chunkZ) || loadQueue.IsPending(chunkX, chunkZ);
+
+    internal bool HasGameplayOwnershipInDecorationHalo(ChunkPos target)
+    {
+        for (var x = target.X - 1; x <= target.X + 2; x++)
+        for (var z = target.Z - 1; z <= target.Z + 2; z++)
+            if (HasGameplayOwnership(x, z)) return true;
+        return false;
+    }
 
     public ServerWorld getWorld() => _server.getWorld(_dimensionId);
 
@@ -87,9 +120,9 @@ internal class ChunkMap
             ReconcilePlayerChunks(player, previousByPlayer[player], GetChunks(player).ToArray());
     }
 
-    public void updateChunks()
+    public void updateChunks(bool includePlayProfile = true)
     {
-        _pregeneration?.Tick();
+        TickBackgroundGeneration(includePlayProfile);
         foreach (var chunk in _chunksToUpdate)
         {
             chunk.updateChunk();
@@ -107,6 +140,52 @@ internal class ChunkMap
         }
 
         loadQueue.Tick();
+    }
+
+    internal void TickBackgroundGeneration(bool includePlayProfile)
+    {
+        _pregeneration?.Tick();
+        if (_automaticPregeneration is null ||
+            (!includePlayProfile && !_automaticPregeneration.RunsWhileSimulationPaused)) return;
+        _automaticPregeneration.Tick(players.Select(static player =>
+            new AutomaticGenerationPlayer(
+                player.ID,
+                (int)Math.Floor(player.X) >> 4,
+                (int)Math.Floor(player.Z) >> 4,
+                player.VelocityX,
+                player.VelocityZ)).ToArray());
+    }
+
+    private AutomaticPregenerationPressure CaptureAutomaticGenerationPressure()
+    {
+        var queue = loadQueue.SnapshotPressure();
+        var memory = GC.GetGCMemoryInfo();
+        var memoryLoad = memory.HighMemoryLoadThresholdBytes <= 0
+            ? 0
+            : memory.MemoryLoadBytes / (double)memory.HighMemoryLoadThresholdBytes;
+        long diskFree = long.MaxValue;
+        try
+        {
+            var stateDirectory = getWorld().GetWorldStorage().GetWorldGenerationStateDirectory();
+            if (stateDirectory is not null)
+                diskFree = new DriveInfo(stateDirectory.Root.FullName).AvailableFreeSpace;
+        }
+        catch (IOException)
+        {
+            diskFree = 0;
+        }
+
+        var serverTickMs = MetricRegistry.IsStale(ServerMetrics.Mspt)
+            ? 0
+            : MetricRegistry.Get(ServerMetrics.Mspt);
+        return new AutomaticPregenerationPressure(
+            queue.GameplayPending,
+            queue.BackgroundQueued + queue.BackgroundRunning,
+            getWorld().Lighting.PendingUpdateCount,
+            serverTickMs,
+            _server.GetRecentIntegratedClientFrameTimeMs(),
+            memoryLoad,
+            diskFree);
     }
 
     public static long GetChunkHash(int chunkX, int chunkZ) => (chunkX + 2147483647L) | ((chunkZ + 2147483647L) << 32);
@@ -351,6 +430,7 @@ internal class ChunkMap
 
     internal void Shutdown()
     {
+        _automaticPregeneration?.Dispose();
         _pregeneration?.Dispose();
         loadQueue.Dispose();
     }

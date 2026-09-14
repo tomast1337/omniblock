@@ -8,7 +8,7 @@ namespace OmniBlock.Server.Commands;
 public sealed class WorldGenerationCommand : Command.Command
 {
     public override string Usage =>
-        "worldgen <start <id> here <radius>|start <id> area <dimension> <centerChunkX> <centerChunkZ> <radius>|list|inspect <id>|pause <id>|resume <id>|cancel <id>>";
+        "worldgen <start <id> here <radius>|start <id> area <dimension> <centerChunkX> <centerChunkZ> <radius>|list|inspect <id>|pause <id>|resume <id>|cancel <id>|auto <on <radius> [play|prepare]|off|status>>";
     public override string Description => "Manage persistent fixed-area world pregeneration";
     public override string[] Names => ["worldgen", "pregen"];
 
@@ -27,7 +27,15 @@ public sealed class WorldGenerationCommand : Command.Command
             .Then(Literal("inspect").Then(ArgumentString("id").Executes(Inspect)))
             .Then(Literal("pause").Then(ArgumentString("id").Executes(Pause)))
             .Then(Literal("resume").Then(ArgumentString("id").Executes(Resume)))
-            .Then(Literal("cancel").Then(ArgumentString("id").Executes(Cancel)));
+            .Then(Literal("cancel").Then(ArgumentString("id").Executes(Cancel)))
+            .Then(Literal("auto")
+                .Then(Literal("status").Executes(AutoStatus))
+                .Then(Literal("off").Executes(AutoOff))
+                .Then(Literal("on")
+                    .Then(ArgumentInt("radius")
+                        .Executes(AutoOnPlay)
+                        .Then(Literal("play").Executes(AutoOnPlay))
+                        .Then(Literal("prepare").Executes(AutoOnPreparation)))));
 
     private static int StartHere(CommandContext<CommandSource> context)
     {
@@ -105,6 +113,55 @@ public sealed class WorldGenerationCommand : Command.Command
 
     private static int Cancel(CommandContext<CommandSource> context) =>
         Change(context, static (service, id) => service.Cancel(id));
+
+    private static int AutoOnPlay(CommandContext<CommandSource> context) =>
+        ConfigureAutomatic(context, AutomaticPregenerationProfile.Play);
+
+    private static int AutoOnPreparation(CommandContext<CommandSource> context) =>
+        ConfigureAutomatic(context, AutomaticPregenerationProfile.Preparation);
+
+    private static int ConfigureAutomatic(
+        CommandContext<CommandSource> context,
+        AutomaticPregenerationProfile profile)
+    {
+        var options = new AutomaticPregenerationOptions(
+            true,
+            context.GetArgument<int>("radius"),
+            profile);
+        context.Source.Server.playerManager.ConfigureAutomaticPregeneration(options);
+        context.Source.Output.SendMessage(
+            $"Automatic generation enabled: {profile.ToString().ToLowerInvariant()} profile, " +
+            $"radius {options.RadiusChunks} chunks around active players.");
+        return AutoStatus(context);
+    }
+
+    private static int AutoOff(CommandContext<CommandSource> context)
+    {
+        context.Source.Server.playerManager.ConfigureAutomaticPregeneration(
+            AutomaticPregenerationOptions.Disabled);
+        context.Source.Output.SendMessage("Automatic generation disabled; committed terrain is retained.");
+        return 1;
+    }
+
+    private static int AutoStatus(CommandContext<CommandSource> context)
+    {
+        foreach (var snapshot in context.Source.Server.playerManager.GetAutomaticPregenerationSnapshots())
+        {
+            var options = snapshot.Options;
+            context.Source.Output.SendMessage(
+                $"auto dimension {snapshot.Dimension}: " +
+                $"{(options.Enabled ? "enabled" : "disabled")} " +
+                $"[{options.Profile.ToString().ToLowerInvariant()} radius {options.RadiusChunks}], " +
+                $"players {snapshot.ActivePlayers}, prepared {snapshot.PreparedTargets}, " +
+                $"saved {snapshot.SavedTargets}, skipped {snapshot.SkippedTargets}, " +
+                $"gameplay-deferred {snapshot.GameplayDeferredTargets}, " +
+                $"written {snapshot.WrittenChunks}, disk +{snapshot.DiskBytes} B, " +
+                $"peak retained {snapshot.PeakRetainedBytes} B; {snapshot.ThrottleReason}");
+            if (snapshot.LastError is not null)
+                context.Source.Output.SendMessage($"Automatic generation error: {snapshot.LastError}");
+        }
+        return 1;
+    }
 
     private static int Change(
         CommandContext<CommandSource> context,

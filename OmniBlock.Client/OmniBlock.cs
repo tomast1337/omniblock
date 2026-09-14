@@ -713,6 +713,49 @@ public partial class OmniBlock :
                                 WriteIndented = true
                             }));
                 };
+                LuauTestHost.WorldGenerationAuto = (profile, radius) =>
+                {
+                    if (Player == null || InternalServer == null) return false;
+                    var normalized = profile.ToLowerInvariant();
+                    if (normalized == "off")
+                    {
+                        Player.SendChatMessage("/worldgen auto off");
+                        return true;
+                    }
+                    if (normalized is not ("play" or "prepare") || radius is < 4 or > 256)
+                        return false;
+                    Player.SendChatMessage($"/worldgen auto on {radius} {normalized}");
+                    return true;
+                };
+                LuauTestHost.WorldGenerationMetric = metric =>
+                {
+                    var dimension = Player?.DimensionId ?? 0;
+                    var snapshot = InternalServer?.GetAutomaticPregenerationSnapshots()
+                        .FirstOrDefault(candidate => candidate.Dimension == dimension);
+                    if (snapshot is null) return 0;
+                    return metric switch
+                    {
+                        "enabled" => snapshot.Options.Enabled ? 1 : 0,
+                        "radius" => snapshot.Options.RadiusChunks,
+                        "players" => snapshot.ActivePlayers,
+                        "prepared" => snapshot.PreparedTargets,
+                        "saved" => snapshot.SavedTargets,
+                        "skipped" => snapshot.SkippedTargets,
+                        "gameplayDeferred" => snapshot.GameplayDeferredTargets,
+                        "written" => snapshot.WrittenChunks,
+                        "active" => snapshot.ActiveTarget is null ? 0 : 1,
+                        "throttled" => snapshot.Throttled ? 1 : 0,
+                        "gameplayPending" => snapshot.Pressure.GameplayPending,
+                        "backgroundQueued" => snapshot.Pressure.BackgroundQueued,
+                        "lightingPending" => snapshot.Pressure.LightingPending,
+                        "serverTickMs" => snapshot.Pressure.ServerTickMs,
+                        "clientFrameMs" => snapshot.Pressure.IntegratedClientFrameMs ?? 0,
+                        "memoryLoadRatio" => snapshot.Pressure.MemoryLoadRatio,
+                        "diskFreeBytes" => snapshot.Pressure.DiskFreeBytes,
+                        "peakRetainedBytes" => snapshot.PeakRetainedBytes,
+                        _ => 0
+                    };
+                };
                 LuauTestHost.Install(LuauState.Handle);
                 if (!LuauState.TryExecute(LuauTestHost.Bootstrap, out var testBootstrapError))
                 {
@@ -1117,6 +1160,8 @@ public partial class OmniBlock :
             LuauTestHost.FlyPath = null;
             LuauTestHost.Screenshot = null;
             LuauTestHost.DumpTerrain = null;
+            LuauTestHost.WorldGenerationAuto = null;
+            LuauTestHost.WorldGenerationMetric = null;
             LuauTestHost.EntityBaseline = null;
             LuauTestHost.EntityBaselineState = null;
             LuauTestHost.EntityBaselineEnvironment = null;
@@ -1502,6 +1547,7 @@ public partial class OmniBlock :
         EntityBaseline?.RecordFrame(thisFrameTimeMs);
         _debugTelemetry.RecordFrameTime(thisFrameTimeMs);
         MetricRegistry.Set(ClientMetrics.FrameTimeMs, (float)thisFrameTimeMs);
+        InternalServer?.ReportIntegratedClientFrameTime(thisFrameTimeMs);
 
         Profiler.Record("FrameTime", thisFrameTimeMs);
         Profiler.CaptureFrame();
@@ -2367,6 +2413,7 @@ public partial class OmniBlock :
                     UIContext,
                     CurrentScreen,
                     integratedServer.GetPregenerationSnapshots,
+                    integratedServer.GetAutomaticPregenerationSnapshots,
                     (action, id) => integratedServer.QueueCommands(
                         $"worldgen {action} {id}", integratedServer))));
     }
