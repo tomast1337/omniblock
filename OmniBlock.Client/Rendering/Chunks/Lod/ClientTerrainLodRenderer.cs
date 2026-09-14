@@ -248,6 +248,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 Math.Sqrt(distanceSquared), presentation.MaximumLevel,
                 presentation.SelectionLevel(translucent: false),
                 parameters.VerticalFovDegrees, parameters.ViewportHeight);
+            requestedLevel = ConstrainLevelToNeighbors(
+                key, requestedLevel, translucent: false);
             if (requestedLevel < presentation.MinimumLevel)
                 RequestDetailLevel(key, requestedLevel);
             AppendVisibleLevels(
@@ -335,6 +337,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 Math.Sqrt(distanceSquared), presentation.MaximumLevel,
                 presentation.SelectionLevel(translucent: true),
                 parameters.VerticalFovDegrees, parameters.ViewportHeight);
+            requestedLevel = ConstrainLevelToNeighbors(
+                key, requestedLevel, translucent: true);
             if (requestedLevel < presentation.MinimumLevel)
                 RequestDetailLevel(key, requestedLevel);
             AppendVisibleLevels(
@@ -527,6 +531,34 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _resident.GetValueOrDefault((key.X, key.Z + 1))?.Boundaries,
         _resident.GetValueOrDefault((key.X - 1, key.Z))?.Boundaries,
         _resident.GetValueOrDefault((key.X + 1, key.Z))?.Boundaries);
+
+    private int ConstrainLevelToNeighbors(
+        (int X, int Z) key,
+        int requestedLevel,
+        bool translucent)
+    {
+        Span<int> levels = stackalloc int[4];
+        var count = 0;
+        count = AppendNeighborLevel((key.X, key.Z - 1), translucent, levels, count);
+        count = AppendNeighborLevel((key.X, key.Z + 1), translucent, levels, count);
+        count = AppendNeighborLevel((key.X - 1, key.Z), translucent, levels, count);
+        count = AppendNeighborLevel((key.X + 1, key.Z), translucent, levels, count);
+        return TerrainLodNeighborLevelConstraint.Constrain(
+            requestedLevel, levels[..count]);
+    }
+
+    private int AppendNeighborLevel(
+        (int X, int Z) key,
+        bool translucent,
+        Span<int> destination,
+        int count)
+    {
+        if (!_resident.TryGetValue(key, out var neighbor) ||
+            !neighbor.HasLayer(translucent)) return count;
+        var level = neighbor.SelectionLevel(translucent);
+        if (level >= 0) destination[count++] = level;
+        return count;
+    }
 
     private void RefreshOutdatedBoundaryNeighbors(
         (int X, int Z) key,
@@ -1172,5 +1204,37 @@ internal static class TerrainLodDetailSelector
         if (previousLevel == 4 && desired < 4 &&
             distance > mediumToCoarse * (1 - Hysteresis)) return Math.Min(4, maximum);
         return desired;
+    }
+}
+
+/// <summary>
+///     Keeps a column within one level of an already-stable neighbor. If inherited state is itself
+///     inconsistent (for example immediately after teleport), the midpoint is deterministic and
+///     lets the local field converge without iteration-order bias.
+/// </summary>
+internal static class TerrainLodNeighborLevelConstraint
+{
+    public static int Constrain(int requestedLevel, ReadOnlySpan<int> neighborLevels)
+    {
+        if (neighborLevels.IsEmpty) return requestedLevel;
+        var lower = int.MinValue;
+        var upper = int.MaxValue;
+        var minimum = int.MaxValue;
+        var maximum = int.MinValue;
+        foreach (var level in neighborLevels)
+        {
+            lower = Math.Max(lower, level - 1);
+            upper = Math.Min(upper, level + 1);
+            minimum = Math.Min(minimum, level);
+            maximum = Math.Max(maximum, level);
+        }
+
+        if (lower <= upper) return Math.Clamp(requestedLevel, lower, upper);
+        var midpointLow = (minimum + maximum) / 2;
+        var midpointHigh = (minimum + maximum + 1) / 2;
+        return Math.Abs(requestedLevel - midpointLow) <=
+               Math.Abs(requestedLevel - midpointHigh)
+            ? midpointLow
+            : midpointHigh;
     }
 }

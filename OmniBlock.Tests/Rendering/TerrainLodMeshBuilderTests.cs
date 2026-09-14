@@ -145,6 +145,25 @@ public sealed class TerrainLodMeshBuilderTests
     }
 
     [Fact]
+    public void Fine_boundary_uses_a_covering_coarse_neighbor_until_matching_detail_arrives()
+    {
+        var world = new FakeWorldContext();
+        var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+        var fineTerrain = Build(world, (x, y, z) => y < 32 ? (byte)stone : (byte)0);
+        var air = Build(world, (x, y, z) => 0);
+        var coarseAirBoundary = TerrainLodBoundarySummary.Capture(air, 2, 4);
+
+        var withoutEvidence = TerrainLodMeshBuilder.Build(
+            fineTerrain, 1, world.Content.Blocks, true);
+        var withCoarseEastAir = TerrainLodMeshBuilder.Build(
+            fineTerrain, 1, world.Content.Blocks, true, neighbors:
+            new TerrainLodNeighborBoundaries(null, null, null, coarseAirBoundary));
+
+        Assert.Equal(512,
+            withCoarseEastAir.Vertices.Length - withoutEvidence.Vertices.Length);
+    }
+
+    [Fact]
     public void Liquid_boundary_uses_the_translucent_neighbor_plane()
     {
         var world = new FakeWorldContext();
@@ -324,6 +343,21 @@ public sealed class TerrainLodMeshBuilderTests
     {
         Assert.Equal(3, TerrainLodDetailSelector.SelectLevel(600, 4, viewportHeight: 480));
         Assert.Equal(2, TerrainLodDetailSelector.SelectLevel(600, 4, viewportHeight: 1080));
+    }
+
+    [Theory]
+    [InlineData(0, new[] { 2 }, 1)]
+    [InlineData(4, new[] { 2 }, 3)]
+    [InlineData(2, new[] { 1, 3 }, 2)]
+    [InlineData(0, new[] { 0, 4 }, 2)]
+    public void Neighbor_constraint_is_bounded_and_order_independent(
+        int requested, int[] neighbors, int expected)
+    {
+        Assert.Equal(expected,
+            TerrainLodNeighborLevelConstraint.Constrain(requested, neighbors));
+        Array.Reverse(neighbors);
+        Assert.Equal(expected,
+            TerrainLodNeighborLevelConstraint.Constrain(requested, neighbors));
     }
 
     [Fact]

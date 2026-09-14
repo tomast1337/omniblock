@@ -136,8 +136,24 @@ internal sealed class TerrainLodBoundarySummary
         out TerrainLodMaterial material)
     {
         material = TerrainLodMaterial.Air;
-        if (!_levels.TryGetValue(level, out var boundary) || y < 0 || y >= boundary.Height)
-            return false;
+        if (!_levels.TryGetValue(level, out var boundary))
+        {
+            // A fine presentation may arrive before its neighbor has installed the same tier.
+            // Query the coarsest covering boundary cell instead of treating that known neighbor
+            // as missing. The fine caller still emits fine-sized patches, so no T-junction-sized
+            // hole is introduced while the neighbor's detail upgrade is pending.
+            var coveringLevel = _levels.Keys
+                .Where(candidate => candidate > level)
+                .OrderBy(candidate => candidate)
+                .FirstOrDefault(-1);
+            if (coveringLevel < 0) return false;
+            boundary = _levels[coveringLevel];
+            var requestedScale = 1 << level;
+            var coveringScale = 1 << coveringLevel;
+            along = along * requestedScale / coveringScale;
+            y = y * requestedScale / coveringScale;
+        }
+        if (y < 0 || y >= boundary.Height) return false;
         BoundarySample sample;
         switch (side)
         {
