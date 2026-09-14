@@ -85,7 +85,10 @@ public sealed class TerrainLodMaterialCatalog
                     nameof(definitions));
         }
         _byProtocolId = byProtocolId.ToFrozenDictionary();
+        RulesFingerprint = ComputeRulesFingerprint(_byProtocolId.Values);
     }
+
+    public string RulesFingerprint { get; }
 
     public static TerrainLodMaterialCatalog FromRuntime(ContentRuntime runtime)
     {
@@ -137,6 +140,25 @@ public sealed class TerrainLodMaterialCatalog
         if (block.RenderLayer > 0 || block.Material.IsTransparent)
             return TerrainLodGeometryClass.Translucent;
         return TerrainLodGeometryClass.Cutout;
+    }
+
+    private static string ComputeRulesFingerprint(
+        IEnumerable<TerrainLodMaterialDefinition> definitions)
+    {
+        using MemoryStream stream = new();
+        using (BinaryWriter writer = new(stream, Encoding.UTF8, leaveOpen: true))
+        {
+            foreach (var definition in definitions.OrderBy(static value => value.ProtocolId))
+            {
+                writer.Write(definition.ProtocolId);
+                writer.Write(definition.BlockId.ToString());
+                writer.Write((byte)definition.Geometry);
+                writer.Write(definition.OccludesFaces);
+                writer.Write(definition.MapColor);
+            }
+        }
+        return Convert.ToHexStringLower(
+            SHA256.HashData(stream.GetBuffer().AsSpan(0, (int)stream.Length)));
     }
 }
 

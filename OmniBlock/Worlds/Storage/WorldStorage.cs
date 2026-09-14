@@ -29,4 +29,10 @@ public interface IWorldStorage
     ///     without persistent storage may return <see langword="null" />.
     /// </summary>
     DirectoryInfo? GetWorldGenerationStateDirectory() => null;
+
+    /// <summary>
+    ///     Disposable distant-terrain data. Deleting this directory must never affect the
+    ///     authoritative world save.
+    /// </summary>
+    DirectoryInfo? GetTerrainLodCacheDirectory() => null;
 }

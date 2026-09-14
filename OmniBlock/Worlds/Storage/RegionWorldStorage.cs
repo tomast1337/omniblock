@@ -185,6 +185,13 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
         return directory;
     }
 
+    public DirectoryInfo GetTerrainLodCacheDirectory()
+    {
+        var directory = new DirectoryInfo(Path.Combine(_dataDir.FullName, "terrain_lod"));
+        if (!directory.Exists) directory.Create();
+        return directory;
+    }
+
     public IPlayerStorage GetPlayerStorage() => this;
 
     public void ForceSave()

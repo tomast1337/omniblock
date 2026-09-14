@@ -171,20 +171,50 @@ public sealed class TerrainLodConversionService : IDisposable
     {
         lock (_gate)
         {
-            var ready = _items
-                .Where(static pair => pair.Value.State == WorkState.Ready && pair.Value.Result is not null)
-                .OrderBy(static pair => pair.Key.X)
-                .ThenBy(static pair => pair.Key.Z)
-                .FirstOrDefault();
+            var ready = FindReadyLocked();
+            if (ready.Value is null)
+            {
+                result = null;
+                return false;
+            }
+            result = ready.Value.Result;
+            _items.Remove(ready.Key);
+            PublishSnapshotLocked();
+            return true;
+        }
+    }
+
+    /// <summary>
+    ///     Borrows the next completed result without releasing its bounded ownership. A cache
+    ///     writer acknowledges it only after durable publication, so transient I/O failures can
+    ///     retry without repeating conversion.
+    /// </summary>
+    public bool TryPeekCompleted(out TerrainLodConversionResult? result)
+    {
+        lock (_gate)
+        {
+            var ready = FindReadyLocked();
             if (ready.Value is not null)
             {
                 result = ready.Value.Result;
-                _items.Remove(ready.Key);
-                PublishSnapshotLocked();
                 return true;
             }
             result = null;
             return false;
+        }
+    }
+
+    public bool AcknowledgeCompleted(int chunkX, int chunkZ, long terrainRevision)
+    {
+        lock (_gate)
+        {
+            var key = new ChunkKey(chunkX, chunkZ);
+            if (!_items.TryGetValue(key, out var item) ||
+                item.State != WorkState.Ready ||
+                item.Result?.TerrainRevision != terrainRevision) return false;
+            _items.Remove(key);
+            PublishSnapshotLocked();
+            return true;
         }
     }
 
@@ -302,6 +332,12 @@ public sealed class TerrainLodConversionService : IDisposable
         item.State = WorkState.Queued;
         item.QueueSequence = _nextQueueSequence++;
     }
+
+    private KeyValuePair<ChunkKey, WorkItem> FindReadyLocked() => _items
+        .Where(static pair => pair.Value.State == WorkState.Ready && pair.Value.Result is not null)
+        .OrderBy(static pair => pair.Key.X)
+        .ThenBy(static pair => pair.Key.Z)
+        .FirstOrDefault();
 
     private long CurrentRetainedSourceBytesLocked() => _items.Values.Sum(static item =>
         item.Source.EstimatedBytes +
