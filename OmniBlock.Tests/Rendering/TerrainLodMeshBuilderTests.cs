@@ -97,6 +97,75 @@ public sealed class TerrainLodMeshBuilderTests
     }
 
     [Fact]
+    public void Resident_air_neighbor_authorizes_an_outer_boundary_wall()
+    {
+        var world = new FakeWorldContext();
+        var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+        var terrain = Build(world, (x, y, z) => y < 32 ? (byte)stone : (byte)0);
+        var air = Build(world, (x, y, z) => 0);
+        var airBoundary = TerrainLodBoundarySummary.Capture(air, 2, 4);
+
+        var withoutEvidence = TerrainLodMeshBuilder.Build(
+            terrain, 2, world.Content.Blocks, true);
+        var withEastAir = TerrainLodMeshBuilder.Build(
+            terrain, 2, world.Content.Blocks, true, neighbors:
+            new TerrainLodNeighborBoundaries(null, null, null, airBoundary));
+
+        Assert.Equal(128, withEastAir.Vertices.Length - withoutEvidence.Vertices.Length);
+    }
+
+    [Fact]
+    public void Full_detail_boundary_summary_remains_surface_bounded()
+    {
+        var world = new FakeWorldContext();
+        var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+        var terrain = Build(world, (x, y, z) => y < 32 ? (byte)stone : (byte)0);
+
+        var boundary = TerrainLodBoundarySummary.Capture(terrain, 0, 4);
+
+        Assert.InRange(boundary.EstimatedBytes, 1, 64 * 1024);
+        Assert.Equal(new TerrainLodBoundaryIdentity(7, 0), boundary.Identity);
+    }
+
+    [Fact]
+    public void Resident_opaque_neighbor_suppresses_the_shared_boundary()
+    {
+        var world = new FakeWorldContext();
+        var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+        var terrain = Build(world, (x, y, z) => y < 32 ? (byte)stone : (byte)0);
+        var opaqueBoundary = TerrainLodBoundarySummary.Capture(terrain, 2, 4);
+
+        var withoutEvidence = TerrainLodMeshBuilder.Build(
+            terrain, 2, world.Content.Blocks, true);
+        var withEastTerrain = TerrainLodMeshBuilder.Build(
+            terrain, 2, world.Content.Blocks, true, neighbors:
+            new TerrainLodNeighborBoundaries(null, null, null, opaqueBoundary));
+
+        Assert.Equal(withoutEvidence.Vertices.Length, withEastTerrain.Vertices.Length);
+    }
+
+    [Fact]
+    public void Liquid_boundary_uses_the_translucent_neighbor_plane()
+    {
+        var world = new FakeWorldContext();
+        var water = world.Content.Blocks.Get("omniblock:flowing_water").Id;
+        var liquid = Build(world, (x, y, z) => y < 8 ? (byte)water : (byte)0);
+        var air = Build(world, (x, y, z) => 0);
+        var airBoundary = TerrainLodBoundarySummary.Capture(air, 2, 4);
+
+        var withoutEvidence = TerrainLodMeshBuilder.Build(
+            liquid, 2, world.Content.Blocks, true);
+        var withSouthAir = TerrainLodMeshBuilder.Build(
+            liquid, 2, world.Content.Blocks, true, neighbors:
+            new TerrainLodNeighborBoundaries(null, airBoundary, null, null));
+
+        Assert.True(withSouthAir.TranslucentVertices.Length >
+                    withoutEvidence.TranslucentVertices.Length);
+        Assert.Equal(withSouthAir.TranslucentVertices.Length,
+            withSouthAir.TranslucentLights.Length);
+    }
+
+    [Fact]
     public void Glass_is_retained_by_the_translucent_slice()
     {
         var world = new FakeWorldContext();

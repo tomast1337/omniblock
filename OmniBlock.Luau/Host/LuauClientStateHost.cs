@@ -75,6 +75,10 @@ public static unsafe class LuauClientStateHost
                                                 key == "terrainLodLevelTransitions" or
                                                 key == "terrainLodLevelTransitionsStarted" or
                                                 key == "terrainLodLevelTransitionReversals" or
+                                                key == "terrainLodBoundaryLinked" or
+                                                key == "terrainLodBoundaryPending" or
+                                                key == "terrainLodBoundaryRefreshes" or
+                                                key == "terrainLodBoundaryBytes" or
                                                 key == "terrainLodUploads" or key == "terrainLodGpuBytes" or
                                                 key == "terrainLodStaleResults" or key == "terrainLodRejected" or
                                                 key == "terrainLodEvictions" then

@@ -1,3 +1,4 @@
+using OmniBlock.Blocks;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.WebGPU;
 using OmniBlock.Profiling;
@@ -22,15 +23,43 @@ internal readonly record struct ClientTerrainLodSnapshot(
     int HandoffPreparingColumns,
     int HandoffOverlapColumns,
     int LevelTransitionColumns,
+    int BoundaryLinkedColumns,
+    int BoundaryPendingColumns,
     int UploadsThisFrame,
     long ResidentGpuBytes,
+    long ResidentBoundaryBytes,
     long StaleResults,
     long RejectedAdmissions,
     long Evictions,
     long HandoffsStarted,
     long HandoffReversals,
     long LevelTransitionsStarted,
-    long LevelTransitionReversals);
+    long LevelTransitionReversals,
+    long BoundaryRefreshes);
+
+internal readonly record struct TerrainLodNeighborIdentities(
+    TerrainLodBoundaryIdentity? North,
+    TerrainLodBoundaryIdentity? South,
+    TerrainLodBoundaryIdentity? West,
+    TerrainLodBoundaryIdentity? East)
+{
+    public bool HasAny => North.HasValue || South.HasValue || West.HasValue || East.HasValue;
+
+    public static TerrainLodNeighborIdentities From(TerrainLodNeighborBoundaries neighbors) => new(
+        neighbors.North?.Identity,
+        neighbors.South?.Identity,
+        neighbors.West?.Identity,
+        neighbors.East?.Identity);
+
+    public TerrainLodBoundaryIdentity? Get(Side side) => side switch
+    {
+        Side.North => North,
+        Side.South => South,
+        Side.West => West,
+        Side.East => East,
+        _ => null
+    };
+}
 
 /// <summary>
 ///     Client owner for the first terrain-horizon slice. It compiles immutable chunk snapshots on
@@ -61,6 +90,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private readonly World _world;
     private readonly TerrainLodConversionService _conversion;
     private readonly Dictionary<(int X, int Z), PendingColumn> _pending = [];
+    private readonly HashSet<(int X, int Z)> _boundaryRefreshPending = [];
     private readonly Dictionary<(int X, int Z), CapturedChunkLighting> _capturedLighting = [];
     private readonly Dictionary<(int X, int Z), ColumnPresentation> _resident = [];
     private readonly Dictionary<(int X, int Z), int> _detailLevelRequests = [];
@@ -76,6 +106,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private long _handoffReversals;
     private long _levelTransitionsStarted;
     private long _levelTransitionReversals;
+    private long _boundaryRefreshes;
     private bool _disposed;
     private ClientTerrainLodSnapshot _snapshot;
 
@@ -119,23 +150,28 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         ObjectDisposedException.ThrowIf(_disposed, this);
         _tick++;
 
+        _boundaryRefreshPending.ExceptWith(_pending.Keys);
         var due = TerrainLodAdmissionOrder.TakeNearest(
             _pending
             .Where(pair => pair.Value.DueTick <= _tick)
             .Select(pair => pair.Key), viewPosition, SnapshotsPerTick);
+        var boundaryDue = TerrainLodAdmissionOrder.TakeNearest(
+            _boundaryRefreshPending, viewPosition, SnapshotsPerTick - due.Length);
 
-        foreach (var key in due)
+        foreach (var (key, isBoundaryRefresh) in due.Select(static key => (key, false))
+                     .Concat(boundaryDue.Select(static key => (key, true))))
         {
             if (!_world.BlockHost.HasChunk(key.X, key.Z))
             {
-                _pending.Remove(key);
+                CompletePending(key, isBoundaryRefresh);
                 continue;
             }
 
             var chunk = _world.BlockHost.GetChunk(key.X, key.Z);
             if (!chunk.Loaded)
             {
-                _pending[key] = _pending[key] with { DueTick = _tick + 1 };
+                if (isBoundaryRefresh) _boundaryRefreshPending.Remove(key);
+                else _pending[key] = _pending[key] with { DueTick = _tick + 1 };
                 continue;
             }
 
@@ -144,18 +180,26 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             if (result == TerrainLodAdmissionResult.RejectedAtCapacity)
             {
                 _rejectedAdmissions++;
-                _pending[key] = _pending[key] with { DueTick = _tick + 1 };
+                if (!isBoundaryRefresh)
+                    _pending[key] = _pending[key] with { DueTick = _tick + 1 };
                 continue;
             }
 
             if (result != TerrainLodAdmissionResult.RejectedStaleRevision)
                 _capturedLighting[key] = CapturedChunkLighting.Capture(
                     chunk, source.TerrainRevision, !_world.Dimension.HasCeiling);
-            _pending.Remove(key);
+            CompletePending(key, isBoundaryRefresh);
         }
 
         EvictDistant(viewPosition);
         PublishSnapshot(0, 0);
+        return;
+
+        void CompletePending((int X, int Z) key, bool boundaryRefresh)
+        {
+            if (boundaryRefresh) _boundaryRefreshPending.Remove(key);
+            else _pending.Remove(key);
+        }
     }
 
     /// <summary>
@@ -347,6 +391,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         foreach (var presentation in _resident.Values) presentation.Dispose();
         _resident.Clear();
         _pending.Clear();
+        _boundaryRefreshPending.Clear();
         _capturedLighting.Clear();
         _detailLevelRequests.Clear();
         _opaquePipeline?.Dispose();
@@ -372,6 +417,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             _pending[key] = new PendingColumn(_tick + QuietTicks);
             return;
         }
+
+        _boundaryRefreshPending.Remove(key);
 
         if (_pending.Count >= PendingCapacity)
         {
@@ -417,8 +464,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 var minimumLevel = Math.Min(
                     Math.Min(selectedLevel, previous?.MinimumLevel ?? MinimumHorizonMeshLevel),
                     _detailLevelRequests.GetValueOrDefault(key, MinimumHorizonMeshLevel));
+                var neighbors = GetNeighborBoundaries(key);
                 candidate = ColumnPresentation.Create(
-                    _world, result, lighting, minimumLevel);
+                    _world, result, lighting, minimumLevel, neighbors);
                 if (previous is not null)
                 {
                     candidate.CopyHandoffsFrom(previous);
@@ -432,6 +480,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 }
                 if (_resident.Remove(key, out var old)) old.Dispose();
                 _resident.Add(key, candidate);
+                RefreshOutdatedBoundaryNeighbors(key, candidate);
                 if (_detailLevelRequests.TryGetValue(key, out var requestedMinimum) &&
                     candidate.MinimumLevel <= requestedMinimum)
                     _detailLevelRequests.Remove(key);
@@ -471,6 +520,42 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         // This is a presentation-detail upgrade of an already valid LOD, not a terrain edit. It may
         // enter the bounded conversion queue on the next tick without the edit quiet period.
         _pending.Add(key, new PendingColumn(_tick));
+    }
+
+    private TerrainLodNeighborBoundaries GetNeighborBoundaries((int X, int Z) key) => new(
+        _resident.GetValueOrDefault((key.X, key.Z - 1))?.Boundaries,
+        _resident.GetValueOrDefault((key.X, key.Z + 1))?.Boundaries,
+        _resident.GetValueOrDefault((key.X - 1, key.Z))?.Boundaries,
+        _resident.GetValueOrDefault((key.X + 1, key.Z))?.Boundaries);
+
+    private void RefreshOutdatedBoundaryNeighbors(
+        (int X, int Z) key,
+        ColumnPresentation installed)
+    {
+        Refresh((key.X, key.Z - 1), Side.South);
+        Refresh((key.X, key.Z + 1), Side.North);
+        Refresh((key.X - 1, key.Z), Side.East);
+        Refresh((key.X + 1, key.Z), Side.West);
+        return;
+
+        void Refresh((int X, int Z) neighborKey, Side installedSide)
+        {
+            if (!_resident.TryGetValue(neighborKey, out var neighbor) ||
+                neighbor.HasNeighbor(installedSide, installed.Boundaries.Identity) ||
+                _pending.ContainsKey(neighborKey) ||
+                _boundaryRefreshPending.Contains(neighborKey)) return;
+            if (!_world.BlockHost.HasChunk(neighborKey.X, neighborKey.Z)) return;
+            var chunk = _world.BlockHost.GetChunk(neighborKey.X, neighborKey.Z);
+            if (!chunk.Loaded) return;
+            if (_boundaryRefreshPending.Count >= PendingCapacity)
+            {
+                _rejectedAdmissions++;
+                return;
+            }
+
+            _boundaryRefreshPending.Add(neighborKey);
+            _boundaryRefreshes++;
+        }
     }
 
     private void RemoveCapturedLighting((int X, int Z) key, long terrainRevision)
@@ -518,15 +603,19 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             preparing,
             overlap,
             levelTransitions,
+            _resident.Values.Count(static value => value.HasAnyNeighbor),
+            _boundaryRefreshPending.Count,
             uploads,
             _resident.Values.Sum(static value => value.EstimatedBytes),
+            _resident.Values.Sum(static value => value.Boundaries.EstimatedBytes),
             _staleResults,
             _rejectedAdmissions,
             _evictions,
             _handoffsStarted,
             _handoffReversals,
             _levelTransitionsStarted,
-            _levelTransitionReversals);
+            _levelTransitionReversals,
+            _boundaryRefreshes);
     }
 
     private static double DistanceSquared((int X, int Z) key, Vector3D<double> point)
@@ -680,16 +769,24 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
 
     private sealed class ColumnPresentation : IDisposable
     {
-        private ColumnPresentation(long terrainRevision, Dictionary<int, GpuLevel> levels)
+        private ColumnPresentation(
+            long terrainRevision,
+            Dictionary<int, GpuLevel> levels,
+            TerrainLodBoundarySummary boundaries,
+            TerrainLodNeighborIdentities neighbors)
         {
             TerrainRevision = terrainRevision;
             Levels = levels;
+            Boundaries = boundaries;
+            Neighbors = neighbors;
             MinimumLevel = levels.Count == 0 ? MinimumHorizonMeshLevel : levels.Keys.Min();
             MaximumLevel = levels.Count == 0 ? MinimumHorizonMeshLevel : levels.Keys.Max();
         }
 
         public long TerrainRevision { get; }
         public Dictionary<int, GpuLevel> Levels { get; }
+        public TerrainLodBoundarySummary Boundaries { get; }
+        private TerrainLodNeighborIdentities Neighbors { get; }
         public int MinimumLevel { get; }
         public int MaximumLevel { get; }
         public long LastPresentedTick { get; set; }
@@ -699,6 +796,10 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         private TerrainLodLevelTransition SolidLevelTransition;
         private TerrainLodLevelTransition TranslucentLevelTransition;
         public bool HasLevel(int level) => Levels.ContainsKey(level);
+        public bool HasAnyNeighbor => Neighbors.HasAny;
+
+        public bool HasNeighbor(Side side, TerrainLodBoundaryIdentity identity) =>
+            Neighbors.Get(side) == identity;
 
         public bool HasLayer(bool translucent) => Levels.Values.Any(level => translucent
             ? level.TranslucentMesh is not null
@@ -802,7 +903,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             World world,
             TerrainLodConversionResult result,
             ILightProvider? lighting,
-            int minimumLevel)
+            int minimumLevel,
+            TerrainLodNeighborBoundaries neighbors)
         {
             var device = WebGpuDevice.Current
                 ?? throw new InvalidOperationException("Terrain LOD upload requires a WebGPU device.");
@@ -812,14 +914,18 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 var maximum = Math.Min(MaximumMeshLevel, result.Hierarchy.Levels.Count - 1);
                 var minimum = Math.Clamp(
                     minimumLevel, ExactVoxelMeshLevel, MinimumHorizonMeshLevel);
+                var boundaries = TerrainLodBoundarySummary.Capture(
+                    result.Hierarchy, minimum, maximum);
                 for (var level = minimum; level <= maximum; level++)
                 {
                     var data = TerrainLodMeshBuilder.Build(
                         result.Hierarchy, level, world.Content.Blocks, !world.Dimension.HasCeiling,
-                        lighting, world.Reader);
+                        lighting, world.Reader, neighbors);
                     levels.Add(level, GpuLevel.Create(device, result.ChunkX, result.ChunkZ, data));
                 }
-                return new ColumnPresentation(result.TerrainRevision, levels);
+                return new ColumnPresentation(
+                    result.TerrainRevision, levels, boundaries,
+                    TerrainLodNeighborIdentities.From(neighbors));
             }
             catch
             {

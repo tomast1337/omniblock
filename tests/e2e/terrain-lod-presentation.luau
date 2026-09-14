@@ -32,6 +32,14 @@ assert(type(OMNI.client.state.terrainLodLevelTransitionsStarted) == "number",
     "LOD level-transition counter is unavailable")
 assert(type(OMNI.client.state.terrainLodLevelTransitionReversals) == "number",
     "LOD level-transition reversal gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodBoundaryLinked) == "number",
+    "LOD boundary-link gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodBoundaryPending) == "number",
+    "LOD boundary-pending gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodBoundaryRefreshes) == "number",
+    "LOD boundary-refresh counter is unavailable")
+assert(type(OMNI.client.state.terrainLodBoundaryBytes) == "number",
+    "LOD boundary-memory gauge is unavailable")
 
 OMNI.waitUntil(function()
     return OMNI.client.state.terrainLodResident > 0 and
@@ -82,7 +90,12 @@ OMNI.waitUntil(function()
         OMNI.client.state.terrainLodPresented > 0 and
     OMNI.client.state.terrainLodTranslucentPresented > 0
 end, 20, 0.05)
-OMNI.wait(0.25)
+-- Let hierarchy handoffs and neighbor-boundary refreshes advance beyond their 250 ms overlap.
+OMNI.wait(1.5)
+assert(OMNI.client.state.terrainLodBoundaryLinked > 0,
+    "resident LOD columns did not establish any neighbor seam evidence")
+assert(OMNI.client.state.terrainLodBoundaryBytes > 0,
+    "resident LOD boundary summaries report no memory")
 OMNI.test.screenshot()
 
 print("terrain LOD: resident=" .. tostring(OMNI.client.state.terrainLodResident) ..
@@ -94,6 +107,10 @@ print("terrain LOD: resident=" .. tostring(OMNI.client.state.terrainLodResident)
     " overlap=" .. tostring(OMNI.client.state.terrainLodHandoffOverlap) ..
     " levelTransitions=" .. tostring(OMNI.client.state.terrainLodLevelTransitionsStarted) ..
     " levelReversals=" .. tostring(OMNI.client.state.terrainLodLevelTransitionReversals) ..
+    " boundaryLinked=" .. tostring(OMNI.client.state.terrainLodBoundaryLinked) ..
+    " boundaryPending=" .. tostring(OMNI.client.state.terrainLodBoundaryPending) ..
+    " boundaryRefreshes=" .. tostring(OMNI.client.state.terrainLodBoundaryRefreshes) ..
+    " boundaryBytes=" .. tostring(OMNI.client.state.terrainLodBoundaryBytes) ..
     " gpuBytes=" .. tostring(OMNI.client.state.terrainLodGpuBytes) ..
     " pending=" .. tostring(OMNI.client.state.terrainLodPending) ..
     " converting=" .. tostring(OMNI.client.state.terrainLodConverting))

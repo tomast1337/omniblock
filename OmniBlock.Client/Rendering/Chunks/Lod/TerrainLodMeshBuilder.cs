@@ -32,6 +32,180 @@ internal readonly record struct TerrainLodFaceAppearance(
     int OverlayTint = 0xFFFFFF);
 
 /// <summary>
+///     Four compact edge planes retained after a hierarchy is uploaded. Material values are
+///     palette-backed, so seam evidence costs O(surface) small indices instead of retaining the
+///     O(volume) hierarchy or repeating resource-location strings per boundary cell.
+/// </summary>
+internal sealed class TerrainLodBoundarySummary
+{
+    private readonly TerrainLodMaterial[] _palette;
+    private readonly Dictionary<int, BoundaryLevel> _levels;
+
+    private TerrainLodBoundarySummary(
+        int chunkX,
+        int chunkZ,
+        long terrainRevision,
+        int minimumLevel,
+        TerrainLodMaterial[] palette,
+        Dictionary<int, BoundaryLevel> levels)
+    {
+        ChunkX = chunkX;
+        ChunkZ = chunkZ;
+        TerrainRevision = terrainRevision;
+        MinimumLevel = minimumLevel;
+        _palette = palette;
+        _levels = levels;
+        EstimatedBytes = palette.Length * 32L + levels.Values.Sum(static level =>
+            (long)(level.North.Length + level.South.Length +
+                   level.West.Length + level.East.Length) * 4);
+    }
+
+    public int ChunkX { get; }
+    public int ChunkZ { get; }
+    public long TerrainRevision { get; }
+    public int MinimumLevel { get; }
+    public long EstimatedBytes { get; }
+    public TerrainLodBoundaryIdentity Identity => new(TerrainRevision, MinimumLevel);
+
+    public static TerrainLodBoundarySummary Capture(
+        TerrainLodHierarchy hierarchy, int minimumLevel, int maximumLevel)
+    {
+        ArgumentNullException.ThrowIfNull(hierarchy);
+        List<TerrainLodMaterial> palette = [TerrainLodMaterial.Air];
+        Dictionary<TerrainLodMaterial, ushort> paletteIndices = [];
+        Dictionary<int, BoundaryLevel> levels = [];
+        var maximum = Math.Min(maximumLevel, hierarchy.Levels.Count - 1);
+        for (var levelIndex = Math.Max(0, minimumLevel); levelIndex <= maximum; levelIndex++)
+        {
+            var level = hierarchy.Levels[levelIndex];
+            var north = new BoundarySample[level.Width * level.Height];
+            var south = new BoundarySample[level.Width * level.Height];
+            var west = new BoundarySample[level.Depth * level.Height];
+            var east = new BoundarySample[level.Depth * level.Height];
+            for (var x = 0; x < level.Width; x++)
+            for (var y = 0; y < level.Height; y++)
+            {
+                north[x * level.Height + y] = Sample(level[x, y, 0]);
+                south[x * level.Height + y] = Sample(level[x, y, level.Depth - 1]);
+            }
+            for (var z = 0; z < level.Depth; z++)
+            for (var y = 0; y < level.Height; y++)
+            {
+                west[z * level.Height + y] = Sample(level[0, y, z]);
+                east[z * level.Height + y] = Sample(level[level.Width - 1, y, z]);
+            }
+            levels.Add(levelIndex, new BoundaryLevel(
+                level.Width, level.Height, level.Depth, north, south, west, east));
+        }
+
+        return new TerrainLodBoundarySummary(
+            hierarchy.ChunkX, hierarchy.ChunkZ, hierarchy.TerrainRevision,
+            Math.Max(0, minimumLevel),
+            [.. palette], levels);
+
+        BoundarySample Sample(TerrainLodCell cell)
+        {
+            var solid = TerrainLodMeshBuilder.TrySelectDepthMaterial(cell, out var depth)
+                ? Index(depth)
+                : (ushort)0;
+            var translucent = TerrainLodMeshBuilder.TrySelectTranslucentMaterial(
+                    cell, out var transparent)
+                ? Index(transparent)
+                : (ushort)0;
+            return new BoundarySample(solid, translucent);
+        }
+
+        ushort Index(TerrainLodMaterial material)
+        {
+            if (paletteIndices.TryGetValue(material, out var index)) return index;
+            if (palette.Count > ushort.MaxValue)
+                throw new InvalidDataException("Terrain LOD boundary material palette is too large.");
+            index = checked((ushort)palette.Count);
+            palette.Add(material);
+            paletteIndices.Add(material, index);
+            return index;
+        }
+    }
+
+    public bool TryGet(
+        int level,
+        Side side,
+        int along,
+        int y,
+        bool translucent,
+        out TerrainLodMaterial material)
+    {
+        material = TerrainLodMaterial.Air;
+        if (!_levels.TryGetValue(level, out var boundary) || y < 0 || y >= boundary.Height)
+            return false;
+        BoundarySample sample;
+        switch (side)
+        {
+            case Side.North when (uint)along < (uint)boundary.Width:
+                sample = boundary.North[along * boundary.Height + y];
+                break;
+            case Side.South when (uint)along < (uint)boundary.Width:
+                sample = boundary.South[along * boundary.Height + y];
+                break;
+            case Side.West when (uint)along < (uint)boundary.Depth:
+                sample = boundary.West[along * boundary.Height + y];
+                break;
+            case Side.East when (uint)along < (uint)boundary.Depth:
+                sample = boundary.East[along * boundary.Height + y];
+                break;
+            default:
+                return false;
+        }
+
+        material = _palette[translucent ? sample.Translucent : sample.Solid];
+        return true;
+    }
+
+    private readonly record struct BoundarySample(ushort Solid, ushort Translucent);
+    private sealed record BoundaryLevel(
+        int Width,
+        int Height,
+        int Depth,
+        BoundarySample[] North,
+        BoundarySample[] South,
+        BoundarySample[] West,
+        BoundarySample[] East);
+}
+
+internal readonly record struct TerrainLodBoundaryIdentity(long TerrainRevision, int MinimumLevel);
+
+internal readonly record struct TerrainLodNeighborBoundaries(
+    TerrainLodBoundarySummary? North,
+    TerrainLodBoundarySummary? South,
+    TerrainLodBoundarySummary? West,
+    TerrainLodBoundarySummary? East)
+{
+    public bool TryGet(
+        int level,
+        Side side,
+        int along,
+        int y,
+        bool translucent,
+        out TerrainLodMaterial material)
+    {
+        var (neighbor, neighborSide) = side switch
+        {
+            Side.North => (North, Side.South),
+            Side.South => (South, Side.North),
+            Side.West => (West, Side.East),
+            Side.East => (East, Side.West),
+            _ => (null, side)
+        };
+        if (neighbor is null)
+        {
+            material = TerrainLodMaterial.Air;
+            return false;
+        }
+        return neighbor.TryGet(level, neighborSide, along, y, translucent, out material);
+    }
+}
+
+/// <summary>
 ///     Compiles the resource-pack-independent hierarchy into independent depth-writing and
 ///     translucent terrain-array quad streams. Keeping the streams separate lets the renderer retain
 ///     ordinary depth semantics and order blended distant columns back to front.
@@ -46,7 +220,8 @@ internal static class TerrainLodMeshBuilder
         IBlockRuntimeView blocks,
         bool hasSkyLight,
         ILightProvider? lighting = null,
-        IBlockReader? visuals = null)
+        IBlockReader? visuals = null,
+        TerrainLodNeighborBoundaries neighbors = default)
     {
         ArgumentNullException.ThrowIfNull(hierarchy);
         ArgumentNullException.ThrowIfNull(blocks);
@@ -54,9 +229,9 @@ internal static class TerrainLodMeshBuilder
             throw new ArgumentOutOfRangeException(nameof(levelIndex));
 
         var solid = BuildLayer(
-            hierarchy, levelIndex, blocks, hasSkyLight, lighting, visuals, false);
+            hierarchy, levelIndex, blocks, hasSkyLight, lighting, visuals, neighbors, false);
         var translucent = BuildLayer(
-            hierarchy, levelIndex, blocks, hasSkyLight, lighting, visuals, true);
+            hierarchy, levelIndex, blocks, hasSkyLight, lighting, visuals, neighbors, true);
         return new TerrainLodMeshData(
             levelIndex,
             solid.Vertices,
@@ -72,6 +247,7 @@ internal static class TerrainLodMeshBuilder
         bool hasSkyLight,
         ILightProvider? lighting,
         IBlockReader? visuals,
+        TerrainLodNeighborBoundaries neighbors,
         bool translucent)
     {
 
@@ -122,26 +298,34 @@ internal static class TerrainLodMeshBuilder
                 AddFace(Side.Up, 1.0f, tileX, tileZ,
                     (maxX, renderMaxY, maxZ), (maxX, renderMaxY, minZ),
                     (minX, renderMaxY, minZ), (minX, renderMaxY, maxZ));
-            // A single-column hierarchy has no neighbor evidence at its horizontal boundary.
-            // Emitting those faces creates enormous dark curtains wherever an adjacent LOD is not
-            // installed yet. Interior cliffs are authoritative; cross-column boundary faces wait
-            // for the later seam builder that can inspect both columns.
-            if (x > 0 && (cell.ExposedFaces & TerrainLodFaceMask.West) != 0)
+            if ((cell.ExposedFaces & TerrainLodFaceMask.West) != 0 &&
+                (x > 0 || BoundaryExposed(Side.West, z, y, material)))
                 AddFace(Side.West, 0.6f, tileZ, tileY,
                     (minX, renderMaxY, minZ), (minX, minY, minZ),
                     (minX, minY, maxZ), (minX, renderMaxY, maxZ));
-            if (x < level.Width - 1 && (cell.ExposedFaces & TerrainLodFaceMask.East) != 0)
+            if ((cell.ExposedFaces & TerrainLodFaceMask.East) != 0 &&
+                (x < level.Width - 1 || BoundaryExposed(Side.East, z, y, material)))
                 AddFace(Side.East, 0.6f, tileZ, tileY,
                     (maxX, renderMaxY, maxZ), (maxX, minY, maxZ),
                     (maxX, minY, minZ), (maxX, renderMaxY, minZ));
-            if (z > 0 && (cell.ExposedFaces & TerrainLodFaceMask.North) != 0)
+            if ((cell.ExposedFaces & TerrainLodFaceMask.North) != 0 &&
+                (z > 0 || BoundaryExposed(Side.North, x, y, material)))
                 AddFace(Side.North, 0.8f, tileX, tileY,
                     (maxX, renderMaxY, minZ), (maxX, minY, minZ),
                     (minX, minY, minZ), (minX, renderMaxY, minZ));
-            if (z < level.Depth - 1 && (cell.ExposedFaces & TerrainLodFaceMask.South) != 0)
+            if ((cell.ExposedFaces & TerrainLodFaceMask.South) != 0 &&
+                (z < level.Depth - 1 || BoundaryExposed(Side.South, x, y, material)))
                 AddFace(Side.South, 0.8f, tileX, tileY,
                     (minX, renderMaxY, maxZ), (minX, minY, maxZ),
                     (maxX, minY, maxZ), (maxX, renderMaxY, maxZ));
+
+            bool BoundaryExposed(Side side, int along, int cellY, TerrainLodMaterial current)
+            {
+                if (!neighbors.TryGet(levelIndex, side, along, cellY, translucent,
+                        out var neighbor)) return false;
+                return neighbor.IsAir || !neighbor.OccludesFaces ||
+                       current.Geometry == TerrainLodGeometryClass.Liquid && neighbor != current;
+            }
 
             void AddFace(
                 Side side,

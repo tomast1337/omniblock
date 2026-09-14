@@ -171,6 +171,8 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"LOD level: transitioning {lod.LevelTransitionColumns:N0}  started {lod.LevelTransitionsStarted:N0}  reversed {lod.LevelTransitionReversals:N0}");
         ImGuiTextSafe.Text(
+            $"LOD seams: linked {lod.BoundaryLinkedColumns:N0}  pending {lod.BoundaryPendingColumns:N0}  refreshes {lod.BoundaryRefreshes:N0}  {FormatBytes(lod.ResidentBoundaryBytes)} CPU edges");
+        ImGuiTextSafe.Text(
             $"Lifecycle: stale {lod.StaleResults:N0}  rejected {lod.RejectedAdmissions:N0}  evicted {lod.Evictions:N0}");
     }
 
