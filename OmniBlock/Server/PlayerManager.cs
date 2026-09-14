@@ -42,11 +42,13 @@ public class PlayerManager
         if (world.Length > 0 && world[0] != null)
         {
             world[0].ChunkMap = _chunkMaps[0];
+            _chunkMaps[0].InitializePregeneration();
         }
 
         if (world.Length > 1 && world[1] != null)
         {
             world[1].ChunkMap = _chunkMaps[1];
+            _chunkMaps[1].InitializePregeneration();
         }
     }
 
@@ -65,6 +67,13 @@ public class PlayerManager
     public void SetViewDistance(int newDistance) => _pendingViewDistance = newDistance;
 
     private ChunkMap GetChunkMap(int dimensionId) => dimensionId == -1 ? _chunkMaps[1] : _chunkMaps[0];
+
+    internal ChunkMap GetChunkMapForDimension(int dimensionId) => GetChunkMap(dimensionId);
+
+    public IReadOnlyList<FixedAreaPregenerationSnapshot> GetPregenerationSnapshots() =>
+        _chunkMaps.SelectMany(static chunkMap => chunkMap.PregenerationSnapshots)
+            .OrderBy(static snapshot => snapshot.Definition.Id, StringComparer.Ordinal)
+            .ToArray();
 
     public void loadPlayerData(ServerPlayerEntity player) => _saveHandler.LoadPlayerData(player);
 

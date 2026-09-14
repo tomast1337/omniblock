@@ -95,6 +95,12 @@ internal class RegionFile
         }
     }
 
+    public bool ContainsChunk(int chunkX, int chunkZ)
+    {
+        lock (this)
+            return !OutOfBounds(chunkX, chunkZ) && GetOffset(chunkX, chunkZ) != 0;
+    }
+
     public ChunkDataStream GetChunkDataInputStream(int chunkX, int chunkZ)
     {
         lock (this)

@@ -17,6 +17,7 @@ internal class ChunkMap
     private readonly int _dimensionId;
     private readonly ILogger<ChunkMap> _logger = Log.Instance.For<ChunkMap>();
     private readonly OmniBlockServer _server;
+    private FixedAreaPregenerationService? _pregeneration;
     public readonly ChunkLoadingQueue loadQueue;
     private int _viewDistance;
     public List<ServerPlayerEntity> players = [];
@@ -41,6 +42,25 @@ internal class ChunkMap
 
     internal bool SharesProcessWithClient => _server is InternalServer;
     internal int DimensionId => _dimensionId;
+    internal FixedAreaPregenerationService Pregeneration =>
+        _pregeneration ??= new FixedAreaPregenerationService(getWorld(), this);
+    internal IReadOnlyList<FixedAreaPregenerationSnapshot> PregenerationSnapshots =>
+        _pregeneration?.PublishedSnapshots ?? [];
+
+    internal void InitializePregeneration()
+    {
+        try
+        {
+            _ = Pregeneration;
+        }
+        catch (NotSupportedException error)
+        {
+            // Custom/ephemeral storage providers are still valid for ordinary gameplay. Their
+            // explicit limitation is reported if an operator later requests pregeneration.
+            _logger.LogInformation(error,
+                "Persistent pregeneration is unavailable in dimension {Dimension}", _dimensionId);
+        }
+    }
 
     internal WorldGenerationCoordinator<Chunk>.GenerationRequest<Chunk>
         RequestBackgroundTerrain(int x, int z, string owner, int radialDistance, long revision = 0) =>
@@ -69,6 +89,7 @@ internal class ChunkMap
 
     public void updateChunks()
     {
+        _pregeneration?.Tick();
         foreach (var chunk in _chunksToUpdate)
         {
             chunk.updateChunk();
@@ -328,7 +349,11 @@ internal class ChunkMap
         }
     }
 
-    internal void Shutdown() => loadQueue.Dispose();
+    internal void Shutdown()
+    {
+        _pregeneration?.Dispose();
+        loadQueue.Dispose();
+    }
 
     internal class TrackedChunk
     {

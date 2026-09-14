@@ -91,6 +91,7 @@ internal class ServerCommandHandler : ICommandHandler
         Register(new GameRuleCommand());
         Register(new SeedCommand());
         Register(new TickCommand());
+        Register(new WorldGenerationCommand());
 
         // Chat commands
         Register(new SayCommand());

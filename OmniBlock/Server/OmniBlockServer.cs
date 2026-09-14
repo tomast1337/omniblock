@@ -689,6 +689,13 @@ public abstract class OmniBlockServer : ICommandOutput
         }
     }
 
+    /// <summary>
+    ///     Thread-safe immutable progress view for an integrated client's preparation screen.
+    ///     Mutations still enter through <see cref="QueueCommands"/> and execute on the server.
+    /// </summary>
+    public IReadOnlyList<FixedAreaPregenerationSnapshot> GetPregenerationSnapshots() =>
+        playerManager?.GetPregenerationSnapshots() ?? [];
+
     private void RunPendingCommands()
     {
         while (true)

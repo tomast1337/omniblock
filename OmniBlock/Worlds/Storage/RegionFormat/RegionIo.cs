@@ -75,6 +75,24 @@ internal static class RegionIo
         return regionFile.func_22209_a();
     }
 
+    public static bool ContainsChunk(string worldDir, int chunkX, int chunkZ)
+    {
+        if (worldDir is null) throw new ArgumentNullException(nameof(worldDir));
+        var regionPath = Path.Combine(
+            worldDir,
+            "region",
+            $"r.{chunkX >> 5}.{chunkZ >> 5}.mcr");
+        lock (gate)
+        {
+            if (!cache.TryGetValue(regionPath, out var regionFile))
+            {
+                if (!File.Exists(regionPath)) return false;
+                regionFile = CreateRegionFile(worldDir, chunkX, chunkZ);
+            }
+            return regionFile.ContainsChunk(chunkX & 31, chunkZ & 31);
+        }
+    }
+
     public static ChunkDataStream? GetChunkInputStream(string worldDir, int chunkX, int chunkZ)
     {
         var regionFile = CreateRegionFile(worldDir, chunkX, chunkZ);

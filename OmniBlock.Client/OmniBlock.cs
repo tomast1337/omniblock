@@ -2354,12 +2354,21 @@ public partial class OmniBlock :
         var isMp = IsMultiplayerWorld() && InternalServer == null;
         var quitText = isMp ? Translations.Get("menu.disconnect") : Translations.Get("menu.saveAndQuitToTitle");
         var saveStep = 0;
+        var integratedServer = InternalServer;
         Navigate(new IngameMenuScreen(UIContext, StatFileWriter, () => Navigate(null), quitText, () =>
         {
             if (IsMultiplayerWorld()) World.Disconnect();
             StopInternalServer();
             ChangeWorld(null);
-        }, () => World?.AttemptSaving(saveStep++) ?? false, TexturePackList));
+        }, () => World?.AttemptSaving(saveStep++) ?? false, TexturePackList,
+            integratedServer is null
+                ? null
+                : () => new WorldPreparationScreen(
+                    UIContext,
+                    CurrentScreen,
+                    integratedServer.GetPregenerationSnapshots,
+                    (action, id) => integratedServer.QueueCommands(
+                        $"worldgen {action} {id}", integratedServer))));
     }
 
     public void SetIngameFocus()

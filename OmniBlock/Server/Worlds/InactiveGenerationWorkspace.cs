@@ -23,6 +23,9 @@ internal sealed class InactiveGenerationWorkspace
 {
     private readonly WorkspaceWorld _world;
     private readonly IChunkSource _generator;
+    private readonly IChunkStorage? _storage;
+    private readonly HashSet<ChunkPos> _storedDependencies = [];
+    private readonly HashSet<ChunkPos> _writableStoredTargets = [];
     private int _started;
 
     public InactiveGenerationWorkspace(IWorldContext source)
@@ -40,6 +43,7 @@ internal sealed class InactiveGenerationWorkspace
             dimension,
             source.Content);
         _generator = _world.Dimension.CreateChunkGenerator();
+        _storage = (source as World)?.GetWorldStorage().GetChunkStorage(source.Dimension);
     }
 
     /// <summary>
@@ -84,7 +88,18 @@ internal sealed class InactiveGenerationWorkspace
                      .ThenBy(static position => position.Z))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            _world.Chunks.Store(_generator.GetChunk(position.X, position.Z));
+            Chunk? chunk = null;
+            if (_storage?.ContainsChunk(position.X, position.Z) == true)
+            {
+                chunk = _storage.LoadChunk(_world, position.X, position.Z);
+                if (chunk is null)
+                    throw new InvalidDataException(
+                        $"Stored dependency chunk {position.X},{position.Z} exists but could not be decoded; " +
+                        "inactive generation will not replace it.");
+                _storedDependencies.Add(position);
+            }
+
+            _world.Chunks.Store(chunk ?? _generator.GetChunk(position.X, position.Z));
         }
 
         foreach (var chunk in _world.Chunks.All
@@ -99,6 +114,10 @@ internal sealed class InactiveGenerationWorkspace
         {
             cancellationToken.ThrowIfCancellationRequested();
             var decorated = _world.Chunks.GetChunk(target.X, target.Z);
+            if (decorated.TerrainPopulated) continue;
+
+            if (_storedDependencies.Remove(target))
+                _writableStoredTargets.Add(target);
             decorated.TerrainPopulated = true;
             _generator.DecorateTerrain(_world.Chunks, target.X, target.Z);
 
@@ -108,12 +127,18 @@ internal sealed class InactiveGenerationWorkspace
 
         return new InactiveGenerationBatch(
             _world.Chunks.All
+                .Where(chunk => !_storedDependencies.Contains(new ChunkPos(chunk.X, chunk.Z)))
                 .OrderBy(static chunk => chunk.X)
                 .ThenBy(static chunk => chunk.Z)
                 .Select(chunk => InactiveChunkSnapshot.Capture(chunk, _world))
                 .ToArray())
         {
-            DecoratedTargets = orderedTargets
+            DecoratedTargets = orderedTargets,
+            SkippedTargets = orderedTargets
+                .Where(target => !_writableStoredTargets.Contains(target) &&
+                                 _storedDependencies.Contains(target))
+                .ToArray(),
+            WritableStoredTargets = _writableStoredTargets.ToArray()
         };
     }
 
@@ -189,6 +214,9 @@ internal sealed class InactiveGenerationWorkspace
 public sealed record InactiveGenerationBatch(IReadOnlyList<InactiveChunkSnapshot> Chunks)
 {
     public IReadOnlyList<ChunkPos> DecoratedTargets { get; init; } = [];
+    public IReadOnlyList<ChunkPos> SkippedTargets { get; init; } = [];
+    public IReadOnlyList<ChunkPos> WritableStoredTargets { get; init; } = [];
+    public long RetainedBytes => Chunks.Sum(static chunk => (long)chunk.SerializedLength);
     public InactiveChunkSnapshot Get(int x, int z) =>
         Chunks.FirstOrDefault(chunk => chunk.X == x && chunk.Z == z)
         ?? throw new KeyNotFoundException($"Inactive batch does not contain chunk {x},{z}.");
@@ -303,6 +331,7 @@ public sealed class InactiveChunkSnapshot
 
     public int X { get; }
     public int Z { get; }
+    internal int SerializedLength => _nbt.Length;
 
     internal static InactiveChunkSnapshot Capture(Chunk chunk, IWorldContext world)
     {

@@ -113,6 +113,25 @@ public sealed class InactiveGenerationWorkspaceTests
     }
 
     [Fact]
+    public void Missing_chunk_probe_does_not_create_an_empty_region_file()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"omniblock-probe-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var storage = new RegionChunkStorage(root);
+
+            Assert.False(storage.ContainsChunk(1024, -1024));
+            Assert.False(Directory.Exists(Path.Combine(root, "region")));
+        }
+        finally
+        {
+            RegionIo.Flush();
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
     public void Completed_batch_is_durably_saved_reopened_and_stays_inactive_until_load()
     {
         var root = Path.Combine(Path.GetTempPath(), $"omniblock-inactive-commit-{Guid.NewGuid():N}");
@@ -138,6 +157,66 @@ public sealed class InactiveGenerationWorkspaceTests
 
             reopened.Load();
             Assert.True(reopened.Loaded);
+        }
+        finally
+        {
+            RegionIo.Flush();
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void Stored_dependencies_are_used_for_reads_but_never_emitted_for_overwrite()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"omniblock-inactive-existing-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var storage = new RegionChunkStorage(root);
+            var world = new SourceWorld(246813579L, storage: new ChunkBackedStorage(storage));
+            var stored = world.Generator.GetChunk(-1, -1);
+            var marker = world.Content.Blocks.Get("diamond_block").Id;
+            stored.SetBlock(1, 100, 1, marker, 0, false);
+            storage.SaveChunk(world, stored, null, 0);
+            storage.FlushToDisk();
+
+            var batch = new InactiveGenerationWorkspace(world).GenerateCompletedNeighborhood(0, 0);
+
+            Assert.Equal(15, batch.Chunks.Count);
+            Assert.DoesNotContain(batch.Chunks, chunk => chunk.X == -1 && chunk.Z == -1);
+            var reopened = storage.LoadChunk(world, -1, -1);
+            Assert.NotNull(reopened);
+            Assert.Equal(marker, reopened.GetBlockId(1, 100, 1));
+        }
+        finally
+        {
+            RegionIo.Flush();
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void Dependency_saved_by_one_batch_is_decorated_when_it_becomes_a_later_target()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"omniblock-inactive-sequence-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var storage = new RegionChunkStorage(root);
+            var world = new SourceWorld(246813579L, storage: new ChunkBackedStorage(storage));
+            var first = new InactiveGenerationWorkspace(world).GenerateCompletedNeighborhood(0, 0);
+            first.SaveDurably(world, storage);
+            var dependency = storage.LoadChunk(world, 1, 0);
+            Assert.NotNull(dependency);
+            Assert.False(dependency.TerrainPopulated);
+
+            var second = new InactiveGenerationWorkspace(world).GenerateCompletedNeighborhood(1, 0);
+
+            Assert.Contains(new ChunkPos(1, 0), second.WritableStoredTargets);
+            Assert.DoesNotContain(new ChunkPos(1, 0), second.SkippedTargets);
+            Assert.Contains(second.Chunks, chunk => chunk.X == 1 && chunk.Z == 0);
+            second.SaveDurably(world, storage);
+            Assert.True(storage.LoadChunk(world, 1, 0)!.TerrainPopulated);
         }
         finally
         {
@@ -285,8 +364,8 @@ public sealed class InactiveGenerationWorkspaceTests
 
     private sealed class SourceWorld : World
     {
-        public SourceWorld(long seed, string profile = "default")
-            : base(new MemoryStorage(), "inactive-source",
+        public SourceWorld(long seed, string profile = "default", IWorldStorage? storage = null)
+            : base(storage ?? new MemoryStorage(), "inactive-source",
                 new WorldSettings(seed, ResolveWorldType(profile)),
                 ResolveDimension(profile), ContentRuntime.Current)
         {
@@ -324,6 +403,18 @@ public sealed class InactiveGenerationWorkspaceTests
         public WorldProperties? LoadProperties() => null;
         public void CheckSessionLock() { }
         public IChunkStorage? GetChunkStorage(Dimension dimension) => null;
+        public void Save(WorldProperties properties, List<EntityPlayer> players) { }
+        public void Save(WorldProperties properties) { }
+        public void ForceSave() { }
+        public IPlayerStorage? GetPlayerStorage() => null;
+        public FileInfo? GetWorldPropertiesFile(string name) => null;
+    }
+
+    private sealed class ChunkBackedStorage(IChunkStorage chunks) : IWorldStorage
+    {
+        public WorldProperties? LoadProperties() => null;
+        public void CheckSessionLock() { }
+        public IChunkStorage GetChunkStorage(Dimension dimension) => chunks;
         public void Save(WorldProperties properties, List<EntityPlayer> players) { }
         public void Save(WorldProperties properties) { }
         public void ForceSave() { }

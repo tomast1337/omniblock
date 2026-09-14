@@ -13,6 +13,8 @@ internal class RegionChunkStorage : IChunkStorage
 
     public RegionChunkStorage(string inputDir) => _dir = inputDir;
 
+    public bool ContainsChunk(int chunkX, int chunkZ) => RegionIo.ContainsChunk(_dir, chunkX, chunkZ);
+
     public Chunk? LoadChunk(IWorldContext world, int chunkX, int chunkZ)
     {
         using var s = RegionIo.GetChunkInputStream(_dir, chunkX, chunkZ);

@@ -16,7 +16,8 @@ public class IngameMenuScreen(
     string quitButtonText,
     Action quit,
     Func<bool> isSavingComplete,
-    TexturePacks texturePacks) : UIScreen(context)
+    TexturePacks texturePacks,
+    Func<UIScreen>? createWorldPreparationScreen = null) : UIScreen(context)
 {
     protected override void Init()
     {
@@ -65,6 +66,17 @@ public class IngameMenuScreen(
         rowStats.AddChild(btnAchievements);
         rowStats.AddChild(btnStats);
         Root.AddChild(rowStats);
+
+        if (createWorldPreparationScreen is not null)
+        {
+            var btnWorldPreparation = CreateButton();
+            btnWorldPreparation.AutomationId = "pause.worldPreparation";
+            btnWorldPreparation.Text = "World Preparation...";
+            btnWorldPreparation.Style.MarginBottom = 4;
+            btnWorldPreparation.OnClick += _ =>
+                Context.Navigator.Navigate(createWorldPreparationScreen());
+            Root.AddChild(btnWorldPreparation);
+        }
 
         // --- Send Feedback and Report Bugs Row ---
         Panel feedbackRow = new();
