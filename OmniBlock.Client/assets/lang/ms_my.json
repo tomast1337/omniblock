@@ -216,6 +216,9 @@
             "min": "*menguap*",
             "max": "HALAJU TINGGI!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Jarak Pemuatan",
             "chunks": "Chunk",

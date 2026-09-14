@@ -216,6 +216,9 @@
             "min": "*menguap*",
             "max": "KECEPATAN TINGGI!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Jarak Render",
             "chunks": "Chunk",

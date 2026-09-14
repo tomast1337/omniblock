@@ -218,6 +218,9 @@
             "min": "*yawn*",
             "max": "HIPERPRĘDKOŚĆ!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Odległość render.",
             "chunks": "czanków",

@@ -201,7 +201,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _visible.Clear();
         _visibleSeams.Clear();
         _selectedSolidLevels.Clear();
-        var maximumDistanceSquared = MaximumDistanceBlocks * MaximumDistanceBlocks;
+        var maximumDistance = Math.Min(
+            MaximumDistanceBlocks, Math.Max(1, parameters.TerrainHorizonDistance) * 16.0f);
+        var maximumDistanceSquared = maximumDistance * maximumDistance;
         foreach (var (key, presentation) in _resident)
         {
             var distanceSquared = DistanceSquared(key, parameters.ViewPos);
@@ -319,7 +321,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _visible.Clear();
         _visibleTranslucentSeams.Clear();
         _selectedTranslucentLevels.Clear();
-        var maximumDistanceSquared = MaximumDistanceBlocks * MaximumDistanceBlocks;
+        var maximumDistance = Math.Min(
+            MaximumDistanceBlocks, Math.Max(1, parameters.TerrainHorizonDistance) * 16.0f);
+        var maximumDistanceSquared = maximumDistance * maximumDistance;
         foreach (var (key, presentation) in _resident)
         {
             var distanceSquared = DistanceSquared(key, parameters.ViewPos);
@@ -1269,14 +1273,21 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
 /// </summary>
 internal static class TerrainLodFog
 {
-    public static FogState Resolve(FogState source, int renderDistance)
+    public static FogState Resolve(
+        FogState source,
+        int renderDistance,
+        int terrainHorizonDistance,
+        int fogDistance)
     {
         if (source.Curve != FogCurve.Linear) return source;
 
         var nearDistance = Math.Max(1, renderDistance) * (float)SubChunkRenderer.Size;
-        var end = Math.Max(source.End, ClientTerrainLodRenderer.MaximumDistanceBlocks);
-        var start = Math.Clamp(
-            Math.Max(source.Start, nearDistance * 0.75f), 0, end - 1);
+        var horizon = Math.Max(renderDistance, terrainHorizonDistance) *
+                      (float)SubChunkRenderer.Size;
+        var end = Math.Clamp(
+            Math.Max(1, fogDistance) * (float)SubChunkRenderer.Size,
+            nearDistance, horizon);
+        var start = Math.Clamp(source.Start, 0, end - 1);
         return source with { Start = start, End = end };
     }
 }

@@ -10,6 +10,7 @@ public struct ChunkRenderParams
     public Matrix4X4<float> Projection;
     public Vector3D<double> ViewPos;
     public int RenderDistance;
+    public int TerrainHorizonDistance;
     public long Ticks;
     public float PartialTicks;
     public float DeltaTime;

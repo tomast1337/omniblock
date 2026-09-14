@@ -6,9 +6,15 @@ public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOpti
 {
     protected override List<OptionSection> GetOptions() =>
     [
-        new(Translations.Get("options.video.performance"), [
+        new("World Distance", [
             Options.RenderDistanceOption,
+            Options.TerrainHorizonDistanceOption,
+            Options.FogDistanceOption,
             Options.SimulationDistanceOption,
+            Options.EntityImpostorDistanceOption
+        ]),
+
+        new(Translations.Get("options.video.performance"), [
             Options.PresentationQualityOption,
             Options.FramerateLimitOption,
             Options.VSyncOption,
@@ -17,7 +23,6 @@ public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOpti
             Options.AnisotropicOption,
             Options.CloudsQualityOption,
             Options.SoftCloudsOption,
-            Options.EntityImpostorDistanceOption,
             new NavigationOption("options.shader.text",
                 () => Context.Navigator.Navigate(new ShaderOptionsScreen(Context, this)))
         ]),

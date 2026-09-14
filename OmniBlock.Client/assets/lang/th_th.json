@@ -216,6 +216,9 @@
             "min": "*หาว*",
             "max": "ความเร็วแสง!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "ระยะการมองเห็น",
             "chunks": "Chunk",

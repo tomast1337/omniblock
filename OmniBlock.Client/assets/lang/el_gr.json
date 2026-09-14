@@ -216,6 +216,9 @@
             "min": "*χασμουρητό*",
             "max": "ΥΠΕΡΤΑΧΥΤΗΤΑ!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Απόσταση Απόδοσης",
             "chunks": "Chunks",

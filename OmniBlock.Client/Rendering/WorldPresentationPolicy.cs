@@ -23,15 +23,20 @@ internal readonly record struct WorldPresentationPolicy(
     public double ParticleDistanceSquared => ParticleDistance * ParticleDistance;
 
     public static WorldPresentationPolicy From(GameOptions options) =>
-        From(options.PresentationQuality, options.RenderDistance);
+        From(options.PresentationQuality, options.RenderDistance, options.FogDistance);
 
-    internal static WorldPresentationPolicy From(int quality, int renderDistance)
+    internal static WorldPresentationPolicy From(
+        int quality,
+        int renderDistance,
+        int fogDistance = -1)
     {
         var terrainDistance = Math.Max(1, renderDistance) * 16.0;
+        var visibleDistance = Math.Max(
+            terrainDistance, Math.Max(1, fogDistance) * 16.0);
         return quality switch
         {
             0 => new(
-                Math.Min(terrainDistance, 96.0),
+                Math.Min(visibleDistance, 96.0),
                 Math.Min(terrainDistance, 48.0),
                 24.0,
                 1_000,
@@ -39,7 +44,7 @@ internal readonly record struct WorldPresentationPolicy(
                 0.35f,
                 1),
             2 => new(
-                terrainDistance,
+                visibleDistance,
                 Math.Min(terrainDistance, 128.0),
                 64.0,
                 ParticleBuffer.MaxParticles,
@@ -47,7 +52,7 @@ internal readonly record struct WorldPresentationPolicy(
                 1.0f,
                 1),
             _ => new(
-                terrainDistance,
+                visibleDistance,
                 Math.Min(terrainDistance, 80.0),
                 40.0,
                 2_500,

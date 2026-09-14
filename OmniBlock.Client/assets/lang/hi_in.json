@@ -216,6 +216,9 @@
             "min": "*जम्हाई*",
             "max": "हाइपरस्पीड!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "रेंडर दूरी",
             "chunks": "चंक्स",

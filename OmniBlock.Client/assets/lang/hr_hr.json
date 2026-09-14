@@ -216,6 +216,9 @@
             "min": "*zijev*",
             "max": "HIPERBRZINA!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Udaljenost prikazivanja",
             "chunks": "Chunkovi",

@@ -734,6 +734,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             Projection = projection,
             ViewPos = new Vector3D<double>(viewX, viewY, viewZ),
             RenderDistance = _renderDistance,
+            TerrainHorizonDistance = _game.Options.TerrainHorizonDistance,
             Ticks = _world.GetTime(),
             PartialTicks = (float)partialTicks,
             DeltaTime = _game.Timer.DeltaTime,
@@ -741,7 +742,10 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             ViewportHeight = _game.DisplayHeight,
             ChunkFade = _game.Options.ChunkFade,
             RenderOccluded = false,
-            Fog = TerrainLodFog.Resolve(RenderSystem.Fog, _renderDistance)
+            Fog = TerrainLodFog.Resolve(
+                RenderSystem.Fog, _renderDistance,
+                _game.Options.TerrainHorizonDistance,
+                _game.Options.FogDistance)
         };
 
         if (pass == 0)

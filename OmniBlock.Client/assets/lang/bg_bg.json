@@ -216,6 +216,9 @@
             "min": "*прозяване*",
             "max": "СВРЪХСКОРОСТ!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Дистанция на изобразяване",
             "chunks": "Чънкове",

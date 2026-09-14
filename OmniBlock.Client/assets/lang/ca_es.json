@@ -216,6 +216,9 @@
             "min": "*badall*",
             "max": "HIPERVELOCITAT!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Distància de renderitzat",
             "chunks": "Chunks",

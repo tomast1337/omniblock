@@ -12,10 +12,11 @@ public sealed class TerrainLodHandoffTests
         var source = new FogState(
             FogCurve.Linear, new Vector4D<float>(0.2f, 0.3f, 0.4f, 1), 32, 128, 1);
 
-        var resolved = TerrainLodFog.Resolve(source, renderDistance: 8);
+        var resolved = TerrainLodFog.Resolve(
+            source, renderDistance: 8, terrainHorizonDistance: 64, fogDistance: 48);
 
-        Assert.Equal(96, resolved.Start);
-        Assert.Equal(ClientTerrainLodRenderer.MaximumDistanceBlocks, resolved.End);
+        Assert.Equal(source.Start, resolved.Start);
+        Assert.Equal(48 * 16, resolved.End);
         Assert.Equal(source.Color, resolved.Color);
     }
 
@@ -25,7 +26,8 @@ public sealed class TerrainLodHandoffTests
         var source = new FogState(
             FogCurve.Exponential, new Vector4D<float>(0.02f, 0.02f, 0.2f, 1), 0, 1, 0.1f);
 
-        Assert.Equal(source, TerrainLodFog.Resolve(source, renderDistance: 8));
+        Assert.Equal(source, TerrainLodFog.Resolve(
+            source, renderDistance: 8, terrainHorizonDistance: 64, fogDistance: 48));
     }
 
     [Fact]

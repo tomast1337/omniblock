@@ -216,6 +216,9 @@
             "min": "*esneme*",
             "max": "SÜPER HIZ!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Görüş Mesafesi",
             "chunks": "Yığın",

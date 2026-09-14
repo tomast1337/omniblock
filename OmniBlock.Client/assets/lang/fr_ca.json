@@ -216,6 +216,9 @@
             "min": "*bâillement*",
             "max": "HYPERVITESSE !!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Distance d'affichage",
             "chunks": "Chunks",

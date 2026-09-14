@@ -216,6 +216,9 @@
             "min": "𒌓𒁺",
             "max": "𒄈𒁕𒋗𒂵"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "𒅆𒄈𒁕",
             "chunks": "𒅆𒂟",

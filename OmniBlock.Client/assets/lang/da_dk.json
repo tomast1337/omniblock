@@ -216,6 +216,9 @@
             "min": "*gaben*",
             "max": "HYPERHASTIGHED!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Renderingsafstand",
             "chunks": "Chunks",

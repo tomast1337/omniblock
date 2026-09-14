@@ -216,6 +216,9 @@
             "min": "*gäsp*",
             "max": "HYPERFART!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Renderingsavstånd",
             "chunks": "Chunkar",

@@ -216,6 +216,9 @@
             "min": "*aharrausi*",
             "max": "HIPERABIADURA!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Errendatze-distantzia",
             "chunks": "Zatiak",

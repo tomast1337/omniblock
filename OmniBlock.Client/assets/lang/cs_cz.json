@@ -216,6 +216,9 @@
             "min": "*zív*",
             "max": "HYPERSONICKÁ RYCHLOST!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Vzdálenost vykreslování",
             "chunks": "Chunky",

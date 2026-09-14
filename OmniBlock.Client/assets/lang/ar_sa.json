@@ -216,6 +216,9 @@
             "min": "*تثاؤب*",
             "max": "سرعة فائقة!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "مسافة العرض",
             "chunks": "قطع",

@@ -216,6 +216,9 @@
             "min": "*あくび*",
             "max": "猛スピード！！！"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "描画距離",
             "chunks": "チャンク",

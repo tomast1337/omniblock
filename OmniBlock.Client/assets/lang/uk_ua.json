@@ -216,6 +216,9 @@
             "min": "*позіхає*",
             "max": "НАДШВИДКІСТЬ!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Дистанція прогляду",
             "chunks": "Чанки",

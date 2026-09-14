@@ -86,6 +86,45 @@ public sealed class GameOptionsScriptConfigTests
     }
 
     [Fact]
+    public void World_distance_options_are_scriptable_persistent_and_effectively_ordered()
+    {
+        var directory = Directory.CreateTempSubdirectory("omniblock-world-distance-options-");
+        try
+        {
+            var options = new GameOptions(null!, directory.FullName);
+            Assert.Equal(16, GameOptions.DecodeTerrainHorizonDistance(0));
+            Assert.Equal(64, GameOptions.DecodeTerrainHorizonDistance(1));
+            Assert.Null(GameOptions.DecodeFogDistance(0));
+            Assert.Equal(8, GameOptions.DecodeFogDistance(1f / 57));
+            Assert.Equal(64, GameOptions.DecodeFogDistance(1));
+            Assert.Equal(9, options.RenderDistance);
+            Assert.Equal(64, options.TerrainHorizonDistance);
+            Assert.Equal(64, options.FogDistance);
+            Assert.Equal(9, options.SimulationDistance);
+
+            Assert.True(options.SetScriptConfig("viewDistance", LuauConfigValue.From(0.5)));
+            Assert.True(options.SetScriptConfig("terrainHorizonDistance", LuauConfigValue.From(0.0)));
+            Assert.True(options.SetScriptConfig("fogDistance", LuauConfigValue.From(0.1)));
+            Assert.True(options.SetScriptConfig("simulationDistance", LuauConfigValue.From(1.0)));
+
+            Assert.Equal(18, options.RenderDistance);
+            Assert.Equal(18, options.TerrainHorizonDistance);
+            Assert.Equal(18, options.FogDistance);
+            Assert.Equal(18, options.SimulationDistance);
+
+            var reloaded = new GameOptions(null!, directory.FullName);
+            Assert.Equal(18, reloaded.RenderDistance);
+            Assert.Equal(18, reloaded.TerrainHorizonDistance);
+            Assert.Equal(18, reloaded.FogDistance);
+            Assert.Equal(18, reloaded.SimulationDistance);
+        }
+        finally
+        {
+            directory.Delete(true);
+        }
+    }
+
+    [Fact]
     public void Entity_impostor_distance_is_aggressive_scriptable_persistent_and_migrates_boolean_gate()
     {
         var directory = Directory.CreateTempSubdirectory("omniblock-impostor-option-");

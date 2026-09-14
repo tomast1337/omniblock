@@ -217,6 +217,9 @@
             "min": "*Huuuuawwwwuh*",
             "max": "SUPERRAPIDO!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Dist. de Renderização",
             "chunks": "Chunks",

@@ -216,6 +216,9 @@
             "min": "*zevanje*",
             "max": "NADHITROST!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Razdalja upodabljanja",
             "chunks": "Kosi",

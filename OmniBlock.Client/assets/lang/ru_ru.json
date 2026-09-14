@@ -216,6 +216,9 @@
             "min": "*зевает*",
             "max": "СВЕРХСКОРОСТЬ!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Дальность прорисовки",
             "chunks": "Чанки",

@@ -216,6 +216,9 @@
             "min": "*geispa*",
             "max": "OFURHRATT!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Sjónmætti",
             "chunks": "Bútar",

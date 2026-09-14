@@ -216,6 +216,9 @@
             "min": "*yawn*",
             "max": "HYPERSPEED!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Render Distance",
             "chunks": "Chunks",

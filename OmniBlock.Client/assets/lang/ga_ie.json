@@ -216,6 +216,9 @@
             "min": "*méanfach*",
             "max": "ARD-LUAS!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Fad Rindreála",
             "chunks": "Smutáin",

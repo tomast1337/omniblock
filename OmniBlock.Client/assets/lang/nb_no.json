@@ -216,6 +216,9 @@
             "min": "*gjesp*",
             "max": "HYPERHASTIGHET!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Synsrekkevidde",
             "chunks": "Chunks",

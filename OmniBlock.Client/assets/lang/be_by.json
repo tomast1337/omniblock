@@ -216,6 +216,9 @@
             "min": "*пазяхае*",
             "max": "ГІПЕРХУТКАСЦЬ!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Далёкасць прамалёўкі",
             "chunks": "Чанкі",

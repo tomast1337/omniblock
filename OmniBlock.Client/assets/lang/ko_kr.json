@@ -216,6 +216,9 @@
             "min": "*하품*",
             "max": "초고속!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "렌더링 거리",
             "chunks": "청크",

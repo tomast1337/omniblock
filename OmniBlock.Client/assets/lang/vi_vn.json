@@ -216,6 +216,9 @@
             "min": "*ngáp*",
             "max": "TỐC ĐỘ BÀN THỜ!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Tầm nhìn",
             "chunks": "Chunk",

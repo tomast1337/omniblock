@@ -166,6 +166,8 @@ public class GameOptions
 
 
     public FloatOption RenderDistanceOption { get; private set; }
+    public FloatOption TerrainHorizonDistanceOption { get; private set; }
+    public FloatOption FogDistanceOption { get; private set; }
     public FloatOption SimulationDistanceOption { get; private set; }
     public CycleOption CloudsQualityOption { get; private set; }
     public BoolOption SoftCloudsOption { get; private set; }
@@ -223,7 +225,13 @@ public class GameOptions
     }
 
     public int RenderDistance => 4 + (int)(RenderDistanceOption.Value * 28.0f);
-    public int SimulationDistance => 2 + (int)(SimulationDistanceOption.Value * 30.0f);
+    public int TerrainHorizonDistance => Math.Max(
+        RenderDistance, DecodeTerrainHorizonDistance(TerrainHorizonDistanceOption.Value));
+    public int FogDistance => Math.Clamp(
+        DecodeFogDistance(FogDistanceOption.Value) ?? TerrainHorizonDistance,
+        RenderDistance, TerrainHorizonDistance);
+    public int SimulationDistance => Math.Min(
+        RenderDistance, 2 + (int)(SimulationDistanceOption.Value * 30.0f));
     public int CloudsQuality => CloudsQualityOption.Value;
     public bool SoftClouds => SoftCloudsOption.Value;
     public bool ViewBobbing => ViewBobbingOption.Value;
@@ -301,6 +309,8 @@ public class GameOptions
         nameof(AlternateBlocksOption),
         nameof(MenuMusicOption),
         nameof(RenderDistanceOption),
+        nameof(TerrainHorizonDistanceOption),
+        nameof(FogDistanceOption),
         nameof(SimulationDistanceOption),
         nameof(CloudsQualityOption),
         nameof(SoftCloudsOption),
@@ -420,8 +430,25 @@ public class GameOptions
                 if (_game?.InternalServer != null)
                 {
                     _game.InternalServer.SetViewDistance(RenderDistance);
+                    _game.InternalServer.SetSimulationDistance(SimulationDistance);
                 }
             }
+        };
+        TerrainHorizonDistanceOption = new FloatOption(
+            "options.terrainHorizon.text", "terrainHorizonDistance", 1f)
+        {
+            LabelOverride = "Terrain Horizon",
+            Steps = 48,
+            Formatter = _ => $"{TerrainHorizonDistance} " +
+                               Translations.Get("options.renderDistance.chunks")
+        };
+        FogDistanceOption = new FloatOption("options.fogDistance.text", "fogDistance", 0f)
+        {
+            LabelOverride = "Fog Distance",
+            Steps = 57,
+            Formatter = v => DecodeFogDistance(v) is not null
+                ? $"{FogDistance} " + Translations.Get("options.renderDistance.chunks")
+                : Translations.Get("options.guiScale.auto")
         };
         SimulationDistanceOption = new FloatOption(
             "options.simulationDistance.text", "simulationDistance", 7.0f / 30.0f)
@@ -502,6 +529,15 @@ public class GameOptions
         return step == 0 ? 0 : 16 + step * 16;
     }
 
+    internal static int DecodeTerrainHorizonDistance(float normalized) =>
+        16 + (int)MathF.Round(Math.Clamp(normalized, 0f, 1f) * 48f);
+
+    internal static int? DecodeFogDistance(float normalized)
+    {
+        var step = (int)MathF.Round(Math.Clamp(normalized, 0f, 1f) * 57f);
+        return step == 0 ? null : 7 + step;
+    }
+
     private IEnumerable<GameOption> GetAllOptions()
     {
         yield return MusicVolumeOption;
@@ -521,6 +557,8 @@ public class GameOptions
         yield return EntityImpostorDistanceOption;
         yield return MenuMusicOption;
         yield return RenderDistanceOption;
+        yield return TerrainHorizonDistanceOption;
+        yield return FogDistanceOption;
         yield return SimulationDistanceOption;
         yield return DifficultyOption;
         yield return CloudsQualityOption;

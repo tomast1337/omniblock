@@ -217,6 +217,9 @@
             "min": "*žiovulys*",
             "max": "HIPERGREITIS!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Matymo atstumas",
             "chunks": "Blokų fragmentai (Chunks)",

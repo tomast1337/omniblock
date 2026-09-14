@@ -216,6 +216,9 @@
             "min": "*žāvas*",
             "max": "HIPERĀTRUMS!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Renderēšanas attālums",
             "chunks": "Chunk",

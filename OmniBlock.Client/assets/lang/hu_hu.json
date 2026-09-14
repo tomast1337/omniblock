@@ -216,6 +216,9 @@
             "min": "*ásítás*",
             "max": "HIPERSEBESSÉG!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Megjelenítési távolság",
             "chunks": "Chunkok",

@@ -216,6 +216,9 @@
             "min": "*gaap*",
             "max": "HYPERNELHEID!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Renderafstand",
             "chunks": "Chunks",

@@ -216,6 +216,9 @@
             "min": "*haukotus*",
             "max": "HYPERNOPEUS!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Piirtoetäisyys",
             "chunks": "Chunkit",

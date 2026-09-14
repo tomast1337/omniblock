@@ -216,6 +216,9 @@
             "min": "*căscat*",
             "max": "HIPERVITEZĂ!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Distanța de randare",
             "chunks": "Chunk-uri",

@@ -38,6 +38,20 @@ click("#option.difficulty")
 assert(OMNI.config.difficulty ~= oldDifficulty, "difficulty option did not cycle")
 node("#options.video")
 node("#options.ui")
+click("#options.video")
+screen("VideoSettingsScreen")
+node("#option.viewDistance")
+node("#option.terrainHorizonDistance")
+node("#option.fogDistance")
+node("#option.simulationDistance")
+OMNI.config.terrainHorizonDistance = 1
+OMNI.config.fogDistance = 0
+assert(OMNI.config.terrainHorizonDistance == 1,
+    "terrain horizon slider was not script-configurable")
+assert(OMNI.config.fogDistance == 0,
+    "automatic fog slider was not script-configurable")
+click("#options.done")
+screen("OptionsScreen")
 click("#options.ui")
 screen("UISettingsScreen")
 assert(OMNI.config.captureMouse == true, "mouse capture should default to enabled")

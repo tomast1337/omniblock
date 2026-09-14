@@ -216,6 +216,9 @@
             "min": "*haigutus*",
             "max": "ÜLIKIIRUS!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Renderduskaugus",
             "chunks": "Chunkid",

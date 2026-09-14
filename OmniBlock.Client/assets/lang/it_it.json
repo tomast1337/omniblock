@@ -216,6 +216,9 @@
             "min": "*sbadiglio*",
             "max": "IPERVELOCITÀ!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Distanza di rendering",
             "chunks": "Chunk",

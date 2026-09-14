@@ -216,6 +216,9 @@
             "min": "*tgħasira*",
             "max": "VELOĊITÀ ESTREMA!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "Distanza tar-Render",
             "chunks": "Chunks",

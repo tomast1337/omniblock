@@ -216,6 +216,9 @@
             "min": "*打哈欠*",
             "max": "極速!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "顯示距離",
             "chunks": "區塊",

@@ -220,6 +220,9 @@
             "min": "*mu lape*",
             "max": "WAWA A!!!"
         },
+        "simulationDistance": {
+            "text": "Simulation Distance"
+        },
         "renderDistance": {
             "text": "suli pi ken lukin",
             "chunks": "leko suli",
