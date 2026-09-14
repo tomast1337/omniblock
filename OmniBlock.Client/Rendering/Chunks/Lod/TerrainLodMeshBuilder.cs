@@ -106,7 +106,7 @@ internal sealed class TerrainLodBoundarySummary
 
         BoundarySample Sample(TerrainLodCell cell)
         {
-            var solid = TerrainLodMeshBuilder.TrySelectDepthMaterial(cell, out var depth)
+            var solid = TerrainLodMeshBuilder.TrySelectVolumetricDepthMaterial(cell, out var depth)
                 ? Index(depth)
                 : (ushort)0;
             var translucent = TerrainLodMeshBuilder.TrySelectTranslucentMaterial(
@@ -252,17 +252,46 @@ internal static class TerrainLodMeshBuilder
         {
             var cell = level[x, y, z];
             TerrainLodMaterial material;
-            if (cell.IsEmpty || !(translucent
-                    ? TrySelectTranslucentMaterial(cell, out material)
-                    : TrySelectDepthMaterial(cell, out material))) continue;
+            if (cell.IsEmpty) continue;
+            var selected = translucent
+                ? TrySelectTranslucentMaterial(cell, out material)
+                : levelIndex == 0
+                    ? TrySelectDepthMaterial(cell, out material)
+                    : TrySelectVolumetricDepthMaterial(cell, out material);
+            if (!selected) continue;
             if (!blocks.TryGet(material.BlockId, out var block) || block is null) continue;
 
-            var minX = x * level.Scale;
+            float minX = x * level.Scale;
             var minY = y * level.Scale - VerticalOrigin;
-            var minZ = z * level.Scale;
-            var maxX = Math.Min((x + 1) * level.Scale, 16);
+            float minZ = z * level.Scale;
+            float maxX = Math.Min((x + 1) * level.Scale, 16);
             var maxY = Math.Min((y + 1) * level.Scale, ChuckFormat.WorldHeight) - VerticalOrigin;
-            var maxZ = Math.Min((z + 1) * level.Scale, 16);
+            float maxZ = Math.Min((z + 1) * level.Scale, 16);
+            if (levelIndex == 0 && material.Geometry is
+                    TerrainLodGeometryClass.SurfaceLayer or TerrainLodGeometryClass.BoundedCube)
+            {
+                if (visuals is not null)
+                    block.UpdateBoundingBox(
+                        visuals,
+                        hierarchy.ChunkX * 16 + x,
+                        y,
+                        hierarchy.ChunkZ * 16 + z);
+                var bounds = block.BoundingBox;
+                minX += (float)bounds.MinX;
+                minZ += (float)bounds.MinZ;
+                maxX = x + (float)bounds.MaxX;
+                maxZ = z + (float)bounds.MaxZ;
+                var cellBottom = y - VerticalOrigin;
+                minY = cellBottom + (float)bounds.MinY;
+                maxY = cellBottom + (float)bounds.MaxY;
+            }
+
+            if (!translucent && levelIndex == 0 &&
+                material.Geometry == TerrainLodGeometryClass.CrossedQuad)
+            {
+                EmitCrossedQuad();
+                continue;
+            }
             // The ordinary fluid renderer lowers an exposed surface according to its level. The
             // coarse cell stays axis-aligned, but retaining that height prevents distant water
             // and lava from becoming a stack of completely full cubes.
@@ -314,9 +343,11 @@ internal static class TerrainLodMeshBuilder
                 (float X, float Y, float Z) d)
             {
                 var light = SampleFaceLight(side, block.LightEmission);
-                var sampleX = hierarchy.ChunkX * 16 + (minX + maxX) / 2;
+                var sampleX = (int)MathF.Floor(
+                    hierarchy.ChunkX * 16 + (minX + maxX) * 0.5f);
                 var sampleY = (int)MathF.Floor((minY + maxY) * 0.5f + VerticalOrigin);
-                var sampleZ = hierarchy.ChunkZ * 16 + (minZ + maxZ) / 2;
+                var sampleZ = (int)MathF.Floor(
+                    hierarchy.ChunkZ * 16 + (minZ + maxZ) * 0.5f);
                 var tint = visuals is null
                     ? block.GetColorForFace(material.Metadata, (int)side)
                     : block.GetColorMultiplier(
@@ -324,6 +355,11 @@ internal static class TerrainLodMeshBuilder
                 var appearance = ResolveFaceAppearance(
                     block, material.Metadata, side, tint,
                     ReferenceEquals(block, grassBlock), grassOverlayTexture);
+                if (levelIndex > 0 && side == Side.Up &&
+                    TryFindSurfaceSample(out var sample, out var sampleCoverage))
+                    appearance = ApplySurfaceSample(
+                        appearance, sample, sampleCoverage,
+                        CoverageOf(cell, material), sampleX, sampleY, sampleZ);
 
                 EmitQuad(appearance.Texture, appearance.Tint);
                 if (appearance.OverlayTexture >= 0)
@@ -342,6 +378,104 @@ internal static class TerrainLodMeshBuilder
                     lights.Add(light);
                     lights.Add(light);
                 }
+            }
+
+            void EmitCrossedQuad()
+            {
+                var texture = block.GetTexture(Side.Down, material.Metadata);
+                var layerIndex = Atlases.Terrain.LayerOfGridIndex(texture);
+                var sampleX = hierarchy.ChunkX * 16 + (minX + maxX) * 0.5f;
+                var sampleY = (int)MathF.Floor((minY + maxY) * 0.5f + VerticalOrigin);
+                var sampleZ = hierarchy.ChunkZ * 16 + (minZ + maxZ) * 0.5f;
+                var tint = visuals is null
+                    ? block.GetColorForFace(material.Metadata, (int)Side.Up)
+                    : block.GetColorMultiplier(
+                        visuals, (int)sampleX, sampleY, (int)sampleZ, material.Metadata);
+                var color = PackTintedColor(tint, 1);
+                var light = SampleFaceLight(Side.Up, block.LightEmission);
+                const float inset = 0.05f;
+                var left = minX + inset;
+                var right = maxX - inset;
+                var north = minZ + inset;
+                var south = maxZ - inset;
+
+                EmitTwoSidedPlane(
+                    (left, maxY, north), (left, minY, north),
+                    (right, minY, south), (right, maxY, south));
+                EmitTwoSidedPlane(
+                    (left, maxY, south), (left, minY, south),
+                    (right, minY, north), (right, maxY, north));
+
+                void EmitTwoSidedPlane(
+                    (float X, float Y, float Z) a,
+                    (float X, float Y, float Z) b,
+                    (float X, float Y, float Z) c,
+                    (float X, float Y, float Z) d)
+                {
+                    Emit(a, b, c, d);
+                    Emit(d, c, b, a);
+                }
+
+                void Emit(
+                    (float X, float Y, float Z) a,
+                    (float X, float Y, float Z) b,
+                    (float X, float Y, float Z) c,
+                    (float X, float Y, float Z) d)
+                {
+                    vertices.Add(ChunkVertexHelper.Create(
+                        color, a.X, a.Y, a.Z, 0, 0, layerIndex));
+                    vertices.Add(ChunkVertexHelper.Create(
+                        color, b.X, b.Y, b.Z, 0, 1, layerIndex));
+                    vertices.Add(ChunkVertexHelper.Create(
+                        color, c.X, c.Y, c.Z, 1, 1, layerIndex));
+                    vertices.Add(ChunkVertexHelper.Create(
+                        color, d.X, d.Y, d.Z, 1, 0, layerIndex));
+                    for (var index = 0; index < 4; index++) lights.Add(light);
+                }
+            }
+
+            bool TryFindSurfaceSample(
+                out TerrainLodMaterial sample,
+                out uint coverage)
+            {
+                if (TrySelectDetailSample(cell, out sample, out coverage)) return true;
+                if (y + 1 < level.Height &&
+                    TrySelectDetailSample(level[x, y + 1, z], out sample, out coverage))
+                    return true;
+                sample = default;
+                coverage = 0;
+                return false;
+            }
+
+            TerrainLodFaceAppearance ApplySurfaceSample(
+                TerrainLodFaceAppearance baseAppearance,
+                TerrainLodMaterial sample,
+                uint sampleCoverage,
+                uint baseCoverage,
+                float sampleX,
+                int sampleY,
+                float sampleZ)
+            {
+                if (sample.Geometry == TerrainLodGeometryClass.SurfaceLayer &&
+                    blocks.TryGet(sample.BlockId, out var sampleBlock) && sampleBlock is not null)
+                {
+                    var sampleTint = visuals is null
+                        ? sampleBlock.GetColorForFace(sample.Metadata, (int)Side.Up)
+                        : sampleBlock.GetColorMultiplier(
+                            visuals, (int)sampleX, sampleY + 1, (int)sampleZ, sample.Metadata);
+                    return ResolveFaceAppearance(
+                        sampleBlock, sample.Metadata, Side.Up, sampleTint,
+                        ReferenceEquals(sampleBlock, grassBlock), grassOverlayTexture);
+                }
+
+                var totalCoverage = Math.Max(1u, sampleCoverage + baseCoverage);
+                var weight = Math.Clamp(sampleCoverage / (float)totalCoverage, 0.125f, 0.35f);
+                return baseAppearance with
+                {
+                    Tint = BlendTint(baseAppearance.Tint, (int)sample.MapColor, weight),
+                    OverlayTint = BlendTint(
+                        baseAppearance.OverlayTint, (int)sample.MapColor, weight)
+                };
             }
 
             ChunkLightVertex SampleFaceLight(Side side, int minimumBlockLight)
@@ -377,7 +511,16 @@ internal static class TerrainLodMeshBuilder
     internal static bool IsDepthWriting(TerrainLodMaterial material) =>
         material.Geometry is TerrainLodGeometryClass.Opaque or
             TerrainLodGeometryClass.Cutout or
-            TerrainLodGeometryClass.ConservativeCube;
+            TerrainLodGeometryClass.ConservativeCube or
+            TerrainLodGeometryClass.BoundedCube or
+            TerrainLodGeometryClass.CrossedQuad or
+            TerrainLodGeometryClass.SurfaceLayer;
+
+    internal static bool IsVolumetricDepthWriting(TerrainLodMaterial material) =>
+        material.Geometry is TerrainLodGeometryClass.Opaque or
+            TerrainLodGeometryClass.Cutout or
+            TerrainLodGeometryClass.ConservativeCube or
+            TerrainLodGeometryClass.BoundedCube;
 
     internal static bool IsTranslucent(TerrainLodMaterial material) =>
         material.Geometry is TerrainLodGeometryClass.Liquid or
@@ -409,6 +552,73 @@ internal static class TerrainLodMeshBuilder
         return false;
     }
 
+    internal static bool TrySelectVolumetricDepthMaterial(
+        in TerrainLodCell cell,
+        out TerrainLodMaterial material)
+    {
+        if (cell.PrimaryCoverage != 0 && IsVolumetricDepthWriting(cell.Primary))
+        {
+            material = cell.Primary;
+            return true;
+        }
+        if (cell.SecondaryCoverage != 0 && IsVolumetricDepthWriting(cell.Secondary))
+        {
+            material = cell.Secondary;
+            return true;
+        }
+        if (cell.TertiaryCoverage != 0 && IsVolumetricDepthWriting(cell.Tertiary))
+        {
+            material = cell.Tertiary;
+            return true;
+        }
+        material = default;
+        return false;
+    }
+
+    internal static bool TrySelectDetailSample(
+        in TerrainLodCell cell,
+        out TerrainLodMaterial material,
+        out uint coverage)
+    {
+        // Prefer a continuous surface such as snow over sparse crossed foliage if both survive
+        // reduction. Either remains a sample at parent levels, never an inflated solid cell.
+        if (TrySelectDetailGeometry(
+                cell, TerrainLodGeometryClass.SurfaceLayer, out material, out coverage) ||
+            TrySelectDetailGeometry(
+                cell, TerrainLodGeometryClass.CrossedQuad, out material, out coverage)) return true;
+        material = default;
+        coverage = 0;
+        return false;
+    }
+
+    private static bool TrySelectDetailGeometry(
+        in TerrainLodCell cell,
+        TerrainLodGeometryClass geometry,
+        out TerrainLodMaterial material,
+        out uint coverage)
+    {
+        if (cell.PrimaryCoverage != 0 && cell.Primary.Geometry == geometry)
+        {
+            material = cell.Primary;
+            coverage = cell.PrimaryCoverage;
+            return true;
+        }
+        if (cell.SecondaryCoverage != 0 && cell.Secondary.Geometry == geometry)
+        {
+            material = cell.Secondary;
+            coverage = cell.SecondaryCoverage;
+            return true;
+        }
+        if (cell.TertiaryCoverage != 0 && cell.Tertiary.Geometry == geometry)
+        {
+            material = cell.Tertiary;
+            coverage = cell.TertiaryCoverage;
+            return true;
+        }
+        material = default;
+        coverage = 0;
+        return false;
+    }
     internal static bool TrySelectTranslucentMaterial(
         in TerrainLodCell cell,
         out TerrainLodMaterial material)
@@ -462,6 +672,24 @@ internal static class TerrainLodMeshBuilder
         BitConverter.IsLittleEndian
             ? alpha << 24 | blue << 16 | green << 8 | red
             : red << 24 | green << 16 | blue << 8 | alpha;
+
+    internal static int BlendTint(int first, int second, float weight)
+    {
+        weight = Math.Clamp(weight, 0, 1);
+        byte Blend(int shift) => (byte)Math.Clamp(
+            (int)MathF.Round(((first >> shift) & 255) * (1 - weight) +
+                             ((second >> shift) & 255) * weight),
+            0, 255);
+        return Blend(16) << 16 | Blend(8) << 8 | Blend(0);
+    }
+
+    private static uint CoverageOf(in TerrainLodCell cell, TerrainLodMaterial material)
+    {
+        if (cell.Primary == material) return cell.PrimaryCoverage;
+        if (cell.Secondary == material) return cell.SecondaryCoverage;
+        if (cell.Tertiary == material) return cell.TertiaryCoverage;
+        return 0;
+    }
 
     private readonly record struct TerrainLodLayerData(
         ChunkVertex[] Vertices,

@@ -170,6 +170,14 @@ public sealed class TerrainLodHierarchyTests
             Resolve("omniblock:glass").Geometry);
         Assert.Equal(TerrainLodGeometryClass.ConservativeCube,
             Resolve("omniblock:moving_piston").Geometry);
+        Assert.Equal(TerrainLodGeometryClass.CrossedQuad,
+            Resolve("omniblock:grass").Geometry);
+        Assert.Equal(TerrainLodGeometryClass.CrossedQuad,
+            Resolve("omniblock:wheat").Geometry);
+        Assert.Equal(TerrainLodGeometryClass.SurfaceLayer,
+            Resolve("omniblock:snow").Geometry);
+        Assert.Equal(TerrainLodGeometryClass.BoundedCube,
+            Resolve("omniblock:slab").Geometry);
 
         TerrainLodMaterial Resolve(string key)
         {

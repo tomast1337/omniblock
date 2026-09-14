@@ -15,7 +15,10 @@ public enum TerrainLodGeometryClass : byte
     Cutout,
     Liquid,
     Translucent,
-    ConservativeCube
+    ConservativeCube,
+    CrossedQuad,
+    SurfaceLayer,
+    BoundedCube
 }
 
 public enum TerrainLodReductionStrategy : byte
@@ -132,6 +135,20 @@ public sealed class TerrainLodMaterialCatalog
             return TerrainLodGeometryClass.Liquid;
         if (block.RenderType == BlockRendererType.Entity)
             return TerrainLodGeometryClass.ConservativeCube;
+        // Plants and crops have no volume. Level zero can preserve their silhouette as crossed
+        // cutout planes; parent levels retain them only as surface samples.
+        if (block.RenderType is BlockRendererType.Reed or BlockRendererType.Crops)
+            return TerrainLodGeometryClass.CrossedQuad;
+        if (block.RenderType == BlockRendererType.Standard && !block.IsFullCube())
+        {
+            var bounds = block.BoundingBox;
+            var isThinHorizontalLayer = !block.Material.IsSolid &&
+                                        bounds.MaxY - bounds.MinY < 0.999 &&
+                                        bounds.MaxX - bounds.MinX > 0.999 &&
+                                        bounds.MaxZ - bounds.MinZ > 0.999;
+            if (isThinHorizontalLayer) return TerrainLodGeometryClass.SurfaceLayer;
+            if (block.Material.IsSolid) return TerrainLodGeometryClass.BoundedCube;
+        }
         // Transparent burnable material describes porous vegetation rather than a continuous
         // refractive surface. This fallback is independent of the fancy-leaves runtime toggle.
         if (block.Material.IsTransparent && block.Material.IsBurnable)
@@ -334,7 +351,7 @@ public sealed class TerrainLodHierarchy
         CanonicalHash = ComputeCanonicalHash();
     }
 
-    public const int ReductionSchemaVersion = 1;
+    public const int ReductionSchemaVersion = 2;
     public int ChunkX { get; }
     public int ChunkZ { get; }
     public long TerrainRevision { get; }
@@ -490,7 +507,9 @@ public static class TerrainLodReducer
                               exposed != TerrainLodFaceMask.None &&
                               material.Geometry is TerrainLodGeometryClass.Cutout or
                                   TerrainLodGeometryClass.Liquid or
-                                  TerrainLodGeometryClass.Translucent
+                                  TerrainLodGeometryClass.Translucent or
+                                  TerrainLodGeometryClass.CrossedQuad or
+                                  TerrainLodGeometryClass.SurfaceLayer
                 ? checked(coverage * 4)
                 : 0;
             var previous = candidates.GetValueOrDefault(material);

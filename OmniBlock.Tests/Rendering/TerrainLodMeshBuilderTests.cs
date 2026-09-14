@@ -62,6 +62,82 @@ public sealed class TerrainLodMeshBuilderTests
     }
 
     [Fact]
+    public void Exact_voxel_plants_compile_to_two_double_sided_crossed_quads()
+    {
+        var world = new FakeWorldContext();
+        var grass = world.Content.Blocks.Get("omniblock:grass").Id;
+        var hierarchy = Build(world, (x, y, z) =>
+            x == 8 && y == 32 && z == 8 ? (byte)grass : (byte)0);
+
+        var mesh = TerrainLodMeshBuilder.Build(hierarchy, 0, world.Content.Blocks, true);
+
+        Assert.Equal(16, mesh.Vertices.Length);
+        Assert.Equal(mesh.Vertices.Length, mesh.Lights.Length);
+        Assert.Empty(mesh.TranslucentVertices);
+        for (var offset = 0; offset < mesh.Vertices.Length; offset += 4)
+        {
+            var quad = mesh.Vertices.AsSpan(offset, 4);
+            Assert.True(quad.ToArray().Select(static vertex => vertex.X).Distinct().Count() > 1);
+            Assert.True(quad.ToArray().Select(static vertex => vertex.Z).Distinct().Count() > 1);
+        }
+    }
+
+    [Fact]
+    public void Coarse_plants_tint_the_supporting_surface_without_becoming_solid_cells()
+    {
+        var world = new FakeWorldContext();
+        var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+        var grass = world.Content.Blocks.Get("omniblock:grass").Id;
+        var hierarchy = Build(world, (x, y, z) =>
+            x != 8 || z != 8 ? (byte)0 : y == 1 ? (byte)stone : y == 2 ? (byte)grass : (byte)0);
+
+        var mesh = TerrainLodMeshBuilder.Build(hierarchy, 1, world.Content.Blocks, true);
+        var expectedSample = TerrainLodMeshBuilder.PackTintedColor(
+            TerrainLodMeshBuilder.BlendTint(0xFFFFFF, 0x007C00, 0.35f), 1);
+
+        Assert.NotEmpty(mesh.Vertices);
+        Assert.Contains(mesh.Vertices, vertex => vertex.Color == expectedSample);
+        Assert.All(mesh.Vertices, vertex =>
+            Assert.True(WorldY(vertex) <= 2.01f,
+                $"crossed plant inflated coarse geometry to y={WorldY(vertex)}"));
+    }
+
+    [Fact]
+    public void Exact_voxel_snow_uses_its_metadata_height_instead_of_a_full_cube()
+    {
+        var world = new FakeWorldContext();
+        var snow = world.Content.Blocks.Get("omniblock:snow").Id;
+        world.ReaderWriter.SetBlock(8, 32, 8, snow, 3);
+        var hierarchy = Build(
+            world,
+            (x, y, z) => x == 8 && y == 32 && z == 8 ? (byte)snow : (byte)0,
+            (x, y, z) => x == 8 && y == 32 && z == 8 ? (byte)3 : (byte)0);
+
+        var mesh = TerrainLodMeshBuilder.Build(
+            hierarchy, 0, world.Content.Blocks, true, visuals: world.Reader);
+
+        Assert.NotEmpty(mesh.Vertices);
+        Assert.InRange(mesh.Vertices.Max(WorldY), 32.49f, 32.51f);
+    }
+
+    [Fact]
+    public void Coarse_snow_samples_its_surface_without_inflating_a_snow_cell()
+    {
+        var world = new FakeWorldContext();
+        var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+        var snowBlock = world.Content.Blocks.Get("omniblock:snow");
+        var hierarchy = Build(world, (x, y, z) =>
+            x != 8 || z != 8 ? (byte)0 : y == 1 ? (byte)stone : y == 2 ? (byte)snowBlock.Id : (byte)0);
+        var snowLayer = OmniBlock.Textures.Atlases.Terrain.LayerOfGridIndex(
+            snowBlock.GetTexture(OmniBlock.Blocks.Side.Up, 0));
+
+        var mesh = TerrainLodMeshBuilder.Build(hierarchy, 1, world.Content.Blocks, true);
+
+        Assert.Contains(mesh.Vertices, vertex => vertex.ArrayLayer == snowLayer);
+        Assert.All(mesh.Vertices, vertex => Assert.True(WorldY(vertex) <= 2.01f));
+    }
+
+    [Fact]
     public void Liquid_only_hierarchy_uses_only_the_translucent_slice()
     {
         var world = new FakeWorldContext();
@@ -561,6 +637,9 @@ public sealed class TerrainLodMeshBuilderTests
         var acZ = (long)vertices[2].Z - vertices[0].Z;
         return abY * acZ - abZ * acY;
     }
+
+    private static float WorldY(ChunkVertex vertex) =>
+        vertex.Y * 64.0f / 32767.0f + ChuckFormat.WorldHeight / 2.0f;
 
     private static bool HasQuadOnPlane(ChunkVertex[] vertices, int axis, float position)
     {
