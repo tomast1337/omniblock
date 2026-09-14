@@ -21,6 +21,7 @@ public class ServerChunkCache : IChunkSource
     // byte stream is internally locked, but that larger decode path is not parallel-safe.
     private readonly object _storageLoadLock = new();
     private readonly ServerWorld _world;
+    private ServerTerrainLodRuntime? _terrainLod;
     private int _generationScopes;
     private int _retainedChunks;
     private long _retainedPayloadBytes;
@@ -178,6 +179,7 @@ public class ServerChunkCache : IChunkSource
 
     public bool Tick()
     {
+        _terrainLod?.Tick();
         if (!_world.savingDisabled)
         {
             for (var unloadIndex = 0; unloadIndex < 100; unloadIndex++)
@@ -186,6 +188,7 @@ public class ServerChunkCache : IChunkSource
                 {
                     var chunkHash = _chunksToUnload.First();
                     var chunk = _chunksByPos[chunkHash];
+                    _terrainLod?.UntrackChunk(chunk);
                     GenerationTelemetry.Measure(WorldGenerationStage.Unload, chunk.Unload);
                     saveChunk(chunk);
                     saveEntities(chunk);
@@ -363,12 +366,23 @@ public class ServerChunkCache : IChunkSource
         {
             _retainedChunks++;
             _retainedPayloadBytes += EstimatePayloadBytes(chunk);
+            _terrainLod?.TrackChunk(chunk);
         }
         UpdateResidencyTelemetry();
     }
 
     private void UpdateResidencyTelemetry() =>
         GenerationTelemetry.SetResidency(_retainedChunks, _retainedPayloadBytes);
+
+    internal void AttachTerrainLod(ServerTerrainLodRuntime? terrainLod)
+    {
+        _terrainLod = terrainLod;
+        if (terrainLod is null) return;
+        foreach (var chunk in _chunks)
+        {
+            if (!ReferenceEquals(chunk, _empty)) terrainLod.TrackChunk(chunk);
+        }
+    }
 
     /// <summary>
     ///     Counts the large, directly owned chunk buffers. Managed object/list overhead is excluded,

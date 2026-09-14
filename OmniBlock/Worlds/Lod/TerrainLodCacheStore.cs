@@ -712,6 +712,7 @@ public sealed class TerrainLodCacheStore
 public sealed record TerrainLodCacheWriterSnapshot(
     long WriteAttempts,
     long Written,
+    long CacheHitsAcknowledged,
     long Rejected,
     long Failures,
     string? LastFailure);
@@ -724,10 +725,11 @@ public sealed class TerrainLodCacheWriter
     private readonly Func<TerrainLodConversionResult, TerrainLodCacheWriteStatus> _write;
     private long _writeAttempts;
     private long _written;
+    private long _cacheHitsAcknowledged;
     private long _rejected;
     private long _failures;
     private string? _lastFailure;
-    private TerrainLodCacheWriterSnapshot _publishedSnapshot = new(0, 0, 0, 0, null);
+    private TerrainLodCacheWriterSnapshot _publishedSnapshot = new(0, 0, 0, 0, 0, null);
 
     public TerrainLodCacheWriter(
         TerrainLodConversionService conversions,
@@ -750,6 +752,15 @@ public sealed class TerrainLodCacheWriter
             var consumed = 0;
             while (consumed < maxRecords && _conversions.TryPeekCompleted(out var result))
             {
+                if (!result!.RequiresPersistence)
+                {
+                    _cacheHitsAcknowledged++;
+                    _lastFailure = null;
+                    _conversions.AcknowledgeCompleted(
+                        result.ChunkX, result.ChunkZ, result.TerrainRevision);
+                    consumed++;
+                    continue;
+                }
                 _writeAttempts++;
                 try
                 {
@@ -781,5 +792,10 @@ public sealed class TerrainLodCacheWriter
 
     private void PublishSnapshotLocked() => Volatile.Write(ref _publishedSnapshot,
         new TerrainLodCacheWriterSnapshot(
-            _writeAttempts, _written, _rejected, _failures, _lastFailure));
+            _writeAttempts,
+            _written,
+            _cacheHitsAcknowledged,
+            _rejected,
+            _failures,
+            _lastFailure));
 }

@@ -203,7 +203,7 @@ public sealed class TerrainLodSourceSnapshot
     public long TerrainRevision { get; }
     public long EstimatedBytes => (long)_blocks.Length + _metadata.Length;
 
-    public static TerrainLodSourceSnapshot Capture(Chunk chunk, long terrainRevision = 0)
+    public static TerrainLodSourceSnapshot Capture(Chunk chunk, long? terrainRevision = null)
     {
         ArgumentNullException.ThrowIfNull(chunk);
         var metadata = new byte[ChuckFormat.ChunkSize];
@@ -219,7 +219,7 @@ public sealed class TerrainLodSourceSnapshot
             16,
             chunk.Blocks,
             metadata,
-            terrainRevision);
+            terrainRevision ?? chunk.TerrainRevision);
     }
 
     /// <summary>
@@ -228,7 +228,7 @@ public sealed class TerrainLodSourceSnapshot
     /// </summary>
     public static TerrainLodSourceSnapshot FromRegionNbt(
         NBTTagCompound level,
-        long terrainRevision = 0)
+        long? terrainRevision = null)
     {
         ArgumentNullException.ThrowIfNull(level);
         var blocks = level.GetByteArray("Blocks");
@@ -255,7 +255,9 @@ public sealed class TerrainLodSourceSnapshot
             16,
             blocks,
             metadata,
-            terrainRevision);
+            terrainRevision ?? (level.HasKey("TerrainRevision")
+                ? level.GetLong("TerrainRevision")
+                : 0));
     }
 
     public byte GetBlock(int x, int y, int z) => _blocks[Index(x, y, z)];

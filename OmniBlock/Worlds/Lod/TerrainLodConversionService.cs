@@ -13,7 +13,12 @@ public sealed record TerrainLodConversionResult(
     int ChunkX,
     int ChunkZ,
     long TerrainRevision,
-    TerrainLodHierarchy Hierarchy);
+    TerrainLodHierarchy Hierarchy,
+    bool RequiresPersistence = true);
+
+internal readonly record struct TerrainLodConversionOutput(
+    TerrainLodHierarchy Hierarchy,
+    bool RequiresPersistence = true);
 
 public sealed record TerrainLodConversionSnapshot(
     int Dimension,
@@ -47,7 +52,7 @@ public sealed class TerrainLodConversionService : IDisposable
     private readonly object _gate = new();
     private readonly int _dimension;
     private readonly int _capacity;
-    private readonly Func<TerrainLodSourceSnapshot, TerrainLodHierarchy> _convert;
+    private readonly Func<TerrainLodSourceSnapshot, TerrainLodConversionOutput> _convert;
     private readonly Dictionary<ChunkKey, WorkItem> _items = [];
     private readonly Thread _worker;
     private bool _disposed;
@@ -75,6 +80,15 @@ public sealed class TerrainLodConversionService : IDisposable
         int dimension,
         int capacity,
         Func<TerrainLodSourceSnapshot, TerrainLodHierarchy> convert)
+        : this(dimension, capacity, source => new TerrainLodConversionOutput(convert(source)))
+    {
+        ArgumentNullException.ThrowIfNull(convert);
+    }
+
+    internal TerrainLodConversionService(
+        int dimension,
+        int capacity,
+        Func<TerrainLodSourceSnapshot, TerrainLodConversionOutput> convert)
     {
         if (capacity <= 0) throw new ArgumentOutOfRangeException(nameof(capacity));
         _dimension = dimension;
@@ -266,11 +280,14 @@ public sealed class TerrainLodConversionService : IDisposable
                 }
             }
 
-            TerrainLodHierarchy? hierarchy = null;
+            TerrainLodConversionOutput output = default;
             Exception? failure = null;
             try
             {
-                hierarchy = _convert(source);
+                output = _convert(source);
+                if (output.Hierarchy is null)
+                    throw new InvalidOperationException(
+                        "Terrain LOD converter returned no hierarchy.");
             }
             catch (Exception error)
             {
@@ -302,7 +319,8 @@ public sealed class TerrainLodConversionService : IDisposable
                         key.X,
                         key.Z,
                         source.TerrainRevision,
-                        hierarchy!);
+                        output.Hierarchy,
+                        output.RequiresPersistence);
                     _completedConversions++;
                 }
                 UpdateMemoryPeaksLocked();

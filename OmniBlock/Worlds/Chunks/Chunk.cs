@@ -63,6 +63,7 @@ public class Chunk
     public bool TerrainPopulated;
     public IWorldContext World;
     private readonly List<PendingActivationTick> _pendingActivationTicks = [];
+    private long _terrainRevision;
 
     public Chunk(IWorldContext world, int x, int z)
     {
@@ -91,6 +92,12 @@ public class Chunk
         Meta = new ChunkNibbleArray(nbt.GetByteArray("Data"));
         SkyLight = new ChunkNibbleArray(nbt.GetByteArray("SkyLight"));
         BlockLight = new ChunkNibbleArray(nbt.GetByteArray("BlockLight"));
+        _terrainRevision = nbt.HasKey("TerrainRevision")
+            ? nbt.GetLong("TerrainRevision")
+            : 0;
+        if (_terrainRevision < 0)
+            throw new InvalidDataException(
+                $"Chunk {X},{Z} has invalid terrain revision {_terrainRevision}.");
     }
 
     public Chunk(IWorldContext world, byte[] blocks, int x, int z) : this(world, x, z)
@@ -120,8 +127,23 @@ public class Chunk
     public virtual int this[int x, int y, int z]
     {
         get => Blocks[ChuckFormat.GetIndex(x, y, z)];
-        set => Blocks[ChuckFormat.GetIndex(x, y, z)] = (byte)value;
+        set
+        {
+            var index = ChuckFormat.GetIndex(x, y, z);
+            var next = (byte)value;
+            if (Blocks[index] == next) return;
+            Blocks[index] = next;
+            MarkTerrainChanged();
+        }
     }
+
+    /// <summary>
+    ///     Monotonic identity for block and metadata content. Lighting, entities, and save-time
+    ///     bookkeeping deliberately do not advance it.
+    /// </summary>
+    public long TerrainRevision => Interlocked.Read(ref _terrainRevision);
+
+    internal event Action<Chunk>? TerrainChanged;
 
     public virtual bool ChunkPosEquals(int x, int z) => x == X && z == Z;
 
@@ -384,11 +406,12 @@ public class Chunk
     {
         var pos = ChuckFormat.GetIndex(localX, y, localZ);
         var newId = (byte)rawId;
+        var newMeta = meta & 15;
         int height = HeightMap[(localZ << 4) | localX];
         int oldId = Blocks[pos];
 
         var sameId = oldId == rawId;
-        if (sameId && Meta.GetNibble(localX, y, localZ) == meta) return false;
+        if (sameId && Meta.GetNibble(localX, y, localZ) == newMeta) return false;
 
         var worldX = X * 16 + localX;
         var worldZ = Z * 16 + localZ;
@@ -399,7 +422,7 @@ public class Chunk
             World.Content.Blocks.GetByProtocolId(oldId).OnBreak(new OnBreakEvent(World, null, worldX, y, worldZ));
         }
 
-        Meta.SetNibble(localX, y, localZ, meta);
+        Meta.SetNibble(localX, y, localZ, newMeta);
 
         if (!World.Dimension.HasCeiling)
         {
@@ -429,11 +452,12 @@ public class Chunk
             // legitimately normalize stale metadata on an already-air cell.
             if (sameId && rawId != 0)
             {
-                World.Content.Blocks.GetByProtocolId(rawId).OnMetadataChange(new OnMetadataChangeEvent(World, worldX, y, worldZ, meta));
+                World.Content.Blocks.GetByProtocolId(rawId).OnMetadataChange(new OnMetadataChangeEvent(World, worldX, y, worldZ, newMeta));
             }
         }
 
         Dirty = true;
+        MarkTerrainChanged();
         return true;
     }
 
@@ -476,6 +500,7 @@ public class Chunk
         }
 
         Dirty = true;
+        MarkTerrainChanged();
         return true;
     }
 
@@ -483,8 +508,17 @@ public class Chunk
 
     public virtual void SetBlockMeta(int x, int y, int z, int meta)
     {
+        var next = meta & 15;
+        if (Meta.GetNibble(x, y, z) == next) return;
         Dirty = true;
-        Meta.SetNibble(x, y, z, meta);
+        Meta.SetNibble(x, y, z, next);
+        MarkTerrainChanged();
+    }
+
+    private void MarkTerrainChanged()
+    {
+        Interlocked.Increment(ref _terrainRevision);
+        TerrainChanged?.Invoke(this);
     }
 
     public virtual int GetLight(LightType lightType, int x, int y, int z) => lightType == LightType.Sky ? SkyLight.GetNibble(x, y, z) : lightType == LightType.Block ? BlockLight.GetNibble(x, y, z) : 0;

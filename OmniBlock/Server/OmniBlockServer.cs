@@ -373,6 +373,9 @@ public abstract class OmniBlockServer : ICommandOutput
             }
         }
 
+        foreach (var world in worlds)
+            world?.ShutdownTerrainLod();
+
         if (this is InternalServer)
         {
             RegistryAccess = RegistryAccess.WithoutWorldDatapacks();
@@ -683,7 +686,7 @@ public abstract class OmniBlockServer : ICommandOutput
         Content = candidate;
         if (worlds is null) return;
         foreach (var world in worlds)
-            world?.ReplaceContent(candidate);
+            world?.ReplaceRuntimeContent(candidate);
     }
 
     public void QueueCommands(string str, ICommandOutput cmd)

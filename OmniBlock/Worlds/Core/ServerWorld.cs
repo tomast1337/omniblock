@@ -21,6 +21,7 @@ public class ServerWorld : World
     public ServerChunkCache ChunkCache;
     internal ChunkMap ChunkMap;
     public bool savingDisabled;
+    private ServerTerrainLodRuntime? _terrainLod;
 
     public ServerWorld(OmniBlockServer server, IWorldStorage storage, string saveName, int dimensionId, WorldSettings settings, ServerWorld del,
         ContentRuntime content) : base(storage, saveName, settings, Dimension.FromId(dimensionId, content), content)
@@ -34,9 +35,39 @@ public class ServerWorld : World
         Entities.OnEntityRemoved += HandleEntityRemoved;
         Entities.OnEntityUpdating += HandleEntityUpdating;
         Entities.OnGlobalEntityAdded += HandleGlobalEntityAdded;
+
+        _terrainLod = ServerTerrainLodRuntime.TryCreate(this);
+        ChunkCache.AttachTerrainLod(_terrainLod);
     }
 
     public bool BypassSpawnProtection { get; }
+    public ServerTerrainLodSnapshot? TerrainLodSnapshot => _terrainLod?.Snapshot();
+
+    internal void ShutdownTerrainLod()
+    {
+        ChunkCache.AttachTerrainLod(null);
+        _terrainLod?.Shutdown();
+        _terrainLod = null;
+    }
+
+    /// <summary>
+    ///     Rebinds disposable distant-terrain state at the same safe server-tick boundary as the
+    ///     immutable gameplay catalog. Material rules and cache identity must never outlive the
+    ///     content runtime from which they were compiled.
+    /// </summary>
+    internal void ReplaceRuntimeContent(ContentRuntime content)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+        if (ReferenceEquals(Content, content)) return;
+
+        ShutdownTerrainLod();
+        ReplaceContent(content);
+        _terrainLod = ServerTerrainLodRuntime.TryCreate(this);
+        ChunkCache.AttachTerrainLod(_terrainLod);
+    }
+
+    internal void SubmitOfflineTerrainLod(InactiveChunkSnapshot snapshot) =>
+        _terrainLod?.SubmitOffline(snapshot);
 
     protected override IChunkSource CreateChunkCache()
     {

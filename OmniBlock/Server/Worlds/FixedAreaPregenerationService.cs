@@ -710,6 +710,8 @@ internal static class InactiveGenerationTargetExecutor
         var checkpoint = new InactiveGenerationCheckpointStore(stateDirectory, checkpointId);
         var sequence = checked(checkpoint.Recover().Checkpoint.LastCommittedBatch + 1);
         var commit = checkpoint.CommitBatch(sequence, batch, world, storage, cancellationToken);
+        foreach (var snapshot in batch.Chunks)
+            world.SubmitOfflineTerrainLod(snapshot);
         return new FixedAreaPregenerationWorkResult(
             skipped,
             false,

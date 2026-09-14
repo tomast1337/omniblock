@@ -357,7 +357,7 @@ public sealed class InactiveChunkSnapshot
     }
 
     /// <summary>Extracts immutable terrain for LOD conversion without creating entities.</summary>
-    public TerrainLodSourceSnapshot CaptureTerrain(long terrainRevision = 0)
+    public TerrainLodSourceSnapshot CaptureTerrain(long? terrainRevision = null)
     {
         using MemoryStream input = new(_nbt, writable: false);
         var root = NbtIo.Read(input);

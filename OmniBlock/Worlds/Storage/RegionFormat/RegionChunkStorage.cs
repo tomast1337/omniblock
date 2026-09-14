@@ -131,6 +131,7 @@ internal class RegionChunkStorage : IChunkStorage
         nbt.SetInteger("xPos", chunk.X);
         nbt.SetInteger("zPos", chunk.Z);
         nbt.SetLong("LastUpdate", world.GetTime());
+        nbt.SetLong("TerrainRevision", chunk.TerrainRevision);
         nbt.SetByteArray("Blocks", chunk.Blocks);
         nbt.SetByteArray("Data", chunk.Meta.Bytes);
         nbt.SetByteArray("SkyLight", chunk.SkyLight.Bytes);
