@@ -736,6 +736,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             Ticks = _world.GetTime(),
             PartialTicks = (float)partialTicks,
             DeltaTime = _game.Timer.DeltaTime,
+            VerticalFovDegrees = _game.GameRenderer.CameraController.GetFov((float)partialTicks),
+            ViewportHeight = _game.DisplayHeight,
             ChunkFade = _game.Options.ChunkFade,
             RenderOccluded = false
         };

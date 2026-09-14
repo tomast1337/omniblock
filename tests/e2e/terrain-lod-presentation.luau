@@ -53,8 +53,13 @@ end, 10, 0.05)
 OMNI.test.setFlying(true)
 OMNI.test.setLook(180, 25)
 OMNI.waitUntil(function()
+    return OMNI.client.state.playerReady
+end, 45, 0.05)
+OMNI.waitUntil(function()
     return OMNI.client.state.terrainLodPresented > 0
-end, 20, 0.05)
+end, 10, 0.05)
+OMNI.wait(0.25)
+OMNI.test.screenshot()
 
 print("terrain LOD: resident=" .. tostring(OMNI.client.state.terrainLodResident) ..
     " presented=" .. tostring(OMNI.client.state.terrainLodPresented) ..

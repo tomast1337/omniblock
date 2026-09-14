@@ -12,6 +12,8 @@ public struct ChunkRenderParams
     public long Ticks;
     public float PartialTicks;
     public float DeltaTime;
+    public float VerticalFovDegrees;
+    public int ViewportHeight;
     public bool ChunkFade;
     public bool RenderOccluded;
 }

@@ -4,6 +4,7 @@ using OmniBlock.Profiling;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Lod;
 using Silk.NET.Maths;
 using Silk.NET.WebGPU;
@@ -36,6 +37,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
     private const int ConversionCapacity = 16;
     private const int PendingCapacity = 4096;
     private const int ResidentCapacity = 2048;
+    private const long ResidentGpuByteCapacity = 128L * 1024 * 1024;
     private const int SnapshotsPerTick = 4;
     private const int UploadsPerFrame = 2;
     private const int DrawsPerFrame = 768;
@@ -46,6 +48,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
     private readonly World _world;
     private readonly TerrainLodConversionService _conversion;
     private readonly Dictionary<(int X, int Z), PendingColumn> _pending = [];
+    private readonly Dictionary<(int X, int Z), CapturedChunkLighting> _capturedLighting = [];
     private readonly Dictionary<(int X, int Z), ColumnPresentation> _resident = [];
     private readonly List<VisibleColumn> _visible = [];
     private ChunkUniforms[] _uniforms = [];
@@ -87,14 +90,10 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
         ObjectDisposedException.ThrowIf(_disposed, this);
         _tick++;
 
-        var due = _pending
+        var due = TerrainLodAdmissionOrder.TakeNearest(
+            _pending
             .Where(pair => pair.Value.DueTick <= _tick)
-            .OrderByDescending(pair => DistanceSquared(pair.Key, viewPosition))
-            .ThenBy(pair => pair.Key.X)
-            .ThenBy(pair => pair.Key.Z)
-            .Take(SnapshotsPerTick)
-            .Select(pair => pair.Key)
-            .ToArray();
+            .Select(pair => pair.Key), viewPosition, SnapshotsPerTick);
 
         foreach (var key in due)
         {
@@ -111,7 +110,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
                 continue;
             }
 
-            var result = _conversion.Submit(TerrainLodSourceSnapshot.Capture(chunk));
+            var source = TerrainLodSourceSnapshot.Capture(chunk);
+            var result = _conversion.Submit(source);
             if (result == TerrainLodAdmissionResult.RejectedAtCapacity)
             {
                 _rejectedAdmissions++;
@@ -119,6 +119,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
                 continue;
             }
 
+            if (result != TerrainLodAdmissionResult.RejectedStaleRevision)
+                _capturedLighting[key] = CapturedChunkLighting.Capture(
+                    chunk, source.TerrainRevision, !_world.Dimension.HasCeiling);
             _pending.Remove(key);
         }
 
@@ -136,6 +139,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
         ArgumentNullException.ThrowIfNull(nearRenderer);
         using var _lodRender = Profiler.Begin("TerrainLodRender");
         var uploads = InstallCompleted(UploadsPerFrame);
+        EvictDistant(parameters.ViewPos);
 
         if (RenderSystem.Fog.Curve != FogCurve.Linear ||
             RenderSystem.DrawTargetOrNull is not WebGpuDrawTarget target ||
@@ -163,7 +167,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
             if (nearComplete) continue;
 
             var level = TerrainLodDetailSelector.SelectLevel(
-                Math.Sqrt(distanceSquared), presentation.MaximumLevel, presentation.LastLevel);
+                Math.Sqrt(distanceSquared), presentation.MaximumLevel, presentation.LastLevel,
+                parameters.VerticalFovDegrees, parameters.ViewportHeight);
             if (!presentation.Levels.TryGetValue(level, out var gpu) || gpu.Mesh is null) continue;
             presentation.LastLevel = level;
             presentation.LastPresentedTick = _tick;
@@ -213,6 +218,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
         foreach (var presentation in _resident.Values) presentation.Dispose();
         _resident.Clear();
         _pending.Clear();
+        _capturedLighting.Clear();
         _pipeline?.Dispose();
         _pipeline = null;
     }
@@ -255,6 +261,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
                 if (chunk.Loaded && chunk.TerrainRevision != result.TerrainRevision)
                 {
                     _staleResults++;
+                    RemoveCapturedLighting(key, result.TerrainRevision);
                     ObserveColumn(key.ChunkX, key.ChunkZ);
                     continue;
                 }
@@ -263,7 +270,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
             ColumnPresentation? candidate = null;
             try
             {
-                candidate = ColumnPresentation.Create(_world, result);
+                _capturedLighting.TryGetValue(key, out var lighting);
+                candidate = ColumnPresentation.Create(_world, result, lighting);
                 if (_resident.Remove(key, out var old)) old.Dispose();
                 _resident.Add(key, candidate);
                 candidate = null;
@@ -271,24 +279,34 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
             }
             finally
             {
+                RemoveCapturedLighting(key, result.TerrainRevision);
                 candidate?.Dispose();
             }
         }
         return installed;
     }
 
+    private void RemoveCapturedLighting((int X, int Z) key, long terrainRevision)
+    {
+        if (_capturedLighting.TryGetValue(key, out var lighting) &&
+            lighting.TerrainRevision == terrainRevision)
+            _capturedLighting.Remove(key);
+    }
+
     private void EvictDistant(Vector3D<double> viewPosition)
     {
-        if (_resident.Count <= ResidentCapacity) return;
+        var residentBytes = _resident.Values.Sum(static value => value.EstimatedBytes);
+        if (_resident.Count <= ResidentCapacity && residentBytes <= ResidentGpuByteCapacity) return;
         var remove = _resident
             .OrderByDescending(pair => DistanceSquared(pair.Key, viewPosition))
             .ThenBy(pair => pair.Value.LastPresentedTick)
-            .Take(_resident.Count - ResidentCapacity)
-            .Select(pair => pair.Key)
             .ToArray();
-        foreach (var key in remove)
+        foreach (var candidate in remove)
         {
-            if (_resident.Remove(key, out var presentation)) presentation.Dispose();
+            if (_resident.Count <= ResidentCapacity && residentBytes <= ResidentGpuByteCapacity) break;
+            if (!_resident.Remove(candidate.Key, out var presentation)) continue;
+            residentBytes -= presentation.EstimatedBytes;
+            presentation.Dispose();
             _evictions++;
         }
     }
@@ -367,7 +385,10 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
         public long LastPresentedTick { get; set; }
         public long EstimatedBytes => Levels.Values.Sum(static level => level.EstimatedBytes);
 
-        public static ColumnPresentation Create(World world, TerrainLodConversionResult result)
+        public static ColumnPresentation Create(
+            World world,
+            TerrainLodConversionResult result,
+            ILightProvider? lighting)
         {
             var device = WebGpuDevice.Current
                 ?? throw new InvalidOperationException("Terrain LOD upload requires a WebGPU device.");
@@ -378,7 +399,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
                 for (var level = MinimumMeshLevel; level <= maximum; level++)
                 {
                     var data = TerrainLodMeshBuilder.Build(
-                        result.Hierarchy, level, world.Content.Blocks, !world.Dimension.HasCeiling);
+                        result.Hierarchy, level, world.Content.Blocks, !world.Dimension.HasCeiling,
+                        lighting);
                     levels.Add(level, GpuLevel.Create(device, result.ChunkX, result.ChunkZ, data));
                 }
                 return new ColumnPresentation(result.TerrainRevision, levels);
@@ -441,30 +463,125 @@ internal sealed class ClientTerrainLodRenderer : IDisposable
     }
 }
 
+internal static class TerrainLodAdmissionOrder
+{
+    /// <summary>
+    ///     Missing coverage closest to the camera is admitted first. Coordinate tie-breakers make
+    ///     equal-distance rings deterministic without introducing a directional preference.
+    /// </summary>
+    public static (int X, int Z)[] TakeNearest(
+        IEnumerable<(int X, int Z)> coordinates,
+        Vector3D<double> viewPosition,
+        int count)
+    {
+        if (count < 0) throw new ArgumentOutOfRangeException(nameof(count));
+        return coordinates
+            .OrderBy(key => DistanceSquared(key, viewPosition))
+            .ThenBy(key => key.X)
+            .ThenBy(key => key.Z)
+            .Take(count)
+            .ToArray();
+    }
+
+    private static double DistanceSquared((int X, int Z) key, Vector3D<double> point)
+    {
+        var dx = key.X * 16 + 8 - point.X;
+        var dz = key.Z * 16 + 8 - point.Z;
+        return dx * dx + dz * dz;
+    }
+}
+
+/// <summary>
+///     Bounded light companion to an in-flight local terrain snapshot. It prevents an unload or
+///     later light edit from changing the result merely because GPU installation happened later.
+/// </summary>
+internal sealed class CapturedChunkLighting : ILightProvider
+{
+    private readonly ChunkNibbleArray _sky;
+    private readonly ChunkNibbleArray _block;
+    private readonly bool _hasSkyLight;
+
+    private CapturedChunkLighting(
+        int chunkX,
+        int chunkZ,
+        long terrainRevision,
+        byte[] sky,
+        byte[] block,
+        bool hasSkyLight)
+    {
+        ChunkX = chunkX;
+        ChunkZ = chunkZ;
+        TerrainRevision = terrainRevision;
+        _sky = new ChunkNibbleArray(sky);
+        _block = new ChunkNibbleArray(block);
+        _hasSkyLight = hasSkyLight;
+    }
+
+    public int ChunkX { get; }
+    public int ChunkZ { get; }
+    public long TerrainRevision { get; }
+
+    public static CapturedChunkLighting Capture(Chunk chunk, long terrainRevision, bool hasSkyLight) =>
+        new(chunk.X, chunk.Z, terrainRevision,
+            chunk.SkyLight.Bytes.ToArray(), chunk.BlockLight.Bytes.ToArray(), hasSkyLight);
+
+    public LightLevels GetLightLevels(int x, int y, int z, int minBlockLight)
+    {
+        var localX = x - ChunkX * 16;
+        var localZ = z - ChunkZ * 16;
+        if ((uint)localX >= 16 || (uint)localZ >= 16 || y < 0 || y >= ChuckFormat.WorldHeight)
+            return (_hasSkyLight ? LightLevels.FullSky : default).WithBlockFloor(minBlockLight);
+        return new LightLevels(
+                (byte)_sky.GetNibble(localX, y, localZ),
+                (byte)_block.GetNibble(localX, y, localZ))
+            .WithBlockFloor(minBlockLight);
+    }
+
+    public float GetNaturalBrightness(int x, int y, int z, int minLight)
+    {
+        var light = GetLightLevels(x, y, z, minLight);
+        return Math.Max(light.Sky, light.Block) / 15.0f;
+    }
+
+    public float GetLuminance(int x, int y, int z) => GetNaturalBrightness(x, y, z, 0);
+}
+
 /// <summary>Distance thresholds with hysteresis so neighboring LOD levels do not flicker.</summary>
 internal static class TerrainLodDetailSelector
 {
-    private const double FineToMedium = 256;
-    private const double MediumToCoarse = 512;
+    private const double TargetProjectedCellPixels = 5;
     private const double Hysteresis = 0.10;
 
-    public static int SelectLevel(double distance, int maximumLevel, int previousLevel = -1)
+    public static int SelectLevel(
+        double distance,
+        int maximumLevel,
+        int previousLevel = -1,
+        double verticalFovDegrees = 70,
+        int viewportHeight = 480)
     {
         if (!double.IsFinite(distance) || distance < 0)
             throw new ArgumentOutOfRangeException(nameof(distance));
         var maximum = Math.Clamp(maximumLevel, 2, 4);
-        var desired = distance < FineToMedium ? 2 : distance < MediumToCoarse ? 3 : 4;
+        if (!double.IsFinite(verticalFovDegrees) || verticalFovDegrees is <= 1 or >= 179)
+            verticalFovDegrees = 70;
+        if (viewportHeight <= 0) viewportHeight = 480;
+
+        var focalLength = viewportHeight /
+                          (2 * Math.Tan(verticalFovDegrees * Math.PI / 360));
+        var fineToMedium = 8 * focalLength / TargetProjectedCellPixels;
+        var mediumToCoarse = 16 * focalLength / TargetProjectedCellPixels;
+        var desired = distance < fineToMedium ? 2 : distance < mediumToCoarse ? 3 : 4;
         desired = Math.Min(desired, maximum);
 
-        if (previousLevel == 2 && desired > 2 && distance < FineToMedium * (1 + Hysteresis))
+        if (previousLevel == 2 && desired > 2 && distance < fineToMedium * (1 + Hysteresis))
             return 2;
         if (previousLevel == 3)
         {
-            if (desired < 3 && distance > FineToMedium * (1 - Hysteresis)) return 3;
-            if (desired > 3 && distance < MediumToCoarse * (1 + Hysteresis)) return 3;
+            if (desired < 3 && distance > fineToMedium * (1 - Hysteresis)) return 3;
+            if (desired > 3 && distance < mediumToCoarse * (1 + Hysteresis)) return 3;
         }
         if (previousLevel == 4 && desired < 4 &&
-            distance > MediumToCoarse * (1 - Hysteresis)) return Math.Min(4, maximum);
+            distance > mediumToCoarse * (1 - Hysteresis)) return Math.Min(4, maximum);
         return desired;
     }
 }
