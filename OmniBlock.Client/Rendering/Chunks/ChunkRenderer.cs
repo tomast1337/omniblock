@@ -1272,7 +1272,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         return int.MaxValue;
     }
 
-    private bool IsMeshColumnReady(int chunkX, int chunkZ)
+    internal bool IsMeshColumnReady(int chunkX, int chunkZ)
     {
         if (!_world.BlockHost.HasChunk(chunkX, chunkZ) ||
             !_world.BlockHost.GetChunk(chunkX, chunkZ).Loaded) return false;
@@ -2546,7 +2546,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     }
 
     /// <summary>The chunk.wgsl pipeline for one raster state, matching the chunk vertex layout.</summary>
-    private static unsafe WgpuPipeline CreateWgpuPipeline(WebGpuDevice device, RenderState state,
+    internal static unsafe WgpuPipeline CreateWgpuPipeline(WebGpuDevice device, RenderState state,
         PrimitiveTopology topology = PrimitiveTopology.TriangleList, string fragmentEntryPoint = "fs_main")
     {
         var source = AssetManager.Instance.GetAsset("shaders/chunk.wgsl").GetTextContent();

@@ -1,6 +1,7 @@
 using System.Numerics;
 using OmniBlock.Client.Entities;
 using OmniBlock.Client.Rendering.Chunks;
+using OmniBlock.Client.Rendering.Chunks.Lod;
 using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.Sound;
 using OmniBlock.Client.UI;
@@ -48,6 +49,7 @@ internal sealed class DebugWindowContext(OmniBlock game)
     public ClientPlayerEntity? Player => game.Player;
     public HitResult ObjectMouseOver => game.ObjectMouseOver;
     public ChunkRenderer? ChunkRenderer => game.WorldRenderer?.ChunkRenderer;
+    public ClientTerrainLodSnapshot? TerrainLod => game.WorldRenderer?.TerrainLod?.Snapshot;
 
     public DebugSystemSnapshot DebugSystemSnapshot => game.DebugSystemSnapshot;
     public UIScreen? CurrentScreen => game.CurrentScreen;

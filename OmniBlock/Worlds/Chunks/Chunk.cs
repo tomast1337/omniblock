@@ -922,6 +922,7 @@ public class Chunk
             }
 
             Loaded = true;
+            MarkTerrainChanged();
             return offset;
         }
     }
@@ -966,6 +967,7 @@ public class Chunk
             }
 
             Loaded = true;
+            MarkTerrainChanged();
         }
     }
 

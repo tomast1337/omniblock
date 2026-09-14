@@ -531,6 +531,23 @@ public partial class OmniBlock :
                 WorldRenderer?.ChunkRenderer.PresentationProfile.FindVisible.LastMs ?? 0;
             LuauClientStateHost.TerrainSubmitCpuMs = () =>
                 WorldRenderer?.ChunkRenderer.PresentationProfile.TerrainSubmit.LastMs ?? 0;
+            LuauClientStateHost.TerrainLodMetric = key =>
+            {
+                var state = WorldRenderer?.TerrainLod?.Snapshot ?? default;
+                return key switch
+                {
+                    "terrainLodPending" => state.PendingColumns,
+                    "terrainLodConverting" => state.ConversionOwnedColumns,
+                    "terrainLodResident" => state.ResidentColumns,
+                    "terrainLodPresented" => state.PresentedColumns,
+                    "terrainLodUploads" => state.UploadsThisFrame,
+                    "terrainLodGpuBytes" => state.ResidentGpuBytes,
+                    "terrainLodStaleResults" => state.StaleResults,
+                    "terrainLodRejected" => state.RejectedAdmissions,
+                    "terrainLodEvictions" => state.Evictions,
+                    _ => 0
+                };
+            };
             LuauClientStateHost.EntityLodMetric = key =>
             {
                 var lod = WorldRenderer?.EntityLod.Last ?? default;
@@ -1138,6 +1155,7 @@ public partial class OmniBlock :
             LuauClientStateHost.TerrainUniformArenaGrowths = null;
             LuauClientStateHost.FindVisibleMs = null;
             LuauClientStateHost.TerrainSubmitCpuMs = null;
+            LuauClientStateHost.TerrainLodMetric = null;
             LuauClientStateHost.EntityLodMetric = null;
             LuauClientStateHost.OldestForegroundAge = null;
             LuauClientStateHost.PresentationRegressionCount = null;

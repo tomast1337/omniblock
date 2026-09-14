@@ -2,6 +2,7 @@ using OmniBlock.Blocks.Materials;
 using OmniBlock.Client.Input;
 using OmniBlock.Client.Options;
 using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Chunks.Lod;
 using OmniBlock.Client.Rendering.Items;
 using OmniBlock.Entities;
 using OmniBlock.Profiling;
@@ -153,11 +154,13 @@ public class GameRenderer
         {
             RenderSystem.Projection.Translate((float)CameraController.CameraYaw, (float)-CameraController.CameraPitch, 0.0F);
             RenderSystem.Projection.Scale((float)CameraController.CameraZoom, (float)CameraController.CameraZoom, 1.0F);
-            GLU.gluPerspective(CameraController.GetFov(tickDelta), _client.DisplayWidth / (float)_client.DisplayHeight, 0.05F, _viewDistance * 2.0F);
+            GLU.gluPerspective(CameraController.GetFov(tickDelta), _client.DisplayWidth / (float)_client.DisplayHeight, 0.05F,
+                Math.Max(_viewDistance * 2.0F, ClientTerrainLodRenderer.MaximumDistanceBlocks));
         }
         else
         {
-            GLU.gluPerspective(CameraController.GetFov(tickDelta), _client.DisplayWidth / (float)_client.DisplayHeight, 0.05F, _viewDistance * 2.0F);
+            GLU.gluPerspective(CameraController.GetFov(tickDelta), _client.DisplayWidth / (float)_client.DisplayHeight, 0.05F,
+                Math.Max(_viewDistance * 2.0F, ClientTerrainLodRenderer.MaximumDistanceBlocks));
         }
 
         RenderSystem.ModelView.LoadIdentity();

@@ -8,6 +8,7 @@ using OmniBlock.Client.Options;
 using OmniBlock.Client.Rendering.Blocks;
 using OmniBlock.Client.Rendering.Blocks.Entities;
 using OmniBlock.Client.Rendering.Chunks;
+using OmniBlock.Client.Rendering.Chunks.Lod;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.Rendering.Core.WebGPU;
@@ -92,6 +93,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     public int CountBlockEntitiesRendered { get; private set; }
     public int CountBlockEntitiesHidden { get; private set; }
     public ChunkRenderer ChunkRenderer { get; private set; }
+    internal ClientTerrainLodRenderer? TerrainLod { get; private set; }
     public float DamagePartialTime { get; set; }
 
     /// <summary>Whether the draw target has slot pipelines registered for the sky.</summary>
@@ -110,6 +112,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         if (_world is Worlds.ClientWorld clientWorld)
             clientWorld.NetworkHandler.PresentationRelocated -= OnPresentationRelocated;
         EntityLod.Clear();
+        TerrainLod?.Dispose();
         ChunkRenderer?.Dispose();
 
         _stars.Dispose();
@@ -124,7 +127,11 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         _clouds = [];
     }
 
-    public void BlockUpdate(int x, int y, int z) => MarkBlocksDirty(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1);
+    public void BlockUpdate(int x, int y, int z)
+    {
+        TerrainLod?.ObserveRegion(x, z, x, z);
+        MarkBlocksDirty(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1);
+    }
 
     public void SetBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
@@ -133,6 +140,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             return;
         }
 
+        TerrainLod?.ObserveRegion(minX, minZ, maxX, maxZ);
         MarkBlocksDirty(minX - 1, minY - 1, minZ - 1, maxX + 1, maxY + 1, maxZ + 1);
     }
 
@@ -158,6 +166,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         // whole notification based on that incomplete neighborhood: MarkStreamingDirty checks the
         // source column per section, while the expanded range below invalidates any already
         // resident mesh on either side of each newly available boundary.
+        TerrainLod?.ObserveRegion(minX, minZ, maxX, maxZ);
         var (start, end) = GetStreamingSectionRange(
             minX, minY, minZ,
             maxX, maxY, maxZ);
@@ -476,6 +485,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         ChunkRenderer.Tick(
             new Vector3D<double>(viewX, viewY, viewZ),
             new Vector3D<double>(view.VelocityX, view.VelocityY, view.VelocityZ));
+        TerrainLod?.Tick(new Vector3D<double>(viewX, viewY, viewZ));
     }
 
     public void LoadRenderers()
@@ -485,6 +495,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         ChunkRenderer?.Dispose();
         ChunkRenderer = new ChunkRenderer(_world, _game.Options);
+        TerrainLod?.Dispose();
+        TerrainLod = new ClientTerrainLodRenderer(_world);
         ChunkMeshVersion.ClearPool();
 
         _renderEntitiesStartupCounter = 2;
@@ -701,7 +713,11 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     {
         if (_game.Options.RenderDistance != _renderDistance)
         {
-            LoadRenderers();
+            // Render distance is a visibility/residency policy, not a content invalidation. The
+            // chunk renderer reads the radius from ChunkRenderParams and discovers newly admitted
+            // sections on its next tick. Keeping both renderers alive preserves every reusable
+            // near mesh and LOD presentation; shrinking is handled by the existing eviction grace.
+            _renderDistance = _game.Options.RenderDistance;
         }
 
         var viewX = camera.LastTickX + (camera.X - camera.LastTickX) * partialTicks;
@@ -726,6 +742,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         if (pass == 0)
         {
+            TerrainLod?.Render(renderParams, ChunkRenderer);
             ChunkRenderer.Render(renderParams);
         }
         else

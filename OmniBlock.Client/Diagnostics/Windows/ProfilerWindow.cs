@@ -1,5 +1,6 @@
 using Hexa.NET.ImGui;
 using OmniBlock.Client.Rendering.Chunks;
+using OmniBlock.Client.Rendering.Chunks.Lod;
 using OmniBlock.Diagnostics;
 using OmniBlock.Profiling;
 using OmniBlock.Server.Worlds;
@@ -33,6 +34,9 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
 
         if (ImGui.CollapsingHeader("Chunk streaming lifecycle", ImGuiTreeNodeFlags.DefaultOpen))
             DrawChunkLifecycle(chunkRenderer);
+
+        if (ImGui.CollapsingHeader("Distant terrain LOD", ImGuiTreeNodeFlags.DefaultOpen))
+            DrawTerrainLod(ctx.TerrainLod);
 
         if (ImGui.CollapsingHeader("Non-terrain presentation", ImGuiTreeNodeFlags.DefaultOpen))
             DrawNonTerrainPresentation();
@@ -146,6 +150,23 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"Versions:  allocated {MetricRegistry.Get(RenderMetrics.MeshVersionAllocated)}  free {MetricRegistry.Get(RenderMetrics.MeshVersionReleased)}");
         if (ImGui.Button("Reset mesh build profile")) chunkRenderer.ResetMeshProfile();
+    }
+
+    private static void DrawTerrainLod(ClientTerrainLodSnapshot? profile)
+    {
+        if (profile is not { } lod)
+        {
+            ImGuiTextSafe.TextDisabled("No distant terrain renderer is active.");
+            return;
+        }
+
+        ImGuiTextSafe.Text(
+            $"Work:      pending {lod.PendingColumns}  converting {lod.ConversionOwnedColumns}  uploads {lod.UploadsThisFrame}");
+        ImGuiTextSafe.Text(
+            $"Resident:  {lod.ResidentColumns:N0} columns  {FormatBytes(lod.ResidentGpuBytes)} GPU estimate");
+        ImGuiTextSafe.Text($"Presented: {lod.PresentedColumns:N0} columns");
+        ImGuiTextSafe.Text(
+            $"Lifecycle: stale {lod.StaleResults:N0}  rejected {lod.RejectedAdmissions:N0}  evicted {lod.Evictions:N0}");
     }
 
     private static void DrawChunkLifecycle(ChunkRenderer chunkRenderer)

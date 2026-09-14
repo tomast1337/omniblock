@@ -23,12 +23,14 @@ public sealed class ChunkTransportLightTests
 
         var blob = ChunkBlobCodec.Encode(
             lit.Blocks, lit.Meta.Bytes, lit.BlockLight.Bytes, lit.SkyLight.Bytes);
+        var revision = received.TerrainRevision;
 
-        ChunkBlobCodec.Decode(
-            blob, received.Blocks, received.Meta.Bytes, received.BlockLight.Bytes, received.SkyLight.Bytes);
+        received.LoadFromBlob(blob);
 
         Assert.Equal(lit.SkyLight.Bytes, received.SkyLight.Bytes);
         Assert.NotEqual(0, received.GetPackedLight(8, 80, 8));
+        Assert.True(received.TerrainRevision > revision,
+            "a complete transported terrain replacement must invalidate derived LOD data");
     }
 
     /// <summary>
@@ -44,11 +46,14 @@ public sealed class ChunkTransportLightTests
         // Sized as the sender sizes it: blocks, then a nibble each for meta, block light and sky.
         var bytes = new byte[ChuckFormat.ChunkSize * 5 / 2];
         lit.ToPacket(bytes, 0, 0, 0, 16, ChuckFormat.ChunkHeight, 16, 0);
+        var revision = received.TerrainRevision;
 
         received.LoadFromPacket(bytes, 0, 0, 0, 16, ChuckFormat.ChunkHeight, 16, 0);
 
         Assert.Equal(lit.SkyLight.Bytes, received.SkyLight.Bytes);
         Assert.NotEqual(0, received.GetPackedLight(8, 80, 8));
+        Assert.True(received.TerrainRevision > revision,
+            "a complete transported terrain replacement must invalidate derived LOD data");
     }
 
     /// <summary>A chunk that has been through the first light pass, as a sent one has.</summary>
