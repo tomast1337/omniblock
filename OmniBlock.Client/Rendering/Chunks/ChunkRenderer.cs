@@ -49,6 +49,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     //TODO: MAKE THIS CONFIGURABLE
     private const double MeshUploadBudgetMs = 1.5;
+    private const long MeshUploadBudgetBytes = 8L * 1024 * 1024;
 
     //TODO: MAKE THIS CONFIGURABLE
     private const double MeshDispatchBudgetMs = 1.5;
@@ -294,6 +295,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     public bool UseOcclusionCulling { get; set; } = true;
     internal ChunkMeshProfileSnapshot MeshProfile => _meshGenerator.Profile;
+    internal ChunkMeshCostSnapshot MeshCostProfile => _meshGenerator.CostProfile;
+    internal long CompletedMeshResultBytes => _meshGenerator.CompletedResultBytes;
+    internal long InFlightEstimatedMeshResultBytes => _meshGenerator.InFlightEstimatedResultBytes;
+    internal double InFlightEstimatedMeshBuildMs => _meshGenerator.InFlightEstimatedBuildMs;
+    internal long MeshBuildAdmissionDeferrals => _meshGenerator.BuildAdmissionDeferrals;
+    internal long MeshUploadAdmissionDeferrals => _meshGenerator.UploadAdmissionDeferrals;
+    internal long MeshOversizedUploadAdmissions => _meshGenerator.OversizedUploadAdmissions;
     internal MeshLifecycleSnapshot MeshLifecycle => _meshLifecycle.Snapshot();
     internal string CreateMeshLifecycleDump() => _meshLifecycle.CreateDump();
     internal string CreateMeshSectionDump()
@@ -505,6 +513,19 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("meshBlockCellsVisited\t").Append(meshProfile.BlockCellsVisited).AppendLine();
         text.Append("meshFullSectionBuilds\t").Append(meshProfile.FullSectionBuilds).AppendLine();
         text.Append("meshPartialSectionBuilds\t").Append(meshProfile.PartialSectionBuilds).AppendLine();
+        var meshCost = MeshCostProfile;
+        text.Append("meshCostBuildSamples\t").Append(meshCost.BuildSamples).AppendLine();
+        text.Append("meshCostUploadSamples\t").Append(meshCost.UploadSamples).AppendLine();
+        text.Append("meshCostBuildMsPerPage\t").Append(meshCost.BuildMsPerPage).AppendLine();
+        text.Append("meshCostResultBytesPerPage\t").Append(meshCost.ResultBytesPerPage).AppendLine();
+        text.Append("meshCostUploadBaseMs\t").Append(meshCost.UploadBaseMs).AppendLine();
+        text.Append("meshCostUploadMsPerMiB\t").Append(meshCost.UploadMsPerMiB).AppendLine();
+        text.Append("meshCompletedResultBytes\t").Append(CompletedMeshResultBytes).AppendLine();
+        text.Append("meshInFlightEstimatedResultBytes\t").Append(InFlightEstimatedMeshResultBytes).AppendLine();
+        text.Append("meshInFlightEstimatedBuildMs\t").Append(InFlightEstimatedMeshBuildMs).AppendLine();
+        text.Append("meshBuildAdmissionDeferrals\t").Append(MeshBuildAdmissionDeferrals).AppendLine();
+        text.Append("meshUploadAdmissionDeferrals\t").Append(MeshUploadAdmissionDeferrals).AppendLine();
+        text.Append("meshOversizedUploadAdmissions\t").Append(MeshOversizedUploadAdmissions).AppendLine();
         var lifecycle = MeshLifecycle;
         text.Append("meshLifecycle\t").Append(lifecycle).AppendLine();
         text.Append("criticalCompleted\t").Append(lifecycle.CriticalCompleted).AppendLine();
@@ -639,6 +660,19 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         Counter("unassignedQuads", profile.UnassignedQuads);
         Counter("terrainUniformEntries", profile.TerrainUniformEntries);
         Counter("terrainSubmissionBatches", profile.TerrainSubmissionBatches);
+        var cost = MeshCostProfile;
+        Counter("meshCostBuildSamples", cost.BuildSamples);
+        Counter("meshCostUploadSamples", cost.UploadSamples);
+        Value("meshCostBuildMsPerPage", cost.BuildMsPerPage);
+        Counter("meshCostResultBytesPerPage", cost.ResultBytesPerPage);
+        Value("meshCostUploadBaseMs", cost.UploadBaseMs);
+        Value("meshCostUploadMsPerMiB", cost.UploadMsPerMiB);
+        Counter("meshCompletedResultBytes", CompletedMeshResultBytes);
+        Counter("meshInFlightEstimatedResultBytes", InFlightEstimatedMeshResultBytes);
+        Value("meshInFlightEstimatedBuildMs", InFlightEstimatedMeshBuildMs);
+        Counter("meshBuildAdmissionDeferrals", MeshBuildAdmissionDeferrals);
+        Counter("meshUploadAdmissionDeferrals", MeshUploadAdmissionDeferrals);
+        Counter("meshOversizedUploadAdmissions", MeshOversizedUploadAdmissions);
         text.AppendLine("timing\tsamples\tlastMs\taverageMs\tp50Ms\tp95Ms\tmaxMs");
         Timing("findVisible", profile.FindVisible);
         Timing("spatialCull", profile.SpatialCull);
@@ -648,6 +682,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         return text.ToString();
 
         void Counter(string name, long value) => text.Append(name).Append('\t').Append(value).AppendLine();
+
+        void Value(string name, double value) => text.Append(name).Append('\t')
+            .Append(value.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)).AppendLine();
 
         void Timing(string name, FrameTimingSnapshot timing) =>
             text.Append(name).Append('\t').Append(timing.Samples).Append('\t')
@@ -1038,19 +1075,41 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         var stopwatch = Stopwatch.StartNew();
         var criticalUploads = 0;
+        var admittedUploads = 0;
+        var admittedBytes = 0L;
         while (true)
         {
-            MeshBuildResult mesh;
-            if (stopwatch.Elapsed.TotalMilliseconds < MeshUploadBudgetMs)
+            if (!_meshGenerator.TryPeekMesh(out var candidate, out var candidatePriority)) break;
+            var remainingMs = Math.Max(0, MeshUploadBudgetMs - stopwatch.Elapsed.TotalMilliseconds);
+            var remainingBytes = Math.Max(0, MeshUploadBudgetBytes - admittedBytes);
+            var predictedUploadMs = _meshGenerator.EstimateUploadMs(candidate.UploadBytes);
+            var regularAdmission = predictedUploadMs <= remainingMs && candidate.UploadBytes <= remainingBytes;
+            var reserveAdmission = !regularAdmission &&
+                                   criticalUploads < CriticalUploadReserve &&
+                                   _meshGenerator.TryPeekMesh(MeshWorkPriority.Critical, out candidate);
+            if (reserveAdmission) candidatePriority = MeshWorkPriority.Critical;
+
+            var oversizedAdmission = !regularAdmission && !reserveAdmission && admittedUploads == 0;
+            if (!regularAdmission && !reserveAdmission && !oversizedAdmission)
             {
-                if (!_meshGenerator.TryDequeueMesh(out mesh)) break;
-            }
-            else if (criticalUploads >= CriticalUploadReserve ||
-                     !_meshGenerator.TryDequeueMesh(MeshWorkPriority.Critical, out mesh))
-            {
+                _meshGenerator.NoteUploadAdmissionDeferred();
                 break;
             }
+
+            if (oversizedAdmission) _meshGenerator.NoteOversizedUploadAdmission();
+            if (!_meshGenerator.TryDequeueMesh(
+                    candidatePriority,
+                    // Oversized progress still consumed the lane selected by fairness. Only the
+                    // critical reserve bypasses that selection and therefore must not advance it.
+                    advanceFairness: !reserveAdmission,
+                    out var mesh))
+            {
+                continue;
+            }
+
             if (mesh.Priority == MeshWorkPriority.Critical) criticalUploads++;
+            admittedUploads++;
+            admittedBytes += mesh.UploadBytes;
             var uploadStart = Stopwatch.GetTimestamp();
 
             if (IsChunkInMeshRetentionDistance(mesh.Pos, viewPos))
@@ -1076,7 +1135,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                         _meshGenerator.MeshChunk(
                             _world, mesh.Pos, cancelledRetry.Value, _options.AlternateBlocksEnabled,
                             priority, section.BeginTrace(cancelledRetry.Value, _frameIndex), section.LifetimeId,
-                            section.RebuildPlan);
+                            section.RebuildPlan,
+                            _meshGenerator.EstimateCost(
+                                section.RebuildPlan, section.LastMeshResultBytesPerPage));
                     }
                     mesh.Dispose();
                     continue;
@@ -1095,7 +1156,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     {
                         var priority = MaxPriority(mesh.Priority, RequestedPriority(mesh.Pos));
                         _meshGenerator.MeshChunk(_world, mesh.Pos, snapshot.Value, _options.AlternateBlocksEnabled, priority,
-                            section.BeginTrace(snapshot.Value, _frameIndex), section.LifetimeId, section.RebuildPlan);
+                            section.BeginTrace(snapshot.Value, _frameIndex), section.LifetimeId, section.RebuildPlan,
+                            _meshGenerator.EstimateCost(
+                                section.RebuildPlan, section.LastMeshResultBytesPerPage));
                     }
 
                     // Superseded by the requeue above (or by whichever in-flight build already
@@ -1154,6 +1217,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 }
 
                 section.NotePresentationInstalled(_frameIndex);
+                section.RecordMeshCost(mesh.BuildMs, mesh.RetainedBytes, mesh.RebuildPlan.PageBuildCount);
                 _residentSpatialIndex.AddOrUpdate(resident);
 #if DEBUG
                 if (_residentSpatialIndex.Count != _residentSections.Count ||
@@ -1182,7 +1246,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                         _meshGenerator.MeshChunk(
                             _world, mesh.Pos, snapshot.Value, _options.AlternateBlocksEnabled,
                             followUpPriority, section.BeginTrace(snapshot.Value, _frameIndex), section.LifetimeId,
-                            section.RebuildPlan);
+                            section.RebuildPlan,
+                            _meshGenerator.EstimateCost(
+                                section.RebuildPlan, section.LastMeshResultBytesPerPage));
                     }
                 }
             }
@@ -1203,7 +1269,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             _meshGenerator.RecordUpload(
                 uploadedAt - uploadStart,
                 uploadedAt - mesh.FinishedAt,
-                uploadedAt - mesh.RequestedAt);
+                uploadedAt - mesh.RequestedAt,
+                mesh.UploadBytes);
         }
     }
 
@@ -1612,6 +1679,17 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 if (section.RequestedPriority == MeshWorkPriority.Critical) criticalDispatches++;
                 var pendingEpoch = section.Version.State.Pending;
                 if (pendingEpoch == -1) continue;
+                var estimate = _meshGenerator.EstimateCost(
+                    section.RebuildPlan,
+                    section.LastMeshResultBytesPerPage);
+                if (!_meshGenerator.CanAdmitBuild(estimate, section.RequestedPriority))
+                {
+                    // Preserve the request and its deterministic rank. Work already running or
+                    // waiting for upload must free estimated time/bytes before ordinary streaming
+                    // expands the backlog further.
+                    _pendingMeshUpdates.Enqueue(section, RankPendingMesh(section, _lastCamera));
+                    break;
+                }
                 _meshGenerator.MeshChunk(
                     _world,
                     section.Position,
@@ -1620,7 +1698,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     section.RequestedPriority,
                     section.PendingTrace,
                     section.LifetimeId,
-                    section.RebuildPlan);
+                    section.RebuildPlan,
+                    estimate);
             }
         }
         _criticalDispatchesSincePump = 0;
@@ -2230,13 +2309,17 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         if (snapshot.HasValue)
         {
             section.BeginTrace(snapshot.Value, _frameIndex);
+            var estimate = _meshGenerator.EstimateCost(
+                section.RebuildPlan, section.LastMeshResultBytesPerPage);
             if (requestedPriority == MeshWorkPriority.Critical &&
-                _criticalDispatchesSincePump < CriticalDispatchReserve)
+                _criticalDispatchesSincePump < CriticalDispatchReserve &&
+                _meshGenerator.CanAdmitBuild(estimate, requestedPriority))
             {
                 _criticalDispatchesSincePump++;
                 _meshGenerator.MeshChunk(
                     _world, chunkPos, snapshot.Value, _options.AlternateBlocksEnabled,
-                    requestedPriority, section.PendingTrace, section.LifetimeId, section.RebuildPlan);
+                    requestedPriority, section.PendingTrace, section.LifetimeId, section.RebuildPlan,
+                    estimate);
             }
             else
             {

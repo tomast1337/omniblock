@@ -67,8 +67,6 @@ local targetMissesBefore = 0
 for _, section in touchedSections do
     targetMissesBefore += OMNI.test.meshDeadlineMissCount(section.x, section.y, section.z)
 end
-OMNI.test.dumpTerrain("critical-issued")
-
 OMNI.waitUntil(function()
     for _, section in touchedSections do
         if not OMNI.test.isMeshCurrent(section.x, section.y, section.z) then
@@ -77,7 +75,6 @@ OMNI.waitUntil(function()
     end
     return true
 end, 15, 0.02)
-OMNI.test.dumpTerrain("critical-settled")
 
 local completedDelta = OMNI.client.state.meshCriticalCompletedCount - completedBefore
 local missedDelta = OMNI.client.state.meshCriticalDeadlineMissCount - missesBefore
@@ -106,6 +103,11 @@ assert(OMNI.client.state.presentationRegressionCount == regressionsBefore,
     "a resident near-field mesh disappeared during critical updates")
 assert(OMNI.client.state.meshBuildFailureCount == 0,
     "mesh snapshot/build failed during critical updates")
+
+-- The terrain dump formats thousands of lifecycle records synchronously. Capture it only after
+-- evaluating the real-time deadline so the diagnostic operation cannot manufacture the miss it
+-- is intended to explain.
+OMNI.test.dumpTerrain("critical-settled")
 
 print("critical mesh workload: broken=" .. tostring(broken) ..
     " sections=" .. tostring(touchedSectionCount) ..

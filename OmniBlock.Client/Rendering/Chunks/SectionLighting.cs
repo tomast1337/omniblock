@@ -209,6 +209,10 @@ internal sealed class SectionLightModel
     public ChunkLightVertex[] InitialValues => _initialValues
         ?? throw new InvalidOperationException("Initial light values have already been uploaded.");
     public int VertexCount => _probes.Length;
+    public long RetainedBytes =>
+        (long)_probes.Length * 8 + (long)(_initialValues?.Length ?? 0) * Marshal.SizeOf<ChunkLightVertex>();
+    public long InitialUploadBytes =>
+        (long)(_initialValues?.Length ?? 0) * Marshal.SizeOf<ChunkLightVertex>();
 
     public void ReleaseInitialValues() => _initialValues = null;
 

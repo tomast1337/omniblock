@@ -76,11 +76,20 @@ internal sealed class SectionRenderState(Vector3D<int> position, MeshLifecycleDi
     public long LastUploadedAt { get; private set; } = -1;
     public int PresentationInstalledFrame { get; private set; } = -1;
     public int AdjacencyChangedFrame { get; private set; } = -1;
+    public long LastMeshResultBytesPerPage { get; private set; }
+    public double LastMeshBuildMs { get; private set; }
     public NearFieldRescueReason ActiveRescueReasons { get; private set; }
     public int RescueStartedFrame { get; private set; } = -1;
     public int RescueDurationFrames { get; private set; }
 
     public void NotePresentationInstalled(int frame) => PresentationInstalledFrame = frame;
+
+    public void RecordMeshCost(double buildMs, long resultBytes, int pages)
+    {
+        LastMeshBuildMs = buildMs;
+        if (pages > 0 && resultBytes >= 0)
+            LastMeshResultBytesPerPage = (resultBytes + pages - 1) / pages;
+    }
 
     public void NoteAdjacencyChanged(int frame) => AdjacencyChangedFrame = frame;
 

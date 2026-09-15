@@ -29,6 +29,9 @@ internal struct MeshBuildResult : IDisposable
     public MeshLifecycleRequest? Trace;
     public bool Cancelled;
     public MeshCancellationReason CancellationReason;
+    public double BuildMs;
+    public long RetainedBytes;
+    public long UploadBytes;
 
     public readonly void Dispose()
     {
@@ -58,6 +61,11 @@ internal sealed class MeshPageBuildResult(int page)
 
 internal class ChunkMeshGenerator : IDisposable
 {
+    internal const long CompletedResultBudgetBytes = 64L * 1024 * 1024;
+    internal const long CriticalCompletedResultBudgetBytes = 96L * 1024 * 1024;
+    // Roughly one to two ordinary frame intervals of queued worker time per worker. This keeps all
+    // workers fed without allowing a cheap count estimate to hide hundreds of expensive jobs.
+    internal const double BuildAdmissionMsPerWorker = 24.0;
     private const float ColorScale = 0.0039215686F;
     private const float TopShadow = 1.0F;
     private const float BottomShadow = 0.5F;
@@ -80,11 +88,18 @@ internal class ChunkMeshGenerator : IDisposable
     private readonly ILogger<ChunkMeshGenerator> _logger = Log.Instance.For<ChunkMeshGenerator>();
     private readonly ConcurrentDictionary<Vector3D<int>, MeshBuildCancellation> _outstanding = new();
     private readonly ChunkMeshProfiler _profile = new();
+    private readonly ChunkMeshCostModel _costModel = new();
     private readonly MeshPriorityFairness _resultFairness = new();
     private readonly CancellationTokenSource _shutdown = new();
     private readonly PriorityWorkScheduler<Vector3D<int>, MeshBuildRequest> _work = new();
     private readonly Task[] _workers;
     private readonly MeshLifecycleDiagnostics? _lifecycle;
+    private long _completedResultBytes;
+    private long _inFlightEstimatedBuildMicros;
+    private long _inFlightEstimatedResultBytes;
+    private long _buildAdmissionDeferrals;
+    private long _uploadAdmissionDeferrals;
+    private long _oversizedUploadAdmissions;
 
     public ChunkMeshGenerator(ushort maxConcurrentTasks = 0, MeshLifecycleDiagnostics? lifecycle = null)
     {
@@ -101,6 +116,15 @@ internal class ChunkMeshGenerator : IDisposable
         _work.Count, _outstanding.Count,
         _criticalResults.Count, _foregroundResults.Count, _backgroundResults.Count,
         MaxConcurrentTasks);
+
+    public ChunkMeshCostSnapshot CostProfile => _costModel.Snapshot();
+    public long CompletedResultBytes => Math.Max(0, Interlocked.Read(ref _completedResultBytes));
+    public long InFlightEstimatedResultBytes => Math.Max(0, Interlocked.Read(ref _inFlightEstimatedResultBytes));
+    public double InFlightEstimatedBuildMs =>
+        Math.Max(0, Interlocked.Read(ref _inFlightEstimatedBuildMicros)) / 1000.0;
+    public long BuildAdmissionDeferrals => Interlocked.Read(ref _buildAdmissionDeferrals);
+    public long UploadAdmissionDeferrals => Interlocked.Read(ref _uploadAdmissionDeferrals);
+    public long OversizedUploadAdmissions => Interlocked.Read(ref _oversizedUploadAdmissions);
 
     public void Dispose()
     {
@@ -119,6 +143,7 @@ internal class ChunkMeshGenerator : IDisposable
         {
             _lifecycle?.Cancel(pending.Trace, MeshCancellationReason.RendererDisposed);
             CompleteOutstanding(pending.Pos);
+            ReleaseInFlightEstimate(pending.Estimate);
             pending.Cache.Dispose();
         }
         _shutdown.Dispose();
@@ -126,6 +151,7 @@ internal class ChunkMeshGenerator : IDisposable
         foreach (var queue in new[] { _criticalResults, _foregroundResults, _backgroundResults })
             while (queue.TryDequeue(out var result))
             {
+                Interlocked.Add(ref _completedResultBytes, -result.RetainedBytes);
                 _lifecycle?.Cancel(result.Trace, MeshCancellationReason.RendererDisposed);
                 result.Dispose();
             }
@@ -133,33 +159,81 @@ internal class ChunkMeshGenerator : IDisposable
         _outstanding.Clear();
     }
 
-    public void ResetProfile() => _profile.Reset();
+    public void ResetProfile()
+    {
+        _profile.Reset();
+        _costModel.Reset();
+        Interlocked.Exchange(ref _buildAdmissionDeferrals, 0);
+        Interlocked.Exchange(ref _uploadAdmissionDeferrals, 0);
+        Interlocked.Exchange(ref _oversizedUploadAdmissions, 0);
+    }
+
+    public ChunkMeshCostEstimate EstimateCost(SectionMeshRebuildPlan plan, long previousBytesPerPage = 0) =>
+        _costModel.Estimate(plan, previousBytesPerPage);
+
+    public double EstimateUploadMs(long bytes) => _costModel.EstimateUploadMs(bytes);
+
+    public bool CanAdmitBuild(in ChunkMeshCostEstimate estimate, MeshWorkPriority priority)
+    {
+        var predictedBuildMs = InFlightEstimatedBuildMs + estimate.BuildMs;
+        var predictedBytes = CompletedResultBytes + InFlightEstimatedResultBytes + estimate.ResultBytes;
+        var buildFits = priority == MeshWorkPriority.Critical ||
+                        predictedBuildMs <= MaxConcurrentTasks * BuildAdmissionMsPerWorker;
+        var bytesFit = predictedBytes <= (priority == MeshWorkPriority.Critical
+            ? CriticalCompletedResultBudgetBytes
+            : CompletedResultBudgetBytes);
+        if (buildFits && bytesFit) return true;
+
+        // One cold/oversized job must still establish observations and make progress. Once any
+        // non-critical worker/result cost is retained, subsequent work waits for capacity.
+        if (InFlightEstimatedBuildMs <= 0 && InFlightEstimatedResultBytes <= 0 && CompletedResultBytes <= 0)
+            return true;
+        Interlocked.Increment(ref _buildAdmissionDeferrals);
+        return false;
+    }
+
+    public void NoteUploadAdmissionDeferred() => Interlocked.Increment(ref _uploadAdmissionDeferrals);
+    public void NoteOversizedUploadAdmission() => Interlocked.Increment(ref _oversizedUploadAdmissions);
+
+    public bool TryPeekMesh(out MeshBuildResult result, out MeshWorkPriority priority)
+    {
+        var hasCritical = !_criticalResults.IsEmpty;
+        var hasForeground = !_foregroundResults.IsEmpty;
+        var hasBackground = !_backgroundResults.IsEmpty;
+        if (!hasCritical && !hasForeground && !hasBackground)
+        {
+            result = default;
+            priority = default;
+            return false;
+        }
+
+        priority = _resultFairness.Peek(hasCritical, hasForeground, hasBackground);
+        return ResultQueueFor(priority).TryPeek(out result);
+    }
+
+    public bool TryPeekMesh(MeshWorkPriority priority, out MeshBuildResult result) =>
+        ResultQueueFor(priority).TryPeek(out result);
 
     public bool TryDequeueMesh(out MeshBuildResult result)
     {
-        var priority = _resultFairness.Select(
-            !_criticalResults.IsEmpty,
-            !_foregroundResults.IsEmpty,
-            !_backgroundResults.IsEmpty);
-        if (ResultQueueFor(priority).TryDequeue(out result))
-        {
-            CompleteOutstanding(result.Pos);
-            return true;
-        }
-
-        // Producers may enqueue between the availability snapshot and the selected dequeue.
-        // Falling through all lanes keeps that harmless race from looking like an empty result set.
-        var found = _criticalResults.TryDequeue(out result)
-                    || _foregroundResults.TryDequeue(out result)
-                    || _backgroundResults.TryDequeue(out result);
-        if (found) CompleteOutstanding(result.Pos);
-        return found;
+        result = default;
+        if (!TryPeekMesh(out _, out var priority) ||
+            !TryDequeueMesh(priority, advanceFairness: true, out result)) return false;
+        return true;
     }
 
     /// <summary>Takes one completed result from an exact lane for the renderer's critical reserve.</summary>
     public bool TryDequeueMesh(MeshWorkPriority priority, out MeshBuildResult result)
+        => TryDequeueMesh(priority, advanceFairness: false, out result);
+
+    public bool TryDequeueMesh(
+        MeshWorkPriority priority,
+        bool advanceFairness,
+        out MeshBuildResult result)
     {
         if (!ResultQueueFor(priority).TryDequeue(out result)) return false;
+        if (advanceFairness) _resultFairness.Commit(priority);
+        Interlocked.Add(ref _completedResultBytes, -result.RetainedBytes);
         CompleteOutstanding(result.Pos);
         return true;
     }
@@ -194,9 +268,12 @@ internal class ChunkMeshGenerator : IDisposable
         MeshWorkPriority priority = MeshWorkPriority.Background,
         MeshLifecycleRequest? trace = null,
         long sectionId = 0,
-        SectionMeshRebuildPlan rebuildPlan = default)
+        SectionMeshRebuildPlan rebuildPlan = default,
+        ChunkMeshCostEstimate estimate = default)
     {
         if (rebuildPlan.PageMask == 0) rebuildPlan = SectionMeshRebuildPlan.Full;
+        if (estimate.BuildMs <= 0 || estimate.ResultBytes <= 0)
+            estimate = _costModel.Estimate(rebuildPlan);
         var requestedAt = Stopwatch.GetTimestamp();
         _lifecycle?.Move(trace, MeshLifecycleStage.Snapshotting, priority);
         // 1 block of padding on every side of the 16-block sub-chunk (18x18x18 total) — exactly
@@ -219,7 +296,7 @@ internal class ChunkMeshGenerator : IDisposable
 
         var control = new MeshBuildCancellation(priority);
         var request = new MeshBuildRequest(pos, version, cache, alternateBlocks, requestedAt,
-            Stopwatch.GetTimestamp(), trace, sectionId, rebuildPlan, control);
+            Stopwatch.GetTimestamp(), trace, sectionId, rebuildPlan, control, estimate);
         if (!_outstanding.TryAdd(pos, control))
         {
             _lifecycle?.Cancel(trace, MeshCancellationReason.DuplicateRequest);
@@ -230,8 +307,11 @@ internal class ChunkMeshGenerator : IDisposable
 
         // Record before publishing to workers, otherwise Building could race ahead of WorkerQueued.
         _lifecycle?.Move(trace, MeshLifecycleStage.WorkerQueued);
+        Interlocked.Add(ref _inFlightEstimatedBuildMicros, ToMicros(estimate.BuildMs));
+        Interlocked.Add(ref _inFlightEstimatedResultBytes, estimate.ResultBytes);
         if (!_work.Enqueue(pos, request, priority))
         {
+            ReleaseInFlightEstimate(estimate);
             _lifecycle?.Cancel(trace, MeshCancellationReason.DuplicateRequest);
             _outstanding.TryRemove(pos, out _);
             control.Dispose();
@@ -288,7 +368,12 @@ internal class ChunkMeshGenerator : IDisposable
                     mesh.FinishedAt = Stopwatch.GetTimestamp();
                     mesh.Trace = request.Trace;
                     mesh.SectionId = request.SectionId;
+                    _costModel.RecordBuild(
+                        mesh.BuildMs,
+                        request.RebuildPlan.PageBuildCount,
+                        mesh.RetainedBytes);
                     _lifecycle?.Move(request.Trace, MeshLifecycleStage.AwaitingUpload);
+                    Interlocked.Add(ref _completedResultBytes, mesh.RetainedBytes);
                     ResultQueueFor(mesh.Priority).Enqueue(mesh);
                 }
                 catch (OperationCanceledException) when (request.Control.IsCancellationRequested)
@@ -316,6 +401,7 @@ internal class ChunkMeshGenerator : IDisposable
                 }
                 finally
                 {
+                    ReleaseInFlightEstimate(request.Estimate);
                     request.Cache.Dispose();
                 }
             }
@@ -368,7 +454,10 @@ internal class ChunkMeshGenerator : IDisposable
             result.VisibilityData = ChunkVisibilityComputer.Compute(cache, pos.X, pos.Y, pos.Z);
             cancellationToken.ThrowIfCancellationRequested();
             _profile.RecordVisibility(Stopwatch.GetTimestamp() - visibilityStart);
-            _profile.RecordGeneration(Stopwatch.GetTimestamp() - generationStart, rebuildPlan);
+            var generationTicks = Stopwatch.GetTimestamp() - generationStart;
+            result.BuildMs = generationTicks * 1000.0 / Stopwatch.Frequency;
+            (result.RetainedBytes, result.UploadBytes) = MeasureResultBytes(result.Pages);
+            _profile.RecordGeneration(generationTicks, rebuildPlan);
             return result;
         }
         catch
@@ -495,8 +584,51 @@ internal class ChunkMeshGenerator : IDisposable
         }
     }
 
-    public void RecordUpload(long elapsedTicks, long finishedToUploadTicks, long requestToUploadTicks) =>
+    public void RecordUpload(
+        long elapsedTicks,
+        long finishedToUploadTicks,
+        long requestToUploadTicks,
+        long uploadBytes)
+    {
         _profile.RecordUpload(elapsedTicks, finishedToUploadTicks, requestToUploadTicks);
+        _costModel.RecordUpload(elapsedTicks * 1000.0 / Stopwatch.Frequency, uploadBytes);
+    }
+
+    private static (long RetainedBytes, long UploadBytes) MeasureResultBytes(
+        MeshPageBuildResult[] pages)
+    {
+        long retained = 0;
+        long upload = 0;
+        foreach (var page in pages)
+        {
+            if (page == null) continue;
+            Add(page.Solid, page.SolidLighting);
+            Add(page.Translucent, page.TranslucentLighting);
+        }
+        return (retained, upload);
+
+        void Add(PooledList<ChunkVertex>? vertices, SectionLightModel? lighting)
+        {
+            if (vertices == null) return;
+            // ArrayPool may retain a larger bucket than the logical vertex count. Admission is a
+            // memory-safety mechanism, so account for the owned array rather than only bytes that
+            // will be copied to the GPU.
+            retained += (long)vertices.Buffer.Length * Unsafe.SizeOf<ChunkVertex>();
+            upload += (long)vertices.Count * Unsafe.SizeOf<ChunkVertex>();
+            if (lighting == null) return;
+            retained += lighting.RetainedBytes;
+            upload += lighting.InitialUploadBytes;
+        }
+    }
+
+    private void ReleaseInFlightEstimate(in ChunkMeshCostEstimate estimate)
+    {
+        Interlocked.Add(ref _inFlightEstimatedBuildMicros, -ToMicros(estimate.BuildMs));
+        Interlocked.Add(ref _inFlightEstimatedResultBytes, -estimate.ResultBytes);
+    }
+
+    private static long ToMicros(double milliseconds) =>
+        checked((long)Math.Ceiling(Math.Max(0, milliseconds) * 1000.0));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int PageLocalIndex(int lx, int ly, int lz) =>
@@ -968,7 +1100,8 @@ internal class ChunkMeshGenerator : IDisposable
         MeshLifecycleRequest? Trace,
         long SectionId,
         SectionMeshRebuildPlan RebuildPlan,
-        MeshBuildCancellation Control);
+        MeshBuildCancellation Control,
+        ChunkMeshCostEstimate Estimate);
 
     /// <summary>One corner of a quad about to be emitted: world position, tiled UV, and its light.</summary>
     private readonly record struct QuadCorner(float X, float Y, float Z, float U, float V, CornerLight Light);

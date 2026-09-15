@@ -5,6 +5,27 @@ namespace OmniBlock.Tests.Rendering;
 public sealed class PriorityWorkSchedulerTests
 {
     [Fact]
+    public void Fairness_peek_does_not_advance_until_the_selection_is_committed()
+    {
+        MeshPriorityFairness fairness = new();
+
+        for (var i = 0; i < MeshPriorityFairness.CriticalBurstLimit; i++)
+        {
+            Assert.Equal(
+                MeshWorkPriority.Critical,
+                fairness.Peek(hasCritical: true, hasForeground: true, hasBackground: false));
+            Assert.Equal(
+                MeshWorkPriority.Critical,
+                fairness.Peek(hasCritical: true, hasForeground: true, hasBackground: false));
+            fairness.Commit(MeshWorkPriority.Critical);
+        }
+
+        Assert.Equal(
+            MeshWorkPriority.Foreground,
+            fairness.Peek(hasCritical: true, hasForeground: true, hasBackground: false));
+    }
+
+    [Fact]
     public async Task Critical_work_overtakes_foreground_and_background_work()
     {
         using PriorityWorkScheduler<string, int> scheduler = new();

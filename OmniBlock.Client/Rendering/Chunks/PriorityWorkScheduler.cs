@@ -21,37 +21,42 @@ internal sealed class MeshPriorityFairness
 
     public MeshWorkPriority Select(bool hasCritical, bool hasForeground, bool hasBackground)
     {
+        var selected = Peek(hasCritical, hasForeground, hasBackground);
+        Commit(selected);
+        return selected;
+    }
+
+    public MeshWorkPriority Peek(bool hasCritical, bool hasForeground, bool hasBackground)
+    {
         if (hasBackground && _higherPrioritySinceBackground >= HigherPriorityBurstLimit)
-        {
-            _higherPrioritySinceBackground = 0;
-            _criticalSinceForeground = 0;
             return MeshWorkPriority.Background;
-        }
 
         if (hasForeground && _criticalSinceForeground >= CriticalBurstLimit)
-        {
-            _criticalSinceForeground = 0;
-            _higherPrioritySinceBackground++;
             return MeshWorkPriority.Foreground;
-        }
 
-        if (hasCritical)
+        if (hasCritical) return MeshWorkPriority.Critical;
+        if (hasForeground) return MeshWorkPriority.Foreground;
+        return MeshWorkPriority.Background;
+    }
+
+    public void Commit(MeshWorkPriority selected)
+    {
+        if (selected == MeshWorkPriority.Critical)
         {
             _criticalSinceForeground++;
             _higherPrioritySinceBackground++;
-            return MeshWorkPriority.Critical;
+            return;
         }
 
-        if (hasForeground)
+        if (selected == MeshWorkPriority.Foreground)
         {
             _criticalSinceForeground = 0;
             _higherPrioritySinceBackground++;
-            return MeshWorkPriority.Foreground;
+            return;
         }
 
         _criticalSinceForeground = 0;
         _higherPrioritySinceBackground = 0;
-        return MeshWorkPriority.Background;
     }
 }
 

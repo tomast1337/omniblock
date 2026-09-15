@@ -261,6 +261,13 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text($"Upload:    {mesh.UploadMs:F3} ms avg");
         ImGuiTextSafe.Text($"Done->GPU: {mesh.FinishedToUploadMs:F3} ms avg");
         ImGuiTextSafe.Text($"Request->GPU: {mesh.RequestToUploadMs:F3} ms avg");
+        var cost = chunkRenderer.MeshCostProfile;
+        ImGuiTextSafe.Text(
+            $"Estimate:  {cost.BuildMsPerPage:F3} ms/page  {FormatBytes(cost.ResultBytesPerPage)}/page  {cost.UploadBaseMs:F3} ms + {cost.UploadMsPerMiB:F3} ms/MiB");
+        ImGuiTextSafe.Text(
+            $"Backpress: {FormatBytes(chunkRenderer.CompletedMeshResultBytes)} completed  {FormatBytes(chunkRenderer.InFlightEstimatedMeshResultBytes)} predicted  {chunkRenderer.InFlightEstimatedMeshBuildMs:F2} worker-ms");
+        ImGuiTextSafe.Text(
+            $"Admission: build waits {chunkRenderer.MeshBuildAdmissionDeferrals:N0}  upload waits {chunkRenderer.MeshUploadAdmissionDeferrals:N0}  oversized {chunkRenderer.MeshOversizedUploadAdmissions:N0}");
         ImGuiTextSafe.Text(
             $"Versions:  allocated {MetricRegistry.Get(RenderMetrics.MeshVersionAllocated)}  free {MetricRegistry.Get(RenderMetrics.MeshVersionReleased)}");
         if (ImGui.Button("Reset mesh build profile")) chunkRenderer.ResetMeshProfile();
