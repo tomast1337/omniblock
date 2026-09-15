@@ -180,6 +180,42 @@ public sealed class ChunkOcclusionCullerTests
     }
 
     [Fact]
+    public void Portal_diagnostics_distinguish_successful_and_duplicate_edges()
+    {
+        using var camera = Node(0, true);
+        using var east = Node(16, true);
+        camera.AdjacentEast = east;
+        east.AdjacentWest = camera;
+        SetVisible(camera, ChunkDirection.West, ChunkDirection.East);
+        SetVisible(east, ChunkDirection.West, ChunkDirection.West);
+        var visitor = new Collector();
+
+        var result = new ChunkOcclusionCuller().FindVisible(
+            visitor,
+            [camera, east],
+            camera,
+            new Vector3D<double>(8, 72, 8),
+            new TestFrustum(),
+            256,
+            true,
+            1,
+            candidatesKnownInFrustum: true);
+
+        Assert.Equal(2, result.PortalVisited);
+        Assert.Equal(2, result.PortalQueuePops);
+        Assert.Equal(2, result.PortalDrawFrustumTests);
+        Assert.Equal(2, result.PortalEdgeAttempts);
+        Assert.Equal(0, result.PortalMissingNeighbors);
+        Assert.Equal(2, result.PortalMarginFrustumTests);
+        Assert.Equal(0, result.PortalMarginRejected);
+        Assert.Equal(1, result.PortalSuccessfulReaches);
+        Assert.Equal(1, result.PortalDuplicateReaches);
+        Assert.Equal(
+            result.PortalDrawFrustumTests + result.PortalMarginFrustumTests,
+            result.FrustumTests);
+    }
+
+    [Fact]
     public void Complete_near_field_graph_needs_no_rescue_after_install_grace()
     {
         using var state = ResidentState(frame: 10, sealedNeighbors: true);

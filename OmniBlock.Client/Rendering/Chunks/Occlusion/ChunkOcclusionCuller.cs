@@ -13,7 +13,15 @@ public readonly record struct ChunkVisibilityResult(
     int FrustumTests,
     int FrustumCandidates,
     int PortalVisited,
-    int DisconnectedSeeds = 0);
+    int DisconnectedSeeds = 0,
+    int PortalQueuePops = 0,
+    int PortalDrawFrustumTests = 0,
+    int PortalEdgeAttempts = 0,
+    int PortalMissingNeighbors = 0,
+    int PortalMarginFrustumTests = 0,
+    int PortalMarginRejected = 0,
+    int PortalDuplicateReaches = 0,
+    int PortalSuccessfulReaches = 0);
 
 public class ChunkOcclusionCuller
 {
@@ -36,6 +44,14 @@ public class ChunkOcclusionCuller
         var frustumTests = 0;
         var frustumCount = 0;
         var disconnectedSeeds = 0;
+        var portalQueuePops = 0;
+        var portalDrawFrustumTests = 0;
+        var portalEdgeAttempts = 0;
+        var portalMissingNeighbors = 0;
+        var portalMarginFrustumTests = 0;
+        var portalMarginRejected = 0;
+        var portalDuplicateReaches = 0;
+        var portalSuccessfulReaches = 0;
 
         // A missing camera mesh is normal during streaming and when flying above the world.
         // With no reliable portal seed, conservatively draw the available meshes in view.
@@ -78,6 +94,7 @@ public class ChunkOcclusionCuller
 
         while (_queue.TryDequeue(out var current))
         {
+            portalQueuePops++;
             DrawIfVisible(current, false);
             // Connectivity may briefly leave the exact draw frustum before turning back toward
             // visible terrain, but it must not wander across the entire resident radius. One
@@ -94,25 +111,52 @@ public class ChunkOcclusionCuller
         var portalVisited = _reached.Count;
         _reached.Clear();
         return new ChunkVisibilityResult(
-            residentCandidates, frustumTests, frustumCount, portalVisited, disconnectedSeeds);
+            residentCandidates,
+            frustumTests,
+            frustumCount,
+            portalVisited,
+            disconnectedSeeds,
+            portalQueuePops,
+            portalDrawFrustumTests,
+            portalEdgeAttempts,
+            portalMissingNeighbors,
+            portalMarginFrustumTests,
+            portalMarginRejected,
+            portalDuplicateReaches,
+            portalSuccessfulReaches);
 
         void DrawIfVisible(SubChunkRenderer renderer, bool knownInFrustum)
         {
-            if (renderer.LastVisibleFrame == frame ||
-                !(knownInFrustum
-                    ? renderer.IsWithinRenderDistance(viewPos, renderDistance)
-                    : IsInFrustum(renderer.BoundingBox) &&
-                      renderer.IsWithinRenderDistance(viewPos, renderDistance))) return;
+            if (renderer.LastVisibleFrame == frame) return;
+            if (!knownInFrustum)
+            {
+                portalDrawFrustumTests++;
+                if (!IsInFrustum(renderer.BoundingBox)) return;
+            }
+            if (!renderer.IsWithinRenderDistance(viewPos, renderDistance)) return;
             renderer.LastVisibleFrame = frame;
             visitor.Visit(renderer);
         }
 
         void ReachIfNearFrustum(SubChunkRenderer? renderer, ChunkDirectionMask incoming)
         {
-            if (renderer == null ||
-                !IsInFrustum(renderer.BoundingBox.Expand(
-                    TraversalMargin, TraversalMargin, TraversalMargin))) return;
-            Reach(renderer, incoming);
+            portalEdgeAttempts++;
+            if (renderer == null)
+            {
+                portalMissingNeighbors++;
+                return;
+            }
+
+            portalMarginFrustumTests++;
+            if (!IsInFrustum(renderer.BoundingBox.Expand(
+                    TraversalMargin, TraversalMargin, TraversalMargin)))
+            {
+                portalMarginRejected++;
+                return;
+            }
+
+            if (Reach(renderer, incoming)) portalSuccessfulReaches++;
+            else portalDuplicateReaches++;
         }
 
         bool IsInFrustum(Box bounds)

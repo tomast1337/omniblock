@@ -429,6 +429,14 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("frustumTests\t").Append(presentation.FrustumTests).AppendLine();
         text.Append("portalVisited\t").Append(presentation.PortalVisited).AppendLine();
         text.Append("disconnectedSeeds\t").Append(presentation.DisconnectedSeeds).AppendLine();
+        text.Append("portalQueuePops\t").Append(presentation.PortalQueuePops).AppendLine();
+        text.Append("portalDrawFrustumTests\t").Append(presentation.PortalDrawFrustumTests).AppendLine();
+        text.Append("portalEdgeAttempts\t").Append(presentation.PortalEdgeAttempts).AppendLine();
+        text.Append("portalMissingNeighbors\t").Append(presentation.PortalMissingNeighbors).AppendLine();
+        text.Append("portalMarginFrustumTests\t").Append(presentation.PortalMarginFrustumTests).AppendLine();
+        text.Append("portalMarginRejected\t").Append(presentation.PortalMarginRejected).AppendLine();
+        text.Append("portalDuplicateReaches\t").Append(presentation.PortalDuplicateReaches).AppendLine();
+        text.Append("portalSuccessfulReaches\t").Append(presentation.PortalSuccessfulReaches).AppendLine();
         text.Append("safetyRescued\t").Append(presentation.SafetyRescued).AppendLine();
         text.Append("incompleteAdjacencyRescued\t").Append(presentation.IncompleteAdjacencyRescued).AppendLine();
         text.Append("newPresentationRescued\t").Append(presentation.NewPresentationRescued).AppendLine();
@@ -585,6 +593,14 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         Counter("frustumTests", profile.FrustumTests);
         Counter("portalVisited", profile.PortalVisited);
         Counter("disconnectedSeeds", profile.DisconnectedSeeds);
+        Counter("portalQueuePops", profile.PortalQueuePops);
+        Counter("portalDrawFrustumTests", profile.PortalDrawFrustumTests);
+        Counter("portalEdgeAttempts", profile.PortalEdgeAttempts);
+        Counter("portalMissingNeighbors", profile.PortalMissingNeighbors);
+        Counter("portalMarginFrustumTests", profile.PortalMarginFrustumTests);
+        Counter("portalMarginRejected", profile.PortalMarginRejected);
+        Counter("portalDuplicateReaches", profile.PortalDuplicateReaches);
+        Counter("portalSuccessfulReaches", profile.PortalSuccessfulReaches);
         Counter("safetyRescued", profile.SafetyRescued);
         Counter("presentedSections", profile.PresentedSections);
         Counter("presentedSolidLayers", profile.PresentedSolidLayers);
@@ -1303,6 +1319,14 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             _visibilityThisFrame.FrustumTests,
             _visibilityThisFrame.PortalVisited,
             _visibilityThisFrame.DisconnectedSeeds,
+            _visibilityThisFrame.PortalQueuePops,
+            _visibilityThisFrame.PortalDrawFrustumTests,
+            _visibilityThisFrame.PortalEdgeAttempts,
+            _visibilityThisFrame.PortalMissingNeighbors,
+            _visibilityThisFrame.PortalMarginFrustumTests,
+            _visibilityThisFrame.PortalMarginRejected,
+            _visibilityThisFrame.PortalDuplicateReaches,
+            _visibilityThisFrame.PortalSuccessfulReaches,
             _safetyRescuedThisFrame,
             _incompleteAdjacencyRescuedThisFrame,
             _newPresentationRescuedThisFrame,
