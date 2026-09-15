@@ -235,6 +235,10 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
                 RenderPassDepthStencilAttachment depth = new() { View = _depthView, DepthLoadOp = LoadOp.Clear,
                     DepthStoreOp = StoreOp.Store, DepthClearValue = 1, StencilLoadOp = LoadOp.Undefined, StencilStoreOp = StoreOp.Undefined };
                 RenderPassDescriptor desc = new() { ColorAttachmentCount = 1, ColorAttachments = &color, DepthStencilAttachment = &depth };
+                RenderPassTimestampWrites timestampWrites = default;
+                if (device.GpuProfiler.TryCreatePassWrites(
+                        GpuPassCategory.EntityImpostorCapture, out timestampWrites))
+                    desc.TimestampWrites = &timestampWrites;
                 var pass = device.Api.CommandEncoderBeginRenderPass(encoder, in desc);
                 try
                 {

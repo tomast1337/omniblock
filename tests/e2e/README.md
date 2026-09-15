@@ -263,6 +263,11 @@ server, one JSON generation profile:
 
 `OMNI.test.dumpProfiler("label")` writes `profiler-label.tsv` with the last, rolling average,
 P50, P95, and recent period maximum for every main/client and integrated-server profiler scope.
+It also writes `gpu-profiler-label.tsv` when WebGPU is active. That sibling contains a delayed,
+non-blocking timestamp-query snapshot for the world, impostor capture, hand, interface, composite,
+and total render span. Milliseconds are present only when wgpu-native exposes its timestamp period
+or the diagnostic override `OMNIBLOCK_GPU_TIMESTAMP_PERIOD_NS` is configured; otherwise the file
+labels and preserves raw ticks rather than assuming the device's unit.
 When a world renderer is active it also writes `chunk-presentation-label.tsv`, separating spatial
 frustum traversal, near-to-far candidate sorting, portal traversal, and terrain submission. The
 presentation artifact records how many exact-frustum candidates were nevertheless outside render

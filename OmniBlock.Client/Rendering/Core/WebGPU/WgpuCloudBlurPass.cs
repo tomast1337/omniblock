@@ -188,7 +188,7 @@ public sealed unsafe class WgpuCloudBlurPass : ICloudBlurPass, IDisposable
 
         _cloudPass = _cloudFb.BeginPass(Encoder,
             new Color(FogColor.X, FogColor.Y, FogColor.Z, 0.0),
-            true, false);
+            true, false, GpuPassCategory.World);
         _drawTarget.BeginPass(_cloudPass, _cloudFb.Width, _cloudFb.Height);
     }
 
@@ -202,7 +202,8 @@ public sealed unsafe class WgpuCloudBlurPass : ICloudBlurPass, IDisposable
         _cloudPass = null;
 
         // Horizontal blur: cloud capture -> ping-pong, premultiplying alpha as it accumulates.
-        var hPass = _pingPongFb.BeginPass(Encoder, default);
+        var hPass = _pingPongFb.BeginPass(Encoder, default,
+            gpuProfileCategory: GpuPassCategory.World);
         api.RenderPassEncoderSetPipeline(hPass, _horizontalPipeline.Pipeline);
         _horizontalPipeline.UploadUniforms(1u);
         _horizontalPipeline.BindUniformGroup(hPass);
@@ -216,7 +217,7 @@ public sealed unsafe class WgpuCloudBlurPass : ICloudBlurPass, IDisposable
         // and depth so everything DrawWorld drew before clouds survives, and the scene's own depth
         // decides how much of the glow shows through in front of nearer terrain.
         var vPass = _offscreenFb.BeginPass(Encoder, default,
-            false, false);
+            false, false, GpuPassCategory.World);
         api.RenderPassEncoderSetPipeline(vPass, _verticalPipeline.Pipeline);
         _verticalPipeline.UploadUniforms(0u);
         _verticalPipeline.BindUniformGroup(vPass);

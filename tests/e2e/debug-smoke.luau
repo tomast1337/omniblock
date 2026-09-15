@@ -23,4 +23,5 @@ assert(OMNI.client.state.playerReady, "game stopped while the debug dashboard wa
 assert(OMNI.client.state.meshBuildFailureCount == 0,
     "mesh build failed while the debug dashboard was open")
 OMNI.test.dumpTerrain("debug-open")
+OMNI.test.dumpProfiler("debug-open")
 OMNI.test.pass()

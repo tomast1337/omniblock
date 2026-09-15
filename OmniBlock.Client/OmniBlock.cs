@@ -758,6 +758,9 @@ public partial class OmniBlock :
                 {
                     _e2eTestController.WriteTextArtifact(
                         $"profiler-{label}.tsv", Profiler.CreateTsvSnapshot());
+                    if (WebGpuDevice.Current?.GpuProfiler is { } gpuProfiler)
+                        _e2eTestController.WriteTextArtifact(
+                            $"gpu-profiler-{label}.tsv", gpuProfiler.CreateTsvSnapshot());
                     if (WorldRenderer?.ChunkRenderer is { } chunkRenderer)
                         _e2eTestController.WriteTextArtifact(
                             $"chunk-presentation-{label}.tsv",

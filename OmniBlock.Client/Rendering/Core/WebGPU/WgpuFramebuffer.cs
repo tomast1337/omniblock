@@ -112,9 +112,9 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
     ///     Begins a render pass targeting this framebuffer and returns the pass encoder. The caller
     ///     ends and releases it.
     /// </summary>
-    public RenderPassEncoder* BeginPass(CommandEncoder* encoder,
+    internal RenderPassEncoder* BeginPass(CommandEncoder* encoder,
         Color clearColor, bool clearColorBuffer = true,
-        bool clearDepth = true)
+        bool clearDepth = true, GpuPassCategory? gpuProfileCategory = null)
     {
         var api = _device.Api;
 
@@ -152,6 +152,11 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
             ColorAttachments = &colorAttach,
             DepthStencilAttachment = pDepth
         };
+
+        RenderPassTimestampWrites timestampWrites = default;
+        if (gpuProfileCategory is { } category &&
+            _device.GpuProfiler.TryCreatePassWrites(category, out timestampWrites))
+            descriptor.TimestampWrites = &timestampWrites;
 
         return api.CommandEncoderBeginRenderPass(encoder, in descriptor);
     }

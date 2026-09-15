@@ -70,8 +70,10 @@ public sealed unsafe class WebGpuDevice : IDisposable
         }
 
         Adapter = RequestAdapter();
-        Device = RequestDevice(Adapter);
+        var adapterSupportsTimestampQueries = Api.AdapterHasFeature(Adapter, FeatureName.TimestampQuery);
+        Device = RequestDevice(Adapter, adapterSupportsTimestampQueries, out var timestampQueriesEnabled);
         Queue = Api.DeviceGetQueue(Device);
+        GpuProfiler = new GpuFrameProfiler(this, timestampQueriesEnabled);
         QuadIndices = new SharedQuadIndexBuffer(this);
         QuadWireframeIndices = new SharedQuadWireframeIndexBuffer(this);
 
@@ -81,8 +83,8 @@ public sealed unsafe class WebGpuDevice : IDisposable
         (SurfaceFormat, _presentMode, _alphaMode) = ChooseSurfaceConfiguration(vsync);
 
         s_logger.LogInformation(
-            "WebGPU device ready: surface format {Format}, present mode {PresentMode}, surface {Width}x{Height}.",
-            SurfaceFormat, _presentMode, width, height);
+            "WebGPU device ready: surface format {Format}, present mode {PresentMode}, surface {Width}x{Height}; GPU timestamps: {TimestampStatus}.",
+            SurfaceFormat, _presentMode, width, height, GpuProfiler.Latest.Status);
 
         Configure(width, height);
     }
@@ -93,6 +95,7 @@ public sealed unsafe class WebGpuDevice : IDisposable
     public Adapter* Adapter { get; }
     public Device* Device { get; }
     public Queue* Queue { get; }
+    internal GpuFrameProfiler GpuProfiler { get; }
     internal SharedQuadIndexBuffer QuadIndices { get; }
     internal SharedQuadWireframeIndexBuffer QuadWireframeIndices { get; }
 
@@ -125,6 +128,7 @@ public sealed unsafe class WebGpuDevice : IDisposable
             _commandEncoder = null;
         }
 
+        GpuProfiler.Dispose();
         QuadWireframeIndices.Dispose();
         QuadIndices.Dispose();
 
@@ -343,12 +347,42 @@ public sealed unsafe class WebGpuDevice : IDisposable
             : adapter;
     }
 
-    private Device* RequestDevice(Adapter* adapter)
+    private Device* RequestDevice(Adapter* adapter, bool requestTimestampQueries, out bool timestampQueriesEnabled)
+    {
+        var device = TryRequestDevice(adapter, requestTimestampQueries, out var message);
+        if (device is not null)
+        {
+            timestampQueriesEnabled = requestTimestampQueries &&
+                                      Api.DeviceHasFeature(device, FeatureName.TimestampQuery);
+            return device;
+        }
+
+        if (requestTimestampQueries)
+        {
+            s_logger.LogWarning(
+                "WebGPU device creation rejected optional timestamp queries ({Message}); retrying without GPU timing.",
+                message);
+            device = TryRequestDevice(adapter, false, out message);
+        }
+
+        timestampQueriesEnabled = false;
+        return device is null
+            ? throw new InvalidOperationException($"WebGPU device creation failed. {message}")
+            : device;
+    }
+
+    private Device* TryRequestDevice(Adapter* adapter, bool requestTimestampQueries, out string? message)
     {
         Device* device = null;
-        string? message = null;
+        string? requestMessage = null;
 
         DeviceDescriptor descriptor = default;
+        FeatureName timestampQuery = FeatureName.TimestampQuery;
+        if (requestTimestampQueries)
+        {
+            descriptor.RequiredFeatureCount = 1;
+            descriptor.RequiredFeatures = &timestampQuery;
+        }
 
         PfnRequestDeviceCallback callback = new((status, result, error, _) =>
         {
@@ -358,15 +392,14 @@ public sealed unsafe class WebGpuDevice : IDisposable
             }
             else
             {
-                message = $"{status}: {Marshal.PtrToStringUTF8((nint)error)}";
+                requestMessage = $"{status}: {Marshal.PtrToStringUTF8((nint)error)}";
             }
         });
 
         Api.AdapterRequestDevice(adapter, in descriptor, callback, null);
 
-        return device is null
-            ? throw new InvalidOperationException($"WebGPU device creation failed. {message}")
-            : device;
+        message = requestMessage;
+        return device;
     }
 
     /// <summary>

@@ -141,6 +141,8 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         var swapView = device.AcquireFrame();
         if (swapView == null) return;
 
+        device.GpuProfiler.BeginFrame();
+        device.GpuProfiler.RecordLatestToProfiler();
         var encoder = device.CreateCommandEncoder();
         EnsureResources(device);
 
@@ -223,7 +225,8 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
 
         // --- Offscreen pass: the world ---
         var worldPassStarted = Stopwatch.GetTimestamp();
-        var worldPass = _offscreenFb.BeginPass(encoder, clear);
+        var worldPass = _offscreenFb.BeginPass(
+            encoder, clear, gpuProfileCategory: GpuPassCategory.World);
 
         // Everything drawn through the Tessellator belongs in this pass, so the target is only open
         // for its length — a draw outside it has nowhere to go and says so. The chunk meshes record
@@ -296,6 +299,9 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
                 ColorAttachmentCount = 1,
                 ColorAttachments = &colorAttach
             };
+            RenderPassTimestampWrites timestampWrites = default;
+            if (device.GpuProfiler.TryCreatePassWrites(GpuPassCategory.Composite, out timestampWrites))
+                swapDesc.TimestampWrites = &timestampWrites;
             var swapPass = api.CommandEncoderBeginRenderPass(encoder, in swapDesc);
             api.RenderPassEncoderEnd(swapPass);
             api.RenderPassEncoderRelease(swapPass);
@@ -307,7 +313,8 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         var capturing = ScreenshotRequested;
         if (viewport is not null || capturing)
         {
-            var presentPass = BeginSwapPass(api, encoder, _presentFb!.ColorView, null);
+            var presentPass = BeginSwapPass(
+                device, encoder, _presentFb!.ColorView, null, GpuPassCategory.Composite);
             api.RenderPassEncoderSetPipeline(presentPass, _blitPipeline!.Pipeline);
             _blitPipeline.BindUniformGroup(presentPass);
             api.RenderPassEncoderSetBindGroup(presentPass, 1,
@@ -328,7 +335,8 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         var drawData = ImGui.GetDrawData();
         if (ImguiOpen && drawData.Handle is not null)
         {
-            var overlayPass = BeginSwapPass(api, encoder, swapView, null);
+            var overlayPass = BeginSwapPass(
+                device, encoder, swapView, null, GpuPassCategory.Composite);
             _imguiWgpu!.RenderDrawData(drawData, overlayPass);
             api.RenderPassEncoderEnd(overlayPass);
             api.RenderPassEncoderRelease(overlayPass);
@@ -376,11 +384,13 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         }
 
         var submitStarted = Stopwatch.GetTimestamp();
+        device.GpuProfiler.Resolve(encoder);
         var encoderFinishStarted = submitStarted;
         var cmdBuf = api.CommandEncoderFinish(encoder, null);
         Profiler.Record("EncoderFinishCpu", Stopwatch.GetElapsedTime(encoderFinishStarted).TotalMilliseconds);
         var nativeSubmitStarted = Stopwatch.GetTimestamp();
         api.QueueSubmit(device.Queue, 1, &cmdBuf);
+        device.GpuProfiler.AfterSubmit();
         Profiler.Record("NativeQueueSubmitCpu", Stopwatch.GetElapsedTime(nativeSubmitStarted).TotalMilliseconds);
         api.CommandBufferRelease(cmdBuf);
         var impostorAfterSubmitStarted = Stopwatch.GetTimestamp();
@@ -445,13 +455,16 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         var swapView = device.AcquireFrame();
         if (swapView == null) return;
 
+        device.GpuProfiler.BeginFrame();
+        device.GpuProfiler.RecordLatestToProfiler();
         var encoder = device.CreateCommandEncoder();
         EnsureResources(device);
 
         _drawTarget.BeginFrame();
         _offscreenFb!.ResizeIfNeeded(device, device.Width, device.Height);
 
-        var pass = _offscreenFb.BeginPass(encoder, new Color(0, 0, 0, 1));
+        var pass = _offscreenFb.BeginPass(
+            encoder, new Color(0, 0, 0, 1), gpuProfileCategory: GpuPassCategory.Interface);
         _drawTarget.BeginPass(pass, _offscreenFb.Width, _offscreenFb.Height);
         RenderSystem.State.Apply(RenderState.Interface);
 
@@ -471,14 +484,17 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         var drawData = ImGui.GetDrawData();
         if (ImguiOpen && drawData.Handle is not null)
         {
-            var overlayPass = BeginSwapPass(api, encoder, swapView, null);
+            var overlayPass = BeginSwapPass(
+                device, encoder, swapView, null, GpuPassCategory.Composite);
             _imguiWgpu!.RenderDrawData(drawData, overlayPass);
             api.RenderPassEncoderEnd(overlayPass);
             api.RenderPassEncoderRelease(overlayPass);
         }
 
+        device.GpuProfiler.Resolve(encoder);
         var cmdBuf = api.CommandEncoderFinish(encoder, null);
         api.QueueSubmit(device.Queue, 1, &cmdBuf);
+        device.GpuProfiler.AfterSubmit();
         api.CommandBufferRelease(cmdBuf);
 
         api.TextureViewRelease(swapView);
@@ -510,6 +526,10 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             ColorAttachmentCount = 1,
             ColorAttachments = &colorAttach
         };
+
+        RenderPassTimestampWrites timestampWrites = default;
+        if (device.GpuProfiler.TryCreatePassWrites(GpuPassCategory.Composite, out timestampWrites))
+            swapDesc.TimestampWrites = &timestampWrites;
 
         var swapPass = api.CommandEncoderBeginRenderPass(encoder, in swapDesc);
 
@@ -617,7 +637,8 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     private void RenderInterfacePass(WebGpuDevice device, CommandEncoder* encoder, float tickDelta)
     {
         var api = device.Api;
-        var pass = BeginSwapPass(api, encoder, _offscreenFb!.ColorView, _offscreenFb.DepthView);
+        var pass = BeginSwapPass(
+            device, encoder, _offscreenFb!.ColorView, _offscreenFb.DepthView, GpuPassCategory.Interface);
 
         // The inventory's mob preview and the held item render through the entity dispatcher, which
         // reads the camera, the world and the font from here. WorldRenderer's frame is what normally
@@ -657,7 +678,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         var api = WebGpuDevice.Current!.Api;
 
         var handPass = offscreenFb.BeginPass(encoder, default,
-            false);
+            false, gpuProfileCategory: GpuPassCategory.FirstPersonHand);
         _drawTarget.BeginPass(handPass, offscreenFb.Width, offscreenFb.Height);
 
         try
@@ -677,9 +698,10 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     ///     Begins a pass on the swapchain view that keeps what is already there, optionally with a
     ///     depth attachment it clears.
     /// </summary>
-    private static RenderPassEncoder* BeginSwapPass(Silk.NET.WebGPU.WebGPU api, CommandEncoder* encoder,
-        TextureView* swapView, TextureView* depthView)
+    private static RenderPassEncoder* BeginSwapPass(WebGpuDevice device, CommandEncoder* encoder,
+        TextureView* swapView, TextureView* depthView, GpuPassCategory category)
     {
+        var api = device.Api;
         RenderPassColorAttachment colorAttach = new()
         {
             View = swapView,
@@ -704,6 +726,10 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             ColorAttachments = &colorAttach,
             DepthStencilAttachment = depthView is null ? null : &depthAttach
         };
+
+        RenderPassTimestampWrites timestampWrites = default;
+        if (device.GpuProfiler.TryCreatePassWrites(category, out timestampWrites))
+            descriptor.TimestampWrites = &timestampWrites;
 
         return api.CommandEncoderBeginRenderPass(encoder, in descriptor);
     }
