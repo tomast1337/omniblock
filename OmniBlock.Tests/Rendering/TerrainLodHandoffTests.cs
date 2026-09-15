@@ -1,11 +1,42 @@
 using OmniBlock.Client.Rendering.Chunks.Lod;
 using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Tests.TestSupport;
 using Silk.NET.Maths;
 
 namespace OmniBlock.Tests.Rendering;
 
 public sealed class TerrainLodHandoffTests
 {
+    [Fact]
+    public void Texture_resource_generation_is_observed_without_resetting_terrain_state()
+    {
+        LightTestWorld world = new();
+        using ClientTerrainLodRenderer renderer = new(world);
+
+        renderer.ObserveResourceGeneration(4);
+        renderer.Tick(default);
+        var before = renderer.Snapshot;
+
+        renderer.ObserveResourceGeneration(5);
+        renderer.Tick(default);
+        var after = renderer.Snapshot;
+
+        Assert.Equal(4, before.ResourceGeneration);
+        Assert.Equal(0, before.ResourceReloads);
+        Assert.Equal(5, after.ResourceGeneration);
+        Assert.Equal(1, after.ResourceReloads);
+        Assert.Equal(before.PendingColumns, after.PendingColumns);
+        Assert.Equal(before.ConversionOwnedColumns, after.ConversionOwnedColumns);
+        Assert.Equal(before.ResidentColumns, after.ResidentColumns);
+        Assert.Equal(before.ResidentGpuBytes, after.ResidentGpuBytes);
+        Assert.Equal(before.ResidentColumns, after.LastResourceReloadReusedColumns);
+        Assert.Equal(before.ResidentGpuBytes, after.LastResourceReloadReusedGpuBytes);
+
+        renderer.ObserveResourceGeneration(5);
+        renderer.Tick(default);
+        Assert.Equal(1, renderer.Snapshot.ResourceReloads);
+    }
+
     [Fact]
     public void Linear_fog_is_extended_once_for_both_near_and_lod_terrain()
     {

@@ -559,6 +559,12 @@ public partial class OmniBlock :
                     "terrainLodStaleResults" => state.StaleResults,
                     "terrainLodRejected" => state.RejectedAdmissions,
                     "terrainLodEvictions" => state.Evictions,
+                    "terrainLodCacheHits" => state.CacheHits,
+                    "terrainLodCacheMisses" => state.CacheMisses,
+                    "terrainLodResourceGeneration" => state.ResourceGeneration,
+                    "terrainLodResourceReloads" => state.ResourceReloads,
+                    "terrainLodResourceReusedColumns" => state.LastResourceReloadReusedColumns,
+                    "terrainLodResourceReusedGpuBytes" => state.LastResourceReloadReusedGpuBytes,
                     _ => 0
                 };
             };

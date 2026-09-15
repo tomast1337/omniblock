@@ -43,7 +43,11 @@ internal readonly record struct ClientTerrainLodSnapshot(
     int CacheWritesPending,
     long CacheWrites,
     long CacheWriteDrops,
-    long CacheErrors);
+    long CacheErrors,
+    long ResourceGeneration,
+    long ResourceReloads,
+    int LastResourceReloadReusedColumns,
+    long LastResourceReloadReusedGpuBytes);
 
 /// <summary>
 ///     Client owner for the first terrain-horizon slice. It compiles immutable chunk snapshots on
@@ -106,6 +110,10 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private long _levelTransitionsStarted;
     private long _levelTransitionReversals;
     private long _boundaryRefreshes;
+    private long _resourceGeneration = -1;
+    private long _resourceReloads;
+    private int _lastResourceReloadReusedColumns;
+    private long _lastResourceReloadReusedGpuBytes;
     private bool _disposed;
     private ClientTerrainLodSnapshot _snapshot;
 
@@ -130,6 +138,33 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     }
 
     public ClientTerrainLodSnapshot Snapshot => _snapshot;
+
+    /// <summary>
+    ///     Observes texture-resource replacement without invalidating terrain presentation. Both
+    ///     near and reduced terrain store stable named-atlas layer indices; the texture manager
+    ///     replaces the pixels and WebGPU binding behind those indices. Hierarchy data, meshes,
+    ///     seams, handoffs, and residency therefore remain compatible across a pack reload.
+    /// </summary>
+    /// <remarks>
+    ///     Resource-dependent presentations such as entity impostor atlases own their own
+    ///     generation invalidation. Keeping this counter here makes the deliberate terrain reuse
+    ///     visible to diagnostics and E2E tests instead of relying on the absence of a reset call.
+    /// </remarks>
+    public void ObserveResourceGeneration(long generation)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_resourceGeneration < 0)
+        {
+            _resourceGeneration = generation;
+            return;
+        }
+
+        if (_resourceGeneration == generation) return;
+        _resourceGeneration = generation;
+        _resourceReloads++;
+        _lastResourceReloadReusedColumns = _resident.Count;
+        _lastResourceReloadReusedGpuBytes = ResidentGpuBytes();
+    }
 
     public TerrainNearHandoff GetNearHandoff(int chunkX, int chunkZ, bool translucent)
     {
@@ -960,9 +995,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 !_translucentSeams.TryGetValue(pair.Key, out var seam) ||
                 seam.Selection != pair.Value),
             uploads,
-            _resident.Values.Sum(static value => value.EstimatedBytes) +
-            _solidSeams.Values.Sum(static value => value.EstimatedBytes) +
-            _translucentSeams.Values.Sum(static value => value.EstimatedBytes),
+            ResidentGpuBytes(),
             _resident.Values.Sum(static value => value.Boundaries.EstimatedBytes),
             _staleResults,
             _rejectedAdmissions,
@@ -981,8 +1014,17 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             cacheWriter?.Written ?? 0,
             cacheWriter?.RejectedAtCapacity ?? 0,
             (cacheWriter?.Failed ?? 0) + (cache?.CorruptReads ?? 0) +
-            (cache?.WriteFailures ?? 0));
+            (cache?.WriteFailures ?? 0),
+            _resourceGeneration,
+            _resourceReloads,
+            _lastResourceReloadReusedColumns,
+            _lastResourceReloadReusedGpuBytes);
     }
+
+    private long ResidentGpuBytes() =>
+        _resident.Values.Sum(static value => value.EstimatedBytes) +
+        _solidSeams.Values.Sum(static value => value.EstimatedBytes) +
+        _translucentSeams.Values.Sum(static value => value.EstimatedBytes);
 
     private static double DistanceSquared((int X, int Z) key, Vector3D<double> point)
     {

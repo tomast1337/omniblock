@@ -40,6 +40,16 @@ assert(type(OMNI.client.state.terrainLodBoundaryRefreshes) == "number",
     "LOD boundary-refresh counter is unavailable")
 assert(type(OMNI.client.state.terrainLodBoundaryBytes) == "number",
     "LOD boundary-memory gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodCacheHits) == "number",
+    "LOD hierarchy-cache hit counter is unavailable")
+assert(type(OMNI.client.state.terrainLodCacheMisses) == "number",
+    "LOD hierarchy-cache miss counter is unavailable")
+assert(type(OMNI.client.state.terrainLodResourceReloads) == "number",
+    "LOD resource-reload reuse counter is unavailable")
+assert(type(OMNI.client.state.terrainLodResourceReusedColumns) == "number",
+    "LOD resource-reload column reuse gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodResourceReusedGpuBytes) == "number",
+    "LOD resource-reload GPU reuse gauge is unavailable")
 
 OMNI.waitUntil(function()
     return OMNI.client.state.terrainLodResident > 0 and
@@ -96,6 +106,21 @@ assert(OMNI.client.state.terrainLodBoundaryLinked > 0,
     "resident LOD columns did not establish any neighbor seam evidence")
 assert(OMNI.client.state.terrainLodBoundaryBytes > 0,
     "resident LOD boundary summaries report no memory")
+
+-- Terrain vertices address stable named-atlas layers, so a pack reload replaces texture pixels
+-- without invalidating hierarchy data or otherwise compatible GPU meshes. Pack-dependent entity
+-- impostors use the same restricted reload hook but own a separate generation invalidation.
+local residentBeforeReload = OMNI.client.state.terrainLodResident
+local gpuBytesBeforeReload = OMNI.client.state.terrainLodGpuBytes
+local reloadsBefore = OMNI.client.state.terrainLodResourceReloads
+assert(OMNI.test.impostorCache("reload"), "could not reload texture resources")
+OMNI.waitUntil(function()
+    return OMNI.client.state.terrainLodResourceReloads > reloadsBefore
+end, 10, 0.05)
+assert(OMNI.client.state.terrainLodResourceReusedColumns >= residentBeforeReload,
+    "resource reload did not retain the resident LOD columns")
+assert(OMNI.client.state.terrainLodResourceReusedGpuBytes >= gpuBytesBeforeReload,
+    "resource reload did not retain compatible LOD GPU geometry")
 OMNI.test.screenshot()
 
 print("terrain LOD: resident=" .. tostring(OMNI.client.state.terrainLodResident) ..

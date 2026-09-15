@@ -175,6 +175,8 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"LOD cache: entries {lod.CacheEntries:N0}  hits {lod.CacheHits:N0}  misses {lod.CacheMisses:N0}  writes {lod.CacheWrites:N0}/{lod.CacheWritesPending:N0} pending  drops {lod.CacheWriteDrops:N0}  errors {lod.CacheErrors:N0}  {FormatBytes(lod.CacheBytes)} disk");
         ImGuiTextSafe.Text(
+            $"Resources: generation {lod.ResourceGeneration:N0}  reloads {lod.ResourceReloads:N0}  last reuse {lod.LastResourceReloadReusedColumns:N0} columns / {FormatBytes(lod.LastResourceReloadReusedGpuBytes)} GPU");
+        ImGuiTextSafe.Text(
             $"Lifecycle: stale {lod.StaleResults:N0}  rejected {lod.RejectedAdmissions:N0}  evicted {lod.Evictions:N0}");
     }
 

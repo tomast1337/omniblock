@@ -713,6 +713,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         Matrix4X4<float> modelView,
         Matrix4X4<float> projection)
     {
+        TerrainLod?.ObserveResourceGeneration(_textureManager.ResourceGeneration);
+
         if (_game.Options.RenderDistance != _renderDistance)
         {
             // Render distance is a visibility/residency policy, not a content invalidation. The
