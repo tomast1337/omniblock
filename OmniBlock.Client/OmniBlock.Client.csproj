@@ -24,6 +24,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <!--
+      wgpu-native 0.19 exposes timestamp queries but not their device-specific period through its
+      C ABI. The Vulkan binding is used once at startup to read that property from the uniquely
+      matching physical adapter; it does not create another logical device or rendering path.
+    -->
+    <PackageReference Include="Silk.NET.Vulkan" Version="2.23.0"/>
     <PackageReference Include="SixLabors.Fonts" Version="2.1.3"/>
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.7"/>
   </ItemGroup>

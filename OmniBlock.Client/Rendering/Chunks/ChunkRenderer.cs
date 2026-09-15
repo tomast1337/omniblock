@@ -831,40 +831,49 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         // No frame has been prepared, so there is nothing this one drew to tidy up after.
         if (_lastCamera is not { } camera) return;
 
-        foreach (var state in _residentSections)
+        using (Profiler.Begin("EvictionScan"))
         {
-            var renderer = state.Renderer!;
-            if (state.ShouldEvict(
-                    IsChunkInMeshRetentionDistance(renderer.Position, _lastViewPos),
-                    _frameIndex,
-                    MeshEvictionGraceFrames))
+            foreach (var state in _residentSections)
             {
-                _renderersToRemove.Add(renderer);
+                var renderer = state.Renderer!;
+                if (state.ShouldEvict(
+                        IsChunkInMeshRetentionDistance(renderer.Position, _lastViewPos),
+                        _frameIndex,
+                        MeshEvictionGraceFrames))
+                {
+                    _renderersToRemove.Add(renderer);
+                }
             }
         }
 
-        foreach (var renderer in _renderersToRemove)
+        using (Profiler.Begin("EvictionApply"))
         {
-            if (!_sections.TryGetValue(renderer.Position, out var section)) continue;
-            if (!_residentSpatialIndex.Remove(renderer))
-                throw new InvalidOperationException(
-                    $"Resident spatial index did not contain evicted section {renderer.Position}.");
+            foreach (var renderer in _renderersToRemove)
+            {
+                if (!_sections.TryGetValue(renderer.Position, out var section)) continue;
+                if (!_residentSpatialIndex.Remove(renderer))
+                    throw new InvalidOperationException(
+                        $"Resident spatial index did not contain evicted section {renderer.Position}.");
 
-            UpdateAdjacency(renderer, false);
-            _sections.Remove(renderer.Position);
-            _residentSections.Remove(section);
-            section.DetachRenderer();
-            section.Dispose();
-            renderer.Dispose();
+                UpdateAdjacency(renderer, false);
+                _sections.Remove(renderer.Position);
+                _residentSections.Remove(section);
+                section.DetachRenderer();
+                section.Dispose();
+                renderer.Dispose();
+            }
         }
 
         _renderersToRemove.Clear();
 
-        DispatchPendingMeshUpdates();
-        LoadNewMeshes(_lastViewPos);
+        using (Profiler.Begin("MeshDispatch"))
+            DispatchPendingMeshUpdates();
+        using (Profiler.Begin("MeshInstall"))
+            LoadNewMeshes(_lastViewPos);
         // Lighting has independent storage and runs after geometry admission/upload. A lava cast
         // can coalesce here, but cannot spend the frame budget before a critical block change.
-        RefreshPendingLights();
+        using (Profiler.Begin("LightRefresh"))
+            RefreshPendingLights();
     }
 
     public unsafe void Render(ChunkRenderParams renderParams)

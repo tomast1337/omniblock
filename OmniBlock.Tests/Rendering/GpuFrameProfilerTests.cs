@@ -5,6 +5,39 @@ namespace OmniBlock.Tests.Rendering;
 public sealed class GpuFrameProfilerTests
 {
     [Fact]
+    public void Selects_timestamp_period_only_for_one_matching_vulkan_adapter()
+    {
+        VulkanTimestampPeriodResolver.Candidate[] candidates =
+        [
+            new(0x1002, 0x744c, 1.0f),
+            new(0x10de, 0x2684, 0.5f)
+        ];
+
+        var period = VulkanTimestampPeriodResolver.SelectUnique(
+            0x10de, 0x2684, candidates, out var matches);
+
+        Assert.Equal(1, matches);
+        Assert.Equal(0.5, period);
+    }
+
+    [Fact]
+    public void Rejects_ambiguous_or_invalid_vulkan_adapter_periods()
+    {
+        VulkanTimestampPeriodResolver.Candidate[] ambiguous =
+        [
+            new(0x1002, 0x744c, 1.0f),
+            new(0x1002, 0x744c, 2.0f),
+            new(0x1002, 0x744c, 0.0f)
+        ];
+
+        var period = VulkanTimestampPeriodResolver.SelectUnique(
+            0x1002, 0x744c, ambiguous, out var matches);
+
+        Assert.Equal(2, matches);
+        Assert.Null(period);
+    }
+
+    [Fact]
     public void Aggregates_reopened_physical_passes_into_logical_categories()
     {
         ulong[] values =

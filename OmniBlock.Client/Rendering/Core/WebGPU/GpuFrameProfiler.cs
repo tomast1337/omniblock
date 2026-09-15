@@ -81,7 +81,7 @@ internal sealed unsafe class GpuFrameProfiler : IDisposable
             return;
         }
 
-        _timestampPeriodNanoseconds = ResolveTimestampPeriod(device.Queue, out var periodStatus);
+        _timestampPeriodNanoseconds = ResolveTimestampPeriod(device, out var periodStatus);
         _status = periodStatus;
         Latest = EmptySnapshot(_status, _timestampPeriodNanoseconds);
 
@@ -308,7 +308,7 @@ internal sealed unsafe class GpuFrameProfiler : IDisposable
         }
     }
 
-    private static double? ResolveTimestampPeriod(Queue* queue, out string status)
+    private static double? ResolveTimestampPeriod(WebGpuDevice device, out string status)
     {
         var configured = Environment.GetEnvironmentVariable(TimestampPeriodOverride);
         if (!string.IsNullOrWhiteSpace(configured) &&
@@ -321,7 +321,7 @@ internal sealed unsafe class GpuFrameProfiler : IDisposable
 
         try
         {
-            var period = WgpuQueueGetTimestampPeriod(queue);
+            var period = WgpuQueueGetTimestampPeriod(device.Queue);
             if (float.IsFinite(period) && period > 0)
             {
                 status = "available: timestamp period from wgpu-native";
@@ -340,7 +340,14 @@ internal sealed unsafe class GpuFrameProfiler : IDisposable
             // loaders do not make that same module visible to a second direct P/Invoke.
         }
 
-        status = $"raw ticks only: timestamp period unavailable; set {TimestampPeriodOverride}";
+        var vulkanPeriod = VulkanTimestampPeriodResolver.TryResolve(device, out var vulkanDetail);
+        if (vulkanPeriod is { } resolvedPeriod)
+        {
+            status = $"available: timestamp period from {vulkanDetail}";
+            return resolvedPeriod;
+        }
+
+        status = $"raw ticks only: timestamp period unavailable ({vulkanDetail}); set {TimestampPeriodOverride}";
         return null;
     }
 

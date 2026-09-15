@@ -423,9 +423,8 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         // GL path can do this inside its terrain draw and this one cannot.
         if (drawWorld)
         {
-            var endFrameStarted = Stopwatch.GetTimestamp();
-            _game.WorldRenderer.ChunkRenderer.EndFrame();
-            Profiler.Record("ChunkEndFrameCpu", Stopwatch.GetElapsedTime(endFrameStarted).TotalMilliseconds);
+            using (Profiler.Begin("ChunkEndFrameCpu"))
+                _game.WorldRenderer.ChunkRenderer.EndFrame();
         }
     }
 

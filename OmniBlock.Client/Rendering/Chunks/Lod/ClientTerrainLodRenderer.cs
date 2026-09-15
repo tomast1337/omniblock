@@ -245,11 +245,13 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         ArgumentNullException.ThrowIfNull(nearRenderer);
         using var cpuMeasurement = new RenderCpuMeasurement(this, translucent: false);
         using var _lodRender = Profiler.Begin("TerrainLodRender");
+        var stageStarted = Stopwatch.GetTimestamp();
         var uploads = InstallCompleted(UploadsPerFrame, parameters.ViewPos,
             parameters.VerticalFovDegrees, parameters.ViewportHeight,
             parameters.TerrainLodDropoffScale,
             parameters.RenderDistance, nearRenderer);
         EvictDistant(parameters.ViewPos);
+        Profiler.Record("InstallAndEvictCpu", Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
 
         if (RenderSystem.Fog.Curve != FogCurve.Linear ||
             RenderSystem.DrawTargetOrNull is not WebGpuDrawTarget target ||
@@ -268,6 +270,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         var maximumDistance = Math.Min(
             MaximumDistanceBlocks, Math.Max(1, parameters.TerrainHorizonDistance) * 16.0f);
         var maximumDistanceSquared = maximumDistance * maximumDistance;
+        stageStarted = Stopwatch.GetTimestamp();
         foreach (var (key, presentation) in _resident)
         {
             var distanceSquared = DistanceSquared(key, parameters.ViewPos);
@@ -317,7 +320,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                     presentedLevel, handoff.Progress, FadeSeed(key), Drawn: true);
             }
         }
+        Profiler.Record("SelectionCpu", Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
 
+        stageStarted = Stopwatch.GetTimestamp();
         _visible.Sort(static (a, b) =>
         {
             var distance = a.DistanceSquared.CompareTo(b.DistanceSquared);
@@ -336,6 +341,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             _selectedSolidLevels.Remove(key);
             _solidSeamStates.Remove(key);
         }
+        Profiler.Record("SortAndTrimCpu", Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
+
+        stageStarted = Stopwatch.GetTimestamp();
         BuildDesiredSeams(
             _solidSeamStates, _desiredSolidSeams, _solidSeamFades);
         uploads += UpdateSeams(device, parameters.ViewPos, SeamUploadsPerFrame,
@@ -346,6 +354,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             SeamDrawsPerFrame, Math.Max(0, DrawsPerFrame - _visible.Count));
         if (_visibleSeams.Count > seamDrawBudget)
             _visibleSeams.RemoveRange(seamDrawBudget, _visibleSeams.Count - seamDrawBudget);
+        Profiler.Record("SeamCpu", Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
         if (_visible.Count == 0)
         {
             PublishSnapshot(uploads, 0);
@@ -369,8 +378,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 _visibleSeams[i].Fade.Progress,
                 _visibleSeams[i].Fade.Mode,
                 _visibleSeams[i].Fade.Seed);
+        stageStarted = Stopwatch.GetTimestamp();
         _opaquePipeline.WriteDynamicUniforms(_uniforms.AsSpan(0, drawCount));
+        Profiler.Record("UniformUploadCpu", Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
 
+        stageStarted = Stopwatch.GetTimestamp();
         for (var i = 0; i < _visible.Count; i++)
         {
             _opaquePipeline.BindDynamicUniforms(target.CurrentPass, i);
@@ -384,6 +396,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             var seam = _visibleSeams[i].Gpu;
             seam.Mesh!.Draw(target.CurrentPass, lightBuffer: seam.Lighting!.Solid);
         }
+        Profiler.Record("DrawCpu", Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
 
         PublishSnapshot(uploads, _visible.Count);
     }

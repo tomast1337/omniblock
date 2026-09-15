@@ -266,9 +266,11 @@ P50, P95, and recent period maximum for every main/client and integrated-server 
 It also writes `gpu-profiler-label.tsv` when WebGPU is active. That sibling contains a delayed,
 non-blocking timestamp-query snapshot for the world, impostor capture, hand, interface, composite,
 and exact encoder-level render span, plus framebuffer resolution, physical-pass counts, and query
-ring drops. Milliseconds are present only when wgpu-native exposes its timestamp period
-or the diagnostic override `OMNIBLOCK_GPU_TIMESTAMP_PERIOD_NS` is configured; otherwise the file
-labels and preserves raw ticks rather than assuming the device's unit.
+ring drops. Milliseconds use wgpu-native's timestamp period when its ABI exposes one. The bundled
+0.19 backend does not, so Vulkan obtains the period from a uniquely vendor/device-matched physical
+adapter without creating another logical device; ambiguous matches remain raw ticks. The diagnostic
+override `OMNIBLOCK_GPU_TIMESTAMP_PERIOD_NS` remains available for backend development. Other
+unsupported cases label and preserve raw ticks rather than assuming the device's unit.
 When a world renderer is active it also writes `chunk-presentation-label.tsv`, separating spatial
 frustum traversal, near-to-far candidate sorting, portal traversal, and terrain submission. The
 presentation artifact records how many exact-frustum candidates were nevertheless outside render
