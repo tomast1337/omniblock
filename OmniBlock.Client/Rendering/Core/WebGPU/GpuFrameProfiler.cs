@@ -19,6 +19,7 @@ internal enum GpuPassCategory
 
 internal readonly record struct GpuPassTiming(
     GpuPassCategory Category,
+    int PhysicalPasses,
     ulong RawTicks,
     double? Milliseconds);
 
@@ -26,6 +27,8 @@ internal readonly record struct GpuFrameTimingSnapshot(
     long Frame,
     string Status,
     double? TimestampPeriodNanoseconds,
+    uint Width,
+    uint Height,
     ulong RenderSpanRawTicks,
     double? RenderSpanMilliseconds,
     GpuPassTiming World,
@@ -54,7 +57,7 @@ internal sealed unsafe class GpuFrameProfiler : IDisposable
 {
     internal const int MaximumPassesPerFrame = 32;
     private const int RingSize = 4;
-    private const int QueryCount = MaximumPassesPerFrame * 2;
+    private const int QueryCount = MaximumPassesPerFrame * 2 + 2;
     private const ulong QueryBufferBytes = QueryCount * sizeof(ulong);
     private const string TimestampPeriodOverride = "OMNIBLOCK_GPU_TIMESTAMP_PERIOD_NS";
 
@@ -90,7 +93,7 @@ internal sealed unsafe class GpuFrameProfiler : IDisposable
     public int DroppedFrames => _droppedFrames;
 
     /// <summary>Collect old mappings, publish their values, then reserve an idle ring slot.</summary>
-    public void BeginFrame()
+    public void BeginFrame(CommandEncoder* encoder, uint width, uint height)
     {
         if (_disposed || !Supported) return;
 
@@ -108,7 +111,11 @@ internal sealed unsafe class GpuFrameProfiler : IDisposable
             return;
         }
 
-        _recording.Begin(++_nextFrame);
+        _recording.Begin(++_nextFrame, width, height);
+        _recording.FrameBeginningIndex = _recording.NextQuery++;
+        _recording.FrameEndIndex = _recording.NextQuery++;
+        _device.Api.CommandEncoderWriteTimestamp(
+            encoder, _recording.QuerySet, _recording.FrameBeginningIndex);
     }
 
     /// <summary>
@@ -122,8 +129,9 @@ internal sealed unsafe class GpuFrameProfiler : IDisposable
         if (_recording is not { State: SlotState.Encoding } slot || slot.RangeCount >= MaximumPassesPerFrame)
             return false;
 
-        var beginning = (uint)(slot.RangeCount * 2);
-        var end = beginning + 1;
+        if (slot.NextQuery + 2 > QueryCount) return false;
+        var beginning = slot.NextQuery++;
+        var end = slot.NextQuery++;
         slot.Ranges[slot.RangeCount++] = new QueryRange(category, beginning, end);
         writes = new RenderPassTimestampWrites
         {
@@ -139,14 +147,15 @@ internal sealed unsafe class GpuFrameProfiler : IDisposable
     {
         if (_recording is not { State: SlotState.Encoding } slot) return;
 
-        if (slot.RangeCount == 0)
+        if (slot.NextQuery == 0)
         {
             slot.ResetWithoutMap();
             _recording = null;
             return;
         }
 
-        var queryCount = (uint)(slot.RangeCount * 2);
+        _device.Api.CommandEncoderWriteTimestamp(encoder, slot.QuerySet, slot.FrameEndIndex);
+        var queryCount = slot.NextQuery;
         var byteCount = (ulong)queryCount * sizeof(ulong);
         _device.Api.CommandEncoderResolveQuerySet(encoder, slot.QuerySet, 0, queryCount, slot.ResolveBuffer, 0);
         _device.Api.CommandEncoderCopyBufferToBuffer(
@@ -174,9 +183,14 @@ internal sealed unsafe class GpuFrameProfiler : IDisposable
         if (latest.RenderSpanMilliseconds is not { } total) return;
 
         Profiler.Record("GpuRenderSpan", total);
-        foreach (var category in Enum.GetValues<GpuPassCategory>())
+        Record(latest.World);
+        Record(latest.EntityImpostorCapture);
+        Record(latest.FirstPersonHand);
+        Record(latest.Interface);
+        Record(latest.Composite);
+
+        static void Record(GpuPassTiming pass)
         {
-            var pass = latest.Get(category);
             if (pass.Milliseconds is { } milliseconds)
                 Profiler.Record($"Gpu{pass.Category}", milliseconds);
         }
@@ -190,19 +204,22 @@ internal sealed unsafe class GpuFrameProfiler : IDisposable
         text.Append("frame\t").AppendLine(latest.Frame.ToString(CultureInfo.InvariantCulture));
         text.Append("timestampPeriodNs\t")
             .AppendLine(latest.TimestampPeriodNanoseconds?.ToString("F9", CultureInfo.InvariantCulture) ?? "unavailable");
+        text.Append("resolution\t").Append(latest.Width).Append('x')
+            .AppendLine(latest.Height.ToString(CultureInfo.InvariantCulture));
         text.Append("droppedFrames\t").AppendLine(_droppedFrames.ToString(CultureInfo.InvariantCulture));
-        text.AppendLine("scope\trawTicks\tmilliseconds");
-        Append("RenderSpan", latest.RenderSpanRawTicks, latest.RenderSpanMilliseconds);
+        text.AppendLine("scope\tphysicalPasses\trawTicks\tmilliseconds");
+        Append("RenderSpan", 1, latest.RenderSpanRawTicks, latest.RenderSpanMilliseconds);
         foreach (var category in Enum.GetValues<GpuPassCategory>())
         {
             var pass = latest.Get(category);
-            Append(pass.Category.ToString(), pass.RawTicks, pass.Milliseconds);
+            Append(pass.Category.ToString(), pass.PhysicalPasses, pass.RawTicks, pass.Milliseconds);
         }
         return text.ToString();
 
-        void Append(string name, ulong ticks, double? milliseconds)
+        void Append(string name, int physicalPasses, ulong ticks, double? milliseconds)
         {
-            text.Append(name).Append('\t').Append(ticks.ToString(CultureInfo.InvariantCulture)).Append('\t')
+            text.Append(name).Append('\t').Append(physicalPasses).Append('\t')
+                .Append(ticks.ToString(CultureInfo.InvariantCulture)).Append('\t')
                 .AppendLine(milliseconds?.ToString("F6", CultureInfo.InvariantCulture) ?? "unavailable");
         }
     }
@@ -212,11 +229,14 @@ internal sealed unsafe class GpuFrameProfiler : IDisposable
         string status,
         double? timestampPeriodNanoseconds,
         ReadOnlySpan<ulong> queryValues,
-        ReadOnlySpan<QueryRange> ranges)
+        ReadOnlySpan<QueryRange> ranges,
+        uint frameBeginningIndex = uint.MaxValue,
+        uint frameEndIndex = uint.MaxValue,
+        uint width = 0,
+        uint height = 0)
     {
-        if (ranges.IsEmpty) return EmptySnapshot(status, timestampPeriodNanoseconds) with { Frame = frame };
-
-        Span<ulong> totals = stackalloc ulong[Enum.GetValues<GpuPassCategory>().Length];
+        Span<ulong> totals = stackalloc ulong[5];
+        Span<int> counts = stackalloc int[5];
         ulong first = ulong.MaxValue;
         ulong last = 0;
 
@@ -227,26 +247,36 @@ internal sealed unsafe class GpuFrameProfiler : IDisposable
             var end = queryValues[(int)range.EndIndex];
             if (end < beginning) continue;
             totals[(int)range.Category] += end - beginning;
+            counts[(int)range.Category]++;
             first = Math.Min(first, beginning);
             last = Math.Max(last, end);
         }
 
-        var span = first == ulong.MaxValue || last < first ? 0 : last - first;
+        var explicitFrameSpan = frameBeginningIndex < queryValues.Length &&
+                                frameEndIndex < queryValues.Length &&
+                                queryValues[(int)frameEndIndex] >= queryValues[(int)frameBeginningIndex];
+        var span = explicitFrameSpan
+            ? queryValues[(int)frameEndIndex] - queryValues[(int)frameBeginningIndex]
+            : first == ulong.MaxValue || last < first ? 0 : last - first;
         return new GpuFrameTimingSnapshot(
             frame,
             status,
             timestampPeriodNanoseconds,
+            width,
+            height,
             span,
             ToMilliseconds(span, timestampPeriodNanoseconds),
-            new(GpuPassCategory.World, totals[(int)GpuPassCategory.World],
+            new(GpuPassCategory.World, counts[(int)GpuPassCategory.World], totals[(int)GpuPassCategory.World],
                 ToMilliseconds(totals[(int)GpuPassCategory.World], timestampPeriodNanoseconds)),
-            new(GpuPassCategory.EntityImpostorCapture, totals[(int)GpuPassCategory.EntityImpostorCapture],
+            new(GpuPassCategory.EntityImpostorCapture, counts[(int)GpuPassCategory.EntityImpostorCapture],
+                totals[(int)GpuPassCategory.EntityImpostorCapture],
                 ToMilliseconds(totals[(int)GpuPassCategory.EntityImpostorCapture], timestampPeriodNanoseconds)),
-            new(GpuPassCategory.FirstPersonHand, totals[(int)GpuPassCategory.FirstPersonHand],
+            new(GpuPassCategory.FirstPersonHand, counts[(int)GpuPassCategory.FirstPersonHand],
+                totals[(int)GpuPassCategory.FirstPersonHand],
                 ToMilliseconds(totals[(int)GpuPassCategory.FirstPersonHand], timestampPeriodNanoseconds)),
-            new(GpuPassCategory.Interface, totals[(int)GpuPassCategory.Interface],
+            new(GpuPassCategory.Interface, counts[(int)GpuPassCategory.Interface], totals[(int)GpuPassCategory.Interface],
                 ToMilliseconds(totals[(int)GpuPassCategory.Interface], timestampPeriodNanoseconds)),
-            new(GpuPassCategory.Composite, totals[(int)GpuPassCategory.Composite],
+            new(GpuPassCategory.Composite, counts[(int)GpuPassCategory.Composite], totals[(int)GpuPassCategory.Composite],
                 ToMilliseconds(totals[(int)GpuPassCategory.Composite], timestampPeriodNanoseconds)));
     }
 
@@ -263,13 +293,17 @@ internal sealed unsafe class GpuFrameProfiler : IDisposable
         foreach (var slot in _slots)
         {
             if (!slot.TryRead(out var values)) continue;
-            if (values is not null)
+            if (!values.IsEmpty)
                 Latest = BuildSnapshot(
                     slot.Frame,
                     _status,
                     _timestampPeriodNanoseconds,
                     values,
-                    slot.Ranges.AsSpan(0, slot.RangeCount));
+                    slot.Ranges.AsSpan(0, slot.RangeCount),
+                    slot.FrameBeginningIndex,
+                    slot.FrameEndIndex,
+                    slot.Width,
+                    slot.Height);
             slot.FinishRead();
         }
     }
@@ -312,12 +346,12 @@ internal sealed unsafe class GpuFrameProfiler : IDisposable
 
     private static GpuFrameTimingSnapshot EmptySnapshot(string status, double? period = null) =>
         new(
-            0, status, period, 0, null,
-            new(GpuPassCategory.World, 0, null),
-            new(GpuPassCategory.EntityImpostorCapture, 0, null),
-            new(GpuPassCategory.FirstPersonHand, 0, null),
-            new(GpuPassCategory.Interface, 0, null),
-            new(GpuPassCategory.Composite, 0, null));
+            0, status, period, 0, 0, 0, null,
+            new(GpuPassCategory.World, 0, 0, null),
+            new(GpuPassCategory.EntityImpostorCapture, 0, 0, null),
+            new(GpuPassCategory.FirstPersonHand, 0, 0, null),
+            new(GpuPassCategory.Interface, 0, 0, null),
+            new(GpuPassCategory.Composite, 0, 0, null));
 
     public void Dispose()
     {
@@ -390,12 +424,22 @@ internal sealed unsafe class GpuFrameProfiler : IDisposable
         public QueryRange[] Ranges { get; } = new QueryRange[MaximumPassesPerFrame];
         public SlotState State { get; set; }
         public int RangeCount { get; set; }
+        public uint NextQuery { get; set; }
+        public uint FrameBeginningIndex { get; set; } = uint.MaxValue;
+        public uint FrameEndIndex { get; set; } = uint.MaxValue;
+        public uint Width { get; private set; }
+        public uint Height { get; private set; }
         public long Frame { get; private set; }
 
-        public void Begin(long frame)
+        public void Begin(long frame, uint width, uint height)
         {
             Frame = frame;
+            Width = width;
+            Height = height;
             RangeCount = 0;
+            NextQuery = 0;
+            FrameBeginningIndex = uint.MaxValue;
+            FrameEndIndex = uint.MaxValue;
             Volatile.Write(ref _mapStatus, Pending);
             State = SlotState.Encoding;
         }
@@ -403,6 +447,7 @@ internal sealed unsafe class GpuFrameProfiler : IDisposable
         public void ResetWithoutMap()
         {
             RangeCount = 0;
+            NextQuery = 0;
             State = SlotState.Idle;
         }
 
@@ -413,23 +458,23 @@ internal sealed unsafe class GpuFrameProfiler : IDisposable
                 ReadbackBuffer,
                 MapMode.Read,
                 0,
-                (nuint)(RangeCount * 2 * sizeof(ulong)),
+                (nuint)(NextQuery * sizeof(ulong)),
                 _callback,
                 null);
         }
 
-        public bool TryRead(out ulong[]? values)
+        public bool TryRead(out ReadOnlySpan<ulong> values)
         {
-            values = null;
+            values = default;
             if (State != SlotState.Mapping) return false;
             var status = Volatile.Read(ref _mapStatus);
             if (status == Pending) return false;
             if (status != (int)BufferMapAsyncStatus.Success) return true;
 
-            var byteCount = checked(RangeCount * 2 * sizeof(ulong));
+            var byteCount = checked((int)NextQuery * sizeof(ulong));
             var pointer = _device.Api.BufferGetConstMappedRange(ReadbackBuffer, 0, (nuint)byteCount);
             if (pointer is null) return true;
-            values = MemoryMarshal.Cast<byte, ulong>(new ReadOnlySpan<byte>(pointer, byteCount)).ToArray();
+            values = new ReadOnlySpan<ulong>(pointer, checked((int)NextQuery));
             return true;
         }
 
@@ -438,6 +483,7 @@ internal sealed unsafe class GpuFrameProfiler : IDisposable
             if (Volatile.Read(ref _mapStatus) == (int)BufferMapAsyncStatus.Success)
                 _device.Api.BufferUnmap(ReadbackBuffer);
             RangeCount = 0;
+            NextQuery = 0;
             State = SlotState.Idle;
         }
 

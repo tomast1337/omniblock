@@ -1,6 +1,7 @@
 using Hexa.NET.ImGui;
 using OmniBlock.Client.Rendering.Chunks;
 using OmniBlock.Client.Rendering.Chunks.Lod;
+using OmniBlock.Client.Rendering.Core.WebGPU;
 using OmniBlock.Diagnostics;
 using OmniBlock.Profiling;
 using OmniBlock.Server.Worlds;
@@ -20,6 +21,7 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         if (ImGui.CollapsingHeader("Frame timings", ImGuiTreeNodeFlags.DefaultOpen))
         {
             DrawWholeFrameSummary();
+            DrawGpuFrameSummary();
             ProfilerRenderer.DrawContents();
             if (ImGui.Button("Capture profile")) CaptureProfile(ctx.ChunkRenderer);
             if (_lastCaptureDirectory != null)
@@ -111,6 +113,38 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
             milliseconds > 0 ? 1000.0 / milliseconds : 0;
     }
 
+    private static void DrawGpuFrameSummary()
+    {
+        if (WebGpuDevice.Current?.GpuProfiler is not { } profiler)
+        {
+            ImGuiTextSafe.TextDisabled("GPU timing: no WebGPU device");
+            return;
+        }
+
+        var snapshot = profiler.Latest;
+        ImGuiTextSafe.TextDisabled(
+            $"GPU timing: {snapshot.Status}  {snapshot.Width}x{snapshot.Height}  delayed frame {snapshot.Frame}  dropped {profiler.DroppedFrames}");
+        Draw("GPU render span", snapshot.RenderSpanRawTicks, snapshot.RenderSpanMilliseconds, 1);
+        Draw("  World", snapshot.World.RawTicks, snapshot.World.Milliseconds, snapshot.World.PhysicalPasses);
+        Draw("  Impostor capture", snapshot.EntityImpostorCapture.RawTicks,
+            snapshot.EntityImpostorCapture.Milliseconds, snapshot.EntityImpostorCapture.PhysicalPasses);
+        Draw("  First-person hand", snapshot.FirstPersonHand.RawTicks,
+            snapshot.FirstPersonHand.Milliseconds, snapshot.FirstPersonHand.PhysicalPasses);
+        Draw("  Interface", snapshot.Interface.RawTicks,
+            snapshot.Interface.Milliseconds, snapshot.Interface.PhysicalPasses);
+        Draw("  Composite", snapshot.Composite.RawTicks,
+            snapshot.Composite.Milliseconds, snapshot.Composite.PhysicalPasses);
+        return;
+
+        static void Draw(string name, ulong ticks, double? milliseconds, int passes)
+        {
+            if (milliseconds is { } value)
+                ImGuiTextSafe.Text($"{name}: {value:F3} ms  {passes} pass{(passes == 1 ? "" : "es")}");
+            else
+                ImGuiTextSafe.Text($"{name}: {ticks:N0} raw ticks  {passes} pass{(passes == 1 ? "" : "es")}");
+        }
+    }
+
     private void CaptureProfile(ChunkRenderer? chunkRenderer)
     {
         try
@@ -121,6 +155,10 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
             File.WriteAllText(
                 Path.Combine(directory, "frame-profiler.tsv"),
                 Profiler.CreateTsvSnapshot());
+            if (WebGpuDevice.Current?.GpuProfiler is { } gpuProfiler)
+                File.WriteAllText(
+                    Path.Combine(directory, "gpu-profiler.tsv"),
+                    gpuProfiler.CreateTsvSnapshot());
             if (chunkRenderer != null)
             {
                 File.WriteAllText(

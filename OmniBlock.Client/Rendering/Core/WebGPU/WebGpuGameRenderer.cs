@@ -141,8 +141,6 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         var swapView = device.AcquireFrame();
         if (swapView == null) return;
 
-        device.GpuProfiler.BeginFrame();
-        device.GpuProfiler.RecordLatestToProfiler();
         var encoder = device.CreateCommandEncoder();
         EnsureResources(device);
 
@@ -160,6 +158,8 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         (uint Width, uint Height)? viewport = ViewportSize is { Width: > 0, Height: > 0 } vp ? vp : null;
         var width = viewport?.Width ?? device.Width;
         var height = viewport?.Height ?? device.Height;
+        device.GpuProfiler.BeginFrame(encoder, width, height);
+        device.GpuProfiler.RecordLatestToProfiler();
 
         var resized = _offscreenFb!.ResizeIfNeeded(device, width, height);
         _presentFb!.ResizeIfNeeded(device, width, height);
@@ -455,10 +455,10 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         var swapView = device.AcquireFrame();
         if (swapView == null) return;
 
-        device.GpuProfiler.BeginFrame();
-        device.GpuProfiler.RecordLatestToProfiler();
         var encoder = device.CreateCommandEncoder();
         EnsureResources(device);
+        device.GpuProfiler.BeginFrame(encoder, device.Width, device.Height);
+        device.GpuProfiler.RecordLatestToProfiler();
 
         _drawTarget.BeginFrame();
         _offscreenFb!.ResizeIfNeeded(device, device.Width, device.Height);

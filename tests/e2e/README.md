@@ -265,7 +265,8 @@ server, one JSON generation profile:
 P50, P95, and recent period maximum for every main/client and integrated-server profiler scope.
 It also writes `gpu-profiler-label.tsv` when WebGPU is active. That sibling contains a delayed,
 non-blocking timestamp-query snapshot for the world, impostor capture, hand, interface, composite,
-and total render span. Milliseconds are present only when wgpu-native exposes its timestamp period
+and exact encoder-level render span, plus framebuffer resolution, physical-pass counts, and query
+ring drops. Milliseconds are present only when wgpu-native exposes its timestamp period
 or the diagnostic override `OMNIBLOCK_GPU_TIMESTAMP_PERIOD_NS` is configured; otherwise the file
 labels and preserves raw ticks rather than assuming the device's unit.
 When a world renderer is active it also writes `chunk-presentation-label.tsv`, separating spatial

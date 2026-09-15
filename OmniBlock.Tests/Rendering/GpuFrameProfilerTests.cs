@@ -28,10 +28,37 @@ public sealed class GpuFrameProfilerTests
         Assert.Equal(200UL, snapshot.RenderSpanRawTicks);
         Assert.Equal(0.0004, snapshot.RenderSpanMilliseconds);
         Assert.Equal(100UL, snapshot.World.RawTicks);
+        Assert.Equal(2, snapshot.World.PhysicalPasses);
         Assert.Equal(0.0002, snapshot.World.Milliseconds);
         Assert.Equal(30UL, snapshot.Interface.RawTicks);
         Assert.Equal(40UL, snapshot.Composite.RawTicks);
         Assert.Equal(0UL, snapshot.FirstPersonHand.RawTicks);
+        Assert.Equal(0, snapshot.FirstPersonHand.PhysicalPasses);
+    }
+
+    [Fact]
+    public void Explicit_encoder_span_includes_work_between_physical_render_passes()
+    {
+        ulong[] values =
+        [
+            80, 400, // encoder-level frame timestamps
+            100, 150,
+            300, 350
+        ];
+        GpuFrameProfiler.QueryRange[] ranges =
+        [
+            new(GpuPassCategory.World, 2, 3),
+            new(GpuPassCategory.Composite, 4, 5)
+        ];
+
+        var snapshot = GpuFrameProfiler.BuildSnapshot(
+            9, "available", 1.0, values, ranges, 0, 1, 1920, 1080);
+
+        Assert.Equal(320UL, snapshot.RenderSpanRawTicks);
+        Assert.Equal((uint)1920, snapshot.Width);
+        Assert.Equal((uint)1080, snapshot.Height);
+        Assert.Equal(50UL, snapshot.World.RawTicks);
+        Assert.Equal(50UL, snapshot.Composite.RawTicks);
     }
 
     [Fact]
