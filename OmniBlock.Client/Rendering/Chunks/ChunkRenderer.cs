@@ -40,6 +40,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     internal const int MeshLeadingEdgeInspectionPerTick = 64;
     internal const int CriticalDispatchReserve = MaxMeshWorkers;
     internal const int CriticalUploadReserve = MaxMeshWorkers * 2;
+    internal const int LightEvaluationCapacity = 16;
+    internal const int LightEvaluationDispatchLimitPerFrame = 4;
+    internal const int LightCompletionLimitPerFrame = 16;
     internal const int LightUploadLimitPerFrame = 4;
     internal const int NearFieldGraphGraceFrames = 2;
 
@@ -79,8 +82,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly HashSet<Vector3D<int>> _currentPresentationRegressions = [];
     private readonly HashSet<SectionRenderState> _activeNearFieldRescues = [];
     private readonly HashSet<SectionRenderState> _nearFieldRescuesThisFrame = [];
+    private readonly SectionLightEvaluationService _lightEvaluation;
     private readonly Queue<Vector3D<int>> _pendingLightUpdates = [];
     private readonly HashSet<Vector3D<int>> _pendingLightUpdateKeys = [];
+    private readonly HashSet<Vector3D<int>> _queuedLightUpdateKeys = [];
+    private readonly HashSet<Vector3D<int>> _inFlightLightUpdateKeys = [];
+    private readonly Dictionary<Vector3D<int>, long> _lightUpdateGenerations = [];
     private readonly SectionMeshRequestQueue _pendingMeshUpdates = new();
     private readonly TranslucentDistanceComparer _translucentDistanceComparer = new();
     private readonly List<SubChunkRenderer> _solidRenderers = [];
@@ -125,6 +132,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private Matrix4X4<float> _projection;
     private long _presentationRegressionCount;
     private long _lightRefreshCompletedCount;
+    private long _nextLightUpdateGeneration;
     private long _schedulerTick;
     private int _geometryUploadsThisFrame;
     private int _geometryUploadsLastFrame;
@@ -261,6 +269,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         // machines: dozens of workers contend with entity rendering, simulation and networking
         // even when the mesh queue is already draining immediately.
         _meshGenerator = new ChunkMeshGenerator((ushort)GetMeshWorkerCount(Environment.ProcessorCount), _meshLifecycle);
+        _lightEvaluation = new SectionLightEvaluationService(LightEvaluationCapacity);
         _world = world;
     }
 
@@ -1648,9 +1657,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         if (!_sections.TryGetValue(sectionPosition, out var section) || section.Renderer == null)
             return false;
-        if (!_pendingLightUpdateKeys.Add(sectionPosition)) return false;
-        _pendingLightUpdates.Enqueue(sectionPosition);
+        _lightUpdateGenerations[sectionPosition] = ++_nextLightUpdateGeneration;
         section.RecordInvalidation(SectionDirtyReason.Lighting);
+        if (!_pendingLightUpdateKeys.Add(sectionPosition)) return false;
+        QueueLightEvaluation(sectionPosition);
         return true;
     }
 
@@ -1659,17 +1669,109 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         var device = WebGpuDevice.Current;
         if (device == null) return;
 
-        var refreshed = 0;
-        while (refreshed < LightUploadLimitPerFrame && _pendingLightUpdates.TryDequeue(out var pos))
+        using (Profiler.Begin("Install"))
         {
-            _pendingLightUpdateKeys.Remove(pos);
-            if (!_sections.TryGetValue(pos, out var section) || section.Renderer?.Presentation is not { } presentation)
-                continue;
-            presentation.RefreshLighting(device, _world.Lighting);
-            _lightRefreshCompletedCount++;
-            _lightUploadsThisFrame++;
-            refreshed++;
+            var completed = 0;
+            var uploaded = 0;
+            while (completed < LightCompletionLimitPerFrame &&
+                   uploaded < LightUploadLimitPerFrame &&
+                   _lightEvaluation.TryTakeCompleted(out var result) && result is not null)
+            {
+                completed++;
+                _inFlightLightUpdateKeys.Remove(result.Position);
+                if (result.Failure is not null)
+                    throw new InvalidOperationException(
+                        $"Section light evaluation failed for {result.Position}.", result.Failure);
+
+                if (!_pendingLightUpdateKeys.Contains(result.Position)) continue;
+                if (!_sections.TryGetValue(result.Position, out var section) ||
+                    !section.OwnsResult(result.SectionId) ||
+                    section.Renderer?.Presentation is not { } presentation)
+                {
+                    ClearLightEvaluation(result.Position);
+                    continue;
+                }
+
+                if (!_lightUpdateGenerations.TryGetValue(result.Position, out var generation) ||
+                    generation != result.Generation ||
+                    presentation.Epoch != result.Evaluation.PresentationEpoch ||
+                    !presentation.TryInstallLighting(device, result.Evaluation))
+                {
+                    QueueLightEvaluation(result.Position);
+                    continue;
+                }
+
+                ClearLightEvaluation(result.Position);
+                _lightRefreshCompletedCount++;
+                _lightUploadsThisFrame++;
+                uploaded++;
+            }
         }
+
+        using (Profiler.Begin("SnapshotDispatch"))
+        {
+            var dispatched = 0;
+            while (dispatched < LightEvaluationDispatchLimitPerFrame &&
+                   _lightEvaluation.HasCapacity &&
+                   _pendingLightUpdates.TryDequeue(out var pos))
+            {
+                _queuedLightUpdateKeys.Remove(pos);
+                if (!_pendingLightUpdateKeys.Contains(pos) || _inFlightLightUpdateKeys.Contains(pos))
+                    continue;
+                if (!_sections.TryGetValue(pos, out var section) ||
+                    section.Renderer?.Presentation is not { } presentation ||
+                    !_lightUpdateGenerations.TryGetValue(pos, out var generation))
+                {
+                    ClearLightEvaluation(pos);
+                    continue;
+                }
+
+                var plan = presentation.CaptureLightingPlan();
+                if (!plan.HasWork)
+                {
+                    ClearLightEvaluation(pos);
+                    _lightRefreshCompletedCount++;
+                    continue;
+                }
+
+                // Two cells cover the outward corner probe plus the neighbor-light lookup used by
+                // slabs, farmland and stairs at a section boundary.
+                const int padding = 2;
+                var snapshot = new WorldRegionSnapshot(
+                    _world,
+                    pos.X - padding, pos.Y - padding, pos.Z - padding,
+                    pos.X + SubChunkRenderer.Size - 1 + padding,
+                    pos.Y + SubChunkRenderer.Size - 1 + padding,
+                    pos.Z + SubChunkRenderer.Size - 1 + padding);
+                var request = new SectionLightEvaluationRequest(
+                    pos, section.LifetimeId, generation, plan, snapshot);
+                if (!_lightEvaluation.TrySubmit(request))
+                {
+                    snapshot.Dispose();
+                    QueueLightEvaluation(pos);
+                    break;
+                }
+
+                _inFlightLightUpdateKeys.Add(pos);
+                dispatched++;
+            }
+        }
+    }
+
+    private void QueueLightEvaluation(Vector3D<int> position)
+    {
+        if (!_pendingLightUpdateKeys.Contains(position) ||
+            _inFlightLightUpdateKeys.Contains(position) ||
+            !_queuedLightUpdateKeys.Add(position)) return;
+        _pendingLightUpdates.Enqueue(position);
+    }
+
+    private void ClearLightEvaluation(Vector3D<int> position)
+    {
+        _pendingLightUpdateKeys.Remove(position);
+        _queuedLightUpdateKeys.Remove(position);
+        _inFlightLightUpdateKeys.Remove(position);
+        _lightUpdateGenerations.Remove(position);
     }
 
     public void Tick(Vector3D<double> viewPos, Vector3D<double> velocity)
@@ -2984,6 +3086,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     public void Dispose()
     {
         _meshGenerator.Dispose();
+        _lightEvaluation.Dispose();
 
         foreach (var state in _sections.Values) state.Dispose(MeshCancellationReason.RendererDisposed);
 
@@ -3010,6 +3113,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _translucentRenderers.Clear();
         _renderersToRemove.Clear();
         _pendingMeshUpdates.Clear();
+        _pendingLightUpdates.Clear();
+        _pendingLightUpdateKeys.Clear();
+        _queuedLightUpdateKeys.Clear();
+        _inFlightLightUpdateKeys.Clear();
+        _lightUpdateGenerations.Clear();
         _deferredStreamingBoundaries.Clear();
         _deferredStreamingBoundaryKeys.Clear();
         _sectionsToRemove.Clear();

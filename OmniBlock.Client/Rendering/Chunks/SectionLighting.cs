@@ -52,9 +52,35 @@ internal sealed unsafe class SectionLighting : IDisposable
         return result;
     }
 
-    public SectionLighting Refresh(ILightProvider lighting)
+    public SectionLightingPlan? CapturePlan() =>
+        SolidModel is null && TranslucentModel is null
+            ? null
+            : new SectionLightingPlan(SolidModel, TranslucentModel, Epoch);
+
+    public static SectionLighting CreateReplacement(
+        WebGpuDevice device,
+        in SectionLightingEvaluation evaluation)
     {
-        return Create(_device, SolidModel, TranslucentModel, lighting, Epoch + 1);
+        WgpuBuffer* solid = null;
+        WgpuBuffer* translucent = null;
+        try
+        {
+            solid = CreateBuffer(device, evaluation.SolidModel, evaluation.SolidValues);
+            translucent = CreateBuffer(
+                device, evaluation.TranslucentModel, evaluation.TranslucentValues);
+            return new SectionLighting(
+                device,
+                evaluation.SolidModel,
+                evaluation.TranslucentModel,
+                solid,
+                translucent,
+                evaluation.SourceEpoch + 1);
+        }
+        catch
+        {
+            WgpuRelease.DeferredBuffers(device, (nint)solid, (nint)translucent);
+            throw;
+        }
     }
 
     private static SectionLighting Create(
@@ -100,6 +126,32 @@ internal sealed unsafe class SectionLighting : IDisposable
         return buffer;
     }
 
+    private static WgpuBuffer* CreateBuffer(
+        WebGpuDevice device,
+        SectionLightModel? model,
+        ChunkLightVertex[]? values)
+    {
+        if (model == null)
+        {
+            if (values != null)
+                throw new ArgumentException("Light values were supplied without a light model.");
+            return null;
+        }
+        if (values == null || values.Length != model.VertexCount)
+            throw new ArgumentException("Replacement light values must match the light model.");
+
+        var bytes = MemoryMarshal.AsBytes(values.AsSpan());
+        BufferDescriptor descriptor = new()
+        {
+            Usage = BufferUsage.Vertex | BufferUsage.CopyDst,
+            Size = (ulong)bytes.Length
+        };
+        var buffer = device.Api.DeviceCreateBuffer(device.Device, in descriptor);
+        fixed (byte* data = bytes)
+            device.Api.QueueWriteBuffer(device.Queue, buffer, 0, data, (nuint)bytes.Length);
+        return buffer;
+    }
+
     public void Dispose()
     {
         if (_disposed) return;
@@ -107,6 +159,26 @@ internal sealed unsafe class SectionLighting : IDisposable
         WgpuRelease.DeferredBuffers(_device, (nint)Solid, (nint)Translucent);
     }
 }
+
+internal readonly record struct SectionLightingPlan(
+    SectionLightModel? SolidModel,
+    SectionLightModel? TranslucentModel,
+    long SourceEpoch)
+{
+    public SectionLightingEvaluation Evaluate(ILightProvider lighting) => new(
+        SolidModel,
+        TranslucentModel,
+        SolidModel?.Evaluate(lighting),
+        TranslucentModel?.Evaluate(lighting),
+        SourceEpoch);
+}
+
+internal readonly record struct SectionLightingEvaluation(
+    SectionLightModel? SolidModel,
+    SectionLightModel? TranslucentModel,
+    ChunkLightVertex[]? SolidValues,
+    ChunkLightVertex[]? TranslucentValues,
+    long SourceEpoch);
 
 /// <summary>A four-byte, independently uploaded terrain-light vertex.</summary>
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]

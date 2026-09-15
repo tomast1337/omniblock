@@ -1,5 +1,8 @@
 using OmniBlock.Client.Rendering.Chunks;
 using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Tests.TestSupport;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 using Silk.NET.Maths;
 
@@ -7,6 +10,43 @@ namespace OmniBlock.Tests.Rendering;
 
 public sealed class SectionLightModelTests
 {
+    [Fact]
+    public void Bounded_evaluator_runs_light_probes_against_an_immutable_snapshot()
+    {
+        var world = new FakeWorldContext();
+        var vertices = TopQuad(0, 0);
+        var model = SectionLightModel.Create(default, vertices.Geometry, vertices.Lights);
+        Assert.NotNull(model);
+        var plan = new SectionPresentationLightPlan(
+            7,
+            [new SectionLightingPlan(model, null, 3)]);
+        var snapshot = new WorldRegionSnapshot(
+            world, -2, -2, -2,
+            SubChunkRenderer.Size + 1,
+            SubChunkRenderer.Size + 1,
+            SubChunkRenderer.Size + 1);
+        using var evaluator = new SectionLightEvaluationService(1);
+
+        Assert.True(evaluator.TrySubmit(new SectionLightEvaluationRequest(
+            default, 11, 13, plan, snapshot)));
+        Assert.False(evaluator.HasCapacity);
+        SectionLightEvaluationResult? result = null;
+        Assert.True(SpinWait.SpinUntil(
+            () => evaluator.TryTakeCompleted(out result), TimeSpan.FromSeconds(5)));
+
+        Assert.True(evaluator.HasCapacity);
+        Assert.NotNull(result);
+        Assert.Null(result.Failure);
+        Assert.Equal(11, result.SectionId);
+        Assert.Equal(13, result.Generation);
+        Assert.Equal(7, result.Evaluation.PresentationEpoch);
+        var page = Assert.Single(result.Evaluation.Pages);
+        Assert.NotNull(page);
+        Assert.Equal(3, page.Value.SourceEpoch);
+        Assert.Equal(4, page.Value.SolidValues?.Length);
+        Assert.Null(page.Value.TranslucentValues);
+    }
+
     [Fact]
     public void Initial_stream_preserves_the_exact_compiled_vertex_light()
     {

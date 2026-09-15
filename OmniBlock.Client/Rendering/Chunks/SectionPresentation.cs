@@ -124,10 +124,51 @@ internal sealed class SectionPresentation : IDisposable
         int translucentVertexCount = 0) =>
         new([], solidVertexCount, translucentVertexCount, visibilityData, isLit, epoch, null, null);
 
-    public void RefreshLighting(WebGpuDevice device, ILightProvider provider)
+    public SectionPresentationLightPlan CaptureLightingPlan()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        foreach (var page in _pages) page?.RefreshLighting(provider);
+        var pages = new SectionLightingPlan?[_pages.Length];
+        for (var i = 0; i < pages.Length; i++)
+            pages[i] = _pages[i]?.CaptureLightingPlan();
+        return new SectionPresentationLightPlan(Epoch, pages);
+    }
+
+    public bool TryInstallLighting(
+        WebGpuDevice device,
+        in SectionPresentationLightEvaluation evaluation)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (evaluation.PresentationEpoch != Epoch || evaluation.Pages.Length != _pages.Length)
+            return false;
+
+        for (var i = 0; i < _pages.Length; i++)
+        {
+            if (evaluation.Pages[i] is { } pageEvaluation &&
+                (_pages[i] == null || !_pages[i]!.OwnsLightingEpoch(pageEvaluation.SourceEpoch)))
+                return false;
+        }
+
+        var replacements = new SectionLighting?[_pages.Length];
+        try
+        {
+            for (var i = 0; i < _pages.Length; i++)
+            {
+                if (evaluation.Pages[i] is { } pageEvaluation)
+                    replacements[i] = SectionLighting.CreateReplacement(device, pageEvaluation);
+            }
+
+            for (var i = 0; i < _pages.Length; i++)
+            {
+                if (replacements[i] is not { } replacement) continue;
+                _pages[i]!.InstallLighting(replacement, evaluation.Pages[i]!.Value.SourceEpoch);
+                replacements[i] = null;
+            }
+            return true;
+        }
+        finally
+        {
+            foreach (var replacement in replacements) replacement?.Dispose();
+        }
     }
 
     public void RecordFirstDraw()
@@ -213,11 +254,20 @@ internal sealed class SectionPagePresentation
         }
     }
 
-    public void RefreshLighting(ILightProvider provider)
+    public SectionLightingPlan? CaptureLightingPlan() =>
+        Volatile.Read(ref _lighting)?.CapturePlan();
+
+    public bool OwnsLightingEpoch(long epoch) =>
+        Volatile.Read(ref _lighting)?.Epoch == epoch;
+
+    public void InstallLighting(SectionLighting replacement, long expectedEpoch)
     {
-        var current = _lighting;
-        if (current == null) return;
-        Interlocked.Exchange(ref _lighting, current.Refresh(provider))?.Dispose();
+        var current = Volatile.Read(ref _lighting);
+        if (current?.Epoch != expectedEpoch)
+            throw new InvalidOperationException(
+                $"Lighting epoch changed before publication; expected {expectedEpoch}, " +
+                $"found {current?.Epoch.ToString() ?? "none"}.");
+        Interlocked.Exchange(ref _lighting, replacement)?.Dispose();
     }
 
     public unsafe Silk.NET.WebGPU.Buffer* LightBufferFor(int pass)
@@ -234,3 +284,22 @@ internal sealed class SectionPagePresentation
         Interlocked.Exchange(ref _lighting, null)?.Dispose();
     }
 }
+
+internal sealed record SectionPresentationLightPlan(
+    long PresentationEpoch,
+    SectionLightingPlan?[] Pages)
+{
+    public bool HasWork => Pages.Any(static page => page.HasValue);
+
+    public SectionPresentationLightEvaluation Evaluate(ILightProvider lighting)
+    {
+        var pages = new SectionLightingEvaluation?[Pages.Length];
+        for (var i = 0; i < pages.Length; i++)
+            if (Pages[i] is { } page) pages[i] = page.Evaluate(lighting);
+        return new SectionPresentationLightEvaluation(PresentationEpoch, pages);
+    }
+}
+
+internal readonly record struct SectionPresentationLightEvaluation(
+    long PresentationEpoch,
+    SectionLightingEvaluation?[] Pages);
