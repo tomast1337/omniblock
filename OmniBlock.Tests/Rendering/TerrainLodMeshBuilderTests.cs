@@ -12,6 +12,39 @@ namespace OmniBlock.Tests.Rendering;
 public sealed class TerrainLodMeshBuilderTests
 {
     [Fact]
+    public void Bounded_compiler_builds_cpu_levels_off_thread_from_an_immutable_snapshot()
+    {
+        var world = new FakeWorldContext();
+        var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+        var hierarchy = Build(world, (x, y, z) => y < 32 ? (byte)stone : (byte)0);
+        var chunk = world.ChunkHost.GetChunk(0, 0);
+        for (var x = 0; x < 16; x++)
+        for (var z = 0; z < 16; z++)
+        for (var y = 0; y < 32; y++)
+            chunk.Blocks[ChuckFormat.GetIndex(x, y, z)] = (byte)stone;
+
+        var visuals = new WorldRegionSnapshot(
+            world, 0, 0, 0, 15, ChuckFormat.WorldHeight - 1, 15);
+        var conversion = new TerrainLodConversionResult(
+            0, 0, 0, 7, hierarchy);
+        using var compiler = new TerrainLodMeshCompilationService(1);
+
+        Assert.True(compiler.TrySubmit(new TerrainLodMeshCompilationRequest(
+            conversion, 2, 4, visuals, true)));
+        Assert.False(compiler.HasCapacity);
+        TerrainLodMeshCompilationResult? result = null;
+        Assert.True(SpinWait.SpinUntil(
+            () => compiler.TryTakeCompleted(out result), TimeSpan.FromSeconds(5)));
+        Assert.True(compiler.HasCapacity);
+
+        Assert.NotNull(result);
+        Assert.Null(result.Failure);
+        Assert.NotNull(result.Boundaries);
+        Assert.Equal([2, 3, 4], result.Levels.Select(static level => level.Level));
+        Assert.All(result.Levels, static level => Assert.NotEmpty(level.Vertices));
+    }
+
+    [Fact]
     public void Opaque_hierarchy_compiles_to_matching_quad_and_light_streams()
     {
         var world = new FakeWorldContext();

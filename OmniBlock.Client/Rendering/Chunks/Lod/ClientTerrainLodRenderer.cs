@@ -82,6 +82,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
 
     private readonly World _world;
     private readonly TerrainLodConversionService _conversion;
+    private readonly TerrainLodMeshCompilationService _meshCompilation;
     private readonly TerrainLodCacheStore? _cache;
     private readonly TerrainLodAsyncCacheWriter? _cacheWriter;
     private readonly Dictionary<(int X, int Z), PendingColumn> _pending = [];
@@ -140,6 +141,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 TerrainLodReductionStrategy.SurfacePreserving,
                 ConversionCapacity);
         if (cache is not null) _cacheWriter = new TerrainLodAsyncCacheWriter(cache);
+        _meshCompilation = new TerrainLodMeshCompilationService(ConversionCapacity);
     }
 
     public ClientTerrainLodSnapshot Snapshot => _snapshot;
@@ -569,6 +571,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         if (_disposed) return;
         _disposed = true;
         _conversion.Dispose();
+        _meshCompilation.Dispose();
         _cacheWriter?.Dispose();
         foreach (var presentation in _resident.Values) presentation.Dispose();
         foreach (var seam in _solidSeams.Values) seam.Dispose();
@@ -623,9 +626,23 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         int renderDistance,
         ChunkRenderer nearRenderer)
     {
+        QueueCompletedConversions(
+            viewPosition,
+            verticalFovDegrees,
+            viewportHeight,
+            detailDropoffScale);
+
         var installed = 0;
-        while (installed < budget && _conversion.TryTakeCompleted(out var result) && result is not null)
+        while (installed < budget &&
+               _meshCompilation.TryTakeCompleted(out var compiled) && compiled is not null)
         {
+            if (compiled.Failure is not null)
+                throw new InvalidOperationException(
+                    $"Terrain LOD mesh compilation failed for " +
+                    $"{compiled.Conversion.ChunkX},{compiled.Conversion.ChunkZ}.",
+                    compiled.Failure);
+
+            var result = compiled.Conversion;
             var key = (result.ChunkX, result.ChunkZ);
             if (_world.BlockHost.HasChunk(key.ChunkX, key.ChunkZ))
             {
@@ -641,17 +658,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             ColumnPresentation? candidate = null;
             try
             {
-                _cacheWriter?.TrySubmit(result);
                 _resident.TryGetValue(key, out var previous);
-                var selectedLevel = TerrainLodDetailSelector.SelectLevel(
-                    Math.Sqrt(DistanceSquared(key, viewPosition)), MaximumMeshLevel,
-                    previous?.SelectionLevel(translucent: false) ?? -1,
-                    verticalFovDegrees, viewportHeight, detailDropoffScale);
-                var minimumLevel = Math.Min(
-                    Math.Min(selectedLevel, previous?.MinimumLevel ?? MinimumHorizonMeshLevel),
-                    _detailLevelRequests.GetValueOrDefault(key, MinimumHorizonMeshLevel));
-                candidate = ColumnPresentation.Create(
-                    _world, result, result.Lighting, minimumLevel);
+                candidate = ColumnPresentation.Create(compiled);
                 if (previous is not null)
                 {
                     candidate.CopyHandoffsFrom(previous);
@@ -677,6 +685,75 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             }
         }
         return installed;
+    }
+
+    private void QueueCompletedConversions(
+        Vector3D<double> viewPosition,
+        double verticalFovDegrees,
+        int viewportHeight,
+        float detailDropoffScale)
+    {
+        var queued = 0;
+        while (queued < UploadsPerFrame &&
+               _conversion.TryPeekCompleted(out var result) && result is not null)
+        {
+            // Building the immutable visual snapshot copies a complete chunk column. Avoid doing
+            // that work repeatedly while every bounded compiler slot is already owned.
+            if (!_meshCompilation.HasCapacity) break;
+
+            var key = (result.ChunkX, result.ChunkZ);
+            if (!_world.BlockHost.HasChunk(key.ChunkX, key.ChunkZ))
+            {
+                _conversion.AcknowledgeCompleted(
+                    result.ChunkX, result.ChunkZ, result.TerrainRevision);
+                _staleResults++;
+                continue;
+            }
+
+            var chunk = _world.BlockHost.GetChunk(key.ChunkX, key.ChunkZ);
+            if (!chunk.Loaded || chunk.TerrainRevision != result.TerrainRevision)
+            {
+                _conversion.AcknowledgeCompleted(
+                    result.ChunkX, result.ChunkZ, result.TerrainRevision);
+                _staleResults++;
+                ObserveColumn(key.ChunkX, key.ChunkZ);
+                continue;
+            }
+
+            _resident.TryGetValue(key, out var previous);
+            var selectedLevel = TerrainLodDetailSelector.SelectLevel(
+                Math.Sqrt(DistanceSquared(key, viewPosition)), MaximumMeshLevel,
+                previous?.SelectionLevel(translucent: false) ?? -1,
+                verticalFovDegrees, viewportHeight, detailDropoffScale);
+            var minimumLevel = Math.Min(
+                Math.Min(selectedLevel, previous?.MinimumLevel ?? MinimumHorizonMeshLevel),
+                _detailLevelRequests.GetValueOrDefault(key, MinimumHorizonMeshLevel));
+            var originX = result.ChunkX * 16;
+            var originZ = result.ChunkZ * 16;
+            var visuals = new WorldRegionSnapshot(
+                _world,
+                originX, 0, originZ,
+                originX + 15, ChuckFormat.WorldHeight - 1, originZ + 15);
+            var request = new TerrainLodMeshCompilationRequest(
+                result,
+                minimumLevel,
+                MaximumMeshLevel,
+                visuals,
+                !_world.Dimension.HasCeiling);
+            if (!_meshCompilation.TrySubmit(request))
+            {
+                visuals.Dispose();
+                break;
+            }
+
+            if (!_conversion.AcknowledgeCompleted(
+                    result.ChunkX, result.ChunkZ, result.TerrainRevision))
+                throw new InvalidOperationException(
+                    $"Terrain LOD conversion {result.ChunkX},{result.ChunkZ} " +
+                    $"revision {result.TerrainRevision} lost ownership before mesh compilation.");
+            _cacheWriter?.TrySubmit(result);
+            queued++;
+        }
     }
 
     private void RequestDetailLevel((int X, int Z) key, int requestedLevel)
@@ -1376,30 +1453,26 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 : candidate.SolidMesh is not null;
         }
 
-        public static ColumnPresentation Create(
-            World world,
-            TerrainLodConversionResult result,
-            ILightProvider? lighting,
-            int minimumLevel)
+        public static ColumnPresentation Create(TerrainLodMeshCompilationResult compiled)
         {
             var device = WebGpuDevice.Current
                 ?? throw new InvalidOperationException("Terrain LOD upload requires a WebGPU device.");
             Dictionary<int, GpuLevel> levels = [];
             try
             {
-                var maximum = Math.Min(MaximumMeshLevel, result.Hierarchy.Levels.Count - 1);
-                var minimum = Math.Clamp(
-                    minimumLevel, ExactVoxelMeshLevel, MinimumHorizonMeshLevel);
-                var boundaries = TerrainLodBoundarySummary.Capture(
-                    result.Hierarchy, minimum, maximum);
-                for (var level = minimum; level <= maximum; level++)
+                foreach (var data in compiled.Levels)
                 {
-                    var data = TerrainLodMeshBuilder.Build(
-                        result.Hierarchy, level, world.Content.Blocks, !world.Dimension.HasCeiling,
-                        lighting, world.Reader);
-                    levels.Add(level, GpuLevel.Create(device, result.ChunkX, result.ChunkZ, data));
+                    levels.Add(data.Level, GpuLevel.Create(
+                        device,
+                        compiled.Conversion.ChunkX,
+                        compiled.Conversion.ChunkZ,
+                        data));
                 }
-                return new ColumnPresentation(result.TerrainRevision, levels, boundaries);
+                return new ColumnPresentation(
+                    compiled.Conversion.TerrainRevision,
+                    levels,
+                    compiled.Boundaries ?? throw new InvalidOperationException(
+                        "Compiled terrain LOD result has no boundary summary."));
             }
             catch
             {

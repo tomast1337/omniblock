@@ -16,7 +16,8 @@ namespace OmniBlock.Worlds.Core;
 ///     chunks it was built from keep changing. Chunk mesh building is the only caller today and
 ///     requests a 16-block sub-chunk plus 1 block of padding on every side (18x18x18) for face
 ///     culling and AO, which is cheap enough to copy synchronously on the calling thread before
-///     handing the actual mesh build off to a worker.
+///     handing the actual mesh build off to a worker. Terrain LOD compilation also uses a full
+///     16x128x16 column snapshot so biome tint and metadata-sensitive bounds remain worker-safe.
 /// </summary>
 public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 {
