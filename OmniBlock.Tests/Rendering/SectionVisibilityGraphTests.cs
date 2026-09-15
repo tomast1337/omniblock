@@ -6,7 +6,8 @@ using Silk.NET.Maths;
 
 namespace OmniBlock.Tests.Rendering;
 
-public sealed class ChunkOcclusionCullerTests
+/// <summary>Locks down conservative visibility and the graph's bounded-work invariants.</summary>
+public sealed class SectionVisibilityGraphTests
 {
     [Theory]
     [InlineData(true)]
@@ -139,7 +140,7 @@ public sealed class ChunkOcclusionCullerTests
         using var other = Node(32);
         var visitor = new Collector();
 
-        var result = new ChunkOcclusionCuller().FindVisible(
+        var result = new SectionVisibilityGraph().FindVisible(
             visitor,
             [visible, rejected, other],
             null,
@@ -163,7 +164,7 @@ public sealed class ChunkOcclusionCullerTests
         using var disconnected = Node(48);
         var visitor = new Collector();
 
-        var result = new ChunkOcclusionCuller().FindVisible(
+        var result = new SectionVisibilityGraph().FindVisible(
             visitor,
             [camera, disconnected],
             camera,
@@ -190,7 +191,7 @@ public sealed class ChunkOcclusionCullerTests
         SetVisible(east, ChunkDirection.West, ChunkDirection.West);
         var visitor = new Collector();
 
-        var result = new ChunkOcclusionCuller().FindVisible(
+        var result = new SectionVisibilityGraph().FindVisible(
             visitor,
             [camera, east],
             camera,
@@ -203,16 +204,51 @@ public sealed class ChunkOcclusionCullerTests
 
         Assert.Equal(2, result.PortalVisited);
         Assert.Equal(2, result.PortalQueuePops);
-        Assert.Equal(2, result.PortalDrawFrustumTests);
+        Assert.Equal(0, result.PortalDrawFrustumTests);
         Assert.Equal(2, result.PortalEdgeAttempts);
         Assert.Equal(0, result.PortalMissingNeighbors);
-        Assert.Equal(2, result.PortalMarginFrustumTests);
+        Assert.Equal(1, result.PortalMarginFrustumTests);
         Assert.Equal(0, result.PortalMarginRejected);
         Assert.Equal(1, result.PortalSuccessfulReaches);
         Assert.Equal(1, result.PortalDuplicateReaches);
+        Assert.Equal(0, result.PortalMarginCacheHits);
         Assert.Equal(
             result.PortalDrawFrustumTests + result.PortalMarginFrustumTests,
             result.FrustumTests);
+    }
+
+    [Fact]
+    public void Multiple_arrivals_coalesce_before_a_section_is_processed()
+    {
+        using var camera = Node(0, true);
+        using var north = Node(16, true);
+        using var east = Node(32, true);
+        using var junction = Node(48, true);
+        camera.AdjacentNorth = north;
+        camera.AdjacentEast = east;
+        north.AdjacentEast = junction;
+        east.AdjacentNorth = junction;
+        SetVisible(camera, ChunkDirection.West, ChunkDirection.North);
+        SetVisible(camera, ChunkDirection.West, ChunkDirection.East);
+        SetVisible(north, ChunkDirection.South, ChunkDirection.East);
+        SetVisible(east, ChunkDirection.West, ChunkDirection.North);
+        var visitor = new Collector();
+
+        var result = new SectionVisibilityGraph().FindVisible(
+            visitor,
+            [camera, north, east, junction],
+            camera,
+            new Vector3D<double>(8, 72, 8),
+            new TestFrustum(),
+            256,
+            true,
+            1,
+            candidatesKnownInFrustum: true);
+
+        Assert.Equal(4, result.PortalVisited);
+        Assert.Equal(4, result.PortalQueuePops);
+        Assert.Equal(4, result.PortalSuccessfulReaches);
+        Assert.Equal(4, visitor.Nodes.Count);
     }
 
     [Fact]
@@ -296,7 +332,7 @@ public sealed class ChunkOcclusionCullerTests
         bool occlusion, ICuller? frustum = null)
     {
         var visitor = new Collector();
-        new ChunkOcclusionCuller().FindVisible(visitor, nodes, camera, new Vector3D<double>(8, 72, 8),
+        new SectionVisibilityGraph().FindVisible(visitor, nodes, camera, new Vector3D<double>(8, 72, 8),
             frustum ?? new TestFrustum(), 256, occlusion, 1);
         return visitor.Nodes;
     }

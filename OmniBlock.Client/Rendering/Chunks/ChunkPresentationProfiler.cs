@@ -98,6 +98,7 @@ internal readonly record struct ChunkPresentationProfileSnapshot(
     int PortalMarginRejected,
     int PortalDuplicateReaches,
     int PortalSuccessfulReaches,
+    int PortalMarginCacheHits,
     int SafetyRescued,
     int IncompleteAdjacencyRescued,
     int NewPresentationRescued,

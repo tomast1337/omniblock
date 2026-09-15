@@ -159,9 +159,11 @@ for name, sample in pairs({ horizon = horizon, down = down }) do
         name .. " presented more translucent layers than are resident")
     assert(sample.emptySubmitted == 0,
         name .. " submitted empty terrain layers: " .. tostring(sample.emptySubmitted))
-    assert(math.abs(sample.terrainUniforms - sample.terrainDraws) < 0.01,
-        name .. " uniform entries do not match terrain draws: uniforms=" ..
-        tostring(sample.terrainUniforms) .. " draws=" .. tostring(sample.terrainDraws))
+    assert(math.abs(sample.terrainUniforms -
+            (sample.presentedSolid + sample.presentedTranslucent)) < 0.01,
+        name .. " uniform entries do not match presented layers: uniforms=" ..
+        tostring(sample.terrainUniforms) .. " layers=" ..
+        tostring(sample.presentedSolid + sample.presentedTranslucent))
     assert(sample.findVisibleMs > 0 and sample.terrainSubmitCpuMs > 0,
         name .. " presentation timing did not advance")
 end

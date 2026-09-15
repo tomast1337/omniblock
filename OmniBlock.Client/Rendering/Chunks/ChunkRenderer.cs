@@ -60,7 +60,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly ChunkMeshGenerator _meshGenerator;
     private readonly MeshLifecycleDiagnostics _meshLifecycle = new();
     private readonly List<SubChunkRenderer> _occludedRenderersBuffer = [];
-    private readonly ChunkOcclusionCuller _occlusionCuller = new();
+    private readonly SectionVisibilityGraph _visibilityGraph = new();
     private readonly GameOptions _options;
     private readonly Dictionary<Vector3D<int>, SectionRenderState> _sections = [];
     private readonly ResidentSectionSpatialIndex _residentSpatialIndex = new();
@@ -437,6 +437,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("portalMarginRejected\t").Append(presentation.PortalMarginRejected).AppendLine();
         text.Append("portalDuplicateReaches\t").Append(presentation.PortalDuplicateReaches).AppendLine();
         text.Append("portalSuccessfulReaches\t").Append(presentation.PortalSuccessfulReaches).AppendLine();
+        text.Append("portalMarginCacheHits\t").Append(presentation.PortalMarginCacheHits).AppendLine();
         text.Append("safetyRescued\t").Append(presentation.SafetyRescued).AppendLine();
         text.Append("incompleteAdjacencyRescued\t").Append(presentation.IncompleteAdjacencyRescued).AppendLine();
         text.Append("newPresentationRescued\t").Append(presentation.NewPresentationRescued).AppendLine();
@@ -601,6 +602,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         Counter("portalMarginRejected", profile.PortalMarginRejected);
         Counter("portalDuplicateReaches", profile.PortalDuplicateReaches);
         Counter("portalSuccessfulReaches", profile.PortalSuccessfulReaches);
+        Counter("portalMarginCacheHits", profile.PortalMarginCacheHits);
         Counter("safetyRescued", profile.SafetyRescued);
         Counter("presentedSections", profile.PresentedSections);
         Counter("presentedSolidLayers", profile.PresentedSolidLayers);
@@ -721,7 +723,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             Profiler.Record("SpatialCull", spatial.CullMs);
             Profiler.Record("CandidateSort", spatial.SortMs);
             var portalStarted = Stopwatch.GetTimestamp();
-            var visibility = _occlusionCuller.FindVisible(
+            var visibility = _visibilityGraph.FindVisible(
                 this,
                 _spatialCandidates,
                 cameraState?.Renderer,
@@ -1327,6 +1329,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             _visibilityThisFrame.PortalMarginRejected,
             _visibilityThisFrame.PortalDuplicateReaches,
             _visibilityThisFrame.PortalSuccessfulReaches,
+            _visibilityThisFrame.PortalMarginCacheHits,
             _safetyRescuedThisFrame,
             _incompleteAdjacencyRescuedThisFrame,
             _newPresentationRescuedThisFrame,

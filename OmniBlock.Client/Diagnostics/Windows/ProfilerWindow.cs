@@ -91,7 +91,7 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"Portal:     {profile.PortalQueuePops:N0} pops  {profile.PortalEdgeAttempts:N0} edges  {profile.PortalSuccessfulReaches:N0} reached  {profile.PortalDuplicateReaches:N0} duplicate");
         ImGuiTextSafe.Text(
-            $"Portal test:{profile.PortalDrawFrustumTests:N0} draw  {profile.PortalMarginFrustumTests:N0} margin  {profile.PortalMarginRejected:N0} rejected  {profile.PortalMissingNeighbors:N0} missing");
+            $"Portal test:{profile.PortalDrawFrustumTests:N0} draw  {profile.PortalMarginFrustumTests:N0} margin  {profile.PortalMarginCacheHits:N0} cached  {profile.PortalMarginRejected:N0} rejected  {profile.PortalMissingNeighbors:N0} missing");
         ImGuiTextSafe.Text(
             $"Rescue:     {profile.IncompleteAdjacencyRescued} adjacency  {profile.NewPresentationRescued} new  {profile.PresentationRegressionRescued} regression  oldest {profile.OldestSafetyRescueFrames} frames");
         ImGuiTextSafe.Text(

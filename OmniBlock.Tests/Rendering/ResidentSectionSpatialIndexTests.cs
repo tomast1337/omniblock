@@ -143,7 +143,7 @@ public sealed class ResidentSectionSpatialIndexTests
         bool knownInFrustum)
     {
         var visitor = new Collector();
-        new ChunkOcclusionCuller().FindVisible(
+        new SectionVisibilityGraph().FindVisible(
             visitor, nodes, camera, new Vector3D<double>(8, 72, 8), frustum, 256,
             occlusion, frame, knownInFrustum);
         return visitor.Nodes;
