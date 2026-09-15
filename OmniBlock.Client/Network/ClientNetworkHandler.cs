@@ -24,6 +24,7 @@ using OmniBlock.Screens;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Lod;
 using OmniBlock.Worlds.Mechanics;
 using OmniBlock.Worlds.Storage;
 using Silk.NET.Maths;
@@ -683,6 +684,33 @@ public class ClientNetworkHandler : NetHandler
         _logger.LogInformation("Chunk cache holds {Count} chunks for this world.", _chunkCache.Count);
     }
 
+    private TerrainLodCacheStore? OpenTerrainLodCache(
+        long worldSeed,
+        int dimensionId,
+        ContentRuntime content)
+    {
+        try
+        {
+            var serverIdentity = _cacheKey ?? "integrated";
+            var safeKey = string.Concat(serverIdentity.Select(c =>
+                Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));
+            var materials = TerrainLodMaterialCatalog.FromRuntime(content);
+            var identity = TerrainLodCacheIdentity.FromClientObservedWorld(
+                serverIdentity, worldSeed, dimensionId, content, materials);
+            return new TerrainLodCacheStore(new DirectoryInfo(Path.Combine(
+                _context.ChunkCacheDirectory, safeKey, "terrain-lod")), identity,
+                maxBytes: 512L * 1024 * 1024,
+                maxRecordBytes: 4L * 1024 * 1024);
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or
+                                      ArgumentException or InvalidOperationException)
+        {
+            _logger.LogWarning(error,
+                "Terrain LOD cache could not be opened; distant terrain will be rebuilt.");
+            return null;
+        }
+    }
+
     /// <summary>
     ///     Advertises the cached chunks near where the player was last in this world.
     ///     <para>
@@ -752,7 +780,12 @@ public class ClientNetworkHandler : NetHandler
         OpenChunkCache(packet.WorldSeed, packet.DimensionId);
         _context.PlayerHost.SetPlayerController(_context.Factory.CreatePlayerController(this));
         _context.StatFileWriter.ReadStat(Stats.Stats.JoinMultiplayerStat, 1);
-        _worldClient = new ClientWorld(this, packet.WorldSeed, packet.DimensionId, _context.Content)
+        _worldClient = new ClientWorld(
+            this,
+            packet.WorldSeed,
+            packet.DimensionId,
+            _context.Content,
+            OpenTerrainLodCache(packet.WorldSeed, packet.DimensionId, _context.Content))
         {
             IsRemote = true
         };
@@ -1363,7 +1396,13 @@ public class ClientNetworkHandler : NetHandler
 
             _terrainLoaded = false;
             Preload.Reset();
-            _worldClient = new ClientWorld(this, _worldClient.Properties.RandomSeed, packet.DimensionId, _worldClient.Content)
+            _worldClient = new ClientWorld(
+                this,
+                _worldClient.Properties.RandomSeed,
+                packet.DimensionId,
+                _worldClient.Content,
+                OpenTerrainLodCache(
+                    _worldClient.Properties.RandomSeed, packet.DimensionId, _worldClient.Content))
             {
                 IsRemote = true
             };

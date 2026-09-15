@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using OmniBlock.Registries;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core.Systems;
 
@@ -44,6 +45,33 @@ public sealed record TerrainLodCacheIdentity(
                 generatorProvider.ToString(),
                 world.Properties.TerrainType.Key.ToString(),
                 world.Properties.GeneratorOptions ?? string.Empty),
+            TerrainLodHierarchy.ReductionSchemaVersion,
+            materials.RulesFingerprint);
+    }
+
+    /// <summary>
+    ///     Identifies hierarchy data reduced from authoritative chunks received from a server.
+    ///     The server/world key prevents equal seeds on different servers from sharing entries;
+    ///     each record's source fingerprint additionally validates the actual received arrays.
+    /// </summary>
+    public static TerrainLodCacheIdentity FromClientObservedWorld(
+        string serverIdentity,
+        long worldSeed,
+        int dimension,
+        ContentRuntime content,
+        TerrainLodMaterialCatalog materials)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(serverIdentity);
+        ArgumentNullException.ThrowIfNull(content);
+        ArgumentNullException.ThrowIfNull(materials);
+        return new TerrainLodCacheIdentity(
+            Hash(
+                "omniblock-client-observed-world-v1",
+                serverIdentity,
+                worldSeed.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+            dimension,
+            content.Manifest.Fingerprint,
+            Hash("omniblock-client-observed-generator-v1", serverIdentity),
             TerrainLodHierarchy.ReductionSchemaVersion,
             materials.RulesFingerprint);
     }
@@ -173,7 +201,11 @@ public sealed class TerrainLodCacheStore
         InitializeUsage();
     }
 
-    public TerrainLodCacheReadResult Read(int chunkX, int chunkZ, long terrainRevision)
+    public TerrainLodCacheReadResult Read(
+        int chunkX,
+        int chunkZ,
+        long terrainRevision,
+        string? sourceFingerprint = null)
     {
         lock (_gate)
         {
@@ -193,7 +225,8 @@ public sealed class TerrainLodCacheStore
                     throw new InvalidDataException(
                         $"LOD record length {info.Length} is outside the supported range.");
                 var bytes = File.ReadAllBytes(path);
-                var result = Deserialize(bytes, chunkX, chunkZ, terrainRevision);
+                var result = Deserialize(
+                    bytes, chunkX, chunkZ, terrainRevision, sourceFingerprint);
                 switch (result.Status)
                 {
                     case TerrainLodCacheReadStatus.Hit:
@@ -308,6 +341,7 @@ public sealed class TerrainLodCacheStore
             writer.Write(result.ChunkX);
             writer.Write(result.ChunkZ);
             writer.Write(result.TerrainRevision);
+            WriteString(writer, result.SourceFingerprint ?? string.Empty);
             writer.Write(result.Lighting is not null);
             if (result.Lighting is { } lighting)
             {
@@ -357,7 +391,8 @@ public sealed class TerrainLodCacheStore
         byte[] record,
         int expectedChunkX,
         int expectedChunkZ,
-        long expectedTerrainRevision)
+        long expectedTerrainRevision,
+        string? expectedSourceFingerprint)
     {
         var bodyLength = record.Length - ChecksumBytes;
         if (bodyLength <= 0 || !CryptographicOperations.FixedTimeEquals(
@@ -394,6 +429,14 @@ public sealed class TerrainLodCacheStore
                 TerrainLodCacheReadStatus.StaleTerrain,
                 null,
                 $"Cached terrain revision {terrainRevision} does not match {expectedTerrainRevision}.");
+        var sourceFingerprint = ReadString(reader);
+        if (expectedSourceFingerprint is not null &&
+            !string.Equals(sourceFingerprint, expectedSourceFingerprint, StringComparison.Ordinal))
+            return new TerrainLodCacheReadResult(
+                TerrainLodCacheReadStatus.StaleTerrain,
+                null,
+                $"Cached terrain source {sourceFingerprint} does not match " +
+                $"{expectedSourceFingerprint}.");
 
         TerrainLodLightingSnapshot? lighting = null;
         if (reader.ReadBoolean())
@@ -839,4 +882,152 @@ public sealed class TerrainLodCacheWriter
             _rejected,
             _failures,
             _lastFailure));
+}
+
+public sealed record TerrainLodAsyncCacheWriterSnapshot(
+    int Capacity,
+    int Queued,
+    long Submitted,
+    long Coalesced,
+    long RejectedAtCapacity,
+    long Written,
+    long Failed,
+    string? LastError);
+
+/// <summary>
+///     Best-effort cache sink for consumers that must retain a completed conversion for another
+///     purpose, such as client GPU installation. Disk writes never run on the render thread and a
+///     saturated queue drops disposable cache work rather than applying backpressure to gameplay.
+/// </summary>
+public sealed class TerrainLodAsyncCacheWriter : IDisposable
+{
+    private readonly object _gate = new();
+    private readonly int _capacity;
+    private readonly TerrainLodCacheStore _store;
+    private readonly Dictionary<(int X, int Z), TerrainLodConversionResult> _pending = [];
+    private readonly Queue<(int X, int Z)> _order = [];
+    private readonly Thread _worker;
+    private bool _disposed;
+    private long _submitted;
+    private long _coalesced;
+    private long _rejectedAtCapacity;
+    private long _written;
+    private long _failed;
+    private string? _lastError;
+    private TerrainLodAsyncCacheWriterSnapshot _snapshot = null!;
+
+    public TerrainLodAsyncCacheWriter(TerrainLodCacheStore store, int capacity = 32)
+    {
+        _store = store ?? throw new ArgumentNullException(nameof(store));
+        if (capacity <= 0) throw new ArgumentOutOfRangeException(nameof(capacity));
+        _capacity = capacity;
+        PublishSnapshotLocked();
+        _worker = new Thread(WorkerLoop)
+        {
+            IsBackground = true,
+            Name = $"TerrainLOD-CacheWriter-{store.Snapshot().Dimension}"
+        };
+        _worker.Start();
+    }
+
+    public bool TrySubmit(TerrainLodConversionResult result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        if (!result.RequiresPersistence) return false;
+        lock (_gate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            var key = (result.ChunkX, result.ChunkZ);
+            if (_pending.TryGetValue(key, out var existing))
+            {
+                if (result.TerrainRevision >= existing.TerrainRevision)
+                    _pending[key] = result;
+                _coalesced++;
+                PublishSnapshotLocked();
+                return true;
+            }
+            if (_pending.Count >= _capacity)
+            {
+                _rejectedAtCapacity++;
+                PublishSnapshotLocked();
+                return false;
+            }
+            _pending.Add(key, result);
+            _order.Enqueue(key);
+            _submitted++;
+            PublishSnapshotLocked();
+            Monitor.Pulse(_gate);
+            return true;
+        }
+    }
+
+    public TerrainLodAsyncCacheWriterSnapshot Snapshot() => Volatile.Read(ref _snapshot);
+
+    public void Dispose()
+    {
+        lock (_gate)
+        {
+            if (_disposed) return;
+            _disposed = true;
+            _pending.Clear();
+            _order.Clear();
+            PublishSnapshotLocked();
+            Monitor.PulseAll(_gate);
+        }
+        _worker.Join(TimeSpan.FromSeconds(5));
+    }
+
+    private void WorkerLoop()
+    {
+        while (true)
+        {
+            TerrainLodConversionResult result;
+            lock (_gate)
+            {
+                while (!_disposed && _order.Count == 0) Monitor.Wait(_gate);
+                if (_disposed) return;
+                var key = _order.Dequeue();
+                if (!_pending.Remove(key, out result!)) continue;
+                PublishSnapshotLocked();
+            }
+
+            try
+            {
+                var status = _store.Write(result);
+                lock (_gate)
+                {
+                    if (status == TerrainLodCacheWriteStatus.Written)
+                        _written++;
+                    else
+                    {
+                        _failed++;
+                        _lastError = "Terrain LOD cache record exceeded the configured budget.";
+                    }
+                    PublishSnapshotLocked();
+                }
+            }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException or
+                                          InvalidDataException or ArgumentException or
+                                          InvalidOperationException)
+            {
+                lock (_gate)
+                {
+                    _failed++;
+                    _lastError = error.GetBaseException().Message;
+                    PublishSnapshotLocked();
+                }
+            }
+        }
+    }
+
+    private void PublishSnapshotLocked() => Volatile.Write(ref _snapshot,
+        new TerrainLodAsyncCacheWriterSnapshot(
+            _capacity,
+            _pending.Count,
+            _submitted,
+            _coalesced,
+            _rejectedAtCapacity,
+            _written,
+            _failed,
+            _lastError));
 }

@@ -35,7 +35,15 @@ internal readonly record struct ClientTerrainLodSnapshot(
     long HandoffReversals,
     long LevelTransitionsStarted,
     long LevelTransitionReversals,
-    long BoundaryRefreshes);
+    long BoundaryRefreshes,
+    int CacheEntries,
+    long CacheBytes,
+    long CacheHits,
+    long CacheMisses,
+    int CacheWritesPending,
+    long CacheWrites,
+    long CacheWriteDrops,
+    long CacheErrors);
 
 /// <summary>
 ///     Client owner for the first terrain-horizon slice. It compiles immutable chunk snapshots on
@@ -67,6 +75,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
 
     private readonly World _world;
     private readonly TerrainLodConversionService _conversion;
+    private readonly TerrainLodCacheStore? _cache;
+    private readonly TerrainLodAsyncCacheWriter? _cacheWriter;
     private readonly Dictionary<(int X, int Z), PendingColumn> _pending = [];
     private readonly Dictionary<(int X, int Z), ColumnPresentation> _resident = [];
     private readonly Dictionary<(int X, int Z), int> _detailLevelRequests = [];
@@ -95,14 +105,24 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private bool _disposed;
     private ClientTerrainLodSnapshot _snapshot;
 
-    public ClientTerrainLodRenderer(World world)
+    public ClientTerrainLodRenderer(World world, TerrainLodCacheStore? cache = null)
     {
         _world = world ?? throw new ArgumentNullException(nameof(world));
-        _conversion = new TerrainLodConversionService(
-            world.Dimension.Id,
-            TerrainLodMaterialCatalog.FromRuntime(world.Content),
-            TerrainLodReductionStrategy.SurfacePreserving,
-            ConversionCapacity);
+        _cache = cache;
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        _conversion = cache is null
+            ? new TerrainLodConversionService(
+                world.Dimension.Id,
+                materials,
+                TerrainLodReductionStrategy.SurfacePreserving,
+                ConversionCapacity)
+            : new TerrainLodConversionService(
+                world.Dimension.Id,
+                materials,
+                cache,
+                TerrainLodReductionStrategy.SurfacePreserving,
+                ConversionCapacity);
+        if (cache is not null) _cacheWriter = new TerrainLodAsyncCacheWriter(cache);
     }
 
     public ClientTerrainLodSnapshot Snapshot => _snapshot;
@@ -441,6 +461,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         if (_disposed) return;
         _disposed = true;
         _conversion.Dispose();
+        _cacheWriter?.Dispose();
         foreach (var presentation in _resident.Values) presentation.Dispose();
         foreach (var seam in _solidSeams.Values) seam.Dispose();
         foreach (var seam in _translucentSeams.Values) seam.Dispose();
@@ -512,6 +533,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             ColumnPresentation? candidate = null;
             try
             {
+                _cacheWriter?.TrySubmit(result);
                 _resident.TryGetValue(key, out var previous);
                 var selectedLevel = TerrainLodDetailSelector.SelectLevel(
                     Math.Sqrt(DistanceSquared(key, viewPosition)), MaximumMeshLevel,
@@ -761,6 +783,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             value.IsInState(TerrainLodHandoffState.Overlap));
         var levelTransitions = _resident.Values.Count(static value =>
             value.HasActiveLevelTransition);
+        var cache = _cache?.Snapshot();
+        var cacheWriter = _cacheWriter?.Snapshot();
         _snapshot = new ClientTerrainLodSnapshot(
             _pending.Count,
             conversion.OwnedChunks,
@@ -791,7 +815,17 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             _handoffReversals,
             _levelTransitionsStarted,
             _levelTransitionReversals,
-            _boundaryRefreshes);
+            _boundaryRefreshes,
+            cache?.EntryCount ?? 0,
+            cache?.CurrentBytes ?? 0,
+            cache?.ReadHits ?? 0,
+            (cache?.ReadMisses ?? 0) + (cache?.StaleReads ?? 0) +
+            (cache?.IncompatibleReads ?? 0),
+            cacheWriter?.Queued ?? 0,
+            cacheWriter?.Written ?? 0,
+            cacheWriter?.RejectedAtCapacity ?? 0,
+            (cacheWriter?.Failed ?? 0) + (cache?.CorruptReads ?? 0) +
+            (cache?.WriteFailures ?? 0));
     }
 
     private static double DistanceSquared((int X, int Z) key, Vector3D<double> point)

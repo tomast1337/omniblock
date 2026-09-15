@@ -93,7 +93,8 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             source =>
             {
                 var cached = _cache.Read(
-                    source.ChunkX, source.ChunkZ, source.TerrainRevision);
+                    source.ChunkX, source.ChunkZ, source.TerrainRevision,
+                    source.SourceFingerprint);
                 return cached.Status == TerrainLodCacheReadStatus.Hit
                     ? new TerrainLodConversionOutput(
                         cached.Hierarchy!, cached.Lighting, RequiresPersistence: false)

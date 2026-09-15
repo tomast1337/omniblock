@@ -87,6 +87,8 @@ public sealed class TerrainLodCacheStoreTests
 
             Assert.Equal(TerrainLodCacheReadStatus.StaleTerrain,
                 store.Read(-1, -33, 8).Status);
+            Assert.Equal(TerrainLodCacheReadStatus.StaleTerrain,
+                store.Read(-1, -33, 7, "different-source").Status);
             var incompatible = new TerrainLodCacheStore(
                 root,
                 Identity() with { ContentFingerprint = "other-content" },
@@ -193,6 +195,57 @@ public sealed class TerrainLodCacheStoreTests
     }
 
     [Fact]
+    public async Task Cache_aware_conversion_reuses_matching_source_and_lighting()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var store = Store(root);
+            var expected = Result(6, -4, 3);
+            store.Write(expected);
+            using var conversions = new TerrainLodConversionService(
+                0, Materials, store, capacity: 2);
+
+            conversions.Submit(Source(6, -4, 3));
+            TerrainLodConversionResult? actual = null;
+            await WaitUntil(() => conversions.TryTakeCompleted(out actual));
+
+            Assert.False(actual!.RequiresPersistence);
+            Assert.Equal(expected.Hierarchy.CanonicalHash, actual.Hierarchy.CanonicalHash);
+            Assert.Equal(new LightLevels(11, 6),
+                actual.Lighting!.GetLightLevels(6 * 16 + 1, 70, -4 * 16 + 2, 0));
+            Assert.Equal(1, store.Snapshot().ReadHits);
+        }
+        finally
+        {
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task Async_cache_writer_persists_without_blocking_the_submitter()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var store = Store(root);
+            var result = Result(-3, 8, 5);
+            using var writer = new TerrainLodAsyncCacheWriter(store, capacity: 2);
+
+            Assert.True(writer.TrySubmit(result));
+            await WaitUntil(() => writer.Snapshot().Written == 1);
+
+            Assert.Equal(0, writer.Snapshot().Queued);
+            Assert.Equal(TerrainLodCacheReadStatus.Hit,
+                store.Read(-3, 8, 5, result.SourceFingerprint).Status);
+        }
+        finally
+        {
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
     public void Material_rules_fingerprint_is_order_independent_and_changes_with_descriptors()
     {
         var reversed = new TerrainLodMaterialCatalog(
@@ -235,7 +288,8 @@ public sealed class TerrainLodCacheStoreTests
             revision,
             TerrainLodReducer.Build(
                 source, Materials, TerrainLodReductionStrategy.SurfacePreserving),
-            source.Lighting);
+            source.Lighting,
+            SourceFingerprint: source.SourceFingerprint);
     }
 
     private static TerrainLodSourceSnapshot Source(int x, int z, long revision)

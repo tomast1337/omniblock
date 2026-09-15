@@ -1,4 +1,5 @@
 using System.Collections.Frozen;
+using System.Buffers.Binary;
 using System.Security.Cryptography;
 using System.Text;
 using OmniBlock.Blocks;
@@ -185,6 +186,7 @@ public sealed class TerrainLodSourceSnapshot
 {
     private readonly byte[] _blocks;
     private readonly byte[] _metadata;
+    private string? _sourceFingerprint;
 
     public TerrainLodSourceSnapshot(
         int chunkX,
@@ -230,6 +232,7 @@ public sealed class TerrainLodSourceSnapshot
     public TerrainLodLightingSnapshot? Lighting { get; }
     public long EstimatedBytes => (long)_blocks.Length + _metadata.Length +
                                   (Lighting?.EstimatedBytes ?? 0);
+    public string SourceFingerprint => _sourceFingerprint ??= ComputeSourceFingerprint();
 
     public static TerrainLodSourceSnapshot Capture(Chunk chunk, long? terrainRevision = null)
     {
@@ -309,6 +312,25 @@ public sealed class TerrainLodSourceSnapshot
 
     public byte GetBlock(int x, int y, int z) => _blocks[Index(x, y, z)];
     public byte GetMetadata(int x, int y, int z) => _metadata[Index(x, y, z)];
+
+    private string ComputeSourceFingerprint()
+    {
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        Span<byte> header = stackalloc byte[sizeof(int) * 3 + sizeof(byte)];
+        BinaryPrimitives.WriteInt32LittleEndian(header, Width);
+        BinaryPrimitives.WriteInt32LittleEndian(header[sizeof(int)..], Height);
+        BinaryPrimitives.WriteInt32LittleEndian(header[(sizeof(int) * 2)..], Depth);
+        header[^1] = Lighting?.HasSkyLight == true ? (byte)1 : (byte)0;
+        hash.AppendData(header);
+        hash.AppendData(_blocks);
+        hash.AppendData(_metadata);
+        if (Lighting is { } lighting)
+        {
+            hash.AppendData(lighting.SkyLight);
+            hash.AppendData(lighting.BlockLight);
+        }
+        return Convert.ToHexStringLower(hash.GetHashAndReset());
+    }
 
     private int Index(int x, int y, int z)
     {

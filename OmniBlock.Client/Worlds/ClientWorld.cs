@@ -8,6 +8,7 @@ using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Dimensions;
+using OmniBlock.Worlds.Lod;
 using OmniBlock.Worlds.Storage;
 
 namespace OmniBlock.Client.Worlds;
@@ -20,10 +21,16 @@ public class ClientWorld : World
     private readonly HashSet<Entity> pendingEntities = [];
     private MultiplayerChunkCache _chunkCache;
 
-    public ClientWorld(ClientNetworkHandler netHandler, long seed, int dimId, ContentRuntime content) : base(new EmptyWorldStorage(), "MpServer", new WorldSettings(seed, content.WorldTypes.Get("omniblock:default")), Dimension.FromId(dimId, content),
+    public ClientWorld(
+        ClientNetworkHandler netHandler,
+        long seed,
+        int dimId,
+        ContentRuntime content,
+        TerrainLodCacheStore? terrainLodCache = null) : base(new EmptyWorldStorage(), "MpServer", new WorldSettings(seed, content.WorldTypes.Get("omniblock:default")), Dimension.FromId(dimId, content),
         content)
     {
         NetworkHandler = netHandler;
+        TerrainLodCache = terrainLodCache;
         SetSpawnPos(new Vec3I(8, 64, 8));
 
         StateManager = netHandler.ClientPersistentStateManager;
@@ -37,6 +44,7 @@ public class ClientWorld : World
     ///     interpolation sample, which has no other route to it.
     /// </summary>
     public ClientNetworkHandler NetworkHandler { get; }
+    internal TerrainLodCacheStore? TerrainLodCache { get; }
     internal IReadOnlyList<ClientEntityDespawnVisual> DistanceDespawnVisuals => _distanceDespawnVisuals;
     internal int DistanceDespawnPresentationCount { get; private set; }
 

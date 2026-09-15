@@ -15,7 +15,8 @@ public sealed record TerrainLodConversionResult(
     long TerrainRevision,
     TerrainLodHierarchy Hierarchy,
     TerrainLodLightingSnapshot? Lighting = null,
-    bool RequiresPersistence = true);
+    bool RequiresPersistence = true,
+    string? SourceFingerprint = null);
 
 internal readonly record struct TerrainLodConversionOutput(
     TerrainLodHierarchy Hierarchy,
@@ -77,6 +78,31 @@ public sealed class TerrainLodConversionService : IDisposable
         TerrainLodReductionStrategy strategy = TerrainLodReductionStrategy.SurfacePreserving,
         int capacity = 64)
         : this(dimension, capacity, CreateConverter(materials, strategy)) { }
+
+    public TerrainLodConversionService(
+        int dimension,
+        TerrainLodMaterialCatalog materials,
+        TerrainLodCacheStore cache,
+        TerrainLodReductionStrategy strategy = TerrainLodReductionStrategy.SurfacePreserving,
+        int capacity = 64)
+        : this(dimension, capacity, source =>
+        {
+            ArgumentNullException.ThrowIfNull(cache);
+            var cached = cache.Read(
+                source.ChunkX,
+                source.ChunkZ,
+                source.TerrainRevision,
+                source.SourceFingerprint);
+            return cached.Status == TerrainLodCacheReadStatus.Hit
+                ? new TerrainLodConversionOutput(
+                    cached.Hierarchy!, cached.Lighting, RequiresPersistence: false)
+                : new TerrainLodConversionOutput(
+                    TerrainLodReducer.Build(source, materials, strategy), source.Lighting);
+        })
+    {
+        ArgumentNullException.ThrowIfNull(materials);
+        ArgumentNullException.ThrowIfNull(cache);
+    }
 
     internal TerrainLodConversionService(
         int dimension,
@@ -324,7 +350,8 @@ public sealed class TerrainLodConversionService : IDisposable
                         source.TerrainRevision,
                         output.Hierarchy,
                         output.Lighting,
-                        output.RequiresPersistence);
+                        output.RequiresPersistence,
+                        source.SourceFingerprint);
                     _completedConversions++;
                 }
                 UpdateMemoryPeaksLocked();
