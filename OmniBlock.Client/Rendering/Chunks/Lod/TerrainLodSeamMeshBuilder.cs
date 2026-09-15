@@ -20,6 +20,13 @@ internal sealed record TerrainLodSeamMeshData(
         (long)Lights.Length * WgpuMesh.ChunkLightVertexStride;
 }
 
+internal enum TerrainLodSeamMaterialSide : byte
+{
+    Either,
+    Owner,
+    Neighbor
+}
+
 /// <summary>
 ///     Compiles the solid/cutout surface shared by two adjacent LOD columns. The result is owned by
 ///     the boundary rather than either column, so a selected-level change can replace the seam
@@ -44,9 +51,10 @@ internal static class TerrainLodSeamMeshBuilder
         IBlockRuntimeView blocks,
         bool hasSkyLight,
         ILightProvider? lighting = null,
-        IBlockReader? visuals = null)
+        IBlockReader? visuals = null,
+        TerrainLodSeamMaterialSide materialSide = TerrainLodSeamMaterialSide.Either)
         => Build(owner, ownerLevel, neighbor, neighborLevel, ownerSide, blocks,
-            hasSkyLight, lighting, visuals, translucent: false);
+            hasSkyLight, lighting, visuals, translucent: false, materialSide);
 
     public static TerrainLodSeamMeshData BuildTranslucent(
         TerrainLodBoundarySummary owner,
@@ -57,9 +65,10 @@ internal static class TerrainLodSeamMeshBuilder
         IBlockRuntimeView blocks,
         bool hasSkyLight,
         ILightProvider? lighting = null,
-        IBlockReader? visuals = null)
+        IBlockReader? visuals = null,
+        TerrainLodSeamMaterialSide materialSide = TerrainLodSeamMaterialSide.Either)
         => Build(owner, ownerLevel, neighbor, neighborLevel, ownerSide, blocks,
-            hasSkyLight, lighting, visuals, translucent: true);
+            hasSkyLight, lighting, visuals, translucent: true, materialSide);
 
     private static TerrainLodSeamMeshData Build(
         TerrainLodBoundarySummary owner,
@@ -71,7 +80,8 @@ internal static class TerrainLodSeamMeshBuilder
         bool hasSkyLight,
         ILightProvider? lighting,
         IBlockReader? visuals,
-        bool translucent)
+        bool translucent,
+        TerrainLodSeamMaterialSide materialSide)
     {
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentNullException.ThrowIfNull(neighbor);
@@ -153,6 +163,8 @@ internal static class TerrainLodSeamMeshBuilder
                 useOwner = ownerVisible && (!neighborVisible || ownerMaterial.OccludesFaces ||
                                             !neighborMaterial.OccludesFaces);
             }
+            if ((materialSide == TerrainLodSeamMaterialSide.Owner && !useOwner) ||
+                (materialSide == TerrainLodSeamMaterialSide.Neighbor && useOwner)) continue;
             var material = useOwner ? ownerMaterial : neighborMaterial;
             if (!blocks.TryGet(material.BlockId, out var block) || block is null) continue;
 

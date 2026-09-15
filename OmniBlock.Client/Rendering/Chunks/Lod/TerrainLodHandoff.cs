@@ -13,6 +13,43 @@ internal readonly record struct TerrainNearHandoff(bool Active, float Progress, 
     public static TerrainNearHandoff Inactive => new(false, 1, 0);
 }
 
+internal readonly record struct TerrainLodSeamFade(float Progress, uint Mode, uint Seed)
+{
+    public static TerrainLodSeamFade ForLod(float nearProgress, uint seed) =>
+        nearProgress > 0
+            ? new TerrainLodSeamFade(nearProgress, 2, seed)
+            : new TerrainLodSeamFade(1, 0, seed);
+}
+
+internal readonly record struct TerrainLodSeamCoveragePlan(
+    bool Combined,
+    bool Owner,
+    bool Neighbor);
+
+internal static class TerrainLodSeamCoverage
+{
+    /// <summary>
+    ///     A steady LOD/LOD edge is one canonical artifact. Once either exact presentation starts
+    ///     appearing, split it by material ownership so each half follows that column's LOD-out
+    ///     dither and no exact face receives a second coplanar surface.
+    /// </summary>
+    public static TerrainLodSeamCoveragePlan Plan(
+        bool ownerLodDrawn,
+        float ownerNearProgress,
+        bool neighborLodDrawn,
+        float neighborNearProgress)
+    {
+        if (!ownerLodDrawn && !neighborLodDrawn) return default;
+        if (ownerLodDrawn && neighborLodDrawn &&
+            ownerNearProgress <= 0 && neighborNearProgress <= 0)
+            return new TerrainLodSeamCoveragePlan(Combined: true, Owner: false, Neighbor: false);
+        return new TerrainLodSeamCoveragePlan(
+            Combined: false,
+            Owner: ownerLodDrawn,
+            Neighbor: neighborLodDrawn);
+    }
+}
+
 internal interface ITerrainPresentationHandoff
 {
     TerrainNearHandoff GetNearHandoff(int chunkX, int chunkZ, bool translucent);

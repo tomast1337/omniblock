@@ -300,6 +300,82 @@ public sealed class TerrainLodMeshBuilderTests
     }
 
     [Fact]
+    public void Exact_to_lod_boundary_emits_only_the_lod_owned_solid_surface()
+    {
+        var world = new FakeWorldContext();
+        var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+        var exactAir = Build(world, (x, y, z) => 0, chunkX: -9, chunkZ: -4);
+        var lodStone = Build(world, (x, y, z) => y < 16 ? (byte)stone : (byte)0,
+            chunkX: -8, chunkZ: -4);
+        var exact = TerrainLodBoundarySummary.Capture(exactAir, 0, 4);
+        var lod = TerrainLodBoundarySummary.Capture(lodStone, 0, 4);
+
+        var lodOwned = TerrainLodSeamMeshBuilder.BuildSolid(
+            exact, 0, lod, 0, OmniBlock.Blocks.Side.East,
+            world.Content.Blocks, true,
+            lighting: new ConstantLight(9, 6),
+            materialSide: TerrainLodSeamMaterialSide.Neighbor);
+        var exactOwned = TerrainLodSeamMeshBuilder.BuildSolid(
+            exact, 0, lod, 0, OmniBlock.Blocks.Side.East,
+            world.Content.Blocks, true,
+            materialSide: TerrainLodSeamMaterialSide.Owner);
+
+        Assert.Equal(16 * 16 * 4, lodOwned.Vertices.Length);
+        Assert.All(lodOwned.Lights, light =>
+        {
+            Assert.Equal(36, light.Sky);
+            Assert.Equal(24, light.Block);
+        });
+        Assert.Empty(exactOwned.Vertices);
+        Assert.True(FaceNormalX(lodOwned.Vertices) < 0);
+        Assert.All(lodOwned.Vertices, vertex =>
+            Assert.InRange(vertex.X * 64.0f / 32767.0f, 15.99f, 16.01f));
+    }
+
+    [Fact]
+    public void Exact_owned_surface_is_not_duplicated_by_the_lod_side()
+    {
+        var world = new FakeWorldContext();
+        var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+        var exactStone = Build(world, (x, y, z) => y < 8 ? (byte)stone : (byte)0,
+            chunkX: 12, chunkZ: -6);
+        var lodAir = Build(world, (x, y, z) => 0, chunkX: 13, chunkZ: -6);
+
+        var lodOwned = TerrainLodSeamMeshBuilder.BuildSolid(
+            TerrainLodBoundarySummary.Capture(exactStone, 0, 4), 0,
+            TerrainLodBoundarySummary.Capture(lodAir, 0, 4), 0,
+            OmniBlock.Blocks.Side.East, world.Content.Blocks, true,
+            materialSide: TerrainLodSeamMaterialSide.Neighbor);
+
+        Assert.Empty(lodOwned.Vertices);
+        Assert.Empty(lodOwned.Lights);
+    }
+
+    [Fact]
+    public void Exact_to_lod_liquid_boundary_keeps_the_lod_height_and_winding()
+    {
+        var world = new FakeWorldContext();
+        var water = world.Content.Blocks.Get("omniblock:flowing_water").Id;
+        var exactAir = Build(world, (x, y, z) => 0, chunkX: -2, chunkZ: 11);
+        var lodWater = Build(
+            world, (x, y, z) => y == 20 ? (byte)water : (byte)0,
+            (x, y, z) => y == 20 ? (byte)4 : (byte)0,
+            chunkX: -1, chunkZ: 11);
+
+        var seam = TerrainLodSeamMeshBuilder.BuildTranslucent(
+            TerrainLodBoundarySummary.Capture(exactAir, 0, 4), 0,
+            TerrainLodBoundarySummary.Capture(lodWater, 0, 4), 0,
+            OmniBlock.Blocks.Side.East, world.Content.Blocks, true,
+            materialSide: TerrainLodSeamMaterialSide.Neighbor);
+
+        Assert.Equal(16 * 4, seam.Vertices.Length);
+        Assert.True(FaceNormalX(seam.Vertices) < 0);
+        var highestWorldY = seam.Vertices.Max(vertex =>
+            vertex.Y * 64.0f / 32767.0f + ChuckFormat.WorldHeight / 2.0f);
+        Assert.InRange(highestWorldY, 20.43f, 20.46f);
+    }
+
+    [Fact]
     public void Seam_rejects_non_adjacent_levels_and_columns()
     {
         var world = new FakeWorldContext();

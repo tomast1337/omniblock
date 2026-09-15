@@ -89,6 +89,46 @@ public sealed class TerrainLodHandoffTests
     }
 
     [Fact]
+    public void Steady_lod_columns_share_one_canonical_seam()
+    {
+        var plan = TerrainLodSeamCoverage.Plan(
+            ownerLodDrawn: true, ownerNearProgress: 0,
+            neighborLodDrawn: true, neighborNearProgress: 0);
+
+        Assert.True(plan.Combined);
+        Assert.False(plan.Owner);
+        Assert.False(plan.Neighbor);
+    }
+
+    [Fact]
+    public void Exact_to_lod_boundary_keeps_only_the_lod_material_side()
+    {
+        var plan = TerrainLodSeamCoverage.Plan(
+            ownerLodDrawn: false, ownerNearProgress: 1,
+            neighborLodDrawn: true, neighborNearProgress: 0);
+
+        Assert.False(plan.Combined);
+        Assert.False(plan.Owner);
+        Assert.True(plan.Neighbor);
+    }
+
+    [Fact]
+    public void Transitioning_edges_split_ownership_and_follow_the_column_dither()
+    {
+        var plan = TerrainLodSeamCoverage.Plan(
+            ownerLodDrawn: true, ownerNearProgress: 0.25f,
+            neighborLodDrawn: true, neighborNearProgress: 0.75f);
+        var owner = TerrainLodSeamFade.ForLod(0.25f, 17);
+        var neighbor = TerrainLodSeamFade.ForLod(0.75f, 23);
+
+        Assert.False(plan.Combined);
+        Assert.True(plan.Owner);
+        Assert.True(plan.Neighbor);
+        Assert.Equal(new TerrainLodSeamFade(0.25f, 2, 17), owner);
+        Assert.Equal(new TerrainLodSeamFade(0.75f, 2, 23), neighbor);
+    }
+
+    [Fact]
     public void Detail_levels_overlap_before_the_new_level_becomes_authoritative()
     {
         TerrainLodLevelTransition transition = default;
