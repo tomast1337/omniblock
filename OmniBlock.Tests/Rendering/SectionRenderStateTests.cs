@@ -145,6 +145,23 @@ public sealed class SectionRenderStateTests
     }
 
     [Fact]
+    public void Eviction_deadline_can_be_scheduled_without_restarting_the_grace_period()
+    {
+        using var state = new SectionRenderState(default);
+
+        Assert.True(state.BeginEvictionGrace(100));
+        Assert.False(state.BeginEvictionGrace(110));
+        Assert.Equal(100, state.OutsideRetentionSinceFrame);
+        Assert.False(state.IsEvictionDue(129, 30));
+        Assert.True(state.IsEvictionDue(130, 30));
+
+        state.CancelEvictionGrace();
+        Assert.Equal(-1, state.OutsideRetentionSinceFrame);
+        Assert.True(state.BeginEvictionGrace(140));
+        Assert.Equal(140, state.OutsideRetentionSinceFrame);
+    }
+
+    [Fact]
     public void Critical_revisions_inherit_the_earliest_deadline_until_completion()
     {
         using var state = new SectionRenderState(default);

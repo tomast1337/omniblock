@@ -79,6 +79,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
                 var columnMaxZ = Math.Min(maxZ, (cz << 4) + 15);
 
                 var chunk = world.ChunkHost.GetChunk(cx, cz);
+                var runLength = rowMaxY - rowMinY + 1;
 
                 for (var worldX = columnMinX; worldX <= columnMaxX; worldX++)
                 {
@@ -87,15 +88,21 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
                     for (var worldZ = columnMinZ; worldZ <= columnMaxZ; worldZ++)
                     {
                         var chunkLocalZ = worldZ & 15;
+                        if (runLength <= 0) continue;
 
-                        for (var worldY = rowMinY; worldY <= rowMaxY; worldY++)
-                        {
-                            var index = LocalIndex(worldX - minX, worldY - minY, worldZ - minZ);
-                            _blocks[index] = chunk.Blocks[ChuckFormat.GetIndex(chunkLocalX, worldY, chunkLocalZ)];
-                            SetNibble(_meta, index, chunk.Meta.GetNibble(chunkLocalX, worldY, chunkLocalZ));
-                            SetNibble(_skyLight, index, chunk.SkyLight.GetNibble(chunkLocalX, worldY, chunkLocalZ));
-                            SetNibble(_blockLight, index, chunk.BlockLight.GetNibble(chunkLocalX, worldY, chunkLocalZ));
-                        }
+                        // Both layouts keep Y contiguous. Copy the byte stream as one run and
+                        // repack pairs of nibbles rather than paying four virtual/indexed lookups
+                        // per cell. Source and destination Y parity can differ because snapshots
+                        // include padding below an aligned render section.
+                        var sourceIndex = ChuckFormat.GetIndex(
+                            chunkLocalX, rowMinY, chunkLocalZ);
+                        var targetIndex = LocalIndex(
+                            worldX - minX, rowMinY - minY, worldZ - minZ);
+                        chunk.Blocks.AsSpan(sourceIndex, runLength)
+                            .CopyTo(_blocks.AsSpan(targetIndex, runLength));
+                        CopyNibbleRun(chunk.Meta.Bytes, sourceIndex, _meta, targetIndex, runLength);
+                        CopyNibbleRun(chunk.SkyLight.Bytes, sourceIndex, _skyLight, targetIndex, runLength);
+                        CopyNibbleRun(chunk.BlockLight.Bytes, sourceIndex, _blockLight, targetIndex, runLength);
                     }
                 }
             }
@@ -207,6 +214,36 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         nibbles[byteIndex] = (index & 1) == 0
             ? (byte)((nibbles[byteIndex] & 0xF0) | (value & 0x0F))
             : (byte)((nibbles[byteIndex] & 0x0F) | ((value & 0x0F) << 4));
+    }
+
+    private static void CopyNibbleRun(
+        byte[] source,
+        int sourceIndex,
+        byte[] destination,
+        int destinationIndex,
+        int count)
+    {
+        if ((destinationIndex & 1) != 0 && count > 0)
+        {
+            SetNibble(destination, destinationIndex, GetNibble(source, sourceIndex));
+            sourceIndex++;
+            destinationIndex++;
+            count--;
+        }
+
+        while (count >= 2)
+        {
+            destination[destinationIndex >> 1] = (sourceIndex & 1) == 0
+                ? source[sourceIndex >> 1]
+                : (byte)((source[sourceIndex >> 1] >> 4) |
+                         ((source[(sourceIndex + 1) >> 1] & 0x0F) << 4));
+            sourceIndex += 2;
+            destinationIndex += 2;
+            count -= 2;
+        }
+
+        if (count != 0)
+            SetNibble(destination, destinationIndex, GetNibble(source, sourceIndex));
     }
 
     /// <summary>

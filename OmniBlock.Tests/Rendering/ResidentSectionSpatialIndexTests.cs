@@ -156,6 +156,49 @@ public sealed class ResidentSectionSpatialIndexTests
         Assert.True(diagnostics.SortMs >= 0);
     }
 
+    [Fact]
+    public void Retention_query_returns_every_vertical_section_only_for_outside_columns()
+    {
+        var index = new ResidentSectionSpatialIndex();
+        using var center = Node(0, 0, 0);
+        using var edge = Node(16 * 3, 16, 0);
+        using var outsideLow = Node(16 * 4, 0, 0);
+        using var outsideHigh = Node(16 * 4, 96, 0);
+        using var outsideNegative = Node(-16 * 5, 32, 0);
+        SubChunkRenderer[] renderers =
+            [center, edge, outsideLow, outsideHigh, outsideNegative];
+        foreach (var renderer in renderers) index.AddOrUpdate(renderer);
+        List<SubChunkRenderer> outside = [];
+
+        var diagnostics = index.CollectOutsideHorizontalRadius(
+            new Vector3D<double>(8, 64, 8), 3, outside);
+
+        Assert.Equal(
+            [outsideNegative, outsideLow, outsideHigh],
+            outside.OrderBy(static renderer => renderer.Position.X)
+                .ThenBy(static renderer => renderer.Position.Y));
+        Assert.Equal(2, diagnostics.OutsideColumns);
+        Assert.Equal(3, diagnostics.OutsideSections);
+    }
+
+    [Fact]
+    public void Retention_query_skips_columns_in_regions_wholly_inside_the_circle()
+    {
+        var index = new ResidentSectionSpatialIndex();
+        using var near = Node(0, 64, 0);
+        using var far = Node(16 * 40, 64, 0);
+        index.AddOrUpdate(near);
+        index.AddOrUpdate(far);
+        List<SubChunkRenderer> outside = [];
+
+        var diagnostics = index.CollectOutsideHorizontalRadius(
+            new Vector3D<double>(8, 64, 8), 10, outside);
+
+        Assert.Equal([far], outside);
+        Assert.Equal(2, diagnostics.RegionTests);
+        Assert.Equal(1, diagnostics.ColumnTests);
+    }
+
     private static List<SubChunkRenderer> Find(
         SubChunkRenderer[] nodes,
         SubChunkRenderer camera,

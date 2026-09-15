@@ -30,6 +30,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     internal const int MeshSpeculativeRadius = 1;
     internal const int MeshRetentionMargin = 2;
     internal const int MeshEvictionGraceFrames = 30;
+    internal const int MeshEvictionLimitPerFrame = 256;
     internal const int MinimumCriticalMeshDeadlineFrames = 2;
     internal const double CriticalMeshDeadlineMs = 50.0;
     internal const int MeshDiscoveryBacklogPerWorker = 8;
@@ -63,6 +64,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly ChunkMeshGenerator _meshGenerator;
     private readonly MeshLifecycleDiagnostics _meshLifecycle = new();
     private readonly List<SubChunkRenderer> _occludedRenderersBuffer = [];
+    private readonly List<SubChunkRenderer> _outsideRetentionRenderers = [];
     private readonly SectionVisibilityGraph _visibilityGraph = new();
     private readonly GameOptions _options;
     private readonly Dictionary<Vector3D<int>, SectionRenderState> _sections = [];
@@ -82,6 +84,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly HashSet<Vector3D<int>> _currentPresentationRegressions = [];
     private readonly HashSet<SectionRenderState> _activeNearFieldRescues = [];
     private readonly HashSet<SectionRenderState> _nearFieldRescuesThisFrame = [];
+    private readonly HashSet<SectionRenderState> _evictionGraceSections = [];
+    private readonly List<SectionRenderState> _evictionGraceToCancel = [];
+    private readonly PriorityQueue<SectionEvictionCandidate, int> _evictionDeadlines = new();
     private readonly SectionLightEvaluationService _lightEvaluation;
     private readonly Queue<Vector3D<int>> _pendingLightUpdates = [];
     private readonly HashSet<Vector3D<int>> _pendingLightUpdateKeys = [];
@@ -125,6 +130,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private int _lastRenderDistance;
     private Vector3D<int>? _lastRequestRankCenter;
     private Vector3D<int>? _lastLeadingEdgeCenter;
+    private Vector2D<int>? _lastEvictionCenter;
+    private int _lastEvictionRadius = -1;
     private Vector3D<double> _lastViewPos;
     private int _meshReadyRadius = int.MaxValue;
     private Matrix4X4<float> _modelView;
@@ -323,8 +330,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     internal int DeferredStreamingBoundaryCount => CountDeferred(SectionDirtyReason.StreamingBoundary);
     internal int LeadingEdgePending => CountPendingWithReason(SectionDirtyReason.LeadingEdge);
     internal int LeadingEdgeQueued => _leadingEdgeSections.Count;
-    internal int EvictionGraceMeshCount => _residentSections.Count(static section =>
-        section.OutsideRetentionSinceFrame >= 0);
+    internal int EvictionGraceMeshCount => _evictionGraceSections.Count;
     internal long OldestForegroundAge => OldestPendingAge(MeshWorkPriority.Foreground);
     internal long PresentationRegressionCount => _presentationRegressionCount;
     internal int LightRefreshPending => _pendingLightUpdateKeys.Count;
@@ -838,22 +844,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     public void EndFrame()
     {
         // No frame has been prepared, so there is nothing this one drew to tidy up after.
-        if (_lastCamera is not { } camera) return;
+        if (_lastCamera is null) return;
 
         using (Profiler.Begin("EvictionScan"))
-        {
-            foreach (var state in _residentSections)
-            {
-                var renderer = state.Renderer!;
-                if (state.ShouldEvict(
-                        IsChunkInMeshRetentionDistance(renderer.Position, _lastViewPos),
-                        _frameIndex,
-                        MeshEvictionGraceFrames))
-                {
-                    _renderersToRemove.Add(renderer);
-                }
-            }
-        }
+            CollectDueEvictions();
 
         using (Profiler.Begin("EvictionApply"))
         {
@@ -867,6 +861,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 UpdateAdjacency(renderer, false);
                 _sections.Remove(renderer.Position);
                 _residentSections.Remove(section);
+                _evictionGraceSections.Remove(section);
+                _pendingMeshUpdates.Remove(renderer.Position);
+                ClearLightEvaluation(renderer.Position);
                 section.DetachRenderer();
                 section.Dispose();
                 renderer.Dispose();
@@ -883,6 +880,85 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         // can coalesce here, but cannot spend the frame budget before a critical block change.
         using (Profiler.Begin("LightRefresh"))
             RefreshPendingLights();
+    }
+
+    private void CollectDueEvictions()
+    {
+        var center = new Vector2D<int>(
+            (int)Math.Floor(_lastViewPos.X / SubChunkRenderer.Size),
+            (int)Math.Floor(_lastViewPos.Z / SubChunkRenderer.Size));
+        var radius = _lastRenderDistance + MeshRetentionMargin;
+        if (_lastEvictionCenter != center || _lastEvictionRadius != radius)
+        {
+            // Only states already counting down need a re-entry check. Ordinary resident sections
+            // inside the circle are represented by the spatial index and never touched here.
+            foreach (var state in _evictionGraceSections)
+            {
+                if (state.IsDisposed || state.Renderer is null ||
+                    IsInHorizontalChunkRadius(state.Position, _lastViewPos, radius))
+                    _evictionGraceToCancel.Add(state);
+            }
+            foreach (var state in _evictionGraceToCancel)
+            {
+                state.CancelEvictionGrace();
+                _evictionGraceSections.Remove(state);
+            }
+            _evictionGraceToCancel.Clear();
+
+            _residentSpatialIndex.CollectOutsideHorizontalRadius(
+                _lastViewPos, radius, _outsideRetentionRenderers);
+            foreach (var renderer in _outsideRetentionRenderers)
+            {
+                if (!_sections.TryGetValue(renderer.Position, out var state) ||
+                    !ReferenceEquals(state.Renderer, renderer) ||
+                    !_evictionGraceSections.Add(state)) continue;
+
+                state.BeginEvictionGrace(_frameIndex);
+                _evictionDeadlines.Enqueue(
+                    new SectionEvictionCandidate(
+                        state, state.LifetimeId, state.OutsideRetentionSinceFrame),
+                    state.OutsideRetentionSinceFrame + MeshEvictionGraceFrames);
+            }
+            _outsideRetentionRenderers.Clear();
+            _lastEvictionCenter = center;
+            _lastEvictionRadius = radius;
+        }
+
+        var admitted = 0;
+        while (admitted < MeshEvictionLimitPerFrame &&
+               _evictionDeadlines.TryPeek(out _, out var deadline) &&
+               deadline <= _frameIndex)
+        {
+            var candidate = _evictionDeadlines.Dequeue();
+            var state = candidate.State;
+            if (!_evictionGraceSections.Contains(state) ||
+                !state.OwnsResult(candidate.SectionId) ||
+                state.OutsideRetentionSinceFrame != candidate.StartedFrame)
+                continue;
+
+            if (IsInHorizontalChunkRadius(state.Position, _lastViewPos, radius))
+            {
+                state.CancelEvictionGrace();
+                _evictionGraceSections.Remove(state);
+                continue;
+            }
+            if (!state.IsEvictionDue(_frameIndex, MeshEvictionGraceFrames))
+            {
+                _evictionDeadlines.Enqueue(
+                    candidate,
+                    state.OutsideRetentionSinceFrame + MeshEvictionGraceFrames);
+                continue;
+            }
+
+            if (state.Renderer is not { } renderer)
+            {
+                state.CancelEvictionGrace();
+                _evictionGraceSections.Remove(state);
+                continue;
+            }
+            _renderersToRemove.Add(renderer);
+            admitted++;
+        }
     }
 
     public unsafe void Render(ChunkRenderParams renderParams)
@@ -1483,43 +1559,46 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     /// </summary>
     private void DispatchPendingMeshUpdates()
     {
-        _pendingMeshUpdates.RemoveWhere(state =>
-        {
-            if (state.IsDisposed) return true;
-            if (IsChunkInMeshPrepareDistance(state.Position, _lastViewPos)) return false;
-            // This request has not reached a worker, so removing its keyed queue entry also has to
-            // release the version's pending epoch. Leaving it set creates an immortal phantom job
-            // that inflates backlog counts and prevents the section from ever snapshotting again.
-            state.AbandonRequest(MeshCancellationReason.OutsideRetention);
-            return true;
-        });
-
         var stopwatch = Stopwatch.StartNew();
         var criticalDispatches = _criticalDispatchesSincePump;
-        while (true)
+        using (Profiler.Begin("SnapshotSubmit"))
         {
-            SectionRenderState section;
-            if (stopwatch.Elapsed.TotalMilliseconds < MeshDispatchBudgetMs)
+            while (true)
             {
-                if (!_pendingMeshUpdates.TryDequeue(out section)) break;
+                SectionRenderState section;
+                if (stopwatch.Elapsed.TotalMilliseconds < MeshDispatchBudgetMs)
+                {
+                    if (!_pendingMeshUpdates.TryDequeue(out section)) break;
+                }
+                else if (criticalDispatches >= CriticalDispatchReserve ||
+                         !_pendingMeshUpdates.TryDequeue(MeshWorkPriority.Critical, out section))
+                {
+                    break;
+                }
+
+                // Retention cleanup removes keyed entries when the camera domain changes. Keep
+                // this dequeue-time guard for a request which crossed the boundary between ticks;
+                // it costs O(dispatched work), never O(the whole backlog).
+                if (section.IsDisposed) continue;
+                if (!IsChunkInMeshPrepareDistance(section.Position, _lastViewPos))
+                {
+                    section.AbandonRequest(MeshCancellationReason.OutsideRetention);
+                    continue;
+                }
+
+                if (section.RequestedPriority == MeshWorkPriority.Critical) criticalDispatches++;
+                var pendingEpoch = section.Version.State.Pending;
+                if (pendingEpoch == -1) continue;
+                _meshGenerator.MeshChunk(
+                    _world,
+                    section.Position,
+                    pendingEpoch,
+                    _options.AlternateBlocksEnabled,
+                    section.RequestedPriority,
+                    section.PendingTrace,
+                    section.LifetimeId,
+                    section.RebuildPlan);
             }
-            else if (criticalDispatches >= CriticalDispatchReserve ||
-                     !_pendingMeshUpdates.TryDequeue(MeshWorkPriority.Critical, out section))
-            {
-                break;
-            }
-            if (section.RequestedPriority == MeshWorkPriority.Critical) criticalDispatches++;
-            var pendingEpoch = section.Version.State.Pending;
-            if (pendingEpoch == -1) continue;
-            _meshGenerator.MeshChunk(
-                _world,
-                section.Position,
-                pendingEpoch,
-                _options.AlternateBlocksEnabled,
-                section.RequestedPriority,
-                section.PendingTrace,
-                section.LifetimeId,
-                section.RebuildPlan);
         }
         _criticalDispatchesSincePump = 0;
     }
@@ -1961,7 +2040,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 // Resident buffers are retired only by EndFrame, after their last command buffer
                 // has been submitted. Keep non-resident state through the same retention boundary
                 // so a build which started inside prepare can still install after a crossing; the
-                // dispatch filter independently cancels work that never reached a worker.
+                // keyed removal below cancels work that never reached a worker.
                 if (section.Value.Renderer is null &&
                     !IsChunkInMeshRetentionDistance(section.Key, _lastViewPos))
                 {
@@ -1971,6 +2050,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
             foreach (var pos in _sectionsToRemove)
             {
+                _pendingMeshUpdates.Remove(pos);
                 if (_sections.Remove(pos, out var section)) section.Dispose();
             }
 
@@ -3126,8 +3206,17 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _everPresentedMeshes.Clear();
         _activeNearFieldRescues.Clear();
         _nearFieldRescuesThisFrame.Clear();
+        _evictionGraceSections.Clear();
+        _evictionGraceToCancel.Clear();
+        _evictionDeadlines.Clear();
+        _outsideRetentionRenderers.Clear();
 
     }
+
+    private readonly record struct SectionEvictionCandidate(
+        SectionRenderState State,
+        long SectionId,
+        int StartedFrame);
 
     private sealed class TranslucentDistanceComparer : IComparer<SubChunkRenderer>
     {

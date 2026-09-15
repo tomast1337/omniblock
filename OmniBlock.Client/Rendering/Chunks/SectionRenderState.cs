@@ -42,13 +42,25 @@ internal sealed class SectionRenderState(Vector3D<int> position, MeshLifecycleDi
     {
         if (insideRetention)
         {
-            OutsideRetentionSinceFrame = -1;
+            CancelEvictionGrace();
             return false;
         }
 
-        if (OutsideRetentionSinceFrame < 0) OutsideRetentionSinceFrame = frame;
-        return frame - OutsideRetentionSinceFrame >= graceFrames;
+        BeginEvictionGrace(frame);
+        return IsEvictionDue(frame, graceFrames);
     }
+
+    public bool BeginEvictionGrace(int frame)
+    {
+        if (OutsideRetentionSinceFrame >= 0) return false;
+        OutsideRetentionSinceFrame = frame;
+        return true;
+    }
+
+    public void CancelEvictionGrace() => OutsideRetentionSinceFrame = -1;
+
+    public bool IsEvictionDue(int frame, int graceFrames) =>
+        OutsideRetentionSinceFrame >= 0 && frame - OutsideRetentionSinceFrame >= graceFrames;
     public Vector3D<int> Position { get; } = position;
     public ChunkMeshVersion Version { get; } = ChunkMeshVersion.Get();
     public SubChunkRenderer? Renderer { get; private set; }

@@ -190,6 +190,52 @@ internal sealed class ResidentSectionSpatialIndex
                ReferenceEquals(column.Sections[sectionY]?.Renderer, renderer);
     }
 
+    /// <summary>
+    ///     Collects resident sections in chunk columns outside a horizontal retention circle.
+    ///     Regions wholly inside are rejected without visiting their columns; distance is then
+    ///     evaluated once per remaining column rather than once per vertical section.
+    /// </summary>
+    public SpatialRetentionQueryDiagnostics CollectOutsideHorizontalRadius(
+        Vector3D<double> viewPosition,
+        int radius,
+        List<SubChunkRenderer> destination)
+    {
+        if (radius < 0) throw new ArgumentOutOfRangeException(nameof(radius));
+        destination.Clear();
+        var centerX = (int)Math.Floor(viewPosition.X / SubChunkRenderer.Size);
+        var centerZ = (int)Math.Floor(viewPosition.Z / SubChunkRenderer.Size);
+        var radiusSquared = radius * radius;
+        var regionTests = 0;
+        var columnTests = 0;
+        var outsideColumns = 0;
+
+        foreach (var (key, region) in _regions)
+        {
+            regionTests++;
+            var minX = key.X * RegionWidthInColumns - centerX;
+            var minZ = key.Z * RegionWidthInColumns - centerZ;
+            var maxX = minX + RegionWidthInColumns - 1;
+            var maxZ = minZ + RegionWidthInColumns - 1;
+            var farX = Math.Max(Math.Abs(minX), Math.Abs(maxX));
+            var farZ = Math.Max(Math.Abs(minZ), Math.Abs(maxZ));
+            if (farX * farX + farZ * farZ <= radiusSquared) continue;
+
+            foreach (var (columnKey, column) in region.Columns)
+            {
+                columnTests++;
+                var dx = columnKey.X - centerX;
+                var dz = columnKey.Z - centerZ;
+                if (dx * dx + dz * dz <= radiusSquared) continue;
+                outsideColumns++;
+                foreach (var indexed in column.Sections)
+                    if (indexed is not null) destination.Add(indexed.Renderer);
+            }
+        }
+
+        return new SpatialRetentionQueryDiagnostics(
+            regionTests, columnTests, outsideColumns, destination.Count);
+    }
+
     internal SpatialLayerSummary GetSummary(Vector3D<int> sectionPosition)
     {
         var chunkX = sectionPosition.X / SubChunkRenderer.Size;
@@ -355,6 +401,12 @@ internal readonly record struct SpatialQueryDiagnostics(
 {
     public int FrustumTests => RegionTests + ColumnTests + SectionTests;
 }
+
+internal readonly record struct SpatialRetentionQueryDiagnostics(
+    int RegionTests,
+    int ColumnTests,
+    int OutsideColumns,
+    int OutsideSections);
 
 internal readonly record struct SpatialLayerSummary(
     int RegionSections,
