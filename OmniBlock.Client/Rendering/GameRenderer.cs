@@ -333,7 +333,10 @@ public class GameRenderer
         var entY = entity.LastTickY + (entity.Y - entity.LastTickY) * tickDelta;
         var entZ = entity.LastTickZ + (entity.Z - entity.LastTickZ) * tickDelta;
 
-        SetupWorldCamera(tickDelta);
+        using (Profiler.Begin("SetupWorldCamera"))
+        {
+            SetupWorldCamera(tickDelta);
+        }
         // Capture the camera transforms once. Later entity, particle, selection, and hand draws
         // mutate the compatibility stacks; both terrain passes must use this same world view.
         var worldModelView = RenderSystem.ModelView.Top;
@@ -342,7 +345,10 @@ public class GameRenderer
         if (_client.Options.RenderDistance >= 8)
         {
             ApplyFog(-1);
-            worldRenderer.RenderSky(tickDelta);
+            using (Profiler.Begin("RenderSky"))
+            {
+                worldRenderer.RenderSky(tickDelta);
+            }
         }
 
         RenderSystem.FogEnabled = true;
@@ -370,7 +376,10 @@ public class GameRenderer
             worldRenderer.RenderEntities(entity.GetPosition(tickDelta), frustrumCuller, tickDelta);
         }
 
-        particleManager.renderSpecialParticles(entity, tickDelta);
+        using (Profiler.Begin("RenderSpecialParticles"))
+        {
+            particleManager.renderSpecialParticles(entity, tickDelta);
+        }
 
         Lighting.turnOff();
         ApplyFog(0);
@@ -383,11 +392,14 @@ public class GameRenderer
         EntityPlayer entityPlayer;
         if (_client.ObjectMouseOver.Type != HitResultType.Miss && entity.IsInFluid(Material.Water) && entity is EntityPlayer)
         {
-            entityPlayer = (EntityPlayer)entity;
-            RenderSystem.AlphaTestEnabled = false;
-            worldRenderer.DrawBlockBreaking(entityPlayer, _client.ObjectMouseOver, entityPlayer.Inventory.ItemInHand, tickDelta);
-            worldRenderer.DrawSelectionBox(entityPlayer, _client.ObjectMouseOver, 0, entityPlayer.Inventory.ItemInHand, tickDelta);
-            RenderSystem.AlphaTestEnabled = true;
+            using (Profiler.Begin("RenderSelectionOverlay"))
+            {
+                entityPlayer = (EntityPlayer)entity;
+                RenderSystem.AlphaTestEnabled = false;
+                worldRenderer.DrawBlockBreaking(entityPlayer, _client.ObjectMouseOver, entityPlayer.Inventory.ItemInHand, tickDelta);
+                worldRenderer.DrawSelectionBox(entityPlayer, _client.ObjectMouseOver, 0, entityPlayer.Inventory.ItemInHand, tickDelta);
+                RenderSystem.AlphaTestEnabled = true;
+            }
         }
 
         ApplyFog(0);
@@ -415,14 +427,20 @@ public class GameRenderer
         RenderSystem.State.Apply(RenderState.Opaque);
         if (!CameraController.IsZoomActive && entity is EntityPlayer && _client.ObjectMouseOver.Type != HitResultType.Miss && !entity.IsInFluid(Material.Water))
         {
-            entityPlayer = (EntityPlayer)entity;
-            RenderSystem.AlphaTestEnabled = false;
-            worldRenderer.DrawBlockBreaking(entityPlayer, _client.ObjectMouseOver, entityPlayer.Inventory.ItemInHand, tickDelta);
-            worldRenderer.DrawSelectionBox(entityPlayer, _client.ObjectMouseOver, 0, entityPlayer.Inventory.ItemInHand, tickDelta);
-            RenderSystem.AlphaTestEnabled = true;
+            using (Profiler.Begin("RenderSelectionOverlay"))
+            {
+                entityPlayer = (EntityPlayer)entity;
+                RenderSystem.AlphaTestEnabled = false;
+                worldRenderer.DrawBlockBreaking(entityPlayer, _client.ObjectMouseOver, entityPlayer.Inventory.ItemInHand, tickDelta);
+                worldRenderer.DrawSelectionBox(entityPlayer, _client.ObjectMouseOver, 0, entityPlayer.Inventory.ItemInHand, tickDelta);
+                RenderSystem.AlphaTestEnabled = true;
+            }
         }
 
-        RenderSnow(tickDelta);
+        using (Profiler.Begin("RenderWeather"))
+        {
+            RenderSnow(tickDelta);
+        }
         RenderSystem.FogEnabled = false;
         if (_targetedEntity != null)
         {
@@ -433,7 +451,10 @@ public class GameRenderer
 
         if (_client.ShowChunkBorders)
         {
-            RenderChunkBorders(tickDelta);
+            using (Profiler.Begin("RenderChunkBorders"))
+            {
+                RenderChunkBorders(tickDelta);
+            }
         }
 
         var cloudBlurPass = _client.Options is { SoftClouds: true, CloudsQuality: >= 2 }

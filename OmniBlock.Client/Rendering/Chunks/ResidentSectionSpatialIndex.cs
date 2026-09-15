@@ -118,7 +118,8 @@ internal sealed class ResidentSectionSpatialIndex
         ICuller culler,
         Vector3D<double> viewPosition,
         float renderDistance,
-        List<SubChunkRenderer> destination)
+        List<SubChunkRenderer> destination,
+        bool orderNearToFar = true)
     {
         var cullStarted = Stopwatch.GetTimestamp();
         destination.Clear();
@@ -155,11 +156,15 @@ internal sealed class ResidentSectionSpatialIndex
         }
 
         var cullMs = Stopwatch.GetElapsedTime(cullStarted).TotalMilliseconds;
-        _distanceComparer.Origin = viewPosition;
+        var sortMs = 0.0;
         _distanceComparer.Comparisons = 0;
-        var sortStarted = Stopwatch.GetTimestamp();
-        destination.Sort(_distanceComparer);
-        var sortMs = Stopwatch.GetElapsedTime(sortStarted).TotalMilliseconds;
+        if (orderNearToFar)
+        {
+            _distanceComparer.Origin = viewPosition;
+            var sortStarted = Stopwatch.GetTimestamp();
+            destination.Sort(_distanceComparer);
+            sortMs = Stopwatch.GetElapsedTime(sortStarted).TotalMilliseconds;
+        }
         return new SpatialQueryDiagnostics(
             regionTests,
             columnTests,

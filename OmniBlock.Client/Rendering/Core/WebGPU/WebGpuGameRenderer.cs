@@ -1,8 +1,10 @@
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Hexa.NET.ImGui;
 using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.Rendering.Entities;
+using OmniBlock.Profiling;
 using Silk.NET.WebGPU;
 using WgpuBuffer = Silk.NET.WebGPU.Buffer;
 
@@ -132,6 +134,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
 
     public void RenderFrame(float tickDelta, long time)
     {
+        var setupStarted = Stopwatch.GetTimestamp();
         var device = WebGpuDevice.Current!;
         var api = device.Api;
 
@@ -211,11 +214,15 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             clear = new Color(fog.X, fog.Y, fog.Z, 1.0);
             _cloudBlurPass!.FogColor = new Vector3(fog.X, fog.Y, fog.Z);
         }
+        Profiler.Record("WebGpuSetup", Stopwatch.GetElapsedTime(setupStarted).TotalMilliseconds);
 
         // Isolated offscreen capture must finish before opening any world render pass.
+        var impostorPrepareStarted = Stopwatch.GetTimestamp();
         if (drawWorld) _game.WorldRenderer.EntityImpostors.Prepare(device, encoder, _game.TextureManager, _game.GameDataDir);
+        Profiler.Record("EntityImpostorPrepare", Stopwatch.GetElapsedTime(impostorPrepareStarted).TotalMilliseconds);
 
         // --- Offscreen pass: the world ---
+        var worldPassStarted = Stopwatch.GetTimestamp();
         var worldPass = _offscreenFb.BeginPass(encoder, clear);
 
         // Everything drawn through the Tessellator belongs in this pass, so the target is only open
@@ -243,21 +250,27 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
 
         api.RenderPassEncoderEnd(worldPass);
         api.RenderPassEncoderRelease(worldPass);
+        Profiler.Record("WorldPassCpu", Stopwatch.GetElapsedTime(worldPassStarted).TotalMilliseconds);
 
         // --- Offscreen pass 2: the first-person hand ---
+        var handStarted = Stopwatch.GetTimestamp();
         if (drawWorld)
         {
             RenderFirstPersonHand(_offscreenFb, encoder, tickDelta);
         }
+        Profiler.Record("FirstPersonHandCpu", Stopwatch.GetElapsedTime(handStarted).TotalMilliseconds);
 
         // --- Interface pass ---
         // Always composited into the offscreen framebuffer now, world and HUD together, so the
         // single gamma pass below corrects both at once — matching FramebufferManager's single
         // end-of-frame gamma pass under GL, which gamma-corrects everything in its one FBO,
         // including the HUD, not just the world.
+        var interfaceStarted = Stopwatch.GetTimestamp();
         RenderInterfacePass(device, encoder, tickDelta);
+        Profiler.Record("InterfacePassCpu", Stopwatch.GetElapsedTime(interfaceStarted).TotalMilliseconds);
 
         // --- Swapchain pass: gamma-correct the composited frame onto its final target(s) ---
+        var compositeStarted = Stopwatch.GetTimestamp();
         // gamma.frag's GL equivalent is a full-screen pass FramebufferManager.End runs every frame
         // regardless of the debug viewport, so this runs the same way here: blit.wgsl now applies
         // the same gamma curve, and every consumer of the composited frame reads it through this,
@@ -320,6 +333,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             api.RenderPassEncoderEnd(overlayPass);
             api.RenderPassEncoderRelease(overlayPass);
         }
+        Profiler.Record("CompositePassCpu", Stopwatch.GetElapsedTime(compositeStarted).TotalMilliseconds);
 
         // A screenshot copies out of _presentFb — populated above precisely because capturing was
         // true — into a MapRead buffer. The copy has to be recorded on this same encoder, before
@@ -361,17 +375,29 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             api.CommandEncoderCopyTextureToBuffer(encoder, in copySrc, in copyDst, in copySize);
         }
 
+        var submitStarted = Stopwatch.GetTimestamp();
+        var encoderFinishStarted = submitStarted;
         var cmdBuf = api.CommandEncoderFinish(encoder, null);
+        Profiler.Record("EncoderFinishCpu", Stopwatch.GetElapsedTime(encoderFinishStarted).TotalMilliseconds);
+        var nativeSubmitStarted = Stopwatch.GetTimestamp();
         api.QueueSubmit(device.Queue, 1, &cmdBuf);
+        Profiler.Record("NativeQueueSubmitCpu", Stopwatch.GetElapsedTime(nativeSubmitStarted).TotalMilliseconds);
         api.CommandBufferRelease(cmdBuf);
+        var impostorAfterSubmitStarted = Stopwatch.GetTimestamp();
         _game.WorldRenderer?.EntityImpostors.AfterSubmit(device);
+        Profiler.Record("EntityImpostorAfterSubmitCpu",
+            Stopwatch.GetElapsedTime(impostorAfterSubmitStarted).TotalMilliseconds);
+        Profiler.Record("QueueSubmitCpu", Stopwatch.GetElapsedTime(submitStarted).TotalMilliseconds);
 
         // The swapchain view is an attachment of the pass just submitted, so it stays alive until
         // the submit has taken its own reference.
         api.TextureViewRelease(swapView);
 
+        var presentStarted = Stopwatch.GetTimestamp();
         device.Present();
+        Profiler.Record("PresentCpu", Stopwatch.GetElapsedTime(presentStarted).TotalMilliseconds);
 
+        var readbackStarted = Stopwatch.GetTimestamp();
         if (capturing)
         {
             ScreenshotResult = ReadBackScreenshot(
@@ -379,6 +405,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             api.BufferRelease(screenshotBuffer);
             ScreenshotRequested = false;
         }
+        Profiler.Record("ScreenshotReadbackCpu", Stopwatch.GetElapsedTime(readbackStarted).TotalMilliseconds);
 
         // Last, because it drops the mesh buffers of chunks that fell out of range and replaces the
         // ones that were rebuilt. A buffer this frame recorded a draw from has to outlive the
@@ -386,7 +413,9 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         // GL path can do this inside its terrain draw and this one cannot.
         if (drawWorld)
         {
+            var endFrameStarted = Stopwatch.GetTimestamp();
             _game.WorldRenderer.ChunkRenderer.EndFrame();
+            Profiler.Record("ChunkEndFrameCpu", Stopwatch.GetElapsedTime(endFrameStarted).TotalMilliseconds);
         }
     }
 

@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using OmniBlock.Util.Maths;
 using Silk.NET.Maths;
 
@@ -33,8 +32,8 @@ public readonly record struct ChunkVisibilityResult(
 public sealed class SectionVisibilityGraph
 {
     private const double TraversalMargin = SubChunkRenderer.Size;
+    private static int s_nextSearchId;
     private readonly Queue<SubChunkRenderer> _queue = new();
-    private readonly Dictionary<SubChunkRenderer, TraversalState> _states = [];
 
     public ChunkVisibilityResult FindVisible(
         IChunkVisibilityVisitor visitor,
@@ -48,7 +47,7 @@ public sealed class SectionVisibilityGraph
         bool candidatesKnownInFrustum = false)
     {
         _queue.Clear();
-        _states.Clear();
+        var searchId = NextSearchId();
 
         var residentCandidates = 0;
         var frustumTests = 0;
@@ -109,7 +108,7 @@ public sealed class SectionVisibilityGraph
         while (_queue.TryDequeue(out var current))
         {
             portalQueuePops++;
-            ref var state = ref StateFor(current);
+            ref var state = ref StateFor(current, searchId);
             state.Queued = false;
             var incomingDelta = state.Reached & ~state.Processed;
             if (incomingDelta == ChunkDirectionMask.None) continue;
@@ -157,7 +156,7 @@ public sealed class SectionVisibilityGraph
 
         bool IsInExactFrustum(SubChunkRenderer renderer)
         {
-            ref var state = ref StateFor(renderer);
+            ref var state = ref StateFor(renderer, searchId);
             if (state.ExactFrustum != FrustumClassification.Unknown)
                 return state.ExactFrustum == FrustumClassification.Visible;
             portalDrawFrustumTests++;
@@ -169,7 +168,7 @@ public sealed class SectionVisibilityGraph
 
         void MarkExactFrustum(SubChunkRenderer renderer, bool visible)
         {
-            ref var state = ref StateFor(renderer);
+            ref var state = ref StateFor(renderer, searchId);
             state.ExactFrustum = visible
                 ? FrustumClassification.Visible
                 : FrustumClassification.Hidden;
@@ -184,7 +183,7 @@ public sealed class SectionVisibilityGraph
                 return;
             }
 
-            ref var state = ref StateFor(renderer);
+            ref var state = ref StateFor(renderer, searchId);
             if ((state.Reached & incoming) == incoming)
             {
                 portalDuplicateReaches++;
@@ -216,7 +215,7 @@ public sealed class SectionVisibilityGraph
         bool AddReach(SubChunkRenderer renderer, ChunkDirectionMask incoming)
         {
             if (incoming == ChunkDirectionMask.None) return false;
-            ref var state = ref StateFor(renderer);
+            ref var state = ref StateFor(renderer, searchId);
             var newDirections = incoming & ~state.Reached;
             if (newDirections == ChunkDirectionMask.None) return false;
             if (state.Reached == ChunkDirectionMask.None) portalVisited++;
@@ -236,22 +235,41 @@ public sealed class SectionVisibilityGraph
         }
     }
 
-    private ref TraversalState StateFor(SubChunkRenderer renderer) =>
-        ref CollectionsMarshal.GetValueRefOrAddDefault(_states, renderer, out _);
-
-    private struct TraversalState
+    private static int NextSearchId()
     {
-        public ChunkDirectionMask Reached;
-        public ChunkDirectionMask Processed;
-        public bool Queued;
-        public FrustumClassification ExactFrustum;
-        public FrustumClassification MarginFrustum;
+        // Zero denotes an untouched renderer. Skipping it also makes the unchecked wraparound
+        // harmless after roughly four billion visibility searches.
+        var id = Interlocked.Increment(ref s_nextSearchId);
+        return id != 0 ? id : Interlocked.Increment(ref s_nextSearchId);
     }
 
-    private enum FrustumClassification : byte
+    private static ref SectionVisibilityTraversalState StateFor(
+        SubChunkRenderer renderer,
+        int searchId)
     {
-        Unknown,
-        Hidden,
-        Visible
+        // Traversal is render-thread-only. Keeping the transient stamp on the graph node avoids a
+        // dictionary lookup for every attempted edge while still resetting state lazily.
+        ref var state = ref renderer.VisibilityTraversal;
+        if (state.SearchId != searchId)
+            state = new SectionVisibilityTraversalState { SearchId = searchId };
+        return ref state;
     }
+
+}
+
+internal struct SectionVisibilityTraversalState
+{
+    public int SearchId;
+    public ChunkDirectionMask Reached;
+    public ChunkDirectionMask Processed;
+    public bool Queued;
+    public FrustumClassification ExactFrustum;
+    public FrustumClassification MarginFrustum;
+}
+
+internal enum FrustumClassification : byte
+{
+    Unknown,
+    Hidden,
+    Visible
 }

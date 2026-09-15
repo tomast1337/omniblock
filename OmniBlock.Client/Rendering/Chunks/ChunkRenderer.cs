@@ -718,7 +718,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         using (Profiler.Begin("FindVisible"))
         {
             var spatial = _residentSpatialIndex.Query(
-                renderParams.Camera, renderParams.ViewPos, renderDistWorld, _spatialCandidates);
+                renderParams.Camera, renderParams.ViewPos, renderDistWorld, _spatialCandidates,
+                orderNearToFar: false);
             _spatialQueryThisFrame = spatial;
             Profiler.Record("SpatialCull", spatial.CullMs);
             Profiler.Record("CandidateSort", spatial.SortMs);

@@ -23,6 +23,9 @@ public class SubChunkRenderer : IDisposable
     private bool disposed;
     public ChunkDirectionMask IncomingDirections;
     public int LastVisibleFrame = -1;
+    // Scratch state is generation-stamped by SectionVisibilityGraph and touched only by the
+    // render thread. Storing it on the node removes per-edge hash-table traffic from culling.
+    internal SectionVisibilityTraversalState VisibilityTraversal;
 
     public SubChunkRenderer(Vector3D<int> position)
     {

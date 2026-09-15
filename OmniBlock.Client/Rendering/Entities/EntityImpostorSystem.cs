@@ -82,6 +82,9 @@ internal sealed unsafe class EntityImpostorSystem : IDisposable
     public void Prepare(WebGpuDevice device, CommandEncoder* encoder, TextureManager textures, string gameDataDirectory)
     {
         _frame++;
+        // Pump all atlas map callbacks once. Polling from every atlas multiplied one native
+        // wgpuDevicePoll call by the resident provider count, even on frames with no readback.
+        if (WgpuAtlasReadback.PendingCallbacks != 0) device.PollNonBlocking();
         var ordered = _entries.OrderBy(e => e.Key.ToString(), StringComparer.Ordinal).Select(e => e.Value).ToArray();
         Entry? scheduled = null;
         if (ordered.Length != 0)

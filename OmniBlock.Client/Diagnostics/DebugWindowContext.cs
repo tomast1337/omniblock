@@ -59,6 +59,8 @@ internal sealed class DebugWindowContext(OmniBlock game)
     public TextureManager TextureManager => game.TextureManager;
     public LuauState? LuauState => game.LuauState;
     public string GameDataDir => game.GameDataDir;
+    public int? FrameRateLimit => game.Options.MaxFramesPerSecond;
+    public bool VSync => game.Options.VSync;
     public ContentRuntime Content => game.Content;
     public WorldGenerationSnapshot? WorldGeneration =>
         game.InternalServer?.worlds?.FirstOrDefault()?.ChunkCache.GenerationTelemetry.Snapshot();

@@ -9,13 +9,31 @@ namespace OmniBlock.Client.Diagnostics.Windows;
 
 internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
 {
+    private string? _captureError;
+    private string? _lastCaptureDirectory;
+
     public override string Title => "Profiler";
     public override DebugDock DefaultDock => DebugDock.Right;
 
     protected override void OnDraw()
     {
         if (ImGui.CollapsingHeader("Frame timings", ImGuiTreeNodeFlags.DefaultOpen))
+        {
+            DrawWholeFrameSummary();
             ProfilerRenderer.DrawContents();
+            if (ImGui.Button("Capture profile")) CaptureProfile(ctx.ChunkRenderer);
+            if (_lastCaptureDirectory != null)
+            {
+                ImGui.SameLine();
+                if (ImGui.SmallButton("Copy capture path"))
+                    Display.SetClipboardString(_lastCaptureDirectory);
+                ImGuiTextSafe.TextDisabled(_lastCaptureDirectory);
+            }
+            else if (_captureError != null)
+            {
+                ImGuiTextSafe.TextDisabled(_captureError);
+            }
+        }
 
         if (ImGui.CollapsingHeader("World generation"))
             DrawWorldGeneration(ctx.WorldGeneration);
@@ -72,6 +90,53 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         >= 1024L => $"{bytes / 1024.0:F1} KiB",
         _ => $"{bytes} B"
     };
+
+    private void DrawWholeFrameSummary()
+    {
+        var frame = Profiler.GetStats().FirstOrDefault(
+            static entry => entry.Name == "[Main] FrameTime");
+        if (frame.Name != null)
+        {
+            ImGuiTextSafe.Text(
+                $"Whole frame: {frame.Last:F2} ms ({FramesPerSecond(frame.Last):F1} FPS)  " +
+                $"avg {frame.Avg:F2} ms ({FramesPerSecond(frame.Avg):F1} FPS)  " +
+                $"period max {frame.Max:F2} ms");
+        }
+
+        ImGuiTextSafe.TextDisabled(
+            $"Limiter: {(ctx.FrameRateLimit?.ToString() ?? "unlimited")} FPS  " +
+            $"VSync: {(ctx.VSync ? "on" : "off")}");
+
+        static double FramesPerSecond(double milliseconds) =>
+            milliseconds > 0 ? 1000.0 / milliseconds : 0;
+    }
+
+    private void CaptureProfile(ChunkRenderer? chunkRenderer)
+    {
+        try
+        {
+            var stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+            var directory = Path.Combine(ctx.GameDataDir, "profiles", stamp);
+            Directory.CreateDirectory(directory);
+            File.WriteAllText(
+                Path.Combine(directory, "frame-profiler.tsv"),
+                Profiler.CreateTsvSnapshot());
+            if (chunkRenderer != null)
+            {
+                File.WriteAllText(
+                    Path.Combine(directory, "chunk-presentation.tsv"),
+                    chunkRenderer.CreatePresentationProfileDump());
+            }
+
+            _lastCaptureDirectory = directory;
+            _captureError = null;
+        }
+        catch (Exception ex)
+        {
+            _captureError = $"Capture failed: {ex.Message}";
+            _lastCaptureDirectory = null;
+        }
+    }
 
     private static void DrawChunkPresentation(ChunkRenderer chunkRenderer)
     {

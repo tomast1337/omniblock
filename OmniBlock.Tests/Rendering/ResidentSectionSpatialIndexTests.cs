@@ -76,6 +76,28 @@ public sealed class ResidentSectionSpatialIndexTests
         Assert.Equal([west, east, farther], candidates);
     }
 
+    [Fact]
+    public void Query_can_skip_ordering_for_order_independent_opaque_visibility()
+    {
+        var index = new ResidentSectionSpatialIndex();
+        using var first = Node(48, 64, 0);
+        using var second = Node(0, 64, 0);
+        index.AddOrUpdate(first);
+        index.AddOrUpdate(second);
+        List<SubChunkRenderer> candidates = [];
+
+        var diagnostics = index.Query(
+            new IntersectingFrustum(),
+            new Vector3D<double>(8, 72, 8),
+            256,
+            candidates,
+            orderNearToFar: false);
+
+        Assert.Equal(0, diagnostics.SortComparisons);
+        Assert.Equal(0, diagnostics.SortMs);
+        Assert.Equal(2, diagnostics.Candidates);
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

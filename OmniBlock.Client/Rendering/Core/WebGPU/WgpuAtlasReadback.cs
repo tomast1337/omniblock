@@ -51,7 +51,6 @@ internal sealed unsafe class WgpuAtlasReadback : IDisposable
     {
         pixels = null;
         if (_disposed) return true;
-        _device.PollNonBlocking();
         var status = Volatile.Read(ref _status);
         if (status == -1)
         {

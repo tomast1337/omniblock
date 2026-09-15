@@ -354,7 +354,6 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
     {
         if (_device != null && !ReferenceEquals(_device, device)) { Dispose(); _device = device; _generation = -1; }
         _readback?.AfterSubmit();
-        if (Enabled || WgpuAtlasReadback.PendingCallbacks != 0) device.PollNonBlocking();
     }
 
     private void PollReadback()
