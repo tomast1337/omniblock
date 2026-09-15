@@ -135,6 +135,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private int _translucentDrawsThisFrame;
     private int _translucentDrawsLastFrame;
     private readonly FrameTimingWindow _findVisibleTimings = new();
+    private readonly FrameTimingWindow _spatialCullTimings = new();
+    private readonly FrameTimingWindow _candidateSortTimings = new();
+    private readonly FrameTimingWindow _portalTraversalTimings = new();
     private readonly FrameTimingWindow _terrainSubmitTimings = new();
     private ChunkPresentationProfileSnapshot _presentationProfile;
     private ChunkVisibilityResult _visibilityThisFrame;
@@ -154,6 +157,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private int _terrainPipelineBindsThisFrame;
     private int _terrainTextureBindsThisFrame;
     private double _findVisibleMsThisFrame;
+    private double _portalTraversalMsThisFrame;
     private double _terrainSubmitMsThisFrame;
     private FogState _terrainFog = FogState.Default;
     internal ITerrainPresentationHandoff? PresentationHandoff { get; set; }
@@ -418,6 +422,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("spatialRegionTests\t").Append(presentation.SpatialRegionTests).AppendLine();
         text.Append("spatialColumnTests\t").Append(presentation.SpatialColumnTests).AppendLine();
         text.Append("spatialSectionTests\t").Append(presentation.SpatialSectionTests).AppendLine();
+        text.Append("spatialFrustumCandidates\t").Append(presentation.SpatialFrustumCandidates).AppendLine();
+        text.Append("spatialCandidatesOutsideRenderDistance\t")
+            .Append(presentation.SpatialCandidatesOutsideRenderDistance).AppendLine();
+        text.Append("spatialSortComparisons\t").Append(presentation.SpatialSortComparisons).AppendLine();
         text.Append("frustumTests\t").Append(presentation.FrustumTests).AppendLine();
         text.Append("portalVisited\t").Append(presentation.PortalVisited).AppendLine();
         text.Append("disconnectedSeeds\t").Append(presentation.DisconnectedSeeds).AppendLine();
@@ -437,6 +445,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("terrainUniformArenaCapacity\t").Append(presentation.TerrainUniformArenaCapacity).AppendLine();
         text.Append("terrainUniformArenaGrowths\t").Append(presentation.TerrainUniformArenaGrowths).AppendLine();
         AppendTiming("findVisible", presentation.FindVisible);
+        AppendTiming("spatialCull", presentation.SpatialCull);
+        AppendTiming("candidateSort", presentation.CandidateSort);
+        AppendTiming("portalTraversal", presentation.PortalTraversal);
         AppendTiming("terrainSubmitCpu", presentation.TerrainSubmit);
         foreach (var state in _residentSections)
         {
@@ -553,6 +564,54 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     }
 
     /// <summary>
+    ///     Compact counters and rolling timings for automated frame-cost diagnosis. Unlike the
+    ///     terrain-state dump, this deliberately omits the per-column grid.
+    /// </summary>
+    internal string CreatePresentationProfileDump()
+    {
+        var profile = PresentationProfile;
+        var text = new StringBuilder(2048);
+        text.AppendLine("metric\tvalue");
+        Counter("residentSections", profile.ResidentSections);
+        Counter("residentSolidLayers", profile.ResidentSolidLayers);
+        Counter("residentTranslucentLayers", profile.ResidentTranslucentLayers);
+        Counter("visibilityCandidates", profile.VisibilityCandidates);
+        Counter("spatialRegionTests", profile.SpatialRegionTests);
+        Counter("spatialColumnTests", profile.SpatialColumnTests);
+        Counter("spatialSectionTests", profile.SpatialSectionTests);
+        Counter("spatialFrustumCandidates", profile.SpatialFrustumCandidates);
+        Counter("spatialCandidatesOutsideRenderDistance", profile.SpatialCandidatesOutsideRenderDistance);
+        Counter("spatialSortComparisons", profile.SpatialSortComparisons);
+        Counter("frustumTests", profile.FrustumTests);
+        Counter("portalVisited", profile.PortalVisited);
+        Counter("disconnectedSeeds", profile.DisconnectedSeeds);
+        Counter("safetyRescued", profile.SafetyRescued);
+        Counter("presentedSections", profile.PresentedSections);
+        Counter("presentedSolidLayers", profile.PresentedSolidLayers);
+        Counter("presentedTranslucentLayers", profile.PresentedTranslucentLayers);
+        Counter("terrainDrawCalls", profile.TerrainDrawCalls);
+        Counter("terrainUniformEntries", profile.TerrainUniformEntries);
+        Counter("terrainSubmissionBatches", profile.TerrainSubmissionBatches);
+        text.AppendLine("timing\tsamples\tlastMs\taverageMs\tp50Ms\tp95Ms\tmaxMs");
+        Timing("findVisible", profile.FindVisible);
+        Timing("spatialCull", profile.SpatialCull);
+        Timing("candidateSort", profile.CandidateSort);
+        Timing("portalTraversal", profile.PortalTraversal);
+        Timing("terrainSubmitCpu", profile.TerrainSubmit);
+        return text.ToString();
+
+        void Counter(string name, long value) => text.Append(name).Append('\t').Append(value).AppendLine();
+
+        void Timing(string name, FrameTimingSnapshot timing) =>
+            text.Append(name).Append('\t').Append(timing.Samples).Append('\t')
+                .Append(timing.LastMs.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)).Append('\t')
+                .Append(timing.AverageMs.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)).Append('\t')
+                .Append(timing.P50Ms.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)).Append('\t')
+                .Append(timing.P95Ms.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)).Append('\t')
+                .Append(timing.MaxMs.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)).AppendLine();
+    }
+
+    /// <summary>
     ///     Chooses which sub-chunks the frame draws and records the explicitly supplied world-view
     ///     matrices used by both terrain passes.
     /// </summary>
@@ -641,8 +700,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         using (Profiler.Begin("FindVisible"))
         {
             var spatial = _residentSpatialIndex.Query(
-                renderParams.Camera, renderParams.ViewPos, _spatialCandidates);
+                renderParams.Camera, renderParams.ViewPos, renderDistWorld, _spatialCandidates);
             _spatialQueryThisFrame = spatial;
+            Profiler.Record("SpatialCull", spatial.CullMs);
+            Profiler.Record("CandidateSort", spatial.SortMs);
+            var portalStarted = Stopwatch.GetTimestamp();
             var visibility = _occlusionCuller.FindVisible(
                 this,
                 _spatialCandidates,
@@ -654,6 +716,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 _frameIndex,
                 candidatesKnownInFrustum: true
             );
+            _portalTraversalMsThisFrame = Stopwatch.GetElapsedTime(portalStarted).TotalMilliseconds;
+            Profiler.Record("PortalTraversal", _portalTraversalMsThisFrame);
             _visibilityThisFrame = visibility with
             {
                 FrustumTests = visibility.FrustumTests + spatial.FrustumTests
@@ -1220,6 +1284,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
 
         _findVisibleTimings.Record(_findVisibleMsThisFrame);
+        _spatialCullTimings.Record(_spatialQueryThisFrame.CullMs);
+        _candidateSortTimings.Record(_spatialQueryThisFrame.SortMs);
+        _portalTraversalTimings.Record(_portalTraversalMsThisFrame);
         _terrainSubmitTimings.Record(_terrainSubmitMsThisFrame);
         var draws = _solidDrawsThisFrame + _translucentDrawsThisFrame;
         _presentationProfile = new ChunkPresentationProfileSnapshot(
@@ -1230,6 +1297,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             _spatialQueryThisFrame.RegionTests,
             _spatialQueryThisFrame.ColumnTests,
             _spatialQueryThisFrame.SectionTests,
+            _spatialQueryThisFrame.Candidates,
+            _spatialQueryThisFrame.OutsideRenderDistance,
+            _spatialQueryThisFrame.SortComparisons,
             _visibilityThisFrame.FrustumTests,
             _visibilityThisFrame.PortalVisited,
             _visibilityThisFrame.DisconnectedSeeds,
@@ -1252,6 +1322,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             _wgpuPipelines.Values.Sum(static pipeline => pipeline.DynamicUniformGrowthCount) +
             _wgpuWireframePipelines.Values.Sum(static pipeline => pipeline.DynamicUniformGrowthCount),
             _findVisibleTimings.Snapshot(),
+            _spatialCullTimings.Snapshot(),
+            _candidateSortTimings.Snapshot(),
+            _portalTraversalTimings.Snapshot(),
             _terrainSubmitTimings.Snapshot());
     }
 

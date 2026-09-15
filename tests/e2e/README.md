@@ -137,6 +137,10 @@ instead of screenshots, avoiding GPU readback while measuring the pipeline.
 distance 8, verifies the server-authoritative values returned by the session protocol, then changes
 simulation distance to 2 and proves the terrain streaming distance remains 32.
 
+`frame-profiler` is an opt-in maximum-near-distance diagnostic. It holds an unfocused flying
+camera still, captures separate forward and straight-down profiler snapshots, and writes the
+generic scope timings plus the chunk visibility/sort/submission breakdown without a GPU readback.
+
 `entity-tracking-distance` is an opt-in integrated-server regression test for distant mob
 persistence. It spawns a real cow, moves the player 200 blocks away while retaining the cow's chunk
 inside a 16-chunk terrain radius, and proves the cow remains networked and presented outside the
@@ -174,6 +178,7 @@ OMNI.test.worldGenerationMetric("saved") -- read-only moving-generation diagnost
 OMNI.test.countEntities("omniblock:cow", 180, 220) -- client-resident entities in a distance band
 OMNI.test.isMeshCurrent(x, y, z) -- latest section epoch has an installed mesh
 OMNI.test.meshDeadlineMissCount(x, y, z) -- section-scoped lifetime counter
+OMNI.test.dumpProfiler("steady") -- rolling main/server timings plus chunk-visibility breakdown
 ```
 
 Movement values are clamped to `[-1, 1]`. The controls persist until changed, which lets a script
@@ -253,6 +258,14 @@ server, one JSON generation profile:
   request's original events have rolled out of the bounded history.
 - `world-generation-label.json`: bounded timing/allocation distributions per generation stage,
   queue depths and peak, failures, and a conservative retained chunk-payload lower bound.
+
+`OMNI.test.dumpProfiler("label")` writes `profiler-label.tsv` with the last, rolling average,
+P50, P95, and recent period maximum for every main/client and integrated-server profiler scope.
+When a world renderer is active it also writes `chunk-presentation-label.tsv`, separating spatial
+frustum traversal, near-to-far candidate sorting, portal traversal, and terrain submission. The
+presentation artifact records how many exact-frustum candidates were nevertheless outside render
+distance and how many comparisons the candidate sort performed, so tests can distinguish a costly
+sort from culling, traversal, or command recording.
 
 `world-generation-control.luau` is the Phase 0 control workload: minimum view distance, a fixed
 near-field edit and lava update, and a 32-block diagonal cinematic flight. Automatic background

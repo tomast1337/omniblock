@@ -25,6 +25,7 @@ public sealed class LuauTestHostIntegrationTests
         var path = (AX: 0.0, AY: 0.0, AZ: 0.0, BX: 0.0, BY: 0.0, BZ: 0.0, Seconds: 0.0);
         var screenshots = 0;
         string? terrainDump = null;
+        string? profilerDump = null;
         (string Profile, int Radius)? automaticGeneration = null;
         LuauTestHost.Pass = () => passes++;
         LuauTestHost.Fail = reason => failure = reason;
@@ -52,6 +53,7 @@ public sealed class LuauTestHostIntegrationTests
             path = (ax, ay, az, bx, by, bz, seconds);
         LuauTestHost.Screenshot = () => screenshots++;
         LuauTestHost.DumpTerrain = label => terrainDump = label;
+        LuauTestHost.DumpProfiler = label => profilerDump = label;
         LuauTestHost.WorldGenerationAuto = (profile, radius) =>
         {
             automaticGeneration = (profile, radius);
@@ -86,7 +88,7 @@ public sealed class LuauTestHostIntegrationTests
                 "OMNI.test.setFlying(true); OMNI.test.teleport(160, 164, 0); " +
                 "OMNI.test.setLook(45.5, 90); OMNI.test.setMovement(1, -0.5, 0.25); " +
                 "OMNI.test.flyPath(160, 256, 0, 160, 256, 160, 20); " +
-                "OMNI.test.screenshot(); OMNI.test.dumpTerrain('airborne'); " +
+                "OMNI.test.screenshot(); OMNI.test.dumpTerrain('airborne'); OMNI.test.dumpProfiler('steady'); " +
                 "assert(OMNI.test.worldGenerationAuto('prepare', 24)); " +
                 "assert(OMNI.test.worldGenerationMetric('saved') == 17); " +
                 "assert(OMNI.test.entityBaseline('sheep', 16, 32)); " +
@@ -112,6 +114,7 @@ public sealed class LuauTestHostIntegrationTests
             Assert.Equal((160.0, 256.0, 0.0, 160.0, 256.0, 160.0, 20.0), path);
             Assert.Equal(1, screenshots);
             Assert.Equal("airborne", terrainDump);
+            Assert.Equal("steady", profilerDump);
             Assert.Equal(("prepare", 24), automaticGeneration);
             Assert.Equal("true", hasTest);
             Assert.True(cleared);
@@ -134,6 +137,7 @@ public sealed class LuauTestHostIntegrationTests
             LuauTestHost.FlyPath = null;
             LuauTestHost.Screenshot = null;
             LuauTestHost.DumpTerrain = null;
+            LuauTestHost.DumpProfiler = null;
             LuauTestHost.WorldGenerationAuto = null;
             LuauTestHost.WorldGenerationMetric = null;
             LuauTestHost.EntityBaseline = null;

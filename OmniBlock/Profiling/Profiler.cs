@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace OmniBlock.Profiling;
 
@@ -84,11 +86,81 @@ public static class Profiler
         return result.OrderBy(x => x.Item1);
     }
 
+    /// <summary>
+    ///     Creates a stable, allocation-only-on-request TSV snapshot of every profiler scope.
+    ///     This is intended for automated diagnostics, not the per-frame presentation path.
+    /// </summary>
+    public static string CreateTsvSnapshot()
+    {
+        var rows = new List<ProfilerDumpRow>();
+        AppendDumpContext(s_mainContext, "Main", rows);
+        AppendDumpContext(s_serverContext, "Server", rows);
+        rows.Sort(static (left, right) => string.Compare(left.Name, right.Name, StringComparison.Ordinal));
+
+        var text = new StringBuilder(128 + rows.Count * 96);
+        text.AppendLine("scope\tsamples\tlastMs\taverageMs\tp50Ms\tp95Ms\tperiodMaxMs");
+        foreach (var row in rows)
+        {
+            text.Append(row.Name).Append('\t')
+                .Append(row.Samples).Append('\t')
+                .Append(Format(row.Last)).Append('\t')
+                .Append(Format(row.Average)).Append('\t')
+                .Append(Format(row.P50)).Append('\t')
+                .Append(Format(row.P95)).Append('\t')
+                .Append(Format(row.PeriodMax)).AppendLine();
+        }
+
+        return text.ToString();
+
+        static string Format(double value) => value.ToString("F6", CultureInfo.InvariantCulture);
+    }
+
     private static void AppendContext(ThreadContext? ctx, string prefix, List<(string, double, double, double, double[], int)> result)
     {
         if (ctx?.GetSnapshot() is not { } snap) return;
         foreach (var e in snap) result.Add(($"[{prefix}] {e.Name}", e.Last, e.Avg, e.Max, e.History, e.HistoryHead));
     }
+
+    private static void AppendDumpContext(ThreadContext? ctx, string prefix, List<ProfilerDumpRow> result)
+    {
+        if (ctx?.GetSnapshot() is not { } snapshot) return;
+        foreach (var entry in snapshot)
+        {
+            var count = Math.Min(entry.HistoryCount, entry.History.Length);
+            if (count == 0)
+            {
+                result.Add(new ProfilerDumpRow(
+                    $"[{prefix}] {entry.Name}", 0, entry.Last, entry.Avg, 0, 0, entry.Max));
+                continue;
+            }
+
+            var samples = new double[count];
+            var start = (entry.HistoryHead - count + entry.History.Length) % entry.History.Length;
+            for (var i = 0; i < count; i++)
+                samples[i] = entry.History[(start + i) % entry.History.Length];
+            Array.Sort(samples);
+            result.Add(new ProfilerDumpRow(
+                $"[{prefix}] {entry.Name}",
+                count,
+                entry.Last,
+                entry.Avg,
+                Percentile(samples, 0.50),
+                Percentile(samples, 0.95),
+                entry.Max));
+        }
+
+        static double Percentile(double[] values, double percentile) =>
+            values[Math.Clamp((int)Math.Ceiling(values.Length * percentile) - 1, 0, values.Length - 1)];
+    }
+
+    private readonly record struct ProfilerDumpRow(
+        string Name,
+        int Samples,
+        double Last,
+        double Average,
+        double P50,
+        double P95,
+        double PeriodMax);
 
     private sealed class ScopeData(string name)
     {
@@ -97,6 +169,7 @@ public static class Profiler
         public double Avg;
         public double CurrentPeriodMax;
         public int HistoryHead;
+        public int HistoryCount;
         public double Last;
         public double PreviousPeriodMax;
 
@@ -168,6 +241,7 @@ public static class Profiler
             {
                 scope.History[scope.HistoryHead] = scope.Last;
                 scope.HistoryHead = (scope.HistoryHead + 1) % HistoryLength;
+                scope.HistoryCount = Math.Min(scope.HistoryCount + 1, HistoryLength);
             }
 
             var snap = new SnapshotEntry[_scopes.Count];
@@ -180,7 +254,8 @@ public static class Profiler
                     data.Avg,
                     Math.Max(data.CurrentPeriodMax, data.PreviousPeriodMax),
                     data.History,
-                    data.HistoryHead);
+                    data.HistoryHead,
+                    data.HistoryCount);
             }
 
             Volatile.Write(ref _snapshot, snap);
@@ -192,7 +267,14 @@ public static class Profiler
     /// <summary>
     ///     A point-in-time snapshot of a single profiler scope.
     /// </summary>
-    public readonly record struct SnapshotEntry(string Name, double Last, double Avg, double Max, double[] History, int HistoryHead);
+    public readonly record struct SnapshotEntry(
+        string Name,
+        double Last,
+        double Avg,
+        double Max,
+        double[] History,
+        int HistoryHead,
+        int HistoryCount);
 
     /// <summary>
     ///     A zero-allocation profiling scope. Dispose via <c>using</c> to stop the timer.

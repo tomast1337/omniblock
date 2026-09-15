@@ -29,8 +29,8 @@ for sample = 1, 6 do
     assert(OMNI.client.state.terrainTextureBinds == expectedBatches,
         "terrain texture array was rebound within a layer")
     assert(OMNI.client.state.terrainUniformArenaCapacity >=
-        math.max(OMNI.client.state.solidDrawsLastFrame,
-            OMNI.client.state.translucentDrawsLastFrame),
+        math.max(OMNI.client.state.presentedSolidLayerCount,
+            OMNI.client.state.presentedTranslucentLayerCount),
         "terrain uniform arena is smaller than the submitted layer")
 
     print("distance32 frame=" .. tostring(frameTimeMs) ..
@@ -58,5 +58,6 @@ for sample = 1, 6 do
         " findVisible=" .. tostring(OMNI.client.state.findVisibleMs) .. "ms" ..
         " submit=" .. tostring(OMNI.client.state.terrainSubmitCpuMs) .. "ms")
 end
+OMNI.test.dumpProfiler("visibility-v32-30s")
 OMNI.test.dumpTerrain("visibility-v32-30s")
 OMNI.test.pass()

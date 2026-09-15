@@ -25,6 +25,7 @@ public static unsafe class LuauTestHost
                                         flyPath = function(ax, ay, az, bx, by, bz, seconds) __Test.flyPath(ax, ay, az, bx, by, bz, seconds) end,
                                         screenshot = function() __Test.screenshot() end,
                                         dumpTerrain = function(label) __Test.dumpTerrain(tostring(label or "terrain")) end,
+                                        dumpProfiler = function(label) __Test.dumpProfiler(tostring(label or "profile")) end,
                                         worldGenerationAuto = function(profile, radius) return __Test.worldGenerationAuto(tostring(profile), radius or 32) end,
                                         worldGenerationMetric = function(metric) return __Test.worldGenerationMetric(tostring(metric)) end,
                                         entityBaseline = function(scene, count, distance) return __Test.entityBaseline(scene, count, distance) end,
@@ -58,6 +59,7 @@ public static unsafe class LuauTestHost
     public static Action<double, double, double, double, double, double, double>? FlyPath;
     public static Action? Screenshot;
     public static Action<string>? DumpTerrain;
+    public static Action<string>? DumpProfiler;
     public static Func<string, int, bool>? WorldGenerationAuto;
     public static Func<string, double>? WorldGenerationMetric;
     public static Func<string, int, double, bool>? EntityBaseline;
@@ -71,7 +73,7 @@ public static unsafe class LuauTestHost
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 25);
+        LuauNative.lua_createtable(l, 0, 27);
         Add(l, "pass", &PassClosure);
         Add(l, "fail", &FailClosure);
         Add(l, "creative", &CreativeClosure);
@@ -88,6 +90,7 @@ public static unsafe class LuauTestHost
         Add(l, "flyPath", &FlyPathClosure);
         Add(l, "screenshot", &ScreenshotClosure);
         Add(l, "dumpTerrain", &DumpTerrainClosure);
+        Add(l, "dumpProfiler", &DumpProfilerClosure);
         Add(l, "worldGenerationAuto", &WorldGenerationAutoClosure);
         Add(l, "worldGenerationMetric", &WorldGenerationMetricClosure);
         Add(l, "entityBaseline", &EntityBaselineClosure);
@@ -421,6 +424,20 @@ public static unsafe class LuauTestHost
         try
         {
             DumpTerrain?.Invoke(ReadString(l, 1) ?? "terrain");
+        }
+        catch
+        {
+        }
+
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int DumpProfilerClosure(IntPtr l)
+    {
+        try
+        {
+            DumpProfiler?.Invoke(ReadString(l, 1) ?? "profile");
         }
         catch
         {

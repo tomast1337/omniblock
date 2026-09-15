@@ -2,6 +2,7 @@ using OmniBlock.Client.Rendering;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Chunks;
 using Silk.NET.Maths;
+using System.Diagnostics;
 
 namespace OmniBlock.Client.Rendering.Chunks;
 
@@ -116,12 +117,15 @@ internal sealed class ResidentSectionSpatialIndex
     public SpatialQueryDiagnostics Query(
         ICuller culler,
         Vector3D<double> viewPosition,
+        float renderDistance,
         List<SubChunkRenderer> destination)
     {
+        var cullStarted = Stopwatch.GetTimestamp();
         destination.Clear();
         var regionTests = 0;
         var columnTests = 0;
         var sectionTests = 0;
+        var outsideRenderDistance = 0;
 
         foreach (var region in _regions.Values)
         {
@@ -138,15 +142,33 @@ internal sealed class ResidentSectionSpatialIndex
                     var indexed = column.Sections[y];
                     if (indexed == null) continue;
                     sectionTests++;
-                    if (culler.IsBoundingBoxInFrustum(indexed.Renderer.BoundingBox))
-                        destination.Add(indexed.Renderer);
+                    if (!culler.IsBoundingBoxInFrustum(indexed.Renderer.BoundingBox)) continue;
+                    destination.Add(indexed.Renderer);
+                    // Keep this as a diagnostic first. The portal culler still owns the final
+                    // render-distance decision, so this does not alter conservative visibility.
+                    // It tells us exactly how many frustum survivors the sort processes only to
+                    // reject them at the next stage.
+                    if (!indexed.Renderer.IsWithinRenderDistance(viewPosition, renderDistance))
+                        outsideRenderDistance++;
                 }
             }
         }
 
+        var cullMs = Stopwatch.GetElapsedTime(cullStarted).TotalMilliseconds;
         _distanceComparer.Origin = viewPosition;
+        _distanceComparer.Comparisons = 0;
+        var sortStarted = Stopwatch.GetTimestamp();
         destination.Sort(_distanceComparer);
-        return new SpatialQueryDiagnostics(regionTests, columnTests, sectionTests, destination.Count);
+        var sortMs = Stopwatch.GetElapsedTime(sortStarted).TotalMilliseconds;
+        return new SpatialQueryDiagnostics(
+            regionTests,
+            columnTests,
+            sectionTests,
+            destination.Count,
+            outsideRenderDistance,
+            _distanceComparer.Comparisons,
+            cullMs,
+            sortMs);
     }
 
     public bool Contains(SubChunkRenderer renderer)
@@ -288,9 +310,11 @@ internal sealed class ResidentSectionSpatialIndex
     private sealed class SectionDistanceComparer : IComparer<SubChunkRenderer>
     {
         public Vector3D<double> Origin;
+        public int Comparisons;
 
         public int Compare(SubChunkRenderer? left, SubChunkRenderer? right)
         {
+            Comparisons++;
             if (ReferenceEquals(left, right)) return 0;
             if (left == null) return 1;
             if (right == null) return -1;
@@ -318,7 +342,11 @@ internal readonly record struct SpatialQueryDiagnostics(
     int RegionTests,
     int ColumnTests,
     int SectionTests,
-    int Candidates)
+    int Candidates,
+    int OutsideRenderDistance,
+    int SortComparisons,
+    double CullMs,
+    double SortMs)
 {
     public int FrustumTests => RegionTests + ColumnTests + SectionTests;
 }

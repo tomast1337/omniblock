@@ -84,6 +84,9 @@ internal readonly record struct ChunkPresentationProfileSnapshot(
     int SpatialRegionTests,
     int SpatialColumnTests,
     int SpatialSectionTests,
+    int SpatialFrustumCandidates,
+    int SpatialCandidatesOutsideRenderDistance,
+    int SpatialSortComparisons,
     int FrustumTests,
     int PortalVisited,
     int DisconnectedSeeds,
@@ -104,4 +107,7 @@ internal readonly record struct ChunkPresentationProfileSnapshot(
     int TerrainUniformArenaCapacity,
     int TerrainUniformArenaGrowths,
     FrameTimingSnapshot FindVisible,
+    FrameTimingSnapshot SpatialCull,
+    FrameTimingSnapshot CandidateSort,
+    FrameTimingSnapshot PortalTraversal,
     FrameTimingSnapshot TerrainSubmit);

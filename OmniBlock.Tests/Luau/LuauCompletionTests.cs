@@ -49,6 +49,7 @@ public sealed class LuauCompletionTests
     [InlineData("OMNI.test.setB", "setBlock")]
     [InlineData("OMNI.test.isMesh", "isMeshCurrent")]
     [InlineData("OMNI.test.meshDeadline", "meshDeadlineMissCount")]
+    [InlineData("OMNI.test.dumpP", "dumpProfiler")]
     [InlineData("OMNI.test.setL", "setLook")]
     [InlineData("OMNI.test.setM", "setMovement")]
     public void CompletesGlobalsAndDomMembers(string source, string expected)

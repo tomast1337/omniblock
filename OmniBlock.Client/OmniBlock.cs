@@ -754,6 +754,15 @@ public partial class OmniBlock :
                                 WriteIndented = true
                             }));
                 };
+                LuauTestHost.DumpProfiler = label =>
+                {
+                    _e2eTestController.WriteTextArtifact(
+                        $"profiler-{label}.tsv", Profiler.CreateTsvSnapshot());
+                    if (WorldRenderer?.ChunkRenderer is { } chunkRenderer)
+                        _e2eTestController.WriteTextArtifact(
+                            $"chunk-presentation-{label}.tsv",
+                            chunkRenderer.CreatePresentationProfileDump());
+                };
                 LuauTestHost.WorldGenerationAuto = (profile, radius) =>
                 {
                     if (Player == null || InternalServer == null) return false;
@@ -1202,6 +1211,7 @@ public partial class OmniBlock :
             LuauTestHost.FlyPath = null;
             LuauTestHost.Screenshot = null;
             LuauTestHost.DumpTerrain = null;
+            LuauTestHost.DumpProfiler = null;
             LuauTestHost.WorldGenerationAuto = null;
             LuauTestHost.WorldGenerationMetric = null;
             LuauTestHost.EntityBaseline = null;

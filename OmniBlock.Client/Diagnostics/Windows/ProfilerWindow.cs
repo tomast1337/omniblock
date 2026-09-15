@@ -85,6 +85,8 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"Spatial:    {profile.SpatialRegionTests} regions  {profile.SpatialColumnTests} columns  {profile.SpatialSectionTests} sections");
         ImGuiTextSafe.Text(
+            $"Candidates: {profile.SpatialFrustumCandidates} frustum  {profile.SpatialCandidatesOutsideRenderDistance} beyond radius  {profile.SpatialSortComparisons:N0} sort comparisons");
+        ImGuiTextSafe.Text(
             $"Fallback:   {profile.DisconnectedSeeds} disconnected seeds  {profile.SafetyRescued} safety rescued  {profile.EmptyLayersSubmitted} empty submitted");
         ImGuiTextSafe.Text(
             $"Rescue:     {profile.IncompleteAdjacencyRescued} adjacency  {profile.NewPresentationRescued} new  {profile.PresentationRegressionRescued} regression  oldest {profile.OldestSafetyRescueFrames} frames");
@@ -95,6 +97,9 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"Uniform arena: {profile.TerrainUniformArenaCapacity:N0} entries  {profile.TerrainUniformArenaGrowths} lifetime growths");
         DrawTiming("Find visible", profile.FindVisible);
+        DrawTiming("  Spatial cull", profile.SpatialCull);
+        DrawTiming("  Candidate sort", profile.CandidateSort);
+        DrawTiming("  Portal traversal", profile.PortalTraversal);
         DrawTiming("Terrain submit", profile.TerrainSubmit);
     }
 

@@ -50,6 +50,7 @@ public sealed class ResidentSectionSpatialIndexTests
         var diagnostics = index.Query(
             new IntersectingFrustum(new Box(-32, 0, -32, 64, 128, 64)),
             new Vector3D<double>(8, 72, 8),
+            256,
             candidates);
 
         Assert.Equal([near], candidates);
@@ -70,7 +71,7 @@ public sealed class ResidentSectionSpatialIndexTests
         index.AddOrUpdate(west);
         List<SubChunkRenderer> candidates = [];
 
-        index.Query(new IntersectingFrustum(), new Vector3D<double>(8, 72, 8), candidates);
+        index.Query(new IntersectingFrustum(), new Vector3D<double>(8, 72, 8), 256, candidates);
 
         Assert.Equal([west, east, farther], candidates);
     }
@@ -98,7 +99,7 @@ public sealed class ResidentSectionSpatialIndexTests
         var index = new ResidentSectionSpatialIndex();
         foreach (var renderer in all) index.AddOrUpdate(renderer);
         List<SubChunkRenderer> candidates = [];
-        index.Query(frustum, new Vector3D<double>(8, 72, 8), candidates);
+        index.Query(frustum, new Vector3D<double>(8, 72, 8), 256, candidates);
         var indexed = Find([.. candidates], camera, frustum, useOcclusion, frame: 2, knownInFrustum: true);
 
         Assert.Equal(
@@ -108,6 +109,29 @@ public sealed class ResidentSectionSpatialIndexTests
             indexed.Select(static renderer =>
                     (renderer.Position.X, renderer.Position.Y, renderer.Position.Z))
                 .Order().ToArray());
+    }
+
+    [Fact]
+    public void Query_reports_frustum_candidates_sorted_beyond_render_distance()
+    {
+        var index = new ResidentSectionSpatialIndex();
+        using var near = Node(0, 64, 0);
+        using var outside = Node(16 * 12, 64, 0);
+        index.AddOrUpdate(outside);
+        index.AddOrUpdate(near);
+        List<SubChunkRenderer> candidates = [];
+
+        var diagnostics = index.Query(
+            new IntersectingFrustum(),
+            new Vector3D<double>(8, 72, 8),
+            4 * 16,
+            candidates);
+
+        Assert.Equal(2, diagnostics.Candidates);
+        Assert.Equal(1, diagnostics.OutsideRenderDistance);
+        Assert.True(diagnostics.SortComparisons > 0);
+        Assert.True(diagnostics.CullMs >= 0);
+        Assert.True(diagnostics.SortMs >= 0);
     }
 
     private static List<SubChunkRenderer> Find(
