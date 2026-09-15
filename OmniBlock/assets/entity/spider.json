@@ -63,6 +63,14 @@
     "Shadow": 1.0,
     "OverlayModel": "spider",
     "OverlayTexture": "/mob/spider_eyes.png",
-    "DeathRotation": 180.0
+    "DeathRotation": 180.0,
+    "Impostor": {
+      "Id": "omniblock:spider",
+      "Provider": "omniblock:basic",
+      "VisualDiameter": 3.2,
+      "Layers": [
+        { "Model": "spider", "Texture": "/mob/spider.png", "PoseProvider": "omniblock:spider" }
+      ]
+    }
   }
 }

@@ -13,6 +13,7 @@ internal interface IEntityLodProvider
     string VariantKey { get; }
     bool Supports(Entity entity, float partialTicks);
     int Pose(Entity entity, float partialTicks);
+    float Scale(Entity entity);
 }
 
 internal interface IEntityImpostorProvider : IEntityLodProvider
@@ -47,12 +48,22 @@ internal sealed class BasicEntityImpostorProvider : IEntityImpostorProvider
     public bool Supports(Entity entity, float partialTicks)
     {
         if (entity is not EntityLiving living || entity.Dead || entity.HasVehicle || entity.Passenger != null ||
-            entity.IsOnFire || living.Health <= 0 || living.DeathTime != 0 || living.HeldItem != null ||
-            living.GetTexture() != TexturePaths[0] || entity.Type?.Definition?.Scale != 1) return false;
+            entity.IsOnFire || living.Health <= 0 || living.DeathTime != 0 ||
+            (!_descriptor.OmitHeldItem && living.HeldItem != null) ||
+            living.GetTexture() != TexturePaths[0] || !float.IsFinite(Scale(entity)) || Scale(entity) <= 0 ||
+            (_descriptor.UnsupportedWhenTrue is { } property &&
+             entity.Synced<bool>(property)?.Value != false)) return false;
         // Head yaw/pitch is deliberately reduced to the captured pose at this LOD. Requiring exact
         // alignment made naturally spawned animals almost permanently ineligible: AI commonly
         // leaves the head turned when its distant simulation pauses, unlike the canonical E2E mob.
         return true;
+    }
+
+    public float Scale(Entity entity)
+    {
+        var declared = entity.Type?.Definition?.Scale ?? 1;
+        if (_descriptor.ScaleProperty is not { } property) return declared;
+        return declared * (entity.Synced<byte>(property)?.Value ?? 0);
     }
 
     public int Pose(Entity entity, float partialTicks)
@@ -87,6 +98,7 @@ internal sealed class CreeperImpostorProvider : IEntityImpostorProvider
     public EntityImpostorCaptureLayer[] BuildLayers() => _basic.BuildLayers();
     public Vector4 LayerEffects(Entity entity, float partialTicks) => _basic.LayerEffects(entity, partialTicks);
     public int Pose(Entity entity, float partialTicks) => _basic.Pose(entity, partialTicks);
+    public float Scale(Entity entity) => _basic.Scale(entity);
     public bool Supports(Entity entity, float partialTicks) =>
         _basic.Supports(entity, partialTicks) &&
         entity.Synced<bool>("powered")?.Value == false &&
@@ -110,6 +122,7 @@ internal sealed class WolfImpostorProvider : IEntityImpostorProvider
     public EntityImpostorCaptureLayer[] BuildLayers() => _basic.BuildLayers();
     public Vector4 LayerEffects(Entity entity, float partialTicks) => _basic.LayerEffects(entity, partialTicks);
     public int Pose(Entity entity, float partialTicks) => _basic.Pose(entity, partialTicks);
+    public float Scale(Entity entity) => _basic.Scale(entity);
 
     public bool Supports(Entity entity, float partialTicks)
     {
@@ -157,6 +170,8 @@ internal sealed class SheepImpostorProvider : IEntityImpostorProvider
         ? BasicEntityImpostorProvider.SelectPose(living.LastWalkAnimationSpeed, living.WalkAnimationSpeed,
             living.AnimationPhase, partialTicks)
         : 0;
+
+    public float Scale(Entity entity) => entity.Type?.Definition?.Scale ?? 1;
 
     public Vector4 LayerEffects(Entity entity, float partialTicks)
     {

@@ -45,6 +45,14 @@
   "Renderer": {
     "Type": "swimming",
     "Model": "squid",
-    "Shadow": 0.7
+    "Shadow": 0.7,
+    "Impostor": {
+      "Id": "omniblock:squid",
+      "Provider": "omniblock:basic",
+      "VisualDiameter": 2.8,
+      "Layers": [
+        { "Model": "squid", "Texture": "/mob/squid.png", "PoseProvider": "omniblock:static" }
+      ]
+    }
   }
 }

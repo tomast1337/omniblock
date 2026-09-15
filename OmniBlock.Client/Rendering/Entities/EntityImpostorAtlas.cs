@@ -375,10 +375,12 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
     }
 
     public bool TrySubmit(EntityLodSelector.Decision decision,
-        Vector3 cameraRelativePosition, float yaw, float light, int pose, bool hurt, Vector4 layerEffects)
+        Vector3 cameraRelativePosition, float yaw, float light, int pose, bool hurt, Vector4 layerEffects,
+        float scale)
     {
         if (!Enabled || decision.Intended != EntityLodTier.Impostor ||
-            decision.ViewIndex < 0 || pose is < 0 or >= EntityImpostorLayout.Poses) return false;
+            decision.ViewIndex < 0 || pose is < 0 or >= EntityImpostorLayout.Poses ||
+            !float.IsFinite(scale) || scale <= 0) return false;
         _requested = true;
         if (_requestStarted == 0) _requestStarted = Stopwatch.GetTimestamp();
         if (!Ready || _count == MaxInstances) { PendingFallbacks++; return false; }
@@ -387,8 +389,8 @@ internal sealed unsafe class EntityImpostorAtlas : IDisposable
         var (right, up) = EntityImpostorLayout.Basis(viewDirection);
         var center = ApplyGroundClearance(cameraRelativePosition, viewDirection);
         _staging[_count++] = new Instance { Center = new Vector4(center, light),
-            Right = new Vector4(Vector3.TransformNormal(right, rotation) * _radius, hurt ? 0.4f : 0),
-            Up = new Vector4(Vector3.TransformNormal(up, rotation) * _radius, _layerCount > 1 ? 1f / _layerCount : 0),
+            Right = new Vector4(Vector3.TransformNormal(right, rotation) * (_radius * scale), hurt ? 0.4f : 0),
+            Up = new Vector4(Vector3.TransformNormal(up, rotation) * (_radius * scale), _layerCount > 1 ? 1f / _layerCount : 0),
             UV = EntityImpostorLayout.UV(decision.ViewIndex, pose, _layerCount), Effects = layerEffects };
         LastPoseMask |= 1 << pose;
         if (hurt) LastHurtSubmitted++;

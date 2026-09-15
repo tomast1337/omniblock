@@ -12,7 +12,9 @@ namespace OmniBlock.Client.Rendering.Entities;
 /// </summary>
 internal sealed unsafe class EntityImpostorSystem : IDisposable
 {
-    private const int MaxResidentAtlases = 8;
+    // The shipped living catalog currently fits within sixteen atlases. This remains a bounded LRU
+    // for future mod models, but must not churn before every built-in mob has had a chance to bake.
+    private const int MaxResidentAtlases = 16;
     private readonly EntityImpostorMemoryCache _memory = new();
     private readonly Dictionary<ResourceLocation, Entry> _entries = [];
     private long _frame;
@@ -106,7 +108,8 @@ internal sealed unsafe class EntityImpostorSystem : IDisposable
     }
 
     public bool TrySubmit(IEntityLodProvider? provider, EntityLodSelector.Decision decision,
-        Vector3 cameraRelativePosition, float yaw, float light, int pose, bool hurt, Vector4 layerEffects)
+        Vector3 cameraRelativePosition, float yaw, float light, int pose, bool hurt, Vector4 layerEffects,
+        float scale = 1)
     {
         if (!Enabled || provider is not IEntityImpostorProvider impostor) return false;
         if (!_entries.TryGetValue(impostor.Id, out var entry))
@@ -126,7 +129,7 @@ internal sealed unsafe class EntityImpostorSystem : IDisposable
             _entries.Add(impostor.Id, entry);
         }
         entry.LastUsed = _frame;
-        return entry.Atlas.TrySubmit(decision, cameraRelativePosition, yaw, light, pose, hurt, layerEffects);
+        return entry.Atlas.TrySubmit(decision, cameraRelativePosition, yaw, light, pose, hurt, layerEffects, scale);
     }
 
     public void Draw()

@@ -68,8 +68,10 @@ and `entity-impostor-occlusion` (uncovered/half/full stone-wall screenshot pairs
 and assert zero `OMNI.client.state.webGpuErrorCount`. `OMNI.test.entityImpostors(true, true)` forces
 the tier for close visual inspection only; unsupported states/providers still fall back to 3D.
 Validated providers are now enabled by default; these historical force-tier scenarios still isolate
-specific comparisons. The appearance matrix includes cow, layered sheep, wild wolf, zombie, and
-creeper pairs. Tamed, angry, sitting, or shaking wolves deliberately retain their 3D renderer.
+specific comparisons. `entity-impostor-catalog` requires all fourteen shipped living mobs to bake
+and submit through their declared provider without disappearing or doubling. The detailed appearance
+matrix includes cow, layered sheep, wild wolf, zombie, and creeper pairs. Tamed, angry, sitting, or
+shaking wolves deliberately retain their 3D renderer.
 Submission checks do not replace visual review of their artifacts.
 The Phase 4 slice expands each atlas to idle plus four gait poses. The prototype scenario uses
 the restricted `OMNI.test.entityBaselineState("idle"|"walk-0".."walk-3"|"hurt")` control and checks

@@ -19,6 +19,7 @@ public class EntityImpostorSystemTests
         public string CacheIdentity => Id.ToString();
         public bool Supports(Entity entity, float partialTicks) => true;
         public int Pose(Entity entity, float partialTicks) => 0;
+        public float Scale(Entity entity) => 1;
         public EntityImpostorCaptureLayer[] BuildLayers() => [new(TexturePaths[0], CowImpostorGeometry.BuildPoses())];
         public Vector4 LayerEffects(Entity entity, float partialTicks) => new(1, 1, 1, 0);
     }
@@ -29,11 +30,11 @@ public class EntityImpostorSystemTests
         using EntityImpostorSystem system = new() { Enabled = true };
         var decision = new EntityLodSelector.Decision(EntityLodTier.Impostor,
             EntityLodReason.ImpostorCandidate, 0, 10);
-        for (var i = 0; i < 12; i++)
+        for (var i = 0; i < 20; i++)
             Assert.False(system.TrySubmit(new FakeProvider(i), decision, Vector3.UnitZ, 0, 1, 0, false, Vector4.One));
-        Assert.Equal(8, system.ResidentAtlasCount);
-        Assert.False(system.TrySubmit(new FakeProvider(11), decision, Vector3.UnitZ, 0, 1, 0, false, Vector4.One));
-        Assert.Equal(8, system.ResidentAtlasCount);
+        Assert.Equal(16, system.ResidentAtlasCount);
+        Assert.False(system.TrySubmit(new FakeProvider(19), decision, Vector3.UnitZ, 0, 1, 0, false, Vector4.One));
+        Assert.Equal(16, system.ResidentAtlasCount);
     }
 
     [Fact]

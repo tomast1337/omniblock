@@ -32,19 +32,34 @@ internal sealed class ClientEntityRendererRegistry
                 LodProvider = Impostor(d)
             };
         });
-        Register("flapping", (d, _) => new FlappingEntityRenderer(Model(d), Shadow(d)));
+        Register("flapping", (d, _) => new FlappingEntityRenderer(Model(d), Shadow(d))
+        {
+            LodProvider = Impostor(d)
+        });
         Register("glowing_eyes", (d, _) => new GlowingEyesEntityRenderer(
             Model(d), EntityModelRegistry.Create(Json(d).GetProperty("OverlayModel").GetString()!), Shadow(d),
             Json(d).GetProperty("OverlayTexture").GetString()!,
-            Json(d).TryGetProperty("DeathRotation", out var death) ? death.GetSingle() : 90.0F));
-        Register("charging", (d, _) => new ChargingEntityRenderer(Model(d), Shadow(d)));
-        Register("swimming", (d, _) => new SwimmingEntityRenderer(Model(d), Shadow(d)));
+            Json(d).TryGetProperty("DeathRotation", out var death) ? death.GetSingle() : 90.0F)
+        {
+            LodProvider = Impostor(d)
+        });
+        Register("charging", (d, _) => new ChargingEntityRenderer(Model(d), Shadow(d))
+        {
+            LodProvider = Impostor(d)
+        });
+        Register("swimming", (d, _) => new SwimmingEntityRenderer(Model(d), Shadow(d))
+        {
+            LodProvider = Impostor(d)
+        });
         Register("tamed", (d, _) => new TamedEntityRenderer(Model(d), Shadow(d))
         {
             LodProvider = Impostor(d)
         });
         Register("squishy", (d, _) => new SquishyEntityRenderer(
-            Model(d), EntityModelRegistry.Create(Json(d).GetProperty("OverlayModel").GetString()!), Shadow(d)));
+            Model(d), EntityModelRegistry.Create(Json(d).GetProperty("OverlayModel").GetString()!), Shadow(d))
+        {
+            LodProvider = Impostor(d)
+        });
         Register("falling_block", (d, _) => new FallingBlockEntityRenderer(Shadow(d)));
         Register("lightning", (_, _) => new LightningEntityRenderer());
         Register("item", (_, content) => new ItemRenderer(content.Blocks));
@@ -63,7 +78,10 @@ internal sealed class ClientEntityRendererRegistry
         Register("primed_block", (d, content) => new PrimedBlockEntityRenderer(
             content.Blocks.Get(Json(d).GetProperty("Block").GetString()!), Shadow(d)));
         Register("scaled", (d, _) => new ScaledEntityRenderer(
-            Model(d), Shadow(d), Json(d).GetProperty("Scale").GetSingle()));
+            Model(d), Shadow(d), Json(d).GetProperty("Scale").GetSingle())
+        {
+            LodProvider = Impostor(d)
+        });
         Register("undead", (d, _) => new UndeadEntityRenderer((ModelBiped)Model(d), Shadow(d))
         {
             LodProvider = Impostor(d)
@@ -88,7 +106,10 @@ internal sealed class ClientEntityRendererRegistry
         Register("overlay", (d, _) => new OverlayEntityRenderer(
             Model(d), EntityModelRegistry.Create(Json(d).GetProperty("OverlayModel").GetString()!), Shadow(d),
             Json(d).GetProperty("OverlayProperty").GetString()!,
-            Json(d).GetProperty("OverlayTexture").GetString()!));
+            Json(d).GetProperty("OverlayTexture").GetString()!)
+        {
+            LodProvider = Impostor(d)
+        });
     }
 
     public FrozenDictionary<EntityType, EntityRenderer> Build(ContentRuntime content)
@@ -186,6 +207,8 @@ internal sealed class ClientEntityRendererRegistry
         var compiled = ClientEntityImpostorDescriptor.Compile(descriptor.Definition);
         return compiled == null ? null : _impostorProviders[compiled.ProviderType](compiled);
     }
+
+    internal IEntityLodProvider? CompileImpostorProvider(EntityRenderDescriptor descriptor) => Impostor(descriptor);
 
     private static JsonElement Json(EntityRenderDescriptor descriptor) => descriptor.Definition;
 

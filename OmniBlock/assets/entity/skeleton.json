@@ -10,7 +10,16 @@
   "Renderer": {
     "Type": "undead",
     "Model": "skeleton",
-    "Shadow": 0.5
+    "Shadow": 0.5,
+    "Impostor": {
+      "Id": "omniblock:skeleton",
+      "Provider": "omniblock:basic",
+      "VisualDiameter": 3.2,
+      "OmitHeldItem": true,
+      "Layers": [
+        { "Model": "skeleton", "Texture": "/mob/skeleton.png", "PoseProvider": "omniblock:zombie" }
+      ]
+    }
   },
   "Behaviors": [
     {

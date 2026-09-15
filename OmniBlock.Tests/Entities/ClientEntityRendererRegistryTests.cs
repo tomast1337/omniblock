@@ -27,13 +27,41 @@ public sealed class ClientEntityRendererRegistryTests
     {
         var dependencies = new ClientEntityRendererRegistry().CaptureDependencies(ContentRuntime.Current);
 
-        Assert.Equal(6, dependencies.Count);
+        Assert.Equal(14, dependencies.Count);
         Assert.True(dependencies.Contains("/mob/cow.png"));
+        Assert.True(dependencies.Contains("/mob/chicken.png"));
         Assert.True(dependencies.Contains("/mob/creeper.png"));
+        Assert.True(dependencies.Contains("/mob/ghast.png"));
+        Assert.True(dependencies.Contains("/mob/pig.png"));
+        Assert.True(dependencies.Contains("/mob/pigzombie.png"));
         Assert.True(dependencies.Contains("/mob/sheep.png"));
         Assert.True(dependencies.Contains("/mob/sheep_fur.png"));
+        Assert.True(dependencies.Contains("/mob/skeleton.png"));
+        Assert.True(dependencies.Contains("/mob/slime.png"));
+        Assert.True(dependencies.Contains("/mob/spider.png"));
+        Assert.True(dependencies.Contains("/mob/squid.png"));
         Assert.True(dependencies.Contains("/mob/zombie.png"));
         Assert.True(dependencies.Contains("/mob/wolf.png"));
+    }
+
+    [Fact]
+    public void Every_shipped_living_mob_has_a_compiled_impostor_provider()
+    {
+        string[] expected =
+        [
+            "chicken", "cow", "creeper", "ghast", "giant", "pig", "pigzombie", "sheep",
+            "skeleton", "slime", "spider", "squid", "wolf", "zombie"
+        ];
+        var runtime = ContentRuntime.Current;
+        var renderers = new ClientEntityRendererRegistry();
+
+        foreach (var name in expected)
+        {
+            var type = runtime.EntityTypes.Get("omniblock:" + name);
+            Assert.NotNull(ClientEntityImpostorDescriptor.Compile(type.RenderDescriptor!.Definition));
+            Assert.IsAssignableFrom<IEntityImpostorProvider>(
+                renderers.CompileImpostorProvider(type.RenderDescriptor));
+        }
     }
 
     [Fact]
@@ -52,7 +80,7 @@ public sealed class ClientEntityRendererRegistryTests
     }
 
     [Fact]
-    public void Hostile_impostors_are_opt_in_and_creeper_special_states_keep_the_3d_renderer()
+    public void Hostile_impostors_cover_equipped_skeletons_while_creeper_special_states_keep_3d()
     {
         var runtime = ContentRuntime.Current;
         var zombieType = runtime.EntityTypes.Get("omniblock:zombie");
@@ -62,8 +90,12 @@ public sealed class ClientEntityRendererRegistryTests
         var creeperDescriptor = ClientEntityImpostorDescriptor.Compile(creeperType.RenderDescriptor!.Definition);
         Assert.NotNull(zombie);
         var provider = new CreeperImpostorProvider(Assert.IsType<ClientEntityImpostorDescriptor>(creeperDescriptor));
-        Assert.Null(ClientEntityImpostorDescriptor.Compile(skeletonType.RenderDescriptor!.Definition));
-        // A skeleton's held bow is not represented yet.
+        var skeletonDescriptor = Assert.IsType<ClientEntityImpostorDescriptor>(
+            ClientEntityImpostorDescriptor.Compile(skeletonType.RenderDescriptor!.Definition));
+        Assert.True(skeletonDescriptor.OmitHeldItem);
+        var skeleton = skeletonType.Create(new FakeWorldContext());
+        Assert.NotNull(((EntityLiving)skeleton).HeldItem);
+        Assert.True(new BasicEntityImpostorProvider(skeletonDescriptor).Supports(skeleton, 0));
 
         var creeper = creeperType.Create(new FakeWorldContext());
         Assert.True(provider.Supports(creeper, 0));
@@ -72,6 +104,32 @@ public sealed class ClientEntityRendererRegistryTests
         creeper.Synced<bool>("powered")!.Value = false;
         creeper.Synced<byte>("state")!.Value = 1;
         Assert.False(provider.Supports(creeper, 0));
+    }
+
+    [Fact]
+    public void Declared_visual_state_and_scale_rules_are_enforced_by_the_basic_provider()
+    {
+        var runtime = ContentRuntime.Current;
+        var pigType = runtime.EntityTypes.Get("omniblock:pig");
+        var pigDescriptor = Assert.IsType<ClientEntityImpostorDescriptor>(
+            ClientEntityImpostorDescriptor.Compile(pigType.RenderDescriptor!.Definition));
+        var pigProvider = new BasicEntityImpostorProvider(pigDescriptor);
+        var pig = pigType.Create(new FakeWorldContext());
+        Assert.True(pigProvider.Supports(pig, 0));
+        pig.Synced<bool>("saddled")!.Value = true;
+        Assert.False(pigProvider.Supports(pig, 0));
+
+        var giantType = runtime.EntityTypes.Get("omniblock:giant");
+        var giantProvider = new BasicEntityImpostorProvider(Assert.IsType<ClientEntityImpostorDescriptor>(
+            ClientEntityImpostorDescriptor.Compile(giantType.RenderDescriptor!.Definition)));
+        Assert.Equal(6, giantProvider.Scale(giantType.Create(new FakeWorldContext())));
+
+        var slimeType = runtime.EntityTypes.Get("omniblock:slime");
+        var slimeProvider = new BasicEntityImpostorProvider(Assert.IsType<ClientEntityImpostorDescriptor>(
+            ClientEntityImpostorDescriptor.Compile(slimeType.RenderDescriptor!.Definition)));
+        var slime = slimeType.Create(new FakeWorldContext());
+        slime.Synced<byte>("size")!.Value = 4;
+        Assert.Equal(4, slimeProvider.Scale(slime));
     }
 
     [Fact]

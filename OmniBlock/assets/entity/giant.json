@@ -32,6 +32,14 @@
     "Type": "scaled",
     "Model": "zombie",
     "Shadow": 0.5,
-    "Scale": 6.0
+    "Scale": 6.0,
+    "Impostor": {
+      "Id": "omniblock:giant",
+      "Provider": "omniblock:basic",
+      "VisualDiameter": 3.2,
+      "Layers": [
+        { "Model": "zombie", "Texture": "/mob/zombie.png", "PoseProvider": "omniblock:zombie" }
+      ]
+    }
   }
 }

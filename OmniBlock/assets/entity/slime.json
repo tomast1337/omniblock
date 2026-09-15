@@ -82,6 +82,15 @@
     "Type": "squishy",
     "Model": "slime",
     "OverlayModel": "slime_cube",
-    "Shadow": 0.25
+    "Shadow": 0.25,
+    "Impostor": {
+      "Id": "omniblock:slime",
+      "Provider": "omniblock:basic",
+      "VisualDiameter": 1.6,
+      "ScaleProperty": "size",
+      "Layers": [
+        { "Model": "slimebody", "Texture": "/mob/slime.png", "PoseProvider": "omniblock:static" }
+      ]
+    }
   }
 }

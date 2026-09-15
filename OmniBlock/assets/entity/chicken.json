@@ -13,7 +13,15 @@
   "Renderer": {
     "Type": "flapping",
     "Model": "chicken",
-    "Shadow": 0.3
+    "Shadow": 0.3,
+    "Impostor": {
+      "Id": "omniblock:chicken",
+      "Provider": "omniblock:basic",
+      "VisualDiameter": 1.5,
+      "Layers": [
+        { "Model": "chicken", "Texture": "/mob/chicken.png", "PoseProvider": "omniblock:chicken" }
+      ]
+    }
   },
   "Behaviors": [
     {

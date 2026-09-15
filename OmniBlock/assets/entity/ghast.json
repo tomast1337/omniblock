@@ -75,6 +75,14 @@
   "Renderer": {
     "Type": "charging",
     "Model": "ghast",
-    "Shadow": 0.5
+    "Shadow": 0.5,
+    "Impostor": {
+      "Id": "omniblock:ghast",
+      "Provider": "omniblock:basic",
+      "VisualDiameter": 7.0,
+      "Layers": [
+        { "Model": "ghast", "Texture": "/mob/ghast.png", "PoseProvider": "omniblock:static" }
+      ]
+    }
   }
 }

@@ -23,7 +23,16 @@
     "Shadow": 0.7,
     "OverlayModel": "pig_saddle",
     "OverlayProperty": "saddled",
-    "OverlayTexture": "/mob/saddle.png"
+    "OverlayTexture": "/mob/saddle.png",
+    "Impostor": {
+      "Id": "omniblock:pig",
+      "Provider": "omniblock:basic",
+      "VisualDiameter": 2.5,
+      "UnsupportedWhenTrue": "saddled",
+      "Layers": [
+        { "Model": "pig", "Texture": "/mob/pig.png", "PoseProvider": "omniblock:quadruped" }
+      ]
+    }
   },
   "Behaviors": [
     {

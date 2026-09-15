@@ -16,7 +16,10 @@ internal sealed record ClientEntityImpostorDescriptor(
     ResourceLocation Id,
     ResourceLocation ProviderType,
     double VisualDiameter,
-    ClientEntityImpostorLayer[] Layers)
+    ClientEntityImpostorLayer[] Layers,
+    bool OmitHeldItem = false,
+    string? UnsupportedWhenTrue = null,
+    string? ScaleProperty = null)
 {
     public static ClientEntityImpostorDescriptor? Compile(JsonElement renderer)
     {
@@ -47,7 +50,20 @@ internal sealed record ClientEntityImpostorDescriptor(
             throw new InvalidDataException("This impostor format supports one or two layers.");
         if (layers.Select(layer => layer.Texture).Distinct(StringComparer.Ordinal).Count() != layers.Length)
             throw new InvalidDataException("Impostor layer texture paths must be distinct.");
-        return new ClientEntityImpostorDescriptor(id, provider, diameter, layers);
+        var omitHeldItem = value.TryGetProperty("OmitHeldItem", out var omit) && omit.GetBoolean();
+        var unsupportedWhenTrue = OptionalPropertyName(value, "UnsupportedWhenTrue");
+        var scaleProperty = OptionalPropertyName(value, "ScaleProperty");
+        return new ClientEntityImpostorDescriptor(
+            id, provider, diameter, layers, omitHeldItem, unsupportedWhenTrue, scaleProperty);
+    }
+
+    private static string? OptionalPropertyName(JsonElement value, string name)
+    {
+        if (!value.TryGetProperty(name, out var property)) return null;
+        var result = property.GetString();
+        if (string.IsNullOrWhiteSpace(result))
+            throw new InvalidDataException($"Impostor '{name}' must be a non-empty property name.");
+        return result;
     }
 
     private static ResourceLocation Resource(JsonElement value, string name)

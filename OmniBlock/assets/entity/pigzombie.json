@@ -66,6 +66,15 @@
   "Renderer": {
     "Type": "undead",
     "Model": "zombie",
-    "Shadow": 0.5
+    "Shadow": 0.5,
+    "Impostor": {
+      "Id": "omniblock:pigzombie",
+      "Provider": "omniblock:basic",
+      "VisualDiameter": 3.2,
+      "OmitHeldItem": true,
+      "Layers": [
+        { "Model": "zombie", "Texture": "/mob/pigzombie.png", "PoseProvider": "omniblock:zombie" }
+      ]
+    }
   }
 }

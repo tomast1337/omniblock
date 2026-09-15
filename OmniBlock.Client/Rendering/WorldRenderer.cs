@@ -679,11 +679,12 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                     target.LastTickZ + (target.Z - target.LastTickZ) * delta);
                 var yaw = presentationPose?.BodyYaw ?? (target is EntityLiving living ?
                     EntityLodDirections.InterpolateYaw(living.LastBodyYaw, living.BodyYaw, delta) : target.Yaw);
+                var providerScale = provider?.Scale(target) ?? 1;
                 // Debug labels/boxes belong to the 3D path. Normal accepted distances are beyond
                 // the existing 16-block shadow radius; never silently drop debug presentation.
                 var decision = EntityLod.Select(target, position, provider != null,
                     !_game.Options.ShowDebugInfo && provider?.Supports(target, delta) == true,
-                    provider?.VariantKey ?? "", provider?.VisualDiameter ?? 0, yaw, cameraForward,
+                    provider?.VariantKey ?? "", (provider?.VisualDiameter ?? 0) * providerScale, yaw, cameraForward,
                     effectiveLodFov, _game.Options.CameraMode == CameraMode.FirstPerson ? _game.DisplayHeight : 0,
                     EntityImpostors.Enabled && EntityImpostors.ForceTierForTest,
                     _game.Options.EntityImpostorDistance);
@@ -694,7 +695,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                     target is EntityLiving hurt && hurt.HurtTime > 0,
                     provider is IEntityImpostorProvider impostor
                         ? impostor.LayerEffects(target, delta)
-                        : new Vector4(1, 1, 1, 0));
+                        : new Vector4(1, 1, 1, 0), providerScale);
             }
         }
     }
