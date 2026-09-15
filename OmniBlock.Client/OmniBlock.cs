@@ -1570,6 +1570,11 @@ public partial class OmniBlock :
         MetricRegistry.Set(RenderMetrics.PresentedTranslucentLayers, presentation.PresentedTranslucentLayers);
         MetricRegistry.Set(RenderMetrics.EmptyLayersSubmitted, presentation.EmptyLayersSubmitted);
         MetricRegistry.Set(RenderMetrics.TerrainDrawCalls, presentation.TerrainDrawCalls);
+        MetricRegistry.Set(RenderMetrics.AvailableQuads, presentation.AvailableQuads);
+        MetricRegistry.Set(RenderMetrics.SubmittedQuads, presentation.SubmittedQuads);
+        MetricRegistry.Set(RenderMetrics.DirectionRejectedQuads, presentation.DirectionRejectedQuads);
+        MetricRegistry.Set(RenderMetrics.DirectionDrawRanges, presentation.DirectionDrawRanges);
+        MetricRegistry.Set(RenderMetrics.UnassignedQuads, presentation.UnassignedQuads);
         MetricRegistry.Set(RenderMetrics.TerrainUniformEntries, presentation.TerrainUniformEntries);
         MetricRegistry.Set(RenderMetrics.TerrainSubmissionBatches, presentation.TerrainSubmissionBatches);
         MetricRegistry.Set(RenderMetrics.TerrainPipelineBinds, presentation.TerrainPipelineBinds);

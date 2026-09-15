@@ -168,6 +168,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private int _presentedSolidLayersThisFrame;
     private int _presentedTranslucentLayersThisFrame;
     private int _terrainUniformEntriesThisFrame;
+    private int _availableQuadsThisFrame;
+    private int _submittedQuadsThisFrame;
+    private int _directionDrawRangesThisFrame;
+    private int _unassignedQuadsThisFrame;
     private int _terrainSubmissionBatchesThisFrame;
     private int _terrainPipelineBindsThisFrame;
     private int _terrainTextureBindsThisFrame;
@@ -462,6 +466,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("presentedTranslucentLayers\t").Append(presentation.PresentedTranslucentLayers).AppendLine();
         text.Append("emptyLayersSubmitted\t").Append(presentation.EmptyLayersSubmitted).AppendLine();
         text.Append("terrainDrawCalls\t").Append(presentation.TerrainDrawCalls).AppendLine();
+        text.Append("availableQuads\t").Append(presentation.AvailableQuads).AppendLine();
+        text.Append("submittedQuads\t").Append(presentation.SubmittedQuads).AppendLine();
+        text.Append("directionRejectedQuads\t").Append(presentation.DirectionRejectedQuads).AppendLine();
+        text.Append("directionDrawRanges\t").Append(presentation.DirectionDrawRanges).AppendLine();
+        text.Append("unassignedQuads\t").Append(presentation.UnassignedQuads).AppendLine();
         text.Append("terrainUniformEntries\t").Append(presentation.TerrainUniformEntries).AppendLine();
         text.Append("terrainSubmissionBatches\t").Append(presentation.TerrainSubmissionBatches).AppendLine();
         text.Append("terrainPipelineBinds\t").Append(presentation.TerrainPipelineBinds).AppendLine();
@@ -623,6 +632,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         Counter("presentedSolidLayers", profile.PresentedSolidLayers);
         Counter("presentedTranslucentLayers", profile.PresentedTranslucentLayers);
         Counter("terrainDrawCalls", profile.TerrainDrawCalls);
+        Counter("availableQuads", profile.AvailableQuads);
+        Counter("submittedQuads", profile.SubmittedQuads);
+        Counter("directionRejectedQuads", profile.DirectionRejectedQuads);
+        Counter("directionDrawRanges", profile.DirectionDrawRanges);
+        Counter("unassignedQuads", profile.UnassignedQuads);
         Counter("terrainUniformEntries", profile.TerrainUniformEntries);
         Counter("terrainSubmissionBatches", profile.TerrainSubmissionBatches);
         text.AppendLine("timing\tsamples\tlastMs\taverageMs\tp50Ms\tp95Ms\tmaxMs");
@@ -665,6 +679,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _translucentDrawsLastFrame = _translucentDrawsThisFrame;
         _translucentDrawsThisFrame = 0;
         _terrainUniformEntriesThisFrame = 0;
+        _availableQuadsThisFrame = 0;
+        _submittedQuadsThisFrame = 0;
+        _directionDrawRangesThisFrame = 0;
+        _unassignedQuadsThisFrame = 0;
         _terrainSubmissionBatchesThisFrame = 0;
         _terrainPipelineBindsThisFrame = 0;
         _terrainTextureBindsThisFrame = 0;
@@ -1435,6 +1453,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             _presentedTranslucentLayersThisFrame,
             Math.Max(0, _terrainUniformEntriesThisFrame - draws),
             draws,
+            _availableQuadsThisFrame,
+            _submittedQuadsThisFrame,
+            _availableQuadsThisFrame - _submittedQuadsThisFrame,
+            _directionDrawRangesThisFrame,
+            _unassignedQuadsThisFrame,
             _terrainUniformEntriesThisFrame,
             _terrainSubmissionBatchesThisFrame,
             _terrainPipelineBindsThisFrame,
@@ -3014,7 +3037,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         for (var i = 0; i < count; i++)
         {
             pipeline.BindDynamicUniforms(pass, i);
-            _solidDrawsThisFrame += _solidRenderers[i].RenderWebGpu(pass, 0);
+            var stats = _solidRenderers[i].RenderWebGpu(pass, 0, _lastViewPos);
+            RecordDirectionalDraw(stats);
+            _solidDrawsThisFrame += stats.DrawRanges;
         }
 
         var t2 = Stopwatch.GetTimestamp();
@@ -3111,10 +3136,20 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         for (var i = 0; i < count; i++)
         {
             pipeline.BindDynamicUniforms(pass, i);
-            _translucentDrawsThisFrame += _translucentRenderers[i].RenderWebGpu(pass, 1);
+            var stats = _translucentRenderers[i].RenderWebGpu(pass, 1, viewPos);
+            RecordDirectionalDraw(stats);
+            _translucentDrawsThisFrame += stats.DrawRanges;
         }
 
         _translucentRenderers.Clear();
+    }
+
+    private void RecordDirectionalDraw(in DirectionalDrawStats stats)
+    {
+        _availableQuadsThisFrame += stats.AvailableQuads;
+        _submittedQuadsThisFrame += stats.SubmittedQuads;
+        _directionDrawRangesThisFrame += stats.DrawRanges;
+        _unassignedQuadsThisFrame += stats.UnassignedQuads;
     }
 
     /// <summary>

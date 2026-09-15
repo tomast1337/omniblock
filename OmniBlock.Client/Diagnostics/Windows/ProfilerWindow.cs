@@ -200,6 +200,8 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"Submission: {profile.TerrainDrawCalls} draws  {profile.TerrainUniformEntries} uniforms");
         ImGuiTextSafe.Text(
+            $"Directions: {profile.SubmittedQuads}/{profile.AvailableQuads} quads  {profile.DirectionRejectedQuads} rejected  {profile.UnassignedQuads} unassigned  {profile.DirectionDrawRanges} ranges");
+        ImGuiTextSafe.Text(
             $"Batches:    {profile.TerrainSubmissionBatches} writes  {profile.TerrainPipelineBinds} pipeline binds  {profile.TerrainTextureBinds} texture binds");
         ImGuiTextSafe.Text(
             $"Uniform arena: {profile.TerrainUniformArenaCapacity:N0} entries  {profile.TerrainUniformArenaGrowths} lifetime growths");

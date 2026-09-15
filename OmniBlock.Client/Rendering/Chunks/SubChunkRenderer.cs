@@ -121,24 +121,48 @@ public class SubChunkRenderer : IDisposable
     ///     The caller has already bound the terrain pipeline and texture-array bind group,
     ///     and uploaded the per-chunk uniforms.
     /// </summary>
-    public unsafe int RenderWebGpu(RenderPassEncoder* passEncoder, int pass)
+    internal unsafe DirectionalDrawStats RenderWebGpu(
+        RenderPassEncoder* passEncoder,
+        int pass,
+        Vector3D<double> viewPosition)
     {
-        if (disposed) return 0;
-        if (pass < 0 || pass > 1) return 0;
+        if (disposed) return default;
+        if (pass < 0 || pass > 1) return default;
         var presentation = _presentation;
-        if (presentation == null) return 0;
+        if (presentation == null) return default;
 
-        var draws = 0;
-        foreach (var page in presentation.Pages)
+        var stats = new DirectionalDrawStats();
+        for (var pageIndex = 0; pageIndex < presentation.Pages.Count; pageIndex++)
         {
+            var page = presentation.Pages[pageIndex];
             var mesh = pass == 0 ? page?.Solid : page?.Translucent;
             if (mesh == null) continue;
-            mesh.Draw(passEncoder, lightBuffer: page!.LightBufferFor(pass));
-            draws++;
+
+            var ranges = page!.RangesFor(pass);
+            Span<ChunkQuadRange> selected = stackalloc ChunkQuadRange[7];
+            var selectedCount = ranges.Select(
+                DirectionalFaceVisibility.ForPage(Position, pageIndex, viewPosition), selected);
+            if (selectedCount == 0) continue;
+
+            mesh.BindChunkQuadStreams(passEncoder, page.LightBufferFor(pass));
+            var submitted = 0;
+            for (var i = 0; i < selectedCount; i++)
+            {
+                var range = selected[i];
+                mesh.DrawBoundQuadRange(
+                    passEncoder, (uint)range.FirstQuad, (uint)range.QuadCount);
+                submitted += range.QuadCount;
+            }
+
+            stats = stats.Add(
+                ranges.AvailableQuadCount,
+                submitted,
+                selectedCount,
+                ranges.UnassignedQuadCount);
         }
 
-        if (draws > 0) presentation.RecordFirstDraw();
-        return draws;
+        if (stats.DrawRanges > 0) presentation.RecordFirstDraw();
+        return stats;
     }
 
     /// <summary>Draws the solid mesh through the device-wide quad wireframe indices.</summary>
@@ -159,4 +183,24 @@ public class SubChunkRenderer : IDisposable
         if (draws > 0) presentation.RecordFirstDraw();
         return draws;
     }
+}
+
+internal readonly record struct DirectionalDrawStats(
+    int AvailableQuads,
+    int SubmittedQuads,
+    int DrawRanges,
+    int UnassignedQuads)
+{
+    public int RejectedQuads => AvailableQuads - SubmittedQuads;
+
+    public DirectionalDrawStats Add(
+        int availableQuads,
+        int submittedQuads,
+        int drawRanges,
+        int unassignedQuads) =>
+        new(
+            AvailableQuads + availableQuads,
+            SubmittedQuads + submittedQuads,
+            DrawRanges + drawRanges,
+            UnassignedQuads + unassignedQuads);
 }

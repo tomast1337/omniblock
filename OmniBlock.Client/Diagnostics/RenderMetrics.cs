@@ -30,6 +30,11 @@ internal static class RenderMetrics
     public static readonly MetricHandle<int> PresentedTranslucentLayers = MetricRegistry.Register<int>("render:chunks.presented_translucent_layers");
     public static readonly MetricHandle<int> EmptyLayersSubmitted = MetricRegistry.Register<int>("render:chunks.empty_layers_submitted");
     public static readonly MetricHandle<int> TerrainDrawCalls = MetricRegistry.Register<int>("render:chunks.terrain_draw_calls");
+    public static readonly MetricHandle<int> AvailableQuads = MetricRegistry.Register<int>("render:chunks.available_quads");
+    public static readonly MetricHandle<int> SubmittedQuads = MetricRegistry.Register<int>("render:chunks.submitted_quads");
+    public static readonly MetricHandle<int> DirectionRejectedQuads = MetricRegistry.Register<int>("render:chunks.direction_rejected_quads");
+    public static readonly MetricHandle<int> DirectionDrawRanges = MetricRegistry.Register<int>("render:chunks.direction_draw_ranges");
+    public static readonly MetricHandle<int> UnassignedQuads = MetricRegistry.Register<int>("render:chunks.unassigned_quads");
     public static readonly MetricHandle<int> TerrainUniformEntries = MetricRegistry.Register<int>("render:chunks.terrain_uniform_entries");
     public static readonly MetricHandle<int> TerrainSubmissionBatches = MetricRegistry.Register<int>("render:chunks.terrain_submission_batches");
     public static readonly MetricHandle<int> TerrainPipelineBinds = MetricRegistry.Register<int>("render:chunks.terrain_pipeline_binds");

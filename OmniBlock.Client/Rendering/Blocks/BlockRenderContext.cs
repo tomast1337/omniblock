@@ -115,6 +115,7 @@ public ref struct BlockRenderContext
 
     internal readonly void DrawBottomFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
+        Tess.setQuadDirection(Side.Down);
         var bb = OverrideBounds ?? block.BoundingBox;
         Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
@@ -179,6 +180,7 @@ public ref struct BlockRenderContext
 
     internal readonly void DrawTopFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
+        Tess.setQuadDirection(Side.Up);
         var bb = OverrideBounds ?? block.BoundingBox;
         Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
@@ -243,6 +245,7 @@ public ref struct BlockRenderContext
 
     internal readonly void DrawNorthFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
+        Tess.setQuadDirection(Side.West);
         var bb = OverrideBounds ?? block.BoundingBox;
         Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
@@ -302,6 +305,7 @@ public ref struct BlockRenderContext
 
     internal readonly void DrawSouthFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
+        Tess.setQuadDirection(Side.East);
         var bb = OverrideBounds ?? block.BoundingBox;
         Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
@@ -366,6 +370,7 @@ public ref struct BlockRenderContext
 
     internal readonly void DrawEastFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
+        Tess.setQuadDirection(Side.North);
         var bb = OverrideBounds ?? block.BoundingBox;
         Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
@@ -430,6 +435,7 @@ public ref struct BlockRenderContext
 
     internal readonly void DrawWestFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
+        Tess.setQuadDirection(Side.South);
         var bb = OverrideBounds ?? block.BoundingBox;
         Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 

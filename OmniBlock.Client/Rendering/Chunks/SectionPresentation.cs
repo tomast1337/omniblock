@@ -198,19 +198,25 @@ internal sealed class SectionPagePresentation
         WgpuMesh? translucent,
         SectionLighting? lighting,
         int solidVertexCount,
-        int translucentVertexCount)
+        int translucentVertexCount,
+        ChunkDirectionalRanges solidRanges,
+        ChunkDirectionalRanges translucentRanges)
     {
         Solid = solid;
         Translucent = translucent;
         _lighting = lighting;
         SolidVertexCount = solidVertexCount;
         TranslucentVertexCount = translucentVertexCount;
+        SolidRanges = solidRanges;
+        TranslucentRanges = translucentRanges;
     }
 
     public WgpuMesh? Solid { get; }
     public WgpuMesh? Translucent { get; }
     public int SolidVertexCount { get; }
     public int TranslucentVertexCount { get; }
+    public ChunkDirectionalRanges SolidRanges { get; }
+    public ChunkDirectionalRanges TranslucentRanges { get; }
     public long LightingEpoch => _lighting?.Epoch ?? -1;
 
     public static SectionPagePresentation Create(WebGpuDevice device, MeshPageBuildResult result)
@@ -225,13 +231,17 @@ internal sealed class SectionPagePresentation
             if (solidCount != (result.SolidLighting?.VertexCount ?? 0) ||
                 translucentCount != (result.TranslucentLighting?.VertexCount ?? 0))
                 throw new ArgumentException("Terrain geometry and light models must have matching vertex counts.");
+            if (solidCount != result.SolidRanges.AvailableQuadCount * 4 ||
+                translucentCount != result.TranslucentRanges.AvailableQuadCount * 4)
+                throw new ArgumentException("Terrain geometry and directional ranges must have matching vertex counts.");
 
             if (solidCount > 0) solid = WgpuMesh.FromChunkQuads(device, result.Solid!.Span);
             if (translucentCount > 0) translucent = WgpuMesh.FromChunkQuads(device, result.Translucent!.Span);
             lighting = SectionLighting.CreateInitial(
                 device, result.SolidLighting, result.TranslucentLighting);
             return new SectionPagePresentation(
-                solid, translucent, lighting, solidCount, translucentCount);
+                solid, translucent, lighting, solidCount, translucentCount,
+                result.SolidRanges, result.TranslucentRanges);
         }
         catch
         {
@@ -275,6 +285,9 @@ internal sealed class SectionPagePresentation
         var lighting = _lighting;
         return lighting == null ? null : pass == 0 ? lighting.Solid : lighting.Translucent;
     }
+
+    public ChunkDirectionalRanges RangesFor(int pass) =>
+        pass == 0 ? SolidRanges : TranslucentRanges;
 
     public void Release()
     {

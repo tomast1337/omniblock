@@ -72,6 +72,26 @@ internal sealed unsafe class SharedQuadIndexBuffer : IDisposable
         _device.Api.RenderPassEncoderDrawIndexed(pass, checked(quadCount * 6), instanceCount, 0, 0, 0);
     }
 
+    public void Bind(RenderPassEncoder* pass, uint requiredQuads)
+    {
+        EnsureCapacity(requiredQuads);
+        _device.Api.RenderPassEncoderSetIndexBuffer(
+            pass, _buffer, IndexFormat.Uint32, 0, WgpuWholeSize.Value);
+    }
+
+    public void DrawBoundRange(
+        RenderPassEncoder* pass,
+        uint firstQuad,
+        uint quadCount,
+        uint instanceCount)
+    {
+        if (quadCount == 0) return;
+        if (firstQuad + quadCount > QuadCapacity)
+            throw new ArgumentOutOfRangeException(nameof(quadCount), "Quad range exceeds the bound index buffer.");
+        _device.Api.RenderPassEncoderDrawIndexed(
+            pass, checked(quadCount * 6), instanceCount, checked(firstQuad * 6), 0, 0);
+    }
+
     internal static void FillIndices(Span<uint> destination)
     {
         if (destination.Length % 6 != 0)

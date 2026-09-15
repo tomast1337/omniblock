@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using OmniBlock.Blocks;
 using OmniBlock.Client.Rendering.Chunks;
 using OmniBlock.Client.Rendering.Core;
 
@@ -60,6 +61,31 @@ public sealed class ChunkMeshBuilderTests
     }
 
     [Fact]
+    public void Finish_packs_directional_quads_and_keeps_unknown_geometry_last()
+    {
+        using var builder = new ChunkMeshBuilder();
+        builder.Begin(0, 0, 0);
+
+        builder.setQuadDirection(Side.East);
+        EmitQuad(builder, 10);
+        EmitQuad(builder, 20);
+        builder.setQuadDirection(Side.Down);
+        EmitQuad(builder, 30);
+
+        using var vertices = builder.Finish(out var lights, out var ranges);
+        using (lights)
+        {
+            Assert.Equal(new ChunkQuadRange(0, 1), ranges.Down);
+            Assert.Equal(new ChunkQuadRange(1, 1), ranges.East);
+            Assert.Equal(new ChunkQuadRange(2, 1), ranges.Unassigned);
+            Assert.Equal(3, ranges.AvailableQuadCount);
+            AssertVertexPosition(vertices.Buffer[0], 30, 0, 0);
+            AssertVertexPosition(vertices.Buffer[4], 10, 0, 0);
+            AssertVertexPosition(vertices.Buffer[8], 20, 0, 0);
+        }
+    }
+
+    [Fact]
     public void Incomplete_quad_is_discarded_like_legacy_capture()
     {
         using var builder = new ChunkMeshBuilder();
@@ -115,6 +141,14 @@ public sealed class ChunkMeshBuilderTests
         sink.addVertexWithUV(20, 5, -31, 0, 16);
         sink.addVertexWithUV(21, 5, -31, 16, 16);
         sink.addVertexWithUV(21, 4, -31, 16, 0);
+    }
+
+    private static void EmitQuad(IBlockVertexSink sink, float x)
+    {
+        sink.addVertexWithUV(x, 0, 0, 0, 0);
+        sink.addVertexWithUV(x, 1, 0, 0, 1);
+        sink.addVertexWithUV(x + 1, 1, 0, 1, 1);
+        sink.addVertexWithUV(x + 1, 0, 0, 1, 0);
     }
 
     private static ChunkVertex V(

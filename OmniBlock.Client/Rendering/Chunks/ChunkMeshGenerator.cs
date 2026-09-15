@@ -44,6 +44,8 @@ internal sealed class MeshPageBuildResult(int page)
     public PooledList<ChunkVertex>? Translucent { get; set; }
     public SectionLightModel? SolidLighting { get; set; }
     public SectionLightModel? TranslucentLighting { get; set; }
+    public ChunkDirectionalRanges SolidRanges { get; set; }
+    public ChunkDirectionalRanges TranslucentRanges { get; set; }
 
     public void Dispose()
     {
@@ -449,7 +451,7 @@ internal class ChunkMeshGenerator : IDisposable
                     }
                 }
 
-                var vertices = mesh.Finish(out var lights);
+                var vertices = mesh.Finish(out var lights, out var ranges);
                 try
                 {
                     if (vertices.Count > 0)
@@ -457,11 +459,13 @@ internal class ChunkMeshGenerator : IDisposable
                         if (pass == 0)
                         {
                             pageResult.Solid = vertices;
+                            pageResult.SolidRanges = ranges;
                             pageResult.SolidLighting = SectionLightModel.Create(pos, vertices.Span, lights.Span);
                         }
                         else
                         {
                             pageResult.Translucent = vertices;
+                            pageResult.TranslucentRanges = ranges;
                             pageResult.TranslucentLighting = SectionLightModel.Create(pos, vertices.Span, lights.Span);
                         }
                     }
@@ -612,7 +616,7 @@ internal class ChunkMeshGenerator : IDisposable
                 QuadCorner tr = new(x0, yFace, z1, 0, h, key.L3);
 
                 var flipped = key.L0.FlipWeight + key.L2.FlipWeight > key.L1.FlipWeight + key.L3.FlipWeight;
-                EmitMergedQuad(tess, key, flipped, TopShadow, tl, bl, br, tr);
+                EmitMergedQuad(tess, Side.Up, key, flipped, TopShadow, tl, bl, br, tr);
             }
         }
     }
@@ -661,7 +665,7 @@ internal class ChunkMeshGenerator : IDisposable
                 QuadCorner tr = new(x1, yFace, z1, w, h, key.L3);
 
                 var flipped = key.L0.FlipWeight + key.L2.FlipWeight > key.L1.FlipWeight + key.L3.FlipWeight;
-                EmitMergedQuad(tess, key, flipped, BottomShadow, tl, bl, br, tr);
+                EmitMergedQuad(tess, Side.Down, key, flipped, BottomShadow, tl, bl, br, tr);
             }
         }
     }
@@ -716,7 +720,7 @@ internal class ChunkMeshGenerator : IDisposable
                 QuadCorner tr = new(x0, y1, zFace, w, 0, key.L0);
 
                 var flipped = key.L1.FlipWeight + key.L3.FlipWeight > key.L2.FlipWeight + key.L0.FlipWeight;
-                EmitMergedQuad(tess, key, flipped, EastShadow, tl, bl, br, tr);
+                EmitMergedQuad(tess, Side.North, key, flipped, EastShadow, tl, bl, br, tr);
             }
         }
     }
@@ -768,7 +772,7 @@ internal class ChunkMeshGenerator : IDisposable
                 QuadCorner tr = new(x1, y1, zFace, w, 0, key.L3);
 
                 var flipped = key.L0.FlipWeight + key.L2.FlipWeight > key.L1.FlipWeight + key.L3.FlipWeight;
-                EmitMergedQuad(tess, key, flipped, WestShadow, tl, bl, br, tr);
+                EmitMergedQuad(tess, Side.South, key, flipped, WestShadow, tl, bl, br, tr);
             }
         }
     }
@@ -822,7 +826,7 @@ internal class ChunkMeshGenerator : IDisposable
                 QuadCorner tr = new(xFace, y1, z1, w, 0, key.L0);
 
                 var flipped = key.L1.FlipWeight + key.L3.FlipWeight > key.L2.FlipWeight + key.L0.FlipWeight;
-                EmitMergedQuad(tess, key, flipped, NorthShadow, tl, bl, br, tr);
+                EmitMergedQuad(tess, Side.West, key, flipped, NorthShadow, tl, bl, br, tr);
             }
         }
     }
@@ -876,7 +880,7 @@ internal class ChunkMeshGenerator : IDisposable
                 QuadCorner tr = new(xFace, y1, z0, w, 0, key.L2);
 
                 var flipped = key.L3.FlipWeight + key.L1.FlipWeight > key.L0.FlipWeight + key.L2.FlipWeight;
-                EmitMergedQuad(tess, key, flipped, SouthShadow, tl, bl, br, tr);
+                EmitMergedQuad(tess, Side.East, key, flipped, SouthShadow, tl, bl, br, tr);
             }
         }
     }
@@ -934,13 +938,14 @@ internal class ChunkMeshGenerator : IDisposable
     ///     "flipped" ever means in the per-block renderer this mirrors: which diagonal the two
     ///     triangles split along, not a different set of corners.
     /// </summary>
-    private static void EmitMergedQuad(IBlockVertexSink tess, in FaceMergeKey key, bool flipped, float shade, QuadCorner tl, QuadCorner bl, QuadCorner br, QuadCorner tr)
+    private static void EmitMergedQuad(IBlockVertexSink tess, Side side, in FaceMergeKey key, bool flipped, float shade, QuadCorner tl, QuadCorner bl, QuadCorner br, QuadCorner tr)
     {
         var r = ((key.TintColor >> 16) & 255) * ColorScale * shade;
         var g = ((key.TintColor >> 8) & 255) * ColorScale * shade;
         var b = (key.TintColor & 255) * ColorScale * shade;
 
         tess.setArrayLayer(key.ArrayLayer);
+        tess.setQuadDirection(side);
 
         Span<QuadCorner> corners = [tl, bl, br, tr];
         var start = flipped ? 1 : 0;

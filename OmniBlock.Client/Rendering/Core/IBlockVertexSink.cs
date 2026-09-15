@@ -1,3 +1,5 @@
+using OmniBlock.Blocks;
+
 namespace OmniBlock.Client.Rendering.Core;
 
 /// <summary>
@@ -16,6 +18,14 @@ public interface IBlockVertexSink
     void setColorOpaque_F(float red, float green, float blue);
 
     void setLight(float sky, float block);
+
+    /// <summary>
+    ///     Declares the outward side of the next complete quad. Immediate-mode sinks may ignore the
+    ///     hint; chunk builders use it to create conservative directional draw ranges.
+    /// </summary>
+    void setQuadDirection(Side? side)
+    {
+    }
 
     /// <summary>Marks subsequent vertices as intentionally independent of world lighting.</summary>
     void setFullBright() => setLight(0.0f, 15.0f);

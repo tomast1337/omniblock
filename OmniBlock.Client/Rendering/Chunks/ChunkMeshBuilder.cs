@@ -1,3 +1,4 @@
+using OmniBlock.Blocks;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Util;
 
@@ -20,6 +21,8 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
     private bool _hasLight;
     private bool _fullBright;
     private int _quadVertexCount;
+    private Side? _quadDirection;
+    private PooledList<byte>? _quadDirections = new();
     private byte _skyLight;
     private PooledList<ChunkVertex>? _vertices = new();
     private PooledList<ChunkLightVertex>? _lights = new();
@@ -49,7 +52,9 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
         Emit(1);
         Emit(2);
         Emit(3);
+        _quadDirections!.Add(_quadDirection is { } side ? (byte)side : (byte)6);
         _quadVertexCount = 0;
+        _quadDirection = null;
     }
 
     public void setArrayLayer(int layer) => _arrayLayer = layer;
@@ -74,6 +79,8 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
         _fullBright = false;
     }
 
+    public void setQuadDirection(Side? side) => _quadDirection = side;
+
     public void setFullBright()
     {
         setLight(0.0f, 15.0f);
@@ -91,8 +98,10 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
     {
         _vertices?.Dispose();
         _lights?.Dispose();
+        _quadDirections?.Dispose();
         _vertices = null;
         _lights = null;
+        _quadDirections = null;
     }
 
     public void Begin(double xOffset, double yOffset, double zOffset)
@@ -101,7 +110,9 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
         ObjectDisposedException.ThrowIf(_lights is null, this);
         _vertices.Clear();
         _lights.Clear();
+        _quadDirections!.Clear();
         _quadVertexCount = 0;
+        _quadDirection = null;
         _arrayLayer = Tessellator.NoArrayLayer;
         _color = unchecked((int)0xFFFFFFFF);
         _hasColor = false;
@@ -116,6 +127,13 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
 
     public PooledList<ChunkVertex> Finish(out PooledList<ChunkLightVertex> lights)
     {
+        return Finish(out lights, out _);
+    }
+
+    public PooledList<ChunkVertex> Finish(
+        out PooledList<ChunkLightVertex> lights,
+        out ChunkDirectionalRanges ranges)
+    {
         ObjectDisposedException.ThrowIf(_vertices is null, this);
 
         // Tessellator capture discarded an incomplete primitive at draw(). Block renderers should
@@ -123,10 +141,41 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
         // runtime failure mode.
         _quadVertexCount = 0;
 
-        var result = _vertices;
-        lights = _lights!;
+        var sourceVertices = _vertices;
+        var sourceLights = _lights!;
+        var directions = _quadDirections!;
+        if (sourceVertices.Count != sourceLights.Count || sourceVertices.Count / 4 != directions.Count)
+            throw new InvalidOperationException("Chunk geometry, lighting, and direction streams diverged.");
+
+        Span<int> quadCounts = stackalloc int[7];
+        foreach (var direction in directions.Span) quadCounts[direction]++;
+
+        var result = new PooledList<ChunkVertex>(sourceVertices.Count);
+        lights = new PooledList<ChunkLightVertex>(sourceLights.Count);
+        Span<ChunkQuadRange> packedRanges = stackalloc ChunkQuadRange[7];
+        for (var bucket = 0; bucket < packedRanges.Length; bucket++)
+        {
+            var firstQuad = result.Count / 4;
+            for (var quad = 0; quad < directions.Count; quad++)
+            {
+                if (directions.Buffer[quad] != bucket) continue;
+                result.AddRange(sourceVertices.Buffer.AsSpan(quad * 4, 4));
+                lights.AddRange(sourceLights.Buffer.AsSpan(quad * 4, 4));
+            }
+
+            packedRanges[bucket] = new ChunkQuadRange(firstQuad, quadCounts[bucket]);
+        }
+
+        ranges = new ChunkDirectionalRanges(
+            packedRanges[0], packedRanges[1], packedRanges[2], packedRanges[3],
+            packedRanges[4], packedRanges[5], packedRanges[6]);
+
+        sourceVertices.Dispose();
+        sourceLights.Dispose();
+        directions.Dispose();
         _vertices = null;
         _lights = null;
+        _quadDirections = null;
         return result;
     }
 
