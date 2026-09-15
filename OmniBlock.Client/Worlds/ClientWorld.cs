@@ -2,6 +2,7 @@ using OmniBlock.Client.Chunks;
 using OmniBlock.Client.Network;
 using OmniBlock.Entities;
 using OmniBlock.Network.Messages;
+using OmniBlock.Profiling;
 using OmniBlock.Registries;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Chunks;
@@ -50,51 +51,66 @@ public class ClientWorld : World
 
     public override void Tick()
     {
-        SetTime(GetTime() + 1L);
-
-        Environment.UpdateWeatherCycles();
-
-        var ambient = Environment.GetAmbientDarkness(1.0F);
-        if (ambient != Environment.AmbientDarkness)
+        using (Profiler.Begin("WorldClock"))
         {
-            Environment.AmbientDarkness = ambient;
-            Broadcaster.NotifyAmbientDarknessChanged();
-        }
+            SetTime(GetTime() + 1L);
 
-        for (var i = 0; i < 10 && pendingEntities.Count > 0; ++i)
-        {
-            var entity = pendingEntities.First();
-            if (!Entities.Entities.Contains(entity))
+            Environment.UpdateWeatherCycles();
+
+            var ambient = Environment.GetAmbientDarkness(1.0F);
+            if (ambient != Environment.AmbientDarkness)
             {
-                SpawnOrQueueEntity(entity);
-            }
-            else
-            {
-                pendingEntities.Remove(entity);
+                Environment.AmbientDarkness = ambient;
+                Broadcaster.NotifyAmbientDarknessChanged();
             }
         }
 
-        NetworkHandler.Tick();
-
-        for (var i = _distanceDespawnVisuals.Count - 1; i >= 0; --i)
+        using (Profiler.Begin("PendingEntities"))
         {
-            if (!_distanceDespawnVisuals[i].Tick())
-                _distanceDespawnVisuals.RemoveAt(i);
+            for (var i = 0; i < 10 && pendingEntities.Count > 0; ++i)
+            {
+                var entity = pendingEntities.First();
+                if (!Entities.Entities.Contains(entity))
+                {
+                    SpawnOrQueueEntity(entity);
+                }
+                else
+                {
+                    pendingEntities.Remove(entity);
+                }
+            }
         }
 
-        for (var i = 0; i < _blockResets.Count; ++i)
+        using (Profiler.Begin("Network"))
         {
-            var blockReset = _blockResets[i];
-            if (--blockReset.Delay == 0)
+            NetworkHandler.Tick();
+        }
+
+        using (Profiler.Begin("DespawnVisuals"))
+        {
+            for (var i = _distanceDespawnVisuals.Count - 1; i >= 0; --i)
             {
-                Writer.OnBlockChangedWithPrev -= HandleBlockChanged;
+                if (!_distanceDespawnVisuals[i].Tick())
+                    _distanceDespawnVisuals.RemoveAt(i);
+            }
+        }
 
-                Writer.SetBlockWithoutNotifyingNeighbors(blockReset.X, blockReset.Y, blockReset.Z, blockReset.BlockId, blockReset.Meta);
-                Broadcaster.BlockUpdateEvent(blockReset.X, blockReset.Y, blockReset.Z);
+        using (Profiler.Begin("BlockResets"))
+        {
+            for (var i = 0; i < _blockResets.Count; ++i)
+            {
+                var blockReset = _blockResets[i];
+                if (--blockReset.Delay == 0)
+                {
+                    Writer.OnBlockChangedWithPrev -= HandleBlockChanged;
 
-                Writer.OnBlockChangedWithPrev += HandleBlockChanged;
+                    Writer.SetBlockWithoutNotifyingNeighbors(blockReset.X, blockReset.Y, blockReset.Z, blockReset.BlockId, blockReset.Meta);
+                    Broadcaster.BlockUpdateEvent(blockReset.X, blockReset.Y, blockReset.Z);
 
-                _blockResets.RemoveAt(i--);
+                    Writer.OnBlockChangedWithPrev += HandleBlockChanged;
+
+                    _blockResets.RemoveAt(i--);
+                }
             }
         }
     }

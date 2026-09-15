@@ -862,63 +862,59 @@ public class Chunk
 
         using (Profiler.Begin(isFullChunk ? "LoadChunkFull" : "LoadChunkPartial"))
         {
-            for (var x = minX; x < maxX; ++x)
+            using (Profiler.Begin("CopyArrays"))
             {
-                for (var z = minZ; z < maxZ; ++z)
+                for (var x = minX; x < maxX; ++x)
                 {
-                    var index = ChuckFormat.GetIndex(x, minY, z);
-                    Buffer.BlockCopy(bytes, offset, Blocks, index, sizeY);
-                    offset += sizeY;
-                }
-            }
-
-            PopulateHeightMapOnly();
-
-            var halfSizeY = sizeY / 2;
-
-            for (var x = minX; x < maxX; ++x)
-            {
-                for (var z = minZ; z < maxZ; ++z)
-                {
-                    var index = ChuckFormat.GetIndex(x, minY, z) >> 1;
-                    Buffer.BlockCopy(bytes, offset, Meta.Bytes, index, halfSizeY);
-                    offset += halfSizeY;
-                }
-            }
-
-            for (var x = minX; x < maxX; ++x)
-            {
-                for (var z = minZ; z < maxZ; ++z)
-                {
-                    var index = ChuckFormat.GetIndex(x, minY, z) >> 1;
-                    Buffer.BlockCopy(bytes, offset, BlockLight.Bytes, index, halfSizeY);
-                    offset += halfSizeY;
-                }
-            }
-
-            for (var x = minX; x < maxX; ++x)
-            {
-                for (var z = minZ; z < maxZ; ++z)
-                {
-                    var index = ChuckFormat.GetIndex(x, minY, z) >> 1;
-                    Buffer.BlockCopy(bytes, offset, SkyLight.Bytes, index, halfSizeY);
-                    offset += halfSizeY;
-                }
-            }
-
-            for (var x = minX; x < maxX; ++x)
-            {
-                for (var z = minZ; z < maxZ; ++z)
-                {
-                    for (var y = minY; y < maxY; y++)
+                    for (var z = minZ; z < maxZ; ++z)
                     {
-                        var id = GetBlockId(x, y, z);
-                        if (id > 0 && World.Content.Blocks.TryGetByProtocolId(id, out var block) && block.HasBlockEntity)
-                        {
-                            GetBlockEntity(x, y, z);
-                        }
+                        var index = ChuckFormat.GetIndex(x, minY, z);
+                        Buffer.BlockCopy(bytes, offset, Blocks, index, sizeY);
+                        offset += sizeY;
                     }
                 }
+
+                var halfSizeY = sizeY / 2;
+
+                for (var x = minX; x < maxX; ++x)
+                {
+                    for (var z = minZ; z < maxZ; ++z)
+                    {
+                        var index = ChuckFormat.GetIndex(x, minY, z) >> 1;
+                        Buffer.BlockCopy(bytes, offset, Meta.Bytes, index, halfSizeY);
+                        offset += halfSizeY;
+                    }
+                }
+
+                for (var x = minX; x < maxX; ++x)
+                {
+                    for (var z = minZ; z < maxZ; ++z)
+                    {
+                        var index = ChuckFormat.GetIndex(x, minY, z) >> 1;
+                        Buffer.BlockCopy(bytes, offset, BlockLight.Bytes, index, halfSizeY);
+                        offset += halfSizeY;
+                    }
+                }
+
+                for (var x = minX; x < maxX; ++x)
+                {
+                    for (var z = minZ; z < maxZ; ++z)
+                    {
+                        var index = ChuckFormat.GetIndex(x, minY, z) >> 1;
+                        Buffer.BlockCopy(bytes, offset, SkyLight.Bytes, index, halfSizeY);
+                        offset += halfSizeY;
+                    }
+                }
+            }
+
+            using (Profiler.Begin("HeightMap"))
+            {
+                PopulateHeightMapOnly();
+            }
+
+            using (Profiler.Begin("BlockEntities"))
+            {
+                PopulateBlockEntities(minX, minY, minZ, maxX, maxY, maxZ);
             }
 
             Loaded = true;
@@ -947,27 +943,39 @@ public class Chunk
     {
         using (Profiler.Begin("LoadChunkBlob"))
         {
-            ChunkBlobCodec.Decode(blob, Blocks, Meta.Bytes, BlockLight.Bytes, SkyLight.Bytes);
-
-            PopulateHeightMapOnly();
-
-            for (var x = 0; x < 16; x++)
+            using (Profiler.Begin("DecodeArrays"))
             {
-                for (var z = 0; z < 16; z++)
-                {
-                    for (var y = 0; y < ChuckFormat.ChunkHeight; y++)
-                    {
-                        var id = GetBlockId(x, y, z);
-                        if (id > 0 && World.Content.Blocks.TryGetByProtocolId(id, out var block) && block.HasBlockEntity)
-                        {
-                            GetBlockEntity(x, y, z);
-                        }
-                    }
-                }
+                ChunkBlobCodec.Decode(blob, Blocks, Meta.Bytes, BlockLight.Bytes, SkyLight.Bytes);
+            }
+
+            using (Profiler.Begin("HeightMap"))
+            {
+                PopulateHeightMapOnly();
+            }
+
+            using (Profiler.Begin("BlockEntities"))
+            {
+                PopulateBlockEntities(0, 0, 0, 16, ChuckFormat.ChunkHeight, 16);
             }
 
             Loaded = true;
             MarkTerrainChanged();
+        }
+    }
+
+    private void PopulateBlockEntities(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
+    {
+        for (var x = minX; x < maxX; x++)
+        for (var z = minZ; z < maxZ; z++)
+        {
+            var start = ChuckFormat.GetIndex(x, minY, z);
+            var end = start + maxY - minY;
+            for (var index = start; index < end; index++)
+            {
+                var id = Blocks[index];
+                if (id > 0 && World.Content.Blocks.HasBlockEntity(id))
+                    GetBlockEntity(x, minY + index - start, z);
+            }
         }
     }
 

@@ -1,8 +1,10 @@
 using System.Buffers;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using OmniBlock.Client.Options;
 using OmniBlock.Client.Rendering.Core.Textures.Atlas;
 using OmniBlock.Client.Resource.Pack;
+using OmniBlock.Profiling;
 using OmniBlock.Textures;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
@@ -395,6 +397,12 @@ public class TextureManager : IDisposable
 
     public unsafe void Tick()
     {
+        long animateTicks = 0;
+        long upscaleTicks = 0;
+        long atlasUploadTicks = 0;
+        long mipmapUploadTicks = 0;
+        long animatedLayerUploadTicks = 0;
+
         _terrainHandle ??= _textures.FirstOrDefault(x => x.Key.EndsWith("/terrain.png")).Value
                            ?? GetTextureId("/terrain.png");
         _itemsHandle ??= _textures.FirstOrDefault(x => x.Key.EndsWith("/gui/items.png")).Value
@@ -402,7 +410,9 @@ public class TextureManager : IDisposable
 
         foreach (var texture in _dynamicTextures)
         {
+            var phaseStart = Stopwatch.GetTimestamp();
             texture.tick();
+            animateTicks += Stopwatch.GetTimestamp() - phaseStart;
 
             var atlasHandle = texture.Atlas == DynamicTexture.FxImage.Terrain
                 ? _terrainHandle
@@ -428,14 +438,17 @@ public class TextureManager : IDisposable
             {
                 if (scale > 1)
                 {
+                    phaseStart = Stopwatch.GetTimestamp();
                     uploadSize = fxSize * scale;
                     rentedArray = ArrayPool<byte>.Shared.Rent(uploadSize * uploadSize * 4);
                     UpscaleNearestNeighbor(texture.Pixels, rentedArray, fxSize, uploadSize, scale);
                     uploadPixels = rentedArray;
+                    upscaleTicks += Stopwatch.GetTimestamp() - phaseStart;
                 }
 
                 var finalReplicate = texture.Replicate;
 
+                phaseStart = Stopwatch.GetTimestamp();
                 fixed (byte* ptr = uploadPixels)
                 {
                     for (var x = 0; x < finalReplicate; x++)
@@ -449,9 +462,11 @@ public class TextureManager : IDisposable
                         }
                     }
                 }
+                atlasUploadTicks += Stopwatch.GetTimestamp() - phaseStart;
 
                 if (texture.Atlas == DynamicTexture.FxImage.Terrain && _gameOptions.UseMipmaps)
                 {
+                    phaseStart = Stopwatch.GetTimestamp();
                     for (var x = 0; x < finalReplicate; x++)
                     {
                         for (var y = 0; y < finalReplicate; y++)
@@ -459,9 +474,12 @@ public class TextureManager : IDisposable
                             UpdateTileMipmaps(tileX + x * uploadSize, tileY + y * uploadSize, uploadSize, targetTileSize, uploadPixels, atlasTexture);
                         }
                     }
+                    mipmapUploadTicks += Stopwatch.GetTimestamp() - phaseStart;
                 }
 
+                phaseStart = Stopwatch.GetTimestamp();
                 UploadAnimatedLayer(texture, fxSize);
+                animatedLayerUploadTicks += Stopwatch.GetTimestamp() - phaseStart;
             }
             finally
             {
@@ -471,6 +489,13 @@ public class TextureManager : IDisposable
                 }
             }
         }
+
+        var ticksToMilliseconds = 1000.0 / Stopwatch.Frequency;
+        Profiler.Record("Animate", animateTicks * ticksToMilliseconds);
+        Profiler.Record("Upscale", upscaleTicks * ticksToMilliseconds);
+        Profiler.Record("AtlasUpload", atlasUploadTicks * ticksToMilliseconds);
+        Profiler.Record("MipmapUpload", mipmapUploadTicks * ticksToMilliseconds);
+        Profiler.Record("AnimatedLayerUpload", animatedLayerUploadTicks * ticksToMilliseconds);
     }
 
     /// <summary>

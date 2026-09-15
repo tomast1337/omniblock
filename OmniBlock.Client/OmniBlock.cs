@@ -1713,10 +1713,17 @@ public partial class OmniBlock :
 
         using (Profiler.Begin("UpdateDynamicTextures"))
         {
-            TextureManager.BindTexture(TextureManager.GetTextureId("/terrain.png"));
+            using (Profiler.Begin("BindAtlas"))
+            {
+                TextureManager.BindTexture(TextureManager.GetTextureId("/terrain.png"));
+            }
+
             if (!IsGamePaused)
             {
-                TextureManager.Tick();
+                using (Profiler.Begin("TickTextures"))
+                {
+                    TextureManager.Tick();
+                }
             }
         }
 

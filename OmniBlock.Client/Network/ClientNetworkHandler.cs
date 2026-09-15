@@ -19,6 +19,7 @@ using OmniBlock.Network.Messages;
 using OmniBlock.Network.Packets;
 using OmniBlock.Network.Snapshots;
 using OmniBlock.Network.Transport;
+using OmniBlock.Profiling;
 using OmniBlock.Registries;
 using OmniBlock.Screens;
 using OmniBlock.Util.Maths;
@@ -204,27 +205,33 @@ public class ClientNetworkHandler : NetHandler
     {
         if (!Disconnected)
         {
-            _netManager.tick();
-
-            MetricRegistry.Set(ClientMetrics.UploadBytes, _netManager.BytesWritten);
-            MetricRegistry.Set(ClientMetrics.DownloadBytes, _netManager.BytesRead);
-            MetricRegistry.Set(ClientMetrics.UploadPackets, _netManager.PacketsWritten);
-            MetricRegistry.Set(ClientMetrics.DownloadPackets, _netManager.PacketsRead);
-            MetricRegistry.Set(ClientMetrics.ReadQueueDepth, _netManager.ReadQueueDepth);
-            MetricRegistry.Set(ClientMetrics.ReadQueuePeak, _netManager.PeakReadQueueDepth);
-            MetricRegistry.Set(ClientMetrics.PacketsProcessed, _netManager.PacketsProcessed);
-            MetricRegistry.Set(ClientMetrics.DrainBudgetHits, _netManager.DrainBudgetHits);
-            MetricRegistry.Set(ClientMetrics.IsInternal, _netManager is InternalConnection);
-            MetricRegistry.Set(ClientMetrics.ServerAddress, _netManager.getAddress()?.ToString() ?? "Unknown");
-            MetricRegistry.Set(ClientMetrics.PeerProtocolVersion, _netManager.PeerProtocolVersion);
+            using (Profiler.Begin("ConnectionDrain"))
+            {
+                _netManager.tick();
+            }
 
             var arrivals = _netManager.ReadIntervals;
-            MetricRegistry.Set(ClientMetrics.ReadIntervalSamples, arrivals.Count);
-            MetricRegistry.Set(ClientMetrics.ReadIntervalMeanMs, arrivals.MeanMs);
-            MetricRegistry.Set(ClientMetrics.ReadIntervalP50Ms, arrivals.PercentileMs(50));
-            MetricRegistry.Set(ClientMetrics.ReadIntervalP95Ms, arrivals.PercentileMs(95));
-            MetricRegistry.Set(ClientMetrics.ReadIntervalP99Ms, arrivals.PercentileMs(99));
-            MetricRegistry.Set(ClientMetrics.ReadIntervalMaxMs, arrivals.MaxMs);
+            using (Profiler.Begin("NetworkMetrics"))
+            {
+                MetricRegistry.Set(ClientMetrics.UploadBytes, _netManager.BytesWritten);
+                MetricRegistry.Set(ClientMetrics.DownloadBytes, _netManager.BytesRead);
+                MetricRegistry.Set(ClientMetrics.UploadPackets, _netManager.PacketsWritten);
+                MetricRegistry.Set(ClientMetrics.DownloadPackets, _netManager.PacketsRead);
+                MetricRegistry.Set(ClientMetrics.ReadQueueDepth, _netManager.ReadQueueDepth);
+                MetricRegistry.Set(ClientMetrics.ReadQueuePeak, _netManager.PeakReadQueueDepth);
+                MetricRegistry.Set(ClientMetrics.PacketsProcessed, _netManager.PacketsProcessed);
+                MetricRegistry.Set(ClientMetrics.DrainBudgetHits, _netManager.DrainBudgetHits);
+                MetricRegistry.Set(ClientMetrics.IsInternal, _netManager is InternalConnection);
+                MetricRegistry.Set(ClientMetrics.ServerAddress, _netManager.getAddress()?.ToString() ?? "Unknown");
+                MetricRegistry.Set(ClientMetrics.PeerProtocolVersion, _netManager.PeerProtocolVersion);
+
+                MetricRegistry.Set(ClientMetrics.ReadIntervalSamples, arrivals.Count);
+                MetricRegistry.Set(ClientMetrics.ReadIntervalMeanMs, arrivals.MeanMs);
+                MetricRegistry.Set(ClientMetrics.ReadIntervalP50Ms, arrivals.PercentileMs(50));
+                MetricRegistry.Set(ClientMetrics.ReadIntervalP95Ms, arrivals.PercentileMs(95));
+                MetricRegistry.Set(ClientMetrics.ReadIntervalP99Ms, arrivals.PercentileMs(99));
+                MetricRegistry.Set(ClientMetrics.ReadIntervalMaxMs, arrivals.MaxMs);
+            }
 
             // The distributions themselves, so the overlay can draw the shape rather than infer it
             // from percentiles. Null on the RTT side for a loopback connection, which has no clock.
@@ -542,6 +549,7 @@ public class ClientNetworkHandler : NetHandler
     /// </summary>
     private void onChunkUnchanged(ChunkUnchangedMessage message)
     {
+        using var profile = Profiler.Begin("ApplyCachedChunk");
         var stored = _chunkCache?.Read(new ChunkPos(message.ChunkX, message.ChunkZ));
         byte[]? blob = null;
 
@@ -589,6 +597,7 @@ public class ClientNetworkHandler : NetHandler
     /// </summary>
     private void onChunkData(ChunkDataMessage message)
     {
+        using var profile = Profiler.Begin("ApplyChunkData");
         var worldX = message.ChunkX * 16;
         var worldZ = message.ChunkZ * 16;
 
@@ -1110,12 +1119,14 @@ public class ClientNetworkHandler : NetHandler
 
     private void onChunkStatusUpdate(ChunkStatusUpdateMessage packet)
     {
+        using var profile = Profiler.Begin("ApplyChunkStatus");
         _worldClient.UpdateChunk(packet.X, packet.Z, packet.Loaded);
         if (!packet.Loaded) Preload.MarkChunkUnloaded(packet.X, packet.Z);
     }
 
     private void onChunkDeltaUpdate(ChunkDeltaUpdateMessage packet)
     {
+        using var profile = Profiler.Begin("ApplyChunkDelta");
         var chunk = _worldClient.BlockHost.GetChunk(packet.X, packet.Z);
         var x = packet.X * 16;
         var y = packet.Z * 16;
@@ -1137,6 +1148,7 @@ public class ClientNetworkHandler : NetHandler
 
     private void onRegionData(RegionDataMessage message)
     {
+        using var profile = Profiler.Begin("ApplyRegionData");
         _worldClient.ClearBlockResets(message.X, message.Y, message.Z, message.X + message.SizeX - 1, message.Y + message.SizeY - 1, message.Z + message.SizeZ - 1);
         _worldClient.HandleChunkDataUpdate(message.X, message.Y, message.Z, message.SizeX, message.SizeY, message.SizeZ, message.Decompress());
         var minChunkX = message.X >> 4;

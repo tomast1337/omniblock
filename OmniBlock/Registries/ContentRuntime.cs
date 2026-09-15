@@ -1,5 +1,6 @@
 using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Entities;
@@ -286,12 +287,27 @@ public sealed class RuntimeBlockRegistry : IBlockRuntimeView
 {
     public const int ProtocolIdCapacity = 256;
     private readonly FrozenDictionary<ResourceLocation, Block> _byKey;
-    private readonly FrozenDictionary<int, Block> _byProtocolId;
+
+    // Definitions remain builder-driven, but the negotiated block protocol is deliberately a
+    // bounded byte address space. Runtime-owned arrays preserve catalog isolation while keeping
+    // terrain, lighting, and meshing lookups out of dictionaries in their innermost loops.
+    private readonly Block?[] _byProtocolId;
+    private readonly bool[] _allowsVision;
+    private readonly bool[] _hasBlockEntity;
+    private readonly bool[] _isOpaque;
+    private readonly byte[] _lightEmission;
+    private readonly byte[] _opacity;
 
     internal RuntimeBlockRegistry(IEnumerable<(ResourceLocation Key, Block Block)> entries)
     {
         var byKey = new Dictionary<ResourceLocation, Block>();
-        var byProtocolId = new Dictionary<int, Block>();
+        var byProtocolId = new Block?[ProtocolIdCapacity];
+        var allowsVision = new bool[ProtocolIdCapacity];
+        var hasBlockEntity = new bool[ProtocolIdCapacity];
+        var isOpaque = new bool[ProtocolIdCapacity];
+        var lightEmission = new byte[ProtocolIdCapacity];
+        var opacity = new byte[ProtocolIdCapacity];
+        Array.Fill(allowsVision, true);
 
         foreach (var (key, block) in entries)
         {
@@ -300,16 +316,35 @@ public sealed class RuntimeBlockRegistry : IBlockRuntimeView
                 throw new ArgumentException($"Duplicate block key '{key}'.", nameof(entries));
             }
 
-            if (!byProtocolId.TryAdd(block.Id, block))
+            if ((uint)block.Id >= ProtocolIdCapacity)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(entries), block.Id,
+                    $"Block protocol id must be between 0 and {ProtocolIdCapacity - 1}.");
+            }
+
+            if (byProtocolId[block.Id] is not null)
             {
                 throw new ArgumentException(
                     $"Duplicate block protocol id {block.Id} for '{key}'.",
                     nameof(entries));
             }
+
+            byProtocolId[block.Id] = block;
+            allowsVision[block.Id] = block.AllowsVision;
+            hasBlockEntity[block.Id] = block.HasBlockEntity;
+            isOpaque[block.Id] = block.IsOpaque;
+            lightEmission[block.Id] = checked((byte)block.LightEmission);
+            opacity[block.Id] = checked((byte)block.Opacity);
         }
 
         _byKey = byKey.ToFrozenDictionary();
-        _byProtocolId = byProtocolId.ToFrozenDictionary();
+        _byProtocolId = byProtocolId;
+        _allowsVision = allowsVision;
+        _hasBlockEntity = hasBlockEntity;
+        _isOpaque = isOpaque;
+        _lightEmission = lightEmission;
+        _opacity = opacity;
     }
 
     public int Count => _byKey.Count;
@@ -321,21 +356,37 @@ public sealed class RuntimeBlockRegistry : IBlockRuntimeView
             : throw new KeyNotFoundException($"Unknown block '{key}'.");
 
     public Block GetByProtocolId(int protocolId) =>
-        _byProtocolId.TryGetValue(protocolId, out var block)
+        (uint)protocolId < _byProtocolId.Length && _byProtocolId[protocolId] is { } block
             ? block
             : throw new KeyNotFoundException($"Unknown block protocol id {protocolId}.");
 
-    public bool TryGetByProtocolId(int protocolId, out Block? block) => _byProtocolId.TryGetValue(protocolId, out block);
+    public bool TryGetByProtocolId(int protocolId, out Block? block)
+    {
+        block = (uint)protocolId < _byProtocolId.Length ? _byProtocolId[protocolId] : null;
+        return block is not null;
+    }
 
     public bool TryGet(ResourceLocation key, out Block? block) => _byKey.TryGetValue(key, out block);
 
     public Block Get(string key) => Get(ResourceLocation.Parse(key));
 
-    public bool IsOpaque(int protocolId) => TryGetByProtocolId(protocolId, out var block) && block.IsOpaque;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsOpaque(int protocolId) =>
+        (uint)protocolId < _isOpaque.Length && _isOpaque[protocolId];
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetLightEmission(int protocolId) =>
-        TryGetByProtocolId(protocolId, out var block) ? block.LightEmission : 0;
+        (uint)protocolId < _lightEmission.Length ? _lightEmission[protocolId] : 0;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool AllowsVision(int protocolId) =>
-        !TryGetByProtocolId(protocolId, out var block) || block.AllowsVision;
+        (uint)protocolId >= _allowsVision.Length || _allowsVision[protocolId];
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool HasBlockEntity(int protocolId) =>
+        (uint)protocolId < _hasBlockEntity.Length && _hasBlockEntity[protocolId];
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int GetOpacity(int protocolId) =>
+        (uint)protocolId < _opacity.Length ? _opacity[protocolId] : 0;
 }
