@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using OmniBlock.Blocks;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.WebGPU;
@@ -47,7 +48,9 @@ internal readonly record struct ClientTerrainLodSnapshot(
     long ResourceGeneration,
     long ResourceReloads,
     int LastResourceReloadReusedColumns,
-    long LastResourceReloadReusedGpuBytes);
+    long LastResourceReloadReusedGpuBytes,
+    double SolidRenderCpuMs,
+    double TranslucentRenderCpuMs);
 
 /// <summary>
 ///     Client owner for the first terrain-horizon slice. It compiles immutable chunk snapshots on
@@ -114,6 +117,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private long _resourceReloads;
     private int _lastResourceReloadReusedColumns;
     private long _lastResourceReloadReusedGpuBytes;
+    private double _solidRenderCpuMs;
+    private double _translucentRenderCpuMs;
     private bool _disposed;
     private ClientTerrainLodSnapshot _snapshot;
 
@@ -238,6 +243,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(nearRenderer);
+        using var cpuMeasurement = new RenderCpuMeasurement(this, translucent: false);
         using var _lodRender = Profiler.Begin("TerrainLodRender");
         var uploads = InstallCompleted(UploadsPerFrame, parameters.ViewPos,
             parameters.VerticalFovDegrees, parameters.ViewportHeight,
@@ -390,6 +396,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(nearRenderer);
+        using var cpuMeasurement = new RenderCpuMeasurement(this, translucent: true);
         if (RenderSystem.Fog.Curve != FogCurve.Linear ||
             RenderSystem.DrawTargetOrNull is not WebGpuDrawTarget target ||
             target.CurrentPass is null || target.TerrainArray is not { } terrainArray ||
@@ -1018,13 +1025,35 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             _resourceGeneration,
             _resourceReloads,
             _lastResourceReloadReusedColumns,
-            _lastResourceReloadReusedGpuBytes);
+            _lastResourceReloadReusedGpuBytes,
+            _solidRenderCpuMs,
+            _translucentRenderCpuMs);
     }
 
     private long ResidentGpuBytes() =>
         _resident.Values.Sum(static value => value.EstimatedBytes) +
         _solidSeams.Values.Sum(static value => value.EstimatedBytes) +
         _translucentSeams.Values.Sum(static value => value.EstimatedBytes);
+
+    private readonly struct RenderCpuMeasurement : IDisposable
+    {
+        private readonly ClientTerrainLodRenderer _owner;
+        private readonly bool _translucent;
+        private readonly long _started = Stopwatch.GetTimestamp();
+
+        public RenderCpuMeasurement(ClientTerrainLodRenderer owner, bool translucent)
+        {
+            _owner = owner;
+            _translucent = translucent;
+        }
+
+        public void Dispose()
+        {
+            var elapsed = Stopwatch.GetElapsedTime(_started).TotalMilliseconds;
+            if (_translucent) _owner._translucentRenderCpuMs = elapsed;
+            else _owner._solidRenderCpuMs = elapsed;
+        }
+    }
 
     private static double DistanceSquared((int X, int Z) key, Vector3D<double> point)
     {

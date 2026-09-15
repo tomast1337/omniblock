@@ -565,6 +565,10 @@ public partial class OmniBlock :
                     "terrainLodResourceReloads" => state.ResourceReloads,
                     "terrainLodResourceReusedColumns" => state.LastResourceReloadReusedColumns,
                     "terrainLodResourceReusedGpuBytes" => state.LastResourceReloadReusedGpuBytes,
+                    "terrainLodSolidCpuMs" => state.SolidRenderCpuMs,
+                    "terrainLodTranslucentCpuMs" => state.TranslucentRenderCpuMs,
+                    "terrainLodCacheBytes" => state.CacheBytes,
+                    "clientWorkingSetBytes" => Environment.WorkingSet,
                     _ => 0
                 };
             };

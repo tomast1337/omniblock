@@ -99,6 +99,10 @@ public sealed class LuauClientStateHostIntegrationTests
             "terrainLodResourceReloads" => 3,
             "terrainLodResourceReusedColumns" => 124,
             "terrainLodResourceReusedGpuBytes" => 46_695_552,
+            "terrainLodSolidCpuMs" => 0.75,
+            "terrainLodTranslucentCpuMs" => 0.25,
+            "terrainLodCacheBytes" => 1_048_576,
+            "clientWorkingSetBytes" => 536_870_912,
             _ => 0
         };
         LuauClientStateHost.EntityLodMetric = key => key == "entityLodIntendedImpostors" ? 12 : 0;
@@ -209,6 +213,10 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.terrainLodResourceReloads", "3");
             AssertValue(state, "OMNI.client.state.terrainLodResourceReusedColumns", "124");
             AssertValue(state, "OMNI.client.state.terrainLodResourceReusedGpuBytes", "46695552");
+            AssertValue(state, "OMNI.client.state.terrainLodSolidCpuMs", "0.75");
+            AssertValue(state, "OMNI.client.state.terrainLodTranslucentCpuMs", "0.25");
+            AssertValue(state, "OMNI.client.state.terrainLodCacheBytes", "1048576");
+            AssertValue(state, "OMNI.client.state.clientWorkingSetBytes", "536870912");
             AssertValue(state, "OMNI.client.state.entityLodIntendedImpostors", "12");
             AssertValue(state, "OMNI.client.state.entityLodImpostorSubmissions", "0");
             Assert.False(state.TryExecute("OMNI.client.state.entityLodIntendedImpostors = 0", out var lodReadOnly));

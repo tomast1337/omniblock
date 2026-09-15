@@ -36,6 +36,15 @@ The opt-in `view-distance-32-diagnostic` scenario holds a real single-player ses
 distance for 30 seconds and logs frame time plus mesh pressure. It is intentionally outside the
 default suite because it is a sustained performance regression rather than a fast functional check.
 
+`terrain-lod-fixed-camera` is the opt-in Phase 5 scale gate. It pins a flying camera, samples 120
+frames at the current 64-chunk horizon setting, and reports frame and terrain-CPU distributions,
+draw counts, LOD GPU/boundary/cache memory, process working set, and observed-versus-required radial
+coverage. It intentionally reports GPU pass timing as unavailable until WebGPU timestamp-query
+support is enabled. A passing run validates the measurement contract, not complete 64-chunk
+coverage; the coverage field prevents sparse client-observed terrain from being mislabeled as a
+full horizon benchmark. Run it with
+`xvfb-run -a tests/e2e/run-local.sh terrain-lod-fixed-camera`.
+
 `entity-render-baseline` is an opt-in 300-second-watchdog benchmark for the existing GPU-instanced
 mob renderer. It uses deterministic client-only cow/sheep/mixed replicas (not server-spawned mobs),
 a stationary flying camera, and an empty-population control. It writes per-frame JSON, resource
@@ -212,6 +221,12 @@ OMNI.client.state.terrainUniformArenaCapacity   -- bounded reusable dynamic-unif
 OMNI.client.state.terrainUniformArenaGrowths    -- lifetime arena reallocations for active pipelines
 OMNI.client.state.findVisibleMs                 -- last completed visibility-selection CPU time
 OMNI.client.state.terrainSubmitCpuMs             -- last completed terrain command-recording CPU time
+OMNI.client.state.terrainLodSolidCpuMs            -- last reduced opaque/cutout pass CPU time
+OMNI.client.state.terrainLodTranslucentCpuMs      -- last reduced translucent pass CPU time
+OMNI.client.state.terrainLodGpuBytes              -- known resident LOD mesh/light GPU bytes
+OMNI.client.state.terrainLodBoundaryBytes         -- retained CPU boundary-summary bytes
+OMNI.client.state.terrainLodCacheBytes            -- persistent client hierarchy-cache bytes
+OMNI.client.state.clientWorkingSetBytes           -- current client process working set
 OMNI.client.state.meshCancelledCount  -- discarded/abandoned requests, including superseded work
 OMNI.client.state.meshSupersededCount -- subset discarded due to a newer revision/replacement
 OMNI.client.state.meshBuildFailureCount -- snapshot or worker exceptions (normally zero)

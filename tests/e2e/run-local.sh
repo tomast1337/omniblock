@@ -7,7 +7,7 @@ artifact_dir="${E2E_ARTIFACTS_DIR:-$repo_root/artifacts/e2e-local/$(date -u +%Y%
 timeout_seconds="${E2E_TIMEOUT_SECONDS:-90}"
 configuration="${CONFIGURATION:-Debug}"
 requested_scenario="${1:-all}"
-if [[ ( "$requested_scenario" == "chunk-visibility-baseline" || "$requested_scenario" == "entity-render-baseline" || "$requested_scenario" == "entity-lod-selection" || "$requested_scenario" == "entity-tracking-distance" || "$requested_scenario" == entity-impostor-* ) && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
+if [[ ( "$requested_scenario" == "chunk-visibility-baseline" || "$requested_scenario" == "terrain-lod-fixed-camera" || "$requested_scenario" == "entity-render-baseline" || "$requested_scenario" == "entity-lod-selection" || "$requested_scenario" == "entity-tracking-distance" || "$requested_scenario" == entity-impostor-* ) && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
     timeout_seconds=300
 fi
 scenarios=(menu world-management multiplayer language-options create-world smoke debug-smoke fps-limit simulation-distance chunk-mesh-deadlines teleport-preload flying-chunk-streaming frustum-directional liquid-boundary-visibility world-generation-control terrain-lod-presentation)
