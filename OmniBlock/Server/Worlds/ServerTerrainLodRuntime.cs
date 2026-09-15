@@ -95,11 +95,12 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                 var cached = _cache.Read(
                     source.ChunkX, source.ChunkZ, source.TerrainRevision);
                 return cached.Status == TerrainLodCacheReadStatus.Hit
-                    ? new TerrainLodConversionOutput(cached.Hierarchy!, false)
+                    ? new TerrainLodConversionOutput(
+                        cached.Hierarchy!, cached.Lighting, RequiresPersistence: false)
                     : new TerrainLodConversionOutput(TerrainLodReducer.Build(
                         source,
                         materials,
-                        TerrainLodReductionStrategy.SurfacePreserving));
+                        TerrainLodReductionStrategy.SurfacePreserving), source.Lighting);
             });
         _writer = new TerrainLodCacheWriter(_conversions, _cache);
         PublishSnapshotLocked();

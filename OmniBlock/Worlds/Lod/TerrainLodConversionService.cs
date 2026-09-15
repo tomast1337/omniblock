@@ -14,10 +14,12 @@ public sealed record TerrainLodConversionResult(
     int ChunkZ,
     long TerrainRevision,
     TerrainLodHierarchy Hierarchy,
+    TerrainLodLightingSnapshot? Lighting = null,
     bool RequiresPersistence = true);
 
 internal readonly record struct TerrainLodConversionOutput(
     TerrainLodHierarchy Hierarchy,
+    TerrainLodLightingSnapshot? Lighting = null,
     bool RequiresPersistence = true);
 
 public sealed record TerrainLodConversionSnapshot(
@@ -80,7 +82,8 @@ public sealed class TerrainLodConversionService : IDisposable
         int dimension,
         int capacity,
         Func<TerrainLodSourceSnapshot, TerrainLodHierarchy> convert)
-        : this(dimension, capacity, source => new TerrainLodConversionOutput(convert(source)))
+        : this(dimension, capacity, source => new TerrainLodConversionOutput(
+            convert(source), source.Lighting))
     {
         ArgumentNullException.ThrowIfNull(convert);
     }
@@ -320,6 +323,7 @@ public sealed class TerrainLodConversionService : IDisposable
                         key.Z,
                         source.TerrainRevision,
                         output.Hierarchy,
+                        output.Lighting,
                         output.RequiresPersistence);
                     _completedConversions++;
                 }

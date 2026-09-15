@@ -5,6 +5,7 @@ using OmniBlock.Blocks;
 using OmniBlock.NBT;
 using OmniBlock.Registries;
 using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Worlds.Lod;
 
@@ -193,7 +194,8 @@ public sealed class TerrainLodSourceSnapshot
         int depth,
         ReadOnlySpan<byte> blocks,
         ReadOnlySpan<byte> metadata,
-        long terrainRevision = 0)
+        long terrainRevision = 0,
+        TerrainLodLightingSnapshot? lighting = null)
     {
         if (width <= 0) throw new ArgumentOutOfRangeException(nameof(width));
         if (height <= 0) throw new ArgumentOutOfRangeException(nameof(height));
@@ -208,6 +210,13 @@ public sealed class TerrainLodSourceSnapshot
         Height = height;
         Depth = depth;
         TerrainRevision = terrainRevision;
+        if (lighting is not null &&
+            (lighting.ChunkX != chunkX || lighting.ChunkZ != chunkZ ||
+             lighting.TerrainRevision != terrainRevision))
+            throw new ArgumentException(
+                "Terrain lighting must identify the same chunk and revision as its source.",
+                nameof(lighting));
+        Lighting = lighting;
         _blocks = blocks.ToArray();
         _metadata = metadata.ToArray();
     }
@@ -218,7 +227,9 @@ public sealed class TerrainLodSourceSnapshot
     public int Height { get; }
     public int Depth { get; }
     public long TerrainRevision { get; }
-    public long EstimatedBytes => (long)_blocks.Length + _metadata.Length;
+    public TerrainLodLightingSnapshot? Lighting { get; }
+    public long EstimatedBytes => (long)_blocks.Length + _metadata.Length +
+                                  (Lighting?.EstimatedBytes ?? 0);
 
     public static TerrainLodSourceSnapshot Capture(Chunk chunk, long? terrainRevision = null)
     {
@@ -236,7 +247,11 @@ public sealed class TerrainLodSourceSnapshot
             16,
             chunk.Blocks,
             metadata,
-            terrainRevision ?? chunk.TerrainRevision);
+            terrainRevision ?? chunk.TerrainRevision,
+            TerrainLodLightingSnapshot.Capture(
+                chunk,
+                terrainRevision ?? chunk.TerrainRevision,
+                !chunk.World.Dimension.HasCeiling));
     }
 
     /// <summary>
@@ -245,7 +260,8 @@ public sealed class TerrainLodSourceSnapshot
     /// </summary>
     public static TerrainLodSourceSnapshot FromRegionNbt(
         NBTTagCompound level,
-        long? terrainRevision = null)
+        long? terrainRevision = null,
+        bool hasSkyLight = true)
     {
         ArgumentNullException.ThrowIfNull(level);
         var blocks = level.GetByteArray("Blocks");
@@ -264,6 +280,21 @@ public sealed class TerrainLodSourceSnapshot
         for (var z = 0; z < 16; z++)
         for (var y = 0; y < ChuckFormat.ChunkHeight; y++)
             metadata[ChuckFormat.GetIndex(x, y, z)] = (byte)nibbles.GetNibble(x, y, z);
+        var revision = terrainRevision ?? (level.HasKey("TerrainRevision")
+            ? level.GetLong("TerrainRevision")
+            : 0);
+        var skyLight = level.GetByteArray("SkyLight");
+        var blockLight = level.GetByteArray("BlockLight");
+        TerrainLodLightingSnapshot? lighting = null;
+        if (skyLight.Length == ChuckFormat.ChunkSize / 2 &&
+            blockLight.Length == ChuckFormat.ChunkSize / 2)
+            lighting = new TerrainLodLightingSnapshot(
+                level.GetInteger("xPos"),
+                level.GetInteger("zPos"),
+                revision,
+                skyLight,
+                blockLight,
+                hasSkyLight);
         return new TerrainLodSourceSnapshot(
             level.GetInteger("xPos"),
             level.GetInteger("zPos"),
@@ -272,9 +303,8 @@ public sealed class TerrainLodSourceSnapshot
             16,
             blocks,
             metadata,
-            terrainRevision ?? (level.HasKey("TerrainRevision")
-                ? level.GetLong("TerrainRevision")
-                : 0));
+            revision,
+            lighting);
     }
 
     public byte GetBlock(int x, int y, int z) => _blocks[Index(x, y, z)];
@@ -286,6 +316,80 @@ public sealed class TerrainLodSourceSnapshot
             throw new ArgumentOutOfRangeException(nameof(x), $"Cell {x},{y},{z} is outside the snapshot.");
         return (x * Depth + z) * Height + y;
     }
+}
+
+/// <summary>
+///     Immutable, resource-pack-independent light companion for a cached terrain hierarchy.
+///     Keeping the packed sky and block nibbles preserves exact face-light sampling while using
+///     half a byte per channel and voxel. GPU meshes remain disposable presentation artifacts.
+/// </summary>
+public sealed class TerrainLodLightingSnapshot : ILightProvider
+{
+    private static readonly int PackedLightBytes = ChuckFormat.ChunkSize / 2;
+    private readonly ChunkNibbleArray _sky;
+    private readonly ChunkNibbleArray _block;
+
+    public TerrainLodLightingSnapshot(
+        int chunkX,
+        int chunkZ,
+        long terrainRevision,
+        ReadOnlySpan<byte> skyLight,
+        ReadOnlySpan<byte> blockLight,
+        bool hasSkyLight)
+    {
+        if (skyLight.Length != PackedLightBytes || blockLight.Length != PackedLightBytes)
+            throw new ArgumentException(
+                $"Terrain lighting requires {PackedLightBytes} bytes per channel.");
+        ChunkX = chunkX;
+        ChunkZ = chunkZ;
+        TerrainRevision = terrainRevision;
+        HasSkyLight = hasSkyLight;
+        _sky = new ChunkNibbleArray(skyLight.ToArray());
+        _block = new ChunkNibbleArray(blockLight.ToArray());
+    }
+
+    public int ChunkX { get; }
+    public int ChunkZ { get; }
+    public long TerrainRevision { get; }
+    public bool HasSkyLight { get; }
+    public long EstimatedBytes => (long)_sky.Bytes.Length + _block.Bytes.Length;
+    internal ReadOnlySpan<byte> SkyLight => _sky.Bytes;
+    internal ReadOnlySpan<byte> BlockLight => _block.Bytes;
+
+    public static TerrainLodLightingSnapshot Capture(
+        Chunk chunk,
+        long terrainRevision,
+        bool hasSkyLight)
+    {
+        ArgumentNullException.ThrowIfNull(chunk);
+        return new TerrainLodLightingSnapshot(
+            chunk.X,
+            chunk.Z,
+            terrainRevision,
+            chunk.SkyLight.Bytes,
+            chunk.BlockLight.Bytes,
+            hasSkyLight);
+    }
+
+    public LightLevels GetLightLevels(int x, int y, int z, int minBlockLight)
+    {
+        var localX = x - ChunkX * 16;
+        var localZ = z - ChunkZ * 16;
+        if ((uint)localX >= 16 || (uint)localZ >= 16 || y < 0 || y >= ChuckFormat.WorldHeight)
+            return (HasSkyLight ? LightLevels.FullSky : default).WithBlockFloor(minBlockLight);
+        return new LightLevels(
+                (byte)_sky.GetNibble(localX, y, localZ),
+                (byte)_block.GetNibble(localX, y, localZ))
+            .WithBlockFloor(minBlockLight);
+    }
+
+    public float GetNaturalBrightness(int x, int y, int z, int minLight)
+    {
+        var light = GetLightLevels(x, y, z, minLight);
+        return Math.Max(light.Sky, light.Block) / 15.0f;
+    }
+
+    public float GetLuminance(int x, int y, int z) => GetNaturalBrightness(x, y, z, 0);
 }
 
 /// <summary>

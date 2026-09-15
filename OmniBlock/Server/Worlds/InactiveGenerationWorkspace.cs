@@ -322,12 +322,14 @@ public sealed class InactiveGenerationCommitException : IOException
 public sealed class InactiveChunkSnapshot
 {
     private readonly byte[] _nbt;
+    private readonly bool _hasSkyLight;
 
-    private InactiveChunkSnapshot(int x, int z, byte[] nbt)
+    private InactiveChunkSnapshot(int x, int z, byte[] nbt, bool hasSkyLight)
     {
         X = x;
         Z = z;
         _nbt = nbt;
+        _hasSkyLight = hasSkyLight;
     }
 
     public int X { get; }
@@ -342,7 +344,8 @@ public sealed class InactiveChunkSnapshot
         RegionChunkStorage.storeChunkInCompound(chunk, world, level);
         using MemoryStream output = new();
         NbtIo.Write(root, output);
-        return new InactiveChunkSnapshot(chunk.X, chunk.Z, output.ToArray());
+        return new InactiveChunkSnapshot(
+            chunk.X, chunk.Z, output.ToArray(), !world.Dimension.HasCeiling);
     }
 
     public Chunk Materialize(IWorldContext target)
@@ -362,7 +365,7 @@ public sealed class InactiveChunkSnapshot
         using MemoryStream input = new(_nbt, writable: false);
         var root = NbtIo.Read(input);
         var snapshot = TerrainLodSourceSnapshot.FromRegionNbt(
-            root.GetCompoundTag("Level"), terrainRevision);
+            root.GetCompoundTag("Level"), terrainRevision, _hasSkyLight);
         if (snapshot.ChunkX != X || snapshot.ChunkZ != Z)
             throw new InvalidDataException(
                 $"Inactive snapshot for {X},{Z} contains terrain for " +

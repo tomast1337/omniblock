@@ -150,6 +150,11 @@ public sealed class TerrainLodHierarchyTests
             serialized, catalog, TerrainLodReductionStrategy.SurfacePreserving);
 
         Assert.Equal(liveHierarchy.CanonicalHash, importedHierarchy.CanonicalHash);
+        Assert.NotNull(live.Lighting);
+        Assert.NotNull(serialized.Lighting);
+        Assert.Equal(
+            live.Lighting.GetLightLevels(3 * 16 + 4, 1, -5 * 16 + 7, 0),
+            serialized.Lighting.GetLightLevels(3 * 16 + 4, 1, -5 * 16 + 7, 0));
         Assert.Empty(chunk.Entities.SelectMany(static entities => entities));
         Assert.Empty(chunk.BlockEntities);
     }

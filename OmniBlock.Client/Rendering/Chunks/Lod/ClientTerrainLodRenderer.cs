@@ -68,7 +68,6 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private readonly World _world;
     private readonly TerrainLodConversionService _conversion;
     private readonly Dictionary<(int X, int Z), PendingColumn> _pending = [];
-    private readonly Dictionary<(int X, int Z), CapturedChunkLighting> _capturedLighting = [];
     private readonly Dictionary<(int X, int Z), ColumnPresentation> _resident = [];
     private readonly Dictionary<(int X, int Z), int> _detailLevelRequests = [];
     private readonly Dictionary<TerrainLodSeamKey, TerrainLodSeamSelection> _desiredSolidSeams = [];
@@ -165,9 +164,6 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 continue;
             }
 
-            if (result != TerrainLodAdmissionResult.RejectedStaleRevision)
-                _capturedLighting[key] = CapturedChunkLighting.Capture(
-                    chunk, source.TerrainRevision, !_world.Dimension.HasCeiling);
             _pending.Remove(key);
         }
 
@@ -456,7 +452,6 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _selectedSolidLevels.Clear();
         _selectedTranslucentLevels.Clear();
         _pending.Clear();
-        _capturedLighting.Clear();
         _detailLevelRequests.Clear();
         _opaquePipeline?.Dispose();
         _opaquePipeline = null;
@@ -509,7 +504,6 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 if (chunk.Loaded && chunk.TerrainRevision != result.TerrainRevision)
                 {
                     _staleResults++;
-                    RemoveCapturedLighting(key, result.TerrainRevision);
                     ObserveColumn(key.ChunkX, key.ChunkZ);
                     continue;
                 }
@@ -518,7 +512,6 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             ColumnPresentation? candidate = null;
             try
             {
-                _capturedLighting.TryGetValue(key, out var lighting);
                 _resident.TryGetValue(key, out var previous);
                 var selectedLevel = TerrainLodDetailSelector.SelectLevel(
                     Math.Sqrt(DistanceSquared(key, viewPosition)), MaximumMeshLevel,
@@ -528,7 +521,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                     Math.Min(selectedLevel, previous?.MinimumLevel ?? MinimumHorizonMeshLevel),
                     _detailLevelRequests.GetValueOrDefault(key, MinimumHorizonMeshLevel));
                 candidate = ColumnPresentation.Create(
-                    _world, result, lighting, minimumLevel);
+                    _world, result, result.Lighting, minimumLevel);
                 if (previous is not null)
                 {
                     candidate.CopyHandoffsFrom(previous);
@@ -550,7 +543,6 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             }
             finally
             {
-                RemoveCapturedLighting(key, result.TerrainRevision);
                 candidate?.Dispose();
             }
         }
@@ -714,13 +706,6 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         var level = neighbor.SelectionLevel(translucent);
         if (level >= 0) destination[count++] = level;
         return count;
-    }
-
-    private void RemoveCapturedLighting((int X, int Z) key, long terrainRevision)
-    {
-        if (_capturedLighting.TryGetValue(key, out var lighting) &&
-            lighting.TerrainRevision == terrainRevision)
-            _capturedLighting.Remove(key);
     }
 
     private void EvictDistant(Vector3D<double> viewPosition)
@@ -1322,61 +1307,6 @@ internal static class TerrainLodAdmissionOrder
         var dz = key.Z * 16 + 8 - point.Z;
         return dx * dx + dz * dz;
     }
-}
-
-/// <summary>
-///     Bounded light companion to an in-flight local terrain snapshot. It prevents an unload or
-///     later light edit from changing the result merely because GPU installation happened later.
-/// </summary>
-internal sealed class CapturedChunkLighting : ILightProvider
-{
-    private readonly ChunkNibbleArray _sky;
-    private readonly ChunkNibbleArray _block;
-    private readonly bool _hasSkyLight;
-
-    private CapturedChunkLighting(
-        int chunkX,
-        int chunkZ,
-        long terrainRevision,
-        byte[] sky,
-        byte[] block,
-        bool hasSkyLight)
-    {
-        ChunkX = chunkX;
-        ChunkZ = chunkZ;
-        TerrainRevision = terrainRevision;
-        _sky = new ChunkNibbleArray(sky);
-        _block = new ChunkNibbleArray(block);
-        _hasSkyLight = hasSkyLight;
-    }
-
-    public int ChunkX { get; }
-    public int ChunkZ { get; }
-    public long TerrainRevision { get; }
-
-    public static CapturedChunkLighting Capture(Chunk chunk, long terrainRevision, bool hasSkyLight) =>
-        new(chunk.X, chunk.Z, terrainRevision,
-            chunk.SkyLight.Bytes.ToArray(), chunk.BlockLight.Bytes.ToArray(), hasSkyLight);
-
-    public LightLevels GetLightLevels(int x, int y, int z, int minBlockLight)
-    {
-        var localX = x - ChunkX * 16;
-        var localZ = z - ChunkZ * 16;
-        if ((uint)localX >= 16 || (uint)localZ >= 16 || y < 0 || y >= ChuckFormat.WorldHeight)
-            return (_hasSkyLight ? LightLevels.FullSky : default).WithBlockFloor(minBlockLight);
-        return new LightLevels(
-                (byte)_sky.GetNibble(localX, y, localZ),
-                (byte)_block.GetNibble(localX, y, localZ))
-            .WithBlockFloor(minBlockLight);
-    }
-
-    public float GetNaturalBrightness(int x, int y, int z, int minLight)
-    {
-        var light = GetLightLevels(x, y, z, minLight);
-        return Math.Max(light.Sky, light.Block) / 15.0f;
-    }
-
-    public float GetLuminance(int x, int y, int z) => GetNaturalBrightness(x, y, z, 0);
 }
 
 /// <summary>Distance thresholds with hysteresis so neighboring LOD levels do not flicker.</summary>

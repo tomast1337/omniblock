@@ -521,7 +521,7 @@ public sealed class TerrainLodMeshBuilderTests
         var chunk = new Chunk(world, new byte[ChuckFormat.ChunkSize], 3, -2);
         chunk.SkyLight.SetNibble(4, 70, 5, 9);
         chunk.BlockLight.SetNibble(4, 70, 5, 6);
-        var captured = CapturedChunkLighting.Capture(chunk, 12, true);
+        var captured = TerrainLodLightingSnapshot.Capture(chunk, 12, true);
 
         chunk.SkyLight.SetNibble(4, 70, 5, 0);
         chunk.BlockLight.SetNibble(4, 70, 5, 0);

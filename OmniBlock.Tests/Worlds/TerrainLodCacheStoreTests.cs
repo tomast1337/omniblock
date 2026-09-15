@@ -1,4 +1,6 @@
 using OmniBlock.Worlds.Lod;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Tests.Worlds;
 
@@ -31,6 +33,9 @@ public sealed class TerrainLodCacheStoreTests
                 read.Hierarchy.Levels[0][0, 0, 1].Primary.BlockId.ToString());
             Assert.Equal(expected.Hierarchy.Levels[1][0, 0, 0].OccupancyMask,
                 read.Hierarchy.Levels[1][0, 0, 0].OccupancyMask);
+            Assert.NotNull(read.Lighting);
+            Assert.Equal(new LightLevels(11, 6),
+                read.Lighting.GetLightLevels(3 * 16 + 1, 70, -7 * 16 + 2, 0));
             Assert.Equal(1, store.Snapshot().ReadHits);
         }
         finally
@@ -229,7 +234,8 @@ public sealed class TerrainLodCacheStoreTests
             z,
             revision,
             TerrainLodReducer.Build(
-                source, Materials, TerrainLodReductionStrategy.SurfacePreserving));
+                source, Materials, TerrainLodReductionStrategy.SurfacePreserving),
+            source.Lighting);
     }
 
     private static TerrainLodSourceSnapshot Source(int x, int z, long revision)
@@ -241,8 +247,14 @@ public sealed class TerrainLodCacheStoreTests
             1, 1,
             1, 1
         ];
+        var sky = new ChunkNibbleArray(ChuckFormat.ChunkSize);
+        var block = new ChunkNibbleArray(ChuckFormat.ChunkSize);
+        sky.SetNibble(1, 70, 2, 11);
+        block.SetNibble(1, 70, 2, 6);
+        var lighting = new TerrainLodLightingSnapshot(
+            x, z, revision, sky.Bytes, block.Bytes, hasSkyLight: true);
         return new TerrainLodSourceSnapshot(
-            x, z, 2, 2, 2, blocks, new byte[blocks.Length], revision);
+            x, z, 2, 2, 2, blocks, new byte[blocks.Length], revision, lighting);
     }
 
     private static DirectoryInfo CreateTemporaryDirectory()

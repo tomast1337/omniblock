@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Worlds.Lod;
@@ -76,7 +77,8 @@ public enum TerrainLodCacheReadStatus
 public sealed record TerrainLodCacheReadResult(
     TerrainLodCacheReadStatus Status,
     TerrainLodHierarchy? Hierarchy,
-    string? Diagnostic = null);
+    string? Diagnostic = null,
+    TerrainLodLightingSnapshot? Lighting = null);
 
 public enum TerrainLodCacheWriteStatus
 {
@@ -114,7 +116,7 @@ internal enum TerrainLodCacheWriteStage
 public sealed class TerrainLodCacheStore
 {
     private const ulong Magic = 0x31444F4C494E4D4F; // OMNILOD1
-    private const int CurrentFormatVersion = 1;
+    private const int CurrentFormatVersion = 2;
     private const int ChecksumBytes = 32;
     private const int MaxStringBytes = 4096;
     private const int MaxLevels = 16;
@@ -306,6 +308,15 @@ public sealed class TerrainLodCacheStore
             writer.Write(result.ChunkX);
             writer.Write(result.ChunkZ);
             writer.Write(result.TerrainRevision);
+            writer.Write(result.Lighting is not null);
+            if (result.Lighting is { } lighting)
+            {
+                writer.Write(lighting.HasSkyLight);
+                writer.Write(lighting.SkyLight.Length);
+                writer.Write(lighting.SkyLight);
+                writer.Write(lighting.BlockLight.Length);
+                writer.Write(lighting.BlockLight);
+            }
             writer.Write((byte)result.Hierarchy.Strategy);
             WriteString(writer, result.Hierarchy.CanonicalHash);
             writer.Write(palette.Count);
@@ -384,6 +395,16 @@ public sealed class TerrainLodCacheStore
                 null,
                 $"Cached terrain revision {terrainRevision} does not match {expectedTerrainRevision}.");
 
+        TerrainLodLightingSnapshot? lighting = null;
+        if (reader.ReadBoolean())
+        {
+            var hasSkyLight = reader.ReadBoolean();
+            var skyLight = ReadPackedLight(reader, "sky");
+            var blockLight = ReadPackedLight(reader, "block");
+            lighting = new TerrainLodLightingSnapshot(
+                chunkX, chunkZ, terrainRevision, skyLight, blockLight, hasSkyLight);
+        }
+
         var strategyValue = reader.ReadByte();
         if (!Enum.IsDefined(typeof(TerrainLodReductionStrategy), strategyValue))
             throw new InvalidDataException($"Unknown terrain LOD reduction strategy {strategyValue}.");
@@ -445,7 +466,22 @@ public sealed class TerrainLodCacheStore
         if (!string.Equals(hierarchy.CanonicalHash, expectedHash, StringComparison.Ordinal))
             throw new InvalidDataException(
                 $"LOD hierarchy hash {hierarchy.CanonicalHash} does not match {expectedHash}.");
-        return new TerrainLodCacheReadResult(TerrainLodCacheReadStatus.Hit, hierarchy);
+        return new TerrainLodCacheReadResult(
+            TerrainLodCacheReadStatus.Hit, hierarchy, Lighting: lighting);
+    }
+
+    private static byte[] ReadPackedLight(BinaryReader reader, string channel)
+    {
+        var expected = ChuckFormat.ChunkSize / 2;
+        var length = reader.ReadInt32();
+        if (length != expected)
+            throw new InvalidDataException(
+                $"LOD {channel}-light channel contains {length} bytes; expected {expected}.");
+        var bytes = reader.ReadBytes(length);
+        if (bytes.Length != length)
+            throw new EndOfStreamException(
+                $"LOD {channel}-light channel ended after {bytes.Length} of {length} bytes.");
+        return bytes;
     }
 
     private void EvictForWriteLocked(string targetPath, long previousLength, long incomingLength)
@@ -529,6 +565,11 @@ public sealed class TerrainLodCacheStore
             result.Hierarchy.TerrainRevision != result.TerrainRevision)
             throw new ArgumentException("LOD result and hierarchy coordinates/revision disagree.",
                 nameof(result));
+        if (result.Lighting is { } lighting &&
+            (lighting.ChunkX != result.ChunkX || lighting.ChunkZ != result.ChunkZ ||
+             lighting.TerrainRevision != result.TerrainRevision))
+            throw new ArgumentException(
+                "LOD result and lighting coordinates/revision disagree.", nameof(result));
         if (_identity.ReductionSchemaVersion != TerrainLodHierarchy.ReductionSchemaVersion)
             throw new InvalidOperationException(
                 $"Cache reduction schema {_identity.ReductionSchemaVersion} does not match runtime " +

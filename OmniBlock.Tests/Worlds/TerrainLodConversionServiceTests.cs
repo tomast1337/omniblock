@@ -1,4 +1,6 @@
 using OmniBlock.Worlds.Lod;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Tests.Worlds;
 
@@ -9,6 +11,30 @@ public sealed class TerrainLodConversionServiceTests
         new TerrainLodMaterialDefinition(1, "example:stone",
             TerrainLodGeometryClass.Opaque, true, 0x707070)
     ]);
+
+    [Fact]
+    public async Task Completed_result_retains_the_immutable_source_lighting()
+    {
+        var sky = new ChunkNibbleArray(ChuckFormat.ChunkSize);
+        var block = new ChunkNibbleArray(ChuckFormat.ChunkSize);
+        sky.SetNibble(2, 64, 3, 10);
+        block.SetNibble(2, 64, 3, 7);
+        var lighting = new TerrainLodLightingSnapshot(
+            4, -2, 9, sky.Bytes, block.Bytes, hasSkyLight: true);
+        var blocks = Enumerable.Repeat((byte)1, 8).ToArray();
+        var source = new TerrainLodSourceSnapshot(
+            4, -2, 2, 2, 2, blocks, new byte[8], 9, lighting);
+        using var service = Service(2, Convert);
+
+        service.Submit(source);
+        sky.SetNibble(2, 64, 3, 0);
+        block.SetNibble(2, 64, 3, 0);
+        var result = await Take(service);
+
+        Assert.Same(lighting, result.Lighting);
+        Assert.Equal(new LightLevels(10, 7),
+            result.Lighting!.GetLightLevels(4 * 16 + 2, 64, -2 * 16 + 3, 0));
+    }
 
     [Fact]
     public async Task Capacity_is_bounded_but_an_owned_coordinate_can_coalesce()
