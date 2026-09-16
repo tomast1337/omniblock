@@ -204,7 +204,16 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"Batches:    {profile.TerrainSubmissionBatches} writes  {profile.TerrainPipelineBinds} pipeline binds  {profile.TerrainTextureBinds} texture binds");
         ImGuiTextSafe.Text(
+            $"Streams:    {profile.TerrainStreamBinds:N0} geometry/light slice binds");
+        ImGuiTextSafe.Text(
             $"Uniform arena: {profile.TerrainUniformArenaCapacity:N0} entries  {profile.TerrainUniformArenaGrowths} lifetime growths");
+        var arena = chunkRenderer.TerrainGpuArenaProfile;
+        ImGuiTextSafe.Text(
+            $"Terrain arenas: {arena.Regions:N0} regions  {arena.GeometrySegments:N0} geometry segments  {arena.LightingSegments:N0} light segments");
+        ImGuiTextSafe.Text(
+            $"Arena memory: {FormatBytes(arena.AllocatedBytes)} used / {FormatBytes(arena.CapacityBytes)} reserved  {arena.ExternalFragmentation:P1} external fragmentation");
+        ImGuiTextSafe.Text(
+            $"Arena ranges: {arena.ActiveAllocations:N0} active  {arena.PendingRetirements:N0} retiring  {arena.SegmentGrowths:N0} segment allocations");
         DrawTiming("Find visible", profile.FindVisible);
         DrawTiming("  Spatial cull", profile.SpatialCull);
         DrawTiming("  Candidate sort", profile.CandidateSort);

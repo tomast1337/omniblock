@@ -95,7 +95,7 @@ public class SubChunkRenderer : IDisposable
     /// <summary>
     ///     Publishes one already-complete presentation with a single reference exchange. The old
     ///     presentation remains authoritative until this point and its WebGPU buffers retire at a
-    ///     later presentation boundary through <see cref="WgpuMesh.Dispose" />.
+    ///     later presentation boundary through the regional arena retirement queue.
     /// </summary>
     internal void InstallPresentation(SectionPresentation presentation)
     {
@@ -144,7 +144,7 @@ public class SubChunkRenderer : IDisposable
                 DirectionalFaceVisibility.ForPage(Position, pageIndex, viewPosition), selected);
             if (selectedCount == 0) continue;
 
-            mesh.BindChunkQuadStreams(passEncoder, page.LightBufferFor(pass));
+            mesh.BindChunkQuadStreams(passEncoder, page.LightSliceFor(pass));
             var submitted = 0;
             for (var i = 0; i < selectedCount; i++)
             {
@@ -158,7 +158,8 @@ public class SubChunkRenderer : IDisposable
                 ranges.AvailableQuadCount,
                 submitted,
                 selectedCount,
-                ranges.UnassignedQuadCount);
+                ranges.UnassignedQuadCount,
+                1);
         }
 
         if (stats.DrawRanges > 0) presentation.RecordFirstDraw();
@@ -176,7 +177,7 @@ public class SubChunkRenderer : IDisposable
         foreach (var page in presentation.Pages)
         {
             if (page?.Solid is not { } mesh) continue;
-            mesh.DrawQuadWireframe(passEncoder, page.LightBufferFor(0));
+            mesh.DrawQuadWireframe(passEncoder, page.LightSliceFor(0));
             draws++;
         }
 
@@ -189,7 +190,8 @@ internal readonly record struct DirectionalDrawStats(
     int AvailableQuads,
     int SubmittedQuads,
     int DrawRanges,
-    int UnassignedQuads)
+    int UnassignedQuads,
+    int StreamBinds)
 {
     public int RejectedQuads => AvailableQuads - SubmittedQuads;
 
@@ -197,10 +199,12 @@ internal readonly record struct DirectionalDrawStats(
         int availableQuads,
         int submittedQuads,
         int drawRanges,
-        int unassignedQuads) =>
+        int unassignedQuads,
+        int streamBinds) =>
         new(
             AvailableQuads + availableQuads,
             SubmittedQuads + submittedQuads,
             DrawRanges + drawRanges,
-            UnassignedQuads + unassignedQuads);
+            UnassignedQuads + unassignedQuads,
+            StreamBinds + streamBinds);
 }

@@ -116,6 +116,7 @@ internal readonly record struct ChunkPresentationProfileSnapshot(
     int UnassignedQuads,
     int TerrainUniformEntries,
     int TerrainSubmissionBatches,
+    int TerrainStreamBinds,
     int TerrainPipelineBinds,
     int TerrainTextureBinds,
     int TerrainUniformArenaCapacity,

@@ -89,6 +89,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly List<SectionRenderState> _evictionGraceToCancel = [];
     private readonly PriorityQueue<SectionEvictionCandidate, int> _evictionDeadlines = new();
     private readonly SectionLightEvaluationService _lightEvaluation;
+    private TerrainGpuArenaSet? _terrainGpuArenas;
     private readonly Queue<Vector3D<int>> _pendingLightUpdates = [];
     private readonly HashSet<Vector3D<int>> _pendingLightUpdateKeys = [];
     private readonly HashSet<Vector3D<int>> _queuedLightUpdateKeys = [];
@@ -176,6 +177,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private int _terrainSubmissionBatchesThisFrame;
     private int _terrainPipelineBindsThisFrame;
     private int _terrainTextureBindsThisFrame;
+    private int _terrainStreamBindsThisFrame;
     private double _findVisibleMsThisFrame;
     private double _portalTraversalMsThisFrame;
     private double _terrainSubmitMsThisFrame;
@@ -352,6 +354,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     internal int SolidDrawsLastFrame => _solidDrawsLastFrame;
     internal int TranslucentDrawsLastFrame => _translucentDrawsLastFrame;
     internal ChunkPresentationProfileSnapshot PresentationProfile => _presentationProfile;
+    internal TerrainGpuArenaSnapshot TerrainGpuArenaProfile =>
+        _terrainGpuArenas?.Snapshot() ?? default;
 
     internal int MeshReadyRadius => _meshReadyRadius == int.MaxValue
         ? Math.Max(0, _lastRenderDistance)
@@ -660,6 +664,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         Counter("unassignedQuads", profile.UnassignedQuads);
         Counter("terrainUniformEntries", profile.TerrainUniformEntries);
         Counter("terrainSubmissionBatches", profile.TerrainSubmissionBatches);
+        Counter("terrainStreamBinds", profile.TerrainStreamBinds);
         var cost = MeshCostProfile;
         Counter("meshCostBuildSamples", cost.BuildSamples);
         Counter("meshCostUploadSamples", cost.UploadSamples);
@@ -673,6 +678,20 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         Counter("meshBuildAdmissionDeferrals", MeshBuildAdmissionDeferrals);
         Counter("meshUploadAdmissionDeferrals", MeshUploadAdmissionDeferrals);
         Counter("meshOversizedUploadAdmissions", MeshOversizedUploadAdmissions);
+        var arena = TerrainGpuArenaProfile;
+        Counter("terrainArenaRegions", arena.Regions);
+        Counter("terrainArenaGeometrySegments", arena.GeometrySegments);
+        Counter("terrainArenaLightingSegments", arena.LightingSegments);
+        Counter("terrainArenaCapacityBytes", arena.CapacityBytes);
+        Counter("terrainArenaAllocatedBytes", arena.AllocatedBytes);
+        Counter("terrainArenaFreeBytes", arena.FreeBytes);
+        Counter("terrainArenaLargestFreeRangeBytes", arena.LargestFreeRangeBytes);
+        Counter("terrainArenaFragmentedFreeBytes", arena.FragmentedFreeBytes);
+        Counter("terrainArenaActiveAllocations", arena.ActiveAllocations);
+        Counter("terrainArenaPendingRetirements", arena.PendingRetirements);
+        Counter("terrainArenaSegmentGrowths", arena.SegmentGrowths);
+        Counter("terrainArenaFailedAllocations", arena.FailedAllocations);
+        Value("terrainArenaExternalFragmentation", arena.ExternalFragmentation);
         text.AppendLine("timing\tsamples\tlastMs\taverageMs\tp50Ms\tp95Ms\tmaxMs");
         Timing("findVisible", profile.FindVisible);
         Timing("spatialCull", profile.SpatialCull);
@@ -723,6 +742,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _terrainSubmissionBatchesThisFrame = 0;
         _terrainPipelineBindsThisFrame = 0;
         _terrainTextureBindsThisFrame = 0;
+        _terrainStreamBindsThisFrame = 0;
         _terrainSubmitMsThisFrame = 0;
 
         var prepareFrameAt = Stopwatch.GetTimestamp();
@@ -935,6 +955,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         // can coalesce here, but cannot spend the frame budget before a critical block change.
         using (Profiler.Begin("LightRefresh"))
             RefreshPendingLights();
+        // Replacements and evictions happen after the frame's command buffer was submitted. The
+        // retired byte ranges can now be reused without invalidating an encoded draw.
+        _terrainGpuArenas?.EndFrame();
     }
 
     private void CollectDueEvictions()
@@ -1187,6 +1210,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 // presentation remains fully authoritative.
                 var presentation = SectionPresentation.Create(
                     device,
+                    _terrainGpuArenas ??= new TerrainGpuArenaSet(device),
+                    mesh.Pos,
                     mesh.Pages,
                     section.Renderer?.Presentation,
                     mesh.RebuildPlan,
@@ -1527,6 +1552,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             _unassignedQuadsThisFrame,
             _terrainUniformEntriesThisFrame,
             _terrainSubmissionBatchesThisFrame,
+            _terrainStreamBindsThisFrame,
             _terrainPipelineBindsThisFrame,
             _terrainTextureBindsThisFrame,
             _wgpuPipelines.Values.Sum(static pipeline => pipeline.DynamicUniformCapacity) +
@@ -3167,7 +3193,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 modelView, renderer.Position, fadeProgress,
                 translucent: false, applyHandoff: false));
 
-            _solidDrawsThisFrame += renderer.RenderWireframeWebGpu(pass);
+            var draws = renderer.RenderWireframeWebGpu(pass);
+            _solidDrawsThisFrame += draws;
+            _terrainStreamBindsThisFrame += draws;
         }
     }
 
@@ -3233,6 +3261,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _submittedQuadsThisFrame += stats.SubmittedQuads;
         _directionDrawRangesThisFrame += stats.DrawRanges;
         _unassignedQuadsThisFrame += stats.UnassignedQuads;
+        _terrainStreamBindsThisFrame += stats.StreamBinds;
     }
 
     /// <summary>
@@ -3287,6 +3316,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _lightEvaluation.Dispose();
 
         foreach (var state in _sections.Values) state.Dispose(MeshCancellationReason.RendererDisposed);
+        _terrainGpuArenas?.Dispose();
+        _terrainGpuArenas = null;
 
         foreach (var pipeline in _wgpuPipelines.Values)
         {

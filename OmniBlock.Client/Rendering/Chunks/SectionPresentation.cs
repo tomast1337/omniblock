@@ -1,6 +1,7 @@
 using OmniBlock.Client.Rendering.Chunks.Occlusion;
 using OmniBlock.Client.Rendering.Core.WebGPU;
 using OmniBlock.Worlds.Core.Systems;
+using Silk.NET.Maths;
 using Silk.NET.WebGPU;
 
 namespace OmniBlock.Client.Rendering.Chunks;
@@ -13,6 +14,8 @@ namespace OmniBlock.Client.Rendering.Chunks;
 internal sealed class SectionPresentation : IDisposable
 {
     private readonly SectionPagePresentation?[] _pages;
+    private readonly TerrainGpuArenaSet? _gpuArenas;
+    private readonly TerrainRenderRegionKey _regionKey;
     private bool _disposed;
     private MeshLifecycleRequest? _firstDrawTrace;
 
@@ -23,6 +26,8 @@ internal sealed class SectionPresentation : IDisposable
         ChunkVisibilityStore visibilityData,
         bool isLit,
         long epoch,
+        TerrainGpuArenaSet? gpuArenas,
+        TerrainRenderRegionKey regionKey,
         MeshLifecycleDiagnostics? lifecycle,
         MeshLifecycleRequest? firstDrawTrace)
     {
@@ -32,6 +37,8 @@ internal sealed class SectionPresentation : IDisposable
         VisibilityData = visibilityData;
         IsLit = isLit;
         Epoch = epoch;
+        _gpuArenas = gpuArenas;
+        _regionKey = regionKey;
         Lifecycle = lifecycle;
         _firstDrawTrace = IsEmpty ? null : firstDrawTrace;
     }
@@ -62,6 +69,8 @@ internal sealed class SectionPresentation : IDisposable
     /// </summary>
     public static SectionPresentation Create(
         WebGpuDevice device,
+        TerrainGpuArenaSet gpuArenas,
+        Vector3D<int> sectionPosition,
         MeshPageBuildResult[] replacements,
         SectionPresentation? current,
         SectionMeshRebuildPlan rebuildPlan,
@@ -77,6 +86,7 @@ internal sealed class SectionPresentation : IDisposable
         if (replacements.Length != rebuildPlan.PageBuildCount)
             throw new ArgumentException("The replacement page count does not match its rebuild mask.", nameof(replacements));
 
+        var regionKey = TerrainRenderRegionKey.FromSectionPosition(sectionPosition);
         var replacementByPage = new MeshPageBuildResult?[SectionMeshRebuildPlan.PageCount];
         foreach (var replacement in replacements)
         {
@@ -95,7 +105,8 @@ internal sealed class SectionPresentation : IDisposable
             for (var page = 0; page < pages.Length; page++)
             {
                 pages[page] = rebuildPlan.Includes(page)
-                    ? SectionPagePresentation.Create(device, replacementByPage[page]!)
+                    ? SectionPagePresentation.Create(
+                        device, gpuArenas, regionKey, replacementByPage[page]!)
                     : current!._pages[page]?.Acquire();
             }
 
@@ -103,7 +114,7 @@ internal sealed class SectionPresentation : IDisposable
             var translucentCount = pages.Sum(static page => page?.TranslucentVertexCount ?? 0);
             return new SectionPresentation(
                 pages, solidCount, translucentCount, visibilityData, isLit, epoch,
-                lifecycle, firstDrawTrace);
+                gpuArenas, regionKey, lifecycle, firstDrawTrace);
         }
         catch
         {
@@ -122,7 +133,8 @@ internal sealed class SectionPresentation : IDisposable
         bool isLit = false,
         int solidVertexCount = 0,
         int translucentVertexCount = 0) =>
-        new([], solidVertexCount, translucentVertexCount, visibilityData, isLit, epoch, null, null);
+        new([], solidVertexCount, translucentVertexCount, visibilityData, isLit, epoch,
+            null, default, null, null);
 
     public SectionPresentationLightPlan CaptureLightingPlan()
     {
@@ -138,6 +150,8 @@ internal sealed class SectionPresentation : IDisposable
         in SectionPresentationLightEvaluation evaluation)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_gpuArenas == null)
+            throw new InvalidOperationException("A metadata-only presentation cannot install lighting.");
         if (evaluation.PresentationEpoch != Epoch || evaluation.Pages.Length != _pages.Length)
             return false;
 
@@ -154,7 +168,8 @@ internal sealed class SectionPresentation : IDisposable
             for (var i = 0; i < _pages.Length; i++)
             {
                 if (evaluation.Pages[i] is { } pageEvaluation)
-                    replacements[i] = SectionLighting.CreateReplacement(device, pageEvaluation);
+                    replacements[i] = SectionLighting.CreateReplacementRegional(
+                        device, _gpuArenas, _regionKey, pageEvaluation);
             }
 
             for (var i = 0; i < _pages.Length; i++)
@@ -194,8 +209,8 @@ internal sealed class SectionPagePresentation
     private int _references = 1;
 
     private SectionPagePresentation(
-        WgpuMesh? solid,
-        WgpuMesh? translucent,
+        TerrainChunkQuadMesh? solid,
+        TerrainChunkQuadMesh? translucent,
         SectionLighting? lighting,
         int solidVertexCount,
         int translucentVertexCount,
@@ -211,18 +226,22 @@ internal sealed class SectionPagePresentation
         TranslucentRanges = translucentRanges;
     }
 
-    public WgpuMesh? Solid { get; }
-    public WgpuMesh? Translucent { get; }
+    public TerrainChunkQuadMesh? Solid { get; }
+    public TerrainChunkQuadMesh? Translucent { get; }
     public int SolidVertexCount { get; }
     public int TranslucentVertexCount { get; }
     public ChunkDirectionalRanges SolidRanges { get; }
     public ChunkDirectionalRanges TranslucentRanges { get; }
     public long LightingEpoch => _lighting?.Epoch ?? -1;
 
-    public static SectionPagePresentation Create(WebGpuDevice device, MeshPageBuildResult result)
+    public static SectionPagePresentation Create(
+        WebGpuDevice device,
+        TerrainGpuArenaSet gpuArenas,
+        TerrainRenderRegionKey regionKey,
+        MeshPageBuildResult result)
     {
-        WgpuMesh? solid = null;
-        WgpuMesh? translucent = null;
+        TerrainChunkQuadMesh? solid = null;
+        TerrainChunkQuadMesh? translucent = null;
         SectionLighting? lighting = null;
         var solidCount = result.Solid?.Count ?? 0;
         var translucentCount = result.Translucent?.Count ?? 0;
@@ -235,10 +254,13 @@ internal sealed class SectionPagePresentation
                 translucentCount != result.TranslucentRanges.AvailableQuadCount * 4)
                 throw new ArgumentException("Terrain geometry and directional ranges must have matching vertex counts.");
 
-            if (solidCount > 0) solid = WgpuMesh.FromChunkQuads(device, result.Solid!.Span);
-            if (translucentCount > 0) translucent = WgpuMesh.FromChunkQuads(device, result.Translucent!.Span);
-            lighting = SectionLighting.CreateInitial(
-                device, result.SolidLighting, result.TranslucentLighting);
+            if (solidCount > 0)
+                solid = TerrainChunkQuadMesh.Create(device, gpuArenas, regionKey, result.Solid!.Span);
+            if (translucentCount > 0)
+                translucent = TerrainChunkQuadMesh.Create(
+                    device, gpuArenas, regionKey, result.Translucent!.Span);
+            lighting = SectionLighting.CreateInitialRegional(
+                device, gpuArenas, regionKey, result.SolidLighting, result.TranslucentLighting);
             return new SectionPagePresentation(
                 solid, translucent, lighting, solidCount, translucentCount,
                 result.SolidRanges, result.TranslucentRanges);
@@ -280,10 +302,10 @@ internal sealed class SectionPagePresentation
         Interlocked.Exchange(ref _lighting, replacement)?.Dispose();
     }
 
-    public unsafe Silk.NET.WebGPU.Buffer* LightBufferFor(int pass)
+    public TerrainGpuBufferSlice LightSliceFor(int pass)
     {
         var lighting = _lighting;
-        return lighting == null ? null : pass == 0 ? lighting.Solid : lighting.Translucent;
+        return lighting == null ? default : pass == 0 ? lighting.SolidSlice : lighting.TranslucentSlice;
     }
 
     public ChunkDirectionalRanges RangesFor(int pass) =>
