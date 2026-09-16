@@ -47,13 +47,6 @@ internal sealed class DebugWindowManager
     /// <summary>Top-left screen position of the "Game Viewport" content area, in window pixel coordinates.</summary>
     public Vector2 ViewportPos { get; private set; }
 
-    /// <summary>
-    ///     Id of the rendered frame to display in the viewport — an OpenGL texture name under GL,
-    ///     or a <see cref="OmniBlock.Client.Rendering.Core.WebGPU.ImGuiWgpuBackend" /> id under
-    ///     WebGPU. Zero shows nothing.
-    /// </summary>
-    public ulong ViewportTextureId { get; set; }
-
     public unsafe void Render(float deltaTime)
     {
         ImGuiIO* io = ImGui.GetIO();
@@ -129,15 +122,13 @@ internal sealed class DebugWindowManager
                 // Derive focus from whether the mouse is physically inside the viewport rect,
                 // since NoMouseInputs prevents IsWindowFocused() from ever being true.
                 GameViewportFocused = ImGui.IsMouseHoveringRect(ViewportPos, ViewportPos + contentSize, false);
-                if (ViewportTextureId != 0 && contentSize.X > 0 && contentSize.Y > 0)
-                {
-                    // No Y-flip: WebGPU's offscreen colour view (sampled the same way the swapchain
-                    // blit already does) has its origin at top-left, unlike a GL FBO's bottom-left.
-                    Vector2 uv0 = new(0, 0);
-                    Vector2 uv1 = new(1, 1);
-
-                    ImGui.Image(new ImTextureRef(null, new ImTextureID(ViewportTextureId)), contentSize, uv0, uv1);
-                }
+                // This window owns layout and input only. WebGPU composites the game directly into
+                // this swapchain rectangle before the ImGui overlay pass, leaving a real hole in
+                // the dashboard instead of copying the frame into a texture for ImGui.Image to
+                // sample again. Dummy preserves an item-sized content region for ImGui navigation
+                // and clipping without emitting geometry or a texture draw.
+                if (contentSize.X > 0 && contentSize.Y > 0)
+                    ImGui.Dummy(contentSize);
             }
             else
             {

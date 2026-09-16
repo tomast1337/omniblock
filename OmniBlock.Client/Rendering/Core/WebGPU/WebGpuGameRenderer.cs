@@ -19,6 +19,8 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     /// <summary>Position (3 floats) then texcoord (2 floats), as blit.wgsl declares them.</summary>
     private const uint BlitQuadStride = 20;
 
+    private readonly record struct SwapchainViewport(uint X, uint Y, uint Width, uint Height);
+
     private readonly WebGpuDrawTarget _drawTarget;
     private readonly OmniBlock _game;
     private readonly Dictionary<Texture2D, (WgpuTexture Texture, ulong ImGuiId)> _imguiTextures = [];
@@ -28,7 +30,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     private bool _disposed;
     private ImGuiWgpuBackend? _imguiWgpu;
     private WgpuFramebuffer? _offscreenFb;
-    private WgpuFramebuffer? _presentFb;
+    private WgpuFramebuffer? _screenshotFb;
 
     public WebGpuGameRenderer(OmniBlock game)
     {
@@ -44,25 +46,22 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     /// <summary>
     ///     Set by the caller from the F3 debug viewport's content size, in pixels; null when that
     ///     window is not open. While set, the world renders at this size into the offscreen
-    ///     framebuffer instead of the swapchain's, and the swapchain is left cleared rather than
-    ///     blitted onto — see <see cref="ViewportTextureId" />.
+    ///     framebuffer, then composites directly into the corresponding swapchain rectangle.
     /// </summary>
     public (uint Width, uint Height)? ViewportSize { get; set; }
 
     /// <summary>
-    ///     Id ImGui.Image can draw the world's last frame through while <see cref="ViewportSize" />
-    ///     is set. Zero otherwise.
+    ///     Top-left swapchain position of the F3 game viewport. ImGui owns the rectangle's layout
+    ///     but deliberately emits no image for it; WebGPU fills the rectangle directly.
     /// </summary>
-    public ulong ViewportTextureId { get; private set; }
+    public (uint X, uint Y)? ViewportPosition { get; set; }
 
     /// <summary>
     ///     Set by the caller to whether the debug UI is open this frame. ImGui only calls
     ///     <c>ImGui.Render()</c> on such a frame — on every other one, <c>ImGui.GetDrawData()</c>
     ///     keeps returning whatever it last built, so without this the overlay pass would go on
-    ///     redrawing a stale, fully-open debug UI (opaque docked panel backgrounds and all) forever
-    ///     after the UI was closed, with only its Game Viewport image blanked out from the texture
-    ///     this frame just unregistered — which is what painted the screen solid dark, not black
-    ///     exactly, but close enough to read as it.
+    ///     redrawing a stale, fully-open debug UI (opaque docked panel backgrounds and all) after
+    ///     the dashboard was closed.
     /// </summary>
     public bool ImguiOpen { get; set; }
 
@@ -99,7 +98,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         _disposed = true;
 
         _offscreenFb?.Dispose();
-        _presentFb?.Dispose();
+        _screenshotFb?.Dispose();
         _blitPipeline?.Dispose();
         _blitQuad?.Dispose();
         _cloudBlurPass?.Dispose();
@@ -161,39 +160,9 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         device.GpuProfiler.BeginFrame(encoder, width, height);
         device.GpuProfiler.RecordLatestToProfiler();
 
-        var resized = _offscreenFb!.ResizeIfNeeded(device, width, height);
-        _presentFb!.ResizeIfNeeded(device, width, height);
+        _offscreenFb!.ResizeIfNeeded(device, width, height);
         _cloudBlurPass!.Resize(device, width, height);
         _cloudBlurPass.Encoder = encoder;
-
-        if (viewport is not null)
-        {
-            // Register once, then Update (never re-Register) on every real resize after that — the
-            // id has to stay stable across a resize: see ImGuiWgpuBackend.UpdateExternalTexture for
-            // why minting a fresh id here silently blanked the image forever instead of just on the
-            // frames an actual resize happened.
-            //
-            // This has to key off _offscreenFb's ResizeIfNeeded return value, not compare ColorView
-            // against a remembered pointer: a released TextureView's address can be handed back by
-            // the allocator to a later, genuinely-different view, so a pointer that looks unchanged
-            // is not proof the view is — that false "unchanged" reading is what let a stale bind
-            // group survive a real resize and made the viewport image freeze on whatever it last
-            // held. _presentFb resizes in lockstep with _offscreenFb (same width/height, above), so
-            // one flag covers both.
-            if (ViewportTextureId == 0)
-            {
-                ViewportTextureId = _imguiWgpu!.RegisterExternalTexture(_presentFb.ColorView);
-            }
-            else if (resized)
-            {
-                _imguiWgpu!.UpdateExternalTexture(ViewportTextureId, _presentFb.ColorView);
-            }
-        }
-        else if (ViewportTextureId != 0)
-        {
-            _imguiWgpu?.UnregisterExternalTexture(ViewportTextureId);
-            ViewportTextureId = 0;
-        }
 
         // How a block-shaped draw is lit, this frame. Default with no world, so the menus do not
         // inherit the last one's nightfall. Read by everything that builds a uniform block below.
@@ -272,49 +241,35 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         RenderInterfacePass(device, encoder, tickDelta);
         Profiler.Record("InterfacePassCpu", Stopwatch.GetElapsedTime(interfaceStarted).TotalMilliseconds);
 
-        // --- Swapchain pass: gamma-correct the composited frame onto its final target(s) ---
+        // --- Swapchain pass: gamma-correct the composited frame onto its final target ---
         var compositeStarted = Stopwatch.GetTimestamp();
         // gamma.frag's GL equivalent is a full-screen pass FramebufferManager.End runs every frame
         // regardless of the debug viewport, so this runs the same way here: blit.wgsl now applies
         // the same gamma curve, and every consumer of the composited frame reads it through this,
         // never straight off _offscreenFb.
-        // While the F3 debug viewport is open the frame belongs in its ImGui::Image (drawn into
-        // _presentFb below), not blitted full-screen underneath it — leaving the swapchain cleared
-        // is enough; the compositor still needs *something* to present.
-        if (viewport is null)
-        {
-            BlitToSwapchain(device, encoder, swapView);
-        }
-        else
-        {
-            RenderPassColorAttachment colorAttach = new()
-            {
-                View = swapView,
-                LoadOp = LoadOp.Clear,
-                StoreOp = StoreOp.Store,
-                ClearValue = new Color(0, 0, 0, 1)
-            };
-            RenderPassDescriptor swapDesc = new()
-            {
-                ColorAttachmentCount = 1,
-                ColorAttachments = &colorAttach
-            };
-            RenderPassTimestampWrites timestampWrites = default;
-            if (device.GpuProfiler.TryCreatePassWrites(GpuPassCategory.Composite, out timestampWrites))
-                swapDesc.TimestampWrites = &timestampWrites;
-            var swapPass = api.CommandEncoderBeginRenderPass(encoder, in swapDesc);
-            api.RenderPassEncoderEnd(swapPass);
-            api.RenderPassEncoderRelease(swapPass);
-        }
+        // The debug dashboard reserves a transparent rectangle through ImGui layout. Composite
+        // directly into that swapchain rectangle instead of copying the frame to a second texture
+        // and asking ImGui.Image to sample it back. This keeps the dashboard out of the game's
+        // presentation path and removes a full viewport-sized render-target pass.
+        SwapchainViewport? presentationViewport = viewport is not null && ViewportPosition is { } position
+            ? new SwapchainViewport(position.X, position.Y, viewport.Value.Width, viewport.Value.Height)
+            : null;
+        var swapchainBlitStarted = Stopwatch.GetTimestamp();
+        BlitToSwapchain(device, encoder, swapView, presentationViewport);
+        Profiler.Record("SwapchainBlitCpu",
+            Stopwatch.GetElapsedTime(swapchainBlitStarted).TotalMilliseconds);
 
-        // --- Present pass: the same gamma-corrected frame again, into the texture ImGui shows
-        // while the F3 debug viewport is open, or a screenshot capture reads from — both need a
-        // texture created with CopySrc, which the swapchain's own is not guaranteed to carry.
+        // Screenshots still need a CopySrc texture because swapchain textures are not guaranteed to
+        // support readback. Allocate and render that target only for an actual capture; it is no
+        // longer part of every debug-dashboard frame.
         var capturing = ScreenshotRequested;
-        if (viewport is not null || capturing)
+        if (capturing)
         {
+            _screenshotFb ??= WgpuFramebuffer.CreateColor(device,
+                width, height, device.SurfaceFormat);
+            _screenshotFb.ResizeIfNeeded(device, width, height);
             var presentPass = BeginSwapPass(
-                device, encoder, _presentFb!.ColorView, null, GpuPassCategory.Composite);
+                device, encoder, _screenshotFb.ColorView, null, GpuPassCategory.Composite);
             api.RenderPassEncoderSetPipeline(presentPass, _blitPipeline!.Pipeline);
             _blitPipeline.BindUniformGroup(presentPass);
             api.RenderPassEncoderSetBindGroup(presentPass, 1,
@@ -333,6 +288,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         // closed, since NewFrame()/Render() are not called at all while it is, and drawing that
         // forever after close is exactly the bug this guards against.
         var drawData = ImGui.GetDrawData();
+        var imguiDrawStarted = Stopwatch.GetTimestamp();
         if (ImguiOpen && drawData.Handle is not null)
         {
             var overlayPass = BeginSwapPass(
@@ -341,9 +297,10 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             api.RenderPassEncoderEnd(overlayPass);
             api.RenderPassEncoderRelease(overlayPass);
         }
+        Profiler.Record("ImguiDrawCpu", Stopwatch.GetElapsedTime(imguiDrawStarted).TotalMilliseconds);
         Profiler.Record("CompositePassCpu", Stopwatch.GetElapsedTime(compositeStarted).TotalMilliseconds);
 
-        // A screenshot copies out of _presentFb — populated above precisely because capturing was
+        // A screenshot copies out of _screenshotFb — populated above precisely because capturing was
         // true — into a MapRead buffer. The copy has to be recorded on this same encoder, before
         // it is finished; the actual host-side read happens after submission, once the GPU has run
         // it (see the map/poll loop below Present()).
@@ -351,8 +308,8 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         uint screenshotBytesPerRow = 0, screenshotWidth = 0, screenshotHeight = 0;
         if (capturing)
         {
-            screenshotWidth = _presentFb!.Width;
-            screenshotHeight = _presentFb.Height;
+            screenshotWidth = _screenshotFb!.Width;
+            screenshotHeight = _screenshotFb.Height;
             screenshotBytesPerRow = (screenshotWidth * 4 + 255) / 256 * 256;
 
             BufferDescriptor screenshotBufferDesc = new()
@@ -364,7 +321,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
 
             ImageCopyTexture copySrc = new()
             {
-                Texture = _presentFb.ColorTexture,
+                Texture = _screenshotFb.ColorTexture,
                 MipLevel = 0,
                 Origin = default,
                 Aspect = TextureAspect.All
@@ -505,7 +462,8 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     ///     <see cref="_blitPipeline" />. Shared by <see cref="RenderFrame" /> and
     ///     <see cref="RenderLoadingFrame" /> rather than duplicated between them.
     /// </summary>
-    private void BlitToSwapchain(WebGpuDevice device, CommandEncoder* encoder, TextureView* swapView)
+    private void BlitToSwapchain(WebGpuDevice device, CommandEncoder* encoder, TextureView* swapView,
+        SwapchainViewport? requestedViewport = null)
     {
         var api = device.Api;
 
@@ -531,14 +489,38 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             swapDesc.TimestampWrites = &timestampWrites;
 
         var swapPass = api.CommandEncoderBeginRenderPass(encoder, in swapDesc);
+        var draw = true;
+
+        if (requestedViewport is { } requested)
+        {
+            // ImGui positions are expected in the same top-left framebuffer coordinate space as
+            // WebGPU viewports. Clamp defensively: a dock resize can produce one frame whose
+            // layout rectangle extends past a simultaneously resized surface.
+            var x = Math.Min(requested.X, device.Width);
+            var y = Math.Min(requested.Y, device.Height);
+            var width = Math.Min(requested.Width, device.Width - x);
+            var height = Math.Min(requested.Height, device.Height - y);
+            if (width > 0 && height > 0)
+            {
+                api.RenderPassEncoderSetViewport(swapPass, x, y, width, height, 0, 1);
+                api.RenderPassEncoderSetScissorRect(swapPass, x, y, width, height);
+            }
+            else
+            {
+                draw = false;
+            }
+        }
 
         // blit.wgsl reads a quad from a vertex buffer and declares the texture and sampler in
         // group 1, behind the uniform group every pipeline here carries at group 0.
-        api.RenderPassEncoderSetPipeline(swapPass, _blitPipeline.Pipeline);
-        _blitPipeline.BindUniformGroup(swapPass);
-        api.RenderPassEncoderSetBindGroup(swapPass, 1,
-            _offscreenFb!.GetBlitBindGroup(device, _blitPipeline.TextureBindGroupLayout), 0, null);
-        _blitQuad!.Draw(swapPass);
+        if (draw)
+        {
+            api.RenderPassEncoderSetPipeline(swapPass, _blitPipeline.Pipeline);
+            _blitPipeline.BindUniformGroup(swapPass);
+            api.RenderPassEncoderSetBindGroup(swapPass, 1,
+                _offscreenFb!.GetBlitBindGroup(device, _blitPipeline.TextureBindGroupLayout), 0, null);
+            _blitQuad!.Draw(swapPass);
+        }
 
         api.RenderPassEncoderEnd(swapPass);
         api.RenderPassEncoderRelease(swapPass);
@@ -586,7 +568,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         var mappedPtr = api.BufferGetConstMappedRange(buffer, 0, bytesPerRow * height);
         ReadOnlySpan<byte> padded = new(mappedPtr, (int)(bytesPerRow * height));
 
-        // _presentFb is always Bgra8Unorm or Rgba8Unorm (WebGpuDevice.ChooseSurfaceConfiguration
+        // _screenshotFb is always Bgra8Unorm or Rgba8Unorm (WebGpuDevice.ChooseSurfaceConfiguration
         // only ever picks one of those two) — everything else about the row is identical between
         // them, just the first and third byte swapped.
         var bgra = device.SurfaceFormat == TextureFormat.Bgra8Unorm;
@@ -816,15 +798,6 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
                 device.SurfaceFormat);
 
             _blitQuad = CreateBlitQuad(device);
-        }
-
-        // The texture ImGui's Game Viewport samples while the F3 debug window is open — see
-        // RenderFrame's gamma pass. Colour-only: it is a copy destination for a full-screen quad,
-        // never a render target anything depth-tests against.
-        if (_presentFb == null)
-        {
-            _presentFb = WgpuFramebuffer.CreateColor(device,
-                device.Width, device.Height, device.SurfaceFormat);
         }
 
         if (_cloudBlurPass == null)

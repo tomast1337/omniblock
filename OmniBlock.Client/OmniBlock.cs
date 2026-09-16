@@ -1355,6 +1355,7 @@ public partial class OmniBlock :
                     }
 
                     var imguiThisFrame = Options.ShowDebugInfo;
+                    var imguiFramebufferScale = Vector2.One;
                     if (imguiThisFrame)
                     {
                         ImGuiImplGLFW.NewFrame();
@@ -1368,6 +1369,7 @@ public partial class OmniBlock :
                             io->DisplayFramebufferScale = new Vector2(
                                 Display.getFramebufferWidth() / (float)w,
                                 Display.getFramebufferHeight() / (float)h);
+                            imguiFramebufferScale = io->DisplayFramebufferScale;
                         }
 
                         ImGui.NewFrame();
@@ -1413,9 +1415,8 @@ public partial class OmniBlock :
 
                     int savedWidth = DisplayWidth, savedHeight = DisplayHeight;
 
-                    // WebGPU hands the offscreen framebuffer's own colour view to
-                    // ImGuiWgpuBackend.RegisterExternalTexture, inside WebGpuGameRenderer.RenderFrame,
-                    // once ViewportSize below tells it to.
+                    // ImGui owns the debug viewport's layout, while WebGPU composites the game
+                    // directly into the resulting swapchain rectangle.
                     if (imguiThisFrame)
                     {
                         // Sizing happens below instead, after DebugWindowManager.Render() runs —
@@ -1429,33 +1430,35 @@ public partial class OmniBlock :
                     else
                     {
                         WebGpuRenderer.ViewportSize = null;
+                        WebGpuRenderer.ViewportPosition = null;
                         DebugViewportOffset = Vector2.Zero;
                     }
 
-                    // WebGPU builds and submits its ImGui draw data as one of the passes recorded
-                    // inside RenderFrame() below, so that data has to already exist by the time
-                    // RenderFrame() runs — ImGui.Render() has to come first. The ViewportTextureId
-                    // this feeds ImGui.Image is therefore last frame's, same as it always was here —
-                    // RenderFrame() has not run yet to produce a fresher one.
+                    // WebGPU builds and submits ImGui draw data as one of the passes recorded inside
+                    // RenderFrame() below, so ImGui must finish layout first. That same layout gives
+                    // the renderer the exact swapchain rectangle it fills before drawing the panels.
                     if (imguiThisFrame)
                     {
-                        _debugWindowManager.ViewportTextureId = WebGpuRenderer.ViewportTextureId;
-
                         using (Profiler.Begin("ImguiBuild"))
                         {
                             _debugWindowManager.Render(Timer.DeltaTime);
                         }
 
-                        // Read the size Render() just produced, not a value read before it ran —
-                        // RenderFrame() below resizes the offscreen texture from this same reading,
-                        // and the draw data ImGui.Render() is about to bake already has an Image
-                        // widget sized from it. Same reading, same frame, for both: no lag left for
-                        // a drag to fall behind on.
+                        // Read the rectangle Render() just produced, not a value from the previous
+                        // frame. The offscreen render size and the swapchain viewport must follow
+                        // the exact same layout result so a dock resize cannot create a gap.
                         var vpSize = _debugWindowManager.ViewportSize;
                         if (vpSize.X > 0 && vpSize.Y > 0)
                         {
                             int vpW = (int)vpSize.X, vpH = (int)vpSize.Y;
-                            WebGpuRenderer.ViewportSize = ((uint)vpW, (uint)vpH);
+                            WebGpuRenderer.ViewportSize = (
+                                (uint)Math.Max(1, (int)MathF.Round(vpSize.X * imguiFramebufferScale.X)),
+                                (uint)Math.Max(1, (int)MathF.Round(vpSize.Y * imguiFramebufferScale.Y)));
+                            WebGpuRenderer.ViewportPosition = (
+                                (uint)Math.Max(0, (int)MathF.Round(
+                                    _debugWindowManager.ViewportPos.X * imguiFramebufferScale.X)),
+                                (uint)Math.Max(0, (int)MathF.Round(
+                                    _debugWindowManager.ViewportPos.Y * imguiFramebufferScale.Y)));
                             DisplayWidth = vpW;
                             DisplayHeight = vpH;
 
@@ -1466,6 +1469,7 @@ public partial class OmniBlock :
                         else
                         {
                             WebGpuRenderer.ViewportSize = null;
+                            WebGpuRenderer.ViewportPosition = null;
                             DebugViewportOffset = Vector2.Zero;
                         }
 
