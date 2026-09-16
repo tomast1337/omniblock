@@ -87,6 +87,32 @@ public sealed class TerrainGpuRangeAllocatorTests
     }
 
     [Fact]
+    public void Opaque_bundle_camera_key_collapses_motion_outside_the_region()
+    {
+        var region = new TerrainRenderRegionKey(2, 1, -3);
+
+        var farA = OpaqueDirectionalCameraKey.From(new Vector3D<double>(0, 0, 0), region);
+        var farB = OpaqueDirectionalCameraKey.From(new Vector3D<double>(100, 20, -10), region);
+
+        Assert.Equal(farA, farB);
+    }
+
+    [Fact]
+    public void Opaque_bundle_camera_key_changes_at_directional_planes()
+    {
+        var region = new TerrainRenderRegionKey(0, 0, 0);
+
+        var before = OpaqueDirectionalCameraKey.From(new Vector3D<double>(15.5, 5, 8), region);
+        var boundary = OpaqueDirectionalCameraKey.From(new Vector3D<double>(16, 8, 8), region);
+        var after = OpaqueDirectionalCameraKey.From(new Vector3D<double>(16.5, 8.5, 8), region);
+
+        Assert.NotEqual(before.X, boundary.X);
+        Assert.NotEqual(boundary.X, after.X);
+        Assert.NotEqual(before.Y, boundary.Y);
+        Assert.NotEqual(boundary.Y, after.Y);
+    }
+
+    [Fact]
     public void Allocations_are_aligned_reused_and_fully_coalesced()
     {
         TerrainGpuRangeAllocator allocator = new(1024);

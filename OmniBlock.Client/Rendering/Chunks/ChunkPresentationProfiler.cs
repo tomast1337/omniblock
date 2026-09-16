@@ -127,6 +127,8 @@ internal readonly record struct ChunkPresentationProfileSnapshot(
     long OpaqueBundleHits,
     long OpaqueBundleBuilds,
     long OpaqueBundleFallbackFrames,
+    long OpaqueBundleRegionInvalidations,
+    int OpaqueBundleCachedRegions,
     FrameTimingSnapshot FindVisible,
     FrameTimingSnapshot SpatialCull,
     FrameTimingSnapshot CandidateSort,

@@ -50,14 +50,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     //TODO: MAKE THIS CONFIGURABLE
     private const double MeshUploadBudgetMs = 1.5;
     private const long MeshUploadBudgetBytes = 8L * 1024 * 1024;
-    // The bundle prototype regressed p95 for small downward-facing sets (~150 sections) while
-    // improving large forward sets (~540). Keep ordinary recording below this measured boundary.
-    private const int OpaqueBundleMinimumSections = 256;
-    private const int OpaqueBundlePromotionFrames = 4;
-    // The whole-view prototype remains opt-in for controlled captures. Active streaming invalidates
-    // it too broadly; the production follow-up must cache per render region instead.
-    private static readonly bool s_opaqueBundlePrototypeEnabled =
-        Environment.GetEnvironmentVariable("OMNIBLOCK_OPAQUE_RENDER_BUNDLES") == "1";
+    private const int OpaqueRegionBundleMinimumSections = 4;
+    private const int OpaqueRegionBundleBuildLimitPerFrame = 8;
+    // Enabled after controlled moving-streaming captures showed a material p95 win. Keep a simple
+    // opt-out for A/B diagnostics and backend-specific regressions.
+    private static readonly bool s_opaqueRegionBundlesEnabled =
+        Environment.GetEnvironmentVariable("OMNIBLOCK_OPAQUE_REGION_BUNDLES") != "0";
 
     //TODO: MAKE THIS CONFIGURABLE
     private const double MeshDispatchBudgetMs = 1.5;
@@ -111,6 +109,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly List<SubChunkRenderer> _solidRenderers = [];
     private readonly List<SubChunkRenderer> _spatialCandidates = [];
     private readonly List<SubChunkRenderer> _translucentRenderers = [];
+    private readonly Dictionary<TerrainRenderRegionKey, OpaqueRegionBundleState> _opaqueRegionBundles = [];
+    private readonly List<OpaqueRegionRange> _opaqueFallbackRegions = [];
     // Includes empty presentations because portal traversal and near-field presentation
     // diagnostics operate on resident sections, not only drawable geometry layers.
     private readonly List<SubChunkRenderer> _visibleRenderers = [];
@@ -194,12 +194,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private long _opaqueBundleCandidateFrames;
     private long _opaqueBundleReusableFrames;
     private long _opaqueBundleInvalidations;
-    private unsafe RenderBundle* _opaqueRenderBundle;
-    private ulong _opaqueRenderBundleSignature;
     private long _opaqueBundleHits;
     private long _opaqueBundleBuilds;
     private long _opaqueBundleFallbackFrames;
-    private int _opaqueBundleCandidateStreak;
+    private long _opaqueBundleRegionInvalidations;
     private double _findVisibleMsThisFrame;
     private double _portalTraversalMsThisFrame;
     private double _terrainSubmitMsThisFrame;
@@ -214,6 +212,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private ChunkDrawMetadata[] _translucentUniformScratch = [];
     private int[] _solidUniformSlotScratch = [];
     private int[] _translucentUniformSlotScratch = [];
+    private nint[] _opaqueBundleExecutionScratch = [];
 
     static ChunkRenderer()
     {
@@ -519,6 +518,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("opaqueBundleHits\t").Append(presentation.OpaqueBundleHits).AppendLine();
         text.Append("opaqueBundleBuilds\t").Append(presentation.OpaqueBundleBuilds).AppendLine();
         text.Append("opaqueBundleFallbackFrames\t").Append(presentation.OpaqueBundleFallbackFrames).AppendLine();
+        text.Append("opaqueBundleRegionInvalidations\t").Append(presentation.OpaqueBundleRegionInvalidations).AppendLine();
+        text.Append("opaqueBundleCachedRegions\t").Append(presentation.OpaqueBundleCachedRegions).AppendLine();
         AppendTiming("findVisible", presentation.FindVisible);
         AppendTiming("spatialCull", presentation.SpatialCull);
         AppendTiming("candidateSort", presentation.CandidateSort);
@@ -701,6 +702,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         Counter("opaqueBundleHits", profile.OpaqueBundleHits);
         Counter("opaqueBundleBuilds", profile.OpaqueBundleBuilds);
         Counter("opaqueBundleFallbackFrames", profile.OpaqueBundleFallbackFrames);
+        Counter("opaqueBundleRegionInvalidations", profile.OpaqueBundleRegionInvalidations);
+        Counter("opaqueBundleCachedRegions", profile.OpaqueBundleCachedRegions);
         var cost = MeshCostProfile;
         Counter("meshCostBuildSamples", cost.BuildSamples);
         Counter("meshCostUploadSamples", cost.UploadSamples);
@@ -1019,7 +1022,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 ClearLightEvaluation(renderer.Position);
                 section.DetachRenderer();
                 section.Dispose();
+                var regionKey = TerrainRenderRegionKey.FromSectionPosition(renderer.Position);
                 _drawMetadataSlots.Release(renderer.Position, renderer.DrawMetadataSlot);
+                ReleaseOpaqueRegionBundle(regionKey, countInvalidation: true);
                 renderer.DrawMetadataSlot = -1;
                 renderer.Dispose();
             }
@@ -1327,6 +1332,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     _residentSections.Add(section);
                     UpdateAdjacency(resident, true);
                 }
+
+                // Geometry/page ownership changed even when this was an in-place section
+                // replacement. Any recorded regional commands must stop referencing the old page
+                // ranges before the next frame can reuse them.
+                ReleaseOpaqueRegionBundle(
+                    TerrainRenderRegionKey.FromSectionPosition(mesh.Pos), countInvalidation: true);
 
                 section.NotePresentationInstalled(_frameIndex);
                 section.RecordMeshCost(mesh.BuildMs, mesh.RetainedBytes, mesh.RebuildPlan.PageBuildCount);
@@ -1652,6 +1663,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             _opaqueBundleHits,
             _opaqueBundleBuilds,
             _opaqueBundleFallbackFrames,
+            _opaqueBundleRegionInvalidations,
+            _opaqueRegionBundles.Values.Count(static state => state.Bundle != 0),
             _findVisibleTimings.Snapshot(),
             _spatialCullTimings.Snapshot(),
             _candidateSortTimings.Snapshot(),
@@ -3233,29 +3246,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         var t1 = Stopwatch.GetTimestamp();
         Profiler.Record("UniformUpload", (t1 - t0) * 1000.0 / Stopwatch.Frequency);
 
-        if (!s_opaqueBundlePrototypeEnabled || count < OpaqueBundleMinimumSections)
+        if (!s_opaqueRegionBundlesEnabled)
         {
-            ReleaseOpaqueRenderBundle();
             _opaqueBundleFallbackFrames++;
-            pipeline.Bind(pass);
-            _terrainPipelineBindsThisFrame++;
-            pipeline.BindUniformGroup(pass);
-            var ordinaryApi = WebGpuDevice.Current!.Api;
-            WgpuPipeline.BindGroup(pass, 1, textureGroup, ordinaryApi);
-            _terrainTextureBindsThisFrame++;
-            pipeline.BindDrawStorage(pass);
-
-            var streamBinding = new TerrainStreamBindingState();
-            var ordinarySignature = BeginOpaqueCommandSignature();
-            for (var i = 0; i < count; i++)
-            {
-                var stats = _solidRenderers[i].RenderWebGpu(
-                    pass, 0, _lastViewPos, ref streamBinding,
-                    checked((uint)_solidRenderers[i].DrawMetadataSlot));
-                ordinarySignature = (ordinarySignature ^ stats.CommandSignature) * 1099511628211UL;
-                RecordDirectionalDraw(stats);
-                _solidDrawsThisFrame += stats.DrawRanges;
-            }
+            _opaqueFallbackRegions.Clear();
+            _opaqueFallbackRegions.Add(new OpaqueRegionRange(0, count));
+            var ordinarySignature = RenderOpaqueRangesOrdinarily(
+                pass, pipeline, textureGroup, _opaqueFallbackRegions);
             RecordOpaqueBundleCandidate(ordinarySignature);
 
             var ordinaryEnd = Stopwatch.GetTimestamp();
@@ -3263,50 +3260,84 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             return;
         }
 
-        var repeatedCandidate = _hasOpaqueBundleSignature;
-        var commandSignature = MeasureOpaqueCommandSet(pipeline, textureGroup, out var measured);
-        repeatedCandidate &= commandSignature == _opaqueBundleSignature;
-        _opaqueBundleCandidateStreak = repeatedCandidate
-            ? _opaqueBundleCandidateStreak + 1
-            : 1;
-        RecordOpaqueBundleCandidate(commandSignature);
-        RecordDirectionalDraw(measured);
-        _solidDrawsThisFrame += measured.DrawRanges;
-
         var api = WebGpuDevice.Current!.Api;
-        if (_opaqueRenderBundle is not null && _opaqueRenderBundleSignature == commandSignature)
+        _opaqueFallbackRegions.Clear();
+        var executionCount = 0;
+        var buildsThisFrame = 0;
+        var wholeFrameSignature = BeginOpaqueCommandSignature();
+        var regionStart = 0;
+        while (regionStart < count)
         {
-            var bundle = _opaqueRenderBundle;
-            api.RenderPassEncoderExecuteBundles(pass, 1, &bundle);
-            _opaqueBundleHits++;
-        }
-        else if (_opaqueBundleCandidateStreak >= OpaqueBundlePromotionFrames)
-        {
-            ReleaseOpaqueRenderBundle();
-            _opaqueRenderBundle = BuildOpaqueRenderBundle(pipeline, textureGroup);
-            _opaqueRenderBundleSignature = commandSignature;
-            _opaqueBundleBuilds++;
-            var bundle = _opaqueRenderBundle;
-            api.RenderPassEncoderExecuteBundles(pass, 1, &bundle);
-        }
-        else
-        {
-            ReleaseOpaqueRenderBundle();
-            _opaqueBundleFallbackFrames++;
-            pipeline.Bind(pass);
-            _terrainPipelineBindsThisFrame++;
-            pipeline.BindUniformGroup(pass);
-            WgpuPipeline.BindGroup(pass, 1, textureGroup, api);
-            _terrainTextureBindsThisFrame++;
-            pipeline.BindDrawStorage(pass);
+            var regionKey = TerrainRenderRegionKey.FromSectionPosition(_solidRenderers[regionStart].Position);
+            var regionEnd = regionStart + 1;
+            while (regionEnd < count &&
+                   TerrainRenderRegionKey.FromSectionPosition(_solidRenderers[regionEnd].Position) == regionKey)
+                regionEnd++;
 
-            var streamBinding = new TerrainStreamBindingState();
-            for (var i = 0; i < count; i++)
+            var commandKey = BuildOpaqueRegionCommandKey(
+                pipeline, textureGroup, regionKey, regionStart, regionEnd);
+            wholeFrameSignature = AddOpaqueSignature(
+                wholeFrameSignature, unchecked((long)commandKey.Fingerprint()));
+
+            if (!_opaqueRegionBundles.TryGetValue(regionKey, out var state))
             {
-                var stats = _solidRenderers[i].RenderWebGpu(
-                    pass, 0, _lastViewPos, ref streamBinding,
-                    checked((uint)_solidRenderers[i].DrawMetadataSlot));
-                _terrainStreamBindsThisFrame += stats.StreamBinds;
+                state = new OpaqueRegionBundleState();
+                _opaqueRegionBundles.Add(regionKey, state);
+            }
+
+            if (state.Bundle != 0 && state.BundleKey == commandKey)
+            {
+                AppendOpaqueBundleForExecution(state.Bundle, ref executionCount);
+                _opaqueBundleHits++;
+                RecordDirectionalDraw(state.Stats);
+                _solidDrawsThisFrame += state.Stats.DrawRanges;
+            }
+            else
+            {
+                if (state.Bundle != 0)
+                {
+                    ReleaseOpaqueRegionBundleHandle(state);
+                    _opaqueBundleRegionInvalidations++;
+                }
+
+                var regionSections = regionEnd - regionStart;
+                if (regionSections >= OpaqueRegionBundleMinimumSections &&
+                    buildsThisFrame < OpaqueRegionBundleBuildLimitPerFrame)
+                {
+                    MeasureOpaqueRegionCommandSet(regionStart, regionEnd, out var measured);
+                    state.Bundle = (nint)BuildOpaqueRegionBundle(
+                        pipeline, textureGroup, regionStart, regionEnd);
+                    state.BundleKey = commandKey;
+                    state.Stats = measured;
+                    AppendOpaqueBundleForExecution(state.Bundle, ref executionCount);
+                    RecordDirectionalDraw(measured);
+                    _solidDrawsThisFrame += measured.DrawRanges;
+                    buildsThisFrame++;
+                    _opaqueBundleBuilds++;
+                }
+                else
+                {
+                    _opaqueFallbackRegions.Add(new OpaqueRegionRange(regionStart, regionEnd));
+                }
+            }
+
+            regionStart = regionEnd;
+        }
+
+        RecordOpaqueBundleCandidate(wholeFrameSignature);
+        if (_opaqueFallbackRegions.Count > 0)
+        {
+            _opaqueBundleFallbackFrames++;
+            RenderOpaqueRangesOrdinarily(pass, pipeline, textureGroup, _opaqueFallbackRegions,
+                recordCounters: false);
+        }
+
+        if (executionCount > 0)
+        {
+            fixed (nint* bundles = _opaqueBundleExecutionScratch)
+            {
+                api.RenderPassEncoderExecuteBundles(
+                    pass, (nuint)executionCount, (RenderBundle**)bundles);
             }
         }
 
@@ -3314,22 +3345,17 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         Profiler.Record("DrawCall", (t2 - t1) * 1000.0 / Stopwatch.Frequency);
     }
 
-    private unsafe ulong MeasureOpaqueCommandSet(
-        WgpuPipeline pipeline,
-        BindGroup* textureGroup,
+    private void MeasureOpaqueRegionCommandSet(
+        int start,
+        int end,
         out DirectionalDrawStats aggregate)
     {
-        var signature = BeginOpaqueCommandSignature();
-        signature = (signature ^ unchecked((ulong)(nint)pipeline.Pipeline)) * 1099511628211UL;
-        signature = (signature ^ unchecked((ulong)(nint)textureGroup)) * 1099511628211UL;
-        signature = (signature ^ unchecked((ulong)(nint)pipeline.DrawStorageBindGroup)) * 1099511628211UL;
-        signature = (signature ^ WebGpuDevice.Current!.QuadIndices.QuadCapacity) * 1099511628211UL;
-
         var available = 0;
         var submitted = 0;
         var ranges = 0;
         var unassigned = 0;
-        for (var i = 0; i < _solidRenderers.Count; i++)
+        var signature = 14695981039346656037UL;
+        for (var i = start; i < end; i++)
         {
             var stats = _solidRenderers[i].MeasureDirectionalDraw(0, _lastViewPos);
             signature = (signature ^ stats.CommandSignature) * 1099511628211UL;
@@ -3340,12 +3366,45 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
         aggregate = new DirectionalDrawStats(
             available, submitted, ranges, unassigned, 0, signature);
-        return signature;
     }
 
-    private unsafe RenderBundle* BuildOpaqueRenderBundle(
+    /// <summary>
+    ///     Cheap conservative validity key for one regional command set. Direction masks can only
+    ///     change when the camera crosses an aligned section/page plane; geometry replacement and
+    ///     membership changes are invalidated separately or represented by the stable slot list.
+    /// </summary>
+    private unsafe OpaqueRegionCommandKey BuildOpaqueRegionCommandKey(
         WgpuPipeline pipeline,
-        BindGroup* textureGroup)
+        BindGroup* textureGroup,
+        TerrainRenderRegionKey regionKey,
+        int start,
+        int end)
+    {
+        var camera = OpaqueDirectionalCameraKey.From(_lastViewPos, regionKey);
+        Span<ulong> membership = stackalloc ulong[4];
+        for (var i = start; i < end; i++)
+        {
+            var localSlot = _solidRenderers[i].DrawMetadataSlot % TerrainDrawMetadataSlotAllocator.SlotsPerRegion;
+            membership[localSlot >> 6] |= 1UL << (localSlot & 63);
+        }
+
+        return new OpaqueRegionCommandKey(
+            (nint)pipeline.Pipeline,
+            (nint)textureGroup,
+            (nint)pipeline.DrawStorageBindGroup,
+            WebGpuDevice.Current!.QuadIndices.QuadCapacity,
+            camera,
+            membership[0], membership[1], membership[2], membership[3]);
+    }
+
+    private static ulong AddOpaqueSignature(ulong value, long component) =>
+        (value ^ unchecked((ulong)component)) * 1099511628211UL;
+
+    private unsafe RenderBundle* BuildOpaqueRegionBundle(
+        WgpuPipeline pipeline,
+        BindGroup* textureGroup,
+        int start,
+        int end)
     {
         var device = WebGpuDevice.Current!;
         var api = device.Api;
@@ -3368,7 +3427,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             pipeline.BindDrawStorage(encoder);
 
             var binding = new TerrainBundleStreamBindingState();
-            for (var i = 0; i < _solidRenderers.Count; i++)
+            for (var i = start; i < end; i++)
             {
                 _solidRenderers[i].RecordOpaqueBundle(
                     encoder, _lastViewPos, ref binding,
@@ -3387,12 +3446,109 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
     }
 
-    private unsafe void ReleaseOpaqueRenderBundle()
+    private unsafe ulong RenderOpaqueRangesOrdinarily(
+        RenderPassEncoder* pass,
+        WgpuPipeline pipeline,
+        BindGroup* textureGroup,
+        IReadOnlyList<OpaqueRegionRange> ranges,
+        bool recordCounters = true)
     {
-        if (_opaqueRenderBundle is null) return;
-        WebGpuDevice.Current?.Api.RenderBundleRelease(_opaqueRenderBundle);
-        _opaqueRenderBundle = null;
-        _opaqueRenderBundleSignature = 0;
+        pipeline.Bind(pass);
+        _terrainPipelineBindsThisFrame++;
+        pipeline.BindUniformGroup(pass);
+        WgpuPipeline.BindGroup(pass, 1, textureGroup, WebGpuDevice.Current!.Api);
+        _terrainTextureBindsThisFrame++;
+        pipeline.BindDrawStorage(pass);
+
+        var signature = BeginOpaqueCommandSignature();
+        var streamBinding = new TerrainStreamBindingState();
+        foreach (var range in ranges)
+        {
+            for (var i = range.Start; i < range.End; i++)
+            {
+                var stats = _solidRenderers[i].RenderWebGpu(
+                    pass, 0, _lastViewPos, ref streamBinding,
+                    checked((uint)_solidRenderers[i].DrawMetadataSlot));
+                signature = (signature ^ stats.CommandSignature) * 1099511628211UL;
+                if (recordCounters)
+                {
+                    RecordDirectionalDraw(stats);
+                    _solidDrawsThisFrame += stats.DrawRanges;
+                }
+                else
+                {
+                    _terrainStreamBindsThisFrame += stats.StreamBinds;
+                }
+            }
+        }
+        return signature;
+    }
+
+    private void AppendOpaqueBundleForExecution(nint bundle, ref int count)
+    {
+        if (_opaqueBundleExecutionScratch.Length == count)
+            Array.Resize(ref _opaqueBundleExecutionScratch, Math.Max(16, count * 2));
+        _opaqueBundleExecutionScratch[count++] = bundle;
+    }
+
+    private unsafe void ReleaseOpaqueRegionBundle(
+        TerrainRenderRegionKey regionKey,
+        bool countInvalidation = false)
+    {
+        if (!_opaqueRegionBundles.Remove(regionKey, out var state)) return;
+        if (countInvalidation && state.Bundle != 0) _opaqueBundleRegionInvalidations++;
+        ReleaseOpaqueRegionBundleHandle(state);
+    }
+
+    private unsafe void ReleaseOpaqueRegionBundleHandle(OpaqueRegionBundleState state)
+    {
+        if (state.Bundle == 0) return;
+        WebGpuDevice.Current?.Api.RenderBundleRelease((RenderBundle*)state.Bundle);
+        state.Bundle = 0;
+        state.BundleKey = default;
+    }
+
+    private unsafe void ReleaseAllOpaqueRegionBundles()
+    {
+        foreach (var state in _opaqueRegionBundles.Values) ReleaseOpaqueRegionBundleHandle(state);
+        _opaqueRegionBundles.Clear();
+    }
+
+    private readonly record struct OpaqueRegionRange(int Start, int End);
+
+    private readonly record struct OpaqueRegionCommandKey(
+        nint Pipeline,
+        nint TextureGroup,
+        nint DrawStorageGroup,
+        uint QuadCapacity,
+        OpaqueDirectionalCameraKey Camera,
+        ulong Membership0,
+        ulong Membership1,
+        ulong Membership2,
+        ulong Membership3)
+    {
+        public ulong Fingerprint()
+        {
+            var value = 14695981039346656037UL;
+            value = AddOpaqueSignature(value, Pipeline);
+            value = AddOpaqueSignature(value, TextureGroup);
+            value = AddOpaqueSignature(value, DrawStorageGroup);
+            value = AddOpaqueSignature(value, QuadCapacity);
+            value = AddOpaqueSignature(value, Camera.X);
+            value = AddOpaqueSignature(value, Camera.Y);
+            value = AddOpaqueSignature(value, Camera.Z);
+            value = AddOpaqueSignature(value, unchecked((long)Membership0));
+            value = AddOpaqueSignature(value, unchecked((long)Membership1));
+            value = AddOpaqueSignature(value, unchecked((long)Membership2));
+            return AddOpaqueSignature(value, unchecked((long)Membership3));
+        }
+    }
+
+    private sealed class OpaqueRegionBundleState
+    {
+        public nint Bundle;
+        public OpaqueRegionCommandKey BundleKey;
+        public DirectionalDrawStats Stats;
     }
 
     /// <summary>
@@ -3583,7 +3739,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         _meshGenerator.Dispose();
         _lightEvaluation.Dispose();
-        ReleaseOpaqueRenderBundle();
+        ReleaseAllOpaqueRegionBundles();
 
         foreach (var state in _sections.Values) state.Dispose(MeshCancellationReason.RendererDisposed);
         _terrainGpuArenas?.Dispose();

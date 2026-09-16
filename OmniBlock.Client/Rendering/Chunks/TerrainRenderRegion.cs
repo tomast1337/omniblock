@@ -84,7 +84,8 @@ internal sealed class TerrainDrawMetadataSlotAllocator
         return checked(region.Block * SlotsPerRegion + localSlot);
     }
 
-    public void Release(Vector3D<int> sectionPosition, int slot)
+    /// <returns><see langword="true" /> when the region became empty and its block was released.</returns>
+    public bool Release(Vector3D<int> sectionPosition, int slot)
     {
         var key = TerrainRenderRegionKey.FromSectionPosition(sectionPosition);
         if (!_regions.TryGetValue(key, out var region))
@@ -96,9 +97,10 @@ internal sealed class TerrainDrawMetadataSlotAllocator
             throw new InvalidOperationException(
                 $"Draw-metadata slot {slot} is stale or does not belong to terrain section {sectionPosition} (expected {expected}).");
 
-        if (region.OccupiedCount != 0) return;
+        if (region.OccupiedCount != 0) return false;
         _regions.Remove(key);
         _freeRegionBlocks.Push(region.Block);
+        return true;
     }
 
     public void Clear()
@@ -123,6 +125,38 @@ internal sealed class TerrainDrawMetadataSlotAllocator
         public int Block { get; } = block;
         public HashSet<int> Occupied { get; } = [];
         public int OccupiedCount => Occupied.Count;
+    }
+}
+
+/// <summary>
+///     Compact camera state that preserves every plane crossing which can change
+///     <see cref="DirectionalFaceVisibility.ForPage" /> for one render region. Movement while the
+///     camera remains outside a region collapses to one key, avoiding global bundle invalidations.
+/// </summary>
+internal readonly record struct OpaqueDirectionalCameraKey(long X, long Y, long Z)
+{
+    public static OpaqueDirectionalCameraKey From(
+        Vector3D<double> position,
+        TerrainRenderRegionKey region)
+    {
+        var origin = region.Origin;
+        return new OpaqueDirectionalCameraKey(
+            Axis(position.X, origin.X, TerrainRenderRegionKey.WidthInBlocks, SubChunkRenderer.Size),
+            Axis(position.Y, origin.Y, TerrainRenderRegionKey.HeightInBlocks, SectionMeshRebuildPlan.PageHeight),
+            Axis(position.Z, origin.Z, TerrainRenderRegionKey.WidthInBlocks, SubChunkRenderer.Size));
+    }
+
+    private static long Axis(double coordinate, int origin, int extent, int step)
+    {
+        if (coordinate < origin) return -1;
+        if (coordinate > origin + extent) return checked(extent / step * 2L + 1);
+
+        var scaled = (coordinate - origin) / step;
+        var cell = Math.Floor(scaled);
+        var index = checked((long)cell);
+        // DirectionalFaceVisibility treats an exact page/section boundary as inside both adjacent
+        // slabs. Give that zero-width state its own key instead of aliasing either open interval.
+        return scaled == cell ? checked(index * 2) : checked(index * 2 + 1);
     }
 }
 
