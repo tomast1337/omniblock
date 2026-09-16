@@ -18,6 +18,22 @@ assert(type(OMNI.client.state.terrainLodPresented) == "number", "LOD presentatio
 assert(type(OMNI.client.state.terrainLodTranslucentPresented) == "number",
     "LOD translucent presentation gauge is unavailable")
 assert(type(OMNI.client.state.terrainLodGpuBytes) == "number", "LOD memory gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodMeshOwned) == "number",
+    "LOD mesh ownership gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodMeshCoverageQueued) == "number",
+    "LOD mesh coverage queue gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodMeshRefinementQueued) == "number",
+    "LOD mesh refinement queue gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodMeshCompletedBytes) == "number",
+    "LOD completed-result byte gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodMeshPredictedBytes) == "number",
+    "LOD predicted-result byte gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodMeshPredictedMs) == "number",
+    "LOD predicted compilation-time gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodMeshAdmissionDeferrals) == "number",
+    "LOD compilation admission counter is unavailable")
+assert(type(OMNI.client.state.terrainLodMeshUploadDeferrals) == "number",
+    "LOD upload admission counter is unavailable")
 assert(type(OMNI.client.state.terrainLodHandoffPreparing) == "number",
     "LOD handoff preparation gauge is unavailable")
 assert(type(OMNI.client.state.terrainLodHandoffOverlap) == "number",
@@ -106,6 +122,14 @@ assert(OMNI.client.state.terrainLodBoundaryLinked > 0,
     "resident LOD columns did not establish any neighbor seam evidence")
 assert(OMNI.client.state.terrainLodBoundaryBytes > 0,
     "resident LOD boundary summaries report no memory")
+assert(OMNI.client.state.terrainLodMeshCompilationSamples > 0,
+    "LOD compilation cost model received no observations")
+assert(OMNI.client.state.terrainLodMeshUploadSamples > 0,
+    "LOD upload cost model received no observations")
+assert(OMNI.client.state.terrainLodMeshCompletedBytes >= 0 and
+       OMNI.client.state.terrainLodMeshPredictedBytes >= 0 and
+       OMNI.client.state.terrainLodMeshPredictedMs >= 0,
+    "LOD mesh backpressure gauges became negative")
 
 -- Terrain vertices address stable named-atlas layers, so a pack reload replaces texture pixels
 -- without invalidating hierarchy data or otherwise compatible GPU meshes. Pack-dependent entity
@@ -137,6 +161,12 @@ print("terrain LOD: resident=" .. tostring(OMNI.client.state.terrainLodResident)
     " boundaryRefreshes=" .. tostring(OMNI.client.state.terrainLodBoundaryRefreshes) ..
     " boundaryBytes=" .. tostring(OMNI.client.state.terrainLodBoundaryBytes) ..
     " gpuBytes=" .. tostring(OMNI.client.state.terrainLodGpuBytes) ..
+    " meshOwned=" .. tostring(OMNI.client.state.terrainLodMeshOwned) ..
+    " meshDoneBytes=" .. tostring(OMNI.client.state.terrainLodMeshCompletedBytes) ..
+    " meshPredictedBytes=" .. tostring(OMNI.client.state.terrainLodMeshPredictedBytes) ..
+    " meshPredictedMs=" .. tostring(OMNI.client.state.terrainLodMeshPredictedMs) ..
+    " meshCompileWaits=" .. tostring(OMNI.client.state.terrainLodMeshAdmissionDeferrals) ..
+    " meshUploadWaits=" .. tostring(OMNI.client.state.terrainLodMeshUploadDeferrals) ..
     " pending=" .. tostring(OMNI.client.state.terrainLodPending) ..
     " converting=" .. tostring(OMNI.client.state.terrainLodConverting))
 OMNI.test.pass()

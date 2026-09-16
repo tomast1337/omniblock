@@ -233,6 +233,14 @@ OMNI.client.state.terrainLodTranslucentCpuMs      -- last reduced translucent pa
 OMNI.client.state.terrainLodGpuBytes              -- known resident LOD mesh/light GPU bytes
 OMNI.client.state.terrainLodBoundaryBytes         -- retained CPU boundary-summary bytes
 OMNI.client.state.terrainLodCacheBytes            -- persistent client hierarchy-cache bytes
+OMNI.client.state.terrainLodMeshOwned              -- bounded compilation requests/results currently owned
+OMNI.client.state.terrainLodMeshCoverageQueued     -- missing-coverage compilations waiting for the worker
+OMNI.client.state.terrainLodMeshRefinementQueued   -- detail-upgrade compilations waiting for the worker
+OMNI.client.state.terrainLodMeshCompletedBytes     -- retained completed CPU mesh/boundary bytes
+OMNI.client.state.terrainLodMeshPredictedBytes     -- estimated queued/running result bytes
+OMNI.client.state.terrainLodMeshPredictedMs        -- estimated queued/running worker milliseconds
+OMNI.client.state.terrainLodMeshAdmissionDeferrals -- compilation time/byte/capacity backpressure events
+OMNI.client.state.terrainLodMeshUploadDeferrals    -- render-thread upload-budget deferrals
 OMNI.client.state.clientWorkingSetBytes           -- current client process working set
 OMNI.client.state.meshCancelledCount  -- discarded/abandoned requests, including superseded work
 OMNI.client.state.meshSupersededCount -- subset discarded due to a newer revision/replacement

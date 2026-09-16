@@ -40,8 +40,47 @@ public sealed class TerrainLodMeshBuilderTests
         Assert.NotNull(result);
         Assert.Null(result.Failure);
         Assert.NotNull(result.Boundaries);
+        Assert.Equal(TerrainLodMeshWorkKind.Coverage, result.WorkKind);
+        Assert.True(result.CompilationMs > 0);
+        Assert.True(result.WorkCells > 0);
+        Assert.True(result.RetainedBytes >= result.UploadBytes);
+        Assert.True(result.UploadBytes > 0);
         Assert.Equal([2, 3, 4], result.Levels.Select(static level => level.Level));
         Assert.All(result.Levels, static level => Assert.NotEmpty(level.Vertices));
+        var compilation = compiler.Snapshot();
+        Assert.Equal(0, compilation.Owned);
+        Assert.Equal(0, compilation.CompletedResultBytes);
+        Assert.Equal(1, compilation.Cost.CompilationSamples);
+    }
+
+    [Fact]
+    public void Refinement_cannot_consume_the_compilers_reserved_coverage_slot()
+    {
+        var world = new FakeWorldContext();
+        var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+        var hierarchy = Build(world, (x, y, z) => y < 32 ? (byte)stone : (byte)0);
+        var conversion = new TerrainLodConversionResult(0, 0, 0, 7, hierarchy);
+        using var compiler = new TerrainLodMeshCompilationService(4);
+
+        for (var i = 0; i < 3; i++)
+            Assert.True(compiler.TrySubmit(Request(TerrainLodMeshWorkKind.Refinement, 0)));
+        var rejected = Request(TerrainLodMeshWorkKind.Refinement, 0);
+        Assert.False(compiler.TrySubmit(rejected));
+        rejected.Visuals.Dispose();
+        Assert.True(compiler.TrySubmit(Request(TerrainLodMeshWorkKind.Coverage, 2)));
+
+        var snapshot = compiler.Snapshot();
+        Assert.Equal(4, snapshot.Owned);
+        Assert.True(snapshot.AdmissionDeferrals > 0);
+
+        TerrainLodMeshCompilationRequest Request(TerrainLodMeshWorkKind kind, int minimum) => new(
+            conversion,
+            minimum,
+            4,
+            new WorldRegionSnapshot(
+                world, 0, 0, 0, 15, ChuckFormat.WorldHeight - 1, 15),
+            true,
+            kind);
     }
 
     [Fact]

@@ -284,6 +284,14 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"Work:      pending {lod.PendingColumns}  converting {lod.ConversionOwnedColumns}  uploads {lod.UploadsThisFrame}");
         ImGuiTextSafe.Text(
+            $"LOD mesh:  owned {lod.MeshCompilationOwned}  coverage {lod.MeshCoverageQueued}/{lod.MeshCoverageCompleted} queued/done  refinement {lod.MeshRefinementQueued}/{lod.MeshRefinementCompleted} queued/done");
+        ImGuiTextSafe.Text(
+            $"LOD cost:  {lod.MeshCompilationMsPerKCell:F3} ms/Kcell  {FormatBytes((long)lod.MeshResultBytesPerKCell)}/Kcell  {lod.MeshUploadBaseMs:F3} ms + {lod.MeshUploadMsPerMiB:F3} ms/MiB");
+        ImGuiTextSafe.Text(
+            $"LOD pressure: {FormatBytes(lod.MeshCompletedResultBytes)} completed  {FormatBytes(lod.MeshPredictedResultBytes)} predicted  {lod.MeshPredictedCompilationMs:F2} worker-ms");
+        ImGuiTextSafe.Text(
+            $"LOD waits: compile {lod.MeshAdmissionDeferrals:N0}  upload {lod.MeshUploadAdmissionDeferrals:N0}  oversized {lod.MeshOversizedUploadAdmissions:N0}");
+        ImGuiTextSafe.Text(
             $"Resident:  {lod.ResidentColumns:N0} columns  level-0 {lod.ExactVoxelLevelColumns:N0}  level-1 {lod.TransitionLevelColumns:N0}  {FormatBytes(lod.ResidentGpuBytes)} GPU estimate");
         ImGuiTextSafe.Text(
             $"Presented: solid {lod.PresentedColumns:N0}  translucent {lod.PresentedTranslucentColumns:N0} columns");

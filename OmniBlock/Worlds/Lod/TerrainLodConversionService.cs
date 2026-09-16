@@ -233,10 +233,29 @@ public sealed class TerrainLodConversionService : IDisposable
     ///     retry without repeating conversion.
     /// </summary>
     public bool TryPeekCompleted(out TerrainLodConversionResult? result)
+        => TryPeekCompleted(static _ => true, static _ => 0, out result);
+
+    /// <summary>
+    ///     Borrows the first deterministic ready result matching a presentation-owned predicate.
+    ///     This lets consumers prioritize missing coverage without moving bounded ownership out of
+    ///     the conversion service before the next stage accepts it.
+    /// </summary>
+    public bool TryPeekCompleted(
+        Func<TerrainLodConversionResult, bool> predicate,
+        out TerrainLodConversionResult? result)
+        => TryPeekCompleted(predicate, static _ => 0, out result);
+
+    /// <summary>Ranks matching ready results without transferring their bounded ownership.</summary>
+    public bool TryPeekCompleted(
+        Func<TerrainLodConversionResult, bool> predicate,
+        Func<TerrainLodConversionResult, double> rank,
+        out TerrainLodConversionResult? result)
     {
+        ArgumentNullException.ThrowIfNull(predicate);
+        ArgumentNullException.ThrowIfNull(rank);
         lock (_gate)
         {
-            var ready = FindReadyLocked();
+            var ready = FindReadyLocked(predicate, rank);
             if (ready.Value is not null)
             {
                 result = ready.Value.Result;
@@ -382,9 +401,16 @@ public sealed class TerrainLodConversionService : IDisposable
         item.QueueSequence = _nextQueueSequence++;
     }
 
-    private KeyValuePair<ChunkKey, WorkItem> FindReadyLocked() => _items
-        .Where(static pair => pair.Value.State == WorkState.Ready && pair.Value.Result is not null)
-        .OrderBy(static pair => pair.Key.X)
+    private KeyValuePair<ChunkKey, WorkItem> FindReadyLocked() =>
+        FindReadyLocked(static _ => true, static _ => 0);
+
+    private KeyValuePair<ChunkKey, WorkItem> FindReadyLocked(
+        Func<TerrainLodConversionResult, bool> predicate,
+        Func<TerrainLodConversionResult, double> rank) => _items
+        .Where(pair => pair.Value.State == WorkState.Ready && pair.Value.Result is not null &&
+                       predicate(pair.Value.Result))
+        .OrderBy(pair => rank(pair.Value.Result!))
+        .ThenBy(static pair => pair.Key.X)
         .ThenBy(static pair => pair.Key.Z)
         .FirstOrDefault();
 

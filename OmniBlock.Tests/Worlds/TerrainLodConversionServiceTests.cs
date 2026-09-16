@@ -63,6 +63,33 @@ public sealed class TerrainLodConversionServiceTests
     }
 
     [Fact]
+    public async Task Completed_results_can_be_borrowed_by_coverage_predicate_without_releasing_ownership()
+    {
+        using var service = Service(4, Convert);
+        Assert.Equal(TerrainLodAdmissionResult.Accepted, service.Submit(Source(-2, 0, 1)));
+        Assert.Equal(TerrainLodAdmissionResult.Accepted, service.Submit(Source(3, 0, 1)));
+        await WaitUntil(() => service.Snapshot().Ready == 2);
+
+        Assert.True(service.TryPeekCompleted(
+            static _ => true,
+            result => Math.Abs(result.ChunkX - 2),
+            out var nearest));
+        Assert.NotNull(nearest);
+        Assert.Equal(3, nearest.ChunkX);
+
+        Assert.True(service.TryPeekCompleted(
+            result => result.ChunkX == 3,
+            out var selected));
+
+        Assert.NotNull(selected);
+        Assert.Equal(3, selected.ChunkX);
+        Assert.Equal(2, service.Snapshot().OwnedChunks);
+        Assert.True(service.AcknowledgeCompleted(
+            selected.ChunkX, selected.ChunkZ, selected.TerrainRevision));
+        Assert.Equal(1, service.Snapshot().OwnedChunks);
+    }
+
+    [Fact]
     public async Task Newer_revision_during_conversion_discards_stale_output_and_rebuilds()
     {
         var firstEntered = new TaskCompletionSource(

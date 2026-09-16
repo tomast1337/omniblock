@@ -88,6 +88,23 @@ public static unsafe class LuauClientStateHost
                                                 key == "terrainLodSolidCpuMs" or
                                                 key == "terrainLodTranslucentCpuMs" or
                                                 key == "terrainLodCacheBytes" or
+                                                key == "terrainLodMeshOwned" or
+                                                key == "terrainLodMeshCoverageQueued" or
+                                                key == "terrainLodMeshRefinementQueued" or
+                                                key == "terrainLodMeshCoverageCompleted" or
+                                                key == "terrainLodMeshRefinementCompleted" or
+                                                key == "terrainLodMeshCompletedBytes" or
+                                                key == "terrainLodMeshPredictedBytes" or
+                                                key == "terrainLodMeshPredictedMs" or
+                                                key == "terrainLodMeshAdmissionDeferrals" or
+                                                key == "terrainLodMeshUploadDeferrals" or
+                                                key == "terrainLodMeshOversizedUploads" or
+                                                key == "terrainLodMeshCompilationSamples" or
+                                                key == "terrainLodMeshUploadSamples" or
+                                                key == "terrainLodMeshCompilationMsPerKCell" or
+                                                key == "terrainLodMeshResultBytesPerKCell" or
+                                                key == "terrainLodMeshUploadBaseMs" or
+                                                key == "terrainLodMeshUploadMsPerMiB" or
                                                 key == "clientWorkingSetBytes" or
                                                 key == "terrainLodUploads" or key == "terrainLodGpuBytes" or
                                                 key == "terrainLodStaleResults" or key == "terrainLodRejected" or

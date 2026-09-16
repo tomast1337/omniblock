@@ -50,7 +50,24 @@ internal readonly record struct ClientTerrainLodSnapshot(
     int LastResourceReloadReusedColumns,
     long LastResourceReloadReusedGpuBytes,
     double SolidRenderCpuMs,
-    double TranslucentRenderCpuMs);
+    double TranslucentRenderCpuMs,
+    int MeshCompilationOwned,
+    int MeshCoverageQueued,
+    int MeshRefinementQueued,
+    int MeshCoverageCompleted,
+    int MeshRefinementCompleted,
+    long MeshCompletedResultBytes,
+    long MeshPredictedResultBytes,
+    double MeshPredictedCompilationMs,
+    long MeshAdmissionDeferrals,
+    long MeshUploadAdmissionDeferrals,
+    long MeshOversizedUploadAdmissions,
+    long MeshCompilationSamples,
+    long MeshUploadSamples,
+    double MeshCompilationMsPerKCell,
+    double MeshResultBytesPerKCell,
+    double MeshUploadBaseMs,
+    double MeshUploadMsPerMiB);
 
 /// <summary>
 ///     Client owner for the first terrain-horizon slice. It compiles immutable chunk snapshots on
@@ -70,7 +87,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private const int ResidentCapacity = 2048;
     private const long ResidentGpuByteCapacity = 128L * 1024 * 1024;
     private const int SnapshotsPerTick = 4;
-    private const int UploadsPerFrame = 2;
+    private const double MeshUploadBudgetMs = 1.0;
+    private const long MeshUploadBudgetBytes = 8L * 1024 * 1024;
     private const int SeamUploadsPerFrame = 2;
     private const int SeamDrawsPerFrame = 256;
     private const int DrawsPerFrame = 768;
@@ -248,7 +266,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         using var cpuMeasurement = new RenderCpuMeasurement(this, translucent: false);
         using var _lodRender = Profiler.Begin("TerrainLodRender");
         var stageStarted = Stopwatch.GetTimestamp();
-        var uploads = InstallCompleted(UploadsPerFrame, parameters.ViewPos,
+        var uploads = InstallCompleted(parameters.ViewPos,
             parameters.VerticalFovDegrees, parameters.ViewportHeight,
             parameters.TerrainLodDropoffScale,
             parameters.RenderDistance, nearRenderer);
@@ -618,7 +636,6 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     }
 
     private int InstallCompleted(
-        int budget,
         Vector3D<double> viewPosition,
         double verticalFovDegrees,
         int viewportHeight,
@@ -633,9 +650,27 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             detailDropoffScale);
 
         var installed = 0;
-        while (installed < budget &&
-               _meshCompilation.TryTakeCompleted(out var compiled) && compiled is not null)
+        var admittedBytes = 0L;
+        var stopwatch = Stopwatch.StartNew();
+        while (_meshCompilation.TryPeekCompleted(out var next, out var workKind) &&
+               next is not null)
         {
+            var remainingMs = Math.Max(0, MeshUploadBudgetMs - stopwatch.Elapsed.TotalMilliseconds);
+            var remainingBytes = Math.Max(0, MeshUploadBudgetBytes - admittedBytes);
+            var predictedUploadMs = _meshCompilation.EstimateUploadMs(next.UploadBytes);
+            var regularAdmission = predictedUploadMs <= remainingMs &&
+                                   next.UploadBytes <= remainingBytes;
+            var oversizedAdmission = !regularAdmission && installed == 0;
+            if (!regularAdmission && !oversizedAdmission)
+            {
+                _meshCompilation.NoteUploadAdmissionDeferred();
+                break;
+            }
+            if (oversizedAdmission) _meshCompilation.NoteOversizedUploadAdmission();
+            if (!_meshCompilation.TryTakeCompleted(
+                    workKind, advanceFairness: true, out var compiled) || compiled is null)
+                continue;
+
             if (compiled.Failure is not null)
                 throw new InvalidOperationException(
                     $"Terrain LOD mesh compilation failed for " +
@@ -655,33 +690,38 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 }
             }
 
-            ColumnPresentation? candidate = null;
+            ColumnPresentation? presentationCandidate = null;
+            var uploadStarted = Stopwatch.GetTimestamp();
             try
             {
                 _resident.TryGetValue(key, out var previous);
-                candidate = ColumnPresentation.Create(compiled);
+                presentationCandidate = ColumnPresentation.Create(compiled);
                 if (previous is not null)
                 {
-                    candidate.CopyHandoffsFrom(previous);
+                    presentationCandidate.CopyHandoffsFrom(previous);
                 }
                 else
                 {
                     var distanceSquared = DistanceSquared(key, viewPosition);
                     var (nearPresent, nearReady) = NearState(
                         key, distanceSquared, renderDistance, nearRenderer);
-                    if (nearPresent && nearReady) candidate.InitializeNearOnly();
+                    if (nearPresent && nearReady) presentationCandidate.InitializeNearOnly();
                 }
                 if (_resident.Remove(key, out var old)) old.Dispose();
-                _resident.Add(key, candidate);
+                _resident.Add(key, presentationCandidate);
                 if (_detailLevelRequests.TryGetValue(key, out var requestedMinimum) &&
-                    candidate.MinimumLevel <= requestedMinimum)
+                    presentationCandidate.MinimumLevel <= requestedMinimum)
                     _detailLevelRequests.Remove(key);
-                candidate = null;
+                presentationCandidate = null;
                 installed++;
+                admittedBytes += compiled.UploadBytes;
+                _meshCompilation.RecordUpload(
+                    Stopwatch.GetElapsedTime(uploadStarted).TotalMilliseconds,
+                    compiled.UploadBytes);
             }
             finally
             {
-                candidate?.Dispose();
+                presentationCandidate?.Dispose();
             }
         }
         return installed;
@@ -693,14 +733,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         int viewportHeight,
         float detailDropoffScale)
     {
-        var queued = 0;
-        while (queued < UploadsPerFrame &&
-               _conversion.TryPeekCompleted(out var result) && result is not null)
+        while (TryPeekCoverageFirst(out var result) && result is not null)
         {
-            // Building the immutable visual snapshot copies a complete chunk column. Avoid doing
-            // that work repeatedly while every bounded compiler slot is already owned.
-            if (!_meshCompilation.HasCapacity) break;
-
             var key = (result.ChunkX, result.ChunkZ);
             if (!_world.BlockHost.HasChunk(key.ChunkX, key.ChunkZ))
             {
@@ -728,6 +762,12 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             var minimumLevel = Math.Min(
                 Math.Min(selectedLevel, previous?.MinimumLevel ?? MinimumHorizonMeshLevel),
                 _detailLevelRequests.GetValueOrDefault(key, MinimumHorizonMeshLevel));
+            var workKind = previous is null
+                ? TerrainLodMeshWorkKind.Coverage
+                : TerrainLodMeshWorkKind.Refinement;
+            // Check the learned time/byte admission before copying a complete visual column.
+            if (!_meshCompilation.CanSubmit(
+                    result, minimumLevel, MaximumMeshLevel, workKind)) break;
             var originX = result.ChunkX * 16;
             var originZ = result.ChunkZ * 16;
             var visuals = new WorldRegionSnapshot(
@@ -739,7 +779,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 minimumLevel,
                 MaximumMeshLevel,
                 visuals,
-                !_world.Dimension.HasCeiling);
+                !_world.Dimension.HasCeiling,
+                workKind);
             if (!_meshCompilation.TrySubmit(request))
             {
                 visuals.Dispose();
@@ -752,7 +793,24 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                     $"Terrain LOD conversion {result.ChunkX},{result.ChunkZ} " +
                     $"revision {result.TerrainRevision} lost ownership before mesh compilation.");
             _cacheWriter?.TrySubmit(result);
-            queued++;
+        }
+
+        return;
+
+        bool TryPeekCoverageFirst(out TerrainLodConversionResult? result)
+        {
+            // A resident presentation remains visible during refresh/refinement. Prefer a column
+            // with no presentation at all, then fall back to the deterministic conversion order.
+            if (_conversion.TryPeekCompleted(
+                    candidate => !_resident.ContainsKey((candidate.ChunkX, candidate.ChunkZ)),
+                    candidate => DistanceSquared(
+                        (candidate.ChunkX, candidate.ChunkZ), viewPosition),
+                    out result)) return true;
+            return _conversion.TryPeekCompleted(
+                static _ => true,
+                candidate => DistanceSquared(
+                    (candidate.ChunkX, candidate.ChunkZ), viewPosition),
+                out result);
         }
     }
 
@@ -1073,6 +1131,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             value.HasActiveLevelTransition);
         var cache = _cache?.Snapshot();
         var cacheWriter = _cacheWriter?.Snapshot();
+        var compilation = _meshCompilation.Snapshot();
+        var cost = compilation.Cost;
         _snapshot = new ClientTerrainLodSnapshot(
             _pending.Count,
             conversion.OwnedChunks,
@@ -1117,7 +1177,24 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             _lastResourceReloadReusedColumns,
             _lastResourceReloadReusedGpuBytes,
             _solidRenderCpuMs,
-            _translucentRenderCpuMs);
+            _translucentRenderCpuMs,
+            compilation.Owned,
+            compilation.CoverageQueued,
+            compilation.RefinementQueued,
+            compilation.CoverageCompleted,
+            compilation.RefinementCompleted,
+            compilation.CompletedResultBytes,
+            compilation.PredictedResultBytes,
+            compilation.PredictedCompilationMs,
+            compilation.AdmissionDeferrals,
+            compilation.UploadAdmissionDeferrals,
+            compilation.OversizedUploadAdmissions,
+            cost.CompilationSamples,
+            cost.UploadSamples,
+            cost.CompilationMsPerKCell,
+            cost.ResultBytesPerKCell,
+            cost.UploadBaseMs,
+            cost.UploadMsPerMiB);
     }
 
     private long ResidentGpuBytes() =>
