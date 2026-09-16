@@ -32,6 +32,61 @@ public sealed class TerrainGpuRangeAllocatorTests
     }
 
     [Fact]
+    public void Draw_metadata_slots_are_stable_local_addresses_inside_a_region()
+    {
+        TerrainDrawMetadataSlotAllocator slots = new();
+
+        Assert.Equal(0, slots.Acquire(new Vector3D<int>(0, 0, 0)));
+        Assert.Equal(1, slots.Acquire(new Vector3D<int>(16, 0, 0)));
+        Assert.Equal(8, slots.Acquire(new Vector3D<int>(0, 0, 16)));
+        Assert.Equal(64, slots.Acquire(new Vector3D<int>(0, 16, 0)));
+        Assert.Equal(1, slots.ActiveRegions);
+        Assert.Equal(4, slots.ActiveSections);
+    }
+
+    [Fact]
+    public void Draw_metadata_slots_handle_negative_region_coordinates()
+    {
+        TerrainDrawMetadataSlotAllocator slots = new();
+
+        // (-16,-16,-16) is the high corner of region (-1,-1,-1).
+        var slot = slots.Acquire(new Vector3D<int>(-16, -16, -16));
+
+        Assert.Equal(255, slot);
+    }
+
+    [Fact]
+    public void Empty_region_releases_its_draw_metadata_block_for_reuse()
+    {
+        TerrainDrawMetadataSlotAllocator slots = new();
+        var firstPosition = new Vector3D<int>(0, 0, 0);
+        var retainedPosition = new Vector3D<int>(128, 0, 0);
+        var first = slots.Acquire(firstPosition);
+        var retained = slots.Acquire(retainedPosition);
+        Assert.Equal(TerrainDrawMetadataSlotAllocator.SlotsPerRegion, retained);
+
+        slots.Release(firstPosition, first);
+        var reused = slots.Acquire(new Vector3D<int>(256, 0, 0));
+
+        Assert.Equal(0, reused);
+        Assert.Equal(2, slots.ActiveRegions);
+        Assert.Equal(2, slots.ActiveSections);
+    }
+
+    [Fact]
+    public void Draw_metadata_slots_reject_duplicate_and_stale_ownership()
+    {
+        TerrainDrawMetadataSlotAllocator slots = new();
+        var position = new Vector3D<int>(0, 0, 0);
+        var slot = slots.Acquire(position);
+
+        Assert.Throws<InvalidOperationException>(() => slots.Acquire(position));
+        Assert.Throws<InvalidOperationException>(() => slots.Release(position, slot + 1));
+        slots.Release(position, slot);
+        Assert.Throws<InvalidOperationException>(() => slots.Release(position, slot));
+    }
+
+    [Fact]
     public void Allocations_are_aligned_reused_and_fully_coalesced()
     {
         TerrainGpuRangeAllocator allocator = new(1024);

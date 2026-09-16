@@ -22,6 +22,19 @@ internal sealed unsafe class TerrainChunkQuadMesh : IDisposable
 
     public uint VertexCount { get; }
 
+    internal ulong CommandIdentity
+    {
+        get
+        {
+            var slice = VertexSlice();
+            var value = 14695981039346656037UL;
+            value = (value ^ unchecked((ulong)(nint)slice.GeometryBuffer)) * 1099511628211UL;
+            value = (value ^ unchecked((ulong)(nint)slice.LightingBuffer)) * 1099511628211UL;
+            value = (value ^ unchecked((uint)slice.FirstVertex)) * 1099511628211UL;
+            return (value ^ VertexCount) * 1099511628211UL;
+        }
+    }
+
     public static TerrainChunkQuadMesh Create(
         WebGpuDevice device,
         TerrainGpuArenaSet arenas,
@@ -57,6 +70,14 @@ internal sealed unsafe class TerrainChunkQuadMesh : IDisposable
         return binding.BindQuads(pass, _device, slice, VertexCount / 4);
     }
 
+    public bool BindChunkQuadStreams(
+        RenderBundleEncoder* encoder,
+        ref TerrainBundleStreamBindingState binding)
+    {
+        var slice = VertexSlice();
+        return binding.BindQuads(encoder, _device, slice, VertexCount / 4);
+    }
+
     public void DrawBoundQuadRange(
         RenderPassEncoder* pass,
         uint firstQuad,
@@ -68,6 +89,19 @@ internal sealed unsafe class TerrainChunkQuadMesh : IDisposable
             throw new ArgumentOutOfRangeException(nameof(quadCount), "Quad range exceeds this mesh.");
         _device.QuadIndices.DrawBoundRange(
             pass, firstQuad, quadCount, instanceCount, VertexSlice().FirstVertex, firstInstance);
+    }
+
+    public void DrawBoundQuadRange(
+        RenderBundleEncoder* encoder,
+        uint firstQuad,
+        uint quadCount,
+        uint instanceCount = 1,
+        uint firstInstance = 0)
+    {
+        if (firstQuad + quadCount > VertexCount / 4)
+            throw new ArgumentOutOfRangeException(nameof(quadCount), "Quad range exceeds this mesh.");
+        _device.QuadIndices.DrawBoundRange(
+            encoder, firstQuad, quadCount, instanceCount, VertexSlice().FirstVertex, firstInstance);
     }
 
     public bool DrawQuadWireframe(
@@ -89,6 +123,41 @@ internal sealed unsafe class TerrainChunkQuadMesh : IDisposable
 
     private TerrainGpuVertexSlice VertexSlice() => (_vertices ??
         throw new ObjectDisposedException(nameof(TerrainChunkQuadMesh))).Slice;
+}
+
+/// <summary>Render-bundle counterpart to <see cref="TerrainStreamBindingState" />.</summary>
+internal unsafe struct TerrainBundleStreamBindingState
+{
+    private nint _geometry;
+    private nint _lighting;
+    private bool _quadIndicesBound;
+
+    public bool BindQuads(
+        RenderBundleEncoder* encoder,
+        WebGpuDevice device,
+        in TerrainGpuVertexSlice slice,
+        uint requiredQuads)
+    {
+        var geometry = (nint)slice.GeometryBuffer;
+        var lighting = (nint)slice.LightingBuffer;
+        var changed = _geometry != geometry || _lighting != lighting;
+        if (changed)
+        {
+            device.Api.RenderBundleEncoderSetVertexBuffer(
+                encoder, 0, slice.GeometryBuffer, 0, WgpuWholeSize.Value);
+            device.Api.RenderBundleEncoderSetVertexBuffer(
+                encoder, 1, slice.LightingBuffer, 0, WgpuWholeSize.Value);
+            _geometry = geometry;
+            _lighting = lighting;
+        }
+
+        if (!_quadIndicesBound || requiredQuads > device.QuadIndices.QuadCapacity)
+        {
+            device.QuadIndices.Bind(encoder, requiredQuads);
+            _quadIndicesBound = true;
+        }
+        return changed;
+    }
 }
 
 /// <summary>Per-pass cache for regional vertex and shared-index bindings.</summary>

@@ -47,6 +47,85 @@ internal readonly record struct TerrainRenderRegionKey(int X, int Y, int Z)
     }
 }
 
+/// <summary>
+///     Assigns each live render region one fixed block of draw-metadata records. The section's
+///     coordinates inside the 8x4x8 region select its record, so visibility sorting cannot change
+///     <c>firstInstance</c> and a future regional render bundle can retain the same addresses.
+/// </summary>
+internal sealed class TerrainDrawMetadataSlotAllocator
+{
+    internal const int SlotsPerRegion =
+        TerrainRenderRegionKey.WidthInColumns *
+        TerrainRenderRegionKey.HeightInSections *
+        TerrainRenderRegionKey.WidthInColumns;
+
+    private readonly Dictionary<TerrainRenderRegionKey, RegionSlots> _regions = [];
+    private readonly Stack<int> _freeRegionBlocks = [];
+    private int _nextRegionBlock;
+
+    public int ActiveRegions => _regions.Count;
+    public int ActiveSections => _regions.Values.Sum(static region => region.OccupiedCount);
+
+    public int Acquire(Vector3D<int> sectionPosition)
+    {
+        var key = TerrainRenderRegionKey.FromSectionPosition(sectionPosition);
+        if (!_regions.TryGetValue(key, out var region))
+        {
+            var block = _freeRegionBlocks.TryPop(out var reused) ? reused : _nextRegionBlock++;
+            region = new RegionSlots(block);
+            _regions.Add(key, region);
+        }
+
+        var localSlot = LocalSlot(key, sectionPosition);
+        if (!region.Occupied.Add(localSlot))
+            throw new InvalidOperationException(
+                $"Terrain section {sectionPosition} already owns draw-metadata slot {localSlot} in region {key}.");
+
+        return checked(region.Block * SlotsPerRegion + localSlot);
+    }
+
+    public void Release(Vector3D<int> sectionPosition, int slot)
+    {
+        var key = TerrainRenderRegionKey.FromSectionPosition(sectionPosition);
+        if (!_regions.TryGetValue(key, out var region))
+            throw new InvalidOperationException($"Terrain region {key} has no draw-metadata slots to release.");
+
+        var localSlot = LocalSlot(key, sectionPosition);
+        var expected = checked(region.Block * SlotsPerRegion + localSlot);
+        if (slot != expected || !region.Occupied.Remove(localSlot))
+            throw new InvalidOperationException(
+                $"Draw-metadata slot {slot} is stale or does not belong to terrain section {sectionPosition} (expected {expected}).");
+
+        if (region.OccupiedCount != 0) return;
+        _regions.Remove(key);
+        _freeRegionBlocks.Push(region.Block);
+    }
+
+    public void Clear()
+    {
+        _regions.Clear();
+        _freeRegionBlocks.Clear();
+        _nextRegionBlock = 0;
+    }
+
+    private static int LocalSlot(TerrainRenderRegionKey key, Vector3D<int> sectionPosition)
+    {
+        var origin = key.Origin;
+        var localX = (sectionPosition.X - origin.X) / SubChunkRenderer.Size;
+        var localY = (sectionPosition.Y - origin.Y) / SubChunkRenderer.Size;
+        var localZ = (sectionPosition.Z - origin.Z) / SubChunkRenderer.Size;
+        return checked((localY * TerrainRenderRegionKey.WidthInColumns + localZ) *
+                       TerrainRenderRegionKey.WidthInColumns + localX);
+    }
+
+    private sealed class RegionSlots(int block)
+    {
+        public int Block { get; } = block;
+        public HashSet<int> Occupied { get; } = [];
+        public int OccupiedCount => Occupied.Count;
+    }
+}
+
 internal readonly record struct TerrainGpuAllocation(long Id, int OffsetBytes, int LengthBytes)
 {
     public int EndBytes => checked(OffsetBytes + LengthBytes);

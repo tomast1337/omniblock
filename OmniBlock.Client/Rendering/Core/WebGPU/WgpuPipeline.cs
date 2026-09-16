@@ -1,5 +1,6 @@
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
+using System.Runtime.InteropServices;
 using Buffer = System.Buffer;
 using WgpuBuffer = Silk.NET.WebGPU.Buffer;
 
@@ -63,6 +64,8 @@ public sealed unsafe class WgpuPipeline : IDisposable
     private int _drawStorageCapacity;
     private int _drawStorageGrowthCount;
     private uint _drawStorageStride;
+    private byte[] _drawStorageMirror = [];
+    private readonly List<int> _drawStorageChangedSlots = [];
     private int _uniformPoolNext;
 
     /// <summary>
@@ -179,6 +182,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
     internal int DynamicUniformGrowthCount => _dynamicUniformGrowthCount;
     internal int DrawStorageCapacity => _drawStorageCapacity;
     internal int DrawStorageGrowthCount => _drawStorageGrowthCount;
+    internal BindGroup* DrawStorageBindGroup => _drawStorageBindGroup;
 
     public void Dispose()
     {
@@ -465,6 +469,9 @@ public sealed unsafe class WgpuPipeline : IDisposable
     public void Bind(RenderPassEncoder* pass) =>
         _device.Api.RenderPassEncoderSetPipeline(pass, Pipeline);
 
+    internal void Bind(RenderBundleEncoder* encoder) =>
+        _device.Api.RenderBundleEncoderSetPipeline(encoder, Pipeline);
+
     /// <summary>Binds the uniform bind group at group 0.</summary>
     /// <remarks>
     ///     Only safe for a draw that is the pass's only one, or whose uniforms every other draw in
@@ -473,6 +480,9 @@ public sealed unsafe class WgpuPipeline : IDisposable
     /// </remarks>
     public void BindUniformGroup(RenderPassEncoder* pass) =>
         _device.Api.RenderPassEncoderSetBindGroup(pass, 0, UniformBindGroup, 0, null);
+
+    internal void BindUniformGroup(RenderBundleEncoder* encoder) =>
+        _device.Api.RenderBundleEncoderSetBindGroup(encoder, 0, UniformBindGroup, 0, null);
 
     /// <summary>
     ///     Writes <paramref name="data" /> to a uniform buffer no draw already recorded is reading
@@ -652,11 +662,95 @@ public sealed unsafe class WgpuPipeline : IDisposable
         _drawStorageStride = stride;
         EnsureDrawStorageCapacity(data.Length);
 
+        var bytes = MemoryMarshal.AsBytes(data);
+        bytes.CopyTo(_drawStorageMirror);
+
         fixed (T* source = data)
         {
             _device.Api.QueueWriteBuffer(
                 _device.Queue, _drawStorageBuffer, 0, source, checked((nuint)(data.Length * sizeof(T))));
         }
+    }
+
+    /// <summary>
+    ///     Updates stable, possibly sparse draw records. Unchanged records cause no queue write;
+    ///     changed adjacent slots are coalesced into one upload. If the arena grows, its complete
+    ///     CPU mirror is restored because sections outside the current visible list must retain
+    ///     valid records in the replacement buffer.
+    /// </summary>
+    /// <returns>The number of records whose contents changed.</returns>
+    public int WriteDrawStorageSlots<T>(ReadOnlySpan<T> data, ReadOnlySpan<int> slots)
+        where T : unmanaged
+    {
+        if (data.Length != slots.Length)
+            throw new ArgumentException("Draw metadata and slot spans must have equal lengths.");
+        if (data.IsEmpty) return 0;
+        if (AdditionalBindGroupLayout is null)
+            throw new InvalidOperationException("This pipeline has no group-2 storage layout.");
+
+        var stride = (uint)sizeof(T);
+        if (_drawStorageStride != 0 && _drawStorageStride != stride)
+            throw new InvalidOperationException("A pipeline draw-storage stride cannot change after allocation.");
+        _drawStorageStride = stride;
+
+        var maxSlot = -1;
+        for (var i = 0; i < slots.Length; i++)
+        {
+            if (slots[i] < 0) throw new ArgumentOutOfRangeException(nameof(slots));
+            maxSlot = Math.Max(maxSlot, slots[i]);
+        }
+
+        var grew = EnsureDrawStorageCapacity(checked(maxSlot + 1));
+        var bytes = MemoryMarshal.AsBytes(data);
+        var strideBytes = sizeof(T);
+        _drawStorageChangedSlots.Clear();
+        for (var i = 0; i < slots.Length; i++)
+        {
+            var slot = slots[i];
+            var source = bytes.Slice(i * strideBytes, strideBytes);
+            var destination = _drawStorageMirror.AsSpan(slot * strideBytes, strideBytes);
+            if (source.SequenceEqual(destination)) continue;
+            source.CopyTo(destination);
+            _drawStorageChangedSlots.Add(slot);
+        }
+
+        if (grew)
+        {
+            fixed (byte* source = _drawStorageMirror)
+            {
+                _device.Api.QueueWriteBuffer(
+                    _device.Queue, _drawStorageBuffer, 0, source, (nuint)_drawStorageMirror.Length);
+            }
+            return _drawStorageChangedSlots.Count;
+        }
+
+        if (_drawStorageChangedSlots.Count == 0) return 0;
+        _drawStorageChangedSlots.Sort();
+        fixed (byte* mirror = _drawStorageMirror)
+        {
+            var first = _drawStorageChangedSlots[0];
+            var last = first;
+            for (var i = 1; i <= _drawStorageChangedSlots.Count; i++)
+            {
+                var next = i < _drawStorageChangedSlots.Count
+                    ? _drawStorageChangedSlots[i]
+                    : int.MaxValue;
+                if (next <= last + 1)
+                {
+                    last = Math.Max(last, next);
+                    continue;
+                }
+
+                var offset = checked(first * strideBytes);
+                var length = checked((last - first + 1) * strideBytes);
+                _device.Api.QueueWriteBuffer(
+                    _device.Queue, _drawStorageBuffer, (ulong)offset, mirror + offset, (nuint)length);
+                first = next;
+                last = next;
+            }
+        }
+
+        return _drawStorageChangedSlots.Count;
     }
 
     /// <summary>Binds the per-draw metadata array at group 2 once for the pass.</summary>
@@ -667,9 +761,16 @@ public sealed unsafe class WgpuPipeline : IDisposable
         _device.Api.RenderPassEncoderSetBindGroup(pass, 2, _drawStorageBindGroup, 0, null);
     }
 
-    private void EnsureDrawStorageCapacity(int required)
+    internal void BindDrawStorage(RenderBundleEncoder* encoder)
     {
-        if (required <= _drawStorageCapacity && _drawStorageBindGroup is not null) return;
+        if (_drawStorageBindGroup is null)
+            throw new InvalidOperationException("Per-draw storage has not been uploaded.");
+        _device.Api.RenderBundleEncoderSetBindGroup(encoder, 2, _drawStorageBindGroup, 0, null);
+    }
+
+    private bool EnsureDrawStorageCapacity(int required)
+    {
+        if (required <= _drawStorageCapacity && _drawStorageBindGroup is not null) return false;
 
         var capacity = Math.Max(required, Math.Max(256, _drawStorageCapacity * 2));
         var bufferSize = checked((ulong)capacity * _drawStorageStride);
@@ -708,14 +809,20 @@ public sealed unsafe class WgpuPipeline : IDisposable
         _drawStorageBuffer = replacementBuffer;
         _drawStorageBindGroup = replacementGroup;
         _drawStorageCapacity = capacity;
+        Array.Resize(ref _drawStorageMirror, checked(capacity * (int)_drawStorageStride));
         _drawStorageGrowthCount++;
         WgpuRelease.DeferredBufferBinding(
             _device, (nint)previousGroup, (nint)previousBuffer);
+        return true;
     }
 
     /// <summary>Binds an external bind group (textures, etc.) at <paramref name="groupIndex" />.</summary>
     public static void BindGroup(RenderPassEncoder* pass, uint groupIndex, BindGroup* group, Silk.NET.WebGPU.WebGPU api) =>
         api.RenderPassEncoderSetBindGroup(pass, groupIndex, group, 0, null);
+
+    internal static void BindGroup(
+        RenderBundleEncoder* encoder, uint groupIndex, BindGroup* group, Silk.NET.WebGPU.WebGPU api) =>
+        api.RenderBundleEncoderSetBindGroup(encoder, groupIndex, group, 0, null);
 
     private static BlendComponent BlendFor(BlendMode mode) => mode switch
     {

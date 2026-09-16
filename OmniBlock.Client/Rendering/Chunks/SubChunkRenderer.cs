@@ -63,6 +63,12 @@ public class SubChunkRenderer : IDisposable
     public long PresentedEpoch => _presentation?.Epoch ?? -1;
     public bool IsLit => _presentation?.IsLit == true;
     internal SectionPresentation? Presentation => _presentation;
+    /// <summary>
+    ///     Stable group-2 storage record for this section's resident lifetime. It is deliberately
+    ///     independent of the per-frame visible-list order so recorded regional commands can be
+    ///     reused later.
+    /// </summary>
+    internal int DrawMetadataSlot { get; set; } = -1;
 
     public void Dispose()
     {
@@ -154,6 +160,8 @@ public class SubChunkRenderer : IDisposable
 
             signature = AddSignature(signature, pageIndex);
             signature = AddSignature(signature, (int)faceMask);
+            signature = AddSignature(signature, unchecked((long)mesh.CommandIdentity));
+            signature = AddSignature(signature, DrawMetadataSlot);
 
             var streamChanged = mesh.BindChunkQuadStreams(passEncoder, ref binding);
             var submitted = 0;
@@ -177,6 +185,84 @@ public class SubChunkRenderer : IDisposable
 
         if (stats.DrawRanges > 0) presentation.RecordFirstDraw();
         return stats;
+    }
+
+    /// <summary>
+    ///     Computes the opaque command identity and counters without recording WebGPU commands.
+    ///     Bundle lookup uses this conservative signature; a mismatch always takes the ordinary
+    ///     path, while a match may replay already-recorded commands.
+    /// </summary>
+    internal DirectionalDrawStats MeasureDirectionalDraw(int pass, Vector3D<double> viewPosition)
+    {
+        if (disposed || pass is < 0 or > 1 || _presentation is not { } presentation) return default;
+
+        var signature = 14695981039346656037UL;
+        signature = AddSignature(signature, Position.X);
+        signature = AddSignature(signature, Position.Y);
+        signature = AddSignature(signature, Position.Z);
+        signature = AddSignature(signature, presentation.Epoch);
+        signature = AddSignature(signature, pass);
+        var stats = new DirectionalDrawStats(0, 0, 0, 0, 0, signature);
+        for (var pageIndex = 0; pageIndex < presentation.Pages.Count; pageIndex++)
+        {
+            var page = presentation.Pages[pageIndex];
+            var mesh = pass == 0 ? page?.Solid : page?.Translucent;
+            if (mesh == null) continue;
+
+            var ranges = page!.RangesFor(pass);
+            Span<ChunkQuadRange> selected = stackalloc ChunkQuadRange[7];
+            var faceMask = DirectionalFaceVisibility.ForPage(Position, pageIndex, viewPosition);
+            var selectedCount = ranges.Select(faceMask, selected);
+            if (selectedCount == 0) continue;
+
+            signature = AddSignature(signature, pageIndex);
+            signature = AddSignature(signature, (int)faceMask);
+            signature = AddSignature(signature, unchecked((long)mesh.CommandIdentity));
+            signature = AddSignature(signature, DrawMetadataSlot);
+            var submitted = 0;
+            for (var i = 0; i < selectedCount; i++) submitted += selected[i].QuadCount;
+            stats = stats.Add(
+                ranges.AvailableQuadCount,
+                submitted,
+                selectedCount,
+                ranges.UnassignedQuadCount,
+                0,
+                signature);
+        }
+
+        return stats;
+    }
+
+    /// <summary>Records this section's selected solid ranges into an opaque render bundle.</summary>
+    internal unsafe void RecordOpaqueBundle(
+        RenderBundleEncoder* encoder,
+        Vector3D<double> viewPosition,
+        ref TerrainBundleStreamBindingState binding,
+        uint drawMetadataIndex)
+    {
+        if (disposed || _presentation is not { } presentation) return;
+        for (var pageIndex = 0; pageIndex < presentation.Pages.Count; pageIndex++)
+        {
+            var page = presentation.Pages[pageIndex];
+            if (page?.Solid is not { } mesh) continue;
+
+            var ranges = page.RangesFor(0);
+            Span<ChunkQuadRange> selected = stackalloc ChunkQuadRange[7];
+            var faceMask = DirectionalFaceVisibility.ForPage(Position, pageIndex, viewPosition);
+            var selectedCount = ranges.Select(faceMask, selected);
+            if (selectedCount == 0) continue;
+
+            mesh.BindChunkQuadStreams(encoder, ref binding);
+            for (var i = 0; i < selectedCount; i++)
+            {
+                var range = selected[i];
+                mesh.DrawBoundQuadRange(
+                    encoder, (uint)range.FirstQuad, (uint)range.QuadCount,
+                    firstInstance: drawMetadataIndex);
+            }
+        }
+
+        presentation.RecordFirstDraw();
     }
 
     private static ulong AddSignature(ulong value, long component)
