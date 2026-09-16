@@ -56,6 +56,20 @@ public sealed class TerrainGpuRangeAllocatorTests
     }
 
     [Fact]
+    public void Allocations_support_non_power_of_two_vertex_stride_alignment()
+    {
+        TerrainGpuRangeAllocator allocator = new(1024);
+
+        Assert.True(allocator.TryAllocate(100, 80, out var first));
+        Assert.True(allocator.TryAllocate(100, 80, out var second));
+
+        Assert.Equal(0, first.OffsetBytes);
+        Assert.Equal(160, second.OffsetBytes);
+        Assert.Equal(0, first.OffsetBytes % 80);
+        Assert.Equal(0, second.OffsetBytes % 80);
+    }
+
+    [Fact]
     public void Failed_candidate_does_not_mutate_live_or_free_ranges()
     {
         TerrainGpuRangeAllocator allocator = new(256);

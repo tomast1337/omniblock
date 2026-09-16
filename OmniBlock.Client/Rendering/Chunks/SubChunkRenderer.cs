@@ -124,7 +124,8 @@ public class SubChunkRenderer : IDisposable
     internal unsafe DirectionalDrawStats RenderWebGpu(
         RenderPassEncoder* passEncoder,
         int pass,
-        Vector3D<double> viewPosition)
+        Vector3D<double> viewPosition,
+        ref TerrainStreamBindingState binding)
     {
         if (disposed) return default;
         if (pass < 0 || pass > 1) return default;
@@ -144,7 +145,7 @@ public class SubChunkRenderer : IDisposable
                 DirectionalFaceVisibility.ForPage(Position, pageIndex, viewPosition), selected);
             if (selectedCount == 0) continue;
 
-            mesh.BindChunkQuadStreams(passEncoder, page.LightSliceFor(pass));
+            var streamChanged = mesh.BindChunkQuadStreams(passEncoder, ref binding);
             var submitted = 0;
             for (var i = 0; i < selectedCount; i++)
             {
@@ -159,7 +160,7 @@ public class SubChunkRenderer : IDisposable
                 submitted,
                 selectedCount,
                 ranges.UnassignedQuadCount,
-                1);
+                streamChanged ? 1 : 0);
         }
 
         if (stats.DrawRanges > 0) presentation.RecordFirstDraw();
@@ -167,8 +168,12 @@ public class SubChunkRenderer : IDisposable
     }
 
     /// <summary>Draws the solid mesh through the device-wide quad wireframe indices.</summary>
-    public unsafe int RenderWireframeWebGpu(RenderPassEncoder* passEncoder)
+    internal unsafe int RenderWireframeWebGpu(
+        RenderPassEncoder* passEncoder,
+        ref TerrainStreamBindingState binding,
+        out int streamBinds)
     {
+        streamBinds = 0;
         if (disposed) return 0;
         var presentation = _presentation;
         if (presentation == null) return 0;
@@ -177,7 +182,7 @@ public class SubChunkRenderer : IDisposable
         foreach (var page in presentation.Pages)
         {
             if (page?.Solid is not { } mesh) continue;
-            mesh.DrawQuadWireframe(passEncoder, page.LightSliceFor(0));
+            if (mesh.DrawQuadWireframe(passEncoder, ref binding)) streamBinds++;
             draws++;
         }
 

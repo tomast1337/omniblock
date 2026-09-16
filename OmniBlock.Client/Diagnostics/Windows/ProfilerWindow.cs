@@ -209,7 +209,7 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
             $"Uniform arena: {profile.TerrainUniformArenaCapacity:N0} entries  {profile.TerrainUniformArenaGrowths} lifetime growths");
         var arena = chunkRenderer.TerrainGpuArenaProfile;
         ImGuiTextSafe.Text(
-            $"Terrain arenas: {arena.Regions:N0} regions  {arena.GeometrySegments:N0} geometry segments  {arena.LightingSegments:N0} light segments");
+            $"Terrain arenas: {arena.Regions:N0} regions  {arena.Segments:N0} paired segments ({arena.Segments * 2:N0} buffers)");
         ImGuiTextSafe.Text(
             $"Arena memory: {FormatBytes(arena.AllocatedBytes)} used / {FormatBytes(arena.CapacityBytes)} reserved  {arena.ExternalFragmentation:P1} external fragmentation");
         ImGuiTextSafe.Text(

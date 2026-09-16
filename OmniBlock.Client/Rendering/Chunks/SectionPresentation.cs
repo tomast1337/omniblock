@@ -14,8 +14,7 @@ namespace OmniBlock.Client.Rendering.Chunks;
 internal sealed class SectionPresentation : IDisposable
 {
     private readonly SectionPagePresentation?[] _pages;
-    private readonly TerrainGpuArenaSet? _gpuArenas;
-    private readonly TerrainRenderRegionKey _regionKey;
+    private readonly bool _hasRegionalStorage;
     private bool _disposed;
     private MeshLifecycleRequest? _firstDrawTrace;
 
@@ -26,8 +25,7 @@ internal sealed class SectionPresentation : IDisposable
         ChunkVisibilityStore visibilityData,
         bool isLit,
         long epoch,
-        TerrainGpuArenaSet? gpuArenas,
-        TerrainRenderRegionKey regionKey,
+        bool hasRegionalStorage,
         MeshLifecycleDiagnostics? lifecycle,
         MeshLifecycleRequest? firstDrawTrace)
     {
@@ -37,8 +35,7 @@ internal sealed class SectionPresentation : IDisposable
         VisibilityData = visibilityData;
         IsLit = isLit;
         Epoch = epoch;
-        _gpuArenas = gpuArenas;
-        _regionKey = regionKey;
+        _hasRegionalStorage = hasRegionalStorage;
         Lifecycle = lifecycle;
         _firstDrawTrace = IsEmpty ? null : firstDrawTrace;
     }
@@ -114,7 +111,7 @@ internal sealed class SectionPresentation : IDisposable
             var translucentCount = pages.Sum(static page => page?.TranslucentVertexCount ?? 0);
             return new SectionPresentation(
                 pages, solidCount, translucentCount, visibilityData, isLit, epoch,
-                gpuArenas, regionKey, lifecycle, firstDrawTrace);
+                true, lifecycle, firstDrawTrace);
         }
         catch
         {
@@ -134,7 +131,7 @@ internal sealed class SectionPresentation : IDisposable
         int solidVertexCount = 0,
         int translucentVertexCount = 0) =>
         new([], solidVertexCount, translucentVertexCount, visibilityData, isLit, epoch,
-            null, default, null, null);
+            false, null, null);
 
     public SectionPresentationLightPlan CaptureLightingPlan()
     {
@@ -150,7 +147,7 @@ internal sealed class SectionPresentation : IDisposable
         in SectionPresentationLightEvaluation evaluation)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (_gpuArenas == null)
+        if (!_hasRegionalStorage)
             throw new InvalidOperationException("A metadata-only presentation cannot install lighting.");
         if (evaluation.PresentationEpoch != Epoch || evaluation.Pages.Length != _pages.Length)
             return false;
@@ -169,8 +166,13 @@ internal sealed class SectionPresentation : IDisposable
             {
                 if (evaluation.Pages[i] is { } pageEvaluation)
                     replacements[i] = SectionLighting.CreateReplacementRegional(
-                        device, _gpuArenas, _regionKey, pageEvaluation);
+                        device, _pages[i]!.Solid, _pages[i]!.Translucent, pageEvaluation);
             }
+
+            // Every page was validated before the first queue write. EndFrame invokes this after
+            // submission, so these in-place light writes are ordered after the old frame and
+            // before the next one without allocating replacement buffers.
+            foreach (var replacement in replacements) replacement?.PublishRegional();
 
             for (var i = 0; i < _pages.Length; i++)
             {
@@ -255,12 +257,15 @@ internal sealed class SectionPagePresentation
                 throw new ArgumentException("Terrain geometry and directional ranges must have matching vertex counts.");
 
             if (solidCount > 0)
-                solid = TerrainChunkQuadMesh.Create(device, gpuArenas, regionKey, result.Solid!.Span);
+                solid = TerrainChunkQuadMesh.Create(
+                    device, gpuArenas, regionKey,
+                    result.Solid!.Span, result.SolidLighting!.InitialValues);
             if (translucentCount > 0)
                 translucent = TerrainChunkQuadMesh.Create(
-                    device, gpuArenas, regionKey, result.Translucent!.Span);
+                    device, gpuArenas, regionKey,
+                    result.Translucent!.Span, result.TranslucentLighting!.InitialValues);
             lighting = SectionLighting.CreateInitialRegional(
-                device, gpuArenas, regionKey, result.SolidLighting, result.TranslucentLighting);
+                device, result.SolidLighting, result.TranslucentLighting, solid, translucent);
             return new SectionPagePresentation(
                 solid, translucent, lighting, solidCount, translucentCount,
                 result.SolidRanges, result.TranslucentRanges);
@@ -300,12 +305,6 @@ internal sealed class SectionPagePresentation
                 $"Lighting epoch changed before publication; expected {expectedEpoch}, " +
                 $"found {current?.Epoch.ToString() ?? "none"}.");
         Interlocked.Exchange(ref _lighting, replacement)?.Dispose();
-    }
-
-    public TerrainGpuBufferSlice LightSliceFor(int pass)
-    {
-        var lighting = _lighting;
-        return lighting == null ? default : pass == 0 ? lighting.SolidSlice : lighting.TranslucentSlice;
     }
 
     public ChunkDirectionalRanges RangesFor(int pass) =>

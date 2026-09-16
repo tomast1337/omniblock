@@ -8,17 +8,19 @@ using WgpuBuffer = Silk.NET.WebGPU.Buffer;
 
 namespace OmniBlock.Client.Rendering.Chunks;
 
-/// <summary>The independently replaceable GPU light streams for one section presentation.</summary>
+/// <summary>The independently refreshable light streams for one section presentation.</summary>
 /// <remarks>
-///     Geometry owns only stable light probes. A propagated-light update evaluates those probes
-///     against the live world, creates complete replacement buffers, and swaps this object only
-///     after every upload succeeds. The old buffers retire at a presentation boundary.
+///     LOD keeps dedicated buffers. Near terrain uses the light half of a paired regional range;
+///     propagated values are fully validated off-thread, then written in place after the preceding
+///     frame was submitted. Queue ordering makes the next frame observe the complete replacement.
 /// </remarks>
 internal sealed unsafe class SectionLighting : IDisposable
 {
     private readonly WebGpuDevice _device;
-    private TerrainGpuBufferLease? _solidLease;
-    private TerrainGpuBufferLease? _translucentLease;
+    private readonly TerrainChunkQuadMesh? _solidRegional;
+    private readonly TerrainChunkQuadMesh? _translucentRegional;
+    private ChunkLightVertex[]? _pendingSolidValues;
+    private ChunkLightVertex[]? _pendingTranslucentValues;
     private bool _disposed;
 
     private SectionLighting(
@@ -27,8 +29,10 @@ internal sealed unsafe class SectionLighting : IDisposable
         SectionLightModel? translucentModel,
         WgpuBuffer* solid,
         WgpuBuffer* translucent,
-        TerrainGpuBufferLease? solidLease,
-        TerrainGpuBufferLease? translucentLease,
+        TerrainChunkQuadMesh? solidRegional,
+        TerrainChunkQuadMesh? translucentRegional,
+        ChunkLightVertex[]? pendingSolidValues,
+        ChunkLightVertex[]? pendingTranslucentValues,
         long epoch)
     {
         _device = device;
@@ -36,16 +40,15 @@ internal sealed unsafe class SectionLighting : IDisposable
         TranslucentModel = translucentModel;
         Solid = solid;
         Translucent = translucent;
-        _solidLease = solidLease;
-        _translucentLease = translucentLease;
+        _solidRegional = solidRegional;
+        _translucentRegional = translucentRegional;
+        _pendingSolidValues = pendingSolidValues;
+        _pendingTranslucentValues = pendingTranslucentValues;
         Epoch = epoch;
     }
 
     public WgpuBuffer* Solid { get; }
     public WgpuBuffer* Translucent { get; }
-    public TerrainGpuBufferSlice SolidSlice => _solidLease?.Slice ?? DedicatedSlice(Solid, SolidModel);
-    public TerrainGpuBufferSlice TranslucentSlice =>
-        _translucentLease?.Slice ?? DedicatedSlice(Translucent, TranslucentModel);
     public long Epoch { get; }
 
     private SectionLightModel? SolidModel { get; }
@@ -63,13 +66,16 @@ internal sealed unsafe class SectionLighting : IDisposable
 
     public static SectionLighting CreateInitialRegional(
         WebGpuDevice device,
-        TerrainGpuArenaSet arenas,
-        TerrainRenderRegionKey regionKey,
         SectionLightModel? solidModel,
-        SectionLightModel? translucentModel)
+        SectionLightModel? translucentModel,
+        TerrainChunkQuadMesh? solid,
+        TerrainChunkQuadMesh? translucent)
     {
-        var result = CreateRegional(
-            device, arenas, regionKey, solidModel, translucentModel, null, null, 0);
+        ValidateRegional(solidModel, solidModel?.InitialValues, solid);
+        ValidateRegional(translucentModel, translucentModel?.InitialValues, translucent);
+        var result = new SectionLighting(
+            device, solidModel, translucentModel, null, null,
+            solid, translucent, null, null, 0);
         solidModel?.ReleaseInitialValues();
         translucentModel?.ReleaseInitialValues();
         return result;
@@ -99,6 +105,8 @@ internal sealed unsafe class SectionLighting : IDisposable
                 translucent,
                 null,
                 null,
+                null,
+                null,
                 evaluation.SourceEpoch + 1);
         }
         catch
@@ -110,18 +118,10 @@ internal sealed unsafe class SectionLighting : IDisposable
 
     public static SectionLighting CreateReplacementRegional(
         WebGpuDevice device,
-        TerrainGpuArenaSet arenas,
-        TerrainRenderRegionKey regionKey,
+        TerrainChunkQuadMesh? solid,
+        TerrainChunkQuadMesh? translucent,
         in SectionLightingEvaluation evaluation) =>
-        CreateRegional(
-            device,
-            arenas,
-            regionKey,
-            evaluation.SolidModel,
-            evaluation.TranslucentModel,
-            evaluation.SolidValues,
-            evaluation.TranslucentValues,
-            evaluation.SourceEpoch + 1);
+        CreateRegionalReplacement(device, solid, translucent, evaluation);
 
     private static SectionLighting Create(
         WebGpuDevice device,
@@ -138,7 +138,7 @@ internal sealed unsafe class SectionLighting : IDisposable
             translucent = CreateBuffer(device, translucentModel, lighting);
             return new SectionLighting(
                 device, solidModel, translucentModel,
-                solid, translucent, null, null, epoch);
+                solid, translucent, null, null, null, null, epoch);
         }
         catch
         {
@@ -147,53 +147,60 @@ internal sealed unsafe class SectionLighting : IDisposable
         }
     }
 
-    private static SectionLighting CreateRegional(
+    private static SectionLighting CreateRegionalReplacement(
         WebGpuDevice device,
-        TerrainGpuArenaSet arenas,
-        TerrainRenderRegionKey regionKey,
-        SectionLightModel? solidModel,
-        SectionLightModel? translucentModel,
-        ChunkLightVertex[]? solidValues,
-        ChunkLightVertex[]? translucentValues,
-        long epoch)
+        TerrainChunkQuadMesh? solid,
+        TerrainChunkQuadMesh? translucent,
+        in SectionLightingEvaluation evaluation)
     {
-        TerrainGpuBufferLease? solid = null;
-        TerrainGpuBufferLease? translucent = null;
-        try
-        {
-            solid = UploadRegional(arenas, regionKey, solidModel, solidValues);
-            translucent = UploadRegional(arenas, regionKey, translucentModel, translucentValues);
-            return new SectionLighting(
-                device, solidModel, translucentModel,
-                null, null, solid, translucent, epoch);
-        }
-        catch
-        {
-            solid?.Dispose();
-            translucent?.Dispose();
-            throw;
-        }
+        ValidateRegional(evaluation.SolidModel, evaluation.SolidValues, solid);
+        ValidateRegional(evaluation.TranslucentModel, evaluation.TranslucentValues, translucent);
+        return new SectionLighting(
+            device,
+            evaluation.SolidModel,
+            evaluation.TranslucentModel,
+            null,
+            null,
+            solid,
+            translucent,
+            evaluation.SolidValues,
+            evaluation.TranslucentValues,
+            evaluation.SourceEpoch + 1);
     }
 
-    private static TerrainGpuBufferLease? UploadRegional(
-        TerrainGpuArenaSet arenas,
-        TerrainRenderRegionKey regionKey,
+    private static void ValidateRegional(
         SectionLightModel? model,
-        ChunkLightVertex[]? values)
+        ChunkLightVertex[]? values,
+        TerrainChunkQuadMesh? mesh)
     {
         if (model == null)
         {
-            if (values != null)
-                throw new ArgumentException("Light values were supplied without a light model.");
-            return null;
+            if (values != null || mesh != null)
+                throw new ArgumentException("Regional lighting was supplied without a light model.");
+            return;
         }
-
-        var source = values ?? model.InitialValues;
-        if (source.Length != model.VertexCount)
+        if (values == null || values.Length != model.VertexCount ||
+            mesh == null || mesh.VertexCount != model.VertexCount)
             throw new ArgumentException("Terrain light values must match the light model.");
-        return arenas.Upload(
-            regionKey, TerrainGpuStreamKind.Lighting,
-            MemoryMarshal.AsBytes(source.AsSpan()));
+    }
+
+    /// <summary>
+    ///     Writes a fully validated light replacement into the paired range. This runs from
+    ///     ChunkRenderer.EndFrame after the preceding command buffer was submitted, so queue order
+    ///     keeps the old draw ahead of this upload and the next frame sees the complete new values.
+    /// </summary>
+    public void PublishRegional()
+    {
+        if (_pendingSolidValues is { } solid)
+        {
+            _solidRegional!.RewriteLighting(solid);
+            _pendingSolidValues = null;
+        }
+        if (_pendingTranslucentValues is { } translucent)
+        {
+            _translucentRegional!.RewriteLighting(translucent);
+            _pendingTranslucentValues = null;
+        }
     }
 
     private static WgpuBuffer* CreateBuffer(
@@ -245,18 +252,8 @@ internal sealed unsafe class SectionLighting : IDisposable
     {
         if (_disposed) return;
         _disposed = true;
-        Interlocked.Exchange(ref _solidLease, null)?.Dispose();
-        Interlocked.Exchange(ref _translucentLease, null)?.Dispose();
         WgpuRelease.DeferredBuffers(_device, (nint)Solid, (nint)Translucent);
     }
-
-    private static TerrainGpuBufferSlice DedicatedSlice(
-        WgpuBuffer* buffer,
-        SectionLightModel? model) =>
-        buffer == null || model == null
-            ? default
-            : new TerrainGpuBufferSlice(
-                buffer, 0, checked((ulong)model.VertexCount * WgpuMesh.ChunkLightVertexStride));
 }
 
 internal readonly record struct SectionLightingPlan(

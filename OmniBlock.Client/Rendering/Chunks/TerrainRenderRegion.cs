@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.WebGPU;
 using Silk.NET.Maths;
 using Silk.NET.WebGPU;
@@ -221,6 +223,10 @@ internal sealed class TerrainGpuRangeAllocator
             _releases);
     }
 
+    public bool Owns(in TerrainGpuAllocation allocation) =>
+        allocation.Id > 0 && _live.TryGetValue(allocation.Id, out var owned) &&
+        owned == allocation && !_retiredIds.Contains(allocation.Id);
+
     private void ValidateOwned(in TerrainGpuAllocation allocation)
     {
         if (allocation.Id <= 0 || !_live.TryGetValue(allocation.Id, out var owned) ||
@@ -255,14 +261,14 @@ internal sealed class TerrainGpuRangeAllocator
         }
     }
 
-    private static int AlignUp(int value, int alignment) =>
-        checked((value + alignment - 1) & -alignment);
+    private static int AlignUp(int value, int alignment) => checked((int)(
+        ((long)value + alignment - 1) / alignment * alignment));
 
     private static void ValidateAlignment(int alignment)
     {
-        if (alignment <= 0 || (alignment & (alignment - 1)) != 0)
+        if (alignment <= 0)
             throw new ArgumentOutOfRangeException(nameof(alignment),
-                "Alignment must be a positive power of two.");
+                "Alignment must be positive.");
     }
 
     private readonly record struct FreeRange(int OffsetBytes, int LengthBytes)
@@ -278,32 +284,33 @@ internal sealed class TerrainGpuRangeAllocator
     }
 }
 
-internal enum TerrainGpuStreamKind
+/// <summary>
+///     One paired geometry/light range. Both streams share the same logical vertex base, allowing
+///     a whole regional buffer pair to remain bound while indexed draws select pages by baseVertex.
+/// </summary>
+internal readonly unsafe struct TerrainGpuVertexSlice
 {
-    Geometry,
-    Lighting
-}
-
-/// <summary>A byte-addressed view into one region-owned WebGPU vertex buffer.</summary>
-internal readonly unsafe struct TerrainGpuBufferSlice
-{
-    public TerrainGpuBufferSlice(WgpuBuffer* buffer, ulong offsetBytes, ulong lengthBytes)
+    public TerrainGpuVertexSlice(
+        WgpuBuffer* geometryBuffer,
+        WgpuBuffer* lightingBuffer,
+        int firstVertex,
+        int vertexCount)
     {
-        Buffer = buffer;
-        OffsetBytes = offsetBytes;
-        LengthBytes = lengthBytes;
+        GeometryBuffer = geometryBuffer;
+        LightingBuffer = lightingBuffer;
+        FirstVertex = firstVertex;
+        VertexCount = vertexCount;
     }
 
-    public WgpuBuffer* Buffer { get; }
-    public ulong OffsetBytes { get; }
-    public ulong LengthBytes { get; }
-    public bool IsEmpty => Buffer == null || LengthBytes == 0;
+    public WgpuBuffer* GeometryBuffer { get; }
+    public WgpuBuffer* LightingBuffer { get; }
+    public int FirstVertex { get; }
+    public int VertexCount { get; }
 }
 
 internal readonly record struct TerrainGpuArenaSnapshot(
     int Regions,
-    int GeometrySegments,
-    int LightingSegments,
+    int Segments,
     long CapacityBytes,
     long AllocatedBytes,
     long FreeBytes,
@@ -320,17 +327,14 @@ internal readonly record struct TerrainGpuArenaSnapshot(
 }
 
 /// <summary>
-///     Render-thread-owned regional terrain storage. Geometry and lighting use separate fixed-size
-///     segments so either stream can grow without copying or invalidating a published presentation.
+///     Render-thread-owned regional terrain storage. Every fixed-size segment owns a geometry and
+///     light buffer addressed by one shared vertex allocator. Segments append without moving a
+///     published range.
 /// </summary>
 internal sealed unsafe class TerrainGpuArenaSet : IDisposable
 {
-    // Regions at the streaming frontier are often sparse. Start small enough that a single page
-    // does not reserve ten MiB, then append fixed segments as a dense region fills. No published
-    // slice moves when that happens.
-    internal const int DefaultGeometrySegmentBytes = 1024 * 1024;
-    internal const int DefaultLightingSegmentBytes = 256 * 1024;
-    private const int UploadAlignmentBytes = 4;
+    internal const int DefaultSegmentVertices = 64 * 1024;
+    private const int QuadAlignmentBytes = 4 * (int)WgpuMesh.ChunkVertexStride;
 
     private readonly WebGpuDevice _device;
     private readonly int _ownerThreadId;
@@ -345,14 +349,19 @@ internal sealed unsafe class TerrainGpuArenaSet : IDisposable
         _ownerThreadId = Environment.CurrentManagedThreadId;
     }
 
-    public TerrainGpuBufferLease Upload(
+    public TerrainGpuVertexLease Upload(
         TerrainRenderRegionKey regionKey,
-        TerrainGpuStreamKind kind,
-        ReadOnlySpan<byte> bytes)
+        ReadOnlySpan<ChunkVertex> vertices,
+        ReadOnlySpan<ChunkLightVertex> lighting)
     {
         AssertOwnerThread();
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (bytes.IsEmpty) throw new ArgumentException("Terrain GPU uploads cannot be empty.", nameof(bytes));
+        if (vertices.IsEmpty || vertices.Length % 4 != 0)
+            throw new ArgumentException(
+                "Terrain GPU uploads require a non-empty multiple of four vertices.", nameof(vertices));
+        if (lighting.Length != vertices.Length)
+            throw new ArgumentException(
+                "Terrain geometry and lighting must contain the same number of vertices.", nameof(lighting));
 
         if (!_regions.TryGetValue(regionKey, out var region))
         {
@@ -360,26 +369,22 @@ internal sealed unsafe class TerrainGpuArenaSet : IDisposable
             _regions.Add(regionKey, region);
         }
 
-        var segments = kind == TerrainGpuStreamKind.Geometry
-            ? region.Geometry
-            : region.Lighting;
-        foreach (var segment in segments)
+        foreach (var segment in region.Segments)
         {
-            if (segment.Allocator.Snapshot().LargestFreeRangeBytes < bytes.Length) continue;
-            if (segment.TryUpload(bytes, out var lease)) return lease;
+            var geometryBytes = checked(vertices.Length * (int)WgpuMesh.ChunkVertexStride);
+            if (segment.Allocator.Snapshot().LargestFreeRangeBytes < geometryBytes) continue;
+            if (segment.TryUpload(vertices, lighting, out var lease)) return lease;
         }
 
-        var defaultCapacity = kind == TerrainGpuStreamKind.Geometry
-            ? DefaultGeometrySegmentBytes
-            : DefaultLightingSegmentBytes;
-        var capacity = Math.Max(defaultCapacity, RoundUpPowerOfTwo(bytes.Length));
-        var newSegment = new Segment(_device, capacity);
-        segments.Add(newSegment);
+        var capacityVertices = Math.Max(DefaultSegmentVertices, RoundUpPowerOfTwo(vertices.Length));
+        var newSegment = new Segment(_device, capacityVertices);
+        region.Segments.Add(newSegment);
         _segmentGrowths++;
-        if (newSegment.TryUpload(bytes, out var createdLease)) return createdLease;
+        if (newSegment.TryUpload(vertices, lighting, out var createdLease)) return createdLease;
 
         throw new InvalidOperationException(
-            $"A new {capacity}-byte terrain GPU segment could not hold a {bytes.Length}-byte upload.");
+            $"A new {capacityVertices}-vertex terrain GPU segment could not hold " +
+            $"a {vertices.Length}-vertex upload.");
     }
 
     /// <summary>Returns retired ranges to their allocators after the preceding frame was submitted.</summary>
@@ -390,8 +395,7 @@ internal sealed unsafe class TerrainGpuArenaSet : IDisposable
         var released = 0;
         foreach (var (key, region) in _regions)
         {
-            foreach (var segment in region.Geometry) released += segment.Allocator.ReleaseRetired();
-            foreach (var segment in region.Lighting) released += segment.Allocator.ReleaseRetired();
+            foreach (var segment in region.Segments) released += segment.Allocator.ReleaseRetired();
             if (region.IsEmpty) _emptyRegions.Add(key);
         }
 
@@ -410,8 +414,7 @@ internal sealed unsafe class TerrainGpuArenaSet : IDisposable
     public TerrainGpuArenaSnapshot Snapshot()
     {
         AssertOwnerThread();
-        var geometrySegments = 0;
-        var lightingSegments = 0;
+        var segments = 0;
         long capacity = 0;
         long allocated = 0;
         long free = 0;
@@ -423,32 +426,29 @@ internal sealed unsafe class TerrainGpuArenaSet : IDisposable
 
         foreach (var region in _regions.Values)
         {
-            geometrySegments += region.Geometry.Count;
-            lightingSegments += region.Lighting.Count;
-            Accumulate(region.Geometry);
-            Accumulate(region.Lighting);
-        }
-
-        return new TerrainGpuArenaSnapshot(
-            _regions.Count, geometrySegments, lightingSegments, capacity, allocated, free,
-            largest, fragmentedFree, active, retired, _segmentGrowths, failed);
-
-        void Accumulate(List<Segment> segments)
-        {
-            foreach (var segment in segments)
+            segments += region.Segments.Count;
+            foreach (var segment in region.Segments)
             {
                 var snapshot = segment.Allocator.Snapshot();
-                capacity += snapshot.CapacityBytes;
-                allocated += snapshot.AllocatedBytes;
-                free += snapshot.FreeBytes;
-                largest = Math.Max(largest, snapshot.LargestFreeRangeBytes);
-                fragmentedFree += snapshot.FreeBytes - snapshot.LargestFreeRangeBytes;
+                capacity += PhysicalBytes(snapshot.CapacityBytes);
+                allocated += PhysicalBytes(snapshot.AllocatedBytes);
+                free += PhysicalBytes(snapshot.FreeBytes);
+                largest = Math.Max(largest, PhysicalBytes(snapshot.LargestFreeRangeBytes));
+                fragmentedFree += PhysicalBytes(
+                    snapshot.FreeBytes - snapshot.LargestFreeRangeBytes);
                 active += snapshot.ActiveAllocations;
                 retired += snapshot.PendingRetirements;
                 failed += snapshot.FailedAllocations;
             }
         }
+
+        return new TerrainGpuArenaSnapshot(
+            _regions.Count, segments, capacity, allocated, free,
+            largest, fragmentedFree, active, retired, _segmentGrowths, failed);
     }
+
+    private static long PhysicalBytes(long geometryBytes) => checked(
+        geometryBytes + geometryBytes / WgpuMesh.ChunkVertexStride * WgpuMesh.ChunkLightVertexStride);
 
     public void Dispose()
     {
@@ -475,19 +475,15 @@ internal sealed unsafe class TerrainGpuArenaSet : IDisposable
 
     private sealed class Region
     {
-        public List<Segment> Geometry { get; } = [];
-        public List<Segment> Lighting { get; } = [];
+        public List<Segment> Segments { get; } = [];
 
-        public bool IsEmpty =>
-            Geometry.All(static segment => segment.Allocator.Snapshot().AllocatedBytes == 0) &&
-            Lighting.All(static segment => segment.Allocator.Snapshot().AllocatedBytes == 0);
+        public bool IsEmpty => Segments.All(
+            static segment => segment.Allocator.Snapshot().AllocatedBytes == 0);
 
         public void Dispose()
         {
-            foreach (var segment in Geometry) segment.Dispose();
-            foreach (var segment in Lighting) segment.Dispose();
-            Geometry.Clear();
-            Lighting.Clear();
+            foreach (var segment in Segments) segment.Dispose();
+            Segments.Clear();
         }
     }
 
@@ -496,26 +492,52 @@ internal sealed unsafe class TerrainGpuArenaSet : IDisposable
         private readonly WebGpuDevice _device;
         private bool _disposed;
 
-        public Segment(WebGpuDevice device, int capacityBytes)
+        public Segment(WebGpuDevice device, int capacityVertices)
         {
             _device = device;
-            Allocator = new TerrainGpuRangeAllocator(capacityBytes);
-            BufferDescriptor descriptor = new()
+            var geometryBytes = checked(capacityVertices * (int)WgpuMesh.ChunkVertexStride);
+            var lightingBytes = checked(capacityVertices * (int)WgpuMesh.ChunkLightVertexStride);
+            Allocator = new TerrainGpuRangeAllocator(geometryBytes);
+            BufferDescriptor geometryDescriptor = new()
             {
                 Usage = BufferUsage.Vertex | BufferUsage.CopyDst,
-                Size = (ulong)capacityBytes
+                Size = (ulong)geometryBytes
             };
-            Buffer = device.Api.DeviceCreateBuffer(device.Device, in descriptor);
-            if (Buffer == null) throw new InvalidOperationException("WebGPU did not create a terrain arena buffer.");
+            GeometryBuffer = device.Api.DeviceCreateBuffer(device.Device, in geometryDescriptor);
+            if (GeometryBuffer == null)
+                throw new InvalidOperationException("WebGPU did not create a terrain geometry arena buffer.");
+
+            try
+            {
+                BufferDescriptor lightingDescriptor = new()
+                {
+                    Usage = BufferUsage.Vertex | BufferUsage.CopyDst,
+                    Size = (ulong)lightingBytes
+                };
+                LightingBuffer = device.Api.DeviceCreateBuffer(device.Device, in lightingDescriptor);
+                if (LightingBuffer == null)
+                    throw new InvalidOperationException("WebGPU did not create a terrain lighting arena buffer.");
+            }
+            catch
+            {
+                WgpuRelease.DeferredBuffers(device, (nint)GeometryBuffer);
+                throw;
+            }
         }
 
-        public WgpuBuffer* Buffer { get; }
+        public WgpuBuffer* GeometryBuffer { get; }
+        public WgpuBuffer* LightingBuffer { get; }
         public TerrainGpuRangeAllocator Allocator { get; }
 
-        public bool TryUpload(ReadOnlySpan<byte> bytes, out TerrainGpuBufferLease lease)
+        public bool TryUpload(
+            ReadOnlySpan<ChunkVertex> vertices,
+            ReadOnlySpan<ChunkLightVertex> lighting,
+            out TerrainGpuVertexLease lease)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            if (!Allocator.TryAllocate(bytes.Length, UploadAlignmentBytes, out var allocation))
+            var geometry = MemoryMarshal.AsBytes(vertices);
+            var lights = MemoryMarshal.AsBytes(lighting);
+            if (!Allocator.TryAllocate(geometry.Length, QuadAlignmentBytes, out var allocation))
             {
                 lease = null!;
                 return false;
@@ -523,11 +545,17 @@ internal sealed unsafe class TerrainGpuArenaSet : IDisposable
 
             try
             {
-                fixed (byte* data = bytes)
+                fixed (byte* geometryData = geometry)
                     _device.Api.QueueWriteBuffer(
-                        _device.Queue, Buffer, (ulong)allocation.OffsetBytes,
-                        data, (nuint)bytes.Length);
-                lease = new TerrainGpuBufferLease(this, allocation);
+                        _device.Queue, GeometryBuffer, (ulong)allocation.OffsetBytes,
+                        geometryData, (nuint)geometry.Length);
+                var firstVertex = allocation.OffsetBytes / (int)WgpuMesh.ChunkVertexStride;
+                fixed (byte* lightData = lights)
+                    _device.Api.QueueWriteBuffer(
+                        _device.Queue, LightingBuffer,
+                        checked((ulong)firstVertex * WgpuMesh.ChunkLightVertexStride),
+                        lightData, (nuint)lights.Length);
+                lease = new TerrainGpuVertexLease(this, allocation);
                 return true;
             }
             catch
@@ -537,8 +565,31 @@ internal sealed unsafe class TerrainGpuArenaSet : IDisposable
             }
         }
 
-        public TerrainGpuBufferSlice Slice(in TerrainGpuAllocation allocation) =>
-            new(Buffer, (ulong)allocation.OffsetBytes, (ulong)allocation.LengthBytes);
+        public TerrainGpuVertexSlice Slice(in TerrainGpuAllocation allocation) => new(
+            GeometryBuffer,
+            LightingBuffer,
+            allocation.OffsetBytes / (int)WgpuMesh.ChunkVertexStride,
+            allocation.LengthBytes / (int)WgpuMesh.ChunkVertexStride);
+
+        public void RewriteLighting(
+            in TerrainGpuAllocation allocation,
+            ReadOnlySpan<ChunkLightVertex> values)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (!Allocator.Owns(allocation))
+                throw new InvalidOperationException("Cannot update a stale terrain lighting range.");
+            var expectedVertices = allocation.LengthBytes / (int)WgpuMesh.ChunkVertexStride;
+            if (values.Length != expectedVertices)
+                throw new ArgumentException("Replacement lighting must match its paired geometry.", nameof(values));
+
+            var bytes = MemoryMarshal.AsBytes(values);
+            var firstVertex = allocation.OffsetBytes / (int)WgpuMesh.ChunkVertexStride;
+            fixed (byte* data = bytes)
+                _device.Api.QueueWriteBuffer(
+                    _device.Queue, LightingBuffer,
+                    checked((ulong)firstVertex * WgpuMesh.ChunkLightVertexStride),
+                    data, (nuint)bytes.Length);
+        }
 
         public void Retire(in TerrainGpuAllocation allocation)
         {
@@ -550,18 +601,19 @@ internal sealed unsafe class TerrainGpuArenaSet : IDisposable
         {
             if (_disposed) return;
             _disposed = true;
-            WgpuRelease.DeferredBuffers(_device, (nint)Buffer);
+            WgpuRelease.DeferredBuffers(
+                _device, (nint)GeometryBuffer, (nint)LightingBuffer);
         }
     }
 }
 
-/// <summary>Exclusive ownership of one arena range; disposal retires it at the next frame boundary.</summary>
-internal sealed class TerrainGpuBufferLease : IDisposable
+/// <summary>Exclusive ownership of one paired vertex range.</summary>
+internal sealed class TerrainGpuVertexLease : IDisposable
 {
     private TerrainGpuArenaSet.Segment? _segment;
     private readonly TerrainGpuAllocation _allocation;
 
-    internal TerrainGpuBufferLease(
+    internal TerrainGpuVertexLease(
         TerrainGpuArenaSet.Segment segment,
         TerrainGpuAllocation allocation)
     {
@@ -569,8 +621,12 @@ internal sealed class TerrainGpuBufferLease : IDisposable
         _allocation = allocation;
     }
 
-    public TerrainGpuBufferSlice Slice => (_segment ??
-        throw new ObjectDisposedException(nameof(TerrainGpuBufferLease))).Slice(_allocation);
+    public TerrainGpuVertexSlice Slice => (_segment ??
+        throw new ObjectDisposedException(nameof(TerrainGpuVertexLease))).Slice(_allocation);
+
+    public void RewriteLighting(ReadOnlySpan<ChunkLightVertex> values) => (_segment ??
+        throw new ObjectDisposedException(nameof(TerrainGpuVertexLease)))
+        .RewriteLighting(_allocation, values);
 
     public void Dispose()
     {

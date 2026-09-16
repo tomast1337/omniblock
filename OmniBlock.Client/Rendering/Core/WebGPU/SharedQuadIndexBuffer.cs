@@ -83,13 +83,14 @@ internal sealed unsafe class SharedQuadIndexBuffer : IDisposable
         RenderPassEncoder* pass,
         uint firstQuad,
         uint quadCount,
-        uint instanceCount)
+        uint instanceCount,
+        int baseVertex = 0)
     {
         if (quadCount == 0) return;
         if (firstQuad + quadCount > QuadCapacity)
             throw new ArgumentOutOfRangeException(nameof(quadCount), "Quad range exceeds the bound index buffer.");
         _device.Api.RenderPassEncoderDrawIndexed(
-            pass, checked(quadCount * 6), instanceCount, checked(firstQuad * 6), 0, 0);
+            pass, checked(quadCount * 6), instanceCount, checked(firstQuad * 6), baseVertex, 0);
     }
 
     internal static void FillIndices(Span<uint> destination)

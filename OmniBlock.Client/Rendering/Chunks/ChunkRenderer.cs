@@ -680,8 +680,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         Counter("meshOversizedUploadAdmissions", MeshOversizedUploadAdmissions);
         var arena = TerrainGpuArenaProfile;
         Counter("terrainArenaRegions", arena.Regions);
-        Counter("terrainArenaGeometrySegments", arena.GeometrySegments);
-        Counter("terrainArenaLightingSegments", arena.LightingSegments);
+        Counter("terrainArenaPairedSegments", arena.Segments);
         Counter("terrainArenaCapacityBytes", arena.CapacityBytes);
         Counter("terrainArenaAllocatedBytes", arena.AllocatedBytes);
         Counter("terrainArenaFreeBytes", arena.FreeBytes);
@@ -886,6 +885,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
 
         BuildLayerVisibleLists(_visibleRenderers, _solidRenderers, _translucentRenderers);
+        // Opaque order is semantically irrelevant. Group regions deterministically so consecutive
+        // pages can retain the same paired arena buffers; translucent order remains back-to-front.
+        _solidRenderers.Sort(CompareSolidRegionOrder);
         _presentedSolidLayersThisFrame = _solidRenderers.Count;
         _presentedTranslucentLayersThisFrame = _translucentRenderers.Count;
         TranslucentMeshes = _translucentRenderers.Count;
@@ -904,6 +906,22 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             if (renderer.HasSolidGeometry) solid.Add(renderer);
             if (renderer.HasTranslucentGeometry) translucent.Add(renderer);
         }
+    }
+
+    private static int CompareSolidRegionOrder(SubChunkRenderer left, SubChunkRenderer right)
+    {
+        var a = TerrainRenderRegionKey.FromSectionPosition(left.Position);
+        var b = TerrainRenderRegionKey.FromSectionPosition(right.Position);
+        var x = a.X.CompareTo(b.X);
+        if (x != 0) return x;
+        var y = a.Y.CompareTo(b.Y);
+        if (y != 0) return y;
+        var z = a.Z.CompareTo(b.Z);
+        if (z != 0) return z;
+        x = left.Position.X.CompareTo(right.Position.X);
+        if (x != 0) return x;
+        y = left.Position.Y.CompareTo(right.Position.Y);
+        return y != 0 ? y : left.Position.Z.CompareTo(right.Position.Z);
     }
 
     /// <summary>
@@ -3143,10 +3161,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         var t1 = Stopwatch.GetTimestamp();
         Profiler.Record("UniformUpload", (t1 - t0) * 1000.0 / Stopwatch.Frequency);
 
+        var streamBinding = new TerrainStreamBindingState();
         for (var i = 0; i < count; i++)
         {
             pipeline.BindDynamicUniforms(pass, i);
-            var stats = _solidRenderers[i].RenderWebGpu(pass, 0, _lastViewPos);
+            var stats = _solidRenderers[i].RenderWebGpu(
+                pass, 0, _lastViewPos, ref streamBinding);
             RecordDirectionalDraw(stats);
             _solidDrawsThisFrame += stats.DrawRanges;
         }
@@ -3175,6 +3195,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _terrainUniformEntriesThisFrame += _solidRenderers.Count;
         _terrainSubmissionBatchesThisFrame += _solidRenderers.Count;
 
+        var streamBinding = new TerrainStreamBindingState();
         foreach (var renderer in _solidRenderers)
         {
             var fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
@@ -3193,9 +3214,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 modelView, renderer.Position, fadeProgress,
                 translucent: false, applyHandoff: false));
 
-            var draws = renderer.RenderWireframeWebGpu(pass);
+            var draws = renderer.RenderWireframeWebGpu(
+                pass, ref streamBinding, out var streamBinds);
             _solidDrawsThisFrame += draws;
-            _terrainStreamBindsThisFrame += draws;
+            _terrainStreamBindsThisFrame += streamBinds;
         }
     }
 
@@ -3244,10 +3266,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         pipeline.WriteDynamicUniforms(_translucentUniformScratch.AsSpan(0, count));
         _terrainSubmissionBatchesThisFrame++;
 
+        var streamBinding = new TerrainStreamBindingState();
         for (var i = 0; i < count; i++)
         {
             pipeline.BindDynamicUniforms(pass, i);
-            var stats = _translucentRenderers[i].RenderWebGpu(pass, 1, viewPos);
+            var stats = _translucentRenderers[i].RenderWebGpu(
+                pass, 1, viewPos, ref streamBinding);
             RecordDirectionalDraw(stats);
             _translucentDrawsThisFrame += stats.DrawRanges;
         }
