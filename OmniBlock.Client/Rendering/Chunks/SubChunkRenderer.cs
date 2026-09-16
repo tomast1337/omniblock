@@ -125,7 +125,8 @@ public class SubChunkRenderer : IDisposable
         RenderPassEncoder* passEncoder,
         int pass,
         Vector3D<double> viewPosition,
-        ref TerrainStreamBindingState binding)
+        ref TerrainStreamBindingState binding,
+        uint drawMetadataIndex)
     {
         if (disposed) return default;
         if (pass < 0 || pass > 1) return default;
@@ -151,7 +152,8 @@ public class SubChunkRenderer : IDisposable
             {
                 var range = selected[i];
                 mesh.DrawBoundQuadRange(
-                    passEncoder, (uint)range.FirstQuad, (uint)range.QuadCount);
+                    passEncoder, (uint)range.FirstQuad, (uint)range.QuadCount,
+                    firstInstance: drawMetadataIndex);
                 submitted += range.QuadCount;
             }
 
@@ -171,7 +173,8 @@ public class SubChunkRenderer : IDisposable
     internal unsafe int RenderWireframeWebGpu(
         RenderPassEncoder* passEncoder,
         ref TerrainStreamBindingState binding,
-        out int streamBinds)
+        out int streamBinds,
+        uint drawMetadataIndex)
     {
         streamBinds = 0;
         if (disposed) return 0;
@@ -182,7 +185,7 @@ public class SubChunkRenderer : IDisposable
         foreach (var page in presentation.Pages)
         {
             if (page?.Solid is not { } mesh) continue;
-            if (mesh.DrawQuadWireframe(passEncoder, ref binding)) streamBinds++;
+            if (mesh.DrawQuadWireframe(passEncoder, ref binding, drawMetadataIndex)) streamBinds++;
             draws++;
         }
 

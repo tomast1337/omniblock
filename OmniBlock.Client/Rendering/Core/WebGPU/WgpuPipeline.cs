@@ -46,6 +46,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
     private readonly uint _uniformSize;
     private bool _disposed;
     private BindGroup* _dynamicUniformBindGroup;
+    private BindGroup* _drawStorageBindGroup;
 
     /// <summary>
     ///     One GPU buffer holding every draw's uniforms for the frame, written with a single
@@ -54,10 +55,14 @@ public sealed unsafe class WgpuPipeline : IDisposable
     ///     with too many draws per frame for a write-per-draw to be free.
     /// </summary>
     private WgpuBuffer* _dynamicUniformBuffer;
+    private WgpuBuffer* _drawStorageBuffer;
 
     private int _dynamicUniformCapacity;
     private int _dynamicUniformGrowthCount;
     private byte[] _dynamicUniformStaging = [];
+    private int _drawStorageCapacity;
+    private int _drawStorageGrowthCount;
+    private uint _drawStorageStride;
     private int _uniformPoolNext;
 
     /// <summary>
@@ -78,7 +83,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
         Module = module;
         BindGroupLayout = bindGroupLayout;
         TextureBindGroupLayout = textureBindGroupLayout;
-        TextureArrayBindGroupLayout = null;
+        AdditionalBindGroupLayout = null;
         Layout = layout;
         Pipeline = pipeline;
         UniformBuffer = uniformBuffer;
@@ -121,11 +126,11 @@ public sealed unsafe class WgpuPipeline : IDisposable
         TextureBindGroupLayout = textureEntries.Length > 0
             ? CreateBindGroupLayout(api, device.Device, textureEntries)
             : null;
-        TextureArrayBindGroupLayout = textureArrayEntries.Length > 0
+        AdditionalBindGroupLayout = textureArrayEntries.Length > 0
             ? CreateBindGroupLayout(api, device.Device, textureArrayEntries)
             : null;
         Layout = CreatePipelineLayout(api, device.Device,
-            BindGroupLayout, TextureBindGroupLayout, TextureArrayBindGroupLayout);
+            BindGroupLayout, TextureBindGroupLayout, AdditionalBindGroupLayout);
         Pipeline = CreateRenderPipeline(api, device.Device, Module, entryPoint, fragmentEntryPoint, Layout, buffers, bufferCount, state, colorFormat, depthFormat, topology, label);
         CreateUniforms(api, device.Device, BindGroupLayout, uniformSize, out var ub, out var ug);
         UniformBuffer = ub;
@@ -143,14 +148,22 @@ public sealed unsafe class WgpuPipeline : IDisposable
     public BindGroupLayout* TextureBindGroupLayout { get; }
 
     /// <summary>
-    ///     The texture-array bind group layout (group 2), or null when the shader samples no array.
+    ///     Optional additional bind-group layout (group 2), used for texture arrays, instance
+    ///     storage, or another pipeline-specific resource set.
     /// </summary>
     /// <remarks>
-    ///     A group of its own rather than more bindings in group 1 because the two textures have
-    ///     different owners and different lifetimes: the 2D one changes with every bind, while the
-    ///     array is rebuilt only when the pack is.
+    ///     This remains separate from group 1 because these resources have different owners and
+    ///     lifetimes. Terrain, for example, keeps its texture array in group 1 and draw metadata in
+    ///     this group.
     /// </remarks>
-    public BindGroupLayout* TextureArrayBindGroupLayout { get; }
+    public BindGroupLayout* AdditionalBindGroupLayout { get; }
+
+    /// <summary>
+    ///     Compatibility alias for callers whose group 2 is a texture array. New generic code
+    ///     should use <see cref="AdditionalBindGroupLayout" /> because terrain uses it for indexed
+    ///     draw metadata instead.
+    /// </summary>
+    public BindGroupLayout* TextureArrayBindGroupLayout => AdditionalBindGroupLayout;
 
     public PipelineLayout* Layout { get; }
     public RenderPipeline* Pipeline { get; }
@@ -164,6 +177,8 @@ public sealed unsafe class WgpuPipeline : IDisposable
     private uint DynamicUniformStride => AlignUp(_uniformSize, DynamicUniformAlignment);
     internal int DynamicUniformCapacity => _dynamicUniformCapacity;
     internal int DynamicUniformGrowthCount => _dynamicUniformGrowthCount;
+    internal int DrawStorageCapacity => _drawStorageCapacity;
+    internal int DrawStorageGrowthCount => _drawStorageGrowthCount;
 
     public void Dispose()
     {
@@ -188,12 +203,19 @@ public sealed unsafe class WgpuPipeline : IDisposable
             api.BufferRelease(_dynamicUniformBuffer);
         }
 
+        if (_drawStorageBindGroup is not null) api.BindGroupRelease(_drawStorageBindGroup);
+        if (_drawStorageBuffer is not null)
+        {
+            api.BufferDestroy(_drawStorageBuffer);
+            api.BufferRelease(_drawStorageBuffer);
+        }
+
         if (UniformBindGroup is not null) api.BindGroupRelease(UniformBindGroup);
         if (UniformBuffer is not null) api.BufferDestroy(UniformBuffer);
         if (UniformBuffer is not null) api.BufferRelease(UniformBuffer);
         if (Pipeline is not null) api.RenderPipelineRelease(Pipeline);
         if (Layout is not null) api.PipelineLayoutRelease(Layout);
-        if (TextureArrayBindGroupLayout is not null) api.BindGroupLayoutRelease(TextureArrayBindGroupLayout);
+        if (AdditionalBindGroupLayout is not null) api.BindGroupLayoutRelease(AdditionalBindGroupLayout);
         if (TextureBindGroupLayout is not null) api.BindGroupLayoutRelease(TextureBindGroupLayout);
         if (BindGroupLayout is not null) api.BindGroupLayoutRelease(BindGroupLayout);
         if (Module is not null) api.ShaderModuleRelease(Module);
@@ -612,6 +634,83 @@ public sealed unsafe class WgpuPipeline : IDisposable
             out var buffer, out var group);
 
         return ((nint)buffer, (nint)group);
+    }
+
+    /// <summary>
+    ///     Uploads a tightly packed per-draw metadata array to group 2. Draws select an element
+    ///     with <c>firstInstance</c>, avoiding a dynamic bind-group change for every terrain draw.
+    /// </summary>
+    public void WriteDrawStorage<T>(ReadOnlySpan<T> data) where T : unmanaged
+    {
+        if (data.IsEmpty) return;
+        if (AdditionalBindGroupLayout is null)
+            throw new InvalidOperationException("This pipeline has no group-2 storage layout.");
+
+        var stride = (uint)sizeof(T);
+        if (_drawStorageStride != 0 && _drawStorageStride != stride)
+            throw new InvalidOperationException("A pipeline draw-storage stride cannot change after allocation.");
+        _drawStorageStride = stride;
+        EnsureDrawStorageCapacity(data.Length);
+
+        fixed (T* source = data)
+        {
+            _device.Api.QueueWriteBuffer(
+                _device.Queue, _drawStorageBuffer, 0, source, checked((nuint)(data.Length * sizeof(T))));
+        }
+    }
+
+    /// <summary>Binds the per-draw metadata array at group 2 once for the pass.</summary>
+    public void BindDrawStorage(RenderPassEncoder* pass)
+    {
+        if (_drawStorageBindGroup is null)
+            throw new InvalidOperationException("Per-draw storage has not been uploaded.");
+        _device.Api.RenderPassEncoderSetBindGroup(pass, 2, _drawStorageBindGroup, 0, null);
+    }
+
+    private void EnsureDrawStorageCapacity(int required)
+    {
+        if (required <= _drawStorageCapacity && _drawStorageBindGroup is not null) return;
+
+        var capacity = Math.Max(required, Math.Max(256, _drawStorageCapacity * 2));
+        var bufferSize = checked((ulong)capacity * _drawStorageStride);
+        BufferDescriptor bufferDescriptor = new()
+        {
+            Usage = BufferUsage.Storage | BufferUsage.CopyDst,
+            Size = bufferSize
+        };
+        var replacementBuffer = _device.Api.DeviceCreateBuffer(_device.Device, in bufferDescriptor);
+        if (replacementBuffer is null)
+            throw new InvalidOperationException("WebGPU failed to allocate the per-draw storage arena.");
+
+        BindGroupEntry entry = new()
+        {
+            Binding = 0,
+            Buffer = replacementBuffer,
+            Offset = 0,
+            Size = bufferSize
+        };
+        BindGroupDescriptor descriptor = new()
+        {
+            Layout = AdditionalBindGroupLayout,
+            EntryCount = 1,
+            Entries = &entry
+        };
+        var replacementGroup = _device.Api.DeviceCreateBindGroup(_device.Device, in descriptor);
+        if (replacementGroup is null)
+        {
+            _device.Api.BufferDestroy(replacementBuffer);
+            _device.Api.BufferRelease(replacementBuffer);
+            throw new InvalidOperationException("WebGPU failed to bind the per-draw storage arena.");
+        }
+
+        var previousBuffer = _drawStorageBuffer;
+        var previousGroup = _drawStorageBindGroup;
+        _drawStorageBuffer = replacementBuffer;
+        _drawStorageBindGroup = replacementGroup;
+        _drawStorageCapacity = capacity;
+        _drawStorageGrowthCount++;
+        WgpuRelease.DeferredBufferBinding(
+            _device, (nint)previousGroup, (nint)previousBuffer);
     }
 
     /// <summary>Binds an external bind group (textures, etc.) at <paramref name="groupIndex" />.</summary>

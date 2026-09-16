@@ -54,8 +54,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     //TODO: MAKE THIS CONFIGURABLE
     private const double MeshDispatchBudgetMs = 1.5;
 
-    /// <summary>Bytes of <see cref="ChunkUniforms" />, as chunk.wgsl declares the block.</summary>
-    private const uint ChunkUniformSize = 336;
+    /// <summary>Bytes of <see cref="ChunkDrawMetadata" />, as chunk.wgsl declares the block.</summary>
+    private const uint ChunkDrawMetadataSize = 96;
+    /// <summary>Bytes of <see cref="ChunkFrameUniforms" />, as chunk.wgsl declares the block.</summary>
+    private const uint ChunkFrameUniformSize = 240;
 
     private static readonly Vector3D<int>[] s_spiralOffsets;
     private static readonly Vector2D<int>[] s_safetyColumnOffsets;
@@ -188,8 +190,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     ///     Reused across frames so the solid pass's per-chunk uniform batch (see
     ///     <see cref="RenderSolidWebGpu" />) doesn't allocate one every frame — grown, never shrunk.
     /// </summary>
-    private ChunkUniforms[] _solidUniformScratch = [];
-    private ChunkUniforms[] _translucentUniformScratch = [];
+    private ChunkDrawMetadata[] _solidUniformScratch = [];
+    private ChunkDrawMetadata[] _translucentUniformScratch = [];
 
     static ChunkRenderer()
     {
@@ -1573,10 +1575,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             _terrainStreamBindsThisFrame,
             _terrainPipelineBindsThisFrame,
             _terrainTextureBindsThisFrame,
-            _wgpuPipelines.Values.Sum(static pipeline => pipeline.DynamicUniformCapacity) +
-            _wgpuWireframePipelines.Values.Sum(static pipeline => pipeline.DynamicUniformCapacity),
-            _wgpuPipelines.Values.Sum(static pipeline => pipeline.DynamicUniformGrowthCount) +
-            _wgpuWireframePipelines.Values.Sum(static pipeline => pipeline.DynamicUniformGrowthCount),
+            _wgpuPipelines.Values.Sum(static pipeline => pipeline.DrawStorageCapacity) +
+            _wgpuWireframePipelines.Values.Sum(static pipeline => pipeline.DrawStorageCapacity),
+            _wgpuPipelines.Values.Sum(static pipeline => pipeline.DrawStorageGrowthCount) +
+            _wgpuWireframePipelines.Values.Sum(static pipeline => pipeline.DrawStorageGrowthCount),
             _findVisibleTimings.Snapshot(),
             _spatialCullTimings.Snapshot(),
             _candidateSortTimings.Snapshot(),
@@ -3056,13 +3058,22 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 Buffer = new BufferBindingLayout
                 {
                     Type = BufferBindingType.Uniform,
-                    MinBindingSize = ChunkUniformSize,
-                    // Lets RenderSolidWebGpu batch every visible chunk's uniforms into one buffer,
-                    // written with a single QueueWriteBuffer call instead of one per chunk — see
-                    // WgpuPipeline.WriteDynamicUniforms. The translucent and wireframe passes still
-                    // draw through the per-draw-buffer BindNextUniforms; that call site handles a
-                    // dynamic-offset layout regardless of which of the two a pipeline was built with.
-                    HasDynamicOffset = true
+                    MinBindingSize = ChunkFrameUniformSize,
+                    HasDynamicOffset = false
+                }
+            }
+        ];
+
+        BindGroupLayoutEntry[] drawMetadataEntries =
+        [
+            new()
+            {
+                Binding = 0,
+                Visibility = ShaderStage.Vertex,
+                Buffer = new BufferBindingLayout
+                {
+                    Type = BufferBindingType.ReadOnlyStorage,
+                    MinBindingSize = ChunkDrawMetadataSize
                 }
             }
         ];
@@ -3092,7 +3103,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         return new WgpuPipeline(
             device, source, "vs_main",
-            ChunkUniformSize,
+            ChunkFrameUniformSize,
             uniformEntries,
             texEntries,
             bufferLayouts, 2,
@@ -3100,6 +3111,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             device.SurfaceFormat,
             TextureFormat.Depth32float,
             topology,
+            textureArrayEntries: drawMetadataEntries,
             fragmentEntryPoint: fragmentEntryPoint);
     }
 
@@ -3115,6 +3127,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         pipeline.Bind(pass);
         _terrainPipelineBindsThisFrame++;
+        pipeline.UploadUniforms(BuildChunkFrameUniforms());
+        pipeline.BindUniformGroup(pass);
         // Asked of the array per pass rather than held: a texture-pack switch rebuilds the array
         // underneath, and a bind group made against the old one points at a destroyed texture.
         WgpuPipeline.BindGroup(pass, 1,
@@ -3124,16 +3138,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         // The same set the GL pass draws, chosen by PrepareFrame — which the caller is responsible
         // for having run, since the view matrices this reads come off the stacks there too.
         //
-        // Two passes instead of BindNextUniforms' one-buffer-per-draw: profiling (see git history on
-        // this method) found the per-chunk QueueWriteBuffer call, not the draw call, was ~10ms of the
-        // frame — CPU-side cost scaling with visible chunk count, which greedy meshing (a
-        // triangle-count optimization) can't touch. Building every chunk's ChunkUniforms into one
-        // scratch array and writing it with a single WriteDynamicUniforms call amortizes that away;
-        // the second loop only binds a dynamic offset and issues the draw, both cheap.
+        // Two passes instead of one write and bind per draw: profiling found per-section uniform
+        // submission was ~10ms of the frame. The first loop builds a tightly packed storage array;
+        // the second selects each record with firstInstance, so group 2 stays bound for the pass.
         _terrainUniformEntriesThisFrame += count;
         if (_solidUniformScratch.Length < count)
         {
-            _solidUniformScratch = new ChunkUniforms[count];
+            _solidUniformScratch = new ChunkDrawMetadata[count];
         }
 
         for (var i = 0; i < count; i++)
@@ -3151,12 +3162,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 new Vector3D<float>((float)camRel.X, (float)camRel.Y, (float)camRel.Z));
             var modelView = translation * _modelView;
 
-            _solidUniformScratch[i] = BuildChunkUniforms(
+            _solidUniformScratch[i] = BuildChunkDrawMetadata(
                 modelView, renderer.Position, fadeProgress, translucent: false);
         }
 
         var t0 = Stopwatch.GetTimestamp();
-        pipeline.WriteDynamicUniforms(_solidUniformScratch.AsSpan(0, count));
+        pipeline.WriteDrawStorage(_solidUniformScratch.AsSpan(0, count));
+        pipeline.BindDrawStorage(pass);
         _terrainSubmissionBatchesThisFrame++;
         var t1 = Stopwatch.GetTimestamp();
         Profiler.Record("UniformUpload", (t1 - t0) * 1000.0 / Stopwatch.Frequency);
@@ -3164,9 +3176,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         var streamBinding = new TerrainStreamBindingState();
         for (var i = 0; i < count; i++)
         {
-            pipeline.BindDynamicUniforms(pass, i);
             var stats = _solidRenderers[i].RenderWebGpu(
-                pass, 0, _lastViewPos, ref streamBinding);
+                pass, 0, _lastViewPos, ref streamBinding, (uint)i);
             RecordDirectionalDraw(stats);
             _solidDrawsThisFrame += stats.DrawRanges;
         }
@@ -3188,34 +3199,42 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         pipeline.Bind(pass);
         _terrainPipelineBindsThisFrame++;
+        pipeline.UploadUniforms(BuildChunkFrameUniforms());
+        pipeline.BindUniformGroup(pass);
         WgpuPipeline.BindGroup(pass, 1,
             textureArray.BindGroupFor(pipeline.TextureBindGroupLayout), WebGpuDevice.Current!.Api);
         _terrainTextureBindsThisFrame++;
 
-        _terrainUniformEntriesThisFrame += _solidRenderers.Count;
-        _terrainSubmissionBatchesThisFrame += _solidRenderers.Count;
+        var count = _solidRenderers.Count;
+        _terrainUniformEntriesThisFrame += count;
+        if (_solidUniformScratch.Length < count)
+            _solidUniformScratch = new ChunkDrawMetadata[count];
 
-        var streamBinding = new TerrainStreamBindingState();
-        foreach (var renderer in _solidRenderers)
+        for (var i = 0; i < count; i++)
         {
+            var renderer = _solidRenderers[i];
             var fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
-
             var camRel = new Vector3D<double>(
                 renderer.PositionMinus.X - _lastViewPos.X,
                 renderer.PositionMinus.Y - _lastViewPos.Y,
                 renderer.PositionMinus.Z - _lastViewPos.Z);
             camRel += new Vector3D<double>(renderer.ClipPosition.X, renderer.ClipPosition.Y, renderer.ClipPosition.Z);
-
             var translation = Matrix4X4.CreateTranslation(
                 new Vector3D<float>((float)camRel.X, (float)camRel.Y, (float)camRel.Z));
-            var modelView = translation * _modelView;
+            _solidUniformScratch[i] = BuildChunkDrawMetadata(
+                translation * _modelView, renderer.Position, fadeProgress,
+                translucent: false, applyHandoff: false);
+        }
 
-            pipeline.BindNextUniforms(pass, BuildChunkUniforms(
-                modelView, renderer.Position, fadeProgress,
-                translucent: false, applyHandoff: false));
+        pipeline.WriteDrawStorage(_solidUniformScratch.AsSpan(0, count));
+        pipeline.BindDrawStorage(pass);
+        _terrainSubmissionBatchesThisFrame++;
 
-            var draws = renderer.RenderWireframeWebGpu(
-                pass, ref streamBinding, out var streamBinds);
+        var streamBinding = new TerrainStreamBindingState();
+        for (var i = 0; i < count; i++)
+        {
+            var draws = _solidRenderers[i].RenderWireframeWebGpu(
+                pass, ref streamBinding, out var streamBinds, (uint)i);
             _solidDrawsThisFrame += draws;
             _terrainStreamBindsThisFrame += streamBinds;
         }
@@ -3231,6 +3250,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         pipeline.Bind(pass);
         _terrainPipelineBindsThisFrame++;
+        pipeline.UploadUniforms(BuildChunkFrameUniforms());
+        pipeline.BindUniformGroup(pass);
         // Asked of the array per pass rather than held: a texture-pack switch rebuilds the array
         // underneath, and a bind group made against the old one points at a destroyed texture.
         WgpuPipeline.BindGroup(pass, 1,
@@ -3242,7 +3263,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         _terrainUniformEntriesThisFrame += count;
         if (_translucentUniformScratch.Length < count)
-            _translucentUniformScratch = new ChunkUniforms[count];
+            _translucentUniformScratch = new ChunkDrawMetadata[count];
 
         for (var i = 0; i < count; i++)
         {
@@ -3259,19 +3280,19 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 new Vector3D<float>((float)camRel.X, (float)camRel.Y, (float)camRel.Z));
             var modelView = translation * _modelView;
 
-            _translucentUniformScratch[i] = BuildChunkUniforms(
+            _translucentUniformScratch[i] = BuildChunkDrawMetadata(
                 modelView, renderer.Position, fadeProgress, translucent: true);
         }
 
-        pipeline.WriteDynamicUniforms(_translucentUniformScratch.AsSpan(0, count));
+        pipeline.WriteDrawStorage(_translucentUniformScratch.AsSpan(0, count));
+        pipeline.BindDrawStorage(pass);
         _terrainSubmissionBatchesThisFrame++;
 
         var streamBinding = new TerrainStreamBindingState();
         for (var i = 0; i < count; i++)
         {
-            pipeline.BindDynamicUniforms(pass, i);
             var stats = _translucentRenderers[i].RenderWebGpu(
-                pass, 1, viewPos, ref streamBinding);
+                pass, 1, viewPos, ref streamBinding, (uint)i);
             RecordDirectionalDraw(stats);
             _translucentDrawsThisFrame += stats.DrawRanges;
         }
@@ -3289,38 +3310,40 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     }
 
     /// <summary>
-    ///     The per-chunk uniform block, from the frame's fog and world light rather than from state
-    ///     of this renderer's own — the GL terrain shader is fed from the same two, so a chunk drawn
-    ///     by either backend is lit and fogged alike.
+    ///     Builds the indexed record selected by a terrain draw's first-instance value. Frame-wide
+    ///     projection, fog and lighting deliberately do not appear here.
     /// </summary>
-    private ChunkUniforms BuildChunkUniforms(
+    private ChunkDrawMetadata BuildChunkDrawMetadata(
         Matrix4X4<float> modelView,
         Vector3D<int> chunkPos,
         float fadeProgress,
         bool translucent,
         bool applyHandoff = true)
     {
-        var fog = _terrainFog;
-        var light = RenderSystem.WorldLight;
         var handoff = applyHandoff
             ? PresentationHandoff?.GetNearHandoff(
                 chunkPos.X >> 4, chunkPos.Z >> 4, translucent) ?? TerrainNearHandoff.Inactive
             : TerrainNearHandoff.Inactive;
 
-        return new ChunkUniforms
+        return new ChunkDrawMetadata
         {
             ModelViewMatrix = modelView,
-            ProjectionMatrix = WgpuClip.FromGl(_projection),
             ChunkPosX = chunkPos.X,
             ChunkPosY = chunkPos.Z,
-            // Caller updates these per frame.
-            TimeX = 0,
-            TimeY = 0,
-            TimeZ = 0,
             FadeProgress = handoff.Active ? handoff.Progress : fadeProgress,
             ChunkFadeEnabled = handoff.Active ? 0u : 1u,
             PresentationFadeMode = handoff.Active ? 1u : 0u,
-            PresentationFadeSeed = handoff.Seed,
+            PresentationFadeSeed = handoff.Seed
+        };
+    }
+
+    private ChunkFrameUniforms BuildChunkFrameUniforms()
+    {
+        var fog = _terrainFog;
+        var light = RenderSystem.WorldLight;
+        return new ChunkFrameUniforms
+        {
+            ProjectionMatrix = WgpuClip.FromGl(_projection),
             AmbientDarkness = light.AmbientDarkness,
             LuminanceOffset = light.LuminanceOffset,
             FogMode = (uint)fog.Curve,
@@ -3419,105 +3442,96 @@ internal readonly record struct NearFieldRescueDiagnostics(
     int OldestDurationFrames);
 
 /// <summary>
-///     Mirror of the WGSL <c>Uniforms</c> struct in <c>chunk.wgsl</c>, laid out to match
+///     Per-draw storage record consumed by chunk.wgsl. Frame-wide projection, light and fog state
+///     deliberately live in <see cref="ChunkFrameUniforms" /> so this repeated block stays small.
 ///     WGSL's default alignment rules (mat4x4 = 16, vec3 = 16, vec4 = 16, f32/u32 = 4).
 /// </summary>
-[StructLayout(LayoutKind.Explicit, Size = 336)]
-public struct ChunkUniforms
+[StructLayout(LayoutKind.Explicit, Size = 96)]
+public struct ChunkDrawMetadata
 {
     // mat4x4<f32> modelViewMatrix at offset 0
     [FieldOffset(0)] public Matrix4X4<float> ModelViewMatrix;
 
-    // mat4x4<f32> projectionMatrix at offset 64
-    [FieldOffset(64)] public Matrix4X4<float> ProjectionMatrix;
+    // vec2<f32> chunkPos at offset 64 (align 8, size 8)
+    [FieldOffset(64)] public float ChunkPosX;
+    [FieldOffset(68)] public float ChunkPosY;
 
-    // vec2<f32> chunkPos at offset 128 (align 8, size 8)
-    [FieldOffset(128)] public float ChunkPosX;
-    [FieldOffset(132)] public float ChunkPosY;
+    [FieldOffset(72)] public float FadeProgress;
+    [FieldOffset(76)] public uint ChunkFadeEnabled;
+    [FieldOffset(80)] public uint PresentationFadeMode;
+    [FieldOffset(84)] public uint PresentationFadeSeed;
+}
 
-    // vec3<f32> time at offset 144 (align 16, size 12)
-    [FieldOffset(144)] public float TimeX;
-    [FieldOffset(148)] public float TimeY;
-    [FieldOffset(152)] public float TimeZ;
+/// <summary>Frame/pass-wide half of chunk.wgsl's terrain uniforms.</summary>
+[StructLayout(LayoutKind.Explicit, Size = 240)]
+public struct ChunkFrameUniforms
+{
+    [FieldOffset(0)] public Matrix4X4<float> ProjectionMatrix;
 
-    // f32 ambientDarkness at offset 156
-    [FieldOffset(156)] public float AmbientDarkness;
+    // vec3<f32> time at offset 64 (align 16, size 12)
+    [FieldOffset(64)] public float TimeX;
+    [FieldOffset(68)] public float TimeY;
+    [FieldOffset(72)] public float TimeZ;
 
-    // f32 luminanceOffset at offset 160
-    [FieldOffset(160)] public float LuminanceOffset;
+    [FieldOffset(76)] public float AmbientDarkness;
 
-    // f32 wavyLeavesStrength at offset 164
-    [FieldOffset(164)] public float WavyLeavesStrength;
+    [FieldOffset(80)] public float LuminanceOffset;
 
-    // f32 wavyLeavesSpeed at offset 168
-    [FieldOffset(168)] public float WavyLeavesSpeed;
+    [FieldOffset(84)] public float WavyLeavesStrength;
 
-    // f32 wavyPlantStrength at offset 172
-    [FieldOffset(172)] public float WavyPlantStrength;
+    [FieldOffset(88)] public float WavyLeavesSpeed;
 
-    // f32 wavyPlantSpeed at offset 176
-    [FieldOffset(176)] public float WavyPlantSpeed;
+    [FieldOffset(92)] public float WavyPlantStrength;
 
-    // u32 wavyPlantMode at offset 180
-    [FieldOffset(180)] public uint WavyPlantMode;
+    [FieldOffset(96)] public float WavyPlantSpeed;
+
+    [FieldOffset(100)] public uint WavyPlantMode;
 
     // vec4<u32> wavyLeafLayers0 at offset 192 (align 16)
-    [FieldOffset(192)] public uint WavyLeafLayer0;
-    [FieldOffset(196)] public uint WavyLeafLayer1;
-    [FieldOffset(200)] public uint WavyLeafLayer2;
-    [FieldOffset(204)] public uint WavyLeafLayer3;
+    [FieldOffset(112)] public uint WavyLeafLayer0;
+    [FieldOffset(116)] public uint WavyLeafLayer1;
+    [FieldOffset(120)] public uint WavyLeafLayer2;
+    [FieldOffset(124)] public uint WavyLeafLayer3;
 
     // vec4<u32> wavyLeafLayers1 at offset 208
-    [FieldOffset(208)] public uint WavyLeafLayer4;
-    [FieldOffset(212)] public uint WavyLeafLayer5;
-    [FieldOffset(216)] public uint WavyLeafLayer6;
-    [FieldOffset(220)] public uint WavyLeafLayer7;
+    [FieldOffset(128)] public uint WavyLeafLayer4;
+    [FieldOffset(132)] public uint WavyLeafLayer5;
+    [FieldOffset(136)] public uint WavyLeafLayer6;
+    [FieldOffset(140)] public uint WavyLeafLayer7;
 
     // u32 wavyLeafCount at offset 224
-    [FieldOffset(224)] public uint WavyLeafCount;
+    [FieldOffset(144)] public uint WavyLeafCount;
 
     // vec4<u32> wavyPlantLayers0 at offset 240 (align 16)
-    [FieldOffset(240)] public uint WavyPlantLayer0;
-    [FieldOffset(244)] public uint WavyPlantLayer1;
-    [FieldOffset(248)] public uint WavyPlantLayer2;
-    [FieldOffset(252)] public uint WavyPlantLayer3;
+    [FieldOffset(160)] public uint WavyPlantLayer0;
+    [FieldOffset(164)] public uint WavyPlantLayer1;
+    [FieldOffset(168)] public uint WavyPlantLayer2;
+    [FieldOffset(172)] public uint WavyPlantLayer3;
 
     // vec4<u32> wavyPlantLayers1 at offset 256
-    [FieldOffset(256)] public uint WavyPlantLayer4;
-    [FieldOffset(260)] public uint WavyPlantLayer5;
-    [FieldOffset(264)] public uint WavyPlantLayer6;
-    [FieldOffset(268)] public uint WavyPlantLayer7;
+    [FieldOffset(176)] public uint WavyPlantLayer4;
+    [FieldOffset(180)] public uint WavyPlantLayer5;
+    [FieldOffset(184)] public uint WavyPlantLayer6;
+    [FieldOffset(188)] public uint WavyPlantLayer7;
 
     // u32 wavyPlantCount at offset 272
-    [FieldOffset(272)] public uint WavyPlantCount;
+    [FieldOffset(192)] public uint WavyPlantCount;
 
     // vec4<f32> fogColor at offset 288 (align 16)
-    [FieldOffset(288)] public float FogColorR;
-    [FieldOffset(292)] public float FogColorG;
-    [FieldOffset(296)] public float FogColorB;
-    [FieldOffset(300)] public float FogColorA;
+    [FieldOffset(208)] public float FogColorR;
+    [FieldOffset(212)] public float FogColorG;
+    [FieldOffset(216)] public float FogColorB;
+    [FieldOffset(220)] public float FogColorA;
 
     // f32 fogStart at offset 304
-    [FieldOffset(304)] public float FogStart;
+    [FieldOffset(224)] public float FogStart;
 
     // f32 fogEnd at offset 308
-    [FieldOffset(308)] public float FogEnd;
+    [FieldOffset(228)] public float FogEnd;
 
     // f32 fogDensity at offset 312
-    [FieldOffset(312)] public float FogDensity;
+    [FieldOffset(232)] public float FogDensity;
 
     // u32 fogMode at offset 316
-    [FieldOffset(316)] public uint FogMode;
-
-    // u32 chunkFadeEnabled at offset 320
-    [FieldOffset(320)] public uint ChunkFadeEnabled;
-
-    // f32 fadeProgress at offset 324
-    [FieldOffset(324)] public float FadeProgress;
-
-    // u32 presentationFadeMode at offset 328
-    [FieldOffset(328)] public uint PresentationFadeMode;
-
-    // u32 presentationFadeSeed at offset 332
-    [FieldOffset(332)] public uint PresentationFadeSeed;
+    [FieldOffset(236)] public uint FogMode;
 }

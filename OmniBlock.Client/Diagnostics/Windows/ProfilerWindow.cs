@@ -198,11 +198,11 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"Rescue:     {profile.IncompleteAdjacencyRescued} adjacency  {profile.NewPresentationRescued} new  {profile.PresentationRegressionRescued} regression  oldest {profile.OldestSafetyRescueFrames} frames");
         ImGuiTextSafe.Text(
-            $"Submission: {profile.TerrainDrawCalls} draws  {profile.TerrainUniformEntries} uniforms");
+            $"Submission: {profile.TerrainDrawCalls} draws  {profile.TerrainUniformEntries} metadata records");
         ImGuiTextSafe.Text(
             $"Directions: {profile.SubmittedQuads}/{profile.AvailableQuads} quads  {profile.DirectionRejectedQuads} rejected  {profile.UnassignedQuads} unassigned  {profile.DirectionDrawRanges} ranges");
         ImGuiTextSafe.Text(
-            $"Batches:    {profile.TerrainSubmissionBatches} writes  {profile.TerrainPipelineBinds} pipeline binds  {profile.TerrainTextureBinds} texture binds");
+            $"Batches:    {profile.TerrainSubmissionBatches} metadata writes  {profile.TerrainPipelineBinds} pipeline binds  {profile.TerrainTextureBinds} texture binds");
         ImGuiTextSafe.Text(
             $"Streams:    {profile.TerrainStreamBinds:N0} geometry/light slice binds");
         ImGuiTextSafe.Text(

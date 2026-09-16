@@ -81,7 +81,8 @@ internal sealed unsafe class SharedQuadWireframeIndexBuffer : IDisposable
         uint firstQuad,
         uint quadCount,
         uint instanceCount,
-        int baseVertex = 0)
+        int baseVertex = 0,
+        uint firstInstance = 0)
     {
         if (quadCount == 0) return;
         if (firstQuad + quadCount > QuadCapacity)
@@ -89,7 +90,7 @@ internal sealed unsafe class SharedQuadWireframeIndexBuffer : IDisposable
                 "Quad range exceeds the bound wireframe index buffer.");
         _device.Api.RenderPassEncoderDrawIndexed(
             pass, checked(quadCount * 12), instanceCount,
-            checked(firstQuad * 12), baseVertex, 0);
+            checked(firstQuad * 12), baseVertex, firstInstance);
     }
 
     internal static void FillIndices(Span<uint> destination)

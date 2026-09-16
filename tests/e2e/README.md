@@ -220,12 +220,12 @@ OMNI.client.state.presentedSolidLayerCount      -- selected solid render layers
 OMNI.client.state.presentedTranslucentLayerCount -- selected translucent render layers
 OMNI.client.state.emptyLayersSubmitted          -- uniforms submitted for layers with no draw
 OMNI.client.state.terrainDrawCalls              -- solid plus translucent terrain draws
-OMNI.client.state.terrainUniformEntries         -- per-section uniforms submitted to WebGPU
-OMNI.client.state.terrainSubmissionBatches      -- uniform-buffer writes (normally one per non-empty layer)
+OMNI.client.state.terrainUniformEntries         -- compatibility name: per-section metadata records submitted to WebGPU
+OMNI.client.state.terrainSubmissionBatches      -- metadata-buffer writes (normally one per non-empty layer)
 OMNI.client.state.terrainPipelineBinds          -- terrain pipeline binds recorded this frame
 OMNI.client.state.terrainTextureBinds           -- terrain-array binds recorded this frame
-OMNI.client.state.terrainUniformArenaCapacity   -- bounded reusable dynamic-uniform entries
-OMNI.client.state.terrainUniformArenaGrowths    -- lifetime arena reallocations for active pipelines
+OMNI.client.state.terrainUniformArenaCapacity   -- compatibility name: bounded reusable draw-metadata entries
+OMNI.client.state.terrainUniformArenaGrowths    -- lifetime metadata-arena reallocations for active pipelines
 OMNI.client.state.findVisibleMs                 -- last completed visibility-selection CPU time
 OMNI.client.state.terrainSubmitCpuMs             -- last completed terrain command-recording CPU time
 OMNI.client.state.terrainLodSolidCpuMs            -- last reduced opaque/cutout pass CPU time

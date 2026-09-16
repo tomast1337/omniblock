@@ -3,10 +3,17 @@
 // position/UV/colour/layer; a replaceable 4-byte ChunkLightVertex carries sky and block light.
 // A propagated-light update can therefore replace lighting without touching geometry.
 
-struct Uniforms {
+struct DrawMetadata {
     modelViewMatrix: mat4x4<f32>,
-    projectionMatrix: mat4x4<f32>,
     chunkPos: vec2<f32>,       // chunk X,Z in world space, for wavy animation
+    fadeProgress: f32,
+    chunkFadeEnabled: u32,     // bool as u32
+    presentationFadeMode: u32, // 0=none, 1=near fade-in, 2=LOD fade-out
+    presentationFadeSeed: u32,
+};
+
+struct FrameUniforms {
+    projectionMatrix: mat4x4<f32>,
     time: vec3<f32>,           // total seconds, for wavy animation
     ambientDarkness: f32,      // how far the sky channel is knocked down
     luminanceOffset: f32,      // floor of the brightness curve (0.05 overworld, 0.1 nether)
@@ -27,15 +34,12 @@ struct Uniforms {
     fogEnd: f32,
     fogDensity: f32,
     fogMode: u32,              // 0=linear, else=exponential
-    chunkFadeEnabled: u32,     // bool as u32
-    fadeProgress: f32,
-    presentationFadeMode: u32, // 0=none, 1=near fade-in, 2=LOD fade-out
-    presentationFadeSeed: u32,
 };
 
-@group(0) @binding(0) var<uniform> u: Uniforms;
+@group(0) @binding(0) var<uniform> frame: FrameUniforms;
 @group(1) @binding(0) var terrainArray: texture_2d_array<f32>;
 @group(1) @binding(1) var terrainSampler: sampler;
+@group(2) @binding(0) var<storage, read> drawMetadata: array<DrawMetadata>;
 
 const POSITION_SCALE_INV: f32 = 64.0 / 32767.0;
 
@@ -45,11 +49,11 @@ fn unpackPosition(packed: vec4<i32>) -> vec3<f32> {
 
 fn rampLuminance(level: f32) -> f32 {
     let factor = 1.0 - level / 15.0;
-    return (1.0 - factor) / (factor * 3.0 + 1.0) * (1.0 - u.luminanceOffset) + u.luminanceOffset;
+    return (1.0 - factor) / (factor * 3.0 + 1.0) * (1.0 - frame.luminanceOffset) + frame.luminanceOffset;
 }
 
 fn terrainBrightness(packedLight: vec2<u32>) -> f32 {
-    let sky = f32(packedLight.x) * 0.25 - u.ambientDarkness;
+    let sky = f32(packedLight.x) * 0.25 - frame.ambientDarkness;
     let block = f32(packedLight.y) * 0.25;
     return rampLuminance(clamp(max(sky, block), 0.0, 15.0));
 }
@@ -58,18 +62,18 @@ fn terrainBrightness(packedLight: vec2<u32>) -> f32 {
 const WIND_DIR: vec2<f32> = vec2<f32>(-0.8, 0.6);
 
 fn calcWaveLeaves(pos: vec3<f32>) -> vec3<f32> {
-    let pi2wt = 2.0 * 3.14159265 * u.wavyLeavesSpeed * u.time.z;
-    let magnitude = abs(sin(dot(vec4<f32>(u.wavyLeavesSpeed * u.time.z, pos), vec4<f32>(1.0, 0.005, 0.005, 0.005))) * 0.5 + 0.72) * 0.013;
+    let pi2wt = 2.0 * 3.14159265 * frame.wavyLeavesSpeed * frame.time.z;
+    let magnitude = abs(sin(dot(vec4<f32>(frame.wavyLeavesSpeed * frame.time.z, pos), vec4<f32>(1.0, 0.005, 0.005, 0.005))) * 0.5 + 0.72) * 0.013;
     return sin(pi2wt * vec3<f32>(0.0063, 0.0224, 0.0015) * 1.5 - pos) * magnitude;
 }
 
 fn calcMoveLeaves(pos: vec3<f32>) -> vec3<f32> {
     let move1 = calcWaveLeaves(pos) * vec3<f32>(1.0, 0.2, 1.0);
-    return 5.0 * u.wavyLeavesStrength * move1;
+    return 5.0 * frame.wavyLeavesStrength * move1;
 }
 
 fn calcWave(pos: vec3<f32>) -> vec2<f32> {
-    let t = 0.2 * u.wavyPlantSpeed * u.time.z;
+    let t = 0.2 * frame.wavyPlantSpeed * frame.time.z;
     let phase = dot(pos.xz, WIND_DIR) * 0.15 - t * 7.5;
     let gust = 0.6 + 0.4 * sin(dot(pos.xz, WIND_DIR) * 0.015 - t);
     let sway = sin(phase) + sin(phase * 2.3 + pos.y * 0.5) * 0.3;
@@ -79,30 +83,30 @@ fn calcWave(pos: vec3<f32>) -> vec2<f32> {
 fn calcMovePlants(pos: vec3<f32>) -> vec3<f32> {
     let move1 = calcWave(pos);
     let move1y = length(move1) * length(move1) * 10.0;
-    return 5.0 * u.wavyPlantStrength * vec3<f32>(move1.x, -move1y, move1.y);
+    return 5.0 * frame.wavyPlantStrength * vec3<f32>(move1.x, -move1y, move1.y);
 }
 
 fn isLeaf(layer: u32) -> bool {
-    if (u.wavyLeafCount > 0u && u.wavyLeafLayers0.x == layer) { return true; }
-    if (u.wavyLeafCount > 1u && u.wavyLeafLayers0.y == layer) { return true; }
-    if (u.wavyLeafCount > 2u && u.wavyLeafLayers0.z == layer) { return true; }
-    if (u.wavyLeafCount > 3u && u.wavyLeafLayers0.w == layer) { return true; }
-    if (u.wavyLeafCount > 4u && u.wavyLeafLayers1.x == layer) { return true; }
-    if (u.wavyLeafCount > 5u && u.wavyLeafLayers1.y == layer) { return true; }
-    if (u.wavyLeafCount > 6u && u.wavyLeafLayers1.z == layer) { return true; }
-    if (u.wavyLeafCount > 7u && u.wavyLeafLayers1.w == layer) { return true; }
+    if (frame.wavyLeafCount > 0u && frame.wavyLeafLayers0.x == layer) { return true; }
+    if (frame.wavyLeafCount > 1u && frame.wavyLeafLayers0.y == layer) { return true; }
+    if (frame.wavyLeafCount > 2u && frame.wavyLeafLayers0.z == layer) { return true; }
+    if (frame.wavyLeafCount > 3u && frame.wavyLeafLayers0.w == layer) { return true; }
+    if (frame.wavyLeafCount > 4u && frame.wavyLeafLayers1.x == layer) { return true; }
+    if (frame.wavyLeafCount > 5u && frame.wavyLeafLayers1.y == layer) { return true; }
+    if (frame.wavyLeafCount > 6u && frame.wavyLeafLayers1.z == layer) { return true; }
+    if (frame.wavyLeafCount > 7u && frame.wavyLeafLayers1.w == layer) { return true; }
     return false;
 }
 
 fn isPlant(layer: u32) -> bool {
-    if (u.wavyPlantCount > 0u && u.wavyPlantLayers0.x == layer) { return true; }
-    if (u.wavyPlantCount > 1u && u.wavyPlantLayers0.y == layer) { return true; }
-    if (u.wavyPlantCount > 2u && u.wavyPlantLayers0.z == layer) { return true; }
-    if (u.wavyPlantCount > 3u && u.wavyPlantLayers0.w == layer) { return true; }
-    if (u.wavyPlantCount > 4u && u.wavyPlantLayers1.x == layer) { return true; }
-    if (u.wavyPlantCount > 5u && u.wavyPlantLayers1.y == layer) { return true; }
-    if (u.wavyPlantCount > 6u && u.wavyPlantLayers1.z == layer) { return true; }
-    if (u.wavyPlantCount > 7u && u.wavyPlantLayers1.w == layer) { return true; }
+    if (frame.wavyPlantCount > 0u && frame.wavyPlantLayers0.x == layer) { return true; }
+    if (frame.wavyPlantCount > 1u && frame.wavyPlantLayers0.y == layer) { return true; }
+    if (frame.wavyPlantCount > 2u && frame.wavyPlantLayers0.z == layer) { return true; }
+    if (frame.wavyPlantCount > 3u && frame.wavyPlantLayers0.w == layer) { return true; }
+    if (frame.wavyPlantCount > 4u && frame.wavyPlantLayers1.x == layer) { return true; }
+    if (frame.wavyPlantCount > 5u && frame.wavyPlantLayers1.y == layer) { return true; }
+    if (frame.wavyPlantCount > 6u && frame.wavyPlantLayers1.z == layer) { return true; }
+    if (frame.wavyPlantCount > 7u && frame.wavyPlantLayers1.w == layer) { return true; }
     return false;
 }
 
@@ -120,39 +124,48 @@ struct VertexOutput {
     @location(1) texCoord: vec2<f32>,
     @location(2) @interpolate(flat) arrayLayer: i32,
     @location(3) fogDistance: f32,
+    @location(4) @interpolate(flat) fadeProgress: f32,
+    @location(5) @interpolate(flat) chunkFadeEnabled: u32,
+    @location(6) @interpolate(flat) presentationFadeMode: u32,
+    @location(7) @interpolate(flat) presentationFadeSeed: u32,
 }
 
 @vertex
-fn vs_main(in: VertexInput) -> VertexOutput {
+fn vs_main(in: VertexInput, @builtin(instance_index) drawIndex: u32) -> VertexOutput {
+    let draw = drawMetadata[drawIndex];
     var pos = unpackPosition(in.position);
 
     // UV: ushort range, the full 0–65535 maps to 0.0–16.0 — a sub-chunk's width, the widest a
     // greedy-merged quad can tile across. Must match Tessellator.UV_SCALE exactly (encode/decode).
     let uv = vec2<f32>(f32(in.uv.x), f32(in.uv.y)) / 4095.0;
     let layer = in.arrayLayer.x;
-    let wavy = u.wavyLeavesStrength + u.wavyPlantStrength;
+    let wavy = frame.wavyLeavesStrength + frame.wavyPlantStrength;
 
     if (wavy > 0.0) {
-        var worldPos = pos + vec3<f32>(u.chunkPos.x, 0.0, u.chunkPos.y);
+        var worldPos = pos + vec3<f32>(draw.chunkPos.x, 0.0, draw.chunkPos.y);
 
-        if (u.wavyLeavesStrength > 0.0 && isLeaf(layer)) {
+        if (frame.wavyLeavesStrength > 0.0 && isLeaf(layer)) {
             worldPos += calcMoveLeaves(worldPos);
-        } else if (u.wavyPlantStrength > 0.0 && isPlant(layer)) {
+        } else if (frame.wavyPlantStrength > 0.0 && isPlant(layer)) {
             worldPos += calcMovePlants(worldPos) * (1.0 - uv.y);
         }
 
-        pos = worldPos - vec3<f32>(u.chunkPos.x, 0.0, u.chunkPos.y);
+        pos = worldPos - vec3<f32>(draw.chunkPos.x, 0.0, draw.chunkPos.y);
     }
 
     let color = vec4<f32>(in.color.rgb * terrainBrightness(in.light), in.color.a);
-    let viewPos = u.modelViewMatrix * vec4<f32>(pos, 1.0);
+    let viewPos = draw.modelViewMatrix * vec4<f32>(pos, 1.0);
 
     var out: VertexOutput;
-    out.position = u.projectionMatrix * viewPos;
+    out.position = frame.projectionMatrix * viewPos;
     out.color = color;
     out.texCoord = uv;
     out.arrayLayer = i32(layer);
     out.fogDistance = length(viewPos.xyz);
+    out.fadeProgress = draw.fadeProgress;
+    out.chunkFadeEnabled = draw.chunkFadeEnabled;
+    out.presentationFadeMode = draw.presentationFadeMode;
+    out.presentationFadeSeed = draw.presentationFadeSeed;
     return out;
 }
 
@@ -201,28 +214,28 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
         discard;
     }
 
-    if (u.presentationFadeMode != 0u) {
-        let threshold = presentationDitherThreshold(in.position.xy, u.presentationFadeSeed);
-        if (u.presentationFadeMode == 1u && threshold >= u.fadeProgress) {
+    if (in.presentationFadeMode != 0u) {
+        let threshold = presentationDitherThreshold(in.position.xy, in.presentationFadeSeed);
+        if (in.presentationFadeMode == 1u && threshold >= in.fadeProgress) {
             discard;
         }
-        if (u.presentationFadeMode == 2u && threshold < u.fadeProgress) {
+        if (in.presentationFadeMode == 2u && threshold < in.fadeProgress) {
             discard;
         }
     }
 
     var fogFactor: f32;
-    if (u.fogMode == 0u) {
-        fogFactor = (u.fogEnd - in.fogDistance) / (u.fogEnd - u.fogStart);
+    if (frame.fogMode == 0u) {
+        fogFactor = (frame.fogEnd - in.fogDistance) / (frame.fogEnd - frame.fogStart);
     } else {
-        fogFactor = exp(-u.fogDensity * in.fogDistance);
+        fogFactor = exp(-frame.fogDensity * in.fogDistance);
     }
     fogFactor = clamp(fogFactor, 0.0, 1.0);
 
-    var fogApplied = mix(u.fogColor, finalColor, vec4<f32>(fogFactor));
+    var fogApplied = mix(frame.fogColor, finalColor, vec4<f32>(fogFactor));
 
-    if (u.chunkFadeEnabled != 0u) {
-        finalColor = mix(u.fogColor, fogApplied, vec4<f32>(u.fadeProgress));
+    if (in.chunkFadeEnabled != 0u) {
+        finalColor = mix(frame.fogColor, fogApplied, vec4<f32>(in.fadeProgress));
     } else {
         finalColor = fogApplied;
     }

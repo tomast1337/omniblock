@@ -61,22 +61,24 @@ internal sealed unsafe class TerrainChunkQuadMesh : IDisposable
         RenderPassEncoder* pass,
         uint firstQuad,
         uint quadCount,
-        uint instanceCount = 1)
+        uint instanceCount = 1,
+        uint firstInstance = 0)
     {
         if (firstQuad + quadCount > VertexCount / 4)
             throw new ArgumentOutOfRangeException(nameof(quadCount), "Quad range exceeds this mesh.");
         _device.QuadIndices.DrawBoundRange(
-            pass, firstQuad, quadCount, instanceCount, VertexSlice().FirstVertex);
+            pass, firstQuad, quadCount, instanceCount, VertexSlice().FirstVertex, firstInstance);
     }
 
     public bool DrawQuadWireframe(
         RenderPassEncoder* pass,
-        ref TerrainStreamBindingState binding)
+        ref TerrainStreamBindingState binding,
+        uint firstInstance = 0)
     {
         var slice = VertexSlice();
         var changed = binding.BindWireframe(pass, _device, slice, VertexCount / 4);
         _device.QuadWireframeIndices.DrawBoundRange(
-            pass, 0, VertexCount / 4, 1, slice.FirstVertex);
+            pass, 0, VertexCount / 4, 1, slice.FirstVertex, firstInstance);
         return changed;
     }
 

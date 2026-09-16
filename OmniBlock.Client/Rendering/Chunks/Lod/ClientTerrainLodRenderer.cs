@@ -120,7 +120,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private readonly List<VisibleSeam> _visibleSeams = [];
     private readonly List<VisibleSeam> _visibleTranslucentSeams = [];
     private readonly List<VisibleTranslucentDraw> _visibleTranslucentDraws = [];
-    private ChunkUniforms[] _uniforms = [];
+    private ChunkDrawMetadata[] _uniforms = [];
     private WgpuPipeline? _opaquePipeline;
     private WgpuPipeline? _translucentPipeline;
     private long _tick;
@@ -383,11 +383,13 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
 
         _opaquePipeline ??= ChunkRenderer.CreateWgpuPipeline(device, RenderState.Opaque);
         _opaquePipeline.Bind(target.CurrentPass);
+        _opaquePipeline.UploadUniforms(BuildFrameUniforms(parameters));
+        _opaquePipeline.BindUniformGroup(target.CurrentPass);
         WgpuPipeline.BindGroup(target.CurrentPass, 1,
             terrainArray.BindGroupFor(_opaquePipeline.TextureBindGroupLayout), device.Api);
 
         var drawCount = _visible.Count + _visibleSeams.Count;
-        if (_uniforms.Length < drawCount) _uniforms = new ChunkUniforms[drawCount];
+        if (_uniforms.Length < drawCount) _uniforms = new ChunkDrawMetadata[drawCount];
         for (var i = 0; i < _visible.Count; i++)
             _uniforms[i] = BuildUniforms(
                 parameters, _visible[i].Key, _visible[i].FadeProgress,
@@ -399,22 +401,24 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 _visibleSeams[i].Fade.Mode,
                 _visibleSeams[i].Fade.Seed);
         stageStarted = Stopwatch.GetTimestamp();
-        _opaquePipeline.WriteDynamicUniforms(_uniforms.AsSpan(0, drawCount));
+        _opaquePipeline.WriteDrawStorage(_uniforms.AsSpan(0, drawCount));
+        _opaquePipeline.BindDrawStorage(target.CurrentPass);
         Profiler.Record("UniformUploadCpu", Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
 
         stageStarted = Stopwatch.GetTimestamp();
         for (var i = 0; i < _visible.Count; i++)
         {
-            _opaquePipeline.BindDynamicUniforms(target.CurrentPass, i);
             var gpu = _visible[i].Gpu;
-            gpu.SolidMesh!.Draw(target.CurrentPass, lightBuffer: gpu.Lighting!.Solid);
+            gpu.SolidMesh!.Draw(
+                target.CurrentPass, lightBuffer: gpu.Lighting!.Solid, firstInstance: (uint)i);
         }
 
         for (var i = 0; i < _visibleSeams.Count; i++)
         {
-            _opaquePipeline.BindDynamicUniforms(target.CurrentPass, _visible.Count + i);
             var seam = _visibleSeams[i].Gpu;
-            seam.Mesh!.Draw(target.CurrentPass, lightBuffer: seam.Lighting!.Solid);
+            seam.Mesh!.Draw(
+                target.CurrentPass, lightBuffer: seam.Lighting!.Solid,
+                firstInstance: (uint)(_visible.Count + i));
         }
         Profiler.Record("DrawCpu", Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
 
@@ -548,11 +552,13 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
 
         _translucentPipeline ??= ChunkRenderer.CreateWgpuPipeline(device, RenderSystem.State.Current);
         _translucentPipeline.Bind(target.CurrentPass);
+        _translucentPipeline.UploadUniforms(BuildFrameUniforms(parameters));
+        _translucentPipeline.BindUniformGroup(target.CurrentPass);
         WgpuPipeline.BindGroup(target.CurrentPass, 1,
             terrainArray.BindGroupFor(_translucentPipeline.TextureBindGroupLayout), device.Api);
 
         var drawCount = _visibleTranslucentDraws.Count;
-        if (_uniforms.Length < drawCount) _uniforms = new ChunkUniforms[drawCount];
+        if (_uniforms.Length < drawCount) _uniforms = new ChunkDrawMetadata[drawCount];
         for (var i = 0; i < drawCount; i++)
         {
             var draw = _visibleTranslucentDraws[i];
@@ -563,18 +569,20 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 column?.FadeMode ?? draw.SeamFade.Mode,
                 column?.FadeSeed ?? draw.SeamFade.Seed);
         }
-        _translucentPipeline.WriteDynamicUniforms(_uniforms.AsSpan(0, drawCount));
+        _translucentPipeline.WriteDrawStorage(_uniforms.AsSpan(0, drawCount));
+        _translucentPipeline.BindDrawStorage(target.CurrentPass);
 
         for (var i = 0; i < drawCount; i++)
         {
-            _translucentPipeline.BindDynamicUniforms(target.CurrentPass, i);
             var draw = _visibleTranslucentDraws[i];
             if (draw.Column is { } column)
                 column.Gpu.TranslucentMesh!.Draw(
-                    target.CurrentPass, lightBuffer: column.Gpu.Lighting!.Translucent);
+                    target.CurrentPass, lightBuffer: column.Gpu.Lighting!.Translucent,
+                    firstInstance: (uint)i);
             else
                 draw.Seam!.Mesh!.Draw(
-                    target.CurrentPass, lightBuffer: draw.Seam.Lighting!.Translucent);
+                    target.CurrentPass, lightBuffer: draw.Seam.Lighting!.Translucent,
+                    firstInstance: (uint)i);
         }
 
         _snapshot = _snapshot with
@@ -1324,7 +1332,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         }
     }
 
-    private static ChunkUniforms BuildUniforms(
+    private static ChunkDrawMetadata BuildUniforms(
         in ChunkRenderParams parameters,
         (int X, int Z) key,
         float fadeProgress,
@@ -1336,14 +1344,25 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             (float)(ChuckFormat.WorldHeight / 2.0 - parameters.ViewPos.Y),
             (float)(key.Z * 16 - parameters.ViewPos.Z));
         var modelView = Matrix4X4.CreateTranslation(relative) * parameters.ModelView;
-        var fog = parameters.Fog;
-        var light = RenderSystem.WorldLight;
-        return new ChunkUniforms
+        return new ChunkDrawMetadata
         {
             ModelViewMatrix = modelView,
-            ProjectionMatrix = WgpuClip.FromGl(parameters.Projection),
             ChunkPosX = key.X * 16,
             ChunkPosY = key.Z * 16,
+            ChunkFadeEnabled = 0,
+            FadeProgress = fadeProgress,
+            PresentationFadeMode = fadeMode,
+            PresentationFadeSeed = fadeSeed
+        };
+    }
+
+    private static ChunkFrameUniforms BuildFrameUniforms(in ChunkRenderParams parameters)
+    {
+        var fog = parameters.Fog;
+        var light = RenderSystem.WorldLight;
+        return new ChunkFrameUniforms
+        {
+            ProjectionMatrix = WgpuClip.FromGl(parameters.Projection),
             AmbientDarkness = light.AmbientDarkness,
             LuminanceOffset = light.LuminanceOffset,
             FogMode = (uint)fog.Curve,
@@ -1353,11 +1372,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             FogColorR = fog.Color.X,
             FogColorG = fog.Color.Y,
             FogColorB = fog.Color.Z,
-            FogColorA = fog.Color.W,
-            ChunkFadeEnabled = 0,
-            FadeProgress = fadeProgress,
-            PresentationFadeMode = fadeMode,
-            PresentationFadeSeed = fadeSeed
+            FogColorA = fog.Color.W
         };
     }
 

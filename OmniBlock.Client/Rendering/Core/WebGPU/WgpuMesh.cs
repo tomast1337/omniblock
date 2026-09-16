@@ -127,7 +127,11 @@ public sealed unsafe class WgpuMesh : IDisposable
     }
 
     /// <summary>Records the draw command on the current render pass.</summary>
-    public void Draw(RenderPassEncoder* pass, uint instanceCount = 1, WgpuBuffer* lightBuffer = null)
+    public void Draw(
+        RenderPassEncoder* pass,
+        uint instanceCount = 1,
+        WgpuBuffer* lightBuffer = null,
+        uint firstInstance = 0)
     {
         var api = _device.Api;
 
@@ -137,16 +141,18 @@ public sealed unsafe class WgpuMesh : IDisposable
 
         if (_usesSharedQuadIndices)
         {
-            _device.QuadIndices.BindAndDraw(pass, VertexCount / 4, instanceCount);
+            _device.QuadIndices.Bind(pass, VertexCount / 4);
+            _device.QuadIndices.DrawBoundRange(
+                pass, 0, VertexCount / 4, instanceCount, firstInstance: firstInstance);
         }
         else if (IndexBuffer is not null)
         {
             api.RenderPassEncoderSetIndexBuffer(pass, IndexBuffer, IndexFormat, 0, WgpuWholeSize.Value);
-            api.RenderPassEncoderDrawIndexed(pass, IndexCount, instanceCount, 0, 0, 0);
+            api.RenderPassEncoderDrawIndexed(pass, IndexCount, instanceCount, 0, 0, firstInstance);
         }
         else
         {
-            api.RenderPassEncoderDraw(pass, VertexCount, instanceCount, 0, 0);
+            api.RenderPassEncoderDraw(pass, VertexCount, instanceCount, 0, firstInstance);
         }
     }
 
