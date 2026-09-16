@@ -55,9 +55,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private const double MeshDispatchBudgetMs = 1.5;
 
     /// <summary>Bytes of <see cref="ChunkDrawMetadata" />, as chunk.wgsl declares the block.</summary>
-    private const uint ChunkDrawMetadataSize = 96;
+    private const uint ChunkDrawMetadataSize = 48;
     /// <summary>Bytes of <see cref="ChunkFrameUniforms" />, as chunk.wgsl declares the block.</summary>
-    private const uint ChunkFrameUniformSize = 240;
+    private const uint ChunkFrameUniformSize = 336;
 
     private static readonly Vector3D<int>[] s_spiralOffsets;
     private static readonly Vector2D<int>[] s_safetyColumnOffsets;
@@ -180,6 +180,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private int _terrainPipelineBindsThisFrame;
     private int _terrainTextureBindsThisFrame;
     private int _terrainStreamBindsThisFrame;
+    private ulong _opaqueBundleSignature;
+    private bool _hasOpaqueBundleSignature;
+    private long _opaqueBundleCandidateFrames;
+    private long _opaqueBundleReusableFrames;
+    private long _opaqueBundleInvalidations;
     private double _findVisibleMsThisFrame;
     private double _portalTraversalMsThisFrame;
     private double _terrainSubmitMsThisFrame;
@@ -187,7 +192,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     internal ITerrainPresentationHandoff? PresentationHandoff { get; set; }
 
     /// <summary>
-    ///     Reused across frames so the solid pass's per-chunk uniform batch (see
+    ///     Reused across frames so the solid pass's per-draw metadata batch (see
     ///     <see cref="RenderSolidWebGpu" />) doesn't allocate one every frame — grown, never shrunk.
     /// </summary>
     private ChunkDrawMetadata[] _solidUniformScratch = [];
@@ -491,6 +496,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("terrainTextureBinds\t").Append(presentation.TerrainTextureBinds).AppendLine();
         text.Append("terrainUniformArenaCapacity\t").Append(presentation.TerrainUniformArenaCapacity).AppendLine();
         text.Append("terrainUniformArenaGrowths\t").Append(presentation.TerrainUniformArenaGrowths).AppendLine();
+        text.Append("opaqueBundleCandidateFrames\t").Append(presentation.OpaqueBundleCandidateFrames).AppendLine();
+        text.Append("opaqueBundleReusableFrames\t").Append(presentation.OpaqueBundleReusableFrames).AppendLine();
+        text.Append("opaqueBundleInvalidations\t").Append(presentation.OpaqueBundleInvalidations).AppendLine();
         AppendTiming("findVisible", presentation.FindVisible);
         AppendTiming("spatialCull", presentation.SpatialCull);
         AppendTiming("candidateSort", presentation.CandidateSort);
@@ -667,6 +675,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         Counter("terrainUniformEntries", profile.TerrainUniformEntries);
         Counter("terrainSubmissionBatches", profile.TerrainSubmissionBatches);
         Counter("terrainStreamBinds", profile.TerrainStreamBinds);
+        Counter("opaqueBundleCandidateFrames", profile.OpaqueBundleCandidateFrames);
+        Counter("opaqueBundleReusableFrames", profile.OpaqueBundleReusableFrames);
+        Counter("opaqueBundleInvalidations", profile.OpaqueBundleInvalidations);
         var cost = MeshCostProfile;
         Counter("meshCostBuildSamples", cost.BuildSamples);
         Counter("meshCostUploadSamples", cost.UploadSamples);
@@ -890,6 +901,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         // Opaque order is semantically irrelevant. Group regions deterministically so consecutive
         // pages can retain the same paired arena buffers; translucent order remains back-to-front.
         _solidRenderers.Sort(CompareSolidRegionOrder);
+        if (_solidRenderers.Count == 0) _hasOpaqueBundleSignature = false;
         _presentedSolidLayersThisFrame = _solidRenderers.Count;
         _presentedTranslucentLayersThisFrame = _translucentRenderers.Count;
         TranslucentMeshes = _translucentRenderers.Count;
@@ -924,6 +936,29 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         if (x != 0) return x;
         y = left.Position.Y.CompareTo(right.Position.Y);
         return y != 0 ? y : left.Position.Z.CompareTo(right.Position.Z);
+    }
+
+    private ulong BeginOpaqueCommandSignature()
+    {
+        var signature = 14695981039346656037UL;
+        signature = (signature ^ (WireframeEnabled ? 1UL : 0UL)) * 1099511628211UL;
+        signature = (signature ^ (uint)_solidRenderers.Count) * 1099511628211UL;
+        signature = (signature ^ (uint)(_wgpuPipelines.Values.Sum(static pipeline => pipeline.DrawStorageGrowthCount) +
+                                        _wgpuWireframePipelines.Values.Sum(static pipeline => pipeline.DrawStorageGrowthCount))) *
+                    1099511628211UL;
+        return signature;
+    }
+
+    private void RecordOpaqueBundleCandidate(ulong signature)
+    {
+        _opaqueBundleCandidateFrames++;
+        if (_hasOpaqueBundleSignature)
+        {
+            if (signature == _opaqueBundleSignature) _opaqueBundleReusableFrames++;
+            else _opaqueBundleInvalidations++;
+        }
+        _opaqueBundleSignature = signature;
+        _hasOpaqueBundleSignature = true;
     }
 
     /// <summary>
@@ -1579,6 +1614,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             _wgpuWireframePipelines.Values.Sum(static pipeline => pipeline.DrawStorageCapacity),
             _wgpuPipelines.Values.Sum(static pipeline => pipeline.DrawStorageGrowthCount) +
             _wgpuWireframePipelines.Values.Sum(static pipeline => pipeline.DrawStorageGrowthCount),
+            _opaqueBundleCandidateFrames,
+            _opaqueBundleReusableFrames,
+            _opaqueBundleInvalidations,
             _findVisibleTimings.Snapshot(),
             _spatialCullTimings.Snapshot(),
             _candidateSortTimings.Snapshot(),
@@ -3151,19 +3189,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         {
             var renderer = _solidRenderers[i];
             var fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
-
-            var camRel = new Vector3D<double>(
-                renderer.PositionMinus.X - _lastViewPos.X,
-                renderer.PositionMinus.Y - _lastViewPos.Y,
-                renderer.PositionMinus.Z - _lastViewPos.Z);
-            camRel += new Vector3D<double>(renderer.ClipPosition.X, renderer.ClipPosition.Y, renderer.ClipPosition.Z);
-
-            var translation = Matrix4X4.CreateTranslation(
-                new Vector3D<float>((float)camRel.X, (float)camRel.Y, (float)camRel.Z));
-            var modelView = translation * _modelView;
-
             _solidUniformScratch[i] = BuildChunkDrawMetadata(
-                modelView, renderer.Position, fadeProgress, translucent: false);
+                renderer.Position, fadeProgress, translucent: false);
         }
 
         var t0 = Stopwatch.GetTimestamp();
@@ -3174,13 +3201,16 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         Profiler.Record("UniformUpload", (t1 - t0) * 1000.0 / Stopwatch.Frequency);
 
         var streamBinding = new TerrainStreamBindingState();
+        var commandSignature = BeginOpaqueCommandSignature();
         for (var i = 0; i < count; i++)
         {
             var stats = _solidRenderers[i].RenderWebGpu(
                 pass, 0, _lastViewPos, ref streamBinding, (uint)i);
+            commandSignature = (commandSignature ^ stats.CommandSignature) * 1099511628211UL;
             RecordDirectionalDraw(stats);
             _solidDrawsThisFrame += stats.DrawRanges;
         }
+        RecordOpaqueBundleCandidate(commandSignature);
 
         var t2 = Stopwatch.GetTimestamp();
         Profiler.Record("DrawCall", (t2 - t1) * 1000.0 / Stopwatch.Frequency);
@@ -3214,16 +3244,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         {
             var renderer = _solidRenderers[i];
             var fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
-            var camRel = new Vector3D<double>(
-                renderer.PositionMinus.X - _lastViewPos.X,
-                renderer.PositionMinus.Y - _lastViewPos.Y,
-                renderer.PositionMinus.Z - _lastViewPos.Z);
-            camRel += new Vector3D<double>(renderer.ClipPosition.X, renderer.ClipPosition.Y, renderer.ClipPosition.Z);
-            var translation = Matrix4X4.CreateTranslation(
-                new Vector3D<float>((float)camRel.X, (float)camRel.Y, (float)camRel.Z));
             _solidUniformScratch[i] = BuildChunkDrawMetadata(
-                translation * _modelView, renderer.Position, fadeProgress,
-                translucent: false, applyHandoff: false);
+                renderer.Position, fadeProgress, translucent: false, applyHandoff: false);
         }
 
         pipeline.WriteDrawStorage(_solidUniformScratch.AsSpan(0, count));
@@ -3269,19 +3291,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         {
             var renderer = _translucentRenderers[i];
             var fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
-
-            var camRel = new Vector3D<double>(
-                renderer.PositionMinus.X - viewPos.X,
-                renderer.PositionMinus.Y - viewPos.Y,
-                renderer.PositionMinus.Z - viewPos.Z);
-            camRel += new Vector3D<double>(renderer.ClipPosition.X, renderer.ClipPosition.Y, renderer.ClipPosition.Z);
-
-            var translation = Matrix4X4.CreateTranslation(
-                new Vector3D<float>((float)camRel.X, (float)camRel.Y, (float)camRel.Z));
-            var modelView = translation * _modelView;
-
             _translucentUniformScratch[i] = BuildChunkDrawMetadata(
-                modelView, renderer.Position, fadeProgress, translucent: true);
+                renderer.Position, fadeProgress, translucent: true);
         }
 
         pipeline.WriteDrawStorage(_translucentUniformScratch.AsSpan(0, count));
@@ -3314,7 +3325,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     ///     projection, fog and lighting deliberately do not appear here.
     /// </summary>
     private ChunkDrawMetadata BuildChunkDrawMetadata(
-        Matrix4X4<float> modelView,
         Vector3D<int> chunkPos,
         float fadeProgress,
         bool translucent,
@@ -3325,9 +3335,18 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 chunkPos.X >> 4, chunkPos.Z >> 4, translucent) ?? TerrainNearHandoff.Inactive
             : TerrainNearHandoff.Inactive;
 
+        TerrainCoordinateFrame.Split(chunkPos.X, out var cellX, out var localX);
+        TerrainCoordinateFrame.Split(chunkPos.Y, out var cellY, out var localY);
+        TerrainCoordinateFrame.Split(chunkPos.Z, out var cellZ, out var localZ);
+
         return new ChunkDrawMetadata
         {
-            ModelViewMatrix = modelView,
+            RegionCellX = cellX,
+            RegionCellY = cellY,
+            RegionCellZ = cellZ,
+            LocalOriginX = localX,
+            LocalOriginY = localY,
+            LocalOriginZ = localZ,
             ChunkPosX = chunkPos.X,
             ChunkPosY = chunkPos.Z,
             FadeProgress = handoff.Active ? handoff.Progress : fadeProgress,
@@ -3341,9 +3360,19 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         var fog = _terrainFog;
         var light = RenderSystem.WorldLight;
+        TerrainCoordinateFrame.Split(_lastViewPos.X, out var cameraCellX, out var cameraLocalX);
+        TerrainCoordinateFrame.Split(_lastViewPos.Y, out var cameraCellY, out var cameraLocalY);
+        TerrainCoordinateFrame.Split(_lastViewPos.Z, out var cameraCellZ, out var cameraLocalZ);
         return new ChunkFrameUniforms
         {
+            ModelViewMatrix = _modelView,
             ProjectionMatrix = WgpuClip.FromGl(_projection),
+            CameraCellX = cameraCellX,
+            CameraCellY = cameraCellY,
+            CameraCellZ = cameraCellZ,
+            CameraLocalX = cameraLocalX,
+            CameraLocalY = cameraLocalY,
+            CameraLocalZ = cameraLocalZ,
             AmbientDarkness = light.AmbientDarkness,
             LuminanceOffset = light.LuminanceOffset,
             FogMode = (uint)fog.Curve,
@@ -3446,92 +3475,125 @@ internal readonly record struct NearFieldRescueDiagnostics(
 ///     deliberately live in <see cref="ChunkFrameUniforms" /> so this repeated block stays small.
 ///     WGSL's default alignment rules (mat4x4 = 16, vec3 = 16, vec4 = 16, f32/u32 = 4).
 /// </summary>
-[StructLayout(LayoutKind.Explicit, Size = 96)]
+[StructLayout(LayoutKind.Explicit, Size = 48)]
 public struct ChunkDrawMetadata
 {
-    // mat4x4<f32> modelViewMatrix at offset 0
-    [FieldOffset(0)] public Matrix4X4<float> ModelViewMatrix;
+    [FieldOffset(0)] public int RegionCellX;
+    [FieldOffset(4)] public int RegionCellY;
+    [FieldOffset(8)] public int RegionCellZ;
+    [FieldOffset(12)] public float FadeProgress;
 
-    // vec2<f32> chunkPos at offset 64 (align 8, size 8)
-    [FieldOffset(64)] public float ChunkPosX;
-    [FieldOffset(68)] public float ChunkPosY;
+    [FieldOffset(16)] public float LocalOriginX;
+    [FieldOffset(20)] public float LocalOriginY;
+    [FieldOffset(24)] public float LocalOriginZ;
+    [FieldOffset(28)] public uint ChunkFadeEnabled;
 
-    [FieldOffset(72)] public float FadeProgress;
-    [FieldOffset(76)] public uint ChunkFadeEnabled;
-    [FieldOffset(80)] public uint PresentationFadeMode;
-    [FieldOffset(84)] public uint PresentationFadeSeed;
+    [FieldOffset(32)] public float ChunkPosX;
+    [FieldOffset(36)] public float ChunkPosY;
+    [FieldOffset(40)] public uint PresentationFadeMode;
+    [FieldOffset(44)] public uint PresentationFadeSeed;
 }
 
-/// <summary>Frame/pass-wide half of chunk.wgsl's terrain uniforms.</summary>
-[StructLayout(LayoutKind.Explicit, Size = 240)]
+/// <summary>Frame/pass-wide chunk.wgsl terrain uniforms and exact camera coordinate frame.</summary>
+[StructLayout(LayoutKind.Explicit, Size = 336)]
 public struct ChunkFrameUniforms
 {
-    [FieldOffset(0)] public Matrix4X4<float> ProjectionMatrix;
+    [FieldOffset(0)] public Matrix4X4<float> ModelViewMatrix;
+    [FieldOffset(64)] public Matrix4X4<float> ProjectionMatrix;
 
-    // vec3<f32> time at offset 64 (align 16, size 12)
-    [FieldOffset(64)] public float TimeX;
-    [FieldOffset(68)] public float TimeY;
-    [FieldOffset(72)] public float TimeZ;
+    [FieldOffset(128)] public int CameraCellX;
+    [FieldOffset(132)] public int CameraCellY;
+    [FieldOffset(136)] public int CameraCellZ;
 
-    [FieldOffset(76)] public float AmbientDarkness;
+    [FieldOffset(144)] public float CameraLocalX;
+    [FieldOffset(148)] public float CameraLocalY;
+    [FieldOffset(152)] public float CameraLocalZ;
 
-    [FieldOffset(80)] public float LuminanceOffset;
+    [FieldOffset(160)] public float TimeX;
+    [FieldOffset(164)] public float TimeY;
+    [FieldOffset(168)] public float TimeZ;
 
-    [FieldOffset(84)] public float WavyLeavesStrength;
+    [FieldOffset(172)] public float AmbientDarkness;
 
-    [FieldOffset(88)] public float WavyLeavesSpeed;
+    [FieldOffset(176)] public float LuminanceOffset;
 
-    [FieldOffset(92)] public float WavyPlantStrength;
+    [FieldOffset(180)] public float WavyLeavesStrength;
 
-    [FieldOffset(96)] public float WavyPlantSpeed;
+    [FieldOffset(184)] public float WavyLeavesSpeed;
 
-    [FieldOffset(100)] public uint WavyPlantMode;
+    [FieldOffset(188)] public float WavyPlantStrength;
+
+    [FieldOffset(192)] public float WavyPlantSpeed;
+
+    [FieldOffset(196)] public uint WavyPlantMode;
 
     // vec4<u32> wavyLeafLayers0 at offset 192 (align 16)
-    [FieldOffset(112)] public uint WavyLeafLayer0;
-    [FieldOffset(116)] public uint WavyLeafLayer1;
-    [FieldOffset(120)] public uint WavyLeafLayer2;
-    [FieldOffset(124)] public uint WavyLeafLayer3;
+    [FieldOffset(208)] public uint WavyLeafLayer0;
+    [FieldOffset(212)] public uint WavyLeafLayer1;
+    [FieldOffset(216)] public uint WavyLeafLayer2;
+    [FieldOffset(220)] public uint WavyLeafLayer3;
 
     // vec4<u32> wavyLeafLayers1 at offset 208
-    [FieldOffset(128)] public uint WavyLeafLayer4;
-    [FieldOffset(132)] public uint WavyLeafLayer5;
-    [FieldOffset(136)] public uint WavyLeafLayer6;
-    [FieldOffset(140)] public uint WavyLeafLayer7;
+    [FieldOffset(224)] public uint WavyLeafLayer4;
+    [FieldOffset(228)] public uint WavyLeafLayer5;
+    [FieldOffset(232)] public uint WavyLeafLayer6;
+    [FieldOffset(236)] public uint WavyLeafLayer7;
 
     // u32 wavyLeafCount at offset 224
-    [FieldOffset(144)] public uint WavyLeafCount;
+    [FieldOffset(240)] public uint WavyLeafCount;
 
     // vec4<u32> wavyPlantLayers0 at offset 240 (align 16)
-    [FieldOffset(160)] public uint WavyPlantLayer0;
-    [FieldOffset(164)] public uint WavyPlantLayer1;
-    [FieldOffset(168)] public uint WavyPlantLayer2;
-    [FieldOffset(172)] public uint WavyPlantLayer3;
+    [FieldOffset(256)] public uint WavyPlantLayer0;
+    [FieldOffset(260)] public uint WavyPlantLayer1;
+    [FieldOffset(264)] public uint WavyPlantLayer2;
+    [FieldOffset(268)] public uint WavyPlantLayer3;
 
     // vec4<u32> wavyPlantLayers1 at offset 256
-    [FieldOffset(176)] public uint WavyPlantLayer4;
-    [FieldOffset(180)] public uint WavyPlantLayer5;
-    [FieldOffset(184)] public uint WavyPlantLayer6;
-    [FieldOffset(188)] public uint WavyPlantLayer7;
+    [FieldOffset(272)] public uint WavyPlantLayer4;
+    [FieldOffset(276)] public uint WavyPlantLayer5;
+    [FieldOffset(280)] public uint WavyPlantLayer6;
+    [FieldOffset(284)] public uint WavyPlantLayer7;
 
     // u32 wavyPlantCount at offset 272
-    [FieldOffset(192)] public uint WavyPlantCount;
+    [FieldOffset(288)] public uint WavyPlantCount;
 
     // vec4<f32> fogColor at offset 288 (align 16)
-    [FieldOffset(208)] public float FogColorR;
-    [FieldOffset(212)] public float FogColorG;
-    [FieldOffset(216)] public float FogColorB;
-    [FieldOffset(220)] public float FogColorA;
+    [FieldOffset(304)] public float FogColorR;
+    [FieldOffset(308)] public float FogColorG;
+    [FieldOffset(312)] public float FogColorB;
+    [FieldOffset(316)] public float FogColorA;
 
     // f32 fogStart at offset 304
-    [FieldOffset(224)] public float FogStart;
+    [FieldOffset(320)] public float FogStart;
 
     // f32 fogEnd at offset 308
-    [FieldOffset(228)] public float FogEnd;
+    [FieldOffset(324)] public float FogEnd;
 
     // f32 fogDensity at offset 312
-    [FieldOffset(232)] public float FogDensity;
+    [FieldOffset(328)] public float FogDensity;
 
     // u32 fogMode at offset 316
-    [FieldOffset(236)] public uint FogMode;
+    [FieldOffset(332)] public uint FogMode;
+}
+
+internal static class TerrainCoordinateFrame
+{
+    internal const int CellSize = 1024;
+
+    internal static void Split(int coordinate, out int cell, out float local)
+    {
+        cell = Math.DivRem(coordinate, CellSize, out var remainder);
+        if (remainder < 0)
+        {
+            cell--;
+            remainder += CellSize;
+        }
+        local = remainder;
+    }
+
+    internal static void Split(double coordinate, out int cell, out float local)
+    {
+        cell = checked((int)Math.Floor(coordinate / CellSize));
+        local = (float)(coordinate - (double)cell * CellSize);
+    }
 }

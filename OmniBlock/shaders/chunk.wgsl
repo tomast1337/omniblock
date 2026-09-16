@@ -4,16 +4,20 @@
 // A propagated-light update can therefore replace lighting without touching geometry.
 
 struct DrawMetadata {
-    modelViewMatrix: mat4x4<f32>,
-    chunkPos: vec2<f32>,       // chunk X,Z in world space, for wavy animation
+    regionCell: vec3<i32>,     // exact 1024-block world cell containing localOrigin
     fadeProgress: f32,
+    localOrigin: vec3<f32>,    // section/page origin inside regionCell
     chunkFadeEnabled: u32,     // bool as u32
+    chunkPos: vec2<f32>,       // chunk X,Z in world space, for wavy animation
     presentationFadeMode: u32, // 0=none, 1=near fade-in, 2=LOD fade-out
     presentationFadeSeed: u32,
 };
 
 struct FrameUniforms {
+    modelViewMatrix: mat4x4<f32>,
     projectionMatrix: mat4x4<f32>,
+    cameraCell: vec3<i32>,     // exact 1024-block camera cell
+    cameraLocal: vec3<f32>,    // camera position inside cameraCell
     time: vec3<f32>,           // total seconds, for wavy animation
     ambientDarkness: f32,      // how far the sky channel is knocked down
     luminanceOffset: f32,      // floor of the brightness curve (0.05 overworld, 0.1 nether)
@@ -134,6 +138,8 @@ struct VertexOutput {
 fn vs_main(in: VertexInput, @builtin(instance_index) drawIndex: u32) -> VertexOutput {
     let draw = drawMetadata[drawIndex];
     var pos = unpackPosition(in.position);
+    let cellDelta = draw.regionCell - frame.cameraCell;
+    let relativeOrigin = vec3<f32>(cellDelta) * 1024.0 + draw.localOrigin - frame.cameraLocal;
 
     // UV: ushort range, the full 0–65535 maps to 0.0–16.0 — a sub-chunk's width, the widest a
     // greedy-merged quad can tile across. Must match Tessellator.UV_SCALE exactly (encode/decode).
@@ -154,7 +160,7 @@ fn vs_main(in: VertexInput, @builtin(instance_index) drawIndex: u32) -> VertexOu
     }
 
     let color = vec4<f32>(in.color.rgb * terrainBrightness(in.light), in.color.a);
-    let viewPos = draw.modelViewMatrix * vec4<f32>(pos, 1.0);
+    let viewPos = frame.modelViewMatrix * vec4<f32>(pos + relativeOrigin, 1.0);
 
     var out: VertexOutput;
     out.position = frame.projectionMatrix * viewPos;

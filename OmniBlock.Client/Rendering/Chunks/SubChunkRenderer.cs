@@ -133,7 +133,13 @@ public class SubChunkRenderer : IDisposable
         var presentation = _presentation;
         if (presentation == null) return default;
 
-        var stats = new DirectionalDrawStats();
+        var signature = 14695981039346656037UL;
+        signature = AddSignature(signature, Position.X);
+        signature = AddSignature(signature, Position.Y);
+        signature = AddSignature(signature, Position.Z);
+        signature = AddSignature(signature, presentation.Epoch);
+        signature = AddSignature(signature, pass);
+        var stats = new DirectionalDrawStats(0, 0, 0, 0, 0, signature);
         for (var pageIndex = 0; pageIndex < presentation.Pages.Count; pageIndex++)
         {
             var page = presentation.Pages[pageIndex];
@@ -142,9 +148,12 @@ public class SubChunkRenderer : IDisposable
 
             var ranges = page!.RangesFor(pass);
             Span<ChunkQuadRange> selected = stackalloc ChunkQuadRange[7];
-            var selectedCount = ranges.Select(
-                DirectionalFaceVisibility.ForPage(Position, pageIndex, viewPosition), selected);
+            var faceMask = DirectionalFaceVisibility.ForPage(Position, pageIndex, viewPosition);
+            var selectedCount = ranges.Select(faceMask, selected);
             if (selectedCount == 0) continue;
+
+            signature = AddSignature(signature, pageIndex);
+            signature = AddSignature(signature, (int)faceMask);
 
             var streamChanged = mesh.BindChunkQuadStreams(passEncoder, ref binding);
             var submitted = 0;
@@ -162,11 +171,18 @@ public class SubChunkRenderer : IDisposable
                 submitted,
                 selectedCount,
                 ranges.UnassignedQuadCount,
-                streamChanged ? 1 : 0);
+                streamChanged ? 1 : 0,
+                signature);
         }
 
         if (stats.DrawRanges > 0) presentation.RecordFirstDraw();
         return stats;
+    }
+
+    private static ulong AddSignature(ulong value, long component)
+    {
+        value ^= unchecked((ulong)component);
+        return value * 1099511628211UL;
     }
 
     /// <summary>Draws the solid mesh through the device-wide quad wireframe indices.</summary>
@@ -199,7 +215,8 @@ internal readonly record struct DirectionalDrawStats(
     int SubmittedQuads,
     int DrawRanges,
     int UnassignedQuads,
-    int StreamBinds)
+    int StreamBinds,
+    ulong CommandSignature = 0)
 {
     public int RejectedQuads => AvailableQuads - SubmittedQuads;
 
@@ -208,11 +225,13 @@ internal readonly record struct DirectionalDrawStats(
         int submittedQuads,
         int drawRanges,
         int unassignedQuads,
-        int streamBinds) =>
+        int streamBinds,
+        ulong commandSignature) =>
         new(
             AvailableQuads + availableQuads,
             SubmittedQuads + submittedQuads,
             DrawRanges + drawRanges,
             UnassignedQuads + unassignedQuads,
-            StreamBinds + streamBinds);
+            StreamBinds + streamBinds,
+            commandSignature);
 }

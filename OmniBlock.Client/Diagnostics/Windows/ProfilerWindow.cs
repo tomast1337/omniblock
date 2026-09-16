@@ -206,7 +206,11 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"Streams:    {profile.TerrainStreamBinds:N0} geometry/light slice binds");
         ImGuiTextSafe.Text(
-            $"Uniform arena: {profile.TerrainUniformArenaCapacity:N0} entries  {profile.TerrainUniformArenaGrowths} lifetime growths");
+            $"Metadata arena: {profile.TerrainUniformArenaCapacity:N0} entries  {profile.TerrainUniformArenaGrowths} lifetime growths");
+        var bundleComparisons = Math.Max(1,
+            profile.OpaqueBundleReusableFrames + profile.OpaqueBundleInvalidations);
+        ImGuiTextSafe.Text(
+            $"Bundle candidate: {profile.OpaqueBundleReusableFrames:N0}/{bundleComparisons:N0} reusable ({profile.OpaqueBundleReusableFrames / (double)bundleComparisons:P1})  {profile.OpaqueBundleInvalidations:N0} invalidations");
         var arena = chunkRenderer.TerrainGpuArenaProfile;
         ImGuiTextSafe.Text(
             $"Terrain arenas: {arena.Regions:N0} regions  {arena.Segments:N0} paired segments ({arena.Segments * 2:N0} buffers)");

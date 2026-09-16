@@ -1339,16 +1339,20 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         uint fadeMode,
         uint fadeSeed)
     {
-        var relative = new Vector3D<float>(
-            (float)(key.X * 16 - parameters.ViewPos.X),
-            (float)(ChuckFormat.WorldHeight / 2.0 - parameters.ViewPos.Y),
-            (float)(key.Z * 16 - parameters.ViewPos.Z));
-        var modelView = Matrix4X4.CreateTranslation(relative) * parameters.ModelView;
+        var origin = new Vector3D<int>(key.X * 16, ChuckFormat.WorldHeight / 2, key.Z * 16);
+        TerrainCoordinateFrame.Split(origin.X, out var cellX, out var localX);
+        TerrainCoordinateFrame.Split(origin.Y, out var cellY, out var localY);
+        TerrainCoordinateFrame.Split(origin.Z, out var cellZ, out var localZ);
         return new ChunkDrawMetadata
         {
-            ModelViewMatrix = modelView,
-            ChunkPosX = key.X * 16,
-            ChunkPosY = key.Z * 16,
+            RegionCellX = cellX,
+            RegionCellY = cellY,
+            RegionCellZ = cellZ,
+            LocalOriginX = localX,
+            LocalOriginY = localY,
+            LocalOriginZ = localZ,
+            ChunkPosX = origin.X,
+            ChunkPosY = origin.Z,
             ChunkFadeEnabled = 0,
             FadeProgress = fadeProgress,
             PresentationFadeMode = fadeMode,
@@ -1360,9 +1364,19 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     {
         var fog = parameters.Fog;
         var light = RenderSystem.WorldLight;
+        TerrainCoordinateFrame.Split(parameters.ViewPos.X, out var cameraCellX, out var cameraLocalX);
+        TerrainCoordinateFrame.Split(parameters.ViewPos.Y, out var cameraCellY, out var cameraLocalY);
+        TerrainCoordinateFrame.Split(parameters.ViewPos.Z, out var cameraCellZ, out var cameraLocalZ);
         return new ChunkFrameUniforms
         {
+            ModelViewMatrix = parameters.ModelView,
             ProjectionMatrix = WgpuClip.FromGl(parameters.Projection),
+            CameraCellX = cameraCellX,
+            CameraCellY = cameraCellY,
+            CameraCellZ = cameraCellZ,
+            CameraLocalX = cameraLocalX,
+            CameraLocalY = cameraLocalY,
+            CameraLocalZ = cameraLocalZ,
             AmbientDarkness = light.AmbientDarkness,
             LuminanceOffset = light.LuminanceOffset,
             FogMode = (uint)fog.Curve,
