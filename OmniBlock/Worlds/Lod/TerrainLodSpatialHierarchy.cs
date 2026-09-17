@@ -137,6 +137,16 @@ public sealed class TerrainLodSpatialPolicy
                 throw new ArgumentException(
                     "Horizontal samples must stay equal or become coarser as spatial level increases.",
                     nameof(horizontalSampleLevelBySpatialLevel));
+            if (i > 0 && _horizontalSampleLevelBySpatialLevel[i] >
+                _horizontalSampleLevelBySpatialLevel[i - 1] + 1)
+                throw new ArgumentException(
+                    "Incremental parent construction supports at most one horizontal octave per spatial level.",
+                    nameof(horizontalSampleLevelBySpatialLevel));
+            if (_horizontalSampleLevelBySpatialLevel[i] > i + 4)
+                throw new ArgumentException(
+                    $"Spatial level {i} cannot represent horizontal sample level " +
+                    $"{_horizontalSampleLevelBySpatialLevel[i]} within its chunk footprint.",
+                    nameof(horizontalSampleLevelBySpatialLevel));
         }
 
         DistanceUnitChunks = distanceUnitChunks;
@@ -154,6 +164,11 @@ public sealed class TerrainLodSpatialPolicy
             throw new ArgumentException(
                 "Vertical slice budgets must be positive and match the number of spatial levels.",
                 nameof(verticalSliceBudgetBySpatialLevel));
+        for (var i = 1; i < _verticalSliceBudgetBySpatialLevel.Length; i++)
+            if (_verticalSliceBudgetBySpatialLevel[i] > _verticalSliceBudgetBySpatialLevel[i - 1])
+                throw new ArgumentException(
+                    "Vertical slice budgets cannot increase as spatial level becomes coarser.",
+                    nameof(verticalSliceBudgetBySpatialLevel));
         VerticalSliceBudgetBySpatialLevel =
             Array.AsReadOnly(_verticalSliceBudgetBySpatialLevel);
     }

@@ -74,6 +74,15 @@ public sealed class TerrainLodSpatialHierarchyTests
     }
 
     [Fact]
+    public void Policy_rejects_levels_that_incremental_parent_builds_cannot_produce()
+    {
+        Assert.Throws<ArgumentException>(() =>
+            new TerrainLodSpatialPolicy(8, 2, [0, 2], [16, 8]));
+        Assert.Throws<ArgumentException>(() =>
+            new TerrainLodSpatialPolicy(8, 2, [0, 0], [8, 16]));
+    }
+
+    [Fact]
     public void Ready_hierarchy_refines_to_complete_non_overlapping_leaves()
     {
         var root = new TerrainLodTileKey(2, 0, 0);
