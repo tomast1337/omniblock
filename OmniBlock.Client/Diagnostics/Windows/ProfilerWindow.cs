@@ -195,6 +195,13 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
             $"Portal:     {profile.PortalQueuePops:N0} pops  {profile.PortalEdgeAttempts:N0} edges  {profile.PortalSuccessfulReaches:N0} reached  {profile.PortalDuplicateReaches:N0} duplicate");
         ImGuiTextSafe.Text(
             $"Portal test:{profile.PortalDrawFrustumTests:N0} draw  {profile.PortalMarginFrustumTests:N0} margin  {profile.PortalMarginCacheHits:N0} cached  {profile.PortalMarginRejected:N0} rejected  {profile.PortalMissingNeighbors:N0} missing");
+        var visibilityReuse = chunkRenderer.VisibilityReuseProfile;
+        ImGuiTextSafe.Text(
+            $"Visibility reuse: {visibilityReuse.ReusedFrames:N0} reused  {visibilityReuse.SynchronousFrames:N0} sync  {visibilityReuse.Builds:N0} builds  " +
+            $"{visibilityReuse.Cancellations:N0} cancelled  {visibilityReuse.StaleResults:N0} stale  {visibilityReuse.PatchedFrames:N0} patched frames");
+        ImGuiTextSafe.Text(
+            $"Visibility worker: {(visibilityReuse.BuildInFlight ? "running" : "idle")}  graph {visibilityReuse.GraphEpoch:N0}  " +
+            $"{visibilityReuse.ConservativeCandidates:N0} candidates  {visibilityReuse.GraphPatches:N0} graph patches  snapshot {visibilityReuse.SnapshotMilliseconds:F3} ms  worker {visibilityReuse.WorkerMilliseconds:F3} ms");
         ImGuiTextSafe.Text(
             $"Rescue:     {profile.IncompleteAdjacencyRescued} adjacency  {profile.NewPresentationRescued} new  {profile.PresentationRegressionRescued} regression  oldest {profile.OldestSafetyRescueFrames} frames");
         ImGuiTextSafe.Text(

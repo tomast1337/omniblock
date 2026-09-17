@@ -36,6 +36,13 @@ public sealed class LuauClientStateHostIntegrationTests
         double residentSolidLayerCount = 0;
         double residentTranslucentLayerCount = 0;
         double visibilityCandidates = 0;
+        double visibilityReuseFrames = 0;
+        double visibilitySynchronousFrames = 0;
+        double visibilityBuilds = 0;
+        double visibilityBuildCancellations = 0;
+        double visibilityStaleResults = 0;
+        double visibilityBuildInFlight = 0;
+        double visibilityWorkerCandidates = 0;
         double frustumTests = 0;
         double portalVisited = 0;
         double safetyRescued = 0;
@@ -77,6 +84,13 @@ public sealed class LuauClientStateHostIntegrationTests
         LuauClientStateHost.ResidentSolidLayerCount = () => residentSolidLayerCount;
         LuauClientStateHost.ResidentTranslucentLayerCount = () => residentTranslucentLayerCount;
         LuauClientStateHost.VisibilityCandidates = () => visibilityCandidates;
+        LuauClientStateHost.VisibilityReuseFrames = () => visibilityReuseFrames;
+        LuauClientStateHost.VisibilitySynchronousFrames = () => visibilitySynchronousFrames;
+        LuauClientStateHost.VisibilityBuilds = () => visibilityBuilds;
+        LuauClientStateHost.VisibilityBuildCancellations = () => visibilityBuildCancellations;
+        LuauClientStateHost.VisibilityStaleResults = () => visibilityStaleResults;
+        LuauClientStateHost.VisibilityBuildInFlight = () => visibilityBuildInFlight;
+        LuauClientStateHost.VisibilityWorkerCandidates = () => visibilityWorkerCandidates;
         LuauClientStateHost.FrustumTests = () => frustumTests;
         LuauClientStateHost.PortalVisited = () => portalVisited;
         LuauClientStateHost.SafetyRescued = () => safetyRescued;
@@ -125,6 +139,8 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.presentationRegressionCount", "0");
             AssertValue(state, "OMNI.client.state.geometryUploadsLastFrame", "0");
             AssertValue(state, "OMNI.client.state.visibilityCandidates", "0");
+            AssertValue(state, "OMNI.client.state.visibilityReuseFrames", "0");
+            AssertValue(state, "OMNI.client.state.visibilityBuildInFlight", "0");
             AssertValue(state, "OMNI.client.state.findVisibleMs", "0");
 
             worldLoaded = true;
@@ -151,6 +167,13 @@ public sealed class LuauClientStateHostIntegrationTests
             residentSolidLayerCount = 401;
             residentTranslucentLayerCount = 57;
             visibilityCandidates = 412;
+            visibilityReuseFrames = 91;
+            visibilitySynchronousFrames = 14;
+            visibilityBuilds = 8;
+            visibilityBuildCancellations = 2;
+            visibilityStaleResults = 1;
+            visibilityBuildInFlight = 1;
+            visibilityWorkerCandidates = 703;
             frustumTests = 527;
             portalVisited = 96;
             safetyRescued = 7;
@@ -193,6 +216,13 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.residentSolidLayerCount", "401");
             AssertValue(state, "OMNI.client.state.residentTranslucentLayerCount", "57");
             AssertValue(state, "OMNI.client.state.visibilityCandidates", "412");
+            AssertValue(state, "OMNI.client.state.visibilityReuseFrames", "91");
+            AssertValue(state, "OMNI.client.state.visibilitySynchronousFrames", "14");
+            AssertValue(state, "OMNI.client.state.visibilityBuilds", "8");
+            AssertValue(state, "OMNI.client.state.visibilityBuildCancellations", "2");
+            AssertValue(state, "OMNI.client.state.visibilityStaleResults", "1");
+            AssertValue(state, "OMNI.client.state.visibilityBuildInFlight", "1");
+            AssertValue(state, "OMNI.client.state.visibilityWorkerCandidates", "703");
             AssertValue(state, "OMNI.client.state.frustumTests", "527");
             AssertValue(state, "OMNI.client.state.portalVisited", "96");
             AssertValue(state, "OMNI.client.state.safetyRescued", "7");
@@ -252,6 +282,13 @@ public sealed class LuauClientStateHostIntegrationTests
             LuauClientStateHost.ResidentSolidLayerCount = null;
             LuauClientStateHost.ResidentTranslucentLayerCount = null;
             LuauClientStateHost.VisibilityCandidates = null;
+            LuauClientStateHost.VisibilityReuseFrames = null;
+            LuauClientStateHost.VisibilitySynchronousFrames = null;
+            LuauClientStateHost.VisibilityBuilds = null;
+            LuauClientStateHost.VisibilityBuildCancellations = null;
+            LuauClientStateHost.VisibilityStaleResults = null;
+            LuauClientStateHost.VisibilityBuildInFlight = null;
+            LuauClientStateHost.VisibilityWorkerCandidates = null;
             LuauClientStateHost.FrustumTests = null;
             LuauClientStateHost.PortalVisited = null;
             LuauClientStateHost.SafetyRescued = null;

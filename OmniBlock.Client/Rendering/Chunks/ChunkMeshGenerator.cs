@@ -27,6 +27,7 @@ internal struct MeshBuildResult : IDisposable
     public long RequestedAt;
     public long FinishedAt;
     public MeshLifecycleRequest? Trace;
+    public SectionDirtyReason DirtyReasons;
     public bool Cancelled;
     public MeshCancellationReason CancellationReason;
     public double BuildMs;
@@ -367,6 +368,7 @@ internal class ChunkMeshGenerator : IDisposable
                     mesh.RequestedAt = request.RequestedAt;
                     mesh.FinishedAt = Stopwatch.GetTimestamp();
                     mesh.Trace = request.Trace;
+                    mesh.DirtyReasons = request.Trace?.Reasons ?? SectionDirtyReason.None;
                     mesh.SectionId = request.SectionId;
                     _costModel.RecordBuild(
                         mesh.BuildMs,

@@ -11,6 +11,20 @@ internal readonly record struct FrameTimingSnapshot(
     public static FrameTimingSnapshot Empty => new(0, 0, 0, 0, 0, 0);
 }
 
+internal readonly record struct VisibilityReuseProfileSnapshot(
+    long GraphEpoch,
+    long ReusedFrames,
+    long SynchronousFrames,
+    long Builds,
+    long Cancellations,
+    long StaleResults,
+    long PatchedFrames,
+    bool BuildInFlight,
+    int ConservativeCandidates,
+    int GraphPatches,
+    double SnapshotMilliseconds,
+    double WorkerMilliseconds);
+
 /// <summary>
 ///     Fixed-size render-thread timing history. Visibility diagnostics must remain cheap enough to
 ///     leave enabled: recording performs no allocation, while the debug snapshot sorts at most 240

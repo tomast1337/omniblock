@@ -728,6 +728,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         var viewX = camera.LastTickX + (camera.X - camera.LastTickX) * partialTicks;
         var viewY = camera.LastTickY + (camera.Y - camera.LastTickY) * partialTicks;
         var viewZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * partialTicks;
+        var viewYaw = camera.PrevYaw + (camera.Yaw - camera.PrevYaw) * (float)partialTicks;
+        var viewPitch = camera.PrevPitch + (camera.Pitch - camera.PrevPitch) * (float)partialTicks;
 
         Lighting.turnOff();
 
@@ -744,6 +746,9 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             PartialTicks = (float)partialTicks,
             DeltaTime = _game.Timer.DeltaTime,
             VerticalFovDegrees = _game.GameRenderer.CameraController.GetFov((float)partialTicks),
+            ViewYawDegrees = viewYaw,
+            ViewPitchDegrees = viewPitch,
+            CameraMode = (int)_game.Options.CameraMode,
             ViewportHeight = _game.DisplayHeight,
             ChunkFade = _game.Options.ChunkFade,
             RenderOccluded = false,

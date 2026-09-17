@@ -493,6 +493,20 @@ public partial class OmniBlock :
                 WorldRenderer?.ChunkRenderer.PresentationProfile.ResidentTranslucentLayers ?? 0;
             LuauClientStateHost.VisibilityCandidates = () =>
                 WorldRenderer?.ChunkRenderer.PresentationProfile.VisibilityCandidates ?? 0;
+            LuauClientStateHost.VisibilityReuseFrames = () =>
+                WorldRenderer?.ChunkRenderer.VisibilityReuseProfile.ReusedFrames ?? 0;
+            LuauClientStateHost.VisibilitySynchronousFrames = () =>
+                WorldRenderer?.ChunkRenderer.VisibilityReuseProfile.SynchronousFrames ?? 0;
+            LuauClientStateHost.VisibilityBuilds = () =>
+                WorldRenderer?.ChunkRenderer.VisibilityReuseProfile.Builds ?? 0;
+            LuauClientStateHost.VisibilityBuildCancellations = () =>
+                WorldRenderer?.ChunkRenderer.VisibilityReuseProfile.Cancellations ?? 0;
+            LuauClientStateHost.VisibilityStaleResults = () =>
+                WorldRenderer?.ChunkRenderer.VisibilityReuseProfile.StaleResults ?? 0;
+            LuauClientStateHost.VisibilityBuildInFlight = () =>
+                WorldRenderer?.ChunkRenderer.VisibilityReuseProfile.BuildInFlight == true ? 1 : 0;
+            LuauClientStateHost.VisibilityWorkerCandidates = () =>
+                WorldRenderer?.ChunkRenderer.VisibilityReuseProfile.ConservativeCandidates ?? 0;
             LuauClientStateHost.FrustumTests = () =>
                 WorldRenderer?.ChunkRenderer.PresentationProfile.FrustumTests ?? 0;
             LuauClientStateHost.PortalVisited = () =>
@@ -1191,6 +1205,13 @@ public partial class OmniBlock :
             LuauClientStateHost.ResidentSolidLayerCount = null;
             LuauClientStateHost.ResidentTranslucentLayerCount = null;
             LuauClientStateHost.VisibilityCandidates = null;
+            LuauClientStateHost.VisibilityReuseFrames = null;
+            LuauClientStateHost.VisibilitySynchronousFrames = null;
+            LuauClientStateHost.VisibilityBuilds = null;
+            LuauClientStateHost.VisibilityBuildCancellations = null;
+            LuauClientStateHost.VisibilityStaleResults = null;
+            LuauClientStateHost.VisibilityBuildInFlight = null;
+            LuauClientStateHost.VisibilityWorkerCandidates = null;
             LuauClientStateHost.FrustumTests = null;
             LuauClientStateHost.PortalVisited = null;
             LuauClientStateHost.SafetyRescued = null;

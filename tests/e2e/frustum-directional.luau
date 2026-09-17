@@ -39,6 +39,9 @@ local playerZ = OMNI.client.state.playerZ
 local regressionsBefore = OMNI.client.state.presentationRegressionCount
 
 local function sampleDirection(pitch)
+    local synchronousBeforeTurn = OMNI.client.state.visibilitySynchronousFrames
+    local reuseBefore = OMNI.client.state.visibilityReuseFrames
+    local buildsBefore = OMNI.client.state.visibilityBuilds
     OMNI.test.setLook(0, pitch)
     OMNI.wait(1)
 
@@ -101,7 +104,11 @@ local function sampleDirection(pitch)
         terrainDraws = terrainDraws / samples,
         terrainUniforms = terrainUniforms / samples,
         findVisibleMs = findVisibleMs / samples,
-        terrainSubmitCpuMs = terrainSubmitCpuMs / samples
+        terrainSubmitCpuMs = terrainSubmitCpuMs / samples,
+        reusedFrames = OMNI.client.state.visibilityReuseFrames - reuseBefore,
+        synchronousFrames = OMNI.client.state.visibilitySynchronousFrames - synchronousBeforeTurn,
+        builds = OMNI.client.state.visibilityBuilds - buildsBefore,
+        conservativeCandidates = OMNI.client.state.visibilityWorkerCandidates
     }
 end
 
@@ -122,7 +129,9 @@ print("frustum horizon candidates=" .. tostring(horizon.visibilityCandidates) ..
     " draws=" .. tostring(horizon.terrainDraws) ..
     " uniforms=" .. tostring(horizon.terrainUniforms) ..
     " findVisible=" .. tostring(horizon.findVisibleMs) .. "ms" ..
-    " submit=" .. tostring(horizon.terrainSubmitCpuMs) .. "ms")
+    " submit=" .. tostring(horizon.terrainSubmitCpuMs) .. "ms" ..
+    " reuse/sync/builds=" .. tostring(horizon.reusedFrames) .. "/" ..
+    tostring(horizon.synchronousFrames) .. "/" .. tostring(horizon.builds))
 print("frustum down presented=" .. tostring(down.presented) ..
     " solid=" .. tostring(down.solidDraws) ..
     " translucent=" .. tostring(down.translucentDraws) ..
@@ -137,17 +146,19 @@ print("frustum down candidates=" .. tostring(down.visibilityCandidates) ..
     " draws=" .. tostring(down.terrainDraws) ..
     " uniforms=" .. tostring(down.terrainUniforms) ..
     " findVisible=" .. tostring(down.findVisibleMs) .. "ms" ..
-    " submit=" .. tostring(down.terrainSubmitCpuMs) .. "ms")
+    " submit=" .. tostring(down.terrainSubmitCpuMs) .. "ms" ..
+    " reuse/sync/builds=" .. tostring(down.reusedFrames) .. "/" ..
+    tostring(down.synchronousFrames) .. "/" .. tostring(down.builds))
 
 OMNI.test.dumpTerrain("frustum-down")
 -- Presented-section count includes the conservative safety-ring rescue and therefore is not
 -- expected to be monotonic with GPU cost yet. This guard proves camera direction reaches terrain
 -- selection; the printed frame/draw values are the benchmark used to guide the spatial-culler
 -- follow-up without imposing machine-specific timing thresholds in CI.
-local presentedDelta = math.abs(down.presented - horizon.presented)
-assert(presentedDelta >= math.max(1, horizon.presented * 0.05),
-    "camera direction did not materially change terrain selection: horizon=" ..
-    tostring(horizon.presented) .. " down=" .. tostring(down.presented))
+local solidLayerDelta = math.abs(down.presentedSolid - horizon.presentedSolid)
+assert(solidLayerDelta >= math.max(1, horizon.presentedSolid * 0.05),
+    "camera direction did not materially change drawable terrain selection: horizon=" ..
+    tostring(horizon.presentedSolid) .. " down=" .. tostring(down.presentedSolid))
 assert(horizon.frameTime > 0 and down.frameTime > 0, "directional frame timing did not advance")
 for name, sample in pairs({ horizon = horizon, down = down }) do
     assert(sample.visibilityCandidates > 0, name .. " visibility candidates did not advance")
@@ -166,7 +177,13 @@ for name, sample in pairs({ horizon = horizon, down = down }) do
         tostring(sample.presentedSolid + sample.presentedTranslucent))
     assert(sample.findVisibleMs > 0 and sample.terrainSubmitCpuMs > 0,
         name .. " presentation timing did not advance")
+    assert(sample.reusedFrames > 0,
+        name .. " never reused an asynchronous visibility result")
+    assert(sample.conservativeCandidates > 0,
+        name .. " asynchronous visibility result had no conservative candidates")
 end
+assert(down.synchronousFrames > 0,
+    "camera-class change did not invalidate visibility reuse before rebuilding")
 assert(math.abs(OMNI.client.state.playerX - playerX) < 0.01 and
     math.abs(OMNI.client.state.playerY - playerY) < 0.01 and
     math.abs(OMNI.client.state.playerZ - playerZ) < 0.01,

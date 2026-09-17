@@ -25,7 +25,11 @@ print("frame-profiler forward frameMs=" .. tostring(OMNI.client.state.frameTimeM
     " candidates=" .. tostring(OMNI.client.state.visibilityCandidates) ..
     " presented=" .. tostring(OMNI.client.state.presentedMeshCount) ..
     " findVisibleMs=" .. tostring(OMNI.client.state.findVisibleMs) ..
-    " submitMs=" .. tostring(OMNI.client.state.terrainSubmitCpuMs))
+    " submitMs=" .. tostring(OMNI.client.state.terrainSubmitCpuMs) ..
+    " visibilityReuse=" .. tostring(OMNI.client.state.visibilityReuseFrames) ..
+    " visibilitySync=" .. tostring(OMNI.client.state.visibilitySynchronousFrames) ..
+    " visibilityBuilds=" .. tostring(OMNI.client.state.visibilityBuilds) ..
+    " visibilityCancelled=" .. tostring(OMNI.client.state.visibilityBuildCancellations))
 OMNI.test.dumpProfiler("distance32-forward")
 
 OMNI.test.setLook(0, 90)
@@ -36,7 +40,11 @@ print("frame-profiler down frameMs=" .. tostring(OMNI.client.state.frameTimeMs) 
     " candidates=" .. tostring(OMNI.client.state.visibilityCandidates) ..
     " presented=" .. tostring(OMNI.client.state.presentedMeshCount) ..
     " findVisibleMs=" .. tostring(OMNI.client.state.findVisibleMs) ..
-    " submitMs=" .. tostring(OMNI.client.state.terrainSubmitCpuMs))
+    " submitMs=" .. tostring(OMNI.client.state.terrainSubmitCpuMs) ..
+    " visibilityReuse=" .. tostring(OMNI.client.state.visibilityReuseFrames) ..
+    " visibilitySync=" .. tostring(OMNI.client.state.visibilitySynchronousFrames) ..
+    " visibilityBuilds=" .. tostring(OMNI.client.state.visibilityBuilds) ..
+    " visibilityCancelled=" .. tostring(OMNI.client.state.visibilityBuildCancellations))
 OMNI.test.dumpProfiler("distance32-down")
 
 assert(OMNI.client.state.webGpuErrorCount == 0, "WebGPU validation failed")

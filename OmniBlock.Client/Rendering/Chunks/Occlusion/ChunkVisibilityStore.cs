@@ -3,7 +3,7 @@ using Silk.NET.Maths;
 
 namespace OmniBlock.Client.Rendering.Chunks.Occlusion;
 
-public struct ChunkVisibilityStore
+public struct ChunkVisibilityStore : IEquatable<ChunkVisibilityStore>
 {
     private long _data;
 
@@ -11,6 +11,14 @@ public struct ChunkVisibilityStore
     public void SetVisible(ChunkDirection from, ChunkDirection to) => _data |= 1L << GetBit(from, to);
 
     public readonly ChunkDirectionMask GetVisibleFrom(ChunkDirectionMask incoming, Vector3D<double> viewPos, SubChunkRenderer renderer)
+        => GetVisibleFrom(incoming);
+
+    /// <summary>
+    ///     Resolves immutable portal connectivity without requiring a live renderer. Visibility
+    ///     snapshots use this overload on worker threads; camera-relative rejection deliberately
+    ///     remains absent because off-axis rays can cross any compiled open face.
+    /// </summary>
+    public readonly ChunkDirectionMask GetVisibleFrom(ChunkDirectionMask incoming)
     {
         if (incoming == ChunkDirectionMask.None)
             return FoldOutgoing(_data);
@@ -20,6 +28,17 @@ public struct ChunkVisibilityStore
         var mask = CreateMask((int)incoming);
         return FoldOutgoing(_data & mask);
     }
+
+    public readonly bool Equals(ChunkVisibilityStore other) => _data == other._data;
+
+    public override readonly bool Equals(object? obj) =>
+        obj is ChunkVisibilityStore other && Equals(other);
+
+    public override readonly int GetHashCode() => _data.GetHashCode();
+
+    public static bool operator ==(ChunkVisibilityStore left, ChunkVisibilityStore right) => left.Equals(right);
+
+    public static bool operator !=(ChunkVisibilityStore left, ChunkVisibilityStore right) => !left.Equals(right);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int GetBit(ChunkDirection from, ChunkDirection to) => ((int)from << 3) | (int)to;

@@ -16,6 +16,9 @@ public struct ChunkRenderParams
     public float PartialTicks;
     public float DeltaTime;
     public float VerticalFovDegrees;
+    public float ViewYawDegrees;
+    public float ViewPitchDegrees;
+    public int CameraMode;
     public int ViewportHeight;
     public bool ChunkFade;
     public bool RenderOccluded;

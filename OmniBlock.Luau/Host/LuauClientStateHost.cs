@@ -46,6 +46,13 @@ public static unsafe class LuauClientStateHost
                                             if key == "residentSolidLayerCount" then return __ClientState.residentSolidLayerCount() end
                                             if key == "residentTranslucentLayerCount" then return __ClientState.residentTranslucentLayerCount() end
                                             if key == "visibilityCandidates" then return __ClientState.visibilityCandidates() end
+                                            if key == "visibilityReuseFrames" then return __ClientState.visibilityReuseFrames() end
+                                            if key == "visibilitySynchronousFrames" then return __ClientState.visibilitySynchronousFrames() end
+                                            if key == "visibilityBuilds" then return __ClientState.visibilityBuilds() end
+                                            if key == "visibilityBuildCancellations" then return __ClientState.visibilityBuildCancellations() end
+                                            if key == "visibilityStaleResults" then return __ClientState.visibilityStaleResults() end
+                                            if key == "visibilityBuildInFlight" then return __ClientState.visibilityBuildInFlight() end
+                                            if key == "visibilityWorkerCandidates" then return __ClientState.visibilityWorkerCandidates() end
                                             if key == "frustumTests" then return __ClientState.frustumTests() end
                                             if key == "portalVisited" then return __ClientState.portalVisited() end
                                             if key == "safetyRescued" then return __ClientState.safetyRescued() end
@@ -185,6 +192,13 @@ public static unsafe class LuauClientStateHost
     public static Func<double>? ResidentSolidLayerCount;
     public static Func<double>? ResidentTranslucentLayerCount;
     public static Func<double>? VisibilityCandidates;
+    public static Func<double>? VisibilityReuseFrames;
+    public static Func<double>? VisibilitySynchronousFrames;
+    public static Func<double>? VisibilityBuilds;
+    public static Func<double>? VisibilityBuildCancellations;
+    public static Func<double>? VisibilityStaleResults;
+    public static Func<double>? VisibilityBuildInFlight;
+    public static Func<double>? VisibilityWorkerCandidates;
     public static Func<double>? FrustumTests;
     public static Func<double>? PortalVisited;
     public static Func<double>? SafetyRescued;
@@ -212,7 +226,7 @@ public static unsafe class LuauClientStateHost
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 61);
+        LuauNative.lua_createtable(l, 0, 68);
         Add(l, "worldLoaded", &WorldLoadedClosure);
         Add(l, "playerReady", &PlayerReadyClosure);
         Add(l, "worldId", &WorldIdClosure);
@@ -249,6 +263,13 @@ public static unsafe class LuauClientStateHost
         Add(l, "residentSolidLayerCount", &ResidentSolidLayerCountClosure);
         Add(l, "residentTranslucentLayerCount", &ResidentTranslucentLayerCountClosure);
         Add(l, "visibilityCandidates", &VisibilityCandidatesClosure);
+        Add(l, "visibilityReuseFrames", &VisibilityReuseFramesClosure);
+        Add(l, "visibilitySynchronousFrames", &VisibilitySynchronousFramesClosure);
+        Add(l, "visibilityBuilds", &VisibilityBuildsClosure);
+        Add(l, "visibilityBuildCancellations", &VisibilityBuildCancellationsClosure);
+        Add(l, "visibilityStaleResults", &VisibilityStaleResultsClosure);
+        Add(l, "visibilityBuildInFlight", &VisibilityBuildInFlightClosure);
+        Add(l, "visibilityWorkerCandidates", &VisibilityWorkerCandidatesClosure);
         Add(l, "frustumTests", &FrustumTestsClosure);
         Add(l, "portalVisited", &PortalVisitedClosure);
         Add(l, "safetyRescued", &SafetyRescuedClosure);
@@ -448,6 +469,27 @@ public static unsafe class LuauClientStateHost
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int VisibilityCandidatesClosure(IntPtr l) => PushNumber(l, VisibilityCandidates);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int VisibilityReuseFramesClosure(IntPtr l) => PushNumber(l, VisibilityReuseFrames);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int VisibilitySynchronousFramesClosure(IntPtr l) => PushNumber(l, VisibilitySynchronousFrames);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int VisibilityBuildsClosure(IntPtr l) => PushNumber(l, VisibilityBuilds);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int VisibilityBuildCancellationsClosure(IntPtr l) => PushNumber(l, VisibilityBuildCancellations);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int VisibilityStaleResultsClosure(IntPtr l) => PushNumber(l, VisibilityStaleResults);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int VisibilityBuildInFlightClosure(IntPtr l) => PushNumber(l, VisibilityBuildInFlight);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int VisibilityWorkerCandidatesClosure(IntPtr l) => PushNumber(l, VisibilityWorkerCandidates);
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int FrustumTestsClosure(IntPtr l) => PushNumber(l, FrustumTests);

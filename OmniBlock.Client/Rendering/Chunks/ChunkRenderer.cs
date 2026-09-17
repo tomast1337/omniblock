@@ -20,6 +20,7 @@ namespace OmniBlock.Client.Rendering.Chunks;
 
 public class ChunkRenderer : IChunkVisibilityVisitor
 {
+    private static long s_nextVisibilityWorldGeneration;
     private const int MaxRenderDistance = 32 + 1;
     private const int MaxMeshWorkers = 8;
     internal const int MeshSafetyRingRadius = 3;
@@ -75,6 +76,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly List<SubChunkRenderer> _occludedRenderersBuffer = [];
     private readonly List<SubChunkRenderer> _outsideRetentionRenderers = [];
     private readonly SectionVisibilityGraph _visibilityGraph = new();
+    private const int MaxVisibilityGraphPatches = 4096;
+    private readonly long _visibilityWorldGeneration =
+        Interlocked.Increment(ref s_nextVisibilityWorldGeneration);
     private readonly GameOptions _options;
     private readonly Dictionary<Vector3D<int>, SectionRenderState> _sections = [];
     private readonly ResidentSectionSpatialIndex _residentSpatialIndex = new();
@@ -82,6 +86,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     // Iteration index only. SectionRenderState remains the residency authority; excluding
     // scheduling-only states keeps per-frame culling independent of background queue size.
     private readonly HashSet<SectionRenderState> _residentSections = [];
+    private readonly Dictionary<Vector3D<int>, VisibilityGraphMutation> _visibilityGraphMutations = [];
+    private readonly HashSet<Vector3D<int>> _visibilityAppliedPositions = [];
     // Boundary arrivals are cheap invalidations until admitted. Keeping only section keys here
     // coalesces repeated neighbor notifications without allocating snapshots or worker jobs.
     private readonly Queue<Vector3D<int>> _deferredStreamingBoundaries = [];
@@ -139,6 +145,21 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private int _currentIndex;
     private int _frameIndex;
     private long _lastPrepareFrameAt;
+    private long _visibilityGraphEpoch = 1;
+    private int _visibilityLastGraphMutationFrame;
+    private long _visibilityLastSnapshotAt;
+    private CancellationTokenSource? _visibilityBuildCancellation;
+    private Task<SectionVisibilityBuildResult>? _visibilityBuildTask;
+    private SectionVisibilityBuildResult? _activeVisibilityResult;
+    private VisibilityViewKey? _pendingVisibilityView;
+    private long _visibilityReuseFrames;
+    private long _visibilitySynchronousFrames;
+    private long _visibilityBuilds;
+    private long _visibilityBuildCancellations;
+    private long _visibilityStaleResults;
+    private long _visibilityPatchedFrames;
+    private double _visibilityWorkerMs;
+    private double _visibilitySnapshotMs;
     private ICuller? _lastCamera;
     private int _lastRenderDistance;
     private Vector3D<int>? _lastRequestRankCenter;
@@ -377,6 +398,19 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     internal int SolidDrawsLastFrame => _solidDrawsLastFrame;
     internal int TranslucentDrawsLastFrame => _translucentDrawsLastFrame;
     internal ChunkPresentationProfileSnapshot PresentationProfile => _presentationProfile;
+    internal VisibilityReuseProfileSnapshot VisibilityReuseProfile => new(
+        _visibilityGraphEpoch,
+        _visibilityReuseFrames,
+        _visibilitySynchronousFrames,
+        _visibilityBuilds,
+        _visibilityBuildCancellations,
+        _visibilityStaleResults,
+        _visibilityPatchedFrames,
+        _visibilityBuildTask != null,
+        _activeVisibilityResult?.ConservativeCandidates.Length ?? 0,
+        _visibilityGraphMutations.Count,
+        _visibilitySnapshotMs,
+        _visibilityWorkerMs);
     internal TerrainGpuArenaSnapshot TerrainGpuArenaProfile =>
         _terrainGpuArenas?.Snapshot() ?? default;
 
@@ -492,6 +526,19 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         text.Append("portalDuplicateReaches\t").Append(presentation.PortalDuplicateReaches).AppendLine();
         text.Append("portalSuccessfulReaches\t").Append(presentation.PortalSuccessfulReaches).AppendLine();
         text.Append("portalMarginCacheHits\t").Append(presentation.PortalMarginCacheHits).AppendLine();
+        var visibilityReuse = VisibilityReuseProfile;
+        text.Append("visibilityGraphEpoch\t").Append(visibilityReuse.GraphEpoch).AppendLine();
+        text.Append("visibilityReuseFrames\t").Append(visibilityReuse.ReusedFrames).AppendLine();
+        text.Append("visibilitySynchronousFrames\t").Append(visibilityReuse.SynchronousFrames).AppendLine();
+        text.Append("visibilityBuilds\t").Append(visibilityReuse.Builds).AppendLine();
+        text.Append("visibilityBuildCancellations\t").Append(visibilityReuse.Cancellations).AppendLine();
+        text.Append("visibilityStaleResults\t").Append(visibilityReuse.StaleResults).AppendLine();
+        text.Append("visibilityPatchedFrames\t").Append(visibilityReuse.PatchedFrames).AppendLine();
+        text.Append("visibilityBuildInFlight\t").Append(visibilityReuse.BuildInFlight ? 1 : 0).AppendLine();
+        text.Append("visibilityConservativeCandidates\t").Append(visibilityReuse.ConservativeCandidates).AppendLine();
+        text.Append("visibilityGraphPatches\t").Append(visibilityReuse.GraphPatches).AppendLine();
+        text.Append("visibilitySnapshotMs\t").Append(visibilityReuse.SnapshotMilliseconds.ToString("F3")).AppendLine();
+        text.Append("visibilityWorkerMs\t").Append(visibilityReuse.WorkerMilliseconds.ToString("F3")).AppendLine();
         text.Append("safetyRescued\t").Append(presentation.SafetyRescued).AppendLine();
         text.Append("incompleteAdjacencyRescued\t").Append(presentation.IncompleteAdjacencyRescued).AppendLine();
         text.Append("newPresentationRescued\t").Append(presentation.NewPresentationRescued).AppendLine();
@@ -683,6 +730,19 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         Counter("portalDuplicateReaches", profile.PortalDuplicateReaches);
         Counter("portalSuccessfulReaches", profile.PortalSuccessfulReaches);
         Counter("portalMarginCacheHits", profile.PortalMarginCacheHits);
+        var visibilityReuse = VisibilityReuseProfile;
+        Counter("visibilityGraphEpoch", visibilityReuse.GraphEpoch);
+        Counter("visibilityReuseFrames", visibilityReuse.ReusedFrames);
+        Counter("visibilitySynchronousFrames", visibilityReuse.SynchronousFrames);
+        Counter("visibilityBuilds", visibilityReuse.Builds);
+        Counter("visibilityBuildCancellations", visibilityReuse.Cancellations);
+        Counter("visibilityStaleResults", visibilityReuse.StaleResults);
+        Counter("visibilityPatchedFrames", visibilityReuse.PatchedFrames);
+        Counter("visibilityBuildInFlight", visibilityReuse.BuildInFlight ? 1 : 0);
+        Counter("visibilityConservativeCandidates", visibilityReuse.ConservativeCandidates);
+        Counter("visibilityGraphPatches", visibilityReuse.GraphPatches);
+        Value("visibilitySnapshotMs", visibilityReuse.SnapshotMilliseconds);
+        Value("visibilityWorkerMs", visibilityReuse.WorkerMilliseconds);
         Counter("safetyRescued", profile.SafetyRescued);
         Counter("presentedSections", profile.PresentedSections);
         Counter("presentedSolidLayers", profile.PresentedSolidLayers);
@@ -841,34 +901,48 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
 
         float renderDistWorld = renderParams.RenderDistance * SubChunkRenderer.Size;
+        var visibilityView = VisibilityViewKey.Create(
+            cameraChunkPos,
+            renderParams.ViewPos,
+            renderParams.ViewYawDegrees,
+            renderParams.ViewPitchDegrees,
+            renderParams.CameraMode,
+            renderParams.Projection,
+            renderParams.RenderDistance,
+            UseOcclusionCulling);
 
         var findVisibleAt = Stopwatch.GetTimestamp();
         using (Profiler.Begin("FindVisible"))
         {
-            var spatial = _residentSpatialIndex.Query(
-                renderParams.Camera, renderParams.ViewPos, renderDistWorld, _spatialCandidates,
-                orderNearToFar: false);
-            _spatialQueryThisFrame = spatial;
-            Profiler.Record("SpatialCull", spatial.CullMs);
-            Profiler.Record("CandidateSort", spatial.SortMs);
-            var portalStarted = Stopwatch.GetTimestamp();
-            var visibility = _visibilityGraph.FindVisible(
-                this,
-                _spatialCandidates,
-                cameraState?.Renderer,
-                renderParams.ViewPos,
-                renderParams.Camera,
-                renderDistWorld,
-                UseOcclusionCulling,
-                _frameIndex,
-                candidatesKnownInFrustum: true
-            );
-            _portalTraversalMsThisFrame = Stopwatch.GetElapsedTime(portalStarted).TotalMilliseconds;
-            Profiler.Record("PortalTraversal", _portalTraversalMsThisFrame);
-            _visibilityThisFrame = visibility with
+            PumpVisibilityBuild();
+            if (!renderParams.RenderOccluded && TryApplyVisibilityResult(
+                    visibilityView,
+                    renderParams.ViewPos,
+                    renderParams.Camera,
+                    renderDistWorld))
             {
-                FrustumTests = visibility.FrustumTests + spatial.FrustumTests
-            };
+                _visibilityReuseFrames++;
+                if (_activeVisibilityResult?.GraphEpoch != _visibilityGraphEpoch)
+                    ScheduleVisibilityBuild(
+                        visibilityView,
+                        cameraState?.Renderer?.Position,
+                        renderParams.ViewPos,
+                        renderParams.Camera);
+            }
+            else
+            {
+                _visibilitySynchronousFrames++;
+                RunSynchronousVisibility(
+                    renderParams.ViewPos,
+                    renderParams.Camera,
+                    renderDistWorld,
+                    cameraState?.Renderer);
+                ScheduleVisibilityBuild(
+                    visibilityView,
+                    cameraState?.Renderer?.Position,
+                    renderParams.ViewPos,
+                    renderParams.Camera);
+            }
         }
         _findVisibleMsThisFrame = Stopwatch.GetElapsedTime(findVisibleAt).TotalMilliseconds;
         ChunksInFrustum = _visibilityThisFrame.FrustumCandidates;
@@ -931,6 +1005,269 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _presentedSolidLayersThisFrame = _solidRenderers.Count;
         _presentedTranslucentLayersThisFrame = _translucentRenderers.Count;
         TranslucentMeshes = _translucentRenderers.Count;
+    }
+
+    private void RunSynchronousVisibility(
+        Vector3D<double> viewPosition,
+        ICuller camera,
+        float renderDistance,
+        SubChunkRenderer? cameraRenderer)
+    {
+        var spatial = _residentSpatialIndex.Query(
+            camera, viewPosition, renderDistance, _spatialCandidates,
+            orderNearToFar: false);
+        _spatialQueryThisFrame = spatial;
+        Profiler.Record("SpatialCull", spatial.CullMs);
+        Profiler.Record("CandidateSort", spatial.SortMs);
+        var portalStarted = Stopwatch.GetTimestamp();
+        var visibility = _visibilityGraph.FindVisible(
+            this,
+            _spatialCandidates,
+            cameraRenderer,
+            viewPosition,
+            camera,
+            renderDistance,
+            UseOcclusionCulling,
+            _frameIndex,
+            candidatesKnownInFrustum: true);
+        _portalTraversalMsThisFrame = Stopwatch.GetElapsedTime(portalStarted).TotalMilliseconds;
+        Profiler.Record("PortalTraversal", _portalTraversalMsThisFrame);
+        _visibilityThisFrame = visibility with
+        {
+            FrustumTests = visibility.FrustumTests + spatial.FrustumTests
+        };
+    }
+
+    private bool TryApplyVisibilityResult(
+        VisibilityViewKey view,
+        Vector3D<double> viewPosition,
+        ICuller camera,
+        float renderDistance)
+    {
+        var result = _activeVisibilityResult;
+        if (result == null ||
+            result.WorldGeneration != _visibilityWorldGeneration ||
+            result.View != view)
+            return false;
+
+        var currentGraph = result.GraphEpoch == _visibilityGraphEpoch;
+        var graphPatchCount = 0;
+        var portalGraphChanged = false;
+        if (!currentGraph)
+        {
+            foreach (var mutation in _visibilityGraphMutations)
+            {
+                if (mutation.Value.Epoch <= result.GraphEpoch) continue;
+                if (++graphPatchCount > MaxVisibilityGraphPatches) return false;
+                portalGraphChanged |= mutation.Value.PortalChanged;
+            }
+        }
+
+        // Validate the complete identity set before publishing any part of it to this frame. A
+        // mismatch should be impossible at an equal graph epoch. Older graph results deliberately
+        // skip replaced/evicted identities and add their live replacements below.
+        if (currentGraph)
+        {
+            foreach (var candidate in result.ConservativeCandidates)
+            {
+                var identity = candidate.Identity;
+                if (!_sections.TryGetValue(identity.Position, out var state) ||
+                    state.LifetimeId != identity.LifetimeId ||
+                    state.Renderer is not { } renderer ||
+                    renderer.PresentedEpoch != identity.PresentationEpoch)
+                {
+                    _activeVisibilityResult = null;
+                    _visibilityStaleResults++;
+                    return false;
+                }
+            }
+        }
+
+        var applyStarted = Stopwatch.GetTimestamp();
+        _spatialCandidates.Clear();
+        _visibilityAppliedPositions.Clear();
+        var exactTests = 0;
+        var exactCandidates = 0;
+        var outsideDistance = 0;
+        foreach (var candidate in result.ConservativeCandidates)
+        {
+            var identity = candidate.Identity;
+            if (!_sections.TryGetValue(identity.Position, out var state) ||
+                state.LifetimeId != identity.LifetimeId ||
+                state.Renderer is not { } renderer ||
+                renderer.PresentedEpoch != identity.PresentationEpoch)
+                continue;
+            exactTests++;
+            if (!camera.IsBoundingBoxInFrustum(renderer.BoundingBox)) continue;
+            exactCandidates++;
+            if (_visibilityAppliedPositions.Add(identity.Position)) _spatialCandidates.Add(renderer);
+            if (!renderer.IsWithinRenderDistance(viewPosition, renderDistance))
+            {
+                outsideDistance++;
+                continue;
+            }
+
+            // A portal-connectivity change can expose any older candidate behind it. Ordinary
+            // presentation installs retain the prior traversal and patch only changed sections.
+            if (candidate.PortalVisible || portalGraphChanged)
+            {
+                renderer.LastVisibleFrame = _frameIndex;
+                Visit(renderer);
+            }
+        }
+
+        if (!currentGraph)
+        {
+            _visibilityPatchedFrames++;
+            foreach (var mutation in _visibilityGraphMutations)
+            {
+                if (mutation.Value.Epoch <= result.GraphEpoch ||
+                    !_sections.TryGetValue(mutation.Key, out var state) ||
+                    state.Renderer is not { } renderer ||
+                    !_visibilityAppliedPositions.Add(mutation.Key))
+                    continue;
+
+                exactTests++;
+                if (!camera.IsBoundingBoxInFrustum(renderer.BoundingBox)) continue;
+                exactCandidates++;
+                _spatialCandidates.Add(renderer);
+                if (!renderer.IsWithinRenderDistance(viewPosition, renderDistance))
+                {
+                    outsideDistance++;
+                    continue;
+                }
+
+                renderer.LastVisibleFrame = _frameIndex;
+                Visit(renderer);
+            }
+        }
+
+        var applyMs = Stopwatch.GetElapsedTime(applyStarted).TotalMilliseconds;
+        _spatialQueryThisFrame = new SpatialQueryDiagnostics(
+            0,
+            0,
+            exactTests,
+            exactCandidates,
+            outsideDistance,
+            0,
+            applyMs,
+            0);
+        _portalTraversalMsThisFrame = 0;
+        Profiler.Record("SpatialCull", applyMs);
+        Profiler.Record("CandidateSort", 0);
+        Profiler.Record("PortalTraversal", 0);
+        _visibilityThisFrame = result.Diagnostics with
+        {
+            ResidentCandidates = result.ConservativeCandidates.Length,
+            FrustumTests = exactTests,
+            FrustumCandidates = exactCandidates
+        };
+        return true;
+    }
+
+    private void ScheduleVisibilityBuild(
+        VisibilityViewKey view,
+        Vector3D<int>? startPosition,
+        Vector3D<double> viewPosition,
+        ICuller camera)
+    {
+        // Test/custom cullers are not assumed thread-safe. The production culler provides a plane
+        // copy detached from the global compatibility matrices.
+        if (camera is not FrustrumCuller liveFrustum) return;
+
+        // Camera-cell/direction changes and teleports invalidate the worker's conservative view
+        // envelope immediately, independently of graph-refresh throttling.
+        if (_visibilityBuildTask != null)
+        {
+            if (_pendingVisibilityView == view) return;
+            if (_visibilityBuildCancellation is { IsCancellationRequested: false })
+            {
+                _visibilityBuildCancellation.Cancel();
+                _visibilityBuildCancellations++;
+            }
+            return;
+        }
+
+        // Streaming can publish several presentations every frame. Copying a graph that is known
+        // to be invalidated again at EndFrame only adds the full snapshot cost to the synchronous
+        // fallback. Prefer a short mutation-free window, but ongoing streaming must not prevent
+        // an initial or replacement result forever. In that case take at most one snapshot per
+        // second at 60 FPS; graph mutations are conservatively patched until the next result.
+        var graphSettled = _frameIndex - _visibilityLastGraphMutationFrame >= 8;
+        var now = Stopwatch.GetTimestamp();
+        var refreshDue = _visibilityLastSnapshotAt == 0 ||
+                         Stopwatch.GetElapsedTime(_visibilityLastSnapshotAt, now) >= TimeSpan.FromSeconds(1);
+        var hasCoveringResult = _activeVisibilityResult is { } active &&
+                                active.WorldGeneration == _visibilityWorldGeneration &&
+                                active.View == view;
+        if (hasCoveringResult ? !refreshDue : !graphSettled && !refreshDue) return;
+
+        var snapshotStarted = Stopwatch.GetTimestamp();
+        var snapshot = SectionVisibilitySnapshot.Capture(
+            _residentSections,
+            _visibilityWorldGeneration,
+            _visibilityGraphEpoch);
+        _visibilitySnapshotMs = Stopwatch.GetElapsedTime(snapshotStarted).TotalMilliseconds;
+        _visibilityLastSnapshotAt = now;
+        var frustum = liveFrustum.Capture();
+        var cancellation = new CancellationTokenSource();
+        _visibilityBuildCancellation = cancellation;
+        _pendingVisibilityView = view;
+        _visibilityBuilds++;
+        _visibilityBuildTask = Task.Run(
+            () => snapshot.Build(view, startPosition, frustum, viewPosition, cancellation.Token),
+            cancellation.Token);
+    }
+
+    private void PumpVisibilityBuild()
+    {
+        if (_visibilityBuildTask is not { IsCompleted: true } completed) return;
+
+        try
+        {
+            var result = completed.GetAwaiter().GetResult();
+            _visibilityWorkerMs = result.WorkerMilliseconds;
+            if (result.WorldGeneration == _visibilityWorldGeneration)
+            {
+                _activeVisibilityResult = result;
+                // This snapshot includes every mutation through its captured epoch even when a
+                // few newer installs landed while the worker traversed. Retain only those newer
+                // positions as conservative patches; otherwise continuous streaming would make
+                // the per-frame patch scan grow for the lifetime of the world.
+                foreach (var mutation in _visibilityGraphMutations
+                             .Where(mutation => mutation.Value.Epoch <= result.GraphEpoch)
+                             .Select(static mutation => mutation.Key)
+                             .ToArray())
+                    _visibilityGraphMutations.Remove(mutation);
+            }
+            else
+                _visibilityStaleResults++;
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected when the camera class changes or the renderer is disposed. Graph changes
+            // are retained as conservative patches instead of canceling useful worker progress.
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Asynchronous section visibility build failed");
+        }
+        finally
+        {
+            _visibilityBuildCancellation?.Dispose();
+            _visibilityBuildCancellation = null;
+            _visibilityBuildTask = null;
+            _pendingVisibilityView = null;
+        }
+    }
+
+    private void InvalidateVisibilityGraph(Vector3D<int> position, bool portalChanged)
+    {
+        _visibilityGraphEpoch++;
+        _visibilityLastGraphMutationFrame = _frameIndex;
+        _visibilityGraphMutations[position] = new VisibilityGraphMutation(
+            _visibilityGraphEpoch,
+            portalChanged || _visibilityGraphMutations.GetValueOrDefault(position).PortalChanged);
     }
 
     internal static void BuildLayerVisibleLists(
@@ -1015,6 +1352,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                         $"Resident spatial index did not contain evicted section {renderer.Position}.");
 
                 UpdateAdjacency(renderer, false);
+                InvalidateVisibilityGraph(renderer.Position, portalChanged: true);
                 _sections.Remove(renderer.Position);
                 _residentSections.Remove(section);
                 _evictionGraceSections.Remove(section);
@@ -1306,6 +1644,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     _meshLifecycle,
                     mesh.Trace);
 
+                var previousVisibility = section.Renderer?.VisibilityData;
                 var isNewResident = section.Renderer == null;
                 var resident = section.Renderer ?? new SubChunkRenderer(mesh.Pos);
                 if (isNewResident)
@@ -1313,6 +1652,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 try
                 {
                     section.CommitPresentation(resident, presentation);
+                    // Presentation identity always advances. Portal traversal only needs the more
+                    // expensive conservative exposure when compiled connectivity actually changed.
+                    InvalidateVisibilityGraph(
+                        mesh.Pos,
+                        portalChanged: (mesh.DirtyReasons & SectionDirtyReason.BlockChange) != 0 &&
+                                       previousVisibility.HasValue &&
+                                       previousVisibility.Value != presentation.VisibilityData);
                 }
                 catch
                 {
@@ -3516,6 +3862,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     private readonly record struct OpaqueRegionRange(int Start, int End);
 
+    private readonly record struct VisibilityGraphMutation(long Epoch, bool PortalChanged);
+
     private readonly record struct OpaqueRegionCommandKey(
         nint Pipeline,
         nint TextureGroup,
@@ -3737,6 +4085,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     public unsafe void Dispose()
     {
+        _visibilityBuildCancellation?.Cancel();
+        _visibilityBuildCancellation?.Dispose();
+        _visibilityBuildCancellation = null;
+        _visibilityBuildTask = null;
+        _activeVisibilityResult = null;
+        _visibilityGraphMutations.Clear();
+        _visibilityAppliedPositions.Clear();
         _meshGenerator.Dispose();
         _lightEvaluation.Dispose();
         ReleaseAllOpaqueRegionBundles();
