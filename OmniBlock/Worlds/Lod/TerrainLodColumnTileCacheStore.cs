@@ -8,6 +8,7 @@ public enum TerrainLodColumnTileCacheReadStatus
 {
     Hit,
     Missing,
+    StaleTerrain,
     Incompatible,
     Corrupt
 }
@@ -31,6 +32,7 @@ public sealed record TerrainLodColumnTileCacheSnapshot(
     int EntryCount,
     long ReadHits,
     long ReadMisses,
+    long StaleReads,
     long IncompatibleReads,
     long CorruptReads,
     long Writes,
@@ -68,6 +70,7 @@ public sealed class TerrainLodColumnTileCacheStore
     private int _entryCount;
     private long _readHits;
     private long _readMisses;
+    private long _staleReads;
     private long _incompatibleReads;
     private long _corruptReads;
     private long _writes;
@@ -107,8 +110,18 @@ public sealed class TerrainLodColumnTileCacheStore
         InitializeUsage();
     }
 
-    public TerrainLodColumnTileCacheReadResult Read(TerrainLodTileKey key)
+    public TerrainLodColumnTileCacheReadResult Read(
+        TerrainLodTileKey key,
+        long? expectedLeafTerrainRevision = null,
+        string? expectedLeafSourceFingerprint = null)
     {
+        if (expectedLeafTerrainRevision.HasValue !=
+            (expectedLeafSourceFingerprint is not null))
+            throw new ArgumentException(
+                "Expected leaf revision and source fingerprint must be supplied together.");
+        if (key.Level != 0 && expectedLeafTerrainRevision.HasValue)
+            throw new ArgumentException(
+                "Source validation applies only to level-zero column tiles.");
         lock (_gate)
         {
             var path = GetRecordPath(key);
@@ -128,7 +141,21 @@ public sealed class TerrainLodColumnTileCacheStore
                     throw new InvalidDataException(
                         $"Column-tile record length {info.Length} is outside the supported range.");
                 var result = Deserialize(File.ReadAllBytes(path), key);
+                if (result.Status == TerrainLodColumnTileCacheReadStatus.Hit &&
+                    expectedLeafTerrainRevision is { } revision)
+                {
+                    var cachedTile = result.Tile!;
+                    if (!cachedTile.MatchesLeafSource(
+                            revision, expectedLeafSourceFingerprint!))
+                        result = new TerrainLodColumnTileCacheReadResult(
+                            TerrainLodColumnTileCacheReadStatus.StaleTerrain,
+                            null,
+                            $"Cached leaf source {cachedTile.InputHashes[0]} does not match " +
+                            $"revision {revision} and source {expectedLeafSourceFingerprint}.");
+                }
                 if (result.Status == TerrainLodColumnTileCacheReadStatus.Hit) _readHits++;
+                else if (result.Status == TerrainLodColumnTileCacheReadStatus.StaleTerrain)
+                    _staleReads++;
                 else if (result.Status == TerrainLodColumnTileCacheReadStatus.Incompatible)
                     _incompatibleReads++;
                 else
@@ -593,6 +620,7 @@ public sealed class TerrainLodColumnTileCacheStore
             _entryCount,
             _readHits,
             _readMisses,
+            _staleReads,
             _incompatibleReads,
             _corruptReads,
             _writes,

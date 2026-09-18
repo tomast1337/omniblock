@@ -388,6 +388,16 @@ public sealed class TerrainLodColumnTile
     public string CanonicalHash { get; }
     public TerrainLodColumn this[int x, int z] => _columns[Index(x, z)];
 
+    public bool MatchesLeafSource(long terrainRevision, string sourceFingerprint)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceFingerprint);
+        return Key.Level == 0 &&
+               LeafTerrainRevision == terrainRevision &&
+               InputHashes.Count == 1 &&
+               string.Equals(InputHashes[0], LeafInputIdentity(
+                   terrainRevision, sourceFingerprint), StringComparison.Ordinal);
+    }
+
     public static TerrainLodColumnTile BuildLeaf(
         TerrainLodSourceSnapshot source,
         TerrainLodMaterialCatalog materials)
@@ -429,7 +439,7 @@ public sealed class TerrainLodColumnTile
             source.Height,
             columns,
             source.TerrainRevision,
-            [$"{source.TerrainRevision}:{source.SourceFingerprint}"]);
+            [LeafInputIdentity(source.TerrainRevision, source.SourceFingerprint)]);
     }
 
     public static TerrainLodColumnTile BuildParent(
@@ -573,6 +583,9 @@ public sealed class TerrainLodColumnTile
                 $"Terrain LOD column {x},{z} is outside 0..{Width - 1}.");
         return x * Width + z;
     }
+
+    private static string LeafInputIdentity(long terrainRevision, string sourceFingerprint) =>
+        $"{terrainRevision}:{sourceFingerprint}";
 
     private string ComputeCanonicalHash()
     {

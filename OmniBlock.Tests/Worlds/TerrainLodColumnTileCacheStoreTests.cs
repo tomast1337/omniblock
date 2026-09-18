@@ -79,6 +79,32 @@ public sealed class TerrainLodColumnTileCacheStoreTests
     }
 
     [Fact]
+    public void Leaf_cache_hit_requires_matching_revision_and_source_fingerprint()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var expected = LeafWithCave(new TerrainLodTileKey(0, 6, -8), revision: 42);
+            var sourceFingerprint = expected.InputHashes[0][
+                (expected.InputHashes[0].IndexOf(':') + 1)..];
+            var store = Store(root);
+            store.Write(expected);
+
+            Assert.Equal(TerrainLodColumnTileCacheReadStatus.Hit,
+                store.Read(expected.Key, 42, sourceFingerprint).Status);
+            Assert.Equal(TerrainLodColumnTileCacheReadStatus.StaleTerrain,
+                store.Read(expected.Key, 43, sourceFingerprint).Status);
+            Assert.Equal(TerrainLodColumnTileCacheReadStatus.StaleTerrain,
+                store.Read(expected.Key, 42, "different-source").Status);
+            Assert.Equal(2, store.Snapshot().StaleReads);
+        }
+        finally
+        {
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
     public void Parent_built_from_cached_children_matches_parent_built_from_fresh_children()
     {
         var root = CreateTemporaryDirectory();
