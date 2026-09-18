@@ -85,6 +85,59 @@ public sealed class TerrainLodColumnTileTests
     }
 
     [Fact]
+    public void Tint_identity_uses_the_same_deterministic_material_vote_as_geometry()
+    {
+        var lush = Stone with { MapColor = 0x55AA44 };
+        var dry = Stone with { MapColor = 0xAA9944 };
+        var lushColumn = Column(4, new TerrainLodColumnSpan(0, 4, lush, 0, 15));
+        var dryColumn = Column(4, new TerrainLodColumnSpan(0, 4, dry, 0, 15));
+
+        var reduced = TerrainLodColumnReducer.MergeFour(
+            lushColumn, dryColumn, lushColumn, lushColumn);
+
+        Assert.Single(reduced.Spans);
+        Assert.Equal(lush, reduced.Spans[0].Material);
+        Assert.Equal(0x55AA44u, reduced.Spans[0].Material.MapColor);
+    }
+
+    [Fact]
+    public void Liquid_surface_and_air_above_it_survive_parent_reduction()
+    {
+        var shoreline = Column(8,
+            new TerrainLodColumnSpan(0, 4, Stone, 0, 0),
+            new TerrainLodColumnSpan(4, 2, Water, 0, 12),
+            new TerrainLodColumnSpan(6, 2, TerrainLodMaterial.Air, 0, 15));
+
+        var reduced = TerrainLodColumnReducer.MergeFour(
+            shoreline, shoreline, shoreline, shoreline);
+
+        Assert.Equal(3, reduced.Spans.Count);
+        Assert.Equal(TerrainLodGeometryClass.Liquid, reduced.Spans[1].Material.Geometry);
+        Assert.Equal(4, reduced.Spans[1].BottomY);
+        Assert.Equal(6, reduced.Spans[1].TopY);
+        Assert.True(reduced.Spans[2].IsAir);
+    }
+
+    [Fact]
+    public void Overhang_and_ceiling_air_intervals_remain_in_canonical_parent_data()
+    {
+        var ceiling = Column(10,
+            new TerrainLodColumnSpan(0, 2, Stone, 0, 0),
+            new TerrainLodColumnSpan(2, 3, TerrainLodMaterial.Air, 0, 0),
+            new TerrainLodColumnSpan(5, 2, Stone, 0, 0),
+            new TerrainLodColumnSpan(7, 3, TerrainLodMaterial.Air, 0, 0));
+
+        var reduced = TerrainLodColumnReducer.MergeFour(
+            ceiling, ceiling, ceiling, ceiling);
+
+        Assert.Equal(4, reduced.Spans.Count);
+        Assert.True(reduced.Spans[1].IsAir);
+        Assert.Equal(Stone, reduced.Spans[2].Material);
+        Assert.True(reduced.Spans[3].IsAir);
+        Assert.All(reduced.Spans, span => Assert.Equal(0, span.SkyLight));
+    }
+
+    [Fact]
     public void Vertical_budget_collapses_light_bands_before_cave_or_surface_boundaries()
     {
         var source = Column(9,

@@ -356,7 +356,7 @@ public static class TerrainLodVerticalSliceReducer
 /// </summary>
 public sealed class TerrainLodColumnTile
 {
-    private const int SchemaVersion = 1;
+    internal const int SchemaVersion = 1;
     private const int MaximumSamplesPerSide = 256;
     private readonly TerrainLodColumn[] _columns;
 
@@ -505,6 +505,65 @@ public sealed class TerrainLodColumnTile
             var child = children[east | (south << 1)];
             return child[x - east * childWidth, z - south * childWidth];
         }
+    }
+
+    internal static TerrainLodColumnTile FromSerialized(
+        TerrainLodTileKey key,
+        int horizontalSampleLevel,
+        int width,
+        int worldHeight,
+        TerrainLodColumn[] columns,
+        long? leafTerrainRevision,
+        string[] inputHashes,
+        string expectedCanonicalHash)
+    {
+        ArgumentNullException.ThrowIfNull(columns);
+        ArgumentNullException.ThrowIfNull(inputHashes);
+        ArgumentException.ThrowIfNullOrWhiteSpace(expectedCanonicalHash);
+        if (horizontalSampleLevel < 0 || horizontalSampleLevel > key.Level + 4)
+            throw new InvalidDataException(
+                $"Terrain LOD tile {key} has invalid horizontal sample level " +
+                $"{horizontalSampleLevel}.");
+        var footprintBlocks = checked(16L * key.ChunkWidth);
+        var sampleSize = 1L << horizontalSampleLevel;
+        if (footprintBlocks % sampleSize != 0 ||
+            footprintBlocks / sampleSize is <= 0 or > MaximumSamplesPerSide ||
+            width != footprintBlocks / sampleSize)
+            throw new InvalidDataException(
+                $"Terrain LOD tile {key} has width {width} at sample level " +
+                $"{horizontalSampleLevel}; expected {footprintBlocks / sampleSize}.");
+        if (worldHeight <= 0)
+            throw new InvalidDataException("Terrain LOD tile world height must be positive.");
+        if (columns.Length != checked(width * width))
+            throw new InvalidDataException(
+                $"Terrain LOD tile declares {columns.Length} columns; expected {width * width}.");
+        if (columns.Any(column => column is null || column.WorldHeight != worldHeight))
+            throw new InvalidDataException(
+                "Terrain LOD tile columns must be non-null and share its world height.");
+        var expectedInputs = key.Level == 0 ? 1 : 4;
+        if (inputHashes.Length != expectedInputs ||
+            inputHashes.Any(string.IsNullOrWhiteSpace))
+            throw new InvalidDataException(
+                $"Terrain LOD tile {key} has {inputHashes.Length} inputs; expected " +
+                $"{expectedInputs} non-empty identities.");
+        if ((key.Level == 0) != leafTerrainRevision.HasValue)
+            throw new InvalidDataException(
+                "Only level-zero terrain LOD tiles may carry a leaf terrain revision.");
+
+        var tile = new TerrainLodColumnTile(
+            key,
+            horizontalSampleLevel,
+            width,
+            worldHeight,
+            columns.ToArray(),
+            leafTerrainRevision,
+            inputHashes.ToArray());
+        if (!string.Equals(tile.CanonicalHash, expectedCanonicalHash,
+                StringComparison.Ordinal))
+            throw new InvalidDataException(
+                $"Terrain LOD tile hash {tile.CanonicalHash} does not match " +
+                $"{expectedCanonicalHash}.");
+        return tile;
     }
 
     private int Index(int x, int z)
