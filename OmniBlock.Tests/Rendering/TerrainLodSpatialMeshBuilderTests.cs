@@ -26,6 +26,12 @@ public sealed class TerrainLodSpatialMeshBuilderTests
             Assert.Equal(0, page.Vertices.Length % 4);
             Assert.Equal(page.Vertices.Length, page.Lights.Length);
             Assert.Equal(page.TranslucentVertices.Length, page.TranslucentLights.Length);
+            Assert.Equal(page.Vertices.Length / 4, page.SolidRanges.AvailableQuadCount);
+            Assert.Equal(
+                page.TranslucentVertices.Length / 4,
+                page.TranslucentRanges.AvailableQuadCount);
+            Assert.Equal(0, page.SolidRanges.UnassignedQuadCount);
+            Assert.Equal(0, page.TranslucentRanges.UnassignedQuadCount);
         });
     }
 

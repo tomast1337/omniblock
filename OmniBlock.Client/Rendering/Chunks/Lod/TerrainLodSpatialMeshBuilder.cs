@@ -20,8 +20,10 @@ internal sealed record TerrainLodSpatialMeshPage(
     int OriginZ,
     ChunkVertex[] Vertices,
     ChunkLightVertex[] Lights,
+    ChunkDirectionalRanges SolidRanges,
     ChunkVertex[] TranslucentVertices,
-    ChunkLightVertex[] TranslucentLights)
+    ChunkLightVertex[] TranslucentLights,
+    ChunkDirectionalRanges TranslucentRanges)
 {
     public long EstimatedBytes =>
         (long)Vertices.Length * WgpuMesh.ChunkVertexStride +
@@ -145,11 +147,11 @@ internal static class TerrainLodSpatialMeshBuilder
                         Math.Clamp(anchorY, 0, tile.WorldHeight - 1) + 0.5,
                         minZ + sampleSize / 2.0);
                     if (side == Side.Up)
-                        Emit(page, translucent, appearance, shade, light, sampleSize, sampleSize,
+                        Emit(page, translucent, side, appearance, shade, light, sampleSize, sampleSize,
                             (maxX, faceY, maxZ), (maxX, faceY, minZ),
                             (minX, faceY, minZ), (minX, faceY, maxZ));
                     else
-                        Emit(page, translucent, appearance, shade, light, sampleSize, sampleSize,
+                        Emit(page, translucent, side, appearance, shade, light, sampleSize, sampleSize,
                             (minX, faceY, maxZ), (minX, faceY, minZ),
                             (maxX, faceY, minZ), (maxX, faceY, maxZ));
                 }
@@ -200,7 +202,7 @@ internal static class TerrainLodSpatialMeshBuilder
                             switch (side)
                             {
                                 case Side.West:
-                                    Emit(page, translucent, appearance, shade, light,
+                                    Emit(page, translucent, side, appearance, shade, light,
                                         alongEnd - alongStart, height,
                                         (fixedCoordinate, y1, alongStart),
                                         (fixedCoordinate, y0, alongStart),
@@ -208,7 +210,7 @@ internal static class TerrainLodSpatialMeshBuilder
                                         (fixedCoordinate, y1, alongEnd));
                                     break;
                                 case Side.East:
-                                    Emit(page, translucent, appearance, shade, light,
+                                    Emit(page, translucent, side, appearance, shade, light,
                                         alongEnd - alongStart, height,
                                         (fixedCoordinate, y1, alongEnd),
                                         (fixedCoordinate, y0, alongEnd),
@@ -216,7 +218,7 @@ internal static class TerrainLodSpatialMeshBuilder
                                         (fixedCoordinate, y1, alongStart));
                                     break;
                                 case Side.North:
-                                    Emit(page, translucent, appearance, shade, light,
+                                    Emit(page, translucent, side, appearance, shade, light,
                                         alongEnd - alongStart, height,
                                         (alongEnd, y1, fixedCoordinate),
                                         (alongEnd, y0, fixedCoordinate),
@@ -224,7 +226,7 @@ internal static class TerrainLodSpatialMeshBuilder
                                         (alongStart, y1, fixedCoordinate));
                                     break;
                                 case Side.South:
-                                    Emit(page, translucent, appearance, shade, light,
+                                    Emit(page, translucent, side, appearance, shade, light,
                                         alongEnd - alongStart, height,
                                         (alongStart, y1, fixedCoordinate),
                                         (alongStart, y0, fixedCoordinate),
@@ -312,6 +314,7 @@ internal static class TerrainLodSpatialMeshBuilder
     private static void Emit(
         PageBuilder page,
         bool translucent,
+        Side side,
         TerrainLodFaceAppearance appearance,
         float shade,
         ChunkLightVertex light,
@@ -331,7 +334,7 @@ internal static class TerrainLodSpatialMeshBuilder
         {
             var layer = Atlases.Terrain.LayerOfGridIndex(texture);
             var color = TerrainLodMeshBuilder.PackTintedColor(tint, shade);
-            page.Add(translucent, light,
+            page.Add(translucent, side, light,
                 Vertex(a, tileU, 0),
                 Vertex(b, tileU, tileV),
                 Vertex(c, 0, tileV),
@@ -355,10 +358,8 @@ internal static class TerrainLodSpatialMeshBuilder
 
     private sealed class PageBuilder(int originX, int originY, int originZ)
     {
-        private readonly List<ChunkVertex> _solid = [];
-        private readonly List<ChunkLightVertex> _solidLights = [];
-        private readonly List<ChunkVertex> _translucent = [];
-        private readonly List<ChunkLightVertex> _translucentLights = [];
+        private readonly List<Quad>[] _solid = CreateBuckets();
+        private readonly List<Quad>[] _translucent = CreateBuckets();
 
         public int OriginX { get; } = originX;
         public int OriginY { get; } = originY;
@@ -366,24 +367,67 @@ internal static class TerrainLodSpatialMeshBuilder
 
         public void Add(
             bool translucent,
+            Side side,
             ChunkLightVertex light,
             ChunkVertex a,
             ChunkVertex b,
             ChunkVertex c,
             ChunkVertex d)
         {
-            var vertices = translucent ? _translucent : _solid;
-            var lights = translucent ? _translucentLights : _solidLights;
-            vertices.Add(a);
-            vertices.Add(b);
-            vertices.Add(c);
-            vertices.Add(d);
-            for (var index = 0; index < 4; index++) lights.Add(light);
+            var bucket = (int)side;
+            if ((uint)bucket >= 6) throw new ArgumentOutOfRangeException(nameof(side));
+            (translucent ? _translucent : _solid)[bucket].Add(new Quad(a, b, c, d, light));
         }
 
-        public TerrainLodSpatialMeshPage Build(TerrainLodSpatialMeshPageKey key) => new(
-            key, OriginX, OriginY, OriginZ,
-            [.. _solid], [.. _solidLights],
-            [.. _translucent], [.. _translucentLights]);
+        public TerrainLodSpatialMeshPage Build(TerrainLodSpatialMeshPageKey key)
+        {
+            var solid = Flatten(_solid);
+            var translucent = Flatten(_translucent);
+            return new TerrainLodSpatialMeshPage(
+                key, OriginX, OriginY, OriginZ,
+                solid.Vertices, solid.Lights, solid.Ranges,
+                translucent.Vertices, translucent.Lights, translucent.Ranges);
+        }
+
+        private static List<Quad>[] CreateBuckets() =>
+            Enumerable.Range(0, 6).Select(static _ => new List<Quad>()).ToArray();
+
+        private static LayerData Flatten(List<Quad>[] buckets)
+        {
+            List<ChunkVertex> vertices = [];
+            List<ChunkLightVertex> lights = [];
+            Span<ChunkQuadRange> ranges = stackalloc ChunkQuadRange[7];
+            for (var bucket = 0; bucket < buckets.Length; bucket++)
+            {
+                var firstQuad = vertices.Count / 4;
+                foreach (var quad in buckets[bucket])
+                {
+                    vertices.Add(quad.A);
+                    vertices.Add(quad.B);
+                    vertices.Add(quad.C);
+                    vertices.Add(quad.D);
+                    for (var index = 0; index < 4; index++) lights.Add(quad.Light);
+                }
+                ranges[bucket] = new ChunkQuadRange(firstQuad, buckets[bucket].Count);
+            }
+            ranges[6] = new ChunkQuadRange(vertices.Count / 4, 0);
+            return new LayerData(
+                [.. vertices], [.. lights],
+                new ChunkDirectionalRanges(
+                    ranges[0], ranges[1], ranges[2], ranges[3],
+                    ranges[4], ranges[5], ranges[6]));
+        }
+
+        private readonly record struct Quad(
+            ChunkVertex A,
+            ChunkVertex B,
+            ChunkVertex C,
+            ChunkVertex D,
+            ChunkLightVertex Light);
+
+        private readonly record struct LayerData(
+            ChunkVertex[] Vertices,
+            ChunkLightVertex[] Lights,
+            ChunkDirectionalRanges Ranges);
     }
 }
