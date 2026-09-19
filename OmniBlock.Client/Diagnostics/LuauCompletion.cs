@@ -37,6 +37,10 @@ internal sealed partial class LuauCompletion
         ["terrainLodSpatialSubmissionReady", "terrainLodSpatialAuthoritativeTiles",
             "terrainLodSpatialHighestAuthoritativeLevel", "terrainLodSpatialHighestGpuLevel",
             "terrainLodSpatialSolidPages", "terrainLodSpatialTranslucentPages",
+            "terrainLodRemoteCoverageRequired", "terrainLodRemoteCoverageAvailable",
+            "terrainLodRemoteCoverageInFlight", "terrainLodRemoteCoveragePending",
+            "terrainLodRemoteCoverageMissing", "terrainLodRemoteCoverageDeferred",
+            "terrainLodRemoteCoverageComplete",
             "terrainLodIdentityReady", "terrainLodIdentityMismatches",
             "terrainLodIdentityRejectedMessages"];
 

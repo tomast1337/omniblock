@@ -74,7 +74,13 @@ internal readonly record struct ClientTerrainLodSnapshot(
     long RemoteWireBytes,
     long RemotePendingResponses,
     long RemoteMissingResponses,
-    long RemoteDeferredResponses);
+    long RemoteDeferredResponses,
+    int RemoteCoverageRequired,
+    int RemoteCoverageAvailable,
+    int RemoteCoverageInFlight,
+    int RemoteCoveragePending,
+    int RemoteCoverageMissing,
+    int RemoteCoverageDeferred);
 
 internal readonly record struct TerrainLodSpatialSnapshot(
     TerrainLodTileKey Root,
@@ -131,6 +137,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private const int SpatialSeamAdmissionsPerFrame = 8;
     private const int SpatialSeamUploadsPerFrame = 2;
     private const int SpatialPageDrawsPerPass = 256;
+    private const int MaximumRemoteOutstandingRequests = 16;
     private const int OverworldCaveCullCeilingY = 60;
 
     private readonly World _world;
@@ -143,7 +150,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private readonly TerrainLodSpatialPresentationSet<TerrainLodSpatialGpuPresentation>
         _spatialPresentations = new();
     private readonly Dictionary<TerrainLodTileKey, TerrainLodColumnTile> _spatialMeshPending = [];
-    private readonly Dictionary<TerrainLodTileKey, long> _remoteRetryAfterTicks = [];
+    private readonly Dictionary<TerrainLodTileKey, RemoteTileRequestState> _remoteRequestStates = [];
     private readonly HashSet<TerrainLodSpatialSeamSegment> _desiredSpatialSeams = [];
     private readonly Dictionary<TerrainLodSpatialSeamSegment,
         TerrainLodSpatialGpuSeamPresentation> _spatialSeams = [];
@@ -196,6 +203,12 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private long _remotePendingResponses;
     private long _remoteMissingResponses;
     private long _remoteDeferredResponses;
+    private int _remoteCoverageRequired;
+    private int _remoteCoverageAvailable;
+    private int _remoteCoverageInFlight;
+    private int _remoteCoveragePending;
+    private int _remoteCoverageMissing;
+    private int _remoteCoverageDeferred;
     private bool _disposed;
     private ClientTerrainLodSnapshot _snapshot;
     private TerrainLodSpatialSnapshot _spatialSnapshot;
@@ -250,7 +263,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         var publication = _spatialHierarchy.PublishCached(tile);
         if (publication != TerrainLodTilePublicationResult.IgnoredCurrent)
             QueueSpatialMesh(tile);
-        _remoteRetryAfterTicks.Remove(tile.Key);
+        _remoteRequestStates.Remove(tile.Key);
         _remoteTiles++;
         _remoteWireBytes += Math.Max(0, wireBytes);
     }
@@ -264,15 +277,18 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         {
             case TerrainLodTileStatus.Pending:
                 _remotePendingResponses++;
-                _remoteRetryAfterTicks[key] = _tick + 8;
+                _remoteRequestStates[key] = new RemoteTileRequestState(
+                    _tick + 8, RemoteTileRequestDisposition.Pending);
                 break;
             case TerrainLodTileStatus.Missing:
                 _remoteMissingResponses++;
-                _remoteRetryAfterTicks[key] = _tick + 200;
+                _remoteRequestStates[key] = new RemoteTileRequestState(
+                    _tick + 200, RemoteTileRequestDisposition.Missing);
                 break;
             case TerrainLodTileStatus.Deferred:
                 _remoteDeferredResponses++;
-                _remoteRetryAfterTicks[key] = _tick + 4;
+                _remoteRequestStates[key] = new RemoteTileRequestState(
+                    _tick + 4, RemoteTileRequestDisposition.Deferred);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(status), status, null);
@@ -286,41 +302,178 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         int maximumRequests)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (maximumRequests <= 0 || horizonDistanceChunks <= nearDistanceChunks ||
-            (_tick & 3) != 0) return [];
         var cameraX = viewPosition.X / 16.0;
         var cameraZ = viewPosition.Z / 16.0;
-        List<TerrainLodTileKey> candidates = [];
-        var levelCount = _spatialPolicy.MaximumSpatialLevel - MinimumSpatialGpuLevel + 1;
-        var level = _spatialPolicy.MaximumSpatialLevel - (int)((_tick >> 2) % levelCount);
-        var width = 1 << level;
-        var minX = (int)Math.Floor((cameraX - horizonDistanceChunks) / width);
-        var maxX = (int)Math.Floor((cameraX + horizonDistanceChunks) / width);
-        var minZ = (int)Math.Floor((cameraZ - horizonDistanceChunks) / width);
-        var maxZ = (int)Math.Floor((cameraZ + horizonDistanceChunks) / width);
-        for (var x = minX; x <= maxX; x++)
-        for (var z = minZ; z <= maxZ; z++)
+        var coverageRootLevel = Math.Max(
+            MinimumSpatialGpuLevel,
+            _spatialPolicy.DesiredSpatialLevel(horizonDistanceChunks));
+        var requiredTiles = TerrainLodRemoteCoveragePlanner.RequiredTiles(
+            cameraX, cameraZ, nearDistanceChunks, horizonDistanceChunks,
+            coverageRootLevel, MinimumSpatialGpuLevel);
+        UpdateRemoteCoverage(requiredTiles, cameraX, cameraZ, horizonDistanceChunks);
+        if (maximumRequests <= 0 || requiredTiles.Length == 0 || (_tick & 3) != 0)
+            return [];
+
+        var availableCapacity = MaximumRemoteOutstandingRequests -
+            _remoteRequestStates.Values.Count(state =>
+                state.Disposition == RemoteTileRequestDisposition.InFlight &&
+                state.RetryAfterTick > _tick);
+        if (availableCapacity <= 0) return [];
+
+        var requestCount = Math.Min(maximumRequests, availableCapacity);
+        List<TerrainLodTileKey> selected = [];
+        // The adaptive partition defines the no-hole contract and always consumes request capacity
+        // before visual refinement. It is already deterministic and near-to-far.
+        foreach (var key in requiredTiles)
         {
-            var key = new TerrainLodTileKey(level, x, z);
-            var distance = key.DistanceTo(cameraX, cameraZ);
-            if (distance > horizonDistanceChunks ||
-                distance + width < nearDistanceChunks ||
-                _spatialHierarchy.TryGetCoverage(key, out _, out _) ||
-                _remoteRetryAfterTicks.TryGetValue(key, out var retryAfter) &&
-                _tick < retryAfter)
-                continue;
-            candidates.Add(key);
+            if (selected.Count >= requestCount) break;
+            CollectCoverageRequests(key);
         }
-        var selected = candidates
-            .OrderBy(key => key.DistanceTo(cameraX, cameraZ))
-            .ThenBy(static key => key.X)
-            .ThenBy(static key => key.Z)
-            .Take(maximumRequests)
-            .ToArray();
-        foreach (var key in selected) _remoteRetryAfterTicks[key] = _tick + 20;
-        _remoteRequests += selected.Length;
-        return selected;
+
+        // Refinement may use only capacity not needed by a due coverage tile. Cycling levels keeps
+        // the request set bounded while the near-to-far order remains stable within each level.
+        if (selected.Count < requestCount)
+        {
+            var refinementLevels = coverageRootLevel - MinimumSpatialGpuLevel;
+            if (refinementLevels > 0)
+            {
+                var level = coverageRootLevel - 1 -
+                            (int)((_tick >> 2) % refinementLevels);
+                var refinements = new List<TerrainLodTileKey>();
+                foreach (var key in TerrainLodRemoteCoveragePlanner.RequiredTiles(
+                             cameraX, cameraZ, nearDistanceChunks,
+                             horizonDistanceChunks, level, MinimumSpatialGpuLevel))
+                {
+                    if (selected.Contains(key) ||
+                        _spatialHierarchy.TryGetCoverage(key, out _, out _))
+                        continue;
+                    if (_remoteRequestStates.TryGetValue(key, out var state) &&
+                        _tick < state.RetryAfterTick)
+                        continue;
+                    refinements.Add(key);
+                }
+                selected.AddRange(refinements
+                    .OrderBy(key => key.DistanceTo(cameraX, cameraZ))
+                    .ThenBy(static key => key.X)
+                    .ThenBy(static key => key.Z)
+                    .Take(requestCount - selected.Count));
+            }
+        }
+
+        foreach (var key in selected)
+            _remoteRequestStates[key] = new RemoteTileRequestState(
+                _tick + 20, RemoteTileRequestDisposition.InFlight);
+        _remoteRequests += selected.Count;
+        return [.. selected];
+
+        void CollectCoverageRequests(TerrainLodTileKey key)
+        {
+            if (selected.Count >= requestCount ||
+                _spatialHierarchy.HasCompleteCoverage(key, MinimumSpatialGpuLevel))
+                return;
+            if (_remoteRequestStates.TryGetValue(key, out var state))
+            {
+                if (_tick >= state.RetryAfterTick)
+                {
+                    selected.Add(key);
+                    return;
+                }
+                // A known-absent aggregate can still be reconstructed client-side from smaller
+                // approved records. Other dispositions may yet deliver this exact key, so only a
+                // definitive miss opens its descendants.
+                if (state.Disposition != RemoteTileRequestDisposition.Missing ||
+                    key.Level == MinimumSpatialGpuLevel)
+                    return;
+                for (var index = 0; index < 4; index++)
+                    CollectCoverageRequests(key.Child(index));
+                return;
+            }
+            selected.Add(key);
+        }
     }
+
+    private void UpdateRemoteCoverage(
+        IReadOnlyCollection<TerrainLodTileKey> requiredTiles,
+        double cameraChunkX,
+        double cameraChunkZ,
+        int horizonDistanceChunks)
+    {
+        foreach (var key in _remoteRequestStates.Keys
+                     .Where(key => key.Level < MinimumSpatialGpuLevel ||
+                                   key.Level > _spatialPolicy.MaximumSpatialLevel ||
+                                   key.DistanceTo(cameraChunkX, cameraChunkZ) >
+                                   horizonDistanceChunks)
+                     .ToArray())
+            _remoteRequestStates.Remove(key);
+
+        _remoteCoverageRequired = requiredTiles.Count;
+        _remoteCoverageAvailable = 0;
+        _remoteCoverageInFlight = 0;
+        _remoteCoveragePending = 0;
+        _remoteCoverageMissing = 0;
+        _remoteCoverageDeferred = 0;
+        foreach (var key in requiredTiles)
+        {
+            if (HasRemoteCoverage(key))
+            {
+                _remoteCoverageAvailable++;
+                _remoteRequestStates.Remove(key);
+                continue;
+            }
+            var disposition = CoverageDisposition(key);
+            switch (disposition)
+            {
+                case RemoteTileRequestDisposition.InFlight:
+                    _remoteCoverageInFlight++;
+                    break;
+                case RemoteTileRequestDisposition.Pending:
+                    _remoteCoveragePending++;
+                    break;
+                case RemoteTileRequestDisposition.Missing:
+                    _remoteCoverageMissing++;
+                    break;
+                case RemoteTileRequestDisposition.Deferred:
+                    _remoteCoverageDeferred++;
+                    break;
+                case null:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(disposition));
+            }
+        }
+
+        RemoteTileRequestDisposition? CoverageDisposition(TerrainLodTileKey key)
+        {
+            if (HasRemoteCoverage(key)) return null;
+            var hasState = _remoteRequestStates.TryGetValue(key, out var state);
+            if (hasState &&
+                (state.Disposition != RemoteTileRequestDisposition.Missing ||
+                 key.Level == MinimumSpatialGpuLevel))
+                return state.Disposition;
+            if (key.Level == MinimumSpatialGpuLevel)
+                return null;
+
+            RemoteTileRequestDisposition? aggregate = null;
+            for (var index = 0; index < 4; index++)
+            {
+                var childDisposition = CoverageDisposition(key.Child(index));
+                if (childDisposition == RemoteTileRequestDisposition.InFlight)
+                    return childDisposition;
+                if (childDisposition == RemoteTileRequestDisposition.Pending)
+                    aggregate = RemoteTileRequestDisposition.Pending;
+                else if (childDisposition == RemoteTileRequestDisposition.Deferred &&
+                         aggregate is not RemoteTileRequestDisposition.Pending)
+                    aggregate = RemoteTileRequestDisposition.Deferred;
+                else if (childDisposition == RemoteTileRequestDisposition.Missing &&
+                         aggregate is null)
+                    aggregate = RemoteTileRequestDisposition.Missing;
+            }
+            return aggregate ?? (hasState ? state.Disposition : null);
+        }
+    }
+
+    private bool HasRemoteCoverage(TerrainLodTileKey root) =>
+        _spatialHierarchy.HasCompleteCoverage(root, MinimumSpatialGpuLevel);
 
     /// <summary>
     ///     Observes texture-resource replacement without invalidating terrain presentation. Both
@@ -1868,7 +2021,13 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             _remoteWireBytes,
             _remotePendingResponses,
             _remoteMissingResponses,
-            _remoteDeferredResponses);
+            _remoteDeferredResponses,
+            _remoteCoverageRequired,
+            _remoteCoverageAvailable,
+            _remoteCoverageInFlight,
+            _remoteCoveragePending,
+            _remoteCoverageMissing,
+            _remoteCoverageDeferred);
     }
 
     private long ResidentGpuBytes() =>
@@ -2092,6 +2251,18 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             FogColorA = fog.Color.W
         };
     }
+
+    private enum RemoteTileRequestDisposition
+    {
+        InFlight,
+        Pending,
+        Missing,
+        Deferred
+    }
+
+    private readonly record struct RemoteTileRequestState(
+        long RetryAfterTick,
+        RemoteTileRequestDisposition Disposition);
 
     private readonly record struct PendingColumn(long DueTick);
     private readonly record struct VisibleColumn(

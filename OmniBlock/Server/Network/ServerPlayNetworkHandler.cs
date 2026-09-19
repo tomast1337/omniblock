@@ -28,7 +28,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     /// </summary>
     private const int MaxFloatingTicks = 20;
     private const int MaximumTerrainLodDistanceChunks = 64;
-    private const int MaximumTerrainLodResponsesPerRequest = 1;
+    private const int MaximumTerrainLodResponsesPerRequest = 4;
 
     private readonly ILogger<ServerPlayNetworkHandler> _logger = Log.Instance.For<ServerPlayNetworkHandler>();
     private readonly OmniBlockServer server;

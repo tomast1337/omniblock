@@ -74,6 +74,9 @@ local summary = {}
 for key, values in pairs(samples) do summary[key] = distribution(values) end
 local requiredColumns = math.floor(math.pi * 64 * 64 + 0.5)
 local coverage = summary.resident.mean / requiredColumns
+local requiredTiles = OMNI.client.state.terrainLodRemoteCoverageRequired
+local availableTiles = OMNI.client.state.terrainLodRemoteCoverageAvailable
+local tileCoverage = requiredTiles > 0 and availableTiles / requiredTiles or 0
 
 assert(math.abs(OMNI.client.state.playerX - fixedX) < 0.01 and
     math.abs(OMNI.client.state.playerY - fixedY) < 0.01 and
@@ -88,6 +91,13 @@ assert(OMNI.client.state.webGpuErrorCount == 0, "WebGPU validation failed")
 print("terrain-lod-fixed-camera schema=1 targetChunks=64 requiredColumns=" ..
     tostring(requiredColumns) .. " observedResident=" .. tostring(summary.resident.mean) ..
     " coverage=" .. tostring(coverage) ..
+    " requiredTiles=" .. tostring(requiredTiles) ..
+    " availableTiles=" .. tostring(availableTiles) ..
+    " tileCoverage=" .. tostring(tileCoverage) ..
+    " coverageInFlight=" .. tostring(OMNI.client.state.terrainLodRemoteCoverageInFlight) ..
+    " coveragePending=" .. tostring(OMNI.client.state.terrainLodRemoteCoveragePending) ..
+    " coverageMissing=" .. tostring(OMNI.client.state.terrainLodRemoteCoverageMissing) ..
+    " coverageDeferred=" .. tostring(OMNI.client.state.terrainLodRemoteCoverageDeferred) ..
     " frameMeanMs=" .. tostring(summary.frame.mean) ..
     " frameP50Ms=" .. tostring(summary.frame.p50) ..
     " frameP95Ms=" .. tostring(summary.frame.p95) ..
@@ -101,7 +111,7 @@ print("terrain-lod-fixed-camera schema=1 targetChunks=64 requiredColumns=" ..
     " boundaryBytes=" .. tostring(summary.boundaryBytes.mean) ..
     " cacheBytes=" .. tostring(summary.cacheBytes.mean) ..
     " workingSetBytes=" .. tostring(summary.workingSetBytes.mean) ..
-    " gpuPassMs=null gpuTimingStatus=timestamp-query-feature-not-requested")
+    " coverageComplete=" .. tostring(OMNI.client.state.terrainLodRemoteCoverageComplete))
 
 OMNI.test.dumpTerrain("lod-fixed-camera-64")
 OMNI.test.screenshot()

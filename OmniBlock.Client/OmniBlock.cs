@@ -631,6 +631,15 @@ public partial class OmniBlock :
                     "terrainLodRemotePending" => state.RemotePendingResponses,
                     "terrainLodRemoteMissing" => state.RemoteMissingResponses,
                     "terrainLodRemoteDeferred" => state.RemoteDeferredResponses,
+                    "terrainLodRemoteCoverageRequired" => state.RemoteCoverageRequired,
+                    "terrainLodRemoteCoverageAvailable" => state.RemoteCoverageAvailable,
+                    "terrainLodRemoteCoverageInFlight" => state.RemoteCoverageInFlight,
+                    "terrainLodRemoteCoveragePending" => state.RemoteCoveragePending,
+                    "terrainLodRemoteCoverageMissing" => state.RemoteCoverageMissing,
+                    "terrainLodRemoteCoverageDeferred" => state.RemoteCoverageDeferred,
+                    "terrainLodRemoteCoverageComplete" =>
+                        state.RemoteCoverageRequired > 0 &&
+                        state.RemoteCoverageAvailable == state.RemoteCoverageRequired ? 1 : 0,
                     "terrainLodIdentityReady" =>
                         terrainNetwork?.TerrainLodIdentityReady == true ? 1 : 0,
                     "terrainLodIdentityMismatches" =>

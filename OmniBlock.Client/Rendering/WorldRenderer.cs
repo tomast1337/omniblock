@@ -508,7 +508,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                         viewPosition,
                         _game.Options.RenderDistance,
                         _game.Options.TerrainHorizonDistance,
-                        maximumRequests: 1);
+                        maximumRequests: 4);
                     if (requests.Length > 0)
                         remoteWorld.NetworkHandler.SendMessage(new TerrainLodTileRequestMessage
                         {

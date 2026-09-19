@@ -39,10 +39,11 @@ default suite because it is a sustained performance regression rather than a fas
 `terrain-lod-fixed-camera` is the opt-in Phase 5 scale gate. It pins a flying camera, samples 120
 frames at the current 64-chunk horizon setting, and reports frame and terrain-CPU distributions,
 draw counts, LOD GPU/boundary/cache memory, process working set, and observed-versus-required radial
-coverage. It intentionally reports GPU pass timing as unavailable until WebGPU timestamp-query
-support is enabled. A passing run validates the measurement contract, not complete 64-chunk
-coverage; the coverage field prevents sparse client-observed terrain from being mislabeled as a
-full horizon benchmark. Run it with
+coverage. The artifact includes the explicit required/available adaptive-tile contract plus current
+in-flight, pending, missing, and deferred counts. GPU pass timing uses timestamp queries when the
+adapter supports them and reports the unsupported state otherwise. A passing run validates the
+measurement contract, not complete 64-chunk coverage; both coverage fields prevent sparse
+client-observed terrain from being mislabeled as a full horizon benchmark. Run it with
 `xvfb-run -a tests/e2e/run-local.sh terrain-lod-fixed-camera`.
 
 `entity-render-baseline` is an opt-in 300-second-watchdog benchmark for the existing GPU-instanced
@@ -241,6 +242,13 @@ OMNI.client.state.terrainLodMeshPredictedBytes     -- estimated queued/running r
 OMNI.client.state.terrainLodMeshPredictedMs        -- estimated queued/running worker milliseconds
 OMNI.client.state.terrainLodMeshAdmissionDeferrals -- compilation time/byte/capacity backpressure events
 OMNI.client.state.terrainLodMeshUploadDeferrals    -- render-thread upload-budget deferrals
+OMNI.client.state.terrainLodRemoteCoverageRequired -- adaptive tiles forming the requested radial horizon
+OMNI.client.state.terrainLodRemoteCoverageAvailable -- tiles covered directly or by complete descendants
+OMNI.client.state.terrainLodRemoteCoverageInFlight -- required tiles awaiting a server response
+OMNI.client.state.terrainLodRemoteCoveragePending  -- required tiles awaiting server cache work
+OMNI.client.state.terrainLodRemoteCoverageMissing  -- required tiles absent from the server cache
+OMNI.client.state.terrainLodRemoteCoverageDeferred -- required tiles delayed by gameplay/bandwidth pressure
+OMNI.client.state.terrainLodRemoteCoverageComplete -- 1 only when every required tile has source coverage
 OMNI.client.state.clientWorkingSetBytes           -- current client process working set
 OMNI.client.state.meshCancelledCount  -- discarded/abandoned requests, including superseded work
 OMNI.client.state.meshSupersededCount -- subset discarded due to a newer revision/replacement

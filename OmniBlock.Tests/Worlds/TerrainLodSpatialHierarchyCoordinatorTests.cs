@@ -116,6 +116,25 @@ public sealed class TerrainLodSpatialHierarchyCoordinatorTests
     }
 
     [Fact]
+    public void Complete_descendant_partition_satisfies_one_atomic_coverage_query()
+    {
+        var policy = TerrainLodSpatialPolicy.CreateDefault();
+        using var coordinator = Coordinator(policy, tileCapacity: 64);
+        var root = new TerrainLodTileKey(4, -1, 2);
+        List<TerrainLodTileKey> descendants = [];
+        foreach (var levelThree in Enumerable.Range(0, 4).Select(root.Child))
+        foreach (var levelTwo in Enumerable.Range(0, 4).Select(levelThree.Child))
+        {
+            descendants.Add(levelTwo);
+            coordinator.PublishCached(Tile(levelTwo, policy, block: 1, revision: 1));
+        }
+
+        Assert.True(coordinator.HasCompleteCoverage(root, minimumLevel: 2));
+        Assert.True(coordinator.Evict(descendants[0]));
+        Assert.False(coordinator.HasCompleteCoverage(root, minimumLevel: 2));
+    }
+
+    [Fact]
     public void Matching_cached_parent_is_promoted_without_reconstruction()
     {
         using var coordinator = Coordinator(MaximumLevelOnePolicy());
@@ -283,6 +302,19 @@ public sealed class TerrainLodSpatialHierarchyCoordinatorTests
         long revision) => Enumerable.Range(0, 4)
         .Select(index => Leaf(parent.Child(index), block, revision))
         .ToArray();
+
+    private static TerrainLodColumnTile Tile(
+        TerrainLodTileKey key,
+        TerrainLodSpatialPolicy policy,
+        byte block,
+        long revision)
+    {
+        if (key.Level == 0) return Leaf(key, block, revision);
+        TerrainLodColumnTile[] children = [.. Enumerable.Range(0, 4)
+            .Select(index => Tile(key.Child(index), policy, block, revision))];
+        return TerrainLodColumnTile.BuildParent(
+            key, children, policy.HorizontalSampleLevelForSpatialLevel(key.Level));
+    }
 
     private static IEnumerable<TerrainLodColumnTile> Leaves(
         TerrainLodTileKey tile,

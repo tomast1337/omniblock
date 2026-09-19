@@ -209,6 +209,30 @@ public sealed class TerrainLodSpatialHierarchyCoordinator : IDisposable
         }
     }
 
+    /// <summary>
+    ///     Returns whether a node is covered directly or by a complete descendant partition.
+    ///     The whole query observes one coordinator snapshot under one lock.
+    /// </summary>
+    public bool HasCompleteCoverage(TerrainLodTileKey root, int minimumLevel)
+    {
+        if (minimumLevel < 0 || minimumLevel > root.Level)
+            throw new ArgumentOutOfRangeException(nameof(minimumLevel));
+        lock (_gate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return HasCoverage(root);
+        }
+
+        bool HasCoverage(TerrainLodTileKey key)
+        {
+            if (_nodes.ContainsKey(key)) return true;
+            if (key.Level == minimumLevel) return false;
+            for (var index = 0; index < 4; index++)
+                if (!HasCoverage(key.Child(index))) return false;
+            return true;
+        }
+    }
+
     public bool IsCurrent(TerrainLodTileKey key)
     {
         lock (_gate)
