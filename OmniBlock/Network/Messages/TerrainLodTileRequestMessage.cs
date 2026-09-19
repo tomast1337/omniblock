@@ -1,4 +1,5 @@
 using OmniBlock.Worlds.Lod;
+using OmniBlock.Util;
 
 namespace OmniBlock.Network.Messages;
 
@@ -10,16 +11,20 @@ namespace OmniBlock.Network.Messages;
 public sealed class TerrainLodTileRequestMessage : Message
 {
     public const int MaximumKeys = 8;
+    private const int MaximumIdentityLength = 128;
     public static readonly ResourceLocation Id = new(
-        Namespace.Get("omniblock"), "terrain_lod_tile_request");
+        Namespace.Get("omniblock"), "terrain_lod_tile_request_v2");
 
     public int Dimension { get; set; }
+    public string CacheIdentity { get; set; } = "";
     public TerrainLodTileKey[] Keys { get; set; } = [];
     public override ResourceLocation Key => Id;
+    public override int SchemaVersion => 2;
 
     public override void Read(Stream stream)
     {
         Dimension = stream.ReadInt();
+        CacheIdentity = stream.ReadString(MaximumIdentityLength);
         var count = stream.ReadVarInt();
         if (count is < 0 or > MaximumKeys)
             throw new InvalidDataException($"Terrain LOD request contains {count} keys.");
@@ -35,6 +40,7 @@ public sealed class TerrainLodTileRequestMessage : Message
             throw new InvalidOperationException(
                 $"Terrain LOD request cannot contain more than {MaximumKeys} keys.");
         stream.WriteInt(Dimension);
+        stream.WriteString(CacheIdentity);
         stream.WriteVarInt(Keys.Length);
         foreach (var key in Keys)
         {
@@ -44,7 +50,9 @@ public sealed class TerrainLodTileRequestMessage : Message
         }
     }
 
-    public override int Size() => sizeof(int) + StreamExtensions.VarIntSize(Keys.Length) +
+    public override int Size() => sizeof(int) + sizeof(ushort) +
+                                  ModifiedUtf8.GetByteCount(CacheIdentity) +
+                                  StreamExtensions.VarIntSize(Keys.Length) +
                                   Keys.Sum(static key =>
                                       StreamExtensions.VarIntSize(key.Level) + sizeof(int) * 2);
 }

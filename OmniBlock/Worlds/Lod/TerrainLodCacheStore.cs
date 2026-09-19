@@ -23,9 +23,33 @@ public sealed record TerrainLodCacheIdentity(
         ReductionSchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture),
         MaterialRulesFingerprint);
 
+    public string? GetPresentationIncompatibility(
+        int dimension,
+        ContentRuntime content,
+        TerrainLodMaterialCatalog materials)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+        ArgumentNullException.ThrowIfNull(materials);
+        if (string.IsNullOrWhiteSpace(WorldFingerprint)) return "world fingerprint is empty";
+        if (Dimension != dimension)
+            return $"identity dimension {Dimension} does not match session dimension {dimension}";
+        if (!string.Equals(ContentFingerprint, content.Manifest.Fingerprint,
+                StringComparison.Ordinal))
+            return "content catalog fingerprint differs";
+        if (string.IsNullOrWhiteSpace(GeneratorFingerprint))
+            return "generator fingerprint is empty";
+        if (ReductionSchemaVersion != TerrainLodHierarchy.ReductionSchemaVersion)
+            return $"reduction schema {ReductionSchemaVersion} is unsupported";
+        if (!string.Equals(MaterialRulesFingerprint, materials.RulesFingerprint,
+                StringComparison.Ordinal))
+            return "material rules fingerprint differs";
+        return null;
+    }
+
     public static TerrainLodCacheIdentity FromWorld(
         IWorldContext world,
-        TerrainLodMaterialCatalog materials)
+        TerrainLodMaterialCatalog materials,
+        string? persistentWorldIdentity = null)
     {
         ArgumentNullException.ThrowIfNull(world);
         ArgumentNullException.ThrowIfNull(materials);
@@ -35,8 +59,11 @@ public sealed record TerrainLodCacheIdentity(
             : world.Content.DimensionGeneratorProfiles
                 .GetByDimensionId(dimension).GeneratorProviderType;
         return new TerrainLodCacheIdentity(
-            Hash("omniblock-terrain-world-v1", world.Seed.ToString(
-                System.Globalization.CultureInfo.InvariantCulture)),
+            Hash(
+                "omniblock-terrain-world-v2",
+                persistentWorldIdentity ?? world.Properties.LevelName,
+                world.Seed.ToString(
+                    System.Globalization.CultureInfo.InvariantCulture)),
             dimension,
             world.Content.Manifest.Fingerprint,
             Hash(

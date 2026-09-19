@@ -140,6 +140,9 @@ public static unsafe class LuauClientStateHost
                                                 key == "terrainLodRemotePending" or
                                                 key == "terrainLodRemoteMissing" or
                                                 key == "terrainLodRemoteDeferred" or
+                                                key == "terrainLodIdentityReady" or
+                                                key == "terrainLodIdentityMismatches" or
+                                                key == "terrainLodIdentityRejectedMessages" or
                                                 key == "clientWorkingSetBytes" or
                                                 key == "terrainLodUploads" or key == "terrainLodGpuBytes" or
                                                 key == "terrainLodStaleResults" or key == "terrainLodRejected" or

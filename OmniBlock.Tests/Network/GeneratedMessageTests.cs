@@ -73,6 +73,7 @@ public sealed class GeneratedMessageTests
         TerrainLodTileStatusMessage written = new()
         {
             Dimension = -1,
+            CacheIdentity = new string('a', 64),
             Tile = new TerrainLodTileKey(3, -17, 42),
             Status = TerrainLodTileStatus.Missing
         };
@@ -81,8 +82,30 @@ public sealed class GeneratedMessageTests
         read.Read(new MemoryStream(Serialise(written), false));
 
         Assert.Equal(written.Dimension, read.Dimension);
+        Assert.Equal(written.CacheIdentity, read.CacheIdentity);
         Assert.Equal(written.Tile, read.Tile);
         Assert.Equal(written.Status, read.Status);
+        Assert.Equal(written.Size(), Serialise(written).Length);
+    }
+
+    [Fact]
+    public void A_terrain_lod_identity_round_trips_every_compatibility_field()
+    {
+        TerrainLodCacheIdentity identity = new(
+            new string('1', 64),
+            -1,
+            new string('2', 64),
+            new string('3', 64),
+            7,
+            new string('4', 64));
+        var written = TerrainLodIdentityMessage.Of(identity);
+
+        TerrainLodIdentityMessage read = new();
+        read.Read(new MemoryStream(Serialise(written), false));
+
+        Assert.Equal(identity, read.ToIdentity());
+        Assert.Equal(identity.CompatibilityFingerprint,
+            read.ToIdentity().CompatibilityFingerprint);
         Assert.Equal(written.Size(), Serialise(written).Length);
     }
 

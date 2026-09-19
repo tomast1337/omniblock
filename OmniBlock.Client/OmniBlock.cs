@@ -549,6 +549,7 @@ public partial class OmniBlock :
             {
                 var state = WorldRenderer?.TerrainLod?.Snapshot ?? default;
                 var spatial = WorldRenderer?.TerrainLod?.SpatialSnapshot ?? default;
+                var terrainNetwork = (World as ClientWorld)?.NetworkHandler;
                 return key switch
                 {
                     "terrainLodPending" => state.PendingColumns,
@@ -629,6 +630,12 @@ public partial class OmniBlock :
                     "terrainLodRemotePending" => state.RemotePendingResponses,
                     "terrainLodRemoteMissing" => state.RemoteMissingResponses,
                     "terrainLodRemoteDeferred" => state.RemoteDeferredResponses,
+                    "terrainLodIdentityReady" =>
+                        terrainNetwork?.TerrainLodIdentityReady == true ? 1 : 0,
+                    "terrainLodIdentityMismatches" =>
+                        terrainNetwork?.TerrainLodIdentityMismatches ?? 0,
+                    "terrainLodIdentityRejectedMessages" =>
+                        terrainNetwork?.TerrainLodIdentityRejectedMessages ?? 0,
                     "clientWorkingSetBytes" => Environment.WorkingSet,
                     _ => 0
                 };

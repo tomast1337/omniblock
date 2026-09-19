@@ -501,17 +501,22 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             terrainLod.Tick(viewPosition);
             if (_world is ClientWorld remoteWorld)
             {
-                var requests = terrainLod.TakeRemoteSpatialRequests(
-                    viewPosition,
-                    _game.Options.RenderDistance,
-                    _game.Options.TerrainHorizonDistance,
-                    maximumRequests: 1);
-                if (requests.Length > 0)
-                    remoteWorld.NetworkHandler.SendMessage(new TerrainLodTileRequestMessage
-                    {
-                        Dimension = _world.Dimension.Id,
-                        Keys = requests
-                    });
+                if (remoteWorld.NetworkHandler.TryGetTerrainLodIdentity(
+                        _world.Dimension.Id, out var cacheIdentity))
+                {
+                    var requests = terrainLod.TakeRemoteSpatialRequests(
+                        viewPosition,
+                        _game.Options.RenderDistance,
+                        _game.Options.TerrainHorizonDistance,
+                        maximumRequests: 1);
+                    if (requests.Length > 0)
+                        remoteWorld.NetworkHandler.SendMessage(new TerrainLodTileRequestMessage
+                        {
+                            Dimension = _world.Dimension.Id,
+                            CacheIdentity = cacheIdentity,
+                            Keys = requests
+                        });
+                }
             }
         }
     }

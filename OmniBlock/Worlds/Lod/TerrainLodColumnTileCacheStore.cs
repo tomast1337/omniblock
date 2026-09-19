@@ -249,9 +249,9 @@ public sealed class TerrainLodColumnTileCacheStore
 
     /// <summary>
     ///     Encodes the identity-independent part of a tile for an already-negotiated content
-    ///     session. Disk records additionally carry world/cache identity; the wire envelope does
-    ///     not, because the server approves each requested coordinate and the session has already
-    ///     synchronized the content catalog.
+    ///     session. Disk records additionally carry the complete world/cache identity; the wire
+    ///     message stamps the negotiated compatibility fingerprint rather than duplicating these
+    ///     fields inside every compressed tile.
     /// </summary>
     internal static byte[] EncodePortable(TerrainLodColumnTile tile)
     {

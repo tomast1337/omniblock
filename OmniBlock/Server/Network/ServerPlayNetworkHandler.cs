@@ -185,6 +185,19 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     {
         if (request.Dimension != player.DimensionId) return;
         var world = server.getWorld(player.DimensionId);
+        var identity = world.TerrainLodIdentity;
+        if (identity is null) return;
+        var identityFingerprint = identity.CompatibilityFingerprint;
+        if (!string.Equals(request.CacheIdentity, identityFingerprint,
+                StringComparison.Ordinal))
+        {
+            if (request.Keys.Length > 0)
+                SendTerrainLodStatus(
+                    request.Keys[0],
+                    TerrainLodTileStatus.Incompatible,
+                    identityFingerprint);
+            return;
+        }
         var playerChunkX = (int)Math.Floor(player.X) >> 4;
         var playerChunkZ = (int)Math.Floor(player.Z) >> 4;
         var responded = 0;
@@ -205,13 +218,15 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 {
                     availability = world.GetTerrainLodPayload(key, out var payload);
                     if (availability == TerrainLodTileAvailability.Ready && payload is not null)
-                        message = TerrainLodTileMessage.FromCompressed(player.DimensionId, payload);
+                        message = TerrainLodTileMessage.FromCompressed(
+                            player.DimensionId, payload, identityFingerprint);
                 }
                 else
                 {
                     availability = world.GetTerrainLodCoverage(key, out var tile);
                     if (availability == TerrainLodTileAvailability.Ready && tile is not null)
-                        message = TerrainLodTileMessage.Loopback(player.DimensionId, tile);
+                        message = TerrainLodTileMessage.Loopback(
+                            player.DimensionId, tile, identityFingerprint);
                 }
 
                 if (message is not null && !_terrainLodPacer.TryConsume(
@@ -220,7 +235,8 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                         getWorldPacketBacklog()))
                 {
                     availability = TerrainLodTileAvailability.Pending;
-                    SendTerrainLodStatus(key, TerrainLodTileStatus.Deferred);
+                    SendTerrainLodStatus(
+                        key, TerrainLodTileStatus.Deferred, identityFingerprint);
                 }
                 else if (message is not null)
                 {
@@ -230,7 +246,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 {
                     SendTerrainLodStatus(key, availability == TerrainLodTileAvailability.Missing
                         ? TerrainLodTileStatus.Missing
-                        : TerrainLodTileStatus.Pending);
+                        : TerrainLodTileStatus.Pending, identityFingerprint);
                 }
 
                 if (++responded >= MaximumTerrainLodResponsesPerRequest) break;
@@ -243,10 +259,14 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         }
     }
 
-    private void SendTerrainLodStatus(TerrainLodTileKey key, TerrainLodTileStatus status) =>
+    private void SendTerrainLodStatus(
+        TerrainLodTileKey key,
+        TerrainLodTileStatus status,
+        string cacheIdentity) =>
         SendMessage(new TerrainLodTileStatusMessage
         {
             Dimension = player.DimensionId,
+            CacheIdentity = cacheIdentity,
             Tile = key,
             Status = status
         });
@@ -282,6 +302,12 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         }
 
         connection.sendMessage(registry, message);
+    }
+
+    internal void SendTerrainLodIdentity()
+    {
+        if (server.CreateTerrainLodIdentityMessage(player.DimensionId) is { } message)
+            SendMessage(message);
     }
 
     private void onPlayerMove(IPlayerMove packet)

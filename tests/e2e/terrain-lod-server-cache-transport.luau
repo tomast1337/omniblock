@@ -22,6 +22,8 @@ assert(type(OMNI.client.state.terrainLodRemoteTiles) == "number")
 assert(type(OMNI.client.state.terrainLodRemotePending) == "number")
 assert(type(OMNI.client.state.terrainLodRemoteMissing) == "number")
 assert(type(OMNI.client.state.terrainLodRemoteDeferred) == "number")
+assert(OMNI.client.state.terrainLodIdentityReady == 1,
+    "server terrain cache identity was not negotiated")
 
 local crossedServerCache = false
 for _ = 1, 2400 do
@@ -40,6 +42,10 @@ assert(crossedServerCache,
     " deferred=" .. tostring(OMNI.client.state.terrainLodRemoteDeferred))
 assert(OMNI.client.state.webGpuErrorCount == 0,
     "WebGPU validation failed while receiving server-cache terrain")
+assert(OMNI.client.state.terrainLodIdentityMismatches == 0,
+    "terrain cache identity changed during transport")
+assert(OMNI.client.state.terrainLodIdentityRejectedMessages == 0,
+    "terrain messages arrived with a stale cache identity")
 
 print("server-cache terrain transport: requests=" ..
     tostring(OMNI.client.state.terrainLodRemoteRequests) ..

@@ -204,6 +204,7 @@ public class PlayerManager
             serverPlayer.SetPosition(serverPlayer.X, serverPlayer.Y + 1.0, serverPlayer.Z);
         }
 
+        serverPlayer.NetworkHandler.SendTerrainLodIdentity();
         serverPlayer.NetworkHandler.SendMessage(new PlayerRespawnMessage
         {
             DimensionId = (sbyte)serverPlayer.DimensionId
@@ -248,6 +249,7 @@ public class PlayerManager
         GetChunkMap(sourceDim).removePlayer(player);
 
         player.DimensionId = targetDim;
+        player.NetworkHandler.SendTerrainLodIdentity();
         player.NetworkHandler.SendMessage(new PlayerRespawnMessage
         {
             DimensionId = (sbyte)player.DimensionId

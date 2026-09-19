@@ -53,6 +53,7 @@ public class ClientNetworkHandler : NetHandler
     private readonly ILogger<ClientNetworkHandler> _logger = Log.Instance.For<ClientNetworkHandler>();
     private readonly Connection _netManager;
     private readonly JavaRandom _rand = new();
+    private readonly Dictionary<int, TerrainLodCacheIdentity> _terrainLodIdentities = [];
 
     /// <summary>
     ///     The transport, kept so it can be shut down with the connection. One instance is one
@@ -80,6 +81,8 @@ public class ClientNetworkHandler : NetHandler
     private long _snapshotBytes;
 
     private long _snapshotRecords;
+    private long _terrainLodIdentityMismatches;
+    private long _terrainLodIdentityRejectedMessages;
     private bool _terrainLoaded;
     private bool _awaitingRespawnPosition;
 
@@ -459,6 +462,7 @@ public class ClientNetworkHandler : NetHandler
         MessageHandlers.On<TickStampMessage>(onTickStamp);
         MessageHandlers.On<ServerStatusMessage>(onServerStatus);
         MessageHandlers.On<SessionDistanceMessage>(onSessionDistance);
+        MessageHandlers.On<TerrainLodIdentityMessage>(onTerrainLodIdentity);
         MessageHandlers.On<TerrainLodTileMessage>(onTerrainLodTile);
         MessageHandlers.On<TerrainLodTileStatusMessage>(onTerrainLodTileStatus);
         MessageHandlers.On<ChunkDataMessage>(onChunkData);
@@ -542,6 +546,11 @@ public class ClientNetworkHandler : NetHandler
     private void onTerrainLodTile(TerrainLodTileMessage message)
     {
         if (_worldClient is null || message.Dimension != _worldClient.Dimension.Id) return;
+        if (!HasTerrainLodIdentity(message.Dimension, message.CacheIdentity))
+        {
+            _terrainLodIdentityRejectedMessages++;
+            return;
+        }
         try
         {
             _worldClient.EnqueueTerrainLodTile(message.Decode(), message.Compressed.Length);
@@ -556,8 +565,69 @@ public class ClientNetworkHandler : NetHandler
     private void onTerrainLodTileStatus(TerrainLodTileStatusMessage message)
     {
         if (_worldClient is null || message.Dimension != _worldClient.Dimension.Id) return;
+        if (message.Status == TerrainLodTileStatus.Incompatible)
+        {
+            _terrainLodIdentityMismatches++;
+            _terrainLodIdentities.Remove(message.Dimension);
+            return;
+        }
+        if (!HasTerrainLodIdentity(message.Dimension, message.CacheIdentity))
+        {
+            _terrainLodIdentityRejectedMessages++;
+            return;
+        }
         _worldClient.EnqueueTerrainLodStatus(message.Tile, message.Status);
     }
+
+    private void onTerrainLodIdentity(TerrainLodIdentityMessage message)
+    {
+        TerrainLodCacheIdentity identity;
+        try
+        {
+            identity = message.ToIdentity();
+            var materials = TerrainLodMaterialCatalog.FromRuntime(_context.Content);
+            if (identity.GetPresentationIncompatibility(
+                    message.Dimension, _context.Content, materials) is { } incompatibility)
+                throw new InvalidDataException(
+                    $"Terrain LOD identity for dimension {identity.Dimension} is incompatible: " +
+                    incompatibility + ".");
+        }
+        catch (Exception error) when (error is ArgumentException or InvalidDataException or
+                                      InvalidOperationException)
+        {
+            _terrainLodIdentityMismatches++;
+            _terrainLodIdentities.Remove(message.Dimension);
+            _logger.LogWarning(error,
+                "Rejected incompatible terrain LOD identity for dimension {Dimension}.",
+                message.Dimension);
+            return;
+        }
+
+        _terrainLodIdentities[identity.Dimension] = identity;
+        _logger.LogDebug(
+            "Terrain LOD cache identity ready for dimension {Dimension}: {Fingerprint}.",
+            identity.Dimension, identity.CompatibilityFingerprint);
+    }
+
+    private bool HasTerrainLodIdentity(int dimension, string fingerprint) =>
+        _terrainLodIdentities.TryGetValue(dimension, out var identity) &&
+        string.Equals(identity.CompatibilityFingerprint, fingerprint, StringComparison.Ordinal);
+
+    internal bool TryGetTerrainLodIdentity(int dimension, out string fingerprint)
+    {
+        if (_terrainLodIdentities.TryGetValue(dimension, out var identity))
+        {
+            fingerprint = identity.CompatibilityFingerprint;
+            return true;
+        }
+        fingerprint = "";
+        return false;
+    }
+
+    internal bool TerrainLodIdentityReady =>
+        _worldClient is not null && _terrainLodIdentities.ContainsKey(_worldClient.Dimension.Id);
+    internal long TerrainLodIdentityMismatches => _terrainLodIdentityMismatches;
+    internal long TerrainLodIdentityRejectedMessages => _terrainLodIdentityRejectedMessages;
 
     /// <summary>
     ///     The server accepted a hash this client offered, so the chunk is loaded from disk instead

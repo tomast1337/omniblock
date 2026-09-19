@@ -69,10 +69,12 @@ internal static class MessageRegistrations
         registry.Register(SessionDistanceMessage.Id, 1, static () => new SessionDistanceMessage());
         registry.Register(SnapshotAckMessage.Id, 1, static () => new SnapshotAckMessage());
         registry.Register(TickStampMessage.Id, 1, static () => new TickStampMessage());
-        registry.Register(TerrainLodTileMessage.Id, 1, static () => new TerrainLodTileMessage());
-        registry.Register(TerrainLodTileRequestMessage.Id, 1,
+        registry.Register(TerrainLodIdentityMessage.Id, 1,
+            static () => new TerrainLodIdentityMessage());
+        registry.Register(TerrainLodTileMessage.Id, 2, static () => new TerrainLodTileMessage());
+        registry.Register(TerrainLodTileRequestMessage.Id, 2,
             static () => new TerrainLodTileRequestMessage());
-        registry.Register(TerrainLodTileStatusMessage.Id, 1,
+        registry.Register(TerrainLodTileStatusMessage.Id, 2,
             static () => new TerrainLodTileStatusMessage());
         registry.Register(TimeSyncRequestMessage.Id, 1, static () => new TimeSyncRequestMessage());
         registry.Register(TimeSyncResponseMessage.Id, 1, static () => new TimeSyncResponseMessage());

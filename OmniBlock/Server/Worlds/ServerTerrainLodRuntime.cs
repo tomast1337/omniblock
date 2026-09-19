@@ -50,6 +50,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     private readonly ILogger<ServerTerrainLodRuntime> _logger =
         Log.Instance.For<ServerTerrainLodRuntime>();
     private readonly int _dimension;
+    private readonly TerrainLodCacheIdentity _identity;
     private readonly int _conversionCapacity;
     private readonly Dictionary<ChunkKey, TrackedChunk> _tracked = [];
     private readonly TerrainLodConversionService _conversions;
@@ -101,13 +102,17 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             throw new ArgumentOutOfRangeException(nameof(conversionCapacity));
         _dimension = dimension;
         _conversionCapacity = conversionCapacity;
-        var identity = TerrainLodCacheIdentity.FromWorld(identitySource, materials);
-        if (identity.Dimension != dimension)
+        // The absolute cache root never crosses the wire; only its hash does. Including it keeps
+        // two saves with the same seed/content from sharing a transport identity, while reopening
+        // this save remains stable.
+        _identity = TerrainLodCacheIdentity.FromWorld(
+            identitySource, materials, cacheRoot.FullName);
+        if (_identity.Dimension != dimension)
             throw new ArgumentException(
-                $"Identity world dimension {identity.Dimension} does not match {dimension}.",
+                $"Identity world dimension {_identity.Dimension} does not match {dimension}.",
                 nameof(identitySource));
-        _cache = new TerrainLodCacheStore(cacheRoot, identity);
-        _spatialCache = new TerrainLodColumnTileCacheStore(cacheRoot, identity);
+        _cache = new TerrainLodCacheStore(cacheRoot, _identity);
+        _spatialCache = new TerrainLodColumnTileCacheStore(cacheRoot, _identity);
         _spatialHierarchy = new TerrainLodSpatialHierarchyCoordinator(
             TerrainLodSpatialPolicy.CreateDefault(),
             _spatialCache,
@@ -167,6 +172,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     }
 
     public ServerTerrainLodSnapshot Snapshot() => Volatile.Read(ref _publishedSnapshot);
+    public TerrainLodCacheIdentity Identity => _identity;
 
     /// <summary>
     ///     Returns already-resident server-approved coarse coverage without loading a gameplay

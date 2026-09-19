@@ -687,6 +687,9 @@ public abstract class OmniBlockServer : ICommandOutput
         if (worlds is null) return;
         foreach (var world in worlds)
             world?.ReplaceRuntimeContent(candidate);
+        if (playerManager is not null)
+            foreach (var player in playerManager.players)
+                player.NetworkHandler.SendTerrainLodIdentity();
     }
 
     public void QueueCommands(string str, ICommandOutput cmd)
@@ -756,7 +759,7 @@ public abstract class OmniBlockServer : ICommandOutput
     /// <summary>
     ///     Sends all reloadable registry data messages followed by <see cref="FinishConfigurationMessage" />
     /// </summary>
-    public void SendConfigurationTo(Action<Packet> send)
+    public void SendConfigurationTo(Action<Packet> send, int dimensionId)
     {
         // First: it establishes how every later message is identified, so nothing name-keyed can be
         // sent before the client holds it. Dropped for non-OmniBlock clients by sendPacket, since
@@ -774,8 +777,16 @@ public abstract class OmniBlockServer : ICommandOutput
             SimulationDistance = SimulationDistance
         })!);
 
+        if (CreateTerrainLodIdentityMessage(dimensionId) is { } terrainLodIdentity)
+            send(OmniMessagePacket.For(Messages, terrainLodIdentity)!);
+
         send(OmniMessagePacket.For(Messages, new FinishConfigurationMessage())!);
     }
+
+    internal TerrainLodIdentityMessage? CreateTerrainLodIdentityMessage(int dimensionId) =>
+        getWorld(dimensionId).TerrainLodIdentity is { } identity
+            ? TerrainLodIdentityMessage.Of(identity)
+            : null;
 
     /// <summary>
     ///     Reloads all data-driven content from disk. Re-reads base assets, global datapacks, and

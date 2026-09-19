@@ -131,7 +131,7 @@ public class ServerLoginNetworkHandler : NetHandler
             var spawnPos = playerWorld.Properties.GetSpawnPos();
             var handler = new ServerPlayNetworkHandler(server, connection, ent);
             handler.SendPacket(LoginHelloPacket.Get("", ent.ID, playerWorld.Seed, (sbyte)playerWorld.Dimension.Id));
-            server.SendConfigurationTo(handler.SendPacket);
+            server.SendConfigurationTo(handler.SendPacket, ent.DimensionId);
             handler.SendMessage(new PlayerGameModeUpdateMessage
             {
                 GameModeNamespace = ent.GameMode.Namespace.ToString(),

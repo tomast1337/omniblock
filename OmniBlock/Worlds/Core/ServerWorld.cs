@@ -43,6 +43,7 @@ public class ServerWorld : World
 
     public bool BypassSpawnProtection { get; }
     public ServerTerrainLodSnapshot? TerrainLodSnapshot => _terrainLod?.Snapshot();
+    internal TerrainLodCacheIdentity? TerrainLodIdentity => _terrainLod?.Identity;
 
     internal void ShutdownTerrainLod()
     {
