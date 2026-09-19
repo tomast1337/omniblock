@@ -119,3 +119,50 @@ internal sealed class TerrainLodSpatialGpuPresentation : IDisposable
         }
     }
 }
+
+/// <summary>GPU pages for one neighbor-aware boundary in a spatial presentation partition.</summary>
+internal sealed class TerrainLodSpatialGpuSeamPresentation : IDisposable
+{
+    private TerrainLodSpatialGpuSeamPresentation(
+        TerrainLodSpatialSeamSegment segment,
+        string canonicalHash,
+        TerrainLodSpatialGpuPresentation.GpuPage[] pages,
+        long estimatedBytes)
+    {
+        Segment = segment;
+        CanonicalHash = canonicalHash;
+        Pages = pages;
+        EstimatedBytes = estimatedBytes;
+    }
+
+    public TerrainLodSpatialSeamSegment Segment { get; }
+    public string CanonicalHash { get; }
+    public IReadOnlyList<TerrainLodSpatialGpuPresentation.GpuPage> Pages { get; }
+    public long EstimatedBytes { get; }
+
+    public static TerrainLodSpatialGpuSeamPresentation Create(
+        WebGpuDevice device,
+        TerrainGpuArenaSet arenas,
+        TerrainLodSpatialSeamMeshData data)
+    {
+        List<TerrainLodSpatialGpuPresentation.GpuPage> pages = [];
+        try
+        {
+            foreach (var page in data.Pages)
+                pages.Add(TerrainLodSpatialGpuPresentation.GpuPage.Create(
+                    device, arenas, page));
+            return new TerrainLodSpatialGpuSeamPresentation(
+                data.Segment, data.CanonicalHash, [.. pages], data.EstimatedBytes);
+        }
+        catch
+        {
+            foreach (var page in pages) page.Dispose();
+            throw;
+        }
+    }
+
+    public void Dispose()
+    {
+        foreach (var page in Pages) page.Dispose();
+    }
+}

@@ -16,12 +16,16 @@ assert(type(OMNI.client.state.terrainLodSpatialMeshPending) == "number")
 assert(type(OMNI.client.state.terrainLodSpatialMeshQueued) == "number")
 assert(type(OMNI.client.state.terrainLodSpatialMeshRunning) == "number")
 assert(type(OMNI.client.state.terrainLodSpatialMeshReady) == "number")
+assert(type(OMNI.client.state.terrainLodSpatialSeamDesired) == "number")
+assert(type(OMNI.client.state.terrainLodSpatialSeamGpuResident) == "number")
 
 OMNI.waitUntil(function()
     return OMNI.client.state.terrainLodSpatialCpuTiles > 0 and
         OMNI.client.state.terrainLodSpatialGpuResident > 0 and
         OMNI.client.state.terrainLodSpatialComplete == 1 and
-        OMNI.client.state.terrainLodSpatialSelected > 0
+        OMNI.client.state.terrainLodSpatialSelected > 0 and
+        OMNI.client.state.terrainLodSpatialSeamDesired > 0 and
+        OMNI.client.state.terrainLodSpatialSeamGpuResident > 0
 end, 30, 0.05)
 
 assert(OMNI.client.state.webGpuErrorCount == 0,
@@ -30,6 +34,7 @@ print("spatial LOD shadow: cpu=" ..
     tostring(OMNI.client.state.terrainLodSpatialCpuTiles) ..
     " gpu=" .. tostring(OMNI.client.state.terrainLodSpatialGpuResident) ..
     " selected=" .. tostring(OMNI.client.state.terrainLodSpatialSelected) ..
+    " seams=" .. tostring(OMNI.client.state.terrainLodSpatialSeamGpuResident) ..
     " fallbacks=" .. tostring(OMNI.client.state.terrainLodSpatialParentFallbacks) ..
     " missing=" .. tostring(OMNI.client.state.terrainLodSpatialMissingGroups))
 OMNI.test.pass()

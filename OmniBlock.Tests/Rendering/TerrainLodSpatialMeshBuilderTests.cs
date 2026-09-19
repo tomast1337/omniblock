@@ -36,6 +36,30 @@ public sealed class TerrainLodSpatialMeshBuilderTests
     }
 
     [Fact]
+    public void Tile_body_can_omit_boundaries_owned_by_the_spatial_seam_plan()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var stone = checked((byte)world.Content.Blocks.Get("omniblock:stone").Id);
+        var tile = Leaf(materials, 0, 0, 128,
+            (_, y, _) => y < 32 ? stone : (byte)0);
+
+        var mesh = TerrainLodSpatialMeshBuilder.Build(
+            tile, world.Content.Blocks, verticalSliceBudget: 8,
+            emitTileBoundaryFaces: false);
+
+        Assert.False(mesh.IncludesExternalBoundaryFaces);
+        Assert.Equal(512, mesh.SolidQuadCount);
+        Assert.All(mesh.Pages, page =>
+        {
+            Assert.True(page.SolidRanges.West.IsEmpty);
+            Assert.True(page.SolidRanges.East.IsEmpty);
+            Assert.True(page.SolidRanges.North.IsEmpty);
+            Assert.True(page.SolidRanges.South.IsEmpty);
+        });
+    }
+
+    [Fact]
     public void Liquid_geometry_is_kept_in_the_translucent_stream()
     {
         var world = new FakeWorldContext();

@@ -77,8 +77,11 @@ internal readonly record struct TerrainLodSpatialShadowSnapshot(
     int MissingCoverageGroups,
     int GpuPresentations,
     int PendingMeshCandidates,
+    int DesiredSeams,
+    int GpuSeams,
     TerrainLodSpatialHierarchyCoordinatorSnapshot Hierarchy,
-    TerrainLodSpatialMeshCompilationSnapshot MeshCompilation);
+    TerrainLodSpatialMeshCompilationSnapshot MeshCompilation,
+    TerrainLodSpatialSeamCompilationSnapshot SeamCompilation);
 
 /// <summary>
 ///     Client owner for the first terrain-horizon slice. It compiles immutable chunk snapshots on
@@ -112,6 +115,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private const int SpatialParentResultsPerTick = 8;
     private const int SpatialMeshAdmissionsPerTick = 8;
     private const int SpatialUploadsPerFrame = 2;
+    private const int SpatialSeamAdmissionsPerFrame = 8;
+    private const int SpatialSeamUploadsPerFrame = 2;
 
     private readonly World _world;
     private readonly TerrainLodConversionService _conversion;
@@ -119,9 +124,13 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private readonly TerrainLodSpatialPolicy _spatialPolicy;
     private readonly TerrainLodSpatialHierarchyCoordinator _spatialHierarchy;
     private readonly TerrainLodSpatialMeshCompilationService _spatialMeshCompilation;
+    private readonly TerrainLodSpatialSeamCompilationService _spatialSeamCompilation;
     private readonly TerrainLodSpatialPresentationSet<TerrainLodSpatialGpuPresentation>
         _spatialPresentations = new();
     private readonly Dictionary<TerrainLodTileKey, TerrainLodColumnTile> _spatialMeshPending = [];
+    private readonly HashSet<TerrainLodSpatialSeamSegment> _desiredSpatialSeams = [];
+    private readonly Dictionary<TerrainLodSpatialSeamSegment,
+        TerrainLodSpatialGpuSeamPresentation> _spatialSeams = [];
     private readonly List<TerrainLodColumnTile> _completedSpatialParents = [];
     private readonly TerrainLodCacheStore? _cache;
     private readonly TerrainLodAsyncCacheWriter? _cacheWriter;
@@ -196,6 +205,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _spatialMeshCompilation = new TerrainLodSpatialMeshCompilationService(
             capacity: 32,
             completedCapacity: 8);
+        _spatialSeamCompilation = new TerrainLodSpatialSeamCompilationService(
+            capacity: 64,
+            completedCapacity: 16);
     }
 
     public ClientTerrainLodSnapshot Snapshot => _snapshot;
@@ -317,6 +329,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             parameters.TerrainLodDropoffScale,
             parameters.RenderDistance, nearRenderer);
         uploads += InstallSpatialCompleted(nearRenderer);
+        uploads += InstallSpatialSeams(nearRenderer);
         EvaluateSpatialShadow(parameters);
         EvictDistant(parameters.ViewPos);
         Profiler.Record("InstallAndEvictCpu", Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
@@ -647,15 +660,19 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _conversion.Dispose();
         _meshCompilation.Dispose();
         _spatialMeshCompilation.Dispose();
+        _spatialSeamCompilation.Dispose();
         _spatialPresentations.Dispose();
         _spatialHierarchy.Dispose();
         _cacheWriter?.Dispose();
         foreach (var presentation in _resident.Values) presentation.Dispose();
         foreach (var seam in _solidSeams.Values) seam.Dispose();
         foreach (var seam in _translucentSeams.Values) seam.Dispose();
+        foreach (var seam in _spatialSeams.Values) seam.Dispose();
         _resident.Clear();
         _solidSeams.Clear();
         _translucentSeams.Clear();
+        _spatialSeams.Clear();
+        _desiredSpatialSeams.Clear();
         _desiredSolidSeams.Clear();
         _desiredTranslucentSeams.Clear();
         _selectedSolidLevels.Clear();
@@ -951,6 +968,46 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         return installed;
     }
 
+    private int InstallSpatialSeams(ChunkRenderer nearRenderer)
+    {
+        if (WebGpuDevice.Current is not { } device) return 0;
+        var installed = 0;
+        while (installed < SpatialSeamUploadsPerFrame &&
+               _spatialSeamCompilation.TryTakeCompleted(out var completed) &&
+               completed is not null)
+        {
+            if (completed.Failure is not null)
+                throw new InvalidOperationException(
+                    "Spatial terrain LOD seam compilation failed.", completed.Failure);
+            var mesh = completed.Mesh ?? throw new InvalidOperationException(
+                "Spatial terrain LOD seam compilation produced no candidate.");
+            if (!_desiredSpatialSeams.Contains(mesh.Segment) ||
+                !TryResolveSpatialSeamTiles(mesh.Segment, out var owner, out var neighbor) ||
+                TerrainLodSpatialSeamMeshBuilder.ComputeCanonicalHash(
+                    mesh.Segment, owner!, neighbor) != mesh.CanonicalHash)
+            {
+                _staleResults++;
+                continue;
+            }
+
+            TerrainLodSpatialGpuSeamPresentation? candidate = null;
+            try
+            {
+                candidate = TerrainLodSpatialGpuSeamPresentation.Create(
+                    device, nearRenderer.GetOrCreateTerrainGpuArenas(device), mesh);
+                if (_spatialSeams.Remove(mesh.Segment, out var previous)) previous.Dispose();
+                _spatialSeams.Add(mesh.Segment, candidate);
+                candidate = null;
+                installed++;
+            }
+            finally
+            {
+                candidate?.Dispose();
+            }
+        }
+        return installed;
+    }
+
     private void EvaluateSpatialShadow(in ChunkRenderParams parameters)
     {
         var cameraChunkX = parameters.ViewPos.X / SubChunkRenderer.Size;
@@ -980,13 +1037,14 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         // Exercise the exact group-transition state that Phase 6E will submit. Its output remains
         // diagnostics-only until a stable root forest, adjacent-tier seams, and draw integration
         // are all enabled together.
-        _spatialPresentations.Update(
+        var frame = _spatialPresentations.Update(
             root,
             cameraChunkX,
             cameraChunkZ,
             _spatialPolicy,
             parameters.DeltaTime,
             parameters.ChunkFade);
+        UpdateSpatialSeams(frame, cameraChunkX, cameraChunkZ);
         _spatialSnapshot = new TerrainLodSpatialShadowSnapshot(
             root,
             selection.CompleteCoverage,
@@ -995,8 +1053,89 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             selection.MissingCoverageGroups,
             _spatialPresentations.Count,
             _spatialMeshPending.Count,
+            _desiredSpatialSeams.Count,
+            _spatialSeams.Count,
             _spatialHierarchy.Snapshot(),
-            _spatialMeshCompilation.Snapshot());
+            _spatialMeshCompilation.Snapshot(),
+            _spatialSeamCompilation.Snapshot());
+    }
+
+    private void UpdateSpatialSeams(
+        TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation> frame,
+        double cameraChunkX,
+        double cameraChunkZ)
+    {
+        _desiredSpatialSeams.Clear();
+        if (frame.CompleteCoverage)
+        {
+            // Outgoing and incoming partitions overlap during a group fade, so each must be
+            // planned independently. Their seam sets coexist until the atomic transition ends.
+            foreach (var partition in frame.Draws.GroupBy(static draw => draw.Fade.Mode))
+            foreach (var seam in TerrainLodSpatialSeamPlanner.Plan(
+                         partition.Select(static draw => draw.Selection)))
+                _desiredSpatialSeams.Add(seam);
+        }
+
+        _spatialSeamCompilation.Retain(_desiredSpatialSeams);
+        foreach (var key in _spatialSeams.Keys
+                     .Where(key => !_desiredSpatialSeams.Contains(key)).ToArray())
+            if (_spatialSeams.Remove(key, out var obsolete)) obsolete.Dispose();
+
+        var admitted = 0;
+        foreach (var seam in _desiredSpatialSeams
+                     .OrderBy(static seam => seam.IsExterior)
+                     .ThenBy(seam => SpatialSeamDistance(
+                         seam, cameraChunkX, cameraChunkZ))
+                     .ThenBy(static seam => seam.FixedChunkCoordinate)
+                     .ThenBy(static seam => seam.AlongStartChunk))
+        {
+            if (admitted >= SpatialSeamAdmissionsPerFrame) break;
+            if (!TryResolveSpatialSeamTiles(seam, out var owner, out var neighbor)) continue;
+            var expectedHash = TerrainLodSpatialSeamMeshBuilder.ComputeCanonicalHash(
+                seam, owner!, neighbor);
+            if (_spatialSeams.TryGetValue(seam, out var existing) &&
+                existing.CanonicalHash == expectedHash)
+                continue;
+            if (_spatialSeamCompilation.Submit(
+                    seam, owner!, neighbor, _world.Content.Blocks,
+                    SpatialSeamDistance(seam, cameraChunkX, cameraChunkZ)))
+                admitted++;
+        }
+    }
+
+    private bool TryResolveSpatialSeamTiles(
+        TerrainLodSpatialSeamSegment seam,
+        out TerrainLodColumnTile? owner,
+        out TerrainLodColumnTile? neighbor)
+    {
+        if (!_spatialHierarchy.TryGetCoverage(seam.Owner.Tile, out owner, out _) ||
+            owner is null)
+        {
+            neighbor = null;
+            return false;
+        }
+        if (seam.Neighbor is not { } selection)
+        {
+            neighbor = null;
+            return true;
+        }
+        return _spatialHierarchy.TryGetCoverage(selection.Tile, out neighbor, out _) &&
+               neighbor is not null;
+    }
+
+    private static double SpatialSeamDistance(
+        TerrainLodSpatialSeamSegment seam,
+        double cameraChunkX,
+        double cameraChunkZ)
+    {
+        var along = (seam.AlongStartChunk + seam.AlongEndChunk) * 0.5;
+        var vertical = seam.OwnerSide is TerrainLodSpatialBoundarySide.West or
+            TerrainLodSpatialBoundarySide.East;
+        var x = vertical ? seam.FixedChunkCoordinate : along;
+        var z = vertical ? along : seam.FixedChunkCoordinate;
+        var dx = x - cameraChunkX;
+        var dz = z - cameraChunkZ;
+        return Math.Sqrt(dx * dx + dz * dz);
     }
 
     private void RequestDetailLevel((int X, int Z) key, int requestedLevel)

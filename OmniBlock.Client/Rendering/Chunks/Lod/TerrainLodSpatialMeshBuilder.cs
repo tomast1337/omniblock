@@ -40,6 +40,7 @@ internal sealed record TerrainLodSpatialMeshData(
     string CanonicalHash,
     int HorizontalSampleLevel,
     int VerticalSliceBudget,
+    bool IncludesExternalBoundaryFaces,
     int MaximumRenderedSpans,
     TerrainLodSpatialMeshPage[] Pages)
 {
@@ -64,7 +65,8 @@ internal static class TerrainLodSpatialMeshBuilder
     public static TerrainLodSpatialMeshData Build(
         TerrainLodColumnTile tile,
         IBlockRuntimeView blocks,
-        int verticalSliceBudget)
+        int verticalSliceBudget,
+        bool emitTileBoundaryFaces = true)
     {
         ArgumentNullException.ThrowIfNull(tile);
         ArgumentNullException.ThrowIfNull(blocks);
@@ -165,9 +167,9 @@ internal static class TerrainLodSpatialMeshBuilder
                     int alongEnd,
                     float shade)
                 {
-                    var neighbor = InBounds(neighborX, neighborZ)
-                        ? Column(neighborX, neighborZ)
-                        : null;
+                    var neighborInBounds = InBounds(neighborX, neighborZ);
+                    if (!neighborInBounds && !emitTileBoundaryFaces) return;
+                    var neighbor = neighborInBounds ? Column(neighborX, neighborZ) : null;
                     var runStart = -1;
                     for (var y = minY; y <= maxY; y++)
                     {
@@ -252,6 +254,7 @@ internal static class TerrainLodSpatialMeshBuilder
             tile.CanonicalHash,
             tile.HorizontalSampleLevel,
             verticalSliceBudget,
+            emitTileBoundaryFaces,
             maximumRenderedSpans,
             completedPages);
 
@@ -291,7 +294,7 @@ internal static class TerrainLodSpatialMeshBuilder
     private static TerrainLodColumnSpan? NeighborAt(TerrainLodColumn column, int y) =>
         y < 0 || y >= column.WorldHeight ? null : column.At(y);
 
-    private static bool IsFaceVisible(
+    internal static bool IsFaceVisible(
         TerrainLodMaterial material,
         TerrainLodColumnSpan? neighbor,
         bool translucent)
@@ -301,17 +304,17 @@ internal static class TerrainLodSpatialMeshBuilder
         return !translucent || neighbor.Value.Material != material;
     }
 
-    private static bool TryLayer(TerrainLodMaterial material, out bool translucent)
+    internal static bool TryLayer(TerrainLodMaterial material, out bool translucent)
     {
         translucent = TerrainLodMeshBuilder.IsTranslucent(material);
         return translucent || TerrainLodMeshBuilder.IsVolumetricDepthWriting(material);
     }
 
-    private static ChunkLightVertex Light(in TerrainLodColumnSpan span) => new(
+    internal static ChunkLightVertex Light(in TerrainLodColumnSpan span) => new(
         ChunkVertexHelper.ToQuarterLevels(span.SkyLight),
         ChunkVertexHelper.ToQuarterLevels(span.BlockLight));
 
-    private static void Emit(
+    internal static void Emit(
         PageBuilder page,
         bool translucent,
         Side side,
@@ -350,13 +353,13 @@ internal static class TerrainLodSpatialMeshBuilder
         }
     }
 
-    private static int FloorDivide(int value, int divisor)
+    internal static int FloorDivide(int value, int divisor)
     {
         var quotient = value / divisor;
         return value % divisor < 0 ? quotient - 1 : quotient;
     }
 
-    private sealed class PageBuilder(int originX, int originY, int originZ)
+    internal sealed class PageBuilder(int originX, int originY, int originZ)
     {
         private readonly List<Quad>[] _solid = CreateBuckets();
         private readonly List<Quad>[] _translucent = CreateBuckets();

@@ -611,6 +611,11 @@ public partial class OmniBlock :
                     "terrainLodSpatialMeshQueued" => spatial.MeshCompilation.Queued,
                     "terrainLodSpatialMeshRunning" => spatial.MeshCompilation.Running,
                     "terrainLodSpatialMeshReady" => spatial.MeshCompilation.Ready,
+                    "terrainLodSpatialSeamDesired" => spatial.DesiredSeams,
+                    "terrainLodSpatialSeamGpuResident" => spatial.GpuSeams,
+                    "terrainLodSpatialSeamQueued" => spatial.SeamCompilation.Queued,
+                    "terrainLodSpatialSeamRunning" => spatial.SeamCompilation.Running,
+                    "terrainLodSpatialSeamReady" => spatial.SeamCompilation.Ready,
                     "clientWorkingSetBytes" => Environment.WorkingSet,
                     _ => 0
                 };
