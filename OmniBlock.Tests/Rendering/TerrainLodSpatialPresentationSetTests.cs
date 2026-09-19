@@ -12,6 +12,27 @@ public sealed class TerrainLodSpatialPresentationSetTests
         verticalSliceBudgetBySpatialLevel: [16, 8]);
 
     [Fact]
+    public void Revision_advances_only_when_a_new_presentation_is_published()
+    {
+        var key = new TerrainLodTileKey(0, 0, 0);
+        using var presentations = new TerrainLodSpatialPresentationSet<FakePresentation>();
+
+        Assert.Equal(0, presentations.Revision);
+        Assert.True(presentations.TryInstall(
+            key, "first", () => new FakePresentation("first"), out _));
+        Assert.Equal(1, presentations.Revision);
+        Assert.False(presentations.TryInstall(
+            key, "first", () => new FakePresentation("unused"), out _));
+        Assert.Equal(1, presentations.Revision);
+        Assert.False(presentations.TryInstall(
+            key, "second", static () => throw new InvalidOperationException("failed"), out _));
+        Assert.Equal(1, presentations.Revision);
+        Assert.True(presentations.TryInstall(
+            key, "second", () => new FakePresentation("second"), out _));
+        Assert.Equal(2, presentations.Revision);
+    }
+
+    [Fact]
     public void Failed_candidate_keeps_the_published_predecessor()
     {
         var key = new TerrainLodTileKey(0, 2, -3);

@@ -49,6 +49,7 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
     private bool _disposed;
 
     public int Count => _entries.Count;
+    public long Revision { get; private set; }
     public bool Transitioning => _transitions.Values.Any(static state => state.To.Length != 0);
     public IEnumerable<TerrainLodTileKey> ReadyKeys => _entries.Keys;
     public IEnumerable<TPresentation> ReadyPresentations =>
@@ -85,6 +86,7 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
         // The dictionary swap is the publication point. Only after it succeeds may the previous
         // buffers retire; until then every selector sees the predecessor as valid coverage.
         _entries[key] = new Entry(canonicalHash, candidate);
+        Revision++;
         unchanged?.Presentation.Dispose();
         return true;
     }

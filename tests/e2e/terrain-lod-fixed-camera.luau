@@ -135,5 +135,6 @@ print("terrain-lod-fixed-camera schema=2 targetChunks=64 spatialResident=" ..
     " coverageComplete=" .. tostring(OMNI.client.state.terrainLodRemoteCoverageComplete))
 
 OMNI.test.dumpTerrain("lod-fixed-camera-64")
+OMNI.test.dumpProfiler("lod-fixed-camera-64")
 OMNI.test.screenshot()
 OMNI.test.pass()

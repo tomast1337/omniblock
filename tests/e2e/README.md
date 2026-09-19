@@ -42,7 +42,9 @@ and exits. The measured process reopens that cache, waits for 100% client covera
 flying camera and samples 120 frames. It reports frame and
 terrain-CPU distributions, draw counts, LOD GPU/boundary/cache memory, process working set, and the
 required/available adaptive-tile contract plus current in-flight, pending, missing, and deferred
-counts. GPU pass timing uses timestamp queries when the adapter supports them and reports the
+counts. It also writes the hierarchical CPU and GPU profiler snapshots used to distinguish forest
+selection, seam validation, submission, and actual device work. GPU pass timing uses timestamp
+queries when the adapter supports them and reports the
 unsupported state otherwise. A passing run now proves complete source coverage for the requested
 64-chunk horizon; fixture preparation is outside the timed sample. Run it with
 `xvfb-run -a tests/e2e/run-local.sh terrain-lod-fixed-camera`.

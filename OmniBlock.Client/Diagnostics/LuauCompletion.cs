@@ -45,7 +45,7 @@ internal sealed partial class LuauCompletion
             "terrainLodIdentityReady", "terrainLodIdentityMismatches",
             "terrainLodIdentityRejectedMessages"];
 
-    private static readonly string[] s_testMembers = ["breakBlock", "countEntities", "creative", "dumpProfiler", "dumpTerrain", "entityBaselineEnvironment", "fail", "flyPath", "isMeshCurrent", "meshDeadlineMissCount", "pass", "screenshot", "setBlock", "setFlying", "setLook", "setMovement", "summon", "teleport"];
+    private static readonly string[] s_testMembers = ["breakBlock", "countEntities", "creative", "dumpProfiler", "dumpTerrain", "entityBaselineEnvironment", "fail", "flyPath", "isMeshCurrent", "meshDeadlineMissCount", "pass", "prepareTerrainLodFixture", "screenshot", "setBlock", "setFlying", "setLook", "setMovement", "summon", "teleport", "terrainLodFixtureMetric"];
     private static readonly string[] s_worldMembers = ["list", "load"];
     private static readonly string[] s_worldGenerationMembers = ["available", "get", "list", "start"];
     private static readonly string[] s_uiMembers = ["hud", "querySelector", "root", "screen"];

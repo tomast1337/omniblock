@@ -156,6 +156,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         TerrainLodSpatialGpuSeamPresentation> _spatialSeams = [];
     private readonly Dictionary<TerrainLodSpatialSeamSegment,
         TerrainLodSpatialPresentationFade> _spatialSeamFades = [];
+    private readonly Dictionary<TerrainLodSpatialSeamSegment,
+        SpatialSeamHashCache> _spatialSeamHashes = [];
     private readonly HashSet<TerrainLodTileKey> _authoritativeSpatialTiles = [];
     private readonly List<VisibleSpatialPage> _visibleSpatialSolid = [];
     private readonly List<VisibleSpatialPage> _visibleSpatialTranslucent = [];
@@ -214,6 +216,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private TerrainLodSpatialSnapshot _spatialSnapshot;
     private TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation>?
         _spatialFrame;
+    private SpatialForestCacheKey? _spatialForestCacheKey;
+    private TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation>?
+        _spatialForestCachedFrame;
     private bool _spatialSubmissionReady;
 
     public ClientTerrainLodRenderer(World world, TerrainLodCacheStore? cache = null)
@@ -1285,11 +1290,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             var mesh = completed.Mesh ?? throw new InvalidOperationException(
                 "Spatial terrain LOD seam compilation produced no candidate.");
             if (!_desiredSpatialSeams.Contains(mesh.Segment) ||
-                !TryResolveSpatialSeamTiles(mesh.Segment, out var owner, out var neighbor) ||
-                TerrainLodSpatialSeamMeshBuilder.ComputeCanonicalHash(
-                    mesh.Segment, owner!, neighbor,
-                    _world.Dimension.HasCeiling ? null : OverworldCaveCullCeilingY) !=
-                mesh.CanonicalHash)
+                !TryResolveSpatialSeamIdentity(
+                    mesh.Segment, out _, out _, out var expectedHash) ||
+                expectedHash != mesh.CanonicalHash)
             {
                 _staleResults++;
                 continue;
@@ -1315,6 +1318,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
 
     private void EvaluateSpatialPresentation(in ChunkRenderParams parameters)
     {
+        var stageStarted = Stopwatch.GetTimestamp();
         var cameraChunkX = parameters.ViewPos.X / SubChunkRenderer.Size;
         var cameraChunkZ = parameters.ViewPos.Z / SubChunkRenderer.Size;
         var chunkX = (int)Math.Floor(cameraChunkX);
@@ -1339,14 +1343,23 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             root = candidateRoot;
             selection = candidate;
         }
+        Profiler.Record("SpatialRootSelectionCpu",
+            Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
         // The forest is the live spatial partition. Bodies become authoritative only after
         // UpdateSpatialSeams verifies that every boundary of this exact partition is GPU-ready.
+        stageStarted = Stopwatch.GetTimestamp();
         var frame = BuildSpatialForestFrame(
             cameraChunkX, cameraChunkZ,
             parameters.TerrainHorizonDistance,
             parameters.DeltaTime);
+        Profiler.Record("SpatialForestCpu",
+            Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
+        stageStarted = Stopwatch.GetTimestamp();
         UpdateSpatialSeams(
             frame, cameraChunkX, cameraChunkZ, parameters.RenderDistance);
+        Profiler.Record("SpatialSeamCpu",
+            Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
+        stageStarted = Stopwatch.GetTimestamp();
         _spatialSnapshot = new TerrainLodSpatialSnapshot(
             root,
             selection.CompleteCoverage,
@@ -1373,6 +1386,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             _spatialHierarchy.Snapshot(),
             _spatialMeshCompilation.Snapshot(),
             _spatialSeamCompilation.Snapshot());
+        Profiler.Record("SpatialSnapshotCpu",
+            Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
     }
 
     private TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation>
@@ -1382,6 +1397,15 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             int horizonDistance,
             float deltaTime)
     {
+        var cacheKey = new SpatialForestCacheKey(
+            cameraChunkX,
+            cameraChunkZ,
+            horizonDistance,
+            _spatialPresentations.Revision);
+        if (_spatialForestCacheKey == cacheKey &&
+            _spatialForestCachedFrame is not null)
+            return _spatialForestCachedFrame;
+
         List<TerrainLodSpatialPresentationDraw<TerrainLodSpatialGpuPresentation>> draws = [];
         var transitioning = false;
         var maximumDistance = Math.Max(1, horizonDistance) +
@@ -1413,8 +1437,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             transitioning |= rootFrame.Transitioning;
         }
         _spatialPresentations.RetainTransitionRoots(activeRoots);
-        return new TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation>(
+        var frame = new TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation>(
             [.. draws], completeCoverage: draws.Count != 0, transitioning);
+        _spatialForestCacheKey = cacheKey;
+        _spatialForestCachedFrame = frame;
+        return frame;
     }
 
     private void UpdateSpatialSeams(
@@ -1423,6 +1450,12 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         double cameraChunkZ,
         int renderDistance)
     {
+        if (ReferenceEquals(frame, _spatialFrame) && _spatialSubmissionReady)
+        {
+            RefreshAuthority();
+            return;
+        }
+
         _desiredSpatialSeams.Clear();
         _spatialSeamFades.Clear();
         if (frame.CompleteCoverage)
@@ -1446,6 +1479,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         }
 
         _spatialSeamCompilation.Retain(_desiredSpatialSeams);
+        foreach (var key in _spatialSeamHashes.Keys
+                     .Where(key => !_desiredSpatialSeams.Contains(key)).ToArray())
+            _spatialSeamHashes.Remove(key);
         foreach (var key in _spatialSeams.Keys
                      .Where(key => !_desiredSpatialSeams.Contains(key)).ToArray())
             if (_spatialSeams.Remove(key, out var obsolete)) obsolete.Dispose();
@@ -1459,12 +1495,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                      .ThenBy(static seam => seam.AlongStartChunk))
         {
             if (admitted >= SpatialSeamAdmissionsPerFrame) break;
-            if (!TryResolveSpatialSeamTiles(seam, out var owner, out var neighbor)) continue;
+            if (!TryResolveSpatialSeamIdentity(
+                    seam, out var owner, out var neighbor, out var expectedHash)) continue;
             int? caveCullBelowY = _world.Dimension.HasCeiling
                 ? null
                 : OverworldCaveCullCeilingY;
-            var expectedHash = TerrainLodSpatialSeamMeshBuilder.ComputeCanonicalHash(
-                seam, owner!, neighbor, caveCullBelowY);
             if (_spatialSeams.TryGetValue(seam, out var existing) &&
                 existing.CanonicalHash == expectedHash)
                 continue;
@@ -1478,23 +1513,59 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _spatialFrame = frame;
         _spatialSubmissionReady = frame.CompleteCoverage &&
             _desiredSpatialSeams.All(SpatialSeamIsCurrent);
-        _authoritativeSpatialTiles.Clear();
-        if (!_spatialSubmissionReady) return;
-        foreach (var draw in frame.Draws)
-            if (TerrainLodSpatialAuthority.IsBeyondNearRadius(
-                    draw.Selection.Tile, cameraChunkX, cameraChunkZ, renderDistance))
-                _authoritativeSpatialTiles.Add(draw.Selection.Tile);
+        RefreshAuthority();
+
+        void RefreshAuthority()
+        {
+            _spatialFrame = frame;
+            _authoritativeSpatialTiles.Clear();
+            if (!_spatialSubmissionReady) return;
+            foreach (var draw in frame.Draws)
+                if (TerrainLodSpatialAuthority.IsBeyondNearRadius(
+                        draw.Selection.Tile, cameraChunkX, cameraChunkZ, renderDistance))
+                    _authoritativeSpatialTiles.Add(draw.Selection.Tile);
+        }
 
         bool SpatialSeamIsCurrent(TerrainLodSpatialSeamSegment seam)
         {
             if (!_spatialSeams.TryGetValue(seam, out var presentation) ||
-                !TryResolveSpatialSeamTiles(seam, out var owner, out var neighbor))
+                !TryResolveSpatialSeamIdentity(
+                    seam, out _, out _, out var expectedHash))
                 return false;
-            return presentation.CanonicalHash ==
-                   TerrainLodSpatialSeamMeshBuilder.ComputeCanonicalHash(
-                       seam, owner!, neighbor,
-                       _world.Dimension.HasCeiling ? null : OverworldCaveCullCeilingY);
+            return presentation.CanonicalHash == expectedHash;
         }
+    }
+
+    private bool TryResolveSpatialSeamIdentity(
+        TerrainLodSpatialSeamSegment seam,
+        out TerrainLodColumnTile? owner,
+        out TerrainLodColumnTile? neighbor,
+        out string canonicalHash)
+    {
+        canonicalHash = string.Empty;
+        if (!TryResolveSpatialSeamTiles(seam, out owner, out neighbor)) return false;
+        int? caveCullBelowY = _world.Dimension.HasCeiling
+            ? null
+            : OverworldCaveCullCeilingY;
+        if (_spatialSeamHashes.TryGetValue(seam, out var cached) &&
+            string.Equals(cached.OwnerCanonicalHash, owner!.CanonicalHash,
+                StringComparison.Ordinal) &&
+            string.Equals(cached.NeighborCanonicalHash, neighbor?.CanonicalHash,
+                StringComparison.Ordinal) &&
+            cached.CaveCullBelowY == caveCullBelowY)
+        {
+            canonicalHash = cached.CanonicalHash;
+            return true;
+        }
+
+        canonicalHash = TerrainLodSpatialSeamMeshBuilder.ComputeCanonicalHash(
+            seam, owner!, neighbor, caveCullBelowY);
+        _spatialSeamHashes[seam] = new SpatialSeamHashCache(
+            owner.CanonicalHash,
+            neighbor?.CanonicalHash,
+            caveCullBelowY,
+            canonicalHash);
+        return true;
     }
 
     private void CollectVisibleSpatialPages(
@@ -2259,6 +2330,18 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         TerrainLodSpatialGpuPresentation.GpuPage Page,
         TerrainLodSpatialPresentationFade Fade,
         double DistanceSquared);
+
+    private readonly record struct SpatialSeamHashCache(
+        string OwnerCanonicalHash,
+        string? NeighborCanonicalHash,
+        int? CaveCullBelowY,
+        string CanonicalHash);
+
+    private readonly record struct SpatialForestCacheKey(
+        double CameraChunkX,
+        double CameraChunkZ,
+        int HorizonDistance,
+        long PresentationRevision);
 
     private readonly record struct VisibleTranslucentDraw(
         VisibleColumn? Column,
