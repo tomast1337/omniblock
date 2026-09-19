@@ -8,7 +8,7 @@ public sealed class ChunkUniformLayoutTests
     [Fact]
     public void Draw_metadata_layout_matches_chunk_shader()
     {
-        Assert.Equal(48, Marshal.SizeOf<ChunkDrawMetadata>());
+        Assert.Equal(64, Marshal.SizeOf<ChunkDrawMetadata>());
         AssertOffset<ChunkDrawMetadata>(nameof(ChunkDrawMetadata.RegionCellX), 0);
         AssertOffset<ChunkDrawMetadata>(nameof(ChunkDrawMetadata.FadeProgress), 12);
         AssertOffset<ChunkDrawMetadata>(nameof(ChunkDrawMetadata.LocalOriginX), 16);
@@ -16,6 +16,8 @@ public sealed class ChunkUniformLayoutTests
         AssertOffset<ChunkDrawMetadata>(nameof(ChunkDrawMetadata.ChunkPosX), 32);
         AssertOffset<ChunkDrawMetadata>(nameof(ChunkDrawMetadata.PresentationFadeMode), 40);
         AssertOffset<ChunkDrawMetadata>(nameof(ChunkDrawMetadata.PresentationFadeSeed), 44);
+        AssertOffset<ChunkDrawMetadata>(nameof(ChunkDrawMetadata.HiddenColumnsLow), 48);
+        AssertOffset<ChunkDrawMetadata>(nameof(ChunkDrawMetadata.HiddenColumnsHigh), 52);
     }
 
     [Fact]

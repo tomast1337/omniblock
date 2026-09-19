@@ -326,14 +326,11 @@ internal sealed class SectionVisibilitySnapshot
             return true;
         }
 
-        bool IsWithinExpandedDistance(in Node node)
-        {
-            var dx = node.Center.X - viewPosition.X;
-            var dy = node.Center.Y - viewPosition.Y;
-            var dz = node.Center.Z - viewPosition.Z;
-            return dx * dx + dz * dz < expandedDistance * expandedDistance &&
-                   Math.Abs(dy) < expandedDistance;
-        }
+        // The worker's conservative candidate set must use the same horizontal footprint as the
+        // live culler. A vertical cutoff here alternates missing terrain with synchronous frames
+        // when flying above the world, particularly at small detailed distances.
+        bool IsWithinExpandedDistance(in Node node) =>
+            SubChunkRenderer.IsWithinHorizontalRenderDistance(node.Center, viewPosition, expandedDistance);
 
         void Emit(int index)
         {

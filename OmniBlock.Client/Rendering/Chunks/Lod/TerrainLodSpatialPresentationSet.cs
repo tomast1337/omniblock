@@ -289,10 +289,42 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
 
 internal static class TerrainLodSpatialAuthority
 {
+    internal const ulong AllColumnsHidden = (1UL << 36) - 1;
+
+    // A 64-block page spans 4x4 columns. Include a one-column halo because vertical seam
+    // geometry can lie exactly on a page edge and belong to the column on either side.
+    public static ulong HiddenColumnMask(int pageChunkX, int pageChunkZ, Func<int, int, bool> spatialOwns)
+    {
+        ulong mask = 0;
+        for (var z = -1; z <= 4; z++)
+        for (var x = -1; x <= 4; x++)
+            if (!spatialOwns(pageChunkX + x, pageChunkZ + z))
+                mask |= 1UL << ((z + 1) * 6 + x + 1);
+        return mask;
+    }
+
     /// <summary>
-    ///     A coarse tile may replace legacy column LOD only when its nearest boundary is beyond
-    ///     the exact-render radius plus a one-chunk guard band. Tiles intersecting that band remain
-    ///     fallback-only so coarse geometry cannot win an equal-depth test against near terrain.
+    ///     Distance requests a handoff; complete GPU coverage permits it. In particular, entering
+    ///     the guard band cannot discard a remotely supplied tile whose columns have not streamed
+    ///     into the near renderer or the legacy LOD cache yet.
+    /// </summary>
+    public static bool ShouldPresent(
+        TerrainLodTileKey tile,
+        double cameraChunkX,
+        double cameraChunkZ,
+        int renderDistance,
+        Func<int, int, bool> replacementReady)
+    {
+        if (IsBeyondNearRadius(tile, cameraChunkX, cameraChunkZ, renderDistance)) return true;
+        for (var z = tile.MinChunkZ; z <= tile.MaxChunkZ; z++)
+        for (var x = tile.MinChunkX; x <= tile.MaxChunkX; x++)
+            if (!replacementReady(checked((int)x), checked((int)z))) return true;
+        return false;
+    }
+
+    /// <summary>
+    ///     Beyond the exact-render radius plus one guard chunk, spatial tiles own the full
+    ///     footprint. Within it, authority is decided per column from replacement readiness.
     /// </summary>
     public static bool IsBeyondNearRadius(
         TerrainLodTileKey tile,

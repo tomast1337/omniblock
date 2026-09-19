@@ -79,6 +79,29 @@ public sealed class SectionVisibilitySnapshotTests
             new Vector3D<double>(8, 72, 8), cancellation.Token));
     }
 
+    [Theory]
+    [InlineData(170, false)]
+    [InlineData(170, true)]
+    [InlineData(192, false)]
+    [InlineData(192, true)]
+    [InlineData(512, false)]
+    [InlineData(512, true)]
+    public void Worker_retains_terrain_below_high_camera_like_the_live_culler(int height, bool occlusion)
+    {
+        using var below = Resident(new Vector3D<int>(0, 64, 0));
+        using var distant = Resident(new Vector3D<int>(160, 64, 0));
+        var position = new Vector3D<double>(8, height, 8);
+        var view = VisibilityViewKey.Create(new Vector3D<int>(0, height / 16 * 16, 0),
+            position, 0, 90, 0, Matrix4X4<float>.Identity, 4, occlusion);
+        var snapshot = SectionVisibilitySnapshot.Capture([below, distant], 1, 1);
+
+        Assert.True(below.Renderer!.IsWithinRenderDistance(position, 4 * 16));
+        var result = snapshot.Build(view, below.Position, AllVisibleFrustum(), position, CancellationToken.None);
+
+        Assert.Contains(result.ConservativeCandidates, candidate => candidate.Identity.Position == below.Position);
+        Assert.DoesNotContain(result.ConservativeCandidates, candidate => candidate.Identity.Position == distant.Position);
+    }
+
     private static VisibilityViewKey View(int sectionX, bool occlusion, int renderDistance = 32) => VisibilityViewKey.Create(
         new Vector3D<int>(sectionX, 64, 0),
         new Vector3D<double>(sectionX + 8, 72, 8),

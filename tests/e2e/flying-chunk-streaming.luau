@@ -22,6 +22,8 @@ OMNI.test.dumpTerrain("initial")
 
 OMNI.wait(2)
 assert(OMNI.client.state.playerY > 240, "player left the aerial test position")
+assert(OMNI.client.state.presentedSolidLayerCount > 0,
+    "exact terrain directly below the high camera was distance-culled")
 OMNI.test.dumpTerrain("after-2s")
 
 local safetyReady = false

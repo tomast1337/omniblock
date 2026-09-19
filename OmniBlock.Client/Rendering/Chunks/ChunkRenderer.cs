@@ -62,7 +62,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private const double MeshDispatchBudgetMs = 1.5;
 
     /// <summary>Bytes of <see cref="ChunkDrawMetadata" />, as chunk.wgsl declares the block.</summary>
-    private const uint ChunkDrawMetadataSize = 48;
+    private static readonly uint ChunkDrawMetadataSize = (uint)Marshal.SizeOf<ChunkDrawMetadata>();
     /// <summary>Bytes of <see cref="ChunkFrameUniforms" />, as chunk.wgsl declares the block.</summary>
     private const uint ChunkFrameUniformSize = 336;
 
@@ -4209,7 +4209,7 @@ internal readonly record struct NearFieldRescueDiagnostics(
 ///     deliberately live in <see cref="ChunkFrameUniforms" /> so this repeated block stays small.
 ///     WGSL's default alignment rules (mat4x4 = 16, vec3 = 16, vec4 = 16, f32/u32 = 4).
 /// </summary>
-[StructLayout(LayoutKind.Explicit, Size = 48)]
+[StructLayout(LayoutKind.Explicit, Size = 64)]
 public struct ChunkDrawMetadata
 {
     [FieldOffset(0)] public int RegionCellX;
@@ -4226,6 +4226,10 @@ public struct ChunkDrawMetadata
     [FieldOffset(36)] public float ChunkPosY;
     [FieldOffset(40)] public uint PresentationFadeMode;
     [FieldOffset(44)] public uint PresentationFadeSeed;
+    // Spatial LOD pages mask columns only after their replacements are ready. Zero means
+    // unrestricted coverage for ordinary section/column draws. WGSL rounds the stride to 64.
+    [FieldOffset(48)] public uint HiddenColumnsLow;
+    [FieldOffset(52)] public uint HiddenColumnsHigh;
 }
 
 /// <summary>Frame/pass-wide chunk.wgsl terrain uniforms and exact camera coordinate frame.</summary>

@@ -89,13 +89,20 @@ public class SubChunkRenderer : IDisposable
         return IsWithinRenderDistance(viewPos, renderDistance);
     }
 
-    internal bool IsWithinRenderDistance(Vector3D<double> viewPos, float renderDistance)
-    {
-        var dx = PositionPlus.X - viewPos.X;
-        var dy = PositionPlus.Y - viewPos.Y;
-        var dz = PositionPlus.Z - viewPos.Z;
+    internal bool IsWithinRenderDistance(Vector3D<double> viewPos, float renderDistance) =>
+        IsWithinHorizontalRenderDistance(PositionPlus, viewPos, renderDistance);
 
-        return dx * dx + dz * dz < renderDistance * renderDistance && Math.Abs(dy) < renderDistance;
+    internal static bool IsWithinHorizontalRenderDistance(
+        Vector3D<int> sectionCenter, Vector3D<double> viewPos, double renderDistance)
+    {
+        var dx = sectionCenter.X - viewPos.X;
+        var dz = sectionCenter.Z - viewPos.Z;
+
+        // Chunk render distance is a horizontal streaming radius. Applying that same distance as
+        // a vertical cutoff makes the exact terrain directly below a high camera disappear while
+        // the horizontally selected LOD remains visible. The frustum is responsible for rejecting
+        // sections above and below the view; distance only bounds the X/Z residency footprint.
+        return dx * dx + dz * dz < renderDistance * renderDistance;
     }
 
     /// <summary>

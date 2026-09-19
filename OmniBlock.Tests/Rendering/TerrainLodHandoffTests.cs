@@ -106,6 +106,20 @@ public sealed class TerrainLodHandoffTests
         Assert.Equal(1, transition.Reversals);
     }
 
+    [Theory]
+    [InlineData((int)TerrainLodHandoffState.LodOnly, true)]
+    [InlineData((int)TerrainLodHandoffState.NearPreparing, true)]
+    [InlineData((int)TerrainLodHandoffState.Overlap, true)]
+    [InlineData((int)TerrainLodHandoffState.NearOnly, false)]
+    public void Streaming_boundary_cleanliness_only_gates_initial_exact_takeover(
+        int state,
+        bool expected)
+    {
+        Assert.Equal(expected,
+            ClientTerrainLodRenderer.RequiresBoundaryCleanHandoff(
+                (TerrainLodHandoffState)state));
+    }
+
     [Fact]
     public void Disabled_fade_switches_only_when_replacement_is_ready()
     {

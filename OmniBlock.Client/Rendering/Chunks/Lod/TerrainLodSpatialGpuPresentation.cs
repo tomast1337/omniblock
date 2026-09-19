@@ -8,7 +8,7 @@ namespace OmniBlock.Client.Rendering.Chunks.Lod;
 ///     Fully uploaded spatial tile candidate. Every page uses the same regional vertex arenas as
 ///     exact terrain and retains packed directional ranges for camera-side submission filtering.
 /// </summary>
-internal sealed class TerrainLodSpatialGpuPresentation : IDisposable
+internal sealed class TerrainLodSpatialGpuPresentation : RetainedTerrainResource
 {
     private TerrainLodSpatialGpuPresentation(
         TerrainLodTileKey key,
@@ -52,7 +52,7 @@ internal sealed class TerrainLodSpatialGpuPresentation : IDisposable
         }
     }
 
-    public void Dispose()
+    protected override void DisposeResources()
     {
         foreach (var page in Pages) page.Dispose();
     }
@@ -121,7 +121,7 @@ internal sealed class TerrainLodSpatialGpuPresentation : IDisposable
 }
 
 /// <summary>GPU pages for one neighbor-aware boundary in a spatial presentation partition.</summary>
-internal sealed class TerrainLodSpatialGpuSeamPresentation : IDisposable
+internal sealed class TerrainLodSpatialGpuSeamPresentation : RetainedTerrainResource
 {
     private TerrainLodSpatialGpuSeamPresentation(
         TerrainLodSpatialSeamSegment segment,
@@ -161,7 +161,7 @@ internal sealed class TerrainLodSpatialGpuSeamPresentation : IDisposable
         }
     }
 
-    public void Dispose()
+    protected override void DisposeResources()
     {
         foreach (var page in Pages) page.Dispose();
     }

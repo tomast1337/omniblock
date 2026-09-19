@@ -37,7 +37,9 @@ assert(type(OMNI.client.state.terrainLodSpatialAuthoritativeTiles) == "number")
 assert(type(OMNI.client.state.terrainLodSpatialHighestAuthoritativeLevel) == "number")
 
 local stagingReady = false
-for _ = 1, 600 do
+-- Source loading and parent compilation share the machine with the integrated server. Allow
+-- preparation time without relaxing the level-3 coverage requirement or the flight assertions.
+for _ = 1, 1800 do
     stagingReady = OMNI.client.state.terrainLodSpatialCpuTiles > 0 and
         OMNI.client.state.terrainLodSpatialGpuResident > 0 and
         OMNI.client.state.terrainLodSpatialHighestGpuLevel >= 3 and
@@ -69,15 +71,17 @@ assert(stagingReady,
 -- allowing a coarse tile to overlap the near renderer.
 local px = OMNI.client.state.playerX
 local pz = OMNI.client.state.playerZ
--- The option is normalized: 4 / 28 resolves to an eight-chunk exact radius. This comfortably
--- satisfies the destination preload while the retained roots remain forty chunks away at the
--- promotion point and twenty chunks away at the observation point.
-OMNI.config.viewDistance = 4 / 28
+-- Reproduce the reported setup: four detailed chunks and a 64-chunk LOD horizon.
+-- Only the initial hierarchy seeding above uses a larger detailed radius.
+OMNI.config.viewDistance = 0
 OMNI.test.teleport(px, 192, pz + 640)
 OMNI.test.setLook(0, 25)
 OMNI.waitUntil(function()
     return OMNI.client.state.playerY > 180 and OMNI.client.state.playerZ > pz + 620
 end, 10, 0.05)
+OMNI.waitUntil(function()
+    return OMNI.client.state.playerReady
+end, 45, 0.05)
 
 local hierarchyReady = false
 for _ = 1, 600 do
@@ -102,6 +106,9 @@ OMNI.waitUntil(function()
         OMNI.client.state.playerZ > pz + 300 and
         OMNI.client.state.playerZ < pz + 340
 end, 10, 0.05)
+OMNI.waitUntil(function()
+    return OMNI.client.state.playerReady
+end, 45, 0.05)
 
 local drawReady = false
 for _, yaw in ipairs({0, 90, 180, 270}) do
@@ -125,6 +132,66 @@ assert(drawReady,
 -- obscuring the terrain so the artifact is useful for visual-regression review as well.
 OMNI.test.setLook(180, 30)
 OMNI.wait(0.5)
+OMNI.test.screenshot()
+
+-- Approach the retained terrain through its near guard band. Coarse coverage must not be
+-- withdrawn merely because the camera got closer; available exact columns take over while
+-- unfinished columns remain covered. Exercise the masked spatial draw on the live GPU path.
+OMNI.test.setLook(180, 55)
+OMNI.test.flyPath(px, 192, pz + 320, px, 192, pz, 16)
+for sample = 1, 16 do
+    OMNI.wait(1)
+    assert(OMNI.client.state.webGpuErrorCount == 0,
+        "WebGPU validation failed while approaching spatial LOD")
+    assert(OMNI.client.state.meshBuildFailureCount == 0,
+        "mesh construction failed during the spatial-to-near handoff")
+    assert(OMNI.client.state.terrainLodSpatialSubmissionReady == 1,
+        "displayed spatial snapshot disappeared while replacement seams were pending")
+end
+OMNI.waitUntil(function()
+    return math.abs(OMNI.client.state.playerX - px) < 2 and
+        math.abs(OMNI.client.state.playerZ - pz) < 2 and
+        OMNI.client.state.playerReady and
+        OMNI.client.state.meshSafetyHoles == 0 and
+        OMNI.client.state.presentedSolidLayerCount > 0
+end, 30, 0.05)
+assert(OMNI.client.state.playerY > 180, "player fell during LOD approach")
+OMNI.test.dumpTerrain("spatial-approach")
+OMNI.test.screenshot()
+
+-- Above the world, pitch and height must not repeatedly withdraw the displayed partition.
+-- Fly vertically, then rotate looking straight down at the small full-detail footprint.
+OMNI.test.setLook(0, 90)
+OMNI.test.flyPath(px, 192, pz, px, 512, pz, 8)
+for sample = 1, 8 do
+    OMNI.wait(1)
+    assert(OMNI.client.state.terrainLodSpatialSubmissionReady == 1,
+        "spatial publication vanished during vertical flight")
+end
+-- Cinematic paths advance on simulation ticks, not the script's wall clock. Never start the next
+-- observation before the endpoint has actually been reached on a loaded renderer.
+OMNI.waitUntil(function()
+    return OMNI.client.state.playerY > 511 and OMNI.client.state.playerReady
+end, 30, 0.05)
+OMNI.test.dumpTerrain("spatial-high-altitude")
+OMNI.test.screenshot()
+OMNI.wait(0.2)
+for _, yaw in ipairs({0, 90, 180, 270}) do
+    OMNI.test.setLook(yaw, 90)
+    -- Observe both initial synchronous culling and subsequent worker-result reuse.
+    for sample = 1, 20 do
+        OMNI.wait(0.05)
+        assert(OMNI.client.state.terrainLodSpatialSubmissionReady == 1,
+            "spatial publication vanished while looking down")
+        -- At this height the full four-chunk footprint fits in view. A few emergency safety-ring
+        -- rescues are not sufficient: the old worker cutoff left only about eight sections drawn.
+        assert(OMNI.client.state.presentedSolidLayerCount >= 16,
+            "detailed terrain below the high camera lost coverage: " ..
+            tostring(OMNI.client.state.presentedSolidLayerCount) .. " solid sections")
+    end
+end
+assert(OMNI.client.state.playerY > 500, "high-altitude observation was not reached")
+OMNI.test.dumpTerrain("spatial-high-altitude")
 OMNI.test.screenshot()
 
 assert(OMNI.client.state.webGpuErrorCount == 0,

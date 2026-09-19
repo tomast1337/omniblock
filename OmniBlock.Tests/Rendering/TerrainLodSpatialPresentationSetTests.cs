@@ -232,6 +232,67 @@ public sealed class TerrainLodSpatialPresentationSetTests
             tile, cameraChunkX: 0, cameraChunkZ: 0, renderDistance: 4));
     }
 
+    [Theory]
+    [InlineData(1, 0)]
+    [InlineData(-1, -1)]
+    public void Approaching_a_tile_keeps_coverage_until_every_replacement_column_is_ready(int x, int z)
+    {
+        var tile = new TerrainLodTileKey(2, x, z);
+        HashSet<(int X, int Z)> ready = [];
+        bool ReplacementReady(int cx, int cz) => ready.Contains((cx, cz));
+        var cameraX = (double)tile.MinChunkX;
+        var cameraZ = (double)tile.MinChunkZ;
+
+        Assert.False(TerrainLodSpatialAuthority.IsBeyondNearRadius(tile, cameraX, cameraZ, 4));
+        Assert.True(TerrainLodSpatialAuthority.ShouldPresent(tile, cameraX, cameraZ, 4, ReplacementReady));
+        for (var cz = tile.MinChunkZ; cz <= tile.MaxChunkZ; cz++)
+        for (var cx = tile.MinChunkX; cx <= tile.MaxChunkX; cx++)
+        {
+            // Even the last missing column must keep the complete coarse tile drawable.
+            Assert.True(TerrainLodSpatialAuthority.ShouldPresent(tile, cameraX, cameraZ, 4, ReplacementReady));
+            ready.Add(((int)cx, (int)cz));
+        }
+        Assert.False(TerrainLodSpatialAuthority.ShouldPresent(tile, cameraX, cameraZ, 4, ReplacementReady));
+
+        ready.Remove(((int)tile.MinChunkX, (int)tile.MinChunkZ));
+        Assert.True(TerrainLodSpatialAuthority.ShouldPresent(tile, cameraX, cameraZ, 4, ReplacementReady));
+    }
+
+    [Fact]
+    public void Distant_tile_stays_authoritative_even_when_legacy_replacements_exist()
+    {
+        var tile = new TerrainLodTileKey(2, 10, 0);
+        Assert.True(TerrainLodSpatialAuthority.ShouldPresent(tile, 0, 0, 4,
+            static (_, _) => throw new InvalidOperationException("Distant selection should not scan replacements.")));
+    }
+
+    [Theory]
+    [InlineData(0, 0)]
+    [InlineData(-4, -8)]
+    public void Ready_columns_can_switch_independently_without_hiding_missing_neighbors(int pageX, int pageZ)
+    {
+        // All columns except one have a replacement. The coarse page must cover only that
+        // remaining column, while its ready neighbors can immediately show their finer meshes.
+        var mask = TerrainLodSpatialAuthority.HiddenColumnMask(pageX, pageZ,
+            (x, z) => x == pageX + 2 && z == pageZ + 3);
+        var retainedBit = 1UL << (4 * 6 + 3);
+        Assert.Equal(TerrainLodSpatialAuthority.AllColumnsHidden ^ retainedBit, mask);
+        Assert.NotEqual(0UL, mask & (1UL << (4 * 6 + 2)));
+        Assert.Equal(0UL, mask & retainedBit);
+    }
+
+    [Fact]
+    public void Page_edge_seams_keep_the_neighboring_column_in_the_coverage_mask()
+    {
+        var mask = TerrainLodSpatialAuthority.HiddenColumnMask(4, -4,
+            static (x, z) => x == 3 && z == -4);
+        Assert.Equal(TerrainLodSpatialAuthority.AllColumnsHidden ^ (1UL << 6), mask);
+        Assert.Equal(TerrainLodSpatialAuthority.AllColumnsHidden,
+            TerrainLodSpatialAuthority.HiddenColumnMask(4, -4, static (_, _) => false));
+        Assert.Equal(0UL,
+            TerrainLodSpatialAuthority.HiddenColumnMask(4, -4, static (_, _) => true));
+    }
+
     private static void Install(
         TerrainLodSpatialPresentationSet<FakePresentation> presentations,
         TerrainLodTileKey key)

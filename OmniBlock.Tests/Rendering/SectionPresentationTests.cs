@@ -7,6 +7,26 @@ namespace OmniBlock.Tests.Rendering;
 public sealed class SectionPresentationTests
 {
     [Fact]
+    public void Render_distance_keeps_sections_directly_below_a_high_camera()
+    {
+        using var renderer = new SubChunkRenderer(new Vector3D<int>(0, 0, 0));
+
+        Assert.True(renderer.IsWithinRenderDistance(
+            new Vector3D<double>(8, 1024, 8),
+            renderDistance: 32));
+    }
+
+    [Fact]
+    public void Render_distance_still_rejects_sections_outside_the_horizontal_radius()
+    {
+        using var renderer = new SubChunkRenderer(new Vector3D<int>(0, 0, 0));
+
+        Assert.False(renderer.IsWithinRenderDistance(
+            new Vector3D<double>(41, 8, 8),
+            renderDistance: 32));
+    }
+
+    [Fact]
     public void Installing_a_presentation_swaps_all_mesh_metadata_together()
     {
         using var renderer = new SubChunkRenderer(new Vector3D<int>(16, 32, 48));

@@ -125,7 +125,6 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private const long MeshUploadBudgetBytes = 8L * 1024 * 1024;
     private const int SeamUploadsPerFrame = 2;
     private const int SeamDrawsPerFrame = 256;
-    private const int DrawsPerFrame = 768;
     private const int QuietTicks = 2;
     private const int ExactVoxelMeshLevel = 0;
     private const int TransitionMeshLevel = 1;
@@ -159,6 +158,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private readonly Dictionary<TerrainLodSpatialSeamSegment,
         SpatialSeamHashCache> _spatialSeamHashes = [];
     private readonly HashSet<TerrainLodTileKey> _authoritativeSpatialTiles = [];
+    private readonly HashSet<(int X, int Z)> _authoritativeSpatialColumns = [];
+    private readonly HashSet<(int X, int Z)> _completedSpatialHandoffs = [];
+    private readonly Dictionary<(int X, int Z), ulong> _spatialColumnMasks = [];
     private readonly List<VisibleSpatialPage> _visibleSpatialSolid = [];
     private readonly List<VisibleSpatialPage> _visibleSpatialTranslucent = [];
     private readonly List<TerrainLodColumnTile> _completedSpatialParents = [];
@@ -214,12 +216,14 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private bool _disposed;
     private ClientTerrainLodSnapshot _snapshot;
     private TerrainLodSpatialSnapshot _spatialSnapshot;
+    private readonly TerrainLodSpatialPublication<TerrainLodSpatialGpuPresentation, TerrainLodSpatialGpuSeamPresentation>
+        _spatialPublication = new();
     private TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation>?
-        _spatialFrame;
+        _spatialFrame => _spatialPublication.Frame;
     private SpatialForestCacheKey? _spatialForestCacheKey;
     private TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation>?
         _spatialForestCachedFrame;
-    private bool _spatialSubmissionReady;
+    private bool _spatialSubmissionReady => _spatialFrame is not null;
 
     public ClientTerrainLodRenderer(World world, TerrainLodCacheStore? cache = null)
     {
@@ -510,6 +514,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
 
     public TerrainNearHandoff GetNearHandoff(int chunkX, int chunkZ, bool translucent)
     {
+        // Only columns still covered by spatial LOD suppress their partial exact replacement.
+        if (IsAuthoritativeSpatialChunk((chunkX, chunkZ)))
+            return new TerrainNearHandoff(true, 0, FadeSeed((chunkX, chunkZ)));
         if (!_resident.TryGetValue((chunkX, chunkZ), out var presentation) ||
             !presentation.HasLayer(translucent)) return TerrainNearHandoff.Inactive;
         return new TerrainNearHandoff(
@@ -598,8 +605,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             parameters.RenderDistance, nearRenderer);
         uploads += InstallSpatialCompleted(nearRenderer);
         uploads += InstallSpatialSeams(nearRenderer);
-        EvaluateSpatialPresentation(parameters);
         EvictDistant(parameters.ViewPos);
+        EvaluateSpatialPresentation(parameters, nearRenderer);
         Profiler.Record("InstallAndEvictCpu", Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
 
         if (RenderSystem.Fog.Curve != FogCurve.Linear ||
@@ -639,7 +646,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 continue;
             }
             var (nearPresent, nearReady) = NearState(
-                key, distanceSquared, parameters.RenderDistance, nearRenderer);
+                key, distanceSquared, parameters.RenderDistance, nearRenderer,
+                RequiresBoundaryCleanHandoff(
+                    presentation.HandoffFor(translucent: false).State));
             var handoff = UpdateHandoff(presentation,
                 translucent: false, nearPresent, nearReady,
                 parameters.DeltaTime, parameters.ChunkFade);
@@ -683,8 +692,6 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             var z = a.Key.Z.CompareTo(b.Key.Z);
             return z != 0 ? z : a.Level.CompareTo(b.Level);
         });
-        if (_visible.Count > DrawsPerFrame)
-            _visible.RemoveRange(DrawsPerFrame, _visible.Count - DrawsPerFrame);
         var drawnColumns = _visible.Select(static item => item.Key).ToHashSet();
         foreach (var key in _selectedSolidLevels.Keys
                      .Where(key => !drawnColumns.Contains(key)).ToArray())
@@ -701,8 +708,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             translucent: false, _desiredSolidSeams, _solidSeams);
         CollectVisibleSeams(parameters.ViewPos, backToFront: false,
             _desiredSolidSeams, _solidSeams, _solidSeamFades, _visibleSeams);
-        var seamDrawBudget = Math.Min(
-            SeamDrawsPerFrame, Math.Max(0, DrawsPerFrame - _visible.Count));
+        // Body coverage is never trimmed to make room for seams. The spatial hierarchy bounds the
+        // normal far-field draw count; this legacy path is the correctness fallback while a
+        // complete spatial partition is unavailable. Dropping its tail made resident columns
+        // blink as camera rotation changed the frustum candidate set.
+        var seamDrawBudget = SeamDrawsPerFrame;
         if (_visibleSeams.Count > seamDrawBudget)
             _visibleSeams.RemoveRange(seamDrawBudget, _visibleSeams.Count - seamDrawBudget);
         Profiler.Record("SeamCpu", Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
@@ -738,7 +748,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 _visibleSpatialSolid[i].Page.Origin,
                 _visibleSpatialSolid[i].Fade.Progress,
                 _visibleSpatialSolid[i].Fade.Mode,
-                _visibleSpatialSolid[i].Fade.Seed);
+                _visibleSpatialSolid[i].Fade.Seed,
+                _visibleSpatialSolid[i].HiddenColumns);
         stageStarted = Stopwatch.GetTimestamp();
         _opaquePipeline.WriteDrawStorage(_uniforms.AsSpan(0, drawCount));
         _opaquePipeline.BindDrawStorage(target.CurrentPass);
@@ -814,7 +825,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 continue;
             }
             var (nearPresent, nearReady) = NearState(
-                key, distanceSquared, parameters.RenderDistance, nearRenderer);
+                key, distanceSquared, parameters.RenderDistance, nearRenderer,
+                RequiresBoundaryCleanHandoff(
+                    presentation.HandoffFor(translucent: true).State));
             var handoff = UpdateHandoff(presentation,
                 translucent: true, nearPresent, nearReady,
                 parameters.DeltaTime, parameters.ChunkFade);
@@ -856,8 +869,6 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             var z = a.Key.Z.CompareTo(b.Key.Z);
             return z != 0 ? z : b.Level.CompareTo(a.Level);
         });
-        if (_visible.Count > DrawsPerFrame)
-            _visible.RemoveRange(DrawsPerFrame, _visible.Count - DrawsPerFrame);
         var drawnColumns = _visible.Select(static item => item.Key).ToHashSet();
         foreach (var key in _selectedTranslucentLevels.Keys
                      .Where(key => !drawnColumns.Contains(key)).ToArray())
@@ -872,8 +883,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         CollectVisibleSeams(parameters.ViewPos, backToFront: true,
             _desiredTranslucentSeams, _translucentSeams,
             _translucentSeamFades, _visibleTranslucentSeams);
-        var seamDrawBudget = Math.Min(
-            SeamDrawsPerFrame, Math.Max(0, DrawsPerFrame - _visible.Count));
+        var seamDrawBudget = SeamDrawsPerFrame;
         if (_visibleTranslucentSeams.Count > seamDrawBudget)
             _visibleTranslucentSeams.RemoveRange(
                 seamDrawBudget, _visibleTranslucentSeams.Count - seamDrawBudget);
@@ -921,7 +931,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                     spatial.Page.Origin,
                     spatial.Fade.Progress,
                     spatial.Fade.Mode,
-                    spatial.Fade.Seed)
+                    spatial.Fade.Seed,
+                    spatial.HiddenColumns)
                 : BuildUniforms(
                     parameters, draw.Key,
                     column?.FadeProgress ?? draw.SeamFade.Progress,
@@ -964,6 +975,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _meshCompilation.Dispose();
         _spatialMeshCompilation.Dispose();
         _spatialSeamCompilation.Dispose();
+        _spatialPublication.Dispose();
         _spatialPresentations.Dispose();
         _spatialHierarchy.Dispose();
         _cacheWriter?.Dispose();
@@ -978,9 +990,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _desiredSpatialSeams.Clear();
         _spatialSeamFades.Clear();
         _authoritativeSpatialTiles.Clear();
+        _authoritativeSpatialColumns.Clear();
+        _completedSpatialHandoffs.Clear();
+        _spatialColumnMasks.Clear();
         _visibleSpatialSolid.Clear();
         _visibleSpatialTranslucent.Clear();
-        _spatialFrame = null;
         _desiredSolidSeams.Clear();
         _desiredTranslucentSeams.Clear();
         _selectedSolidLevels.Clear();
@@ -1317,7 +1331,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         return installed;
     }
 
-    private void EvaluateSpatialPresentation(in ChunkRenderParams parameters)
+    private void EvaluateSpatialPresentation(in ChunkRenderParams parameters, ChunkRenderer nearRenderer)
     {
         var stageStarted = Stopwatch.GetTimestamp();
         var cameraChunkX = parameters.ViewPos.X / SubChunkRenderer.Size;
@@ -1357,7 +1371,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
         stageStarted = Stopwatch.GetTimestamp();
         UpdateSpatialSeams(
-            frame, cameraChunkX, cameraChunkZ, parameters.RenderDistance);
+            frame, cameraChunkX, cameraChunkZ, parameters.RenderDistance, nearRenderer);
         Profiler.Record("SpatialSeamCpu",
             Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
         stageStarted = Stopwatch.GetTimestamp();
@@ -1381,9 +1395,12 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 : _authoritativeSpatialTiles.Max(static tile => tile.Level),
             _visibleSpatialSolid.Count,
             _visibleSpatialTranslucent.Count,
-            _spatialPresentations.ReadyPresentations.Sum(
-                static presentation => presentation.EstimatedBytes) +
-            _spatialSeams.Values.Sum(static seam => seam.EstimatedBytes),
+            _spatialPresentations.ReadyPresentations
+                .Concat(_spatialFrame?.Draws.Select(static draw => draw.Presentation) ?? [])
+                .Distinct().Sum(static presentation => presentation.EstimatedBytes) +
+            _spatialSeams.Values
+                .Concat(_spatialPublication.Seams.Values.Select(static seam => seam.Presentation))
+                .Distinct().Sum(static seam => seam.EstimatedBytes),
             _spatialHierarchy.Snapshot(),
             _spatialMeshCompilation.Snapshot(),
             _spatialSeamCompilation.Snapshot());
@@ -1426,7 +1443,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             // The forest can change spatial level only as a complete parent/child partition. Live
             // fades remain disabled until seam planning can include stable neighboring roots in
             // both transition partitions; the body-plus-seam readiness gate still makes this an
-            // atomic replacement with legacy column LOD as the temporary fallback.
+            // atomic replacement; the last complete spatial snapshot remains displayed while the
+            // new body/seam partition is being prepared.
             var rootFrame = _spatialPresentations.UpdatePartition(
                 root.ManagementRoot,
                 root.Nodes,
@@ -1449,7 +1467,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation> frame,
         double cameraChunkX,
         double cameraChunkZ,
-        int renderDistance)
+        int renderDistance,
+        ChunkRenderer nearRenderer)
     {
         if (ReferenceEquals(frame, _spatialFrame) && _spatialSubmissionReady)
         {
@@ -1511,20 +1530,64 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 admitted++;
         }
 
-        _spatialFrame = frame;
-        _spatialSubmissionReady = frame.CompleteCoverage &&
-            _desiredSpatialSeams.All(SpatialSeamIsCurrent);
+        if (frame.CompleteCoverage && _desiredSpatialSeams.All(SpatialSeamIsCurrent))
+        {
+            var seams = _desiredSpatialSeams.ToDictionary(
+                static key => key,
+                key => new PublishedTerrainSeam<TerrainLodSpatialGpuSeamPresentation>(
+                    _spatialSeams[key], _spatialSeamFades.GetValueOrDefault(
+                        key, new TerrainLodSpatialPresentationFade(1, 0, 0))));
+            _spatialPublication.TryPublish(frame, seams, seamsReady: true);
+        }
         RefreshAuthority();
 
         void RefreshAuthority()
         {
-            _spatialFrame = frame;
+            // Keep the handoff memory bounded to the current detailed radius.
+            _completedSpatialHandoffs.RemoveWhere(column =>
+            {
+                var dx = column.X + 0.5 - cameraChunkX;
+                var dz = column.Z + 0.5 - cameraChunkZ;
+                return dx * dx + dz * dz >= (double)renderDistance * renderDistance;
+            });
             _authoritativeSpatialTiles.Clear();
-            if (!_spatialSubmissionReady) return;
-            foreach (var draw in frame.Draws)
-                if (TerrainLodSpatialAuthority.IsBeyondNearRadius(
-                        draw.Selection.Tile, cameraChunkX, cameraChunkZ, renderDistance))
+            _authoritativeSpatialColumns.Clear();
+            _spatialColumnMasks.Clear();
+            if (_spatialFrame is not { } published) return;
+            foreach (var draw in published.Draws)
+            {
+                if (TerrainLodSpatialAuthority.ShouldPresent(
+                        draw.Selection.Tile, cameraChunkX, cameraChunkZ, renderDistance,
+                        ReplacementReady))
+                {
                     _authoritativeSpatialTiles.Add(draw.Selection.Tile);
+                    var tile = draw.Selection.Tile;
+                    var distant = TerrainLodSpatialAuthority.IsBeyondNearRadius(
+                        tile, cameraChunkX, cameraChunkZ, renderDistance);
+                    for (var z = tile.MinChunkZ; z <= tile.MaxChunkZ; z++)
+                    for (var x = tile.MinChunkX; x <= tile.MaxChunkX; x++)
+                        if (distant || !ReplacementReady((int)x, (int)z))
+                        {
+                            _completedSpatialHandoffs.Remove(((int)x, (int)z));
+                            _authoritativeSpatialColumns.Add(((int)x, (int)z));
+                        }
+                }
+            }
+        }
+
+        bool ReplacementReady(int x, int z)
+        {
+            // A published legacy column includes both layers, including deliberately empty ones.
+            if (_resident.ContainsKey((x, z))) return true;
+            var dx = x + 0.5 - cameraChunkX;
+            var dz = z + 0.5 - cameraChunkZ;
+            var ready = dx * dx + dz * dz < (double)renderDistance * renderDistance &&
+                (_completedSpatialHandoffs.Contains((x, z))
+                    ? nearRenderer.IsMeshColumnReady(x, z)
+                    : nearRenderer.IsMeshColumnReadyForLodHandoff(x, z));
+            if (ready) _completedSpatialHandoffs.Add((x, z));
+            else _completedSpatialHandoffs.Remove((x, z));
+            return ready;
         }
 
         bool SpatialSeamIsCurrent(TerrainLodSpatialSeamSegment seam)
@@ -1588,13 +1651,10 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             foreach (var page in draw.Presentation.Pages)
                 AddPage(page, draw.Fade);
         }
-        foreach (var seam in _desiredSpatialSeams)
+        foreach (var (seam, published) in _spatialPublication.Seams)
         {
-            if (!SpatialSeamTouchesAuthority(seam) ||
-                !_spatialSeams.TryGetValue(seam, out var presentation)) continue;
-            var fade = _spatialSeamFades.GetValueOrDefault(
-                seam, new TerrainLodSpatialPresentationFade(1, 0, 0));
-            foreach (var page in presentation.Pages) AddPage(page, fade);
+            if (!SpatialSeamTouchesAuthority(seam)) continue;
+            foreach (var page in published.Presentation.Pages) AddPage(page, published.Fade);
         }
 
         destination.Sort((a, b) =>
@@ -1629,12 +1689,22 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 viewPosition.Z - (page.Origin.Z + TerrainLodSpatialMeshBuilder.PageSize)));
             var distanceSquared = dx * dx + dz * dz;
             if (distanceSquared > maximumDistance * maximumDistance) return;
-            destination.Add(new VisibleSpatialPage(page, fade, distanceSquared));
+            // Reuse across vertical pages, seams and both layers; coverage is horizontal and
+            // changes only when the frame's authority decision is refreshed.
+            var maskKey = (X: page.Origin.X >> 4, Z: page.Origin.Z >> 4);
+            if (!_spatialColumnMasks.TryGetValue(maskKey, out var hiddenColumns))
+            {
+                hiddenColumns = TerrainLodSpatialAuthority.HiddenColumnMask(
+                    maskKey.X, maskKey.Z, (x, z) => _authoritativeSpatialColumns.Contains((x, z)));
+                _spatialColumnMasks.Add(maskKey, hiddenColumns);
+            }
+            if (hiddenColumns == TerrainLodSpatialAuthority.AllColumnsHidden) return;
+            destination.Add(new VisibleSpatialPage(page, fade, distanceSquared, hiddenColumns));
         }
     }
 
     private bool IsAuthoritativeSpatialChunk((int X, int Z) key) =>
-        _authoritativeSpatialTiles.Any(tile => tile.ContainsChunk(key.X, key.Z));
+        _authoritativeSpatialColumns.Contains(key);
 
     private bool SpatialSeamTouchesAuthority(TerrainLodSpatialSeamSegment seam) =>
         _authoritativeSpatialTiles.Contains(seam.Owner.Tile) ||
@@ -2113,15 +2183,28 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         (int X, int Z) key,
         double distanceSquared,
         int renderDistance,
-        ChunkRenderer nearRenderer)
+        ChunkRenderer nearRenderer,
+        bool requireBoundaryClean = true)
     {
         var nearDistance = Math.Max(0, renderDistance) * (double)SubChunkRenderer.Size;
         var nearPresent = distanceSquared < nearDistance * nearDistance &&
                           _world.BlockHost.HasChunk(key.X, key.Z) &&
                           _world.BlockHost.GetChunk(key.X, key.Z).Loaded;
         return (nearPresent,
-            nearPresent && nearRenderer.IsMeshColumnReadyForLodHandoff(key.X, key.Z));
+            nearPresent && (requireBoundaryClean
+                ? nearRenderer.IsMeshColumnReadyForLodHandoff(key.X, key.Z)
+                : nearRenderer.IsMeshColumnReady(key.X, key.Z)));
     }
+
+    /// <summary>
+    ///     A streaming-boundary rebuild gates only the initial transfer of authority. Once an exact
+    ///     column owns presentation, ordinary neighbor arrivals and remeshes keep its previous mesh
+    ///     visible atomically; restoring LOD for each maintenance request causes visible blinking.
+    ///     A genuinely missing exact section still fails <see cref="ChunkRenderer.IsMeshColumnReady" />
+    ///     and reverses to LOD coverage.
+    /// </summary>
+    internal static bool RequiresBoundaryCleanHandoff(TerrainLodHandoffState state) =>
+        state != TerrainLodHandoffState.NearOnly;
 
     private TerrainLodHandoffTransition UpdateHandoff(
         ColumnPresentation presentation,
@@ -2219,7 +2302,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         Vector3D<int> origin,
         float fadeProgress,
         uint fadeMode,
-        uint fadeSeed)
+        uint fadeSeed,
+        ulong hiddenColumns = 0)
     {
         TerrainCoordinateFrame.Split(origin.X, out var cellX, out var localX);
         TerrainCoordinateFrame.Split(origin.Y, out var cellY, out var localY);
@@ -2237,7 +2321,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             ChunkFadeEnabled = 0,
             FadeProgress = fadeProgress,
             PresentationFadeMode = fadeMode,
-            PresentationFadeSeed = fadeSeed
+            PresentationFadeSeed = fadeSeed,
+            HiddenColumnsLow = (uint)hiddenColumns,
+            HiddenColumnsHigh = (uint)(hiddenColumns >> 32)
         };
     }
 
@@ -2330,7 +2416,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private readonly record struct VisibleSpatialPage(
         TerrainLodSpatialGpuPresentation.GpuPage Page,
         TerrainLodSpatialPresentationFade Fade,
-        double DistanceSquared);
+        double DistanceSquared,
+        ulong HiddenColumns);
 
     private readonly record struct SpatialSeamHashCache(
         string OwnerCanonicalHash,

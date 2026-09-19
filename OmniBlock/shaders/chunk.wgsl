@@ -11,6 +11,7 @@ struct DrawMetadata {
     chunkPos: vec2<f32>,       // chunk X,Z in world space, for wavy animation
     presentationFadeMode: u32, // 0=none, 1=near fade-in, 2=LOD fade-out
     presentationFadeSeed: u32,
+    hiddenColumns: vec2<u32>, // 6x6 column mask for spatial pages (4x4 interior plus seam halo)
 };
 
 struct FrameUniforms {
@@ -132,6 +133,8 @@ struct VertexOutput {
     @location(5) @interpolate(flat) chunkFadeEnabled: u32,
     @location(6) @interpolate(flat) presentationFadeMode: u32,
     @location(7) @interpolate(flat) presentationFadeSeed: u32,
+    @location(8) pagePosition: vec2<f32>,
+    @location(9) @interpolate(flat) hiddenColumns: vec2<u32>,
 }
 
 @vertex
@@ -172,6 +175,8 @@ fn vs_main(in: VertexInput, @builtin(instance_index) drawIndex: u32) -> VertexOu
     out.chunkFadeEnabled = draw.chunkFadeEnabled;
     out.presentationFadeMode = draw.presentationFadeMode;
     out.presentationFadeSeed = draw.presentationFadeSeed;
+    out.pagePosition = unpackPosition(in.position).xz;
+    out.hiddenColumns = draw.hiddenColumns;
     return out;
 }
 
@@ -180,7 +185,24 @@ fn vs_main(in: VertexInput, @builtin(instance_index) drawIndex: u32) -> VertexOu
 // regardless of what's under them.
 @fragment
 fn fs_wireframe(in: VertexOutput) -> @location(0) vec4<f32> {
+    if (hiddenSpatialColumn(in)) { discard; }
     return vec4<f32>(0.0, 1.0, 0.0, 1.0);
+}
+
+fn columnMasked(cell: vec2<u32>, mask: vec2<u32>) -> bool {
+    let bit = cell.y * 6u + cell.x;
+    return (mask[bit / 32u] & (1u << (bit % 32u))) != 0u;
+}
+
+fn hiddenSpatialColumn(in: VertexOutput) -> bool {
+    if (all(in.hiddenColumns == vec2<u32>(0u))) { return false; }
+    // Keep boundary faces if either adjoining column still needs LOD. The small tolerance
+    // covers packed-position quantization, including seams on negative-coordinate page edges.
+    let lo = vec2<u32>(clamp(floor((in.pagePosition - 0.002) / 16.0) + 1.0, vec2<f32>(0.0), vec2<f32>(5.0)));
+    let hi = vec2<u32>(clamp(floor((in.pagePosition + 0.002) / 16.0) + 1.0, vec2<f32>(0.0), vec2<f32>(5.0)));
+    return columnMasked(lo, in.hiddenColumns) && columnMasked(hi, in.hiddenColumns) &&
+        columnMasked(vec2<u32>(lo.x, hi.y), in.hiddenColumns) &&
+        columnMasked(vec2<u32>(hi.x, lo.y), in.hiddenColumns);
 }
 
 fn presentationDitherThreshold(position: vec2<f32>, seed: u32) -> f32 {
@@ -214,6 +236,7 @@ fn presentationDitherThreshold(position: vec2<f32>, seed: u32) -> f32 {
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let texColor = textureSample(terrainArray, terrainSampler, in.texCoord, in.arrayLayer);
+    if (hiddenSpatialColumn(in)) { discard; }
     var finalColor = texColor * in.color;
 
     if (finalColor.a < 0.001) {
