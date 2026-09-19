@@ -78,9 +78,37 @@ public sealed class TerrainLodSpatialSeamMeshBuilderTests
 
         Assert.Equal(0, seam.SolidQuadCount);
         Assert.Equal(16, seam.TranslucentQuadCount);
+        Assert.All(seam.Pages.SelectMany(static page => page.TranslucentLights),
+            light => Assert.Equal(60, light.Sky));
         var maximumY = seam.Pages.SelectMany(static page => page.TranslucentVertices)
             .Max(vertex => vertex.Y / (32767f / 64f) + seam.Pages[0].OriginY);
         Assert.InRange(maximumY, 7.0f, 8.0f);
+    }
+
+    [Fact]
+    public void Exterior_frontier_is_a_bounded_sunlit_skirt_not_a_world_depth_wall()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var stone = checked((byte)world.Content.Blocks.Get("omniblock:stone").Id);
+        var tile = Leaf(materials, 0, 0, 96,
+            (_, y, _) => y < 64 ? stone : (byte)0);
+        var selection = new TerrainLodTileSelection(tile.Key, 0, 8);
+        var segment = TerrainLodSpatialSeamPlanner.Plan([selection])
+            .Single(static seam => seam.OwnerSide == TerrainLodSpatialBoundarySide.East);
+
+        var seam = TerrainLodSpatialSeamMeshBuilder.Build(
+            segment, tile, neighbor: null, world.Content.Blocks);
+        var vertices = seam.Pages.SelectMany(page => page.Vertices.Select(vertex =>
+            page.OriginY + vertex.Y / (32767f / 64f))).ToArray();
+        var lights = seam.Pages.SelectMany(static page => page.Lights).ToArray();
+
+        Assert.Equal(16, seam.SolidQuadCount);
+        Assert.InRange(vertices.Min(),
+            64 - TerrainLodSpatialSeamMeshBuilder.ExteriorSkirtDepth - 0.01f,
+            64 - TerrainLodSpatialSeamMeshBuilder.ExteriorSkirtDepth + 0.01f);
+        Assert.InRange(vertices.Max(), 63.99f, 64.01f);
+        Assert.All(lights, light => Assert.Equal(60, light.Sky));
     }
 
     [Fact]

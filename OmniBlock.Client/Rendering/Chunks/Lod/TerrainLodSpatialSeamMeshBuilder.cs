@@ -30,6 +30,10 @@ internal sealed record TerrainLodSpatialSeamMeshData(
 /// </summary>
 internal static class TerrainLodSpatialSeamMeshBuilder
 {
+    // Unknown terrain must never expose a full bedrock-to-surface cross-section. A shallow skirt
+    // hides cracks at the finite coverage edge while contiguous coarse coverage is acquired.
+    internal const int ExteriorSkirtDepth = 16;
+
     public static TerrainLodSpatialSeamMeshData Build(
         TerrainLodSpatialSeamSegment segment,
         TerrainLodColumnTile owner,
@@ -92,6 +96,9 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                     neighbor, segment.Neighbor!.Value.MaximumVerticalSlices,
                     SourceX(segment.OwnerSide, fixedBlock, along, ownerSide: false),
                     SourceZ(segment.OwnerSide, fixedBlock, along, ownerSide: false));
+            var exteriorBottom = neighborColumn is null
+                ? Math.Max(0, SurfaceTop(ownerColumn) - ExteriorSkirtDepth)
+                : 0;
 
             SortedSet<int> transitions = [0, owner.WorldHeight];
             AddTransitions(transitions, ownerColumn);
@@ -103,15 +110,19 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                 var top = heights[index + 1];
                 var ownerSpan = ownerColumn.At(bottom);
                 TerrainLodColumnSpan? neighborSpan = neighborColumn?.At(bottom);
-                EmitVisible(ownerSpan, ownerColumn, neighborSpan, segment.OwnerSide);
+                EmitVisible(
+                    ownerSpan, ownerColumn, neighborSpan, segment.OwnerSide,
+                    neighborColumn is null ? exteriorBottom : bottom);
                 if (neighborSpan is { } adjacent)
-                    EmitVisible(adjacent, neighborColumn!, ownerSpan, Opposite(segment.OwnerSide));
+                    EmitVisible(
+                        adjacent, neighborColumn!, ownerSpan, Opposite(segment.OwnerSide), bottom);
 
                 void EmitVisible(
                     TerrainLodColumnSpan source,
                     TerrainLodColumn sourceColumn,
                     TerrainLodColumnSpan? opposite,
-                    TerrainLodSpatialBoundarySide sourceSide)
+                    TerrainLodSpatialBoundarySide sourceSide,
+                    int minimumY)
                 {
                     if (!TerrainLodSpatialMeshBuilder.TryLayer(
                             source.Material, out var translucent) ||
@@ -120,14 +131,15 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                         !blocks.TryGet(source.Material.BlockId, out var block) || block is null)
                         return;
 
+                    var renderBottom = Math.Max(bottom, minimumY);
                     var renderTop = (float)top;
                     if (source.Material.Geometry == TerrainLodGeometryClass.Liquid &&
                         top == source.TopY && top < sourceColumn.WorldHeight &&
                         sourceColumn.At(top).IsAir)
                         renderTop -= FluidMath.GetFluidHeightFromMeta(source.Material.Metadata);
-                    if (renderTop <= bottom) return;
+                    if (renderTop <= renderBottom) return;
 
-                    for (var y0 = (float)bottom; y0 < renderTop;)
+                    for (var y0 = (float)renderBottom; y0 < renderTop;)
                     {
                         var pageBoundary =
                             (TerrainLodSpatialMeshBuilder.FloorDivide(
@@ -162,6 +174,16 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                 target.Add(span.BottomY);
                 target.Add(span.TopY);
             }
+        }
+
+        static int SurfaceTop(TerrainLodColumn column)
+        {
+            for (var index = column.Spans.Count - 1; index >= 0; index--)
+            {
+                var span = column.Spans[index];
+                if (!span.IsAir) return span.TopY;
+            }
+            return 0;
         }
 
         TerrainLodColumn ColumnAt(

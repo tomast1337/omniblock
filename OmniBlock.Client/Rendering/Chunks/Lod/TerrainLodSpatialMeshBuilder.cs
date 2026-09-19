@@ -352,8 +352,14 @@ internal static class TerrainLodSpatialMeshBuilder
         TerrainLodColumnSpan? exposedNeighbor,
         Side side)
     {
-        var sky = exposedNeighbor?.SkyLight ??
-                  (side == Side.Up ? (byte)15 : source.SkyLight);
+        // A missing horizontal neighbor is an exterior presentation frontier, not an opaque
+        // underground sample. Light its bounded skirt as open air; otherwise the frontier becomes
+        // a solid black rectangle even at noon. Downward world-bottom faces retain source light.
+        var sky = exposedNeighbor?.SkyLight ?? side switch
+        {
+            Side.Down => source.SkyLight,
+            _ => (byte)15
+        };
         var block = Math.Max(source.BlockLight, exposedNeighbor?.BlockLight ?? (byte)0);
         return new ChunkLightVertex(
             ChunkVertexHelper.ToQuarterLevels(sky),
