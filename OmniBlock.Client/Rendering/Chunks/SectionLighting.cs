@@ -276,9 +276,66 @@ internal readonly record struct SectionLightingEvaluation(
     ChunkLightVertex[]? TranslucentValues,
     long SourceEpoch);
 
+internal enum ChunkLightProbeKind : byte
+{
+    InferredFace = 0,
+    FullBright = 1,
+    ExactCell = 2,
+    ExactCellAndAbove = 3
+}
+
 /// <summary>A four-byte, independently uploaded terrain-light vertex.</summary>
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
-internal readonly record struct ChunkLightVertex(byte Sky, byte Block, byte Pad0 = 0, byte Pad1 = 0);
+internal readonly record struct ChunkLightVertex(byte Sky, byte Block, byte Pad0 = 0, byte Pad1 = 0)
+{
+    private const int KindMask = 0b11;
+    private const int MinimumShift = 2;
+    private const int XShift = 6;
+    private const int YShift = 8;
+    private const int ZShift = 10;
+
+    internal ChunkLightProbeKind ProbeKind => (ChunkLightProbeKind)(ProbeData & KindMask);
+    internal int MinimumBlockLight => (ProbeData >> MinimumShift) & 0x0F;
+    internal int SampleOffsetX => DecodeOffset(XShift);
+    internal int SampleOffsetY => DecodeOffset(YShift);
+    internal int SampleOffsetZ => DecodeOffset(ZShift);
+
+    private ushort ProbeData => (ushort)(Pad0 | Pad1 << 8);
+
+    internal static ChunkLightVertex WithProbe(
+        byte sky,
+        byte block,
+        ChunkLightProbeKind kind,
+        int minimumBlockLight,
+        int sampleOffsetX = 0,
+        int sampleOffsetY = 0,
+        int sampleOffsetZ = 0)
+    {
+        // Preserve the original full-bright marker exactly. Apart from making old captures easy to
+        // inspect, no sample offsets or emission floor have meaning for a full-bright primitive.
+        if (kind == ChunkLightProbeKind.FullBright)
+            return new ChunkLightVertex(sky, block, (byte)ChunkLightProbeKind.FullBright);
+
+        var packed = (int)kind
+                     | (Math.Clamp(minimumBlockLight, 0, 15) << MinimumShift);
+        if (kind is ChunkLightProbeKind.ExactCell or ChunkLightProbeKind.ExactCellAndAbove)
+        {
+            packed |= EncodeOffset(sampleOffsetX) << XShift;
+            packed |= EncodeOffset(sampleOffsetY) << YShift;
+            packed |= EncodeOffset(sampleOffsetZ) << ZShift;
+        }
+        return new ChunkLightVertex(sky, block, (byte)packed, (byte)(packed >> 8));
+    }
+
+    private static int EncodeOffset(int offset)
+    {
+        if (offset is < -1 or > 1)
+            throw new InvalidOperationException($"A retained light sample is {offset} cells from its vertex; expected -1..1.");
+        return offset + 1;
+    }
+
+    private int DecodeOffset(int shift) => ((ProbeData >> shift) & 0b11) - 1;
+}
 
 /// <summary>
 ///     Compact CPU probes retained beside geometry so later light changes never invoke block
@@ -306,7 +363,8 @@ internal sealed class SectionLightModel
         ?? throw new InvalidOperationException("Initial light values have already been uploaded.");
     public int VertexCount => _probes.Length;
     public long RetainedBytes =>
-        (long)_probes.Length * 8 + (long)(_initialValues?.Length ?? 0) * Marshal.SizeOf<ChunkLightVertex>();
+        (long)_probes.Length * Marshal.SizeOf<LightProbe>() +
+        (long)(_initialValues?.Length ?? 0) * Marshal.SizeOf<ChunkLightVertex>();
     public long InitialUploadBytes =>
         (long)(_initialValues?.Length ?? 0) * Marshal.SizeOf<ChunkLightVertex>();
 
@@ -331,8 +389,7 @@ internal sealed class SectionLightModel
             for (var corner = 0; corner < 4; corner++)
             {
                 ref readonly var vertex = ref vertices[i + corner];
-                probes[i + corner] = LightProbe.Create(vertex, normal,
-                    initialLights[i + corner].Pad0 != 0);
+                probes[i + corner] = LightProbe.Create(vertex, normal, initialLights[i + corner]);
             }
         }
 
@@ -373,22 +430,61 @@ internal sealed class SectionLightModel
 
     [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
     private readonly record struct LightProbe(
-        short X, short Y, short Z, AxisNormal Normal, bool FullBright)
+        short X,
+        short Y,
+        short Z,
+        ushort Metadata)
     {
+        private const int NormalMask = 0b111;
+        private const int KindShift = 3;
+        private const int MinimumShift = 5;
+        private const int XShift = 9;
+        private const int YShift = 11;
+        private const int ZShift = 13;
+
+        private AxisNormal Normal => (AxisNormal)(Metadata & NormalMask);
+        private ChunkLightProbeKind Kind => (ChunkLightProbeKind)((Metadata >> KindShift) & 0b11);
+        private int MinimumBlockLight => (Metadata >> MinimumShift) & 0x0F;
+        private int SampleOffsetX => DecodeOffset(XShift);
+        private int SampleOffsetY => DecodeOffset(YShift);
+        private int SampleOffsetZ => DecodeOffset(ZShift);
+
         public static LightProbe Create(
             in ChunkVertex vertex,
             AxisNormal normal,
-            bool fullBright)
-            => new(vertex.X, vertex.Y, vertex.Z, normal, fullBright);
+            in ChunkLightVertex light)
+        {
+            var metadata = (int)normal
+                           | ((int)light.ProbeKind << KindShift)
+                           | (light.MinimumBlockLight << MinimumShift);
+            if (light.ProbeKind is ChunkLightProbeKind.ExactCell or ChunkLightProbeKind.ExactCellAndAbove)
+            {
+                metadata |= EncodeOffset(light.SampleOffsetX) << XShift;
+                metadata |= EncodeOffset(light.SampleOffsetY) << YShift;
+                metadata |= EncodeOffset(light.SampleOffsetZ) << ZShift;
+            }
+            return new LightProbe(vertex.X, vertex.Y, vertex.Z, (ushort)metadata);
+        }
 
         public ChunkLightVertex Evaluate(ILightProvider lighting, Vector3D<int> sectionPosition)
         {
-            if (FullBright) return new ChunkLightVertex(0, 60);
+            if (Kind == ChunkLightProbeKind.FullBright) return new ChunkLightVertex(0, 60);
             var x = sectionPosition.X + X * PositionScaleInv;
             var y = sectionPosition.Y + Y * PositionScaleInv;
             var z = sectionPosition.Z + Z * PositionScaleInv;
+            if (Kind is ChunkLightProbeKind.ExactCell or ChunkLightProbeKind.ExactCellAndAbove)
+            {
+                var cell = new Cell(
+                    FloorInside(x) + SampleOffsetX,
+                    FloorInside(y) + SampleOffsetY,
+                    FloorInside(z) + SampleOffsetZ);
+                var exact = Sample(cell, lighting, MinimumBlockLight);
+                return Kind == ChunkLightProbeKind.ExactCellAndAbove
+                    ? Max(exact, Sample(cell with { Y = cell.Y + 1 }, lighting, MinimumBlockLight))
+                    : exact;
+            }
             if (Normal == AxisNormal.None)
-                return Sample(new Cell(FloorInside(x), FloorInside(y), FloorInside(z)), lighting);
+                return Sample(new Cell(FloorInside(x), FloorInside(y), FloorInside(z)), lighting, MinimumBlockLight);
 
             var xs = TangentCells(x);
             var ys = TangentCells(y);
@@ -397,48 +493,59 @@ internal sealed class SectionLightModel
             {
                 var nx = OutwardCell(x, Normal == AxisNormal.PositiveX);
                 return MeanFour(new Cell(nx, ys.Low, zs.Low), new Cell(nx, ys.Low, zs.High),
-                    new Cell(nx, ys.High, zs.Low), new Cell(nx, ys.High, zs.High), lighting);
+                    new Cell(nx, ys.High, zs.Low), new Cell(nx, ys.High, zs.High), lighting, MinimumBlockLight);
             }
             if (Normal is AxisNormal.PositiveY or AxisNormal.NegativeY)
             {
                 var ny = OutwardCell(y, Normal == AxisNormal.PositiveY);
                 return MeanFour(new Cell(xs.Low, ny, zs.Low), new Cell(xs.Low, ny, zs.High),
-                    new Cell(xs.High, ny, zs.Low), new Cell(xs.High, ny, zs.High), lighting);
+                    new Cell(xs.High, ny, zs.Low), new Cell(xs.High, ny, zs.High), lighting, MinimumBlockLight);
             }
 
             var nz = OutwardCell(z, Normal == AxisNormal.PositiveZ);
             return MeanFour(new Cell(xs.Low, ys.Low, nz), new Cell(xs.Low, ys.High, nz),
-                new Cell(xs.High, ys.Low, nz), new Cell(xs.High, ys.High, nz), lighting);
+                new Cell(xs.High, ys.Low, nz), new Cell(xs.High, ys.High, nz), lighting, MinimumBlockLight);
         }
 
         private static ChunkLightVertex MeanFour(
-            Cell a, Cell b, Cell c, Cell d, ILightProvider lighting)
+            Cell a, Cell b, Cell c, Cell d, ILightProvider lighting, int minimumBlockLight)
         {
             var sky = 0f;
             var block = 0f;
-            Add(a, lighting, ref sky, ref block);
-            Add(b, lighting, ref sky, ref block);
-            Add(c, lighting, ref sky, ref block);
-            Add(d, lighting, ref sky, ref block);
+            Add(a, lighting, minimumBlockLight, ref sky, ref block);
+            Add(b, lighting, minimumBlockLight, ref sky, ref block);
+            Add(c, lighting, minimumBlockLight, ref sky, ref block);
+            Add(d, lighting, minimumBlockLight, ref sky, ref block);
             return new ChunkLightVertex(
                 ChunkVertexHelper.ToQuarterLevels(sky * 0.25f),
                 ChunkVertexHelper.ToQuarterLevels(block * 0.25f));
         }
 
-        private static ChunkLightVertex Sample(Cell cell, ILightProvider lighting)
+        private static ChunkLightVertex Sample(Cell cell, ILightProvider lighting, int minimumBlockLight)
         {
-            var levels = lighting.GetLightLevels(cell.X, cell.Y, cell.Z, 0);
+            var levels = lighting.GetLightLevels(cell.X, cell.Y, cell.Z, minimumBlockLight);
             return new ChunkLightVertex(
                 ChunkVertexHelper.ToQuarterLevels(levels.Sky),
                 ChunkVertexHelper.ToQuarterLevels(levels.Block));
         }
 
-        private static void Add(Cell cell, ILightProvider lighting, ref float sky, ref float block)
+        private static void Add(
+            Cell cell,
+            ILightProvider lighting,
+            int minimumBlockLight,
+            ref float sky,
+            ref float block)
         {
-            var levels = lighting.GetLightLevels(cell.X, cell.Y, cell.Z, 0);
+            var levels = lighting.GetLightLevels(cell.X, cell.Y, cell.Z, minimumBlockLight);
             sky += levels.Sky;
             block += levels.Block;
         }
+
+        private static ChunkLightVertex Max(ChunkLightVertex a, ChunkLightVertex b) =>
+            new(Math.Max(a.Sky, b.Sky), Math.Max(a.Block, b.Block));
+
+        private static int EncodeOffset(int offset) => offset + 1;
+        private int DecodeOffset(int shift) => ((Metadata >> shift) & 0b11) - 1;
 
         private static (int Low, int High) TangentCells(float value)
         {

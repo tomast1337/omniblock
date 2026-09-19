@@ -20,6 +20,28 @@ public interface IBlockVertexSink
     void setLight(float sky, float block);
 
     /// <summary>
+    ///     Sets the minimum block-light level subsequent world geometry must retain when it is
+    ///     relit. Immediate-mode sinks may ignore this hint.
+    /// </summary>
+    void setMinimumBlockLight(int minimumBlockLight)
+    {
+    }
+
+    /// <summary>
+    ///     Sets light resolved from a specific world cell and retains that sampling intent for
+    ///     later light-only updates. Fluids additionally select the brighter of this cell and the
+    ///     cell above it.
+    /// </summary>
+    void setLightSample(
+        float sky,
+        float block,
+        int x,
+        int y,
+        int z,
+        int minimumBlockLight,
+        bool includeCellAbove = false) => setLight(sky, block);
+
+    /// <summary>
     ///     Declares the outward side of the next complete quad. Immediate-mode sinks may ignore the
     ///     hint; chunk builders use it to create conservative directional draw ranges.
     /// </summary>

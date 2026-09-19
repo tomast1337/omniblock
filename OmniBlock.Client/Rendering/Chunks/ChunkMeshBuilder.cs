@@ -20,6 +20,12 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
     private bool _hasColor;
     private bool _hasLight;
     private bool _fullBright;
+    private bool _includeCellAbove;
+    private int _lightSampleX;
+    private int _lightSampleY;
+    private int _lightSampleZ;
+    private byte _minimumBlockLight;
+    private bool _usesExactLightSample;
     private int _quadVertexCount;
     private Side? _quadDirection;
     private PooledList<byte>? _quadDirections = new();
@@ -44,7 +50,13 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
             _arrayLayer,
             _hasLight ? _skyLight : (byte)0,
             _hasLight ? _blockLight : (byte)0,
-            _fullBright);
+            _fullBright,
+            _minimumBlockLight,
+            _usesExactLightSample,
+            _includeCellAbove,
+            _lightSampleX,
+            _lightSampleY,
+            _lightSampleZ);
 
         if (_quadVertexCount != 4) return;
 
@@ -77,6 +89,29 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
         _blockLight = ChunkVertexHelper.ToQuarterLevels(block);
         _hasLight = true;
         _fullBright = false;
+        _usesExactLightSample = false;
+        _includeCellAbove = false;
+    }
+
+    public void setMinimumBlockLight(int minimumBlockLight) =>
+        _minimumBlockLight = (byte)Math.Clamp(minimumBlockLight, 0, 15);
+
+    public void setLightSample(
+        float sky,
+        float block,
+        int x,
+        int y,
+        int z,
+        int minimumBlockLight,
+        bool includeCellAbove = false)
+    {
+        setLight(sky, block);
+        setMinimumBlockLight(minimumBlockLight);
+        _usesExactLightSample = true;
+        _includeCellAbove = includeCellAbove;
+        _lightSampleX = checked((int)(x + _xOffset));
+        _lightSampleY = checked((int)(y + _yOffset));
+        _lightSampleZ = checked((int)(z + _zOffset));
     }
 
     public void setQuadDirection(Side? side) => _quadDirection = side;
@@ -118,6 +153,12 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
         _hasColor = false;
         _hasLight = false;
         _fullBright = false;
+        _includeCellAbove = false;
+        _lightSampleX = 0;
+        _lightSampleY = 0;
+        _lightSampleZ = 0;
+        _minimumBlockLight = 0;
+        _usesExactLightSample = false;
         _skyLight = 0;
         _blockLight = 0;
         _xOffset = xOffset;
@@ -197,8 +238,27 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
             vertex.U,
             vertex.V,
             vertex.ArrayLayer));
-        _lights!.Add(new ChunkLightVertex(vertex.SkyLight, vertex.BlockLight, vertex.FullBright ? (byte)1 : (byte)0));
+        var probeKind = vertex.FullBright
+            ? ChunkLightProbeKind.FullBright
+            : vertex.UsesExactLightSample
+                ? vertex.IncludeCellAbove
+                    ? ChunkLightProbeKind.ExactCellAndAbove
+                    : ChunkLightProbeKind.ExactCell
+                : ChunkLightProbeKind.InferredFace;
+        var vertexCellX = FloorInside(vertex.X);
+        var vertexCellY = FloorInside(vertex.Y);
+        var vertexCellZ = FloorInside(vertex.Z);
+        _lights!.Add(ChunkLightVertex.WithProbe(
+            vertex.SkyLight,
+            vertex.BlockLight,
+            probeKind,
+            vertex.MinimumBlockLight,
+            vertex.LightSampleX - vertexCellX,
+            vertex.LightSampleY - vertexCellY,
+            vertex.LightSampleZ - vertexCellZ));
     }
+
+    private static int FloorInside(float value) => (int)MathF.Floor(value + 0.002f);
 
     private readonly record struct PendingVertex(
         float X,
@@ -210,5 +270,11 @@ internal sealed class ChunkMeshBuilder : IBlockVertexSink, IDisposable
         int ArrayLayer,
         byte SkyLight,
         byte BlockLight,
-        bool FullBright);
+        bool FullBright,
+        byte MinimumBlockLight,
+        bool UsesExactLightSample,
+        bool IncludeCellAbove,
+        int LightSampleX,
+        int LightSampleY,
+        int LightSampleZ);
 }

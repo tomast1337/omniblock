@@ -31,6 +31,9 @@ public class BlockRenderer
 
     public static bool RenderBlockByRenderType(IBlockReader world, IBlockRuntimeView blocks, ILightProvider lighting, Block block, BlockPos pos, IBlockVertexSink tess, int overrideTexture = -1, bool renderAllFaces = false, bool doVariance = false)
     {
+        // The initial light values already include this floor. Retaining it separately lets the
+        // light-only rebuild path reach the same result without invoking the block renderer again.
+        tess.setMinimumBlockLight(block.LightEmission);
         var type = block.RenderType;
 
         block.UpdateBoundingBox(world, pos.X, pos.Y, pos.Z);

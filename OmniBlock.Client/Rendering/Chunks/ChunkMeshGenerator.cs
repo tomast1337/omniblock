@@ -731,7 +731,8 @@ internal class ChunkMeshGenerator : IDisposable
                     var layer = Atlases.Terrain.LayerOfGridIndex(textureId);
                     var tint = block.GetColorMultiplier(cache, x, y, z);
 
-                    grid[v * size + u] = new FaceMergeKey(layer, tint, v0, v1, v2, v3);
+                    grid[v * size + u] = new FaceMergeKey(
+                        layer, tint, (byte)block.LightEmission, v0, v1, v2, v3);
                 }
             }
 
@@ -780,7 +781,8 @@ internal class ChunkMeshGenerator : IDisposable
                     var layer = Atlases.Terrain.LayerOfGridIndex(textureId);
                     var tint = block.TextureId != 3 ? block.GetColorMultiplier(cache, x, y, z) : 0xFFFFFF;
 
-                    grid[v * size + u] = new FaceMergeKey(layer, tint, v0, v1, v2, v3);
+                    grid[v * size + u] = new FaceMergeKey(
+                        layer, tint, (byte)block.LightEmission, v0, v1, v2, v3);
                 }
             }
 
@@ -832,7 +834,8 @@ internal class ChunkMeshGenerator : IDisposable
                     var layer = Atlases.Terrain.LayerOfGridIndex(textureId);
                     var tint = block.TextureId != 3 ? block.GetColorMultiplier(cache, x, y, z) : 0xFFFFFF;
 
-                    grid[v * size + u] = new FaceMergeKey(layer, tint, v0, v1, v2, v3);
+                    grid[v * size + u] = new FaceMergeKey(
+                        layer, tint, (byte)block.LightEmission, v0, v1, v2, v3);
                 }
             }
 
@@ -887,7 +890,8 @@ internal class ChunkMeshGenerator : IDisposable
                     var layer = Atlases.Terrain.LayerOfGridIndex(textureId);
                     var tint = block.TextureId != 3 ? block.GetColorMultiplier(cache, x, y, z) : 0xFFFFFF;
 
-                    grid[v * size + u] = new FaceMergeKey(layer, tint, v0, v1, v2, v3);
+                    grid[v * size + u] = new FaceMergeKey(
+                        layer, tint, (byte)block.LightEmission, v0, v1, v2, v3);
                 }
             }
 
@@ -939,7 +943,8 @@ internal class ChunkMeshGenerator : IDisposable
                     var layer = Atlases.Terrain.LayerOfGridIndex(textureId);
                     var tint = block.TextureId != 3 ? block.GetColorMultiplier(cache, x, y, z) : 0xFFFFFF;
 
-                    grid[v * size + u] = new FaceMergeKey(layer, tint, v0, v1, v2, v3);
+                    grid[v * size + u] = new FaceMergeKey(
+                        layer, tint, (byte)block.LightEmission, v0, v1, v2, v3);
                 }
             }
 
@@ -993,7 +998,8 @@ internal class ChunkMeshGenerator : IDisposable
                     var layer = Atlases.Terrain.LayerOfGridIndex(textureId);
                     var tint = block.TextureId != 3 ? block.GetColorMultiplier(cache, x, y, z) : 0xFFFFFF;
 
-                    grid[v * size + u] = new FaceMergeKey(layer, tint, v0, v1, v2, v3);
+                    grid[v * size + u] = new FaceMergeKey(
+                        layer, tint, (byte)block.LightEmission, v0, v1, v2, v3);
                 }
             }
 
@@ -1080,6 +1086,7 @@ internal class ChunkMeshGenerator : IDisposable
 
         tess.setArrayLayer(key.ArrayLayer);
         tess.setQuadDirection(side);
+        tess.setMinimumBlockLight(key.MinimumBlockLight);
 
         Span<QuadCorner> corners = [tl, bl, br, tr];
         var start = flipped ? 1 : 0;
@@ -1115,5 +1122,12 @@ internal class ChunkMeshGenerator : IDisposable
     ///     lighting gradient — but it means a merged quad's corners are exactly the value every
     ///     contributing cell already agreed on, with no interpolation to get wrong.
     /// </summary>
-    private readonly record struct FaceMergeKey(int ArrayLayer, int TintColor, CornerLight L0, CornerLight L1, CornerLight L2, CornerLight L3);
+    private readonly record struct FaceMergeKey(
+        int ArrayLayer,
+        int TintColor,
+        byte MinimumBlockLight,
+        CornerLight L0,
+        CornerLight L1,
+        CornerLight L2,
+        CornerLight L3);
 }

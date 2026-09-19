@@ -54,6 +54,7 @@ public sealed class SectionLightModelTests
         var model = SectionLightModel.Create(default, vertices.Geometry, vertices.Lights);
 
         Assert.NotNull(model);
+        Assert.Equal(48, model.RetainedBytes); // four 8-byte probes plus four 4-byte initial values
         Assert.All(model.InitialValues, value =>
         {
             Assert.Equal(17, value.Sky);
@@ -90,6 +91,52 @@ public sealed class SectionLightModelTests
         });
     }
 
+    [Fact]
+    public void Relighting_a_sloped_fluid_surface_uses_its_original_cell_and_the_cell_above()
+    {
+        using var builder = new ChunkMeshBuilder();
+        builder.Begin(0, 0, 0);
+        builder.setLightSample(15, 0, 4, 8, 6, 0, includeCellAbove: true);
+        builder.addVertexWithUV(4, 8.75, 6, 0, 0);
+        builder.addVertexWithUV(4, 8.50, 7, 0, 1);
+        builder.addVertexWithUV(5, 8.25, 7, 1, 1);
+        builder.addVertexWithUV(5, 8.625, 6, 1, 0);
+        using var geometry = builder.Finish(out var lights);
+        using (lights)
+        {
+            var model = SectionLightModel.Create(default, geometry.Span, lights.Span);
+
+            var values = model!.Evaluate(new FluidLightProvider());
+
+            Assert.All(values, value =>
+            {
+                Assert.Equal(60, value.Sky);
+                Assert.Equal(12, value.Block);
+            });
+        }
+    }
+
+    [Fact]
+    public void Relighting_an_emissive_fluid_preserves_its_block_light_floor()
+    {
+        using var builder = new ChunkMeshBuilder();
+        builder.Begin(0, 0, 0);
+        builder.setLightSample(0, 15, 4, 8, 6, 15, includeCellAbove: true);
+        builder.addVertexWithUV(4, 8.75, 6, 0, 0);
+        builder.addVertexWithUV(4, 8.50, 7, 0, 1);
+        builder.addVertexWithUV(5, 8.25, 7, 1, 1);
+        builder.addVertexWithUV(5, 8.625, 6, 1, 0);
+        using var geometry = builder.Finish(out var lights);
+        using (lights)
+        {
+            var model = SectionLightModel.Create(default, geometry.Span, lights.Span);
+
+            var values = model!.Evaluate(new DarkLightProvider());
+
+            Assert.All(values, value => Assert.Equal(60, value.Block));
+        }
+    }
+
     private static (ChunkVertex[] Geometry, ChunkLightVertex[] Lights) TopQuad(
         byte sky, byte block, bool fullBright = false) =>
     (
@@ -108,5 +155,27 @@ public sealed class SectionLightModelTests
 
         public LightLevels GetLightLevels(int x, int y, int z, int minBlockLight) =>
             LightLevels.Of(Math.Abs(x - 16) + Math.Abs(z - 48), Math.Abs(y - 30));
+    }
+
+    private sealed class FluidLightProvider : ILightProvider
+    {
+        public float GetNaturalBrightness(int x, int y, int z, int minLight) => 0;
+        public float GetLuminance(int x, int y, int z) => 0;
+
+        public LightLevels GetLightLevels(int x, int y, int z, int minBlockLight)
+        {
+            Assert.Equal(4, x);
+            Assert.Equal(6, z);
+            Assert.True(y is 8 or 9);
+            return LightLevels.Of(y == 9 ? 15 : 2, Math.Max(3, minBlockLight));
+        }
+    }
+
+    private sealed class DarkLightProvider : ILightProvider
+    {
+        public float GetNaturalBrightness(int x, int y, int z, int minLight) => 0;
+        public float GetLuminance(int x, int y, int z) => 0;
+        public LightLevels GetLightLevels(int x, int y, int z, int minBlockLight) =>
+            LightLevels.Of(0, minBlockLight);
     }
 }

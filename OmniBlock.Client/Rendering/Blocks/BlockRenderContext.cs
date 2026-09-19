@@ -512,7 +512,14 @@ public ref struct BlockRenderContext
     internal readonly void SetLightAt(in Block block, int x, int y, int z)
     {
         var levels = block.GetLightLevels(Lighting, x, y, z);
-        Tess.setLight(levels.Sky, levels.Block);
+        Tess.setLightSample(
+            levels.Sky,
+            levels.Block,
+            x,
+            y,
+            z,
+            block.LightEmission,
+            block.Material.IsFluid);
     }
 
     /// <summary>Sets the light for something that should come out at full brightness regardless.</summary>
