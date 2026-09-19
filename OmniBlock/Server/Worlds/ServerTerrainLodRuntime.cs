@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using OmniBlock.Network.Messages;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
@@ -21,7 +22,9 @@ public sealed record ServerTerrainLodSnapshot(
     string? LastPipelineFailure,
     TerrainLodConversionSnapshot Conversion,
     TerrainLodCacheSnapshot Cache,
-    TerrainLodCacheWriterSnapshot Writer);
+    TerrainLodCacheWriterSnapshot Writer,
+    TerrainLodColumnTileCacheSnapshot SpatialCache,
+    TerrainLodSpatialHierarchyCoordinatorSnapshot SpatialHierarchy);
 
 /// <summary>
 ///     Per-dimension lifecycle owner joining live chunks to the bounded converter and disposable
@@ -45,6 +48,15 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     private readonly TerrainLodConversionService _conversions;
     private readonly TerrainLodCacheStore _cache;
     private readonly TerrainLodCacheWriter _writer;
+    private readonly TerrainLodColumnTileCacheStore _spatialCache;
+    private readonly TerrainLodSpatialHierarchyCoordinator _spatialHierarchy;
+    private readonly List<TerrainLodColumnTile> _completedSpatialParents = [];
+    private readonly Queue<TerrainLodTileKey> _spatialReadRequests = [];
+    private readonly HashSet<TerrainLodTileKey> _spatialReadsPending = [];
+    private readonly Queue<TerrainLodTileKey> _spatialEncodeRequests = [];
+    private readonly HashSet<TerrainLodTileKey> _spatialEncodesPending = [];
+    private readonly Dictionary<TerrainLodTileKey, byte[]> _spatialWirePayloads = [];
+    private readonly Queue<TerrainLodTileKey> _spatialWirePayloadOrder = [];
     private readonly AutoResetEvent _writerWake = new(false);
     private readonly Thread _writerThread;
     private bool _disposed;
@@ -87,6 +99,14 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                 $"Identity world dimension {identity.Dimension} does not match {dimension}.",
                 nameof(identitySource));
         _cache = new TerrainLodCacheStore(cacheRoot, identity);
+        _spatialCache = new TerrainLodColumnTileCacheStore(cacheRoot, identity);
+        _spatialHierarchy = new TerrainLodSpatialHierarchyCoordinator(
+            TerrainLodSpatialPolicy.CreateDefault(),
+            _spatialCache,
+            tileCapacity: 8192,
+            constructionCapacity: 128,
+            completedCapacity: 32,
+            persistenceCapacity: 64);
         _conversions = new TerrainLodConversionService(
             _dimension,
             conversionCapacity,
@@ -102,8 +122,14 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                         source,
                         materials,
                         TerrainLodReductionStrategy.SurfacePreserving), source.Lighting);
-            });
-        _writer = new TerrainLodCacheWriter(_conversions, _cache);
+            },
+            source => source.Width == 16 && source.Depth == 16
+                ? TerrainLodColumnTile.BuildLeaf(source, materials)
+                : null);
+        _writer = new TerrainLodCacheWriter(
+            _conversions,
+            _cache.Write,
+            PublishSpatialLeaf);
         PublishSnapshotLocked();
         _writerThread = new Thread(WriterLoop)
         {
@@ -133,6 +159,54 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     }
 
     public ServerTerrainLodSnapshot Snapshot() => Volatile.Read(ref _publishedSnapshot);
+
+    /// <summary>
+    ///     Returns already-resident server-approved coarse coverage without loading a gameplay
+    ///     chunk or touching disk on the simulation thread. A cold persistent record is queued for
+    ///     the LOD worker and becomes available to a later bounded client retry.
+    /// </summary>
+    public bool TryGetSpatialCoverage(
+        TerrainLodTileKey key,
+        out TerrainLodColumnTile? tile)
+    {
+        lock (_gate)
+        {
+            if (_disposed)
+            {
+                tile = null;
+                return false;
+            }
+        }
+        if (_spatialHierarchy.TryGetCoverage(key, out tile, out _)) return true;
+        lock (_gate)
+        {
+            if (!_disposed && _spatialReadsPending.Add(key))
+            {
+                _spatialReadRequests.Enqueue(key);
+                _writerWake.Set();
+            }
+        }
+        tile = null;
+        return false;
+    }
+
+    /// <summary>Returns a pre-encoded remote payload or queues encoding on the LOD worker.</summary>
+    public bool TryGetSpatialPayload(TerrainLodTileKey key, out byte[]? payload)
+    {
+        lock (_gate)
+        {
+            if (_spatialWirePayloads.TryGetValue(key, out payload)) return true;
+            if (_disposed)
+            {
+                payload = null;
+                return false;
+            }
+        }
+        if (_spatialHierarchy.TryGetCoverage(key, out _, out _)) QueueSpatialEncode(key);
+        else TryGetSpatialCoverage(key, out _);
+        payload = null;
+        return false;
+    }
 
     public void TrackChunk(Chunk chunk)
     {
@@ -271,10 +345,12 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             Tick(_conversionCapacity);
             _writerWake.Set();
             var conversion = _conversions.Snapshot();
+            var spatial = _spatialHierarchy.Snapshot();
             bool hasDirty;
             lock (_gate) hasDirty = _tracked.Values.Any(static state => state.Dirty);
             if (!hasDirty && conversion.Queued == 0 && conversion.Running == 0 &&
-                conversion.Ready == 0) break;
+                conversion.Ready == 0 && spatial.Construction.Owned == 0 &&
+                (spatial.Persistence?.Queued ?? 0) == 0) break;
             Thread.Sleep(5);
         }
         Dispose();
@@ -332,12 +408,112 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             }
             var failuresBefore = _writer.Snapshot().Failures;
             var consumed = _writer.Drain(WritesPerDrain);
+            _completedSpatialParents.Clear();
+            var spatialPublished = _spatialHierarchy.DrainCompleted(
+                maximumResults: 16,
+                _completedSpatialParents);
+            var spatialReads = DrainSpatialReads(maximumReads: 4);
+            foreach (var parent in _completedSpatialParents)
+                if (parent.Key.Level >= 2)
+                {
+                    lock (_gate) _spatialWirePayloads.Remove(parent.Key);
+                    QueueSpatialEncode(parent.Key);
+                }
+            var spatialEncodes = DrainSpatialEncodes(maximumEncodes: 2);
             lock (_gate) PublishSnapshotLocked();
             if (_writer.Snapshot().Failures != failuresBefore)
                 _writerWake.WaitOne(TimeSpan.FromMilliseconds(250));
-            else if (consumed == 0)
+            else if (consumed == 0 && spatialPublished == 0 && spatialReads == 0 &&
+                     spatialEncodes == 0)
                 _writerWake.WaitOne(TimeSpan.FromMilliseconds(50));
         }
+    }
+
+    private int DrainSpatialReads(int maximumReads)
+    {
+        var consumed = 0;
+        while (consumed < maximumReads)
+        {
+            TerrainLodTileKey key;
+            lock (_gate)
+            {
+                if (!_spatialReadRequests.TryDequeue(out key)) break;
+            }
+            try
+            {
+                var cached = _spatialCache.Read(key);
+                if (cached.Status == TerrainLodColumnTileCacheReadStatus.Hit)
+                {
+                    _spatialHierarchy.PublishCached(cached.Tile!);
+                    if (key.Level >= 2) QueueSpatialEncode(key);
+                }
+            }
+            finally
+            {
+                lock (_gate) _spatialReadsPending.Remove(key);
+            }
+            consumed++;
+        }
+        return consumed;
+    }
+
+    private void QueueSpatialEncode(TerrainLodTileKey key)
+    {
+        lock (_gate)
+        {
+            if (_disposed || _spatialWirePayloads.ContainsKey(key) ||
+                !_spatialEncodesPending.Add(key)) return;
+            _spatialEncodeRequests.Enqueue(key);
+            _writerWake.Set();
+        }
+    }
+
+    private int DrainSpatialEncodes(int maximumEncodes)
+    {
+        var consumed = 0;
+        while (consumed < maximumEncodes)
+        {
+            TerrainLodTileKey key;
+            lock (_gate)
+            {
+                if (!_spatialEncodeRequests.TryDequeue(out key)) break;
+            }
+            try
+            {
+                if (!_spatialHierarchy.TryGetCoverage(key, out var tile, out _) || tile is null)
+                    continue;
+                var payload = TerrainLodTileMessage.Encode(tile);
+                lock (_gate)
+                {
+                    const int capacity = 512;
+                    if (!_spatialWirePayloads.ContainsKey(key)) _spatialWirePayloadOrder.Enqueue(key);
+                    _spatialWirePayloads[key] = payload;
+                    while (_spatialWirePayloads.Count > capacity &&
+                           _spatialWirePayloadOrder.TryDequeue(out var evicted))
+                        _spatialWirePayloads.Remove(evicted);
+                }
+            }
+            catch (Exception error) when (error is IOException or InvalidDataException or
+                                          ArgumentException or InvalidOperationException or
+                                          OverflowException)
+            {
+                RecordPipelineFailure(error, key.X, key.Z);
+            }
+            finally
+            {
+                lock (_gate) _spatialEncodesPending.Remove(key);
+            }
+            consumed++;
+        }
+        return consumed;
+    }
+
+    private void PublishSpatialLeaf(TerrainLodConversionResult result)
+    {
+        if (result.SpatialLeaf is not { } leaf)
+            throw new InvalidOperationException(
+                $"Terrain LOD conversion {result.ChunkX},{result.ChunkZ} has no spatial leaf.");
+        _spatialHierarchy.PublishLeaf(leaf);
     }
 
     private void PublishSnapshotLocked() => Volatile.Write(ref _publishedSnapshot,
@@ -356,7 +532,9 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             _lastPipelineFailure,
             _conversions.Snapshot(),
             _cache.Snapshot(),
-            _writer.Snapshot()));
+            _writer.Snapshot(),
+            _spatialCache.Snapshot(),
+            _spatialHierarchy.Snapshot()));
 
     public void Dispose()
     {
@@ -367,6 +545,12 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             foreach (var state in _tracked.Values)
                 state.Chunk.TerrainChanged -= OnTerrainChanged;
             _tracked.Clear();
+            _spatialReadRequests.Clear();
+            _spatialReadsPending.Clear();
+            _spatialEncodeRequests.Clear();
+            _spatialEncodesPending.Clear();
+            _spatialWirePayloads.Clear();
+            _spatialWirePayloadOrder.Clear();
             _stopWriter = true;
             PublishSnapshotLocked();
         }
@@ -374,6 +558,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         if (_writerThread != Thread.CurrentThread)
             _writerThread.Join(TimeSpan.FromSeconds(5));
         _conversions.Dispose();
+        _spatialHierarchy.Dispose();
         _writerWake.Dispose();
     }
 

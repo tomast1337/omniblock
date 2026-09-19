@@ -195,6 +195,38 @@ public sealed class TerrainLodCacheStoreTests
     }
 
     [Fact]
+    public async Task Cache_writer_publishes_cache_hits_to_secondary_consumers_before_acknowledging()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var store = Store(root);
+            store.Write(Result(3, 7, 2));
+            using var conversions = new TerrainLodConversionService(
+                0, Materials, store, capacity: 2);
+            conversions.Submit(Source(3, 7, 2));
+            await WaitUntil(() => conversions.Snapshot().Ready == 1);
+            TerrainLodConversionResult? observed = null;
+            var writer = new TerrainLodCacheWriter(
+                conversions,
+                store.Write,
+                result => observed = result);
+
+            Assert.Equal(1, writer.Drain(1));
+
+            Assert.NotNull(observed);
+            Assert.False(observed!.RequiresPersistence);
+            Assert.Equal(0, conversions.Snapshot().OwnedChunks);
+            Assert.Equal(1, writer.Snapshot().CacheHitsAcknowledged);
+            Assert.Equal(0, writer.Snapshot().WriteAttempts);
+        }
+        finally
+        {
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task Cache_aware_conversion_reuses_matching_source_and_lighting()
     {
         var root = CreateTemporaryDirectory();

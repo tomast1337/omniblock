@@ -136,6 +136,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private readonly TerrainLodSpatialPresentationSet<TerrainLodSpatialGpuPresentation>
         _spatialPresentations = new();
     private readonly Dictionary<TerrainLodTileKey, TerrainLodColumnTile> _spatialMeshPending = [];
+    private readonly Dictionary<TerrainLodTileKey, long> _remoteRequestTicks = [];
     private readonly HashSet<TerrainLodSpatialSeamSegment> _desiredSpatialSeams = [];
     private readonly Dictionary<TerrainLodSpatialSeamSegment,
         TerrainLodSpatialGpuSeamPresentation> _spatialSeams = [];
@@ -208,15 +209,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 ConversionCapacity);
         if (cache is not null) _cacheWriter = new TerrainLodAsyncCacheWriter(cache);
         _meshCompilation = new TerrainLodMeshCompilationService(ConversionCapacity);
-        _spatialPolicy = new TerrainLodSpatialPolicy(
-            // The live horizon is capped at 64 chunks. A unit of eight made level 3 reachable
-            // only at that outer boundary and level 4 unreachable, leaving the hierarchy stuck
-            // on 4x4-chunk tiles. Four yields level 2 from 16 chunks, level 3 from 32, and level 4
-            // at the outer band while the exact/legacy paths retain higher detail nearby.
-            distanceUnitChunks: 4,
-            distanceGrowth: 2,
-            horizontalSampleLevelBySpatialLevel: [0, 0, 1, 1, 2],
-            verticalSliceBudgetBySpatialLevel: [32, 24, 16, 12, 8]);
+        // Shared with the server cache producer. The live horizon is capped at 64 chunks: a unit
+        // of four reaches levels 2/3/4 at 16/32/64 chunks while exact paths retain nearby detail.
+        _spatialPolicy = TerrainLodSpatialPolicy.CreateDefault();
         _spatialHierarchy = new TerrainLodSpatialHierarchyCoordinator(
             _spatialPolicy,
             tileCapacity: 4096,
@@ -232,6 +227,60 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
 
     public ClientTerrainLodSnapshot Snapshot => _snapshot;
     public TerrainLodSpatialSnapshot SpatialSnapshot => _spatialSnapshot;
+
+    public void ObserveRemoteSpatialTile(TerrainLodColumnTile tile)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(tile);
+        if (tile.Key.Level < MinimumSpatialGpuLevel ||
+            tile.Key.Level > _spatialPolicy.MaximumSpatialLevel) return;
+        var publication = _spatialHierarchy.PublishCached(tile);
+        if (publication != TerrainLodTilePublicationResult.IgnoredCurrent)
+            QueueSpatialMesh(tile);
+        _remoteRequestTicks.Remove(tile.Key);
+    }
+
+    public TerrainLodTileKey[] TakeRemoteSpatialRequests(
+        Vector3D<double> viewPosition,
+        int nearDistanceChunks,
+        int horizonDistanceChunks,
+        int maximumRequests)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (maximumRequests <= 0 || horizonDistanceChunks <= nearDistanceChunks ||
+            (_tick & 3) != 0) return [];
+        var cameraX = viewPosition.X / 16.0;
+        var cameraZ = viewPosition.Z / 16.0;
+        List<TerrainLodTileKey> candidates = [];
+        var levelCount = _spatialPolicy.MaximumSpatialLevel - MinimumSpatialGpuLevel + 1;
+        var level = _spatialPolicy.MaximumSpatialLevel - (int)((_tick >> 2) % levelCount);
+        var width = 1 << level;
+        var minX = (int)Math.Floor((cameraX - horizonDistanceChunks) / width);
+        var maxX = (int)Math.Floor((cameraX + horizonDistanceChunks) / width);
+        var minZ = (int)Math.Floor((cameraZ - horizonDistanceChunks) / width);
+        var maxZ = (int)Math.Floor((cameraZ + horizonDistanceChunks) / width);
+        for (var x = minX; x <= maxX; x++)
+        for (var z = minZ; z <= maxZ; z++)
+        {
+            var key = new TerrainLodTileKey(level, x, z);
+            var distance = key.DistanceTo(cameraX, cameraZ);
+            if (distance > horizonDistanceChunks ||
+                distance + width < nearDistanceChunks ||
+                _spatialHierarchy.TryGetCoverage(key, out _, out _) ||
+                _remoteRequestTicks.TryGetValue(key, out var requestedAt) &&
+                _tick - requestedAt < 20)
+                continue;
+            candidates.Add(key);
+        }
+        var selected = candidates
+            .OrderBy(key => key.DistanceTo(cameraX, cameraZ))
+            .ThenBy(static key => key.X)
+            .ThenBy(static key => key.Z)
+            .Take(maximumRequests)
+            .ToArray();
+        foreach (var key in selected) _remoteRequestTicks[key] = _tick;
+        return selected;
+    }
 
     /// <summary>
     ///     Observes texture-resource replacement without invalidating terrain presentation. Both

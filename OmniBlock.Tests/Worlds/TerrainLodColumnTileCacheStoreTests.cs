@@ -1,3 +1,4 @@
+using OmniBlock.Network.Messages;
 using OmniBlock.Worlds.Lod;
 using OmniBlock.Worlds.Chunks;
 
@@ -50,6 +51,34 @@ public sealed class TerrainLodColumnTileCacheStoreTests
         {
             Directory.Delete(root.FullName, recursive: true);
         }
+    }
+
+    [Fact]
+    public void Portable_message_round_trips_parent_without_disk_identity()
+    {
+        var key = new TerrainLodTileKey(1, 2, -4);
+        var expected = TerrainLodColumnTile.BuildParent(key,
+        [
+            Leaf(key.Child(0), 1, 31),
+            Leaf(key.Child(1), 2, 32),
+            Leaf(key.Child(2), 1, 33),
+            Leaf(key.Child(3), 2, 34)
+        ], horizontalSampleLevel: 1);
+        var outgoing = TerrainLodTileMessage.Of(-1, expected);
+        using MemoryStream stream = new();
+        outgoing.Write(stream);
+        Assert.Equal(outgoing.Size(), stream.Length);
+        stream.Position = 0;
+        TerrainLodTileMessage incoming = new();
+        incoming.Read(stream);
+
+        var actual = incoming.Decode();
+
+        Assert.Equal(-1, incoming.Dimension);
+        Assert.Equal(expected.Key, actual.Key);
+        Assert.Equal(expected.CanonicalHash, actual.CanonicalHash);
+        Assert.Equal(expected.InputHashes, actual.InputHashes);
+        Assert.Equal(expected[0, 0].Spans, actual[0, 0].Spans);
     }
 
     [Fact]

@@ -59,6 +59,8 @@ public sealed class TerrainLodColumnTileCacheStore
     private const int MaximumPaletteEntries = ushort.MaxValue;
     private const int LinuxOpenReadOnly = 0;
     private const int LinuxOpenDirectory = 0x10000;
+    private const uint PortableMagic = 0x314C5450; // PTL1
+    private const int PortableVersion = 1;
 
     private readonly object _gate = new();
     private readonly TerrainLodCacheIdentity _identity;
@@ -244,6 +246,124 @@ public sealed class TerrainLodColumnTileCacheStore
 
     public TerrainLodColumnTileCacheSnapshot Snapshot() =>
         Volatile.Read(ref _publishedSnapshot);
+
+    /// <summary>
+    ///     Encodes the identity-independent part of a tile for an already-negotiated content
+    ///     session. Disk records additionally carry world/cache identity; the wire envelope does
+    ///     not, because the server approves each requested coordinate and the session has already
+    ///     synchronized the content catalog.
+    /// </summary>
+    internal static byte[] EncodePortable(TerrainLodColumnTile tile)
+    {
+        ArgumentNullException.ThrowIfNull(tile);
+        ValidateTileForSerialization(tile);
+        using MemoryStream stream = new();
+        using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
+        {
+            var palette = BuildPalette(tile);
+            var paletteIndices = palette
+                .Select(static (material, index) => (material, index))
+                .ToDictionary(static pair => pair.material, static pair => (ushort)pair.index);
+            writer.Write(PortableMagic);
+            writer.Write(PortableVersion);
+            writer.Write(TerrainLodColumnTile.SchemaVersion);
+            writer.Write(tile.Key.Level);
+            writer.Write(tile.Key.X);
+            writer.Write(tile.Key.Z);
+            writer.Write(tile.HorizontalSampleLevel);
+            writer.Write(tile.Width);
+            writer.Write(tile.WorldHeight);
+            writer.Write(tile.LeafTerrainRevision.HasValue);
+            if (tile.LeafTerrainRevision is { } revision) writer.Write(revision);
+            writer.Write(tile.InputHashes.Count);
+            foreach (var input in tile.InputHashes) WriteString(writer, input);
+            WriteString(writer, tile.CanonicalHash);
+            writer.Write(palette.Count);
+            foreach (var material in palette) WriteMaterial(writer, material);
+            writer.Write(checked(tile.Width * tile.Width));
+            for (var x = 0; x < tile.Width; x++)
+            for (var z = 0; z < tile.Width; z++)
+            {
+                var column = tile[x, z];
+                writer.Write(column.Spans.Count);
+                foreach (var span in column.Spans)
+                {
+                    writer.Write(span.BottomY);
+                    writer.Write(span.Height);
+                    writer.Write(paletteIndices[span.Material]);
+                    writer.Write(span.BlockLight);
+                    writer.Write(span.SkyLight);
+                }
+            }
+        }
+        return stream.ToArray();
+    }
+
+    internal static TerrainLodColumnTile DecodePortable(ReadOnlySpan<byte> payload)
+    {
+        using MemoryStream stream = new(payload.ToArray(), writable: false);
+        using BinaryReader reader = new(stream, Encoding.UTF8, leaveOpen: false);
+        if (reader.ReadUInt32() != PortableMagic)
+            throw new InvalidDataException("Terrain LOD wire tile has an invalid signature.");
+        if (reader.ReadInt32() != PortableVersion)
+            throw new InvalidDataException("Terrain LOD wire tile has an unsupported version.");
+        if (reader.ReadInt32() != TerrainLodColumnTile.SchemaVersion)
+            throw new InvalidDataException("Terrain LOD wire tile has an unsupported schema.");
+        var key = new TerrainLodTileKey(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
+        var sampleLevel = reader.ReadInt32();
+        var width = reader.ReadInt32();
+        var worldHeight = reader.ReadInt32();
+        ValidateDimensions(key, sampleLevel, width, worldHeight);
+        var revision = reader.ReadBoolean() ? reader.ReadInt64() : (long?)null;
+        var expectedInputs = key.Level == 0 ? 1 : 4;
+        var inputCount = reader.ReadInt32();
+        if (inputCount != expectedInputs)
+            throw new InvalidDataException(
+                $"Terrain LOD wire tile has {inputCount} inputs; expected {expectedInputs}.");
+        var inputs = new string[inputCount];
+        for (var index = 0; index < inputs.Length; index++) inputs[index] = ReadString(reader);
+        var hash = ReadString(reader);
+        var paletteCount = reader.ReadInt32();
+        if (paletteCount is <= 0 or > MaximumPaletteEntries)
+            throw new InvalidDataException("Terrain LOD wire tile has an invalid palette size.");
+        var palette = new TerrainLodMaterial[paletteCount];
+        var unique = new HashSet<TerrainLodMaterial>();
+        for (var index = 0; index < palette.Length; index++)
+        {
+            palette[index] = ReadMaterial(reader);
+            if (!unique.Add(palette[index]))
+                throw new InvalidDataException("Terrain LOD wire tile repeats a palette entry.");
+        }
+        var columnCount = reader.ReadInt32();
+        if (columnCount != checked(width * width))
+            throw new InvalidDataException("Terrain LOD wire tile has an invalid column count.");
+        var columns = new TerrainLodColumn[columnCount];
+        var totalSpans = 0;
+        for (var index = 0; index < columns.Length; index++)
+        {
+            var spanCount = reader.ReadInt32();
+            if (spanCount is <= 0 or > MaximumSpansPerColumn ||
+                checked(totalSpans + spanCount) > MaximumTotalSpans)
+                throw new InvalidDataException("Terrain LOD wire tile has an invalid span count.");
+            totalSpans += spanCount;
+            var spans = new TerrainLodColumnSpan[spanCount];
+            for (var spanIndex = 0; spanIndex < spans.Length; spanIndex++)
+            {
+                var bottomY = reader.ReadInt32();
+                var height = reader.ReadInt32();
+                var paletteIndex = reader.ReadUInt16();
+                if (paletteIndex >= palette.Length)
+                    throw new InvalidDataException("Terrain LOD wire tile has an invalid palette reference.");
+                spans[spanIndex] = new TerrainLodColumnSpan(
+                    bottomY, height, palette[paletteIndex], reader.ReadByte(), reader.ReadByte());
+            }
+            columns[index] = TerrainLodColumn.Create(worldHeight, spans);
+        }
+        if (stream.Position != stream.Length)
+            throw new InvalidDataException("Terrain LOD wire tile contains trailing data.");
+        return TerrainLodColumnTile.FromSerialized(
+            key, sampleLevel, width, worldHeight, columns, revision, inputs, hash);
+    }
 
     private byte[] Serialize(TerrainLodColumnTile tile)
     {

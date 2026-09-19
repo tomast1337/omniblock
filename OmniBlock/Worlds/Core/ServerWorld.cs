@@ -10,6 +10,7 @@ using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Dimensions;
 using OmniBlock.Worlds.Mechanics;
+using OmniBlock.Worlds.Lod;
 using OmniBlock.Worlds.Storage;
 
 namespace OmniBlock.Worlds.Core;
@@ -68,6 +69,22 @@ public class ServerWorld : World
 
     internal void SubmitOfflineTerrainLod(InactiveChunkSnapshot snapshot) =>
         _terrainLod?.SubmitOffline(snapshot);
+
+    internal bool TryGetTerrainLodCoverage(
+        TerrainLodTileKey key,
+        out TerrainLodColumnTile? tile)
+    {
+        if (_terrainLod is not null) return _terrainLod.TryGetSpatialCoverage(key, out tile);
+        tile = null;
+        return false;
+    }
+
+    internal bool TryGetTerrainLodPayload(TerrainLodTileKey key, out byte[]? payload)
+    {
+        if (_terrainLod is not null) return _terrainLod.TryGetSpatialPayload(key, out payload);
+        payload = null;
+        return false;
+    }
 
     protected override IChunkSource CreateChunkCache()
     {

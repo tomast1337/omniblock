@@ -807,6 +807,7 @@ public sealed class TerrainLodCacheWriter
     private readonly object _gate = new();
     private readonly TerrainLodConversionService _conversions;
     private readonly Func<TerrainLodConversionResult, TerrainLodCacheWriteStatus> _write;
+    private readonly Action<TerrainLodConversionResult>? _beforeAcknowledge;
     private long _writeAttempts;
     private long _written;
     private long _cacheHitsAcknowledged;
@@ -818,14 +819,16 @@ public sealed class TerrainLodCacheWriter
     public TerrainLodCacheWriter(
         TerrainLodConversionService conversions,
         TerrainLodCacheStore store)
-        : this(conversions, RequireStore(store).Write) { }
+        : this(conversions, RequireStore(store).Write, null) { }
 
     internal TerrainLodCacheWriter(
         TerrainLodConversionService conversions,
-        Func<TerrainLodConversionResult, TerrainLodCacheWriteStatus> write)
+        Func<TerrainLodConversionResult, TerrainLodCacheWriteStatus> write,
+        Action<TerrainLodConversionResult>? beforeAcknowledge = null)
     {
         _conversions = conversions ?? throw new ArgumentNullException(nameof(conversions));
         _write = write ?? throw new ArgumentNullException(nameof(write));
+        _beforeAcknowledge = beforeAcknowledge;
     }
 
     public int Drain(int maxRecords)
@@ -836,18 +839,22 @@ public sealed class TerrainLodCacheWriter
             var consumed = 0;
             while (consumed < maxRecords && _conversions.TryPeekCompleted(out var result))
             {
-                if (!result!.RequiresPersistence)
-                {
-                    _cacheHitsAcknowledged++;
-                    _lastFailure = null;
-                    _conversions.AcknowledgeCompleted(
-                        result.ChunkX, result.ChunkZ, result.TerrainRevision);
-                    consumed++;
-                    continue;
-                }
-                _writeAttempts++;
                 try
                 {
+                    // Consumers such as the server spatial hierarchy need every completed source,
+                    // including a hierarchy-cache hit. Run this before ownership is acknowledged so
+                    // failure leaves the same result available for retry.
+                    _beforeAcknowledge?.Invoke(result!);
+                    if (!result!.RequiresPersistence)
+                    {
+                        _cacheHitsAcknowledged++;
+                        _lastFailure = null;
+                        _conversions.AcknowledgeCompleted(
+                            result.ChunkX, result.ChunkZ, result.TerrainRevision);
+                        consumed++;
+                        continue;
+                    }
+                    _writeAttempts++;
                     var status = _write(result!);
                     if (status == TerrainLodCacheWriteStatus.Written) _written++;
                     else _rejected++;

@@ -1,4 +1,5 @@
 using OmniBlock.NBT;
+using OmniBlock.Network.Messages;
 using OmniBlock.Server.Worlds;
 using OmniBlock.Tests.TestSupport;
 using OmniBlock.Worlds.Chunks;
@@ -133,6 +134,55 @@ public sealed class ServerTerrainLodRuntimeTests
             Assert.Equal(0, runtime.Snapshot().OfflineSnapshotsDropped);
             Assert.Equal(chunk.TerrainRevision,
                 offline.CaptureTerrain().TerrainRevision);
+        }
+        finally
+        {
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task Runtime_builds_and_reopens_spatial_parent_coverage_without_loading_chunks()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var world = new FakeWorldContext();
+            var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+            using (var runtime = new ServerTerrainLodRuntime(
+                       0, materials, root, world, conversionCapacity: 8))
+            {
+                for (var x = 0; x < 2; x++)
+                for (var z = 0; z < 2; z++)
+                {
+                    var chunk = Chunk(world, x, z);
+                    chunk[0, 0, 0] = world.Content.Blocks.Get("omniblock:stone").Id;
+                    runtime.SubmitOffline(InactiveChunkSnapshot.Capture(chunk, world));
+                }
+
+                var parentKey = new TerrainLodTileKey(1, 0, 0);
+                await WaitUntil(() =>
+                    runtime.TryGetSpatialCoverage(parentKey, out _) &&
+                    runtime.Snapshot().SpatialCache.Writes >= 5);
+                Assert.True(runtime.TryGetSpatialCoverage(parentKey, out var parent));
+                Assert.Equal(parentKey, parent!.Key);
+            }
+
+            using var reopened = new ServerTerrainLodRuntime(
+                0, materials, root, world, conversionCapacity: 2);
+            var reopenedKey = new TerrainLodTileKey(1, 0, 0);
+            Assert.False(reopened.TryGetSpatialCoverage(reopenedKey, out _));
+            await WaitUntil(() => reopened.TryGetSpatialCoverage(reopenedKey, out _));
+            Assert.True(reopened.TryGetSpatialCoverage(reopenedKey, out var cached));
+            Assert.Equal(1, cached!.Key.Level);
+            await WaitUntil(() => reopened.Snapshot().SpatialCache.ReadHits == 1);
+            Assert.Equal(1, reopened.Snapshot().SpatialCache.ReadHits);
+            Assert.Equal(0, reopened.Snapshot().TrackedChunks);
+            Assert.False(reopened.TryGetSpatialPayload(reopenedKey, out _));
+            await WaitUntil(() => reopened.TryGetSpatialPayload(reopenedKey, out _));
+            Assert.True(reopened.TryGetSpatialPayload(reopenedKey, out var payload));
+            var transported = TerrainLodTileMessage.FromCompressed(0, payload!).Decode();
+            Assert.Equal(cached.CanonicalHash, transported.CanonicalHash);
         }
         finally
         {

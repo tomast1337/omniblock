@@ -25,6 +25,8 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     ///     or elevator/piston ride without being long enough to be useful as a fly hack.
     /// </summary>
     private const int MaxFloatingTicks = 20;
+    private const int MaximumTerrainLodDistanceChunks = 64;
+    private const int MaximumTerrainLodResponsesPerRequest = 1;
 
     private readonly ILogger<ServerPlayNetworkHandler> _logger = Log.Instance.For<ServerPlayNetworkHandler>();
     private readonly OmniBlockServer server;
@@ -57,6 +59,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
         MessageHandlers.On<TimeSyncRequestMessage>(onTimeSyncRequest);
         MessageHandlers.On<ChunkCacheOfferMessage>(onChunkCacheOffer);
+        MessageHandlers.On<TerrainLodTileRequestMessage>(onTerrainLodTileRequest);
         MessageHandlers.On<SnapshotAckMessage>(ack => player.SnapshotStream.Acknowledge(ack.Sequence));
         MessageHandlers.On<InteractEntityMessage>(interact => InteractWithEntity(interact.EntityId, interact.Action, interact.RenderTimeMs));
         MessageHandlers.On<PlayerActionMessage>(onPlayerAction);
@@ -173,6 +176,51 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
         _logger.LogDebug(
             "{Player} offered {Count} cached chunk hashes.", player.Name, offer.Entries.Count);
+    }
+
+    private void onTerrainLodTileRequest(TerrainLodTileRequestMessage request)
+    {
+        if (request.Dimension != player.DimensionId) return;
+        var world = server.getWorld(player.DimensionId);
+        var playerChunkX = (int)Math.Floor(player.X) >> 4;
+        var playerChunkZ = (int)Math.Floor(player.Z) >> 4;
+        var sent = 0;
+        foreach (var key in request.Keys.Distinct())
+        {
+            // Level-zero/one records reveal almost full chunk detail and belong to ordinary chunk
+            // streaming. The distant lane begins at a 4x4-chunk aggregate and never generates on
+            // demand; it can only return an already-approved persistent server record.
+            if (key.Level is < 2 or > 4 ||
+                key.DistanceTo(playerChunkX + 0.5, playerChunkZ + 0.5) >
+                MaximumTerrainLodDistanceChunks ||
+                (WantsCompactPayloads
+                    ? !world.TryGetTerrainLodPayload(key, out _)
+                    : !world.TryGetTerrainLodCoverage(key, out _)))
+                continue;
+            try
+            {
+                TerrainLodTileMessage message;
+                if (WantsCompactPayloads)
+                {
+                    if (!world.TryGetTerrainLodPayload(key, out var payload) || payload is null)
+                        continue;
+                    message = TerrainLodTileMessage.FromCompressed(player.DimensionId, payload);
+                }
+                else
+                {
+                    if (!world.TryGetTerrainLodCoverage(key, out var tile) || tile is null)
+                        continue;
+                    message = TerrainLodTileMessage.Loopback(player.DimensionId, tile);
+                }
+                SendMessage(message);
+                if (++sent >= MaximumTerrainLodResponsesPerRequest) break;
+            }
+            catch (InvalidDataException error)
+            {
+                _logger.LogWarning(error, "Terrain LOD tile {Tile} could not be sent to {Player}.",
+                    key, player.Name);
+            }
+        }
     }
 
     /// <summary>

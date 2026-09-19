@@ -110,6 +110,17 @@ public sealed class TerrainLodSpatialPolicy
     private readonly int[] _horizontalSampleLevelBySpatialLevel;
     private readonly int[] _verticalSliceBudgetBySpatialLevel;
 
+    /// <summary>
+    ///     The shared persisted/presented hierarchy contract. Server construction and client
+    ///     selection must use the same shape: changing one side alone produces cache records the
+    ///     other peer cannot refine consistently.
+    /// </summary>
+    public static TerrainLodSpatialPolicy CreateDefault() => new(
+        distanceUnitChunks: 4,
+        distanceGrowth: 2,
+        horizontalSampleLevelBySpatialLevel: [0, 0, 1, 1, 2],
+        verticalSliceBudgetBySpatialLevel: [32, 24, 16, 12, 8]);
+
     public TerrainLodSpatialPolicy(
         double distanceUnitChunks,
         double distanceGrowth,

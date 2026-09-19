@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using OmniBlock.Client.Chunks;
 using OmniBlock.Client.Network;
 using OmniBlock.Entities;
@@ -20,6 +21,7 @@ public class ClientWorld : World
     private readonly List<ClientEntityDespawnVisual> _distanceDespawnVisuals = [];
     private readonly HashSet<Entity> forcedEntities = [];
     private readonly HashSet<Entity> pendingEntities = [];
+    private readonly ConcurrentQueue<TerrainLodColumnTile> _terrainLodTiles = new();
     private MultiplayerChunkCache _chunkCache;
 
     public ClientWorld(
@@ -48,6 +50,12 @@ public class ClientWorld : World
     internal TerrainLodCacheStore? TerrainLodCache { get; }
     internal IReadOnlyList<ClientEntityDespawnVisual> DistanceDespawnVisuals => _distanceDespawnVisuals;
     internal int DistanceDespawnPresentationCount { get; private set; }
+
+    internal void EnqueueTerrainLodTile(TerrainLodColumnTile tile) =>
+        _terrainLodTiles.Enqueue(tile ?? throw new ArgumentNullException(nameof(tile)));
+
+    internal bool TryDequeueTerrainLodTile(out TerrainLodColumnTile? tile) =>
+        _terrainLodTiles.TryDequeue(out tile);
 
     public override void Tick()
     {

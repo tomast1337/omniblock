@@ -18,6 +18,7 @@ using OmniBlock.Client.Worlds;
 using OmniBlock.Entities;
 using OmniBlock.Items;
 using OmniBlock.Items.Behaviors;
+using OmniBlock.Network.Messages;
 using OmniBlock.Profiling;
 using OmniBlock.Util;
 using OmniBlock.Util.Hit;
@@ -485,7 +486,31 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         ChunkRenderer.Tick(
             new Vector3D<double>(viewX, viewY, viewZ),
             new Vector3D<double>(view.VelocityX, view.VelocityY, view.VelocityZ));
-        TerrainLod?.Tick(new Vector3D<double>(viewX, viewY, viewZ));
+        var viewPosition = new Vector3D<double>(viewX, viewY, viewZ);
+        if (TerrainLod is { } terrainLod)
+        {
+            if (_world is ClientWorld clientWorld)
+            {
+                for (var admitted = 0; admitted < 2 &&
+                     clientWorld.TryDequeueTerrainLodTile(out var tile); admitted++)
+                    terrainLod.ObserveRemoteSpatialTile(tile!);
+            }
+            terrainLod.Tick(viewPosition);
+            if (_world is ClientWorld remoteWorld)
+            {
+                var requests = terrainLod.TakeRemoteSpatialRequests(
+                    viewPosition,
+                    _game.Options.RenderDistance,
+                    _game.Options.TerrainHorizonDistance,
+                    maximumRequests: 1);
+                if (requests.Length > 0)
+                    remoteWorld.NetworkHandler.SendMessage(new TerrainLodTileRequestMessage
+                    {
+                        Dimension = _world.Dimension.Id,
+                        Keys = requests
+                    });
+            }
+        }
     }
 
     public void LoadRenderers()
