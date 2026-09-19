@@ -290,6 +290,16 @@ near-field edit and lava update, and a 32-block diagonal cinematic flight. Autom
 pregeneration is absent/disabled by construction. Its start, pressure, and settled dumps provide
 repeatable evidence before a background generation service is introduced.
 
+`world-generation-job-lifecycle.luau` exercises the user-facing `OMNI.worldgen` facade against the
+real integrated server. It starts and immediately pauses a persistent circular job, verifies the
+immutable progress/list views, resumes until server-owned work begins, and cancels while asserting
+the persisted cancellation contract that committed terrain is retained. The fixed-area service's
+focused tests separately cover cancellation after a durable batch; the E2E does not wait for an
+expensive generation batch. Mutations travel through the same FIFO server command boundary as the
+in-game preparation screen; scripts never touch the generation service from the client thread.
+Remote clients expose `OMNI.worldgen.available == false` until a permissioned network control
+protocol is added.
+
 The terrain header also reports `leadingEdgeQueued`, `leadingEdgePending`, and
 `evictionGraceMeshes`. The first is the coalesced frontier waiting for loaded source data, the
 second is admitted frontier work, and the last counts resident meshes temporarily preserved outside

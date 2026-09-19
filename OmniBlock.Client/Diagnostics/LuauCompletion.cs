@@ -15,7 +15,7 @@ internal sealed partial class LuauCompletion
         "string", "table", "tonumber", "tostring", "typeof", "utf8", "xpcall"
     ];
 
-    private static readonly string[] s_omniMembers = ["client", "config", "environment", "has", "run", "test", "ui", "wait", "waitUntil"];
+    private static readonly string[] s_omniMembers = ["client", "config", "environment", "has", "run", "test", "ui", "wait", "waitUntil", "worldgen"];
     private static readonly string[] s_clientMembers = ["state", "worlds"];
     private static readonly string[] s_entityLodMembers =
     [
@@ -42,6 +42,7 @@ internal sealed partial class LuauCompletion
 
     private static readonly string[] s_testMembers = ["breakBlock", "countEntities", "creative", "dumpProfiler", "dumpTerrain", "entityBaselineEnvironment", "fail", "flyPath", "isMeshCurrent", "meshDeadlineMissCount", "pass", "screenshot", "setBlock", "setFlying", "setLook", "setMovement", "summon", "teleport"];
     private static readonly string[] s_worldMembers = ["list", "load"];
+    private static readonly string[] s_worldGenerationMembers = ["available", "get", "list", "start"];
     private static readonly string[] s_uiMembers = ["hud", "querySelector", "root", "screen"];
 
     private static readonly string[] s_configMembers =
@@ -109,6 +110,7 @@ internal sealed partial class LuauCompletion
                 .Concat(s_entityLodMembers);
         if (receiver.EndsWith("OMNI.test", StringComparison.Ordinal)) return s_testMembers;
         if (receiver.EndsWith("OMNI.client.worlds", StringComparison.Ordinal)) return s_worldMembers;
+        if (receiver.EndsWith("OMNI.worldgen", StringComparison.Ordinal)) return s_worldGenerationMembers;
         if (receiver.EndsWith("OMNI.ui", StringComparison.Ordinal)) return s_uiMembers;
         if (receiver.EndsWith("OMNI.config", StringComparison.Ordinal)) return s_configMembers;
         return s_nodeMembers;

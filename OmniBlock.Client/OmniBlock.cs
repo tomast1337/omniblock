@@ -38,6 +38,7 @@ using OmniBlock.Luau.Host;
 using OmniBlock.Profiling;
 using OmniBlock.Registries;
 using OmniBlock.Server.Internal;
+using OmniBlock.Server.Worlds;
 using OmniBlock.Stats;
 using OmniBlock.Util;
 using OmniBlock.Util.Hit;
@@ -896,6 +897,22 @@ public partial class OmniBlock :
                 _logger.LogError("Failed to install the Luau worlds bootstrap: {Error}", worldsBootstrapError);
             }
 
+            LuauWorldGenerationHost.Available = () => InternalServer != null;
+            LuauWorldGenerationHost.List = GetLuauWorldGenerationSnapshots;
+            LuauWorldGenerationHost.Inspect = id => GetLuauWorldGenerationSnapshots()
+                .FirstOrDefault(snapshot => snapshot.Id == id) is { Id.Length: > 0 } snapshot
+                    ? snapshot
+                    : null;
+            LuauWorldGenerationHost.Start = QueueLuauWorldGenerationStart;
+            LuauWorldGenerationHost.Change = QueueLuauWorldGenerationChange;
+            LuauWorldGenerationHost.Install(LuauState.Handle);
+            if (!LuauState.TryExecute(LuauWorldGenerationHost.Bootstrap, out var generationBootstrapError))
+            {
+                _logger.LogError(
+                    "Failed to install the Luau world-generation bootstrap: {Error}",
+                    generationBootstrapError);
+            }
+
             LuauUiHost.Dispatch = UiCommandRegistry.Invoke;
             LuauUiHost.Install(LuauState.Handle);
 
@@ -1206,6 +1223,11 @@ public partial class OmniBlock :
             LuauConfigHost.Options = null;
             LuauWorldsHost.List = null;
             LuauWorldsHost.Load = null;
+            LuauWorldGenerationHost.Available = null;
+            LuauWorldGenerationHost.List = null;
+            LuauWorldGenerationHost.Inspect = null;
+            LuauWorldGenerationHost.Start = null;
+            LuauWorldGenerationHost.Change = null;
             LuauClientStateHost.WorldLoaded = null;
             LuauClientStateHost.PlayerReady = null;
             LuauClientStateHost.WorldId = null;
@@ -2563,6 +2585,89 @@ public partial class OmniBlock :
                     (action, id) => integratedServer.QueueCommands(
                         $"worldgen {action} {id}", integratedServer))));
     }
+
+    private IReadOnlyList<LuauWorldGenerationInfo> GetLuauWorldGenerationSnapshots() =>
+        InternalServer?.GetPregenerationSnapshots()
+            .Select(static snapshot =>
+            {
+                var definition = snapshot.Definition;
+                return new LuauWorldGenerationInfo(
+                    definition.Id,
+                    definition.World,
+                    definition.Dimension,
+                    definition.Seed.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    definition.GeneratorProfile,
+                    definition.GeneratorOptionsHash,
+                    definition.ContentFingerprint,
+                    definition.CenterChunkX,
+                    definition.CenterChunkZ,
+                    definition.RadiusChunks,
+                    definition.TotalTargets,
+                    snapshot.Status.ToString().ToLowerInvariant(),
+                    snapshot.NextTarget,
+                    snapshot.RemainingTargets,
+                    snapshot.PreparedTargets,
+                    snapshot.DecoratedTargets,
+                    snapshot.SavedTargets,
+                    snapshot.SkippedTargets,
+                    snapshot.WrittenChunks,
+                    snapshot.RetainedBytes,
+                    snapshot.PeakRetainedBytes,
+                    snapshot.DiskBytes,
+                    snapshot.TargetsPerSecond,
+                    snapshot.ThrottleReason,
+                    snapshot.LastError,
+                    definition.CreatedUtc.ToString("O"),
+                    snapshot.UpdatedUtc.ToString("O"));
+            })
+            .ToArray()
+        ?? [];
+
+    private LuauWorldGenerationCommandResult QueueLuauWorldGenerationStart(
+        string id,
+        int dimension,
+        int centerChunkX,
+        int centerChunkZ,
+        int radiusChunks)
+    {
+        var server = InternalServer;
+        if (server == null)
+            return new(false, "world-generation jobs can only be controlled by the local server owner");
+        if (!IsValidWorldGenerationJobId(id))
+            return new(false,
+                "job IDs may contain only ASCII letters, digits, '.', '-', and '_' (maximum 64 characters)");
+        if (dimension is not (0 or -1))
+            return new(false, $"dimension {dimension} does not exist");
+        if (radiusChunks is < 0 or > 4096)
+            return new(false, "radiusChunks must be between 0 and 4096");
+        if (server.GetPregenerationSnapshots().Any(snapshot => snapshot.Definition.Id == id))
+            return new(false, $"world-generation job '{id}' already exists");
+
+        server.QueueCommands(
+            $"worldgen start {id} area {dimension} {centerChunkX} {centerChunkZ} {radiusChunks}",
+            server);
+        return new(true);
+    }
+
+    private LuauWorldGenerationCommandResult QueueLuauWorldGenerationChange(string action, string id)
+    {
+        var server = InternalServer;
+        if (server == null)
+            return new(false, "world-generation jobs can only be controlled by the local server owner");
+        if (action is not ("pause" or "resume" or "cancel"))
+            return new(false, $"unknown world-generation action '{action}'");
+        if (!IsValidWorldGenerationJobId(id))
+            return new(false, "invalid world-generation job id");
+
+        // A start and its first lifecycle action may be queued by one Luau turn. The job is not
+        // published yet in that case, but FIFO server-command ordering resolves it safely.
+        server.QueueCommands($"worldgen {action} {id}", server);
+        return new(true);
+    }
+
+    private static bool IsValidWorldGenerationJobId(string id) =>
+        !string.IsNullOrWhiteSpace(id) && id.Length <= 64 && id.All(static character =>
+            char.IsAsciiLetterOrDigit(character) || character is '-' or '_' or '.');
 
     public void SetIngameFocus()
     {

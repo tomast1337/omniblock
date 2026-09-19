@@ -52,6 +52,7 @@ public sealed class LuauCompletionTests
     [InlineData("OMNI.test.dumpP", "dumpProfiler")]
     [InlineData("OMNI.test.setL", "setLook")]
     [InlineData("OMNI.test.setM", "setMovement")]
+    [InlineData("OMNI.worldgen.st", "start")]
     public void CompletesGlobalsAndDomMembers(string source, string expected)
     {
         LuauCompletion completion = new();
