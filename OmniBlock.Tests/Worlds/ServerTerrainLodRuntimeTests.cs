@@ -190,6 +190,34 @@ public sealed class ServerTerrainLodRuntimeTests
         }
     }
 
+    [Fact]
+    public async Task Cold_absent_spatial_record_becomes_an_explicit_cache_miss()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var world = new FakeWorldContext();
+            using var runtime = new ServerTerrainLodRuntime(
+                0,
+                TerrainLodMaterialCatalog.FromRuntime(world.Content),
+                root,
+                world,
+                conversionCapacity: 2);
+            var key = new TerrainLodTileKey(3, 9, -4);
+
+            Assert.Equal(TerrainLodTileAvailability.Pending,
+                runtime.GetSpatialCoverage(key, out _));
+            await WaitUntil(() => runtime.GetSpatialCoverage(key, out _) ==
+                                  TerrainLodTileAvailability.Missing);
+            Assert.Equal(TerrainLodTileAvailability.Missing,
+                runtime.GetSpatialPayload(key, out _));
+        }
+        finally
+        {
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
     private static Chunk Chunk(FakeWorldContext world, int x, int z) =>
         new(world, new byte[ChuckFormat.ChunkSize], x, z);
 

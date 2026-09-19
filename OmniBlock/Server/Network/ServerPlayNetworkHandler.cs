@@ -10,9 +10,11 @@ using OmniBlock.Network.Packets;
 using OmniBlock.Server.Command;
 using OmniBlock.Server.Entities;
 using OmniBlock.Server.Internal;
+using OmniBlock.Server.Worlds;
 using OmniBlock.Util;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Lod;
 
 namespace OmniBlock.Server.Network;
 
@@ -31,6 +33,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     private readonly ILogger<ServerPlayNetworkHandler> _logger = Log.Instance.For<ServerPlayNetworkHandler>();
     private readonly OmniBlockServer server;
     private readonly Dictionary<int, short> transactions = new();
+    private readonly TerrainLodSendPacer _terrainLodPacer = new();
 
     private long _lastMoveBudgetRefillMs = Environment.TickCount64;
 
@@ -184,7 +187,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         var world = server.getWorld(player.DimensionId);
         var playerChunkX = (int)Math.Floor(player.X) >> 4;
         var playerChunkZ = (int)Math.Floor(player.Z) >> 4;
-        var sent = 0;
+        var responded = 0;
         foreach (var key in request.Keys.Distinct())
         {
             // Level-zero/one records reveal almost full chunk detail and belong to ordinary chunk
@@ -192,28 +195,45 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             // demand; it can only return an already-approved persistent server record.
             if (key.Level is < 2 or > 4 ||
                 key.DistanceTo(playerChunkX + 0.5, playerChunkZ + 0.5) >
-                MaximumTerrainLodDistanceChunks ||
-                (WantsCompactPayloads
-                    ? !world.TryGetTerrainLodPayload(key, out _)
-                    : !world.TryGetTerrainLodCoverage(key, out _)))
+                MaximumTerrainLodDistanceChunks)
                 continue;
             try
             {
-                TerrainLodTileMessage message;
+                TerrainLodTileAvailability availability;
+                TerrainLodTileMessage? message = null;
                 if (WantsCompactPayloads)
                 {
-                    if (!world.TryGetTerrainLodPayload(key, out var payload) || payload is null)
-                        continue;
-                    message = TerrainLodTileMessage.FromCompressed(player.DimensionId, payload);
+                    availability = world.GetTerrainLodPayload(key, out var payload);
+                    if (availability == TerrainLodTileAvailability.Ready && payload is not null)
+                        message = TerrainLodTileMessage.FromCompressed(player.DimensionId, payload);
                 }
                 else
                 {
-                    if (!world.TryGetTerrainLodCoverage(key, out var tile) || tile is null)
-                        continue;
-                    message = TerrainLodTileMessage.Loopback(player.DimensionId, tile);
+                    availability = world.GetTerrainLodCoverage(key, out var tile);
+                    if (availability == TerrainLodTileAvailability.Ready && tile is not null)
+                        message = TerrainLodTileMessage.Loopback(player.DimensionId, tile);
                 }
-                SendMessage(message);
-                if (++sent >= MaximumTerrainLodResponsesPerRequest) break;
+
+                if (message is not null && !_terrainLodPacer.TryConsume(
+                        WantsCompactPayloads ? message.Size() : 0,
+                        player.PendingChunkSendCount,
+                        getWorldPacketBacklog()))
+                {
+                    availability = TerrainLodTileAvailability.Pending;
+                    SendTerrainLodStatus(key, TerrainLodTileStatus.Deferred);
+                }
+                else if (message is not null)
+                {
+                    SendMessage(message);
+                }
+                else
+                {
+                    SendTerrainLodStatus(key, availability == TerrainLodTileAvailability.Missing
+                        ? TerrainLodTileStatus.Missing
+                        : TerrainLodTileStatus.Pending);
+                }
+
+                if (++responded >= MaximumTerrainLodResponsesPerRequest) break;
             }
             catch (InvalidDataException error)
             {
@@ -222,6 +242,14 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             }
         }
     }
+
+    private void SendTerrainLodStatus(TerrainLodTileKey key, TerrainLodTileStatus status) =>
+        SendMessage(new TerrainLodTileStatusMessage
+        {
+            Dimension = player.DimensionId,
+            Tile = key,
+            Status = status
+        });
 
     /// <summary>
     ///     Echoes a probe. The server is stateless here: it returns every field it cannot derive and

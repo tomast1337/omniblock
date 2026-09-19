@@ -21,7 +21,8 @@ public class ClientWorld : World
     private readonly List<ClientEntityDespawnVisual> _distanceDespawnVisuals = [];
     private readonly HashSet<Entity> forcedEntities = [];
     private readonly HashSet<Entity> pendingEntities = [];
-    private readonly ConcurrentQueue<TerrainLodColumnTile> _terrainLodTiles = new();
+    private readonly ConcurrentQueue<TerrainLodTileTransfer> _terrainLodTiles = new();
+    private readonly ConcurrentQueue<TerrainLodTileStatusUpdate> _terrainLodStatuses = new();
     private MultiplayerChunkCache _chunkCache;
 
     public ClientWorld(
@@ -51,11 +52,18 @@ public class ClientWorld : World
     internal IReadOnlyList<ClientEntityDespawnVisual> DistanceDespawnVisuals => _distanceDespawnVisuals;
     internal int DistanceDespawnPresentationCount { get; private set; }
 
-    internal void EnqueueTerrainLodTile(TerrainLodColumnTile tile) =>
-        _terrainLodTiles.Enqueue(tile ?? throw new ArgumentNullException(nameof(tile)));
+    internal void EnqueueTerrainLodTile(TerrainLodColumnTile tile, int wireBytes) =>
+        _terrainLodTiles.Enqueue(new TerrainLodTileTransfer(
+            tile ?? throw new ArgumentNullException(nameof(tile)), wireBytes));
 
-    internal bool TryDequeueTerrainLodTile(out TerrainLodColumnTile? tile) =>
-        _terrainLodTiles.TryDequeue(out tile);
+    internal bool TryDequeueTerrainLodTile(out TerrainLodTileTransfer transfer) =>
+        _terrainLodTiles.TryDequeue(out transfer);
+
+    internal void EnqueueTerrainLodStatus(TerrainLodTileKey tile, TerrainLodTileStatus status) =>
+        _terrainLodStatuses.Enqueue(new TerrainLodTileStatusUpdate(tile, status));
+
+    internal bool TryDequeueTerrainLodStatus(out TerrainLodTileStatusUpdate status) =>
+        _terrainLodStatuses.TryDequeue(out status);
 
     public override void Tick()
     {
@@ -301,6 +309,11 @@ public class ClientWorld : World
         NetworkHandler.Disconnect();
     }
 }
+
+internal readonly record struct TerrainLodTileTransfer(TerrainLodColumnTile Tile, int WireBytes);
+internal readonly record struct TerrainLodTileStatusUpdate(
+    TerrainLodTileKey Tile,
+    TerrainLodTileStatus Status);
 
 internal sealed class ClientEntityDespawnVisual(Entity entity)
 {

@@ -7,6 +7,13 @@ using OmniBlock.Worlds.Lod;
 
 namespace OmniBlock.Server.Worlds;
 
+internal enum TerrainLodTileAvailability
+{
+    Ready,
+    Pending,
+    Missing
+}
+
 public sealed record ServerTerrainLodSnapshot(
     int Dimension,
     int TrackedChunks,
@@ -53,6 +60,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     private readonly List<TerrainLodColumnTile> _completedSpatialParents = [];
     private readonly Queue<TerrainLodTileKey> _spatialReadRequests = [];
     private readonly HashSet<TerrainLodTileKey> _spatialReadsPending = [];
+    private readonly HashSet<TerrainLodTileKey> _spatialMissing = [];
     private readonly Queue<TerrainLodTileKey> _spatialEncodeRequests = [];
     private readonly HashSet<TerrainLodTileKey> _spatialEncodesPending = [];
     private readonly Dictionary<TerrainLodTileKey, byte[]> _spatialWirePayloads = [];
@@ -165,7 +173,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     ///     chunk or touching disk on the simulation thread. A cold persistent record is queued for
     ///     the LOD worker and becomes available to a later bounded client retry.
     /// </summary>
-    public bool TryGetSpatialCoverage(
+    public TerrainLodTileAvailability GetSpatialCoverage(
         TerrainLodTileKey key,
         out TerrainLodColumnTile? tile)
     {
@@ -174,12 +182,21 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             if (_disposed)
             {
                 tile = null;
-                return false;
+                return TerrainLodTileAvailability.Missing;
             }
         }
-        if (_spatialHierarchy.TryGetCoverage(key, out tile, out _)) return true;
+        if (_spatialHierarchy.TryGetCoverage(key, out tile, out _))
+        {
+            lock (_gate) _spatialMissing.Remove(key);
+            return TerrainLodTileAvailability.Ready;
+        }
         lock (_gate)
         {
+            if (_spatialMissing.Contains(key))
+            {
+                tile = null;
+                return TerrainLodTileAvailability.Missing;
+            }
             if (!_disposed && _spatialReadsPending.Add(key))
             {
                 _spatialReadRequests.Enqueue(key);
@@ -187,26 +204,41 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             }
         }
         tile = null;
-        return false;
+        return TerrainLodTileAvailability.Pending;
     }
 
+    internal bool TryGetSpatialCoverage(TerrainLodTileKey key, out TerrainLodColumnTile? tile) =>
+        GetSpatialCoverage(key, out tile) == TerrainLodTileAvailability.Ready;
+
     /// <summary>Returns a pre-encoded remote payload or queues encoding on the LOD worker.</summary>
-    public bool TryGetSpatialPayload(TerrainLodTileKey key, out byte[]? payload)
+    public TerrainLodTileAvailability GetSpatialPayload(TerrainLodTileKey key, out byte[]? payload)
     {
         lock (_gate)
         {
-            if (_spatialWirePayloads.TryGetValue(key, out payload)) return true;
+            if (_spatialWirePayloads.TryGetValue(key, out payload))
+                return TerrainLodTileAvailability.Ready;
             if (_disposed)
             {
                 payload = null;
-                return false;
+                return TerrainLodTileAvailability.Missing;
             }
         }
         if (_spatialHierarchy.TryGetCoverage(key, out _, out _)) QueueSpatialEncode(key);
-        else TryGetSpatialCoverage(key, out _);
+        else
+        {
+            var availability = GetSpatialCoverage(key, out _);
+            if (availability == TerrainLodTileAvailability.Missing)
+            {
+                payload = null;
+                return availability;
+            }
+        }
         payload = null;
-        return false;
+        return TerrainLodTileAvailability.Pending;
     }
+
+    internal bool TryGetSpatialPayload(TerrainLodTileKey key, out byte[]? payload) =>
+        GetSpatialPayload(key, out payload) == TerrainLodTileAvailability.Ready;
 
     public void TrackChunk(Chunk chunk)
     {
@@ -416,7 +448,11 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             foreach (var parent in _completedSpatialParents)
                 if (parent.Key.Level >= 2)
                 {
-                    lock (_gate) _spatialWirePayloads.Remove(parent.Key);
+                    lock (_gate)
+                    {
+                        _spatialWirePayloads.Remove(parent.Key);
+                        _spatialMissing.Remove(parent.Key);
+                    }
                     QueueSpatialEncode(parent.Key);
                 }
             var spatialEncodes = DrainSpatialEncodes(maximumEncodes: 2);
@@ -445,7 +481,12 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                 if (cached.Status == TerrainLodColumnTileCacheReadStatus.Hit)
                 {
                     _spatialHierarchy.PublishCached(cached.Tile!);
+                    lock (_gate) _spatialMissing.Remove(key);
                     if (key.Level >= 2) QueueSpatialEncode(key);
+                }
+                else
+                {
+                    lock (_gate) _spatialMissing.Add(key);
                 }
             }
             finally
@@ -547,6 +588,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             _tracked.Clear();
             _spatialReadRequests.Clear();
             _spatialReadsPending.Clear();
+            _spatialMissing.Clear();
             _spatialEncodeRequests.Clear();
             _spatialEncodesPending.Clear();
             _spatialWirePayloads.Clear();

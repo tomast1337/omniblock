@@ -2,6 +2,7 @@ using System.Diagnostics;
 using OmniBlock.Blocks;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.WebGPU;
+using OmniBlock.Network.Messages;
 using OmniBlock.Profiling;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Chunks;
@@ -67,7 +68,13 @@ internal readonly record struct ClientTerrainLodSnapshot(
     double MeshCompilationMsPerKCell,
     double MeshResultBytesPerKCell,
     double MeshUploadBaseMs,
-    double MeshUploadMsPerMiB);
+    double MeshUploadMsPerMiB,
+    long RemoteRequests,
+    long RemoteTiles,
+    long RemoteWireBytes,
+    long RemotePendingResponses,
+    long RemoteMissingResponses,
+    long RemoteDeferredResponses);
 
 internal readonly record struct TerrainLodSpatialSnapshot(
     TerrainLodTileKey Root,
@@ -136,7 +143,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private readonly TerrainLodSpatialPresentationSet<TerrainLodSpatialGpuPresentation>
         _spatialPresentations = new();
     private readonly Dictionary<TerrainLodTileKey, TerrainLodColumnTile> _spatialMeshPending = [];
-    private readonly Dictionary<TerrainLodTileKey, long> _remoteRequestTicks = [];
+    private readonly Dictionary<TerrainLodTileKey, long> _remoteRetryAfterTicks = [];
     private readonly HashSet<TerrainLodSpatialSeamSegment> _desiredSpatialSeams = [];
     private readonly Dictionary<TerrainLodSpatialSeamSegment,
         TerrainLodSpatialGpuSeamPresentation> _spatialSeams = [];
@@ -183,6 +190,12 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private long _lastResourceReloadReusedGpuBytes;
     private double _solidRenderCpuMs;
     private double _translucentRenderCpuMs;
+    private long _remoteRequests;
+    private long _remoteTiles;
+    private long _remoteWireBytes;
+    private long _remotePendingResponses;
+    private long _remoteMissingResponses;
+    private long _remoteDeferredResponses;
     private bool _disposed;
     private ClientTerrainLodSnapshot _snapshot;
     private TerrainLodSpatialSnapshot _spatialSnapshot;
@@ -228,7 +241,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     public ClientTerrainLodSnapshot Snapshot => _snapshot;
     public TerrainLodSpatialSnapshot SpatialSnapshot => _spatialSnapshot;
 
-    public void ObserveRemoteSpatialTile(TerrainLodColumnTile tile)
+    public void ObserveRemoteSpatialTile(TerrainLodColumnTile tile, int wireBytes = 0)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(tile);
@@ -237,7 +250,33 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         var publication = _spatialHierarchy.PublishCached(tile);
         if (publication != TerrainLodTilePublicationResult.IgnoredCurrent)
             QueueSpatialMesh(tile);
-        _remoteRequestTicks.Remove(tile.Key);
+        _remoteRetryAfterTicks.Remove(tile.Key);
+        _remoteTiles++;
+        _remoteWireBytes += Math.Max(0, wireBytes);
+    }
+
+    public void ObserveRemoteSpatialStatus(TerrainLodTileKey key, TerrainLodTileStatus status)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (key.Level < MinimumSpatialGpuLevel ||
+            key.Level > _spatialPolicy.MaximumSpatialLevel) return;
+        switch (status)
+        {
+            case TerrainLodTileStatus.Pending:
+                _remotePendingResponses++;
+                _remoteRetryAfterTicks[key] = _tick + 8;
+                break;
+            case TerrainLodTileStatus.Missing:
+                _remoteMissingResponses++;
+                _remoteRetryAfterTicks[key] = _tick + 200;
+                break;
+            case TerrainLodTileStatus.Deferred:
+                _remoteDeferredResponses++;
+                _remoteRetryAfterTicks[key] = _tick + 4;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(status), status, null);
+        }
     }
 
     public TerrainLodTileKey[] TakeRemoteSpatialRequests(
@@ -267,8 +306,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             if (distance > horizonDistanceChunks ||
                 distance + width < nearDistanceChunks ||
                 _spatialHierarchy.TryGetCoverage(key, out _, out _) ||
-                _remoteRequestTicks.TryGetValue(key, out var requestedAt) &&
-                _tick - requestedAt < 20)
+                _remoteRetryAfterTicks.TryGetValue(key, out var retryAfter) &&
+                _tick < retryAfter)
                 continue;
             candidates.Add(key);
         }
@@ -278,7 +317,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             .ThenBy(static key => key.Z)
             .Take(maximumRequests)
             .ToArray();
-        foreach (var key in selected) _remoteRequestTicks[key] = _tick;
+        foreach (var key in selected) _remoteRetryAfterTicks[key] = _tick + 20;
+        _remoteRequests += selected.Length;
         return selected;
     }
 
@@ -1822,7 +1862,13 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             cost.CompilationMsPerKCell,
             cost.ResultBytesPerKCell,
             cost.UploadBaseMs,
-            cost.UploadMsPerMiB);
+            cost.UploadMsPerMiB,
+            _remoteRequests,
+            _remoteTiles,
+            _remoteWireBytes,
+            _remotePendingResponses,
+            _remoteMissingResponses,
+            _remoteDeferredResponses);
     }
 
     private long ResidentGpuBytes() =>

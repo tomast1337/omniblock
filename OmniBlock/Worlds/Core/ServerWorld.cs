@@ -70,20 +70,22 @@ public class ServerWorld : World
     internal void SubmitOfflineTerrainLod(InactiveChunkSnapshot snapshot) =>
         _terrainLod?.SubmitOffline(snapshot);
 
-    internal bool TryGetTerrainLodCoverage(
+    internal TerrainLodTileAvailability GetTerrainLodCoverage(
         TerrainLodTileKey key,
         out TerrainLodColumnTile? tile)
     {
-        if (_terrainLod is not null) return _terrainLod.TryGetSpatialCoverage(key, out tile);
+        if (_terrainLod is not null) return _terrainLod.GetSpatialCoverage(key, out tile);
         tile = null;
-        return false;
+        return TerrainLodTileAvailability.Missing;
     }
 
-    internal bool TryGetTerrainLodPayload(TerrainLodTileKey key, out byte[]? payload)
+    internal TerrainLodTileAvailability GetTerrainLodPayload(
+        TerrainLodTileKey key,
+        out byte[]? payload)
     {
-        if (_terrainLod is not null) return _terrainLod.TryGetSpatialPayload(key, out payload);
+        if (_terrainLod is not null) return _terrainLod.GetSpatialPayload(key, out payload);
         payload = null;
-        return false;
+        return TerrainLodTileAvailability.Missing;
     }
 
     protected override IChunkSource CreateChunkCache()

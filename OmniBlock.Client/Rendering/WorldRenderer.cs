@@ -491,9 +491,12 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         {
             if (_world is ClientWorld clientWorld)
             {
+                for (var observed = 0; observed < 8 &&
+                     clientWorld.TryDequeueTerrainLodStatus(out var status); observed++)
+                    terrainLod.ObserveRemoteSpatialStatus(status.Tile, status.Status);
                 for (var admitted = 0; admitted < 2 &&
-                     clientWorld.TryDequeueTerrainLodTile(out var tile); admitted++)
-                    terrainLod.ObserveRemoteSpatialTile(tile!);
+                     clientWorld.TryDequeueTerrainLodTile(out var transfer); admitted++)
+                    terrainLod.ObserveRemoteSpatialTile(transfer.Tile, transfer.WireBytes);
             }
             terrainLod.Tick(viewPosition);
             if (_world is ClientWorld remoteWorld)

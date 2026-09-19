@@ -134,6 +134,12 @@ public static unsafe class LuauClientStateHost
                                                 key == "terrainLodSpatialHighestAuthoritativeLevel" or
                                                 key == "terrainLodSpatialSolidPages" or
                                                 key == "terrainLodSpatialTranslucentPages" or
+                                                key == "terrainLodRemoteRequests" or
+                                                key == "terrainLodRemoteTiles" or
+                                                key == "terrainLodRemoteBytes" or
+                                                key == "terrainLodRemotePending" or
+                                                key == "terrainLodRemoteMissing" or
+                                                key == "terrainLodRemoteDeferred" or
                                                 key == "clientWorkingSetBytes" or
                                                 key == "terrainLodUploads" or key == "terrainLodGpuBytes" or
                                                 key == "terrainLodStaleResults" or key == "terrainLodRejected" or

@@ -379,6 +379,8 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public void CancelChunkSend(ChunkPos chunkPos) => _pendingChunkUpdates.Remove(chunkPos);
 
+    internal int PendingChunkSendCount => _pendingChunkUpdates.Count;
+
     public void FlushPendingChunkUpdates()
     {
         if (_pendingChunkUpdates.Count == 0)

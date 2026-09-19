@@ -460,6 +460,7 @@ public class ClientNetworkHandler : NetHandler
         MessageHandlers.On<ServerStatusMessage>(onServerStatus);
         MessageHandlers.On<SessionDistanceMessage>(onSessionDistance);
         MessageHandlers.On<TerrainLodTileMessage>(onTerrainLodTile);
+        MessageHandlers.On<TerrainLodTileStatusMessage>(onTerrainLodTileStatus);
         MessageHandlers.On<ChunkDataMessage>(onChunkData);
         MessageHandlers.On<RegionDataMessage>(onRegionData);
         MessageHandlers.On<PlayerMoveMessage>(onPlayerMove);
@@ -543,13 +544,19 @@ public class ClientNetworkHandler : NetHandler
         if (_worldClient is null || message.Dimension != _worldClient.Dimension.Id) return;
         try
         {
-            _worldClient.EnqueueTerrainLodTile(message.Decode());
+            _worldClient.EnqueueTerrainLodTile(message.Decode(), message.Compressed.Length);
         }
         catch (Exception error) when (error is InvalidDataException or ArgumentException or
                                       EndOfStreamException or OverflowException)
         {
             _logger.LogWarning(error, "Rejected invalid distant-terrain tile from server.");
         }
+    }
+
+    private void onTerrainLodTileStatus(TerrainLodTileStatusMessage message)
+    {
+        if (_worldClient is null || message.Dimension != _worldClient.Dimension.Id) return;
+        _worldClient.EnqueueTerrainLodStatus(message.Tile, message.Status);
     }
 
     /// <summary>

@@ -623,6 +623,12 @@ public partial class OmniBlock :
                         spatial.HighestAuthoritativeLevel,
                     "terrainLodSpatialSolidPages" => spatial.SubmittedSolidPages,
                     "terrainLodSpatialTranslucentPages" => spatial.SubmittedTranslucentPages,
+                    "terrainLodRemoteRequests" => state.RemoteRequests,
+                    "terrainLodRemoteTiles" => state.RemoteTiles,
+                    "terrainLodRemoteBytes" => state.RemoteWireBytes,
+                    "terrainLodRemotePending" => state.RemotePendingResponses,
+                    "terrainLodRemoteMissing" => state.RemoteMissingResponses,
+                    "terrainLodRemoteDeferred" => state.RemoteDeferredResponses,
                     "clientWorkingSetBytes" => Environment.WorkingSet,
                     _ => 0
                 };

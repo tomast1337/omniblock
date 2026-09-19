@@ -1,5 +1,6 @@
 using OmniBlock.Items;
 using OmniBlock.Network.Messages;
+using OmniBlock.Worlds.Lod;
 
 namespace OmniBlock.Tests.Network;
 
@@ -64,6 +65,25 @@ public sealed class GeneratedMessageTests
             // which properties a given message has.
             Assert.Equal(bytes, Serialise(read));
         }
+    }
+
+    [Fact]
+    public void A_terrain_lod_cache_miss_round_trips_its_key_and_status()
+    {
+        TerrainLodTileStatusMessage written = new()
+        {
+            Dimension = -1,
+            Tile = new TerrainLodTileKey(3, -17, 42),
+            Status = TerrainLodTileStatus.Missing
+        };
+
+        TerrainLodTileStatusMessage read = new();
+        read.Read(new MemoryStream(Serialise(written), false));
+
+        Assert.Equal(written.Dimension, read.Dimension);
+        Assert.Equal(written.Tile, read.Tile);
+        Assert.Equal(written.Status, read.Status);
+        Assert.Equal(written.Size(), Serialise(written).Length);
     }
 
     [Fact]
