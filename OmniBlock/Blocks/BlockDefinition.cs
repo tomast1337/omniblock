@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using OmniBlock.Registries.Data;
+using OmniBlock.Worlds.Lod;
 
 namespace OmniBlock.Blocks;
 
@@ -31,6 +32,7 @@ public sealed record BlockDefinition : IDataAsset
 
     public string RenderType { get; init; } = "Standard";
     public int RenderLayer { get; init; }
+    public BlockTerrainLodDefinition? TerrainLod { get; init; }
     public int TickRate { get; init; } = 10;
     public float Slipperiness { get; init; } = 0.6F;
     public bool NotFullCube { get; init; }
@@ -57,6 +59,22 @@ public sealed record BlockDefinition : IDataAsset
 }
 
 public sealed record BoundingBoxDefinition(float MinX, float MinY, float MinZ, float MaxX, float MaxY, float MaxZ);
+
+/// <summary>
+///     Resource-pack-independent distant-terrain representation for blocks whose rendering cannot
+///     be inferred safely. Omitting the descriptor retains the built-in classifier; declaring an
+///     empty descriptor deliberately selects the conservative-cube fallback.
+/// </summary>
+public sealed record BlockTerrainLodDefinition
+{
+    public string Geometry { get; init; } = nameof(TerrainLodGeometryClass.ConservativeCube);
+    public bool? OccludesFaces { get; init; }
+}
+
+/// <summary>Validated immutable form stored on a finalized runtime block.</summary>
+public readonly record struct BlockTerrainLodDescriptor(
+    TerrainLodGeometryClass Geometry,
+    bool OccludesFaces);
 
 public sealed record BlockItemDefinition
 {

@@ -16,6 +16,7 @@
   "SideVariance": "None",
   "RenderType": "Standard",
   "RenderLayer": 0,
+  "TerrainLod": null,
   "TickRate": 10,
   "Slipperiness": 0.6,
   "NotFullCube": false,

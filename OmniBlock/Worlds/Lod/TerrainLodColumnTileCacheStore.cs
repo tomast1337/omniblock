@@ -664,7 +664,10 @@ public sealed class TerrainLodColumnTileCacheStore
         ArgumentException.ThrowIfNullOrWhiteSpace(identity.GeneratorFingerprint);
         ArgumentException.ThrowIfNullOrWhiteSpace(identity.MaterialRulesFingerprint);
         if (identity.ReductionSchemaVersion <= 0)
-            throw new ArgumentOutOfRangeException(nameof(identity.ReductionSchemaVersion));
+            throw new ArgumentOutOfRangeException(
+                nameof(identity),
+                identity.ReductionSchemaVersion,
+                "The LOD reduction schema version must be positive.");
     }
 
     private static void WriteIdentity(BinaryWriter writer, TerrainLodCacheIdentity identity)

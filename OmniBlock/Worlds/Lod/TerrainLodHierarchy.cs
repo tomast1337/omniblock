@@ -104,13 +104,15 @@ public sealed class TerrainLodMaterialCatalog
             .Select(entry =>
             {
                 var block = runtime.Blocks.Get(entry.Key);
-                var geometry = Classify(block);
+                var explicitDescriptor = block.TerrainLod;
+                var geometry = explicitDescriptor?.Geometry ?? Classify(block);
                 return new TerrainLodMaterialDefinition(
                     block.Id,
                     entry.Key,
                     geometry,
-                    geometry is TerrainLodGeometryClass.Opaque or
-                        TerrainLodGeometryClass.ConservativeCube,
+                    explicitDescriptor?.OccludesFaces ??
+                    (geometry is TerrainLodGeometryClass.Opaque or
+                        TerrainLodGeometryClass.ConservativeCube),
                     block.Material.MapColor.ColorValue);
             }));
     }
@@ -237,6 +239,9 @@ public sealed class TerrainLodSourceSnapshot
     public static TerrainLodSourceSnapshot Capture(Chunk chunk, long? terrainRevision = null)
     {
         ArgumentNullException.ThrowIfNull(chunk);
+        if (!chunk.HasCompleteTerrainSnapshot)
+            throw new InvalidOperationException(
+                $"Chunk {chunk.X},{chunk.Z} does not contain a complete terrain snapshot.");
         var metadata = new byte[ChuckFormat.ChunkSize];
         for (var x = 0; x < 16; x++)
         for (var z = 0; z < 16; z++)

@@ -131,7 +131,7 @@ public sealed class ProcessDefinitionTests
 
     private sealed class ProcessResourceStack
     {
-        [JsonPropertyName("item")] public string Item { get; } = "";
+        [JsonPropertyName("item")] public string Item { get; init; } = "";
 
         [JsonPropertyName("count")] public int Count { get; init; }
     }

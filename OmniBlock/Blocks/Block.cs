@@ -77,6 +77,12 @@ public class Block
 
     public BlockRendererType RenderType { get; private set; } = BlockRendererType.Standard;
 
+    /// <summary>
+    ///     Explicit resource-pack-independent LOD representation, or <see langword="null"/> when
+    ///     the built-in material catalog should infer one from ordinary block properties.
+    /// </summary>
+    public BlockTerrainLodDescriptor? TerrainLod { get; private set; }
+
     public bool HasCollisionBox { get; private set; } = true;
 
     public byte BurnChance { get; private set; }
@@ -482,6 +488,7 @@ public class Block
         Physics = draft.Physics;
         Redstone = draft.Redstone;
         RenderType = draft.RenderType;
+        TerrainLod = draft.TerrainLod;
         HasCollisionBox = draft.HasCollisionBox;
         BurnChance = draft.BurnChance;
         SpreadChance = draft.SpreadChance;

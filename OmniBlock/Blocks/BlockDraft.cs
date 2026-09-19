@@ -18,6 +18,7 @@ internal sealed class BlockDraft
         Physics = block.Physics;
         Redstone = block.Redstone;
         RenderType = block.RenderType;
+        TerrainLod = block.TerrainLod;
         HasCollisionBox = block.HasCollisionBox;
         BurnChance = block.BurnChance;
         SpreadChance = block.SpreadChance;
@@ -49,6 +50,7 @@ internal sealed class BlockDraft
     internal IBlockPhysics? Physics { get; set; }
     internal IRedstoneComponent? Redstone { get; set; }
     internal BlockRendererType RenderType { get; set; }
+    internal BlockTerrainLodDescriptor? TerrainLod { get; set; }
     internal bool HasCollisionBox { get; set; }
     internal byte BurnChance { get; set; }
     internal byte SpreadChance { get; set; }

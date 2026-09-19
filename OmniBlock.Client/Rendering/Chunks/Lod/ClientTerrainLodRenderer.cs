@@ -400,7 +400,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             }
 
             var chunk = _world.BlockHost.GetChunk(key.X, key.Z);
-            if (!chunk.Loaded)
+            if (!chunk.Loaded || !chunk.HasCompleteTerrainSnapshot)
             {
                 _pending[key] = _pending[key] with { DueTick = _tick + 1 };
                 continue;

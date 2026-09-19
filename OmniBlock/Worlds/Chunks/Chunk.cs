@@ -57,6 +57,12 @@ public class Chunk
     public long LastSaveTime;
 
     public bool Loaded;
+    /// <summary>
+    ///     True only after every terrain, metadata, and light cell in this column came from one
+    ///     complete source. <see cref="Loaded"/> is an activation/residency flag and is also set by
+    ///     partial network updates, so it cannot guard immutable terrain snapshots by itself.
+    /// </summary>
+    public bool HasCompleteTerrainSnapshot { get; private set; }
     public ChunkNibbleArray Meta;
     public int MinHeightMapValue;
     public ChunkNibbleArray SkyLight;
@@ -98,14 +104,21 @@ public class Chunk
         if (_terrainRevision < 0)
             throw new InvalidDataException(
                 $"Chunk {X},{Z} has invalid terrain revision {_terrainRevision}.");
+        HasCompleteTerrainSnapshot = true;
     }
 
-    public Chunk(IWorldContext world, byte[] blocks, int x, int z) : this(world, x, z)
+    public Chunk(
+        IWorldContext world,
+        byte[] blocks,
+        int x,
+        int z,
+        bool hasCompleteTerrainSnapshot = true) : this(world, x, z)
     {
         Blocks = blocks;
         Meta = new ChunkNibbleArray(blocks.Length);
         SkyLight = new ChunkNibbleArray(blocks.Length);
         BlockLight = new ChunkNibbleArray(blocks.Length);
+        HasCompleteTerrainSnapshot = hasCompleteTerrainSnapshot;
     }
 
     /// <inheritdoc cref="LightSectionHeight" />
@@ -918,6 +931,7 @@ public class Chunk
             }
 
             Loaded = true;
+            if (isFullChunk) HasCompleteTerrainSnapshot = true;
             MarkTerrainChanged();
             return offset;
         }
@@ -959,6 +973,7 @@ public class Chunk
             }
 
             Loaded = true;
+            HasCompleteTerrainSnapshot = true;
             MarkTerrainChanged();
         }
     }

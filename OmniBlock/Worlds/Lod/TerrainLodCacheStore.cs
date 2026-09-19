@@ -621,7 +621,10 @@ public sealed class TerrainLodCacheStore
         ArgumentException.ThrowIfNullOrWhiteSpace(identity.GeneratorFingerprint);
         ArgumentException.ThrowIfNullOrWhiteSpace(identity.MaterialRulesFingerprint);
         if (identity.ReductionSchemaVersion <= 0)
-            throw new ArgumentOutOfRangeException(nameof(identity.ReductionSchemaVersion));
+            throw new ArgumentOutOfRangeException(
+                nameof(identity),
+                identity.ReductionSchemaVersion,
+                "The LOD reduction schema version must be positive.");
     }
 
     private void ValidateResult(TerrainLodConversionResult result)

@@ -1,5 +1,6 @@
 using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Blocks.Materials;
+using OmniBlock.Worlds.Lod;
 
 namespace OmniBlock.Blocks;
 
@@ -25,6 +26,7 @@ internal static class BlockFactory
             BurnChance = def.BurnChance,
             SpreadChance = def.SpreadChance,
             RenderType = Enum.Parse<BlockRendererType>(def.RenderType, true),
+            TerrainLod = CompileTerrainLod(def.TerrainLod),
             RenderLayer = def.RenderLayer,
             TickRate = def.TickRate,
             HasCollisionBox = !def.NoCollision,
@@ -56,6 +58,35 @@ internal static class BlockFactory
         draft.Apply();
 
         return block;
+    }
+
+    private static BlockTerrainLodDescriptor? CompileTerrainLod(BlockTerrainLodDefinition? definition)
+    {
+        if (definition is null) return null;
+        if (!Enum.TryParse<TerrainLodGeometryClass>(definition.Geometry, true, out var geometry) ||
+            !Enum.IsDefined(geometry))
+        {
+            throw new ArgumentException(
+                $"Unknown terrain LOD geometry '{definition.Geometry}'.",
+                nameof(definition));
+        }
+        if (geometry == TerrainLodGeometryClass.Air)
+        {
+            throw new ArgumentException(
+                "A registered block cannot use the terrain LOD air geometry.",
+                nameof(definition));
+        }
+
+        var canOcclude = geometry is TerrainLodGeometryClass.Opaque or
+            TerrainLodGeometryClass.ConservativeCube;
+        var occludesFaces = definition.OccludesFaces ?? canOcclude;
+        if (occludesFaces && !canOcclude)
+        {
+            throw new ArgumentException(
+                $"Terrain LOD geometry '{geometry}' cannot conservatively occlude neighboring faces.",
+                nameof(definition));
+        }
+        return new BlockTerrainLodDescriptor(geometry, occludesFaces);
     }
 
     internal static void AttachBehaviors(

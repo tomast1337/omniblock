@@ -1,3 +1,6 @@
+using System.Text.Json;
+using OmniBlock.Blocks;
+using OmniBlock.Registries;
 using OmniBlock.Server.Worlds;
 using OmniBlock.Tests.TestSupport;
 using OmniBlock.Worlds.Chunks;
@@ -160,6 +163,35 @@ public sealed class TerrainLodHierarchyTests
     }
 
     [Fact]
+    public void Local_lod_capture_rejects_partial_chunk_payloads()
+    {
+        var world = new FakeWorldContext();
+        var chunk = new Chunk(world, 7, -4)
+        {
+            Blocks = new byte[ChuckFormat.ChunkSize],
+            Meta = new ChunkNibbleArray(ChuckFormat.ChunkSize),
+            BlockLight = new ChunkNibbleArray(ChuckFormat.ChunkSize),
+            SkyLight = new ChunkNibbleArray(ChuckFormat.ChunkSize)
+        };
+        var partial = new byte[16 * 16 * 16 * 5 / 2];
+
+        chunk.LoadFromPacket(partial, 0, 0, 0, 16, 16, 16, 0);
+
+        Assert.True(chunk.Loaded);
+        Assert.False(chunk.HasCompleteTerrainSnapshot);
+        var error = Assert.Throws<InvalidOperationException>(() =>
+            TerrainLodSourceSnapshot.Capture(chunk));
+        Assert.Contains("7,-4", error.Message);
+
+        var complete = new byte[ChuckFormat.ChunkSize * 5 / 2];
+        chunk.LoadFromPacket(
+            complete, 0, 0, 0, 16, ChuckFormat.ChunkHeight, 16, 0);
+
+        Assert.True(chunk.HasCompleteTerrainSnapshot);
+        Assert.NotNull(TerrainLodSourceSnapshot.Capture(chunk));
+    }
+
+    [Fact]
     public void Built_in_fallbacks_classify_terrain_without_client_graphics_state()
     {
         var world = new FakeWorldContext();
@@ -189,6 +221,88 @@ public sealed class TerrainLodHierarchyTests
             var block = world.Content.Blocks.Get(key);
             return catalog.Resolve(block.Id, 0);
         }
+    }
+
+    [Fact]
+    public void Explicit_block_descriptor_overrides_render_type_inference()
+    {
+        var builder = ContentRuntimeBuilder.CreateBuiltIns();
+        var definition = JsonSerializer.Deserialize<BlockDefinition>(
+            """
+            {
+              "ProtocolId": 240,
+              "Material": "stone",
+              "TerrainLod": {
+                "Geometry": "CrossedQuad",
+                "OccludesFaces": false
+              }
+            }
+            """)!;
+        definition.Name = "modded_billboard";
+        definition.Namespace = Namespace.Get("example");
+        builder.AddBlockDefinition(definition);
+
+        var runtime = builder.Build();
+        var block = runtime.Blocks.Get("example:modded_billboard");
+        var material = TerrainLodMaterialCatalog.FromRuntime(runtime).Resolve(block.Id, 0);
+
+        Assert.True(block.IsFrozen);
+        Assert.Equal(
+            new BlockTerrainLodDescriptor(TerrainLodGeometryClass.CrossedQuad, false),
+            block.TerrainLod);
+        Assert.Equal(TerrainLodGeometryClass.CrossedQuad, material.Geometry);
+        Assert.False(material.OccludesFaces);
+    }
+
+    [Fact]
+    public void Empty_block_descriptor_uses_conservative_cube_fallback()
+    {
+        var builder = ContentRuntimeBuilder.CreateBuiltIns();
+        builder.AddBlockDefinition(new BlockDefinition
+        {
+            Name = "unknown_renderer",
+            Namespace = Namespace.Get("example"),
+            ProtocolId = 240,
+            Material = "stone",
+            NonOpaque = true,
+            TerrainLod = new BlockTerrainLodDefinition()
+        });
+
+        var runtime = builder.Build();
+        var block = runtime.Blocks.Get("example:unknown_renderer");
+        var material = TerrainLodMaterialCatalog.FromRuntime(runtime).Resolve(block.Id, 0);
+
+        Assert.Equal(TerrainLodGeometryClass.ConservativeCube, material.Geometry);
+        Assert.True(material.OccludesFaces);
+    }
+
+    [Theory]
+    [InlineData("Air", true, "cannot use the terrain LOD air geometry")]
+    [InlineData("CrossedQuad", true, "cannot conservatively occlude")]
+    [InlineData("NotAGeometry", false, "Unknown terrain LOD geometry")]
+    public void Invalid_block_descriptor_fails_catalog_construction_with_owner(
+        string geometry,
+        bool occludesFaces,
+        string expected)
+    {
+        var builder = ContentRuntimeBuilder.CreateBuiltIns();
+        builder.AddBlockDefinition(new BlockDefinition
+        {
+            Name = "bad_lod",
+            Namespace = Namespace.Get("example"),
+            ProtocolId = 240,
+            Material = "stone",
+            TerrainLod = new BlockTerrainLodDefinition
+            {
+                Geometry = geometry,
+                OccludesFaces = occludesFaces
+            }
+        });
+
+        var error = Assert.Throws<InvalidOperationException>(() => builder.Build());
+
+        Assert.Contains("Block 'example:bad_lod' failed construction", error.Message);
+        Assert.Contains(expected, error.Message);
     }
 
     private static TerrainLodHierarchy Build(

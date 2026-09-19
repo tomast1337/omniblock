@@ -15,7 +15,7 @@ public class MultiplayerChunkCache(World world) : IChunkSource
     {
         ChunkPos key = new(x, z);
         var blocks = new byte[ChuckFormat.ChunkSize];
-        Chunk chunk = new(world, blocks, x, z);
+        Chunk chunk = new(world, blocks, x, z, hasCompleteTerrainSnapshot: false);
 
         Array.Fill(chunk.SkyLight.Bytes, (byte)255);
         _chunkByPos[key] = chunk;
