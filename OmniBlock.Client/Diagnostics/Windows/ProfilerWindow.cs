@@ -295,7 +295,7 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
 
     private static void DrawTerrainLod(
         ClientTerrainLodSnapshot? profile,
-        TerrainLodSpatialShadowSnapshot? spatialProfile)
+        TerrainLodSpatialSnapshot? spatialProfile)
     {
         if (profile is not { } lod)
         {
@@ -332,7 +332,7 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"Lifecycle: stale {lod.StaleResults:N0}  rejected {lod.RejectedAdmissions:N0}  evicted {lod.Evictions:N0}");
         if (spatialProfile is not { } spatial) return;
-        ImGui.SeparatorText("Spatial LOD shadow");
+        ImGui.SeparatorText("Spatial LOD");
         ImGuiTextSafe.Text(
             $"Root:      L{spatial.Root.Level} {spatial.Root.X},{spatial.Root.Z}  complete {spatial.CompleteCoverage}");
         ImGuiTextSafe.Text(
@@ -343,6 +343,8 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
             $"GPU stage: {spatial.GpuPresentations:N0} resident  {spatial.PendingMeshCandidates:N0} pending  {spatial.MeshCompilation.Queued:N0} queued  {spatial.MeshCompilation.Running:N0} running  {spatial.MeshCompilation.Ready:N0} ready");
         ImGuiTextSafe.Text(
             $"Seams:     {spatial.DesiredSeams:N0} desired  {spatial.GpuSeams:N0} GPU  {spatial.SeamCompilation.Queued:N0} queued  {spatial.SeamCompilation.Running:N0} running  {spatial.SeamCompilation.Ready:N0} ready");
+        ImGuiTextSafe.Text(
+            $"Live:      ready {spatial.SubmissionReady}  {spatial.AuthoritativeTiles:N0} authoritative tiles  pages {spatial.SubmittedSolidPages:N0} solid / {spatial.SubmittedTranslucentPages:N0} translucent");
     }
 
     private static void DrawChunkLifecycle(ChunkRenderer chunkRenderer)

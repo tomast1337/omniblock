@@ -183,6 +183,10 @@ public static class Profiler
 
     internal sealed class ThreadContext(string displayName)
     {
+        // Server scopes are recorded on the server thread while the main thread snapshots both
+        // contexts once per frame. Dictionary reads and writes must therefore be synchronized even
+        // though each context has only one scope-producing thread.
+        private readonly object _gate = new();
         private readonly Stack<string> _pathStack = new();
 
         private readonly Dictionary<string, ScopeData> _scopes = [];
@@ -203,62 +207,74 @@ public static class Profiler
         internal void EndScope(string path, double ms)
         {
             _pathStack.TryPop(out _);
-            if (!_scopes.TryGetValue(path, out var data))
+            lock (_gate)
             {
-                data = new ScopeData(path);
-                _scopes[path] = data;
-            }
+                if (!_scopes.TryGetValue(path, out var data))
+                {
+                    data = new ScopeData(path);
+                    _scopes[path] = data;
+                }
 
-            data.Update(ms);
+                data.Update(ms);
+            }
         }
 
         internal void RecordDirect(string path, double ms)
         {
-            if (!_scopes.TryGetValue(path, out var data))
+            lock (_gate)
             {
-                data = new ScopeData(path);
-                _scopes[path] = data;
-            }
+                if (!_scopes.TryGetValue(path, out var data))
+                {
+                    data = new ScopeData(path);
+                    _scopes[path] = data;
+                }
 
-            data.Update(ms);
+                data.Update(ms);
+            }
         }
 
         public void RollPeriodMax(double dt)
         {
-            _periodTimer += dt;
-            if (_periodTimer < 1.0) return;
-            _periodTimer = 0;
-            foreach (var scope in _scopes.Values)
+            lock (_gate)
             {
-                scope.PreviousPeriodMax = scope.CurrentPeriodMax;
-                scope.CurrentPeriodMax = 0;
+                _periodTimer += dt;
+                if (_periodTimer < 1.0) return;
+                _periodTimer = 0;
+                foreach (var scope in _scopes.Values)
+                {
+                    scope.PreviousPeriodMax = scope.CurrentPeriodMax;
+                    scope.CurrentPeriodMax = 0;
+                }
             }
         }
 
         public void CaptureFrame()
         {
-            foreach (var scope in _scopes.Values)
+            lock (_gate)
             {
-                scope.History[scope.HistoryHead] = scope.Last;
-                scope.HistoryHead = (scope.HistoryHead + 1) % HistoryLength;
-                scope.HistoryCount = Math.Min(scope.HistoryCount + 1, HistoryLength);
-            }
+                foreach (var scope in _scopes.Values)
+                {
+                    scope.History[scope.HistoryHead] = scope.Last;
+                    scope.HistoryHead = (scope.HistoryHead + 1) % HistoryLength;
+                    scope.HistoryCount = Math.Min(scope.HistoryCount + 1, HistoryLength);
+                }
 
-            var snap = new SnapshotEntry[_scopes.Count];
-            var i = 0;
-            foreach (var data in _scopes.Values)
-            {
-                snap[i++] = new SnapshotEntry(
-                    data.Name,
-                    data.Last,
-                    data.Avg,
-                    Math.Max(data.CurrentPeriodMax, data.PreviousPeriodMax),
-                    data.History,
-                    data.HistoryHead,
-                    data.HistoryCount);
-            }
+                var snap = new SnapshotEntry[_scopes.Count];
+                var i = 0;
+                foreach (var data in _scopes.Values)
+                {
+                    snap[i++] = new SnapshotEntry(
+                        data.Name,
+                        data.Last,
+                        data.Avg,
+                        Math.Max(data.CurrentPeriodMax, data.PreviousPeriodMax),
+                        data.History,
+                        data.HistoryHead,
+                        data.HistoryCount);
+                }
 
-            Volatile.Write(ref _snapshot, snap);
+                Volatile.Write(ref _snapshot, snap);
+            }
         }
 
         public SnapshotEntry[]? GetSnapshot() => Volatile.Read(ref _snapshot);

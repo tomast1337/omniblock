@@ -616,6 +616,10 @@ public partial class OmniBlock :
                     "terrainLodSpatialSeamQueued" => spatial.SeamCompilation.Queued,
                     "terrainLodSpatialSeamRunning" => spatial.SeamCompilation.Running,
                     "terrainLodSpatialSeamReady" => spatial.SeamCompilation.Ready,
+                    "terrainLodSpatialSubmissionReady" => spatial.SubmissionReady ? 1 : 0,
+                    "terrainLodSpatialAuthoritativeTiles" => spatial.AuthoritativeTiles,
+                    "terrainLodSpatialSolidPages" => spatial.SubmittedSolidPages,
+                    "terrainLodSpatialTranslucentPages" => spatial.SubmittedTranslucentPages,
                     "clientWorkingSetBytes" => Environment.WorkingSet,
                     _ => 0
                 };

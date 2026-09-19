@@ -45,14 +45,12 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
 
     private readonly int _ownerThreadId = Environment.CurrentManagedThreadId;
     private readonly Dictionary<TerrainLodTileKey, Entry> _entries = [];
-    private TerrainLodTileSelection[] _current = [];
-    private TerrainLodTileSelection[] _from = [];
-    private TerrainLodTileSelection[] _to = [];
-    private float _progress = 1;
+    private readonly Dictionary<TerrainLodTileKey, TransitionState> _transitions = [];
     private bool _disposed;
 
     public int Count => _entries.Count;
-    public bool Transitioning => _to.Length != 0;
+    public bool Transitioning => _transitions.Values.Any(static state => state.To.Length != 0);
+    public IEnumerable<TerrainLodTileKey> ReadyKeys => _entries.Keys;
 
     public bool TryInstall(
         TerrainLodTileKey key,
@@ -102,6 +100,11 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
         AssertOwnerThread();
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(policy);
+        if (!_transitions.TryGetValue(root, out var state))
+        {
+            state = new TransitionState();
+            _transitions.Add(root, state);
+        }
         var desired = TerrainLodSpatialSelector.Select(
             root, cameraChunkX, cameraChunkZ, policy, IsReady);
 
@@ -109,53 +112,54 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
         {
             // Never replace a previously complete partition with a hole. This can occur only when
             // callers explicitly evict active coverage; candidate failure alone keeps its entry.
-            var retained = Resolve(_current, new TerrainLodSpatialPresentationFade(1, 0, Seed(root)));
+            var retained = Resolve(
+                state.Current, new TerrainLodSpatialPresentationFade(1, 0, Seed(root)));
             return new TerrainLodSpatialPresentationFrame<TPresentation>(
                 retained, retained.Length != 0, transitioning: false);
         }
 
         var requested = desired.Nodes.ToArray();
-        if (_current.Length == 0)
+        if (state.Current.Length == 0)
         {
-            _current = requested;
-            return StableFrame(root, desired.CompleteCoverage);
+            state.Current = requested;
+            return StableFrame(root, state, desired.CompleteCoverage);
         }
 
-        if (!SamePartition(requested, Transitioning ? _to : _current))
+        if (!SamePartition(requested, state.To.Length != 0 ? state.To : state.Current))
         {
-            var source = Transitioning && _progress >= 0.5f ? _to :
-                Transitioning ? _from : _current;
+            var source = state.To.Length != 0 && state.Progress >= 0.5f ? state.To :
+                state.To.Length != 0 ? state.From : state.Current;
             if (SamePartition(requested, source))
             {
-                _current = source;
-                _from = [];
-                _to = [];
-                _progress = 1;
-                return StableFrame(root, completeCoverage: true);
+                state.Current = source;
+                state.From = [];
+                state.To = [];
+                state.Progress = 1;
+                return StableFrame(root, state, completeCoverage: true);
             }
 
-            _from = source;
-            _to = requested;
-            _progress = fadeEnabled ? 0 : 1;
+            state.From = source;
+            state.To = requested;
+            state.Progress = fadeEnabled ? 0 : 1;
         }
 
-        if (!Transitioning) return StableFrame(root, completeCoverage: true);
-        _progress = fadeEnabled
-            ? Math.Clamp(_progress + Math.Max(0, deltaTime) / TransitionDurationSeconds, 0, 1)
+        if (state.To.Length == 0) return StableFrame(root, state, completeCoverage: true);
+        state.Progress = fadeEnabled
+            ? Math.Clamp(state.Progress + Math.Max(0, deltaTime) / TransitionDurationSeconds, 0, 1)
             : 1;
-        if (_progress >= 1)
+        if (state.Progress >= 1)
         {
-            _current = _to;
-            _from = [];
-            _to = [];
-            return StableFrame(root, completeCoverage: true);
+            state.Current = state.To;
+            state.From = [];
+            state.To = [];
+            return StableFrame(root, state, completeCoverage: true);
         }
 
         var seed = Seed(root);
         var outgoing = Resolve(
-            _from, new TerrainLodSpatialPresentationFade(_progress, 2, seed));
+            state.From, new TerrainLodSpatialPresentationFade(state.Progress, 2, seed));
         var incoming = Resolve(
-            _to, new TerrainLodSpatialPresentationFade(_progress, 1, seed));
+            state.To, new TerrainLodSpatialPresentationFade(state.Progress, 1, seed));
         return new TerrainLodSpatialPresentationFrame<TPresentation>(
             [.. outgoing, .. incoming], completeCoverage: true, transitioning: true);
     }
@@ -167,15 +171,14 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
         _disposed = true;
         foreach (var entry in _entries.Values) entry.Presentation.Dispose();
         _entries.Clear();
-        _current = [];
-        _from = [];
-        _to = [];
+        _transitions.Clear();
     }
 
     private TerrainLodSpatialPresentationFrame<TPresentation> StableFrame(
         TerrainLodTileKey root,
+        TransitionState state,
         bool completeCoverage) => new(
-        Resolve(_current, new TerrainLodSpatialPresentationFade(1, 0, Seed(root))),
+        Resolve(state.Current, new TerrainLodSpatialPresentationFade(1, 0, Seed(root))),
         completeCoverage,
         transitioning: false);
 
@@ -212,4 +215,27 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
     }
 
     private sealed record Entry(string CanonicalHash, TPresentation Presentation);
+
+    private sealed class TransitionState
+    {
+        public TerrainLodTileSelection[] Current = [];
+        public TerrainLodTileSelection[] From = [];
+        public TerrainLodTileSelection[] To = [];
+        public float Progress = 1;
+    }
+}
+
+internal static class TerrainLodSpatialAuthority
+{
+    /// <summary>
+    ///     A coarse tile may replace legacy column LOD only when its nearest boundary is beyond
+    ///     the exact-render radius plus a one-chunk guard band. Tiles intersecting that band remain
+    ///     fallback-only so coarse geometry cannot win an equal-depth test against near terrain.
+    /// </summary>
+    public static bool IsBeyondNearRadius(
+        TerrainLodTileKey tile,
+        double cameraChunkX,
+        double cameraChunkZ,
+        int renderDistance) =>
+        tile.DistanceTo(cameraChunkX, cameraChunkZ) >= Math.Max(0, renderDistance) + 1.0;
 }

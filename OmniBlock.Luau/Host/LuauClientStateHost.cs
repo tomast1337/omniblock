@@ -128,6 +128,10 @@ public static unsafe class LuauClientStateHost
                                                 key == "terrainLodSpatialSeamQueued" or
                                                 key == "terrainLodSpatialSeamRunning" or
                                                 key == "terrainLodSpatialSeamReady" or
+                                                key == "terrainLodSpatialSubmissionReady" or
+                                                key == "terrainLodSpatialAuthoritativeTiles" or
+                                                key == "terrainLodSpatialSolidPages" or
+                                                key == "terrainLodSpatialTranslucentPages" or
                                                 key == "clientWorkingSetBytes" or
                                                 key == "terrainLodUploads" or key == "terrainLodGpuBytes" or
                                                 key == "terrainLodStaleResults" or key == "terrainLodRejected" or

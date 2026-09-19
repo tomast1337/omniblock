@@ -108,6 +108,50 @@ public sealed class TerrainLodSpatialPresentationSetTests
         Assert.All(completed.Draws, draw => Assert.Equal(0u, draw.Fade.Mode));
     }
 
+    [Fact]
+    public void Independent_roots_keep_independent_transition_state()
+    {
+        var first = new TerrainLodTileKey(1, 0, 0);
+        var second = new TerrainLodTileKey(1, 1, 0);
+        using var presentations = new TerrainLodSpatialPresentationSet<FakePresentation>();
+        Install(presentations, first);
+        Install(presentations, second);
+        presentations.Update(first, 1, 1, RefiningPolicy, 0, fadeEnabled: true);
+        presentations.Update(second, 3, 1, RefiningPolicy, 0, fadeEnabled: true);
+        for (var index = 0; index < 4; index++) Install(presentations, first.Child(index));
+
+        var firstFrame = presentations.Update(
+            first, 1, 1, RefiningPolicy,
+            TerrainLodSpatialPresentationSet<FakePresentation>.TransitionDurationSeconds / 2,
+            fadeEnabled: true);
+        var secondFrame = presentations.Update(
+            second, 3, 1, RefiningPolicy,
+            TerrainLodSpatialPresentationSet<FakePresentation>.TransitionDurationSeconds / 2,
+            fadeEnabled: true);
+
+        Assert.True(firstFrame.Transitioning);
+        Assert.False(secondFrame.Transitioning);
+        Assert.Equal(second, Assert.Single(secondFrame.Draws).Selection.Tile);
+    }
+
+    [Fact]
+    public void Tile_intersecting_near_guard_band_cannot_be_authoritative()
+    {
+        var tile = new TerrainLodTileKey(2, 1, 0); // chunks 4..7
+
+        Assert.False(TerrainLodSpatialAuthority.IsBeyondNearRadius(
+            tile, cameraChunkX: 0, cameraChunkZ: 0, renderDistance: 4));
+    }
+
+    [Fact]
+    public void Entirely_distant_tile_can_replace_legacy_column_lod()
+    {
+        var tile = new TerrainLodTileKey(2, 2, 0); // chunks 8..11
+
+        Assert.True(TerrainLodSpatialAuthority.IsBeyondNearRadius(
+            tile, cameraChunkX: 0, cameraChunkZ: 0, renderDistance: 4));
+    }
+
     private static void Install(
         TerrainLodSpatialPresentationSet<FakePresentation> presentations,
         TerrainLodTileKey key)

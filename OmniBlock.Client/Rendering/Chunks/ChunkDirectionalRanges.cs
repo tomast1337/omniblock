@@ -102,6 +102,23 @@ internal static class DirectionalFaceVisibility
         return mask;
     }
 
+    /// <summary>Conservative directional selection for an arbitrary axis-aligned mesh page.</summary>
+    public static ChunkDirectionMask ForBounds(
+        Vector3D<int> minimum,
+        int size,
+        Vector3D<double> viewPosition)
+    {
+        if (size <= 0) throw new ArgumentOutOfRangeException(nameof(size));
+        var mask = ChunkDirectionMask.None;
+        AddAxis(viewPosition.X, minimum.X, checked(minimum.X + size),
+            ChunkDirectionMask.West, ChunkDirectionMask.East, ref mask);
+        AddAxis(viewPosition.Y, minimum.Y, checked(minimum.Y + size),
+            ChunkDirectionMask.Down, ChunkDirectionMask.Up, ref mask);
+        AddAxis(viewPosition.Z, minimum.Z, checked(minimum.Z + size),
+            ChunkDirectionMask.North, ChunkDirectionMask.South, ref mask);
+        return mask;
+    }
+
     private static void AddAxis(
         double camera,
         double minimum,

@@ -69,7 +69,7 @@ internal readonly record struct ClientTerrainLodSnapshot(
     double MeshUploadBaseMs,
     double MeshUploadMsPerMiB);
 
-internal readonly record struct TerrainLodSpatialShadowSnapshot(
+internal readonly record struct TerrainLodSpatialSnapshot(
     TerrainLodTileKey Root,
     bool CompleteCoverage,
     int SelectedTiles,
@@ -79,6 +79,10 @@ internal readonly record struct TerrainLodSpatialShadowSnapshot(
     int PendingMeshCandidates,
     int DesiredSeams,
     int GpuSeams,
+    bool SubmissionReady,
+    int AuthoritativeTiles,
+    int SubmittedSolidPages,
+    int SubmittedTranslucentPages,
     TerrainLodSpatialHierarchyCoordinatorSnapshot Hierarchy,
     TerrainLodSpatialMeshCompilationSnapshot MeshCompilation,
     TerrainLodSpatialSeamCompilationSnapshot SeamCompilation);
@@ -117,6 +121,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private const int SpatialUploadsPerFrame = 2;
     private const int SpatialSeamAdmissionsPerFrame = 8;
     private const int SpatialSeamUploadsPerFrame = 2;
+    private const int SpatialPageDrawsPerPass = 256;
 
     private readonly World _world;
     private readonly TerrainLodConversionService _conversion;
@@ -131,6 +136,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private readonly HashSet<TerrainLodSpatialSeamSegment> _desiredSpatialSeams = [];
     private readonly Dictionary<TerrainLodSpatialSeamSegment,
         TerrainLodSpatialGpuSeamPresentation> _spatialSeams = [];
+    private readonly Dictionary<TerrainLodSpatialSeamSegment,
+        TerrainLodSpatialPresentationFade> _spatialSeamFades = [];
+    private readonly HashSet<TerrainLodTileKey> _authoritativeSpatialTiles = [];
+    private readonly List<VisibleSpatialPage> _visibleSpatialSolid = [];
+    private readonly List<VisibleSpatialPage> _visibleSpatialTranslucent = [];
     private readonly List<TerrainLodColumnTile> _completedSpatialParents = [];
     private readonly TerrainLodCacheStore? _cache;
     private readonly TerrainLodAsyncCacheWriter? _cacheWriter;
@@ -171,7 +181,10 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private double _translucentRenderCpuMs;
     private bool _disposed;
     private ClientTerrainLodSnapshot _snapshot;
-    private TerrainLodSpatialShadowSnapshot _spatialSnapshot;
+    private TerrainLodSpatialSnapshot _spatialSnapshot;
+    private TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation>?
+        _spatialFrame;
+    private bool _spatialSubmissionReady;
 
     public ClientTerrainLodRenderer(World world, TerrainLodCacheStore? cache = null)
     {
@@ -211,7 +224,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     }
 
     public ClientTerrainLodSnapshot Snapshot => _snapshot;
-    public TerrainLodSpatialShadowSnapshot SpatialSnapshot => _spatialSnapshot;
+    public TerrainLodSpatialSnapshot SpatialSnapshot => _spatialSnapshot;
 
     /// <summary>
     ///     Observes texture-resource replacement without invalidating terrain presentation. Both
@@ -351,9 +364,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         var maximumDistance = Math.Min(
             MaximumDistanceBlocks, Math.Max(1, parameters.TerrainHorizonDistance) * 16.0f);
         var maximumDistanceSquared = maximumDistance * maximumDistance;
+        CollectVisibleSpatialPages(parameters, translucent: false, _visibleSpatialSolid);
         stageStarted = Stopwatch.GetTimestamp();
         foreach (var (key, presentation) in _resident)
         {
+            if (IsAuthoritativeSpatialChunk(key)) continue;
             var distanceSquared = DistanceSquared(key, parameters.ViewPos);
             if (distanceSquared > maximumDistanceSquared ||
                 !parameters.Camera.IsBoundingBoxInFrustum(new Box(
@@ -436,7 +451,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         if (_visibleSeams.Count > seamDrawBudget)
             _visibleSeams.RemoveRange(seamDrawBudget, _visibleSeams.Count - seamDrawBudget);
         Profiler.Record("SeamCpu", Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
-        if (_visible.Count == 0)
+        if (_visible.Count == 0 && _visibleSeams.Count == 0 &&
+            _visibleSpatialSolid.Count == 0)
         {
             PublishSnapshot(uploads, 0);
             return;
@@ -449,7 +465,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         WgpuPipeline.BindGroup(target.CurrentPass, 1,
             terrainArray.BindGroupFor(_opaquePipeline.TextureBindGroupLayout), device.Api);
 
-        var drawCount = _visible.Count + _visibleSeams.Count;
+        var spatialStart = _visible.Count + _visibleSeams.Count;
+        var drawCount = spatialStart + _visibleSpatialSolid.Count;
         if (_uniforms.Length < drawCount) _uniforms = new ChunkDrawMetadata[drawCount];
         for (var i = 0; i < _visible.Count; i++)
             _uniforms[i] = BuildUniforms(
@@ -461,6 +478,12 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 _visibleSeams[i].Fade.Progress,
                 _visibleSeams[i].Fade.Mode,
                 _visibleSeams[i].Fade.Seed);
+        for (var i = 0; i < _visibleSpatialSolid.Count; i++)
+            _uniforms[spatialStart + i] = BuildUniforms(
+                _visibleSpatialSolid[i].Page.Origin,
+                _visibleSpatialSolid[i].Fade.Progress,
+                _visibleSpatialSolid[i].Fade.Mode,
+                _visibleSpatialSolid[i].Fade.Seed);
         stageStarted = Stopwatch.GetTimestamp();
         _opaquePipeline.WriteDrawStorage(_uniforms.AsSpan(0, drawCount));
         _opaquePipeline.BindDrawStorage(target.CurrentPass);
@@ -481,6 +504,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 target.CurrentPass, lightBuffer: seam.Lighting!.Solid,
                 firstInstance: (uint)(_visible.Count + i));
         }
+        var spatialBinding = new TerrainStreamBindingState();
+        for (var i = 0; i < _visibleSpatialSolid.Count; i++)
+            DrawSpatialPage(
+                target.CurrentPass, _visibleSpatialSolid[i], translucent: false,
+                ref spatialBinding, (uint)(spatialStart + i), parameters.ViewPos);
         Profiler.Record("DrawCpu", Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
 
         PublishSnapshot(uploads, _visible.Count);
@@ -512,8 +540,10 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         var maximumDistance = Math.Min(
             MaximumDistanceBlocks, Math.Max(1, parameters.TerrainHorizonDistance) * 16.0f);
         var maximumDistanceSquared = maximumDistance * maximumDistance;
+        CollectVisibleSpatialPages(parameters, translucent: true, _visibleSpatialTranslucent);
         foreach (var (key, presentation) in _resident)
         {
+            if (IsAuthoritativeSpatialChunk(key)) continue;
             var distanceSquared = DistanceSquared(key, parameters.ViewPos);
             if (distanceSquared > maximumDistanceSquared ||
                 !parameters.Camera.IsBoundingBoxInFrustum(new Box(
@@ -594,10 +624,17 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 seamDrawBudget, _visibleTranslucentSeams.Count - seamDrawBudget);
         _visibleTranslucentDraws.Clear();
         _visibleTranslucentDraws.AddRange(_visible.Select(static column =>
-            new VisibleTranslucentDraw(column, null, column.Key, column.DistanceSquared)));
+            new VisibleTranslucentDraw(column, null, null,
+                column.Key, column.DistanceSquared)));
         _visibleTranslucentDraws.AddRange(_visibleTranslucentSeams.Select(static seam =>
             new VisibleTranslucentDraw(
-                null, seam.Gpu, seam.Key.Owner, seam.DistanceSquared, seam.Fade)));
+                null, seam.Gpu, null,
+                seam.Key.Owner, seam.DistanceSquared, seam.Fade)));
+        _visibleTranslucentDraws.AddRange(_visibleSpatialTranslucent.Select(static page =>
+            new VisibleTranslucentDraw(
+                null, null, page,
+                (page.Page.Origin.X >> 4, page.Page.Origin.Z >> 4),
+                page.DistanceSquared)));
         _visibleTranslucentDraws.Sort(static (a, b) =>
         {
             var distance = b.DistanceSquared.CompareTo(a.DistanceSquared);
@@ -605,7 +642,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             var x = a.Key.X.CompareTo(b.Key.X);
             return x != 0 ? x : a.Key.Z.CompareTo(b.Key.Z);
         });
-        if (_visible.Count == 0)
+        if (_visibleTranslucentDraws.Count == 0)
         {
             _snapshot = _snapshot with { PresentedTranslucentColumns = 0 };
             return;
@@ -624,15 +661,22 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         {
             var draw = _visibleTranslucentDraws[i];
             var column = draw.Column;
-            _uniforms[i] = BuildUniforms(
-                parameters, draw.Key,
-                column?.FadeProgress ?? draw.SeamFade.Progress,
-                column?.FadeMode ?? draw.SeamFade.Mode,
-                column?.FadeSeed ?? draw.SeamFade.Seed);
+            _uniforms[i] = draw.Spatial is { } spatial
+                ? BuildUniforms(
+                    spatial.Page.Origin,
+                    spatial.Fade.Progress,
+                    spatial.Fade.Mode,
+                    spatial.Fade.Seed)
+                : BuildUniforms(
+                    parameters, draw.Key,
+                    column?.FadeProgress ?? draw.SeamFade.Progress,
+                    column?.FadeMode ?? draw.SeamFade.Mode,
+                    column?.FadeSeed ?? draw.SeamFade.Seed);
         }
         _translucentPipeline.WriteDrawStorage(_uniforms.AsSpan(0, drawCount));
         _translucentPipeline.BindDrawStorage(target.CurrentPass);
 
+        var spatialBinding = new TerrainStreamBindingState();
         for (var i = 0; i < drawCount; i++)
         {
             var draw = _visibleTranslucentDraws[i];
@@ -640,15 +684,19 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 column.Gpu.TranslucentMesh!.Draw(
                     target.CurrentPass, lightBuffer: column.Gpu.Lighting!.Translucent,
                     firstInstance: (uint)i);
-            else
-                draw.Seam!.Mesh!.Draw(
-                    target.CurrentPass, lightBuffer: draw.Seam.Lighting!.Translucent,
+            else if (draw.Seam is { } seam)
+                seam.Mesh!.Draw(
+                    target.CurrentPass, lightBuffer: seam.Lighting!.Translucent,
                     firstInstance: (uint)i);
+            else if (draw.Spatial is { } spatial)
+                DrawSpatialPage(
+                    target.CurrentPass, spatial, translucent: true,
+                    ref spatialBinding, (uint)i, parameters.ViewPos);
         }
 
         _snapshot = _snapshot with
         {
-            PresentedTranslucentColumns = _visible.Count,
+            PresentedTranslucentColumns = _visible.Count + _visibleSpatialTranslucent.Count,
             UploadsThisFrame = _snapshot.UploadsThisFrame + seamUploads
         };
     }
@@ -673,6 +721,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _translucentSeams.Clear();
         _spatialSeams.Clear();
         _desiredSpatialSeams.Clear();
+        _spatialSeamFades.Clear();
+        _authoritativeSpatialTiles.Clear();
+        _visibleSpatialSolid.Clear();
+        _visibleSpatialTranslucent.Clear();
+        _spatialFrame = null;
         _desiredSolidSeams.Clear();
         _desiredTranslucentSeams.Clear();
         _selectedSolidLevels.Clear();
@@ -930,9 +983,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     }
 
     /// <summary>
-    ///     Uploads real spatial candidates into the shared arenas but deliberately does not submit
-    ///     them yet. Phase 6E will enable drawing only after the shadow selector proves a complete
-    ///     partition for a stable root forest.
+    ///     Uploads real spatial candidates into the shared arenas. Publication alone never makes a
+    ///     tile authoritative: the live forest also requires its complete neighbor seam set.
     /// </summary>
     private int InstallSpatialCompleted(ChunkRenderer nearRenderer)
     {
@@ -1037,15 +1089,13 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         // Exercise the exact group-transition state that Phase 6E will submit. Its output remains
         // diagnostics-only until a stable root forest, adjacent-tier seams, and draw integration
         // are all enabled together.
-        var frame = _spatialPresentations.Update(
-            root,
-            cameraChunkX,
-            cameraChunkZ,
-            _spatialPolicy,
-            parameters.DeltaTime,
-            parameters.ChunkFade);
-        UpdateSpatialSeams(frame, cameraChunkX, cameraChunkZ);
-        _spatialSnapshot = new TerrainLodSpatialShadowSnapshot(
+        var frame = BuildSpatialForestFrame(
+            cameraChunkX, cameraChunkZ,
+            parameters.TerrainHorizonDistance,
+            parameters.DeltaTime);
+        UpdateSpatialSeams(
+            frame, cameraChunkX, cameraChunkZ, parameters.RenderDistance);
+        _spatialSnapshot = new TerrainLodSpatialSnapshot(
             root,
             selection.CompleteCoverage,
             selection.Nodes.Count,
@@ -1055,25 +1105,72 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             _spatialMeshPending.Count,
             _desiredSpatialSeams.Count,
             _spatialSeams.Count,
+            _spatialSubmissionReady,
+            _authoritativeSpatialTiles.Count,
+            _visibleSpatialSolid.Count,
+            _visibleSpatialTranslucent.Count,
             _spatialHierarchy.Snapshot(),
             _spatialMeshCompilation.Snapshot(),
             _spatialSeamCompilation.Snapshot());
     }
 
+    private TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation>
+        BuildSpatialForestFrame(
+            double cameraChunkX,
+            double cameraChunkZ,
+            int horizonDistance,
+            float deltaTime)
+    {
+        List<TerrainLodSpatialPresentationDraw<TerrainLodSpatialGpuPresentation>> draws = [];
+        var transitioning = false;
+        var maximumDistance = Math.Max(1, horizonDistance) +
+                              (1 << MinimumSpatialGpuLevel);
+        foreach (var root in _spatialPresentations.ReadyKeys
+                     .Where(static key => key.Level == MinimumSpatialGpuLevel)
+                     .Where(key => key.DistanceTo(cameraChunkX, cameraChunkZ) <= maximumDistance)
+                     .OrderBy(key => key.DistanceTo(cameraChunkX, cameraChunkZ))
+                     .ThenBy(static key => key.X)
+                     .ThenBy(static key => key.Z))
+        {
+            // Level-2 roots are non-overlapping and independently complete. Fades stay disabled
+            // until the forest can promote/demote whole root groups atomically across levels.
+            var rootFrame = _spatialPresentations.Update(
+                root, cameraChunkX, cameraChunkZ, _spatialPolicy,
+                deltaTime, fadeEnabled: false);
+            if (!rootFrame.CompleteCoverage) continue;
+            draws.AddRange(rootFrame.Draws);
+            transitioning |= rootFrame.Transitioning;
+        }
+        return new TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation>(
+            [.. draws], completeCoverage: draws.Count != 0, transitioning);
+    }
+
     private void UpdateSpatialSeams(
         TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation> frame,
         double cameraChunkX,
-        double cameraChunkZ)
+        double cameraChunkZ,
+        int renderDistance)
     {
         _desiredSpatialSeams.Clear();
+        _spatialSeamFades.Clear();
         if (frame.CompleteCoverage)
         {
             // Outgoing and incoming partitions overlap during a group fade, so each must be
             // planned independently. Their seam sets coexist until the atomic transition ends.
             foreach (var partition in frame.Draws.GroupBy(static draw => draw.Fade.Mode))
-            foreach (var seam in TerrainLodSpatialSeamPlanner.Plan(
-                         partition.Select(static draw => draw.Selection)))
-                _desiredSpatialSeams.Add(seam);
+            {
+                var fade = partition.First().Fade;
+                foreach (var seam in TerrainLodSpatialSeamPlanner.Plan(
+                             partition.Select(static draw => draw.Selection)))
+                {
+                    _desiredSpatialSeams.Add(seam);
+                    if (_spatialSeamFades.TryGetValue(seam, out var existing) &&
+                        existing.Mode != fade.Mode)
+                        _spatialSeamFades[seam] = new TerrainLodSpatialPresentationFade(1, 0, 0);
+                    else
+                        _spatialSeamFades[seam] = fade;
+                }
+            }
         }
 
         _spatialSeamCompilation.Retain(_desiredSpatialSeams);
@@ -1101,7 +1198,127 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                     SpatialSeamDistance(seam, cameraChunkX, cameraChunkZ)))
                 admitted++;
         }
+
+        _spatialFrame = frame;
+        _spatialSubmissionReady = frame.CompleteCoverage &&
+            _desiredSpatialSeams.All(SpatialSeamIsCurrent);
+        _authoritativeSpatialTiles.Clear();
+        if (!_spatialSubmissionReady) return;
+        foreach (var draw in frame.Draws)
+            if (TerrainLodSpatialAuthority.IsBeyondNearRadius(
+                    draw.Selection.Tile, cameraChunkX, cameraChunkZ, renderDistance))
+                _authoritativeSpatialTiles.Add(draw.Selection.Tile);
+        if (CountSpatialPages(frame, translucent: false) > SpatialPageDrawsPerPass ||
+            CountSpatialPages(frame, translucent: true) > SpatialPageDrawsPerPass)
+        {
+            // Never trim a spatial partition. Falling back to the legacy column path preserves
+            // coverage until a future indirect/batched submission path raises this bound.
+            _authoritativeSpatialTiles.Clear();
+            _spatialSubmissionReady = false;
+        }
+
+        bool SpatialSeamIsCurrent(TerrainLodSpatialSeamSegment seam)
+        {
+            if (!_spatialSeams.TryGetValue(seam, out var presentation) ||
+                !TryResolveSpatialSeamTiles(seam, out var owner, out var neighbor))
+                return false;
+            return presentation.CanonicalHash ==
+                   TerrainLodSpatialSeamMeshBuilder.ComputeCanonicalHash(
+                       seam, owner!, neighbor);
+        }
     }
+
+    private int CountSpatialPages(
+        TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation> frame,
+        bool translucent)
+    {
+        var count = frame.Draws
+            .Where(draw => _authoritativeSpatialTiles.Contains(draw.Selection.Tile))
+            .Sum(draw => draw.Presentation.Pages.Count(page => translucent
+                ? page.Translucent is not null
+                : page.Solid is not null));
+        foreach (var seam in _desiredSpatialSeams)
+        {
+            if (!SpatialSeamTouchesAuthority(seam) ||
+                !_spatialSeams.TryGetValue(seam, out var presentation)) continue;
+            count += presentation.Pages.Count(page => translucent
+                ? page.Translucent is not null
+                : page.Solid is not null);
+        }
+        return count;
+    }
+
+    private void CollectVisibleSpatialPages(
+        in ChunkRenderParams parameters,
+        bool translucent,
+        List<VisibleSpatialPage> destination)
+    {
+        destination.Clear();
+        if (!_spatialSubmissionReady || _spatialFrame is not { } frame ||
+            _authoritativeSpatialTiles.Count == 0) return;
+        var maximumDistance = Math.Min(
+            MaximumDistanceBlocks, Math.Max(1, parameters.TerrainHorizonDistance) * 16.0f);
+        var camera = parameters.Camera;
+        var viewPosition = parameters.ViewPos;
+
+        foreach (var draw in frame.Draws)
+        {
+            if (!_authoritativeSpatialTiles.Contains(draw.Selection.Tile)) continue;
+            foreach (var page in draw.Presentation.Pages)
+                AddPage(page, draw.Fade);
+        }
+        foreach (var seam in _desiredSpatialSeams)
+        {
+            if (!SpatialSeamTouchesAuthority(seam) ||
+                !_spatialSeams.TryGetValue(seam, out var presentation)) continue;
+            var fade = _spatialSeamFades.GetValueOrDefault(
+                seam, new TerrainLodSpatialPresentationFade(1, 0, 0));
+            foreach (var page in presentation.Pages) AddPage(page, fade);
+        }
+
+        destination.Sort((a, b) =>
+        {
+            var distance = translucent
+                ? b.DistanceSquared.CompareTo(a.DistanceSquared)
+                : a.DistanceSquared.CompareTo(b.DistanceSquared);
+            if (distance != 0) return distance;
+            var x = a.Page.Origin.X.CompareTo(b.Page.Origin.X);
+            if (x != 0) return x;
+            var y = a.Page.Origin.Y.CompareTo(b.Page.Origin.Y);
+            return y != 0 ? y : a.Page.Origin.Z.CompareTo(b.Page.Origin.Z);
+        });
+        return;
+
+        void AddPage(
+            TerrainLodSpatialGpuPresentation.GpuPage page,
+            TerrainLodSpatialPresentationFade fade)
+        {
+            if (translucent ? page.Translucent is null : page.Solid is null) return;
+            var box = new Box(
+                page.Origin.X, page.Origin.Y, page.Origin.Z,
+                page.Origin.X + TerrainLodSpatialMeshBuilder.PageSize,
+                page.Origin.Y + TerrainLodSpatialMeshBuilder.PageSize,
+                page.Origin.Z + TerrainLodSpatialMeshBuilder.PageSize);
+            if (!camera.IsBoundingBoxInFrustum(box)) return;
+            var dx = Math.Max(0, Math.Max(
+                page.Origin.X - viewPosition.X,
+                viewPosition.X - (page.Origin.X + TerrainLodSpatialMeshBuilder.PageSize)));
+            var dz = Math.Max(0, Math.Max(
+                page.Origin.Z - viewPosition.Z,
+                viewPosition.Z - (page.Origin.Z + TerrainLodSpatialMeshBuilder.PageSize)));
+            var distanceSquared = dx * dx + dz * dz;
+            if (distanceSquared > maximumDistance * maximumDistance) return;
+            destination.Add(new VisibleSpatialPage(page, fade, distanceSquared));
+        }
+    }
+
+    private bool IsAuthoritativeSpatialChunk((int X, int Z) key) =>
+        _authoritativeSpatialTiles.Any(tile => tile.ContainsChunk(key.X, key.Z));
+
+    private bool SpatialSeamTouchesAuthority(TerrainLodSpatialSeamSegment seam) =>
+        _authoritativeSpatialTiles.Contains(seam.Owner.Tile) ||
+        seam.Neighbor is { } neighbor &&
+        _authoritativeSpatialTiles.Contains(neighbor.Tile);
 
     private bool TryResolveSpatialSeamTiles(
         TerrainLodSpatialSeamSegment seam,
@@ -1656,6 +1873,15 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         uint fadeSeed)
     {
         var origin = new Vector3D<int>(key.X * 16, ChuckFormat.WorldHeight / 2, key.Z * 16);
+        return BuildUniforms(origin, fadeProgress, fadeMode, fadeSeed);
+    }
+
+    private static ChunkDrawMetadata BuildUniforms(
+        Vector3D<int> origin,
+        float fadeProgress,
+        uint fadeMode,
+        uint fadeSeed)
+    {
         TerrainCoordinateFrame.Split(origin.X, out var cellX, out var localX);
         TerrainCoordinateFrame.Split(origin.Y, out var cellY, out var localY);
         TerrainCoordinateFrame.Split(origin.Z, out var cellZ, out var localZ);
@@ -1674,6 +1900,34 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             PresentationFadeMode = fadeMode,
             PresentationFadeSeed = fadeSeed
         };
+    }
+
+    private static unsafe void DrawSpatialPage(
+        RenderPassEncoder* pass,
+        in VisibleSpatialPage visible,
+        bool translucent,
+        ref TerrainStreamBindingState binding,
+        uint drawMetadataIndex,
+        Vector3D<double> viewPosition)
+    {
+        var mesh = translucent ? visible.Page.Translucent : visible.Page.Solid;
+        if (mesh is null) return;
+        var ranges = translucent
+            ? visible.Page.TranslucentRanges
+            : visible.Page.SolidRanges;
+        Span<ChunkQuadRange> selected = stackalloc ChunkQuadRange[7];
+        var faceMask = DirectionalFaceVisibility.ForBounds(
+            visible.Page.Origin, TerrainLodSpatialMeshBuilder.PageSize, viewPosition);
+        var selectedCount = ranges.Select(faceMask, selected);
+        if (selectedCount == 0) return;
+        mesh.BindChunkQuadStreams(pass, ref binding);
+        for (var index = 0; index < selectedCount; index++)
+        {
+            var range = selected[index];
+            mesh.DrawBoundQuadRange(
+                pass, (uint)range.FirstQuad, (uint)range.QuadCount,
+                firstInstance: drawMetadataIndex);
+        }
     }
 
     private static ChunkFrameUniforms BuildFrameUniforms(in ChunkRenderParams parameters)
@@ -1722,9 +1976,15 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         double DistanceSquared,
         TerrainLodSeamFade Fade);
 
+    private readonly record struct VisibleSpatialPage(
+        TerrainLodSpatialGpuPresentation.GpuPage Page,
+        TerrainLodSpatialPresentationFade Fade,
+        double DistanceSquared);
+
     private readonly record struct VisibleTranslucentDraw(
         VisibleColumn? Column,
         GpuSeam? Seam,
+        VisibleSpatialPage? Spatial,
         (int X, int Z) Key,
         double DistanceSquared,
         TerrainLodSeamFade SeamFade = default);

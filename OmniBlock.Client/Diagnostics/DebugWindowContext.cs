@@ -50,7 +50,7 @@ internal sealed class DebugWindowContext(OmniBlock game)
     public HitResult ObjectMouseOver => game.ObjectMouseOver;
     public ChunkRenderer? ChunkRenderer => game.WorldRenderer?.ChunkRenderer;
     public ClientTerrainLodSnapshot? TerrainLod => game.WorldRenderer?.TerrainLod?.Snapshot;
-    public TerrainLodSpatialShadowSnapshot? TerrainLodSpatial =>
+    public TerrainLodSpatialSnapshot? TerrainLodSpatial =>
         game.WorldRenderer?.TerrainLod?.SpatialSnapshot;
 
     public DebugSystemSnapshot DebugSystemSnapshot => game.DebugSystemSnapshot;

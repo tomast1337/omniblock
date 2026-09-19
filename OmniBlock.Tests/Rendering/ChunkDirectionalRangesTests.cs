@@ -51,4 +51,18 @@ public sealed class ChunkDirectionalRangesTests
 
         Assert.Equal(ChunkDirectionMask.All, mask);
     }
+
+    [Fact]
+    public void Arbitrary_spatial_page_uses_its_full_bounds()
+    {
+        var mask = DirectionalFaceVisibility.ForBounds(
+            new Vector3D<int>(64, 0, -128),
+            size: 64,
+            new Vector3D<double>(96, 96, -160));
+
+        Assert.Equal(
+            ChunkDirectionMask.West | ChunkDirectionMask.East |
+            ChunkDirectionMask.Up | ChunkDirectionMask.North,
+            mask);
+    }
 }
