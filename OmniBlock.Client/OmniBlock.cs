@@ -625,6 +625,7 @@ public partial class OmniBlock :
                         spatial.HighestAuthoritativeLevel,
                     "terrainLodSpatialSolidPages" => spatial.SubmittedSolidPages,
                     "terrainLodSpatialTranslucentPages" => spatial.SubmittedTranslucentPages,
+                    "terrainLodSpatialGpuBytes" => spatial.GpuBytes,
                     "terrainLodRemoteRequests" => state.RemoteRequests,
                     "terrainLodRemoteTiles" => state.RemoteTiles,
                     "terrainLodRemoteBytes" => state.RemoteWireBytes,
@@ -884,6 +885,44 @@ public partial class OmniBlock :
                         "memoryLoadRatio" => snapshot.Pressure.MemoryLoadRatio,
                         "diskFreeBytes" => snapshot.Pressure.DiskFreeBytes,
                         "peakRetainedBytes" => snapshot.PeakRetainedBytes,
+                        _ => 0
+                    };
+                };
+                LuauTestHost.PrepareTerrainLodFixture = radius =>
+                {
+                    if (Player == null || InternalServer == null ||
+                        radius is <= 0 or > 64)
+                        return false;
+                    return InternalServer.QueueTerrainLodScaleFixture(
+                        Player.DimensionId,
+                        Player.X / 16.0,
+                        Player.Z / 16.0,
+                        Options.RenderDistance,
+                        radius);
+                };
+                LuauTestHost.TerrainLodFixtureMetric = metric =>
+                {
+                    var snapshot = InternalServer?.TerrainLodScaleFixture;
+                    if (metric == "cacheReadHits")
+                    {
+                        var dimension = Player?.DimensionId ?? 0;
+                        return InternalServer?.getWorld(dimension).TerrainLodSnapshot?
+                            .SpatialCache.ReadHits ?? 0;
+                    }
+                    if (metric == "cacheEntries")
+                    {
+                        var dimension = Player?.DimensionId ?? 0;
+                        return InternalServer?.getWorld(dimension).TerrainLodSnapshot?
+                            .SpatialCache.EntryCount ?? 0;
+                    }
+                    if (snapshot is null) return 0;
+                    return metric switch
+                    {
+                        "queued" => snapshot.Status == TerrainLodScaleFixtureStatus.Queued ? 1 : 0,
+                        "preparing" => snapshot.Status == TerrainLodScaleFixtureStatus.Preparing ? 1 : 0,
+                        "complete" => snapshot.Status == TerrainLodScaleFixtureStatus.Complete ? 1 : 0,
+                        "failed" => snapshot.Status == TerrainLodScaleFixtureStatus.Failed ? 1 : 0,
+                        "tiles" => snapshot.Tiles,
                         _ => 0
                     };
                 };
@@ -1323,6 +1362,8 @@ public partial class OmniBlock :
             LuauTestHost.DumpProfiler = null;
             LuauTestHost.WorldGenerationAuto = null;
             LuauTestHost.WorldGenerationMetric = null;
+            LuauTestHost.PrepareTerrainLodFixture = null;
+            LuauTestHost.TerrainLodFixtureMetric = null;
             LuauTestHost.EntityBaseline = null;
             LuauTestHost.EntityBaselineState = null;
             LuauTestHost.EntityBaselineEnvironment = null;

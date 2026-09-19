@@ -398,6 +398,50 @@ public sealed class TerrainLodColumnTile
                    terrainRevision, sourceFingerprint), StringComparison.Ordinal);
     }
 
+    /// <summary>
+    ///     Creates an immutable uniform tile for importers and prepared derived-data fixtures.
+    ///     This bypasses leaf reduction, so callers must supply a stable source identity and must
+    ///     never use the result as authoritative gameplay terrain.
+    /// </summary>
+    public static TerrainLodColumnTile CreateUniform(
+        TerrainLodTileKey key,
+        int horizontalSampleLevel,
+        int worldHeight,
+        TerrainLodColumn column,
+        string sourceIdentity)
+    {
+        ArgumentNullException.ThrowIfNull(column);
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceIdentity);
+        if (key.Level == 0)
+            throw new ArgumentException(
+                "Uniform imports must be aggregate tiles; authoritative leaves require source validation.",
+                nameof(key));
+        if (column.WorldHeight != worldHeight)
+            throw new ArgumentException(
+                $"Uniform column height {column.WorldHeight} does not match {worldHeight}.",
+                nameof(column));
+        if (horizontalSampleLevel < 0 || horizontalSampleLevel > key.Level + 4)
+            throw new ArgumentOutOfRangeException(nameof(horizontalSampleLevel));
+        var footprintBlocks = checked(16L * key.ChunkWidth);
+        var sampleSize = 1L << horizontalSampleLevel;
+        var width = footprintBlocks / sampleSize;
+        if (footprintBlocks % sampleSize != 0 || width is <= 0 or > MaximumSamplesPerSide)
+            throw new ArgumentException(
+                $"Tile {key} cannot use horizontal sample level {horizontalSampleLevel}.",
+                nameof(horizontalSampleLevel));
+        var inputs = Enumerable.Range(0, 4)
+            .Select(index => $"{sourceIdentity}:{key.Level}:{key.X}:{key.Z}:{index}")
+            .ToArray();
+        return new TerrainLodColumnTile(
+            key,
+            horizontalSampleLevel,
+            checked((int)width),
+            worldHeight,
+            Enumerable.Repeat(column, checked((int)(width * width))).ToArray(),
+            leafTerrainRevision: null,
+            inputs);
+    }
+
     public static TerrainLodColumnTile BuildLeaf(
         TerrainLodSourceSnapshot source,
         TerrainLodMaterialCatalog materials)

@@ -13,7 +13,7 @@ public sealed class TerrainLodRemoteCoveragePlannerTests
     {
         const double cameraX = -3.25;
         const double cameraZ = 5.75;
-        var roots = TerrainLodRemoteCoveragePlanner.RequiredTiles(
+        var roots = TerrainLodCoveragePlanner.RequiredTiles(
             cameraX, cameraZ, nearDistanceChunks: 12,
             horizonDistanceChunks: 64, rootLevel: 4, minimumLevel: 2);
 
@@ -35,7 +35,7 @@ public sealed class TerrainLodRemoteCoveragePlannerTests
             .ThenByDescending(static key => key.Level)
             .ThenBy(static key => key.X)
             .ThenBy(static key => key.Z));
-        Assert.Equal(roots, TerrainLodRemoteCoveragePlanner.RequiredTiles(
+        Assert.Equal(roots, TerrainLodCoveragePlanner.RequiredTiles(
             cameraX, cameraZ, 12, 64, 4, 2));
     }
 
@@ -46,7 +46,7 @@ public sealed class TerrainLodRemoteCoveragePlannerTests
         const double cameraZ = -11.5;
         var containing = TerrainLodTileKey.ContainingChunk(2, -21, -12);
 
-        var roots = TerrainLodRemoteCoveragePlanner.RequiredTiles(
+        var roots = TerrainLodCoveragePlanner.RequiredTiles(
             cameraX, cameraZ, nearDistanceChunks: 0,
             horizonDistanceChunks: 6, rootLevel: 2, minimumLevel: 2);
 
@@ -61,30 +61,30 @@ public sealed class TerrainLodRemoteCoveragePlannerTests
         var root = new TerrainLodTileKey(4, -2, 3);
         HashSet<TerrainLodTileKey> available = [];
 
-        Assert.False(TerrainLodRemoteCoveragePlanner.HasCompleteCoverage(
+        Assert.False(TerrainLodCoveragePlanner.HasCompleteCoverage(
             root, 2, available.Contains));
 
         foreach (var levelThree in Enumerable.Range(0, 4).Select(root.Child))
         foreach (var levelTwo in Enumerable.Range(0, 4).Select(levelThree.Child))
             available.Add(levelTwo);
-        Assert.True(TerrainLodRemoteCoveragePlanner.HasCompleteCoverage(
+        Assert.True(TerrainLodCoveragePlanner.HasCompleteCoverage(
             root, 2, available.Contains));
 
         available.Remove(root.Child(0).Child(0));
-        Assert.False(TerrainLodRemoteCoveragePlanner.HasCompleteCoverage(
+        Assert.False(TerrainLodCoveragePlanner.HasCompleteCoverage(
             root, 2, available.Contains));
 
         available.Clear();
         available.Add(root);
-        Assert.True(TerrainLodRemoteCoveragePlanner.HasCompleteCoverage(
+        Assert.True(TerrainLodCoveragePlanner.HasCompleteCoverage(
             root, 2, available.Contains));
     }
 
     [Fact]
     public void Horizon_inside_near_radius_has_no_remote_contract()
     {
-        Assert.Empty(TerrainLodRemoteCoveragePlanner.RequiredTiles(0, 0, 16, 16, 4, 2));
-        Assert.Empty(TerrainLodRemoteCoveragePlanner.RequiredTiles(0, 0, 32, 16, 4, 2));
+        Assert.Empty(TerrainLodCoveragePlanner.RequiredTiles(0, 0, 16, 16, 4, 2));
+        Assert.Empty(TerrainLodCoveragePlanner.RequiredTiles(0, 0, 32, 16, 4, 2));
     }
 
     [Fact]

@@ -1,13 +1,11 @@
-using OmniBlock.Worlds.Lod;
-
-namespace OmniBlock.Client.Rendering.Chunks.Lod;
+namespace OmniBlock.Worlds.Lod;
 
 /// <summary>
 ///     Defines the adaptive source-tile partition required to cover a radial distant-terrain
 ///     horizon. Coarse tiles cover the interior while boundary tiles descend to the minimum level,
 ///     avoiding requests for coarse records that extend far outside the configured horizon.
 /// </summary>
-internal static class TerrainLodRemoteCoveragePlanner
+public static class TerrainLodCoveragePlanner
 {
     public static TerrainLodTileKey[] RequiredTiles(
         double cameraChunkX,
@@ -63,9 +61,8 @@ internal static class TerrainLodRemoteCoveragePlanner
     }
 
     /// <summary>
-    ///     A root is covered by itself or by a complete descendant partition down to the minimum
-    ///     remotely presentable level. This lets locally constructed children satisfy the same
-    ///     contract as a transported parent without claiming that sparse descendants are complete.
+    ///     A tile is covered by itself or by a complete descendant partition down to the minimum
+    ///     remotely presentable level.
     /// </summary>
     public static bool HasCompleteCoverage(
         TerrainLodTileKey root,

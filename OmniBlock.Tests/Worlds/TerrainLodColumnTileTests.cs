@@ -226,6 +226,27 @@ public sealed class TerrainLodColumnTileTests
     }
 
     [Fact]
+    public void Uniform_import_tile_has_policy_dimensions_and_stable_identity()
+    {
+        var key = new TerrainLodTileKey(4, -2, 3);
+        var column = Column(128,
+            new TerrainLodColumnSpan(0, 64, Stone, 0, 0),
+            new TerrainLodColumnSpan(64, 64, TerrainLodMaterial.Air, 0, 15));
+
+        var first = TerrainLodColumnTile.CreateUniform(
+            key, horizontalSampleLevel: 2, 128, column, "fixture-v1");
+        var second = TerrainLodColumnTile.CreateUniform(
+            key, horizontalSampleLevel: 2, 128, column, "fixture-v1");
+
+        Assert.Equal(64, first.Width);
+        Assert.Equal(4, first.InputHashes.Count);
+        Assert.Null(first.LeafTerrainRevision);
+        Assert.Equal(column.Spans, first[0, 0].Spans);
+        Assert.Equal(column.Spans, first[63, 63].Spans);
+        Assert.Equal(first.CanonicalHash, second.CanonicalHash);
+    }
+
+    [Fact]
     public void Invalid_noncanonical_column_is_rejected()
     {
         var error = Assert.Throws<ArgumentException>(() => Column(8,

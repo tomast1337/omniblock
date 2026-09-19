@@ -51,6 +51,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         Log.Instance.For<ServerTerrainLodRuntime>();
     private readonly int _dimension;
     private readonly TerrainLodCacheIdentity _identity;
+    private readonly TerrainLodMaterialCatalog _materials;
     private readonly int _conversionCapacity;
     private readonly Dictionary<ChunkKey, TrackedChunk> _tracked = [];
     private readonly TerrainLodConversionService _conversions;
@@ -101,6 +102,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         if (conversionCapacity <= 0)
             throw new ArgumentOutOfRangeException(nameof(conversionCapacity));
         _dimension = dimension;
+        _materials = materials;
         _conversionCapacity = conversionCapacity;
         // The absolute cache root never crosses the wire; only its hash does. Including it keeps
         // two saves with the same seed/content from sharing a transport identity, while reopening
@@ -245,6 +247,63 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
 
     internal bool TryGetSpatialPayload(TerrainLodTileKey key, out byte[]? payload) =>
         GetSpatialPayload(key, out payload) == TerrainLodTileAvailability.Ready;
+
+    /// <summary>
+    ///     Prepares a bounded uniform cache fixture through the same durable store and hierarchy
+    ///     used by ordinary pregeneration. The integrated-server E2E harness calls this before its
+    ///     timed scale sample; no gameplay chunks are synthesized or activated.
+    /// </summary>
+    internal int PrepareUniformSpatialFixture(
+        double centerChunkX,
+        double centerChunkZ,
+        int nearDistanceChunks,
+        int horizonDistanceChunks,
+        int surfaceBlockProtocolId)
+    {
+        if (horizonDistanceChunks is <= 0 or > 64)
+            throw new ArgumentOutOfRangeException(nameof(horizonDistanceChunks));
+        var policy = TerrainLodSpatialPolicy.CreateDefault();
+        const int minimumLevel = 2;
+        var rootLevel = Math.Max(
+            minimumLevel,
+            policy.DesiredSpatialLevel(horizonDistanceChunks));
+        var keys = TerrainLodCoveragePlanner.RequiredTiles(
+            centerChunkX,
+            centerChunkZ,
+            nearDistanceChunks,
+            horizonDistanceChunks,
+            rootLevel,
+            minimumLevel);
+        var surface = _materials.Resolve(surfaceBlockProtocolId, metadata: 0);
+        var column = TerrainLodColumn.Create(ChuckFormat.WorldHeight,
+        [
+            new TerrainLodColumnSpan(0, 64, surface, blockLight: 0, skyLight: 0),
+            new TerrainLodColumnSpan(
+                64, ChuckFormat.WorldHeight - 64,
+                TerrainLodMaterial.Air, blockLight: 0, skyLight: 15)
+        ]);
+        var sourceIdentity = FormattableString.Invariant(
+            $"integrated-scale-fixture-v1:{centerChunkX}:{centerChunkZ}:{nearDistanceChunks}:{horizonDistanceChunks}");
+        foreach (var key in keys)
+        {
+            var tile = TerrainLodColumnTile.CreateUniform(
+                key,
+                policy.HorizontalSampleLevelForSpatialLevel(key.Level),
+                ChuckFormat.WorldHeight,
+                column,
+                sourceIdentity);
+            _spatialCache.Write(tile);
+            _spatialHierarchy.PublishCached(tile);
+            lock (_gate)
+            {
+                _spatialMissing.Remove(key);
+                _spatialWirePayloads.Remove(key);
+            }
+            QueueSpatialEncode(key);
+        }
+        lock (_gate) PublishSnapshotLocked();
+        return keys.Length;
+    }
 
     public void TrackChunk(Chunk chunk)
     {

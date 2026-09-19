@@ -198,8 +198,8 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                     identityFingerprint);
             return;
         }
-        var playerChunkX = (int)Math.Floor(player.X) >> 4;
-        var playerChunkZ = (int)Math.Floor(player.Z) >> 4;
+        var playerChunkX = player.X / 16.0;
+        var playerChunkZ = player.Z / 16.0;
         var responded = 0;
         foreach (var key in request.Keys.Distinct())
         {
@@ -207,7 +207,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             // streaming. The distant lane begins at a 4x4-chunk aggregate and never generates on
             // demand; it can only return an already-approved persistent server record.
             if (key.Level is < 2 or > 4 ||
-                key.DistanceTo(playerChunkX + 0.5, playerChunkZ + 0.5) >
+                key.DistanceTo(playerChunkX, playerChunkZ) >
                 MaximumTerrainLodDistanceChunks)
                 continue;
             try

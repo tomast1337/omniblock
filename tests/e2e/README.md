@@ -36,14 +36,15 @@ The opt-in `view-distance-32-diagnostic` scenario holds a real single-player ses
 distance for 30 seconds and logs frame time plus mesh pressure. It is intentionally outside the
 default suite because it is a sustained performance regression rather than a fast functional check.
 
-`terrain-lod-fixed-camera` is the opt-in Phase 5 scale gate. It pins a flying camera, samples 120
-frames at the current 64-chunk horizon setting, and reports frame and terrain-CPU distributions,
-draw counts, LOD GPU/boundary/cache memory, process working set, and observed-versus-required radial
-coverage. The artifact includes the explicit required/available adaptive-tile contract plus current
-in-flight, pending, missing, and deferred counts. GPU pass timing uses timestamp queries when the
-adapter supports them and reports the unsupported state otherwise. A passing run validates the
-measurement contract, not complete 64-chunk coverage; both coverage fields prevent sparse
-client-observed terrain from being mislabeled as a full horizon benchmark. Run it with
+`terrain-lod-fixed-camera` is the opt-in Phase 5 scale gate. A dedicated first process prepares the
+exact adaptive 64-chunk radial partition in the integrated server's persistent derived-data cache
+and exits. The measured process reopens that cache, waits for 100% client coverage, then pins a
+flying camera and samples 120 frames. It reports frame and
+terrain-CPU distributions, draw counts, LOD GPU/boundary/cache memory, process working set, and the
+required/available adaptive-tile contract plus current in-flight, pending, missing, and deferred
+counts. GPU pass timing uses timestamp queries when the adapter supports them and reports the
+unsupported state otherwise. A passing run now proves complete source coverage for the requested
+64-chunk horizon; fixture preparation is outside the timed sample. Run it with
 `xvfb-run -a tests/e2e/run-local.sh terrain-lod-fixed-camera`.
 
 `entity-render-baseline` is an opt-in 300-second-watchdog benchmark for the existing GPU-instanced
@@ -178,6 +179,9 @@ OMNI.test.setBlock("omniblock:flowing_water", x, y, z) -- E2E-only server comman
 OMNI.test.summon("omniblock:cow", 1) -- E2E-only server command; maximum count is 256
 OMNI.test.worldGenerationAuto("prepare", 8) -- E2E-only integrated-server control
 OMNI.test.worldGenerationMetric("saved") -- read-only moving-generation diagnostic
+OMNI.test.prepareTerrainLodFixture(64)    -- E2E-only derived-data scale fixture
+OMNI.test.terrainLodFixtureMetric("complete")
+OMNI.test.terrainLodFixtureMetric("cacheReadHits") -- proves warm-process disk reuse
 OMNI.test.countEntities("omniblock:cow", 180, 220) -- client-resident entities in a distance band
 OMNI.test.isMeshCurrent(x, y, z) -- latest section epoch has an installed mesh
 OMNI.test.meshDeadlineMissCount(x, y, z) -- section-scoped lifetime counter
@@ -249,6 +253,7 @@ OMNI.client.state.terrainLodRemoteCoveragePending  -- required tiles awaiting se
 OMNI.client.state.terrainLodRemoteCoverageMissing  -- required tiles absent from the server cache
 OMNI.client.state.terrainLodRemoteCoverageDeferred -- required tiles delayed by gameplay/bandwidth pressure
 OMNI.client.state.terrainLodRemoteCoverageComplete -- 1 only when every required tile has source coverage
+OMNI.client.state.terrainLodSpatialGpuBytes         -- resident spatial-tile and seam GPU estimate
 OMNI.client.state.clientWorkingSetBytes           -- current client process working set
 OMNI.client.state.meshCancelledCount  -- discarded/abandoned requests, including superseded work
 OMNI.client.state.meshSupersededCount -- subset discarded due to a newer revision/replacement

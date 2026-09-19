@@ -23,6 +23,7 @@ public abstract class OmniBlockServer : ICommandOutput
 {
     private readonly ILogger<OmniBlockServer> _logger = Log.Instance.For<OmniBlockServer>();
     private readonly Queue<PendingCommand> _pendingCommands = new();
+    private readonly Queue<Action<OmniBlockServer>> _pendingServerActions = new();
     private readonly object _pendingCommandsLock = new();
 
     private readonly List<IRegistryReloadListener> _reloadListeners = [];
@@ -700,6 +701,13 @@ public abstract class OmniBlockServer : ICommandOutput
         }
     }
 
+    /// <summary>Queues trusted same-process work for the next server-thread boundary.</summary>
+    protected void QueueServerAction(Action<OmniBlockServer> action)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+        lock (_pendingCommandsLock) _pendingServerActions.Enqueue(action);
+    }
+
     /// <summary>
     ///     Thread-safe immutable progress view for an integrated client's preparation screen.
     ///     Mutations still enter through <see cref="QueueCommands"/> and execute on the server.
@@ -736,6 +744,17 @@ public abstract class OmniBlockServer : ICommandOutput
             }
 
             _commandHandler.ExecuteCommand(cmd);
+        }
+
+        while (true)
+        {
+            Action<OmniBlockServer> action;
+            lock (_pendingCommandsLock)
+            {
+                if (_pendingServerActions.Count == 0) break;
+                action = _pendingServerActions.Dequeue();
+            }
+            action(this);
         }
     }
 

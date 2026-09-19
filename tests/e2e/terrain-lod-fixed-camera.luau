@@ -1,7 +1,6 @@
--- Phase 5 fixed-camera measurement gate. The current presentation prototype supports at most a
--- 64-chunk horizon and derives LOD only from complete chunks already delivered to the client.
--- This captures the honest 64-chunk configuration; the report's coverage ratio prevents it from
--- being mistaken for a fully populated 64-chunk disk/transport fixture.
+-- Phase 5 fixed-camera scale gate. The runner's preparation process has already written the exact
+-- adaptive 64-chunk radial partition. This fresh process must reopen and transport those records
+-- before the timed client compilation, upload, and presentation sample begins.
 OMNI.config.viewDistance = 0
 OMNI.config.terrainHorizonDistance = 1
 OMNI.config.fogDistance = 1
@@ -28,10 +27,29 @@ OMNI.test.setMovement(0, 0, 0)
 OMNI.test.setLook(180, 25)
 
 OMNI.waitUntil(function()
-    return OMNI.client.state.terrainLodResident > 0 and
-        OMNI.client.state.terrainLodPresented > 0 and
-        OMNI.client.state.terrainLodGpuBytes > 0
-end, 30, 0.05)
+    return OMNI.client.state.terrainLodRemoteCoverageRequired > 0 and
+        OMNI.client.state.terrainLodRemoteCoverageComplete == 1
+end, 120, 0.05)
+assert(OMNI.test.terrainLodFixtureMetric("cacheReadHits") > 0,
+    "measured process did not reopen persistent terrain LOD records")
+
+local spatialReady = false
+for _ = 1, 2400 do
+    spatialReady = OMNI.client.state.terrainLodSpatialSubmissionReady == 1 and
+        OMNI.client.state.terrainLodSpatialGpuResident > 0 and
+        OMNI.client.state.terrainLodSpatialSolidPages > 0 and
+        OMNI.client.state.terrainLodSpatialGpuBytes > 0
+    if spatialReady then break end
+    OMNI.wait(0.05)
+end
+assert(spatialReady,
+    "spatial terrain did not become presentable: resident=" ..
+    tostring(OMNI.client.state.terrainLodSpatialGpuResident) ..
+    " pending=" .. tostring(OMNI.client.state.terrainLodSpatialMeshPending) ..
+    " queued=" .. tostring(OMNI.client.state.terrainLodSpatialMeshQueued) ..
+    " running=" .. tostring(OMNI.client.state.terrainLodSpatialMeshRunning) ..
+    " seams=" .. tostring(OMNI.client.state.terrainLodSpatialSeamGpuResident) ..
+    "/" .. tostring(OMNI.client.state.terrainLodSpatialSeamDesired))
 OMNI.wait(2)
 
 local fixedX = OMNI.client.state.playerX
@@ -50,11 +68,12 @@ for _ = 1, 120 do
         OMNI.client.state.terrainLodSolidCpuMs + OMNI.client.state.terrainLodTranslucentCpuMs)
     table.insert(samples.nearSubmitCpu, OMNI.client.state.terrainSubmitCpuMs)
     table.insert(samples.lodDraws,
-        OMNI.client.state.terrainLodPresented + OMNI.client.state.terrainLodTranslucentPresented)
+        OMNI.client.state.terrainLodSpatialSolidPages +
+        OMNI.client.state.terrainLodSpatialTranslucentPages)
     table.insert(samples.nearDraws, OMNI.client.state.terrainDrawCalls)
-    table.insert(samples.resident, OMNI.client.state.terrainLodResident)
-    table.insert(samples.presented, OMNI.client.state.terrainLodPresented)
-    table.insert(samples.gpuBytes, OMNI.client.state.terrainLodGpuBytes)
+    table.insert(samples.resident, OMNI.client.state.terrainLodSpatialGpuResident)
+    table.insert(samples.presented, OMNI.client.state.terrainLodSpatialSolidPages)
+    table.insert(samples.gpuBytes, OMNI.client.state.terrainLodSpatialGpuBytes)
     table.insert(samples.boundaryBytes, OMNI.client.state.terrainLodBoundaryBytes)
     table.insert(samples.cacheBytes, OMNI.client.state.terrainLodCacheBytes)
     table.insert(samples.workingSetBytes, OMNI.client.state.clientWorkingSetBytes)
@@ -72,8 +91,6 @@ end
 
 local summary = {}
 for key, values in pairs(samples) do summary[key] = distribution(values) end
-local requiredColumns = math.floor(math.pi * 64 * 64 + 0.5)
-local coverage = summary.resident.mean / requiredColumns
 local requiredTiles = OMNI.client.state.terrainLodRemoteCoverageRequired
 local availableTiles = OMNI.client.state.terrainLodRemoteCoverageAvailable
 local tileCoverage = requiredTiles > 0 and availableTiles / requiredTiles or 0
@@ -87,10 +104,13 @@ assert(summary.frame.mean > 0 and summary.lodCpu.mean > 0,
 assert(summary.gpuBytes.mean > 0 and summary.workingSetBytes.mean > 0,
     "memory counters did not advance")
 assert(OMNI.client.state.webGpuErrorCount == 0, "WebGPU validation failed")
+assert(OMNI.client.state.terrainLodRemoteCoverageComplete == 1 and
+        availableTiles == requiredTiles,
+    "64-chunk terrain coverage regressed during the fixed-camera sample")
 
-print("terrain-lod-fixed-camera schema=1 targetChunks=64 requiredColumns=" ..
-    tostring(requiredColumns) .. " observedResident=" .. tostring(summary.resident.mean) ..
-    " coverage=" .. tostring(coverage) ..
+print("terrain-lod-fixed-camera schema=2 targetChunks=64 spatialResident=" ..
+    tostring(summary.resident.mean) ..
+    " spatialPresented=" .. tostring(summary.presented.mean) ..
     " requiredTiles=" .. tostring(requiredTiles) ..
     " availableTiles=" .. tostring(availableTiles) ..
     " tileCoverage=" .. tostring(tileCoverage) ..
@@ -98,6 +118,7 @@ print("terrain-lod-fixed-camera schema=1 targetChunks=64 requiredColumns=" ..
     " coveragePending=" .. tostring(OMNI.client.state.terrainLodRemoteCoveragePending) ..
     " coverageMissing=" .. tostring(OMNI.client.state.terrainLodRemoteCoverageMissing) ..
     " coverageDeferred=" .. tostring(OMNI.client.state.terrainLodRemoteCoverageDeferred) ..
+    " serverCacheReadHits=" .. tostring(OMNI.test.terrainLodFixtureMetric("cacheReadHits")) ..
     " frameMeanMs=" .. tostring(summary.frame.mean) ..
     " frameP50Ms=" .. tostring(summary.frame.p50) ..
     " frameP95Ms=" .. tostring(summary.frame.p95) ..

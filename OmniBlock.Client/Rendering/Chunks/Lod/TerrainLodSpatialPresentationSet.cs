@@ -51,6 +51,8 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
     public int Count => _entries.Count;
     public bool Transitioning => _transitions.Values.Any(static state => state.To.Length != 0);
     public IEnumerable<TerrainLodTileKey> ReadyKeys => _entries.Keys;
+    public IEnumerable<TPresentation> ReadyPresentations =>
+        _entries.Values.Select(static entry => entry.Presentation);
 
     public bool TryInstall(
         TerrainLodTileKey key,

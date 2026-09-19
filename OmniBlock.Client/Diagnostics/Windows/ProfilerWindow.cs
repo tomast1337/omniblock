@@ -342,7 +342,7 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"Remote coverage: {lod.RemoteCoverageAvailable:N0}/{lod.RemoteCoverageRequired:N0} tiles  in-flight {lod.RemoteCoverageInFlight:N0}  pending {lod.RemoteCoveragePending:N0}  missing {lod.RemoteCoverageMissing:N0}  deferred {lod.RemoteCoverageDeferred:N0}");
         ImGuiTextSafe.Text(
-            $"GPU stage: {spatial.GpuPresentations:N0} resident through L{spatial.HighestGpuResidentLevel}  {spatial.PendingMeshCandidates:N0} pending  {spatial.MeshCompilation.Queued:N0} queued  {spatial.MeshCompilation.Running:N0} running  {spatial.MeshCompilation.Ready:N0} ready");
+            $"GPU stage: {spatial.GpuPresentations:N0} resident through L{spatial.HighestGpuResidentLevel}  {FormatBytes(spatial.GpuBytes)}  {spatial.PendingMeshCandidates:N0} pending  {spatial.MeshCompilation.Queued:N0} queued  {spatial.MeshCompilation.Running:N0} running  {spatial.MeshCompilation.Ready:N0} ready");
         ImGuiTextSafe.Text(
             $"Seams:     {spatial.DesiredSeams:N0} desired  {spatial.GpuSeams:N0} GPU  {spatial.SeamCompilation.Queued:N0} queued  {spatial.SeamCompilation.Running:N0} running  {spatial.SeamCompilation.Ready:N0} ready");
         ImGuiTextSafe.Text(

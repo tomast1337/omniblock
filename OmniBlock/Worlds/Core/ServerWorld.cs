@@ -89,6 +89,23 @@ public class ServerWorld : World
         return TerrainLodTileAvailability.Missing;
     }
 
+    internal int PrepareTerrainLodScaleFixture(
+        double centerChunkX,
+        double centerChunkZ,
+        int nearDistanceChunks,
+        int horizonDistanceChunks)
+    {
+        if (_terrainLod is null)
+            throw new InvalidOperationException("The terrain LOD runtime is unavailable.");
+        var surface = Content.Blocks.Get("omniblock:grass_block");
+        return _terrainLod.PrepareUniformSpatialFixture(
+            centerChunkX,
+            centerChunkZ,
+            nearDistanceChunks,
+            horizonDistanceChunks,
+            surface.Id);
+    }
+
     protected override IChunkSource CreateChunkCache()
     {
         var chunkStorage = Storage.GetChunkStorage(Dimension);

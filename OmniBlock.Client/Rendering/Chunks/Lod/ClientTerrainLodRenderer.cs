@@ -98,6 +98,7 @@ internal readonly record struct TerrainLodSpatialSnapshot(
     int HighestAuthoritativeLevel,
     int SubmittedSolidPages,
     int SubmittedTranslucentPages,
+    long GpuBytes,
     TerrainLodSpatialHierarchyCoordinatorSnapshot Hierarchy,
     TerrainLodSpatialMeshCompilationSnapshot MeshCompilation,
     TerrainLodSpatialSeamCompilationSnapshot SeamCompilation);
@@ -136,7 +137,6 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private const int SpatialUploadsPerFrame = 2;
     private const int SpatialSeamAdmissionsPerFrame = 8;
     private const int SpatialSeamUploadsPerFrame = 2;
-    private const int SpatialPageDrawsPerPass = 256;
     private const int MaximumRemoteOutstandingRequests = 16;
     private const int OverworldCaveCullCeilingY = 60;
 
@@ -307,7 +307,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         var coverageRootLevel = Math.Max(
             MinimumSpatialGpuLevel,
             _spatialPolicy.DesiredSpatialLevel(horizonDistanceChunks));
-        var requiredTiles = TerrainLodRemoteCoveragePlanner.RequiredTiles(
+        var requiredTiles = TerrainLodCoveragePlanner.RequiredTiles(
             cameraX, cameraZ, nearDistanceChunks, horizonDistanceChunks,
             coverageRootLevel, MinimumSpatialGpuLevel);
         UpdateRemoteCoverage(requiredTiles, cameraX, cameraZ, horizonDistanceChunks);
@@ -340,7 +340,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 var level = coverageRootLevel - 1 -
                             (int)((_tick >> 2) % refinementLevels);
                 var refinements = new List<TerrainLodTileKey>();
-                foreach (var key in TerrainLodRemoteCoveragePlanner.RequiredTiles(
+                foreach (var key in TerrainLodCoveragePlanner.RequiredTiles(
                              cameraX, cameraZ, nearDistanceChunks,
                              horizonDistanceChunks, level, MinimumSpatialGpuLevel))
                 {
@@ -1367,6 +1367,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 : _authoritativeSpatialTiles.Max(static tile => tile.Level),
             _visibleSpatialSolid.Count,
             _visibleSpatialTranslucent.Count,
+            _spatialPresentations.ReadyPresentations.Sum(
+                static presentation => presentation.EstimatedBytes) +
+            _spatialSeams.Values.Sum(static seam => seam.EstimatedBytes),
             _spatialHierarchy.Snapshot(),
             _spatialMeshCompilation.Snapshot(),
             _spatialSeamCompilation.Snapshot());
@@ -1481,14 +1484,6 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             if (TerrainLodSpatialAuthority.IsBeyondNearRadius(
                     draw.Selection.Tile, cameraChunkX, cameraChunkZ, renderDistance))
                 _authoritativeSpatialTiles.Add(draw.Selection.Tile);
-        if (CountSpatialPages(frame, translucent: false) > SpatialPageDrawsPerPass ||
-            CountSpatialPages(frame, translucent: true) > SpatialPageDrawsPerPass)
-        {
-            // Never trim a spatial partition. Falling back to the legacy column path preserves
-            // coverage until a future indirect/batched submission path raises this bound.
-            _authoritativeSpatialTiles.Clear();
-            _spatialSubmissionReady = false;
-        }
 
         bool SpatialSeamIsCurrent(TerrainLodSpatialSeamSegment seam)
         {
@@ -1500,26 +1495,6 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                        seam, owner!, neighbor,
                        _world.Dimension.HasCeiling ? null : OverworldCaveCullCeilingY);
         }
-    }
-
-    private int CountSpatialPages(
-        TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation> frame,
-        bool translucent)
-    {
-        var count = frame.Draws
-            .Where(draw => _authoritativeSpatialTiles.Contains(draw.Selection.Tile))
-            .Sum(draw => draw.Presentation.Pages.Count(page => translucent
-                ? page.Translucent is not null
-                : page.Solid is not null));
-        foreach (var seam in _desiredSpatialSeams)
-        {
-            if (!SpatialSeamTouchesAuthority(seam) ||
-                !_spatialSeams.TryGetValue(seam, out var presentation)) continue;
-            count += presentation.Pages.Count(page => translucent
-                ? page.Translucent is not null
-                : page.Solid is not null);
-        }
-        return count;
     }
 
     private void CollectVisibleSpatialPages(
