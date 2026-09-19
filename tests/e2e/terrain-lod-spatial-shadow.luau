@@ -1,4 +1,7 @@
-OMNI.config.viewDistance = 0
+-- Build enough aligned source coverage to produce a real level-3 parent. We lower the exact
+-- distance again before travel so the retained spatial hierarchy, rather than near chunks, owns
+-- the old area.
+OMNI.config.viewDistance = 1.0
 OMNI.config.terrainHorizonDistance = 1
 OMNI.config.pauseOnFocusLoss = false
 OMNI.config.captureMouse = false
@@ -11,6 +14,7 @@ end, 75, 0.05)
 assert(type(OMNI.client.state.terrainLodSpatialComplete) == "number")
 assert(type(OMNI.client.state.terrainLodSpatialSelected) == "number")
 assert(type(OMNI.client.state.terrainLodSpatialGpuResident) == "number")
+assert(type(OMNI.client.state.terrainLodSpatialHighestGpuLevel) == "number")
 assert(type(OMNI.client.state.terrainLodSpatialCpuTiles) == "number")
 assert(type(OMNI.client.state.terrainLodSpatialMissingGroups) == "number")
 assert(type(OMNI.client.state.terrainLodSpatialMeshPending) == "number")
@@ -21,11 +25,13 @@ assert(type(OMNI.client.state.terrainLodSpatialSeamDesired) == "number")
 assert(type(OMNI.client.state.terrainLodSpatialSeamGpuResident) == "number")
 assert(type(OMNI.client.state.terrainLodSpatialSubmissionReady) == "number")
 assert(type(OMNI.client.state.terrainLodSpatialAuthoritativeTiles) == "number")
+assert(type(OMNI.client.state.terrainLodSpatialHighestAuthoritativeLevel) == "number")
 
 local stagingReady = false
 for _ = 1, 600 do
     stagingReady = OMNI.client.state.terrainLodSpatialCpuTiles > 0 and
         OMNI.client.state.terrainLodSpatialGpuResident > 0 and
+        OMNI.client.state.terrainLodSpatialHighestGpuLevel >= 3 and
         OMNI.client.state.terrainLodSpatialComplete == 1 and
         OMNI.client.state.terrainLodSpatialSelected > 0 and
         OMNI.client.state.terrainLodSpatialSeamDesired > 0 and
@@ -38,6 +44,7 @@ assert(stagingReady,
     "spatial presentation staging did not become ready: cpu=" ..
     tostring(OMNI.client.state.terrainLodSpatialCpuTiles) ..
     " gpu=" .. tostring(OMNI.client.state.terrainLodSpatialGpuResident) ..
+    " highestGpuLevel=" .. tostring(OMNI.client.state.terrainLodSpatialHighestGpuLevel) ..
     " complete=" .. tostring(OMNI.client.state.terrainLodSpatialComplete) ..
     " selected=" .. tostring(OMNI.client.state.terrainLodSpatialSelected) ..
     " seamDesired=" .. tostring(OMNI.client.state.terrainLodSpatialSeamDesired) ..
@@ -50,24 +57,53 @@ assert(stagingReady,
 -- allowing a coarse tile to overlap the near renderer.
 local px = OMNI.client.state.playerX
 local pz = OMNI.client.state.playerZ
+OMNI.config.viewDistance = 0
 OMNI.test.creative()
 OMNI.test.setFlying(true)
-OMNI.test.teleport(px, 192, pz + 320)
-OMNI.test.setLook(180, 25)
+OMNI.test.teleport(px, 192, pz + 640)
+OMNI.test.setLook(0, 25)
 OMNI.waitUntil(function()
-    return OMNI.client.state.playerY > 180 and OMNI.client.state.playerZ > pz + 300
+    return OMNI.client.state.playerY > 180 and OMNI.client.state.playerZ > pz + 620
 end, 10, 0.05)
 
-local liveReady = false
+local hierarchyReady = false
 for _ = 1, 600 do
-    liveReady = OMNI.client.state.terrainLodSpatialSubmissionReady == 1 and
+    hierarchyReady = OMNI.client.state.terrainLodSpatialSubmissionReady == 1 and
         OMNI.client.state.terrainLodSpatialAuthoritativeTiles > 0 and
-        OMNI.client.state.terrainLodSpatialSolidPages > 0
-    if liveReady then break end
+        OMNI.client.state.terrainLodSpatialHighestAuthoritativeLevel >= 3
+    if hierarchyReady then break end
     OMNI.wait(0.05)
 end
-assert(liveReady,
-    "spatial roots did not become authoritative after moving away: submission=" ..
+assert(hierarchyReady,
+    "spatial roots did not promote after moving away: submission=" ..
+    tostring(OMNI.client.state.terrainLodSpatialSubmissionReady) ..
+    " authoritative=" .. tostring(OMNI.client.state.terrainLodSpatialAuthoritativeTiles) ..
+    " highestLevel=" .. tostring(OMNI.client.state.terrainLodSpatialHighestAuthoritativeLevel))
+local promotedLevel = OMNI.client.state.terrainLodSpatialHighestAuthoritativeLevel
+
+-- Authority is independent of the camera frustum. Return to the nearer observation point and
+-- prove that a spatial page is actually selected and submitted by the terrain pass.
+OMNI.test.teleport(px, 192, pz + 320)
+OMNI.waitUntil(function()
+    return OMNI.client.state.playerY > 180 and
+        OMNI.client.state.playerZ > pz + 300 and
+        OMNI.client.state.playerZ < pz + 340
+end, 10, 0.05)
+
+local drawReady = false
+for _, yaw in ipairs({0, 90, 180, 270}) do
+    OMNI.test.setLook(yaw, 20)
+    for _ = 1, 60 do
+        drawReady = OMNI.client.state.terrainLodSpatialSubmissionReady == 1 and
+            OMNI.client.state.terrainLodSpatialAuthoritativeTiles > 0 and
+            OMNI.client.state.terrainLodSpatialSolidPages > 0
+        if drawReady then break end
+        OMNI.wait(0.05)
+    end
+    if drawReady then break end
+end
+assert(drawReady,
+    "spatial roots did not submit visible pages: submission=" ..
     tostring(OMNI.client.state.terrainLodSpatialSubmissionReady) ..
     " authoritative=" .. tostring(OMNI.client.state.terrainLodSpatialAuthoritativeTiles) ..
     " solidPages=" .. tostring(OMNI.client.state.terrainLodSpatialSolidPages) ..
@@ -81,6 +117,8 @@ print("spatial LOD live: cpu=" ..
     " selected=" .. tostring(OMNI.client.state.terrainLodSpatialSelected) ..
     " seams=" .. tostring(OMNI.client.state.terrainLodSpatialSeamGpuResident) ..
     " live=" .. tostring(OMNI.client.state.terrainLodSpatialAuthoritativeTiles) ..
+    " promotedLevel=" .. tostring(promotedLevel) ..
+    " currentLevel=" .. tostring(OMNI.client.state.terrainLodSpatialHighestAuthoritativeLevel) ..
     " fallbacks=" .. tostring(OMNI.client.state.terrainLodSpatialParentFallbacks) ..
     " missing=" .. tostring(OMNI.client.state.terrainLodSpatialMissingGroups))
 OMNI.test.pass()

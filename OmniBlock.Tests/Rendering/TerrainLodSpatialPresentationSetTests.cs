@@ -135,6 +135,65 @@ public sealed class TerrainLodSpatialPresentationSetTests
     }
 
     [Fact]
+    public void Partial_management_root_grows_without_fading_uncovered_space()
+    {
+        var managementRoot = new TerrainLodTileKey(2, 0, 0);
+        var first = managementRoot.Child(0);
+        var second = managementRoot.Child(1);
+        using var presentations = new TerrainLodSpatialPresentationSet<FakePresentation>();
+        Install(presentations, first);
+        Install(presentations, second);
+
+        var initial = presentations.UpdatePartition(
+            managementRoot,
+            [Selection(first)],
+            completeRootCoverage: false,
+            deltaTime: 0,
+            fadeEnabled: true);
+        var grown = presentations.UpdatePartition(
+            managementRoot,
+            [Selection(first), Selection(second)],
+            completeRootCoverage: false,
+            deltaTime: TerrainLodSpatialPresentationSet<FakePresentation>
+                .TransitionDurationSeconds / 2,
+            fadeEnabled: true);
+
+        Assert.False(initial.Transitioning);
+        Assert.False(grown.Transitioning);
+        Assert.Equal([first, second], grown.Draws.Select(static draw => draw.Selection.Tile));
+        Assert.All(grown.Draws, static draw => Assert.Equal(0u, draw.Fade.Mode));
+    }
+
+    [Fact]
+    public void Complete_forest_partition_promotes_to_parent_as_one_group()
+    {
+        var root = new TerrainLodTileKey(1, 0, 0);
+        using var presentations = new TerrainLodSpatialPresentationSet<FakePresentation>();
+        var children = Enumerable.Range(0, 4).Select(root.Child).ToArray();
+        foreach (var child in children) Install(presentations, child);
+        Install(presentations, root);
+        presentations.UpdatePartition(
+            root,
+            children.Select(Selection).ToArray(),
+            completeRootCoverage: true,
+            deltaTime: 0,
+            fadeEnabled: true);
+
+        var transition = presentations.UpdatePartition(
+            root,
+            [Selection(root)],
+            completeRootCoverage: true,
+            deltaTime: TerrainLodSpatialPresentationSet<FakePresentation>
+                .TransitionDurationSeconds / 2,
+            fadeEnabled: true);
+
+        Assert.True(transition.Transitioning);
+        Assert.Equal(5, transition.Draws.Count);
+        Assert.Equal(4, transition.Draws.Count(static draw => draw.Fade.Mode == 2));
+        Assert.Single(transition.Draws, static draw => draw.Fade.Mode == 1);
+    }
+
+    [Fact]
     public void Tile_intersecting_near_guard_band_cannot_be_authoritative()
     {
         var tile = new TerrainLodTileKey(2, 1, 0); // chunks 4..7
@@ -160,6 +219,9 @@ public sealed class TerrainLodSpatialPresentationSetTests
             key, key.ToString(), () => new FakePresentation(key.ToString()), out var failure));
         Assert.Null(failure);
     }
+
+    private static TerrainLodTileSelection Selection(TerrainLodTileKey key) =>
+        new(key, 0, 16);
 
     private sealed class FakePresentation(string name) : IDisposable
     {

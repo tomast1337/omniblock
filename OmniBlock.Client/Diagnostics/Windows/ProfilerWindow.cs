@@ -340,11 +340,11 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"CPU tiles: {spatial.Hierarchy.Tiles:N0} total  {spatial.Hierarchy.CurrentTiles:N0} current  {spatial.Hierarchy.FallbackTiles:N0} fallback");
         ImGuiTextSafe.Text(
-            $"GPU stage: {spatial.GpuPresentations:N0} resident  {spatial.PendingMeshCandidates:N0} pending  {spatial.MeshCompilation.Queued:N0} queued  {spatial.MeshCompilation.Running:N0} running  {spatial.MeshCompilation.Ready:N0} ready");
+            $"GPU stage: {spatial.GpuPresentations:N0} resident through L{spatial.HighestGpuResidentLevel}  {spatial.PendingMeshCandidates:N0} pending  {spatial.MeshCompilation.Queued:N0} queued  {spatial.MeshCompilation.Running:N0} running  {spatial.MeshCompilation.Ready:N0} ready");
         ImGuiTextSafe.Text(
             $"Seams:     {spatial.DesiredSeams:N0} desired  {spatial.GpuSeams:N0} GPU  {spatial.SeamCompilation.Queued:N0} queued  {spatial.SeamCompilation.Running:N0} running  {spatial.SeamCompilation.Ready:N0} ready");
         ImGuiTextSafe.Text(
-            $"Live:      ready {spatial.SubmissionReady}  {spatial.AuthoritativeTiles:N0} authoritative tiles  pages {spatial.SubmittedSolidPages:N0} solid / {spatial.SubmittedTranslucentPages:N0} translucent");
+            $"Live:      ready {spatial.SubmissionReady}  {spatial.AuthoritativeTiles:N0} authoritative tiles  highest L{spatial.HighestAuthoritativeLevel}  pages {spatial.SubmittedSolidPages:N0} solid / {spatial.SubmittedTranslucentPages:N0} translucent");
     }
 
     private static void DrawChunkLifecycle(ChunkRenderer chunkRenderer)

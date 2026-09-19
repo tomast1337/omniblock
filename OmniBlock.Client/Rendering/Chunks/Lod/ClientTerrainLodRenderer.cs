@@ -76,11 +76,13 @@ internal readonly record struct TerrainLodSpatialSnapshot(
     int ParentFallbacks,
     int MissingCoverageGroups,
     int GpuPresentations,
+    int HighestGpuResidentLevel,
     int PendingMeshCandidates,
     int DesiredSeams,
     int GpuSeams,
     bool SubmissionReady,
     int AuthoritativeTiles,
+    int HighestAuthoritativeLevel,
     int SubmittedSolidPages,
     int SubmittedTranslucentPages,
     TerrainLodSpatialHierarchyCoordinatorSnapshot Hierarchy,
@@ -206,7 +208,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         if (cache is not null) _cacheWriter = new TerrainLodAsyncCacheWriter(cache);
         _meshCompilation = new TerrainLodMeshCompilationService(ConversionCapacity);
         _spatialPolicy = new TerrainLodSpatialPolicy(
-            distanceUnitChunks: 8,
+            // The live horizon is capped at 64 chunks. A unit of eight made level 3 reachable
+            // only at that outer boundary and level 4 unreachable, leaving the hierarchy stuck
+            // on 4x4-chunk tiles. Four yields level 2 from 16 chunks, level 3 from 32, and level 4
+            // at the outer band while the exact/legacy paths retain higher detail nearby.
+            distanceUnitChunks: 4,
             distanceGrowth: 2,
             horizontalSampleLevelBySpatialLevel: [0, 0, 1, 1, 2],
             verticalSliceBudgetBySpatialLevel: [32, 24, 16, 12, 8]);
@@ -343,7 +349,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             parameters.RenderDistance, nearRenderer);
         uploads += InstallSpatialCompleted(nearRenderer);
         uploads += InstallSpatialSeams(nearRenderer);
-        EvaluateSpatialShadow(parameters);
+        EvaluateSpatialPresentation(parameters);
         EvictDistant(parameters.ViewPos);
         Profiler.Record("InstallAndEvictCpu", Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
 
@@ -1060,7 +1066,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         return installed;
     }
 
-    private void EvaluateSpatialShadow(in ChunkRenderParams parameters)
+    private void EvaluateSpatialPresentation(in ChunkRenderParams parameters)
     {
         var cameraChunkX = parameters.ViewPos.X / SubChunkRenderer.Size;
         var cameraChunkZ = parameters.ViewPos.Z / SubChunkRenderer.Size;
@@ -1071,9 +1077,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         var selection = TerrainLodSpatialSelector.Select(
             root, cameraChunkX, cameraChunkZ,
             _spatialPolicy, _spatialPresentations.IsReady);
-        // Until a stable root forest exists, report the coarsest complete diagnostic root around
-        // the camera. A partially loaded level-4 management root must not hide the fact that a
-        // real level-2 or level-3 GPU partition is already complete and transition-safe.
+        // Keep the single-root counters for compact diagnostics. A partially loaded level-4
+        // management root must not hide the fact that a real level-2 or level-3 GPU partition is
+        // already complete and transition-safe.
         for (var level = _spatialPolicy.MaximumSpatialLevel - 1;
              !selection.CompleteCoverage && level >= MinimumSpatialGpuLevel;
              level--)
@@ -1086,9 +1092,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             root = candidateRoot;
             selection = candidate;
         }
-        // Exercise the exact group-transition state that Phase 6E will submit. Its output remains
-        // diagnostics-only until a stable root forest, adjacent-tier seams, and draw integration
-        // are all enabled together.
+        // The forest is the live spatial partition. Bodies become authoritative only after
+        // UpdateSpatialSeams verifies that every boundary of this exact partition is GPU-ready.
         var frame = BuildSpatialForestFrame(
             cameraChunkX, cameraChunkZ,
             parameters.TerrainHorizonDistance,
@@ -1102,11 +1107,17 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             selection.ParentFallbacks,
             selection.MissingCoverageGroups,
             _spatialPresentations.Count,
+            _spatialPresentations.ReadyKeys.Any()
+                ? _spatialPresentations.ReadyKeys.Max(static tile => tile.Level)
+                : -1,
             _spatialMeshPending.Count,
             _desiredSpatialSeams.Count,
             _spatialSeams.Count,
             _spatialSubmissionReady,
             _authoritativeSpatialTiles.Count,
+            _authoritativeSpatialTiles.Count == 0
+                ? -1
+                : _authoritativeSpatialTiles.Max(static tile => tile.Level),
             _visibleSpatialSolid.Count,
             _visibleSpatialTranslucent.Count,
             _spatialHierarchy.Snapshot(),
@@ -1125,22 +1136,33 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         var transitioning = false;
         var maximumDistance = Math.Max(1, horizonDistance) +
                               (1 << MinimumSpatialGpuLevel);
-        foreach (var root in _spatialPresentations.ReadyKeys
-                     .Where(static key => key.Level == MinimumSpatialGpuLevel)
-                     .Where(key => key.DistanceTo(cameraChunkX, cameraChunkZ) <= maximumDistance)
-                     .OrderBy(key => key.DistanceTo(cameraChunkX, cameraChunkZ))
-                     .ThenBy(static key => key.X)
-                     .ThenBy(static key => key.Z))
+        var forest = TerrainLodSpatialForestSelector.Select(
+            _spatialPresentations.ReadyKeys,
+            MinimumSpatialGpuLevel,
+            cameraChunkX,
+            cameraChunkZ,
+            maximumDistance,
+            _spatialPolicy,
+            _spatialPresentations.IsReady);
+        HashSet<TerrainLodTileKey> activeRoots = [];
+        foreach (var root in forest.Roots)
         {
-            // Level-2 roots are non-overlapping and independently complete. Fades stay disabled
-            // until the forest can promote/demote whole root groups atomically across levels.
-            var rootFrame = _spatialPresentations.Update(
-                root, cameraChunkX, cameraChunkZ, _spatialPolicy,
-                deltaTime, fadeEnabled: false);
-            if (!rootFrame.CompleteCoverage) continue;
+            activeRoots.Add(root.ManagementRoot);
+            // The forest can change spatial level only as a complete parent/child partition. Live
+            // fades remain disabled until seam planning can include stable neighboring roots in
+            // both transition partitions; the body-plus-seam readiness gate still makes this an
+            // atomic replacement with legacy column LOD as the temporary fallback.
+            var rootFrame = _spatialPresentations.UpdatePartition(
+                root.ManagementRoot,
+                root.Nodes,
+                root.CompleteCoverage,
+                deltaTime,
+                fadeEnabled: false);
+            if (rootFrame.Draws.Count == 0) continue;
             draws.AddRange(rootFrame.Draws);
             transitioning |= rootFrame.Transitioning;
         }
+        _spatialPresentations.RetainTransitionRoots(activeRoots);
         return new TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation>(
             [.. draws], completeCoverage: draws.Count != 0, transitioning);
     }

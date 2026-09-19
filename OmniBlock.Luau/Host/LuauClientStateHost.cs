@@ -117,6 +117,7 @@ public static unsafe class LuauClientStateHost
                                                 key == "terrainLodSpatialParentFallbacks" or
                                                 key == "terrainLodSpatialMissingGroups" or
                                                 key == "terrainLodSpatialGpuResident" or
+                                                key == "terrainLodSpatialHighestGpuLevel" or
                                                 key == "terrainLodSpatialCpuTiles" or
                                                 key == "terrainLodSpatialCurrentTiles" or
                                                 key == "terrainLodSpatialMeshPending" or
@@ -130,6 +131,7 @@ public static unsafe class LuauClientStateHost
                                                 key == "terrainLodSpatialSeamReady" or
                                                 key == "terrainLodSpatialSubmissionReady" or
                                                 key == "terrainLodSpatialAuthoritativeTiles" or
+                                                key == "terrainLodSpatialHighestAuthoritativeLevel" or
                                                 key == "terrainLodSpatialSolidPages" or
                                                 key == "terrainLodSpatialTranslucentPages" or
                                                 key == "clientWorkingSetBytes" or

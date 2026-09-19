@@ -118,11 +118,57 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
                 retained, retained.Length != 0, transitioning: false);
         }
 
-        var requested = desired.Nodes.ToArray();
+        return UpdatePartition(
+            root, desired.Nodes, completeRootCoverage: true,
+            deltaTime, fadeEnabled);
+    }
+
+    /// <summary>
+    ///     Publishes a forest partition within one stable management root. Partial management
+    ///     roots grow without fading because old and new partitions do not cover the same area.
+    ///     Once both partitions cover the complete root, parent/child promotion uses the shared
+    ///     group transition instead of independently replacing quadrants.
+    /// </summary>
+    public TerrainLodSpatialPresentationFrame<TPresentation> UpdatePartition(
+        TerrainLodTileKey root,
+        IReadOnlyList<TerrainLodTileSelection> desired,
+        bool completeRootCoverage,
+        float deltaTime,
+        bool fadeEnabled)
+    {
+        AssertOwnerThread();
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(desired);
+        if (!_transitions.TryGetValue(root, out var state))
+        {
+            state = new TransitionState();
+            _transitions.Add(root, state);
+        }
+
+        var requested = desired.ToArray();
+        if (requested.Any(selection => !_entries.ContainsKey(selection.Tile)))
+            throw new InvalidOperationException(
+                $"Spatial terrain forest for {root} selected a presentation that is not resident.");
+
         if (state.Current.Length == 0)
         {
             state.Current = requested;
-            return StableFrame(root, state, desired.CompleteCoverage);
+            state.CurrentCompleteRootCoverage = completeRootCoverage;
+            return StableFrame(root, state, requested.Length != 0);
+        }
+
+        // A partial management domain can gain or lose independently covered descendants. There
+        // is no complementary old geometry for newly covered space, so cross-fading would create
+        // deliberate holes. Publish that set directly; the caller still gates authority on the
+        // complete replacement seam set.
+        if (!completeRootCoverage || !state.CurrentCompleteRootCoverage)
+        {
+            state.Current = requested;
+            state.CurrentCompleteRootCoverage = completeRootCoverage;
+            state.From = [];
+            state.To = [];
+            state.Progress = 1;
+            return StableFrame(root, state, requested.Length != 0);
         }
 
         if (!SamePartition(requested, state.To.Length != 0 ? state.To : state.Current))
@@ -132,6 +178,7 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
             if (SamePartition(requested, source))
             {
                 state.Current = source;
+                state.CurrentCompleteRootCoverage = completeRootCoverage;
                 state.From = [];
                 state.To = [];
                 state.Progress = 1;
@@ -150,6 +197,7 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
         if (state.Progress >= 1)
         {
             state.Current = state.To;
+            state.CurrentCompleteRootCoverage = completeRootCoverage;
             state.From = [];
             state.To = [];
             return StableFrame(root, state, completeCoverage: true);
@@ -162,6 +210,15 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
             state.To, new TerrainLodSpatialPresentationFade(state.Progress, 1, seed));
         return new TerrainLodSpatialPresentationFrame<TPresentation>(
             [.. outgoing, .. incoming], completeCoverage: true, transitioning: true);
+    }
+
+    public void RetainTransitionRoots(IReadOnlySet<TerrainLodTileKey> activeRoots)
+    {
+        AssertOwnerThread();
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(activeRoots);
+        foreach (var root in _transitions.Keys.Where(root => !activeRoots.Contains(root)).ToArray())
+            _transitions.Remove(root);
     }
 
     public void Dispose()
@@ -222,6 +279,7 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
         public TerrainLodTileSelection[] From = [];
         public TerrainLodTileSelection[] To = [];
         public float Progress = 1;
+        public bool CurrentCompleteRootCoverage;
     }
 }
 

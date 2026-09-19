@@ -295,3 +295,127 @@ public static class TerrainLodSpatialSelector
         }
     }
 }
+
+public sealed class TerrainLodSpatialForestRootSelection
+{
+    internal TerrainLodSpatialForestRootSelection(
+        TerrainLodTileKey managementRoot,
+        TerrainLodTileSelection[] nodes,
+        bool completeCoverage,
+        int parentFallbacks,
+        int missingCoverageGroups)
+    {
+        ManagementRoot = managementRoot;
+        Nodes = Array.AsReadOnly(nodes);
+        CompleteCoverage = completeCoverage;
+        ParentFallbacks = parentFallbacks;
+        MissingCoverageGroups = missingCoverageGroups;
+    }
+
+    public TerrainLodTileKey ManagementRoot { get; }
+    public ReadOnlyCollection<TerrainLodTileSelection> Nodes { get; }
+    public bool CompleteCoverage { get; }
+    public int ParentFallbacks { get; }
+    public int MissingCoverageGroups { get; }
+}
+
+public sealed class TerrainLodSpatialForestSelection
+{
+    internal TerrainLodSpatialForestSelection(
+        TerrainLodSpatialForestRootSelection[] roots)
+    {
+        Roots = Array.AsReadOnly(roots);
+    }
+
+    public ReadOnlyCollection<TerrainLodSpatialForestRootSelection> Roots { get; }
+    public int SelectedNodes => Roots.Sum(static root => root.Nodes.Count);
+}
+
+/// <summary>
+///     Builds a deterministic forest over every GPU-ready spatial presentation near the camera.
+///     Maximum-level roots are management domains only: an incomplete domain recursively exposes
+///     its independently covered descendants instead of turning the missing domain into a hole.
+///     Once a domain becomes complete, the ordinary all-children-or-parent selector can promote
+///     or demote its whole partition atomically.
+/// </summary>
+public static class TerrainLodSpatialForestSelector
+{
+    public static TerrainLodSpatialForestSelection Select(
+        IEnumerable<TerrainLodTileKey> readyKeys,
+        int minimumVisibleLevel,
+        double cameraChunkX,
+        double cameraChunkZ,
+        double maximumDistanceChunks,
+        TerrainLodSpatialPolicy policy,
+        Func<TerrainLodTileKey, bool> isGpuReady)
+    {
+        ArgumentNullException.ThrowIfNull(readyKeys);
+        ArgumentNullException.ThrowIfNull(policy);
+        ArgumentNullException.ThrowIfNull(isGpuReady);
+        if (minimumVisibleLevel is < 0 or > TerrainLodTileKey.MaximumLevel)
+            throw new ArgumentOutOfRangeException(nameof(minimumVisibleLevel));
+        if (minimumVisibleLevel > policy.MaximumSpatialLevel)
+            throw new ArgumentOutOfRangeException(nameof(minimumVisibleLevel));
+        if (!double.IsFinite(maximumDistanceChunks) || maximumDistanceChunks < 0)
+            throw new ArgumentOutOfRangeException(nameof(maximumDistanceChunks));
+
+        var managementRoots = readyKeys
+            .Where(key => key.Level >= minimumVisibleLevel &&
+                          key.Level <= policy.MaximumSpatialLevel)
+            .Where(key => key.DistanceTo(cameraChunkX, cameraChunkZ) <=
+                          maximumDistanceChunks)
+            .Select(key => AncestorAt(key, policy.MaximumSpatialLevel))
+            .Distinct()
+            .OrderBy(key => key.DistanceTo(cameraChunkX, cameraChunkZ))
+            .ThenBy(static key => key.X)
+            .ThenBy(static key => key.Z)
+            .ToArray();
+
+        List<TerrainLodSpatialForestRootSelection> roots = [];
+        foreach (var managementRoot in managementRoots)
+        {
+            List<TerrainLodTileSelection> nodes = [];
+            var parentFallbacks = 0;
+            var missingCoverageGroups = 0;
+            var complete = Cover(managementRoot, nodes,
+                ref parentFallbacks, ref missingCoverageGroups);
+            if (nodes.Count == 0) continue;
+            roots.Add(new TerrainLodSpatialForestRootSelection(
+                managementRoot, [.. nodes], complete,
+                parentFallbacks, missingCoverageGroups));
+        }
+
+        return new TerrainLodSpatialForestSelection([.. roots]);
+
+        bool Cover(
+            TerrainLodTileKey root,
+            List<TerrainLodTileSelection> destination,
+            ref int parentFallbacks,
+            ref int missingCoverageGroups)
+        {
+            var selection = TerrainLodSpatialSelector.Select(
+                root, cameraChunkX, cameraChunkZ, policy, isGpuReady);
+            parentFallbacks += selection.ParentFallbacks;
+            missingCoverageGroups += selection.MissingCoverageGroups;
+            if (selection.CompleteCoverage)
+            {
+                destination.AddRange(selection.Nodes);
+                return true;
+            }
+
+            if (root.Level == minimumVisibleLevel) return false;
+            var allChildrenComplete = true;
+            for (var index = 0; index < 4; index++)
+                allChildrenComplete &= Cover(
+                    root.Child(index), destination,
+                    ref parentFallbacks, ref missingCoverageGroups);
+            return allChildrenComplete;
+        }
+    }
+
+    private static TerrainLodTileKey AncestorAt(TerrainLodTileKey key, int level)
+    {
+        while (key.Level < level) key = key.Parent();
+        return key;
+    }
+}

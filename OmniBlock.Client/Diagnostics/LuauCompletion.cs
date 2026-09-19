@@ -35,6 +35,7 @@ internal sealed partial class LuauCompletion
 
     private static readonly string[] s_spatialLiveStateMembers =
         ["terrainLodSpatialSubmissionReady", "terrainLodSpatialAuthoritativeTiles",
+            "terrainLodSpatialHighestAuthoritativeLevel", "terrainLodSpatialHighestGpuLevel",
             "terrainLodSpatialSolidPages", "terrainLodSpatialTranslucentPages"];
 
     private static readonly string[] s_testMembers = ["breakBlock", "countEntities", "creative", "dumpProfiler", "dumpTerrain", "entityBaselineEnvironment", "fail", "flyPath", "isMeshCurrent", "meshDeadlineMissCount", "pass", "screenshot", "setBlock", "setFlying", "setLook", "setMovement", "summon", "teleport"];

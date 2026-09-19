@@ -605,6 +605,7 @@ public partial class OmniBlock :
                     "terrainLodSpatialParentFallbacks" => spatial.ParentFallbacks,
                     "terrainLodSpatialMissingGroups" => spatial.MissingCoverageGroups,
                     "terrainLodSpatialGpuResident" => spatial.GpuPresentations,
+                    "terrainLodSpatialHighestGpuLevel" => spatial.HighestGpuResidentLevel,
                     "terrainLodSpatialCpuTiles" => spatial.Hierarchy.Tiles,
                     "terrainLodSpatialCurrentTiles" => spatial.Hierarchy.CurrentTiles,
                     "terrainLodSpatialMeshPending" => spatial.PendingMeshCandidates,
@@ -618,6 +619,8 @@ public partial class OmniBlock :
                     "terrainLodSpatialSeamReady" => spatial.SeamCompilation.Ready,
                     "terrainLodSpatialSubmissionReady" => spatial.SubmissionReady ? 1 : 0,
                     "terrainLodSpatialAuthoritativeTiles" => spatial.AuthoritativeTiles,
+                    "terrainLodSpatialHighestAuthoritativeLevel" =>
+                        spatial.HighestAuthoritativeLevel,
                     "terrainLodSpatialSolidPages" => spatial.SubmittedSolidPages,
                     "terrainLodSpatialTranslucentPages" => spatial.SubmittedTranslucentPages,
                     "clientWorkingSetBytes" => Environment.WorkingSet,
