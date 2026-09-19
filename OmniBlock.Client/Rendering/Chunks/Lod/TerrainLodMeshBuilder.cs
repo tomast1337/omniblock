@@ -210,7 +210,8 @@ internal static class TerrainLodMeshBuilder
         IBlockRuntimeView blocks,
         bool hasSkyLight,
         ILightProvider? lighting = null,
-        IBlockReader? visuals = null)
+        IBlockReader? visuals = null,
+        int? caveCullBelowY = null)
     {
         ArgumentNullException.ThrowIfNull(hierarchy);
         ArgumentNullException.ThrowIfNull(blocks);
@@ -218,9 +219,11 @@ internal static class TerrainLodMeshBuilder
             throw new ArgumentOutOfRangeException(nameof(levelIndex));
 
         var solid = BuildLayer(
-            hierarchy, levelIndex, blocks, hasSkyLight, lighting, visuals, false);
+            hierarchy, levelIndex, blocks, hasSkyLight, lighting, visuals,
+            caveCullBelowY, false);
         var translucent = BuildLayer(
-            hierarchy, levelIndex, blocks, hasSkyLight, lighting, visuals, true);
+            hierarchy, levelIndex, blocks, hasSkyLight, lighting, visuals,
+            caveCullBelowY, true);
         return new TerrainLodMeshData(
             levelIndex,
             solid.Vertices,
@@ -236,6 +239,7 @@ internal static class TerrainLodMeshBuilder
         bool hasSkyLight,
         ILightProvider? lighting,
         IBlockReader? visuals,
+        int? caveCullBelowY,
         bool translucent)
     {
 
@@ -307,34 +311,45 @@ internal static class TerrainLodMeshBuilder
             var tileY = renderMaxY - minY;
             var tileZ = maxZ - minZ;
 
-            if ((cell.ExposedFaces & TerrainLodFaceMask.Down) != 0)
+            if ((cell.ExposedFaces & TerrainLodFaceMask.Down) != 0 &&
+                !CullUndergroundFace(Side.Down))
                 AddFace(Side.Down, 0.5f, tileX, tileZ,
                     (minX, minY, maxZ), (minX, minY, minZ),
                     (maxX, minY, minZ), (maxX, minY, maxZ));
-            if ((cell.ExposedFaces & TerrainLodFaceMask.Up) != 0)
+            if ((cell.ExposedFaces & TerrainLodFaceMask.Up) != 0 &&
+                !CullUndergroundFace(Side.Up))
                 AddFace(Side.Up, 1.0f, tileX, tileZ,
                     (maxX, renderMaxY, maxZ), (maxX, renderMaxY, minZ),
                     (minX, renderMaxY, minZ), (minX, renderMaxY, maxZ));
             if ((cell.ExposedFaces & TerrainLodFaceMask.West) != 0 &&
-                x > 0)
+                x > 0 && !CullUndergroundFace(Side.West))
                 AddFace(Side.West, 0.6f, tileZ, tileY,
                     (minX, renderMaxY, minZ), (minX, minY, minZ),
                     (minX, minY, maxZ), (minX, renderMaxY, maxZ));
             if ((cell.ExposedFaces & TerrainLodFaceMask.East) != 0 &&
-                x < level.Width - 1)
+                x < level.Width - 1 && !CullUndergroundFace(Side.East))
                 AddFace(Side.East, 0.6f, tileZ, tileY,
                     (maxX, renderMaxY, maxZ), (maxX, minY, maxZ),
                     (maxX, minY, minZ), (maxX, renderMaxY, minZ));
             if ((cell.ExposedFaces & TerrainLodFaceMask.North) != 0 &&
-                z > 0)
+                z > 0 && !CullUndergroundFace(Side.North))
                 AddFace(Side.North, 0.8f, tileX, tileY,
                     (maxX, renderMaxY, minZ), (maxX, minY, minZ),
                     (minX, minY, minZ), (minX, renderMaxY, minZ));
             if ((cell.ExposedFaces & TerrainLodFaceMask.South) != 0 &&
-                z < level.Depth - 1)
+                z < level.Depth - 1 && !CullUndergroundFace(Side.South))
                 AddFace(Side.South, 0.8f, tileX, tileY,
                     (minX, renderMaxY, maxZ), (minX, minY, maxZ),
                     (maxX, minY, maxZ), (maxX, renderMaxY, maxZ));
+
+            bool CullUndergroundFace(Side side)
+            {
+                if (caveCullBelowY is not { } ceilingY || !hasSkyLight || lighting is null)
+                    return false;
+                var worldTop = maxY + VerticalOrigin;
+                if (worldTop > ceilingY) return false;
+                return SampleFaceLight(side, minimumBlockLight: 0).Sky == 0;
+            }
 
             void AddFace(
                 Side side,

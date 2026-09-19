@@ -5,11 +5,20 @@ OMNI.config.viewDistance = 1.0
 OMNI.config.terrainHorizonDistance = 1
 OMNI.config.pauseOnFocusLoss = false
 OMNI.config.captureMouse = false
+OMNI.config.cloudsQuality = 1
 
 assert(OMNI.client.worlds.load("e2e-smoke"), "could not launch fixture world")
 OMNI.waitUntil(function()
     return OMNI.client.state.worldLoaded and OMNI.client.state.playerReady
 end, 75, 0.05)
+
+-- Parent construction can take tens of seconds on software rendering. Enter creative before that
+-- wait so the fixture player cannot be killed, then pin the client flight state for both later
+-- teleports. The short wait lets the integrated server apply the game-mode command first.
+OMNI.test.creative()
+OMNI.wait(0.5)
+OMNI.test.setFlying(true)
+OMNI.test.setMovement(0, 0, 0)
 
 assert(type(OMNI.client.state.terrainLodSpatialComplete) == "number")
 assert(type(OMNI.client.state.terrainLodSpatialSelected) == "number")
@@ -49,6 +58,9 @@ assert(stagingReady,
     " selected=" .. tostring(OMNI.client.state.terrainLodSpatialSelected) ..
     " seamDesired=" .. tostring(OMNI.client.state.terrainLodSpatialSeamDesired) ..
     " seamGpu=" .. tostring(OMNI.client.state.terrainLodSpatialSeamGpuResident) ..
+    " seamQueued=" .. tostring(OMNI.client.state.terrainLodSpatialSeamQueued) ..
+    " seamRunning=" .. tostring(OMNI.client.state.terrainLodSpatialSeamRunning) ..
+    " seamReady=" .. tostring(OMNI.client.state.terrainLodSpatialSeamReady) ..
     " submission=" .. tostring(OMNI.client.state.terrainLodSpatialSubmissionReady) ..
     " authoritative=" .. tostring(OMNI.client.state.terrainLodSpatialAuthoritativeTiles))
 
@@ -57,9 +69,10 @@ assert(stagingReady,
 -- allowing a coarse tile to overlap the near renderer.
 local px = OMNI.client.state.playerX
 local pz = OMNI.client.state.playerZ
-OMNI.config.viewDistance = 0
-OMNI.test.creative()
-OMNI.test.setFlying(true)
+-- The option is normalized: 4 / 28 resolves to an eight-chunk exact radius. This comfortably
+-- satisfies the destination preload while the retained roots remain forty chunks away at the
+-- promotion point and twenty chunks away at the observation point.
+OMNI.config.viewDistance = 4 / 28
 OMNI.test.teleport(px, 192, pz + 640)
 OMNI.test.setLook(0, 25)
 OMNI.waitUntil(function()
@@ -108,6 +121,11 @@ assert(drawReady,
     " authoritative=" .. tostring(OMNI.client.state.terrainLodSpatialAuthoritativeTiles) ..
     " solidPages=" .. tostring(OMNI.client.state.terrainLodSpatialSolidPages) ..
     " translucentPages=" .. tostring(OMNI.client.state.terrainLodSpatialTranslucentPages))
+-- The retained hierarchy is north of this observation point. Capture it without the cloud layer
+-- obscuring the terrain so the artifact is useful for visual-regression review as well.
+OMNI.test.setLook(180, 30)
+OMNI.wait(0.5)
+OMNI.test.screenshot()
 
 assert(OMNI.client.state.webGpuErrorCount == 0,
     "WebGPU validation failed while staging spatial terrain")

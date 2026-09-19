@@ -66,7 +66,8 @@ internal static class TerrainLodSpatialMeshBuilder
         TerrainLodColumnTile tile,
         IBlockRuntimeView blocks,
         int verticalSliceBudget,
-        bool emitTileBoundaryFaces = true)
+        bool emitTileBoundaryFaces = true,
+        int? caveCullBelowY = null)
     {
         ArgumentNullException.ThrowIfNull(tile);
         ArgumentNullException.ThrowIfNull(blocks);
@@ -97,7 +98,10 @@ internal static class TerrainLodSpatialMeshBuilder
         for (var x = 0; x < tile.Width; x++)
         for (var z = 0; z < tile.Width; z++)
         {
-            var reduced = TerrainLodVerticalSliceReducer.Reduce(tile[x, z], verticalSliceBudget);
+            var source = caveCullBelowY is { } ceilingY
+                ? TerrainLodCaveCuller.SealUndergroundAir(tile[x, z], ceilingY)
+                : tile[x, z];
+            var reduced = TerrainLodVerticalSliceReducer.Reduce(source, verticalSliceBudget);
             columns[x * tile.Width + z] = reduced;
             maximumRenderedSpans = Math.Max(maximumRenderedSpans, reduced.Spans.Count);
         }
@@ -128,20 +132,27 @@ internal static class TerrainLodSpatialMeshBuilder
                     IsFaceVisible(span.Material, NeighborAt(column, maxY), translucent))
                     renderMaxY -= FluidMath.GetFluidHeightFromMeta(span.Material.Metadata);
 
-                if (IsFaceVisible(span.Material, NeighborAt(column, minY - 1), translucent))
-                    EmitHorizontal(Side.Down, minY, anchorY: minY, 0.5f);
-                if (IsFaceVisible(span.Material, NeighborAt(column, maxY), translucent))
-                    EmitHorizontal(Side.Up, renderMaxY, anchorY: maxY - 1, 1.0f);
+                var below = NeighborAt(column, minY - 1);
+                var above = NeighborAt(column, maxY);
+                if (IsFaceVisible(span.Material, below, translucent))
+                    EmitHorizontal(Side.Down, minY, anchorY: minY, 0.5f, below);
+                if (IsFaceVisible(span.Material, above, translucent))
+                    EmitHorizontal(Side.Up, renderMaxY, anchorY: maxY - 1, 1.0f, above);
 
                 EmitSide(Side.West, x - 1, z, minX, minZ, maxZ, 0.6f);
                 EmitSide(Side.East, x + 1, z, maxX, minZ, maxZ, 0.6f);
                 EmitSide(Side.North, x, z - 1, minZ, minX, maxX, 0.8f);
                 EmitSide(Side.South, x, z + 1, maxZ, minX, maxX, 0.8f);
 
-                void EmitHorizontal(Side side, float faceY, int anchorY, float shade)
+                void EmitHorizontal(
+                    Side side,
+                    float faceY,
+                    int anchorY,
+                    float shade,
+                    TerrainLodColumnSpan? exposedNeighbor)
                 {
                     var appearance = Appearance(block, span.Material, side);
-                    var light = Light(span);
+                    var light = FaceLight(span, exposedNeighbor, side);
                     // sampleSize is bounded by MaximumQuadSpan and the power-of-two sample grid is
                     // aligned to every page boundary, so this quad can never straddle a page.
                     var page = PageFor(
@@ -171,20 +182,37 @@ internal static class TerrainLodSpatialMeshBuilder
                     if (!neighborInBounds && !emitTileBoundaryFaces) return;
                     var neighbor = neighborInBounds ? Column(neighborX, neighborZ) : null;
                     var runStart = -1;
+                    var runLight = default(ChunkLightVertex);
                     for (var y = minY; y <= maxY; y++)
                     {
+                        var adjacent = y < maxY && neighbor is not null
+                            ? NeighborAt(neighbor, y)
+                            : null;
                         var visible = y < maxY && IsFaceVisible(
-                            span.Material, neighbor is null ? null : NeighborAt(neighbor, y),
-                            translucent);
-                        if (visible && runStart < 0) runStart = y;
+                            span.Material, adjacent, translucent);
+                        var light = FaceLight(span, adjacent, side);
+                        if (visible && runStart >= 0 && light != runLight)
+                        {
+                            EmitVerticalRange(runStart, y, runLight);
+                            runStart = y;
+                            runLight = light;
+                        }
+                        else if (visible && runStart < 0)
+                        {
+                            runStart = y;
+                            runLight = light;
+                        }
                         if (visible || runStart < 0) continue;
 
                         var runEnd = y == maxY ? renderMaxY : y;
-                        EmitVerticalRange(runStart, runEnd);
+                        EmitVerticalRange(runStart, runEnd, runLight);
                         runStart = -1;
                     }
 
-                    void EmitVerticalRange(float bottom, float top)
+                    void EmitVerticalRange(
+                        float bottom,
+                        float top,
+                        ChunkLightVertex light)
                     {
                         for (var y0 = bottom; y0 < top;)
                         {
@@ -192,7 +220,6 @@ internal static class TerrainLodSpatialMeshBuilder
                             var y1 = Math.Min(top, Math.Min(y0 + MaximumQuadSpan, pageBoundary));
                             if (y1 <= y0) y1 = Math.Min(top, y0 + MaximumQuadSpan);
                             var appearance = Appearance(block, span.Material, side);
-                            var light = Light(span);
                             var anchorX = side is Side.West or Side.East
                                 ? (side == Side.West ? fixedCoordinate + 0.001 : fixedCoordinate - 0.001)
                                 : (alongStart + alongEnd) * 0.5;
@@ -313,6 +340,25 @@ internal static class TerrainLodSpatialMeshBuilder
     internal static ChunkLightVertex Light(in TerrainLodColumnSpan span) => new(
         ChunkVertexHelper.ToQuarterLevels(span.SkyLight),
         ChunkVertexHelper.ToQuarterLevels(span.BlockLight));
+
+    /// <summary>
+    ///     Samples the medium exposed by a face, not the opaque span that owns its material.
+    ///     Opaque blocks normally store zero skylight internally; using that value for their top
+    ///     face turns otherwise sunlit distant terrain black. Source block light remains a floor
+    ///     so luminous materials do not darken when the adjacent air sample is empty.
+    /// </summary>
+    internal static ChunkLightVertex FaceLight(
+        in TerrainLodColumnSpan source,
+        TerrainLodColumnSpan? exposedNeighbor,
+        Side side)
+    {
+        var sky = exposedNeighbor?.SkyLight ??
+                  (side == Side.Up ? (byte)15 : source.SkyLight);
+        var block = Math.Max(source.BlockLight, exposedNeighbor?.BlockLight ?? (byte)0);
+        return new ChunkLightVertex(
+            ChunkVertexHelper.ToQuarterLevels(sky),
+            ChunkVertexHelper.ToQuarterLevels(block));
+    }
 
     internal static void Emit(
         PageBuilder page,

@@ -57,13 +57,14 @@ internal sealed class TerrainLodSpatialSeamCompilationService : IDisposable
         TerrainLodColumnTile owner,
         TerrainLodColumnTile? neighbor,
         IBlockRuntimeView blocks,
-        double distanceChunks)
+        double distanceChunks,
+        int? caveCullBelowY = null)
     {
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentNullException.ThrowIfNull(blocks);
         if (!double.IsFinite(distanceChunks) || distanceChunks < 0)
             throw new ArgumentOutOfRangeException(nameof(distanceChunks));
-        var identity = SourceIdentity(owner, neighbor);
+        var identity = SourceIdentity(owner, neighbor, caveCullBelowY);
         lock (_gate)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -71,7 +72,8 @@ internal sealed class TerrainLodSpatialSeamCompilationService : IDisposable
             {
                 if (existing.Input.SourceIdentity == identity) return false;
                 existing.Input = new Input(
-                    segment, owner, neighbor, blocks, identity, distanceChunks, _sequence++);
+                    segment, owner, neighbor, blocks, identity, distanceChunks,
+                    caveCullBelowY, _sequence++);
                 existing.Generation++;
                 existing.Mesh = null;
                 existing.Failure = null;
@@ -86,7 +88,8 @@ internal sealed class TerrainLodSpatialSeamCompilationService : IDisposable
                 return false;
             }
             _items.Add(segment, new WorkItem(new Input(
-                segment, owner, neighbor, blocks, identity, distanceChunks, _sequence++)));
+                segment, owner, neighbor, blocks, identity, distanceChunks,
+                caveCullBelowY, _sequence++)));
             Monitor.PulseAll(_gate);
             return true;
         }
@@ -194,7 +197,8 @@ internal sealed class TerrainLodSpatialSeamCompilationService : IDisposable
             try
             {
                 mesh = TerrainLodSpatialSeamMeshBuilder.Build(
-                    input.Segment, input.Owner, input.Neighbor, input.Blocks);
+                    input.Segment, input.Owner, input.Neighbor, input.Blocks,
+                    input.CaveCullBelowY);
             }
             catch (Exception error)
             {
@@ -229,8 +233,10 @@ internal sealed class TerrainLodSpatialSeamCompilationService : IDisposable
 
     private static string SourceIdentity(
         TerrainLodColumnTile owner,
-        TerrainLodColumnTile? neighbor) =>
-        $"{owner.CanonicalHash}:{neighbor?.CanonicalHash ?? "air"}";
+        TerrainLodColumnTile? neighbor,
+        int? caveCullBelowY) =>
+        $"{owner.CanonicalHash}:{neighbor?.CanonicalHash ?? "air"}:" +
+        $"{caveCullBelowY?.ToString() ?? "none"}";
 
     private enum State { Queued, Running, Ready, Failed }
 
@@ -251,5 +257,6 @@ internal sealed class TerrainLodSpatialSeamCompilationService : IDisposable
         IBlockRuntimeView Blocks,
         string SourceIdentity,
         double DistanceChunks,
+        int? CaveCullBelowY,
         long Sequence);
 }

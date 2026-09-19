@@ -75,7 +75,8 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
         IBlockRuntimeView blocks,
         int verticalSliceBudget,
         TerrainLodSpatialMeshWorkKind workKind,
-        double distanceChunks)
+        double distanceChunks,
+        int? caveCullBelowY = null)
     {
         ArgumentNullException.ThrowIfNull(tile);
         ArgumentNullException.ThrowIfNull(blocks);
@@ -84,14 +85,16 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
         if (!double.IsFinite(distanceChunks) || distanceChunks < 0)
             throw new ArgumentOutOfRangeException(nameof(distanceChunks));
         var input = new Input(
-            tile, blocks, verticalSliceBudget, workKind, distanceChunks, 0);
+            tile, blocks, verticalSliceBudget, workKind, distanceChunks,
+            caveCullBelowY, 0);
         lock (_gate)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             if (_items.TryGetValue(tile.Key, out var existing))
             {
                 if (existing.Input.Tile.CanonicalHash == tile.CanonicalHash &&
-                    existing.Input.VerticalSliceBudget == verticalSliceBudget)
+                    existing.Input.VerticalSliceBudget == verticalSliceBudget &&
+                    existing.Input.CaveCullBelowY == caveCullBelowY)
                     return TerrainLodSpatialMeshAdmissionResult.Coalesced;
                 existing.Input = input with { Sequence = _sequence++ };
                 existing.Generation++;
@@ -213,7 +216,8 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
             {
                 mesh = TerrainLodSpatialMeshBuilder.Build(
                     input.Tile, input.Blocks, input.VerticalSliceBudget,
-                    emitTileBoundaryFaces: false);
+                    emitTileBoundaryFaces: false,
+                    caveCullBelowY: input.CaveCullBelowY);
             }
             catch (Exception error)
             {
@@ -260,5 +264,6 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
         int VerticalSliceBudget,
         TerrainLodSpatialMeshWorkKind WorkKind,
         double DistanceChunks,
+        int? CaveCullBelowY,
         long Sequence);
 }

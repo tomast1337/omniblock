@@ -10,7 +10,8 @@ internal sealed record TerrainLodMeshCompilationRequest(
     int MaximumLevel,
     WorldRegionSnapshot Visuals,
     bool HasSkyLight,
-    TerrainLodMeshWorkKind WorkKind = TerrainLodMeshWorkKind.Coverage);
+    TerrainLodMeshWorkKind WorkKind = TerrainLodMeshWorkKind.Coverage,
+    int? CaveCullBelowY = null);
 
 internal sealed record TerrainLodMeshCompilationResult(
     TerrainLodConversionResult Conversion,
@@ -242,7 +243,8 @@ internal sealed class TerrainLodMeshCompilationService : IDisposable
                         request.Visuals.ContentBlocks,
                         request.HasSkyLight,
                         request.Conversion.Lighting,
-                        request.Visuals);
+                        request.Visuals,
+                        request.CaveCullBelowY);
                 }
                 var compilationMs = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
                 var retainedBytes = levels.Sum(static level => level.EstimatedBytes) +

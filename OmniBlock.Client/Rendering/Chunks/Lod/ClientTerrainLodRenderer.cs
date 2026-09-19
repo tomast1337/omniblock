@@ -124,6 +124,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private const int SpatialSeamAdmissionsPerFrame = 8;
     private const int SpatialSeamUploadsPerFrame = 2;
     private const int SpatialPageDrawsPerPass = 256;
+    private const int OverworldCaveCullCeilingY = 60;
 
     private readonly World _world;
     private readonly TerrainLodConversionService _conversion;
@@ -917,7 +918,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 MaximumMeshLevel,
                 visuals,
                 !_world.Dimension.HasCeiling,
-                workKind);
+                workKind,
+                _world.Dimension.HasCeiling ? null : OverworldCaveCullCeilingY);
             if (!_meshCompilation.TrySubmit(request))
             {
                 visuals.Dispose();
@@ -981,7 +983,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 _world.Content.Blocks,
                 _spatialPolicy.VerticalSliceBudgetForSpatialLevel(pair.Key.Level),
                 workKind,
-                pair.Key.DistanceTo(cameraChunkX, cameraChunkZ));
+                pair.Key.DistanceTo(cameraChunkX, cameraChunkZ),
+                _world.Dimension.HasCeiling ? null : OverworldCaveCullCeilingY);
             if (result == TerrainLodSpatialMeshAdmissionResult.RejectedAtCapacity) break;
             _spatialMeshPending.Remove(pair.Key);
             admitted++;
@@ -1042,7 +1045,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             if (!_desiredSpatialSeams.Contains(mesh.Segment) ||
                 !TryResolveSpatialSeamTiles(mesh.Segment, out var owner, out var neighbor) ||
                 TerrainLodSpatialSeamMeshBuilder.ComputeCanonicalHash(
-                    mesh.Segment, owner!, neighbor) != mesh.CanonicalHash)
+                    mesh.Segment, owner!, neighbor,
+                    _world.Dimension.HasCeiling ? null : OverworldCaveCullCeilingY) !=
+                mesh.CanonicalHash)
             {
                 _staleResults++;
                 continue;
@@ -1210,14 +1215,18 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         {
             if (admitted >= SpatialSeamAdmissionsPerFrame) break;
             if (!TryResolveSpatialSeamTiles(seam, out var owner, out var neighbor)) continue;
+            int? caveCullBelowY = _world.Dimension.HasCeiling
+                ? null
+                : OverworldCaveCullCeilingY;
             var expectedHash = TerrainLodSpatialSeamMeshBuilder.ComputeCanonicalHash(
-                seam, owner!, neighbor);
+                seam, owner!, neighbor, caveCullBelowY);
             if (_spatialSeams.TryGetValue(seam, out var existing) &&
                 existing.CanonicalHash == expectedHash)
                 continue;
             if (_spatialSeamCompilation.Submit(
-                    seam, owner!, neighbor, _world.Content.Blocks,
-                    SpatialSeamDistance(seam, cameraChunkX, cameraChunkZ)))
+                seam, owner!, neighbor, _world.Content.Blocks,
+                    SpatialSeamDistance(seam, cameraChunkX, cameraChunkZ),
+                    caveCullBelowY))
                 admitted++;
         }
 
@@ -1246,7 +1255,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 return false;
             return presentation.CanonicalHash ==
                    TerrainLodSpatialSeamMeshBuilder.ComputeCanonicalHash(
-                       seam, owner!, neighbor);
+                       seam, owner!, neighbor,
+                       _world.Dimension.HasCeiling ? null : OverworldCaveCullCeilingY);
         }
     }
 
@@ -1528,14 +1538,20 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                         key.BoundarySide, _world.Content.Blocks,
                         !_world.Dimension.HasCeiling,
                         lighting: _world.Lighting, visuals: _world.Reader,
-                        materialSide: key.MaterialSide)
+                        materialSide: key.MaterialSide,
+                        caveCullBelowY: _world.Dimension.HasCeiling
+                            ? null
+                            : OverworldCaveCullCeilingY)
                     : TerrainLodSeamMeshBuilder.BuildSolid(
                         owner.Boundaries, selection.OwnerLevel,
                         neighbor.Boundaries, selection.NeighborLevel,
                         key.BoundarySide, _world.Content.Blocks,
                         !_world.Dimension.HasCeiling,
                         lighting: _world.Lighting, visuals: _world.Reader,
-                        materialSide: key.MaterialSide);
+                        materialSide: key.MaterialSide,
+                        caveCullBelowY: _world.Dimension.HasCeiling
+                            ? null
+                            : OverworldCaveCullCeilingY);
                 var candidate = GpuSeam.Create(
                     device, key.Owner, selection, data, translucent);
                 if (installed.Remove(key, out var previous)) previous.Dispose();

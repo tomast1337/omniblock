@@ -52,9 +52,10 @@ internal static class TerrainLodSeamMeshBuilder
         bool hasSkyLight,
         ILightProvider? lighting = null,
         IBlockReader? visuals = null,
-        TerrainLodSeamMaterialSide materialSide = TerrainLodSeamMaterialSide.Either)
+        TerrainLodSeamMaterialSide materialSide = TerrainLodSeamMaterialSide.Either,
+        int? caveCullBelowY = null)
         => Build(owner, ownerLevel, neighbor, neighborLevel, ownerSide, blocks,
-            hasSkyLight, lighting, visuals, translucent: false, materialSide);
+            hasSkyLight, lighting, visuals, translucent: false, materialSide, caveCullBelowY);
 
     public static TerrainLodSeamMeshData BuildTranslucent(
         TerrainLodBoundarySummary owner,
@@ -66,9 +67,10 @@ internal static class TerrainLodSeamMeshBuilder
         bool hasSkyLight,
         ILightProvider? lighting = null,
         IBlockReader? visuals = null,
-        TerrainLodSeamMaterialSide materialSide = TerrainLodSeamMaterialSide.Either)
+        TerrainLodSeamMaterialSide materialSide = TerrainLodSeamMaterialSide.Either,
+        int? caveCullBelowY = null)
         => Build(owner, ownerLevel, neighbor, neighborLevel, ownerSide, blocks,
-            hasSkyLight, lighting, visuals, translucent: true, materialSide);
+            hasSkyLight, lighting, visuals, translucent: true, materialSide, caveCullBelowY);
 
     private static TerrainLodSeamMeshData Build(
         TerrainLodBoundarySummary owner,
@@ -81,7 +83,8 @@ internal static class TerrainLodSeamMeshBuilder
         ILightProvider? lighting,
         IBlockReader? visuals,
         bool translucent,
-        TerrainLodSeamMaterialSide materialSide)
+        TerrainLodSeamMaterialSide materialSide,
+        int? caveCullBelowY)
     {
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentNullException.ThrowIfNull(neighbor);
@@ -183,6 +186,9 @@ internal static class TerrainLodSeamMeshBuilder
                 block, material.Metadata, faceSide, tint,
                 ReferenceEquals(block, grassBlock), grassOverlayTexture);
             var light = SampleLight(faceSide, block.LightEmission, sampleX, sampleY, sampleZ);
+            if (caveCullBelowY is { } ceilingY && hasSkyLight && lighting is not null &&
+                y + fineScale <= ceilingY && light.Sky == 0)
+                continue;
 
             if (ownerSide == Side.East)
             {

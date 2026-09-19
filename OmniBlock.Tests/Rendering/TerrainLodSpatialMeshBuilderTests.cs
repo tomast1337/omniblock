@@ -1,5 +1,6 @@
 using OmniBlock.Client.Rendering.Chunks.Lod;
 using OmniBlock.Tests.TestSupport;
+using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Lod;
 
 namespace OmniBlock.Tests.Rendering;
@@ -103,6 +104,81 @@ public sealed class TerrainLodSpatialMeshBuilderTests
         Assert.Equal(4, canonicalSpanCount);
         Assert.Equal(canonicalSpanCount, tile[0, 0].Spans.Count);
         Assert.InRange(mesh.MaximumRenderedSpans, 1, 2);
+    }
+
+    [Fact]
+    public void Cave_culling_removes_underground_faces_without_mutating_canonical_spans()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var stone = checked((byte)world.Content.Blocks.Get("omniblock:stone").Id);
+        var blocks = new byte[ChuckFormat.ChunkSize];
+        var metadata = new byte[blocks.Length];
+        var sky = new ChunkNibbleArray(ChuckFormat.ChunkSize);
+        var block = new ChunkNibbleArray(ChuckFormat.ChunkSize);
+        for (var x = 0; x < 16; x++)
+        for (var z = 0; z < 16; z++)
+        for (var y = 0; y < ChuckFormat.ChunkHeight; y++)
+        {
+            blocks[ChuckFormat.GetIndex(x, y, z)] =
+                y < 16 || y is >= 24 and < 32 ? stone : (byte)0;
+            if (y >= 32) sky.SetNibble(x, y, z, 15);
+        }
+        var source = new TerrainLodSourceSnapshot(
+            0, 0, 16, ChuckFormat.ChunkHeight, 16,
+            blocks, metadata, terrainRevision: 1,
+            new TerrainLodLightingSnapshot(
+                0, 0, 1, sky.Bytes, block.Bytes, hasSkyLight: true));
+        var tile = TerrainLodColumnTile.BuildLeaf(source, materials);
+        var canonicalSpans = tile[0, 0].Spans.ToArray();
+
+        var unculled = TerrainLodSpatialMeshBuilder.Build(
+            tile, world.Content.Blocks, verticalSliceBudget: 8,
+            emitTileBoundaryFaces: false);
+        var culled = TerrainLodSpatialMeshBuilder.Build(
+            tile, world.Content.Blocks, verticalSliceBudget: 8,
+            emitTileBoundaryFaces: false, caveCullBelowY: 32);
+
+        Assert.True(culled.SolidQuadCount < unculled.SolidQuadCount);
+        Assert.Equal(canonicalSpans, tile[0, 0].Spans);
+    }
+
+    [Fact]
+    public void Exposed_top_faces_sample_sunlit_air_instead_of_opaque_block_light()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var stone = checked((byte)world.Content.Blocks.Get("omniblock:stone").Id);
+        var blocks = new byte[ChuckFormat.ChunkSize];
+        var metadata = new byte[blocks.Length];
+        var sky = new ChunkNibbleArray(ChuckFormat.ChunkSize);
+        var block = new ChunkNibbleArray(ChuckFormat.ChunkSize);
+        for (var x = 0; x < 16; x++)
+        for (var z = 0; z < 16; z++)
+        for (var y = 0; y < ChuckFormat.ChunkHeight; y++)
+        {
+            blocks[ChuckFormat.GetIndex(x, y, z)] = y < 32 ? stone : (byte)0;
+            if (y >= 32) sky.SetNibble(x, y, z, 15);
+        }
+        var tile = TerrainLodColumnTile.BuildLeaf(
+            new TerrainLodSourceSnapshot(
+                0, 0, 16, ChuckFormat.ChunkHeight, 16,
+                blocks, metadata, terrainRevision: 1,
+                new TerrainLodLightingSnapshot(
+                    0, 0, 1, sky.Bytes, block.Bytes, hasSkyLight: true)),
+            materials);
+
+        var mesh = TerrainLodSpatialMeshBuilder.Build(
+            tile, world.Content.Blocks, verticalSliceBudget: 8,
+            emitTileBoundaryFaces: false, caveCullBelowY: 60);
+        var topLights = mesh.Pages.SelectMany(page =>
+        {
+            var range = page.SolidRanges.Up;
+            return page.Lights.Skip(range.FirstQuad * 4).Take(range.QuadCount * 4);
+        }).ToArray();
+
+        Assert.NotEmpty(topLights);
+        Assert.All(topLights, light => Assert.Equal(60, light.Sky));
     }
 
     [Fact]

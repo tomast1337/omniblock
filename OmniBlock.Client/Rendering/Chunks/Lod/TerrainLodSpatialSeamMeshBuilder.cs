@@ -34,7 +34,8 @@ internal static class TerrainLodSpatialSeamMeshBuilder
         TerrainLodSpatialSeamSegment segment,
         TerrainLodColumnTile owner,
         TerrainLodColumnTile? neighbor,
-        IBlockRuntimeView blocks)
+        IBlockRuntimeView blocks,
+        int? caveCullBelowY = null)
     {
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentNullException.ThrowIfNull(blocks);
@@ -136,7 +137,9 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                             Math.Min(y0 + TerrainLodSpatialMeshBuilder.MaximumQuadSpan, pageBoundary));
                         if (y1 <= y0) y1 = Math.Min(renderTop,
                             y0 + TerrainLodSpatialMeshBuilder.MaximumQuadSpan);
-                        EmitPatch(source, block, translucent, sourceSide, y0, y1, along, end);
+                        EmitPatch(
+                            source, opposite, block, translucent, sourceSide,
+                            y0, y1, along, end);
                         y0 = y1;
                     }
                 }
@@ -145,7 +148,7 @@ internal static class TerrainLodSpatialSeamMeshBuilder
 
         return new TerrainLodSpatialSeamMeshData(
             segment,
-            ComputeCanonicalHash(segment, owner, neighbor),
+            ComputeCanonicalHash(segment, owner, neighbor, caveCullBelowY),
             pages.OrderBy(static pair => pair.Key.X)
                 .ThenBy(static pair => pair.Key.Y)
                 .ThenBy(static pair => pair.Key.Z)
@@ -176,7 +179,11 @@ internal static class TerrainLodSpatialSeamMeshBuilder
             var key = (tile, localX, localZ, budget);
             if (!reduced.TryGetValue(key, out var column))
             {
-                column = TerrainLodVerticalSliceReducer.Reduce(tile[localX, localZ], budget);
+                var source = caveCullBelowY is { } ceilingY
+                    ? TerrainLodCaveCuller.SealUndergroundAir(
+                        tile[localX, localZ], ceilingY)
+                    : tile[localX, localZ];
+                column = TerrainLodVerticalSliceReducer.Reduce(source, budget);
                 reduced.Add(key, column);
             }
             return column;
@@ -184,6 +191,7 @@ internal static class TerrainLodSpatialSeamMeshBuilder
 
         void EmitPatch(
             TerrainLodColumnSpan span,
+            TerrainLodColumnSpan? exposedNeighbor,
             Block block,
             bool translucent,
             TerrainLodSpatialBoundarySide boundarySide,
@@ -214,6 +222,8 @@ internal static class TerrainLodSpatialSeamMeshBuilder
             var page = PageFor(anchorX, (y0 + y1) * 0.5, anchorZ);
             var height = y1 - y0;
             var length = patchEnd - patchStart;
+            var light = TerrainLodSpatialMeshBuilder.FaceLight(
+                span, exposedNeighbor, side);
             switch (boundarySide)
             {
                 case TerrainLodSpatialBoundarySide.West:
@@ -241,7 +251,7 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                 (float X, float Y, float Z) c,
                 (float X, float Y, float Z) d) => TerrainLodSpatialMeshBuilder.Emit(
                 page, translucent, side, appearance, shade,
-                TerrainLodSpatialMeshBuilder.Light(span), length, height, a, b, c, d);
+                light, length, height, a, b, c, d);
         }
 
         TerrainLodSpatialMeshBuilder.PageBuilder PageFor(
@@ -314,7 +324,8 @@ internal static class TerrainLodSpatialSeamMeshBuilder
     internal static string ComputeCanonicalHash(
         TerrainLodSpatialSeamSegment segment,
         TerrainLodColumnTile owner,
-        TerrainLodColumnTile? neighbor)
+        TerrainLodColumnTile? neighbor,
+        int? caveCullBelowY = null)
     {
         var value = string.Join("|",
             owner.CanonicalHash,
@@ -324,7 +335,8 @@ internal static class TerrainLodSpatialSeamMeshBuilder
             (int)segment.OwnerSide,
             segment.FixedChunkCoordinate,
             segment.AlongStartChunk,
-            segment.AlongEndChunk);
+            segment.AlongEndChunk,
+            caveCullBelowY?.ToString() ?? "none");
         return Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
     }
 }

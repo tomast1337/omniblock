@@ -326,6 +326,49 @@ public sealed class TerrainLodMeshBuilderTests
     }
 
     [Fact]
+    public void Cave_culling_removes_unlit_underground_column_faces_but_keeps_the_surface()
+    {
+        var world = new FakeWorldContext();
+        var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+        var terrain = Build(world, (_, y, _) =>
+            y < 16 || y is >= 24 and < 32 ? (byte)stone : (byte)0);
+        var lighting = new HeightLight(32);
+
+        var unculled = TerrainLodMeshBuilder.Build(
+            terrain, 0, world.Content.Blocks, true, lighting);
+        var culled = TerrainLodMeshBuilder.Build(
+            terrain, 0, world.Content.Blocks, true, lighting,
+            caveCullBelowY: 60);
+
+        Assert.NotEmpty(culled.Vertices);
+        Assert.True(culled.Vertices.Length < unculled.Vertices.Length);
+        Assert.Contains(culled.Vertices, vertex => WorldY(vertex) >= 31.99f);
+    }
+
+    [Fact]
+    public void Cave_culling_removes_unlit_underground_chunk_seams()
+    {
+        var world = new FakeWorldContext();
+        var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+        var west = Build(world, (_, y, _) => y < 16 ? (byte)stone : (byte)0,
+            chunkX: 0, chunkZ: 0);
+        var east = Build(world, (_, _, _) => 0, chunkX: 1, chunkZ: 0);
+        var owner = TerrainLodBoundarySummary.Capture(west, 0, 4);
+        var neighbor = TerrainLodBoundarySummary.Capture(east, 0, 4);
+
+        var unculled = TerrainLodSeamMeshBuilder.BuildSolid(
+            owner, 0, neighbor, 0, OmniBlock.Blocks.Side.East,
+            world.Content.Blocks, true, lighting: new ConstantLight(0, 0));
+        var culled = TerrainLodSeamMeshBuilder.BuildSolid(
+            owner, 0, neighbor, 0, OmniBlock.Blocks.Side.East,
+            world.Content.Blocks, true, lighting: new ConstantLight(0, 0),
+            caveCullBelowY: 60);
+
+        Assert.NotEmpty(unculled.Vertices);
+        Assert.Empty(culled.Vertices);
+    }
+
+    [Fact]
     public void Shared_opaque_boundary_has_no_double_surface()
     {
         var world = new FakeWorldContext();
@@ -816,5 +859,14 @@ public sealed class TerrainLodMeshBuilderTests
         public float GetLuminance(int x, int y, int z) => 1;
         public LightLevels GetLightLevels(int x, int y, int z, int minBlockLight) =>
             new(sky, Math.Max(block, (byte)Math.Clamp(minBlockLight, 0, 15)));
+    }
+
+    private sealed class HeightLight(int skyStartY) : ILightProvider
+    {
+        public float GetNaturalBrightness(int x, int y, int z, int minLight) => 1;
+        public float GetLuminance(int x, int y, int z) => 1;
+        public LightLevels GetLightLevels(int x, int y, int z, int minBlockLight) =>
+            new(y >= skyStartY ? (byte)15 : (byte)0,
+                (byte)Math.Clamp(minBlockLight, 0, 15));
     }
 }

@@ -83,6 +83,36 @@ public sealed class TerrainLodSpatialSeamMeshBuilderTests
         Assert.InRange(maximumY, 7.0f, 8.0f);
     }
 
+    [Fact]
+    public void Cave_policy_participates_in_the_compiled_seam_identity()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var stone = checked((byte)world.Content.Blocks.Get("omniblock:stone").Id);
+        var west = Leaf(materials, 0, 0, 64,
+            (_, y, _) => y < 16 || y is >= 24 and < 32 ? stone : (byte)0);
+        var east = Leaf(materials, 1, 0, 64,
+            (_, y, _) => y < 32 ? stone : (byte)0);
+        TerrainLodTileSelection[] selection =
+        [
+            new(west.Key, 0, 8),
+            new(east.Key, 0, 8)
+        ];
+        var segment = Assert.Single(TerrainLodSpatialSeamPlanner.Plan(
+            selection, includeExterior: false));
+
+        var mesh = TerrainLodSpatialSeamMeshBuilder.Build(
+            segment, west, east, world.Content.Blocks, caveCullBelowY: 60);
+
+        Assert.Equal(
+            TerrainLodSpatialSeamMeshBuilder.ComputeCanonicalHash(
+                segment, west, east, caveCullBelowY: 60),
+            mesh.CanonicalHash);
+        Assert.NotEqual(
+            TerrainLodSpatialSeamMeshBuilder.ComputeCanonicalHash(segment, west, east),
+            mesh.CanonicalHash);
+    }
+
     private static TerrainLodColumnTile Parent(
         TerrainLodMaterialCatalog materials,
         TerrainLodTileKey key,
