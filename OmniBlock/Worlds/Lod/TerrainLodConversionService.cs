@@ -16,7 +16,8 @@ public sealed record TerrainLodConversionResult(
     TerrainLodHierarchy Hierarchy,
     TerrainLodLightingSnapshot? Lighting = null,
     bool RequiresPersistence = true,
-    string? SourceFingerprint = null);
+    string? SourceFingerprint = null,
+    TerrainLodColumnTile? SpatialLeaf = null);
 
 internal readonly record struct TerrainLodConversionOutput(
     TerrainLodHierarchy Hierarchy,
@@ -56,6 +57,7 @@ public sealed class TerrainLodConversionService : IDisposable
     private readonly int _dimension;
     private readonly int _capacity;
     private readonly Func<TerrainLodSourceSnapshot, TerrainLodConversionOutput> _convert;
+    private readonly Func<TerrainLodSourceSnapshot, TerrainLodColumnTile?> _buildSpatialLeaf;
     private readonly Dictionary<ChunkKey, WorkItem> _items = [];
     private readonly Thread _worker;
     private bool _disposed;
@@ -77,7 +79,14 @@ public sealed class TerrainLodConversionService : IDisposable
         TerrainLodMaterialCatalog materials,
         TerrainLodReductionStrategy strategy = TerrainLodReductionStrategy.SurfacePreserving,
         int capacity = 64)
-        : this(dimension, capacity, CreateConverter(materials, strategy)) { }
+        : this(
+            dimension,
+            capacity,
+            source => new TerrainLodConversionOutput(
+                TerrainLodReducer.Build(source, materials, strategy), source.Lighting),
+            source => source.Width == 16 && source.Depth == 16
+                ? TerrainLodColumnTile.BuildLeaf(source, materials)
+                : null) { }
 
     public TerrainLodConversionService(
         int dimension,
@@ -98,7 +107,9 @@ public sealed class TerrainLodConversionService : IDisposable
                     cached.Hierarchy!, cached.Lighting, RequiresPersistence: false)
                 : new TerrainLodConversionOutput(
                     TerrainLodReducer.Build(source, materials, strategy), source.Lighting);
-        })
+        }, source => source.Width == 16 && source.Depth == 16
+            ? TerrainLodColumnTile.BuildLeaf(source, materials)
+            : null)
     {
         ArgumentNullException.ThrowIfNull(materials);
         ArgumentNullException.ThrowIfNull(cache);
@@ -109,7 +120,7 @@ public sealed class TerrainLodConversionService : IDisposable
         int capacity,
         Func<TerrainLodSourceSnapshot, TerrainLodHierarchy> convert)
         : this(dimension, capacity, source => new TerrainLodConversionOutput(
-            convert(source), source.Lighting))
+            convert(source), source.Lighting), static _ => null)
     {
         ArgumentNullException.ThrowIfNull(convert);
     }
@@ -117,12 +128,14 @@ public sealed class TerrainLodConversionService : IDisposable
     internal TerrainLodConversionService(
         int dimension,
         int capacity,
-        Func<TerrainLodSourceSnapshot, TerrainLodConversionOutput> convert)
+        Func<TerrainLodSourceSnapshot, TerrainLodConversionOutput> convert,
+        Func<TerrainLodSourceSnapshot, TerrainLodColumnTile?>? buildSpatialLeaf = null)
     {
         if (capacity <= 0) throw new ArgumentOutOfRangeException(nameof(capacity));
         _dimension = dimension;
         _capacity = capacity;
         _convert = convert ?? throw new ArgumentNullException(nameof(convert));
+        _buildSpatialLeaf = buildSpatialLeaf ?? (static _ => null);
         PublishSnapshotLocked();
         _worker = new Thread(WorkerLoop)
         {
@@ -329,6 +342,7 @@ public sealed class TerrainLodConversionService : IDisposable
             }
 
             TerrainLodConversionOutput output = default;
+            TerrainLodColumnTile? spatialLeaf = null;
             Exception? failure = null;
             try
             {
@@ -336,6 +350,14 @@ public sealed class TerrainLodConversionService : IDisposable
                 if (output.Hierarchy is null)
                     throw new InvalidOperationException(
                         "Terrain LOD converter returned no hierarchy.");
+                spatialLeaf = _buildSpatialLeaf(source);
+                if (spatialLeaf is not null &&
+                    (!spatialLeaf.MatchesLeafSource(
+                         source.TerrainRevision, source.SourceFingerprint) ||
+                     spatialLeaf.Key != new TerrainLodTileKey(
+                         0, source.ChunkX, source.ChunkZ)))
+                    throw new InvalidOperationException(
+                        "Terrain LOD spatial leaf does not identify its source snapshot.");
             }
             catch (Exception error)
             {
@@ -370,7 +392,8 @@ public sealed class TerrainLodConversionService : IDisposable
                         output.Hierarchy,
                         output.Lighting,
                         output.RequiresPersistence,
-                        source.SourceFingerprint);
+                        source.SourceFingerprint,
+                        spatialLeaf);
                     _completedConversions++;
                 }
                 UpdateMemoryPeaksLocked();

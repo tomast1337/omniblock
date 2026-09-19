@@ -69,6 +69,17 @@ internal readonly record struct ClientTerrainLodSnapshot(
     double MeshUploadBaseMs,
     double MeshUploadMsPerMiB);
 
+internal readonly record struct TerrainLodSpatialShadowSnapshot(
+    TerrainLodTileKey Root,
+    bool CompleteCoverage,
+    int SelectedTiles,
+    int ParentFallbacks,
+    int MissingCoverageGroups,
+    int GpuPresentations,
+    int PendingMeshCandidates,
+    TerrainLodSpatialHierarchyCoordinatorSnapshot Hierarchy,
+    TerrainLodSpatialMeshCompilationSnapshot MeshCompilation);
+
 /// <summary>
 ///     Client owner for the first terrain-horizon slice. It compiles immutable chunk snapshots on
 ///     the LOD worker and publishes solid/translucent GPU presentations atomically on the render
@@ -97,10 +108,21 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private const int TransitionMeshLevel = 1;
     private const int MinimumHorizonMeshLevel = 2;
     private const int MaximumMeshLevel = 4;
+    private const int MinimumSpatialGpuLevel = 2;
+    private const int SpatialParentResultsPerTick = 8;
+    private const int SpatialMeshAdmissionsPerTick = 8;
+    private const int SpatialUploadsPerFrame = 2;
 
     private readonly World _world;
     private readonly TerrainLodConversionService _conversion;
     private readonly TerrainLodMeshCompilationService _meshCompilation;
+    private readonly TerrainLodSpatialPolicy _spatialPolicy;
+    private readonly TerrainLodSpatialHierarchyCoordinator _spatialHierarchy;
+    private readonly TerrainLodSpatialMeshCompilationService _spatialMeshCompilation;
+    private readonly TerrainLodSpatialPresentationSet<TerrainLodSpatialGpuPresentation>
+        _spatialPresentations = new();
+    private readonly Dictionary<TerrainLodTileKey, TerrainLodColumnTile> _spatialMeshPending = [];
+    private readonly List<TerrainLodColumnTile> _completedSpatialParents = [];
     private readonly TerrainLodCacheStore? _cache;
     private readonly TerrainLodAsyncCacheWriter? _cacheWriter;
     private readonly Dictionary<(int X, int Z), PendingColumn> _pending = [];
@@ -140,6 +162,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private double _translucentRenderCpuMs;
     private bool _disposed;
     private ClientTerrainLodSnapshot _snapshot;
+    private TerrainLodSpatialShadowSnapshot _spatialSnapshot;
 
     public ClientTerrainLodRenderer(World world, TerrainLodCacheStore? cache = null)
     {
@@ -160,9 +183,23 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 ConversionCapacity);
         if (cache is not null) _cacheWriter = new TerrainLodAsyncCacheWriter(cache);
         _meshCompilation = new TerrainLodMeshCompilationService(ConversionCapacity);
+        _spatialPolicy = new TerrainLodSpatialPolicy(
+            distanceUnitChunks: 8,
+            distanceGrowth: 2,
+            horizontalSampleLevelBySpatialLevel: [0, 0, 1, 1, 2],
+            verticalSliceBudgetBySpatialLevel: [32, 24, 16, 12, 8]);
+        _spatialHierarchy = new TerrainLodSpatialHierarchyCoordinator(
+            _spatialPolicy,
+            tileCapacity: 4096,
+            constructionCapacity: 64,
+            completedCapacity: 16);
+        _spatialMeshCompilation = new TerrainLodSpatialMeshCompilationService(
+            capacity: 32,
+            completedCapacity: 8);
     }
 
     public ClientTerrainLodSnapshot Snapshot => _snapshot;
+    public TerrainLodSpatialShadowSnapshot SpatialSnapshot => _spatialSnapshot;
 
     /// <summary>
     ///     Observes texture-resource replacement without invalidating terrain presentation. Both
@@ -218,6 +255,15 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         _tick++;
+        _spatialHierarchy.SetCameraChunkPosition(
+            viewPosition.X / SubChunkRenderer.Size,
+            viewPosition.Z / SubChunkRenderer.Size);
+
+        _completedSpatialParents.Clear();
+        _spatialHierarchy.DrainCompleted(
+            SpatialParentResultsPerTick, _completedSpatialParents);
+        foreach (var parent in _completedSpatialParents) QueueSpatialMesh(parent);
+        DispatchSpatialMeshCompilation(viewPosition);
 
         var due = TerrainLodAdmissionOrder.TakeNearest(
             _pending
@@ -270,6 +316,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             parameters.VerticalFovDegrees, parameters.ViewportHeight,
             parameters.TerrainLodDropoffScale,
             parameters.RenderDistance, nearRenderer);
+        uploads += InstallSpatialCompleted(nearRenderer);
+        EvaluateSpatialShadow(parameters);
         EvictDistant(parameters.ViewPos);
         Profiler.Record("InstallAndEvictCpu", Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
 
@@ -598,6 +646,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _disposed = true;
         _conversion.Dispose();
         _meshCompilation.Dispose();
+        _spatialMeshCompilation.Dispose();
+        _spatialPresentations.Dispose();
+        _spatialHierarchy.Dispose();
         _cacheWriter?.Dispose();
         foreach (var presentation in _resident.Values) presentation.Dispose();
         foreach (var seam in _solidSeams.Values) seam.Dispose();
@@ -611,6 +662,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _selectedTranslucentLevels.Clear();
         _pending.Clear();
         _detailLevelRequests.Clear();
+        _spatialMeshPending.Clear();
+        _completedSpatialParents.Clear();
         _opaquePipeline?.Dispose();
         _opaquePipeline = null;
         _translucentPipeline?.Dispose();
@@ -795,6 +848,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 break;
             }
 
+            if (result.SpatialLeaf is { } spatialLeaf)
+                _spatialHierarchy.PublishLeaf(spatialLeaf);
+
             if (!_conversion.AcknowledgeCompleted(
                     result.ChunkX, result.ChunkZ, result.TerrainRevision))
                 throw new InvalidOperationException(
@@ -820,6 +876,127 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                     (candidate.ChunkX, candidate.ChunkZ), viewPosition),
                 out result);
         }
+    }
+
+    private void QueueSpatialMesh(TerrainLodColumnTile tile)
+    {
+        if (tile.Key.Level < MinimumSpatialGpuLevel) return;
+        _spatialMeshPending[tile.Key] = tile;
+    }
+
+    private void DispatchSpatialMeshCompilation(Vector3D<double> viewPosition)
+    {
+        var cameraChunkX = viewPosition.X / SubChunkRenderer.Size;
+        var cameraChunkZ = viewPosition.Z / SubChunkRenderer.Size;
+        var admitted = 0;
+        foreach (var pair in _spatialMeshPending
+                     .OrderByDescending(static pair => pair.Key.Level)
+                     .ThenBy(pair => pair.Key.DistanceTo(cameraChunkX, cameraChunkZ))
+                     .ThenBy(static pair => pair.Key.X)
+                     .ThenBy(static pair => pair.Key.Z)
+                     .ToArray())
+        {
+            if (admitted >= SpatialMeshAdmissionsPerTick) break;
+            var workKind = _spatialPresentations.IsReady(pair.Key)
+                ? TerrainLodSpatialMeshWorkKind.Refinement
+                : TerrainLodSpatialMeshWorkKind.Coverage;
+            var result = _spatialMeshCompilation.Submit(
+                pair.Value,
+                _world.Content.Blocks,
+                _spatialPolicy.VerticalSliceBudgetForSpatialLevel(pair.Key.Level),
+                workKind,
+                pair.Key.DistanceTo(cameraChunkX, cameraChunkZ));
+            if (result == TerrainLodSpatialMeshAdmissionResult.RejectedAtCapacity) break;
+            _spatialMeshPending.Remove(pair.Key);
+            admitted++;
+        }
+    }
+
+    /// <summary>
+    ///     Uploads real spatial candidates into the shared arenas but deliberately does not submit
+    ///     them yet. Phase 6E will enable drawing only after the shadow selector proves a complete
+    ///     partition for a stable root forest.
+    /// </summary>
+    private int InstallSpatialCompleted(ChunkRenderer nearRenderer)
+    {
+        if (WebGpuDevice.Current is not { } device) return 0;
+        var installed = 0;
+        while (installed < SpatialUploadsPerFrame &&
+               _spatialMeshCompilation.TryTakeCompleted(out var completed) &&
+               completed is not null)
+        {
+            if (completed.Failure is not null)
+                throw new InvalidOperationException(
+                    "Spatial terrain LOD mesh compilation failed.", completed.Failure);
+            var mesh = completed.Mesh ?? throw new InvalidOperationException(
+                "Spatial terrain LOD mesh compilation produced no candidate.");
+            if (!_spatialHierarchy.TryGetCoverage(mesh.Key, out var current, out _) ||
+                current is null || current.CanonicalHash != mesh.CanonicalHash)
+            {
+                _staleResults++;
+                continue;
+            }
+
+            var installedCandidate = _spatialPresentations.TryInstall(
+                mesh.Key,
+                mesh.CanonicalHash,
+                () => TerrainLodSpatialGpuPresentation.Create(
+                    device, nearRenderer.GetOrCreateTerrainGpuArenas(device), mesh),
+                out var failure);
+            if (failure is not null)
+                throw new InvalidOperationException(
+                    $"Spatial terrain LOD upload failed for {mesh.Key}.", failure);
+            if (installedCandidate) installed++;
+        }
+        return installed;
+    }
+
+    private void EvaluateSpatialShadow(in ChunkRenderParams parameters)
+    {
+        var cameraChunkX = parameters.ViewPos.X / SubChunkRenderer.Size;
+        var cameraChunkZ = parameters.ViewPos.Z / SubChunkRenderer.Size;
+        var chunkX = (int)Math.Floor(cameraChunkX);
+        var chunkZ = (int)Math.Floor(cameraChunkZ);
+        var root = TerrainLodTileKey.ContainingChunk(
+            _spatialPolicy.MaximumSpatialLevel, chunkX, chunkZ);
+        var selection = TerrainLodSpatialSelector.Select(
+            root, cameraChunkX, cameraChunkZ,
+            _spatialPolicy, _spatialPresentations.IsReady);
+        // Until a stable root forest exists, report the coarsest complete diagnostic root around
+        // the camera. A partially loaded level-4 management root must not hide the fact that a
+        // real level-2 or level-3 GPU partition is already complete and transition-safe.
+        for (var level = _spatialPolicy.MaximumSpatialLevel - 1;
+             !selection.CompleteCoverage && level >= MinimumSpatialGpuLevel;
+             level--)
+        {
+            var candidateRoot = TerrainLodTileKey.ContainingChunk(level, chunkX, chunkZ);
+            var candidate = TerrainLodSpatialSelector.Select(
+                candidateRoot, cameraChunkX, cameraChunkZ,
+                _spatialPolicy, _spatialPresentations.IsReady);
+            if (!candidate.CompleteCoverage) continue;
+            root = candidateRoot;
+            selection = candidate;
+        }
+        // Exercise the exact group-transition state that Phase 6E will submit. Its output remains
+        // diagnostics-only until a stable root forest, adjacent-tier seams, and draw integration
+        // are all enabled together.
+        _spatialPresentations.Update(
+            root,
+            cameraChunkX,
+            cameraChunkZ,
+            _spatialPolicy,
+            parameters.DeltaTime,
+            parameters.ChunkFade);
+        _spatialSnapshot = new TerrainLodSpatialShadowSnapshot(
+            root,
+            selection.CompleteCoverage,
+            selection.Nodes.Count,
+            selection.ParentFallbacks,
+            selection.MissingCoverageGroups,
+            _spatialPresentations.Count,
+            _spatialMeshPending.Count,
+            _spatialHierarchy.Snapshot(),
+            _spatialMeshCompilation.Snapshot());
     }
 
     private void RequestDetailLevel((int X, int Z) key, int requestedLevel)

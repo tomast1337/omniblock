@@ -548,6 +548,7 @@ public partial class OmniBlock :
             LuauClientStateHost.TerrainLodMetric = key =>
             {
                 var state = WorldRenderer?.TerrainLod?.Snapshot ?? default;
+                var spatial = WorldRenderer?.TerrainLod?.SpatialSnapshot ?? default;
                 return key switch
                 {
                     "terrainLodPending" => state.PendingColumns,
@@ -599,6 +600,17 @@ public partial class OmniBlock :
                     "terrainLodSolidCpuMs" => state.SolidRenderCpuMs,
                     "terrainLodTranslucentCpuMs" => state.TranslucentRenderCpuMs,
                     "terrainLodCacheBytes" => state.CacheBytes,
+                    "terrainLodSpatialComplete" => spatial.CompleteCoverage ? 1 : 0,
+                    "terrainLodSpatialSelected" => spatial.SelectedTiles,
+                    "terrainLodSpatialParentFallbacks" => spatial.ParentFallbacks,
+                    "terrainLodSpatialMissingGroups" => spatial.MissingCoverageGroups,
+                    "terrainLodSpatialGpuResident" => spatial.GpuPresentations,
+                    "terrainLodSpatialCpuTiles" => spatial.Hierarchy.Tiles,
+                    "terrainLodSpatialCurrentTiles" => spatial.Hierarchy.CurrentTiles,
+                    "terrainLodSpatialMeshPending" => spatial.PendingMeshCandidates,
+                    "terrainLodSpatialMeshQueued" => spatial.MeshCompilation.Queued,
+                    "terrainLodSpatialMeshRunning" => spatial.MeshCompilation.Running,
+                    "terrainLodSpatialMeshReady" => spatial.MeshCompilation.Ready,
                     "clientWorkingSetBytes" => Environment.WorkingSet,
                     _ => 0
                 };

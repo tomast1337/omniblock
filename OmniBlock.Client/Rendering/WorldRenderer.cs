@@ -493,9 +493,11 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         LeavesBehavior.SetGraphicsLevel(_world.Content.Blocks.Get("leaves"), true);
         _renderDistance = _game.Options.RenderDistance;
 
+        // Spatial LOD presentations lease ranges from the chunk renderer's regional arenas, so
+        // release those leases before destroying their shared arena owner.
+        TerrainLod?.Dispose();
         ChunkRenderer?.Dispose();
         ChunkRenderer = new ChunkRenderer(_world, _game.Options);
-        TerrainLod?.Dispose();
         TerrainLod = new ClientTerrainLodRenderer(
             _world, (_world as ClientWorld)?.TerrainLodCache);
         ChunkRenderer.PresentationHandoff = TerrainLod;

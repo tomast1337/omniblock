@@ -414,6 +414,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     internal TerrainGpuArenaSnapshot TerrainGpuArenaProfile =>
         _terrainGpuArenas?.Snapshot() ?? default;
 
+    /// <summary>
+    ///     Shares the render-thread terrain arena owner with distant spatial presentations. LOD
+    ///     pages use different leases but must not create a parallel buffer/submission system.
+    /// </summary>
+    internal TerrainGpuArenaSet GetOrCreateTerrainGpuArenas(WebGpuDevice device) =>
+        _terrainGpuArenas ??= new TerrainGpuArenaSet(device);
+
     internal int MeshReadyRadius => _meshReadyRadius == int.MaxValue
         ? Math.Max(0, _lastRenderDistance)
         : _meshReadyRadius;

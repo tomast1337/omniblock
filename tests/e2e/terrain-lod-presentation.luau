@@ -66,6 +66,14 @@ assert(type(OMNI.client.state.terrainLodResourceReusedColumns) == "number",
     "LOD resource-reload column reuse gauge is unavailable")
 assert(type(OMNI.client.state.terrainLodResourceReusedGpuBytes) == "number",
     "LOD resource-reload GPU reuse gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodSpatialComplete) == "number",
+    "spatial LOD shadow coverage gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodSpatialSelected) == "number",
+    "spatial LOD shadow selection gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodSpatialGpuResident) == "number",
+    "spatial LOD shadow GPU residency gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodSpatialCpuTiles) == "number",
+    "spatial LOD shadow CPU residency gauge is unavailable")
 
 OMNI.waitUntil(function()
     return OMNI.client.state.terrainLodResident > 0 and
@@ -89,6 +97,9 @@ local pz = math.floor(OMNI.client.state.playerZ)
 OMNI.test.creative()
 OMNI.wait(0.25)
 OMNI.test.setBlock("omniblock:stone", px + 2, py + 3, pz)
+-- The fixture spawn varies across a dry/shore boundary. Seed one deterministic translucent block
+-- so this scenario tests the blended LOD path instead of depending on which spawn was selected.
+OMNI.test.setBlock("omniblock:water", px + 3, py + 3, pz)
 OMNI.wait(1)
 
 -- Atomic rebuild means the old coverage is retained while the edited revision converts.
@@ -109,13 +120,22 @@ OMNI.test.setLook(180, 25)
 OMNI.waitUntil(function()
     return OMNI.client.state.playerReady
 end, 45, 0.05)
-OMNI.waitUntil(function()
-    return OMNI.client.state.terrainLodLevel0Resident > 0 and
+local presentationReady = false
+for _ = 1, 400 do
+    presentationReady = OMNI.client.state.terrainLodLevel0Resident > 0 and
         OMNI.client.state.terrainLodLevel1Resident > 0 and
-        OMNI.client.state.terrainLodHandoffsStarted > 0 and
         OMNI.client.state.terrainLodPresented > 0 and
-    OMNI.client.state.terrainLodTranslucentPresented > 0
-end, 20, 0.05)
+        OMNI.client.state.terrainLodTranslucentPresented > 0
+    if presentationReady then break end
+    OMNI.wait(0.05)
+end
+assert(presentationReady,
+    "LOD presentation did not become ready: level0=" ..
+    tostring(OMNI.client.state.terrainLodLevel0Resident) ..
+    " level1=" .. tostring(OMNI.client.state.terrainLodLevel1Resident) ..
+    " handoffs=" .. tostring(OMNI.client.state.terrainLodHandoffsStarted) ..
+    " solid=" .. tostring(OMNI.client.state.terrainLodPresented) ..
+    " translucent=" .. tostring(OMNI.client.state.terrainLodTranslucentPresented))
 -- Let hierarchy handoffs and neighbor-boundary refreshes advance beyond their 250 ms overlap.
 OMNI.wait(1.5)
 assert(OMNI.client.state.terrainLodBoundaryLinked > 0,
@@ -167,6 +187,10 @@ print("terrain LOD: resident=" .. tostring(OMNI.client.state.terrainLodResident)
     " meshPredictedMs=" .. tostring(OMNI.client.state.terrainLodMeshPredictedMs) ..
     " meshCompileWaits=" .. tostring(OMNI.client.state.terrainLodMeshAdmissionDeferrals) ..
     " meshUploadWaits=" .. tostring(OMNI.client.state.terrainLodMeshUploadDeferrals) ..
+    " spatialComplete=" .. tostring(OMNI.client.state.terrainLodSpatialComplete) ..
+    " spatialSelected=" .. tostring(OMNI.client.state.terrainLodSpatialSelected) ..
+    " spatialGpu=" .. tostring(OMNI.client.state.terrainLodSpatialGpuResident) ..
+    " spatialCpu=" .. tostring(OMNI.client.state.terrainLodSpatialCpuTiles) ..
     " pending=" .. tostring(OMNI.client.state.terrainLodPending) ..
     " converting=" .. tostring(OMNI.client.state.terrainLodConverting))
 OMNI.test.pass()

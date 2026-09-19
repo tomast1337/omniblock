@@ -170,6 +170,22 @@ public sealed class TerrainLodConversionServiceTests
         Assert.Equal(0, service.Snapshot().OwnedChunks);
     }
 
+    [Fact]
+    public async Task Shipped_converter_builds_the_spatial_leaf_from_the_same_snapshot()
+    {
+        using var service = new TerrainLodConversionService(3, Materials, capacity: 2);
+        var source = Source(-4, 7, 13, width: 16, height: 8, depth: 16);
+        service.Submit(source);
+
+        var result = await Take(service);
+
+        Assert.NotNull(result.SpatialLeaf);
+        Assert.Equal(new TerrainLodTileKey(0, -4, 7), result.SpatialLeaf.Key);
+        Assert.True(result.SpatialLeaf.MatchesLeafSource(
+            source.TerrainRevision, source.SourceFingerprint));
+        Assert.Equal(result.SourceFingerprint, source.SourceFingerprint);
+    }
+
     private static TerrainLodConversionService Service(
         int capacity,
         Func<TerrainLodSourceSnapshot, TerrainLodHierarchy> convert) =>

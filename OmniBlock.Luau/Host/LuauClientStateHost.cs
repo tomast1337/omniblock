@@ -112,6 +112,17 @@ public static unsafe class LuauClientStateHost
                                                 key == "terrainLodMeshResultBytesPerKCell" or
                                                 key == "terrainLodMeshUploadBaseMs" or
                                                 key == "terrainLodMeshUploadMsPerMiB" or
+                                                key == "terrainLodSpatialComplete" or
+                                                key == "terrainLodSpatialSelected" or
+                                                key == "terrainLodSpatialParentFallbacks" or
+                                                key == "terrainLodSpatialMissingGroups" or
+                                                key == "terrainLodSpatialGpuResident" or
+                                                key == "terrainLodSpatialCpuTiles" or
+                                                key == "terrainLodSpatialCurrentTiles" or
+                                                key == "terrainLodSpatialMeshPending" or
+                                                key == "terrainLodSpatialMeshQueued" or
+                                                key == "terrainLodSpatialMeshRunning" or
+                                                key == "terrainLodSpatialMeshReady" or
                                                 key == "clientWorkingSetBytes" or
                                                 key == "terrainLodUploads" or key == "terrainLodGpuBytes" or
                                                 key == "terrainLodStaleResults" or key == "terrainLodRejected" or

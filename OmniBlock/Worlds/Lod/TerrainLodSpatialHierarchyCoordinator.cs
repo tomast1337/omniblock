@@ -152,7 +152,9 @@ public sealed class TerrainLodSpatialHierarchyCoordinator : IDisposable
     }
 
     /// <summary>Publishes at most <paramref name="maximumResults"/> valid CPU candidates.</summary>
-    public int DrainCompleted(int maximumResults)
+    public int DrainCompleted(
+        int maximumResults,
+        ICollection<TerrainLodColumnTile>? publications = null)
     {
         if (maximumResults <= 0) throw new ArgumentOutOfRangeException(nameof(maximumResults));
         var published = 0;
@@ -177,6 +179,7 @@ public sealed class TerrainLodSpatialHierarchyCoordinator : IDisposable
 
                 InstallLocked(tile, current: true, ignoreCurrent: false);
                 _parentPublications++;
+                publications?.Add(tile);
                 PersistLocked(tile);
                 published++;
                 if (tile.Key.Level < _policy.MaximumSpatialLevel)

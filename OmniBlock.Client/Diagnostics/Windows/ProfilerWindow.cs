@@ -56,7 +56,7 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
             DrawChunkLifecycle(chunkRenderer);
 
         if (ImGui.CollapsingHeader("Distant terrain LOD", ImGuiTreeNodeFlags.DefaultOpen))
-            DrawTerrainLod(ctx.TerrainLod);
+            DrawTerrainLod(ctx.TerrainLod, ctx.TerrainLodSpatial);
 
         if (ImGui.CollapsingHeader("Non-terrain presentation", ImGuiTreeNodeFlags.DefaultOpen))
             DrawNonTerrainPresentation();
@@ -293,7 +293,9 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         if (ImGui.Button("Reset mesh build profile")) chunkRenderer.ResetMeshProfile();
     }
 
-    private static void DrawTerrainLod(ClientTerrainLodSnapshot? profile)
+    private static void DrawTerrainLod(
+        ClientTerrainLodSnapshot? profile,
+        TerrainLodSpatialShadowSnapshot? spatialProfile)
     {
         if (profile is not { } lod)
         {
@@ -329,6 +331,16 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
             $"Resources: generation {lod.ResourceGeneration:N0}  reloads {lod.ResourceReloads:N0}  last reuse {lod.LastResourceReloadReusedColumns:N0} columns / {FormatBytes(lod.LastResourceReloadReusedGpuBytes)} GPU");
         ImGuiTextSafe.Text(
             $"Lifecycle: stale {lod.StaleResults:N0}  rejected {lod.RejectedAdmissions:N0}  evicted {lod.Evictions:N0}");
+        if (spatialProfile is not { } spatial) return;
+        ImGui.SeparatorText("Spatial LOD shadow");
+        ImGuiTextSafe.Text(
+            $"Root:      L{spatial.Root.Level} {spatial.Root.X},{spatial.Root.Z}  complete {spatial.CompleteCoverage}");
+        ImGuiTextSafe.Text(
+            $"Selection: {spatial.SelectedTiles:N0} tiles  parent fallbacks {spatial.ParentFallbacks:N0}  missing groups {spatial.MissingCoverageGroups:N0}");
+        ImGuiTextSafe.Text(
+            $"CPU tiles: {spatial.Hierarchy.Tiles:N0} total  {spatial.Hierarchy.CurrentTiles:N0} current  {spatial.Hierarchy.FallbackTiles:N0} fallback");
+        ImGuiTextSafe.Text(
+            $"GPU stage: {spatial.GpuPresentations:N0} resident  {spatial.PendingMeshCandidates:N0} pending  {spatial.MeshCompilation.Queued:N0} queued  {spatial.MeshCompilation.Running:N0} running  {spatial.MeshCompilation.Ready:N0} ready");
     }
 
     private static void DrawChunkLifecycle(ChunkRenderer chunkRenderer)

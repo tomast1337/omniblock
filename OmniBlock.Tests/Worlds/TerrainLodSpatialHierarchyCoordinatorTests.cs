@@ -23,7 +23,9 @@ public sealed class TerrainLodSpatialHierarchyCoordinatorTests
         await WaitUntil(() => coordinator.Snapshot().Construction.Ready == 1);
 
         Assert.False(coordinator.TryGetCoverage(parent, out _, out _));
-        Assert.Equal(1, coordinator.DrainCompleted(1));
+        List<TerrainLodColumnTile> publications = [];
+        Assert.Equal(1, coordinator.DrainCompleted(1, publications));
+        Assert.Equal(parent, Assert.Single(publications).Key);
         Assert.True(coordinator.TryGetCoverage(parent, out var tile, out var current));
         Assert.True(current);
         Assert.Equal(parent, tile!.Key);
