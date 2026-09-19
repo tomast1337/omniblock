@@ -2061,6 +2061,27 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         return true;
     }
 
+    /// <summary>
+    ///     An existing exact mesh is not yet a safe replacement for LOD coverage when it was built
+    ///     against a missing streamed neighbor. Keep the LOD handoff active until the deferred
+    ///     boundary rebuild has installed; otherwise liquid and transparent faces can briefly
+    ///     expose the old chunk edge as an internal wall.
+    /// </summary>
+    internal bool IsMeshColumnReadyForLodHandoff(int chunkX, int chunkZ)
+    {
+        if (!IsMeshColumnReady(chunkX, chunkZ)) return false;
+        for (var y = 0; y < ChuckFormat.WorldHeight; y += SubChunkRenderer.Size)
+        {
+            var position = new Vector3D<int>(
+                chunkX * SubChunkRenderer.Size, y, chunkZ * SubChunkRenderer.Size);
+            if (!_sections.TryGetValue(position, out var section) ||
+                ((section.DirtyReasons | section.DeferredDirtyReasons) &
+                 SectionDirtyReason.StreamingBoundary) != 0)
+                return false;
+        }
+        return true;
+    }
+
     private int CountPending(MeshWorkPriority priority)
     {
         var count = 0;

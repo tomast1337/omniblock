@@ -1,4 +1,5 @@
 using OmniBlock.Client.Rendering.Chunks.Lod;
+using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Tests.TestSupport;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Lod;
@@ -73,12 +74,31 @@ public sealed class TerrainLodSpatialMeshBuilderTests
             tile, world.Content.Blocks, verticalSliceBudget: 8);
 
         Assert.Equal(0, mesh.SolidQuadCount);
-        Assert.Equal(576, mesh.TranslucentQuadCount);
+        // The 16x16 liquid top and bottom are each one tiled quad. Only the 64 outer wall
+        // segments remain separate; the former per-column top/bottom grid is gone.
+        Assert.Equal(66, mesh.TranslucentQuadCount);
         Assert.All(mesh.Pages.SelectMany(static page => page.TranslucentLights), light =>
         {
             Assert.InRange(light.Block, (byte)0, (byte)60);
             Assert.InRange(light.Sky, (byte)0, (byte)60);
         });
+    }
+
+    [Fact]
+    public void Stationary_and_flowing_water_do_not_create_internal_tile_walls()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var flowing = checked((byte)world.Content.Blocks.Get("omniblock:flowing_water").Id);
+        var stationary = checked((byte)world.Content.Blocks.Get("omniblock:water").Id);
+        var tile = Leaf(materials, 0, 0, 32,
+            (x, y, _) => y < 8 ? x < 8 ? flowing : stationary : (byte)0);
+
+        var mesh = TerrainLodSpatialMeshBuilder.Build(
+            tile, world.Content.Blocks, verticalSliceBudget: 8);
+
+        Assert.DoesNotContain(mesh.Pages, page => HasQuadOnWorldPlane(
+            page, page.TranslucentVertices, axis: 0, position: 8));
     }
 
     [Fact]
@@ -243,5 +263,30 @@ public sealed class TerrainLodSpatialMeshBuilderTests
         var source = new TerrainLodSourceSnapshot(
             chunkX, chunkZ, 16, height, 16, blocks, metadata, terrainRevision: 1);
         return TerrainLodColumnTile.BuildLeaf(source, materials);
+    }
+
+    private static bool HasQuadOnWorldPlane(
+        TerrainLodSpatialMeshPage page,
+        ChunkVertex[] vertices,
+        int axis,
+        float position)
+    {
+        for (var index = 0; index < vertices.Length; index += 4)
+        {
+            var onPlane = true;
+            for (var corner = 0; corner < 4; corner++)
+            {
+                var vertex = vertices[index + corner];
+                var coordinate = axis switch
+                {
+                    0 => page.OriginX + vertex.X * 64.0f / 32767.0f,
+                    1 => page.OriginY + vertex.Y * 64.0f / 32767.0f,
+                    _ => page.OriginZ + vertex.Z * 64.0f / 32767.0f
+                };
+                onPlane &= Math.Abs(coordinate - position) < 0.01f;
+            }
+            if (onPlane) return true;
+        }
+        return false;
     }
 }

@@ -110,6 +110,14 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                 var top = heights[index + 1];
                 var ownerSpan = ownerColumn.At(bottom);
                 TerrainLodColumnSpan? neighborSpan = neighborColumn?.At(bottom);
+                if (neighborSpan is { } liquidNeighbor &&
+                    TerrainLodMeshBuilder.SharesLiquidMedium(
+                        ownerSpan.Material, liquidNeighbor.Material, blocks))
+                {
+                    EmitLiquidReconciliation(ownerSpan, ownerColumn,
+                        liquidNeighbor, neighborColumn!, bottom, top);
+                    continue;
+                }
                 EmitVisible(
                     ownerSpan, ownerColumn, neighborSpan, segment.OwnerSide,
                     neighborColumn is null ? exteriorBottom : bottom);
@@ -125,9 +133,9 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                     int minimumY)
                 {
                     if (!TerrainLodSpatialMeshBuilder.TryLayer(
-                            source.Material, out var translucent) ||
+                        source.Material, out var translucent) ||
                         !TerrainLodSpatialMeshBuilder.IsFaceVisible(
-                            source.Material, opposite, translucent) ||
+                            source.Material, opposite, translucent, blocks) ||
                         !blocks.TryGet(source.Material.BlockId, out var block) || block is null)
                         return;
 
@@ -154,6 +162,46 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                             y0, y1, along, end);
                         y0 = y1;
                     }
+                }
+
+                void EmitLiquidReconciliation(
+                    TerrainLodColumnSpan ownerLiquid,
+                    TerrainLodColumn ownerLiquidColumn,
+                    TerrainLodColumnSpan neighborLiquid,
+                    TerrainLodColumn neighborLiquidColumn,
+                    int intervalBottom,
+                    int intervalTop)
+                {
+                    var ownerTop = LiquidTop(ownerLiquid, ownerLiquidColumn, intervalTop);
+                    var neighborTop = LiquidTop(
+                        neighborLiquid, neighborLiquidColumn, intervalTop);
+                    if (Math.Abs(ownerTop - neighborTop) < 0.001f) return;
+
+                    var useOwner = ownerTop > neighborTop;
+                    var source = useOwner ? ownerLiquid : neighborLiquid;
+                    var opposite = useOwner ? neighborLiquid : ownerLiquid;
+                    var sourceSide = useOwner
+                        ? segment.OwnerSide
+                        : Opposite(segment.OwnerSide);
+                    if (!blocks.TryGet(source.Material.BlockId, out var liquidBlock) ||
+                        liquidBlock is null)
+                        return;
+                    EmitPatch(
+                        source, opposite, liquidBlock, translucent: true, sourceSide,
+                        Math.Max(intervalBottom, Math.Min(ownerTop, neighborTop)),
+                        Math.Max(ownerTop, neighborTop), along, end);
+                }
+
+                static float LiquidTop(
+                    TerrainLodColumnSpan span,
+                    TerrainLodColumn column,
+                    int intervalTop)
+                {
+                    var top = (float)intervalTop;
+                    if (intervalTop == span.TopY && span.TopY < column.WorldHeight &&
+                        column.At(span.TopY).IsAir)
+                        top -= FluidMath.GetFluidHeightFromMeta(span.Material.Metadata);
+                    return top;
                 }
             }
         }

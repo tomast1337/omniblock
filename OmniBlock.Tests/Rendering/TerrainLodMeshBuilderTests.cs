@@ -529,6 +529,41 @@ public sealed class TerrainLodMeshBuilderTests
     }
 
     [Fact]
+    public void Mixed_detail_equal_liquid_boundaries_do_not_create_an_internal_wall()
+    {
+        var world = new FakeWorldContext();
+        var water = world.Content.Blocks.Get("omniblock:flowing_water").Id;
+        var west = Build(world, (x, y, z) => y < 8 ? (byte)water : (byte)0,
+            chunkX: 0, chunkZ: 0);
+        var east = Build(world, (x, y, z) => y < 8 ? (byte)water : (byte)0,
+            chunkX: 1, chunkZ: 0);
+
+        var seam = TerrainLodSeamMeshBuilder.BuildTranslucent(
+            TerrainLodBoundarySummary.Capture(west, 0, 4), 0,
+            TerrainLodBoundarySummary.Capture(east, 1, 4), 1,
+            OmniBlock.Blocks.Side.East, world.Content.Blocks, true);
+
+        Assert.Empty(seam.Vertices);
+        Assert.Empty(seam.Lights);
+    }
+
+    [Fact]
+    public void Liquid_metadata_does_not_create_internal_voxel_walls()
+    {
+        var world = new FakeWorldContext();
+        var water = world.Content.Blocks.Get("omniblock:flowing_water").Id;
+        var hierarchy = Build(
+            world,
+            (x, y, z) => y < 8 ? (byte)water : (byte)0,
+            (x, y, z) => y < 8 && x >= 8 ? (byte)4 : (byte)0);
+
+        var mesh = TerrainLodMeshBuilder.Build(
+            hierarchy, 0, world.Content.Blocks, true);
+
+        Assert.False(HasQuadOnPlane(mesh.TranslucentVertices, axis: 0, position: 8));
+    }
+
+    [Fact]
     public void Different_liquid_heights_create_only_the_reconciliation_strip()
     {
         var world = new FakeWorldContext();

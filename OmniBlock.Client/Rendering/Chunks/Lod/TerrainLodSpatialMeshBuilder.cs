@@ -129,14 +129,14 @@ internal static class TerrainLodSpatialMeshBuilder
                 var maxY = span.TopY;
                 var renderMaxY = (float)maxY;
                 if (span.Material.Geometry == TerrainLodGeometryClass.Liquid &&
-                    IsFaceVisible(span.Material, NeighborAt(column, maxY), translucent))
+                    IsFaceVisible(span.Material, NeighborAt(column, maxY), translucent, blocks))
                     renderMaxY -= FluidMath.GetFluidHeightFromMeta(span.Material.Metadata);
 
                 var below = NeighborAt(column, minY - 1);
                 var above = NeighborAt(column, maxY);
-                if (IsFaceVisible(span.Material, below, translucent))
+                if (IsFaceVisible(span.Material, below, translucent, blocks))
                     EmitHorizontal(Side.Down, minY, anchorY: minY, 0.5f, below);
-                if (IsFaceVisible(span.Material, above, translucent))
+                if (IsFaceVisible(span.Material, above, translucent, blocks))
                     EmitHorizontal(Side.Up, renderMaxY, anchorY: maxY - 1, 1.0f, above);
 
                 EmitSide(Side.West, x - 1, z, minX, minZ, maxZ, 0.6f);
@@ -189,7 +189,7 @@ internal static class TerrainLodSpatialMeshBuilder
                             ? NeighborAt(neighbor, y)
                             : null;
                         var visible = y < maxY && IsFaceVisible(
-                            span.Material, adjacent, translucent);
+                            span.Material, adjacent, translucent, blocks);
                         var light = FaceLight(span, adjacent, side);
                         if (visible && runStart >= 0 && light != runLight)
                         {
@@ -324,10 +324,14 @@ internal static class TerrainLodSpatialMeshBuilder
     internal static bool IsFaceVisible(
         TerrainLodMaterial material,
         TerrainLodColumnSpan? neighbor,
-        bool translucent)
+        bool translucent,
+        IBlockRuntimeView blocks)
     {
         if (neighbor is null || neighbor.Value.IsAir) return true;
         if (neighbor.Value.Material.OccludesFaces) return false;
+        if (translucent && TerrainLodMeshBuilder.SharesLiquidMedium(
+                material, neighbor.Value.Material, blocks))
+            return false;
         return !translucent || neighbor.Value.Material != material;
     }
 
@@ -436,8 +440,8 @@ internal static class TerrainLodSpatialMeshBuilder
 
         public TerrainLodSpatialMeshPage Build(TerrainLodSpatialMeshPageKey key)
         {
-            var solid = Flatten(_solid);
-            var translucent = Flatten(_translucent);
+            var solid = Flatten(_solid, mergeHorizontal: false);
+            var translucent = Flatten(_translucent, mergeHorizontal: true);
             return new TerrainLodSpatialMeshPage(
                 key, OriginX, OriginY, OriginZ,
                 solid.Vertices, solid.Lights, solid.Ranges,
@@ -447,7 +451,7 @@ internal static class TerrainLodSpatialMeshBuilder
         private static List<Quad>[] CreateBuckets() =>
             Enumerable.Range(0, 6).Select(static _ => new List<Quad>()).ToArray();
 
-        private static LayerData Flatten(List<Quad>[] buckets)
+        private static LayerData Flatten(List<Quad>[] buckets, bool mergeHorizontal)
         {
             List<ChunkVertex> vertices = [];
             List<ChunkLightVertex> lights = [];
@@ -455,15 +459,26 @@ internal static class TerrainLodSpatialMeshBuilder
             for (var bucket = 0; bucket < buckets.Length; bucket++)
             {
                 var firstQuad = vertices.Count / 4;
+                List<ChunkVertex> bucketVertices = [];
+                List<ChunkLightVertex> bucketLights = [];
                 foreach (var quad in buckets[bucket])
                 {
-                    vertices.Add(quad.A);
-                    vertices.Add(quad.B);
-                    vertices.Add(quad.C);
-                    vertices.Add(quad.D);
-                    for (var index = 0; index < 4; index++) lights.Add(quad.Light);
+                    bucketVertices.Add(quad.A);
+                    bucketVertices.Add(quad.B);
+                    bucketVertices.Add(quad.C);
+                    bucketVertices.Add(quad.D);
+                    for (var index = 0; index < 4; index++) bucketLights.Add(quad.Light);
                 }
-                ranges[bucket] = new ChunkQuadRange(firstQuad, buckets[bucket].Count);
+                var merged = mergeHorizontal &&
+                             bucket is (int)Side.Down or (int)Side.Up
+                    ? TerrainLodHorizontalQuadMerger.Merge(
+                        [.. bucketVertices],
+                        [.. bucketLights])
+                    : new TerrainLodHorizontalQuadMerger.MergedQuads(
+                        [.. bucketVertices], [.. bucketLights]);
+                vertices.AddRange(merged.Vertices);
+                lights.AddRange(merged.Lights);
+                ranges[bucket] = new ChunkQuadRange(firstQuad, merged.Vertices.Length / 4);
             }
             ranges[6] = new ChunkQuadRange(vertices.Count / 4, 0);
             return new LayerData(

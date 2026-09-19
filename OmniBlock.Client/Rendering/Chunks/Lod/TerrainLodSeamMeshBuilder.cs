@@ -140,7 +140,8 @@ internal static class TerrainLodSeamMeshBuilder
                 if (ownerVisible && neighborVisible &&
                     ownerMaterial.Geometry == TerrainLodGeometryClass.Liquid &&
                     neighborMaterial.Geometry == TerrainLodGeometryClass.Liquid &&
-                    ownerMaterial.BlockId == neighborMaterial.BlockId)
+                    TerrainLodMeshBuilder.SharesLiquidMedium(
+                        ownerMaterial, neighborMaterial, blocks))
                 {
                     var ownerTop = maxY - FluidMath.GetFluidHeightFromMeta(ownerMaterial.Metadata);
                     var neighborTop = maxY - FluidMath.GetFluidHeightFromMeta(neighborMaterial.Metadata);

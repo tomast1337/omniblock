@@ -2120,7 +2120,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                           _world.BlockHost.HasChunk(key.X, key.Z) &&
                           _world.BlockHost.GetChunk(key.X, key.Z).Loaded;
         return (nearPresent,
-            nearPresent && nearRenderer.IsMeshColumnReady(key.X, key.Z));
+            nearPresent && nearRenderer.IsMeshColumnReadyForLodHandoff(key.X, key.Z));
     }
 
     private TerrainLodHandoffTransition UpdateHandoff(

@@ -322,25 +322,38 @@ internal static class TerrainLodMeshBuilder
                     (maxX, renderMaxY, maxZ), (maxX, renderMaxY, minZ),
                     (minX, renderMaxY, minZ), (minX, renderMaxY, maxZ));
             if ((cell.ExposedFaces & TerrainLodFaceMask.West) != 0 &&
-                x > 0 && !CullUndergroundFace(Side.West))
+                x > 0 && ShouldEmitLiquidSide(x - 1, y, z) &&
+                !CullUndergroundFace(Side.West))
                 AddFace(Side.West, 0.6f, tileZ, tileY,
                     (minX, renderMaxY, minZ), (minX, minY, minZ),
                     (minX, minY, maxZ), (minX, renderMaxY, maxZ));
             if ((cell.ExposedFaces & TerrainLodFaceMask.East) != 0 &&
-                x < level.Width - 1 && !CullUndergroundFace(Side.East))
+                x < level.Width - 1 && ShouldEmitLiquidSide(x + 1, y, z) &&
+                !CullUndergroundFace(Side.East))
                 AddFace(Side.East, 0.6f, tileZ, tileY,
                     (maxX, renderMaxY, maxZ), (maxX, minY, maxZ),
                     (maxX, minY, minZ), (maxX, renderMaxY, minZ));
             if ((cell.ExposedFaces & TerrainLodFaceMask.North) != 0 &&
-                z > 0 && !CullUndergroundFace(Side.North))
+                z > 0 && ShouldEmitLiquidSide(x, y, z - 1) &&
+                !CullUndergroundFace(Side.North))
                 AddFace(Side.North, 0.8f, tileX, tileY,
                     (maxX, renderMaxY, minZ), (maxX, minY, minZ),
                     (minX, minY, minZ), (minX, renderMaxY, minZ));
             if ((cell.ExposedFaces & TerrainLodFaceMask.South) != 0 &&
-                z < level.Depth - 1 && !CullUndergroundFace(Side.South))
+                z < level.Depth - 1 && ShouldEmitLiquidSide(x, y, z + 1) &&
+                !CullUndergroundFace(Side.South))
                 AddFace(Side.South, 0.8f, tileX, tileY,
                     (minX, renderMaxY, maxZ), (minX, minY, maxZ),
                     (maxX, minY, maxZ), (maxX, renderMaxY, maxZ));
+
+            bool ShouldEmitLiquidSide(int neighborX, int neighborY, int neighborZ)
+            {
+                if (!translucent || material.Geometry != TerrainLodGeometryClass.Liquid)
+                    return true;
+                var neighborCell = level[neighborX, neighborY, neighborZ];
+                return !TrySelectTranslucentMaterial(neighborCell, out var neighborMaterial) ||
+                       !SharesLiquidMedium(material, neighborMaterial, blocks);
+            }
 
             bool CullUndergroundFace(Side side)
             {
@@ -524,7 +537,9 @@ internal static class TerrainLodMeshBuilder
             }
         }
 
-        return new TerrainLodLayerData([.. vertices], [.. lights]);
+        if (!translucent) return new TerrainLodLayerData([.. vertices], [.. lights]);
+        var merged = TerrainLodHorizontalQuadMerger.Merge([.. vertices], [.. lights]);
+        return new TerrainLodLayerData(merged.Vertices, merged.Lights);
     }
 
     internal static bool IsDepthWriting(TerrainLodMaterial material) =>
@@ -544,6 +559,26 @@ internal static class TerrainLodMeshBuilder
     internal static bool IsTranslucent(TerrainLodMaterial material) =>
         material.Geometry is TerrainLodGeometryClass.Liquid or
             TerrainLodGeometryClass.Translucent;
+
+    /// <summary>
+    ///     Fluid metadata and stationary/flowing block variants describe the surface, not a
+    ///     boundary between two media. The exact renderer makes this decision from the canonical
+    ///     block material; LOD construction must use the same rule or it exposes a cube grid inside
+    ///     continuous water and lava volumes.
+    /// </summary>
+    internal static bool SharesLiquidMedium(
+        TerrainLodMaterial first,
+        TerrainLodMaterial second,
+        IBlockRuntimeView blocks)
+    {
+        if (first.Geometry != TerrainLodGeometryClass.Liquid ||
+            second.Geometry != TerrainLodGeometryClass.Liquid)
+            return false;
+        if (first.BlockId == second.BlockId) return true;
+        return blocks.TryGet(first.BlockId, out var firstBlock) && firstBlock is not null &&
+               blocks.TryGet(second.BlockId, out var secondBlock) && secondBlock is not null &&
+               ReferenceEquals(firstBlock.Material, secondBlock.Material);
+    }
 
     internal static bool TrySelectDepthMaterial(
         in TerrainLodCell cell,
