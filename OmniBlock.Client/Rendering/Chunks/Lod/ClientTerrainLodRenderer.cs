@@ -443,7 +443,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 case null:
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(disposition));
+                    throw new InvalidOperationException(
+                        $"Unknown remote tile request disposition '{disposition}'.");
             }
         }
 

@@ -146,6 +146,7 @@ public class SubChunkRenderer : IDisposable
         signature = AddSignature(signature, presentation.Epoch);
         signature = AddSignature(signature, pass);
         var stats = new DirectionalDrawStats(0, 0, 0, 0, 0, signature);
+        Span<ChunkQuadRange> selected = stackalloc ChunkQuadRange[7];
         for (var pageIndex = 0; pageIndex < presentation.Pages.Count; pageIndex++)
         {
             var page = presentation.Pages[pageIndex];
@@ -153,7 +154,6 @@ public class SubChunkRenderer : IDisposable
             if (mesh == null) continue;
 
             var ranges = page!.RangesFor(pass);
-            Span<ChunkQuadRange> selected = stackalloc ChunkQuadRange[7];
             var faceMask = DirectionalFaceVisibility.ForPage(Position, pageIndex, viewPosition);
             var selectedCount = ranges.Select(faceMask, selected);
             if (selectedCount == 0) continue;
@@ -203,6 +203,7 @@ public class SubChunkRenderer : IDisposable
         signature = AddSignature(signature, presentation.Epoch);
         signature = AddSignature(signature, pass);
         var stats = new DirectionalDrawStats(0, 0, 0, 0, 0, signature);
+        Span<ChunkQuadRange> selected = stackalloc ChunkQuadRange[7];
         for (var pageIndex = 0; pageIndex < presentation.Pages.Count; pageIndex++)
         {
             var page = presentation.Pages[pageIndex];
@@ -210,7 +211,6 @@ public class SubChunkRenderer : IDisposable
             if (mesh == null) continue;
 
             var ranges = page!.RangesFor(pass);
-            Span<ChunkQuadRange> selected = stackalloc ChunkQuadRange[7];
             var faceMask = DirectionalFaceVisibility.ForPage(Position, pageIndex, viewPosition);
             var selectedCount = ranges.Select(faceMask, selected);
             if (selectedCount == 0) continue;
@@ -241,13 +241,13 @@ public class SubChunkRenderer : IDisposable
         uint drawMetadataIndex)
     {
         if (disposed || _presentation is not { } presentation) return;
+        Span<ChunkQuadRange> selected = stackalloc ChunkQuadRange[7];
         for (var pageIndex = 0; pageIndex < presentation.Pages.Count; pageIndex++)
         {
             var page = presentation.Pages[pageIndex];
             if (page?.Solid is not { } mesh) continue;
 
             var ranges = page.RangesFor(0);
-            Span<ChunkQuadRange> selected = stackalloc ChunkQuadRange[7];
             var faceMask = DirectionalFaceVisibility.ForPage(Position, pageIndex, viewPosition);
             var selectedCount = ranges.Select(faceMask, selected);
             if (selectedCount == 0) continue;
