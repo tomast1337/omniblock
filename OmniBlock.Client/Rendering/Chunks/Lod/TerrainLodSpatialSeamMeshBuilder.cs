@@ -69,9 +69,9 @@ internal static class TerrainLodSpatialSeamMeshBuilder
             ? ownerSample
             : checked(1 << neighbor.HorizontalSampleLevel);
         var step = Math.Min(ownerSample, neighborSample);
-        if (step > TerrainLodSpatialMeshBuilder.MaximumQuadSpan)
+        if (step > TerrainLodSpatialMeshBuilder.MaximumSampleSpan)
             throw new NotSupportedException(
-                $"Spatial seam sample size {step} exceeds the packed tiled-UV limit.");
+                $"Spatial seam sample size {step} exceeds the packed position-page limit.");
 
         var fixedBlock = CheckedBlock(segment.FixedChunkCoordinate);
         var alongStart = CheckedBlock(segment.AlongStartChunk);

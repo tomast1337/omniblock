@@ -58,7 +58,12 @@ public struct ChunkVertex
     /// <summary>Which layer of the terrain array this vertex samples.</summary>
     [FieldOffset(16)] public byte ArrayLayer;
 
-    [FieldOffset(17)] public byte PadTail0;
+    /// <summary>
+    ///     Power-of-two multiplier applied to both decoded UV coordinates. Ordinary chunk quads
+    ///     use zero; coarse terrain LOD faces use it to tile beyond sixteen blocks without giving
+    ///     up the exact renderer's fixed-point UV precision.
+    /// </summary>
+    [FieldOffset(17)] public byte UvScaleExponent;
     [FieldOffset(18)] public byte PadTail1;
     [FieldOffset(19)] public byte PadTail2; // 4-byte-stride alignment
 }
@@ -80,7 +85,8 @@ public static class ChunkVertexHelper
         float z,
         float u,
         float v,
-        int arrayLayer)
+        int arrayLayer,
+        byte uvScaleExponent = 0)
     {
         return new ChunkVertex
         {
@@ -92,7 +98,7 @@ public static class ChunkVertexHelper
             V = FloatToShortUV(v),
             ArrayLayer = (byte)arrayLayer,
             PadPosition = 0,
-            PadTail0 = 0,
+            UvScaleExponent = uvScaleExponent,
             PadTail1 = 0,
             PadTail2 = 0
         };

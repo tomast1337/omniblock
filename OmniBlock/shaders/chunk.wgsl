@@ -120,7 +120,8 @@ struct VertexInput {
     @location(1) uv: vec2<u32>,             // Uint16x2 at offset 12
     @location(2) color: vec4<f32>,          // Unorm8x4 at offset 8
     @location(3) light: vec2<u32>,          // Uint8x2 at offset 16
-    @location(4) @interpolate(flat) arrayLayer: vec2<u32>, // Uint8x2 at offset 18, .x is the layer
+    // Uint8x2 at offset 16: .x is the texture-array layer and .y is the power-of-two UV scale.
+    @location(4) @interpolate(flat) arrayLayer: vec2<u32>,
 }
 
 struct VertexOutput {
@@ -144,9 +145,11 @@ fn vs_main(in: VertexInput, @builtin(instance_index) drawIndex: u32) -> VertexOu
     let cellDelta = draw.regionCell - frame.cameraCell;
     let relativeOrigin = vec3<f32>(cellDelta) * 1024.0 + draw.localOrigin - frame.cameraLocal;
 
-    // UV: ushort range, the full 0–65535 maps to 0.0–16.0 — a sub-chunk's width, the widest a
-    // greedy-merged quad can tile across. Must match Tessellator.UV_SCALE exactly (encode/decode).
-    let uv = vec2<f32>(f32(in.uv.x), f32(in.uv.y)) / 4095.0;
+    // UV: ushort range maps to 0.0–16.0 at exponent zero. Coarse LOD faces retain that precision
+    // and carry a shared power-of-two multiplier in the byte beside their array layer.
+    // Must match ChunkVertexHelper.UV_SCALE exactly.
+    let uv = vec2<f32>(f32(in.uv.x), f32(in.uv.y)) / 4095.0 *
+        exp2(f32(in.arrayLayer.y));
     let layer = in.arrayLayer.x;
     let wavy = frame.wavyLeavesStrength + frame.wavyPlantStrength;
 

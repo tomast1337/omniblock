@@ -32,9 +32,9 @@ public sealed class ChunkMeshBuilderTests
 
             for (var i = 0; i < expected.Length; i++)
             {
-                AssertVertex(expected[i], vertices.Buffer[i]);
-                Assert.Equal(expected[i].PadTail0, lights.Buffer[i].Sky);
-                Assert.Equal(expected[i].PadTail1, lights.Buffer[i].Block);
+                AssertVertex(expected[i].Vertex, vertices.Buffer[i]);
+                Assert.Equal(expected[i].SkyLight, lights.Buffer[i].Sky);
+                Assert.Equal(expected[i].BlockLight, lights.Buffer[i].Block);
             }
         }
     }
@@ -114,7 +114,7 @@ public sealed class ChunkMeshBuilderTests
             Assert.All(lights.Span.ToArray(), light => Assert.Equal(1, light.Pad0));
             Assert.All(vertices.Span.ToArray(), vertex =>
             {
-                Assert.Equal(0, vertex.PadTail0);
+                Assert.Equal(0, vertex.UvScaleExponent);
                 Assert.Equal(0, vertex.PadTail1);
                 Assert.Equal(0, vertex.PadTail2);
             });
@@ -151,21 +151,27 @@ public sealed class ChunkMeshBuilderTests
         sink.addVertexWithUV(x + 1, 0, 0, 1, 0);
     }
 
-    private static ChunkVertex V(
+    private static ExpectedVertex V(
         short x, short y, short z,
         ushort u, ushort v,
-        int color, byte skyLight, byte blockLight, byte arrayLayer) => new()
-    {
-        X = x,
-        Y = y,
-        Z = z,
-        U = u,
-        V = v,
-        Color = color,
-        ArrayLayer = arrayLayer,
-        PadTail0 = skyLight,
-        PadTail1 = blockLight
-    };
+        int color, byte skyLight, byte blockLight, byte arrayLayer) => new(
+        new ChunkVertex
+        {
+            X = x,
+            Y = y,
+            Z = z,
+            U = u,
+            V = v,
+            Color = color,
+            ArrayLayer = arrayLayer
+        },
+        skyLight,
+        blockLight);
+
+    private readonly record struct ExpectedVertex(
+        ChunkVertex Vertex,
+        byte SkyLight,
+        byte BlockLight);
 
     private static void AssertVertex(ChunkVertex expected, ChunkVertex actual)
     {
@@ -177,7 +183,7 @@ public sealed class ChunkMeshBuilderTests
         Assert.Equal(expected.U, actual.U);
         Assert.Equal(expected.V, actual.V);
         Assert.Equal(expected.ArrayLayer, actual.ArrayLayer);
-        Assert.Equal(0, actual.PadTail0);
+        Assert.Equal(0, actual.UvScaleExponent);
         Assert.Equal(0, actual.PadTail1);
         Assert.Equal(0, actual.PadTail2);
     }

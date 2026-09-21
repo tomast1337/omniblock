@@ -231,6 +231,46 @@ public sealed class TerrainLodSpatialMeshBuilderTests
         });
     }
 
+    [Theory]
+    [InlineData(5, 32, 1)]
+    [InlineData(6, 64, 2)]
+    public void Public_large_horizon_samples_use_packed_uv_scale_without_losing_tiling(
+        int horizontalSampleLevel,
+        int expectedSampleSize,
+        byte expectedExponent)
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var stone = world.Content.Blocks.Get("omniblock:stone");
+        var column = TerrainLodColumn.Create(128,
+        [
+            new TerrainLodColumnSpan(
+                0, 64, materials.Resolve(stone.Id, metadata: 0), blockLight: 0, skyLight: 0),
+            new TerrainLodColumnSpan(
+                64, 64, TerrainLodMaterial.Air, blockLight: 0, skyLight: 15)
+        ]);
+        var tile = TerrainLodColumnTile.CreateUniform(
+            new TerrainLodTileKey(horizontalSampleLevel + 2, 0, 0),
+            horizontalSampleLevel,
+            128,
+            column,
+            $"packed-uv-{horizontalSampleLevel}");
+
+        var mesh = TerrainLodSpatialMeshBuilder.Build(
+            tile, world.Content.Blocks, verticalSliceBudget: 4,
+            emitTileBoundaryFaces: false);
+        var vertices = mesh.Pages.SelectMany(static page => page.Vertices).ToArray();
+
+        Assert.NotEmpty(vertices);
+        Assert.All(vertices, vertex => Assert.Equal(expectedExponent, vertex.UvScaleExponent));
+        Assert.Equal(expectedSampleSize,
+            vertices.Max(vertex => vertex.U / 4095f * (1 << vertex.UvScaleExponent)),
+            precision: 3);
+        Assert.Equal(expectedSampleSize,
+            vertices.Max(vertex => vertex.V / 4095f * (1 << vertex.UvScaleExponent)),
+            precision: 3);
+    }
+
     private static TerrainLodColumnTile BuildUniformTree(
         TerrainLodTileKey key,
         TerrainLodMaterialCatalog materials,

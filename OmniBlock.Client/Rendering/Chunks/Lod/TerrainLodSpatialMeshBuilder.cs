@@ -57,10 +57,12 @@ internal sealed record TerrainLodSpatialMeshData(
 /// </summary>
 internal static class TerrainLodSpatialMeshBuilder
 {
-    // ChunkVertex uses 32767 / 64 fixed-point positions. UVs can repeat across at most sixteen
-    // blocks, so larger faces are divided before they reach the packed stream.
+    // ChunkVertex uses 32767 / 64 fixed-point positions. Vertical runs remain split at sixteen
+    // blocks; a coarse horizontal sample may span one complete 64-block page and carries a packed
+    // power-of-two UV scale so its texture still repeats once per block.
     internal const int PageSize = 64;
     internal const int MaximumQuadSpan = 16;
+    internal const int MaximumSampleSpan = PageSize;
 
     public static TerrainLodSpatialMeshData Build(
         TerrainLodColumnTile tile,
@@ -75,10 +77,10 @@ internal static class TerrainLodSpatialMeshBuilder
             throw new ArgumentOutOfRangeException(nameof(verticalSliceBudget));
 
         var sampleSize = checked(1 << tile.HorizontalSampleLevel);
-        if (sampleSize > MaximumQuadSpan)
+        if (sampleSize > MaximumSampleSpan)
             throw new NotSupportedException(
-                $"Spatial terrain sample size {sampleSize} exceeds the packed tiled-UV limit " +
-                $"of {MaximumQuadSpan} blocks.");
+                $"Spatial terrain sample size {sampleSize} exceeds the packed position-page " +
+                $"limit of {MaximumSampleSpan} blocks.");
         var expectedFootprint = checked((long)tile.Key.ChunkWidth * 16);
         if ((long)tile.Width * sampleSize != expectedFootprint)
             throw new InvalidDataException(
@@ -153,7 +155,7 @@ internal static class TerrainLodSpatialMeshBuilder
                 {
                     var appearance = Appearance(block, span.Material, side);
                     var light = FaceLight(span, exposedNeighbor, side);
-                    // sampleSize is bounded by MaximumQuadSpan and the power-of-two sample grid is
+                    // sampleSize is bounded by MaximumSampleSpan and the power-of-two sample grid is
                     // aligned to every page boundary, so this quad can never straddle a page.
                     var page = PageFor(
                         minX + sampleSize / 2.0,
@@ -393,6 +395,8 @@ internal static class TerrainLodSpatialMeshBuilder
         {
             var layer = Atlases.Terrain.LayerOfGridIndex(texture);
             var color = TerrainLodMeshBuilder.PackTintedColor(tint, shade);
+            var uvScaleExponent = UvScaleExponent(Math.Max(tileU, tileV));
+            var uvScale = 1 << uvScaleExponent;
             page.Add(translucent, side, light,
                 Vertex(a, tileU, 0),
                 Vertex(b, tileU, tileV),
@@ -405,8 +409,21 @@ internal static class TerrainLodSpatialMeshBuilder
                     value.X - page.OriginX,
                     value.Y - page.OriginY,
                     value.Z - page.OriginZ,
-                    u, v, layer);
+                    u / uvScale, v / uvScale, layer, uvScaleExponent);
         }
+    }
+
+    internal static byte UvScaleExponent(float maximumUv)
+    {
+        if (!float.IsFinite(maximumUv) || maximumUv < 0)
+            throw new ArgumentOutOfRangeException(nameof(maximumUv));
+        byte exponent = 0;
+        while (maximumUv > MaximumQuadSpan)
+        {
+            maximumUv *= 0.5f;
+            exponent++;
+        }
+        return exponent;
     }
 
     internal static int FloorDivide(int value, int divisor)
