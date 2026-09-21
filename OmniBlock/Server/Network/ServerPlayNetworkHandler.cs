@@ -33,6 +33,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     private readonly OmniBlockServer server;
     private readonly Dictionary<int, short> transactions = new();
     private readonly TerrainLodSendPacer _terrainLodPacer = new();
+    private readonly TerrainLodRequestQueue _terrainLodRequests = new();
 
     private long _lastMoveBudgetRefillMs = Environment.TickCount64;
 
@@ -191,85 +192,216 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 StringComparison.Ordinal))
         {
             if (request.Keys.Length > 0)
-                SendTerrainLodStatus(
+                QueueTerrainLodStatus(
                     request.Keys[0],
                     TerrainLodTileStatus.Incompatible,
-                    identityFingerprint);
+                    identityFingerprint,
+                    "The requested terrain LOD cache identity does not match this dimension.");
+            return;
+        }
+        if (identity.GetRequestIncompatibility(
+                request.MaximumSpatialLevel,
+                request.QualityPolicyVersion,
+                TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel) is { } incompatibility)
+        {
+            if (request.Keys.Length > 0)
+                QueueTerrainLodStatus(
+                    request.Keys[0],
+                    TerrainLodTileStatus.Incompatible,
+                    identityFingerprint,
+                    incompatibility);
             return;
         }
         var playerChunkX = player.X / 16.0;
         var playerChunkZ = player.Z / 16.0;
-        var responded = 0;
+        var accepted = 0;
         foreach (var key in request.Keys.Distinct())
         {
             // Level-zero/one records reveal almost full chunk detail and belong to ordinary chunk
             // streaming. The distant lane begins at a 4x4-chunk aggregate and never generates on
             // demand; it can only return an already-approved persistent server record.
             if (key.Level < TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel ||
-                key.Level > TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel ||
+                key.Level > request.MaximumSpatialLevel ||
                 key.DistanceTo(playerChunkX, playerChunkZ) >
                 TerrainLodSpatialPolicy.MaximumSupportedHorizonChunks)
                 continue;
-            try
+            var queued = new QueuedTerrainLodRequest(
+                request.Dimension,
+                identityFingerprint,
+                request.MaximumSpatialLevel,
+                request.QualityPolicyVersion,
+                key);
+            switch (_terrainLodRequests.Enqueue(queued))
             {
-                TerrainLodTileAvailability availability;
-                TerrainLodTileMessage? message = null;
-                if (WantsCompactPayloads)
-                {
-                    availability = world.GetTerrainLodPayload(key, out var payload);
-                    if (availability == TerrainLodTileAvailability.Ready && payload is not null)
-                        message = TerrainLodTileMessage.FromCompressed(
-                            player.DimensionId, payload, identityFingerprint);
-                }
-                else
-                {
-                    availability = world.GetTerrainLodCoverage(key, out var tile);
-                    if (availability == TerrainLodTileAvailability.Ready && tile is not null)
-                        message = TerrainLodTileMessage.Loopback(
-                            player.DimensionId, tile, identityFingerprint);
-                }
-
-                if (message is not null && !_terrainLodPacer.TryConsume(
-                        WantsCompactPayloads ? message.Size() : 0,
-                        player.PendingChunkSendCount,
-                        getWorldPacketBacklog()))
-                {
-                    availability = TerrainLodTileAvailability.Pending;
-                    SendTerrainLodStatus(
-                        key, TerrainLodTileStatus.Deferred, identityFingerprint);
-                }
-                else if (message is not null)
-                {
-                    SendMessage(message);
-                }
-                else
-                {
-                    SendTerrainLodStatus(key, availability == TerrainLodTileAvailability.Missing
-                        ? TerrainLodTileStatus.Missing
-                        : TerrainLodTileStatus.Pending, identityFingerprint);
-                }
-
-                if (++responded >= MaximumTerrainLodResponsesPerRequest) break;
-            }
-            catch (InvalidDataException error)
-            {
-                _logger.LogWarning(error, "Terrain LOD tile {Tile} could not be sent to {Player}.",
-                    key, player.Name);
+                case TerrainLodRequestEnqueueResult.Added:
+                    if (++accepted >= MaximumTerrainLodResponsesPerRequest) return;
+                    break;
+                case TerrainLodRequestEnqueueResult.Full:
+                    // The queue itself is the memory and amplification bound. Do not bypass it to
+                    // report that it is full; the client's ordinary retry policy will ask again.
+                    return;
             }
         }
     }
 
-    private void SendTerrainLodStatus(
+    internal int PendingTerrainLodRequestCount => _terrainLodRequests.Count;
+
+    /// <summary>
+    ///     Attempts one queued distant-terrain reply. Called by the player manager's round-robin
+    ///     scheduler only after gameplay chunks have had their tick's send opportunity.
+    /// </summary>
+    internal TerrainLodFlushResult FlushOneTerrainLodResponse(TerrainLodGlobalSendPacer globalPacer)
+    {
+        if (!_terrainLodRequests.TryPeek(out var request))
+            return TerrainLodFlushResult.NoWork;
+
+        // A dimension transfer invalidates the old disclosure context. Discard it without emitting
+        // a response from the new dimension; the new identity message causes the client to replan.
+        if (request.Dimension != player.DimensionId)
+        {
+            _terrainLodRequests.TryDequeue(out _);
+            return TerrainLodFlushResult.Progress;
+        }
+
+        // UDP needs the ordered-channel depth here because handing another fragmented payload to
+        // the socket can still consume link capacity. Loopback already has an isolated bulk inbox
+        // which is promoted only after its normal inbox drains; treating that normal inbox as a
+        // producer gate as well would starve LOD whenever tick/entity traffic is continuous.
+        var gameplayBacklog = connection.IsInternal ? 0 : getWorldPacketBacklog();
+        var bulkBacklog = connection.getBulkPacketBacklog();
+        if (!_terrainLodPacer.CanSend(
+                0, player.PendingChunkSendCount, gameplayBacklog, bulkBacklog))
+            return TerrainLodFlushResult.Blocked;
+
+        var world = server.getWorld(player.DimensionId);
+        var identity = world.TerrainLodIdentity;
+        if (request.ImmediateStatus is { } immediateStatus)
+            return TrySendQueuedTerrainLodResponse(
+                CreateTerrainLodStatus(
+                    request.Tile,
+                    immediateStatus,
+                    request.CacheIdentity,
+                    request.Diagnostic),
+                globalPacer,
+                gameplayBacklog,
+                bulkBacklog);
+
+        if (identity is null ||
+            !string.Equals(request.CacheIdentity, identity.CompatibilityFingerprint,
+                StringComparison.Ordinal) ||
+            identity.GetRequestIncompatibility(
+                request.MaximumSpatialLevel,
+                request.QualityPolicyVersion,
+                TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel) is not null)
+        {
+            _terrainLodRequests.TryDequeue(out _);
+            return TerrainLodFlushResult.Progress;
+        }
+
+        // Disclosure is decided when bytes leave, not merely when the request arrived. A player
+        // can teleport or run far enough while this request waits that the tile no longer belongs
+        // to the server-approved horizon around their current position.
+        if (request.Tile.Level < TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel ||
+            request.Tile.Level > request.MaximumSpatialLevel ||
+            request.Tile.DistanceTo(player.X / 16.0, player.Z / 16.0) >
+            TerrainLodSpatialPolicy.MaximumSupportedHorizonChunks)
+        {
+            _terrainLodRequests.TryDequeue(out _);
+            return TerrainLodFlushResult.Progress;
+        }
+
+        try
+        {
+            TerrainLodTileAvailability availability;
+            Message response;
+            if (WantsCompactPayloads)
+            {
+                availability = world.GetTerrainLodPayload(request.Tile, out var payload);
+                response = availability == TerrainLodTileAvailability.Ready && payload is not null
+                    ? TerrainLodTileMessage.FromCompressed(
+                        player.DimensionId, payload, request.CacheIdentity)
+                    : CreateTerrainLodStatus(
+                        request.Tile,
+                        availability == TerrainLodTileAvailability.Missing
+                            ? TerrainLodTileStatus.Missing
+                            : TerrainLodTileStatus.Pending,
+                        request.CacheIdentity);
+            }
+            else
+            {
+                availability = world.GetTerrainLodCoverage(request.Tile, out var tile);
+                response = availability == TerrainLodTileAvailability.Ready && tile is not null
+                    ? TerrainLodTileMessage.Loopback(
+                        player.DimensionId, tile, request.CacheIdentity)
+                    : CreateTerrainLodStatus(
+                        request.Tile,
+                        availability == TerrainLodTileAvailability.Missing
+                            ? TerrainLodTileStatus.Missing
+                            : TerrainLodTileStatus.Pending,
+                        request.CacheIdentity);
+            }
+
+            return TrySendQueuedTerrainLodResponse(
+                response, globalPacer, gameplayBacklog, bulkBacklog);
+        }
+        catch (InvalidDataException error)
+        {
+            _terrainLodRequests.TryDequeue(out _);
+            _logger.LogWarning(error, "Terrain LOD tile {Tile} could not be sent to {Player}.",
+                request.Tile, player.Name);
+            return TerrainLodFlushResult.Progress;
+        }
+    }
+
+    private void QueueTerrainLodStatus(
         TerrainLodTileKey key,
         TerrainLodTileStatus status,
-        string cacheIdentity) =>
-        SendMessage(new TerrainLodTileStatusMessage
+        string cacheIdentity,
+        string diagnostic = "")
+    {
+        var identity = server.getWorld(player.DimensionId).TerrainLodIdentity;
+        _terrainLodRequests.Enqueue(new QueuedTerrainLodRequest(
+            player.DimensionId,
+            cacheIdentity,
+            identity?.MaximumSpatialLevel ?? TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel,
+            identity?.QualityPolicyVersion ?? TerrainLodSpatialPolicy.CurrentQualityPolicyVersion,
+            key,
+            status,
+            diagnostic));
+    }
+
+    private TerrainLodFlushResult TrySendQueuedTerrainLodResponse(
+        Message response,
+        TerrainLodGlobalSendPacer globalPacer,
+        int gameplayBacklog,
+        int bulkBacklog)
+    {
+        var bytes = WantsCompactPayloads ? response.Size() : 0;
+        if (!_terrainLodPacer.CanSend(
+                bytes, player.PendingChunkSendCount, gameplayBacklog, bulkBacklog) ||
+            !globalPacer.CanSend(bytes))
+            return TerrainLodFlushResult.Blocked;
+
+        _terrainLodPacer.Record(bytes);
+        globalPacer.Record(bytes);
+        _terrainLodRequests.TryDequeue(out _);
+        SendMessage(response);
+        return TerrainLodFlushResult.Progress;
+    }
+
+    private TerrainLodTileStatusMessage CreateTerrainLodStatus(
+        TerrainLodTileKey key,
+        TerrainLodTileStatus status,
+        string cacheIdentity,
+        string diagnostic = "") =>
+        new()
         {
             Dimension = player.DimensionId,
             CacheIdentity = cacheIdentity,
             Tile = key,
-            Status = status
-        });
+            Status = status,
+            Diagnostic = diagnostic
+        };
 
     /// <summary>
     ///     Echoes a probe. The server is stateless here: it returns every field it cannot derive and

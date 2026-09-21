@@ -81,6 +81,27 @@ public sealed class TerrainLodSpatialPublicationTests
     }
 
     [Fact]
+    public void Catalog_eviction_cannot_free_a_body_leased_by_the_displayed_snapshot()
+    {
+        using var catalog = new TerrainLodSpatialPresentationSet<Resource>();
+        using var publication = new TerrainLodSpatialPublication<Resource, Resource>();
+        using var seam = new Resource();
+        var body = new Resource();
+        catalog.TryInstall(Selection.Tile, "resident", () => body, out _);
+        var policy = new TerrainLodSpatialPolicy(8, 2, [0], [16]);
+        publication.TryPublish(
+            catalog.Update(Selection.Tile, 0, 0, policy, 1, fadeEnabled: false),
+            Seams(seam), true);
+        catalog.RetainTransitionRoots(new HashSet<TerrainLodTileKey>());
+
+        Assert.True(catalog.TryEvict(Selection.Tile));
+        Assert.Equal(0, body.Disposals);
+
+        publication.Dispose();
+        Assert.Equal(1, body.Disposals);
+    }
+
+    [Fact]
     public void Failed_acquisition_rolls_back_candidate_leases_without_changing_displayed_snapshot()
     {
         using var publication = new TerrainLodSpatialPublication<Resource, Resource>();

@@ -13,7 +13,9 @@ public sealed record TerrainLodCacheIdentity(
     string ContentFingerprint,
     string GeneratorFingerprint,
     int ReductionSchemaVersion,
-    string MaterialRulesFingerprint)
+    string MaterialRulesFingerprint,
+    int MaximumSpatialLevel,
+    int QualityPolicyVersion)
 {
     public string CompatibilityFingerprint => Hash(
         WorldFingerprint,
@@ -21,7 +23,48 @@ public sealed record TerrainLodCacheIdentity(
         ContentFingerprint,
         GeneratorFingerprint,
         ReductionSchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture),
-        MaterialRulesFingerprint);
+        MaterialRulesFingerprint,
+        MaximumSpatialLevel.ToString(System.Globalization.CultureInfo.InvariantCulture),
+        QualityPolicyVersion.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+    /// <summary>
+    ///     Identity of the derived bytes themselves. The declared maximum is deliberately absent:
+    ///     increasing L6 to L10 must retain valid L0-L6 records, while a policy change must not.
+    /// </summary>
+    public string RecordFingerprint => Hash(
+        WorldFingerprint,
+        Dimension.ToString(System.Globalization.CultureInfo.InvariantCulture),
+        ContentFingerprint,
+        GeneratorFingerprint,
+        ReductionSchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture),
+        MaterialRulesFingerprint,
+        QualityPolicyVersion.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+    public int NegotiateMaximumSpatialLevel(int localMaximumSpatialLevel)
+    {
+        if (localMaximumSpatialLevel is < 0 or > TerrainLodSpatialPolicy.MaximumGeneratedSpatialLevel)
+            throw new ArgumentOutOfRangeException(nameof(localMaximumSpatialLevel));
+        return Math.Min(MaximumSpatialLevel, localMaximumSpatialLevel);
+    }
+
+    public string? GetRequestIncompatibility(
+        int requestedMaximumSpatialLevel,
+        int requestedQualityPolicyVersion,
+        int localMaximumSpatialLevel)
+    {
+        var supportedMaximum = NegotiateMaximumSpatialLevel(localMaximumSpatialLevel);
+        if (requestedQualityPolicyVersion != QualityPolicyVersion ||
+            requestedQualityPolicyVersion != TerrainLodSpatialPolicy.CurrentQualityPolicyVersion)
+            return $"quality-policy version {requestedQualityPolicyVersion} is unsupported; " +
+                   $"server policy is {QualityPolicyVersion}";
+        if (requestedMaximumSpatialLevel is < TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel)
+            return $"maximum spatial level {requestedMaximumSpatialLevel} is below the remote " +
+                   $"minimum {TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel}";
+        if (requestedMaximumSpatialLevel > supportedMaximum)
+            return $"maximum spatial level {requestedMaximumSpatialLevel} exceeds the server " +
+                   $"maximum {supportedMaximum}";
+        return null;
+    }
 
     public string? GetPresentationIncompatibility(
         int dimension,
@@ -43,16 +86,23 @@ public sealed record TerrainLodCacheIdentity(
         if (!string.Equals(MaterialRulesFingerprint, materials.RulesFingerprint,
                 StringComparison.Ordinal))
             return "material rules fingerprint differs";
+        if (MaximumSpatialLevel is < TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel or
+            > TerrainLodSpatialPolicy.MaximumGeneratedSpatialLevel)
+            return $"maximum spatial level {MaximumSpatialLevel} is unsupported";
+        if (QualityPolicyVersion != TerrainLodSpatialPolicy.CurrentQualityPolicyVersion)
+            return $"quality-policy version {QualityPolicyVersion} is unsupported";
         return null;
     }
 
     public static TerrainLodCacheIdentity FromWorld(
         IWorldContext world,
         TerrainLodMaterialCatalog materials,
-        string? persistentWorldIdentity = null)
+        string? persistentWorldIdentity = null,
+        TerrainLodSpatialPolicy? spatialPolicy = null)
     {
         ArgumentNullException.ThrowIfNull(world);
         ArgumentNullException.ThrowIfNull(materials);
+        spatialPolicy ??= TerrainLodSpatialPolicy.CreateDefault();
         var dimension = world.Dimension.Id;
         var generatorProvider = dimension == 0
             ? world.Properties.TerrainType.GeneratorProviderType
@@ -73,7 +123,9 @@ public sealed record TerrainLodCacheIdentity(
                 world.Properties.TerrainType.Key.ToString(),
                 world.Properties.GeneratorOptions ?? string.Empty),
             TerrainLodHierarchy.ReductionSchemaVersion,
-            materials.RulesFingerprint);
+            materials.RulesFingerprint,
+            spatialPolicy.MaximumSpatialLevel,
+            TerrainLodSpatialPolicy.CurrentQualityPolicyVersion);
     }
 
     /// <summary>
@@ -100,7 +152,9 @@ public sealed record TerrainLodCacheIdentity(
             content.Manifest.Fingerprint,
             Hash("omniblock-client-observed-generator-v1", serverIdentity),
             TerrainLodHierarchy.ReductionSchemaVersion,
-            materials.RulesFingerprint);
+            materials.RulesFingerprint,
+            TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel,
+            TerrainLodSpatialPolicy.CurrentQualityPolicyVersion);
     }
 
     private static string Hash(params string[] values)
@@ -171,7 +225,7 @@ internal enum TerrainLodCacheWriteStage
 public sealed class TerrainLodCacheStore
 {
     private const ulong Magic = 0x31444F4C494E4D4F; // OMNILOD1
-    private const int CurrentFormatVersion = 2;
+    private const int CurrentFormatVersion = 3;
     private const int ChecksumBytes = 32;
     private const int MaxStringBytes = 4096;
     private const int MaxLevels = 16;
@@ -438,12 +492,13 @@ public sealed class TerrainLodCacheStore
                 null,
                 $"Cache format {format} is not supported by format {CurrentFormatVersion}.");
         var identity = ReadIdentity(reader);
-        if (identity != _identity)
+        if (!string.Equals(identity.RecordFingerprint, _identity.RecordFingerprint,
+                StringComparison.Ordinal))
             return new TerrainLodCacheReadResult(
                 TerrainLodCacheReadStatus.Incompatible,
                 null,
-                $"Cache identity {identity.CompatibilityFingerprint} does not match " +
-                $"{_identity.CompatibilityFingerprint}.");
+                $"Cache record identity {identity.RecordFingerprint} does not match " +
+                $"{_identity.RecordFingerprint}.");
 
         var chunkX = reader.ReadInt32();
         var chunkZ = reader.ReadInt32();
@@ -625,6 +680,18 @@ public sealed class TerrainLodCacheStore
                 nameof(identity),
                 identity.ReductionSchemaVersion,
                 "The LOD reduction schema version must be positive.");
+        if (identity.MaximumSpatialLevel is < 0 or
+            > TerrainLodSpatialPolicy.MaximumGeneratedSpatialLevel)
+            throw new ArgumentOutOfRangeException(
+                nameof(identity),
+                identity.MaximumSpatialLevel,
+                "The cache maximum spatial level is unsupported.");
+        if (identity.QualityPolicyVersion !=
+            TerrainLodSpatialPolicy.CurrentQualityPolicyVersion)
+            throw new ArgumentOutOfRangeException(
+                nameof(identity),
+                identity.QualityPolicyVersion,
+                "The cache quality-policy version is unsupported.");
     }
 
     private void ValidateResult(TerrainLodConversionResult result)
@@ -681,6 +748,8 @@ public sealed class TerrainLodCacheStore
         WriteString(writer, identity.GeneratorFingerprint);
         writer.Write(identity.ReductionSchemaVersion);
         WriteString(writer, identity.MaterialRulesFingerprint);
+        writer.Write(identity.MaximumSpatialLevel);
+        writer.Write(identity.QualityPolicyVersion);
     }
 
     private static TerrainLodCacheIdentity ReadIdentity(BinaryReader reader) => new(
@@ -689,7 +758,9 @@ public sealed class TerrainLodCacheStore
         ReadString(reader),
         ReadString(reader),
         reader.ReadInt32(),
-        ReadString(reader));
+        ReadString(reader),
+        reader.ReadInt32(),
+        reader.ReadInt32());
 
     private static void WriteMaterial(BinaryWriter writer, TerrainLodMaterial material)
     {

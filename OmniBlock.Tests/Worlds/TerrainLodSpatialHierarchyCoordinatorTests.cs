@@ -253,6 +253,50 @@ public sealed class TerrainLodSpatialHierarchyCoordinatorTests
     }
 
     [Fact]
+    public async Task Residency_eviction_does_not_invalidate_a_reusable_parent()
+    {
+        using var coordinator = Coordinator(MaximumLevelOnePolicy());
+        var parent = new TerrainLodTileKey(1, -3, 5);
+        var children = Children(parent, 1, 31).ToArray();
+        foreach (var leaf in children) coordinator.PublishLeaf(leaf);
+        await PumpUntil(coordinator, () => coordinator.IsCurrent(parent));
+
+        Assert.True(coordinator.EvictResident(children[0].Key));
+
+        Assert.False(coordinator.TryGetCoverage(children[0].Key, out _, out _));
+        Assert.True(coordinator.TryGetCoverage(parent, out _, out var parentCurrent));
+        Assert.True(parentCurrent);
+        Assert.Equal(1, coordinator.Snapshot().Evictions);
+    }
+
+    [Fact]
+    public async Task Residency_eviction_preserves_the_durable_cache_record()
+    {
+        var directory = CreateTemporaryDirectory();
+        try
+        {
+            var store = new TerrainLodColumnTileCacheStore(
+                directory, Identity(), 16 * 1024 * 1024, 8 * 1024 * 1024);
+            using var coordinator = new TerrainLodSpatialHierarchyCoordinator(
+                MaximumLevelOnePolicy(), store, tileCapacity: 32,
+                constructionCapacity: 8, completedCapacity: 4, persistenceCapacity: 8);
+            var parent = new TerrainLodTileKey(1, 6, -5);
+            foreach (var leaf in Children(parent, 1, 47)) coordinator.PublishLeaf(leaf);
+            await PumpUntil(coordinator, () => coordinator.IsCurrent(parent));
+            await WaitUntil(() => coordinator.Snapshot().Persistence!.Written >= 5);
+
+            Assert.True(coordinator.EvictResident(parent));
+
+            Assert.False(coordinator.TryGetCoverage(parent, out _, out _));
+            Assert.Equal(TerrainLodColumnTileCacheReadStatus.Hit, store.Read(parent).Status);
+        }
+        finally
+        {
+            directory.Delete(true);
+        }
+    }
+
+    [Fact]
     public async Task Accepted_parent_is_persisted_through_the_bounded_async_writer()
     {
         var directory = CreateTemporaryDirectory();
@@ -399,7 +443,9 @@ public sealed class TerrainLodSpatialHierarchyCoordinatorTests
         "coordinator-content",
         "coordinator-generator",
         TerrainLodHierarchy.ReductionSchemaVersion,
-        Materials.RulesFingerprint);
+        Materials.RulesFingerprint,
+        TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel,
+        TerrainLodSpatialPolicy.CurrentQualityPolicyVersion);
 
     private static async Task PumpUntil(
         TerrainLodSpatialHierarchyCoordinator coordinator,

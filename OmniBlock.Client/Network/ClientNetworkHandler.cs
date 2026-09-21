@@ -546,14 +546,18 @@ public class ClientNetworkHandler : NetHandler
     private void onTerrainLodTile(TerrainLodTileMessage message)
     {
         if (_worldClient is null || message.Dimension != _worldClient.Dimension.Id) return;
-        if (!HasTerrainLodIdentity(message.Dimension, message.CacheIdentity))
+        if (!TryGetTerrainLodIdentity(
+                message.Dimension, message.CacheIdentity, out var identity))
         {
             _terrainLodIdentityRejectedMessages++;
             return;
         }
         try
         {
-            _worldClient.EnqueueTerrainLodTile(message.Decode(), message.Compressed.Length);
+            var negotiatedMaximum = identity.NegotiateMaximumSpatialLevel(
+                TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel);
+            _worldClient.EnqueueTerrainLodTile(
+                message.Decode(negotiatedMaximum), message.Compressed.Length);
         }
         catch (Exception error) when (error is InvalidDataException or ArgumentException or
                                       EndOfStreamException or OverflowException)
@@ -565,15 +569,21 @@ public class ClientNetworkHandler : NetHandler
     private void onTerrainLodTileStatus(TerrainLodTileStatusMessage message)
     {
         if (_worldClient is null || message.Dimension != _worldClient.Dimension.Id) return;
+        if (!HasTerrainLodIdentity(message.Dimension, message.CacheIdentity))
+        {
+            _terrainLodIdentityRejectedMessages++;
+            return;
+        }
         if (message.Status == TerrainLodTileStatus.Incompatible)
         {
             _terrainLodIdentityMismatches++;
             _terrainLodIdentities.Remove(message.Dimension);
-            return;
-        }
-        if (!HasTerrainLodIdentity(message.Dimension, message.CacheIdentity))
-        {
-            _terrainLodIdentityRejectedMessages++;
+            _logger.LogWarning(
+                "Server rejected terrain LOD compatibility for dimension {Dimension}: {Diagnostic}",
+                message.Dimension,
+                string.IsNullOrWhiteSpace(message.Diagnostic)
+                    ? "no diagnostic supplied"
+                    : message.Diagnostic);
             return;
         }
         _worldClient.EnqueueTerrainLodStatus(message.Tile, message.Status);
@@ -605,22 +615,39 @@ public class ClientNetworkHandler : NetHandler
 
         _terrainLodIdentities[identity.Dimension] = identity;
         _logger.LogDebug(
-            "Terrain LOD cache identity ready for dimension {Dimension}: {Fingerprint}.",
-            identity.Dimension, identity.CompatibilityFingerprint);
+            "Terrain LOD cache identity ready for dimension {Dimension}: {Fingerprint}; " +
+            "server maximum L{ServerMaximum}, negotiated L{NegotiatedMaximum}, policy {Policy}.",
+            identity.Dimension,
+            identity.CompatibilityFingerprint,
+            identity.MaximumSpatialLevel,
+            identity.NegotiateMaximumSpatialLevel(
+                TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel),
+            identity.QualityPolicyVersion);
     }
 
     private bool HasTerrainLodIdentity(int dimension, string fingerprint) =>
         _terrainLodIdentities.TryGetValue(dimension, out var identity) &&
         string.Equals(identity.CompatibilityFingerprint, fingerprint, StringComparison.Ordinal);
 
-    internal bool TryGetTerrainLodIdentity(int dimension, out string fingerprint)
+    private bool TryGetTerrainLodIdentity(
+        int dimension,
+        string fingerprint,
+        out TerrainLodCacheIdentity identity)
     {
-        if (_terrainLodIdentities.TryGetValue(dimension, out var identity))
-        {
-            fingerprint = identity.CompatibilityFingerprint;
+        if (_terrainLodIdentities.TryGetValue(dimension, out identity!) &&
+            string.Equals(identity.CompatibilityFingerprint, fingerprint,
+                StringComparison.Ordinal))
             return true;
-        }
-        fingerprint = "";
+        identity = null!;
+        return false;
+    }
+
+    internal bool TryGetTerrainLodIdentity(
+        int dimension,
+        out TerrainLodCacheIdentity identity)
+    {
+        if (_terrainLodIdentities.TryGetValue(dimension, out identity!)) return true;
+        identity = null!;
         return false;
     }
 

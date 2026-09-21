@@ -113,7 +113,10 @@ internal readonly record struct TerrainLodSpatialSnapshot(
     long GpuBytes,
     TerrainLodSpatialHierarchyCoordinatorSnapshot Hierarchy,
     TerrainLodSpatialMeshCompilationSnapshot MeshCompilation,
-    TerrainLodSpatialSeamCompilationSnapshot SeamCompilation);
+    TerrainLodSpatialSeamCompilationSnapshot SeamCompilation,
+    int PinnedPresentations,
+    long GpuEvictions,
+    long CpuEvictions);
 
 /// <summary>
 ///     Client owner for the first terrain-horizon slice. It compiles immutable chunk snapshots on
@@ -247,6 +250,18 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private int _coarseCoverSelectedTiles;
     private int _coarseCoverParentFallbacks;
     private int _coarseCoverMissingGroups;
+    private int _coarseOuterBoundaryMinimumLevel = MinimumSpatialGpuLevel;
+    private int _spatialPinnedPresentations;
+    private long _spatialGpuEvictions;
+    private long _spatialCpuEvictions;
+    private int _lastSpatialResidencyChunkX = int.MinValue;
+    private int _lastSpatialResidencyChunkZ = int.MinValue;
+    private int _lastSpatialResidencyHorizon = -1;
+    private long _lastSpatialResidencyRevision = -1;
+    private long _lastSpatialResidencyGpuBytes;
+    private int _lastSpatialResidencyCpuTiles;
+    private TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation>?
+        _lastSpatialResidencyFrame;
     private long _coarseCoverStartedTimestamp;
     private long _coarseCoverGeneration;
     private long _publishedCoarseCoverGeneration = -1;
@@ -351,14 +366,21 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         Vector3D<double> viewPosition,
         int nearDistanceChunks,
         int horizonDistanceChunks,
-        int maximumRequests)
+        int maximumRequests,
+        int maximumSpatialLevel = TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        if (maximumSpatialLevel is < MinimumSpatialGpuLevel or
+            > TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel)
+            throw new ArgumentOutOfRangeException(nameof(maximumSpatialLevel));
+        horizonDistanceChunks = Math.Min(
+            horizonDistanceChunks,
+            TerrainLodSpatialPolicy.MaximumHorizonChunksForSpatialLevel(maximumSpatialLevel));
         var cameraX = viewPosition.X / 16.0;
         var cameraZ = viewPosition.Z / 16.0;
-        var coverageRootLevel = Math.Max(
+        var coverageRootLevel = Math.Min(maximumSpatialLevel, Math.Max(
             MinimumSpatialGpuLevel,
-            _spatialPolicy.DesiredSpatialLevel(horizonDistanceChunks));
+            _spatialPolicy.DesiredSpatialLevel(horizonDistanceChunks)));
         var outerBoundaryMinimumLevel =
             TerrainLodCoveragePlanner.RecommendedOuterBoundaryMinimumLevel(
                 coverageRootLevel, MinimumSpatialGpuLevel);
@@ -366,6 +388,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             cameraX, cameraZ, nearDistanceChunks, horizonDistanceChunks,
             coverageRootLevel, MinimumSpatialGpuLevel, outerBoundaryMinimumLevel);
         outerBoundaryMinimumLevel = coveragePlan.EffectiveOuterBoundaryMinimumLevel;
+        _coarseOuterBoundaryMinimumLevel = outerBoundaryMinimumLevel;
         var requiredTiles = TerrainLodCoveragePlanner.PrioritizeMissing(
             coveragePlan.Tiles,
             cameraX, cameraZ, _spatialPolicy);
@@ -725,6 +748,10 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         using var cpuMeasurement = new RenderCpuMeasurement(this, translucent: false);
         using var _lodRender = Profiler.Begin("TerrainLodRender");
         var stageStarted = Stopwatch.GetTimestamp();
+        EvictSpatialResidency(
+            parameters.ViewPos.X / SubChunkRenderer.Size,
+            parameters.ViewPos.Z / SubChunkRenderer.Size,
+            parameters.TerrainHorizonDistance);
         var uploads = InstallCompleted(parameters.ViewPos,
             parameters.VerticalFovDegrees, parameters.ViewportHeight,
             parameters.TerrainLodDropoffScale,
@@ -1427,6 +1454,13 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 string.Equals(previous.CanonicalHash, mesh.CanonicalHash,
                     StringComparison.Ordinal))
                 continue;
+            if (previous is null &&
+                _spatialPresentations.Count >=
+                TerrainLodScaleBudget.MaximumSpatialPresentations)
+            {
+                _rejectedAdmissions++;
+                continue;
+            }
             var projectedBytes = SpatialGpuBytes() - (previous?.EstimatedBytes ?? 0) +
                                  mesh.EstimatedBytes;
             if (projectedBytes > TerrainLodScaleBudget.MaximumSpatialGpuBytes)
@@ -1563,6 +1597,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             frame, cameraChunkX, cameraChunkZ, parameters.RenderDistance, nearRenderer);
         Profiler.Record("SpatialSeamCpu",
             Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
+        EvictSpatialResidency(
+            cameraChunkX, cameraChunkZ, parameters.TerrainHorizonDistance);
         stageStarted = Stopwatch.GetTimestamp();
         _spatialSnapshot = new TerrainLodSpatialSnapshot(
             root,
@@ -1584,15 +1620,13 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 : _authoritativeSpatialTiles.Max(static tile => tile.Level),
             _visibleSpatialSolid.Count,
             _visibleSpatialTranslucent.Count,
-            _spatialPresentations.ReadyPresentations
-                .Concat(_spatialFrame?.Draws.Select(static draw => draw.Presentation) ?? [])
-                .Distinct().Sum(static presentation => presentation.EstimatedBytes) +
-            _spatialSeams.Values
-                .Concat(_spatialPublication.Seams.Values.Select(static seam => seam.Presentation))
-                .Distinct().Sum(static seam => seam.EstimatedBytes),
+            SpatialGpuBytes(),
             _spatialHierarchy.Snapshot(),
             _spatialMeshCompilation.Snapshot(),
-            _spatialSeamCompilation.Snapshot());
+            _spatialSeamCompilation.Snapshot(),
+            _spatialPinnedPresentations,
+            _spatialGpuEvictions,
+            _spatialCpuEvictions);
         Profiler.Record("SpatialSnapshotCpu",
             Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
     }
@@ -1615,6 +1649,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             cameraChunkX, cameraChunkZ, nearDistance, horizonDistance,
             coverageRootLevel, MinimumSpatialGpuLevel, outerBoundaryMinimumLevel);
         outerBoundaryMinimumLevel = coveragePlan.EffectiveOuterBoundaryMinimumLevel;
+        _coarseOuterBoundaryMinimumLevel = outerBoundaryMinimumLevel;
         var requiredTiles = TerrainLodCoveragePlanner.PrioritizeMissing(
             coveragePlan.Tiles,
             cameraChunkX, cameraChunkZ, _spatialPolicy);
@@ -1930,9 +1965,207 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     }
 
     private long SpatialGpuBytes() =>
-        _spatialPresentations.ReadyPresentations.Sum(static presentation =>
-            presentation.EstimatedBytes) +
-        _spatialSeams.Values.Sum(static seam => seam.EstimatedBytes);
+        _spatialPresentations.ReadyPresentations
+            .Concat(_spatialFrame?.Draws.Select(static draw => draw.Presentation) ?? [])
+            .Distinct().Sum(static presentation => presentation.EstimatedBytes) +
+        _spatialSeams.Values
+            .Concat(_spatialPublication.Seams.Values.Select(static seam => seam.Presentation))
+            .Distinct().Sum(static seam => seam.EstimatedBytes);
+
+    /// <summary>
+    ///     Keeps the active atomic snapshot, its bounded replacement, and a small leading edge in
+    ///     memory. Everything else is trailing cache state and may be reconstructed from the
+    ///     durable column-tile cache without deleting that cache entry.
+    /// </summary>
+    private void EvictSpatialResidency(
+        double cameraChunkX,
+        double cameraChunkZ,
+        int horizonDistanceChunks)
+    {
+        if (horizonDistanceChunks <= 0) return;
+        var cameraChunkFloorX = (int)Math.Floor(cameraChunkX);
+        var cameraChunkFloorZ = (int)Math.Floor(cameraChunkZ);
+        var cpuTarget = TerrainLodScaleBudget.ClientHierarchyTiles -
+                        TerrainLodScaleBudget.ClientHierarchyTileReserve;
+        var unchanged = cameraChunkFloorX == _lastSpatialResidencyChunkX &&
+                        cameraChunkFloorZ == _lastSpatialResidencyChunkZ &&
+                        horizonDistanceChunks == _lastSpatialResidencyHorizon &&
+                        _spatialPresentations.Revision == _lastSpatialResidencyRevision &&
+                        ReferenceEquals(_spatialFrame, _lastSpatialResidencyFrame);
+        if (unchanged &&
+            _spatialPresentations.Count <= TerrainLodScaleBudget.TargetSpatialPresentations &&
+            _lastSpatialResidencyGpuBytes <= TerrainLodScaleBudget.TargetSpatialGpuBytes &&
+            _lastSpatialResidencyCpuTiles <= cpuTarget)
+            return;
+
+        var gpuBytesBefore = SpatialGpuBytes();
+        var retentionMargin = Math.Clamp(horizonDistanceChunks / 8.0, 16, 64);
+        var retentionDistance = horizonDistanceChunks + retentionMargin;
+        var readyKeys = _spatialPresentations.ReadyKeys.ToArray();
+        var hierarchyKeys = _spatialHierarchy.ResidentKeys();
+
+        // Publication revisions are frequent while a horizon is filling. Most of them do not
+        // create trailing residency, so do not rebuild the replacement tree or sort candidates
+        // merely to discover that there is nothing to evict. This keeps ordinary publication
+        // proportional to the resident-key scan and reserves the more expensive pinning pass for
+        // actual movement or pressure.
+        if (readyKeys.Length <= TerrainLodScaleBudget.TargetSpatialPresentations &&
+            gpuBytesBefore <= TerrainLodScaleBudget.TargetSpatialGpuBytes &&
+            hierarchyKeys.Length <= cpuTarget &&
+            readyKeys.All(key =>
+                key.DistanceTo(cameraChunkX, cameraChunkZ) <= retentionDistance) &&
+            hierarchyKeys.All(key =>
+                key.DistanceTo(cameraChunkX, cameraChunkZ) <= retentionDistance))
+        {
+            HashSet<TerrainLodTileKey> activePins = [];
+            AddFramePins(_spatialFrame, activePins);
+            AddFramePins(_spatialForestCachedFrame, activePins);
+            activePins.UnionWith(_spatialPresentations.TransitionTiles);
+            _spatialPinnedPresentations = activePins.Count(_spatialPresentations.IsReady);
+            RememberResidency(gpuBytesBefore, hierarchyKeys.Length);
+            return;
+        }
+
+        HashSet<TerrainLodTileKey> pinned = [];
+        PinFrame(_spatialFrame);
+        PinFrame(_spatialForestCachedFrame);
+        pinned.UnionWith(_spatialPresentations.TransitionTiles);
+
+        // A replacement may not yet form a complete frame. Pin its complete ready groups directly
+        // from the required coverage roots so movement cannot continuously evict its leading edge.
+        var replacementPins = 0;
+        foreach (var root in _coarseRequiredTiles) PinReplacement(root);
+
+        foreach (var key in _spatialMeshPending.Keys)
+            if (_spatialPresentations.IsReady(key)) pinned.Add(key);
+        foreach (var key in _spatialPresentations.ReadyKeys
+                     .Where(key => !pinned.Contains(key))
+                     .OrderBy(key => key.DistanceTo(cameraChunkX, cameraChunkZ))
+                     .ThenByDescending(static key => key.Level)
+                     .ThenBy(static key => key.X)
+                     .ThenBy(static key => key.Z)
+                     .Take(TerrainLodScaleBudget.MaximumLeadingEdgePresentations))
+            pinned.Add(key);
+        _spatialPinnedPresentations = pinned.Count(_spatialPresentations.IsReady);
+
+        var gpuBytes = gpuBytesBefore;
+        foreach (var candidate in readyKeys
+                     .Where(key => !pinned.Contains(key))
+                     .Select(key => new
+                     {
+                         Key = key,
+                         Distance = key.DistanceTo(cameraChunkX, cameraChunkZ),
+                         Presentation = _spatialPresentations.TryGetPresentation(
+                             key, out var value) ? value : null
+                     })
+                     .Where(static candidate => candidate.Presentation is not null)
+                     .OrderByDescending(candidate => candidate.Distance > retentionDistance)
+                     .ThenByDescending(static candidate => candidate.Distance)
+                     .ThenBy(static candidate => candidate.Key.Level)
+                     .ThenBy(static candidate => candidate.Key.X)
+                     .ThenBy(static candidate => candidate.Key.Z)
+                     .ToArray())
+        {
+            var outsideRetention = candidate.Distance > retentionDistance;
+            var underPressure =
+                _spatialPresentations.Count > TerrainLodScaleBudget.TargetSpatialPresentations ||
+                gpuBytes > TerrainLodScaleBudget.TargetSpatialGpuBytes;
+            if (!outsideRetention && !underPressure) break;
+            if (!_spatialPresentations.TryEvict(candidate.Key)) continue;
+            gpuBytes -= candidate.Presentation!.EstimatedBytes;
+            _spatialGpuEvictions++;
+        }
+
+        // GPU entries, active seams, pending compilation inputs, and the required replacement
+        // roots keep their CPU records. Remaining distant hierarchy nodes are memory cache only.
+        HashSet<TerrainLodTileKey> cpuPinned = [.. pinned];
+        cpuPinned.UnionWith(_spatialPresentations.ReadyKeys);
+        cpuPinned.UnionWith(_coarseRequiredTiles);
+        cpuPinned.UnionWith(_spatialMeshPending.Keys);
+        if (_deferredSpatialMeshUpload?.Mesh is { } deferredMesh)
+            cpuPinned.Add(deferredMesh.Key);
+        foreach (var seam in _spatialPublication.Seams.Keys.Concat(_spatialSeams.Keys))
+        {
+            cpuPinned.Add(seam.Owner.Tile);
+            if (seam.Neighbor is { } neighbor) cpuPinned.Add(neighbor.Tile);
+        }
+        if (_deferredSpatialSeamUpload?.Mesh is { } deferredSeam)
+        {
+            cpuPinned.Add(deferredSeam.Segment.Owner.Tile);
+            if (deferredSeam.Segment.Neighbor is { } neighbor)
+                cpuPinned.Add(neighbor.Tile);
+        }
+
+        var cpuCount = hierarchyKeys.Length;
+        foreach (var candidate in hierarchyKeys
+                     .Where(key => !cpuPinned.Contains(key))
+                     .Select(key => new
+                     {
+                         Key = key,
+                         Distance = key.DistanceTo(cameraChunkX, cameraChunkZ)
+                     })
+                     .OrderByDescending(candidate => candidate.Distance > retentionDistance)
+                     .ThenByDescending(static candidate => candidate.Distance)
+                     .ThenBy(static candidate => candidate.Key.Level)
+                     .ThenBy(static candidate => candidate.Key.X)
+                     .ThenBy(static candidate => candidate.Key.Z))
+        {
+            var outsideRetention = candidate.Distance > retentionDistance;
+            if (!outsideRetention && cpuCount <= cpuTarget) break;
+            if (!_spatialHierarchy.EvictResident(candidate.Key)) continue;
+            cpuCount--;
+            _spatialCpuEvictions++;
+        }
+
+        RememberResidency(gpuBytes, cpuCount);
+
+        return;
+
+        void PinFrame(
+            TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation>? frame)
+        {
+            if (frame is null) return;
+            foreach (var draw in frame.Draws) pinned.Add(draw.Selection.Tile);
+        }
+
+        static void AddFramePins(
+            TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation>? frame,
+            HashSet<TerrainLodTileKey> destination)
+        {
+            if (frame is null) return;
+            foreach (var draw in frame.Draws) destination.Add(draw.Selection.Tile);
+        }
+
+        void RememberResidency(long gpuBytes, int cpuTiles)
+        {
+            _lastSpatialResidencyChunkX = cameraChunkFloorX;
+            _lastSpatialResidencyChunkZ = cameraChunkFloorZ;
+            _lastSpatialResidencyHorizon = horizonDistanceChunks;
+            _lastSpatialResidencyRevision = _spatialPresentations.Revision;
+            _lastSpatialResidencyFrame = _spatialFrame;
+            _lastSpatialResidencyGpuBytes = gpuBytes;
+            _lastSpatialResidencyCpuTiles = cpuTiles;
+        }
+
+        void PinReplacement(TerrainLodTileKey root)
+        {
+            if (replacementPins >= TerrainLodScaleBudget.MaximumSelectedNodes) return;
+            var selection = TerrainLodSpatialSelector.Select(
+                root, cameraChunkX, cameraChunkZ,
+                _spatialPolicy, _spatialPresentations.IsReady);
+            if (selection.CompleteCoverage)
+            {
+                if (replacementPins + selection.Nodes.Count >
+                    TerrainLodScaleBudget.MaximumSelectedNodes)
+                    return;
+                foreach (var node in selection.Nodes) pinned.Add(node.Tile);
+                replacementPins += selection.Nodes.Count;
+                return;
+            }
+            if (root.Level <= _coarseOuterBoundaryMinimumLevel) return;
+            for (var index = 0; index < 4; index++) PinReplacement(root.Child(index));
+        }
+    }
 
     private bool TryResolveSpatialSeamIdentity(
         TerrainLodSpatialSeamSegment seam,

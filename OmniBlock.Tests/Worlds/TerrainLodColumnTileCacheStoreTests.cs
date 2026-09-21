@@ -112,6 +112,12 @@ public sealed class TerrainLodColumnTileCacheStoreTests
             Assert.Equal(expected.CanonicalHash, disk.CanonicalHash);
             Assert.Equal(expected.CanonicalHash, wire.CanonicalHash);
             Assert.Equal(key, wire.Key);
+
+            var expandedStore = Store(
+                root, TerrainLodSpatialPolicy.MaximumGeneratedSpatialLevel);
+            var reused = expandedStore.Read(key);
+            Assert.Equal(TerrainLodColumnTileCacheReadStatus.Hit, reused.Status);
+            Assert.Equal(expected.CanonicalHash, reused.Tile!.CanonicalHash);
         }
         finally
         {
@@ -146,7 +152,17 @@ public sealed class TerrainLodColumnTileCacheStoreTests
                 key,
                 children,
                 policy.HorizontalSampleLevelForSpatialLevel(key.Level));
-            var store = Store(root);
+            var boundedStore = Store(root);
+            var rejectedRead = boundedStore.Read(key);
+            Assert.Equal(TerrainLodColumnTileCacheReadStatus.Incompatible,
+                rejectedRead.Status);
+            Assert.Contains("exceeds cache manifest maximum 6", rejectedRead.Diagnostic);
+            var writeError = Assert.Throws<InvalidOperationException>(() =>
+                boundedStore.Write(expected));
+            Assert.Contains("exceeds cache manifest maximum 6", writeError.Message);
+
+            var store = Store(
+                root, TerrainLodSpatialPolicy.MaximumGeneratedSpatialLevel);
 
             Assert.Equal(64, expected.Width);
             Assert.Equal(TerrainLodColumnTileCacheWriteStatus.Written,
@@ -154,6 +170,12 @@ public sealed class TerrainLodColumnTileCacheStoreTests
             var actual = Assert.IsType<TerrainLodColumnTile>(store.Read(key).Tile);
             Assert.Equal(expected.CanonicalHash, actual.CanonicalHash);
             Assert.Equal(expected.InputHashes, actual.InputHashes);
+
+            var wire = TerrainLodTileMessage.Of(0, expected);
+            var transportError = Assert.Throws<InvalidDataException>(() => wire.Decode());
+            Assert.Contains("exceeding the negotiated maximum 6", transportError.Message);
+            Assert.Equal(expected.CanonicalHash,
+                wire.Decode(TerrainLodSpatialPolicy.MaximumGeneratedSpatialLevel).CanonicalHash);
         }
         finally
         {
@@ -358,16 +380,21 @@ public sealed class TerrainLodColumnTileCacheStoreTests
         }
     }
 
-    private static TerrainLodColumnTileCacheStore Store(DirectoryInfo root) =>
-        new(root, Identity(), 8 * 1024 * 1024, 8 * 1024 * 1024);
+    private static TerrainLodColumnTileCacheStore Store(
+        DirectoryInfo root,
+        int maximumSpatialLevel = TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel) =>
+        new(root, Identity(maximumSpatialLevel), 8 * 1024 * 1024, 8 * 1024 * 1024);
 
-    private static TerrainLodCacheIdentity Identity() => new(
+    private static TerrainLodCacheIdentity Identity(
+        int maximumSpatialLevel = TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel) => new(
         "column-world",
         0,
         "column-content",
         "column-generator",
         TerrainLodHierarchy.ReductionSchemaVersion,
-        Materials.RulesFingerprint);
+        Materials.RulesFingerprint,
+        maximumSpatialLevel,
+        TerrainLodSpatialPolicy.CurrentQualityPolicyVersion);
 
     private static TerrainLodColumnTile Leaf(
         TerrainLodTileKey key,

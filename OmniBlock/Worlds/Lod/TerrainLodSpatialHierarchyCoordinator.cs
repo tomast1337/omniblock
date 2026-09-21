@@ -255,6 +255,33 @@ public sealed class TerrainLodSpatialHierarchyCoordinator : IDisposable
         }
     }
 
+    /// <summary>
+    ///     Drops only the in-memory copy of a reusable derived-data record. Unlike authoritative
+    ///     invalidation, this does not invalidate ancestors or delete the durable cache entry.
+    /// </summary>
+    public bool EvictResident(TerrainLodTileKey key)
+    {
+        lock (_gate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (!_nodes.Remove(key)) return false;
+            _construction.Discard(key);
+            _deferredParents.Remove(key);
+            _evictions++;
+            RetryDeferredLocked();
+            return true;
+        }
+    }
+
+    public TerrainLodTileKey[] ResidentKeys()
+    {
+        lock (_gate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return [.. _nodes.Keys];
+        }
+    }
+
     public TerrainLodSpatialHierarchyCoordinatorSnapshot Snapshot()
     {
         lock (_gate)

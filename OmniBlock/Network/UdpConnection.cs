@@ -47,6 +47,14 @@ public sealed class UdpConnection : Connection
     public const byte StateChannel = 1;
 
     /// <summary>
+    ///     Subordinate, independently ordered bulk data such as distant-terrain cache records.
+    ///     Keeping it off <see cref="OrderedChannel" /> means a multi-megabyte LOD record cannot
+    ///     stand in front of a chunk, block update, inventory action, or chat message. Admission
+    ///     and bandwidth fairness remain server policy; the channel supplies only isolation.
+    /// </summary>
+    public const byte BulkChannel = 2;
+
+    /// <summary>
     ///     Everything is <see cref="DeliveryMode.ReliableOrdered" />, which is a starting position
     ///     and not the end state.
     ///     <para>
@@ -89,8 +97,12 @@ public sealed class UdpConnection : Connection
     ///         had to finish.
     ///     </para>
     /// </summary>
-    public static byte ChannelFor(Packet packet) =>
-        PacketPriorities.Of(packet) == SendPriority.High ? StateChannel : OrderedChannel;
+    public static byte ChannelFor(Packet packet) => PacketPriorities.Of(packet) switch
+    {
+        SendPriority.High => StateChannel,
+        SendPriority.Bulk => BulkChannel,
+        _ => OrderedChannel
+    };
 
     public override void sendPacket(Packet packet)
     {
@@ -143,6 +155,8 @@ public sealed class UdpConnection : Connection
     ///     be a reason to slow chunk streaming, nor chunk streaming a reason to slow them.
     /// </summary>
     public override int getWorldPacketBacklog() => _transport.PendingPackets(OrderedChannel);
+
+    public override int getBulkPacketBacklog() => _transport.PendingPackets(BulkChannel);
 
     public override void tick()
     {

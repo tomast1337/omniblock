@@ -135,6 +135,9 @@ public static unsafe class LuauClientStateHost
                                                 key == "terrainLodSpatialSolidPages" or
                                                 key == "terrainLodSpatialTranslucentPages" or
                                                 key == "terrainLodSpatialGpuBytes" or
+                                                key == "terrainLodSpatialPinned" or
+                                                key == "terrainLodSpatialGpuEvictions" or
+                                                key == "terrainLodSpatialCpuEvictions" or
                                                 key == "terrainLodCoarseSourceUnavailable" or
                                                 key == "terrainLodCoarseBuilding" or
                                                 key == "terrainLodCoarseTransportPending" or

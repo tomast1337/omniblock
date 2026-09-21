@@ -92,11 +92,12 @@ public sealed class LiteNetLibTransport : ITransport
             ChannelsCount = Channels,
             IPv6Enabled = enableIPv6,
 
-            // A raw chunk is 81,920 bytes against a ~1,200 byte payload MTU, so a single reliable
-            // send is around seventy fragments. The default ceiling is well above that; it is
-            // pinned here because the number is load-bearing and silently truncating a chunk would
-            // present as corrupt terrain rather than as a transport error.
-            MaxFragmentsCount = 1024,
+            // A terrain-LOD envelope is bounded just below 2 MiB. Against a ~1,200 byte payload MTU
+            // that can exceed 1,700 fragments, so this must match the message-layer bound rather
+            // than the much smaller 81,920-byte gameplay chunk. Bulk uses an isolated channel and
+            // strict pacing, but the transport still has to be capable of carrying one admitted
+            // record without rejecting it as oversized.
+            MaxFragmentsCount = 2048,
 
             // Matches the 30 s receive timeout the socket transport used. The server can stall
             // longer than a default keepalive window during world generation, and dropping players

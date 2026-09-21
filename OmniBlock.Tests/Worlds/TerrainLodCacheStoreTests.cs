@@ -308,7 +308,9 @@ public sealed class TerrainLodCacheStoreTests
         "content-fingerprint",
         "generator-fingerprint",
         TerrainLodHierarchy.ReductionSchemaVersion,
-        Materials.RulesFingerprint);
+        Materials.RulesFingerprint,
+        TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel,
+        TerrainLodSpatialPolicy.CurrentQualityPolicyVersion);
 
     private static TerrainLodConversionResult Result(int x, int z, long revision)
     {

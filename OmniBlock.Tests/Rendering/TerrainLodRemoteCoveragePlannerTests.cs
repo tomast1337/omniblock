@@ -355,6 +355,22 @@ public sealed class TerrainLodRemoteCoveragePlannerTests
     }
 
     [Fact]
+    public void Remote_coverage_respects_the_negotiated_peer_maximum()
+    {
+        using var renderer = new ClientTerrainLodRenderer(new LightTestWorld());
+
+        var requests = renderer.TakeRemoteSpatialRequests(
+            new Vector3D<double>(0, 80, 0),
+            nearDistanceChunks: 0,
+            horizonDistanceChunks: 256,
+            maximumRequests: 4,
+            maximumSpatialLevel: 4);
+
+        Assert.NotEmpty(requests);
+        Assert.All(requests, key => Assert.Equal(4, key.Level));
+    }
+
+    [Fact]
     public void Generated_hierarchy_keeps_large_horizon_partitions_sublinear()
     {
         var policy = TerrainLodSpatialPolicy.CreateForMaximumHorizon(

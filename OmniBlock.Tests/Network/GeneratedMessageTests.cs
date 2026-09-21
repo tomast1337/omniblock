@@ -75,7 +75,8 @@ public sealed class GeneratedMessageTests
             Dimension = -1,
             CacheIdentity = new string('a', 64),
             Tile = new TerrainLodTileKey(3, -17, 42),
-            Status = TerrainLodTileStatus.Missing
+            Status = TerrainLodTileStatus.Incompatible,
+            Diagnostic = "quality-policy version 2 is unsupported"
         };
 
         TerrainLodTileStatusMessage read = new();
@@ -85,6 +86,30 @@ public sealed class GeneratedMessageTests
         Assert.Equal(written.CacheIdentity, read.CacheIdentity);
         Assert.Equal(written.Tile, read.Tile);
         Assert.Equal(written.Status, read.Status);
+        Assert.Equal(written.Diagnostic, read.Diagnostic);
+        Assert.Equal(written.Size(), Serialise(written).Length);
+    }
+
+    [Fact]
+    public void A_terrain_lod_request_round_trips_its_negotiated_contract()
+    {
+        TerrainLodTileRequestMessage written = new()
+        {
+            Dimension = 2,
+            CacheIdentity = new string('b', 64),
+            MaximumSpatialLevel = 5,
+            QualityPolicyVersion = TerrainLodSpatialPolicy.CurrentQualityPolicyVersion,
+            Keys = [new TerrainLodTileKey(5, -3, 9)]
+        };
+
+        TerrainLodTileRequestMessage read = new();
+        read.Read(new MemoryStream(Serialise(written), false));
+
+        Assert.Equal(written.Dimension, read.Dimension);
+        Assert.Equal(written.CacheIdentity, read.CacheIdentity);
+        Assert.Equal(written.MaximumSpatialLevel, read.MaximumSpatialLevel);
+        Assert.Equal(written.QualityPolicyVersion, read.QualityPolicyVersion);
+        Assert.Equal(written.Keys, read.Keys);
         Assert.Equal(written.Size(), Serialise(written).Length);
     }
 
@@ -97,7 +122,9 @@ public sealed class GeneratedMessageTests
             new string('2', 64),
             new string('3', 64),
             7,
-            new string('4', 64));
+            new string('4', 64),
+            6,
+            11);
         var written = TerrainLodIdentityMessage.Of(identity);
 
         TerrainLodIdentityMessage read = new();

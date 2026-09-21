@@ -16,12 +16,14 @@ public class PlayerManager
     private readonly ChunkMap[] _chunkMaps;
     private readonly int _maxPlayerCount;
     private readonly OmniBlockServer _server;
+    private readonly TerrainLodGlobalSendPacer _terrainLodGlobalPacer = new();
     private readonly bool _whitelistEnabled;
     protected readonly HashSet<string> bannedIps = [];
     protected readonly HashSet<string> bannedPlayers = [];
     protected readonly HashSet<string> ops = [];
     protected readonly HashSet<string> whitelist = [];
     private volatile int _pendingViewDistance = -1;
+    private int _terrainLodRoundRobinCursor;
     private IPlayerStorage _saveHandler;
     public List<ServerPlayerEntity> players = [];
 
@@ -333,6 +335,36 @@ public class PlayerManager
         for (var i = 0; i < players.Count; i++)
         {
             players[i].FlushPendingChunkUpdates();
+        }
+    }
+
+    /// <summary>
+    ///     Gives queued distant-terrain replies a bounded, fair turn after gameplay chunks. At most
+    ///     one response is taken from a player before advancing to the next, while a lone player may
+    ///     use the remaining global slots. A blocked connection does not block another player.
+    /// </summary>
+    public void flushPendingTerrainLodResponses()
+    {
+        if (players.Count == 0) return;
+
+        _terrainLodGlobalPacer.BeginTick();
+        while (_terrainLodGlobalPacer.HasResponseCapacity)
+        {
+            var madeProgress = false;
+            var visited = 0;
+            while (visited++ < players.Count)
+            {
+                if (_terrainLodRoundRobinCursor >= players.Count)
+                    _terrainLodRoundRobinCursor = 0;
+                var player = players[_terrainLodRoundRobinCursor++];
+                var result = player.NetworkHandler?.FlushOneTerrainLodResponse(
+                    _terrainLodGlobalPacer) ?? TerrainLodFlushResult.NoWork;
+                if (result != TerrainLodFlushResult.Progress) continue;
+                madeProgress = true;
+                break;
+            }
+
+            if (!madeProgress) break;
         }
     }
 

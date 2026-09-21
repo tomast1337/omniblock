@@ -25,6 +25,7 @@ using OmniBlock.Util.Hit;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Lod;
 using Silk.NET.Maths;
 
 namespace OmniBlock.Client.Rendering;
@@ -502,18 +503,23 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             if (_world is ClientWorld remoteWorld)
             {
                 if (remoteWorld.NetworkHandler.TryGetTerrainLodIdentity(
-                        _world.Dimension.Id, out var cacheIdentity))
+                        _world.Dimension.Id, out var identity))
                 {
+                    var negotiatedMaximum = identity.NegotiateMaximumSpatialLevel(
+                        TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel);
                     var requests = terrainLod.TakeRemoteSpatialRequests(
                         viewPosition,
                         _game.Options.RenderDistance,
                         _game.Options.TerrainHorizonDistance,
-                        maximumRequests: 4);
+                        maximumRequests: 4,
+                        maximumSpatialLevel: negotiatedMaximum);
                     if (requests.Length > 0)
                         remoteWorld.NetworkHandler.SendMessage(new TerrainLodTileRequestMessage
                         {
                             Dimension = _world.Dimension.Id,
-                            CacheIdentity = cacheIdentity,
+                            CacheIdentity = identity.CompatibilityFingerprint,
+                            MaximumSpatialLevel = negotiatedMaximum,
+                            QualityPolicyVersion = identity.QualityPolicyVersion,
                             Keys = requests
                         });
                 }

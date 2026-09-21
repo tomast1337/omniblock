@@ -77,6 +77,28 @@ public sealed class LoopbackMessageTests
         Assert.Equal(EntityRemovalReason.DistanceDespawn, received.Reason);
     }
 
+    [Fact]
+    public void Bulk_messages_wait_for_gameplay_on_loopback_too()
+    {
+        var (sender, handler) = Pair();
+        TerrainLodTileStatusMessage bulk = new();
+        EntityMoveMessage gameplay = new() { EntityId = 7 };
+
+        // Deliberately enqueue bulk first: lane priority, not call order, must decide which is
+        // applied first. Loopback has no UDP channels, so InternalConnection emulates the contract
+        // with an isolated application queue.
+        sender.sendMessage(Negotiated(), bulk);
+        sender.sendMessage(Negotiated(), gameplay);
+
+        Assert.Equal(1, sender.getWorldPacketBacklog());
+        Assert.Equal(1, sender.getBulkPacketBacklog());
+
+        sender.RemoteConnection.tick();
+        Assert.Equal(2, handler.Received.Count);
+        Assert.Same(gameplay, handler.Received[0]);
+        Assert.Same(bulk, handler.Received[1]);
+    }
+
     /// <summary>
     ///     A real connection does serialise, and the receiving side gets a distinct instance. Stated
     ///     here so the loopback assertion above reads as a property of that transport rather than of

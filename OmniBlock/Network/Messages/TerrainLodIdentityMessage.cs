@@ -12,7 +12,7 @@ public sealed class TerrainLodIdentityMessage : Message
 {
     private const int MaximumFingerprintLength = 128;
     public static readonly ResourceLocation Id = new(
-        Namespace.Get("omniblock"), "terrain_lod_identity");
+        Namespace.Get("omniblock"), "terrain_lod_identity_v2");
 
     public string WorldFingerprint { get; set; } = "";
     public int Dimension { get; set; }
@@ -20,7 +20,10 @@ public sealed class TerrainLodIdentityMessage : Message
     public string GeneratorFingerprint { get; set; } = "";
     public int ReductionSchemaVersion { get; set; }
     public string MaterialRulesFingerprint { get; set; } = "";
+    public int MaximumSpatialLevel { get; set; }
+    public int QualityPolicyVersion { get; set; }
     public override ResourceLocation Key => Id;
+    public override int SchemaVersion => 2;
 
     public TerrainLodCacheIdentity ToIdentity() => new(
         WorldFingerprint,
@@ -28,7 +31,9 @@ public sealed class TerrainLodIdentityMessage : Message
         ContentFingerprint,
         GeneratorFingerprint,
         ReductionSchemaVersion,
-        MaterialRulesFingerprint);
+        MaterialRulesFingerprint,
+        MaximumSpatialLevel,
+        QualityPolicyVersion);
 
     public static TerrainLodIdentityMessage Of(TerrainLodCacheIdentity identity)
     {
@@ -40,7 +45,9 @@ public sealed class TerrainLodIdentityMessage : Message
             ContentFingerprint = identity.ContentFingerprint,
             GeneratorFingerprint = identity.GeneratorFingerprint,
             ReductionSchemaVersion = identity.ReductionSchemaVersion,
-            MaterialRulesFingerprint = identity.MaterialRulesFingerprint
+            MaterialRulesFingerprint = identity.MaterialRulesFingerprint,
+            MaximumSpatialLevel = identity.MaximumSpatialLevel,
+            QualityPolicyVersion = identity.QualityPolicyVersion
         };
     }
 
@@ -52,6 +59,8 @@ public sealed class TerrainLodIdentityMessage : Message
         GeneratorFingerprint = stream.ReadString(MaximumFingerprintLength);
         ReductionSchemaVersion = stream.ReadVarInt();
         MaterialRulesFingerprint = stream.ReadString(MaximumFingerprintLength);
+        MaximumSpatialLevel = stream.ReadVarInt();
+        QualityPolicyVersion = stream.ReadVarInt();
     }
 
     public override void Write(Stream stream)
@@ -62,6 +71,8 @@ public sealed class TerrainLodIdentityMessage : Message
         stream.WriteString(GeneratorFingerprint);
         stream.WriteVarInt(ReductionSchemaVersion);
         stream.WriteString(MaterialRulesFingerprint);
+        stream.WriteVarInt(MaximumSpatialLevel);
+        stream.WriteVarInt(QualityPolicyVersion);
     }
 
     public override int Size() =>
@@ -69,5 +80,7 @@ public sealed class TerrainLodIdentityMessage : Message
         sizeof(ushort) + ModifiedUtf8.GetByteCount(ContentFingerprint) +
         sizeof(ushort) + ModifiedUtf8.GetByteCount(GeneratorFingerprint) +
         StreamExtensions.VarIntSize(ReductionSchemaVersion) +
-        sizeof(ushort) + ModifiedUtf8.GetByteCount(MaterialRulesFingerprint);
+        sizeof(ushort) + ModifiedUtf8.GetByteCount(MaterialRulesFingerprint) +
+        StreamExtensions.VarIntSize(MaximumSpatialLevel) +
+        StreamExtensions.VarIntSize(QualityPolicyVersion);
 }

@@ -88,6 +88,9 @@ public sealed class SendPriorityTests
         Assert.Equal(
             SendPriority.Normal,
             PacketPriorities.Of(OmniMessagePacket.Get(0, [])));
+        Assert.Equal(
+            SendPriority.Bulk,
+            PacketPriorities.Of(OmniMessagePacket.Get(0, [], false, SendPriority.Bulk)));
     }
 
     [Fact]
@@ -119,8 +122,21 @@ public sealed class SendPriorityTests
         Assert.Equal(UdpConnection.OrderedChannel, UdpConnection.ChannelFor(Envelope(new RegionDataMessage())));
         // Block updates migrated; travels through the envelope on the ordered channel.
         Assert.Equal(UdpConnection.OrderedChannel, UdpConnection.ChannelFor(Envelope(new BlockUpdateMessage())));
+        Assert.Equal(UdpConnection.OrderedChannel, UdpConnection.ChannelFor(Envelope(new InteractBlockMessage())));
+        Assert.Equal(UdpConnection.OrderedChannel, UdpConnection.ChannelFor(Envelope(new PlayerActionMessage())));
         // ChatMessage migrated; travels through the envelope on the ordered channel.
         Assert.Equal(UdpConnection.OrderedChannel, UdpConnection.ChannelFor(Envelope(new ChatMessage())));
+    }
+
+    [Fact]
+    public void Terrain_lod_transport_uses_the_subordinate_bulk_channel()
+    {
+        Assert.Equal(SendPriority.Bulk, new TerrainLodTileRequestMessage().Priority);
+        Assert.Equal(SendPriority.Bulk, new TerrainLodTileMessage().Priority);
+        Assert.Equal(SendPriority.Bulk, new TerrainLodTileStatusMessage().Priority);
+        Assert.Equal(
+            UdpConnection.BulkChannel,
+            UdpConnection.ChannelFor(Envelope(new TerrainLodTileMessage())));
     }
 
     [Fact]
@@ -131,9 +147,10 @@ public sealed class SendPriorityTests
 
         connection.sendPacket(Envelope(new RegionDataMessage()));
         connection.sendPacket(Envelope(new EntityMoveMessage()));
+        connection.sendPacket(Envelope(new TerrainLodTileMessage()));
 
         Assert.Equal(
-            [UdpConnection.OrderedChannel, UdpConnection.StateChannel],
+            [UdpConnection.OrderedChannel, UdpConnection.StateChannel, UdpConnection.BulkChannel],
             transport.Sent.Select(s => s.Channel));
     }
 

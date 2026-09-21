@@ -19,6 +19,7 @@ public sealed class TerrainLodTileMessage : Message
     private TerrainLodColumnTile? LoopbackTile { get; set; }
     public override ResourceLocation Key => Id;
     public override int SchemaVersion => 2;
+    public override SendPriority Priority => SendPriority.Bulk;
 
     public static TerrainLodTileMessage Of(
         int dimension,
@@ -55,11 +56,15 @@ public sealed class TerrainLodTileMessage : Message
         return compressed;
     }
 
-    public TerrainLodColumnTile Decode()
+    public TerrainLodColumnTile Decode(
+        int maximumSpatialLevel = TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel)
     {
+        if (maximumSpatialLevel is < 0 or
+            > TerrainLodSpatialPolicy.MaximumGeneratedSpatialLevel)
+            throw new ArgumentOutOfRangeException(nameof(maximumSpatialLevel));
         if (LoopbackTile is { } loopbackTile)
         {
-            ValidateSpatialLevel(loopbackTile);
+            ValidateSpatialLevel(loopbackTile, maximumSpatialLevel);
             return loopbackTile;
         }
         using MemoryStream input = new(Compressed, writable: false);
@@ -76,7 +81,7 @@ public sealed class TerrainLodTileMessage : Message
         }
         var tile = TerrainLodColumnTileCacheStore.DecodePortable(output.GetBuffer().AsSpan(
             0, checked((int)output.Length)));
-        ValidateSpatialLevel(tile);
+        ValidateSpatialLevel(tile, maximumSpatialLevel);
         return tile;
     }
 
@@ -102,10 +107,13 @@ public sealed class TerrainLodTileMessage : Message
                                   ModifiedUtf8.GetByteCount(CacheIdentity) +
                                   StreamExtensions.ByteArraySize(Compressed);
 
-    private static void ValidateSpatialLevel(TerrainLodColumnTile tile)
+    private static void ValidateSpatialLevel(
+        TerrainLodColumnTile tile,
+        int maximumSpatialLevel)
     {
-        if (tile.Key.Level > TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel)
+        if (tile.Key.Level > maximumSpatialLevel)
             throw new InvalidDataException(
-                $"Terrain LOD response contains unsupported spatial level {tile.Key.Level}.");
+                $"Terrain LOD response contains spatial level {tile.Key.Level}, exceeding the " +
+                $"negotiated maximum {maximumSpatialLevel}.");
     }
 }

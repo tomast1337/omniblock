@@ -105,6 +105,11 @@ assert(summary.frame.mean > 0 and summary.lodCpu.mean > 0,
     "CPU timing counters did not advance")
 assert(summary.gpuBytes.mean > 0 and summary.workingSetBytes.mean > 0,
     "memory counters did not advance")
+assert(OMNI.client.state.terrainLodSpatialPinned > 0,
+    "the published spatial partition was not pinned")
+assert(OMNI.client.state.terrainLodSpatialGpuEvictions >= 0 and
+        OMNI.client.state.terrainLodSpatialCpuEvictions >= 0,
+    "spatial residency lifecycle counters are invalid")
 assert(OMNI.client.state.webGpuErrorCount == 0, "WebGPU validation failed")
 assert(OMNI.client.state.terrainLodRemoteCoverageComplete == 1 and
         availableTiles == requiredTiles,
@@ -131,6 +136,9 @@ print("terrain-lod-fixed-camera schema=2 targetChunks=64 spatialResident=" ..
     " lodDrawsMean=" .. tostring(summary.lodDraws.mean) ..
     " nearDrawsMean=" .. tostring(summary.nearDraws.mean) ..
     " lodGpuBytes=" .. tostring(summary.gpuBytes.mean) ..
+    " spatialPinned=" .. tostring(OMNI.client.state.terrainLodSpatialPinned) ..
+    " spatialGpuEvictions=" .. tostring(OMNI.client.state.terrainLodSpatialGpuEvictions) ..
+    " spatialCpuEvictions=" .. tostring(OMNI.client.state.terrainLodSpatialCpuEvictions) ..
     " boundaryBytes=" .. tostring(summary.boundaryBytes.mean) ..
     " cacheBytes=" .. tostring(summary.cacheBytes.mean) ..
     " workingSetBytes=" .. tostring(summary.workingSetBytes.mean) ..

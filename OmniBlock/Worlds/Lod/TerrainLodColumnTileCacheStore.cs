@@ -49,7 +49,7 @@ public sealed record TerrainLodColumnTileCacheSnapshot(
 public sealed class TerrainLodColumnTileCacheStore
 {
     private const ulong Magic = 0x314C4F43494E4D4F; // OMNICOL1
-    private const int CurrentFormatVersion = 1;
+    private const int CurrentFormatVersion = 2;
     private const int ChecksumBytes = 32;
     private const int MaximumStringBytes = 4096;
     private const int MaximumSamplesPerSide = 256;
@@ -126,6 +126,16 @@ public sealed class TerrainLodColumnTileCacheStore
                 "Source validation applies only to level-zero column tiles.");
         lock (_gate)
         {
+            if (key.Level > _identity.MaximumSpatialLevel)
+            {
+                _incompatibleReads++;
+                PublishSnapshotLocked();
+                return new TerrainLodColumnTileCacheReadResult(
+                    TerrainLodColumnTileCacheReadStatus.Incompatible,
+                    null,
+                    $"Column tile level {key.Level} exceeds cache manifest maximum " +
+                    $"{_identity.MaximumSpatialLevel}.");
+            }
             var path = GetRecordPath(key);
             if (!File.Exists(path))
             {
@@ -183,6 +193,10 @@ public sealed class TerrainLodColumnTileCacheStore
     public TerrainLodColumnTileCacheWriteStatus Write(TerrainLodColumnTile tile)
     {
         ArgumentNullException.ThrowIfNull(tile);
+        if (tile.Key.Level > _identity.MaximumSpatialLevel)
+            throw new InvalidOperationException(
+                $"Column tile level {tile.Key.Level} exceeds cache manifest maximum " +
+                $"{_identity.MaximumSpatialLevel}.");
         var bytes = Serialize(tile);
         lock (_gate)
         {
@@ -435,10 +449,11 @@ public sealed class TerrainLodColumnTileCacheStore
             return Incompatible(
                 $"Column-tile format {format} is not supported by {CurrentFormatVersion}.");
         var identity = ReadIdentity(reader);
-        if (identity != _identity)
+        if (!string.Equals(identity.RecordFingerprint, _identity.RecordFingerprint,
+                StringComparison.Ordinal))
             return Incompatible(
-                $"Column-tile identity {identity.CompatibilityFingerprint} does not match " +
-                $"{_identity.CompatibilityFingerprint}.");
+                $"Column-tile record identity {identity.RecordFingerprint} does not match " +
+                $"{_identity.RecordFingerprint}.");
         var schema = reader.ReadInt32();
         if (schema != TerrainLodColumnTile.SchemaVersion)
             return Incompatible(
@@ -449,6 +464,10 @@ public sealed class TerrainLodColumnTileCacheStore
         if (key != expectedKey)
             throw new InvalidDataException(
                 $"Column-tile record for {expectedKey} contains {key}.");
+        if (key.Level > identity.MaximumSpatialLevel)
+            throw new InvalidDataException(
+                $"Column-tile record level {key.Level} exceeds its manifest maximum " +
+                $"{identity.MaximumSpatialLevel}.");
         var horizontalSampleLevel = reader.ReadInt32();
         var width = reader.ReadInt32();
         var worldHeight = reader.ReadInt32();
@@ -668,6 +687,18 @@ public sealed class TerrainLodColumnTileCacheStore
                 nameof(identity),
                 identity.ReductionSchemaVersion,
                 "The LOD reduction schema version must be positive.");
+        if (identity.MaximumSpatialLevel is < 0 or
+            > TerrainLodSpatialPolicy.MaximumGeneratedSpatialLevel)
+            throw new ArgumentOutOfRangeException(
+                nameof(identity),
+                identity.MaximumSpatialLevel,
+                "The cache maximum spatial level is unsupported.");
+        if (identity.QualityPolicyVersion !=
+            TerrainLodSpatialPolicy.CurrentQualityPolicyVersion)
+            throw new ArgumentOutOfRangeException(
+                nameof(identity),
+                identity.QualityPolicyVersion,
+                "The cache quality-policy version is unsupported.");
     }
 
     private static void WriteIdentity(BinaryWriter writer, TerrainLodCacheIdentity identity)
@@ -678,6 +709,8 @@ public sealed class TerrainLodColumnTileCacheStore
         WriteString(writer, identity.GeneratorFingerprint);
         writer.Write(identity.ReductionSchemaVersion);
         WriteString(writer, identity.MaterialRulesFingerprint);
+        writer.Write(identity.MaximumSpatialLevel);
+        writer.Write(identity.QualityPolicyVersion);
     }
 
     private static TerrainLodCacheIdentity ReadIdentity(BinaryReader reader) => new(
@@ -686,7 +719,9 @@ public sealed class TerrainLodColumnTileCacheStore
         ReadString(reader),
         ReadString(reader),
         reader.ReadInt32(),
-        ReadString(reader));
+        ReadString(reader),
+        reader.ReadInt32(),
+        reader.ReadInt32());
 
     private static void WriteMaterial(BinaryWriter writer, TerrainLodMaterial material)
     {

@@ -36,5 +36,40 @@ public sealed class TerrainLodCacheIdentityTests
         Assert.Equal("material rules fingerprint differs",
             (compatible with { MaterialRulesFingerprint = "changed" })
             .GetPresentationIncompatibility(world.Dimension.Id, world.Content, materials));
+        Assert.Equal("maximum spatial level 11 is unsupported",
+            (compatible with { MaximumSpatialLevel = 11 })
+            .GetPresentationIncompatibility(world.Dimension.Id, world.Content, materials));
+        Assert.Equal("quality-policy version 999 is unsupported",
+            (compatible with { QualityPolicyVersion = 999 })
+            .GetPresentationIncompatibility(world.Dimension.Id, world.Content, materials));
+    }
+
+    [Fact]
+    public void Cache_contract_participates_in_identity_and_negotiates_the_lower_level()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var levelSix = TerrainLodCacheIdentity.FromWorld(
+            world, materials, "/saves/world", TerrainLodSpatialPolicy.CreateDefault());
+        var levelTen = TerrainLodCacheIdentity.FromWorld(
+            world, materials, "/saves/world",
+            TerrainLodSpatialPolicy.CreateForMaximumHorizon(
+                TerrainLodSpatialPolicy.MaximumGeneratedHorizonChunks));
+
+        Assert.Equal(6, levelSix.MaximumSpatialLevel);
+        Assert.Equal(10, levelTen.MaximumSpatialLevel);
+        Assert.Equal(TerrainLodSpatialPolicy.CurrentQualityPolicyVersion,
+            levelTen.QualityPolicyVersion);
+        Assert.NotEqual(levelSix.CompatibilityFingerprint, levelTen.CompatibilityFingerprint);
+        Assert.Equal(levelSix.RecordFingerprint, levelTen.RecordFingerprint);
+        Assert.Equal(6, levelTen.NegotiateMaximumSpatialLevel(6));
+        Assert.Equal(4, levelSix.NegotiateMaximumSpatialLevel(4));
+        Assert.Null(levelSix.GetRequestIncompatibility(
+            4, TerrainLodSpatialPolicy.CurrentQualityPolicyVersion, 6));
+        Assert.Equal("maximum spatial level 7 exceeds the server maximum 6",
+            levelTen.GetRequestIncompatibility(
+                7, TerrainLodSpatialPolicy.CurrentQualityPolicyVersion, 6));
+        Assert.Equal("quality-policy version 2 is unsupported; server policy is 1",
+            levelSix.GetRequestIncompatibility(6, 2, 6));
     }
 }

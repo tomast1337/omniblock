@@ -14,6 +14,14 @@ public sealed class TerrainLodSendPacerTests
             TerrainLodSendPacer.BurstBytes);
         Assert.Equal(TerrainLodScaleBudget.MaximumTransportBacklog,
             TerrainLodSendPacer.MaximumTransportBacklog);
+        Assert.Equal(TerrainLodScaleBudget.GlobalTransportBytesPerSecond,
+            TerrainLodGlobalSendPacer.BytesPerSecond);
+        Assert.Equal(TerrainLodScaleBudget.GlobalTransportBurstBytes,
+            TerrainLodGlobalSendPacer.BurstBytes);
+        Assert.Equal(TerrainLodScaleBudget.MaximumTransportResponsesPerTick,
+            TerrainLodGlobalSendPacer.MaximumResponsesPerTick);
+        Assert.Equal(TerrainLodScaleBudget.MaximumQueuedRequestsPerClient,
+            TerrainLodRequestQueue.Capacity);
     }
 
     [Fact]
@@ -21,8 +29,12 @@ public sealed class TerrainLodSendPacerTests
     {
         TerrainLodSendPacer pacer = new();
 
-        Assert.False(pacer.TryConsume(1024, pendingGameplayChunks: 1, transportBacklog: 0));
-        Assert.True(pacer.TryConsume(1024, pendingGameplayChunks: 0, transportBacklog: 0));
+        Assert.False(pacer.TryConsume(
+            1024, pendingGameplayChunks: 1, gameplayTransportBacklog: 0, bulkTransportBacklog: 0));
+        Assert.False(pacer.TryConsume(
+            1024, pendingGameplayChunks: 0, gameplayTransportBacklog: 1, bulkTransportBacklog: 0));
+        Assert.True(pacer.TryConsume(
+            1024, pendingGameplayChunks: 0, gameplayTransportBacklog: 0, bulkTransportBacklog: 0));
     }
 
     [Fact]
@@ -31,8 +43,8 @@ public sealed class TerrainLodSendPacerTests
         TerrainLodSendPacer pacer = new();
 
         Assert.False(pacer.TryConsume(
-            1024, 0, TerrainLodSendPacer.MaximumTransportBacklog));
-        Assert.True(pacer.TryConsume(1024, 0, 0));
+            1024, 0, 0, TerrainLodSendPacer.MaximumTransportBacklog));
+        Assert.True(pacer.TryConsume(1024, 0, 0, 0));
     }
 
     [Fact]
@@ -41,12 +53,35 @@ public sealed class TerrainLodSendPacerTests
         ManualClock clock = new();
         TerrainLodSendPacer pacer = new(clock);
 
-        Assert.True(pacer.TryConsume(TerrainLodSendPacer.BurstBytes, 0, 0));
-        Assert.False(pacer.TryConsume(1, 0, 0));
+        Assert.True(pacer.TryConsume(TerrainLodSendPacer.BurstBytes, 0, 0, 0));
+        Assert.False(pacer.TryConsume(1, 0, 0, 0));
 
         clock.Advance(TimeSpan.FromSeconds(1));
-        Assert.True(pacer.TryConsume(TerrainLodSendPacer.BytesPerSecond, 0, 0));
-        Assert.False(pacer.TryConsume(1, 0, 0));
+        Assert.True(pacer.TryConsume(TerrainLodSendPacer.BytesPerSecond, 0, 0, 0));
+        Assert.False(pacer.TryConsume(1, 0, 0, 0));
+    }
+
+    [Fact]
+    public void Global_budget_caps_all_clients_and_per_tick_dispatch_work()
+    {
+        ManualClock clock = new();
+        TerrainLodGlobalSendPacer pacer = new(clock);
+        pacer.BeginTick();
+
+        for (var i = 0; i < TerrainLodGlobalSendPacer.MaximumResponsesPerTick; i++)
+        {
+            Assert.True(pacer.CanSend(0));
+            pacer.Record(0);
+        }
+        Assert.False(pacer.CanSend(0));
+
+        pacer.BeginTick();
+        Assert.True(pacer.CanSend(TerrainLodGlobalSendPacer.BurstBytes));
+        pacer.Record(TerrainLodGlobalSendPacer.BurstBytes);
+        Assert.False(pacer.CanSend(1));
+
+        clock.Advance(TimeSpan.FromSeconds(1));
+        Assert.True(pacer.CanSend(TerrainLodGlobalSendPacer.BytesPerSecond));
     }
 
     private sealed class ManualClock : TimeProvider

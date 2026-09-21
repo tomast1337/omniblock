@@ -107,6 +107,11 @@ public readonly record struct TerrainLodTileKey
 /// </summary>
 public sealed class TerrainLodSpatialPolicy
 {
+    /// <summary>
+    ///     Version of the canonical spatial sampling and vertical-slice schedules. Increment this
+    ///     when equal source terrain can compile into different column tiles under a new policy.
+    /// </summary>
+    public const int CurrentQualityPolicyVersion = 1;
     public const int MinimumSupportedHorizonChunks = 16;
     /// <summary>Largest horizon currently exposed and accepted by client/server transport.</summary>
     public const int MaximumSupportedHorizonChunks = 256;
@@ -164,6 +169,13 @@ public sealed class TerrainLodSpatialPolicy
                 horizonChunks / DefaultDistanceUnitChunks,
                 DefaultDistanceGrowth));
         return Math.Clamp(level, 0, MaximumGeneratedSpatialLevel);
+    }
+
+    public static int MaximumHorizonChunksForSpatialLevel(int spatialLevel)
+    {
+        if (spatialLevel is < 0 or > MaximumGeneratedSpatialLevel)
+            throw new ArgumentOutOfRangeException(nameof(spatialLevel));
+        return checked((int)(DefaultDistanceUnitChunks * (1 << spatialLevel)));
     }
 
     private static int HorizontalSampleLevelForGeneratedSpatialLevel(int spatialLevel) =>

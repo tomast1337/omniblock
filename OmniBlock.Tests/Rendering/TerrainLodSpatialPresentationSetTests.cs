@@ -75,6 +75,37 @@ public sealed class TerrainLodSpatialPresentationSetTests
     }
 
     [Fact]
+    public void Unpinned_catalog_entry_can_be_evicted_and_releases_its_resource()
+    {
+        var key = new TerrainLodTileKey(0, 9, -4);
+        using var presentations = new TerrainLodSpatialPresentationSet<FakePresentation>();
+        var presentation = new FakePresentation("trailing");
+        Assert.True(presentations.TryInstall(key, "trailing", () => presentation, out _));
+
+        Assert.True(presentations.TryEvict(key));
+
+        Assert.True(presentation.Disposed);
+        Assert.False(presentations.IsReady(key));
+        Assert.Equal(0, presentations.Count);
+        Assert.Equal(2, presentations.Revision);
+    }
+
+    [Fact]
+    public void Active_transition_members_cannot_be_evicted()
+    {
+        var root = new TerrainLodTileKey(1, 0, 0);
+        using var presentations = new TerrainLodSpatialPresentationSet<FakePresentation>();
+        Install(presentations, root);
+        presentations.UpdatePartition(
+            root, [Selection(root)], completeRootCoverage: true,
+            deltaTime: 0, fadeEnabled: false);
+
+        Assert.Contains(root, presentations.TransitionTiles);
+        Assert.False(presentations.TryEvict(root));
+        Assert.True(presentations.IsReady(root));
+    }
+
+    [Fact]
     public void Partial_child_quartet_cannot_replace_ready_parent()
     {
         var root = new TerrainLodTileKey(1, 0, 0);

@@ -74,6 +74,11 @@ assert(type(OMNI.client.state.terrainLodSpatialGpuResident) == "number",
     "spatial LOD shadow GPU residency gauge is unavailable")
 assert(type(OMNI.client.state.terrainLodSpatialCpuTiles) == "number",
     "spatial LOD shadow CPU residency gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodSpatialPinned) == "number",
+    "spatial LOD pinned-residency gauge is unavailable")
+assert(type(OMNI.client.state.terrainLodSpatialGpuEvictions) == "number" and
+       type(OMNI.client.state.terrainLodSpatialCpuEvictions) == "number",
+    "spatial LOD eviction counters are unavailable")
 
 OMNI.waitUntil(function()
     return OMNI.client.state.terrainLodResident > 0 and

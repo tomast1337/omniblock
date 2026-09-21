@@ -157,7 +157,13 @@ public class Connection
     ///         several seconds ago is this number, not a physics or interpolation fault.
     ///     </para>
     /// </summary>
-    public int ReadQueueDepth => readQueue.Count;
+    public int ReadQueueDepth => readQueue.Count + AdditionalReadQueueDepth;
+
+    /// <summary>Non-bulk application backlog, used by loopback's producer-side pacing.</summary>
+    protected int NormalReadQueueDepth => readQueue.Count;
+
+    /// <summary>Subclasses with an isolated low-priority inbox contribute it to diagnostics.</summary>
+    protected virtual int AdditionalReadQueueDepth => 0;
 
     /// <summary>High-water mark of <see cref="ReadQueueDepth" />, sampled once per tick.</summary>
     public int PeakReadQueueDepth { get; private set; }
@@ -326,6 +332,13 @@ public class Connection
     ///     </para>
     /// </summary>
     public virtual int getWorldPacketBacklog() => 0;
+
+    /// <summary>
+    ///     Packets waiting in the transport's subordinate bulk lane. Kept separate from world
+    ///     backlog so gameplay can require an empty ordered lane while bulk applies its own larger
+    ///     queue ceiling.
+    /// </summary>
+    public virtual int getBulkPacketBacklog() => 0;
 
     /// <summary>
     ///     Stamps T1 (server receiving request) or T3 (client receiving response) on the read

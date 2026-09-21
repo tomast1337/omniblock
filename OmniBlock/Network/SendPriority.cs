@@ -3,7 +3,7 @@ using OmniBlock.Network.Packets;
 namespace OmniBlock.Network;
 
 /// <summary>
-///     Which of <see cref="Connection" />'s two send queues a packet is drained from.
+///     Which transport lane a packet belongs to.
 /// </summary>
 public enum SendPriority
 {
@@ -11,7 +11,13 @@ public enum SendPriority
     Normal,
 
     /// <summary>Drained ahead of anything <see cref="Normal" />. See <see cref="PacketPriorities" />.</summary>
-    High
+    High,
+
+    /// <summary>
+    ///     Elastic data that must never head-of-line block gameplay. Bulk traffic receives its own
+    ///     ordering domain and is admitted only by a feature-specific bandwidth scheduler.
+    /// </summary>
+    Bulk
 }
 
 /// <summary>

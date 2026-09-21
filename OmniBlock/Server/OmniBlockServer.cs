@@ -580,6 +580,7 @@ public abstract class OmniBlockServer : ICommandOutput
         // keeps advancing its isolated work.
         playerManager.updateAllChunks(includePlayProfile: !_isPaused);
         playerManager.flushPendingChunkUpdates();
+        playerManager.flushPendingTerrainLodResponses();
 
         // Ahead of the tracker, so that TCP's ordering guarantee makes the stamp cover every entity
         // update that follows it. Skipped when no simulation tick has run since the last broadcast:

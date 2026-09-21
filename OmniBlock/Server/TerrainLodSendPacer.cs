@@ -23,14 +23,37 @@ public sealed class TerrainLodSendPacer
         _lastRefillTimestamp = _clock.GetTimestamp();
     }
 
-    public bool TryConsume(int bytes, int pendingGameplayChunks, int transportBacklog)
+    public bool CanSend(
+        int bytes,
+        int pendingGameplayChunks,
+        int gameplayTransportBacklog,
+        int bulkTransportBacklog)
     {
         if (bytes < 0) throw new ArgumentOutOfRangeException(nameof(bytes));
         Refill();
-        if (pendingGameplayChunks > 0 || transportBacklog >= MaximumTransportBacklog ||
-            bytes > _tokens)
-            return false;
+        return pendingGameplayChunks == 0 &&
+               gameplayTransportBacklog == 0 &&
+               bulkTransportBacklog < MaximumTransportBacklog &&
+               bytes <= _tokens;
+    }
+
+    public void Record(int bytes)
+    {
+        if (bytes < 0) throw new ArgumentOutOfRangeException(nameof(bytes));
+        if (bytes > _tokens)
+            throw new InvalidOperationException("Terrain LOD transport tokens were overspent.");
         _tokens -= bytes;
+    }
+
+    public bool TryConsume(
+        int bytes,
+        int pendingGameplayChunks,
+        int gameplayTransportBacklog,
+        int bulkTransportBacklog)
+    {
+        if (!CanSend(bytes, pendingGameplayChunks, gameplayTransportBacklog, bulkTransportBacklog))
+            return false;
+        Record(bytes);
         return true;
     }
 

@@ -116,6 +116,9 @@ public sealed class LuauClientStateHostIntegrationTests
             "terrainLodSolidCpuMs" => 0.75,
             "terrainLodTranslucentCpuMs" => 0.25,
             "terrainLodCacheBytes" => 1_048_576,
+            "terrainLodSpatialPinned" => 274,
+            "terrainLodSpatialGpuEvictions" => 18,
+            "terrainLodSpatialCpuEvictions" => 41,
             "clientWorkingSetBytes" => 536_870_912,
             _ => 0
         };
@@ -246,6 +249,9 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.terrainLodSolidCpuMs", "0.75");
             AssertValue(state, "OMNI.client.state.terrainLodTranslucentCpuMs", "0.25");
             AssertValue(state, "OMNI.client.state.terrainLodCacheBytes", "1048576");
+            AssertValue(state, "OMNI.client.state.terrainLodSpatialPinned", "274");
+            AssertValue(state, "OMNI.client.state.terrainLodSpatialGpuEvictions", "18");
+            AssertValue(state, "OMNI.client.state.terrainLodSpatialCpuEvictions", "41");
             AssertValue(state, "OMNI.client.state.clientWorkingSetBytes", "536870912");
             AssertValue(state, "OMNI.client.state.entityLodIntendedImpostors", "12");
             AssertValue(state, "OMNI.client.state.entityLodImpostorSubmissions", "0");

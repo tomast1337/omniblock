@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net;
 using Microsoft.Extensions.Logging;
 using OmniBlock.Network.Messages;
@@ -8,6 +9,7 @@ namespace OmniBlock.Network;
 public class InternalConnection : Connection
 {
     private readonly ILogger<InternalConnection> _logger = Log.Instance.For<InternalConnection>();
+    private readonly ConcurrentQueue<Packet> _bulkReadQueue = [];
 
     public InternalConnection(NetHandler? netHandler, string name)
     {
@@ -20,6 +22,8 @@ public class InternalConnection : Connection
     public string Name { get; set; }
 
     public override bool IsInternal => true;
+
+    protected override int AdditionalReadQueueDepth => _bulkReadQueue.Count;
 
     public void AssignRemote(InternalConnection remote) => RemoteConnection = remote;
 
@@ -50,7 +54,22 @@ public class InternalConnection : Connection
     {
         BytesRead += packet.Size();
         PacketsRead++;
-        readQueue.Enqueue(packet);
+        if (PacketPriorities.Of(packet) == SendPriority.Bulk)
+            _bulkReadQueue.Enqueue(packet);
+        else
+            readQueue.Enqueue(packet);
+    }
+
+    protected override void processPackets()
+    {
+        // Loopback has no transport channels, so preserve the same priority contract with two
+        // application queues. Drain gameplay/control first, then spend at most one unit of idle
+        // application capacity on bulk. Testing only at tick entry starves this lane under a
+        // continuous tick-stamp/entity stream even though the normal queue is drained each tick.
+        base.processPackets();
+        if (!readQueue.IsEmpty || !_bulkReadQueue.TryDequeue(out var bulk)) return;
+        if (netHandler is null) throw new Exception("networkHandler is null");
+        ApplyPacket(bulk, netHandler);
     }
 
     public override void disconnect(string disconnectedReason, params object[] disconnectReasonArgs)
@@ -91,7 +110,10 @@ public class InternalConnection : Connection
     ///     transport. Without it, distance 32 can enqueue thousands of decoded chunks while the
     ///     renderer is still meshing the first rings.
     /// </summary>
-    public override int getWorldPacketBacklog() => RemoteConnection?.ReadQueueDepth ?? 0;
+    public override int getWorldPacketBacklog() => RemoteConnection?.NormalReadQueueDepth ?? 0;
+
+    // The isolated application lane is also the direct backpressure signal for its producer.
+    public override int getBulkPacketBacklog() => RemoteConnection?._bulkReadQueue.Count ?? 0;
 
     public override IPEndPoint getAddress() => new(IPAddress.Parse("127.0.0.1"), 12345);
 }

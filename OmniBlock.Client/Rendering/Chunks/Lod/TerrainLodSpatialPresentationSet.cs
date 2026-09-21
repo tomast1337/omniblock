@@ -54,6 +54,10 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
     public IEnumerable<TerrainLodTileKey> ReadyKeys => _entries.Keys;
     public IEnumerable<TPresentation> ReadyPresentations =>
         _entries.Values.Select(static entry => entry.Presentation);
+    public IEnumerable<TerrainLodTileKey> TransitionTiles => _transitions.Values
+        .SelectMany(static state => state.Current.Concat(state.From).Concat(state.To))
+        .Select(static selection => selection.Tile)
+        .Distinct();
 
     public bool TryInstall(
         TerrainLodTileKey key,
@@ -102,6 +106,23 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
         }
         presentation = null;
         return false;
+    }
+
+    /// <summary>
+    ///     Releases catalog ownership of an unused presentation. Active transition members are
+    ///     protected here as a final invariant; published snapshots remain alive through their
+    ///     independent <see cref="RetainedTerrainResource"/> leases.
+    /// </summary>
+    public bool TryEvict(TerrainLodTileKey key)
+    {
+        AssertOwnerThread();
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_transitions.Values.Any(state => References(state, key)) ||
+            !_entries.Remove(key, out var entry))
+            return false;
+        Revision++;
+        entry.Presentation.Dispose();
+        return true;
     }
 
     public TerrainLodSpatialPresentationFrame<TPresentation> Update(
@@ -275,6 +296,11 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
             if (first[index] != second[index]) return false;
         return true;
     }
+
+    private static bool References(TransitionState state, TerrainLodTileKey key) =>
+        state.Current.Any(selection => selection.Tile == key) ||
+        state.From.Any(selection => selection.Tile == key) ||
+        state.To.Any(selection => selection.Tile == key);
 
     private static uint Seed(TerrainLodTileKey root) => unchecked((uint)(
         root.Level * 83_492_791 ^ root.X * 73_856_093 ^ root.Z * 19_349_663));
