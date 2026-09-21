@@ -615,11 +615,19 @@ public partial class OmniBlock :
                     "terrainLodSpatialMeshQueued" => spatial.MeshCompilation.Queued,
                     "terrainLodSpatialMeshRunning" => spatial.MeshCompilation.Running,
                     "terrainLodSpatialMeshReady" => spatial.MeshCompilation.Ready,
+                    "terrainLodSpatialMeshCancelled" => spatial.MeshCompilation.Cancelled,
+                    "terrainLodSpatialMeshOverBudget" => spatial.MeshCompilation.OverBudget,
+                    "terrainLodSpatialMeshOldestQueuedMs" =>
+                        spatial.MeshCompilation.OldestQueuedMs,
                     "terrainLodSpatialSeamDesired" => spatial.DesiredSeams,
                     "terrainLodSpatialSeamGpuResident" => spatial.GpuSeams,
                     "terrainLodSpatialSeamQueued" => spatial.SeamCompilation.Queued,
                     "terrainLodSpatialSeamRunning" => spatial.SeamCompilation.Running,
                     "terrainLodSpatialSeamReady" => spatial.SeamCompilation.Ready,
+                    "terrainLodSpatialSeamCancelled" => spatial.SeamCompilation.Cancelled,
+                    "terrainLodSpatialSeamOverBudget" => spatial.SeamCompilation.OverBudget,
+                    "terrainLodSpatialSeamOldestQueuedMs" =>
+                        spatial.SeamCompilation.OldestQueuedMs,
                     "terrainLodSpatialSubmissionReady" => spatial.SubmissionReady ? 1 : 0,
                     "terrainLodSpatialAuthoritativeTiles" => spatial.AuthoritativeTiles,
                     "terrainLodSpatialHighestAuthoritativeLevel" =>

@@ -1387,6 +1387,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     {
         var cameraChunkX = viewPosition.X / SubChunkRenderer.Size;
         var cameraChunkZ = viewPosition.Z / SubChunkRenderer.Size;
+        var gpuBytes = SpatialGpuBytes();
         var admitted = 0;
         foreach (var pair in _spatialMeshPending
                      .OrderByDescending(static pair => pair.Key.Level)
@@ -1399,14 +1400,30 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             var workKind = _spatialPresentations.IsReady(pair.Key)
                 ? TerrainLodSpatialMeshWorkKind.Refinement
                 : TerrainLodSpatialMeshWorkKind.Coverage;
+            _spatialPresentations.TryGetPresentation(pair.Key, out var previous);
+            var maximumResultBytes = Math.Min(
+                TerrainLodScaleBudget.MaximumUploadBytesPerFrame,
+                Math.Max(0, TerrainLodScaleBudget.MaximumSpatialGpuBytes -
+                            (gpuBytes - (previous?.EstimatedBytes ?? 0))));
+            if (maximumResultBytes == 0)
+            {
+                _rejectedAdmissions++;
+                break;
+            }
             var result = _spatialMeshCompilation.Submit(
                 pair.Value,
                 _world.Content.Blocks,
                 _spatialPolicy.VerticalSliceBudgetForSpatialLevel(pair.Key.Level),
                 workKind,
                 pair.Key.DistanceTo(cameraChunkX, cameraChunkZ),
-                _world.Dimension.HasCeiling ? null : OverworldCaveCullCeilingY);
+                _world.Dimension.HasCeiling ? null : OverworldCaveCullCeilingY,
+                maximumResultBytes);
             if (result == TerrainLodSpatialMeshAdmissionResult.RejectedAtCapacity) break;
+            if (result == TerrainLodSpatialMeshAdmissionResult.RejectedOverBudget)
+            {
+                _rejectedAdmissions++;
+                break;
+            }
             _spatialMeshPending.Remove(pair.Key);
             admitted++;
         }
@@ -1675,6 +1692,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         var requiredTiles = TerrainLodCoveragePlanner.PrioritizeMissing(
             coveragePlan.Tiles,
             cameraChunkX, cameraChunkZ, _spatialPolicy);
+        RetainSpatialMeshCandidates(requiredTiles);
         UpdateCoarseCoverPlan(requiredTiles);
         // Uploads happen earlier in this render pass than presentation evaluation. Reclassify the
         // same immutable partition here so GPU-pending/ready diagnostics describe this frame,
@@ -1792,6 +1810,34 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         return frame;
     }
 
+    /// <summary>
+    ///     Cancels body work that cannot participate in the current atomic cover. Ancestors remain
+    ///     eligible because they are the conservative fallback while a complete child group is
+    ///     being compiled; the currently published frame is retained for the same reason.
+    /// </summary>
+    private void RetainSpatialMeshCandidates(IReadOnlyList<TerrainLodTileKey> requiredTiles)
+    {
+        HashSet<TerrainLodTileKey> desired = [];
+        foreach (var required in requiredTiles)
+        {
+            var candidate = required;
+            while (true)
+            {
+                desired.Add(candidate);
+                if (candidate.Level >= _spatialPolicy.MaximumSpatialLevel) break;
+                candidate = candidate.Parent();
+            }
+        }
+        if (_spatialFrame is { } published)
+            foreach (var draw in published.Draws)
+                desired.Add(draw.Selection.Tile);
+
+        _spatialMeshCompilation.Retain(desired);
+        foreach (var key in _spatialMeshPending.Keys
+                     .Where(key => !desired.Contains(key)).ToArray())
+            _spatialMeshPending.Remove(key);
+    }
+
     private void UpdateSpatialSeams(
         TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation> frame,
         double cameraChunkX,
@@ -1847,6 +1893,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             if (_spatialSeams.Remove(key, out var obsolete)) obsolete.Dispose();
 
         var admitted = 0;
+        var gpuBytes = SpatialGpuBytes();
         foreach (var seam in _desiredSpatialSeams
                      .OrderBy(static seam => seam.IsExterior)
                      .ThenBy(seam => SpatialSeamDistance(
@@ -1863,10 +1910,23 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             if (_spatialSeams.TryGetValue(seam, out var existing) &&
                 existing.CanonicalHash == expectedHash)
                 continue;
+            var previousBytes = _spatialSeams.TryGetValue(seam, out var previous)
+                ? previous.EstimatedBytes
+                : 0;
+            var maximumResultBytes = Math.Min(
+                TerrainLodScaleBudget.MaximumUploadBytesPerFrame,
+                Math.Max(0, TerrainLodScaleBudget.MaximumSpatialGpuBytes -
+                            (gpuBytes - previousBytes)));
+            if (maximumResultBytes == 0)
+            {
+                _rejectedAdmissions++;
+                break;
+            }
             if (_spatialSeamCompilation.Submit(
                 seam, owner!, neighbor, _world.Content.Blocks,
                     SpatialSeamDistance(seam, cameraChunkX, cameraChunkZ),
-                    caveCullBelowY))
+                    caveCullBelowY,
+                    maximumResultBytes))
                 admitted++;
         }
 

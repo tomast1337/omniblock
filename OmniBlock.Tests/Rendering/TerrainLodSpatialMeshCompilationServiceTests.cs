@@ -66,6 +66,48 @@ public sealed class TerrainLodSpatialMeshCompilationServiceTests
         Assert.NotNull((await Take(service)).Mesh);
     }
 
+    [Fact]
+    public async Task Unpublishable_result_stops_in_the_worker_and_releases_capacity()
+    {
+        var world = new FakeWorldContext();
+        using var service = new TerrainLodSpatialMeshCompilationService(2, 1);
+
+        Assert.Equal(TerrainLodSpatialMeshAdmissionResult.Accepted,
+            service.Submit(Leaf(world, 0, 0, 1), world.Content.Blocks, 8,
+                TerrainLodSpatialMeshWorkKind.Coverage, 1,
+                maximumResultBytes: 1));
+        await WaitUntil(() => service.Snapshot().OverBudget == 1);
+
+        var snapshot = service.Snapshot();
+        Assert.Equal(0, snapshot.Owned);
+        Assert.Equal(0, snapshot.Ready);
+        Assert.Equal(1, snapshot.OverBudget);
+    }
+
+    [Fact]
+    public async Task Retain_cancels_obsolete_queued_work_and_reports_queue_age()
+    {
+        var world = new FakeWorldContext();
+        var retained = Leaf(world, 0, 0, 1);
+        var obsolete = Leaf(world, 1, 0, 1);
+        using var service = new TerrainLodSpatialMeshCompilationService(3, 1);
+        service.Submit(retained, world.Content.Blocks, 8,
+            TerrainLodSpatialMeshWorkKind.Coverage, 1);
+        await WaitUntil(() => service.Snapshot().Ready == 1);
+        service.Submit(obsolete, world.Content.Blocks, 8,
+            TerrainLodSpatialMeshWorkKind.Coverage, 2);
+        await Task.Delay(5);
+
+        Assert.True(service.Snapshot().OldestQueuedMs > 0);
+        service.Retain(new HashSet<TerrainLodTileKey> { retained.Key });
+
+        var snapshot = service.Snapshot();
+        Assert.Equal(1, snapshot.Owned);
+        Assert.Equal(0, snapshot.Queued);
+        Assert.Equal(1, snapshot.Cancelled);
+        Assert.NotNull((await Take(service)).Mesh);
+    }
+
     private static TerrainLodColumnTile Leaf(
         FakeWorldContext world,
         int chunkX,

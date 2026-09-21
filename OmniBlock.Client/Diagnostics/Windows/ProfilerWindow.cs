@@ -359,9 +359,13 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"GPU stage: {spatial.GpuPresentations:N0} resident through L{spatial.HighestGpuResidentLevel}  {FormatBytes(spatial.GpuBytes)}  {spatial.PendingMeshCandidates:N0} pending  {spatial.MeshCompilation.Queued:N0} queued  {spatial.MeshCompilation.Running:N0} running  {spatial.MeshCompilation.Ready:N0} ready");
         ImGuiTextSafe.Text(
+            $"GPU work:  oldest {spatial.MeshCompilation.OldestQueuedMs:N0} ms  cancelled {spatial.MeshCompilation.Cancelled:N0}  over-budget {spatial.MeshCompilation.OverBudget:N0}  capacity rejects {spatial.MeshCompilation.RejectedAtCapacity:N0}");
+        ImGuiTextSafe.Text(
             $"Residency: {spatial.PinnedPresentations:N0} pinned  {spatial.GpuEvictions:N0} GPU evictions  {spatial.CpuEvictions:N0} CPU evictions");
         ImGuiTextSafe.Text(
             $"Seams:     {spatial.DesiredSeams:N0} desired  {spatial.GpuSeams:N0} GPU  {spatial.SeamCompilation.Queued:N0} queued  {spatial.SeamCompilation.Running:N0} running  {spatial.SeamCompilation.Ready:N0} ready");
+        ImGuiTextSafe.Text(
+            $"Seam work: oldest {spatial.SeamCompilation.OldestQueuedMs:N0} ms  cancelled {spatial.SeamCompilation.Cancelled:N0}  over-budget {spatial.SeamCompilation.OverBudget:N0}  capacity rejects {spatial.SeamCompilation.RejectedAtCapacity:N0}");
         ImGuiTextSafe.Text(
             $"Live:      ready {spatial.SubmissionReady}  {spatial.AuthoritativeTiles:N0} authoritative tiles  highest L{spatial.HighestAuthoritativeLevel}  pages {spatial.SubmittedSolidPages:N0} solid / {spatial.SubmittedTranslucentPages:N0} translucent");
     }

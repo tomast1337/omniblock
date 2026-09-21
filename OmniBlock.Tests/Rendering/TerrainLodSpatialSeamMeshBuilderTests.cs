@@ -7,6 +7,24 @@ namespace OmniBlock.Tests.Rendering;
 public sealed class TerrainLodSpatialSeamMeshBuilderTests
 {
     [Fact]
+    public void Seam_build_stops_when_the_result_cannot_fit_its_budget()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var stone = checked((byte)world.Content.Blocks.Get("omniblock:stone").Id);
+        var tile = Leaf(materials, 0, 0, 32,
+            (_, y, _) => y < 8 ? stone : (byte)0);
+        var selection = new TerrainLodTileSelection(tile.Key, 0, 8);
+        var segment = TerrainLodSpatialSeamPlanner.Plan([selection])
+            .Single(static seam => seam.OwnerSide == TerrainLodSpatialBoundarySide.East);
+
+        Assert.Throws<TerrainLodSpatialMeshBudgetExceededException>(() =>
+            TerrainLodSpatialSeamMeshBuilder.Build(
+                segment, tile, neighbor: null, world.Content.Blocks,
+                maximumResultBytes: 1));
+    }
+
+    [Fact]
     public void Coarse_to_refined_boundary_uses_the_finer_sample_partition()
     {
         var world = new FakeWorldContext();

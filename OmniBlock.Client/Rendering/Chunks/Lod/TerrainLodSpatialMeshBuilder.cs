@@ -85,12 +85,16 @@ internal static class TerrainLodSpatialMeshBuilder
         IBlockRuntimeView blocks,
         int verticalSliceBudget,
         bool emitTileBoundaryFaces = true,
-        int? caveCullBelowY = null)
+        int? caveCullBelowY = null,
+        CancellationToken cancellationToken = default,
+        long maximumResultBytes = long.MaxValue)
     {
         ArgumentNullException.ThrowIfNull(tile);
         ArgumentNullException.ThrowIfNull(blocks);
         if (verticalSliceBudget <= 0)
             throw new ArgumentOutOfRangeException(nameof(verticalSliceBudget));
+        var guard = new TerrainLodSpatialMeshBuildGuard(
+            cancellationToken, maximumResultBytes);
 
         var sampleSize = checked(1 << tile.HorizontalSampleLevel);
         if (sampleSize > MaximumSampleSpan)
@@ -116,6 +120,7 @@ internal static class TerrainLodSpatialMeshBuilder
         for (var x = 0; x < tile.Width; x++)
         for (var z = 0; z < tile.Width; z++)
         {
+            guard.Checkpoint();
             var source = caveCullBelowY is { } ceilingY
                 ? TerrainLodCaveCuller.SealUndergroundAir(tile[x, z], ceilingY)
                 : tile[x, z];
@@ -133,6 +138,7 @@ internal static class TerrainLodSpatialMeshBuilder
         for (var x = 0; x < tile.Width; x++)
         for (var z = 0; z < tile.Width; z++)
         {
+            guard.Checkpoint();
             var column = Column(x, z);
             foreach (var span in column.Spans)
             {
@@ -180,11 +186,11 @@ internal static class TerrainLodSpatialMeshBuilder
                     if (side == Side.Up)
                         Emit(page, translucent, side, appearance, shade, light, sampleSize, sampleSize,
                             (maxX, faceY, maxZ), (maxX, faceY, minZ),
-                            (minX, faceY, minZ), (minX, faceY, maxZ));
+                            (minX, faceY, minZ), (minX, faceY, maxZ), guard);
                     else
                         Emit(page, translucent, side, appearance, shade, light, sampleSize, sampleSize,
                             (minX, faceY, maxZ), (minX, faceY, minZ),
-                            (maxX, faceY, minZ), (maxX, faceY, maxZ));
+                            (maxX, faceY, minZ), (maxX, faceY, maxZ), guard);
                 }
 
                 void EmitSide(
@@ -203,6 +209,7 @@ internal static class TerrainLodSpatialMeshBuilder
                     var runLight = default(ChunkLightVertex);
                     for (var y = minY; y <= maxY; y++)
                     {
+                        if ((y & 15) == 0) guard.Checkpoint();
                         var adjacent = y < maxY && neighbor is not null
                             ? NeighborAt(neighbor, y)
                             : null;
@@ -254,7 +261,7 @@ internal static class TerrainLodSpatialMeshBuilder
                                         (fixedCoordinate, y1, alongStart),
                                         (fixedCoordinate, y0, alongStart),
                                         (fixedCoordinate, y0, alongEnd),
-                                        (fixedCoordinate, y1, alongEnd));
+                                        (fixedCoordinate, y1, alongEnd), guard);
                                     break;
                                 case Side.East:
                                     Emit(page, translucent, side, appearance, shade, light,
@@ -262,7 +269,7 @@ internal static class TerrainLodSpatialMeshBuilder
                                         (fixedCoordinate, y1, alongEnd),
                                         (fixedCoordinate, y0, alongEnd),
                                         (fixedCoordinate, y0, alongStart),
-                                        (fixedCoordinate, y1, alongStart));
+                                        (fixedCoordinate, y1, alongStart), guard);
                                     break;
                                 case Side.North:
                                     Emit(page, translucent, side, appearance, shade, light,
@@ -270,7 +277,7 @@ internal static class TerrainLodSpatialMeshBuilder
                                         (alongEnd, y1, fixedCoordinate),
                                         (alongEnd, y0, fixedCoordinate),
                                         (alongStart, y0, fixedCoordinate),
-                                        (alongStart, y1, fixedCoordinate));
+                                        (alongStart, y1, fixedCoordinate), guard);
                                     break;
                                 case Side.South:
                                     Emit(page, translucent, side, appearance, shade, light,
@@ -278,7 +285,7 @@ internal static class TerrainLodSpatialMeshBuilder
                                         (alongStart, y1, fixedCoordinate),
                                         (alongStart, y0, fixedCoordinate),
                                         (alongEnd, y0, fixedCoordinate),
-                                        (alongEnd, y1, fixedCoordinate));
+                                        (alongEnd, y1, fixedCoordinate), guard);
                                     break;
                             }
                             y0 = y1;
@@ -292,10 +299,10 @@ internal static class TerrainLodSpatialMeshBuilder
             .OrderBy(static pair => pair.Key.X)
             .ThenBy(static pair => pair.Key.Y)
             .ThenBy(static pair => pair.Key.Z)
-            .Select(static pair => pair.Value.Build(pair.Key))
+            .Select(pair => pair.Value.Build(pair.Key, guard))
             .ToArray();
         if (tile.Key.Level >= TileScaleSubmissionMinimumLevel)
-            completedPages = CoalescePages(completedPages);
+            completedPages = CoalescePages(completedPages, guard);
         return new TerrainLodSpatialMeshData(
             tile.Key,
             tile.CanonicalHash,
@@ -402,7 +409,8 @@ internal static class TerrainLodSpatialMeshBuilder
         (float X, float Y, float Z) a,
         (float X, float Y, float Z) b,
         (float X, float Y, float Z) c,
-        (float X, float Y, float Z) d)
+        (float X, float Y, float Z) d,
+        TerrainLodSpatialMeshBuildGuard? guard = null)
     {
         EmitTexture(appearance.Texture, appearance.Tint);
         if (appearance.OverlayTexture >= 0)
@@ -411,6 +419,7 @@ internal static class TerrainLodSpatialMeshBuilder
 
         void EmitTexture(int texture, int tint)
         {
+            guard?.ReserveQuad();
             var layer = Atlases.Terrain.LayerOfGridIndex(texture);
             var color = TerrainLodMeshBuilder.PackTintedColor(tint, shade);
             var uvScaleExponent = UvScaleExponent(Math.Max(tileU, tileV));
@@ -456,7 +465,8 @@ internal static class TerrainLodSpatialMeshBuilder
     ///     otherwise-unused vertex lanes carry that page's offset from the new tile origin.
     /// </summary>
     internal static TerrainLodSpatialMeshPage[] CoalescePages(
-        IReadOnlyList<TerrainLodSpatialMeshPage> pages)
+        IReadOnlyList<TerrainLodSpatialMeshPage> pages,
+        TerrainLodSpatialMeshBuildGuard? guard = null)
     {
         if (pages.Count <= 1) return pages.ToArray();
 
@@ -467,8 +477,8 @@ internal static class TerrainLodSpatialMeshBuilder
         var maximumY = pages.Max(static page => checked(page.OriginY + page.ExtentY));
         var maximumZ = pages.Max(static page => checked(page.OriginZ + page.ExtentZ));
 
-        var solid = MergeLayer(pages, translucent: false, originX, originY, originZ);
-        var translucent = MergeLayer(pages, translucent: true, originX, originY, originZ);
+        var solid = MergeLayer(pages, translucent: false, originX, originY, originZ, guard);
+        var translucent = MergeLayer(pages, translucent: true, originX, originY, originZ, guard);
         return
         [
             new TerrainLodSpatialMeshPage(
@@ -490,13 +500,15 @@ internal static class TerrainLodSpatialMeshBuilder
         bool translucent,
         int originX,
         int originY,
-        int originZ)
+        int originZ,
+        TerrainLodSpatialMeshBuildGuard? guard)
     {
         List<ChunkVertex> vertices = [];
         List<ChunkLightVertex> lights = [];
         Span<ChunkQuadRange> mergedRanges = stackalloc ChunkQuadRange[7];
         for (var bucket = 0; bucket < 7; bucket++)
         {
+            guard?.Checkpoint();
             var firstQuad = vertices.Count / 4;
             foreach (var page in pages)
             {
@@ -569,10 +581,13 @@ internal static class TerrainLodSpatialMeshBuilder
             (translucent ? _translucent : _solid)[bucket].Add(new Quad(a, b, c, d, light));
         }
 
-        public TerrainLodSpatialMeshPage Build(TerrainLodSpatialMeshPageKey key)
+        public TerrainLodSpatialMeshPage Build(
+            TerrainLodSpatialMeshPageKey key,
+            TerrainLodSpatialMeshBuildGuard? guard = null)
         {
-            var solid = Flatten(_solid, mergeHorizontal: false);
-            var translucent = Flatten(_translucent, mergeHorizontal: true);
+            guard?.Checkpoint();
+            var solid = Flatten(_solid, mergeHorizontal: false, guard);
+            var translucent = Flatten(_translucent, mergeHorizontal: true, guard);
             return new TerrainLodSpatialMeshPage(
                 key, OriginX, OriginY, OriginZ,
                 PageSize, PageSize, PageSize,
@@ -583,13 +598,17 @@ internal static class TerrainLodSpatialMeshBuilder
         private static List<Quad>[] CreateBuckets() =>
             Enumerable.Range(0, 6).Select(static _ => new List<Quad>()).ToArray();
 
-        private static LayerData Flatten(List<Quad>[] buckets, bool mergeHorizontal)
+        private static LayerData Flatten(
+            List<Quad>[] buckets,
+            bool mergeHorizontal,
+            TerrainLodSpatialMeshBuildGuard? guard)
         {
             List<ChunkVertex> vertices = [];
             List<ChunkLightVertex> lights = [];
             Span<ChunkQuadRange> ranges = stackalloc ChunkQuadRange[7];
             for (var bucket = 0; bucket < buckets.Length; bucket++)
             {
+                guard?.Checkpoint();
                 var firstQuad = vertices.Count / 4;
                 List<ChunkVertex> bucketVertices = [];
                 List<ChunkLightVertex> bucketLights = [];

@@ -78,7 +78,10 @@ internal sealed class TerrainLodMeshCompilationService : IDisposable
         _worker = new Thread(WorkerLoop)
         {
             IsBackground = true,
-            Name = "TerrainLOD-Mesh"
+            Name = "TerrainLOD-Mesh",
+            // The integrated server owns simulation correctness. Distant presentation work must
+            // yield CPU time before it can turn a large cold horizon into server tick starvation.
+            Priority = ThreadPriority.BelowNormal
         };
         _worker.Start();
     }

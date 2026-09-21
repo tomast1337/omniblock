@@ -9,6 +9,41 @@ namespace OmniBlock.Tests.Rendering;
 public sealed class TerrainLodSpatialMeshBuilderTests
 {
     [Fact]
+    public void Build_observes_cancellation_before_allocating_mesh_output()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var stone = checked((byte)world.Content.Blocks.Get("omniblock:stone").Id);
+        var tile = Leaf(materials, 0, 0, 32,
+            (_, y, _) => y < 8 ? stone : (byte)0);
+        using CancellationTokenSource cancellation = new();
+        cancellation.Cancel();
+
+        Assert.Throws<OperationCanceledException>(() =>
+            TerrainLodSpatialMeshBuilder.Build(
+                tile, world.Content.Blocks, verticalSliceBudget: 8,
+                cancellationToken: cancellation.Token));
+    }
+
+    [Fact]
+    public void Build_stops_when_the_retained_result_cannot_fit_its_budget()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var stone = checked((byte)world.Content.Blocks.Get("omniblock:stone").Id);
+        var tile = Leaf(materials, 0, 0, 32,
+            (_, y, _) => y < 8 ? stone : (byte)0);
+
+        var error = Assert.Throws<TerrainLodSpatialMeshBudgetExceededException>(() =>
+            TerrainLodSpatialMeshBuilder.Build(
+                tile, world.Content.Blocks, verticalSliceBudget: 8,
+                maximumResultBytes: 1));
+
+        Assert.Equal(1, error.MaximumResultBytes);
+        Assert.True(error.AttemptedResultBytes > error.MaximumResultBytes);
+    }
+
+    [Fact]
     public void Uniform_tile_culls_internal_faces_and_emits_paired_light_streams()
     {
         var world = new FakeWorldContext();

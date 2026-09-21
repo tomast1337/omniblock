@@ -47,7 +47,9 @@ internal static class TerrainLodSpatialSeamMeshBuilder
         TerrainLodColumnTile owner,
         TerrainLodColumnTile? neighbor,
         IBlockRuntimeView blocks,
-        int? caveCullBelowY = null)
+        int? caveCullBelowY = null,
+        CancellationToken cancellationToken = default,
+        long maximumResultBytes = long.MaxValue)
     {
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentNullException.ThrowIfNull(blocks);
@@ -71,6 +73,8 @@ internal static class TerrainLodSpatialSeamMeshBuilder
         if (segment.AlongStartChunk >= segment.AlongEndChunk)
             throw new ArgumentException("A spatial seam must cover a non-empty interval.",
                 nameof(segment));
+        var guard = new TerrainLodSpatialMeshBuildGuard(
+            cancellationToken, maximumResultBytes);
 
         var ownerSample = checked(1 << owner.HorizontalSampleLevel);
         var neighborSample = neighbor is null
@@ -93,6 +97,7 @@ internal static class TerrainLodSpatialSeamMeshBuilder
 
         for (var along = alongStart; along < alongEnd; along += step)
         {
+            guard.Checkpoint();
             var end = Math.Min(alongEnd, checked(along + step));
             var ownerColumn = ColumnAt(
                 owner, segment.Owner.MaximumVerticalSlices,
@@ -217,11 +222,11 @@ internal static class TerrainLodSpatialSeamMeshBuilder
         var completedPages = pages.OrderBy(static pair => pair.Key.X)
             .ThenBy(static pair => pair.Key.Y)
             .ThenBy(static pair => pair.Key.Z)
-            .Select(static pair => pair.Value.Build(pair.Key))
+            .Select(pair => pair.Value.Build(pair.Key, guard))
             .ToArray();
         if (Math.Max(segment.Owner.Tile.Level, segment.Neighbor?.Tile.Level ?? 0) >=
             TerrainLodSpatialMeshBuilder.TileScaleSubmissionMinimumLevel)
-            completedPages = TerrainLodSpatialMeshBuilder.CoalescePages(completedPages);
+            completedPages = TerrainLodSpatialMeshBuilder.CoalescePages(completedPages, guard);
 
         return new TerrainLodSpatialSeamMeshData(
             segment,
@@ -334,7 +339,7 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                 (float X, float Y, float Z) c,
                 (float X, float Y, float Z) d) => TerrainLodSpatialMeshBuilder.Emit(
                 page, translucent, side, appearance, shade,
-                light, length, height, a, b, c, d);
+                light, length, height, a, b, c, d, guard);
         }
 
         TerrainLodSpatialMeshBuilder.PageBuilder PageFor(

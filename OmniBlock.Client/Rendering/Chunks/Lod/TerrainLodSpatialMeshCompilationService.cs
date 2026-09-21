@@ -14,7 +14,8 @@ internal enum TerrainLodSpatialMeshAdmissionResult
 {
     Accepted,
     Coalesced,
-    RejectedAtCapacity
+    RejectedAtCapacity,
+    RejectedOverBudget
 }
 
 internal sealed record TerrainLodSpatialMeshCompilationResult(
@@ -34,7 +35,10 @@ internal readonly record struct TerrainLodSpatialMeshCompilationSnapshot(
     int Failed,
     long Coalesced,
     long RejectedAtCapacity,
-    long StaleResults);
+    long Cancelled,
+    long OverBudget,
+    long StaleResults,
+    double OldestQueuedMs);
 
 /// <summary>
 ///     Bounded, key-coalescing worker between immutable spatial column tiles and GPU staging.
@@ -51,6 +55,8 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
     private long _sequence;
     private long _coalesced;
     private long _rejectedAtCapacity;
+    private long _cancelled;
+    private long _overBudget;
     private long _staleResults;
 
     public TerrainLodSpatialMeshCompilationService(
@@ -65,7 +71,8 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
         _worker = new Thread(WorkerLoop)
         {
             IsBackground = true,
-            Name = "TerrainLOD-SpatialMesh"
+            Name = "TerrainLOD-SpatialMesh",
+            Priority = ThreadPriority.BelowNormal
         };
         _worker.Start();
     }
@@ -76,7 +83,8 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
         int verticalSliceBudget,
         TerrainLodSpatialMeshWorkKind workKind,
         double distanceChunks,
-        int? caveCullBelowY = null)
+        int? caveCullBelowY = null,
+        long maximumResultBytes = TerrainLodScaleBudget.MaximumUploadBytesPerFrame)
     {
         ArgumentNullException.ThrowIfNull(tile);
         ArgumentNullException.ThrowIfNull(blocks);
@@ -84,24 +92,33 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
             throw new ArgumentOutOfRangeException(nameof(verticalSliceBudget));
         if (!double.IsFinite(distanceChunks) || distanceChunks < 0)
             throw new ArgumentOutOfRangeException(nameof(distanceChunks));
+        if (maximumResultBytes < 0)
+            throw new ArgumentOutOfRangeException(nameof(maximumResultBytes));
         var input = new Input(
             tile, blocks, verticalSliceBudget, workKind, distanceChunks,
-            caveCullBelowY, 0);
+            caveCullBelowY, maximumResultBytes, 0, Stopwatch.GetTimestamp());
         lock (_gate)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
+            if (maximumResultBytes == 0)
+            {
+                _overBudget++;
+                return TerrainLodSpatialMeshAdmissionResult.RejectedOverBudget;
+            }
             if (_items.TryGetValue(tile.Key, out var existing))
             {
                 if (existing.Input.Tile.CanonicalHash == tile.CanonicalHash &&
                     existing.Input.VerticalSliceBudget == verticalSliceBudget &&
                     existing.Input.CaveCullBelowY == caveCullBelowY)
                     return TerrainLodSpatialMeshAdmissionResult.Coalesced;
+                existing.CancelCurrentGeneration();
                 existing.Input = input with { Sequence = _sequence++ };
                 existing.Generation++;
                 existing.Result = null;
                 existing.Failure = null;
                 if (existing.State != State.Running) existing.State = State.Queued;
                 _coalesced++;
+                _cancelled++;
                 Monitor.PulseAll(_gate);
                 return TerrainLodSpatialMeshAdmissionResult.Coalesced;
             }
@@ -113,6 +130,22 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
             _items.Add(tile.Key, new WorkItem(input with { Sequence = _sequence++ }));
             Monitor.PulseAll(_gate);
             return TerrainLodSpatialMeshAdmissionResult.Accepted;
+        }
+    }
+
+    public void Retain(IReadOnlySet<TerrainLodTileKey> desired)
+    {
+        ArgumentNullException.ThrowIfNull(desired);
+        lock (_gate)
+        {
+            foreach (var key in _items.Keys.Where(key => !desired.Contains(key)).ToArray())
+            {
+                var item = _items[key];
+                item.CancelCurrentGeneration(createReplacement: false);
+                _items.Remove(key);
+                _cancelled++;
+            }
+            Monitor.PulseAll(_gate);
         }
     }
 
@@ -139,6 +172,7 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
                 ready.Value.CompilationMs,
                 ready.Value.Failure);
             _items.Remove(ready.Key);
+            ready.Value.DisposeCancellation();
             Monitor.PulseAll(_gate);
             return true;
         }
@@ -157,7 +191,10 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
                 _items.Values.Count(static item => item.State == State.Failed),
                 _coalesced,
                 _rejectedAtCapacity,
-                _staleResults);
+                _cancelled,
+                _overBudget,
+                _staleResults,
+                OldestQueuedMsLocked());
     }
 
     public void Dispose()
@@ -166,6 +203,8 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
         {
             if (_disposed) return;
             _disposed = true;
+            foreach (var item in _items.Values)
+                item.CancelCurrentGeneration(createReplacement: false);
             _items.Clear();
             Monitor.PulseAll(_gate);
         }
@@ -179,6 +218,7 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
             WorkItem item;
             Input input;
             long generation;
+            CancellationToken cancellationToken;
             lock (_gate)
             {
                 while (true)
@@ -204,6 +244,7 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
                     }
                     input = item.Input;
                     generation = item.Generation;
+                    cancellationToken = item.CancellationToken;
                     item.State = State.Running;
                     break;
                 }
@@ -211,13 +252,25 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
 
             TerrainLodSpatialMeshData? mesh = null;
             Exception? failure = null;
+            var cancelled = false;
+            var overBudget = false;
             var started = Stopwatch.GetTimestamp();
             try
             {
                 mesh = TerrainLodSpatialMeshBuilder.Build(
                     input.Tile, input.Blocks, input.VerticalSliceBudget,
                     emitTileBoundaryFaces: false,
-                    caveCullBelowY: input.CaveCullBelowY);
+                    caveCullBelowY: input.CaveCullBelowY,
+                    cancellationToken: cancellationToken,
+                    maximumResultBytes: input.MaximumResultBytes);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                cancelled = true;
+            }
+            catch (TerrainLodSpatialMeshBudgetExceededException)
+            {
+                overBudget = true;
             }
             catch (Exception error)
             {
@@ -233,7 +286,15 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
                 if (item.Generation != generation)
                 {
                     item.State = State.Queued;
-                    _staleResults++;
+                    if (!cancelled) _staleResults++;
+                    Monitor.PulseAll(_gate);
+                    continue;
+                }
+                if (cancelled || overBudget)
+                {
+                    _items.Remove(input.Tile.Key);
+                    item.DisposeCancellation();
+                    if (overBudget) _overBudget++;
                     Monitor.PulseAll(_gate);
                     continue;
                 }
@@ -256,6 +317,18 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
         public TerrainLodSpatialMeshData? Result;
         public Exception? Failure;
         public double CompilationMs;
+        private CancellationTokenSource _cancellation = new();
+
+        public CancellationToken CancellationToken => _cancellation.Token;
+
+        public void CancelCurrentGeneration(bool createReplacement = true)
+        {
+            _cancellation.Cancel();
+            _cancellation.Dispose();
+            if (createReplacement) _cancellation = new CancellationTokenSource();
+        }
+
+        public void DisposeCancellation() => _cancellation.Dispose();
     }
 
     private readonly record struct Input(
@@ -265,5 +338,17 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
         TerrainLodSpatialMeshWorkKind WorkKind,
         double DistanceChunks,
         int? CaveCullBelowY,
-        long Sequence);
+        long MaximumResultBytes,
+        long Sequence,
+        long QueuedTimestamp);
+
+    private double OldestQueuedMsLocked()
+    {
+        var oldest = _items.Values
+            .Where(static item => item.State == State.Queued)
+            .Select(static item => item.Input.QueuedTimestamp)
+            .DefaultIfEmpty(0)
+            .Min();
+        return oldest == 0 ? 0 : Stopwatch.GetElapsedTime(oldest).TotalMilliseconds;
+    }
 }
