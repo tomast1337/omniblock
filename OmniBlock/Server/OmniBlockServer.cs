@@ -13,6 +13,7 @@ using OmniBlock.Server.Worlds;
 using OmniBlock.Util;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Lod;
 using OmniBlock.Worlds.Storage;
 using Silk.NET.Maths;
 using ServerWorld = OmniBlock.Worlds.Core.ServerWorld;
@@ -74,13 +75,21 @@ public abstract class OmniBlockServer : ICommandOutput
     public bool stopped;
     public ServerWorld[] worlds;
 
-    protected OmniBlockServer(IServerConfiguration config, ContentRuntime content)
+    protected OmniBlockServer(
+        IServerConfiguration config,
+        ContentRuntime content,
+        TerrainLodSpatialPolicy? terrainLodPolicy = null)
     {
         this.config = config;
         Content = content ?? throw new ArgumentNullException(nameof(content));
+        TerrainLodPolicy = terrainLodPolicy ?? TerrainLodSpatialPolicy.CreateDefault();
     }
 
     public ContentRuntime Content { get; private set; }
+    internal TerrainLodSpatialPolicy TerrainLodPolicy { get; }
+    internal int TerrainLodMaximumHorizonChunks =>
+        TerrainLodSpatialPolicy.MaximumHorizonChunksForSpatialLevel(
+            TerrainLodPolicy.MaximumSpatialLevel);
     public int SimulationDistance { get; private set; } = 9;
     public int RenderDistance => Math.Clamp(config.GetViewDistance(10), 4, 32);
     public RegistryAccess RegistryAccess { get; set; } = RegistryAccess.Empty;

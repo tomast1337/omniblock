@@ -283,7 +283,10 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private TerrainLodSpatialSeamCompilationResult? _deferredSpatialSeamUpload;
     private bool _spatialSubmissionReady => _spatialFrame is not null;
 
-    public ClientTerrainLodRenderer(World world, TerrainLodCacheStore? cache = null)
+    public ClientTerrainLodRenderer(
+        World world,
+        TerrainLodCacheStore? cache = null,
+        TerrainLodSpatialPolicy? spatialPolicy = null)
     {
         _world = world ?? throw new ArgumentNullException(nameof(world));
         _cache = cache;
@@ -304,7 +307,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _meshCompilation = new TerrainLodMeshCompilationService(ConversionCapacity);
         // Shared with the server cache producer. The generated policy preserves levels 0..4 used
         // by the 64-chunk renderer and adds only the ancestors needed by larger horizons.
-        _spatialPolicy = TerrainLodSpatialPolicy.CreateDefault();
+        _spatialPolicy = spatialPolicy ?? TerrainLodSpatialPolicy.CreateDefault();
         _spatialHierarchy = new TerrainLodSpatialHierarchyCoordinator(
             _spatialPolicy,
             tileCapacity: TerrainLodScaleBudget.ClientHierarchyTiles,
@@ -371,8 +374,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         int maximumSpatialLevel = TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (maximumSpatialLevel is < MinimumSpatialGpuLevel or
-            > TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel)
+        if (maximumSpatialLevel < MinimumSpatialGpuLevel ||
+            maximumSpatialLevel > _spatialPolicy.MaximumSpatialLevel)
             throw new ArgumentOutOfRangeException(nameof(maximumSpatialLevel));
         horizonDistanceChunks = Math.Min(
             horizonDistanceChunks,

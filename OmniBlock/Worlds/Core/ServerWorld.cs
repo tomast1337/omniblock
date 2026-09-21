@@ -37,7 +37,7 @@ public class ServerWorld : World
         Entities.OnEntityUpdating += HandleEntityUpdating;
         Entities.OnGlobalEntityAdded += HandleGlobalEntityAdded;
 
-        _terrainLod = ServerTerrainLodRuntime.TryCreate(this);
+        _terrainLod = ServerTerrainLodRuntime.TryCreate(this, server.TerrainLodPolicy);
         ChunkCache.AttachTerrainLod(_terrainLod);
     }
 
@@ -64,7 +64,7 @@ public class ServerWorld : World
 
         ShutdownTerrainLod();
         ReplaceContent(content);
-        _terrainLod = ServerTerrainLodRuntime.TryCreate(this);
+        _terrainLod = ServerTerrainLodRuntime.TryCreate(this, server.TerrainLodPolicy);
         ChunkCache.AttachTerrainLod(_terrainLod);
     }
 

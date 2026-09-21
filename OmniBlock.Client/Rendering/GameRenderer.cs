@@ -155,12 +155,12 @@ public class GameRenderer
             RenderSystem.Projection.Translate((float)CameraController.CameraYaw, (float)-CameraController.CameraPitch, 0.0F);
             RenderSystem.Projection.Scale((float)CameraController.CameraZoom, (float)CameraController.CameraZoom, 1.0F);
             GLU.gluPerspective(CameraController.GetFov(tickDelta), _client.DisplayWidth / (float)_client.DisplayHeight, 0.05F,
-                _client.Options.TerrainHorizonDistance * 16.0f);
+                _client.EffectiveTerrainHorizonDistance * 16.0f);
         }
         else
         {
             GLU.gluPerspective(CameraController.GetFov(tickDelta), _client.DisplayWidth / (float)_client.DisplayHeight, 0.05F,
-                _client.Options.TerrainHorizonDistance * 16.0f);
+                _client.EffectiveTerrainHorizonDistance * 16.0f);
         }
 
         RenderSystem.ModelView.LoadIdentity();

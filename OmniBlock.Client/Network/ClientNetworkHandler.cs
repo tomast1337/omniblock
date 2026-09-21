@@ -555,7 +555,7 @@ public class ClientNetworkHandler : NetHandler
         try
         {
             var negotiatedMaximum = identity.NegotiateMaximumSpatialLevel(
-                TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel);
+                _context.Factory.MaximumTerrainLodSpatialLevel);
             _worldClient.EnqueueTerrainLodTile(
                 message.Decode(negotiatedMaximum), message.Compressed.Length);
         }
@@ -621,7 +621,7 @@ public class ClientNetworkHandler : NetHandler
             identity.CompatibilityFingerprint,
             identity.MaximumSpatialLevel,
             identity.NegotiateMaximumSpatialLevel(
-                TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel),
+                _context.Factory.MaximumTerrainLodSpatialLevel),
             identity.QualityPolicyVersion);
     }
 

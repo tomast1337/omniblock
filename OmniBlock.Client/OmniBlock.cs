@@ -48,6 +48,7 @@ using OmniBlock.Worlds.Colors;
 using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Storage;
+using OmniBlock.Worlds.Lod;
 using Silk.NET.Maths;
 
 namespace OmniBlock.Client;
@@ -102,6 +103,20 @@ public partial class OmniBlock :
     public IWorldStorageSource SaveLoader { get; private set; }
     public InternalServer? InternalServer { get; private set; }
     public RegistryAccess RegistryAccess { get; private set; } = RegistryAccess.Empty;
+    private int? _terrainLodTestHorizonChunks;
+
+    /// <summary>
+    ///     The normal option remains capped at the measured public maximum. Explicit E2E launches
+    ///     may install a larger per-session policy before opening a world so dormant hierarchy
+    ///     levels can pass their release gates without becoming a user-visible setting.
+    /// </summary>
+    internal int EffectiveTerrainHorizonDistance =>
+        _terrainLodTestHorizonChunks ?? Options.TerrainHorizonDistance;
+
+    internal TerrainLodSpatialPolicy TerrainLodPolicy =>
+        TerrainLodSpatialPolicy.CreateForMaximumHorizon(
+            _terrainLodTestHorizonChunks ??
+            TerrainLodSpatialPolicy.MaximumSupportedHorizonChunks);
 
     #endregion
 
@@ -929,10 +944,26 @@ public partial class OmniBlock :
                         _ => 0
                     };
                 };
+                LuauTestHost.ConfigureTerrainLodScaleProfile = horizonChunks =>
+                {
+                    // This capability exists only in an explicit E2E launch. Keep it immutable for
+                    // the lifetime of a world: changing hierarchy depth after identity negotiation
+                    // would make the client, integrated server, and durable cache disagree.
+                    if (World != null || InternalServer != null ||
+                        horizonChunks is not (512 or 1024))
+                        return false;
+                    _terrainLodTestHorizonChunks = horizonChunks;
+                    _logger.LogInformation(
+                        "Configured E2E-only terrain LOD scale profile: {Horizon} chunks, L{Level}",
+                        horizonChunks,
+                        TerrainLodSpatialPolicy.RequiredMaximumSpatialLevel(horizonChunks));
+                    return true;
+                };
                 LuauTestHost.PrepareTerrainLodFixture = radius =>
                 {
                     if (Player == null || InternalServer == null ||
-                        radius is <= 0 or > 64)
+                        radius <= 0 ||
+                        radius > (_terrainLodTestHorizonChunks ?? 64))
                         return false;
                     return InternalServer.QueueTerrainLodScaleFixture(
                         Player.DimensionId,
@@ -1403,6 +1434,7 @@ public partial class OmniBlock :
             LuauTestHost.DumpProfiler = null;
             LuauTestHost.WorldGenerationAuto = null;
             LuauTestHost.WorldGenerationMetric = null;
+            LuauTestHost.ConfigureTerrainLodScaleProfile = null;
             LuauTestHost.PrepareTerrainLodFixture = null;
             LuauTestHost.TerrainLodFixtureMetric = null;
             LuauTestHost.EntityBaseline = null;
@@ -2525,7 +2557,8 @@ public partial class OmniBlock :
     {
         InternalServer = new InternalServer(
             Path.Combine(OmniBlockDir, "saves"), worldDir, worldSettings,
-            Options.RenderDistance, Options.SimulationDistance, Options.Difficulty, Content);
+            Options.RenderDistance, Options.SimulationDistance, Options.Difficulty, Content,
+            TerrainLodPolicy);
         InternalServer.RegistryAccess = RegistryAccess;
         InternalServer.RunThreaded("Internal Server");
     }

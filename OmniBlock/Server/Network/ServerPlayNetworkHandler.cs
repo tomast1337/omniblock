@@ -202,7 +202,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         if (identity.GetRequestIncompatibility(
                 request.MaximumSpatialLevel,
                 request.QualityPolicyVersion,
-                TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel) is { } incompatibility)
+                server.TerrainLodPolicy.MaximumSpatialLevel) is { } incompatibility)
         {
             if (request.Keys.Length > 0)
                 QueueTerrainLodStatus(
@@ -223,7 +223,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             if (key.Level < TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel ||
                 key.Level > request.MaximumSpatialLevel ||
                 key.DistanceTo(playerChunkX, playerChunkZ) >
-                TerrainLodSpatialPolicy.MaximumSupportedHorizonChunks)
+                server.TerrainLodMaximumHorizonChunks)
                 continue;
             var queued = new QueuedTerrainLodRequest(
                 request.Dimension,
@@ -292,7 +292,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             identity.GetRequestIncompatibility(
                 request.MaximumSpatialLevel,
                 request.QualityPolicyVersion,
-                TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel) is not null)
+                server.TerrainLodPolicy.MaximumSpatialLevel) is not null)
         {
             _terrainLodRequests.TryDequeue(out _);
             return TerrainLodFlushResult.Progress;
@@ -304,7 +304,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         if (request.Tile.Level < TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel ||
             request.Tile.Level > request.MaximumSpatialLevel ||
             request.Tile.DistanceTo(player.X / 16.0, player.Z / 16.0) >
-            TerrainLodSpatialPolicy.MaximumSupportedHorizonChunks)
+            server.TerrainLodMaximumHorizonChunks)
         {
             _terrainLodRequests.TryDequeue(out _);
             return TerrainLodFlushResult.Progress;
@@ -363,7 +363,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         _terrainLodRequests.Enqueue(new QueuedTerrainLodRequest(
             player.DimensionId,
             cacheIdentity,
-            identity?.MaximumSpatialLevel ?? TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel,
+            identity?.MaximumSpatialLevel ?? server.TerrainLodPolicy.MaximumSpatialLevel,
             identity?.QualityPolicyVersion ?? TerrainLodSpatialPolicy.CurrentQualityPolicyVersion,
             key,
             status,

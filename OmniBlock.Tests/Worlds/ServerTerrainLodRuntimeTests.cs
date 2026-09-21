@@ -218,6 +218,45 @@ public sealed class ServerTerrainLodRuntimeTests
         }
     }
 
+    [Theory]
+    [InlineData(512, 7, 289)]
+    [InlineData(1024, 8, 297)]
+    public void Explicit_scale_policy_controls_identity_and_fixture_depth(
+        int horizonChunks,
+        int expectedMaximumLevel,
+        int expectedTiles)
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var world = new FakeWorldContext();
+            var policy = TerrainLodSpatialPolicy.CreateForMaximumHorizon(horizonChunks);
+            using var runtime = new ServerTerrainLodRuntime(
+                0,
+                TerrainLodMaterialCatalog.FromRuntime(world.Content),
+                root,
+                world,
+                conversionCapacity: 2,
+                spatialPolicy: policy);
+
+            var tiles = runtime.PrepareUniformSpatialFixture(
+                centerChunkX: 0,
+                centerChunkZ: 20,
+                nearDistanceChunks: 4,
+                horizonDistanceChunks: horizonChunks,
+                surfaceBlockProtocolId:
+                    world.Content.Blocks.Get("omniblock:grass_block").Id);
+
+            Assert.Equal(expectedMaximumLevel, runtime.Identity.MaximumSpatialLevel);
+            Assert.Equal(expectedTiles, tiles);
+            Assert.InRange(tiles, 1, TerrainLodScaleBudget.MaximumCoverageTiles);
+        }
+        finally
+        {
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
     private static Chunk Chunk(FakeWorldContext world, int x, int z) =>
         new(world, new byte[ChuckFormat.ChunkSize], x, z);
 

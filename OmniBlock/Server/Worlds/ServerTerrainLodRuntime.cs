@@ -52,6 +52,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     private readonly int _dimension;
     private readonly TerrainLodCacheIdentity _identity;
     private readonly TerrainLodMaterialCatalog _materials;
+    private readonly TerrainLodSpatialPolicy _spatialPolicy;
     private readonly int _conversionCapacity;
     private readonly Dictionary<ChunkKey, TrackedChunk> _tracked = [];
     private readonly TerrainLodConversionService _conversions;
@@ -83,12 +84,16 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     private string? _lastPipelineFailure;
     private ServerTerrainLodSnapshot _publishedSnapshot = null!;
 
-    private ServerTerrainLodRuntime(ServerWorld world, DirectoryInfo cacheRoot)
+    private ServerTerrainLodRuntime(
+        ServerWorld world,
+        DirectoryInfo cacheRoot,
+        TerrainLodSpatialPolicy spatialPolicy)
         : this(
             world.Dimension.Id,
             TerrainLodMaterialCatalog.FromRuntime(world.Content),
             cacheRoot,
-            world)
+            world,
+            spatialPolicy: spatialPolicy)
     {
     }
 
@@ -97,18 +102,20 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         TerrainLodMaterialCatalog materials,
         DirectoryInfo cacheRoot,
         IWorldContext identitySource,
-        int conversionCapacity = ConversionCapacity)
+        int conversionCapacity = ConversionCapacity,
+        TerrainLodSpatialPolicy? spatialPolicy = null)
     {
         if (conversionCapacity <= 0)
             throw new ArgumentOutOfRangeException(nameof(conversionCapacity));
         _dimension = dimension;
         _materials = materials;
+        _spatialPolicy = spatialPolicy ?? TerrainLodSpatialPolicy.CreateDefault();
         _conversionCapacity = conversionCapacity;
         // The absolute cache root never crosses the wire; only its hash does. Including it keeps
         // two saves with the same seed/content from sharing a transport identity, while reopening
         // this save remains stable.
         _identity = TerrainLodCacheIdentity.FromWorld(
-            identitySource, materials, cacheRoot.FullName);
+            identitySource, materials, cacheRoot.FullName, _spatialPolicy);
         if (_identity.Dimension != dimension)
             throw new ArgumentException(
                 $"Identity world dimension {_identity.Dimension} does not match {dimension}.",
@@ -116,7 +123,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         _cache = new TerrainLodCacheStore(cacheRoot, _identity);
         _spatialCache = new TerrainLodColumnTileCacheStore(cacheRoot, _identity);
         _spatialHierarchy = new TerrainLodSpatialHierarchyCoordinator(
-            TerrainLodSpatialPolicy.CreateDefault(),
+            _spatialPolicy,
             _spatialCache,
             tileCapacity: TerrainLodScaleBudget.ServerHierarchyTiles,
             constructionCapacity: 128,
@@ -154,13 +161,18 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         _writerThread.Start();
     }
 
-    public static ServerTerrainLodRuntime? TryCreate(ServerWorld world)
+    public static ServerTerrainLodRuntime? TryCreate(
+        ServerWorld world,
+        TerrainLodSpatialPolicy? spatialPolicy = null)
     {
         ArgumentNullException.ThrowIfNull(world);
         try
         {
             var root = world.GetWorldStorage().GetTerrainLodCacheDirectory();
-            return root is null ? null : new ServerTerrainLodRuntime(world, root);
+            return root is null
+                ? null
+                : new ServerTerrainLodRuntime(
+                    world, root, spatialPolicy ?? TerrainLodSpatialPolicy.CreateDefault());
         }
         catch (Exception error)
         {
@@ -260,14 +272,14 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         int horizonDistanceChunks,
         int surfaceBlockProtocolId)
     {
-        if (horizonDistanceChunks is <= 0 or
-            > TerrainLodSpatialPolicy.MaximumSupportedHorizonChunks)
+        if (horizonDistanceChunks <= 0 ||
+            horizonDistanceChunks > TerrainLodSpatialPolicy.MaximumHorizonChunksForSpatialLevel(
+                _spatialPolicy.MaximumSpatialLevel))
             throw new ArgumentOutOfRangeException(nameof(horizonDistanceChunks));
-        var policy = TerrainLodSpatialPolicy.CreateDefault();
         const int minimumLevel = 2;
         var rootLevel = Math.Max(
             minimumLevel,
-            policy.DesiredSpatialLevel(horizonDistanceChunks));
+            _spatialPolicy.DesiredSpatialLevel(horizonDistanceChunks));
         var outerBoundaryMinimumLevel =
             TerrainLodCoveragePlanner.RecommendedOuterBoundaryMinimumLevel(
                 rootLevel, minimumLevel);
@@ -293,7 +305,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         {
             var tile = TerrainLodColumnTile.CreateUniform(
                 key,
-                policy.HorizontalSampleLevelForSpatialLevel(key.Level),
+                _spatialPolicy.HorizontalSampleLevelForSpatialLevel(key.Level),
                 ChuckFormat.WorldHeight,
                 column,
                 sourceIdentity);

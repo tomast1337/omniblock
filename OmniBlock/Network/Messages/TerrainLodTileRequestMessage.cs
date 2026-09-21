@@ -65,7 +65,7 @@ public sealed class TerrainLodTileRequestMessage : Message
             throw new InvalidOperationException(
                 $"Terrain LOD request cannot contain more than {MaximumKeys} keys.");
         if (MaximumSpatialLevel is < TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel or
-            > TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel)
+            > TerrainLodSpatialPolicy.MaximumGeneratedSpatialLevel)
             throw new InvalidOperationException(
                 $"Terrain LOD request maximum spatial level {MaximumSpatialLevel} exceeds this " +
                 $"peer's supported range.");

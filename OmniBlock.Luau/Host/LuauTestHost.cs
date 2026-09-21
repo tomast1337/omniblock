@@ -28,6 +28,7 @@ public static unsafe class LuauTestHost
                                         dumpProfiler = function(label) __Test.dumpProfiler(tostring(label or "profile")) end,
                                         worldGenerationAuto = function(profile, radius) return __Test.worldGenerationAuto(tostring(profile), radius or 32) end,
                                         worldGenerationMetric = function(metric) return __Test.worldGenerationMetric(tostring(metric)) end,
+                                        configureTerrainLodScaleProfile = function(horizon) return __Test.configureTerrainLodScaleProfile(horizon) end,
                                         prepareTerrainLodFixture = function(radius) return __Test.prepareTerrainLodFixture(radius or 64) end,
                                         terrainLodFixtureMetric = function(metric) return __Test.terrainLodFixtureMetric(tostring(metric)) end,
                                         entityBaseline = function(scene, count, distance) return __Test.entityBaseline(scene, count, distance) end,
@@ -64,6 +65,7 @@ public static unsafe class LuauTestHost
     public static Action<string>? DumpProfiler;
     public static Func<string, int, bool>? WorldGenerationAuto;
     public static Func<string, double>? WorldGenerationMetric;
+    public static Func<int, bool>? ConfigureTerrainLodScaleProfile;
     public static Func<int, bool>? PrepareTerrainLodFixture;
     public static Func<string, double>? TerrainLodFixtureMetric;
     public static Func<string, int, double, bool>? EntityBaseline;
@@ -77,7 +79,7 @@ public static unsafe class LuauTestHost
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 29);
+        LuauNative.lua_createtable(l, 0, 30);
         Add(l, "pass", &PassClosure);
         Add(l, "fail", &FailClosure);
         Add(l, "creative", &CreativeClosure);
@@ -97,6 +99,7 @@ public static unsafe class LuauTestHost
         Add(l, "dumpProfiler", &DumpProfilerClosure);
         Add(l, "worldGenerationAuto", &WorldGenerationAutoClosure);
         Add(l, "worldGenerationMetric", &WorldGenerationMetricClosure);
+        Add(l, "configureTerrainLodScaleProfile", &ConfigureTerrainLodScaleProfileClosure);
         Add(l, "prepareTerrainLodFixture", &PrepareTerrainLodFixtureClosure);
         Add(l, "terrainLodFixtureMetric", &TerrainLodFixtureMetricClosure);
         Add(l, "entityBaseline", &EntityBaselineClosure);
@@ -492,6 +495,23 @@ public static unsafe class LuauTestHost
         catch (Exception error)
         {
             Fail?.Invoke($"Terrain LOD fixture: {error.Message}");
+        }
+        LuauNative.lua_pushboolean(l, result ? 1 : 0);
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int ConfigureTerrainLodScaleProfileClosure(IntPtr l)
+    {
+        var result = false;
+        try
+        {
+            result = ConfigureTerrainLodScaleProfile?.Invoke(
+                LuauNative.luaL_checkinteger(l, 1)) == true;
+        }
+        catch (Exception error)
+        {
+            Fail?.Invoke($"Terrain LOD scale profile: {error.Message}");
         }
         LuauNative.lua_pushboolean(l, result ? 1 : 0);
         return 1;

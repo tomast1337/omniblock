@@ -27,6 +27,8 @@ public sealed class LuauTestHostIntegrationTests
         string? terrainDump = null;
         string? profilerDump = null;
         (string Profile, int Radius)? automaticGeneration = null;
+        var configuredTerrainLodHorizon = 0;
+        var preparedTerrainLodRadius = 0;
         LuauTestHost.Pass = () => passes++;
         LuauTestHost.Fail = reason => failure = reason;
         LuauTestHost.Creative = () => creative++;
@@ -60,6 +62,17 @@ public sealed class LuauTestHostIntegrationTests
             return true;
         };
         LuauTestHost.WorldGenerationMetric = metric => metric == "saved" ? 17 : 0;
+        LuauTestHost.ConfigureTerrainLodScaleProfile = horizon =>
+        {
+            configuredTerrainLodHorizon = horizon;
+            return horizon == 512;
+        };
+        LuauTestHost.PrepareTerrainLodFixture = radius =>
+        {
+            preparedTerrainLodRadius = radius;
+            return radius == 512;
+        };
+        LuauTestHost.TerrainLodFixtureMetric = metric => metric == "tiles" ? 289 : 0;
         LuauTestHost.EntityBaseline = (scene, count, distance) => scene == "sheep" && count == 16 && distance == 32;
         LuauTestHost.EntityBaselineState = state => state == "walk-2";
         LuauTestHost.BeginEntitySample = () => true;
@@ -91,6 +104,9 @@ public sealed class LuauTestHostIntegrationTests
                 "OMNI.test.screenshot(); OMNI.test.dumpTerrain('airborne'); OMNI.test.dumpProfiler('steady'); " +
                 "assert(OMNI.test.worldGenerationAuto('prepare', 24)); " +
                 "assert(OMNI.test.worldGenerationMetric('saved') == 17); " +
+                "assert(OMNI.test.configureTerrainLodScaleProfile(512)); " +
+                "assert(OMNI.test.prepareTerrainLodFixture(512)); " +
+                "assert(OMNI.test.terrainLodFixtureMetric('tiles') == 289); " +
                 "assert(OMNI.test.entityBaseline('sheep', 16, 32)); " +
                 "assert(not OMNI.test.entityBaseline('bad', 16, 32)); " +
                 "assert(OMNI.test.entityBaselineState('walk-2')); assert(not OMNI.test.entityBaselineState('bad')); " +
@@ -116,6 +132,8 @@ public sealed class LuauTestHostIntegrationTests
             Assert.Equal("airborne", terrainDump);
             Assert.Equal("steady", profilerDump);
             Assert.Equal(("prepare", 24), automaticGeneration);
+            Assert.Equal(512, configuredTerrainLodHorizon);
+            Assert.Equal(512, preparedTerrainLodRadius);
             Assert.Equal("true", hasTest);
             Assert.True(cleared);
         }
@@ -140,6 +158,9 @@ public sealed class LuauTestHostIntegrationTests
             LuauTestHost.DumpProfiler = null;
             LuauTestHost.WorldGenerationAuto = null;
             LuauTestHost.WorldGenerationMetric = null;
+            LuauTestHost.ConfigureTerrainLodScaleProfile = null;
+            LuauTestHost.PrepareTerrainLodFixture = null;
+            LuauTestHost.TerrainLodFixtureMetric = null;
             LuauTestHost.EntityBaseline = null;
             LuauTestHost.EntityBaselineState = null;
             LuauTestHost.BeginEntitySample = null;

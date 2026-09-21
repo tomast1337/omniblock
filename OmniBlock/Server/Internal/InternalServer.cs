@@ -3,6 +3,7 @@ using OmniBlock.Network.Messages;
 using OmniBlock.Registries;
 using OmniBlock.Server.Network;
 using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Lod;
 
 namespace OmniBlock.Server.Internal;
 
@@ -40,10 +41,11 @@ public class InternalServer : OmniBlockServer
         int viewDistance,
         int simulationDistance,
         int initialDifficulty,
-        ContentRuntime content) :
+        ContentRuntime content,
+        TerrainLodSpatialPolicy? terrainLodPolicy = null) :
         base(new InternalServerConfiguration(
             levelName, settings.TerrainType.Name, settings.Seed.ToString(), settings.GeneratorOptions,
-            viewDistance, simulationDistance), content)
+            viewDistance, simulationDistance), content, terrainLodPolicy)
     {
         _worldPath = worldPath;
         logHelp = false;
@@ -81,7 +83,8 @@ public class InternalServer : OmniBlockServer
         int horizonDistanceChunks)
     {
         if (dimension is not (0 or -1) || nearDistanceChunks < 0 ||
-            horizonDistanceChunks is <= 0 or > 64 ||
+            horizonDistanceChunks <= 0 ||
+            horizonDistanceChunks > TerrainLodMaximumHorizonChunks ||
             nearDistanceChunks >= horizonDistanceChunks)
             return false;
         var current = TerrainLodScaleFixture;

@@ -506,11 +506,11 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                         _world.Dimension.Id, out var identity))
                 {
                     var negotiatedMaximum = identity.NegotiateMaximumSpatialLevel(
-                        TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel);
+                        _game.MaximumTerrainLodSpatialLevel);
                     var requests = terrainLod.TakeRemoteSpatialRequests(
                         viewPosition,
                         _game.Options.RenderDistance,
-                        _game.Options.TerrainHorizonDistance,
+                        _game.EffectiveTerrainHorizonDistance,
                         maximumRequests: 4,
                         maximumSpatialLevel: negotiatedMaximum);
                     if (requests.Length > 0)
@@ -538,7 +538,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         ChunkRenderer?.Dispose();
         ChunkRenderer = new ChunkRenderer(_world, _game.Options);
         TerrainLod = new ClientTerrainLodRenderer(
-            _world, (_world as ClientWorld)?.TerrainLodCache);
+            _world, (_world as ClientWorld)?.TerrainLodCache, _game.TerrainLodPolicy);
         ChunkRenderer.PresentationHandoff = TerrainLod;
         ChunkMeshVersion.ClearPool();
 
@@ -781,7 +781,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             Projection = projection,
             ViewPos = new Vector3D<double>(viewX, viewY, viewZ),
             RenderDistance = _renderDistance,
-            TerrainHorizonDistance = _game.Options.TerrainHorizonDistance,
+            TerrainHorizonDistance = _game.EffectiveTerrainHorizonDistance,
             TerrainLodDropoffScale = _game.Options.TerrainLodDropoffScale,
             Ticks = _world.GetTime(),
             PartialTicks = (float)partialTicks,
@@ -795,7 +795,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             RenderOccluded = false,
             Fog = TerrainLodFog.Resolve(
                 RenderSystem.Fog, _renderDistance,
-                _game.Options.TerrainHorizonDistance,
+                _game.EffectiveTerrainHorizonDistance,
                 _game.Options.FogDistance)
         };
 

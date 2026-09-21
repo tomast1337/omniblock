@@ -49,6 +49,13 @@ unsupported state otherwise. A passing run now proves complete source coverage f
 64-chunk horizon; fixture preparation is outside the timed sample. Run it with
 `xvfb-run -a tests/e2e/run-local.sh terrain-lod-fixed-camera`.
 
+`terrain-lod-scale-512` and `terrain-lod-scale-1024` are opt-in dormant-level release gates. Each
+uses the same two-process persistent-cache contract but selects an E2E-only L7 or L8 session before
+opening the world. They assert the hard node, draw-page, CPU-cache, compilation-queue, GPU-byte,
+transport, compatibility, and WebGPU bounds. These scenarios do not widen the normal 256-chunk/L6
+setting. Their output separately reports transport and presentation convergence time; on timeout
+they dump both terrain state and profiler data before failing.
+
 `entity-render-baseline` is an opt-in 300-second-watchdog benchmark for the existing GPU-instanced
 mob renderer. It uses deterministic client-only cow/sheep/mixed replicas (not server-spawned mobs),
 a stationary flying camera, and an empty-population control. It writes per-frame JSON, resource
@@ -182,6 +189,7 @@ OMNI.test.summon("omniblock:cow", 1) -- E2E-only server command; maximum count i
 OMNI.test.worldGenerationAuto("prepare", 8) -- E2E-only integrated-server control
 OMNI.test.worldGenerationMetric("saved") -- read-only moving-generation diagnostic
 OMNI.test.prepareTerrainLodFixture(64)    -- E2E-only derived-data scale fixture
+OMNI.test.configureTerrainLodScaleProfile(512) -- before loading a world; accepts 512 or 1024
 OMNI.test.terrainLodFixtureMetric("complete")
 OMNI.test.terrainLodFixtureMetric("cacheReadHits") -- proves warm-process disk reuse
 OMNI.test.countEntities("omniblock:cow", 180, 220) -- client-resident entities in a distance band

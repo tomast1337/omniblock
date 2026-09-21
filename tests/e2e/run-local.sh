@@ -10,6 +10,9 @@ requested_scenario="${1:-all}"
 if [[ ( "$requested_scenario" == "chunk-visibility-baseline" || "$requested_scenario" == "frame-profiler" || "$requested_scenario" == "terrain-lod-fixed-camera" || "$requested_scenario" == "terrain-lod-spatial-shadow" || "$requested_scenario" == "terrain-lod-server-cache-transport" || "$requested_scenario" == "world-generation-job-lifecycle" || "$requested_scenario" == "entity-render-baseline" || "$requested_scenario" == "entity-lod-selection" || "$requested_scenario" == "entity-tracking-distance" || "$requested_scenario" == entity-impostor-* ) && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
     timeout_seconds=300
 fi
+if [[ "$requested_scenario" == terrain-lod-scale-* && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
+    timeout_seconds=600
+fi
 scenarios=(menu world-management multiplayer language-options create-world smoke debug-smoke fps-limit simulation-distance chunk-mesh-deadlines teleport-preload flying-chunk-streaming frustum-directional liquid-boundary-visibility world-generation-control world-generation-job-lifecycle terrain-lod-presentation terrain-lod-spatial-shadow terrain-lod-server-cache-transport)
 run_roots=()
 
@@ -67,7 +70,8 @@ for scenario in "${scenarios[@]}"; do
     # The measured terrain-LOD gate must consume a genuinely pregenerated persistent cache, not
     # records that remain resident in the process that created them. Prepare with one client/server
     # lifetime, close it, then run the benchmark below against the same isolated data directory.
-    if [[ "$scenario" == "terrain-lod-fixed-camera" ]]; then
+    prepare_script="$script_dir/$scenario-prepare.luau"
+    if [[ -f "$prepare_script" ]]; then
         prepare_artifacts="$scenario_artifacts/prepare"
         mkdir -p "$prepare_artifacts"
         set +e
@@ -75,7 +79,7 @@ for scenario in "${scenarios[@]}"; do
             cd "$repo_root/OmniBlock.Client"
             env XDG_DATA_HOME="$data_root" LUAU_NATIVE_LOCAL=1 dotnet run \
                 --project . --configuration "$configuration" --no-launch-profile --no-build --no-restore -- \
-                "${launch_args[@]}" --e2e-script "$script_dir/terrain-lod-fixed-camera-prepare.luau" \
+                "${launch_args[@]}" --e2e-script "$prepare_script" \
                 --e2e-timeout "$timeout_seconds" --e2e-artifacts "$prepare_artifacts"
         )
         prepare_status=$?
@@ -92,7 +96,7 @@ for scenario in "${scenarios[@]}"; do
             prepare_status=1
         fi
         if (( prepare_status != 0 )); then
-            echo "Terrain LOD fixture preparation failed (exit $prepare_status)" >&2
+            echo "Scenario fixture preparation failed (exit $prepare_status)" >&2
             suite_status=1
             continue
         fi
