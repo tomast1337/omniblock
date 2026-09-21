@@ -36,6 +36,8 @@ assert(OMNI.test.terrainLodFixtureMetric("cacheReadHits") > 0,
 local spatialReady = false
 for _ = 1, 2400 do
     spatialReady = OMNI.client.state.terrainLodSpatialSubmissionReady == 1 and
+        OMNI.client.state.terrainLodCoarseComplete == 1 and
+        OMNI.client.state.terrainLodCoarseFrontierUnknown == 0 and
         OMNI.client.state.terrainLodSpatialGpuResident > 0 and
         OMNI.client.state.terrainLodSpatialSolidPages > 0 and
         OMNI.client.state.terrainLodSpatialGpuBytes > 0

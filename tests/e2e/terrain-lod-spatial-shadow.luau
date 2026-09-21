@@ -40,6 +40,12 @@ assert(type(OMNI.client.state.terrainCoverageHoles) == "number")
 assert(type(OMNI.client.state.terrainCoverageOverlaps) == "number")
 assert(type(OMNI.client.state.terrainCoverageMissingSeams) == "number")
 assert(type(OMNI.client.state.terrainCoveragePendingSeams) == "number")
+assert(type(OMNI.client.state.terrainLodCoarseSourceUnavailable) == "number")
+assert(type(OMNI.client.state.terrainLodCoarseBuilding) == "number")
+assert(type(OMNI.client.state.terrainLodCoarseTransportPending) == "number")
+assert(type(OMNI.client.state.terrainLodCoarseGpuPending) == "number")
+assert(type(OMNI.client.state.terrainLodCoarseFrontierUnknown) == "number")
+assert(type(OMNI.client.state.terrainLodColdCoverMs) == "number")
 
 local function coverageDiagnostic(stage)
     return stage .. ": covered=" .. tostring(OMNI.client.state.terrainCoverageCovered) ..
@@ -103,6 +109,8 @@ assert(stagingReady,
     " seamReady=" .. tostring(OMNI.client.state.terrainLodSpatialSeamReady) ..
     " submission=" .. tostring(OMNI.client.state.terrainLodSpatialSubmissionReady) ..
     " authoritative=" .. tostring(OMNI.client.state.terrainLodSpatialAuthoritativeTiles))
+assert(OMNI.client.state.terrainLodColdCoverMs >= 0,
+    "cold coarse-cover completion time was not recorded")
 
 -- Move far enough that the retained roots around spawn lie wholly outside the exact-render guard
 -- band, then look back at them. This makes the live spatial path authoritative without ever

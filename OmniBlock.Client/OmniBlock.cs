@@ -658,6 +658,19 @@ public partial class OmniBlock :
                     "terrainLodRemoteCoverageComplete" =>
                         state.RemoteCoverageRequired > 0 &&
                         state.RemoteCoverageAvailable == state.RemoteCoverageRequired ? 1 : 0,
+                    "terrainLodCoarseSourceUnavailable" => state.CoarseCoverSourceUnavailable,
+                    "terrainLodCoarseBuilding" => state.CoarseCoverBuilding,
+                    "terrainLodCoarseTransportPending" => state.CoarseCoverTransportPending,
+                    "terrainLodCoarseGpuPending" => state.CoarseCoverGpuPending,
+                    "terrainLodCoarseReady" => state.CoarseCoverReady,
+                    "terrainLodCoarseAwaitingRequest" => state.CoarseCoverAwaitingRequest,
+                    "terrainLodCoarseFrontierUnknown" => state.CoarseCoverFrontierUnknown,
+                    "terrainLodCoarseComplete" => state.CoarseCoverComplete ? 1 : 0,
+                    "terrainLodCoarseRetainingPrevious" =>
+                        state.CoarseCoverRetainingPrevious ? 1 : 0,
+                    "terrainLodColdCoverMs" => state.ColdCoverMs,
+                    "terrainLodFirstCompleteHorizonMs" => state.FirstCompleteHorizonMs,
+                    "terrainLodRefinementMs" => state.RefinementMs,
                     "terrainLodIdentityReady" =>
                         terrainNetwork?.TerrainLodIdentityReady == true ? 1 : 0,
                     "terrainLodIdentityMismatches" =>

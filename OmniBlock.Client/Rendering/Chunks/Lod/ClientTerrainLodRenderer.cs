@@ -80,7 +80,19 @@ internal readonly record struct ClientTerrainLodSnapshot(
     int RemoteCoverageInFlight,
     int RemoteCoveragePending,
     int RemoteCoverageMissing,
-    int RemoteCoverageDeferred);
+    int RemoteCoverageDeferred,
+    int CoarseCoverSourceUnavailable,
+    int CoarseCoverBuilding,
+    int CoarseCoverTransportPending,
+    int CoarseCoverGpuPending,
+    int CoarseCoverReady,
+    int CoarseCoverAwaitingRequest,
+    int CoarseCoverFrontierUnknown,
+    bool CoarseCoverComplete,
+    bool CoarseCoverRetainingPrevious,
+    double ColdCoverMs,
+    double FirstCompleteHorizonMs,
+    double RefinementMs);
 
 internal readonly record struct TerrainLodSpatialSnapshot(
     TerrainLodTileKey Root,
@@ -219,6 +231,25 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private int _remoteCoveragePending;
     private int _remoteCoverageMissing;
     private int _remoteCoverageDeferred;
+    private int _coarseCoverSourceUnavailable;
+    private int _coarseCoverBuilding;
+    private int _coarseCoverTransportPending;
+    private int _coarseCoverGpuPending;
+    private int _coarseCoverReady;
+    private int _coarseCoverAwaitingRequest;
+    private int _coarseCoverFrontierUnknown;
+    private bool _coarseCoverComplete;
+    private bool _coarseCoverRetainingPrevious;
+    private double _coldCoverMs = -1;
+    private double _firstCompleteHorizonMs = -1;
+    private double _refinementMs = -1;
+    private int _coarseCoverSelectedTiles;
+    private int _coarseCoverParentFallbacks;
+    private int _coarseCoverMissingGroups;
+    private long _coarseCoverStartedTimestamp;
+    private long _coarseCoverGeneration;
+    private long _publishedCoarseCoverGeneration = -1;
+    private TerrainLodTileKey[] _coarseRequiredTiles = [];
     private bool _disposed;
     private long _lastCoverageTick = -1;
     private ClientTerrainLodSnapshot _snapshot;
@@ -325,9 +356,12 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         var coverageRootLevel = Math.Max(
             MinimumSpatialGpuLevel,
             _spatialPolicy.DesiredSpatialLevel(horizonDistanceChunks));
-        var requiredTiles = TerrainLodCoveragePlanner.RequiredTiles(
-            cameraX, cameraZ, nearDistanceChunks, horizonDistanceChunks,
-            coverageRootLevel, MinimumSpatialGpuLevel);
+        var requiredTiles = TerrainLodCoveragePlanner.PrioritizeMissing(
+            TerrainLodCoveragePlanner.RequiredTiles(
+                cameraX, cameraZ, nearDistanceChunks, horizonDistanceChunks,
+                coverageRootLevel, MinimumSpatialGpuLevel),
+            cameraX, cameraZ, _spatialPolicy);
+        UpdateCoarseCoverPlan(requiredTiles);
         UpdateRemoteCoverage(requiredTiles, cameraX, cameraZ, horizonDistanceChunks);
         if (maximumRequests <= 0 || requiredTiles.Length == 0 || (_tick & 3) != 0)
             return [];
@@ -350,7 +384,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
 
         // Refinement may use only capacity not needed by a due coverage tile. Cycling levels keeps
         // the request set bounded while the near-to-far order remains stable within each level.
-        if (selected.Count < requestCount)
+        if (selected.Count < requestCount && requiredTiles.All(CoverageRequestResolved))
         {
             var refinementLevels = coverageRootLevel - MinimumSpatialGpuLevel;
             if (refinementLevels > 0)
@@ -430,10 +464,24 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _remoteCoveragePending = 0;
         _remoteCoverageMissing = 0;
         _remoteCoverageDeferred = 0;
+        _coarseCoverSourceUnavailable = 0;
+        _coarseCoverBuilding = 0;
+        _coarseCoverTransportPending = 0;
+        _coarseCoverGpuPending = 0;
+        _coarseCoverReady = 0;
+        _coarseCoverAwaitingRequest = 0;
         foreach (var key in requiredTiles)
         {
+            if (HasGpuCoverage(key))
+            {
+                _coarseCoverReady++;
+                _remoteCoverageAvailable++;
+                _remoteRequestStates.Remove(key);
+                continue;
+            }
             if (HasRemoteCoverage(key))
             {
+                _coarseCoverGpuPending++;
                 _remoteCoverageAvailable++;
                 _remoteRequestStates.Remove(key);
                 continue;
@@ -443,23 +491,34 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             {
                 case RemoteTileRequestDisposition.InFlight:
                     _remoteCoverageInFlight++;
+                    _coarseCoverTransportPending++;
                     break;
                 case RemoteTileRequestDisposition.Pending:
                     _remoteCoveragePending++;
+                    _coarseCoverBuilding++;
                     break;
                 case RemoteTileRequestDisposition.Missing:
                     _remoteCoverageMissing++;
+                    _coarseCoverSourceUnavailable++;
                     break;
                 case RemoteTileRequestDisposition.Deferred:
                     _remoteCoverageDeferred++;
+                    _coarseCoverTransportPending++;
                     break;
                 case null:
+                    _coarseCoverAwaitingRequest++;
                     break;
                 default:
                     throw new InvalidOperationException(
                         $"Unknown remote tile request disposition '{disposition}'.");
             }
         }
+        _coarseCoverComplete = requiredTiles.Count != 0 &&
+                               _coarseCoverReady == requiredTiles.Count;
+        _coarseCoverFrontierUnknown = requiredTiles.Count - _coarseCoverReady;
+        _coarseCoverRetainingPrevious = _spatialFrame is not null &&
+                                         _publishedCoarseCoverGeneration !=
+                                         _coarseCoverGeneration;
 
         RemoteTileRequestDisposition? CoverageDisposition(TerrainLodTileKey key)
         {
@@ -493,6 +552,41 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
 
     private bool HasRemoteCoverage(TerrainLodTileKey root) =>
         _spatialHierarchy.HasCompleteCoverage(root, MinimumSpatialGpuLevel);
+
+    private bool HasGpuCoverage(TerrainLodTileKey root) =>
+        TerrainLodCoveragePlanner.HasCompleteCoverage(
+            root, MinimumSpatialGpuLevel, _spatialPresentations.IsReady);
+
+    private bool CoverageRequestResolved(TerrainLodTileKey key)
+    {
+        if (HasRemoteCoverage(key)) return true;
+        if (!_remoteRequestStates.TryGetValue(key, out var state) ||
+            state.Disposition != RemoteTileRequestDisposition.Missing)
+            return false;
+        if (key.Level == MinimumSpatialGpuLevel) return true;
+        for (var index = 0; index < 4; index++)
+            if (!CoverageRequestResolved(key.Child(index))) return false;
+        return true;
+    }
+
+    private void UpdateCoarseCoverPlan(TerrainLodTileKey[] requiredTiles)
+    {
+        var canonical = requiredTiles
+            .OrderBy(static key => key.Level)
+            .ThenBy(static key => key.X)
+            .ThenBy(static key => key.Z)
+            .ToArray();
+        if (_coarseRequiredTiles.AsSpan().SequenceEqual(canonical)) return;
+        _coarseRequiredTiles = canonical;
+        _coarseCoverGeneration++;
+        _coarseCoverStartedTimestamp = Stopwatch.GetTimestamp();
+        _firstCompleteHorizonMs = -1;
+        _refinementMs = -1;
+        _coarseCoverComplete = false;
+        _coarseCoverRetainingPrevious = _spatialFrame is not null;
+        _spatialForestCacheKey = null;
+        _spatialForestCachedFrame = null;
+    }
 
     /// <summary>
     ///     Observes texture-resource replacement without invalidating terrain presentation. Both
@@ -1380,6 +1474,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         stageStarted = Stopwatch.GetTimestamp();
         var frame = BuildSpatialForestFrame(
             cameraChunkX, cameraChunkZ,
+            parameters.RenderDistance,
             parameters.TerrainHorizonDistance,
             parameters.DeltaTime);
         Profiler.Record("SpatialForestCpu",
@@ -1392,10 +1487,10 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         stageStarted = Stopwatch.GetTimestamp();
         _spatialSnapshot = new TerrainLodSpatialSnapshot(
             root,
-            selection.CompleteCoverage,
-            selection.Nodes.Count,
-            selection.ParentFallbacks,
-            selection.MissingCoverageGroups,
+            frame.CompleteCoverage,
+            _coarseCoverSelectedTiles,
+            _coarseCoverParentFallbacks,
+            _coarseCoverMissingGroups,
             _spatialPresentations.Count,
             _spatialPresentations.ReadyKeys.Any()
                 ? _spatialPresentations.ReadyKeys.Max(static tile => tile.Level)
@@ -1427,43 +1522,109 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         BuildSpatialForestFrame(
             double cameraChunkX,
             double cameraChunkZ,
+            int nearDistance,
             int horizonDistance,
             float deltaTime)
     {
+        var coverageRootLevel = Math.Max(
+            MinimumSpatialGpuLevel,
+            _spatialPolicy.DesiredSpatialLevel(horizonDistance));
+        var requiredTiles = TerrainLodCoveragePlanner.PrioritizeMissing(
+            TerrainLodCoveragePlanner.RequiredTiles(
+                cameraChunkX, cameraChunkZ, nearDistance, horizonDistance,
+                coverageRootLevel, MinimumSpatialGpuLevel),
+            cameraChunkX, cameraChunkZ, _spatialPolicy);
+        UpdateCoarseCoverPlan(requiredTiles);
+        // Uploads happen earlier in this render pass than presentation evaluation. Reclassify the
+        // same immutable partition here so GPU-pending/ready diagnostics describe this frame,
+        // rather than the previous simulation tick.
+        UpdateRemoteCoverage(requiredTiles, cameraChunkX, cameraChunkZ, horizonDistance);
         var cacheKey = new SpatialForestCacheKey(
             cameraChunkX,
             cameraChunkZ,
+            nearDistance,
             horizonDistance,
+            _coarseCoverGeneration,
             _spatialPresentations.Revision);
         if (_spatialForestCacheKey == cacheKey &&
             _spatialForestCachedFrame is not null)
             return _spatialForestCachedFrame;
 
+        var horizonCover = TerrainLodCoveragePlanner.SelectCompleteCover(
+            requiredTiles, cameraChunkX, cameraChunkZ,
+            _spatialPolicy, _spatialPresentations.IsReady);
+        var cover = horizonCover.CompleteHorizon
+            ? horizonCover
+            : TerrainLodCoveragePlanner.SelectContiguousAvailableCover(
+                _spatialPresentations.ReadyKeys,
+                MinimumSpatialGpuLevel,
+                cameraChunkX,
+                cameraChunkZ,
+                Math.Max(1, horizonDistance) + (1 << MinimumSpatialGpuLevel),
+                _spatialPolicy,
+                _spatialPresentations.IsReady,
+                _spatialFrame?.Draws
+                    .Select(static draw => draw.Selection.Tile)
+                    .ToHashSet());
+        _coarseCoverComplete = horizonCover.CompleteHorizon;
+        _coarseCoverSelectedTiles = cover.SelectedNodes;
+        _coarseCoverParentFallbacks = cover.ParentFallbacks;
+        _coarseCoverMissingGroups = cover.MissingCoverageGroups;
+        _coarseCoverReady = requiredTiles.Count(HasGpuCoverage);
+        _coarseCoverFrontierUnknown = requiredTiles.Length - _coarseCoverReady;
+        _coarseCoverRetainingPrevious = _spatialFrame is not null &&
+                                         _publishedCoarseCoverGeneration !=
+                                         _coarseCoverGeneration;
+        if (!cover.CompleteCoverage)
+        {
+            var incomplete = new TerrainLodSpatialPresentationFrame<
+                TerrainLodSpatialGpuPresentation>([], false, false);
+            _spatialForestCacheKey = cacheKey;
+            _spatialForestCachedFrame = incomplete;
+            return incomplete;
+        }
+
+        var candidateSelections = cover.Roots.SelectMany(static root => root.Nodes).ToArray();
+        if (!horizonCover.CompleteHorizon &&
+            _spatialFrame is { } previous &&
+            _publishedCoarseCoverGeneration != _coarseCoverGeneration &&
+            TerrainLodCoveragePlanner.ShouldRetainPreviousCover(
+                previous.Draws.Select(static draw => draw.Selection),
+                candidateSelections,
+                cameraChunkX,
+                cameraChunkZ,
+                Math.Max(1, horizonDistance) + (1 << MinimumSpatialGpuLevel)))
+        {
+            _coarseCoverRetainingPrevious = true;
+            var retained = new TerrainLodSpatialPresentationFrame<
+                TerrainLodSpatialGpuPresentation>([], false, false);
+            _spatialForestCacheKey = cacheKey;
+            _spatialForestCachedFrame = retained;
+            return retained;
+        }
+
+        var elapsed = Stopwatch.GetElapsedTime(_coarseCoverStartedTimestamp).TotalMilliseconds;
+        if (_firstCompleteHorizonMs < 0 && horizonCover.CompleteHorizon)
+            _firstCompleteHorizonMs = elapsed;
+        if (_refinementMs < 0 && horizonCover.CompleteHorizon &&
+            horizonCover.ParentFallbacks == 0)
+            _refinementMs = elapsed;
+
         List<TerrainLodSpatialPresentationDraw<TerrainLodSpatialGpuPresentation>> draws = [];
         var transitioning = false;
-        var maximumDistance = Math.Max(1, horizonDistance) +
-                              (1 << MinimumSpatialGpuLevel);
-        var forest = TerrainLodSpatialForestSelector.Select(
-            _spatialPresentations.ReadyKeys,
-            MinimumSpatialGpuLevel,
-            cameraChunkX,
-            cameraChunkZ,
-            maximumDistance,
-            _spatialPolicy,
-            _spatialPresentations.IsReady);
         HashSet<TerrainLodTileKey> activeRoots = [];
-        foreach (var root in forest.Roots)
+        foreach (var root in cover.Roots)
         {
-            activeRoots.Add(root.ManagementRoot);
+            activeRoots.Add(root.Root);
             // The forest can change spatial level only as a complete parent/child partition. Live
             // fades remain disabled until seam planning can include stable neighboring roots in
             // both transition partitions; the body-plus-seam readiness gate still makes this an
             // atomic replacement; the last complete spatial snapshot remains displayed while the
             // new body/seam partition is being prepared.
             var rootFrame = _spatialPresentations.UpdatePartition(
-                root.ManagementRoot,
+                root.Root,
                 root.Nodes,
-                root.CompleteCoverage,
+                completeRootCoverage: true,
                 deltaTime,
                 fadeEnabled: false);
             if (rootFrame.Draws.Count == 0) continue;
@@ -1487,6 +1648,17 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     {
         if (ReferenceEquals(frame, _spatialFrame) && _spatialSubmissionReady)
         {
+            RefreshAuthority();
+            return;
+        }
+
+        // An incomplete candidate is not a presentation. Keep the last complete body-and-seam
+        // snapshot (and its leases) while the leading edge is sourced, built, transported, and
+        // uploaded. On a cold start the ordinary fog frontier remains visible instead of claiming
+        // terrain the client does not own.
+        if (!frame.CompleteCoverage)
+        {
+            _coarseCoverRetainingPrevious = _spatialFrame is not null;
             RefreshAuthority();
             return;
         }
@@ -1552,7 +1724,14 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 key => new PublishedTerrainSeam<TerrainLodSpatialGpuSeamPresentation>(
                     _spatialSeams[key], _spatialSeamFades.GetValueOrDefault(
                         key, new TerrainLodSpatialPresentationFade(1, 0, 0))));
-            _spatialPublication.TryPublish(frame, seams, seamsReady: true);
+            if (_spatialPublication.TryPublish(frame, seams, seamsReady: true))
+            {
+                _publishedCoarseCoverGeneration = _coarseCoverGeneration;
+                _coarseCoverRetainingPrevious = false;
+                if (_coldCoverMs < 0)
+                    _coldCoverMs = Stopwatch.GetElapsedTime(
+                        _coarseCoverStartedTimestamp).TotalMilliseconds;
+            }
         }
         RefreshAuthority();
 
@@ -2327,7 +2506,19 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             _remoteCoverageInFlight,
             _remoteCoveragePending,
             _remoteCoverageMissing,
-            _remoteCoverageDeferred);
+            _remoteCoverageDeferred,
+            _coarseCoverSourceUnavailable,
+            _coarseCoverBuilding,
+            _coarseCoverTransportPending,
+            _coarseCoverGpuPending,
+            _coarseCoverReady,
+            _coarseCoverAwaitingRequest,
+            _coarseCoverFrontierUnknown,
+            _coarseCoverComplete,
+            _coarseCoverRetainingPrevious,
+            _coldCoverMs,
+            _firstCompleteHorizonMs,
+            _refinementMs);
     }
 
     private long ResidentGpuBytes() =>
@@ -2611,7 +2802,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private readonly record struct SpatialForestCacheKey(
         double CameraChunkX,
         double CameraChunkZ,
+        int NearDistance,
         int HorizonDistance,
+        long CoarseCoverGeneration,
         long PresentationRevision);
 
     private readonly record struct VisibleTranslucentDraw(

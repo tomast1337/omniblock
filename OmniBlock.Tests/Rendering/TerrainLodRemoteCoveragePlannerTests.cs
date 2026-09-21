@@ -81,6 +81,132 @@ public sealed class TerrainLodRemoteCoveragePlannerTests
     }
 
     [Fact]
+    public void Missing_nodes_are_prioritized_by_coverage_gain_before_distance()
+    {
+        var policy = TerrainLodSpatialPolicy.CreateDefault();
+        var nearbyFine = new TerrainLodTileKey(2, 0, 0);
+        var fartherCoarse = new TerrainLodTileKey(4, 2, 0);
+
+        var ordered = TerrainLodCoveragePlanner.PrioritizeMissing(
+            [nearbyFine, fartherCoarse], 0, 0, policy);
+
+        Assert.Equal(fartherCoarse, ordered[0]);
+        Assert.True(
+            TerrainLodCoveragePlanner.CoverageGainPerBuildUnit(fartherCoarse, policy) >
+            TerrainLodCoveragePlanner.CoverageGainPerBuildUnit(nearbyFine, policy));
+    }
+
+    [Fact]
+    public void Coarse_cover_never_exposes_a_ready_island_beyond_a_missing_band()
+    {
+        var policy = TerrainLodSpatialPolicy.CreateDefault();
+        var first = new TerrainLodTileKey(2, 0, 0);
+        var second = new TerrainLodTileKey(2, 1, 0);
+        HashSet<TerrainLodTileKey> ready = [second];
+
+        var incomplete = TerrainLodCoveragePlanner.SelectCompleteCover(
+            [first, second], 0, 0, policy, ready.Contains);
+
+        Assert.False(incomplete.CompleteCoverage);
+        Assert.Empty(incomplete.Roots);
+        Assert.Equal(0, incomplete.SelectedNodes);
+
+        ready.Add(first);
+        var complete = TerrainLodCoveragePlanner.SelectCompleteCover(
+            [first, second], 0, 0, policy, ready.Contains);
+
+        Assert.True(complete.CompleteCoverage);
+        Assert.True(complete.CompleteHorizon);
+        Assert.Equal(2, complete.Roots.Count);
+        Assert.Equal(2, complete.SelectedNodes);
+    }
+
+    [Fact]
+    public void Coarse_cover_publishes_a_complete_near_band_before_the_full_horizon()
+    {
+        var policy = TerrainLodSpatialPolicy.CreateDefault();
+        var near = new TerrainLodTileKey(2, 0, 0);
+        var far = new TerrainLodTileKey(2, 2, 0);
+        HashSet<TerrainLodTileKey> ready = [near];
+
+        var selection = TerrainLodCoveragePlanner.SelectCompleteCover(
+            [near, far], 0, 0, policy, ready.Contains);
+
+        Assert.True(selection.CompleteCoverage);
+        Assert.False(selection.CompleteHorizon);
+        Assert.Equal(near, Assert.Single(selection.Roots).Root);
+    }
+
+    [Fact]
+    public void Coarse_cover_accepts_a_complete_descendant_partition()
+    {
+        var policy = TerrainLodSpatialPolicy.CreateDefault();
+        var root = new TerrainLodTileKey(3, 0, 0);
+        HashSet<TerrainLodTileKey> ready = [];
+        for (var index = 0; index < 4; index++) ready.Add(root.Child(index));
+
+        var selection = TerrainLodCoveragePlanner.SelectCompleteCover(
+            [root], 0, 0, policy, ready.Contains);
+
+        Assert.True(selection.CompleteCoverage);
+        Assert.Single(selection.Roots);
+        Assert.Equal(4, selection.SelectedNodes);
+    }
+
+    [Fact]
+    public void Unavailable_frontier_exposes_only_one_connected_ready_component()
+    {
+        var policy = TerrainLodSpatialPolicy.CreateDefault();
+        var near = new TerrainLodTileKey(2, 0, 0);
+        var adjacent = new TerrainLodTileKey(2, 1, 0);
+        var isolated = new TerrainLodTileKey(2, 10, 0);
+        HashSet<TerrainLodTileKey> ready = [near, adjacent, isolated];
+
+        var selection = TerrainLodCoveragePlanner.SelectContiguousAvailableCover(
+            ready, minimumVisibleLevel: 2,
+            cameraChunkX: 0, cameraChunkZ: 0,
+            maximumDistanceChunks: 64, policy, ready.Contains);
+
+        Assert.True(selection.CompleteCoverage);
+        Assert.False(selection.CompleteHorizon);
+        Assert.Equal(2, selection.SelectedNodes);
+        Assert.Contains(selection.Roots, root => root.Root == near);
+        Assert.Contains(selection.Roots, root => root.Root == adjacent);
+        Assert.DoesNotContain(selection.Roots, root => root.Root == isolated);
+
+        var retained = TerrainLodCoveragePlanner.SelectContiguousAvailableCover(
+            ready, minimumVisibleLevel: 2,
+            cameraChunkX: 0, cameraChunkZ: 0,
+            maximumDistanceChunks: 64, policy, ready.Contains,
+            new HashSet<TerrainLodTileKey> { isolated });
+        Assert.Equal(isolated, Assert.Single(retained.Roots).Root);
+    }
+
+    [Fact]
+    public void Recenter_keeps_a_larger_previous_cover_until_the_leading_edge_catches_up()
+    {
+        TerrainLodTileSelection[] previous =
+        [
+            new(new TerrainLodTileKey(3, 0, 0), 1, 12),
+            new(new TerrainLodTileKey(3, 1, 0), 1, 12)
+        ];
+        TerrainLodTileSelection[] smallCandidate =
+        [new(new TerrainLodTileKey(3, 2, 0), 1, 12)];
+        TerrainLodTileSelection[] completeCandidate =
+        [
+            new(new TerrainLodTileKey(3, 2, 0), 1, 12),
+            new(new TerrainLodTileKey(3, 3, 0), 1, 12)
+        ];
+
+        Assert.True(TerrainLodCoveragePlanner.ShouldRetainPreviousCover(
+            previous, smallCandidate, 16, 0, 64));
+        Assert.False(TerrainLodCoveragePlanner.ShouldRetainPreviousCover(
+            previous, completeCandidate, 16, 0, 64));
+        Assert.False(TerrainLodCoveragePlanner.ShouldRetainPreviousCover(
+            previous, smallCandidate, 200, 0, 16));
+    }
+
+    [Fact]
     public void Horizon_inside_near_radius_has_no_remote_contract()
     {
         Assert.Empty(TerrainLodCoveragePlanner.RequiredTiles(0, 0, 16, 16, 4, 2));
