@@ -115,8 +115,8 @@ public sealed class ChunkMeshBuilderTests
             Assert.All(vertices.Span.ToArray(), vertex =>
             {
                 Assert.Equal(0, vertex.UvScaleExponent);
-                Assert.Equal(0, vertex.PadTail1);
-                Assert.Equal(0, vertex.PadTail2);
+                Assert.Equal(0, vertex.PageOffsetY);
+                Assert.Equal(0, vertex.Reserved);
             });
         }
     }
@@ -178,14 +178,14 @@ public sealed class ChunkMeshBuilderTests
         Assert.Equal(expected.X, actual.X);
         Assert.Equal(expected.Y, actual.Y);
         Assert.Equal(expected.Z, actual.Z);
-        Assert.Equal(expected.PadPosition, actual.PadPosition);
+        Assert.Equal(expected.PageOffsetXZ, actual.PageOffsetXZ);
         Assert.Equal(expected.Color, actual.Color);
         Assert.Equal(expected.U, actual.U);
         Assert.Equal(expected.V, actual.V);
         Assert.Equal(expected.ArrayLayer, actual.ArrayLayer);
         Assert.Equal(0, actual.UvScaleExponent);
-        Assert.Equal(0, actual.PadTail1);
-        Assert.Equal(0, actual.PadTail2);
+        Assert.Equal(0, actual.PageOffsetY);
+        Assert.Equal(0, actual.Reserved);
     }
 
     private static void AssertVertexPosition(ChunkVertex actual, float x, float y, float z)

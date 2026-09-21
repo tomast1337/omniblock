@@ -19,6 +19,14 @@ internal sealed record TerrainLodSpatialSeamMeshData(
     public int TranslucentQuadCount => Pages.Sum(static page =>
         page.TranslucentVertices.Length / 4);
     public long EstimatedBytes => Pages.Sum(static page => page.EstimatedBytes);
+    public int[] ArenaAllocationVertexCounts => Pages
+        .SelectMany(static page => new[]
+        {
+            page.Vertices.Length,
+            page.TranslucentVertices.Length
+        })
+        .Where(static count => count > 0)
+        .ToArray();
 }
 
 /// <summary>
@@ -206,14 +214,19 @@ internal static class TerrainLodSpatialSeamMeshBuilder
             }
         }
 
+        var completedPages = pages.OrderBy(static pair => pair.Key.X)
+            .ThenBy(static pair => pair.Key.Y)
+            .ThenBy(static pair => pair.Key.Z)
+            .Select(static pair => pair.Value.Build(pair.Key))
+            .ToArray();
+        if (Math.Max(segment.Owner.Tile.Level, segment.Neighbor?.Tile.Level ?? 0) >=
+            TerrainLodSpatialMeshBuilder.TileScaleSubmissionMinimumLevel)
+            completedPages = TerrainLodSpatialMeshBuilder.CoalescePages(completedPages);
+
         return new TerrainLodSpatialSeamMeshData(
             segment,
             ComputeCanonicalHash(segment, owner, neighbor, caveCullBelowY),
-            pages.OrderBy(static pair => pair.Key.X)
-                .ThenBy(static pair => pair.Key.Y)
-                .ThenBy(static pair => pair.Key.Z)
-                .Select(static pair => pair.Value.Build(pair.Key))
-                .ToArray());
+            completedPages);
 
         static void AddTransitions(SortedSet<int> target, TerrainLodColumn column)
         {

@@ -342,7 +342,8 @@ public static class TerrainLodSpatialSelector
             var desiredLevel = policy.DesiredSpatialLevel(
                 tile.DistanceTo(cameraChunkX, cameraChunkZ));
             var shouldRefine = tile.Level > desiredLevel;
-            if (!shouldRefine && isGpuReady(tile))
+            var tileReady = isGpuReady(tile);
+            if (!shouldRefine && tileReady)
             {
                 selected.Add(new TerrainLodTileSelection(
                     tile,
@@ -353,6 +354,26 @@ public static class TerrainLodSpatialSelector
 
             if (tile.Level > 0)
             {
+                // A ready parent is the atomic fallback. If even one immediate child is absent,
+                // descending through every theoretical grandchild cannot produce a publishable
+                // replacement and becomes exponential at L7+. Wait for the complete child group
+                // instead; the hierarchy coordinator materializes those parents from complete
+                // descendant groups before they become presentation candidates.
+                var completeChildGroup = true;
+                if (tileReady && shouldRefine)
+                    for (var index = 0; index < 4; index++)
+                        completeChildGroup &= isGpuReady(tile.Child(index));
+                if (tileReady && shouldRefine && !completeChildGroup)
+                {
+                    parentFallbacks++;
+                    missingCoverageGroups++;
+                    selected.Add(new TerrainLodTileSelection(
+                        tile,
+                        policy.HorizontalSampleLevelForSpatialLevel(tile.Level),
+                        policy.VerticalSliceBudgetForSpatialLevel(tile.Level)));
+                    return true;
+                }
+
                 var childStart = selected.Count;
                 var allChildrenCovered = true;
                 for (var i = 0; i < 4; i++)
@@ -361,7 +382,7 @@ public static class TerrainLodSpatialSelector
                 selected.RemoveRange(childStart, selected.Count - childStart);
             }
 
-            if (isGpuReady(tile))
+            if (tileReady)
             {
                 if (shouldRefine) parentFallbacks++;
                 selected.Add(new TerrainLodTileSelection(

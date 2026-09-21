@@ -18,6 +18,9 @@ internal sealed record TerrainLodSpatialMeshPage(
     int OriginX,
     int OriginY,
     int OriginZ,
+    int ExtentX,
+    int ExtentY,
+    int ExtentZ,
     ChunkVertex[] Vertices,
     ChunkLightVertex[] Lights,
     ChunkDirectionalRanges SolidRanges,
@@ -45,6 +48,14 @@ internal sealed record TerrainLodSpatialMeshData(
     TerrainLodSpatialMeshPage[] Pages)
 {
     public long EstimatedBytes => Pages.Sum(static page => page.EstimatedBytes);
+    public int[] ArenaAllocationVertexCounts => Pages
+        .SelectMany(static page => new[]
+        {
+            page.Vertices.Length,
+            page.TranslucentVertices.Length
+        })
+        .Where(static count => count > 0)
+        .ToArray();
     public int SolidQuadCount => Pages.Sum(static page => page.Vertices.Length / 4);
     public int TranslucentQuadCount => Pages.Sum(static page =>
         page.TranslucentVertices.Length / 4);
@@ -63,6 +74,11 @@ internal static class TerrainLodSpatialMeshBuilder
     internal const int PageSize = 64;
     internal const int MaximumQuadSpan = 16;
     internal const int MaximumSampleSpan = PageSize;
+    // L5 is the first policy tier whose selected nodes are wholly distant from the exact/LOD
+    // handoff and whose 64-block construction pages otherwise multiply draw count materially.
+    // L2-L4 retain individual pages so the shader's 6x6 per-page authority mask can hide exact
+    // columns during near-boundary handoff.
+    internal const int TileScaleSubmissionMinimumLevel = 5;
 
     public static TerrainLodSpatialMeshData Build(
         TerrainLodColumnTile tile,
@@ -278,6 +294,8 @@ internal static class TerrainLodSpatialMeshBuilder
             .ThenBy(static pair => pair.Key.Z)
             .Select(static pair => pair.Value.Build(pair.Key))
             .ToArray();
+        if (tile.Key.Level >= TileScaleSubmissionMinimumLevel)
+            completedPages = CoalescePages(completedPages);
         return new TerrainLodSpatialMeshData(
             tile.Key,
             tile.CanonicalHash,
@@ -432,6 +450,102 @@ internal static class TerrainLodSpatialMeshBuilder
         return value % divisor < 0 ? quotient - 1 : quotient;
     }
 
+    /// <summary>
+    ///     Converts the fixed-size CPU construction pages of one distant tile into one GPU
+    ///     submission. Local packed positions stay inside their original 64-block pages; the
+    ///     otherwise-unused vertex lanes carry that page's offset from the new tile origin.
+    /// </summary>
+    internal static TerrainLodSpatialMeshPage[] CoalescePages(
+        IReadOnlyList<TerrainLodSpatialMeshPage> pages)
+    {
+        if (pages.Count <= 1) return pages.ToArray();
+
+        var originX = pages.Min(static page => page.OriginX);
+        var originY = pages.Min(static page => page.OriginY);
+        var originZ = pages.Min(static page => page.OriginZ);
+        var maximumX = pages.Max(static page => checked(page.OriginX + page.ExtentX));
+        var maximumY = pages.Max(static page => checked(page.OriginY + page.ExtentY));
+        var maximumZ = pages.Max(static page => checked(page.OriginZ + page.ExtentZ));
+
+        var solid = MergeLayer(pages, translucent: false, originX, originY, originZ);
+        var translucent = MergeLayer(pages, translucent: true, originX, originY, originZ);
+        return
+        [
+            new TerrainLodSpatialMeshPage(
+                new TerrainLodSpatialMeshPageKey(
+                    FloorDivide(originX, PageSize),
+                    FloorDivide(originY, PageSize),
+                    FloorDivide(originZ, PageSize)),
+                originX, originY, originZ,
+                checked(maximumX - originX),
+                checked(maximumY - originY),
+                checked(maximumZ - originZ),
+                solid.Vertices, solid.Lights, solid.Ranges,
+                translucent.Vertices, translucent.Lights, translucent.Ranges)
+        ];
+    }
+
+    private static CoalescedLayer MergeLayer(
+        IReadOnlyList<TerrainLodSpatialMeshPage> pages,
+        bool translucent,
+        int originX,
+        int originY,
+        int originZ)
+    {
+        List<ChunkVertex> vertices = [];
+        List<ChunkLightVertex> lights = [];
+        Span<ChunkQuadRange> mergedRanges = stackalloc ChunkQuadRange[7];
+        for (var bucket = 0; bucket < 7; bucket++)
+        {
+            var firstQuad = vertices.Count / 4;
+            foreach (var page in pages)
+            {
+                var pageVertices = translucent ? page.TranslucentVertices : page.Vertices;
+                var pageLights = translucent ? page.TranslucentLights : page.Lights;
+                var ranges = translucent ? page.TranslucentRanges : page.SolidRanges;
+                var range = bucket < 6 ? ranges.Get((Side)bucket) : ranges.Unassigned;
+                if (range.IsEmpty) continue;
+
+                var offsetX = CheckedPageOffset(page.OriginX, originX);
+                var offsetY = CheckedPageOffset(page.OriginY, originY);
+                var offsetZ = CheckedPageOffset(page.OriginZ, originZ);
+                var packedXZ = (short)(ushort)(offsetX | offsetZ << 8);
+                var firstVertex = checked(range.FirstQuad * 4);
+                var vertexCount = checked(range.QuadCount * 4);
+                for (var index = 0; index < vertexCount; index++)
+                {
+                    var vertex = pageVertices[firstVertex + index];
+                    vertex.PageOffsetXZ = packedXZ;
+                    vertex.PageOffsetY = (byte)offsetY;
+                    vertices.Add(vertex);
+                    lights.Add(pageLights[firstVertex + index]);
+                }
+            }
+            mergedRanges[bucket] = new ChunkQuadRange(
+                firstQuad, vertices.Count / 4 - firstQuad);
+        }
+
+        return new CoalescedLayer(
+            [.. vertices], [.. lights],
+            new ChunkDirectionalRanges(
+                mergedRanges[0], mergedRanges[1], mergedRanges[2], mergedRanges[3],
+                mergedRanges[4], mergedRanges[5], mergedRanges[6]));
+
+        static int CheckedPageOffset(int pageOrigin, int rootOrigin)
+        {
+            var delta = checked(pageOrigin - rootOrigin);
+            if (delta < 0 || delta % PageSize != 0 || delta / PageSize > byte.MaxValue)
+                throw new ArgumentOutOfRangeException(nameof(pageOrigin),
+                    $"Distant terrain page delta {delta} cannot be encoded in one byte of {PageSize}-block units.");
+            return delta / PageSize;
+        }
+    }
+
+    private readonly record struct CoalescedLayer(
+        ChunkVertex[] Vertices,
+        ChunkLightVertex[] Lights,
+        ChunkDirectionalRanges Ranges);
+
     internal sealed class PageBuilder(int originX, int originY, int originZ)
     {
         private readonly List<Quad>[] _solid = CreateBuckets();
@@ -461,6 +575,7 @@ internal static class TerrainLodSpatialMeshBuilder
             var translucent = Flatten(_translucent, mergeHorizontal: true);
             return new TerrainLodSpatialMeshPage(
                 key, OriginX, OriginY, OriginZ,
+                PageSize, PageSize, PageSize,
                 solid.Vertices, solid.Lights, solid.Ranges,
                 translucent.Vertices, translucent.Lights, translucent.Ranges);
         }

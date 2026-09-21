@@ -52,6 +52,14 @@ fn unpackPosition(packed: vec4<i32>) -> vec3<f32> {
     return vec3<f32>(f32(packed.x), f32(packed.y), f32(packed.z)) * POSITION_SCALE_INV;
 }
 
+fn unpackPageOffset(packedXZ: i32, packedY: u32) -> vec3<f32> {
+    let bits = bitcast<u32>(packedXZ);
+    return vec3<f32>(
+        f32(bits & 255u),
+        f32(packedY),
+        f32((bits >> 8u) & 255u)) * 64.0;
+}
+
 fn rampLuminance(level: f32) -> f32 {
     let factor = 1.0 - level / 15.0;
     return (1.0 - factor) / (factor * 3.0 + 1.0) * (1.0 - frame.luminanceOffset) + frame.luminanceOffset;
@@ -116,12 +124,14 @@ fn isPlant(layer: u32) -> bool {
 }
 
 struct VertexInput {
-    @location(0) position: vec4<i32>,       // Sint16x4 at offset 0, w is padding
+    @location(0) position: vec4<i32>,       // Sint16x4; .w packs distant page X/Z offsets
     @location(1) uv: vec2<u32>,             // Uint16x2 at offset 12
     @location(2) color: vec4<f32>,          // Unorm8x4 at offset 8
     @location(3) light: vec2<u32>,          // Uint8x2 at offset 16
     // Uint8x2 at offset 16: .x is the texture-array layer and .y is the power-of-two UV scale.
     @location(4) @interpolate(flat) arrayLayer: vec2<u32>,
+    // Uint8x2 at offset 18: .x is distant page Y offset; .y is reserved.
+    @location(5) @interpolate(flat) pageData: vec2<u32>,
 }
 
 struct VertexOutput {
@@ -141,7 +151,9 @@ struct VertexOutput {
 @vertex
 fn vs_main(in: VertexInput, @builtin(instance_index) drawIndex: u32) -> VertexOutput {
     let draw = drawMetadata[drawIndex];
-    var pos = unpackPosition(in.position);
+    var pos = unpackPosition(in.position) +
+        unpackPageOffset(in.position.w, in.pageData.x);
+    let pagePos = pos;
     let cellDelta = draw.regionCell - frame.cameraCell;
     let relativeOrigin = vec3<f32>(cellDelta) * 1024.0 + draw.localOrigin - frame.cameraLocal;
 
@@ -178,7 +190,7 @@ fn vs_main(in: VertexInput, @builtin(instance_index) drawIndex: u32) -> VertexOu
     out.chunkFadeEnabled = draw.chunkFadeEnabled;
     out.presentationFadeMode = draw.presentationFadeMode;
     out.presentationFadeSeed = draw.presentationFadeSeed;
-    out.pagePosition = unpackPosition(in.position).xz;
+    out.pagePosition = pagePos.xz;
     out.hiddenColumns = draw.hiddenColumns;
     return out;
 }

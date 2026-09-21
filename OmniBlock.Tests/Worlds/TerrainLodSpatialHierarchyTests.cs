@@ -204,6 +204,27 @@ public sealed class TerrainLodSpatialHierarchyTests
     }
 
     [Fact]
+    public void Ready_large_parent_does_not_search_an_absent_exponential_descendant_tree()
+    {
+        var policy = TerrainLodSpatialPolicy.CreateForMaximumHorizon(512);
+        var root = new TerrainLodTileKey(7, 0, 0);
+        var probes = 0;
+
+        var selection = TerrainLodSpatialSelector.Select(
+            root, 0, 0, policy, tile =>
+            {
+                probes++;
+                return tile == root;
+            });
+
+        Assert.True(selection.CompleteCoverage);
+        Assert.Equal(root, Assert.Single(selection.Nodes).Tile);
+        Assert.Equal(1, selection.ParentFallbacks);
+        Assert.Equal(1, selection.MissingCoverageGroups);
+        Assert.InRange(probes, 1, 5);
+    }
+
+    [Fact]
     public void Missing_parent_and_incomplete_children_report_no_partial_coverage()
     {
         var root = new TerrainLodTileKey(1, 0, 0);

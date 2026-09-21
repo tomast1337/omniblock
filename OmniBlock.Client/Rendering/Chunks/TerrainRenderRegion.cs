@@ -13,6 +13,14 @@ namespace OmniBlock.Client.Rendering.Chunks;
 /// </summary>
 internal readonly record struct TerrainRenderRegionKey(int X, int Y, int Z)
 {
+    /// <summary>
+    ///     Arena identity reserved for distant spatial terrain. Distant vertices carry their
+    ///     page-to-tile offsets themselves, so geographic near-render regions would only multiply
+    ///     minimum-size GPU buffers without improving precision or culling.
+    /// </summary>
+    public static readonly TerrainRenderRegionKey DistantTerrainArena =
+        new(int.MinValue, int.MinValue, int.MinValue);
+
     public const int WidthInColumns = ResidentSectionSpatialIndex.RegionWidthInColumns;
     public const int HeightInSections = 4;
     public const int WidthInBlocks = WidthInColumns * SubChunkRenderer.Size;
@@ -336,6 +344,15 @@ internal sealed class TerrainGpuRangeAllocator
             _releases);
     }
 
+    internal int[] AvailableRangeBytes(int alignmentBytes)
+    {
+        ValidateAlignment(alignmentBytes);
+        return _free.Select(range =>
+            Math.Max(0, range.EndBytes - AlignUp(range.OffsetBytes, alignmentBytes)))
+            .Where(static length => length > 0)
+            .ToArray();
+    }
+
     public bool Owns(in TerrainGpuAllocation allocation) =>
         allocation.Id > 0 && _live.TryGetValue(allocation.Id, out var owned) &&
         owned == allocation && !_retiredIds.Contains(allocation.Id);
@@ -558,6 +575,65 @@ internal sealed unsafe class TerrainGpuArenaSet : IDisposable
         return new TerrainGpuArenaSnapshot(
             _regions.Count, segments, capacity, allocated, free,
             largest, fragmentedFree, active, retired, _segmentGrowths, failed);
+    }
+
+    /// <summary>
+    ///     Conservatively simulates the exact segment-selection policy for a sequence of uploads
+    ///     without allocating a WebGPU buffer. Retired ranges remain unavailable, matching the
+    ///     atomic old/new presentation overlap during the current frame.
+    /// </summary>
+    public long ProjectedRegionCapacityBytes(
+        TerrainRenderRegionKey regionKey,
+        ReadOnlySpan<int> vertexCounts)
+    {
+        AssertOwnerThread();
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        List<List<int>> freeBySegment = [];
+        long capacityBytes = 0;
+        if (_regions.TryGetValue(regionKey, out var region))
+        {
+            foreach (var segment in region.Segments)
+            {
+                var snapshot = segment.Allocator.Snapshot();
+                capacityBytes += PhysicalBytes(snapshot.CapacityBytes);
+                freeBySegment.Add(
+                    [.. segment.Allocator.AvailableRangeBytes(QuadAlignmentBytes)]);
+            }
+        }
+
+        foreach (var vertexCount in vertexCounts)
+        {
+            if (vertexCount <= 0 || vertexCount % 4 != 0)
+                throw new ArgumentOutOfRangeException(nameof(vertexCounts),
+                    "Projected terrain uploads must be positive multiples of four vertices.");
+            var geometryBytes = checked(vertexCount * (int)WgpuMesh.ChunkVertexStride);
+            var placed = false;
+            foreach (var ranges in freeBySegment)
+            {
+                var best = -1;
+                var waste = int.MaxValue;
+                for (var index = 0; index < ranges.Count; index++)
+                {
+                    var candidateWaste = ranges[index] - geometryBytes;
+                    if (candidateWaste < 0 || candidateWaste >= waste) continue;
+                    best = index;
+                    waste = candidateWaste;
+                }
+                if (best < 0) continue;
+                ranges[best] -= geometryBytes;
+                placed = true;
+                break;
+            }
+            if (placed) continue;
+
+            var capacityVertices = Math.Max(
+                DefaultSegmentVertices, RoundUpPowerOfTwo(vertexCount));
+            var segmentGeometryBytes = checked(
+                capacityVertices * (int)WgpuMesh.ChunkVertexStride);
+            capacityBytes += PhysicalBytes(segmentGeometryBytes);
+            freeBySegment.Add([segmentGeometryBytes - geometryBytes]);
+        }
+        return capacityBytes;
     }
 
     private static long PhysicalBytes(long geometryBytes) => checked(

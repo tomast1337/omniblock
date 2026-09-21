@@ -3469,7 +3469,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         var source = AssetManager.Instance.GetAsset("shaders/chunk.wgsl").GetTextContent();
 
-        var attrs = stackalloc VertexAttribute[4];
+        var attrs = stackalloc VertexAttribute[5];
         attrs[0] = new VertexAttribute
         {
             Format = VertexFormat.Sint16x4,
@@ -3494,6 +3494,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             Offset = 16,
             ShaderLocation = 4
         };
+        attrs[4] = new VertexAttribute
+        {
+            Format = VertexFormat.Uint8x2,
+            Offset = 18,
+            ShaderLocation = 5
+        };
 
         var lightAttr = stackalloc VertexAttribute[1];
         lightAttr[0] = new VertexAttribute
@@ -3508,7 +3514,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         {
             ArrayStride = 20,
             StepMode = VertexStepMode.Vertex,
-            AttributeCount = 4,
+            AttributeCount = 5,
             Attributes = attrs
         };
         bufferLayouts[1] = new VertexBufferLayout

@@ -232,6 +232,7 @@ public sealed class TerrainLodSpatialMeshBuilderTests
     }
 
     [Theory]
+    [InlineData(3, 8, 0)]
     [InlineData(5, 32, 1)]
     [InlineData(6, 64, 2)]
     public void Public_large_horizon_samples_use_packed_uv_scale_without_losing_tiling(
@@ -259,9 +260,14 @@ public sealed class TerrainLodSpatialMeshBuilderTests
         var mesh = TerrainLodSpatialMeshBuilder.Build(
             tile, world.Content.Blocks, verticalSliceBudget: 4,
             emitTileBoundaryFaces: false);
+        var page = Assert.Single(mesh.Pages);
         var vertices = mesh.Pages.SelectMany(static page => page.Vertices).ToArray();
 
         Assert.NotEmpty(vertices);
+        Assert.Equal(tile.Key.ChunkWidth * 16, page.ExtentX);
+        Assert.Equal(tile.Key.ChunkWidth * 16, page.ExtentZ);
+        Assert.Contains(vertices, static vertex =>
+            vertex.PageOffsetXZ != 0 || vertex.PageOffsetY != 0);
         Assert.All(vertices, vertex => Assert.Equal(expectedExponent, vertex.UvScaleExponent));
         Assert.Equal(expectedSampleSize,
             vertices.Max(vertex => vertex.U / 4095f * (1 << vertex.UvScaleExponent)),

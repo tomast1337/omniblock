@@ -109,12 +109,26 @@ internal static class DirectionalFaceVisibility
         Vector3D<double> viewPosition)
     {
         if (size <= 0) throw new ArgumentOutOfRangeException(nameof(size));
+        return ForBounds(
+            minimum,
+            minimum + new Vector3D<int>(size, size, size),
+            viewPosition);
+    }
+
+    /// <summary>Conservative directional selection for non-cubic coalesced terrain bounds.</summary>
+    public static ChunkDirectionMask ForBounds(
+        Vector3D<int> minimum,
+        Vector3D<int> maximum,
+        Vector3D<double> viewPosition)
+    {
+        if (maximum.X <= minimum.X || maximum.Y <= minimum.Y || maximum.Z <= minimum.Z)
+            throw new ArgumentOutOfRangeException(nameof(maximum));
         var mask = ChunkDirectionMask.None;
-        AddAxis(viewPosition.X, minimum.X, checked(minimum.X + size),
+        AddAxis(viewPosition.X, minimum.X, maximum.X,
             ChunkDirectionMask.West, ChunkDirectionMask.East, ref mask);
-        AddAxis(viewPosition.Y, minimum.Y, checked(minimum.Y + size),
+        AddAxis(viewPosition.Y, minimum.Y, maximum.Y,
             ChunkDirectionMask.Down, ChunkDirectionMask.Up, ref mask);
-        AddAxis(viewPosition.Z, minimum.Z, checked(minimum.Z + size),
+        AddAxis(viewPosition.Z, minimum.Z, maximum.Z,
             ChunkDirectionMask.North, ChunkDirectionMask.South, ref mask);
         return mask;
     }

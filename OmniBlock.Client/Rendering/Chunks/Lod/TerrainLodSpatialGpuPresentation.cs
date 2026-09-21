@@ -62,6 +62,7 @@ internal sealed class TerrainLodSpatialGpuPresentation : RetainedTerrainResource
         private GpuPage(
             TerrainLodSpatialMeshPageKey key,
             Vector3D<int> origin,
+            Vector3D<int> extent,
             TerrainChunkQuadMesh? solid,
             TerrainChunkQuadMesh? translucent,
             ChunkDirectionalRanges solidRanges,
@@ -69,6 +70,7 @@ internal sealed class TerrainLodSpatialGpuPresentation : RetainedTerrainResource
         {
             Key = key;
             Origin = origin;
+            Extent = extent;
             Solid = solid;
             Translucent = translucent;
             SolidRanges = solidRanges;
@@ -77,6 +79,8 @@ internal sealed class TerrainLodSpatialGpuPresentation : RetainedTerrainResource
 
         public TerrainLodSpatialMeshPageKey Key { get; }
         public Vector3D<int> Origin { get; }
+        public Vector3D<int> Extent { get; }
+        public Vector3D<int> Maximum => Origin + Extent;
         public TerrainChunkQuadMesh? Solid { get; }
         public TerrainChunkQuadMesh? Translucent { get; }
         public ChunkDirectionalRanges SolidRanges { get; }
@@ -88,7 +92,8 @@ internal sealed class TerrainLodSpatialGpuPresentation : RetainedTerrainResource
             TerrainLodSpatialMeshPage page)
         {
             var origin = new Vector3D<int>(page.OriginX, page.OriginY, page.OriginZ);
-            var region = TerrainRenderRegionKey.FromSectionPosition(origin);
+            var extent = new Vector3D<int>(page.ExtentX, page.ExtentY, page.ExtentZ);
+            var region = TerrainRenderRegionKey.DistantTerrainArena;
             TerrainChunkQuadMesh? solid = null;
             TerrainChunkQuadMesh? translucent = null;
             try
@@ -101,7 +106,7 @@ internal sealed class TerrainLodSpatialGpuPresentation : RetainedTerrainResource
                         device, arenas, region,
                         page.TranslucentVertices, page.TranslucentLights);
                 return new GpuPage(
-                    page.Key, origin, solid, translucent,
+                    page.Key, origin, extent, solid, translucent,
                     page.SolidRanges, page.TranslucentRanges);
             }
             catch

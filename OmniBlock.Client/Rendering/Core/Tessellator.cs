@@ -37,13 +37,14 @@ public struct Vertex(float x, float y, float z, float u, float v, int color, int
 [StructLayout(LayoutKind.Explicit, Size = 20)]
 public struct ChunkVertex
 {
-    // Position: 4×short, the 4th is padding. WebGPU requires Sint16x4 at this location because
-    // no Sint16x3 vertex format exists, and wgpu-native requires ArrayStride to be a multiple of
-    // 4 bytes — 18 would be rejected at pipeline creation.
+    // Position: 4×short. WebGPU has no Sint16x3 format, so the fourth lane carries the packed
+    // X/Z offset of a distant terrain page relative to its tile draw origin. Exact meshes keep it
+    // zero. This lets many 64-block CPU pages share one GPU allocation and draw without widening
+    // the compact 20-byte vertex.
     [FieldOffset(0)] public short X;
     [FieldOffset(2)] public short Y;
     [FieldOffset(4)] public short Z;
-    [FieldOffset(6)] public short PadPosition;
+    [FieldOffset(6)] public short PageOffsetXZ;
 
     // Colour: RGBA as 4 unsigned bytes, sent normalized.
     [FieldOffset(8)] public int Color;
@@ -64,8 +65,9 @@ public struct ChunkVertex
     ///     up the exact renderer's fixed-point UV precision.
     /// </summary>
     [FieldOffset(17)] public byte UvScaleExponent;
-    [FieldOffset(18)] public byte PadTail1;
-    [FieldOffset(19)] public byte PadTail2; // 4-byte-stride alignment
+    /// <summary>Distant-page Y offset in 64-block units; zero for exact terrain.</summary>
+    [FieldOffset(18)] public byte PageOffsetY;
+    [FieldOffset(19)] public byte Reserved; // 4-byte-stride alignment
 }
 
 public static class ChunkVertexHelper
@@ -97,10 +99,10 @@ public static class ChunkVertexHelper
             U = FloatToShortUV(u),
             V = FloatToShortUV(v),
             ArrayLayer = (byte)arrayLayer,
-            PadPosition = 0,
+            PageOffsetXZ = 0,
             UvScaleExponent = uvScaleExponent,
-            PadTail1 = 0,
-            PadTail2 = 0
+            PageOffsetY = 0,
+            Reserved = 0
         };
     }
 

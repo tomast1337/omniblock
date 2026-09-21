@@ -174,6 +174,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private readonly Dictionary<TerrainLodSpatialSeamSegment,
         SpatialSeamHashCache> _spatialSeamHashes = [];
     private readonly HashSet<TerrainLodTileKey> _authoritativeSpatialTiles = [];
+    private readonly HashSet<TerrainLodTileKey> _fullyAuthoritativeSpatialTiles = [];
     private readonly HashSet<(int X, int Z)> _authoritativeSpatialColumns = [];
     private readonly HashSet<(int X, int Z)> _completedSpatialHandoffs = [];
     private readonly Dictionary<(int X, int Z), ulong> _spatialColumnMasks = [];
@@ -1142,6 +1143,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _desiredSpatialSeams.Clear();
         _spatialSeamFades.Clear();
         _authoritativeSpatialTiles.Clear();
+        _fullyAuthoritativeSpatialTiles.Clear();
         _authoritativeSpatialColumns.Clear();
         _completedSpatialHandoffs.Clear();
         _spatialColumnMasks.Clear();
@@ -1469,11 +1471,21 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 continue;
             }
 
+            var arenas = nearRenderer.GetOrCreateTerrainGpuArenas(device);
+            if (arenas.ProjectedRegionCapacityBytes(
+                    TerrainRenderRegionKey.DistantTerrainArena,
+                    mesh.ArenaAllocationVertexCounts) >
+                TerrainLodScaleBudget.MaximumSpatialGpuBytes)
+            {
+                _rejectedAdmissions++;
+                continue;
+            }
+
             var installedCandidate = _spatialPresentations.TryInstall(
                 mesh.Key,
                 mesh.CanonicalHash,
                 () => TerrainLodSpatialGpuPresentation.Create(
-                    device, nearRenderer.GetOrCreateTerrainGpuArenas(device), mesh),
+                    device, arenas, mesh),
                 out var failure);
             if (failure is not null)
                 throw new InvalidOperationException(
@@ -1534,11 +1546,21 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 continue;
             }
 
+            var arenas = nearRenderer.GetOrCreateTerrainGpuArenas(device);
+            if (arenas.ProjectedRegionCapacityBytes(
+                    TerrainRenderRegionKey.DistantTerrainArena,
+                    mesh.ArenaAllocationVertexCounts) >
+                TerrainLodScaleBudget.MaximumSpatialGpuBytes)
+            {
+                _rejectedAdmissions++;
+                continue;
+            }
+
             TerrainLodSpatialGpuSeamPresentation? candidate = null;
             try
             {
                 candidate = TerrainLodSpatialGpuSeamPresentation.Create(
-                    device, nearRenderer.GetOrCreateTerrainGpuArenas(device), mesh);
+                    device, arenas, mesh);
                 if (_spatialSeams.Remove(mesh.Segment, out var previous)) previous.Dispose();
                 _spatialSeams.Add(mesh.Segment, candidate);
                 candidate = null;
@@ -1877,6 +1899,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 return dx * dx + dz * dz >= (double)renderDistance * renderDistance;
             });
             _authoritativeSpatialTiles.Clear();
+            _fullyAuthoritativeSpatialTiles.Clear();
             _authoritativeSpatialColumns.Clear();
             _spatialColumnMasks.Clear();
             if (_spatialFrame is not { } published) return;
@@ -1890,9 +1913,27 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                     var tile = draw.Selection.Tile;
                     var distant = TerrainLodSpatialAuthority.IsBeyondNearRadius(
                         tile, cameraChunkX, cameraChunkZ, renderDistance);
-                    for (var z = tile.MinChunkZ; z <= tile.MaxChunkZ; z++)
-                    for (var x = tile.MinChunkX; x <= tile.MaxChunkX; x++)
-                        if (distant || !ReplacementReady((int)x, (int)z))
+                    if (distant)
+                    {
+                        _fullyAuthoritativeSpatialTiles.Add(tile);
+                        continue;
+                    }
+
+                    // Mixed authority exists only around the exact-radius handoff. Clip a coarse
+                    // fallback to that small window rather than materializing its whole footprint
+                    // as individual chunk keys.
+                    var handoffRadius = Math.Max(0, renderDistance) + 1;
+                    var minX = Math.Max(tile.MinChunkX,
+                        (long)Math.Floor(cameraChunkX - handoffRadius));
+                    var maxX = Math.Min(tile.MaxChunkX,
+                        (long)Math.Ceiling(cameraChunkX + handoffRadius));
+                    var minZ = Math.Max(tile.MinChunkZ,
+                        (long)Math.Floor(cameraChunkZ - handoffRadius));
+                    var maxZ = Math.Min(tile.MaxChunkZ,
+                        (long)Math.Ceiling(cameraChunkZ + handoffRadius));
+                    for (var z = minZ; z <= maxZ; z++)
+                    for (var x = minX; x <= maxX; x++)
+                        if (!ReplacementReady((int)x, (int)z))
                         {
                             _completedSpatialHandoffs.Remove(((int)x, (int)z));
                             _authoritativeSpatialColumns.Add(((int)x, (int)z));
@@ -2243,40 +2284,52 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             if (translucent ? page.Translucent is null : page.Solid is null) return;
             var box = new Box(
                 page.Origin.X, page.Origin.Y, page.Origin.Z,
-                page.Origin.X + TerrainLodSpatialMeshBuilder.PageSize,
-                page.Origin.Y + TerrainLodSpatialMeshBuilder.PageSize,
-                page.Origin.Z + TerrainLodSpatialMeshBuilder.PageSize);
+                page.Maximum.X, page.Maximum.Y, page.Maximum.Z);
             if (!camera.IsBoundingBoxInFrustum(box)) return;
             var dx = Math.Max(0, Math.Max(
                 page.Origin.X - viewPosition.X,
-                viewPosition.X - (page.Origin.X + TerrainLodSpatialMeshBuilder.PageSize)));
+                viewPosition.X - page.Maximum.X));
             var dz = Math.Max(0, Math.Max(
                 page.Origin.Z - viewPosition.Z,
-                viewPosition.Z - (page.Origin.Z + TerrainLodSpatialMeshBuilder.PageSize)));
+                viewPosition.Z - page.Maximum.Z));
             var distanceSquared = dx * dx + dz * dz;
             if (distanceSquared > maximumDistance * maximumDistance) return;
             // Reuse across vertical pages, seams and both layers; coverage is horizontal and
             // changes only when the frame's authority decision is refreshed.
-            var maskKey = (X: page.Origin.X >> 4, Z: page.Origin.Z >> 4);
-            if (!_spatialColumnMasks.TryGetValue(maskKey, out var hiddenColumns))
+            ulong hiddenColumns = 0;
+            if (page.Extent.X == TerrainLodSpatialMeshBuilder.PageSize &&
+                page.Extent.Z == TerrainLodSpatialMeshBuilder.PageSize)
             {
-                hiddenColumns = TerrainLodSpatialAuthority.HiddenColumnMask(
-                    maskKey.X, maskKey.Z, (x, z) => _authoritativeSpatialColumns.Contains((x, z)));
-                _spatialColumnMasks.Add(maskKey, hiddenColumns);
+                var maskKey = (X: page.Origin.X >> 4, Z: page.Origin.Z >> 4);
+                if (!_spatialColumnMasks.TryGetValue(maskKey, out hiddenColumns))
+                {
+                    hiddenColumns = TerrainLodSpatialAuthority.HiddenColumnMask(
+                        maskKey.X, maskKey.Z,
+                        (x, z) => IsAuthoritativeSpatialChunk((x, z)));
+                    _spatialColumnMasks.Add(maskKey, hiddenColumns);
+                }
             }
             if (hiddenColumns == TerrainLodSpatialAuthority.AllColumnsHidden) return;
             destination.Add(new VisibleSpatialPage(page, fade, distanceSquared, hiddenColumns));
         }
     }
 
-    private bool IsAuthoritativeSpatialChunk((int X, int Z) key) =>
-        _authoritativeSpatialColumns.Contains(key);
+    private bool IsAuthoritativeSpatialChunk((int X, int Z) key)
+    {
+        if (_authoritativeSpatialColumns.Contains(key)) return true;
+        for (var level = MinimumSpatialGpuLevel;
+             level <= _spatialPolicy.MaximumSpatialLevel;
+             level++)
+            if (_fullyAuthoritativeSpatialTiles.Contains(
+                    TerrainLodTileKey.ContainingChunk(level, key.X, key.Z)))
+                return true;
+        return false;
+    }
 
     /// <summary>
-    /// Builds a layer-independent ownership report at simulation-tick frequency. The footprint is
-    /// the union of loaded exact columns in the detail radius and every retained LOD body inside
-    /// the configured horizon. Candidate spatial frames are deliberately excluded: only the
-    /// atomically published body/seam snapshot is allowed to claim coverage.
+    /// Builds a layer-independent ownership report at simulation-tick frequency. Per-column
+    /// validation is bounded to the exact/LOD handoff; far spatial coverage is validated through
+    /// its atomic tile-and-seam topology rather than expanded into every covered chunk.
     /// </summary>
     private void UpdateCoverageSnapshot(
         in ChunkRenderParams parameters,
@@ -2292,10 +2345,10 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
 
         var cameraChunkX = parameters.ViewPos.X / SubChunkRenderer.Size;
         var cameraChunkZ = parameters.ViewPos.Z / SubChunkRenderer.Size;
-        var horizon = Math.Max(1, parameters.TerrainHorizonDistance);
-        var horizonSquared = horizon * horizon;
         var detail = Math.Max(0, parameters.RenderDistance);
         var detailSquared = (double)detail * detail;
+        var auditRadius = detail + 2;
+        var auditRadiusSquared = (double)auditRadius * auditRadius;
         var minX = (int)Math.Floor(cameraChunkX - detail - 1);
         var maxX = (int)Math.Ceiling(cameraChunkX + detail + 1);
         var minZ = (int)Math.Floor(cameraChunkZ - detail - 1);
@@ -2312,7 +2365,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         }
 
         foreach (var key in _resident.Keys)
-            if (ColumnDistanceSquared(key.X, key.Z) <= horizonSquared)
+            if (ColumnDistanceSquared(key.X, key.Z) <= auditRadiusSquared)
                 _coverageFootprint.Add(key);
 
         if (_spatialFrame is { } published)
@@ -2320,11 +2373,19 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             foreach (var draw in published.Draws)
             {
                 var tile = draw.Selection.Tile;
-                for (var z = tile.MinChunkZ; z <= tile.MaxChunkZ; z++)
-                for (var x = tile.MinChunkX; x <= tile.MaxChunkX; x++)
+                var spatialMinX = Math.Max(tile.MinChunkX,
+                    (long)Math.Floor(cameraChunkX - auditRadius));
+                var spatialMaxX = Math.Min(tile.MaxChunkX,
+                    (long)Math.Ceiling(cameraChunkX + auditRadius));
+                var spatialMinZ = Math.Max(tile.MinChunkZ,
+                    (long)Math.Floor(cameraChunkZ - auditRadius));
+                var spatialMaxZ = Math.Min(tile.MaxChunkZ,
+                    (long)Math.Ceiling(cameraChunkZ + auditRadius));
+                for (var z = spatialMinZ; z <= spatialMaxZ; z++)
+                for (var x = spatialMinX; x <= spatialMaxX; x++)
                 {
                     var column = (X: checked((int)x), Z: checked((int)z));
-                    if (ColumnDistanceSquared(column.X, column.Z) > horizonSquared) continue;
+                    if (ColumnDistanceSquared(column.X, column.Z) > auditRadiusSquared) continue;
                     _coverageFootprint.Add(column);
                     var body = (column, draw.Fade.Mode);
                     var count = _coverageSpatialBodies.GetValueOrDefault(body) + 1;
@@ -3087,7 +3148,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             : visible.Page.SolidRanges;
         Span<ChunkQuadRange> selected = stackalloc ChunkQuadRange[7];
         var faceMask = DirectionalFaceVisibility.ForBounds(
-            visible.Page.Origin, TerrainLodSpatialMeshBuilder.PageSize, viewPosition);
+            visible.Page.Origin, visible.Page.Maximum, viewPosition);
         var selectedCount = ranges.Select(faceMask, selected);
         if (selectedCount == 0) return;
         mesh.BindChunkQuadStreams(pass, ref binding);
