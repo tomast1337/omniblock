@@ -2,7 +2,7 @@
 -- distance again before travel so the retained spatial hierarchy, rather than near chunks, owns
 -- the old area.
 OMNI.config.viewDistance = 1.0
-OMNI.config.terrainHorizonDistance = 1
+OMNI.config.terrainHorizonDistance = 0.2
 OMNI.config.pauseOnFocusLoss = false
 OMNI.config.captureMouse = false
 OMNI.config.cloudsQuality = 1

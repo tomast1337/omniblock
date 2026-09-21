@@ -260,6 +260,8 @@ public sealed class TerrainLodRemoteCoveragePlannerTests
         Vector3D<double> camera = new(0, 80, 0);
         using var nearRenderer = new ClientTerrainLodRenderer(new LightTestWorld());
         using var farRenderer = new ClientTerrainLodRenderer(new LightTestWorld());
+        using var fartherRenderer = new ClientTerrainLodRenderer(new LightTestWorld());
+        using var maximumRenderer = new ClientTerrainLodRenderer(new LightTestWorld());
 
         var near = nearRenderer.TakeRemoteSpatialRequests(
             camera, nearDistanceChunks: 0, horizonDistanceChunks: 16,
@@ -267,9 +269,60 @@ public sealed class TerrainLodRemoteCoveragePlannerTests
         var far = farRenderer.TakeRemoteSpatialRequests(
             camera, nearDistanceChunks: 0, horizonDistanceChunks: 64,
             maximumRequests: 4);
+        var farther = fartherRenderer.TakeRemoteSpatialRequests(
+            camera, nearDistanceChunks: 0, horizonDistanceChunks: 128,
+            maximumRequests: 4);
+        var maximum = maximumRenderer.TakeRemoteSpatialRequests(
+            camera, nearDistanceChunks: 0, horizonDistanceChunks: 256,
+            maximumRequests: 4);
 
         Assert.All(near, key => Assert.Equal(2, key.Level));
         Assert.All(far, key => Assert.Equal(4, key.Level));
+        Assert.All(farther, key => Assert.Equal(5, key.Level));
+        Assert.All(maximum, key => Assert.Equal(6, key.Level));
+    }
+
+    [Fact]
+    public void Generated_hierarchy_keeps_large_horizon_partitions_sublinear()
+    {
+        var policy = TerrainLodSpatialPolicy.CreateDefault();
+        int[] horizons = [64, 128, 256];
+        var partitions = horizons.Select(horizon =>
+        {
+            var rootLevel = policy.DesiredSpatialLevel(horizon);
+            var keys = TerrainLodCoveragePlanner.RequiredTiles(
+                cameraChunkX: -3.25,
+                cameraChunkZ: 5.75,
+                nearDistanceChunks: 8,
+                horizonDistanceChunks: horizon,
+                rootLevel,
+                TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel);
+            return (Horizon: horizon, RootLevel: rootLevel, Keys: keys);
+        }).ToArray();
+
+        Assert.Equal([4, 5, 6], partitions.Select(static value => value.RootLevel));
+        Assert.All(partitions, partition =>
+        {
+            // Boundary refinement grows with circumference, not horizon area. The loose constant
+            // leaves room for camera alignment while catching a regression to level-2 tiling of
+            // the complete disk immediately.
+            Assert.InRange(partition.Keys.Length, 1, partition.Horizon * 6);
+            Assert.All(partition.Keys, key => Assert.InRange(
+                key.Level,
+                TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel,
+                partition.RootLevel));
+        });
+        Assert.True(partitions[1].Keys.Length <= partitions[0].Keys.Length * 3);
+        Assert.True(partitions[2].Keys.Length <= partitions[1].Keys.Length * 3);
+
+        // Every coarse root is capped at 64x64 horizontal samples. This bounds per-draw vertex,
+        // upload, and memory work even though its represented area grows by four each level.
+        Assert.All(partitions.SelectMany(static partition => partition.Keys), key =>
+        {
+            var samplesAcross = key.ChunkWidth * 16 /
+                                (1 << policy.HorizontalSampleLevelForSpatialLevel(key.Level));
+            Assert.InRange(samplesAcross, 1, 64);
+        });
     }
 
     private static double FurthestDistance(

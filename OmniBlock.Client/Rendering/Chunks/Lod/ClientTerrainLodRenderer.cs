@@ -127,7 +127,6 @@ internal readonly record struct TerrainLodSpatialSnapshot(
 /// </remarks>
 internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentationHandoff
 {
-    public const float MaximumDistanceBlocks = 1024.0f;
     private const int ConversionCapacity = 16;
     private const int PendingCapacity = 4096;
     private const int ResidentCapacity = 2048;
@@ -283,8 +282,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 ConversionCapacity);
         if (cache is not null) _cacheWriter = new TerrainLodAsyncCacheWriter(cache);
         _meshCompilation = new TerrainLodMeshCompilationService(ConversionCapacity);
-        // Shared with the server cache producer. The live horizon is capped at 64 chunks: a unit
-        // of four reaches levels 2/3/4 at 16/32/64 chunks while exact paths retain nearby detail.
+        // Shared with the server cache producer. The generated policy preserves levels 0..4 used
+        // by the 64-chunk renderer and adds only the ancestors needed by larger horizons.
         _spatialPolicy = TerrainLodSpatialPolicy.CreateDefault();
         _spatialHierarchy = new TerrainLodSpatialHierarchyCoordinator(
             _spatialPolicy,
@@ -726,8 +725,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _selectedSolidLevels.Clear();
         _solidSeamStates.Clear();
         _solidSeamFades.Clear();
-        var maximumDistance = Math.Min(
-            MaximumDistanceBlocks, Math.Max(1, parameters.TerrainHorizonDistance) * 16.0f);
+        var maximumDistance = Math.Max(1, parameters.TerrainHorizonDistance) * 16.0f;
         var maximumDistanceSquared = maximumDistance * maximumDistance;
         CollectVisibleSpatialPages(parameters, translucent: false, _visibleSpatialSolid);
         stageStarted = Stopwatch.GetTimestamp();
@@ -907,8 +905,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _selectedTranslucentLevels.Clear();
         _translucentSeamStates.Clear();
         _translucentSeamFades.Clear();
-        var maximumDistance = Math.Min(
-            MaximumDistanceBlocks, Math.Max(1, parameters.TerrainHorizonDistance) * 16.0f);
+        var maximumDistance = Math.Max(1, parameters.TerrainHorizonDistance) * 16.0f;
         var maximumDistanceSquared = maximumDistance * maximumDistance;
         CollectVisibleSpatialPages(parameters, translucent: true, _visibleSpatialTranslucent);
         foreach (var (key, presentation) in _resident)
@@ -1452,9 +1449,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         var selection = TerrainLodSpatialSelector.Select(
             root, cameraChunkX, cameraChunkZ,
             _spatialPolicy, _spatialPresentations.IsReady);
-        // Keep the single-root counters for compact diagnostics. A partially loaded level-4
-        // management root must not hide the fact that a real level-2 or level-3 GPU partition is
-        // already complete and transition-safe.
+        // Keep the single-root counters for compact diagnostics. A partially loaded maximum-level
+        // management root must not hide the fact that a finer GPU partition is already complete
+        // and transition-safe.
         for (var level = _spatialPolicy.MaximumSpatialLevel - 1;
              !selection.CompleteCoverage && level >= MinimumSpatialGpuLevel;
              level--)
@@ -1834,8 +1831,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         destination.Clear();
         if (!_spatialSubmissionReady || _spatialFrame is not { } frame ||
             _authoritativeSpatialTiles.Count == 0) return;
-        var maximumDistance = Math.Min(
-            MaximumDistanceBlocks, Math.Max(1, parameters.TerrainHorizonDistance) * 16.0f);
+        var maximumDistance = Math.Max(1, parameters.TerrainHorizonDistance) * 16.0f;
         var camera = parameters.Camera;
         var viewPosition = parameters.ViewPos;
 
@@ -1920,8 +1916,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
 
         var cameraChunkX = parameters.ViewPos.X / SubChunkRenderer.Size;
         var cameraChunkZ = parameters.ViewPos.Z / SubChunkRenderer.Size;
-        var horizon = Math.Min(MaximumDistanceBlocks / SubChunkRenderer.Size,
-            Math.Max(1, parameters.TerrainHorizonDistance));
+        var horizon = Math.Max(1, parameters.TerrainHorizonDistance);
         var horizonSquared = horizon * horizon;
         var detail = Math.Max(0, parameters.RenderDistance);
         var detailSquared = (double)detail * detail;

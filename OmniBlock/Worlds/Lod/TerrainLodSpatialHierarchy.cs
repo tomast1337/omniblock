@@ -107,6 +107,12 @@ public readonly record struct TerrainLodTileKey
 /// </summary>
 public sealed class TerrainLodSpatialPolicy
 {
+    public const int MinimumSupportedHorizonChunks = 16;
+    public const int MaximumSupportedHorizonChunks = 256;
+    public const int MinimumRemoteSpatialLevel = 2;
+    public const int MaximumSupportedSpatialLevel = 6;
+    private const double DefaultDistanceUnitChunks = 4;
+    private const double DefaultDistanceGrowth = 2;
     private readonly int[] _horizontalSampleLevelBySpatialLevel;
     private readonly int[] _verticalSliceBudgetBySpatialLevel;
 
@@ -115,11 +121,55 @@ public sealed class TerrainLodSpatialPolicy
     ///     selection must use the same shape: changing one side alone produces cache records the
     ///     other peer cannot refine consistently.
     /// </summary>
-    public static TerrainLodSpatialPolicy CreateDefault() => new(
-        distanceUnitChunks: 4,
-        distanceGrowth: 2,
-        horizontalSampleLevelBySpatialLevel: [0, 0, 1, 1, 2],
-        verticalSliceBudgetBySpatialLevel: [32, 24, 16, 12, 8]);
+    public static TerrainLodSpatialPolicy CreateDefault() =>
+        CreateForMaximumHorizon(MaximumSupportedHorizonChunks);
+
+    /// <summary>
+    ///     Builds only the hierarchy depth required by a selected maximum horizon. Spatial
+    ///     footprint, horizontal sample density, and vertical slice quality intentionally use
+    ///     separate schedules: extending the quadtree must not imply that every quality axis
+    ///     loses one octave at the same time.
+    /// </summary>
+    public static TerrainLodSpatialPolicy CreateForMaximumHorizon(int horizonChunks)
+    {
+        if (horizonChunks is < MinimumSupportedHorizonChunks or > MaximumSupportedHorizonChunks)
+            throw new ArgumentOutOfRangeException(nameof(horizonChunks),
+                $"Terrain LOD horizon must be between {MinimumSupportedHorizonChunks} and " +
+                $"{MaximumSupportedHorizonChunks} chunks.");
+        var maximumLevel = RequiredMaximumSpatialLevel(horizonChunks);
+        return new TerrainLodSpatialPolicy(
+            DefaultDistanceUnitChunks,
+            DefaultDistanceGrowth,
+            Enumerable.Range(0, maximumLevel + 1)
+                .Select(HorizontalSampleLevelForGeneratedSpatialLevel),
+            Enumerable.Range(0, maximumLevel + 1)
+                .Select(VerticalSliceBudgetForGeneratedSpatialLevel));
+    }
+
+    public static int RequiredMaximumSpatialLevel(int horizonChunks)
+    {
+        if (horizonChunks <= 0)
+            throw new ArgumentOutOfRangeException(nameof(horizonChunks));
+        var level = horizonChunks <= DefaultDistanceUnitChunks
+            ? 0
+            : (int)Math.Floor(Math.Log(
+                horizonChunks / DefaultDistanceUnitChunks,
+                DefaultDistanceGrowth));
+        return Math.Clamp(level, 0, MaximumSupportedSpatialLevel);
+    }
+
+    private static int HorizontalSampleLevelForGeneratedSpatialLevel(int spatialLevel) =>
+        spatialLevel <= 4 ? spatialLevel / 2 : spatialLevel - 2;
+
+    private static int VerticalSliceBudgetForGeneratedSpatialLevel(int spatialLevel) =>
+        spatialLevel switch
+        {
+            0 => 32,
+            1 => 24,
+            2 => 16,
+            3 => 12,
+            _ => Math.Max(4, 8 - (spatialLevel - 4) * 2)
+        };
 
     public TerrainLodSpatialPolicy(
         double distanceUnitChunks,

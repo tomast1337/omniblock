@@ -99,6 +99,49 @@ public sealed class TerrainLodSpatialHierarchyCoordinatorTests
     }
 
     [Fact]
+    public async Task Leaf_edit_invalidates_only_its_ancestor_chain()
+    {
+        var policy = MaximumLevelTwoPolicy();
+        var root = new TerrainLodTileKey(2, 0, 0);
+        var changedParent = root.Child(0);
+        using ManualResetEventSlim releaseReplacement = new();
+        var replacementEntered = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var blockReplacement = 0;
+        var construction = new TerrainLodParentConstructionService(16, 8, input =>
+        {
+            if (Volatile.Read(ref blockReplacement) != 0 && input.Key == changedParent)
+            {
+                replacementEntered.TrySetResult();
+                releaseReplacement.Wait(TimeSpan.FromSeconds(5));
+            }
+            return TerrainLodColumnTile.BuildParent(
+                input.Key, input.Children, input.HorizontalSampleLevel);
+        });
+        using var coordinator = new TerrainLodSpatialHierarchyCoordinator(
+            policy, construction, null, 64, ownsDependencies: true);
+        foreach (var leaf in Leaves(root, block: 1, revision: 1))
+            coordinator.PublishLeaf(leaf);
+        await PumpUntil(coordinator, () => coordinator.IsCurrent(root));
+
+        Volatile.Write(ref blockReplacement, 1);
+        coordinator.PublishLeaf(Leaf(changedParent.Child(0), block: 2, revision: 2));
+        await replacementEntered.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        try
+        {
+            Assert.False(coordinator.IsCurrent(changedParent));
+            Assert.False(coordinator.IsCurrent(root));
+            Assert.All(Enumerable.Range(1, 3), child =>
+                Assert.True(coordinator.IsCurrent(root.Child(child))));
+            Assert.Equal(2, coordinator.Snapshot().FallbackTiles);
+        }
+        finally
+        {
+            releaseReplacement.Set();
+        }
+    }
+
+    [Fact]
     public void Cached_parent_without_current_children_is_fallback_only()
     {
         using var coordinator = Coordinator(MaximumLevelOnePolicy());

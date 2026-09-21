@@ -260,7 +260,8 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         int horizonDistanceChunks,
         int surfaceBlockProtocolId)
     {
-        if (horizonDistanceChunks is <= 0 or > 64)
+        if (horizonDistanceChunks is <= 0 or
+            > TerrainLodSpatialPolicy.MaximumSupportedHorizonChunks)
             throw new ArgumentOutOfRangeException(nameof(horizonDistanceChunks));
         var policy = TerrainLodSpatialPolicy.CreateDefault();
         const int minimumLevel = 2;

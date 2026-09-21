@@ -2,7 +2,7 @@
 -- adaptive 64-chunk radial partition. This fresh process must reopen and transport those records
 -- before the timed client compilation, upload, and presentation sample begins.
 OMNI.config.viewDistance = 0
-OMNI.config.terrainHorizonDistance = 1
+OMNI.config.terrainHorizonDistance = 0.2
 OMNI.config.fogDistance = 1
 OMNI.config.vsync = false
 OMNI.config.fpsLimit = 1

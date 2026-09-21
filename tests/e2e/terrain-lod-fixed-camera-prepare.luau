@@ -1,7 +1,7 @@
 -- Preparation half of the fixed-camera scale gate. The runner launches this in the same isolated
 -- data directory as the measured process, forcing that second process to reopen durable records.
 OMNI.config.viewDistance = 0
-OMNI.config.terrainHorizonDistance = 1
+OMNI.config.terrainHorizonDistance = 0.2
 OMNI.config.pauseOnFocusLoss = false
 OMNI.config.captureMouse = false
 

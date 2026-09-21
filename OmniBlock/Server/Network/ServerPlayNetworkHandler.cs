@@ -27,7 +27,6 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     ///     or elevator/piston ride without being long enough to be useful as a fly hack.
     /// </summary>
     private const int MaxFloatingTicks = 20;
-    private const int MaximumTerrainLodDistanceChunks = 64;
     private const int MaximumTerrainLodResponsesPerRequest = 4;
 
     private readonly ILogger<ServerPlayNetworkHandler> _logger = Log.Instance.For<ServerPlayNetworkHandler>();
@@ -206,9 +205,10 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             // Level-zero/one records reveal almost full chunk detail and belong to ordinary chunk
             // streaming. The distant lane begins at a 4x4-chunk aggregate and never generates on
             // demand; it can only return an already-approved persistent server record.
-            if (key.Level is < 2 or > 4 ||
+            if (key.Level < TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel ||
+                key.Level > TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel ||
                 key.DistanceTo(playerChunkX, playerChunkZ) >
-                MaximumTerrainLodDistanceChunks)
+                TerrainLodSpatialPolicy.MaximumSupportedHorizonChunks)
                 continue;
             try
             {

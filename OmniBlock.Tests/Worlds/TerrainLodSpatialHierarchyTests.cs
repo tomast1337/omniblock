@@ -73,6 +73,50 @@ public sealed class TerrainLodSpatialHierarchyTests
         Assert.Equal(8, policy.VerticalSliceBudgetForSpatialLevel(8));
     }
 
+    [Theory]
+    [InlineData(64, 4, 16)]
+    [InlineData(128, 5, 32)]
+    [InlineData(256, 6, 64)]
+    public void Generated_policy_depth_follows_selected_horizon(
+        int horizonChunks,
+        int expectedMaximumLevel,
+        int expectedMaximumFootprintChunks)
+    {
+        var policy = TerrainLodSpatialPolicy.CreateForMaximumHorizon(horizonChunks);
+
+        Assert.Equal(expectedMaximumLevel, policy.MaximumSpatialLevel);
+        Assert.Equal(expectedMaximumLevel, policy.DesiredSpatialLevel(horizonChunks));
+        Assert.Equal(expectedMaximumFootprintChunks,
+            new TerrainLodTileKey(expectedMaximumLevel, 0, 0).ChunkWidth);
+    }
+
+    [Fact]
+    public void Generated_policy_preserves_legacy_levels_and_bounds_new_node_quality()
+    {
+        var policy = TerrainLodSpatialPolicy.CreateDefault();
+
+        Assert.Equal([0, 0, 1, 1, 2, 3, 4],
+            policy.HorizontalSampleLevelBySpatialLevel);
+        Assert.Equal([32, 24, 16, 12, 8, 6, 4],
+            policy.VerticalSliceBudgetBySpatialLevel);
+        for (var level = 2; level <= policy.MaximumSpatialLevel; level++)
+        {
+            var footprintBlocks = new TerrainLodTileKey(level, 0, 0).ChunkWidth * 16;
+            var samplesAcross = footprintBlocks /
+                                (1 << policy.HorizontalSampleLevelForSpatialLevel(level));
+            Assert.InRange(samplesAcross, 1, 64);
+        }
+    }
+
+    [Fact]
+    public void Generated_policy_rejects_unsupported_horizons()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            TerrainLodSpatialPolicy.CreateForMaximumHorizon(15));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            TerrainLodSpatialPolicy.CreateForMaximumHorizon(257));
+    }
+
     [Fact]
     public void Policy_rejects_levels_that_incremental_parent_builds_cannot_produce()
     {

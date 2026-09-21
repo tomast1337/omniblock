@@ -6,6 +6,7 @@ using OmniBlock.Client.Input;
 using OmniBlock.Client.Rendering.Core.WebGPU;
 using OmniBlock.Client.UI;
 using OmniBlock.Luau.Host;
+using OmniBlock.Worlds.Lod;
 using Silk.NET.GLFW;
 using File = System.IO.File;
 
@@ -13,6 +14,7 @@ namespace OmniBlock.Client.Options;
 
 public class GameOptions
 {
+    private const int OptionsFormatVersion = 2;
     private static readonly string[] s_difficultyLabels =
     [
         "options.difficulty.peaceful",
@@ -440,10 +442,10 @@ public class GameOptions
             }
         };
         TerrainHorizonDistanceOption = new FloatOption(
-            "options.terrainHorizon.text", "terrainHorizonDistance", 1f)
+            "options.terrainHorizon.text", "terrainHorizonDistance", 48f / 240f)
         {
             LabelOverride = "Terrain Horizon",
-            Steps = 48,
+            Steps = 240,
             Formatter = _ => $"{TerrainHorizonDistance} " +
                                Translations.Get("options.renderDistance.chunks")
         };
@@ -543,7 +545,10 @@ public class GameOptions
     }
 
     internal static int DecodeTerrainHorizonDistance(float normalized) =>
-        16 + (int)MathF.Round(Math.Clamp(normalized, 0f, 1f) * 48f);
+        TerrainLodSpatialPolicy.MinimumSupportedHorizonChunks +
+        (int)MathF.Round(Math.Clamp(normalized, 0f, 1f) *
+                         (TerrainLodSpatialPolicy.MaximumSupportedHorizonChunks -
+                          TerrainLodSpatialPolicy.MinimumSupportedHorizonChunks));
 
     internal static float DecodeTerrainLodDropoffScale(float normalized)
     {
@@ -756,12 +761,16 @@ public class GameOptions
             var root = document.RootElement;
             if (root.ValueKind != JsonValueKind.Object)
                 throw new JsonException("The options root must be an object.");
+            var version = root.TryGetProperty("version", out var versionElement) &&
+                          versionElement.TryGetInt32(out var parsedVersion)
+                ? parsedVersion
+                : 1;
 
             if (root.TryGetProperty("options", out var options) && options.ValueKind == JsonValueKind.Object)
             {
                 foreach (var property in options.EnumerateObject())
                     LoadJsonEntry("option", property.Name,
-                        () => LoadJsonOption(property.Name, property.Value));
+                        () => LoadJsonOption(property.Name, property.Value, version));
             }
 
             if (root.TryGetProperty("client", out var client) && client.ValueKind == JsonValueKind.Object)
@@ -793,6 +802,13 @@ public class GameOptions
                             ShaderOptions.Load(shader.Name, option.Name, JsonScalarToString(option.Value)));
                     }
                 }
+            }
+            if (version < OptionsFormatVersion)
+            {
+                SaveOptions();
+                _logger.LogInformation(
+                    "Migrated options format from version {OldVersion} to {NewVersion}.",
+                    version, OptionsFormatVersion);
             }
         }
         catch (Exception exception)
@@ -834,6 +850,9 @@ public class GameOptions
         if (_allOptions.TryGetValue(key, out var option))
         {
             option.Load(value);
+            if (key == TerrainHorizonDistanceOption.SaveKey)
+                TerrainHorizonDistanceOption.Set(
+                    MigrateLegacyTerrainHorizon(TerrainHorizonDistanceOption.Value));
             return;
         }
 
@@ -892,7 +911,7 @@ public class GameOptions
         }
     }
 
-    private void LoadJsonOption(string key, JsonElement value)
+    private void LoadJsonOption(string key, JsonElement value, int version)
     {
         if (!_allOptions.TryGetValue(key, out var option)) return;
 
@@ -903,7 +922,10 @@ public class GameOptions
                 break;
             case FloatOption number when value.ValueKind == JsonValueKind.Number && value.TryGetSingle(out var single)
                                          && float.IsFinite(single) && single is >= 0f and <= 1f:
-                number.Value = single;
+                number.Value = version < OptionsFormatVersion &&
+                               key == TerrainHorizonDistanceOption.SaveKey
+                    ? MigrateLegacyTerrainHorizon(single)
+                    : single;
                 break;
             case CycleOption cycle when value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var index)
                                         && index >= 0 && index < cycle.Length:
@@ -983,7 +1005,7 @@ public class GameOptions
         {
             var root = new JsonObject
             {
-                ["version"] = 1,
+                ["version"] = OptionsFormatVersion,
                 ["options"] = BuildOptionsJson(),
                 ["client"] = new JsonObject
                 {
@@ -1033,6 +1055,14 @@ public class GameOptions
             };
         }
         return result;
+    }
+
+    private static float MigrateLegacyTerrainHorizon(float normalized)
+    {
+        var oldDistance = 16 + (int)MathF.Round(Math.Clamp(normalized, 0f, 1f) * 48f);
+        return (oldDistance - TerrainLodSpatialPolicy.MinimumSupportedHorizonChunks) /
+               (float)(TerrainLodSpatialPolicy.MaximumSupportedHorizonChunks -
+                       TerrainLodSpatialPolicy.MinimumSupportedHorizonChunks);
     }
 
     private JsonObject BuildKeyboardJson()

@@ -82,6 +82,57 @@ public sealed class TerrainLodColumnTileCacheStoreTests
     }
 
     [Fact]
+    public void Generated_maximum_level_round_trips_through_disk_and_transport()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var policy = TerrainLodSpatialPolicy.CreateDefault();
+            var key = new TerrainLodTileKey(
+                TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel, -2, 3);
+            var column = TerrainLodColumn.Create(8,
+            [
+                new TerrainLodColumnSpan(
+                    0, 8, Materials.Resolve(1, metadata: 0), blockLight: 0, skyLight: 15)
+            ]);
+            var expected = TerrainLodColumnTile.CreateUniform(
+                key,
+                policy.HorizontalSampleLevelForSpatialLevel(key.Level),
+                8,
+                column,
+                "level-six-round-trip");
+            var store = Store(root);
+
+            Assert.Equal(TerrainLodColumnTileCacheWriteStatus.Written,
+                store.Write(expected));
+            var disk = Assert.IsType<TerrainLodColumnTile>(store.Read(key).Tile);
+            var wire = TerrainLodTileMessage.Of(0, expected).Decode();
+
+            Assert.Equal(64, expected.Width);
+            Assert.Equal(expected.CanonicalHash, disk.CanonicalHash);
+            Assert.Equal(expected.CanonicalHash, wire.CanonicalHash);
+            Assert.Equal(key, wire.Key);
+        }
+        finally
+        {
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void Transport_rejects_levels_outside_the_generated_policy()
+    {
+        TerrainLodTileRequestMessage request = new()
+        {
+            Keys = [new TerrainLodTileKey(
+                TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel + 1, 0, 0)]
+        };
+        using MemoryStream stream = new();
+
+        Assert.Throws<InvalidOperationException>(() => request.Write(stream));
+    }
+
+    [Fact]
     public void Leaf_tile_round_trips_revision_air_intervals_and_light()
     {
         var root = CreateTemporaryDirectory();

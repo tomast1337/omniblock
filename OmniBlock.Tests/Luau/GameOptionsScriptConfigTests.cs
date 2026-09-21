@@ -93,7 +93,8 @@ public sealed class GameOptionsScriptConfigTests
         {
             var options = new GameOptions(null!, directory.FullName);
             Assert.Equal(16, GameOptions.DecodeTerrainHorizonDistance(0));
-            Assert.Equal(64, GameOptions.DecodeTerrainHorizonDistance(1));
+            Assert.Equal(256, GameOptions.DecodeTerrainHorizonDistance(1));
+            Assert.Equal(64, GameOptions.DecodeTerrainHorizonDistance(0.2f));
             Assert.Equal(
                 new[] { 0.5f, 0.75f, 1f, 1.5f, 2f, 3f },
                 Enumerable.Range(0, 6)
@@ -126,6 +127,37 @@ public sealed class GameOptionsScriptConfigTests
             Assert.Equal(3f, reloaded.TerrainLodDropoffScale);
             Assert.Equal(18, reloaded.FogDistance);
             Assert.Equal(18, reloaded.SimulationDistance);
+        }
+        finally
+        {
+            directory.Delete(true);
+        }
+    }
+
+    [Fact]
+    public void Version_one_horizon_maximum_migrates_to_sixty_four_chunks()
+    {
+        var directory = Directory.CreateTempSubdirectory("omniblock-horizon-migration-");
+        try
+        {
+            var path = Path.Combine(directory.FullName, "options.json");
+            File.WriteAllText(path,
+                """
+                {
+                  "version": 1,
+                  "options": {
+                    "terrainHorizonDistance": 1.0
+                  }
+                }
+                """);
+
+            var options = new GameOptions(null!, directory.FullName);
+
+            Assert.Equal(64, options.TerrainHorizonDistance);
+            using var document = JsonDocument.Parse(File.ReadAllText(path));
+            Assert.Equal(2, document.RootElement.GetProperty("version").GetInt32());
+            Assert.Equal(0.2f, document.RootElement.GetProperty("options")
+                .GetProperty("terrainHorizonDistance").GetSingle(), precision: 3);
         }
         finally
         {
@@ -191,7 +223,7 @@ public sealed class GameOptionsScriptConfigTests
             using (var document = JsonDocument.Parse(File.ReadAllText(jsonPath)))
             {
                 var root = document.RootElement;
-                Assert.Equal(1, root.GetProperty("version").GetInt32());
+                Assert.Equal(2, root.GetProperty("version").GetInt32());
                 Assert.Equal(JsonValueKind.Number,
                     root.GetProperty("options").GetProperty("music").ValueKind);
                 Assert.Equal(JsonValueKind.True,

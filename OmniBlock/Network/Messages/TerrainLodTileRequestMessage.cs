@@ -30,8 +30,14 @@ public sealed class TerrainLodTileRequestMessage : Message
             throw new InvalidDataException($"Terrain LOD request contains {count} keys.");
         Keys = new TerrainLodTileKey[count];
         for (var index = 0; index < Keys.Length; index++)
-            Keys[index] = new TerrainLodTileKey(
+        {
+            var key = new TerrainLodTileKey(
                 stream.ReadVarInt(), stream.ReadInt(), stream.ReadInt());
+            if (!IsSupportedRemoteKey(key))
+                throw new InvalidDataException(
+                    $"Terrain LOD request contains unsupported spatial level {key.Level}.");
+            Keys[index] = key;
+        }
     }
 
     public override void Write(Stream stream)
@@ -39,6 +45,9 @@ public sealed class TerrainLodTileRequestMessage : Message
         if (Keys.Length > MaximumKeys)
             throw new InvalidOperationException(
                 $"Terrain LOD request cannot contain more than {MaximumKeys} keys.");
+        if (Keys.Any(static key => !IsSupportedRemoteKey(key)))
+            throw new InvalidOperationException(
+                "Terrain LOD request contains a spatial level outside the supported range.");
         stream.WriteInt(Dimension);
         stream.WriteString(CacheIdentity);
         stream.WriteVarInt(Keys.Length);
@@ -55,4 +64,8 @@ public sealed class TerrainLodTileRequestMessage : Message
                                   StreamExtensions.VarIntSize(Keys.Length) +
                                   Keys.Sum(static key =>
                                       StreamExtensions.VarIntSize(key.Level) + sizeof(int) * 2);
+
+    private static bool IsSupportedRemoteKey(TerrainLodTileKey key) =>
+        key.Level >= TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel &&
+        key.Level <= TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel;
 }

@@ -57,7 +57,11 @@ public sealed class TerrainLodTileMessage : Message
 
     public TerrainLodColumnTile Decode()
     {
-        if (LoopbackTile is { } tile) return tile;
+        if (LoopbackTile is { } loopbackTile)
+        {
+            ValidateSpatialLevel(loopbackTile);
+            return loopbackTile;
+        }
         using MemoryStream input = new(Compressed, writable: false);
         using ZLibStream decompressor = new(input, CompressionMode.Decompress);
         using MemoryStream output = new(Math.Min(MaximumDecodedBytes, Compressed.Length * 4));
@@ -70,8 +74,10 @@ public sealed class TerrainLodTileMessage : Message
                     $"Terrain LOD tile expands past {MaximumDecodedBytes} bytes.");
             output.Write(buffer, 0, read);
         }
-        return TerrainLodColumnTileCacheStore.DecodePortable(output.GetBuffer().AsSpan(
+        var tile = TerrainLodColumnTileCacheStore.DecodePortable(output.GetBuffer().AsSpan(
             0, checked((int)output.Length)));
+        ValidateSpatialLevel(tile);
+        return tile;
     }
 
     public override void Read(Stream stream)
@@ -95,4 +101,11 @@ public sealed class TerrainLodTileMessage : Message
     public override int Size() => sizeof(int) + sizeof(ushort) +
                                   ModifiedUtf8.GetByteCount(CacheIdentity) +
                                   StreamExtensions.ByteArraySize(Compressed);
+
+    private static void ValidateSpatialLevel(TerrainLodColumnTile tile)
+    {
+        if (tile.Key.Level > TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel)
+            throw new InvalidDataException(
+                $"Terrain LOD response contains unsupported spatial level {tile.Key.Level}.");
+    }
 }
