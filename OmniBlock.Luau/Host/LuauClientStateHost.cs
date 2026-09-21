@@ -10,215 +10,7 @@ public static unsafe class LuauClientStateHost
                                     OMNI.client = OMNI.client or {}
                                     OMNI.client.state = setmetatable({}, {
                                         __index = function(_, key)
-                                            if key == "worldLoaded" then return __ClientState.worldLoaded() end
-                                            if key == "playerReady" then return __ClientState.playerReady() end
-                                            if key == "worldId" then return __ClientState.worldId() end
-                                            if key == "debugOpen" then return __ClientState.debugOpen() end
-                                            if key == "meshPending" then return __ClientState.meshPending() end
-                                            if key == "meshCancelledCount" then return __ClientState.meshCancelledCount() end
-                                            if key == "meshSupersededCount" then return __ClientState.meshSupersededCount() end
-                                            if key == "meshBuildFailureCount" then return __ClientState.meshBuildFailureCount() end
-                                            if key == "meshAwaitingUpload" then return __ClientState.meshAwaitingUpload() end
-                                            if key == "meshAwaitingDraw" then return __ClientState.meshAwaitingDraw() end
-                                            if key == "meshLeadingEdgeQueued" then return __ClientState.meshLeadingEdgeQueued() end
-                                            if key == "meshLeadingEdgePending" then return __ClientState.meshLeadingEdgePending() end
-                                            if key == "meshEvictionGraceCount" then return __ClientState.meshEvictionGraceCount() end
-                                            if key == "meshCooperativeCancellationCount" then return __ClientState.meshCooperativeCancellationCount() end
-                                            if key == "meshCriticalCompletedCount" then return __ClientState.meshCriticalCompletedCount() end
-                                            if key == "meshCriticalDeadlineMissCount" then return __ClientState.meshCriticalDeadlineMissCount() end
-                                            if key == "meshCriticalOverdueCount" then return __ClientState.meshCriticalOverdueCount() end
-                                            if key == "meshRequestToGpuMs" then return __ClientState.meshRequestToGpuMs() end
-                                            if key == "frameTimeMs" then return __ClientState.frameTimeMs() end
-                                            if key == "meshSafetyLoadedColumns" then return __ClientState.meshSafetyLoadedColumns() end
-                                            if key == "meshSafetyExpectedSections" then return __ClientState.meshSafetyExpectedSections() end
-                                            if key == "meshSafetyHoles" then return __ClientState.meshSafetyHoles() end
-                                            if key == "meshReadyRadius" then return __ClientState.meshReadyRadius() end
-                                            if key == "residentMeshCount" then return __ClientState.residentMeshCount() end
-                                            if key == "presentedMeshCount" then return __ClientState.presentedMeshCount() end
-                                            if key == "foregroundPending" then return __ClientState.foregroundPending() end
-                                            if key == "backgroundPending" then return __ClientState.backgroundPending() end
-                                            if key == "lightRefreshPending" then return __ClientState.lightRefreshPending() end
-                                            if key == "lightRefreshCompletedCount" then return __ClientState.lightRefreshCompletedCount() end
-                                            if key == "geometryUploadsLastFrame" then return __ClientState.geometryUploadsLastFrame() end
-                                            if key == "lightUploadsLastFrame" then return __ClientState.lightUploadsLastFrame() end
-                                            if key == "solidDrawsLastFrame" then return __ClientState.solidDrawsLastFrame() end
-                                            if key == "translucentDrawsLastFrame" then return __ClientState.translucentDrawsLastFrame() end
-                                            if key == "residentSolidLayerCount" then return __ClientState.residentSolidLayerCount() end
-                                            if key == "residentTranslucentLayerCount" then return __ClientState.residentTranslucentLayerCount() end
-                                            if key == "visibilityCandidates" then return __ClientState.visibilityCandidates() end
-                                            if key == "visibilityReuseFrames" then return __ClientState.visibilityReuseFrames() end
-                                            if key == "visibilitySynchronousFrames" then return __ClientState.visibilitySynchronousFrames() end
-                                            if key == "visibilityBuilds" then return __ClientState.visibilityBuilds() end
-                                            if key == "visibilityBuildCancellations" then return __ClientState.visibilityBuildCancellations() end
-                                            if key == "visibilityStaleResults" then return __ClientState.visibilityStaleResults() end
-                                            if key == "visibilityBuildInFlight" then return __ClientState.visibilityBuildInFlight() end
-                                            if key == "visibilityWorkerCandidates" then return __ClientState.visibilityWorkerCandidates() end
-                                            if key == "frustumTests" then return __ClientState.frustumTests() end
-                                            if key == "portalVisited" then return __ClientState.portalVisited() end
-                                            if key == "safetyRescued" then return __ClientState.safetyRescued() end
-                                            if key == "renderDistance" then return __ClientState.renderDistance() end
-                                            if key == "simulationDistance" then return __ClientState.simulationDistance() end
-                                            if key == "presentedSolidLayerCount" then return __ClientState.presentedSolidLayerCount() end
-                                            if key == "presentedTranslucentLayerCount" then return __ClientState.presentedTranslucentLayerCount() end
-                                            if key == "emptyLayersSubmitted" then return __ClientState.emptyLayersSubmitted() end
-                                            if key == "terrainDrawCalls" then return __ClientState.terrainDrawCalls() end
-                                            if key == "terrainUniformEntries" then return __ClientState.terrainUniformEntries() end
-                                            if key == "terrainSubmissionBatches" then return __ClientState.terrainSubmissionBatches() end
-                                            if key == "terrainPipelineBinds" then return __ClientState.terrainPipelineBinds() end
-                                            if key == "terrainTextureBinds" then return __ClientState.terrainTextureBinds() end
-                                            if key == "terrainUniformArenaCapacity" then return __ClientState.terrainUniformArenaCapacity() end
-                                            if key == "terrainUniformArenaGrowths" then return __ClientState.terrainUniformArenaGrowths() end
-                                            if key == "findVisibleMs" then return __ClientState.findVisibleMs() end
-                                            if key == "terrainSubmitCpuMs" then return __ClientState.terrainSubmitCpuMs() end
-                                            if key == "terrainLodPending" or key == "terrainLodConverting" or
-                                                key == "terrainLodResident" or key == "terrainLodLevel0Resident" or
-                                                key == "terrainLodLevel1Resident" or
-                                                key == "terrainLodPresented" or
-                                                key == "terrainLodTranslucentPresented" or
-                                                key == "terrainLodHandoffPreparing" or
-                                                key == "terrainLodHandoffOverlap" or
-                                                key == "terrainLodHandoffsStarted" or
-                                                key == "terrainLodHandoffReversals" or
-                                                key == "terrainLodLevelTransitions" or
-                                                key == "terrainLodLevelTransitionsStarted" or
-                                                key == "terrainLodLevelTransitionReversals" or
-                                                key == "terrainLodBoundaryLinked" or
-                                                key == "terrainLodBoundaryPending" or
-                                                key == "terrainLodBoundaryRefreshes" or
-                                                key == "terrainLodBoundaryBytes" or
-                                                key == "terrainLodCacheHits" or
-                                                key == "terrainLodCacheMisses" or
-                                                key == "terrainLodResourceGeneration" or
-                                                key == "terrainLodResourceReloads" or
-                                                key == "terrainLodResourceReusedColumns" or
-                                                key == "terrainLodResourceReusedGpuBytes" or
-                                                key == "terrainLodSolidCpuMs" or
-                                                key == "terrainLodTranslucentCpuMs" or
-                                                key == "terrainLodCacheBytes" or
-                                                key == "terrainLodMeshOwned" or
-                                                key == "terrainLodMeshCoverageQueued" or
-                                                key == "terrainLodMeshRefinementQueued" or
-                                                key == "terrainLodMeshCoverageCompleted" or
-                                                key == "terrainLodMeshRefinementCompleted" or
-                                                key == "terrainLodMeshCompletedBytes" or
-                                                key == "terrainLodMeshPredictedBytes" or
-                                                key == "terrainLodMeshPredictedMs" or
-                                                key == "terrainLodMeshAdmissionDeferrals" or
-                                                key == "terrainLodMeshUploadDeferrals" or
-                                                key == "terrainLodMeshOversizedUploads" or
-                                                key == "terrainLodMeshCompilationSamples" or
-                                                key == "terrainLodMeshUploadSamples" or
-                                                key == "terrainLodMeshCompilationMsPerKCell" or
-                                                key == "terrainLodMeshResultBytesPerKCell" or
-                                                key == "terrainLodMeshUploadBaseMs" or
-                                                key == "terrainLodMeshUploadMsPerMiB" or
-                                                key == "terrainLodSpatialComplete" or
-                                                key == "terrainLodSpatialSelected" or
-                                                key == "terrainLodSpatialParentFallbacks" or
-                                                key == "terrainLodSpatialMissingGroups" or
-                                                key == "terrainLodSpatialGpuResident" or
-                                                key == "terrainLodSpatialHighestGpuLevel" or
-                                                key == "terrainLodSpatialCpuTiles" or
-                                                key == "terrainLodSpatialCurrentTiles" or
-                                                key == "terrainLodSpatialMeshPending" or
-                                                key == "terrainLodSpatialMeshQueued" or
-                                                key == "terrainLodSpatialMeshRunning" or
-                                                key == "terrainLodSpatialMeshReady" or
-                                                key == "terrainLodSpatialSeamDesired" or
-                                                key == "terrainLodSpatialSeamGpuResident" or
-                                                key == "terrainLodSpatialSeamQueued" or
-                                                key == "terrainLodSpatialSeamRunning" or
-                                                key == "terrainLodSpatialSeamReady" or
-                                                key == "terrainLodSpatialSubmissionReady" or
-                                                key == "terrainLodSpatialAuthoritativeTiles" or
-                                                key == "terrainLodSpatialHighestAuthoritativeLevel" or
-                                                key == "terrainLodSpatialSolidPages" or
-                                                key == "terrainLodSpatialTranslucentPages" or
-                                                key == "terrainLodSpatialGpuBytes" or
-                                                key == "terrainLodSpatialPinned" or
-                                                key == "terrainLodSpatialGpuEvictions" or
-                                                key == "terrainLodSpatialCpuEvictions" or
-                                                key == "terrainLodCoarseSourceUnavailable" or
-                                                key == "terrainLodCoarseBuilding" or
-                                                key == "terrainLodCoarseTransportPending" or
-                                                key == "terrainLodCoarseGpuPending" or
-                                                key == "terrainLodCoarseReady" or
-                                                key == "terrainLodCoarseAwaitingRequest" or
-                                                key == "terrainLodCoarseFrontierUnknown" or
-                                                key == "terrainLodCoarseComplete" or
-                                                key == "terrainLodCoarseRetainingPrevious" or
-                                                key == "terrainLodColdCoverMs" or
-                                                key == "terrainLodFirstCompleteHorizonMs" or
-                                                key == "terrainLodRefinementMs" or
-                                                key == "terrainCoverageReady" or
-                                                key == "terrainCoverageExpected" or
-                                                key == "terrainCoverageCovered" or
-                                                key == "terrainCoverageExact" or
-                                                key == "terrainCoverageColumnLod" or
-                                                key == "terrainCoverageSpatial" or
-                                                key == "terrainCoverageTransitions" or
-                                                key == "terrainCoverageHoles" or
-                                                key == "terrainCoverageOverlaps" or
-                                                key == "terrainCoverageExpectedSeams" or
-                                                key == "terrainCoverageMissingSeams" or
-                                                key == "terrainCoveragePendingSeams" or
-                                                key == "terrainCoverageUnexpectedSeams" or
-                                                key == "terrainCoverageFailureKind" or
-                                                key == "terrainCoverageFailureX" or
-                                                key == "terrainCoverageFailureZ" or
-                                                key == "terrainLodRemoteRequests" or
-                                                key == "terrainLodRemoteTiles" or
-                                                key == "terrainLodRemoteBytes" or
-                                                key == "terrainLodRemotePending" or
-                                                key == "terrainLodRemoteMissing" or
-                                                key == "terrainLodRemoteDeferred" or
-                                                key == "terrainLodRemoteCoverageRequired" or
-                                                key == "terrainLodRemoteCoverageAvailable" or
-                                                key == "terrainLodRemoteCoverageInFlight" or
-                                                key == "terrainLodRemoteCoveragePending" or
-                                                key == "terrainLodRemoteCoverageMissing" or
-                                                key == "terrainLodRemoteCoverageDeferred" or
-                                                key == "terrainLodRemoteCoverageComplete" or
-                                                key == "terrainLodIdentityReady" or
-                                                key == "terrainLodIdentityMismatches" or
-                                                key == "terrainLodIdentityRejectedMessages" or
-                                                key == "clientWorkingSetBytes" or
-                                                key == "terrainLodUploads" or key == "terrainLodGpuBytes" or
-                                                key == "terrainLodStaleResults" or key == "terrainLodRejected" or
-                                                key == "terrainLodEvictions" then
-                                                return __ClientState.terrainLod(key)
-                                            end
-                                            if key == "entityClientResident" or key == "entityPresented" or key == "entityHidden" or
-                                                key == "entityLodObserved" or key == "entityLodIntendedImpostors" or
-                                                key == "entityLodModelSubmissions" or key == "entityLodImpostorSubmissions" or
-                                                key == "entityLodUnsupportedProvider" or key == "entityLodUnsupportedState" or
-                                                key == "entityLodInvalidView" or key == "entityLodCapacityFallbacks" or
-                                                key == "entityLodStateCount" or key == "entityLodResets" or key == "entityLodTransitions" or
-                                                key == "entityImpostorViews" or key == "entityImpostorReady" or
-                                                key == "entityImpostorFailures" or key == "entityImpostorReplacements" or
-                                                key == "entityImpostorPendingFallbacks" or key == "entityImpostorPoseMask" or
-                                                key == "entityImpostorHurtSubmissions" or key == "entityImpostorOverlaySubmissions" or
-                                                key == "webGpuErrorCount" or
-                                                key == "entityImpostorMemoryHits" or key == "entityImpostorDiskHits" or
-                                                key == "entityImpostorCacheMisses" or key == "entityImpostorCacheWrites" or
-                                                key == "entityImpostorCacheErrors" or key == "entityImpostorCancellations" or
-                                                key == "entityImpostorStaleResults" or key == "entityImpostorCapturedViews" or
-                                                key == "entityImpostorMemoryBytes" or key == "entityImpostorReadbackPending" or
-                                                key == "entityImpostorInvalidations" or key == "entityImpostorBakeQueueAgeMs" or
-                                                key == "entityImpostorLastBakeMs" or key == "entityImpostorAverageBakeMs" or
-                                                key == "entityImpostorCaptureCpuMs" or key == "entityImpostorResidentGpuBytes" or
-                                                key == "entityImpostorStagingBytes" or key == "entityImpostorDrawBatches" or
-                                                key == "entityImpostorResidentAtlases" or
-                                                key == "entityDistanceDespawnVisuals" or
-                                                key == "entityDistanceDespawnPresentationCount" then
-                                                return __ClientState.entityLod(key)
-                                            end
-                                            if key == "oldestForegroundAge" then return __ClientState.oldestForegroundAge() end
-                                            if key == "presentationRegressionCount" then return __ClientState.presentationRegressionCount() end
-                                            if key == "playerX" then return __ClientState.playerX() end
-                                            if key == "playerY" then return __ClientState.playerY() end
-                                            if key == "playerZ" then return __ClientState.playerZ() end
-                                            return nil
+                                            return __ClientState.get(key)
                                         end,
                                         __newindex = function()
                                             error("OMNI.client.state is read-only", 2)
@@ -294,502 +86,245 @@ public static unsafe class LuauClientStateHost
     public static Func<double>? PlayerY;
     public static Func<double>? PlayerZ;
 
+    private static readonly Dictionary<string, Action<IntPtr>> StateReaders = new(StringComparer.Ordinal)
+    {
+        ["worldLoaded"] = static l => PushBool(l, WorldLoaded),
+        ["playerReady"] = static l => PushBool(l, PlayerReady),
+        ["worldId"] = static l => PushString(l, WorldId),
+        ["debugOpen"] = static l => PushBool(l, DebugOpen),
+        ["meshPending"] = static l => PushNumber(l, MeshPending),
+        ["meshCancelledCount"] = static l => PushNumber(l, MeshCancelledCount),
+        ["meshSupersededCount"] = static l => PushNumber(l, MeshSupersededCount),
+        ["meshBuildFailureCount"] = static l => PushNumber(l, MeshBuildFailureCount),
+        ["meshAwaitingUpload"] = static l => PushNumber(l, MeshAwaitingUpload),
+        ["meshAwaitingDraw"] = static l => PushNumber(l, MeshAwaitingDraw),
+        ["meshLeadingEdgeQueued"] = static l => PushNumber(l, MeshLeadingEdgeQueued),
+        ["meshLeadingEdgePending"] = static l => PushNumber(l, MeshLeadingEdgePending),
+        ["meshEvictionGraceCount"] = static l => PushNumber(l, MeshEvictionGraceCount),
+        ["meshCooperativeCancellationCount"] = static l => PushNumber(l, MeshCooperativeCancellationCount),
+        ["meshCriticalCompletedCount"] = static l => PushNumber(l, MeshCriticalCompletedCount),
+        ["meshCriticalDeadlineMissCount"] = static l => PushNumber(l, MeshCriticalDeadlineMissCount),
+        ["meshCriticalOverdueCount"] = static l => PushNumber(l, MeshCriticalOverdueCount),
+        ["meshRequestToGpuMs"] = static l => PushNumber(l, MeshRequestToGpuMs),
+        ["frameTimeMs"] = static l => PushNumber(l, FrameTimeMs),
+        ["meshSafetyLoadedColumns"] = static l => PushNumber(l, MeshSafetyLoadedColumns),
+        ["meshSafetyExpectedSections"] = static l => PushNumber(l, MeshSafetyExpectedSections),
+        ["meshSafetyHoles"] = static l => PushNumber(l, MeshSafetyHoles),
+        ["meshReadyRadius"] = static l => PushNumber(l, MeshReadyRadius),
+        ["residentMeshCount"] = static l => PushNumber(l, ResidentMeshCount),
+        ["presentedMeshCount"] = static l => PushNumber(l, PresentedMeshCount),
+        ["foregroundPending"] = static l => PushNumber(l, ForegroundPending),
+        ["backgroundPending"] = static l => PushNumber(l, BackgroundPending),
+        ["lightRefreshPending"] = static l => PushNumber(l, LightRefreshPending),
+        ["lightRefreshCompletedCount"] = static l => PushNumber(l, LightRefreshCompletedCount),
+        ["geometryUploadsLastFrame"] = static l => PushNumber(l, GeometryUploadsLastFrame),
+        ["lightUploadsLastFrame"] = static l => PushNumber(l, LightUploadsLastFrame),
+        ["solidDrawsLastFrame"] = static l => PushNumber(l, SolidDrawsLastFrame),
+        ["translucentDrawsLastFrame"] = static l => PushNumber(l, TranslucentDrawsLastFrame),
+        ["residentSolidLayerCount"] = static l => PushNumber(l, ResidentSolidLayerCount),
+        ["residentTranslucentLayerCount"] = static l => PushNumber(l, ResidentTranslucentLayerCount),
+        ["visibilityCandidates"] = static l => PushNumber(l, VisibilityCandidates),
+        ["visibilityReuseFrames"] = static l => PushNumber(l, VisibilityReuseFrames),
+        ["visibilitySynchronousFrames"] = static l => PushNumber(l, VisibilitySynchronousFrames),
+        ["visibilityBuilds"] = static l => PushNumber(l, VisibilityBuilds),
+        ["visibilityBuildCancellations"] = static l => PushNumber(l, VisibilityBuildCancellations),
+        ["visibilityStaleResults"] = static l => PushNumber(l, VisibilityStaleResults),
+        ["visibilityBuildInFlight"] = static l => PushNumber(l, VisibilityBuildInFlight),
+        ["visibilityWorkerCandidates"] = static l => PushNumber(l, VisibilityWorkerCandidates),
+        ["frustumTests"] = static l => PushNumber(l, FrustumTests),
+        ["portalVisited"] = static l => PushNumber(l, PortalVisited),
+        ["safetyRescued"] = static l => PushNumber(l, SafetyRescued),
+        ["renderDistance"] = static l => PushNumber(l, RenderDistance),
+        ["simulationDistance"] = static l => PushNumber(l, SimulationDistance),
+        ["presentedSolidLayerCount"] = static l => PushNumber(l, PresentedSolidLayerCount),
+        ["presentedTranslucentLayerCount"] = static l => PushNumber(l, PresentedTranslucentLayerCount),
+        ["emptyLayersSubmitted"] = static l => PushNumber(l, EmptyLayersSubmitted),
+        ["terrainDrawCalls"] = static l => PushNumber(l, TerrainDrawCalls),
+        ["terrainUniformEntries"] = static l => PushNumber(l, TerrainUniformEntries),
+        ["terrainSubmissionBatches"] = static l => PushNumber(l, TerrainSubmissionBatches),
+        ["terrainPipelineBinds"] = static l => PushNumber(l, TerrainPipelineBinds),
+        ["terrainTextureBinds"] = static l => PushNumber(l, TerrainTextureBinds),
+        ["terrainUniformArenaCapacity"] = static l => PushNumber(l, TerrainUniformArenaCapacity),
+        ["terrainUniformArenaGrowths"] = static l => PushNumber(l, TerrainUniformArenaGrowths),
+        ["findVisibleMs"] = static l => PushNumber(l, FindVisibleMs),
+        ["terrainSubmitCpuMs"] = static l => PushNumber(l, TerrainSubmitCpuMs),
+        ["oldestForegroundAge"] = static l => PushNumber(l, OldestForegroundAge),
+        ["presentationRegressionCount"] = static l => PushNumber(l, PresentationRegressionCount),
+        ["playerX"] = static l => PushNumber(l, PlayerX),
+        ["playerY"] = static l => PushNumber(l, PlayerY),
+        ["playerZ"] = static l => PushNumber(l, PlayerZ)
+    };
+
+    private static readonly HashSet<string> TerrainLodKeys = new(StringComparer.Ordinal)
+    {
+        "terrainLodPending", "terrainLodConverting", "terrainLodResident",
+        "terrainLodLevel0Resident", "terrainLodLevel1Resident", "terrainLodPresented",
+        "terrainLodTranslucentPresented", "terrainLodHandoffPreparing", "terrainLodHandoffOverlap",
+        "terrainLodHandoffsStarted", "terrainLodHandoffReversals", "terrainLodLevelTransitions",
+        "terrainLodLevelTransitionsStarted", "terrainLodLevelTransitionReversals",
+        "terrainLodBoundaryLinked", "terrainLodBoundaryPending", "terrainLodBoundaryRefreshes",
+        "terrainLodBoundaryBytes", "terrainLodCacheHits", "terrainLodCacheMisses",
+        "terrainLodResourceGeneration", "terrainLodResourceReloads",
+        "terrainLodResourceReusedColumns", "terrainLodResourceReusedGpuBytes",
+        "terrainLodSolidCpuMs", "terrainLodTranslucentCpuMs", "terrainLodCacheBytes",
+        "terrainLodMeshOwned", "terrainLodMeshCoverageQueued", "terrainLodMeshRefinementQueued",
+        "terrainLodMeshCoverageCompleted", "terrainLodMeshRefinementCompleted",
+        "terrainLodMeshCompletedBytes", "terrainLodMeshPredictedBytes", "terrainLodMeshPredictedMs",
+        "terrainLodMeshAdmissionDeferrals", "terrainLodMeshUploadDeferrals",
+        "terrainLodMeshOversizedUploads", "terrainLodMeshCompilationSamples",
+        "terrainLodMeshUploadSamples", "terrainLodMeshCompilationMsPerKCell",
+        "terrainLodMeshResultBytesPerKCell", "terrainLodMeshUploadBaseMs",
+        "terrainLodMeshUploadMsPerMiB", "terrainLodSpatialComplete", "terrainLodSpatialSelected",
+        "terrainLodSpatialParentFallbacks", "terrainLodSpatialMissingGroups",
+        "terrainLodSpatialGpuResident", "terrainLodSpatialHighestGpuLevel",
+        "terrainLodSpatialCpuTiles", "terrainLodSpatialCurrentTiles", "terrainLodSpatialMeshPending",
+        "terrainLodSpatialMeshQueued", "terrainLodSpatialMeshRunning", "terrainLodSpatialMeshReady",
+        "terrainLodSpatialSeamDesired", "terrainLodSpatialSeamGpuResident",
+        "terrainLodSpatialSeamQueued", "terrainLodSpatialSeamRunning", "terrainLodSpatialSeamReady",
+        "terrainLodSpatialSubmissionReady", "terrainLodSpatialAuthoritativeTiles",
+        "terrainLodSpatialHighestAuthoritativeLevel", "terrainLodSpatialSolidPages",
+        "terrainLodSpatialTranslucentPages", "terrainLodSpatialGpuBytes", "terrainLodSpatialPinned",
+        "terrainLodSpatialGpuEvictions", "terrainLodSpatialCpuEvictions",
+        "terrainLodCoarseSourceUnavailable", "terrainLodCoarseBuilding",
+        "terrainLodCoarseTransportPending", "terrainLodCoarseGpuPending", "terrainLodCoarseReady",
+        "terrainLodCoarseAwaitingRequest", "terrainLodCoarseFrontierUnknown",
+        "terrainLodCoarseComplete", "terrainLodCoarseRetainingPrevious", "terrainLodColdCoverMs",
+        "terrainLodFirstCompleteHorizonMs", "terrainLodRefinementMs", "terrainCoverageReady",
+        "terrainCoverageExpected", "terrainCoverageCovered", "terrainCoverageExact",
+        "terrainCoverageColumnLod", "terrainCoverageSpatial", "terrainCoverageTransitions",
+        "terrainCoverageHoles", "terrainCoverageOverlaps", "terrainCoverageExpectedSeams",
+        "terrainCoverageMissingSeams", "terrainCoveragePendingSeams", "terrainCoverageUnexpectedSeams",
+        "terrainCoverageFailureKind", "terrainCoverageFailureX", "terrainCoverageFailureZ",
+        "terrainLodRemoteRequests", "terrainLodRemoteTiles", "terrainLodRemoteBytes",
+        "terrainLodRemotePending", "terrainLodRemoteMissing", "terrainLodRemoteDeferred",
+        "terrainLodRemoteCoverageRequired", "terrainLodRemoteCoverageAvailable",
+        "terrainLodRemoteCoverageInFlight", "terrainLodRemoteCoveragePending",
+        "terrainLodRemoteCoverageMissing", "terrainLodRemoteCoverageDeferred",
+        "terrainLodRemoteCoverageComplete", "terrainLodIdentityReady",
+        "terrainLodIdentityMismatches", "terrainLodIdentityRejectedMessages", "clientWorkingSetBytes",
+        "terrainLodUploads", "terrainLodGpuBytes", "terrainLodStaleResults", "terrainLodRejected",
+        "terrainLodEvictions"
+    };
+
+    private static readonly HashSet<string> EntityLodKeys = new(StringComparer.Ordinal)
+    {
+        "entityClientResident", "entityPresented", "entityHidden", "entityLodObserved",
+        "entityLodIntendedImpostors", "entityLodModelSubmissions", "entityLodImpostorSubmissions",
+        "entityLodUnsupportedProvider", "entityLodUnsupportedState", "entityLodInvalidView",
+        "entityLodCapacityFallbacks", "entityLodStateCount", "entityLodResets",
+        "entityLodTransitions", "entityImpostorViews", "entityImpostorReady",
+        "entityImpostorFailures", "entityImpostorReplacements", "entityImpostorPendingFallbacks",
+        "entityImpostorPoseMask", "entityImpostorHurtSubmissions", "entityImpostorOverlaySubmissions",
+        "webGpuErrorCount", "entityImpostorMemoryHits", "entityImpostorDiskHits",
+        "entityImpostorCacheMisses", "entityImpostorCacheWrites", "entityImpostorCacheErrors",
+        "entityImpostorCancellations", "entityImpostorStaleResults", "entityImpostorCapturedViews",
+        "entityImpostorMemoryBytes", "entityImpostorReadbackPending", "entityImpostorInvalidations",
+        "entityImpostorBakeQueueAgeMs", "entityImpostorLastBakeMs", "entityImpostorAverageBakeMs",
+        "entityImpostorCaptureCpuMs", "entityImpostorResidentGpuBytes", "entityImpostorStagingBytes",
+        "entityImpostorDrawBatches", "entityImpostorResidentAtlases", "entityDistanceDespawnVisuals",
+        "entityDistanceDespawnPresentationCount"
+    };
+
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 68);
-        Add(l, "worldLoaded", &WorldLoadedClosure);
-        Add(l, "playerReady", &PlayerReadyClosure);
-        Add(l, "worldId", &WorldIdClosure);
-        Add(l, "debugOpen", &DebugOpenClosure);
-        Add(l, "meshPending", &MeshPendingClosure);
-        Add(l, "meshCancelledCount", &MeshCancelledCountClosure);
-        Add(l, "meshSupersededCount", &MeshSupersededCountClosure);
-        Add(l, "meshBuildFailureCount", &MeshBuildFailureCountClosure);
-        Add(l, "meshAwaitingUpload", &MeshAwaitingUploadClosure);
-        Add(l, "meshAwaitingDraw", &MeshAwaitingDrawClosure);
-        Add(l, "meshLeadingEdgeQueued", &MeshLeadingEdgeQueuedClosure);
-        Add(l, "meshLeadingEdgePending", &MeshLeadingEdgePendingClosure);
-        Add(l, "meshEvictionGraceCount", &MeshEvictionGraceCountClosure);
-        Add(l, "meshCooperativeCancellationCount", &MeshCooperativeCancellationCountClosure);
-        Add(l, "meshCriticalCompletedCount", &MeshCriticalCompletedCountClosure);
-        Add(l, "meshCriticalDeadlineMissCount", &MeshCriticalDeadlineMissCountClosure);
-        Add(l, "meshCriticalOverdueCount", &MeshCriticalOverdueCountClosure);
-        Add(l, "meshRequestToGpuMs", &MeshRequestToGpuMsClosure);
-        Add(l, "frameTimeMs", &FrameTimeMsClosure);
-        Add(l, "meshSafetyLoadedColumns", &MeshSafetyLoadedColumnsClosure);
-        Add(l, "meshSafetyExpectedSections", &MeshSafetyExpectedSectionsClosure);
-        Add(l, "meshSafetyHoles", &MeshSafetyHolesClosure);
-        Add(l, "meshReadyRadius", &MeshReadyRadiusClosure);
-        Add(l, "residentMeshCount", &ResidentMeshCountClosure);
-        Add(l, "presentedMeshCount", &PresentedMeshCountClosure);
-        Add(l, "foregroundPending", &ForegroundPendingClosure);
-        Add(l, "backgroundPending", &BackgroundPendingClosure);
-        Add(l, "lightRefreshPending", &LightRefreshPendingClosure);
-        Add(l, "lightRefreshCompletedCount", &LightRefreshCompletedCountClosure);
-        Add(l, "geometryUploadsLastFrame", &GeometryUploadsLastFrameClosure);
-        Add(l, "lightUploadsLastFrame", &LightUploadsLastFrameClosure);
-        Add(l, "solidDrawsLastFrame", &SolidDrawsLastFrameClosure);
-        Add(l, "translucentDrawsLastFrame", &TranslucentDrawsLastFrameClosure);
-        Add(l, "residentSolidLayerCount", &ResidentSolidLayerCountClosure);
-        Add(l, "residentTranslucentLayerCount", &ResidentTranslucentLayerCountClosure);
-        Add(l, "visibilityCandidates", &VisibilityCandidatesClosure);
-        Add(l, "visibilityReuseFrames", &VisibilityReuseFramesClosure);
-        Add(l, "visibilitySynchronousFrames", &VisibilitySynchronousFramesClosure);
-        Add(l, "visibilityBuilds", &VisibilityBuildsClosure);
-        Add(l, "visibilityBuildCancellations", &VisibilityBuildCancellationsClosure);
-        Add(l, "visibilityStaleResults", &VisibilityStaleResultsClosure);
-        Add(l, "visibilityBuildInFlight", &VisibilityBuildInFlightClosure);
-        Add(l, "visibilityWorkerCandidates", &VisibilityWorkerCandidatesClosure);
-        Add(l, "frustumTests", &FrustumTestsClosure);
-        Add(l, "portalVisited", &PortalVisitedClosure);
-        Add(l, "safetyRescued", &SafetyRescuedClosure);
-        Add(l, "renderDistance", &RenderDistanceClosure);
-        Add(l, "simulationDistance", &SimulationDistanceClosure);
-        Add(l, "presentedSolidLayerCount", &PresentedSolidLayerCountClosure);
-        Add(l, "presentedTranslucentLayerCount", &PresentedTranslucentLayerCountClosure);
-        Add(l, "emptyLayersSubmitted", &EmptyLayersSubmittedClosure);
-        Add(l, "terrainDrawCalls", &TerrainDrawCallsClosure);
-        Add(l, "terrainUniformEntries", &TerrainUniformEntriesClosure);
-        Add(l, "terrainSubmissionBatches", &TerrainSubmissionBatchesClosure);
-        Add(l, "terrainPipelineBinds", &TerrainPipelineBindsClosure);
-        Add(l, "terrainTextureBinds", &TerrainTextureBindsClosure);
-        Add(l, "terrainUniformArenaCapacity", &TerrainUniformArenaCapacityClosure);
-        Add(l, "terrainUniformArenaGrowths", &TerrainUniformArenaGrowthsClosure);
-        Add(l, "findVisibleMs", &FindVisibleMsClosure);
-        Add(l, "terrainSubmitCpuMs", &TerrainSubmitCpuMsClosure);
-        Add(l, "terrainLod", &TerrainLodClosure);
-        Add(l, "entityLod", &EntityLodClosure);
-        Add(l, "oldestForegroundAge", &OldestForegroundAgeClosure);
-        Add(l, "presentationRegressionCount", &PresentationRegressionCountClosure);
-        Add(l, "playerX", &PlayerXClosure);
-        Add(l, "playerY", &PlayerYClosure);
-        Add(l, "playerZ", &PlayerZClosure);
+        LuauNative.lua_createtable(l, 0, 1);
+        Add(l, "get", &GetClosure);
         LuauNative.lua_setfield(l, LuauNative.GlobalsIndex, "__ClientState");
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int GetClosure(IntPtr l)
+    {
+        try
+        {
+            var key = ReadStringArgument(l, 1);
+            if (key is null) return PushNil(l);
+
+            if (StateReaders.TryGetValue(key, out var reader))
+            {
+                reader(l);
+                return 1;
+            }
+
+            if (TerrainLodKeys.Contains(key))
+            {
+                PushMetric(l, TerrainLodMetric, key);
+                return 1;
+            }
+
+            if (EntityLodKeys.Contains(key))
+            {
+                PushMetric(l, EntityLodMetric, key);
+                return 1;
+            }
+
+            return PushNil(l);
+        }
+        catch
+        {
+            // Managed exceptions must never cross an unmanaged Luau callback boundary.
+            return PushNil(l);
+        }
+    }
+
+    private static string? ReadStringArgument(IntPtr l, int index)
+    {
+        var pointer = LuauNative.lua_tolstring(l, index, out var length);
+        return pointer == IntPtr.Zero
+            ? null
+            : Marshal.PtrToStringUTF8(pointer, checked((int)length));
+    }
+
+    private static void PushNumber(IntPtr l, Func<double>? getter) =>
+        LuauNative.lua_pushnumber(l, Read(getter, 0d));
+
+    private static void PushBool(IntPtr l, Func<bool>? getter) =>
+        LuauNative.lua_pushboolean(l, Read(getter, false) ? 1 : 0);
+
+    private static void PushString(IntPtr l, Func<string?>? getter)
+    {
+        var value = Read(getter, default(string));
+        if (value is null) LuauNative.lua_pushnil(l);
+        else LuauNative.lua_pushstring(l, value);
+    }
+
+    private static void PushMetric(IntPtr l, Func<string, double>? getter, string key)
+    {
+        double value = 0;
+        try
+        {
+            value = getter?.Invoke(key) ?? 0;
+        }
+        catch
+        {
+            // Preserve the automation API's historical zero fallback without allocating a closure.
+        }
+
+        LuauNative.lua_pushnumber(l, value);
+    }
+
+    private static T Read<T>(Func<T>? getter, T fallback)
+    {
+        try
+        {
+            return getter is null ? fallback : getter();
+        }
+        catch
+        {
+            // Managed exceptions must never cross an unmanaged Luau callback boundary.
+            return fallback;
+        }
+    }
+
+    private static int PushNil(IntPtr l)
+    {
+        LuauNative.lua_pushnil(l);
+        return 1;
     }
 
     private static void Add(IntPtr l, string name, delegate* unmanaged[Cdecl]<IntPtr, int> function)
     {
         LuauNative.lua_pushcclosurek(l, function, "__ClientState." + name, 0, IntPtr.Zero);
         LuauNative.lua_setfield(l, -2, name);
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int WorldLoadedClosure(IntPtr l)
-    {
-        LuauNative.lua_pushboolean(l, ReadBool(WorldLoaded) ? 1 : 0);
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int PlayerReadyClosure(IntPtr l)
-    {
-        LuauNative.lua_pushboolean(l, ReadBool(PlayerReady) ? 1 : 0);
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int DebugOpenClosure(IntPtr l)
-    {
-        LuauNative.lua_pushboolean(l, ReadBool(DebugOpen) ? 1 : 0);
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int WorldIdClosure(IntPtr l)
-    {
-        string? id = null;
-        try
-        {
-            id = WorldId?.Invoke();
-        }
-        catch
-        {
-            // Managed exceptions must never cross an unmanaged Luau callback boundary.
-        }
-
-        if (id == null) LuauNative.lua_pushnil(l);
-        else LuauNative.lua_pushstring(l, id);
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int MeshPendingClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(MeshPending));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int MeshRequestToGpuMsClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(MeshRequestToGpuMs));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int FrameTimeMsClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(FrameTimeMs));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int MeshSafetyLoadedColumnsClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(MeshSafetyLoadedColumns));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int MeshSafetyExpectedSectionsClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(MeshSafetyExpectedSections));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int MeshSafetyHolesClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(MeshSafetyHoles));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int MeshReadyRadiusClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(MeshReadyRadius));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int ResidentMeshCountClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(ResidentMeshCount));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int PresentedMeshCountClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(PresentedMeshCount));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int ForegroundPendingClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(ForegroundPending));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int BackgroundPendingClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(BackgroundPending));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int LightRefreshPendingClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(LightRefreshPending));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int LightRefreshCompletedCountClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(LightRefreshCompletedCount));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int GeometryUploadsLastFrameClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(GeometryUploadsLastFrame));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int LightUploadsLastFrameClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(LightUploadsLastFrame));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int SolidDrawsLastFrameClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(SolidDrawsLastFrame));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int TranslucentDrawsLastFrameClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(TranslucentDrawsLastFrame));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int ResidentSolidLayerCountClosure(IntPtr l) => PushNumber(l, ResidentSolidLayerCount);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int ResidentTranslucentLayerCountClosure(IntPtr l) => PushNumber(l, ResidentTranslucentLayerCount);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int VisibilityCandidatesClosure(IntPtr l) => PushNumber(l, VisibilityCandidates);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int VisibilityReuseFramesClosure(IntPtr l) => PushNumber(l, VisibilityReuseFrames);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int VisibilitySynchronousFramesClosure(IntPtr l) => PushNumber(l, VisibilitySynchronousFrames);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int VisibilityBuildsClosure(IntPtr l) => PushNumber(l, VisibilityBuilds);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int VisibilityBuildCancellationsClosure(IntPtr l) => PushNumber(l, VisibilityBuildCancellations);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int VisibilityStaleResultsClosure(IntPtr l) => PushNumber(l, VisibilityStaleResults);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int VisibilityBuildInFlightClosure(IntPtr l) => PushNumber(l, VisibilityBuildInFlight);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int VisibilityWorkerCandidatesClosure(IntPtr l) => PushNumber(l, VisibilityWorkerCandidates);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int FrustumTestsClosure(IntPtr l) => PushNumber(l, FrustumTests);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int PortalVisitedClosure(IntPtr l) => PushNumber(l, PortalVisited);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int SafetyRescuedClosure(IntPtr l) => PushNumber(l, SafetyRescued);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int RenderDistanceClosure(IntPtr l) => PushNumber(l, RenderDistance);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int SimulationDistanceClosure(IntPtr l) => PushNumber(l, SimulationDistance);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int PresentedSolidLayerCountClosure(IntPtr l) => PushNumber(l, PresentedSolidLayerCount);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int PresentedTranslucentLayerCountClosure(IntPtr l) => PushNumber(l, PresentedTranslucentLayerCount);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int EmptyLayersSubmittedClosure(IntPtr l) => PushNumber(l, EmptyLayersSubmitted);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int TerrainDrawCallsClosure(IntPtr l) => PushNumber(l, TerrainDrawCalls);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int TerrainUniformEntriesClosure(IntPtr l) => PushNumber(l, TerrainUniformEntries);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int TerrainSubmissionBatchesClosure(IntPtr l) => PushNumber(l, TerrainSubmissionBatches);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int TerrainPipelineBindsClosure(IntPtr l) => PushNumber(l, TerrainPipelineBinds);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int TerrainTextureBindsClosure(IntPtr l) => PushNumber(l, TerrainTextureBinds);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int TerrainUniformArenaCapacityClosure(IntPtr l) => PushNumber(l, TerrainUniformArenaCapacity);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int TerrainUniformArenaGrowthsClosure(IntPtr l) => PushNumber(l, TerrainUniformArenaGrowths);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int FindVisibleMsClosure(IntPtr l) => PushNumber(l, FindVisibleMs);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int TerrainSubmitCpuMsClosure(IntPtr l) => PushNumber(l, TerrainSubmitCpuMs);
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int TerrainLodClosure(IntPtr l)
-    {
-        double value = 0;
-        try
-        {
-            var pointer = LuauNative.lua_tolstring(l, 1, out var length);
-            if (pointer != IntPtr.Zero)
-                value = TerrainLodMetric?.Invoke(Marshal.PtrToStringUTF8(pointer, (int)length) ?? "") ?? 0;
-        }
-        catch { }
-        LuauNative.lua_pushnumber(l, value);
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int EntityLodClosure(IntPtr l)
-    {
-        double value = 0;
-        try
-        {
-            var pointer = LuauNative.lua_tolstring(l, 1, out var length);
-            if (pointer != IntPtr.Zero)
-                value = EntityLodMetric?.Invoke(Marshal.PtrToStringUTF8(pointer, (int)length) ?? "") ?? 0;
-        }
-        catch { }
-        LuauNative.lua_pushnumber(l, value);
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int OldestForegroundAgeClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(OldestForegroundAge));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int PresentationRegressionCountClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(PresentationRegressionCount));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int PlayerXClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(PlayerX));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int PlayerYClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(PlayerY));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int PlayerZClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(PlayerZ));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int MeshCancelledCountClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(MeshCancelledCount));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int MeshSupersededCountClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(MeshSupersededCount));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int MeshBuildFailureCountClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(MeshBuildFailureCount));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int MeshAwaitingUploadClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(MeshAwaitingUpload));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int MeshAwaitingDrawClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(MeshAwaitingDraw));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int MeshLeadingEdgeQueuedClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(MeshLeadingEdgeQueued));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int MeshLeadingEdgePendingClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(MeshLeadingEdgePending));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int MeshEvictionGraceCountClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(MeshEvictionGraceCount));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int MeshCooperativeCancellationCountClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(MeshCooperativeCancellationCount));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int MeshCriticalCompletedCountClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(MeshCriticalCompletedCount));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int MeshCriticalDeadlineMissCountClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(MeshCriticalDeadlineMissCount));
-        return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int MeshCriticalOverdueCountClosure(IntPtr l)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(MeshCriticalOverdueCount));
-        return 1;
-    }
-
-    private static bool ReadBool(Func<bool>? getter)
-    {
-        try
-        {
-            return getter?.Invoke() == true;
-        }
-        catch
-        {
-            // Managed exceptions must never cross an unmanaged Luau callback boundary.
-            return false;
-        }
-    }
-
-    private static int PushNumber(IntPtr l, Func<double>? getter)
-    {
-        LuauNative.lua_pushnumber(l, ReadNumber(getter));
-        return 1;
-    }
-
-    private static double ReadNumber(Func<double>? getter)
-    {
-        try
-        {
-            return getter?.Invoke() ?? 0;
-        }
-        catch
-        {
-            // Managed exceptions must never cross an unmanaged Luau callback boundary.
-            return 0;
-        }
     }
 }

@@ -6,6 +6,13 @@ namespace OmniBlock.Tests.Luau;
 [Collection(LuauHostCollection.Name)]
 public sealed class LuauClientStateHostIntegrationTests
 {
+    [Fact]
+    public void Bootstrap_routes_all_properties_through_the_generic_getter()
+    {
+        Assert.Contains("return __ClientState.get(key)", LuauClientStateHost.Bootstrap);
+        Assert.DoesNotContain("if key ==", LuauClientStateHost.Bootstrap);
+    }
+
     [SkippableFact]
     public void BootstrapExposesLiveReadOnlyReadinessState()
     {
@@ -145,6 +152,9 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.visibilityReuseFrames", "0");
             AssertValue(state, "OMNI.client.state.visibilityBuildInFlight", "0");
             AssertValue(state, "OMNI.client.state.findVisibleMs", "0");
+            AssertValue(state, "OMNI.client.state.unknownMetric", "nil");
+            AssertValue(state, "OMNI.client.state.terrainLodNotPublic", "nil");
+            AssertValue(state, "__ClientState.get('unknownMetric')", "nil");
 
             worldLoaded = true;
             playerReady = true;
@@ -253,6 +263,9 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.terrainLodSpatialGpuEvictions", "18");
             AssertValue(state, "OMNI.client.state.terrainLodSpatialCpuEvictions", "41");
             AssertValue(state, "OMNI.client.state.clientWorkingSetBytes", "536870912");
+            LuauClientStateHost.TerrainLodMetric = _ => throw new InvalidOperationException();
+            AssertValue(state, "OMNI.client.state.terrainLodPending", "0");
+            AssertValue(state, "OMNI.client.state.terrainLodNotPublic", "nil");
             AssertValue(state, "OMNI.client.state.entityLodIntendedImpostors", "12");
             AssertValue(state, "OMNI.client.state.entityLodImpostorSubmissions", "0");
             Assert.False(state.TryExecute("OMNI.client.state.entityLodIntendedImpostors = 0", out var lodReadOnly));
