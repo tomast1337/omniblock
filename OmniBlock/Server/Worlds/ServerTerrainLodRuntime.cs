@@ -118,7 +118,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         _spatialHierarchy = new TerrainLodSpatialHierarchyCoordinator(
             TerrainLodSpatialPolicy.CreateDefault(),
             _spatialCache,
-            tileCapacity: 8192,
+            tileCapacity: TerrainLodScaleBudget.ServerHierarchyTiles,
             constructionCapacity: 128,
             completedCapacity: 32,
             persistenceCapacity: 64);
@@ -268,13 +268,17 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         var rootLevel = Math.Max(
             minimumLevel,
             policy.DesiredSpatialLevel(horizonDistanceChunks));
-        var keys = TerrainLodCoveragePlanner.RequiredTiles(
+        var outerBoundaryMinimumLevel =
+            TerrainLodCoveragePlanner.RecommendedOuterBoundaryMinimumLevel(
+                rootLevel, minimumLevel);
+        var coveragePlan = TerrainLodCoveragePlanner.PlanRequiredTiles(
             centerChunkX,
             centerChunkZ,
             nearDistanceChunks,
             horizonDistanceChunks,
             rootLevel,
-            minimumLevel);
+            minimumLevel,
+            outerBoundaryMinimumLevel);
         var surface = _materials.Resolve(surfaceBlockProtocolId, metadata: 0);
         var column = TerrainLodColumn.Create(ChuckFormat.WorldHeight,
         [
@@ -285,7 +289,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         ]);
         var sourceIdentity = FormattableString.Invariant(
             $"integrated-scale-fixture-v1:{centerChunkX}:{centerChunkZ}:{nearDistanceChunks}:{horizonDistanceChunks}");
-        foreach (var key in keys)
+        foreach (var key in coveragePlan.Tiles)
         {
             var tile = TerrainLodColumnTile.CreateUniform(
                 key,
@@ -303,7 +307,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             QueueSpatialEncode(key);
         }
         lock (_gate) PublishSnapshotLocked();
-        return keys.Length;
+        return coveragePlan.Tiles.Count;
     }
 
     public void TrackChunk(Chunk chunk)

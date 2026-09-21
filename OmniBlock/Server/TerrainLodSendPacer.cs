@@ -1,5 +1,7 @@
 namespace OmniBlock.Server;
 
+using OmniBlock.Worlds.Lod;
+
 /// <summary>
 ///     A deliberately subordinate byte lane for distant-terrain cache records. Gameplay chunks
 ///     are allowed to drain first; once they are clear, a token bucket prevents LOD traffic from
@@ -7,9 +9,9 @@ namespace OmniBlock.Server;
 /// </summary>
 public sealed class TerrainLodSendPacer
 {
-    public const int BytesPerSecond = 256 * 1024;
-    public const int BurstBytes = 2 * 1024 * 1024;
-    public const int MaximumTransportBacklog = 8;
+    public const int BytesPerSecond = TerrainLodScaleBudget.TransportBytesPerSecond;
+    public const int BurstBytes = TerrainLodScaleBudget.TransportBurstBytes;
+    public const int MaximumTransportBacklog = TerrainLodScaleBudget.MaximumTransportBacklog;
 
     private readonly TimeProvider _clock;
     private long _lastRefillTimestamp;

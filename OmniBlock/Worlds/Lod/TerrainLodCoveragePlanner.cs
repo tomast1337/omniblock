@@ -7,13 +7,191 @@ namespace OmniBlock.Worlds.Lod;
 /// </summary>
 public static class TerrainLodCoveragePlanner
 {
+    /// <summary>
+    ///     Builds a coverage partition without ever retaining more than <paramref name="maximumTiles"/>
+    ///     nodes. When the requested far-boundary resolution does not fit, only that boundary is
+    ///     coarsened; the near exact/LOD handoff floor remains unchanged.
+    /// </summary>
+    public static TerrainLodCoveragePlan PlanRequiredTiles(
+        double cameraChunkX,
+        double cameraChunkZ,
+        int nearDistanceChunks,
+        int horizonDistanceChunks,
+        int rootLevel,
+        int nearBoundaryMinimumLevel,
+        int outerBoundaryMinimumLevel,
+        int maximumTiles = TerrainLodScaleBudget.MaximumCoverageTiles)
+    {
+        if (TryPlanRequiredTiles(
+                cameraChunkX, cameraChunkZ, nearDistanceChunks, horizonDistanceChunks,
+                rootLevel, nearBoundaryMinimumLevel, outerBoundaryMinimumLevel,
+                out var plan, maximumTiles))
+            return plan!;
+        throw new InvalidOperationException(
+            $"Terrain LOD coverage cannot fit within the hard {maximumTiles}-tile budget " +
+            $"at root level {rootLevel}. The near-boundary level " +
+            $"{nearBoundaryMinimumLevel} would need a coarser quality policy.");
+    }
+
+    /// <summary>
+    ///     Bounded form used by optional refinement. A false result means the caller should defer
+    ///     that refinement tier; no oversized intermediate array is retained.
+    /// </summary>
+    public static bool TryPlanRequiredTiles(
+        double cameraChunkX,
+        double cameraChunkZ,
+        int nearDistanceChunks,
+        int horizonDistanceChunks,
+        int rootLevel,
+        int nearBoundaryMinimumLevel,
+        int outerBoundaryMinimumLevel,
+        out TerrainLodCoveragePlan? plan,
+        int maximumTiles = TerrainLodScaleBudget.MaximumCoverageTiles)
+    {
+        if (maximumTiles <= 0) throw new ArgumentOutOfRangeException(nameof(maximumTiles));
+        ValidateArguments(
+            cameraChunkX, cameraChunkZ, nearDistanceChunks, horizonDistanceChunks,
+            rootLevel, nearBoundaryMinimumLevel, outerBoundaryMinimumLevel);
+        if (horizonDistanceChunks <= nearDistanceChunks)
+        {
+            plan = new TerrainLodCoveragePlan(
+                [], outerBoundaryMinimumLevel, outerBoundaryMinimumLevel);
+            return true;
+        }
+
+        for (var effectiveOuterLevel = outerBoundaryMinimumLevel;
+             effectiveOuterLevel <= rootLevel;
+             effectiveOuterLevel++)
+        {
+            if (!TryRequiredTiles(
+                    cameraChunkX, cameraChunkZ, nearDistanceChunks, horizonDistanceChunks,
+                    rootLevel, nearBoundaryMinimumLevel, effectiveOuterLevel,
+                    maximumTiles, out var tiles))
+                continue;
+            plan = new TerrainLodCoveragePlan(
+                tiles, outerBoundaryMinimumLevel, effectiveOuterLevel);
+            return true;
+        }
+
+        plan = null;
+        return false;
+    }
+
     public static TerrainLodTileKey[] RequiredTiles(
         double cameraChunkX,
         double cameraChunkZ,
         int nearDistanceChunks,
         int horizonDistanceChunks,
         int rootLevel,
-        int minimumLevel)
+        int minimumLevel) => RequiredTiles(
+        cameraChunkX,
+        cameraChunkZ,
+        nearDistanceChunks,
+        horizonDistanceChunks,
+        rootLevel,
+        minimumLevel,
+        minimumLevel);
+
+    /// <summary>
+    ///     Builds an adaptive annulus with independent refinement floors at its inner and outer
+    ///     boundaries. The exact-terrain handoff can retain fine level-2 coverage while a very
+    ///     distant circular edge stops at a coarser level instead of producing O(radius) fine
+    ///     records merely to approximate the horizon curve.
+    /// </summary>
+    public static TerrainLodTileKey[] RequiredTiles(
+        double cameraChunkX,
+        double cameraChunkZ,
+        int nearDistanceChunks,
+        int horizonDistanceChunks,
+        int rootLevel,
+        int nearBoundaryMinimumLevel,
+        int outerBoundaryMinimumLevel)
+    {
+        ValidateArguments(
+            cameraChunkX, cameraChunkZ, nearDistanceChunks, horizonDistanceChunks,
+            rootLevel, nearBoundaryMinimumLevel, outerBoundaryMinimumLevel);
+        _ = TryRequiredTiles(
+            cameraChunkX, cameraChunkZ, nearDistanceChunks, horizonDistanceChunks,
+            rootLevel, nearBoundaryMinimumLevel, outerBoundaryMinimumLevel,
+            int.MaxValue, out var required);
+        return required;
+    }
+
+    private static bool TryRequiredTiles(
+        double cameraChunkX,
+        double cameraChunkZ,
+        int nearDistanceChunks,
+        int horizonDistanceChunks,
+        int rootLevel,
+        int nearBoundaryMinimumLevel,
+        int outerBoundaryMinimumLevel,
+        int maximumTiles,
+        out TerrainLodTileKey[] tiles)
+    {
+        if (horizonDistanceChunks <= nearDistanceChunks)
+        {
+            tiles = [];
+            return true;
+        }
+
+        List<TerrainLodTileKey> required = new(Math.Min(maximumTiles, 512));
+        var exceededBudget = false;
+        var width = 1 << rootLevel;
+        var minX = (int)Math.Floor((cameraChunkX - horizonDistanceChunks) / width);
+        var maxX = (int)Math.Floor((cameraChunkX + horizonDistanceChunks) / width);
+        var minZ = (int)Math.Floor((cameraChunkZ - horizonDistanceChunks) / width);
+        var maxZ = (int)Math.Floor((cameraChunkZ + horizonDistanceChunks) / width);
+        for (var x = minX; x <= maxX && !exceededBudget; x++)
+        for (var z = minZ; z <= maxZ && !exceededBudget; z++)
+            Visit(new TerrainLodTileKey(rootLevel, x, z));
+
+        if (exceededBudget)
+        {
+            tiles = [];
+            return false;
+        }
+        tiles = [.. required
+            .OrderBy(key => key.DistanceTo(cameraChunkX, cameraChunkZ))
+            .ThenByDescending(static key => key.Level)
+            .ThenBy(static key => key.X)
+            .ThenBy(static key => key.Z)];
+        return true;
+
+        void Visit(TerrainLodTileKey key)
+        {
+            if (exceededBudget) return;
+            var nearest = key.DistanceTo(cameraChunkX, cameraChunkZ);
+            var furthest = FurthestDistanceTo(key, cameraChunkX, cameraChunkZ);
+            if (nearest > horizonDistanceChunks || furthest <= nearDistanceChunks) return;
+            var whollyInsideAnnulus = furthest <= horizonDistanceChunks &&
+                                      nearest >= nearDistanceChunks;
+            var crossesNearBoundary = nearest < nearDistanceChunks &&
+                                      furthest > nearDistanceChunks;
+            var boundaryMinimumLevel = crossesNearBoundary
+                ? nearBoundaryMinimumLevel
+                : outerBoundaryMinimumLevel;
+            if (whollyInsideAnnulus || key.Level <= boundaryMinimumLevel)
+            {
+                if (required.Count >= maximumTiles)
+                {
+                    exceededBudget = true;
+                    return;
+                }
+                required.Add(key);
+                return;
+            }
+            for (var index = 0; index < 4; index++) Visit(key.Child(index));
+        }
+    }
+
+    private static void ValidateArguments(
+        double cameraChunkX,
+        double cameraChunkZ,
+        int nearDistanceChunks,
+        int horizonDistanceChunks,
+        int rootLevel,
+        int nearBoundaryMinimumLevel,
+        int outerBoundaryMinimumLevel)
     {
         if (!double.IsFinite(cameraChunkX))
             throw new ArgumentOutOfRangeException(nameof(cameraChunkX));
@@ -22,42 +200,30 @@ public static class TerrainLodCoveragePlanner
         if (nearDistanceChunks < 0)
             throw new ArgumentOutOfRangeException(nameof(nearDistanceChunks));
         if (horizonDistanceChunks <= nearDistanceChunks)
-            return [];
+            return;
         if (rootLevel is < 0 or > TerrainLodTileKey.MaximumLevel)
             throw new ArgumentOutOfRangeException(nameof(rootLevel));
-        if (minimumLevel < 0 || minimumLevel > rootLevel)
-            throw new ArgumentOutOfRangeException(nameof(minimumLevel));
+        if (nearBoundaryMinimumLevel < 0 || nearBoundaryMinimumLevel > rootLevel)
+            throw new ArgumentOutOfRangeException(nameof(nearBoundaryMinimumLevel));
+        if (outerBoundaryMinimumLevel < nearBoundaryMinimumLevel ||
+            outerBoundaryMinimumLevel > rootLevel)
+            throw new ArgumentOutOfRangeException(nameof(outerBoundaryMinimumLevel));
+    }
 
-        var width = 1 << rootLevel;
-        var minX = (int)Math.Floor((cameraChunkX - horizonDistanceChunks) / width);
-        var maxX = (int)Math.Floor((cameraChunkX + horizonDistanceChunks) / width);
-        var minZ = (int)Math.Floor((cameraChunkZ - horizonDistanceChunks) / width);
-        var maxZ = (int)Math.Floor((cameraChunkZ + horizonDistanceChunks) / width);
-        List<TerrainLodTileKey> required = [];
-        for (var x = minX; x <= maxX; x++)
-        for (var z = minZ; z <= maxZ; z++)
-            Visit(new TerrainLodTileKey(rootLevel, x, z));
-
-        return [.. required
-            .OrderBy(key => key.DistanceTo(cameraChunkX, cameraChunkZ))
-            .ThenByDescending(static key => key.Level)
-            .ThenBy(static key => key.X)
-            .ThenBy(static key => key.Z)];
-
-        void Visit(TerrainLodTileKey key)
-        {
-            var nearest = key.DistanceTo(cameraChunkX, cameraChunkZ);
-            var furthest = FurthestDistanceTo(key, cameraChunkX, cameraChunkZ);
-            if (nearest > horizonDistanceChunks || furthest <= nearDistanceChunks) return;
-            var whollyInsideAnnulus = furthest <= horizonDistanceChunks &&
-                                      nearest >= nearDistanceChunks;
-            if (whollyInsideAnnulus || key.Level == minimumLevel)
-            {
-                required.Add(key);
-                return;
-            }
-            for (var index = 0; index < 4; index++) Visit(key.Child(index));
-        }
+    /// <summary>
+    ///     Keeps two refinement octaves below the management root at the far boundary. Thus the
+    ///     number of boundary nodes remains approximately stable as the horizon and root level
+    ///     grow together, while the inner handoff can retain its independently chosen fine floor.
+    /// </summary>
+    public static int RecommendedOuterBoundaryMinimumLevel(
+        int rootLevel,
+        int nearBoundaryMinimumLevel)
+    {
+        if (rootLevel is < 0 or > TerrainLodTileKey.MaximumLevel)
+            throw new ArgumentOutOfRangeException(nameof(rootLevel));
+        if (nearBoundaryMinimumLevel < 0 || nearBoundaryMinimumLevel > rootLevel)
+            throw new ArgumentOutOfRangeException(nameof(nearBoundaryMinimumLevel));
+        return Math.Max(nearBoundaryMinimumLevel, rootLevel - 2);
     }
 
     /// <summary>
@@ -97,11 +263,14 @@ public static class TerrainLodCoveragePlanner
         double cameraChunkX,
         double cameraChunkZ,
         TerrainLodSpatialPolicy policy,
-        Func<TerrainLodTileKey, bool> isGpuReady)
+        Func<TerrainLodTileKey, bool> isGpuReady,
+        int maximumSelectedNodes = int.MaxValue)
     {
         ArgumentNullException.ThrowIfNull(requiredRoots);
         ArgumentNullException.ThrowIfNull(policy);
         ArgumentNullException.ThrowIfNull(isGpuReady);
+        if (maximumSelectedNodes <= 0)
+            throw new ArgumentOutOfRangeException(nameof(maximumSelectedNodes));
 
         var candidates = requiredRoots
             .Distinct()
@@ -121,6 +290,7 @@ public static class TerrainLodCoveragePlanner
         var parentFallbacks = 0;
         var missingGroups = 0;
         var completeHorizon = true;
+        var budgetLimited = false;
         var frontierBandWidth = candidates.Length == 0
             ? 1
             : 1 << candidates.Min(static candidate => candidate.Root.Level);
@@ -139,15 +309,50 @@ public static class TerrainLodCoveragePlanner
                 completeHorizon = false;
                 break;
             }
-            roots.AddRange(group.Select(static candidate =>
+            var groupRoots = group.Select(static candidate =>
                 new TerrainLodCoarseCoverRootSelection(
-                    candidate.Root, [.. candidate.Selection.Nodes])));
+                    candidate.Root, [.. candidate.Selection.Nodes])).ToArray();
+            var projectedNodes = roots.Sum(static root => root.Nodes.Count) +
+                                 groupRoots.Sum(static root => root.Nodes.Count);
+            if (projectedNodes > maximumSelectedNodes)
+            {
+                // Prefer a ready management root over its finer descendants. This preserves the
+                // band's complete coverage while reducing work instead of truncating arbitrary
+                // children. Farthest/largest reductions collapse first.
+                foreach (var index in Enumerable.Range(0, groupRoots.Length)
+                             .Where(index => groupRoots[index].Nodes.Count > 1 &&
+                                             isGpuReady(groupRoots[index].Root))
+                             .OrderByDescending(index => groupRoots[index].Nodes.Count - 1)
+                             .ThenByDescending(index => group[index].Distance))
+                {
+                    var root = groupRoots[index].Root;
+                    projectedNodes -= groupRoots[index].Nodes.Count - 1;
+                    groupRoots[index] = new TerrainLodCoarseCoverRootSelection(
+                        root,
+                        [new TerrainLodTileSelection(
+                            root,
+                            policy.HorizontalSampleLevelForSpatialLevel(root.Level),
+                            policy.VerticalSliceBudgetForSpatialLevel(root.Level))]);
+                    parentFallbacks++;
+                    budgetLimited = true;
+                    if (projectedNodes <= maximumSelectedNodes) break;
+                }
+            }
+            if (projectedNodes > maximumSelectedNodes)
+            {
+                // A complete radial band is indivisible. Retain the already complete near prefix
+                // rather than allocating or publishing an over-budget partial band.
+                completeHorizon = false;
+                budgetLimited = true;
+                break;
+            }
+            roots.AddRange(groupRoots);
         }
 
         return new TerrainLodCoarseCoverSelection(
             [.. roots], roots.Count != 0,
             completeHorizon && roots.Count == candidates.Length,
-            parentFallbacks, missingGroups);
+            parentFallbacks, missingGroups, budgetLimited);
     }
 
     /// <summary>
@@ -163,8 +368,11 @@ public static class TerrainLodCoveragePlanner
         double maximumDistanceChunks,
         TerrainLodSpatialPolicy policy,
         Func<TerrainLodTileKey, bool> isGpuReady,
-        IReadOnlySet<TerrainLodTileKey>? preferredTiles = null)
+        IReadOnlySet<TerrainLodTileKey>? preferredTiles = null,
+        int maximumSelectedNodes = int.MaxValue)
     {
+        if (maximumSelectedNodes <= 0)
+            throw new ArgumentOutOfRangeException(nameof(maximumSelectedNodes));
         var forest = TerrainLodSpatialForestSelector.Select(
             readyKeys, minimumVisibleLevel, cameraChunkX, cameraChunkZ,
             maximumDistanceChunks, policy, isGpuReady);
@@ -207,6 +415,12 @@ public static class TerrainLodCoveragePlanner
             .ThenBy(static component => component.Min(selection => selection.Tile.X))
             .ThenBy(static component => component.Min(selection => selection.Tile.Z))
             .First();
+        if (selected.Count > maximumSelectedNodes)
+            return new TerrainLodCoarseCoverSelection(
+                [], false, false,
+                forest.Roots.Sum(static root => root.ParentFallbacks),
+                forest.Roots.Sum(static root => root.MissingCoverageGroups),
+                budgetLimited: true);
         return new TerrainLodCoarseCoverSelection(
             [.. selected
                 .OrderBy(selection => selection.Tile.DistanceTo(cameraChunkX, cameraChunkZ))
@@ -329,6 +543,25 @@ public static class TerrainLodCoveragePlanner
     }
 }
 
+public sealed class TerrainLodCoveragePlan
+{
+    internal TerrainLodCoveragePlan(
+        TerrainLodTileKey[] tiles,
+        int requestedOuterBoundaryMinimumLevel,
+        int effectiveOuterBoundaryMinimumLevel)
+    {
+        Tiles = Array.AsReadOnly(tiles);
+        RequestedOuterBoundaryMinimumLevel = requestedOuterBoundaryMinimumLevel;
+        EffectiveOuterBoundaryMinimumLevel = effectiveOuterBoundaryMinimumLevel;
+    }
+
+    public IReadOnlyList<TerrainLodTileKey> Tiles { get; }
+    public int RequestedOuterBoundaryMinimumLevel { get; }
+    public int EffectiveOuterBoundaryMinimumLevel { get; }
+    public bool CoarsenedForBudget =>
+        EffectiveOuterBoundaryMinimumLevel > RequestedOuterBoundaryMinimumLevel;
+}
+
 public sealed class TerrainLodCoarseCoverRootSelection
 {
     internal TerrainLodCoarseCoverRootSelection(
@@ -350,13 +583,15 @@ public sealed class TerrainLodCoarseCoverSelection
         bool completeCoverage,
         bool completeHorizon,
         int parentFallbacks,
-        int missingCoverageGroups)
+        int missingCoverageGroups,
+        bool budgetLimited = false)
     {
         Roots = Array.AsReadOnly(roots);
         CompleteCoverage = completeCoverage;
         CompleteHorizon = completeHorizon;
         ParentFallbacks = parentFallbacks;
         MissingCoverageGroups = missingCoverageGroups;
+        BudgetLimited = budgetLimited;
     }
 
     public IReadOnlyList<TerrainLodCoarseCoverRootSelection> Roots { get; }
@@ -364,5 +599,6 @@ public sealed class TerrainLodCoarseCoverSelection
     public bool CompleteHorizon { get; }
     public int ParentFallbacks { get; }
     public int MissingCoverageGroups { get; }
+    public bool BudgetLimited { get; }
     public int SelectedNodes => Roots.Sum(static root => root.Nodes.Count);
 }

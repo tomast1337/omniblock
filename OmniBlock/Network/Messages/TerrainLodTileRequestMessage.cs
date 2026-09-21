@@ -10,7 +10,7 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class TerrainLodTileRequestMessage : Message
 {
-    public const int MaximumKeys = 8;
+    public const int MaximumKeys = TerrainLodScaleBudget.MaximumRequestKeys;
     private const int MaximumIdentityLength = 128;
     public static readonly ResourceLocation Id = new(
         Namespace.Get("omniblock"), "terrain_lod_tile_request_v2");

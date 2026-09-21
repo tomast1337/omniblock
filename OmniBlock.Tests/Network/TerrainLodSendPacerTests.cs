@@ -1,9 +1,21 @@
 using OmniBlock.Server;
+using OmniBlock.Worlds.Lod;
 
 namespace OmniBlock.Tests.Network;
 
 public sealed class TerrainLodSendPacerTests
 {
+    [Fact]
+    public void Transport_pacer_uses_the_shared_scale_budget()
+    {
+        Assert.Equal(TerrainLodScaleBudget.TransportBytesPerSecond,
+            TerrainLodSendPacer.BytesPerSecond);
+        Assert.Equal(TerrainLodScaleBudget.TransportBurstBytes,
+            TerrainLodSendPacer.BurstBytes);
+        Assert.Equal(TerrainLodScaleBudget.MaximumTransportBacklog,
+            TerrainLodSendPacer.MaximumTransportBacklog);
+    }
+
     [Fact]
     public void Gameplay_chunk_queue_always_wins_over_lod_tiles()
     {

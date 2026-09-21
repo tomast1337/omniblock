@@ -8,8 +8,8 @@ namespace OmniBlock.Network.Messages;
 public sealed class TerrainLodTileMessage : Message
 {
     private const int MaximumIdentityLength = 128;
-    private const int MaximumCompressedBytes = 2 * 1024 * 1024 - 128;
-    private const int MaximumDecodedBytes = 64 * 1024 * 1024;
+    private const int MaximumCompressedBytes = TerrainLodScaleBudget.MaximumCompressedTileBytes;
+    private const int MaximumDecodedBytes = TerrainLodScaleBudget.MaximumDecodedTileBytes;
     public static readonly ResourceLocation Id = new(
         Namespace.Get("omniblock"), "terrain_lod_tile_v2");
 

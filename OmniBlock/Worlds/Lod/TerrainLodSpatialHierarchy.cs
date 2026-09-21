@@ -108,9 +108,17 @@ public readonly record struct TerrainLodTileKey
 public sealed class TerrainLodSpatialPolicy
 {
     public const int MinimumSupportedHorizonChunks = 16;
+    /// <summary>Largest horizon currently exposed and accepted by client/server transport.</summary>
     public const int MaximumSupportedHorizonChunks = 256;
+    /// <summary>
+    ///     Largest dormant policy shape the hierarchy and disk cache can construct. Distances
+    ///     above <see cref="MaximumSupportedHorizonChunks"/> remain unavailable to users and peers
+    ///     until their Phase 2B scale gates pass.
+    /// </summary>
+    public const int MaximumGeneratedHorizonChunks = 4096;
     public const int MinimumRemoteSpatialLevel = 2;
     public const int MaximumSupportedSpatialLevel = 6;
+    public const int MaximumGeneratedSpatialLevel = 10;
     private const double DefaultDistanceUnitChunks = 4;
     private const double DefaultDistanceGrowth = 2;
     private readonly int[] _horizontalSampleLevelBySpatialLevel;
@@ -132,10 +140,10 @@ public sealed class TerrainLodSpatialPolicy
     /// </summary>
     public static TerrainLodSpatialPolicy CreateForMaximumHorizon(int horizonChunks)
     {
-        if (horizonChunks is < MinimumSupportedHorizonChunks or > MaximumSupportedHorizonChunks)
+        if (horizonChunks is < MinimumSupportedHorizonChunks or > MaximumGeneratedHorizonChunks)
             throw new ArgumentOutOfRangeException(nameof(horizonChunks),
                 $"Terrain LOD horizon must be between {MinimumSupportedHorizonChunks} and " +
-                $"{MaximumSupportedHorizonChunks} chunks.");
+                $"{MaximumGeneratedHorizonChunks} chunks.");
         var maximumLevel = RequiredMaximumSpatialLevel(horizonChunks);
         return new TerrainLodSpatialPolicy(
             DefaultDistanceUnitChunks,
@@ -155,7 +163,7 @@ public sealed class TerrainLodSpatialPolicy
             : (int)Math.Floor(Math.Log(
                 horizonChunks / DefaultDistanceUnitChunks,
                 DefaultDistanceGrowth));
-        return Math.Clamp(level, 0, MaximumSupportedSpatialLevel);
+        return Math.Clamp(level, 0, MaximumGeneratedSpatialLevel);
     }
 
     private static int HorizontalSampleLevelForGeneratedSpatialLevel(int spatialLevel) =>

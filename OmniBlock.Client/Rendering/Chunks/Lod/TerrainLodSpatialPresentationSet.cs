@@ -93,6 +93,17 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
 
     public bool IsReady(TerrainLodTileKey key) => _entries.ContainsKey(key);
 
+    public bool TryGetPresentation(TerrainLodTileKey key, out TPresentation? presentation)
+    {
+        if (_entries.TryGetValue(key, out var entry))
+        {
+            presentation = entry.Presentation;
+            return true;
+        }
+        presentation = null;
+        return false;
+    }
+
     public TerrainLodSpatialPresentationFrame<TPresentation> Update(
         TerrainLodTileKey root,
         double cameraChunkX,

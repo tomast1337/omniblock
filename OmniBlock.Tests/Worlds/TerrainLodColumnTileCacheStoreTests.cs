@@ -120,6 +120,48 @@ public sealed class TerrainLodColumnTileCacheStoreTests
     }
 
     [Fact]
+    public void Dormant_level_ten_parent_builds_and_round_trips_through_disk_cache()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var policy = TerrainLodSpatialPolicy.CreateForMaximumHorizon(
+                TerrainLodSpatialPolicy.MaximumGeneratedHorizonChunks);
+            var key = new TerrainLodTileKey(
+                TerrainLodSpatialPolicy.MaximumGeneratedSpatialLevel, 1, -1);
+            var column = TerrainLodColumn.Create(8,
+            [
+                new TerrainLodColumnSpan(
+                    0, 8, Materials.Resolve(1, metadata: 0), blockLight: 0, skyLight: 15)
+            ]);
+            var children = Enumerable.Range(0, 4)
+                .Select(index => TerrainLodColumnTile.CreateUniform(
+                    key.Child(index),
+                    policy.HorizontalSampleLevelForSpatialLevel(key.Level - 1),
+                    8,
+                    column,
+                    $"level-ten-child-{index}"))
+                .ToArray();
+            var expected = TerrainLodColumnTile.BuildParent(
+                key,
+                children,
+                policy.HorizontalSampleLevelForSpatialLevel(key.Level));
+            var store = Store(root);
+
+            Assert.Equal(64, expected.Width);
+            Assert.Equal(TerrainLodColumnTileCacheWriteStatus.Written,
+                store.Write(expected));
+            var actual = Assert.IsType<TerrainLodColumnTile>(store.Read(key).Tile);
+            Assert.Equal(expected.CanonicalHash, actual.CanonicalHash);
+            Assert.Equal(expected.InputHashes, actual.InputHashes);
+        }
+        finally
+        {
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
     public void Transport_rejects_levels_outside_the_generated_policy()
     {
         TerrainLodTileRequestMessage request = new()

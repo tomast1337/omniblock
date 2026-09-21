@@ -154,6 +154,78 @@ public sealed class TerrainLodRemoteCoveragePlannerTests
     }
 
     [Fact]
+    public void Coverage_plan_coarsens_only_the_far_boundary_to_fit_its_hard_budget()
+    {
+        var plan = TerrainLodCoveragePlanner.PlanRequiredTiles(
+            cameraChunkX: 0.25,
+            cameraChunkZ: -0.25,
+            nearDistanceChunks: 4,
+            horizonDistanceChunks: 4096,
+            rootLevel: 10,
+            nearBoundaryMinimumLevel: 2,
+            outerBoundaryMinimumLevel: 2,
+            maximumTiles: TerrainLodScaleBudget.MaximumCoverageTiles);
+
+        Assert.True(plan.CoarsenedForBudget);
+        Assert.Equal(2, plan.RequestedOuterBoundaryMinimumLevel);
+        Assert.InRange(plan.EffectiveOuterBoundaryMinimumLevel, 3, 10);
+        Assert.InRange(plan.Tiles.Count, 1, TerrainLodScaleBudget.MaximumCoverageTiles);
+        Assert.Contains(plan.Tiles, key => key.Level == 2);
+    }
+
+    [Fact]
+    public void Optional_refinement_plan_defers_instead_of_exceeding_its_budget()
+    {
+        var planned = TerrainLodCoveragePlanner.TryPlanRequiredTiles(
+            cameraChunkX: 0,
+            cameraChunkZ: 20,
+            nearDistanceChunks: 4,
+            horizonDistanceChunks: 64,
+            rootLevel: 2,
+            nearBoundaryMinimumLevel: 2,
+            outerBoundaryMinimumLevel: 2,
+            out var plan,
+            maximumTiles: TerrainLodScaleBudget.MaximumCoverageTiles);
+
+        Assert.False(planned);
+        Assert.Null(plan);
+    }
+
+    [Fact]
+    public void Selection_collapses_ready_descendants_to_their_parent_before_exceeding_budget()
+    {
+        var policy = TerrainLodSpatialPolicy.CreateDefault();
+        var root = new TerrainLodTileKey(3, 0, 0);
+        HashSet<TerrainLodTileKey> ready = [root];
+        for (var index = 0; index < 4; index++) ready.Add(root.Child(index));
+
+        var selection = TerrainLodCoveragePlanner.SelectCompleteCover(
+            [root], 0, 0, policy, ready.Contains, maximumSelectedNodes: 1);
+
+        Assert.True(selection.CompleteCoverage);
+        Assert.True(selection.CompleteHorizon);
+        Assert.True(selection.BudgetLimited);
+        Assert.Equal(root, Assert.Single(Assert.Single(selection.Roots).Nodes).Tile);
+    }
+
+    [Fact]
+    public void Selection_retains_no_partial_band_when_it_cannot_fit_the_node_budget()
+    {
+        var policy = TerrainLodSpatialPolicy.CreateDefault();
+        var root = new TerrainLodTileKey(3, 0, 0);
+        HashSet<TerrainLodTileKey> ready = [];
+        for (var index = 0; index < 4; index++) ready.Add(root.Child(index));
+
+        var selection = TerrainLodCoveragePlanner.SelectCompleteCover(
+            [root], 0, 0, policy, ready.Contains, maximumSelectedNodes: 2);
+
+        Assert.False(selection.CompleteCoverage);
+        Assert.False(selection.CompleteHorizon);
+        Assert.True(selection.BudgetLimited);
+        Assert.Empty(selection.Roots);
+    }
+
+    [Fact]
     public void Unavailable_frontier_exposes_only_one_connected_ready_component()
     {
         var policy = TerrainLodSpatialPolicy.CreateDefault();
@@ -285,35 +357,44 @@ public sealed class TerrainLodRemoteCoveragePlannerTests
     [Fact]
     public void Generated_hierarchy_keeps_large_horizon_partitions_sublinear()
     {
-        var policy = TerrainLodSpatialPolicy.CreateDefault();
-        int[] horizons = [64, 128, 256];
+        var policy = TerrainLodSpatialPolicy.CreateForMaximumHorizon(
+            TerrainLodSpatialPolicy.MaximumGeneratedHorizonChunks);
+        int[] horizons = [64, 128, 256, 512, 1024, 2048, 4096];
         var partitions = horizons.Select(horizon =>
         {
             var rootLevel = policy.DesiredSpatialLevel(horizon);
+            var outerBoundaryMinimumLevel =
+                TerrainLodCoveragePlanner.RecommendedOuterBoundaryMinimumLevel(
+                    rootLevel, TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel);
             var keys = TerrainLodCoveragePlanner.RequiredTiles(
                 cameraChunkX: -3.25,
                 cameraChunkZ: 5.75,
                 nearDistanceChunks: 8,
                 horizonDistanceChunks: horizon,
                 rootLevel,
-                TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel);
-            return (Horizon: horizon, RootLevel: rootLevel, Keys: keys);
+                TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel,
+                outerBoundaryMinimumLevel);
+            return (Horizon: horizon, RootLevel: rootLevel,
+                OuterBoundaryMinimumLevel: outerBoundaryMinimumLevel, Keys: keys);
         }).ToArray();
 
-        Assert.Equal([4, 5, 6], partitions.Select(static value => value.RootLevel));
+        Assert.Equal([4, 5, 6, 7, 8, 9, 10],
+            partitions.Select(static value => value.RootLevel));
+        Assert.Equal([2, 3, 4, 5, 6, 7, 8],
+            partitions.Select(static value => value.OuterBoundaryMinimumLevel));
         Assert.All(partitions, partition =>
         {
-            // Boundary refinement grows with circumference, not horizon area. The loose constant
-            // leaves room for camera alignment while catching a regression to level-2 tiling of
-            // the complete disk immediately.
-            Assert.InRange(partition.Keys.Length, 1, partition.Horizon * 6);
+            // The far-boundary floor rises with hierarchy depth, so the complete annulus remains
+            // within one stable node budget instead of growing with either area or circumference.
+            Assert.InRange(partition.Keys.Length, 1, 512);
             Assert.All(partition.Keys, key => Assert.InRange(
                 key.Level,
                 TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel,
                 partition.RootLevel));
         });
-        Assert.True(partitions[1].Keys.Length <= partitions[0].Keys.Length * 3);
-        Assert.True(partitions[2].Keys.Length <= partitions[1].Keys.Length * 3);
+        for (var index = 1; index < partitions.Length; index++)
+            Assert.True(partitions[index].Keys.Length <=
+                        partitions[index - 1].Keys.Length * 3 / 2);
 
         // Every coarse root is capped at 64x64 horizontal samples. This bounds per-draw vertex,
         // upload, and memory work even though its represented area grows by four each level.
@@ -323,6 +404,35 @@ public sealed class TerrainLodRemoteCoveragePlannerTests
                                 (1 << policy.HorizontalSampleLevelForSpatialLevel(key.Level));
             Assert.InRange(samplesAcross, 1, 64);
         });
+    }
+
+    [Fact]
+    public void Near_and_far_boundaries_use_independent_refinement_floors()
+    {
+        const double cameraX = -3.25;
+        const double cameraZ = 5.75;
+        const int nearDistance = 8;
+        const int horizonDistance = 256;
+        const int rootLevel = 6;
+        const int nearMinimumLevel = 2;
+        var outerMinimumLevel =
+            TerrainLodCoveragePlanner.RecommendedOuterBoundaryMinimumLevel(
+                rootLevel, nearMinimumLevel);
+
+        var keys = TerrainLodCoveragePlanner.RequiredTiles(
+            cameraX, cameraZ, nearDistance, horizonDistance,
+            rootLevel, nearMinimumLevel, outerMinimumLevel);
+
+        Assert.Equal(4, outerMinimumLevel);
+        Assert.Contains(keys, key => key.Level == nearMinimumLevel &&
+                                     key.DistanceTo(cameraX, cameraZ) < nearDistance &&
+                                     FurthestDistance(key, cameraX, cameraZ) > nearDistance);
+        Assert.All(keys.Where(key =>
+                key.DistanceTo(cameraX, cameraZ) <= horizonDistance &&
+                FurthestDistance(key, cameraX, cameraZ) > horizonDistance &&
+                !(key.DistanceTo(cameraX, cameraZ) < nearDistance &&
+                  FurthestDistance(key, cameraX, cameraZ) > nearDistance)),
+            key => Assert.True(key.Level >= outerMinimumLevel));
     }
 
     private static double FurthestDistance(
