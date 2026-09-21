@@ -2051,6 +2051,16 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         if (!_world.BlockHost.HasChunk(chunkX, chunkZ) ||
             !_world.BlockHost.GetChunk(chunkX, chunkZ).Loaded) return false;
 
+        return IsMeshColumnResident(chunkX, chunkZ);
+    }
+
+    /// <summary>
+    ///     Reports whether the complete exact presentation is still retained, independently of
+    ///     source-chunk readiness. Residency hysteresis intentionally keeps these meshes available
+    ///     while an exact-to-LOD handoff reverses after movement or unload.
+    /// </summary>
+    internal bool IsMeshColumnResident(int chunkX, int chunkZ)
+    {
         for (var y = 0; y < ChuckFormat.WorldHeight; y += SubChunkRenderer.Size)
         {
             if (!HasRenderer(new Vector3D<int>(

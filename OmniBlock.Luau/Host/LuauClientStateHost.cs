@@ -135,6 +135,22 @@ public static unsafe class LuauClientStateHost
                                                 key == "terrainLodSpatialSolidPages" or
                                                 key == "terrainLodSpatialTranslucentPages" or
                                                 key == "terrainLodSpatialGpuBytes" or
+                                                key == "terrainCoverageReady" or
+                                                key == "terrainCoverageExpected" or
+                                                key == "terrainCoverageCovered" or
+                                                key == "terrainCoverageExact" or
+                                                key == "terrainCoverageColumnLod" or
+                                                key == "terrainCoverageSpatial" or
+                                                key == "terrainCoverageTransitions" or
+                                                key == "terrainCoverageHoles" or
+                                                key == "terrainCoverageOverlaps" or
+                                                key == "terrainCoverageExpectedSeams" or
+                                                key == "terrainCoverageMissingSeams" or
+                                                key == "terrainCoveragePendingSeams" or
+                                                key == "terrainCoverageUnexpectedSeams" or
+                                                key == "terrainCoverageFailureKind" or
+                                                key == "terrainCoverageFailureX" or
+                                                key == "terrainCoverageFailureZ" or
                                                 key == "terrainLodRemoteRequests" or
                                                 key == "terrainLodRemoteTiles" or
                                                 key == "terrainLodRemoteBytes" or

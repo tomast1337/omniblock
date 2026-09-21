@@ -56,7 +56,7 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
             DrawChunkLifecycle(chunkRenderer);
 
         if (ImGui.CollapsingHeader("Distant terrain LOD", ImGuiTreeNodeFlags.DefaultOpen))
-            DrawTerrainLod(ctx.TerrainLod, ctx.TerrainLodSpatial);
+            DrawTerrainLod(ctx.TerrainLod, ctx.TerrainLodSpatial, ctx.TerrainCoverage);
 
         if (ImGui.CollapsingHeader("Non-terrain presentation", ImGuiTreeNodeFlags.DefaultOpen))
             DrawNonTerrainPresentation();
@@ -295,7 +295,8 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
 
     private static void DrawTerrainLod(
         ClientTerrainLodSnapshot? profile,
-        TerrainLodSpatialSnapshot? spatialProfile)
+        TerrainLodSpatialSnapshot? spatialProfile,
+        TerrainCoverageSnapshot? coverageProfile)
     {
         if (profile is not { } lod)
         {
@@ -331,6 +332,16 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
             $"Resources: generation {lod.ResourceGeneration:N0}  reloads {lod.ResourceReloads:N0}  last reuse {lod.LastResourceReloadReusedColumns:N0} columns / {FormatBytes(lod.LastResourceReloadReusedGpuBytes)} GPU");
         ImGuiTextSafe.Text(
             $"Lifecycle: stale {lod.StaleResults:N0}  rejected {lod.RejectedAdmissions:N0}  evicted {lod.Evictions:N0}");
+        if (coverageProfile is { } coverage)
+        {
+            ImGuiTextSafe.Text(
+                $"Coverage:  {coverage.CoveredColumns:N0}/{coverage.ExpectedColumns:N0} columns  exact {coverage.ExactOwnedColumns:N0}  column {coverage.ColumnLodOwnedColumns:N0}  spatial {coverage.SpatialOwnedColumns:N0}  transitions {coverage.TransitionColumns:N0}");
+            ImGuiTextSafe.Text(
+                $"Contract:  holes {coverage.HoleCount:N0}  overlaps {coverage.OverlapCount:N0}  seams missing {coverage.MissingSeams:N0} / pending {coverage.PendingReplacementSeams:N0} / unexpected {coverage.UnexpectedSeams:N0}");
+            if (coverage.FirstFailureKind != TerrainCoverageFailureKind.None)
+                ImGuiTextSafe.Text(
+                    $"First failure: {coverage.FirstFailureKind} at {coverage.FirstFailureX},{coverage.FirstFailureZ}");
+        }
         if (spatialProfile is not { } spatial) return;
         ImGui.SeparatorText("Spatial LOD");
         ImGuiTextSafe.Text(

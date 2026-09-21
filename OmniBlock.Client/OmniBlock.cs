@@ -550,6 +550,7 @@ public partial class OmniBlock :
             {
                 var state = WorldRenderer?.TerrainLod?.Snapshot ?? default;
                 var spatial = WorldRenderer?.TerrainLod?.SpatialSnapshot ?? default;
+                var coverage = WorldRenderer?.TerrainLod?.CoverageSnapshot ?? default;
                 var terrainNetwork = (World as ClientWorld)?.NetworkHandler;
                 return key switch
                 {
@@ -626,6 +627,22 @@ public partial class OmniBlock :
                     "terrainLodSpatialSolidPages" => spatial.SubmittedSolidPages,
                     "terrainLodSpatialTranslucentPages" => spatial.SubmittedTranslucentPages,
                     "terrainLodSpatialGpuBytes" => spatial.GpuBytes,
+                    "terrainCoverageReady" => coverage.IsComplete ? 1 : 0,
+                    "terrainCoverageExpected" => coverage.ExpectedColumns,
+                    "terrainCoverageCovered" => coverage.CoveredColumns,
+                    "terrainCoverageExact" => coverage.ExactOwnedColumns,
+                    "terrainCoverageColumnLod" => coverage.ColumnLodOwnedColumns,
+                    "terrainCoverageSpatial" => coverage.SpatialOwnedColumns,
+                    "terrainCoverageTransitions" => coverage.TransitionColumns,
+                    "terrainCoverageHoles" => coverage.HoleCount,
+                    "terrainCoverageOverlaps" => coverage.OverlapCount,
+                    "terrainCoverageExpectedSeams" => coverage.ExpectedSeams,
+                    "terrainCoverageMissingSeams" => coverage.MissingSeams,
+                    "terrainCoveragePendingSeams" => coverage.PendingReplacementSeams,
+                    "terrainCoverageUnexpectedSeams" => coverage.UnexpectedSeams,
+                    "terrainCoverageFailureKind" => (int)coverage.FirstFailureKind,
+                    "terrainCoverageFailureX" => coverage.FirstFailureX,
+                    "terrainCoverageFailureZ" => coverage.FirstFailureZ,
                     "terrainLodRemoteRequests" => state.RemoteRequests,
                     "terrainLodRemoteTiles" => state.RemoteTiles,
                     "terrainLodRemoteBytes" => state.RemoteWireBytes,

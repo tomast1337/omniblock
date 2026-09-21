@@ -183,6 +183,12 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private readonly List<VisibleSeam> _visibleSeams = [];
     private readonly List<VisibleSeam> _visibleTranslucentSeams = [];
     private readonly List<VisibleTranslucentDraw> _visibleTranslucentDraws = [];
+    private readonly HashSet<(int X, int Z)> _coverageFootprint = [];
+    private readonly Dictionary<((int X, int Z) Column, uint Mode), int>
+        _coverageSpatialBodies = [];
+    private readonly HashSet<(int X, int Z)> _coverageSpatialConflicts = [];
+    private readonly List<TerrainCoverageColumn> _coverageColumns = [];
+    private readonly HashSet<TerrainLodSpatialSeamSegment> _coverageSpatialSeams = [];
     private ChunkDrawMetadata[] _uniforms = [];
     private WgpuPipeline? _opaquePipeline;
     private WgpuPipeline? _translucentPipeline;
@@ -214,8 +220,10 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private int _remoteCoverageMissing;
     private int _remoteCoverageDeferred;
     private bool _disposed;
+    private long _lastCoverageTick = -1;
     private ClientTerrainLodSnapshot _snapshot;
     private TerrainLodSpatialSnapshot _spatialSnapshot;
+    private TerrainCoverageSnapshot _coverageSnapshot;
     private readonly TerrainLodSpatialPublication<TerrainLodSpatialGpuPresentation, TerrainLodSpatialGpuSeamPresentation>
         _spatialPublication = new();
     private TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation>?
@@ -262,6 +270,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
 
     public ClientTerrainLodSnapshot Snapshot => _snapshot;
     public TerrainLodSpatialSnapshot SpatialSnapshot => _spatialSnapshot;
+    public TerrainCoverageSnapshot CoverageSnapshot => _coverageSnapshot;
 
     public void ObserveRemoteSpatialTile(TerrainLodColumnTile tile, int wireBytes = 0)
     {
@@ -706,6 +715,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             _solidSeamStates, _desiredSolidSeams, _solidSeamFades);
         uploads += UpdateSeams(device, parameters.ViewPos, SeamUploadsPerFrame,
             translucent: false, _desiredSolidSeams, _solidSeams);
+        UpdateCoverageSnapshot(parameters, nearRenderer);
         CollectVisibleSeams(parameters.ViewPos, backToFront: false,
             _desiredSolidSeams, _solidSeams, _solidSeamFades, _visibleSeams);
         // Body coverage is never trimmed to make room for seams. The spatial hierarchy bounds the
@@ -995,6 +1005,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _spatialColumnMasks.Clear();
         _visibleSpatialSolid.Clear();
         _visibleSpatialTranslucent.Clear();
+        _coverageFootprint.Clear();
+        _coverageSpatialBodies.Clear();
+        _coverageSpatialConflicts.Clear();
+        _coverageColumns.Clear();
+        _coverageSpatialSeams.Clear();
         _desiredSolidSeams.Clear();
         _desiredTranslucentSeams.Clear();
         _selectedSolidLevels.Clear();
@@ -1706,6 +1721,149 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private bool IsAuthoritativeSpatialChunk((int X, int Z) key) =>
         _authoritativeSpatialColumns.Contains(key);
 
+    /// <summary>
+    /// Builds a layer-independent ownership report at simulation-tick frequency. The footprint is
+    /// the union of loaded exact columns in the detail radius and every retained LOD body inside
+    /// the configured horizon. Candidate spatial frames are deliberately excluded: only the
+    /// atomically published body/seam snapshot is allowed to claim coverage.
+    /// </summary>
+    private void UpdateCoverageSnapshot(
+        in ChunkRenderParams parameters,
+        ChunkRenderer nearRenderer)
+    {
+        if (_lastCoverageTick == _tick) return;
+        _lastCoverageTick = _tick;
+        _coverageFootprint.Clear();
+        _coverageSpatialBodies.Clear();
+        _coverageSpatialConflicts.Clear();
+        _coverageColumns.Clear();
+        _coverageSpatialSeams.Clear();
+
+        var cameraChunkX = parameters.ViewPos.X / SubChunkRenderer.Size;
+        var cameraChunkZ = parameters.ViewPos.Z / SubChunkRenderer.Size;
+        var horizon = Math.Min(MaximumDistanceBlocks / SubChunkRenderer.Size,
+            Math.Max(1, parameters.TerrainHorizonDistance));
+        var horizonSquared = horizon * horizon;
+        var detail = Math.Max(0, parameters.RenderDistance);
+        var detailSquared = (double)detail * detail;
+        var minX = (int)Math.Floor(cameraChunkX - detail - 1);
+        var maxX = (int)Math.Ceiling(cameraChunkX + detail + 1);
+        var minZ = (int)Math.Floor(cameraChunkZ - detail - 1);
+        var maxZ = (int)Math.Ceiling(cameraChunkZ + detail + 1);
+        for (var z = minZ; z <= maxZ; z++)
+        for (var x = minX; x <= maxX; x++)
+        {
+            if (ColumnDistanceSquared(x, z) >= detailSquared ||
+                !_world.BlockHost.HasChunk(x, z) ||
+                !_world.BlockHost.GetChunk(x, z).Loaded ||
+                !nearRenderer.IsMeshColumnResident(x, z))
+                continue;
+            _coverageFootprint.Add((x, z));
+        }
+
+        foreach (var key in _resident.Keys)
+            if (ColumnDistanceSquared(key.X, key.Z) <= horizonSquared)
+                _coverageFootprint.Add(key);
+
+        if (_spatialFrame is { } published)
+        {
+            foreach (var draw in published.Draws)
+            {
+                var tile = draw.Selection.Tile;
+                for (var z = tile.MinChunkZ; z <= tile.MaxChunkZ; z++)
+                for (var x = tile.MinChunkX; x <= tile.MaxChunkX; x++)
+                {
+                    var column = (X: checked((int)x), Z: checked((int)z));
+                    if (ColumnDistanceSquared(column.X, column.Z) > horizonSquared) continue;
+                    _coverageFootprint.Add(column);
+                    var body = (column, draw.Fade.Mode);
+                    var count = _coverageSpatialBodies.GetValueOrDefault(body) + 1;
+                    _coverageSpatialBodies[body] = count;
+                    if (count > 1) _coverageSpatialConflicts.Add(column);
+                }
+            }
+
+            foreach (var partition in published.Draws.GroupBy(static draw => draw.Fade.Mode))
+            foreach (var seam in TerrainLodSpatialSeamPlanner.Plan(
+                         partition.Select(static draw => draw.Selection)))
+                _coverageSpatialSeams.Add(seam);
+        }
+
+        foreach (var key in _coverageFootprint.OrderBy(static key => key.X)
+                     .ThenBy(static key => key.Z))
+        {
+            if (!parameters.Camera.IsBoundingBoxInFrustum(new Box(
+                    key.X * SubChunkRenderer.Size, 0, key.Z * SubChunkRenderer.Size,
+                    (key.X + 1) * SubChunkRenderer.Size, ChuckFormat.WorldHeight,
+                    (key.Z + 1) * SubChunkRenderer.Size)))
+                continue;
+            var exactPresent = nearRenderer.IsMeshColumnResident(key.X, key.Z);
+            var hasColumnLod = _resident.TryGetValue(key, out var columnLod);
+            var handoff = hasColumnLod
+                ? Math.Min(
+                    columnLod!.HandoffFor(translucent: false).Progress,
+                    columnLod.HandoffFor(translucent: true).Progress)
+                : 0;
+            _coverageColumns.Add(new TerrainCoverageColumn(
+                key.X, key.Z, exactPresent, hasColumnLod, handoff,
+                IsAuthoritativeSpatialChunk(key), _coverageSpatialConflicts.Contains(key)));
+        }
+
+        var expectedColumnSeams =
+            _desiredSolidSeams.Count(SeamRequiresGeometry) +
+            _desiredTranslucentSeams.Count(SeamRequiresGeometry);
+        var missingColumnSeams = 0;
+        var pendingColumnSeams = 0;
+        (int X, int Z)? firstMissingColumnSeam = null;
+        CountMissing(_desiredSolidSeams, _solidSeams);
+        CountMissing(_desiredTranslucentSeams, _translucentSeams);
+        _coverageSnapshot = TerrainPresentationCoverageOracle.Evaluate(
+            _coverageColumns,
+            expectedColumnSeams,
+            missingColumnSeams,
+            pendingColumnSeams,
+            _coverageSpatialSeams,
+            _spatialPublication.Seams.Keys,
+            firstMissingColumnSeam);
+        return;
+
+        double ColumnDistanceSquared(int x, int z)
+        {
+            var dx = x + 0.5 - cameraChunkX;
+            var dz = z + 0.5 - cameraChunkZ;
+            return dx * dx + dz * dz;
+        }
+
+        void CountMissing(
+            IReadOnlyDictionary<TerrainLodSeamKey, TerrainLodSeamSelection> desired,
+            IReadOnlyDictionary<TerrainLodSeamKey, GpuSeam> resident)
+        {
+            foreach (var group in desired.GroupBy(
+                         static pair => (pair.Key.Owner, pair.Key.BoundarySide)))
+            {
+                var desiredParts = group.Where(SeamRequiresGeometry).ToArray();
+                if (desiredParts.Length == 0) continue;
+                var desiredReady = desiredParts.All(pair =>
+                    resident.TryGetValue(pair.Key, out var seam) &&
+                    seam.Selection == pair.Value);
+                if (desiredReady) continue;
+                pendingColumnSeams += desiredParts.Count(pair =>
+                    !resident.TryGetValue(pair.Key, out var seam) ||
+                    seam.Selection != pair.Value);
+                // CollectVisibleSeams deliberately retains the previous complete edge until every
+                // part of a split replacement is installed. That is valid displayed coverage, not
+                // a hole; the pending counter still exposes the unfinished replacement.
+                var hasFallback = resident.Any(pair =>
+                    pair.Key.Owner == group.Key.Owner &&
+                    pair.Key.BoundarySide == group.Key.BoundarySide);
+                if (hasFallback) continue;
+                missingColumnSeams += desiredParts.Length;
+                firstMissingColumnSeam ??= group.Key.Owner;
+            }
+        }
+
+    }
+
     private bool SpatialSeamTouchesAuthority(TerrainLodSpatialSeamSegment seam) =>
         _authoritativeSpatialTiles.Contains(seam.Owner.Tile) ||
         seam.Neighbor is { } neighbor &&
@@ -1869,22 +2027,42 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             seam.Dispose();
         }
 
+        var groups = desired
+            .GroupBy(static pair => (pair.Key.Owner, pair.Key.BoundarySide))
+            .Select(group =>
+            {
+                var parts = group.ToArray();
+                var missing = parts.Count(pair =>
+                    !installed.TryGetValue(pair.Key, out var current) ||
+                    current.Selection != pair.Value);
+                var hasFallback = installed.Keys.Any(key =>
+                    key.Owner == group.Key.Owner &&
+                    key.BoundarySide == group.Key.BoundarySide);
+                var critical = !hasFallback && parts.Any(SeamRequiresGeometry);
+                return new SeamUploadGroup(group.Key, parts, missing, critical);
+            })
+            .ToArray();
+        // A newly visible level-changing edge without an older complete artifact is coverage work,
+        // not refinement. Admit every such group atomically this frame; ordinary replacements keep
+        // the small per-frame budget because CollectVisibleSeams retains their predecessor.
+        var effectiveBudget = Math.Max(uploadBudget,
+            groups.Where(static group => group.Critical)
+                .Sum(static group => group.Missing));
         var uploads = 0;
-        foreach (var group in desired
-                     .GroupBy(static pair => (pair.Key.Owner, pair.Key.BoundarySide))
-                     .OrderBy(group => DistanceSquared(group.Key.Owner, viewPosition))
+        foreach (var uploadGroup in groups
+                     .OrderByDescending(static group => group.Critical)
+                     .ThenBy(group => DistanceSquared(group.Key.Owner, viewPosition))
                      .ThenBy(static group => group.Key.Owner.X)
                      .ThenBy(static group => group.Key.Owner.Z)
                      .ThenBy(static group => group.Key.BoundarySide))
         {
-            var missing = group.Count(pair =>
-                !installed.TryGetValue(pair.Key, out var current) ||
-                current.Selection != pair.Value);
+            var missing = uploadGroup.Missing;
             if (missing == 0) continue;
             // Owner/neighbor split artifacts are one presentation replacement. Never publish only
             // half because the per-frame seam budget happened to end between them.
-            if (uploads + missing > uploadBudget) continue;
-            foreach (var (key, selection) in group.OrderBy(static pair => pair.Key.MaterialSide))
+            if (uploads + missing > effectiveBudget) continue;
+            foreach (var (key, selection) in uploadGroup.Parts
+                         .OrderBy(static pair => pair.Key.MaterialSide))
             {
                 if (installed.TryGetValue(key, out var current) &&
                     current.Selection == selection) continue;
@@ -1921,6 +2099,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         }
         return uploads;
     }
+
+    private static bool SeamRequiresGeometry(
+        KeyValuePair<TerrainLodSeamKey, TerrainLodSeamSelection> pair) =>
+        pair.Value.OwnerLevel != pair.Value.NeighborLevel ||
+        pair.Key.MaterialSide != TerrainLodSeamMaterialSide.Either;
 
     private static void CollectVisibleSeams(
         Vector3D<double> viewPosition,
@@ -2460,6 +2643,12 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         TerrainLodBoundaryIdentity NeighborIdentity,
         int OwnerLevel,
         int NeighborLevel);
+
+    private readonly record struct SeamUploadGroup(
+        ((int X, int Z) Owner, Side BoundarySide) Key,
+        KeyValuePair<TerrainLodSeamKey, TerrainLodSeamSelection>[] Parts,
+        int Missing,
+        bool Critical);
 
     private sealed class ColumnPresentation : IDisposable
     {

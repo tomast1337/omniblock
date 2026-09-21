@@ -52,6 +52,8 @@ internal sealed class DebugWindowContext(OmniBlock game)
     public ClientTerrainLodSnapshot? TerrainLod => game.WorldRenderer?.TerrainLod?.Snapshot;
     public TerrainLodSpatialSnapshot? TerrainLodSpatial =>
         game.WorldRenderer?.TerrainLod?.SpatialSnapshot;
+    public TerrainCoverageSnapshot? TerrainCoverage =>
+        game.WorldRenderer?.TerrainLod?.CoverageSnapshot;
 
     public DebugSystemSnapshot DebugSystemSnapshot => game.DebugSystemSnapshot;
     public UIScreen? CurrentScreen => game.CurrentScreen;
