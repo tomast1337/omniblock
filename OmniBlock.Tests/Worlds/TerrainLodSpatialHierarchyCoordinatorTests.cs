@@ -350,16 +350,42 @@ public sealed class TerrainLodSpatialHierarchyCoordinatorTests
 
         Assert.True(writer.TrySubmit(first));
         await firstEntered.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        // An empty queue is not durable completion: the first record is still being written.
+        Assert.Equal(0, writer.Snapshot().Queued);
+        Assert.Equal(1, writer.Snapshot().Running);
+        Assert.Equal(0, writer.Snapshot().Written);
         Assert.True(writer.TrySubmit(pendingOld));
         Assert.True(writer.TrySubmit(pendingNew));
         Assert.False(writer.TrySubmit(rejected));
         releaseFirst.Set();
         await WaitUntil(() => writer.Snapshot().Written == 2);
+        Assert.Equal(0, writer.Snapshot().Running);
+        Assert.Equal(0, writer.Snapshot().Queued);
 
         Assert.Equal([first.CanonicalHash, pendingNew.CanonicalHash],
             written.Select(static tile => tile.CanonicalHash).ToArray());
         Assert.Equal(1, writer.Snapshot().Coalesced);
         Assert.Equal(1, writer.Snapshot().RejectedAtCapacity);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Failed_tile_write_clears_running_but_retains_failure(bool throwIoError)
+    {
+        using var writer = new TerrainLodColumnTileAsyncCacheWriter(1, _ =>
+            throwIoError
+                ? throw new IOException("simulated disk failure")
+                : TerrainLodColumnTileCacheWriteStatus.RejectedRecordTooLarge);
+        Assert.True(writer.TrySubmit(Leaf(new TerrainLodTileKey(0, 0, 0), 1, 1)));
+
+        await WaitUntil(() => writer.Snapshot().Failed == 1);
+
+        var snapshot = writer.Snapshot();
+        Assert.Equal(0, snapshot.Queued);
+        Assert.Equal(0, snapshot.Running);
+        Assert.Equal(0, snapshot.Written);
+        Assert.False(string.IsNullOrEmpty(snapshot.LastError));
     }
 
     private static TerrainLodSpatialHierarchyCoordinator Coordinator(

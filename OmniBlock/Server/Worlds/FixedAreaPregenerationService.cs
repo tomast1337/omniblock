@@ -711,7 +711,7 @@ internal static class InactiveGenerationTargetExecutor
         var sequence = checked(checkpoint.Recover().Checkpoint.LastCommittedBatch + 1);
         var commit = checkpoint.CommitBatch(sequence, batch, world, storage, cancellationToken);
         foreach (var snapshot in batch.Chunks)
-            world.SubmitOfflineTerrainLod(snapshot);
+            await world.SubmitOfflineTerrainLodAsync(snapshot, cancellationToken).ConfigureAwait(false);
         return new FixedAreaPregenerationWorkResult(
             skipped,
             false,

@@ -8,7 +8,8 @@ public sealed record TerrainLodColumnTileAsyncCacheWriterSnapshot(
     long RejectedAtCapacity,
     long Written,
     long Failed,
-    string? LastError);
+    string? LastError,
+    int Running = 0);
 
 /// <summary>
 ///     Bounded best-effort persistence lane for spatial column tiles. The most recent candidate
@@ -28,6 +29,7 @@ public sealed class TerrainLodColumnTileAsyncCacheWriter : IDisposable
     private long _rejectedAtCapacity;
     private long _written;
     private long _failed;
+    private int _running;
     private string? _lastError;
     private TerrainLodColumnTileAsyncCacheWriterSnapshot _snapshot = null!;
 
@@ -94,6 +96,7 @@ public sealed class TerrainLodColumnTileAsyncCacheWriter : IDisposable
                 if (_disposed) return;
                 var key = _order.Dequeue();
                 if (!_pending.Remove(key, out tile!)) continue;
+                _running = 1;
                 PublishSnapshotLocked();
             }
 
@@ -102,6 +105,7 @@ public sealed class TerrainLodColumnTileAsyncCacheWriter : IDisposable
                 var status = _write(tile);
                 lock (_gate)
                 {
+                    _running = 0;
                     if (status == TerrainLodColumnTileCacheWriteStatus.Written)
                     {
                         _written++;
@@ -122,6 +126,7 @@ public sealed class TerrainLodColumnTileAsyncCacheWriter : IDisposable
             {
                 lock (_gate)
                 {
+                    _running = 0;
                     _failed++;
                     _lastError = error.GetBaseException().Message;
                     PublishSnapshotLocked();
@@ -143,7 +148,8 @@ public sealed class TerrainLodColumnTileAsyncCacheWriter : IDisposable
             _rejectedAtCapacity,
             _written,
             _failed,
-            _lastError));
+            _lastError,
+            _running));
 
     public void Dispose()
     {

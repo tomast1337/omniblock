@@ -78,7 +78,7 @@ The scale fixture uses uniform synthetic reduced terrain to isolate lifecycle an
 it is not a visual-quality baseline for caves, foliage, liquids, or arbitrary modded content.
 
 `terrain-lod-generated-patch` is a separate opt-in **real-source** check. Preparation uses
-`OMNI.worldgen.start` to generate and durably save an eight-chunk-radius patch at (1024,1024),
+`OMNI.worldgen.start` to generate and durably save a sixteen-chunk-radius patch at (1024,1024),
 outside spawn, with the ordinary generator, decoration, lighting and LOD conversion. A second
 process reopens the save, verifies the completed job, teleports a creative flying player above
 the patch, and waits for disk-cache transport and GPU residency. It checks eight downward camera
@@ -93,6 +93,19 @@ The surrounding horizon is intentionally incomplete; this is not a zero-hole who
 light and cave/overhang fidelity through near-parent construction, cache reopen and transport.
 Generated 4x4-chunk integration tests also check actual 2:1 parent reduction, descendant edits,
 and persistence of the replacement parent in Overworld, Sky and Nether.
+Preparation now waits for ten consecutive 100-ms samples with no dirty sources, owned conversions,
+pending/deferred parent builds, or queued/running spatial cache writes after the job completes.
+It rejects offline conversion drops, conversion/build/write failures and persistence admission
+deferrals, and verifies that the job's committed chunks reached conversion admission. This is a
+quiet-period diagnostic, not an atomic storage barrier or a proof of complete horizon coverage.
+Inactive generation now awaits bounded conversion admission after the terrain commit instead of
+discarding LOD sources when the converter is full. The wait is cancellable and does not block the
+simulation tick or create an overflow queue.
+`dumpTerrain` includes the integrated server's LOD snapshot (null on a remote connection), exposing
+source counts, build queues, cache writes/failures and `PreparationPendingWork` beside client state.
+Restricted `OMNI.test.terrainLodFixtureMetric` readers include `preparationPending`,
+`preparationFailures`, `offlineSubmitted`, `offlineDropped`, `persistenceDeferred`, and
+`persistenceRunning`; these return -1 when the integrated server snapshot is unavailable.
 
 `entity-render-baseline` is an opt-in 300-second-watchdog benchmark for the existing GPU-instanced
 mob renderer. It uses deterministic client-only cow/sheep/mixed replicas (not server-spawned mobs),

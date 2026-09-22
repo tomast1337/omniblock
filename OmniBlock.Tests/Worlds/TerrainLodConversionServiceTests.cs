@@ -6,6 +6,47 @@ namespace OmniBlock.Tests.Worlds;
 
 public sealed class TerrainLodConversionServiceTests
 {
+    [Theory]
+    [InlineData("acknowledge")]
+    [InlineData("take")]
+    [InlineData("discard")]
+    public async Task Background_admission_waits_for_bounded_ownership_to_be_released(string release)
+    {
+        using var service = Service(1, Convert);
+        service.Submit(Source(0, 0, 1));
+        await WaitUntil(() => service.Snapshot().Ready == 1);
+        var pending = service.SubmitWhenAvailableAsync(Source(1, 0, 1), CancellationToken.None).AsTask();
+        Assert.False(pending.IsCompleted);
+        Assert.Equal(1, service.Snapshot().OwnedChunks);
+        switch (release)
+        {
+            case "acknowledge": Assert.True(service.AcknowledgeCompleted(0, 0, 1)); break;
+            case "take": Assert.True(service.TryTakeCompleted(out _)); break;
+            case "discard": Assert.True(service.Discard(0, 0)); break;
+        }
+        Assert.Equal(TerrainLodAdmissionResult.Accepted, await pending.WaitAsync(TimeSpan.FromSeconds(2)));
+        Assert.Equal(1, service.Snapshot().OwnedChunks);
+        Assert.Equal(1, (await Take(service)).ChunkX);
+    }
+
+    [Fact]
+    public async Task Background_admission_can_cancel_or_dispose_without_leaking_a_source()
+    {
+        using var service = Service(1, Convert);
+        service.Submit(Source(0, 0, 1));
+        await WaitUntil(() => service.Snapshot().Ready == 1);
+        using CancellationTokenSource cancellation = new();
+        var canceled = service.SubmitWhenAvailableAsync(Source(1, 0, 1), cancellation.Token).AsTask();
+        cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => canceled);
+        Assert.Equal(1, service.Snapshot().OwnedChunks);
+        Assert.Equal(1, service.Snapshot().AcceptedSubmissions);
+        var disposed = service.SubmitWhenAvailableAsync(Source(2, 0, 1), CancellationToken.None).AsTask();
+        service.Dispose();
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => disposed.WaitAsync(TimeSpan.FromSeconds(2)));
+        Assert.Equal(0, service.Snapshot().OwnedChunks);
+    }
+
     private static readonly TerrainLodMaterialCatalog Materials = new(
     [
         new TerrainLodMaterialDefinition(1, "example:stone",

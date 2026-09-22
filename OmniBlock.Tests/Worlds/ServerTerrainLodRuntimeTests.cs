@@ -11,6 +11,52 @@ namespace OmniBlock.Tests.Worlds;
 public sealed class ServerTerrainLodRuntimeTests
 {
     [Fact]
+    public void Preparation_diagnostics_include_every_build_and_persistence_stage()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var world = new FakeWorldContext();
+            using var runtime = new ServerTerrainLodRuntime(
+                0, TerrainLodMaterialCatalog.FromRuntime(world.Content), root, world);
+            var idle = runtime.Snapshot();
+            Assert.Equal(0, idle.PreparationPendingWork);
+            Assert.Equal(0, idle.PreparationFailureEvents);
+
+            Assert.Equal(1, (idle with { DirtyChunks = 1 }).PreparationPendingWork);
+            Assert.Equal(1, (idle with
+            {
+                Conversion = idle.Conversion with { OwnedChunks = 1 }
+            }).PreparationPendingWork);
+            var hierarchy = idle.SpatialHierarchy;
+            Assert.NotNull(hierarchy.Persistence);
+            foreach (var busy in new[]
+                     {
+                         hierarchy with { DeferredParents = 1 },
+                         hierarchy with { Construction = hierarchy.Construction with { Owned = 1 } },
+                         hierarchy with { Persistence = hierarchy.Persistence with { Queued = 1 } },
+                         hierarchy with { Persistence = hierarchy.Persistence with { Running = 1 } }
+                     })
+                Assert.Equal(1, (idle with { SpatialHierarchy = busy }).PreparationPendingWork);
+
+            // Failure and idleness are separate: a failed/oversize write cannot qualify as ready.
+            var failed = idle with
+            {
+                SpatialHierarchy = hierarchy with
+                {
+                    Persistence = hierarchy.Persistence with { Failed = 1 }
+                }
+            };
+            Assert.Equal(0, failed.PreparationPendingWork);
+            Assert.Equal(1, failed.PreparationFailureEvents);
+        }
+        finally
+        {
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
     public void Terrain_revision_advances_only_for_changed_blocks_or_metadata_and_round_trips()
     {
         var world = new FakeWorldContext();
@@ -127,13 +173,41 @@ public sealed class ServerTerrainLodRuntimeTests
             using var runtime = new ServerTerrainLodRuntime(
                 0, materials, root, world, conversionCapacity: 2);
 
-            runtime.SubmitOffline(offline);
+            await runtime.SubmitOfflineAsync(offline, CancellationToken.None);
             await WaitUntil(() => runtime.Snapshot().Writer.Written == 1);
 
             Assert.Equal(1, runtime.Snapshot().OfflineSnapshotsSubmitted);
             Assert.Equal(0, runtime.Snapshot().OfflineSnapshotsDropped);
             Assert.Equal(chunk.TerrainRevision,
                 offline.CaptureTerrain().TerrainRevision);
+        }
+        finally
+        {
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task Offline_batch_larger_than_conversion_capacity_is_admitted_without_loss()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var world = new FakeWorldContext();
+            using var runtime = new ServerTerrainLodRuntime(
+                0, TerrainLodMaterialCatalog.FromRuntime(world.Content), root, world, conversionCapacity: 1);
+            using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(15));
+            for (var x = 0; x < 8; x++)
+            {
+                var chunk = Chunk(world, x, 0);
+                chunk[0, 4, 0] = world.Content.Blocks.Get("omniblock:stone").Id;
+                await runtime.SubmitOfflineAsync(InactiveChunkSnapshot.Capture(chunk, world), timeout.Token);
+                Assert.InRange(runtime.Snapshot().Conversion.OwnedChunks, 0, 1);
+            }
+            await WaitUntil(() => runtime.Snapshot().Writer.Written == 8);
+            Assert.Equal(8, runtime.Snapshot().OfflineSnapshotsSubmitted);
+            Assert.Equal(0, runtime.Snapshot().OfflineSnapshotsDropped);
+            Assert.Equal(0, runtime.Snapshot().PreparationFailureEvents);
         }
         finally
         {

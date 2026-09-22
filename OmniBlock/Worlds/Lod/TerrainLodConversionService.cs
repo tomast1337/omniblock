@@ -54,6 +54,7 @@ public sealed record TerrainLodConversionSnapshot(
 public sealed class TerrainLodConversionService : IDisposable
 {
     private readonly object _gate = new();
+    private TaskCompletionSource? _capacityAvailable;
     private readonly int _dimension;
     private readonly int _capacity;
     private readonly Func<TerrainLodSourceSnapshot, TerrainLodConversionOutput> _convert;
@@ -194,6 +195,35 @@ public sealed class TerrainLodConversionService : IDisposable
         }
     }
 
+    /// <summary>
+    ///     Backpressure for bounded background producers. The caller retains one source until
+    ///     admission; no overflow queue is created and live Submit callers never wait.
+    /// </summary>
+    internal async ValueTask<TerrainLodAdmissionResult> SubmitWhenAvailableAsync(
+        TerrainLodSourceSnapshot source, CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            Task available;
+            lock (_gate)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var admission = Submit(source);
+                if (admission != TerrainLodAdmissionResult.RejectedAtCapacity) return admission;
+                available = (_capacityAvailable ??= new TaskCompletionSource(
+                    TaskCreationOptions.RunContinuationsAsynchronously)).Task;
+            }
+            await available.WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private void NotifyCapacityAvailableLocked()
+    {
+        var available = _capacityAvailable;
+        _capacityAvailable = null;
+        available?.TrySetResult();
+    }
+
     public bool Retry(int chunkX, int chunkZ)
     {
         lock (_gate)
@@ -218,6 +248,7 @@ public sealed class TerrainLodConversionService : IDisposable
             ObjectDisposedException.ThrowIf(_disposed, this);
             var key = new ChunkKey(chunkX, chunkZ);
             if (!_items.Remove(key)) return false;
+            NotifyCapacityAvailableLocked();
             PublishSnapshotLocked();
             return true;
         }
@@ -235,6 +266,7 @@ public sealed class TerrainLodConversionService : IDisposable
             }
             result = ready.Value.Result;
             _items.Remove(ready.Key);
+            NotifyCapacityAvailableLocked();
             PublishSnapshotLocked();
             return true;
         }
@@ -288,6 +320,7 @@ public sealed class TerrainLodConversionService : IDisposable
                 item.State != WorkState.Ready ||
                 item.Result?.TerrainRevision != terrainRevision) return false;
             _items.Remove(key);
+            NotifyCapacityAvailableLocked();
             PublishSnapshotLocked();
             return true;
         }
@@ -478,6 +511,7 @@ public sealed class TerrainLodConversionService : IDisposable
             if (_disposed) return;
             _disposed = true;
             _items.Clear();
+            NotifyCapacityAvailableLocked();
             PublishSnapshotLocked();
             Monitor.PulseAll(_gate);
         }

@@ -68,8 +68,9 @@ public class ServerWorld : World
         ChunkCache.AttachTerrainLod(_terrainLod);
     }
 
-    internal void SubmitOfflineTerrainLod(InactiveChunkSnapshot snapshot) =>
-        _terrainLod?.SubmitOffline(snapshot);
+    internal ValueTask SubmitOfflineTerrainLodAsync(
+        InactiveChunkSnapshot snapshot, CancellationToken cancellationToken) =>
+        _terrainLod?.SubmitOfflineAsync(snapshot, cancellationToken) ?? ValueTask.CompletedTask;
 
     internal TerrainLodTileAvailability GetTerrainLodCoverage(
         TerrainLodTileKey key,

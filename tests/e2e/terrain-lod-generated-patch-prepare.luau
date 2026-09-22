@@ -19,7 +19,7 @@ local job = OMNI.worldgen.start({
     id = "e2e_generated_lod_patch",
     dimension = "omniblock:overworld",
     center = { x = 1024, z = 1024 },
-    radiusChunks = 8,
+    radiusChunks = 16,
     shape = "circle",
     profile = "play",
 })
@@ -39,10 +39,25 @@ local p = job.progress
 assert(p.preparedTargets > 0 and p.writtenChunks > 0, "cold fixture did not generate terrain")
 assert(p.remainingTargets == 0 and p.nextTarget == p.totalTargets)
 assert(p.generatorProfile ~= "omniblock:flat", "wrong world generator")
-OMNI.waitUntil(function()
-    return OMNI.test.terrainLodFixtureMetric("cacheEntries") > 0
-end, 30, 0.1)
+-- Cache entries alone can be satisfied by spawn data. Wait for all admitted conversions,
+-- parent construction and persistence (including in-flight disk writes) to become quiet.
+local quietSamples = 0
+local ok, failure = pcall(function()
+    OMNI.waitUntil(function()
+        assert(OMNI.test.terrainLodFixtureMetric("preparationFailures") == 0,
+            "server LOD pipeline failed")
+        assert(OMNI.test.terrainLodFixtureMetric("offlineDropped") == 0,
+            "offline terrain was dropped before LOD conversion")
+        assert(OMNI.test.terrainLodFixtureMetric("persistenceDeferred") == 0,
+            "LOD records were not admitted to persistence")
+        local pending = OMNI.test.terrainLodFixtureMetric("preparationPending")
+        quietSamples = pending == 0 and quietSamples + 1 or 0
+        return quietSamples >= 10 and
+            OMNI.test.terrainLodFixtureMetric("offlineSubmitted") >= p.writtenChunks
+    end, 60, 0.1)
+end)
 OMNI.test.dumpTerrain("generated-patch-prepared")
+assert(ok, "LOD preparation failed: " .. tostring(failure))
 print("real generated patch complete: profile=" .. p.generatorProfile ..
     " targets=" .. p.totalTargets .. " written=" .. p.writtenChunks)
 OMNI.test.pass()

@@ -82,6 +82,7 @@ for _, job in OMNI.worldgen.list() do
 end
 assert(prepared ~= nil and prepared.status == "completed", "prepared job was not reopened")
 assert(prepared.writtenChunks > 0, "preparation did not commit actual chunks")
+assert(prepared.radiusChunks == 16, "wrong generated-patch size")
 local tilesBefore = state.terrainLodRemoteTiles
 OMNI.test.teleport(1024, 192, 1024)
 OMNI.waitUntil(function()

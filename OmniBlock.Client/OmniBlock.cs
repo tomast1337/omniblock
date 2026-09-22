@@ -940,7 +940,10 @@ public partial class OmniBlock :
                             {
                                 Terrain = terrainLod.Snapshot,
                                 Spatial = terrainLod.SpatialSnapshot,
-                                Coverage = terrainLod.CoverageSnapshot
+                                Coverage = terrainLod.CoverageSnapshot,
+                                Server = InternalServer?.worlds?
+                                    .FirstOrDefault(world => world.Dimension.Id == World.Dimension.Id)?
+                                    .TerrainLodSnapshot
                             }, new JsonSerializerOptions { WriteIndented = true }));
                     var worldGeneration = InternalServer?.worlds?
                         .FirstOrDefault(world => world.Dimension.Id == World.Dimension.Id)?
@@ -1063,7 +1066,9 @@ public partial class OmniBlock :
                             .SpatialCache.EntryCount ?? 0;
                     }
                     if (metric is "cacheBytes" or "readQueued" or "readPending" or
-                        "encodeQueued" or "encodePending" or "wirePayloads")
+                        "encodeQueued" or "encodePending" or "wirePayloads" or
+                        "preparationPending" or "preparationFailures" or "offlineSubmitted" or
+                        "offlineDropped" or "persistenceDeferred" or "persistenceRunning")
                     {
                         var dimension = Player?.DimensionId ?? 0;
                         var terrain = InternalServer?.getWorld(dimension).TerrainLodSnapshot;
@@ -1075,6 +1080,12 @@ public partial class OmniBlock :
                             "encodeQueued" => terrain?.SpatialEncodeQueued ?? 0,
                             "encodePending" => terrain?.SpatialEncodePending ?? 0,
                             "wirePayloads" => terrain?.SpatialWirePayloads ?? 0,
+                            "preparationPending" => terrain?.PreparationPendingWork ?? -1,
+                            "preparationFailures" => terrain?.PreparationFailureEvents ?? -1,
+                            "offlineSubmitted" => terrain?.OfflineSnapshotsSubmitted ?? -1,
+                            "offlineDropped" => terrain?.OfflineSnapshotsDropped ?? -1,
+                            "persistenceDeferred" => terrain?.SpatialHierarchy.PersistenceDeferrals ?? -1,
+                            "persistenceRunning" => terrain?.SpatialHierarchy.Persistence?.Running ?? -1,
                             _ => 0
                         };
                     }

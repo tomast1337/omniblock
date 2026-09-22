@@ -36,7 +36,20 @@ public sealed record ServerTerrainLodSnapshot(
     int SpatialReadPending,
     int SpatialEncodeQueued,
     int SpatialEncodePending,
-    int SpatialWirePayloads);
+    int SpatialWirePayloads)
+{
+    // Observational only: asynchronous stages publish independently. Consumers should require
+    // a quiet interval after generation completes, not treat a single sample as a flush barrier.
+    // Missing siblings outside the generated patch are not pending construction work.
+    public int PreparationPendingWork => DirtyChunks + Conversion.OwnedChunks +
+        SpatialHierarchy.Construction.Owned + SpatialHierarchy.DeferredParents +
+        (SpatialHierarchy.Persistence?.Queued ?? 0) +
+        (SpatialHierarchy.Persistence?.Running ?? 0);
+
+    public long PreparationFailureEvents => PipelineFailures + Conversion.FailedConversions +
+        Writer.Failures + Writer.Rejected + SpatialHierarchy.Construction.FailedConstructions +
+        (SpatialHierarchy.Persistence?.Failed ?? 0);
+}
 
 /// <summary>
 ///     Per-dimension lifecycle owner joining live chunks to the bounded converter and disposable
@@ -456,6 +469,42 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         }
     }
 
+    /// <summary>
+    ///     Awaited by inactive-generation workers after the terrain commit. Keep the producer's
+    ///     existing bounded batch alive until admission rather than silently dropping its LOD.
+    ///     Never call this synchronously from the simulation tick.
+    /// </summary>
+    public async ValueTask SubmitOfflineAsync(
+        InactiveChunkSnapshot snapshot, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        cancellationToken.ThrowIfCancellationRequested();
+        lock (_gate) ObjectDisposedException.ThrowIf(_disposed, this);
+        try
+        {
+            var admission = await _conversions.SubmitWhenAvailableAsync(
+                snapshot.CaptureTerrain(), cancellationToken).ConfigureAwait(false);
+            lock (_gate)
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                if (admission == TerrainLodAdmissionResult.RejectedStaleRevision)
+                    _offlineSnapshotsDropped++;
+                else
+                {
+                    _offlineSnapshotsSubmitted++;
+                    RecordAdmissionLocked(admission);
+                }
+                PublishSnapshotLocked();
+                _writerWake.Set();
+            }
+        }
+        catch (Exception error) when (error is not (OperationCanceledException or ObjectDisposedException))
+        {
+            RecordPipelineFailure(error, snapshot.X, snapshot.Z);
+            throw;
+        }
+    }
+
     public void Shutdown(TimeSpan? timeout = null)
     {
         var deadline = DateTime.UtcNow + (timeout ?? TimeSpan.FromSeconds(5));
@@ -469,7 +518,9 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             lock (_gate) hasDirty = _tracked.Values.Any(static state => state.Dirty);
             if (!hasDirty && conversion.Queued == 0 && conversion.Running == 0 &&
                 conversion.Ready == 0 && spatial.Construction.Owned == 0 &&
-                (spatial.Persistence?.Queued ?? 0) == 0) break;
+                spatial.DeferredParents == 0 &&
+                (spatial.Persistence?.Queued ?? 0) == 0 &&
+                (spatial.Persistence?.Running ?? 0) == 0) break;
             Thread.Sleep(5);
         }
         Dispose();
