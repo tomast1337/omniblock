@@ -81,12 +81,18 @@ it is not a visual-quality baseline for caves, foliage, liquids, or arbitrary mo
 `OMNI.worldgen.start` to generate and durably save an eight-chunk-radius patch at (1024,1024),
 outside spawn, with the ordinary generator, decoration, lighting and LOD conversion. A second
 process reopens the save, verifies the completed job, teleports a creative flying player above
-the patch, waits for disk-cache transport and GPU residency, and records eight downward camera
-directions. It never calls `prepareTerrainLodFixture`. Run with
+the patch, and waits for disk-cache transport and GPU residency. It checks eight downward camera
+directions, a four-chunk flight, teleport, eight acknowledged block edits, and return-to-origin.
+During rotation, flight and edits it samples the existing local camera-footprint ownership/seam
+oracle, requires a nonempty sample, and checks unchanged GPU/queue/age limits. Teleport destinations
+are allowed to converge before coverage assertions resume. Stage and failure dumps include terrain
+and profiler state. It never calls `prepareTerrainLodFixture`. Run with
 `xvfb-run -a tests/e2e/run-local.sh terrain-lod-generated-patch` (360-second watchdog per process).
 The surrounding horizon is intentionally incomplete; this is not a zero-hole whole-horizon or
 512/1024 performance gate. Generated-column integration tests separately verify voxel/material,
 light and cave/overhang fidelity through near-parent construction, cache reopen and transport.
+Generated 4x4-chunk integration tests also check actual 2:1 parent reduction, descendant edits,
+and persistence of the replacement parent in Overworld, Sky and Nether.
 
 `entity-render-baseline` is an opt-in 300-second-watchdog benchmark for the existing GPU-instanced
 mob renderer. It uses deterministic client-only cow/sheep/mixed replicas (not server-spawned mobs),

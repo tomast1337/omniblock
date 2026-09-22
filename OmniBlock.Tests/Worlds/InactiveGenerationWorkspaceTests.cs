@@ -152,6 +152,83 @@ public sealed class InactiveGenerationWorkspaceTests
         }
     }
 
+    [Theory]
+    [InlineData("default")]
+    [InlineData("sky")]
+    [InlineData("nether")]
+    public async Task TerrainLod_generated_coarse_parent_replaces_edited_descendant_and_persists_it(string profile)
+    {
+        var root = Directory.CreateTempSubdirectory("omniblock-generated-lod-edit-");
+        try
+        {
+            var world = new SourceWorld(246813579L, profile);
+            var batch = new InactiveGenerationWorkspace(world).GenerateCompletedNeighborhood(1, 1);
+            var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+            var key = new TerrainLodTileKey(2, 0, 0);
+            var policy = TerrainLodSpatialPolicy.CreateDefault();
+            Dictionary<TerrainLodTileKey, TerrainLodColumnTile> leaves = [];
+            foreach (var snapshot in batch.Chunks)
+            {
+                var leaf = TerrainLodColumnTile.BuildLeaf(snapshot.CaptureTerrain(), materials);
+                leaves.Add(leaf.Key, leaf);
+            }
+
+            TerrainLodColumnTile ExpectedParent()
+            {
+                var children = Enumerable.Range(0, 4).Select(i =>
+                {
+                    var child = key.Child(i);
+                    return TerrainLodColumnTile.BuildParent(child,
+                        Enumerable.Range(0, 4).Select(j => leaves[child.Child(j)]).ToArray(),
+                        policy.HorizontalSampleLevelForSpatialLevel(1));
+                }).ToArray();
+                return TerrainLodColumnTile.BuildParent(key, children,
+                    policy.HorizontalSampleLevelForSpatialLevel(2));
+            }
+
+            string editedHash;
+            using (var runtime = new ServerTerrainLodRuntime(
+                       world.Dimension.Id, materials, root, world, conversionCapacity: 32))
+            {
+                foreach (var snapshot in batch.Chunks.Reverse()) runtime.SubmitOffline(snapshot);
+                var original = ExpectedParent();
+                Assert.Equal(1, original.HorizontalSampleLevel); // Actual 2:1 reduction, not just a mosaic.
+                await WaitForTerrainLod(() => runtime.TryGetSpatialCoverage(key, out var tile) &&
+                    tile!.CanonicalHash == original.CanonicalHash);
+
+                var chunk = batch.Get(0, 0).Materialize(world);
+                // Change a full reduction cell, so this is a visible edit, not merely a new hash
+                // for one source voxel that loses the coarser material vote.
+                var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+                for (var x = 0; x < 2; x++)
+                for (var z = 0; z < 2; z++)
+                    chunk[x, 100, z] = chunk[x, 100, z] == stone ? 0 : stone;
+                var edited = InactiveChunkSnapshot.Capture(chunk, world);
+                var editedLeaf = TerrainLodColumnTile.BuildLeaf(edited.CaptureTerrain(), materials);
+                leaves[editedLeaf.Key] = editedLeaf;
+                var expected = ExpectedParent();
+                editedHash = expected.CanonicalHash;
+                Assert.NotEqual(original.CanonicalHash, editedHash);
+                Assert.NotEqual(original[0, 0].At(100).Material, expected[0, 0].At(100).Material);
+                runtime.SubmitOffline(edited);
+                await WaitForTerrainLod(() => runtime.TryGetSpatialCoverage(key, out var tile) &&
+                    tile!.CanonicalHash == editedHash);
+                Assert.Equal(0, runtime.Snapshot().OfflineSnapshotsDropped);
+            }
+
+            using var reopened = new ServerTerrainLodRuntime(world.Dimension.Id, materials, root, world);
+            await WaitForTerrainLod(() => reopened.TryGetSpatialPayload(key, out _));
+            Assert.True(reopened.TryGetSpatialPayload(key, out var payload));
+            Assert.Equal(editedHash,
+                TerrainLodTileMessage.FromCompressed(world.Dimension.Id, payload!).Decode().CanonicalHash);
+            Assert.Equal(0, reopened.Snapshot().TrackedChunks);
+        }
+        finally
+        {
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
     private static async Task WaitForTerrainLod(Func<bool> predicate)
     {
         var deadline = DateTime.UtcNow.AddSeconds(15);
