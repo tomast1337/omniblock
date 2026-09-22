@@ -118,6 +118,17 @@ policy-v1 2x2 counterfactual and an unreduced reference. Output includes compres
 material mismatches and air filled beneath opaque roofs, separately for skylit samples. These are
 CPU/source fidelity measurements, not frame-time, screenshot, or complete-horizon acceptance.
 
+`terrain-lod-natural-cave` is an opt-in in-game companion to that CPU fixture. Run
+`xvfb-run -a tests/e2e/run-local.sh terrain-lod-natural-cave` (240-second watchdog).
+It creates an isolated default world with seed `246813579`, then views the generated patch
+containing a skylit under-roof opening at `(24,76,33)` from a fixed flying camera. It captures
+the eight-chunk exact reference and the four-chunk LOD presentation from that same camera.
+`check_natural_cave.py` requires an uploaded, drawn block-scale local-column LOD level for the
+opening's chunk and no local ownership holes/overlaps. Resident local columns own this same-session
+handoff, so the checker deliberately does **not** claim remote spatial L2 authority. The
+screenshots and stage counters are for manual cave/terrain comparison; metadata cannot assert
+cave-mouth pixel fidelity. This is a small generated patch, not a pregenerated horizon.
+
 `terrain-lod-remote-handoff` is an opt-in stationary **real-source handoff** check (240-second
 watchdog). Run `xvfb-run -a tests/e2e/run-local.sh terrain-lod-remote-handoff`. It uses the ordinary
 generated spawn region, waits for initial streaming, then reduces exact distance from eight to

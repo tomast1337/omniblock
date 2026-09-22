@@ -51,6 +51,8 @@ public sealed partial class InactiveGenerationWorkspaceTests
 
         Assert.True(reference.CaveAirVoxels > 0, "Fixture contains no air below an opaque roof");
         Assert.True(reference.SkylitCaveAirVoxels > 0, "Fixture contains no skylit cave/overhang air");
+        if (tileX == 0)
+            Assert.Equal((24L, 76, 33L), reference.FirstSkylitAirUnderRoof);
         Assert.Equal(0, shipped.HorizontalSampleLevel);
         Assert.Equal(64, shipped.Width);
         Assert.Equal(0, current.CanonicalMaterialMismatches);
@@ -111,7 +113,8 @@ public sealed partial class InactiveGenerationWorkspaceTests
             Assert.InRange(message.Compressed.Length, 1, TerrainLodScaleBudget.MaximumCompressedTileBytes);
             var quality = TerrainLodSpatialMeshQuality.FromMesh(mesh);
             var result = new Fidelity(caveAir, skylitCaveAir, canonicalMismatch, presentedMismatch,
-                canonicalClosed, presentedClosed, canonicalSkylitClosed, presentedSkylitClosed);
+                canonicalClosed, presentedClosed, canonicalSkylitClosed, presentedSkylitClosed,
+                firstOpening);
             _output.WriteLine(JsonSerializer.Serialize(new
             {
                 Fixture = name, Seed = 246813579L, Tile = key,
@@ -127,5 +130,6 @@ public sealed partial class InactiveGenerationWorkspaceTests
         long CaveAirVoxels, long SkylitCaveAirVoxels,
         long CanonicalMaterialMismatches, long PresentedMaterialMismatches,
         long CanonicalClosedCaveAir, long PresentedClosedCaveAir,
-        long CanonicalClosedSkylitCaveAir, long PresentedClosedSkylitCaveAir);
+        long CanonicalClosedSkylitCaveAir, long PresentedClosedSkylitCaveAir,
+        (long X, int Y, long Z)? FirstSkylitAirUnderRoof);
 }

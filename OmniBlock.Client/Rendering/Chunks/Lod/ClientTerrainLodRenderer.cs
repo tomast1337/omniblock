@@ -3834,7 +3834,10 @@ internal static class TerrainLodDetailSelector
     private const double Hysteresis = 0.10;
     // Fine tiers are deliberately bounded even on high-resolution displays. They are transition
     // coverage, not a second full-resolution copy of the entire render distance.
-    private const double MaximumExactVoxelDistance = 96;
+    // A four-chunk exact radius used to leave only a two-chunk block-scale LOD band.
+    // Retain 1x1 local columns through eight chunks so nearby cave mouths and cliff
+    // silhouettes do not immediately fall to 2x2 after the exact handoff.
+    private const double MaximumExactVoxelDistance = 128;
     private const double MaximumTransitionDistance = 256;
 
     public static int SelectLevel(
