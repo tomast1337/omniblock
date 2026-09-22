@@ -77,14 +77,17 @@ worker queues, and coverage-oracle snapshots, so admission stalls can be diagnos
 The scale fixture uses uniform synthetic reduced terrain to isolate lifecycle and budget behavior;
 it is not a visual-quality baseline for caves, foliage, liquids, or arbitrary modded content.
 
-`terrain-lod-near-quality` is an opt-in **visual characterization**, not a quality acceptance gate.
+`terrain-lod-near-quality` is an opt-in **visual characterization** with a narrow empty-layer
+regression gate, not a whole-scene quality acceptance gate.
 Run `xvfb-run -a tests/e2e/run-local.sh terrain-lod-near-quality` (240-second watchdog).
 It uses isolated regular terrain, creative flight, a stationary camera, and controlled steps,
 an open arch, snow, foliage, and a water basin five chunks ahead. It captures an eight-chunk exact
 reference, changes to four exact chunks at the same position, captures initial and later LOD
 presentation, then looks downward. The horizon is 16 chunks; no synthetic reduced tiles or large
 pregeneration job are used. Passing proves setup and capture completed without the checked render
-errors, **not** full terrain convergence, visual fidelity, or natural-cave correctness.
+errors. The runner also checks the captured selected levels: the arch column must retain an empty
+L0 translucent selection without a body draw, and the adjacent basin must present real L0 water.
+It does **not** assert full terrain convergence, whole-scene visual fidelity, or natural-cave correctness.
 
 `terrain-lod-<label>.json` now includes an on-demand `Quality` snapshot: camera/FOV/viewport and
 distance settings, published spatial tile bounds and mesh sampling/span budgets, current CPU
@@ -92,7 +95,9 @@ source/hash agreement and immediate child availability, plus selected local soli
 levels and their uploaded/non-empty layer levels. Spatial quality metadata belongs to the actual
 uploaded presentation, including retained predecessors, rather than the latest CPU revision.
 Spatial rows are ownership candidates, not proof of pixels drawn; check `Authoritative` and
-submission counters. Local rows are selected layers, not all residency. `Relation` compares the
+submission counters. Local rows are selected layers, not all residency; a selected compiled empty
+layer is retained with `HasSelectedLayerGeometry=false`. `LayerBodyDrawn` distinguishes no body
+submission from a transition still drawing its old level. `Relation` compares the
 spatial selection to the distance target and minimum level; it does not guess a fallback cause.
 `MaximumRenderedSpans` is an observed maximum, not the configured vertical budget. Collection is
 CPU-only and on demand; there is no additional GPU readback or per-frame diagnostic list build.

@@ -113,6 +113,9 @@ internal sealed partial class ClientTerrainLodRenderer
                 ChunkX = key.X, ChunkZ = key.Z, Layer = layer,
                 DistanceToCenterBlocks = distance,
                 SelectedLevel = level,
+                HasSelectedLayerGeometry = presentation.TryGetLevel(level, layer == "translucent", out _),
+                LayerBodyDrawn = (layer == "translucent" ? _translucentSeamStates : _solidSeamStates)
+                    .TryGetValue(key, out var seamState) && seamState.Drawn,
                 HorizontalSampleBlocks = 1 << level,
                 VerticalCellBlocks = 1 << level,
                 IdealLevelWithoutHysteresis = TerrainLodDetailSelector.SelectLevel(

@@ -899,12 +899,13 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                 RequestDetailLevel(key, requestedLevel);
             if (handoff.Progress >= 1)
             {
-                if (presentation.TryGetNearestLevel(
-                        requestedLevel, translucent: false, out var exactLevel, out _))
+                var selection = presentation.SelectLayerLevel(requestedLevel, translucent: false);
+                if (selection.Available)
                     _solidSeamStates[key] = new TerrainLodSeamColumnState(
-                        exactLevel, handoff.Progress, FadeSeed(key), Drawn: false);
+                        selection.Level, handoff.Progress, FadeSeed(key), Drawn: false);
                 continue;
             }
+            var visibleBefore = _visible.Count;
             var presentedLevel = AppendVisibleLevels(
                 presentation, key, distanceSquared, requestedLevel,
                 translucent: false, handoff.Progress,
@@ -913,7 +914,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             {
                 _selectedSolidLevels[key] = presentedLevel;
                 _solidSeamStates[key] = new TerrainLodSeamColumnState(
-                    presentedLevel, handoff.Progress, FadeSeed(key), Drawn: true);
+                    presentedLevel, handoff.Progress, FadeSeed(key), Drawn: _visible.Count > visibleBefore);
             }
         }
         Profiler.Record("SelectionCpu", Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
@@ -928,13 +929,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             var z = a.Key.Z.CompareTo(b.Key.Z);
             return z != 0 ? z : a.Level.CompareTo(b.Level);
         });
-        var drawnColumns = _visible.Select(static item => item.Key).ToHashSet();
-        foreach (var key in _selectedSolidLevels.Keys
-                     .Where(key => !drawnColumns.Contains(key)).ToArray())
-        {
-            _selectedSolidLevels.Remove(key);
-            _solidSeamStates.Remove(key);
-        }
+        // Empty compiled layers remain valid selections and boundary evidence, without a draw.
         Profiler.Record("SortAndTrimCpu", Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
 
         stageStarted = Stopwatch.GetTimestamp();
@@ -1078,12 +1073,13 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                 RequestDetailLevel(key, requestedLevel);
             if (handoff.Progress >= 1)
             {
-                if (presentation.TryGetNearestLevel(
-                        requestedLevel, translucent: true, out var exactLevel, out _))
+                var selection = presentation.SelectLayerLevel(requestedLevel, translucent: true);
+                if (selection.Available)
                     _translucentSeamStates[key] = new TerrainLodSeamColumnState(
-                        exactLevel, handoff.Progress, FadeSeed(key), Drawn: false);
+                        selection.Level, handoff.Progress, FadeSeed(key), Drawn: false);
                 continue;
             }
+            var visibleBefore = _visible.Count;
             var presentedLevel = AppendVisibleLevels(
                 presentation, key, distanceSquared, requestedLevel,
                 translucent: true, handoff.Progress,
@@ -1092,7 +1088,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             {
                 _selectedTranslucentLevels[key] = presentedLevel;
                 _translucentSeamStates[key] = new TerrainLodSeamColumnState(
-                    presentedLevel, handoff.Progress, FadeSeed(key), Drawn: true);
+                    presentedLevel, handoff.Progress, FadeSeed(key), Drawn: _visible.Count > visibleBefore);
             }
         }
 
@@ -1105,13 +1101,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             var z = a.Key.Z.CompareTo(b.Key.Z);
             return z != 0 ? z : b.Level.CompareTo(a.Level);
         });
-        var drawnColumns = _visible.Select(static item => item.Key).ToHashSet();
-        foreach (var key in _selectedTranslucentLevels.Keys
-                     .Where(key => !drawnColumns.Contains(key)).ToArray())
-        {
-            _selectedTranslucentLevels.Remove(key);
-            _translucentSeamStates.Remove(key);
-        }
+        // As with solids, an empty layer is selected coverage, not an unavailable level.
         BuildDesiredSeams(
             _translucentSeamStates, _desiredTranslucentSeams, _translucentSeamFades);
         var seamUploads = UpdateSeams(device, parameters.ViewPos, SeamUploadsPerFrame,
@@ -3280,13 +3270,13 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         float deltaTime,
         bool fadeEnabled)
     {
-        if (!presentation.TryGetNearestLevel(
-                requestedLevel, translucent, out var selectedLevel, out _)) return -1;
+        var selection = presentation.SelectLayerLevel(requestedLevel, translucent);
+        if (!selection.Available) return -1;
 
         // The exact/LOD handoff owns the single dither mask while it is active. Freeze a hierarchy
         // level transition during that short interval rather than trying to compose two masks.
         var blend = UpdateLevelTransition(presentation,
-            translucent, selectedLevel,
+            translucent, selection.Level,
             nearHandoffProgress > 0 ? 0 : deltaTime,
             fadeEnabled);
         presentation.LastPresentedTick = _tick;
@@ -3590,37 +3580,9 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             return translucent ? gpu.TranslucentMesh is not null : gpu.SolidMesh is not null;
         }
 
-        public bool TryGetNearestLevel(
-            int requested,
-            bool translucent,
-            out int selected,
-            out GpuLevel gpu)
-        {
-            if (Levels.TryGetValue(requested, out gpu!) && HasRequestedLayer(gpu))
-            {
-                selected = requested;
-                return true;
-            }
-
-            foreach (var candidate in Levels.Keys
-                         .OrderBy(level => Math.Abs(level - requested))
-                         .ThenBy(level => level))
-            {
-                var candidateGpu = Levels[candidate];
-                if (!HasRequestedLayer(candidateGpu)) continue;
-                selected = candidate;
-                gpu = candidateGpu;
-                return true;
-            }
-
-            selected = -1;
-            gpu = null!;
-            return false;
-
-            bool HasRequestedLayer(GpuLevel candidate) => translucent
-                ? candidate.TranslucentMesh is not null
-                : candidate.SolidMesh is not null;
-        }
+        public TerrainLodLayerSelection SelectLayerLevel(int requested, bool translucent) => translucent
+            ? TerrainLodLayerSelection.Select(Levels, requested, static gpu => gpu.TranslucentMesh is not null)
+            : TerrainLodLayerSelection.Select(Levels, requested, static gpu => gpu.SolidMesh is not null);
 
         public static ColumnPresentation Create(TerrainLodMeshCompilationResult compiled)
         {

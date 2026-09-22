@@ -210,6 +210,12 @@ for scenario in "${scenarios[@]}"; do
         fi
     fi
 
+    if (( status == 0 )) && [[ "$scenario" == "terrain-lod-near-quality" ]]; then
+        if ! python3 "$script_dir/check_near_quality.py" "$scenario_artifacts"; then
+            status=1
+        fi
+    fi
+
     if (( status == 0 )); then
         echo "Scenario passed: $scenario"
     else
