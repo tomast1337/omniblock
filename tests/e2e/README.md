@@ -78,7 +78,7 @@ The scale fixture uses uniform synthetic reduced terrain to isolate lifecycle an
 it is not a visual-quality baseline for caves, foliage, liquids, or arbitrary modded content.
 
 `terrain-lod-generated-patch` is a separate opt-in **real-source** check. Preparation uses
-`OMNI.worldgen.start` to generate and durably save a sixteen-chunk-radius patch at (1024,1024),
+`OMNI.worldgen.start` to generate and durably save a 32-chunk-radius patch (3,209 targets) at (1024,1024),
 outside spawn, with the ordinary generator, decoration, lighting and LOD conversion. A second
 process reopens the save, verifies the completed job, teleports a creative flying player above
 the patch, and waits for disk-cache transport and GPU residency. It checks eight downward camera
@@ -87,7 +87,10 @@ During rotation, flight and edits it samples the existing local camera-footprint
 oracle, requires a nonempty sample, and checks unchanged GPU/queue/age limits. Teleport destinations
 are allowed to converge before coverage assertions resume. Stage and failure dumps include terrain
 and profiler state. It never calls `prepareTerrainLodFixture`. Run with
-`xvfb-run -a tests/e2e/run-local.sh terrain-lod-generated-patch` (360-second watchdog per process).
+`xvfb-run -a tests/e2e/run-local.sh terrain-lod-generated-patch` (1,080-second watchdog per process;
+generation itself has a 900-second wait). The larger wall-clock allowance is only for preparing
+four times the previous target count: GPU/worker/queue and 30-second compilation-age limits are
+unchanged. Generation failure now dumps terrain and profiler state, as does successful preparation.
 The surrounding horizon is intentionally incomplete; this is not a zero-hole whole-horizon or
 512/1024 performance gate. Generated-column integration tests separately verify voxel/material,
 light and cave/overhang fidelity through near-parent construction, cache reopen and transport.
@@ -98,6 +101,10 @@ pending/deferred parent builds, or queued/running spatial cache writes after the
 It rejects offline conversion drops, conversion/build/write failures and persistence admission
 deferrals, and verifies that the job's committed chunks reached conversion admission. This is a
 quiet-period diagnostic, not an atomic storage barrier or a proof of complete horizon coverage.
+Reusable-baseline sealing additionally rejects any spatial-hierarchy capacity rejection (or a
+missing rejection counter). Conversion admission does not guarantee spatial leaf publication;
+quiet queues must not mask a leaf refused by a full hierarchy. This conservative gate also rejects
+parent capacity pressure that might subsequently recover, instead of claiming loss-free preparation.
 Inactive generation now awaits bounded conversion admission after the terrain commit instead of
 discarding LOD sources when the converter is full. The wait is cancellable and does not block the
 simulation tick or create an overflow queue.
@@ -112,13 +119,15 @@ Restricted `OMNI.test.terrainLodFixtureMetric` readers include `preparationPendi
 The generated-patch scenario can retain preparation across runs (Python 3.11+ and `flock` required):
 
 ```bash
-E2E_PREPARED_FIXTURE="$PWD/artifacts/e2e-fixtures/generated-patch-v1" \
+E2E_PREPARED_FIXTURE="$PWD/artifacts/e2e-fixtures/generated-patch-r32-v1" \
     xvfb-run -a tests/e2e/run-local.sh terrain-lod-generated-patch
 ```
 
 Run the same command again to skip generation. This opt-in currently supports only
 `terrain-lod-generated-patch`; ordinary runs still use disposable temporary data. Choose a **new
 absolute directory**, not an existing save or the normal game data directory.
+The former radius-16 baseline cannot satisfy the radius-32 contract. Keep it for historical
+evidence and use a new root; do not edit its manifest to make validation pass.
 
 - First run: prepare normally, require a successful process/result and drained LOD diagnostics,
   then publish `baseline/data` and its manifest together with an atomic directory rename.

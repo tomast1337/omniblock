@@ -40,7 +40,7 @@ class PreparedFixtureTests(unittest.TestCase):
             "Server": {
                 "PreparationPendingWork": 0, "PreparationFailureEvents": 0,
                 "OfflineSnapshotsDropped": 0, "OfflineSnapshotsSubmitted": 1800,
-                "SpatialHierarchy": {"PersistenceDeferrals": 0},
+                "SpatialHierarchy": {"PersistenceDeferrals": 0, "TileCapacityRejections": 0},
             },
         }
         self.write_report()
@@ -108,6 +108,30 @@ class PreparedFixtureTests(unittest.TestCase):
         self.write_report()
         with self.assertRaisesRegex(ValueError, "GeneratorFingerprint"):
             self.seal()
+
+    def test_spatial_capacity_loss_cannot_hide_behind_quiet_successful_conversion(self):
+        self.report["Server"]["SpatialHierarchy"]["TileCapacityRejections"] = 1
+        self.write_report()
+        with self.assertRaisesRegex(ValueError, "rejected spatial tiles"):
+            self.seal()
+        self.assertFalse((self.root / "baseline").exists())
+
+    def test_missing_spatial_capacity_diagnostic_cannot_seal(self):
+        del self.report["Server"]["SpatialHierarchy"]["TileCapacityRejections"]
+        self.write_report()
+        with self.assertRaisesRegex(ValueError, "rejected spatial tiles"):
+            self.seal()
+
+    def test_old_baseline_with_spatial_loss_cannot_be_reused(self):
+        self.seal()
+        path = self.root / "baseline/manifest.json"
+        manifest = json.loads(path.read_text())
+        manifest["preparation"]["server"]["SpatialHierarchy"]["TileCapacityRejections"] = 3
+        fixture.write_json(path, manifest)
+        before = fixture.inventory(self.data)
+        with self.assertRaisesRegex(ValueError, "rejected spatial tiles"):
+            fixture.restore(self.root, self.expected)
+        self.assertEqual(before, fixture.inventory(self.data))
 
     def test_unfinished_or_failed_work_not_published(self):
         original = copy.deepcopy(self.report)

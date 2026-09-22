@@ -103,9 +103,19 @@ def validate_preparation(artifacts):
         raise ValueError("Preparation has unfinished or failed LOD work")
     if server.get("OfflineSnapshotsSubmitted", 0) <= 0:
         raise ValueError("Preparation did not admit real generated terrain")
-    if server.get("SpatialHierarchy", {}).get("PersistenceDeferrals") != 0:
-        raise ValueError("Preparation deferred spatial persistence")
+    validate_spatial_admission(server)
     return {"identity": identity, "result": result, "server": server}
+
+
+def validate_spatial_admission(server):
+    hierarchy = server.get("SpatialHierarchy", {})
+    # Conversion admission is not spatial publication. PublishLeaf can refuse a full hierarchy
+    # without contributing to PreparationFailureEvents, so quiet queues alone are insufficient.
+    # This gate is deliberately conservative even for parent rejections later recovered by retry.
+    if hierarchy.get("TileCapacityRejections") != 0:
+        raise ValueError("Preparation rejected spatial tiles at capacity; refusing an incomplete baseline")
+    if hierarchy.get("PersistenceDeferrals") != 0:
+        raise ValueError("Preparation deferred spatial persistence")
 
 
 def seal(root, expected, artifacts):
@@ -151,6 +161,8 @@ def restore(root, expected):
         raise ValueError("Fixture schema/path mismatch; use a new directory")
     if manifest.get("contract") != expected:
         raise ValueError("Fixture build/assets/seed/preparation contract changed; use a new directory")
+    # Older baselines must meet the current admission gate too, even if file hashes still match.
+    validate_spatial_admission(manifest.get("preparation", {}).get("server", {}))
     if inventory(baseline / "data") != manifest.get("files"):
         raise ValueError("Fixture data was changed or corrupted; refusing reuse")
     previous = root / "previous-work"

@@ -19,24 +19,32 @@ local job = OMNI.worldgen.start({
     id = "e2e_generated_lod_patch",
     dimension = "omniblock:overworld",
     center = { x = 1024, z = 1024 },
-    radiusChunks = 16,
+    radiusChunks = 32,
     shape = "circle",
     profile = "play",
 })
 local samples = 0
-OMNI.waitUntil(function()
-    local p = job.progress
-    if p == nil then return false end
-    assert(p.status ~= "failed", "generation failed: " .. tostring(p.lastError))
-    samples += 1
-    if samples % 50 == 0 then
-        print("generated patch: " .. p.nextTarget .. "/" .. p.totalTargets ..
-            " written=" .. p.writtenChunks .. " throttle=" .. p.throttleReason)
-    end
-    return p.status == "completed"
-end, 240, 0.1)
+local generated, generationFailure = pcall(function()
+    OMNI.waitUntil(function()
+        local p = job.progress
+        if p == nil then return false end
+        assert(p.status ~= "failed", "generation failed: " .. tostring(p.lastError))
+        samples += 1
+        if samples % 50 == 0 then
+            print("generated patch: " .. p.nextTarget .. "/" .. p.totalTargets ..
+                " written=" .. p.writtenChunks .. " throttle=" .. p.throttleReason)
+        end
+        return p.status == "completed"
+    end, 900, 0.1)
+end)
+if not generated then
+    OMNI.test.dumpTerrain("generated-patch-generation-failed")
+    OMNI.test.dumpProfiler("generated-patch-generation-failed")
+end
+assert(generated, "real-source generation failed: " .. tostring(generationFailure))
 local p = job.progress
 assert(p.preparedTargets > 0 and p.writtenChunks > 0, "cold fixture did not generate terrain")
+assert(p.radiusChunks == 32 and p.totalTargets == 3209, "wrong generated-patch footprint")
 assert(p.remainingTargets == 0 and p.nextTarget == p.totalTargets)
 assert(p.generatorProfile ~= "omniblock:flat", "wrong world generator")
 -- Cache entries alone can be satisfied by spawn data. Wait for all admitted conversions,
@@ -57,6 +65,7 @@ local ok, failure = pcall(function()
     end, 60, 0.1)
 end)
 OMNI.test.dumpTerrain("generated-patch-prepared")
+OMNI.test.dumpProfiler("generated-patch-prepared")
 assert(ok, "LOD preparation failed: " .. tostring(failure))
 print("real generated patch complete: profile=" .. p.generatorProfile ..
     " targets=" .. p.totalTargets .. " written=" .. p.writtenChunks)
