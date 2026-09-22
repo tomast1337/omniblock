@@ -38,8 +38,13 @@ jobs:
                       libvulkan1 \
                       mesa-vulkan-drivers \
                       ninja-build \
+                      python3 \
+                      util-linux \
                       xauth \
                       xvfb
+
+            - name: Test prepared-fixture ownership and isolation
+              run: python3 -m unittest discover -s tests/e2e -p test_prepared_fixture.py -v
 
             - name: Setup .NET
               uses: actions/setup-dotnet@v4

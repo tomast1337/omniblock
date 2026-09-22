@@ -7,6 +7,17 @@ artifact_dir="${E2E_ARTIFACTS_DIR:-$repo_root/artifacts/e2e-local/$(date -u +%Y%
 timeout_seconds="${E2E_TIMEOUT_SECONDS:-90}"
 configuration="${CONFIGURATION:-Debug}"
 requested_scenario="${1:-all}"
+prepared_fixture="${E2E_PREPARED_FIXTURE:-}"
+if [[ -n "$prepared_fixture" ]]; then
+    if [[ "$requested_scenario" != "terrain-lod-generated-patch" || "$prepared_fixture" != /* ]]; then
+        echo "E2E_PREPARED_FIXTURE requires an absolute directory and terrain-lod-generated-patch." >&2
+        exit 2
+    fi
+    python3 "$script_dir/prepared_fixture.py" init "$prepared_fixture"
+    # Hold ownership across preparation, sealing, restore and measurement, including game children.
+    exec 9>"$prepared_fixture/.lock"
+    flock -n 9 || { echo "Prepared fixture is already in use." >&2; exit 2; }
+fi
 if [[ ( "$requested_scenario" == "chunk-visibility-baseline" || "$requested_scenario" == "frame-profiler" || "$requested_scenario" == "terrain-lod-fixed-camera" || "$requested_scenario" == "terrain-lod-spatial-shadow" || "$requested_scenario" == "terrain-lod-server-cache-transport" || "$requested_scenario" == "world-generation-job-lifecycle" || "$requested_scenario" == "entity-render-baseline" || "$requested_scenario" == "entity-lod-selection" || "$requested_scenario" == "entity-tracking-distance" || "$requested_scenario" == entity-impostor-* ) && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
     timeout_seconds=300
 fi
@@ -51,16 +62,32 @@ for scenario in "${scenarios[@]}"; do
         exit 2
     fi
 
-    run_root="$(mktemp -d "${TMPDIR:-/tmp}/omniblock-e2e.XXXXXX")"
-    run_roots+=("$run_root")
+    fixture_mode="prepare"
+    if [[ -n "$prepared_fixture" ]]; then
+        if [[ -e "$artifact_dir/$scenario/result.json" || -e "$artifact_dir/$scenario/prepare/result.json" ]]; then
+            echo "Prepared-fixture runs require a fresh artifact directory (stale result found)." >&2
+            exit 2
+        fi
+        fixture_mode="$(python3 "$script_dir/prepared_fixture.py" restore "$prepared_fixture" \
+            --repo "$repo_root" --build "$repo_root/OmniBlock.Client/bin/$configuration/net10.0")"
+        run_root="$prepared_fixture/work"
+    else
+        run_root="$(mktemp -d "${TMPDIR:-/tmp}/omniblock-e2e.XXXXXX")"
+        run_roots+=("$run_root")
+    fi
     data_root="$run_root/data"
     game_data_dir="$data_root/OmniBlock"
     world_dir="$game_data_dir/saves/e2e-smoke"
     flat_world_dir="$game_data_dir/saves/e2e-flat"
     scenario_artifacts="$artifact_dir/$scenario"
     mkdir -p "$world_dir" "$flat_world_dir" "$scenario_artifacts"
-    base64 --decode "$script_dir/fixtures/e2e-smoke/level.dat.base64" > "$world_dir/level.dat"
-    base64 --decode "$script_dir/fixtures/e2e-flat/level.dat.base64" > "$flat_world_dir/level.dat"
+    if [[ "$fixture_mode" == "prepare" ]]; then
+        base64 --decode "$script_dir/fixtures/e2e-smoke/level.dat.base64" > "$world_dir/level.dat"
+        base64 --decode "$script_dir/fixtures/e2e-flat/level.dat.base64" > "$flat_world_dir/level.dat"
+    else
+        echo "Reusing validated prepared baseline: $prepared_fixture"
+        cp "$prepared_fixture/baseline/manifest.json" "$scenario_artifacts/prepared-fixture.json"
+    fi
     echo "Running scenario: $scenario"
     launch_args=(--username OmniE2E)
     if [[ "$scenario" == "multiplayer" ]]; then
@@ -74,7 +101,7 @@ for scenario in "${scenarios[@]}"; do
     # records that remain resident in the process that created them. Prepare with one client/server
     # lifetime, close it, then run the benchmark below against the same isolated data directory.
     prepare_script="$script_dir/$scenario-prepare.luau"
-    if [[ -f "$prepare_script" ]]; then
+    if [[ -f "$prepare_script" && "$fixture_mode" == "prepare" ]]; then
         prepare_artifacts="$scenario_artifacts/prepare"
         mkdir -p "$prepare_artifacts"
         set +e
@@ -102,6 +129,13 @@ for scenario in "${scenarios[@]}"; do
             echo "Scenario fixture preparation failed (exit $prepare_status)" >&2
             suite_status=1
             continue
+        fi
+        if [[ -n "$prepared_fixture" ]]; then
+            python3 "$script_dir/prepared_fixture.py" seal "$prepared_fixture" \
+                --repo "$repo_root" --build "$repo_root/OmniBlock.Client/bin/$configuration/net10.0" \
+                --artifacts "$prepare_artifacts"
+            cp "$prepared_fixture/baseline/manifest.json" "$scenario_artifacts/prepared-fixture.json"
+            echo "Prepared baseline retained at: $prepared_fixture (subsequent runs restore it before measuring)"
         fi
     fi
     set +e
@@ -134,6 +168,14 @@ for scenario in "${scenarios[@]}"; do
     else
         echo "E2E client produced no result artifact: $result_file" >&2
         status=1
+    fi
+
+    if [[ -n "$prepared_fixture" && "$status" == 0 ]]; then
+        if ! python3 "$script_dir/prepared_fixture.py" verify "$prepared_fixture" \
+            --repo "$repo_root" --build "$repo_root/OmniBlock.Client/bin/$configuration/net10.0" \
+            --artifacts "$scenario_artifacts"; then
+            status=1
+        fi
     fi
 
     # This scenario needs a genuinely new process, not only a cleared in-memory registry.

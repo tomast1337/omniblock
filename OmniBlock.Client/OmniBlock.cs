@@ -943,7 +943,10 @@ public partial class OmniBlock :
                                 Coverage = terrainLod.CoverageSnapshot,
                                 Server = InternalServer?.worlds?
                                     .FirstOrDefault(world => world.Dimension.Id == World.Dimension.Id)?
-                                    .TerrainLodSnapshot
+                                    .TerrainLodSnapshot,
+                                ServerIdentity = InternalServer?.worlds?
+                                    .FirstOrDefault(world => world.Dimension.Id == World.Dimension.Id)?
+                                    .TerrainLodIdentity
                             }, new JsonSerializerOptions { WriteIndented = true }));
                     var worldGeneration = InternalServer?.worlds?
                         .FirstOrDefault(world => world.Dimension.Id == World.Dimension.Id)?

@@ -107,6 +107,50 @@ Restricted `OMNI.test.terrainLodFixtureMetric` readers include `preparationPendi
 `preparationFailures`, `offlineSubmitted`, `offlineDropped`, `persistenceDeferred`, and
 `persistenceRunning`; these return -1 when the integrated server snapshot is unavailable.
 
+### Reusing a real-terrain baseline
+
+The generated-patch scenario can retain preparation across runs (Python 3.11+ and `flock` required):
+
+```bash
+E2E_PREPARED_FIXTURE="$PWD/artifacts/e2e-fixtures/generated-patch-v1" \
+    xvfb-run -a tests/e2e/run-local.sh terrain-lod-generated-patch
+```
+
+Run the same command again to skip generation. This opt-in currently supports only
+`terrain-lod-generated-patch`; ordinary runs still use disposable temporary data. Choose a **new
+absolute directory**, not an existing save or the normal game data directory.
+
+- First run: prepare normally, require a successful process/result and drained LOD diagnostics,
+  then publish `baseline/data` and its manifest together with an atomic directory rename.
+- Later runs: validate the compiled game assemblies, shipped assets, seed fixtures and preparation
+  script; validate every baseline file with SHA-256; restore a fresh disposable `work/data` before
+  measurement. Prior measured edits, generation jobs, player state and cache writes cannot leak
+  into the next run. Measurement-script changes alone do not invalidate preparation.
+- The manifest records world, generator, content, material-rule and LOD schema/policy identity.
+  The measured process must report that same server identity at its final checkpoint. Terrain
+  dumps expose it as `ServerIdentity` (null without an integrated server).
+- Production world identity includes its storage path. The work directory therefore stays at
+  the same absolute path; **moving/copying a fixture root to another path is not supported**.
+  No production identity check is bypassed to make reuse work.
+- One nonblocking lock covers build, preparation, restore and measurement. Existing unowned roots,
+  symlinks, interrupted preparation/restores, changed inputs or corrupt files fail explicitly.
+  Inspect failed work and select a new root to rebuild; the runner never overwrites a baseline.
+- The root is retained deliberately. Budget space for baseline, current work and a transient
+  restore copy (roughly three data copies). Only the previous disposable `work` is removed after
+  a successful restore. The original baseline remains recoverable and personal saves are untouched.
+
+Each run needs fresh artifacts (the default timestamp directory provides this); its
+`prepared-fixture.json` archives the validated manifest. Preparation and measurement are separate
+processes, but restored client caches and OS filesystem caches may be warm. This is not a cold-I/O
+benchmark, and does not establish full 64/512/1024 horizon coverage. The baseline is byte-checked;
+live simulation timing and performance samples are not guaranteed deterministic.
+
+Run the ownership/integrity tests without launching the game:
+
+```bash
+python3 -m unittest discover -s tests/e2e -p test_prepared_fixture.py -v
+```
+
 `entity-render-baseline` is an opt-in 300-second-watchdog benchmark for the existing GPU-instanced
 mob renderer. It uses deterministic client-only cow/sheep/mixed replicas (not server-spawned mobs),
 a stationary flying camera, and an empty-population control. It writes per-frame JSON, resource
@@ -404,6 +448,8 @@ The following environment variables are optional:
 - `E2E_ARTIFACTS_DIR`: artifact output directory.
 - `E2E_TIMEOUT_SECONDS`: watchdog timeout; defaults to 90 seconds.
 - `CONFIGURATION`: .NET build configuration; defaults to Debug.
+- `E2E_PREPARED_FIXTURE`: opt-in absolute prepared-baseline directory for
+  `terrain-lod-generated-patch`; see the isolation and invalidation rules above.
 
 CI runs the same script under Xvfb and Mesa Lavapipe. `WGPU_BACKEND=vulkan`
 selects WebGPU's Vulkan backend, while `VK_ICD_FILENAMES` points it at Mesa's
