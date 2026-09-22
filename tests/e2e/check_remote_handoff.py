@@ -21,6 +21,11 @@ def check(artifacts):
               tile["MatchesRecentRemoteSource"] and tile["SelectedSolidPages"] > 0]
     if not remote or after["Terrain"]["RemoteTiles"] <= 0:
         raise ValueError("No server-received, authoritative spatial tile reached solid submission")
+    near_remote = [tile for tile in remote if tile["Tile"]["Level"] == 2]
+    if not near_remote or any(tile["Mesh"]["HorizontalSampleBlocks"] != 1 for tile in near_remote):
+        raise ValueError("No block-scale server-supplied near LOD, or a coarse L2 mesh was published")
+    if any(tile["Mesh"]["SourceColumns"] != 4096 for tile in near_remote):
+        raise ValueError("Near LOD did not retain all 64x64 source columns")
     def owned_columns(snapshot):
         return {(x, z) for row in snapshot["Quality"]["Spatial"] or [] if row["Authoritative"]
                 for x in range(row["Tile"]["MinChunkX"], row["Tile"]["MaxChunkX"] + 1)
@@ -30,8 +35,12 @@ def check(artifacts):
     current = owned_columns(after)
     if not previous.issubset(current):
         raise ValueError("Previously authoritative outer coverage was lost after shrinking exact distance")
-    if not current - previous:
-        raise ValueError("No additional spatial tile took authority after shrinking exact distance")
+    # The server only offers tiles for terrain it already generated. A radius change can have
+    # zero new remote sources, especially in a fresh isolated save. Retaining an existing
+    # authoritative tile and handing the newly exposed columns to local LOD is still valid.
+    # Do not demand a fabricated new tile as proof of a successful handoff.
+    if after["Coverage"]["ExactOwnedColumns"] >= before["Coverage"]["ExactOwnedColumns"]:
+        raise ValueError("Shrinking exact distance did not change local ownership")
     if after["Coverage"]["HoleCount"] or after["Coverage"]["OverlapCount"]:
         raise ValueError("Local exact/LOD ownership regressed during the handoff")
 
@@ -41,4 +50,4 @@ if __name__ == "__main__":
         check(Path(sys.argv[1]))
     except (IndexError, KeyError, OSError, ValueError) as error:
         sys.exit(f"Remote handoff regression: {error}")
-    print("Remote handoff passed: server tile selected after stationary 8-to-4 radius change")
+    print("Remote handoff passed: block-scale server tile retained after stationary 8-to-4 radius change")

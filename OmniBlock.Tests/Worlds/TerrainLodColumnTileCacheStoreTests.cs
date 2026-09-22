@@ -1,3 +1,5 @@
+using System.Buffers.Binary;
+using System.Security.Cryptography;
 using OmniBlock.Network.Messages;
 using OmniBlock.Worlds.Lod;
 using OmniBlock.Worlds.Chunks;
@@ -373,6 +375,58 @@ public sealed class TerrainLodColumnTileCacheStoreTests
                 bounded.Write(Leaf(key, 2, 2)));
             Assert.Equal(previous.CanonicalHash,
                 Assert.IsType<TerrainLodColumnTile>(initial.Read(key).Tile).CanonicalHash);
+        }
+        finally
+        {
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void Policy_v1_tile_is_a_nondestructive_miss_then_replaced_by_block_scale_v2()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var key = new TerrainLodTileKey(2, -1, 0);
+            var column = TerrainLodColumn.Create(8,
+                [new TerrainLodColumnSpan(0, 8, Materials.Resolve(1, 0), 0, 15)]);
+            var previous = TerrainLodColumnTile.CreateUniform(key, 1, 8, column, "previous");
+            var store = Store(root);
+            store.Write(previous);
+            var file = Assert.Single(root.EnumerateFiles("*.ocol", SearchOption.AllDirectories));
+            var record = File.ReadAllBytes(file.FullName);
+            // Construct a checksummed format-v2 / policy-v1 fixture. Production writers only
+            // accept the current policy, so alter the identity field, not the decoder rules.
+            using (var stream = new MemoryStream(record))
+            using (var reader = new BinaryReader(stream))
+            {
+                reader.ReadUInt64(); // signature
+                Assert.Equal(2, reader.ReadInt32()); // disk format, independent of quality policy
+                reader.ReadBytes(reader.ReadInt32()); // world
+                reader.ReadInt32(); // dimension
+                reader.ReadBytes(reader.ReadInt32()); // content
+                reader.ReadBytes(reader.ReadInt32()); // generator
+                reader.ReadInt32(); // reduction schema
+                reader.ReadBytes(reader.ReadInt32()); // materials
+                reader.ReadInt32(); // maximum spatial level
+                var offset = checked((int)stream.Position);
+                Assert.Equal(2, reader.ReadInt32());
+                BinaryPrimitives.WriteInt32LittleEndian(record.AsSpan(offset, 4), 1);
+            }
+            SHA256.HashData(record.AsSpan(0, record.Length - 32), record.AsSpan(record.Length - 32));
+            File.WriteAllBytes(file.FullName, record);
+
+            var reopened = Store(root);
+            Assert.Equal(TerrainLodColumnTileCacheReadStatus.Incompatible, reopened.Read(key).Status);
+            Assert.Equal(record, File.ReadAllBytes(file.FullName)); // A miss never deletes the old bytes.
+            var replacement = TerrainLodColumnTile.CreateUniform(key, 0, 8, column, "replacement");
+            Assert.Equal(TerrainLodColumnTileCacheWriteStatus.Written, reopened.Write(replacement));
+            var loaded = Store(root).Read(key);
+            Assert.Equal(TerrainLodColumnTileCacheReadStatus.Hit, loaded.Status);
+            Assert.Equal(64, loaded.Tile!.Width);
+            Assert.Equal(0, loaded.Tile.HorizontalSampleLevel);
+            Assert.Equal(replacement.CanonicalHash, loaded.Tile.CanonicalHash);
         }
         finally
         {

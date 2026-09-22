@@ -31,7 +31,7 @@ public sealed class TerrainLodQualityDiagnosticsTests
         Assert.Equal(100, quality.VerticalReducedColumns);
         Assert.Equal(11000, quality.RenderedSpans);
         Assert.Equal(60, quality.CaveCullBelowY);
-        Assert.Equal(2, 1 << TerrainLodSpatialPolicy.CreateDefault().HorizontalSampleLevelForSpatialLevel(2));
+        Assert.Equal(1, 1 << TerrainLodSpatialPolicy.CreateDefault().HorizontalSampleLevelForSpatialLevel(2));
         // A new revision cannot silently change diagnostic metadata on the retained predecessor.
         var replacement = TerrainLodSpatialMeshQuality.FromMesh(mesh with { HorizontalSampleLevel = 1 });
         Assert.Equal(2, replacement.HorizontalSampleBlocks);

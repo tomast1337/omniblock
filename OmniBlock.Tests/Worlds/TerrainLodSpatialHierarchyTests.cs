@@ -95,11 +95,11 @@ public sealed class TerrainLodSpatialHierarchyTests
     }
 
     [Fact]
-    public void Generated_policy_preserves_legacy_levels_and_bounds_new_node_quality()
+    public void Generated_policy_preserves_block_scale_near_source_and_bounds_node_quality()
     {
         var policy = TerrainLodSpatialPolicy.CreateDefault();
 
-        Assert.Equal([0, 0, 1, 1, 2, 3, 4],
+        Assert.Equal([0, 0, 0, 1, 2, 3, 4],
             policy.HorizontalSampleLevelBySpatialLevel);
         Assert.Equal([32, 24, 16, 12, 8, 6, 4],
             policy.VerticalSliceBudgetBySpatialLevel);
@@ -120,7 +120,7 @@ public sealed class TerrainLodSpatialHierarchyTests
 
         Assert.Equal(TerrainLodSpatialPolicy.MaximumGeneratedSpatialLevel,
             policy.MaximumSpatialLevel);
-        Assert.Equal([0, 0, 1, 1, 2, 3, 4, 5, 6, 7, 8],
+        Assert.Equal([0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8],
             policy.HorizontalSampleLevelBySpatialLevel);
         Assert.Equal([32, 24, 16, 12, 8, 6, 4, 4, 4, 4, 4],
             policy.VerticalSliceBudgetBySpatialLevel);
@@ -132,6 +132,27 @@ public sealed class TerrainLodSpatialHierarchyTests
             var samplesAcross = footprintBlocks /
                                 (1 << policy.HorizontalSampleLevelForSpatialLevel(level));
             Assert.InRange(samplesAcross, 1, 64);
+        }
+    }
+
+    [Theory]
+    [InlineData(16)]
+    [InlineData(32)]
+    [InlineData(64)]
+    [InlineData(128)]
+    [InlineData(256)]
+    public void Horizon_does_not_coarsen_the_near_source_band(int horizon)
+    {
+        var policy = TerrainLodSpatialPolicy.CreateForMaximumHorizon(horizon);
+        var selected = Math.Max(TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel,
+            policy.DesiredSpatialLevel(5));
+        Assert.Equal(2, selected);
+        Assert.Equal(0, policy.HorizontalSampleLevelForSpatialLevel(selected));
+        Assert.Equal(16, policy.VerticalSliceBudgetForSpatialLevel(selected));
+        if (policy.MaximumSpatialLevel >= 3)
+        {
+            Assert.Equal(3, policy.DesiredSpatialLevel(32));
+            Assert.Equal(1, policy.HorizontalSampleLevelForSpatialLevel(3));
         }
     }
 

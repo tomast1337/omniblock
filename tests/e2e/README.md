@@ -113,8 +113,8 @@ LUAU_NATIVE_LOCAL=1 dotnet test OmniBlock.Tests/OmniBlock.Tests.csproj --no-rest
   --filter FullyQualifiedName~TerrainLod_generated_near_detail --logger 'console;verbosity=detailed'
 ```
 
-It generates two real 4x4-chunk patches and compares the shipped source with a test-only retained
-1x1 alternative and an unreduced reference. Output includes compressed bytes, mesh payload bytes,
+It generates two real 4x4-chunk patches and compares the shipped 1x1 near source with a test-only
+policy-v1 2x2 counterfactual and an unreduced reference. Output includes compressed bytes, mesh payload bytes,
 material mismatches and air filled beneath opaque roofs, separately for skylit samples. These are
 CPU/source fidelity measurements, not frame-time, screenshot, or complete-horizon acceptance.
 
@@ -123,7 +123,10 @@ watchdog). Run `xvfb-run -a tests/e2e/run-local.sh terrain-lod-remote-handoff`. 
 generated spawn region, waits for initial streaming, then reduces exact distance from eight to
 four chunks without moving the camera. `check_remote_handoff.py` verifies the captured distances,
 unchanged camera, current selection-cache revision, and at least one authoritative server-received
-tile selected for solid submission. It also checks the local ownership oracle for holes/overlaps.
+L2 tile selected for solid submission with 64x64 block-scale source columns. It also checks the
+local ownership oracle for holes/overlaps and verifies that shrinking the exact radius actually
+changes local ownership. Already authoritative tiles must persist; a fresh save may have no new
+server tile available immediately after the change.
 No synthetic LOD tiles or far-area generation are used. Missing ungenerated portions of the
 16-chunk horizon are allowed: this does not claim a fully sourced horizon or visual-quality parity.
 

@@ -192,13 +192,13 @@ public sealed partial class InactiveGenerationWorkspaceTests
             {
                 foreach (var snapshot in batch.Chunks.Reverse()) runtime.SubmitOffline(snapshot);
                 var original = ExpectedParent();
-                Assert.Equal(1, original.HorizontalSampleLevel); // Actual 2:1 reduction, not just a mosaic.
+                Assert.Equal(0, original.HorizontalSampleLevel); // The remotely usable near tier is now block-scale.
                 await WaitForTerrainLod(() => runtime.TryGetSpatialCoverage(key, out var tile) &&
                     tile!.CanonicalHash == original.CanonicalHash);
 
                 var chunk = batch.Get(0, 0).Materialize(world);
-                // Change a full reduction cell, so this is a visible edit, not merely a new hash
-                // for one source voxel that loses the coarser material vote.
+                // Change a 2x2 patch, checking both content and canonical hash after rebuilding
+                // the remotely usable parent from an edited descendant.
                 var stone = world.Content.Blocks.Get("omniblock:stone").Id;
                 for (var x = 0; x < 2; x++)
                 for (var z = 0; z < 2; z++)

@@ -43,19 +43,22 @@ public sealed partial class InactiveGenerationWorkspaceTests
         var hash = exact.CanonicalHash;
 
         var current = Measure("shipped", shipped, policy.VerticalSliceBudgetForSpatialLevel(key.Level), 60);
-        var fine = Measure("retained-1x1-same-presentation", exact,
+        // Keep an explicit policy-v1 counterfactual so the historical loss remains measurable
+        // after the shipped policy adopts 1x1. This never enters the live cache/runtime.
+        var legacy = Measure("legacy-v1-2x2", TerrainLodColumnTile.BuildParent(key, children, 1),
             policy.VerticalSliceBudgetForSpatialLevel(key.Level), 60);
         var reference = Measure("retained-1x1-unreduced-reference", exact, 128, null);
 
         Assert.True(reference.CaveAirVoxels > 0, "Fixture contains no air below an opaque roof");
         Assert.True(reference.SkylitCaveAirVoxels > 0, "Fixture contains no skylit cave/overhang air");
-        Assert.Equal(0, fine.CanonicalMaterialMismatches);
-        Assert.Equal(0, fine.PresentedClosedSkylitCaveAir);
+        Assert.Equal(0, shipped.HorizontalSampleLevel);
+        Assert.Equal(64, shipped.Width);
+        Assert.Equal(0, current.CanonicalMaterialMismatches);
+        Assert.Equal(0, current.PresentedClosedSkylitCaveAir);
+        Assert.True(legacy.CanonicalMaterialMismatches > 0, "Fixture did not exercise horizontal reduction");
         Assert.Equal(0, reference.PresentedMaterialMismatches);
         Assert.Equal(0, reference.PresentedClosedCaveAir);
         Assert.Equal(hash, exact.CanonicalHash); // Rendering never changes durable source data.
-        if (shipped.HorizontalSampleLevel > 0)
-            Assert.True(current.CanonicalMaterialMismatches > 0, "Fixture did not exercise horizontal reduction");
 
         Fidelity Measure(string name, TerrainLodColumnTile source, int verticalBudget, int? caveCeiling)
         {
@@ -102,7 +105,10 @@ public sealed partial class InactiveGenerationWorkspaceTests
             }
 
             var mesh = TerrainLodSpatialMeshBuilder.Build(decoded, world.Content.Blocks, verticalBudget,
-                emitTileBoundaryFaces: false, caveCullBelowY: caveCeiling);
+                emitTileBoundaryFaces: false, caveCullBelowY: caveCeiling,
+                maximumResultBytes: TerrainLodScaleBudget.MaximumUploadBytesPerFrame);
+            Assert.InRange(mesh.EstimatedBytes, 1, TerrainLodScaleBudget.MaximumUploadBytesPerFrame);
+            Assert.InRange(message.Compressed.Length, 1, TerrainLodScaleBudget.MaximumCompressedTileBytes);
             var quality = TerrainLodSpatialMeshQuality.FromMesh(mesh);
             var result = new Fidelity(caveAir, skylitCaveAir, canonicalMismatch, presentedMismatch,
                 canonicalClosed, presentedClosed, canonicalSkylitClosed, presentedSkylitClosed);

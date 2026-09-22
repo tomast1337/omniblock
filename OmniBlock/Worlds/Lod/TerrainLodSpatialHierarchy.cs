@@ -111,7 +111,7 @@ public sealed class TerrainLodSpatialPolicy
     ///     Version of the canonical spatial sampling and vertical-slice schedules. Increment this
     ///     when equal source terrain can compile into different column tiles under a new policy.
     /// </summary>
-    public const int CurrentQualityPolicyVersion = 1;
+    public const int CurrentQualityPolicyVersion = 2;
     public const int MinimumSupportedHorizonChunks = 16;
     /// <summary>Largest horizon currently exposed and accepted by client/server transport.</summary>
     public const int MaximumSupportedHorizonChunks = 256;
@@ -179,7 +179,10 @@ public sealed class TerrainLodSpatialPolicy
     }
 
     private static int HorizontalSampleLevelForGeneratedSpatialLevel(int spatialLevel) =>
-        spatialLevel <= 4 ? spatialLevel / 2 : spatialLevel - 2;
+        // The first remotely renderable tile (L2, 4x4 chunks) must retain block-scale detail.
+        // Its 64x64 columns fit the existing per-tile bound. Farther tiers keep their prior
+        // 2/4/8/16-block samples; increasing horizon never coarsens this near source band.
+        spatialLevel <= 2 ? 0 : spatialLevel <= 4 ? spatialLevel / 2 : spatialLevel - 2;
 
     private static int VerticalSliceBudgetForGeneratedSpatialLevel(int spatialLevel) =>
         spatialLevel switch

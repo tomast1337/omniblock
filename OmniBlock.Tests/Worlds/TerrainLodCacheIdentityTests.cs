@@ -69,7 +69,23 @@ public sealed class TerrainLodCacheIdentityTests
         Assert.Equal("maximum spatial level 7 exceeds the server maximum 6",
             levelTen.GetRequestIncompatibility(
                 7, TerrainLodSpatialPolicy.CurrentQualityPolicyVersion, 6));
-        Assert.Equal("quality-policy version 2 is unsupported; server policy is 1",
-            levelSix.GetRequestIncompatibility(6, 2, 6));
+        Assert.Equal($"quality-policy version 1 is unsupported; server policy is {TerrainLodSpatialPolicy.CurrentQualityPolicyVersion}",
+            levelSix.GetRequestIncompatibility(6, 1, 6));
+    }
+
+    [Fact]
+    public void Near_quality_upgrade_invalidates_old_cache_and_peer_identity_not_world_content()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var current = TerrainLodCacheIdentity.FromWorld(world, materials, "/saves/world");
+        var previous = current with { QualityPolicyVersion = 1 };
+        Assert.Equal(2, current.QualityPolicyVersion);
+        Assert.Equal(previous.WorldFingerprint, current.WorldFingerprint);
+        Assert.Equal(previous.ContentFingerprint, current.ContentFingerprint);
+        Assert.NotEqual(previous.RecordFingerprint, current.RecordFingerprint);
+        Assert.NotEqual(previous.CompatibilityFingerprint, current.CompatibilityFingerprint);
+        Assert.Equal("quality-policy version 1 is unsupported",
+            previous.GetPresentationIncompatibility(world.Dimension.Id, world.Content, materials));
     }
 }
