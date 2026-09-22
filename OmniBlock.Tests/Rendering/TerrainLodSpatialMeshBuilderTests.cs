@@ -58,6 +58,13 @@ public sealed class TerrainLodSpatialMeshBuilderTests
         Assert.Equal(tile.CanonicalHash, mesh.CanonicalHash);
         Assert.Equal(640, mesh.SolidQuadCount);
         Assert.Equal(0, mesh.TranslucentQuadCount);
+        Assert.Equal(tile.Width * tile.Width, mesh.Profile.SourceColumns);
+        Assert.True(mesh.Profile.SourceSpans >= mesh.Profile.SourceColumns);
+        Assert.True(mesh.Profile.ConstructionPages > 0);
+        Assert.True(mesh.Profile.ReductionMs >= 0);
+        Assert.True(mesh.Profile.FaceEmissionMs >= 0);
+        Assert.True(mesh.Profile.FlatteningMs >= 0);
+        Assert.True(mesh.Profile.CoalescingMs >= 0);
         Assert.All(mesh.Pages, page =>
         {
             Assert.Equal(0, page.Vertices.Length % 4);

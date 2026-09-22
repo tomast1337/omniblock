@@ -643,6 +643,19 @@ public partial class OmniBlock :
                     "terrainLodSpatialMeshPeakRunning" => spatial.MeshCompilation.PeakRunning,
                     "terrainLodSpatialMeshPeakCompleted" =>
                         spatial.MeshCompilation.PeakCompleted,
+                    "terrainLodSpatialMeshReductionMs" =>
+                        spatial.MeshCompilation.ReductionMs,
+                    "terrainLodSpatialMeshFaceEmissionMs" =>
+                        spatial.MeshCompilation.FaceEmissionMs,
+                    "terrainLodSpatialMeshFlatteningMs" =>
+                        spatial.MeshCompilation.FlatteningMs,
+                    "terrainLodSpatialMeshCoalescingMs" =>
+                        spatial.MeshCompilation.CoalescingMs,
+                    "terrainLodSpatialMeshSourceColumns" =>
+                        spatial.MeshCompilation.SourceColumns,
+                    "terrainLodSpatialMeshSourceSpans" => spatial.MeshCompilation.SourceSpans,
+                    "terrainLodSpatialMeshConstructionPages" =>
+                        spatial.MeshCompilation.ConstructionPages,
                     "terrainLodSpatialSeamDesired" => spatial.DesiredSeams,
                     "terrainLodSpatialSeamGpuResident" => spatial.GpuSeams,
                     "terrainLodSpatialSeamQueued" => spatial.SeamCompilation.Queued,
@@ -727,6 +740,12 @@ public partial class OmniBlock :
                     "terrainLodFirstSeamUploadMs" => state.Convergence.FirstSeamUploadMs,
                     "terrainLodSeamsCompleteMs" => state.Convergence.SeamsCompleteMs,
                     "terrainLodPublicationMs" => state.Convergence.PublicationMs,
+                    "terrainLodBodyUploads" => state.Convergence.BodyUploads,
+                    "terrainLodBodyUploadBytes" => state.Convergence.BodyUploadBytes,
+                    "terrainLodBodyInstallMs" => state.Convergence.BodyInstallMs,
+                    "terrainLodSeamUploads" => state.Convergence.SeamUploads,
+                    "terrainLodSeamUploadBytes" => state.Convergence.SeamUploadBytes,
+                    "terrainLodSeamInstallMs" => state.Convergence.SeamInstallMs,
                     "terrainLodIdentityReady" =>
                         terrainNetwork?.TerrainLodIdentityReady == true ? 1 : 0,
                     "terrainLodIdentityMismatches" =>

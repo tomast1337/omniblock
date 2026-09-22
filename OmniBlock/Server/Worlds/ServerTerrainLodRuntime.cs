@@ -321,7 +321,6 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                 _spatialMissing.Remove(key);
                 _spatialWirePayloads.Remove(key);
             }
-            QueueSpatialEncode(key);
         }
         lock (_gate) PublishSnapshotLocked();
         return coveragePlan.Tiles.Count;
@@ -533,14 +532,15 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                 _completedSpatialParents);
             var spatialReads = DrainSpatialReads(maximumReads: 4);
             foreach (var parent in _completedSpatialParents)
-                if (parent.Key.Level >= 2)
+                lock (_gate)
                 {
-                    lock (_gate)
-                    {
-                        _spatialWirePayloads.Remove(parent.Key);
-                        _spatialMissing.Remove(parent.Key);
-                    }
-                    QueueSpatialEncode(parent.Key);
+                    // Publishing a tile and preparing its remote wire representation are separate
+                    // lifecycle steps. Integrated connections consume the immutable tile directly,
+                    // and remote clients request compression lazily through GetSpatialPayload().
+                    // Eager encoding here made cold-cache reads contend with work that a loopback
+                    // session could never consume.
+                    _spatialWirePayloads.Remove(parent.Key);
+                    _spatialMissing.Remove(parent.Key);
                 }
             var spatialEncodes = DrainSpatialEncodes(maximumEncodes: 2);
             lock (_gate) PublishSnapshotLocked();
@@ -569,7 +569,6 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                 {
                     _spatialHierarchy.PublishCached(cached.Tile!);
                     lock (_gate) _spatialMissing.Remove(key);
-                    if (key.Level >= 2) QueueSpatialEncode(key);
                 }
                 else
                 {

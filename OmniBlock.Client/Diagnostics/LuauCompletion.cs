@@ -42,7 +42,10 @@ internal sealed partial class LuauCompletion
             "terrainLodSpatialMeshOldestQueuedMs", "terrainLodSpatialMeshCompleted",
             "terrainLodSpatialMeshCompilationTotalMs", "terrainLodSpatialMeshCompilationMaxMs",
             "terrainLodSpatialMeshPeakQueued", "terrainLodSpatialMeshPeakRunning",
-            "terrainLodSpatialMeshPeakCompleted",
+            "terrainLodSpatialMeshPeakCompleted", "terrainLodSpatialMeshReductionMs",
+            "terrainLodSpatialMeshFaceEmissionMs", "terrainLodSpatialMeshFlatteningMs",
+            "terrainLodSpatialMeshCoalescingMs", "terrainLodSpatialMeshSourceColumns",
+            "terrainLodSpatialMeshSourceSpans", "terrainLodSpatialMeshConstructionPages",
             "terrainLodSpatialSeamCancelled", "terrainLodSpatialSeamOverBudget",
             "terrainLodSpatialSeamOldestQueuedMs",
             "terrainCoveragePendingSeams",
@@ -63,7 +66,10 @@ internal sealed partial class LuauCompletion
             "terrainLodFirstSourceTileMs", "terrainLodSourceCompleteMs",
             "terrainLodFirstBodyUploadMs", "terrainLodBodiesCompleteMs",
             "terrainLodFirstSeamUploadMs", "terrainLodSeamsCompleteMs",
-            "terrainLodPublicationMs",
+            "terrainLodPublicationMs", "terrainLodBodyUploads",
+            "terrainLodBodyUploadBytes", "terrainLodBodyInstallMs",
+            "terrainLodSeamUploads", "terrainLodSeamUploadBytes",
+            "terrainLodSeamInstallMs",
             "terrainLodIdentityReady", "terrainLodIdentityMismatches",
             "terrainLodIdentityRejectedMessages"];
 

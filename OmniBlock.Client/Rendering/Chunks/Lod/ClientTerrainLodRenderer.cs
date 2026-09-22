@@ -115,7 +115,13 @@ internal readonly record struct TerrainLodConvergenceSnapshot(
     double BodiesCompleteMs,
     double FirstSeamUploadMs,
     double SeamsCompleteMs,
-    double PublicationMs);
+    double PublicationMs,
+    long BodyUploads,
+    long BodyUploadBytes,
+    double BodyInstallMs,
+    long SeamUploads,
+    long SeamUploadBytes,
+    double SeamInstallMs);
 
 internal readonly record struct TerrainLodSpatialSnapshot(
     TerrainLodTileKey Root,
@@ -284,6 +290,12 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private double _firstSeamUploadMs = -1;
     private double _seamsCompleteMs = -1;
     private double _publicationMs = -1;
+    private long _bodyUploads;
+    private long _bodyUploadBytes;
+    private double _bodyInstallMs;
+    private long _seamUploads;
+    private long _seamUploadBytes;
+    private double _seamInstallMs;
     private int _coarseCoverSelectedTiles;
     private int _coarseCoverParentFallbacks;
     private int _coarseCoverMissingGroups;
@@ -689,6 +701,12 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _firstSeamUploadMs = -1;
         _seamsCompleteMs = -1;
         _publicationMs = -1;
+        _bodyUploads = 0;
+        _bodyUploadBytes = 0;
+        _bodyInstallMs = 0;
+        _seamUploads = 0;
+        _seamUploadBytes = 0;
+        _seamInstallMs = 0;
         _coarseCoverComplete = false;
         _coarseCoverRetainingPrevious = _spatialFrame is not null;
         _spatialForestCacheKey = null;
@@ -1558,12 +1576,14 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 continue;
             }
 
+            var installStarted = Stopwatch.GetTimestamp();
             var installedCandidate = _spatialPresentations.TryInstall(
                 mesh.Key,
                 mesh.CanonicalHash,
                 () => TerrainLodSpatialGpuPresentation.Create(
                     device, arenas, mesh),
                 out var failure);
+            _bodyInstallMs += Stopwatch.GetElapsedTime(installStarted).TotalMilliseconds;
             if (failure is not null)
                 throw new InvalidOperationException(
                     $"Spatial terrain LOD upload failed for {mesh.Key}.", failure);
@@ -1571,6 +1591,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             {
                 installed++;
                 uploadedBytes += mesh.EstimatedBytes;
+                _bodyUploads++;
+                _bodyUploadBytes += mesh.EstimatedBytes;
                 if (_firstBodyUploadMs < 0)
                     _firstBodyUploadMs = CoarseCoverElapsedMs();
             }
@@ -1636,6 +1658,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             }
 
             TerrainLodSpatialGpuSeamPresentation? candidate = null;
+            var installStarted = Stopwatch.GetTimestamp();
             try
             {
                 candidate = TerrainLodSpatialGpuSeamPresentation.Create(
@@ -1645,12 +1668,15 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 candidate = null;
                 installed++;
                 uploadedBytes += mesh.EstimatedBytes;
+                _seamUploads++;
+                _seamUploadBytes += mesh.EstimatedBytes;
                 if (_firstSeamUploadMs < 0)
                     _firstSeamUploadMs = CoarseCoverElapsedMs();
             }
             finally
             {
                 candidate?.Dispose();
+                _seamInstallMs += Stopwatch.GetElapsedTime(installStarted).TotalMilliseconds;
             }
         }
         return installed;
@@ -3117,7 +3143,13 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 _bodiesCompleteMs,
                 _firstSeamUploadMs,
                 _seamsCompleteMs,
-                _publicationMs));
+                _publicationMs,
+                _bodyUploads,
+                _bodyUploadBytes,
+                _bodyInstallMs,
+                _seamUploads,
+                _seamUploadBytes,
+                _seamInstallMs));
     }
 
     private double CoarseCoverElapsedMs() => _coarseCoverStartedTimestamp == 0

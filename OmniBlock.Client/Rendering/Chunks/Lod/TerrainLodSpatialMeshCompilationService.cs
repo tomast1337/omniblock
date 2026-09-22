@@ -44,7 +44,14 @@ internal readonly record struct TerrainLodSpatialMeshCompilationSnapshot(
     double MaximumCompilationMs,
     int PeakQueued,
     int PeakRunning,
-    int PeakCompleted);
+    int PeakCompleted,
+    double ReductionMs,
+    double FaceEmissionMs,
+    double FlatteningMs,
+    double CoalescingMs,
+    long SourceColumns,
+    long SourceSpans,
+    long ConstructionPages);
 
 /// <summary>
 ///     Bounded, key-coalescing worker between immutable spatial column tiles and GPU staging.
@@ -71,6 +78,13 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
     private int _peakQueued;
     private int _peakRunning;
     private int _peakCompleted;
+    private double _reductionMs;
+    private double _faceEmissionMs;
+    private double _flatteningMs;
+    private double _coalescingMs;
+    private long _sourceColumns;
+    private long _sourceSpans;
+    private long _constructionPages;
 
     public TerrainLodSpatialMeshCompilationService(
         int capacity = 32,
@@ -224,7 +238,14 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
                 _maximumCompilationMs,
                 _peakQueued,
                 _peakRunning,
-                _peakCompleted);
+                _peakCompleted,
+                _reductionMs,
+                _faceEmissionMs,
+                _flatteningMs,
+                _coalescingMs,
+                _sourceColumns,
+                _sourceSpans,
+                _constructionPages);
     }
 
     public void Dispose()
@@ -337,6 +358,16 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
                 _completed++;
                 _totalCompilationMs += elapsed;
                 _maximumCompilationMs = Math.Max(_maximumCompilationMs, elapsed);
+                if (mesh is not null)
+                {
+                    _reductionMs += mesh.Profile.ReductionMs;
+                    _faceEmissionMs += mesh.Profile.FaceEmissionMs;
+                    _flatteningMs += mesh.Profile.FlatteningMs;
+                    _coalescingMs += mesh.Profile.CoalescingMs;
+                    _sourceColumns += mesh.Profile.SourceColumns;
+                    _sourceSpans += mesh.Profile.SourceSpans;
+                    _constructionPages += mesh.Profile.ConstructionPages;
+                }
                 UpdatePressurePeaksLocked();
                 Monitor.PulseAll(_gate);
             }

@@ -364,11 +364,17 @@ internal sealed class ProfilerWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text(
             $"Converge GPU: first body {FormatDuration(convergence.FirstBodyUploadMs)}  all bodies {FormatDuration(convergence.BodiesCompleteMs)}  first seam {FormatDuration(convergence.FirstSeamUploadMs)}  all seams {FormatDuration(convergence.SeamsCompleteMs)}  publish {FormatDuration(convergence.PublicationMs)}");
         ImGuiTextSafe.Text(
+            $"Install: body {convergence.BodyUploads:N0} / {FormatBytes(convergence.BodyUploadBytes)} / {convergence.BodyInstallMs:N1} ms  seam {convergence.SeamUploads:N0} / {FormatBytes(convergence.SeamUploadBytes)} / {convergence.SeamInstallMs:N1} ms");
+        ImGuiTextSafe.Text(
             $"GPU stage: {spatial.GpuPresentations:N0} resident through L{spatial.HighestGpuResidentLevel}  {FormatBytes(spatial.GpuBytes)}  {spatial.PendingMeshCandidates:N0} pending  {spatial.MeshCompilation.Queued:N0} queued  {spatial.MeshCompilation.Running:N0} running  {spatial.MeshCompilation.Ready:N0} ready");
         ImGuiTextSafe.Text(
             $"GPU work:  oldest {spatial.MeshCompilation.OldestQueuedMs:N0} ms  cancelled {spatial.MeshCompilation.Cancelled:N0}  over-budget {spatial.MeshCompilation.OverBudget:N0}  capacity rejects {spatial.MeshCompilation.RejectedAtCapacity:N0}");
         ImGuiTextSafe.Text(
             $"Body work: {spatial.MeshCompilation.Completed:N0} completed  {spatial.MeshCompilation.TotalCompilationMs:N1} worker-ms total  {spatial.MeshCompilation.MaximumCompilationMs:N1} ms max  peak q/r/d {spatial.MeshCompilation.PeakQueued:N0}/{spatial.MeshCompilation.PeakRunning:N0}/{spatial.MeshCompilation.PeakCompleted:N0}");
+        ImGuiTextSafe.Text(
+            $"Body CPU:  reduce {spatial.MeshCompilation.ReductionMs:N1} ms  faces {spatial.MeshCompilation.FaceEmissionMs:N1} ms  flatten {spatial.MeshCompilation.FlatteningMs:N1} ms  coalesce {spatial.MeshCompilation.CoalescingMs:N1} ms");
+        ImGuiTextSafe.Text(
+            $"Body input: {spatial.MeshCompilation.SourceColumns:N0} columns  {spatial.MeshCompilation.SourceSpans:N0} spans  {spatial.MeshCompilation.ConstructionPages:N0} construction pages");
         ImGuiTextSafe.Text(
             $"Residency: {spatial.PinnedPresentations:N0} pinned  {spatial.GpuEvictions:N0} GPU evictions  {spatial.CpuEvictions:N0} CPU evictions");
         ImGuiTextSafe.Text(

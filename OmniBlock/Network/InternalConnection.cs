@@ -19,6 +19,7 @@ public class InternalConnection : Connection
 
     private readonly ILogger<InternalConnection> _logger = Log.Instance.For<InternalConnection>();
     private readonly ConcurrentQueue<Packet> _bulkReadQueue = [];
+    private int _peakBulkReadQueueDepth;
 
     public InternalConnection(NetHandler? netHandler, string name, TimeProvider? clock = null)
         : base(clock: clock)
@@ -34,6 +35,10 @@ public class InternalConnection : Connection
     public override bool IsInternal => true;
 
     protected override int AdditionalReadQueueDepth => _bulkReadQueue.Count;
+
+    public override int BulkReadQueueDepth => _bulkReadQueue.Count;
+
+    public override int PeakBulkReadQueueDepth => Volatile.Read(ref _peakBulkReadQueueDepth);
 
     public void AssignRemote(InternalConnection remote) => RemoteConnection = remote;
 
@@ -65,9 +70,24 @@ public class InternalConnection : Connection
         BytesRead += packet.Size();
         PacketsRead++;
         if (PacketPriorities.Of(packet) == SendPriority.Bulk)
+        {
             _bulkReadQueue.Enqueue(packet);
+            NoteBulkQueueDepth(_bulkReadQueue.Count);
+        }
         else
             readQueue.Enqueue(packet);
+    }
+
+    private void NoteBulkQueueDepth(int depth)
+    {
+        var current = Volatile.Read(ref _peakBulkReadQueueDepth);
+        while (depth > current)
+        {
+            var observed = Interlocked.CompareExchange(
+                ref _peakBulkReadQueueDepth, depth, current);
+            if (observed == current) return;
+            current = observed;
+        }
     }
 
     protected override void processPackets()

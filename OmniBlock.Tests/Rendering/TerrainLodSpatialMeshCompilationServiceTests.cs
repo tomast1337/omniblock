@@ -31,6 +31,10 @@ public sealed class TerrainLodSpatialMeshCompilationServiceTests
         Assert.InRange(snapshot.PeakQueued, 1, 2);
         Assert.Equal(1, snapshot.PeakRunning);
         Assert.Equal(1, snapshot.PeakCompleted);
+        Assert.True(snapshot.FaceEmissionMs >= 0);
+        Assert.Equal(tile.Width * tile.Width, snapshot.SourceColumns);
+        Assert.True(snapshot.SourceSpans >= snapshot.SourceColumns);
+        Assert.True(snapshot.ConstructionPages > 0);
     }
 
     [Fact]

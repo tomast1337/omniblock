@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Client.Rendering.Core;
@@ -37,6 +38,15 @@ internal sealed record TerrainLodSpatialMeshPage(
 
 internal readonly record struct TerrainLodSpatialMeshPageKey(int X, int Y, int Z);
 
+internal readonly record struct TerrainLodSpatialMeshBuildProfile(
+    double ReductionMs,
+    double FaceEmissionMs,
+    double FlatteningMs,
+    double CoalescingMs,
+    int SourceColumns,
+    int SourceSpans,
+    int ConstructionPages);
+
 /// <summary>Immutable CPU result for one canonical spatial column tile.</summary>
 internal sealed record TerrainLodSpatialMeshData(
     TerrainLodTileKey Key,
@@ -45,7 +55,8 @@ internal sealed record TerrainLodSpatialMeshData(
     int VerticalSliceBudget,
     bool IncludesExternalBoundaryFaces,
     int MaximumRenderedSpans,
-    TerrainLodSpatialMeshPage[] Pages)
+    TerrainLodSpatialMeshPage[] Pages,
+    TerrainLodSpatialMeshBuildProfile Profile)
 {
     public long EstimatedBytes => Pages.Sum(static page => page.EstimatedBytes);
     public int[] ArenaAllocationVertexCounts => Pages
@@ -115,8 +126,10 @@ internal static class TerrainLodSpatialMeshBuilder
             tileMinZ + expectedFootprint > int.MaxValue)
             throw new InvalidDataException($"Spatial terrain tile {tile.Key} is outside renderable coordinates.");
 
+        var stageStarted = Stopwatch.GetTimestamp();
         var columns = new TerrainLodColumn[checked(tile.Width * tile.Width)];
         var maximumRenderedSpans = 0;
+        var sourceSpans = 0;
         for (var x = 0; x < tile.Width; x++)
         for (var z = 0; z < tile.Width; z++)
         {
@@ -126,8 +139,10 @@ internal static class TerrainLodSpatialMeshBuilder
                 : tile[x, z];
             var reduced = TerrainLodVerticalSliceReducer.Reduce(source, verticalSliceBudget);
             columns[x * tile.Width + z] = reduced;
+            sourceSpans += source.Spans.Count;
             maximumRenderedSpans = Math.Max(maximumRenderedSpans, reduced.Spans.Count);
         }
+        var reductionMs = Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds;
 
         Dictionary<TerrainLodSpatialMeshPageKey, PageBuilder> pages = [];
         blocks.TryGet("omniblock:grass_block", out var grassBlock);
@@ -135,6 +150,7 @@ internal static class TerrainLodSpatialMeshBuilder
             ? -1
             : Atlases.Terrain.IndexOf("omniblock:grass_block_side_overlay");
 
+        stageStarted = Stopwatch.GetTimestamp();
         for (var x = 0; x < tile.Width; x++)
         for (var z = 0; z < tile.Width; z++)
         {
@@ -205,33 +221,61 @@ internal static class TerrainLodSpatialMeshBuilder
                     var neighborInBounds = InBounds(neighborX, neighborZ);
                     if (!neighborInBounds && !emitTileBoundaryFaces) return;
                     var neighbor = neighborInBounds ? Column(neighborX, neighborZ) : null;
-                    var runStart = -1;
+                    var runStart = -1.0f;
                     var runLight = default(ChunkLightVertex);
-                    for (var y = minY; y <= maxY; y++)
-                    {
-                        if ((y & 15) == 0) guard.Checkpoint();
-                        var adjacent = y < maxY && neighbor is not null
-                            ? NeighborAt(neighbor, y)
-                            : null;
-                        var visible = y < maxY && IsFaceVisible(
-                            span.Material, adjacent, translucent, blocks);
-                        var light = FaceLight(span, adjacent, side);
-                        if (visible && runStart >= 0 && light != runLight)
-                        {
-                            EmitVerticalRange(runStart, y, runLight);
-                            runStart = y;
-                            runLight = light;
-                        }
-                        else if (visible && runStart < 0)
-                        {
-                            runStart = y;
-                            runLight = light;
-                        }
-                        if (visible || runStart < 0) continue;
 
-                        var runEnd = y == maxY ? renderMaxY : y;
-                        EmitVerticalRange(runStart, runEnd, runLight);
-                        runStart = -1;
+                    // Both columns are canonical vertical interval lists. Walking every block Y
+                    // here made face emission O(world height) for every span and every side, then
+                    // performed a binary search in the neighbor for each cell. Intersect the
+                    // already-reduced intervals directly; output is identical because a run can
+                    // change only at a neighbor-span boundary or when its sampled light changes.
+                    if (neighbor is null)
+                    {
+                        var light = FaceLight(span, null, side);
+                        EmitVerticalRange(minY, renderMaxY, light);
+                    }
+                    else
+                    {
+                        foreach (var adjacentValue in neighbor.Spans)
+                        {
+                            if (adjacentValue.TopY <= minY) continue;
+                            if (adjacentValue.BottomY >= maxY) break;
+                            guard.Checkpoint();
+                            var rangeBottom = Math.Max(minY, adjacentValue.BottomY);
+                            var rangeTop = Math.Min(maxY, adjacentValue.TopY);
+                            TerrainLodColumnSpan? adjacent = adjacentValue;
+                            var visible = IsFaceVisible(
+                                span.Material, adjacent, translucent, blocks);
+                            var light = FaceLight(span, adjacent, side);
+                            if (!visible)
+                            {
+                                if (runStart >= 0)
+                                {
+                                    EmitVerticalRange(runStart, rangeBottom, runLight);
+                                    runStart = -1;
+                                }
+                                continue;
+                            }
+                            if (runStart < 0)
+                            {
+                                runStart = rangeBottom;
+                                runLight = light;
+                            }
+                            else if (light != runLight)
+                            {
+                                EmitVerticalRange(runStart, rangeBottom, runLight);
+                                runStart = rangeBottom;
+                                runLight = light;
+                            }
+
+                            if (rangeTop != maxY) continue;
+                            EmitVerticalRange(runStart, renderMaxY, runLight);
+                            runStart = -1;
+                        }
+                        if (runStart >= 0)
+                        {
+                            EmitVerticalRange(runStart, renderMaxY, runLight);
+                        }
                     }
 
                     void EmitVerticalRange(
@@ -294,15 +338,24 @@ internal static class TerrainLodSpatialMeshBuilder
                 }
             }
         }
+        var faceEmissionMs = Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds;
 
+        stageStarted = Stopwatch.GetTimestamp();
         var completedPages = pages
             .OrderBy(static pair => pair.Key.X)
             .ThenBy(static pair => pair.Key.Y)
             .ThenBy(static pair => pair.Key.Z)
             .Select(pair => pair.Value.Build(pair.Key, guard))
             .ToArray();
+        var flatteningMs = Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds;
+        var constructionPages = completedPages.Length;
+        var coalescingMs = 0.0;
         if (tile.Key.Level >= TileScaleSubmissionMinimumLevel)
+        {
+            stageStarted = Stopwatch.GetTimestamp();
             completedPages = CoalescePages(completedPages, guard);
+            coalescingMs = Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds;
+        }
         return new TerrainLodSpatialMeshData(
             tile.Key,
             tile.CanonicalHash,
@@ -310,7 +363,15 @@ internal static class TerrainLodSpatialMeshBuilder
             verticalSliceBudget,
             emitTileBoundaryFaces,
             maximumRenderedSpans,
-            completedPages);
+            completedPages,
+            new TerrainLodSpatialMeshBuildProfile(
+                reductionMs,
+                faceEmissionMs,
+                flatteningMs,
+                coalescingMs,
+                columns.Length,
+                sourceSpans,
+                constructionPages));
 
         TerrainLodColumn Column(int x, int z) => columns[x * tile.Width + z];
         bool InBounds(int x, int z) =>

@@ -178,9 +178,11 @@ public sealed class ServerTerrainLodRuntimeTests
             await WaitUntil(() => reopened.Snapshot().SpatialCache.ReadHits == 1);
             Assert.Equal(1, reopened.Snapshot().SpatialCache.ReadHits);
             Assert.Equal(0, reopened.Snapshot().TrackedChunks);
+            Assert.Equal(0, reopened.Snapshot().SpatialWirePayloads);
             Assert.False(reopened.TryGetSpatialPayload(reopenedKey, out _));
             await WaitUntil(() => reopened.TryGetSpatialPayload(reopenedKey, out _));
             Assert.True(reopened.TryGetSpatialPayload(reopenedKey, out var payload));
+            Assert.Equal(1, reopened.Snapshot().SpatialWirePayloads);
             var transported = TerrainLodTileMessage.FromCompressed(0, payload!).Decode();
             Assert.Equal(cached.CanonicalHash, transported.CanonicalHash);
         }

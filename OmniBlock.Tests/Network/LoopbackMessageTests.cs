@@ -108,12 +108,17 @@ public sealed class LoopbackMessageTests
             .ToArray();
         foreach (var message in bulk) sender.sendMessage(Negotiated(), message);
 
+        Assert.Equal(bulk.Length, sender.RemoteConnection.BulkReadQueueDepth);
+        Assert.Equal(bulk.Length, sender.RemoteConnection.PeakBulkReadQueueDepth);
+
         sender.RemoteConnection.tick();
 
         Assert.Equal(InternalConnection.MaximumBulkPacketsPerTick, handler.Received.Count);
         Assert.Same(bulk[0], handler.Received[0]);
         Assert.Same(bulk[1], handler.Received[1]);
         Assert.Equal(1, sender.getBulkPacketBacklog());
+        Assert.Equal(1, sender.RemoteConnection.BulkReadQueueDepth);
+        Assert.Equal(bulk.Length, sender.RemoteConnection.PeakBulkReadQueueDepth);
     }
 
     [Fact]

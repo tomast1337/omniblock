@@ -169,6 +169,16 @@ public class Connection
     public int PeakReadQueueDepth { get; private set; }
 
     /// <summary>
+    ///     Low-priority terrain/application packets waiting outside the normal gameplay queue.
+    ///     Network transports currently report zero because their decoded inbox is shared;
+    ///     loopback overrides this for its explicitly isolated bulk lane.
+    /// </summary>
+    public virtual int BulkReadQueueDepth => 0;
+
+    /// <summary>High-water mark of <see cref="BulkReadQueueDepth" />.</summary>
+    public virtual int PeakBulkReadQueueDepth => 0;
+
+    /// <summary>
     ///     Packets applied to the handler. Against <see cref="PacketsRead" /> this is the drain rate
     ///     versus the arrival rate, and the two diverging is the whole diagnosis.
     /// </summary>

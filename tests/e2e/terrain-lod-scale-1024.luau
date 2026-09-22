@@ -99,6 +99,12 @@ print("terrain-lod-scale schema=1 targetChunks=" .. tostring(horizon) ..
     " firstSeamMs=" .. tostring(OMNI.client.state.terrainLodFirstSeamUploadMs) ..
     " seamsCompleteMs=" .. tostring(OMNI.client.state.terrainLodSeamsCompleteMs) ..
     " publicationMs=" .. tostring(OMNI.client.state.terrainLodPublicationMs) ..
+    " bodyUploads=" .. tostring(OMNI.client.state.terrainLodBodyUploads) ..
+    " bodyUploadBytes=" .. tostring(OMNI.client.state.terrainLodBodyUploadBytes) ..
+    " bodyInstallMs=" .. tostring(OMNI.client.state.terrainLodBodyInstallMs) ..
+    " seamUploads=" .. tostring(OMNI.client.state.terrainLodSeamUploads) ..
+    " seamUploadBytes=" .. tostring(OMNI.client.state.terrainLodSeamUploadBytes) ..
+    " seamInstallMs=" .. tostring(OMNI.client.state.terrainLodSeamInstallMs) ..
     " networkReceived=" .. tostring(OMNI.client.state.terrainLodNetworkTilesReceived) ..
     " networkAdmitted=" .. tostring(OMNI.client.state.terrainLodNetworkTilesAdmitted) ..
     " clientTileQueuePeak=" .. tostring(OMNI.client.state.terrainLodNetworkTileQueuePeak) ..
@@ -116,6 +122,13 @@ print("terrain-lod-scale schema=1 targetChunks=" .. tostring(horizon) ..
     " meshPeakQueued=" .. tostring(OMNI.client.state.terrainLodSpatialMeshPeakQueued) ..
     " meshPeakRunning=" .. tostring(OMNI.client.state.terrainLodSpatialMeshPeakRunning) ..
     " meshPeakCompleted=" .. tostring(OMNI.client.state.terrainLodSpatialMeshPeakCompleted) ..
+    " meshReductionMs=" .. tostring(OMNI.client.state.terrainLodSpatialMeshReductionMs) ..
+    " meshFaceMs=" .. tostring(OMNI.client.state.terrainLodSpatialMeshFaceEmissionMs) ..
+    " meshFlattenMs=" .. tostring(OMNI.client.state.terrainLodSpatialMeshFlatteningMs) ..
+    " meshCoalesceMs=" .. tostring(OMNI.client.state.terrainLodSpatialMeshCoalescingMs) ..
+    " meshSourceColumns=" .. tostring(OMNI.client.state.terrainLodSpatialMeshSourceColumns) ..
+    " meshSourceSpans=" .. tostring(OMNI.client.state.terrainLodSpatialMeshSourceSpans) ..
+    " meshConstructionPages=" .. tostring(OMNI.client.state.terrainLodSpatialMeshConstructionPages) ..
     " meshCancelled=" .. tostring(OMNI.client.state.terrainLodSpatialMeshCancelled) ..
     " seamCancelled=" .. tostring(OMNI.client.state.terrainLodSpatialSeamCancelled))
 OMNI.test.dumpTerrain("lod-scale-1024")
