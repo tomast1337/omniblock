@@ -56,6 +56,22 @@ transport, compatibility, and WebGPU bounds. These scenarios do not widen the no
 setting. Their output separately reports transport and presentation convergence time; on timeout
 they dump both terrain state and profiler data before failing.
 
+`terrain-lod-scale-512-movement` extends the L7 gate through a ten-chunk cinematic flight,
+rotation, teleport, return to the original center, repeated block edits, and disconnect with work
+pending. Its separate preparation process persists overlapping radial partitions along the route.
+The measured process samples coverage, queue ages, GPU memory, and validation errors while moving,
+checks actual arrival coordinates, and writes terrain/profiler artifacts at each stage and on
+failure. Run with `xvfb-run -a tests/e2e/run-local.sh terrain-lod-scale-512-movement`.
+The restricted `OMNI.test.prepareTerrainLodFixture(radius, x, z)` accepts an optional world-space
+center for preparing routes (omitting both coordinates uses the player). `OMNI.test.disconnect()`
+queues the normal world teardown after the Luau callback returns.
+`OMNI.test.hasBlock(id, x, y, z)` reads the client's loaded block data, allowing edit tests to
+observe server acknowledgments before asserting mesh readiness.
+`dumpTerrain` also writes `terrain-lod-<label>.json` with source/convergence, spatial residency,
+worker queues, and coverage-oracle snapshots, so admission stalls can be diagnosed from artifacts.
+The scale fixture uses uniform synthetic reduced terrain to isolate lifecycle and budget behavior;
+it is not a visual-quality baseline for caves, foliage, liquids, or arbitrary modded content.
+
 `entity-render-baseline` is an opt-in 300-second-watchdog benchmark for the existing GPU-instanced
 mob renderer. It uses deterministic client-only cow/sheep/mixed replicas (not server-spawned mobs),
 a stationary flying camera, and an empty-population control. It writes per-frame JSON, resource

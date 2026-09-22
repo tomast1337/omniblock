@@ -12,10 +12,12 @@ public static unsafe class LuauTestHost
                                         pass = function() __Test.pass() end,
                                         fail = function(reason) __Test.fail(tostring(reason or "Test failed")) end,
                                         creative = function() __Test.creative() end,
+                                        disconnect = function() return __Test.disconnect() end,
                                         summon = function(entity, count) return __Test.summon(tostring(entity), count or 1) end,
                                         countEntities = function(entity, minDistance, maxDistance) return __Test.countEntities(tostring(entity), minDistance or 0, maxDistance or 1000000) end,
                                         breakBlock = function(x, y, z) return __Test.breakBlock(x, y, z) end,
                                         setBlock = function(id, x, y, z) __Test.setBlock(tostring(id), x, y, z) end,
+                                        hasBlock = function(id, x, y, z) return __Test.hasBlock(tostring(id), x, y, z) end,
                                         isMeshCurrent = function(x, y, z) return __Test.isMeshCurrent(x, y, z) end,
                                         meshDeadlineMissCount = function(x, y, z) return __Test.meshDeadlineMissCount(x, y, z) end,
                                         setFlying = function(value) __Test.setFlying(value) end,
@@ -29,7 +31,7 @@ public static unsafe class LuauTestHost
                                         worldGenerationAuto = function(profile, radius) return __Test.worldGenerationAuto(tostring(profile), radius or 32) end,
                                         worldGenerationMetric = function(metric) return __Test.worldGenerationMetric(tostring(metric)) end,
                                         configureTerrainLodScaleProfile = function(horizon) return __Test.configureTerrainLodScaleProfile(horizon) end,
-                                        prepareTerrainLodFixture = function(radius) return __Test.prepareTerrainLodFixture(radius or 64) end,
+                                        prepareTerrainLodFixture = function(radius, x, z) return __Test.prepareTerrainLodFixture(radius or 64, x, z) end,
                                         terrainLodFixtureMetric = function(metric) return __Test.terrainLodFixtureMetric(tostring(metric)) end,
                                         entityBaseline = function(scene, count, distance) return __Test.entityBaseline(scene, count, distance) end,
                                         entityBaselineState = function(state) return __Test.entityBaselineState(tostring(state)) end,
@@ -49,10 +51,12 @@ public static unsafe class LuauTestHost
     public static Action? Pass;
     public static Action<string>? Fail;
     public static Action? Creative;
+    public static Func<bool>? Disconnect;
     public static Func<string, int, bool>? Summon;
     public static Func<string, double, double, int>? CountEntities;
     public static Func<int, int, int, bool>? BreakBlock;
     public static Action<string, int, int, int>? SetBlock;
+    public static Func<string, int, int, int, bool>? HasBlock;
     public static Func<int, int, int, bool>? IsMeshCurrent;
     public static Func<int, int, int, double>? MeshDeadlineMissCount;
     public static Action<bool>? SetFlying;
@@ -66,7 +70,7 @@ public static unsafe class LuauTestHost
     public static Func<string, int, bool>? WorldGenerationAuto;
     public static Func<string, double>? WorldGenerationMetric;
     public static Func<int, bool>? ConfigureTerrainLodScaleProfile;
-    public static Func<int, bool>? PrepareTerrainLodFixture;
+    public static Func<int, double?, double?, bool>? PrepareTerrainLodFixture;
     public static Func<string, double>? TerrainLodFixtureMetric;
     public static Func<string, int, double, bool>? EntityBaseline;
     public static Func<string, bool>? EntityBaselineState;
@@ -79,14 +83,16 @@ public static unsafe class LuauTestHost
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 30);
+        LuauNative.lua_createtable(l, 0, 32);
         Add(l, "pass", &PassClosure);
         Add(l, "fail", &FailClosure);
         Add(l, "creative", &CreativeClosure);
+        Add(l, "disconnect", &DisconnectClosure);
         Add(l, "summon", &SummonClosure);
         Add(l, "countEntities", &CountEntitiesClosure);
         Add(l, "breakBlock", &BreakBlockClosure);
         Add(l, "setBlock", &SetBlockClosure);
+        Add(l, "hasBlock", &HasBlockClosure);
         Add(l, "isMeshCurrent", &IsMeshCurrentClosure);
         Add(l, "meshDeadlineMissCount", &MeshDeadlineMissCountClosure);
         Add(l, "setFlying", &SetFlyingClosure);
@@ -312,6 +318,21 @@ public static unsafe class LuauTestHost
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int HasBlockClosure(IntPtr l)
+    {
+        var result = false;
+        try
+        {
+            result = HasBlock?.Invoke(ReadString(l, 1) ?? string.Empty,
+                LuauNative.luaL_checkinteger(l, 2), LuauNative.luaL_checkinteger(l, 3),
+                LuauNative.luaL_checkinteger(l, 4)) == true;
+        }
+        catch (Exception error) { Fail?.Invoke($"Block observation: {error.Message}"); }
+        LuauNative.lua_pushboolean(l, result ? 1 : 0);
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int MeshDeadlineMissCountClosure(IntPtr l)
     {
         LuauNative.lua_pushnumber(l, InvokeAt(MeshDeadlineMissCount, l, 0));
@@ -490,13 +511,25 @@ public static unsafe class LuauTestHost
         try
         {
             result = PrepareTerrainLodFixture?.Invoke(
-                LuauNative.luaL_checkinteger(l, 1)) == true;
+                LuauNative.luaL_checkinteger(l, 1),
+                LuauNative.lua_type(l, 2) <= 0 ? null : LuauNative.luaL_checknumber(l, 2),
+                LuauNative.lua_type(l, 3) <= 0 ? null : LuauNative.luaL_checknumber(l, 3)) == true;
         }
         catch (Exception error)
         {
             Fail?.Invoke($"Terrain LOD fixture: {error.Message}");
         }
         LuauNative.lua_pushboolean(l, result ? 1 : 0);
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int DisconnectClosure(IntPtr l)
+    {
+        var accepted = false;
+        try { accepted = Disconnect?.Invoke() == true; }
+        catch (Exception error) { Fail?.Invoke($"Disconnect: {error.Message}"); }
+        LuauNative.lua_pushboolean(l, accepted ? 1 : 0);
         return 1;
     }
 

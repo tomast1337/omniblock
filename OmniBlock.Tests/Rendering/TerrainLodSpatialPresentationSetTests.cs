@@ -245,8 +245,29 @@ public sealed class TerrainLodSpatialPresentationSetTests
         Assert.Single(transition.Draws, static draw => draw.Fade.Mode == 1);
     }
 
+    [Theory]
+    [InlineData(0, 4)]
+    [InlineData(-1, -4)]
+    public void Mixed_tile_retains_columns_beyond_the_bounded_handoff_window(int tileX, int tileZ)
+    {
+        var tile = new TerrainLodTileKey(3, tileX, tileZ);
+        HashSet<TerrainLodTileKey> published = [tile];
+        var minX = (int)tile.MinChunkX;
+        var minZ = (int)tile.MinChunkZ;
+        HashSet<(int X, int Z)> replacements = [(minX, minZ)];
+        for (var z = minZ; z <= tile.MaxChunkZ; z++)
+        for (var x = minX; x <= tile.MaxChunkX; x++)
+            Assert.Equal((x, z) != (minX, minZ),
+                TerrainLodSpatialAuthority.OwnsColumn(x, z, published, replacements, 2, 7));
+        Assert.False(TerrainLodSpatialAuthority.OwnsColumn(
+            minX - 1, minZ, published, replacements, 2, 7));
+        replacements.Clear();
+        Assert.True(TerrainLodSpatialAuthority.OwnsColumn(
+            minX, minZ, published, replacements, 2, 7));
+    }
+
     [Fact]
-    public void Tile_intersecting_near_guard_band_cannot_be_authoritative()
+    public void Tile_intersecting_near_guard_band_needs_per_column_replacement_checks()
     {
         var tile = new TerrainLodTileKey(2, 1, 0); // chunks 4..7
 

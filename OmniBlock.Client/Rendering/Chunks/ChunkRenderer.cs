@@ -20,6 +20,7 @@ namespace OmniBlock.Client.Rendering.Chunks;
 
 public class ChunkRenderer : IChunkVisibilityVisitor
 {
+    private bool _disposed;
     private static long s_nextVisibilityWorldGeneration;
     private const int MaxRenderDistance = 32 + 1;
     private const int MaxMeshWorkers = 8;
@@ -4129,6 +4130,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     public unsafe void Dispose()
     {
+        if (_disposed) return;
+        _disposed = true;
         _visibilityBuildCancellation?.Cancel();
         _visibilityBuildCancellation?.Dispose();
         _visibilityBuildCancellation = null;

@@ -16,7 +16,10 @@ public sealed class TerrainLodSpatialMeshCompilationServiceTests
         Assert.Equal(TerrainLodSpatialMeshAdmissionResult.Accepted,
             service.Submit(tile, world.Content.Blocks, 8,
                 TerrainLodSpatialMeshWorkKind.Coverage, 4));
+        Assert.True(service.Contains(tile.Key, tile.CanonicalHash));
+        Assert.False(service.Contains(tile.Key, "different-generation"));
         var result = await Take(service);
+        Assert.False(service.Contains(tile.Key, tile.CanonicalHash));
 
         Assert.Null(result.Failure);
         Assert.NotNull(result.Mesh);

@@ -7,7 +7,7 @@ namespace OmniBlock.Server.Command;
 
 public abstract partial class Command
 {
-    private class ArgBlock(RuntimeItemRegistry items, RuntimeBlockRegistry blocks) : IArgumentType<(int id, int meta)>
+    internal sealed class ArgBlock(RuntimeItemRegistry items, RuntimeBlockRegistry blocks) : IArgumentType<(int id, int meta)>
     {
         private const string AirBlockAlias = "air";
         private static readonly DynamicCommandExceptionType s_blockNotFound = new(expected => new LiteralMessage($"Block \"{expected}\" not found."));
@@ -15,6 +15,9 @@ public abstract partial class Command
         public (int id, int meta) Parse(IStringReader reader)
         {
             var name = ArgItemStack.ParseString(reader);
+            // Air is protocol zero rather than a catalog item, but scripts use canonical resource
+            // names for it just as they do for ordinary blocks.
+            if (name == "omniblock:air") return (0, 0);
 
             var separator = name.IndexOf(':');
             if (separator < 0)

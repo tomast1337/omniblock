@@ -208,8 +208,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private readonly Dictionary<TerrainLodSpatialSeamSegment,
         SpatialSeamHashCache> _spatialSeamHashes = [];
     private readonly HashSet<TerrainLodTileKey> _authoritativeSpatialTiles = [];
-    private readonly HashSet<TerrainLodTileKey> _fullyAuthoritativeSpatialTiles = [];
-    private readonly HashSet<(int X, int Z)> _authoritativeSpatialColumns = [];
+    private readonly HashSet<(int X, int Z)> _spatialReplacementColumns = [];
     private readonly HashSet<(int X, int Z)> _completedSpatialHandoffs = [];
     private readonly Dictionary<(int X, int Z), ulong> _spatialColumnMasks = [];
     private readonly List<VisibleSpatialPage> _visibleSpatialSolid = [];
@@ -1221,8 +1220,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _desiredSpatialSeams.Clear();
         _spatialSeamFades.Clear();
         _authoritativeSpatialTiles.Clear();
-        _fullyAuthoritativeSpatialTiles.Clear();
-        _authoritativeSpatialColumns.Clear();
+        _spatialReplacementColumns.Clear();
         _completedSpatialHandoffs.Clear();
         _spatialColumnMasks.Clear();
         _visibleSpatialSolid.Clear();
@@ -1556,14 +1554,18 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 TerrainLodScaleBudget.MaximumSpatialPresentations)
             {
                 _rejectedAdmissions++;
-                continue;
+                _deferredSpatialMeshUpload = completed;
+                break;
             }
             var projectedBytes = SpatialGpuBytes() - (previous?.EstimatedBytes ?? 0) +
                                  mesh.EstimatedBytes;
+            // Residency pressure is temporary, not a failed mesh. Keep this bounded candidate
+            // for retry after eviction; dropping it loses the only completion for a ready source.
             if (projectedBytes > TerrainLodScaleBudget.MaximumSpatialGpuBytes)
             {
                 _rejectedAdmissions++;
-                continue;
+                _deferredSpatialMeshUpload = completed;
+                break;
             }
 
             var arenas = nearRenderer.GetOrCreateTerrainGpuArenas(device);
@@ -1573,7 +1575,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 TerrainLodScaleBudget.MaximumSpatialGpuBytes)
             {
                 _rejectedAdmissions++;
-                continue;
+                _deferredSpatialMeshUpload = completed;
+                break;
             }
 
             var installStarted = Stopwatch.GetTimestamp();
@@ -1644,7 +1647,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 TerrainLodScaleBudget.MaximumSpatialGpuBytes)
             {
                 _rejectedAdmissions++;
-                continue;
+                _deferredSpatialSeamUpload = completed;
+                break;
             }
 
             var arenas = nearRenderer.GetOrCreateTerrainGpuArenas(device);
@@ -1654,7 +1658,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 TerrainLodScaleBudget.MaximumSpatialGpuBytes)
             {
                 _rejectedAdmissions++;
-                continue;
+                _deferredSpatialSeamUpload = completed;
+                break;
             }
 
             TerrainLodSpatialGpuSeamPresentation? candidate = null;
@@ -1944,9 +1949,26 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 desired.Add(draw.Selection.Tile);
 
         _spatialMeshCompilation.Retain(desired);
+        if (_deferredSpatialMeshUpload?.Mesh is { } deferred && !desired.Contains(deferred.Key))
+        {
+            _deferredSpatialMeshUpload = null;
+            _staleResults++;
+        }
         foreach (var key in _spatialMeshPending.Keys
                      .Where(key => !desired.Contains(key)).ToArray())
             _spatialMeshPending.Remove(key);
+
+        // Source residency outlives GPU residency. A returning required tile must be rebuilt
+        // from its cached CPU record even when no network or hierarchy publication fires again.
+        foreach (var required in requiredTiles)
+        {
+            if (_spatialPresentations.IsReady(required) ||
+                _spatialMeshPending.ContainsKey(required) ||
+                _deferredSpatialMeshUpload?.Mesh?.Key == required ||
+                !_spatialHierarchy.TryGetCoverage(required, out var tile, out _) || tile is null ||
+                _spatialMeshCompilation.Contains(required, tile.CanonicalHash)) continue;
+            QueueSpatialMesh(tile);
+        }
     }
 
     private void UpdateSpatialSeams(
@@ -2074,8 +2096,7 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 return dx * dx + dz * dz >= (double)renderDistance * renderDistance;
             });
             _authoritativeSpatialTiles.Clear();
-            _fullyAuthoritativeSpatialTiles.Clear();
-            _authoritativeSpatialColumns.Clear();
+            _spatialReplacementColumns.Clear();
             _spatialColumnMasks.Clear();
             if (_spatialFrame is not { } published) return;
             foreach (var draw in published.Draws)
@@ -2088,15 +2109,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                     var tile = draw.Selection.Tile;
                     var distant = TerrainLodSpatialAuthority.IsBeyondNearRadius(
                         tile, cameraChunkX, cameraChunkZ, renderDistance);
-                    if (distant)
-                    {
-                        _fullyAuthoritativeSpatialTiles.Add(tile);
-                        continue;
-                    }
+                    if (distant) continue;
 
-                    // Mixed authority exists only around the exact-radius handoff. Clip a coarse
-                    // fallback to that small window rather than materializing its whole footprint
-                    // as individual chunk keys.
+                    // The whole published tile remains owned, with bounded exceptions for ready
+                    // replacements. Recording only owned columns inside this window hides the
+                    // rest of a mixed tile beyond the window, leaving holes at the guard edge.
                     var handoffRadius = Math.Max(0, renderDistance) + 1;
                     var minX = Math.Max(tile.MinChunkX,
                         (long)Math.Floor(cameraChunkX - handoffRadius));
@@ -2108,11 +2125,10 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                         (long)Math.Ceiling(cameraChunkZ + handoffRadius));
                     for (var z = minZ; z <= maxZ; z++)
                     for (var x = minX; x <= maxX; x++)
-                        if (!ReplacementReady((int)x, (int)z))
-                        {
+                        if (ReplacementReady((int)x, (int)z))
+                            _spatialReplacementColumns.Add(((int)x, (int)z));
+                        else
                             _completedSpatialHandoffs.Remove(((int)x, (int)z));
-                            _authoritativeSpatialColumns.Add(((int)x, (int)z));
-                        }
                 }
             }
         }
@@ -2254,13 +2270,19 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
 
         foreach (var key in _spatialMeshPending.Keys)
             if (_spatialPresentations.IsReady(key)) pinned.Add(key);
-        foreach (var key in _spatialPresentations.ReadyKeys
+        var optionalCache = _spatialPresentations.ReadyKeys
                      .Where(key => !pinned.Contains(key))
                      .OrderBy(key => key.DistanceTo(cameraChunkX, cameraChunkZ))
                      .ThenByDescending(static key => key.Level)
                      .ThenBy(static key => key.X)
                      .ThenBy(static key => key.Z)
-                     .Take(TerrainLodScaleBudget.MaximumLeadingEdgePresentations))
+                     .Select(key => (Key: key, Bytes:
+                         _spatialPresentations.TryGetPresentation(key, out var value)
+                             ? value!.EstimatedBytes : 0))
+                     .ToArray();
+        var reservedBytes = gpuBytesBefore - optionalCache.Sum(static entry => entry.Bytes);
+        foreach (var key in TerrainLodSpatialResidencyPolicy.SelectLeadingEdge(
+                     optionalCache, reservedBytes))
             pinned.Add(key);
         _spatialPinnedPresentations = pinned.Count(_spatialPresentations.IsReady);
 
@@ -2489,17 +2511,9 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         }
     }
 
-    private bool IsAuthoritativeSpatialChunk((int X, int Z) key)
-    {
-        if (_authoritativeSpatialColumns.Contains(key)) return true;
-        for (var level = MinimumSpatialGpuLevel;
-             level <= _spatialPolicy.MaximumSpatialLevel;
-             level++)
-            if (_fullyAuthoritativeSpatialTiles.Contains(
-                    TerrainLodTileKey.ContainingChunk(level, key.X, key.Z)))
-                return true;
-        return false;
-    }
+    private bool IsAuthoritativeSpatialChunk((int X, int Z) key) =>
+        TerrainLodSpatialAuthority.OwnsColumn(key.X, key.Z, _authoritativeSpatialTiles,
+            _spatialReplacementColumns, MinimumSpatialGpuLevel, _spatialPolicy.MaximumSpatialLevel);
 
     /// <summary>
     /// Builds a layer-independent ownership report at simulation-tick frequency. Per-column

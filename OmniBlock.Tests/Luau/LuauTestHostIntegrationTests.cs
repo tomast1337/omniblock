@@ -29,6 +29,9 @@ public sealed class LuauTestHostIntegrationTests
         (string Profile, int Radius)? automaticGeneration = null;
         var configuredTerrainLodHorizon = 0;
         var preparedTerrainLodRadius = 0;
+        (double? X, double? Z) fixtureCenter = default;
+        var disconnects = 0;
+        LuauTestHost.Disconnect = () => { disconnects++; return true; };
         LuauTestHost.Pass = () => passes++;
         LuauTestHost.Fail = reason => failure = reason;
         LuauTestHost.Creative = () => creative++;
@@ -45,6 +48,8 @@ public sealed class LuauTestHostIntegrationTests
             return true;
         };
         LuauTestHost.SetBlock = (id, x, y, z) => setBlock = (id, x, y, z);
+        LuauTestHost.HasBlock = (id, x, y, z) =>
+            id == "omniblock:stone" && (x, y, z) == (175, 100, 640);
         LuauTestHost.IsMeshCurrent = (x, y, z) => (x, y, z) == (4, 61, 7);
         LuauTestHost.MeshDeadlineMissCount = (x, y, z) => x + y + z;
         LuauTestHost.SetFlying = value => flying = value;
@@ -67,9 +72,10 @@ public sealed class LuauTestHostIntegrationTests
             configuredTerrainLodHorizon = horizon;
             return horizon == 512;
         };
-        LuauTestHost.PrepareTerrainLodFixture = radius =>
+        LuauTestHost.PrepareTerrainLodFixture = (radius, x, z) =>
         {
             preparedTerrainLodRadius = radius;
+            fixtureCenter = (x, z);
             return radius == 512;
         };
         LuauTestHost.TerrainLodFixtureMetric = metric => metric == "tiles" ? 289 : 0;
@@ -96,6 +102,8 @@ public sealed class LuauTestHostIntegrationTests
                 "assert(OMNI.test.countEntities('omniblock:cow', 32, 128) == 3); " +
                 "assert(OMNI.test.breakBlock(4, 61, 7)); " +
                 "OMNI.test.setBlock('omniblock:flowing_water', 15, 70, 0); " +
+                "assert(OMNI.test.hasBlock('omniblock:stone', 175, 100, 640)); " +
+                "assert(not OMNI.test.hasBlock('omniblock:air', 175, 100, 640)); " +
                 "assert(OMNI.test.isMeshCurrent(4, 61, 7)); " +
                 "assert(OMNI.test.meshDeadlineMissCount(4, 61, 7) == 72); " +
                 "OMNI.test.setFlying(true); OMNI.test.teleport(160, 164, 0); " +
@@ -134,6 +142,12 @@ public sealed class LuauTestHostIntegrationTests
             Assert.Equal(("prepare", 24), automaticGeneration);
             Assert.Equal(512, configuredTerrainLodHorizon);
             Assert.Equal(512, preparedTerrainLodRadius);
+            Assert.Equal(((double?)null, (double?)null), fixtureCenter);
+            Assert.True(state.TryExecute(
+                "assert(OMNI.test.prepareTerrainLodFixture(512, -160, 640)); assert(OMNI.test.disconnect())",
+                out var routeError), routeError);
+            Assert.Equal(((double?)-160, (double?)640), fixtureCenter);
+            Assert.Equal(1, disconnects);
             Assert.Equal("true", hasTest);
             Assert.True(cleared);
         }
@@ -142,10 +156,12 @@ public sealed class LuauTestHostIntegrationTests
             LuauTestHost.Pass = null;
             LuauTestHost.Fail = null;
             LuauTestHost.Creative = null;
+            LuauTestHost.Disconnect = null;
             LuauTestHost.Summon = null;
             LuauTestHost.CountEntities = null;
             LuauTestHost.BreakBlock = null;
             LuauTestHost.SetBlock = null;
+            LuauTestHost.HasBlock = null;
             LuauTestHost.IsMeshCurrent = null;
             LuauTestHost.MeshDeadlineMissCount = null;
             LuauTestHost.SetFlying = null;

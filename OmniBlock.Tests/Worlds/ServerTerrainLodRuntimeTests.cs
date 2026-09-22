@@ -259,6 +259,29 @@ public sealed class ServerTerrainLodRuntimeTests
         }
     }
 
+    [Fact]
+    public void Overlapping_fixture_centers_preserve_shared_tile_identity()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var world = new FakeWorldContext();
+            using var runtime = new ServerTerrainLodRuntime(
+                0, TerrainLodMaterialCatalog.FromRuntime(world.Content), root, world);
+            var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+            var sharedKey = new TerrainLodTileKey(4, 1, 1);
+            runtime.PrepareUniformSpatialFixture(0, 20, 4, 64, stone);
+            Assert.True(runtime.TryGetSpatialCoverage(sharedKey, out var before));
+            runtime.PrepareUniformSpatialFixture(0, 21, 4, 64, stone);
+            Assert.True(runtime.TryGetSpatialCoverage(sharedKey, out var after));
+            Assert.Equal(before!.CanonicalHash, after!.CanonicalHash);
+        }
+        finally
+        {
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
     private static Chunk Chunk(FakeWorldContext world, int x, int z) =>
         new(world, new byte[ChuckFormat.ChunkSize], x, z);
 

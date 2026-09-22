@@ -171,6 +171,13 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
         }
     }
 
+    public bool Contains(TerrainLodTileKey key, string canonicalHash)
+    {
+        lock (_gate)
+            return _items.TryGetValue(key, out var item) &&
+                   item.Input.Tile.CanonicalHash == canonicalHash;
+    }
+
     public void Retain(IReadOnlySet<TerrainLodTileKey> desired)
     {
         ArgumentNullException.ThrowIfNull(desired);

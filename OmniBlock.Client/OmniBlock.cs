@@ -43,6 +43,7 @@ using OmniBlock.Stats;
 using OmniBlock.Util;
 using OmniBlock.Util.Hit;
 using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.ClientData.Colors;
 using OmniBlock.Worlds.Colors;
 using OmniBlock.Worlds.Core;
@@ -235,6 +236,7 @@ public partial class OmniBlock :
     private LuauWorldService? _luauWorldService;
     private string? _singleplayerWorldId;
     private bool _luauSchedulerFailed;
+    private bool _testDisconnectRequested;
 
     /// <summary>The directory saves, options and screenshots live under.</summary>
     public string GameDataDir { get; private set; }
@@ -863,6 +865,11 @@ public partial class OmniBlock :
                 };
                 LuauTestHost.IsMeshCurrent = (x, y, z) =>
                     WorldRenderer?.ChunkRenderer.IsMeshCurrent(x, y, z) == true;
+                LuauTestHost.HasBlock = (id, x, y, z) =>
+                    World != null && y >= 0 && y < ChuckFormat.WorldHeight &&
+                    World.BlockHost.HasChunk(x >> 4, z >> 4) &&
+                    World.Reader.GetBlockId(x, y, z) ==
+                    (id == "omniblock:air" ? 0 : World.Content.Blocks.Get(id).Id);
                 LuauTestHost.MeshDeadlineMissCount = (x, y, z) =>
                     WorldRenderer?.ChunkRenderer.CriticalDeadlineMissesAt(x, y, z) ?? 0;
                 LuauTestHost.SetFlying = flying => Player?.SetFlyingForTest(flying);
@@ -926,6 +933,15 @@ public partial class OmniBlock :
                         $"mesh-lifecycle-{label}.tsv", WorldRenderer.ChunkRenderer.CreateMeshLifecycleDump());
                     _e2eTestController.WriteTextArtifact(
                         $"mesh-sections-{label}.tsv", WorldRenderer.ChunkRenderer.CreateMeshSectionDump());
+                    if (WorldRenderer.TerrainLod is { } terrainLod)
+                        _e2eTestController.WriteTextArtifact(
+                            $"terrain-lod-{label}.json",
+                            JsonSerializer.Serialize(new
+                            {
+                                Terrain = terrainLod.Snapshot,
+                                Spatial = terrainLod.SpatialSnapshot,
+                                Coverage = terrainLod.CoverageSnapshot
+                            }, new JsonSerializerOptions { WriteIndented = true }));
                     var worldGeneration = InternalServer?.worlds?
                         .FirstOrDefault(world => world.Dimension.Id == World.Dimension.Id)?
                         .ChunkCache.GenerationTelemetry.Snapshot()
@@ -1008,16 +1024,26 @@ public partial class OmniBlock :
                         TerrainLodSpatialPolicy.RequiredMaximumSpatialLevel(horizonChunks));
                     return true;
                 };
-                LuauTestHost.PrepareTerrainLodFixture = radius =>
+                LuauTestHost.Disconnect = () =>
+                {
+                    if (World == null || _testDisconnectRequested) return false;
+                    // Apply after the scheduler returns, so disposal cannot reenter the VM.
+                    _testDisconnectRequested = true;
+                    return true;
+                };
+                LuauTestHost.PrepareTerrainLodFixture = (radius, x, z) =>
                 {
                     if (Player == null || InternalServer == null ||
                         radius <= 0 ||
-                        radius > (_terrainLodTestHorizonChunks ?? 64))
+                        radius > (_terrainLodTestHorizonChunks ?? 64) ||
+                        x.HasValue != z.HasValue ||
+                        (x.HasValue && (!double.IsFinite(x.Value) || !double.IsFinite(z!.Value) ||
+                            Math.Abs(x.Value) > 30_000_000 || Math.Abs(z.Value) > 30_000_000)))
                         return false;
                     return InternalServer.QueueTerrainLodScaleFixture(
                         Player.DimensionId,
-                        Player.X / 16.0,
-                        Player.Z / 16.0,
+                        (x ?? Player.X) / 16.0,
+                        (z ?? Player.Z) / 16.0,
                         Options.RenderDistance,
                         radius);
                 };
@@ -1483,10 +1509,12 @@ public partial class OmniBlock :
             LuauTestHost.Pass = null;
             LuauTestHost.Fail = null;
             LuauTestHost.Creative = null;
+            LuauTestHost.Disconnect = null;
             LuauTestHost.Summon = null;
             LuauTestHost.CountEntities = null;
             LuauTestHost.BreakBlock = null;
             LuauTestHost.SetBlock = null;
+            LuauTestHost.HasBlock = null;
             LuauTestHost.IsMeshCurrent = null;
             LuauTestHost.MeshDeadlineMissCount = null;
             LuauTestHost.SetFlying = null;
@@ -2133,6 +2161,14 @@ public partial class OmniBlock :
 
     private void ProcessPendingLuauWorldLoad()
     {
+        if (_testDisconnectRequested)
+        {
+            _testDisconnectRequested = false;
+            if (IsMultiplayerWorld()) World?.Disconnect();
+            StopInternalServer();
+            ChangeWorld(null);
+            Navigate(null);
+        }
         if (_luauWorldService?.TryTakePending(out var request) != true || request == null)
             return;
 
@@ -2541,6 +2577,8 @@ public partial class OmniBlock :
         }
         else
         {
+            WorldRenderer?.ChangeWorld(null!);
+            ParticleManager?.clearEffects(null!);
             Player = null;
         }
 

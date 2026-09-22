@@ -304,8 +304,9 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                 64, ChuckFormat.WorldHeight - 64,
                 TerrainLodMaterial.Air, blockLight: 0, skyLight: 15)
         ]);
-        var sourceIdentity = FormattableString.Invariant(
-            $"integrated-scale-fixture-v1:{centerChunkX}:{centerChunkZ}:{nearDistanceChunks}:{horizonDistanceChunks}");
+        // A route prepares overlapping partitions. The same uniform tile must retain the same
+        // identity irrespective of which camera center requested it.
+        const string sourceIdentity = "integrated-scale-fixture-v2";
         foreach (var key in coveragePlan.Tiles)
         {
             var tile = TerrainLodColumnTile.CreateUniform(

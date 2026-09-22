@@ -328,6 +328,20 @@ internal static class TerrainLodSpatialAuthority
 {
     internal const ulong AllColumnsHidden = (1UL << 36) - 1;
 
+    /// <summary>Published tiles own their complete extent except explicitly replaced columns.</summary>
+    public static bool OwnsColumn(
+        int x, int z,
+        IReadOnlySet<TerrainLodTileKey> publishedTiles,
+        IReadOnlySet<(int X, int Z)> replacedColumns,
+        int minimumLevel, int maximumLevel)
+    {
+        if (replacedColumns.Contains((x, z))) return false;
+        for (var level = minimumLevel; level <= maximumLevel; level++)
+            if (publishedTiles.Contains(TerrainLodTileKey.ContainingChunk(level, x, z)))
+                return true;
+        return false;
+    }
+
     // A 64-block page spans 4x4 columns. Include a one-column halo because vertical seam
     // geometry can lie exactly on a page edge and belong to the column on either side.
     public static ulong HiddenColumnMask(int pageChunkX, int pageChunkZ, Func<int, int, bool> spatialOwns)

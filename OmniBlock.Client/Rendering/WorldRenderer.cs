@@ -471,6 +471,14 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             world.EventListeners.Add(this);
             LoadRenderers();
         }
+        else
+        {
+            // A disconnect must cancel workers and release publication leases while their arena
+            // owner still exists. Waiting for the next world load retains the entire old horizon.
+            TerrainLod?.Dispose();
+            TerrainLod = null;
+            ChunkRenderer?.Dispose();
+        }
     }
 
     public void Tick(Entity view, float partialTicks)
