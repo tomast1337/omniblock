@@ -112,6 +112,34 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         _skylightSubtracted = world.Environment.AmbientDarkness;
     }
 
+    private WorldRegionSnapshot(WorldRegionSnapshot source)
+    {
+        ContentBlocks = source.ContentBlocks;
+        _biomeSource = source._biomeSource.Clone();
+        _minX = source._minX;
+        _minY = source._minY;
+        _minZ = source._minZ;
+        _sizeX = source._sizeX;
+        _sizeY = source._sizeY;
+        _sizeZ = source._sizeZ;
+        _lightTable = source._lightTable;
+        _skylightSubtracted = source._skylightSubtracted;
+        _blocks = CloneArray(source._blocks);
+        _meta = CloneArray(source._meta);
+        _skyLight = CloneArray(source._skyLight);
+        _blockLight = CloneArray(source._blockLight);
+    }
+
+    /// <summary>Copies an immutable worker snapshot without consulting live or unloaded chunks.</summary>
+    public WorldRegionSnapshot Clone() => new(this);
+
+    private static byte[] CloneArray(byte[] source)
+    {
+        var copy = ArrayPool<byte>.Shared.Rent(source.Length);
+        source.CopyTo(copy, 0);
+        return copy;
+    }
+
     public IBlockRuntimeView ContentBlocks { get; }
     /// <summary>Retained pooled terrain arrays, excluding the small biome clone and shared runtime.</summary>
     public long RetainedArrayBytes => (long)_blocks.Length + _meta.Length + _skyLight.Length + _blockLight.Length;

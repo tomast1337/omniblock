@@ -961,6 +961,10 @@ public partial class OmniBlock :
                                 WriteIndented = true
                             }));
                 };
+                LuauTestHost.TerrainLodColumnMinimumLevel = (x, z) =>
+                    WorldRenderer?.TerrainLod?.ResidentMinimumLevel(x, z) ?? -1;
+                LuauTestHost.TerrainLodColumnSourceLoaded = (x, z) =>
+                    World?.BlockHost.HasChunk(x, z) == true;
                 LuauTestHost.DumpProfiler = label =>
                 {
                     _e2eTestController.WriteTextArtifact(
@@ -1539,6 +1543,8 @@ public partial class OmniBlock :
             LuauTestHost.FlyPath = null;
             LuauTestHost.Screenshot = null;
             LuauTestHost.DumpTerrain = null;
+            LuauTestHost.TerrainLodColumnMinimumLevel = null;
+            LuauTestHost.TerrainLodColumnSourceLoaded = null;
             LuauTestHost.DumpProfiler = null;
             LuauTestHost.WorldGenerationAuto = null;
             LuauTestHost.WorldGenerationMetric = null;

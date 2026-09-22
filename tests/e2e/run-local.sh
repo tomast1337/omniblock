@@ -7,7 +7,7 @@ artifact_dir="${E2E_ARTIFACTS_DIR:-$repo_root/artifacts/e2e-local/$(date -u +%Y%
 timeout_seconds="${E2E_TIMEOUT_SECONDS:-90}"
 configuration="${CONFIGURATION:-Debug}"
 requested_scenario="${1:-all}"
-if [[ ( "$requested_scenario" == "terrain-lod-near-quality" || "$requested_scenario" == "terrain-lod-remote-handoff" || "$requested_scenario" == "terrain-lod-natural-cave" ) && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
+if [[ ( "$requested_scenario" == "terrain-lod-near-quality" || "$requested_scenario" == "terrain-lod-remote-handoff" || "$requested_scenario" == "terrain-lod-natural-cave" || "$requested_scenario" == "terrain-lod-quality-upgrade" ) && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
     timeout_seconds=240
 fi
 prepared_fixture="${E2E_PREPARED_FIXTURE:-}"

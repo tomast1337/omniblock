@@ -161,6 +161,9 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
 {
     private const int ConversionCapacity = 16;
     private readonly TerrainLodVisualCaptures _conversionVisuals = new(ConversionCapacity);
+    // Full-detail upgrades are rare, but must remain possible after the simulation unloads a
+    // nearby column. Bound the retained source separately from resident GPU mesh capacity.
+    private readonly TerrainLodRefinementSources _refinementSources = new(64L * 1024 * 1024, 192);
     private long _unloadedConversionsPreserved;
     private const int PendingCapacity = 4096;
     private const int ResidentCapacity = 2048;
@@ -754,6 +757,10 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             FadeSeed((chunkX, chunkZ)));
     }
 
+    internal int ResidentMinimumLevel(int chunkX, int chunkZ) =>
+        _resident.TryGetValue((chunkX, chunkZ), out var presentation)
+            ? presentation.MinimumLevel : -1;
+
     /// <summary>Coalesces terrain changes by chunk coordinate without retaining source arrays.</summary>
     public void ObserveRegion(int minX, int minZ, int maxX, int maxZ)
     {
@@ -771,6 +778,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         _tick++;
+        if ((_tick & 15) == 0)
+            _refinementSources.Prune(viewPosition.X, viewPosition.Z);
         _spatialHierarchy.SetCameraChunkPosition(
             viewPosition.X / SubChunkRenderer.Size,
             viewPosition.Z / SubChunkRenderer.Size);
@@ -820,7 +829,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                     key.X * 16 + 15, ChuckFormat.WorldHeight - 1, key.Z * 16 + 15);
                 try
                 {
-                    _conversionVisuals.Replace(key, new(new TerrainLodSourceLifetime(chunk), visuals));
+                    _conversionVisuals.Replace(key, new(new TerrainLodSourceLifetime(chunk), visuals, source));
                 }
                 catch
                 {
@@ -1220,6 +1229,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         _disposed = true;
         _conversion.Dispose();
         _conversionVisuals.Dispose();
+        _refinementSources.Dispose();
         _meshCompilation.Dispose();
         _spatialMeshCompilation.Dispose();
         _spatialSeamCompilation.Dispose();
@@ -1442,6 +1452,12 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                 workKind,
                 _world.Dimension.HasCeiling ? null : OverworldCaveCullCeilingY,
                 captured.Lifetime);
+            // The worker may dispose captured.Visuals immediately after submission. Copy any
+            // refinement evidence while this render-thread owner still holds the snapshot.
+            if (minimumLevel > ExactVoxelMeshLevel)
+                _refinementSources.Retain(key, captured, viewPosition.X, viewPosition.Z);
+            else
+                _refinementSources.Remove(key);
             if (!_meshCompilation.TrySubmit(request))
             {
                 break;
@@ -2742,7 +2758,11 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             _detailLevelRequests[key] = requestedLevel;
             return;
         }
-        if (!_world.BlockHost.HasChunk(key.X, key.Z)) return;
+        if (!_world.BlockHost.HasChunk(key.X, key.Z))
+        {
+            RequestRetainedDetail(key, requestedLevel);
+            return;
+        }
         var chunk = _world.BlockHost.GetChunk(key.X, key.Z);
         if (!chunk.Loaded) return;
         if (_pending.Count >= PendingCapacity)
@@ -2755,6 +2775,38 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         // This is a presentation-detail upgrade of an already valid LOD, not a terrain edit. It may
         // enter the bounded conversion queue on the next tick without the edit quiet period.
         _pending.Add(key, new PendingColumn(_tick));
+    }
+
+    private void RequestRetainedDetail((int X, int Z) key, int requestedLevel)
+    {
+        if (!_refinementSources.TryGet(key, out var retained)) return;
+        if (!_resident.TryGetValue(key, out var presentation) ||
+            presentation.TerrainRevision != retained.Terrain.TerrainRevision ||
+            !retained.Lifetime.IsCurrent(null))
+        {
+            _refinementSources.Remove(key);
+            return;
+        }
+
+        var admission = _conversion.Submit(retained.Terrain);
+        if (admission == TerrainLodAdmissionResult.RejectedAtCapacity)
+        {
+            _rejectedAdmissions++;
+            return;
+        }
+        if (admission == TerrainLodAdmissionResult.RejectedStaleRevision) return;
+
+        var visuals = retained.Visuals.Clone();
+        try
+        {
+            _conversionVisuals.Replace(key, new(retained.Lifetime, visuals, retained.Terrain));
+        }
+        catch
+        {
+            visuals.Dispose();
+            throw;
+        }
+        _detailLevelRequests[key] = requestedLevel;
     }
 
     private void BuildDesiredSeams(

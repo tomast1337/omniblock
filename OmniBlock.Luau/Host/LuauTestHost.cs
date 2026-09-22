@@ -27,6 +27,8 @@ public static unsafe class LuauTestHost
                                         flyPath = function(ax, ay, az, bx, by, bz, seconds) __Test.flyPath(ax, ay, az, bx, by, bz, seconds) end,
                                         screenshot = function() __Test.screenshot() end,
                                         dumpTerrain = function(label) __Test.dumpTerrain(tostring(label or "terrain")) end,
+                                        terrainLodColumnMinimumLevel = function(x, z) return __Test.terrainLodColumnMinimumLevel(x, z) end,
+                                        terrainLodColumnSourceLoaded = function(x, z) return __Test.terrainLodColumnSourceLoaded(x, z) end,
                                         dumpProfiler = function(label) __Test.dumpProfiler(tostring(label or "profile")) end,
                                         worldGenerationAuto = function(profile, radius) return __Test.worldGenerationAuto(tostring(profile), radius or 32) end,
                                         worldGenerationMetric = function(metric) return __Test.worldGenerationMetric(tostring(metric)) end,
@@ -66,6 +68,8 @@ public static unsafe class LuauTestHost
     public static Action<double, double, double, double, double, double, double>? FlyPath;
     public static Action? Screenshot;
     public static Action<string>? DumpTerrain;
+    public static Func<int, int, int>? TerrainLodColumnMinimumLevel;
+    public static Func<int, int, bool>? TerrainLodColumnSourceLoaded;
     public static Action<string>? DumpProfiler;
     public static Func<string, int, bool>? WorldGenerationAuto;
     public static Func<string, double>? WorldGenerationMetric;
@@ -102,6 +106,8 @@ public static unsafe class LuauTestHost
         Add(l, "flyPath", &FlyPathClosure);
         Add(l, "screenshot", &ScreenshotClosure);
         Add(l, "dumpTerrain", &DumpTerrainClosure);
+        Add(l, "terrainLodColumnMinimumLevel", &TerrainLodColumnMinimumLevelClosure);
+        Add(l, "terrainLodColumnSourceLoaded", &TerrainLodColumnSourceLoadedClosure);
         Add(l, "dumpProfiler", &DumpProfilerClosure);
         Add(l, "worldGenerationAuto", &WorldGenerationAutoClosure);
         Add(l, "worldGenerationMetric", &WorldGenerationMetricClosure);
@@ -564,6 +570,42 @@ public static unsafe class LuauTestHost
             Fail?.Invoke($"Terrain LOD fixture metric: {error.Message}");
         }
         LuauNative.lua_pushnumber(l, result);
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int TerrainLodColumnMinimumLevelClosure(IntPtr l)
+    {
+        var result = -1;
+        try
+        {
+            result = TerrainLodColumnMinimumLevel?.Invoke(
+                LuauNative.luaL_checkinteger(l, 1),
+                LuauNative.luaL_checkinteger(l, 2)) ?? -1;
+        }
+        catch (Exception error)
+        {
+            Fail?.Invoke($"Terrain LOD column level: {error.Message}");
+        }
+        LuauNative.lua_pushinteger(l, result);
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int TerrainLodColumnSourceLoadedClosure(IntPtr l)
+    {
+        var result = false;
+        try
+        {
+            result = TerrainLodColumnSourceLoaded?.Invoke(
+                LuauNative.luaL_checkinteger(l, 1),
+                LuauNative.luaL_checkinteger(l, 2)) == true;
+        }
+        catch (Exception error)
+        {
+            Fail?.Invoke($"Terrain LOD column source: {error.Message}");
+        }
+        LuauNative.lua_pushboolean(l, result ? 1 : 0);
         return 1;
     }
 

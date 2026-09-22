@@ -123,6 +123,8 @@ internal sealed partial class ClientTerrainLodRenderer
             MinimumSpatialLevel = MinimumSpatialGpuLevel,
             RetainedConversionVisuals = _conversionVisuals.Count,
             RetainedConversionVisualArrayBytes = _conversionVisuals.RetainedArrayBytes,
+            RetainedFineSources = _refinementSources.Count,
+            RetainedFineSourceBytes = _refinementSources.RetainedBytes,
             UnloadedConversionsPreserved = _unloadedConversionsPreserved,
             PresentationRevision = _spatialPresentations.Revision,
             CachedForestRevision = _spatialForestCacheKey?.PresentationRevision,

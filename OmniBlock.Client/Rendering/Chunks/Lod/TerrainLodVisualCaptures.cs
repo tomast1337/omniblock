@@ -1,5 +1,6 @@
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Lod;
 
 namespace OmniBlock.Client.Rendering.Chunks.Lod;
 
@@ -26,7 +27,10 @@ internal sealed class TerrainLodSourceLifetime(Chunk source)
 /// </summary>
 internal sealed class TerrainLodVisualCaptures(int capacity) : IDisposable
 {
-    internal sealed record Capture(TerrainLodSourceLifetime Lifetime, WorldRegionSnapshot Visuals);
+    internal sealed record Capture(
+        TerrainLodSourceLifetime Lifetime,
+        WorldRegionSnapshot Visuals,
+        TerrainLodSourceSnapshot? Source = null);
     private readonly Dictionary<(int X, int Z), Capture> _captures = [];
     public int Count => _captures.Count;
     public long RetainedArrayBytes => _captures.Values.Sum(capture => capture.Visuals.RetainedArrayBytes);
