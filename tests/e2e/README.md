@@ -122,12 +122,21 @@ CPU/source fidelity measurements, not frame-time, screenshot, or complete-horizo
 `xvfb-run -a tests/e2e/run-local.sh terrain-lod-natural-cave` (240-second watchdog).
 It creates an isolated default world with seed `246813579`, then views the generated patch
 containing a skylit under-roof opening at `(24,76,33)` from a fixed flying camera. It captures
-the eight-chunk exact reference and the four-chunk LOD presentation from that same camera.
-`check_natural_cave.py` requires an uploaded, drawn block-scale local-column LOD level for the
-opening's chunk and no local ownership holes/overlaps. Resident local columns own this same-session
-handoff, so the checker deliberately does **not** claim remote spatial L2 authority. The
-screenshots and stage counters are for manual cave/terrain comparison; metadata cannot assert
-cave-mouth pixel fidelity. This is a small generated patch, not a pregenerated horizon.
+the eight-chunk exact reference, a four-chunk LOD view at 1x (compiling L0 while source is
+loaded), then views at 0.75x and 1x (the former 96-block and current 128-block near bands).
+All captures use the same camera.
+`check_natural_cave.py` requires the opening's drawn local column to refine from L1/2x2 to
+L0/1x1 without changing that column's terrain revision, resource generation, or owner. The
+quality dump also records selected-layer vertex counts, an on-demand geometry-cost proxy, not measured GPU
+time or total residency. Starting at 0.75x and requesting 1x only after the gameplay chunk
+unloads currently cannot compile a missing L0; that separate quality-upgrade lifecycle defect
+remains open. Resident local columns own this same-session handoff, so the checker deliberately
+does **not** claim remote spatial L2 authority. The screenshots and stage counters are for manual
+cave/terrain comparison; metadata cannot assert cave-mouth pixel fidelity. This is a small
+generated patch, not a pregenerated horizon.
+One fixed run compared 90 stable drawn layers: 12 changed level and selected vertices increased
+from 225,352 at 0.75x to 279,556 at 1x. Streaming still changed other columns, so this is
+neither a whole-scene GPU-time measurement nor a residency budget.
 
 `terrain-lod-remote-handoff` is an opt-in stationary **real-source handoff** check (240-second
 watchdog). Run `xvfb-run -a tests/e2e/run-local.sh terrain-lod-remote-handoff`. It uses the ordinary

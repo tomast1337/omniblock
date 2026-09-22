@@ -790,10 +790,12 @@ public sealed class TerrainLodMeshBuilderTests
     [Fact]
     public void Natural_cave_fixture_stays_block_scale_after_exact_handoff()
     {
-        // The generated opening at (24,76,33) is about 105 blocks from the fixed
-        // comparison camera. A previous L1 selection must refine back to 1x1.
+        // The generated opening at (24,76,33) is about 110 blocks from the fixed
+        // comparison camera. Both directions must clear the 10% hysteresis band.
         Assert.Equal(0, TerrainLodDetailSelector.SelectLevel(
-            105, 4, previousLevel: 1, viewportHeight: 1034));
+            110, 4, previousLevel: 1, viewportHeight: 1034));
+        Assert.Equal(1, TerrainLodDetailSelector.SelectLevel(
+            110, 4, previousLevel: 0, viewportHeight: 1034, detailDropoffScale: 0.75));
     }
 
     [Fact]

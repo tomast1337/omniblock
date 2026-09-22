@@ -136,12 +136,18 @@ internal sealed partial class ClientTerrainLodRenderer
         {
             var presentation = _resident[key];
             var distance = Math.Sqrt(DistanceSquared(key, _qualityCamera));
+            var hasGeometry = presentation.TryGetLevel(level, layer == "translucent", out var gpu);
             return new
             {
                 ChunkX = key.X, ChunkZ = key.Z, Layer = layer,
                 DistanceToCenterBlocks = distance,
                 SelectedLevel = level,
-                HasSelectedLayerGeometry = presentation.TryGetLevel(level, layer == "translucent", out _),
+                HasSelectedLayerGeometry = hasGeometry,
+                // On-demand selected-body cost proxy. This is not actual submitted vertices while
+                // a fade also draws the predecessor or when a seam-only selection is retained.
+                SelectedLayerVertices = hasGeometry
+                    ? (layer == "translucent" ? gpu.TranslucentMesh : gpu.SolidMesh)!.VertexCount
+                    : 0u,
                 LayerBodyDrawn = (layer == "translucent" ? _translucentSeamStates : _solidSeamStates)
                     .TryGetValue(key, out var seamState) && seamState.Drawn,
                 HorizontalSampleBlocks = 1 << level,

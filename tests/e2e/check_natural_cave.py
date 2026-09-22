@@ -7,40 +7,89 @@ import sys
 
 def check(artifacts):
     exact = json.loads((artifacts / "terrain-lod-natural-cave-exact.json").read_text())
+    fine_before = json.loads((artifacts / "terrain-lod-natural-cave-fine-before.json").read_text())
+    coarse = json.loads((artifacts / "terrain-lod-natural-cave-coarse.json").read_text())
     lod = json.loads((artifacts / "terrain-lod-natural-cave-lod.json").read_text())
     before = exact["Quality"]
+    initial = fine_before["Quality"]
+    middle = coarse["Quality"]
     after = lod["Quality"]
-    if before["Camera"] != after["Camera"]:
+    if len({(q["Camera"]["X"], q["Camera"]["Y"], q["Camera"]["Z"])
+            for q in (before, initial, middle, after)}) != 1:
         raise ValueError("Exact and LOD captures used different cameras")
-    if before["ExactRadiusChunks"] != 8 or after["ExactRadiusChunks"] != 4:
+    camera = before["Camera"]
+    if camera["X"] != 24 or camera["Z"] != -70 or not 114 < camera["Y"] < 118:
+        raise ValueError("The natural-cave comparison camera moved from its fixed fixture")
+    if (before["ExactRadiusChunks"], initial["ExactRadiusChunks"],
+            middle["ExactRadiusChunks"], after["ExactRadiusChunks"]) != (8, 4, 4, 4):
         raise ValueError("The eight-to-four exact-distance handoff was not presented")
-    if before["HorizonRadiusChunks"] != 16 or after["HorizonRadiusChunks"] != 16:
+    if any(snapshot["HorizonRadiusChunks"] != 16 for snapshot in (before, initial, middle, after)):
         raise ValueError("Expected the bounded sixteen-chunk horizon")
+    if (initial["LocalDropoffScale"], middle["LocalDropoffScale"],
+            after["LocalDropoffScale"]) != (1, 0.75, 1):
+        raise ValueError("Expected the 1x, 0.75x, 1x presentation-quality comparison")
     if after["CachedForestRevision"] != after["PresentationRevision"]:
         raise ValueError("The LOD selection did not use the latest published revision")
     # (24,76,33) belongs to chunk (1,2). Following an exact-distance shrink,
     # resident local column LOD retains ownership; server spatial L2 is not a
     # valid requirement for this same-session before/after comparison.
-    rows = [row for row in after["Local"] if row["ChunkX"] == 1
-            and row["ChunkZ"] == 2 and row["Layer"] == "solid"]
-    if len(rows) != 1:
-        raise ValueError("Natural-cave chunk (1,2) had no unique local solid selection")
-    column = rows[0]
-    if column["SpatialOwned"] or not column["LayerBodyDrawn"]:
-        raise ValueError("Natural-cave chunk was not drawn from local column LOD")
-    if not column["HasSelectedLayerGeometry"]:
-        raise ValueError("Natural-cave chunk selected an empty solid layer")
-    if column["SelectedLevel"] != 0 or column["HorizontalSampleBlocks"] != 1:
-        raise ValueError("Natural-cave chunk lost its block-scale near LOD")
-    if column["SelectedLevel"] not in column["UploadedLevels"]:
-        raise ValueError("Natural-cave chunk selected a level that was not uploaded")
-    if lod["Coverage"]["HoleCount"] or lod["Coverage"]["OverlapCount"]:
-        raise ValueError("Local ownership has holes or overlaps after the handoff")
+    def cave_column(quality):
+        rows = [row for row in quality["Local"] if row["ChunkX"] == 1
+                and row["ChunkZ"] == 2 and row["Layer"] == "solid"]
+        if len(rows) != 1:
+            raise ValueError("Natural-cave chunk (1,2) had no unique local solid selection")
+        column = rows[0]
+        if column["SpatialOwned"] or not column["LayerBodyDrawn"]:
+            raise ValueError("Natural-cave chunk was not drawn from local column LOD")
+        if not column["HasSelectedLayerGeometry"] or column["SelectedLayerVertices"] <= 0:
+            raise ValueError("Natural-cave chunk selected an empty solid layer")
+        if column["SelectedLevel"] not in column["UploadedLevels"]:
+            raise ValueError("Natural-cave chunk selected a level that was not uploaded")
+        return column
+
+    first = cave_column(initial)
+    old = cave_column(middle)
+    new = cave_column(after)
+    same_revision = len({first["TerrainRevision"], old["TerrainRevision"], new["TerrainRevision"]}) == 1
+    same_levels = first["UploadedLevels"] == old["UploadedLevels"] == new["UploadedLevels"]
+    if not same_revision or not same_levels:
+        raise ValueError("The two quality selections used different terrain or uploaded levels")
+    if (first["SelectedLevel"], old["SelectedLevel"], new["SelectedLevel"]) != (0, 1, 0):
+        raise ValueError("The cave did not select 1x1, 2x2, 1x1 at the same camera")
+    if new["SelectedLayerVertices"] <= old["SelectedLayerVertices"]:
+        raise ValueError("The block-scale cave mesh did not carry more geometry than 2x2")
+    if len({sample["Terrain"]["ResourceGeneration"] for sample in (fine_before, coarse, lod)}) != 1:
+        raise ValueError("Resource generation changed during the quality comparison")
+    for sample in (fine_before, coarse, lod):
+        if sample["Coverage"]["HoleCount"] or sample["Coverage"]["OverlapCount"]:
+            raise ValueError("Local ownership has holes or overlaps during the comparison")
+
+    def drawn_rows(quality):
+        return {(row["ChunkX"], row["ChunkZ"], row["Layer"]): row
+                for row in quality["Local"] if row["LayerBodyDrawn"] and
+                not row["SpatialOwned"] and row["HasSelectedLayerGeometry"]}
+
+    coarse_rows = drawn_rows(middle)
+    fine_rows = drawn_rows(after)
+    stable = [(coarse_rows[key], fine_rows[key]) for key in coarse_rows.keys() & fine_rows.keys()
+              if coarse_rows[key]["TerrainRevision"] == fine_rows[key]["TerrainRevision"] and
+              coarse_rows[key]["UploadedLevels"] == fine_rows[key]["UploadedLevels"]]
+    if not stable:
+        raise ValueError("No stable drawn local columns to compare")
+    changed = sum(old_row["SelectedLevel"] != new_row["SelectedLevel"]
+                  for old_row, new_row in stable)
+    return (old["SelectedLayerVertices"], new["SelectedLayerVertices"],
+            len(stable), changed,
+            sum(old_row["SelectedLayerVertices"] for old_row, _ in stable),
+            sum(new_row["SelectedLayerVertices"] for _, new_row in stable))
 
 
 if __name__ == "__main__":
     try:
-        check(Path(sys.argv[1]))
+        coarse_vertices, fine_vertices, stable, changed, coarse_total, fine_total = check(Path(sys.argv[1]))
     except (IndexError, KeyError, OSError, TypeError, ValueError) as error:
         sys.exit(f"Natural-cave handoff: {error}")
-    print("Natural-cave comparison captured: exact to local column LOD at the same camera")
+    print("Natural-cave comparison captured: same source/camera, L1->L0, "
+          f"selected cave-body vertices {coarse_vertices}->{fine_vertices}; "
+          f"stable drawn layers {stable}, changed {changed}, "
+          f"selected vertices {coarse_total}->{fine_total}")

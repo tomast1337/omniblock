@@ -2,6 +2,7 @@
 -- generated-terrain fidelity test; it is not a hand-placed arch or synthetic LOD tile.
 OMNI.config.viewDistance = 0.15 -- eight exact chunks for the reference
 OMNI.config.terrainHorizonDistance = 0 -- sixteen-chunk LOD horizon
+OMNI.config.terrainLodDropoffDistance = 0.4 -- 1x: compile the 128-block fine band first
 OMNI.config.pauseOnFocusLoss = false
 OMNI.config.captureMouse = false
 OMNI.config.bobView = false
@@ -34,10 +35,10 @@ OMNI.test.setFlying(true)
 OMNI.test.setMovement(0, 0, 0)
 -- Exact radius eight includes all four chunk rows of L2 tile (0,0); radius four
 -- excludes them. The camera never moves during the comparison.
-OMNI.test.teleport(24, 115, -65)
+OMNI.test.teleport(24, 115, -70)
 OMNI.waitUntil(function()
     return state.playerReady and math.abs(state.playerX - 24) < 1 and
-        math.abs(state.playerZ + 65) < 1 and state.playerY > 114
+        math.abs(state.playerZ + 70) < 1 and state.playerY > 114
 end, 45, 0.1)
 OMNI.test.setFlying(true)
 OMNI.test.setLook(0, 22)
@@ -51,6 +52,20 @@ OMNI.waitUntil(function()
     return state.terrainLodSpatialAuthoritativeTiles > 0 and
         state.terrainLodSpatialGpuResident > 0
 end, 60, 0.1)
+OMNI.wait(5)
+OMNI.test.dumpTerrain("natural-cave-fine-before")
+
+-- Switch only presentation quality after L0 was compiled from the live source.
+-- This isolates selection cost; a low-first, source-unloaded quality upgrade is a
+-- separate lifecycle gap, not a valid apples-to-apples geometry measurement.
+OMNI.config.terrainLodDropoffDistance = 0.2 -- 0.75x: 96-block near band
+OMNI.wait(5)
+OMNI.test.dumpTerrain("natural-cave-coarse")
+OMNI.test.screenshot()
+OMNI.wait(10) -- keep the screenshot toast out of the fine-detail capture
+
+-- Switch back to the original selection. The source and camera stay fixed.
+OMNI.config.terrainLodDropoffDistance = 0.4 -- 1x: 128-block near band
 OMNI.wait(5)
 OMNI.test.dumpTerrain("natural-cave-lod")
 OMNI.test.dumpProfiler("natural-cave-lod")
