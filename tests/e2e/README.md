@@ -77,6 +77,26 @@ worker queues, and coverage-oracle snapshots, so admission stalls can be diagnos
 The scale fixture uses uniform synthetic reduced terrain to isolate lifecycle and budget behavior;
 it is not a visual-quality baseline for caves, foliage, liquids, or arbitrary modded content.
 
+`terrain-lod-near-quality` is an opt-in **visual characterization**, not a quality acceptance gate.
+Run `xvfb-run -a tests/e2e/run-local.sh terrain-lod-near-quality` (240-second watchdog).
+It uses isolated regular terrain, creative flight, a stationary camera, and controlled steps,
+an open arch, snow, foliage, and a water basin five chunks ahead. It captures an eight-chunk exact
+reference, changes to four exact chunks at the same position, captures initial and later LOD
+presentation, then looks downward. The horizon is 16 chunks; no synthetic reduced tiles or large
+pregeneration job are used. Passing proves setup and capture completed without the checked render
+errors, **not** full terrain convergence, visual fidelity, or natural-cave correctness.
+
+`terrain-lod-<label>.json` now includes an on-demand `Quality` snapshot: camera/FOV/viewport and
+distance settings, published spatial tile bounds and mesh sampling/span budgets, current CPU
+source/hash agreement and immediate child availability, plus selected local solid/translucent
+levels and their uploaded/non-empty layer levels. Spatial quality metadata belongs to the actual
+uploaded presentation, including retained predecessors, rather than the latest CPU revision.
+Spatial rows are ownership candidates, not proof of pixels drawn; check `Authoritative` and
+submission counters. Local rows are selected layers, not all residency. `Relation` compares the
+spatial selection to the distance target and minimum level; it does not guess a fallback cause.
+`MaximumRenderedSpans` is an observed maximum, not the configured vertical budget. Collection is
+CPU-only and on demand; there is no additional GPU readback or per-frame diagnostic list build.
+
 `terrain-lod-generated-patch` is a separate opt-in **real-source** check. Preparation uses
 `OMNI.worldgen.start` to generate and durably save a 32-chunk-radius patch (3,209 targets) at (1024,1024),
 outside spawn, with the ordinary generator, decoration, lighting and LOD conversion. A second

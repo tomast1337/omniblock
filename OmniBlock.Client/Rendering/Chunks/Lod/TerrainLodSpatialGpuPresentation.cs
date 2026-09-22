@@ -14,18 +14,21 @@ internal sealed class TerrainLodSpatialGpuPresentation : RetainedTerrainResource
         TerrainLodTileKey key,
         string canonicalHash,
         GpuPage[] pages,
-        long estimatedBytes)
+        long estimatedBytes,
+        TerrainLodSpatialMeshQuality quality)
     {
         Key = key;
         CanonicalHash = canonicalHash;
         Pages = pages;
         EstimatedBytes = estimatedBytes;
+        Quality = quality;
     }
 
     public TerrainLodTileKey Key { get; }
     public string CanonicalHash { get; }
     public IReadOnlyList<GpuPage> Pages { get; }
     public long EstimatedBytes { get; }
+    public TerrainLodSpatialMeshQuality Quality { get; }
     public bool HasSolidGeometry => Pages.Any(static page => page.Solid is not null);
     public bool HasTranslucentGeometry => Pages.Any(static page => page.Translucent is not null);
 
@@ -43,7 +46,8 @@ internal sealed class TerrainLodSpatialGpuPresentation : RetainedTerrainResource
             foreach (var page in data.Pages)
                 pages.Add(GpuPage.Create(device, arenas, page));
             return new TerrainLodSpatialGpuPresentation(
-                data.Key, data.CanonicalHash, [.. pages], data.EstimatedBytes);
+                data.Key, data.CanonicalHash, [.. pages], data.EstimatedBytes,
+                TerrainLodSpatialMeshQuality.FromMesh(data));
         }
         catch
         {

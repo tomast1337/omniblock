@@ -157,7 +157,7 @@ internal readonly record struct TerrainLodSpatialSnapshot(
 ///     renderer and is hidden only after that renderer has a complete column presentation. An old
 ///     LOD mesh remains valid coverage while a newer revision is being built.
 /// </remarks>
-internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentationHandoff
+internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPresentationHandoff
 {
     private const int ConversionCapacity = 16;
     private const int PendingCapacity = 4096;
@@ -825,6 +825,12 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         ArgumentNullException.ThrowIfNull(nearRenderer);
         using var cpuMeasurement = new RenderCpuMeasurement(this, translucent: false);
         using var _lodRender = Profiler.Begin("TerrainLodRender");
+        _qualityCamera = parameters.ViewPos;
+        _qualityNearDistance = parameters.RenderDistance;
+        _qualityHorizonDistance = parameters.TerrainHorizonDistance;
+        _qualityFov = parameters.VerticalFovDegrees;
+        _qualityHeight = parameters.ViewportHeight;
+        _qualityDropoff = parameters.TerrainLodDropoffScale;
         var stageStarted = Stopwatch.GetTimestamp();
         EvictSpatialResidency(
             parameters.ViewPos.X / SubChunkRenderer.Size,
