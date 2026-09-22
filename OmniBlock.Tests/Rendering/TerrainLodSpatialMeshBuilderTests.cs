@@ -166,6 +166,11 @@ public sealed class TerrainLodSpatialMeshBuilderTests
         Assert.Equal(4, canonicalSpanCount);
         Assert.Equal(canonicalSpanCount, tile[0, 0].Spans.Count);
         Assert.InRange(mesh.MaximumRenderedSpans, 1, 2);
+        Assert.Equal(256, mesh.Profile.VerticalReducedColumns);
+        Assert.Equal(0, mesh.Profile.CaveCulledColumns);
+        Assert.Equal(4 * 256, mesh.Profile.CanonicalSpans);
+        Assert.Equal(mesh.Profile.CanonicalSpans, mesh.Profile.SourceSpans);
+        Assert.True(mesh.Profile.RenderedSpans < mesh.Profile.SourceSpans);
     }
 
     [Fact]
@@ -202,6 +207,13 @@ public sealed class TerrainLodSpatialMeshBuilderTests
             emitTileBoundaryFaces: false, caveCullBelowY: 32);
 
         Assert.True(culled.SolidQuadCount < unculled.SolidQuadCount);
+        Assert.Equal(32, culled.CaveCullBelowY);
+        Assert.Null(unculled.CaveCullBelowY);
+        Assert.Equal(256, culled.Profile.CaveCulledColumns);
+        Assert.Equal(0, unculled.Profile.CaveCulledColumns);
+        Assert.Equal(0, culled.Profile.VerticalReducedColumns);
+        Assert.True(culled.Profile.SourceSpans < culled.Profile.CanonicalSpans);
+        Assert.Equal(culled.Profile.RenderedSpans, culled.Profile.SourceSpans);
         Assert.Equal(canonicalSpans, tile[0, 0].Spans);
     }
 

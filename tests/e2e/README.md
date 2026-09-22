@@ -101,6 +101,22 @@ submission from a transition still drawing its old level. `Relation` compares th
 spatial selection to the distance target and minimum level; it does not guess a fallback cause.
 `MaximumRenderedSpans` is an observed maximum, not the configured vertical budget. Collection is
 CPU-only and on demand; there is no additional GPU readback or per-frame diagnostic list build.
+`CanonicalSpans`, `CaveCulledColumns`, `VerticalReducedColumns`, `RenderedSpans`, and
+`CaveCullBelowY` record the actual mesh-build simplification stages. Column counters report how
+many columns changed, not how many visible cave openings disappeared. They cannot measure detail
+already lost before the client received a canonical tile.
+
+For that source-side comparison, run the CPU fixture:
+
+```sh
+LUAU_NATIVE_LOCAL=1 dotnet test OmniBlock.Tests/OmniBlock.Tests.csproj --no-restore \
+  --filter FullyQualifiedName~TerrainLod_generated_near_detail --logger 'console;verbosity=detailed'
+```
+
+It generates two real 4x4-chunk patches and compares the shipped source with a test-only retained
+1x1 alternative and an unreduced reference. Output includes compressed bytes, mesh payload bytes,
+material mismatches and air filled beneath opaque roofs, separately for skylit samples. These are
+CPU/source fidelity measurements, not frame-time, screenshot, or complete-horizon acceptance.
 
 `terrain-lod-remote-handoff` is an opt-in stationary **real-source handoff** check (240-second
 watchdog). Run `xvfb-run -a tests/e2e/run-local.sh terrain-lod-remote-handoff`. It uses the ordinary

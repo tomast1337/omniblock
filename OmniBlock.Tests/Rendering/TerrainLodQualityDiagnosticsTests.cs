@@ -18,13 +18,19 @@ public sealed class TerrainLodQualityDiagnosticsTests
     public void Mesh_quality_uses_compiled_data_not_the_current_policy()
     {
         var mesh = new TerrainLodSpatialMeshData(new TerrainLodTileKey(2, -1, 0), "old", 0,
-            24, false, 19, [], new TerrainLodSpatialMeshBuildProfile(0, 0, 0, 0, 4096, 12000, 2));
+            24, false, 19, [], new TerrainLodSpatialMeshBuildProfile(0, 0, 0, 0, 4096, 12000, 2,
+                14000, 200, 100, 11000)) { CaveCullBelowY = 60 };
         var quality = TerrainLodSpatialMeshQuality.FromMesh(mesh);
         Assert.Equal(1, quality.HorizontalSampleBlocks);
         Assert.Equal(24, quality.VerticalSliceBudget);
         Assert.Equal(19, quality.MaximumRenderedSpans);
         Assert.Equal(4096, quality.SourceColumns);
         Assert.Equal(12000, quality.SourceSpansAfterCaveCulling);
+        Assert.Equal(14000, quality.CanonicalSpans);
+        Assert.Equal(200, quality.CaveCulledColumns);
+        Assert.Equal(100, quality.VerticalReducedColumns);
+        Assert.Equal(11000, quality.RenderedSpans);
+        Assert.Equal(60, quality.CaveCullBelowY);
         Assert.Equal(2, 1 << TerrainLodSpatialPolicy.CreateDefault().HorizontalSampleLevelForSpatialLevel(2));
         // A new revision cannot silently change diagnostic metadata on the retained predecessor.
         var replacement = TerrainLodSpatialMeshQuality.FromMesh(mesh with { HorizontalSampleLevel = 1 });

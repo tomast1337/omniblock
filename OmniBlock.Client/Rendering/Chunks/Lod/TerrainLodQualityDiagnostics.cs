@@ -12,12 +12,19 @@ internal readonly record struct TerrainLodSpatialMeshQuality(
     int SourceColumns,
     int SourceSpansAfterCaveCulling,
     int SolidQuads,
-    int TranslucentQuads)
+    int TranslucentQuads,
+    int CanonicalSpans,
+    int CaveCulledColumns,
+    int VerticalReducedColumns,
+    int RenderedSpans,
+    int? CaveCullBelowY)
 {
     public static TerrainLodSpatialMeshQuality FromMesh(TerrainLodSpatialMeshData mesh) => new(
         1 << mesh.HorizontalSampleLevel, mesh.VerticalSliceBudget, mesh.MaximumRenderedSpans,
         mesh.Profile.SourceColumns, mesh.Profile.SourceSpans, mesh.SolidQuadCount,
-        mesh.TranslucentQuadCount);
+        mesh.TranslucentQuadCount, mesh.Profile.CanonicalSpans,
+        mesh.Profile.CaveCulledColumns, mesh.Profile.VerticalReducedColumns,
+        mesh.Profile.RenderedSpans, mesh.CaveCullBelowY);
 }
 
 internal static class TerrainLodQualityDiagnostics

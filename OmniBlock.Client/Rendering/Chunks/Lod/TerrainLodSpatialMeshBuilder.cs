@@ -45,7 +45,11 @@ internal readonly record struct TerrainLodSpatialMeshBuildProfile(
     double CoalescingMs,
     int SourceColumns,
     int SourceSpans,
-    int ConstructionPages);
+    int ConstructionPages,
+    int CanonicalSpans = 0,
+    int CaveCulledColumns = 0,
+    int VerticalReducedColumns = 0,
+    int RenderedSpans = 0);
 
 /// <summary>Immutable CPU result for one canonical spatial column tile.</summary>
 internal sealed record TerrainLodSpatialMeshData(
@@ -58,6 +62,7 @@ internal sealed record TerrainLodSpatialMeshData(
     TerrainLodSpatialMeshPage[] Pages,
     TerrainLodSpatialMeshBuildProfile Profile)
 {
+    public int? CaveCullBelowY { get; init; }
     public long EstimatedBytes => Pages.Sum(static page => page.EstimatedBytes);
     public int[] ArenaAllocationVertexCounts => Pages
         .SelectMany(static page => new[]
@@ -130,6 +135,10 @@ internal static class TerrainLodSpatialMeshBuilder
         var columns = new TerrainLodColumn[checked(tile.Width * tile.Width)];
         var maximumRenderedSpans = 0;
         var sourceSpans = 0;
+        var canonicalSpans = 0;
+        var caveCulledColumns = 0;
+        var verticalReducedColumns = 0;
+        var renderedSpans = 0;
         for (var x = 0; x < tile.Width; x++)
         for (var z = 0; z < tile.Width; z++)
         {
@@ -138,6 +147,12 @@ internal static class TerrainLodSpatialMeshBuilder
                 ? TerrainLodCaveCuller.SealUndergroundAir(tile[x, z], ceilingY)
                 : tile[x, z];
             var reduced = TerrainLodVerticalSliceReducer.Reduce(source, verticalSliceBudget);
+            // Constant-time evidence from the actual build, not a second fidelity scan. These
+            // counters distinguish presentation simplification from already-reduced source data.
+            canonicalSpans += tile[x, z].Spans.Count;
+            if (!ReferenceEquals(source, tile[x, z])) caveCulledColumns++;
+            if (!ReferenceEquals(reduced, source)) verticalReducedColumns++;
+            renderedSpans += reduced.Spans.Count;
             columns[x * tile.Width + z] = reduced;
             sourceSpans += source.Spans.Count;
             maximumRenderedSpans = Math.Max(maximumRenderedSpans, reduced.Spans.Count);
@@ -371,7 +386,8 @@ internal static class TerrainLodSpatialMeshBuilder
                 coalescingMs,
                 columns.Length,
                 sourceSpans,
-                constructionPages));
+                constructionPages, canonicalSpans, caveCulledColumns,
+                verticalReducedColumns, renderedSpans)) { CaveCullBelowY = caveCullBelowY };
 
         TerrainLodColumn Column(int x, int z) => columns[x * tile.Width + z];
         bool InBounds(int x, int z) =>

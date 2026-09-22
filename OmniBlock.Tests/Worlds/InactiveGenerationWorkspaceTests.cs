@@ -20,7 +20,7 @@ using OmniBlock.Worlds.Storage.RegionFormat;
 namespace OmniBlock.Tests.Worlds;
 
 [Collection(ChunkGeneratorCharacterizationCollection.Name)]
-public sealed class InactiveGenerationWorkspaceTests
+public sealed partial class InactiveGenerationWorkspaceTests
 {
     // Unlike the uniform scale fixtures, these go through the actual generator, decoration and
     // lighting. Keep the patch small: fidelity evidence is not a 1024-chunk performance claim.
