@@ -184,7 +184,6 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
     // every individual upload made startup quadratic and produced visible 300 ms frame spikes.
     // Partial covers advance atomically in small batches; the final complete cover bypasses the
     // batch immediately.
-    private const int SpatialForestRevisionBatchSize = 8;
     private const int MaximumRemoteOutstandingRequests =
         TerrainLodScaleBudget.MaximumRemoteOutstandingRequests;
     private const int OverworldCaveCullCeilingY = 60;
@@ -378,6 +377,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         ArgumentNullException.ThrowIfNull(tile);
         if (tile.Key.Level < MinimumSpatialGpuLevel ||
             tile.Key.Level > _spatialPolicy.MaximumSpatialLevel) return;
+        RecordRemoteSource(tile);
         var publication = _spatialHierarchy.PublishCached(tile);
         if (publication != TerrainLodTilePublicationResult.IgnoredCurrent)
             QueueSpatialMesh(tile);
@@ -1216,6 +1216,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         _desiredSpatialSeams.Clear();
         _spatialSeamFades.Clear();
         _authoritativeSpatialTiles.Clear();
+        _recentRemoteSources.Clear();
         _spatialReplacementColumns.Clear();
         _completedSpatialHandoffs.Clear();
         _spatialColumnMasks.Clear();
@@ -1790,9 +1791,10 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         // rather than the previous simulation tick.
         UpdateRemoteCoverage(requiredTiles, cameraChunkX, cameraChunkZ, horizonDistance,
             outerBoundaryMinimumLevel);
-        var presentationRevision = _coarseCoverComplete
-            ? _spatialPresentations.Revision
-            : _spatialPresentations.Revision / SpatialForestRevisionBatchSize;
+        // Even one newly resident bridge tile can unlock the next contiguous band. Quantizing
+        // revisions left the tail of an incomplete horizon cached forever at a stationary camera.
+        // Upload admission already bounds new residency per frame; unchanged frames still hit.
+        var presentationRevision = _spatialPresentations.Revision;
         var cacheKey = new SpatialForestCacheKey(
             cameraChunkX,
             cameraChunkZ,
@@ -1906,7 +1908,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
     }
 
     /// <summary>
-    ///     Batched cold-cover selection may outlive an individual catalog entry. Replacing an
+    ///     Cached cold-cover selection may outlive an individual catalog entry. Replacing an
     ///     unpublished entry releases its owner reference immediately, so a cache hit is valid
     ///     only while every draw still names the exact live presentation object. Published frames
     ///     have independent leases and are deliberately handled by the publication owner instead.
@@ -3444,7 +3446,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         int? CaveCullBelowY,
         string CanonicalHash);
 
-    private readonly record struct SpatialForestCacheKey(
+    internal readonly record struct SpatialForestCacheKey(
         double CameraChunkX,
         double CameraChunkZ,
         int NearDistance,

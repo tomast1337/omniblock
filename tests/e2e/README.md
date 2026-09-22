@@ -102,6 +102,21 @@ spatial selection to the distance target and minimum level; it does not guess a 
 `MaximumRenderedSpans` is an observed maximum, not the configured vertical budget. Collection is
 CPU-only and on demand; there is no additional GPU readback or per-frame diagnostic list build.
 
+`terrain-lod-remote-handoff` is an opt-in stationary **real-source handoff** check (240-second
+watchdog). Run `xvfb-run -a tests/e2e/run-local.sh terrain-lod-remote-handoff`. It uses the ordinary
+generated spawn region, waits for initial streaming, then reduces exact distance from eight to
+four chunks without moving the camera. `check_remote_handoff.py` verifies the captured distances,
+unchanged camera, current selection-cache revision, and at least one authoritative server-received
+tile selected for solid submission. It also checks the local ownership oracle for holes/overlaps.
+No synthetic LOD tiles or far-area generation are used. Missing ungenerated portions of the
+16-chunk horizon are allowed: this does not claim a fully sourced horizon or visual-quality parity.
+
+Quality dumps expose `PresentationRevision`, `CachedForestRevision`, and `ReadySpatialTiles` to
+distinguish resident but unselected tiles from missing data. Per-tile `SelectedSolidPages` and
+`SelectedTranslucentPages` count pages admitted by the frustum/authority filters, not pixel visibility
+or GPU completion. `MatchesRecentRemoteSource` compares the uploaded hash with a bounded history
+of 64 server receipts; false means unknown provenance, not necessarily locally generated content.
+
 `terrain-lod-generated-patch` is a separate opt-in **real-source** check. Preparation uses
 `OMNI.worldgen.start` to generate and durably save a 32-chunk-radius patch (3,209 targets) at (1024,1024),
 outside spawn, with the ordinary generator, decoration, lighting and LOD conversion. A second

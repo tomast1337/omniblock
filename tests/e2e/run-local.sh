@@ -7,7 +7,7 @@ artifact_dir="${E2E_ARTIFACTS_DIR:-$repo_root/artifacts/e2e-local/$(date -u +%Y%
 timeout_seconds="${E2E_TIMEOUT_SECONDS:-90}"
 configuration="${CONFIGURATION:-Debug}"
 requested_scenario="${1:-all}"
-if [[ "$requested_scenario" == "terrain-lod-near-quality" && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
+if [[ ( "$requested_scenario" == "terrain-lod-near-quality" || "$requested_scenario" == "terrain-lod-remote-handoff" ) && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
     timeout_seconds=240
 fi
 prepared_fixture="${E2E_PREPARED_FIXTURE:-}"
@@ -212,6 +212,11 @@ for scenario in "${scenarios[@]}"; do
 
     if (( status == 0 )) && [[ "$scenario" == "terrain-lod-near-quality" ]]; then
         if ! python3 "$script_dir/check_near_quality.py" "$scenario_artifacts"; then
+            status=1
+        fi
+    fi
+    if (( status == 0 )) && [[ "$scenario" == "terrain-lod-remote-handoff" ]]; then
+        if ! python3 "$script_dir/check_remote_handoff.py" "$scenario_artifacts"; then
             status=1
         fi
     fi

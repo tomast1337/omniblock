@@ -37,6 +37,15 @@ internal sealed partial class ClientTerrainLodRenderer
     private double _qualityFov;
     private int _qualityHeight;
     private double _qualityDropoff;
+    // Bounded provenance evidence for dumps, not a second source cache. Older remote receipts
+    // may age out, so a false match means unknown provenance rather than locally generated.
+    private readonly Queue<(TerrainLodTileKey Tile, string Hash)> _recentRemoteSources = new(64);
+
+    private void RecordRemoteSource(TerrainLodColumnTile tile)
+    {
+        if (_recentRemoteSources.Count == 64) _recentRemoteSources.Dequeue();
+        _recentRemoteSources.Enqueue((tile.Key, tile.CanonicalHash));
+    }
 
     /// <summary>
     /// Render-thread, on-demand diagnostic; no GPU readback or per-frame list construction.
@@ -45,6 +54,8 @@ internal sealed partial class ClientTerrainLodRenderer
     /// </summary>
     public object CaptureQualitySnapshot()
     {
+        var visibleSolidPages = _visibleSpatialSolid.Select(page => page.Page).ToHashSet();
+        var visibleTranslucentPages = _visibleSpatialTranslucent.Select(page => page.Page).ToHashSet();
         var spatial = _spatialFrame?.Draws
             .OrderBy(draw => draw.Selection.Tile.Level)
             .ThenBy(draw => draw.Selection.Tile.X)
@@ -72,6 +83,9 @@ internal sealed partial class ClientTerrainLodRenderer
                     Relation = TerrainLodQualityDiagnostics.SelectionRelation(
                         key.Level, desired, MinimumSpatialGpuLevel),
                     Authoritative = _authoritativeSpatialTiles.Contains(key),
+                    MatchesRecentRemoteSource = _recentRemoteSources.Contains((key, draw.Presentation.CanonicalHash)),
+                    SelectedSolidPages = draw.Presentation.Pages.Count(visibleSolidPages.Contains),
+                    SelectedTranslucentPages = draw.Presentation.Pages.Count(visibleTranslucentPages.Contains),
                     CpuSourceAvailable = available,
                     CpuSourceCurrent = current,
                     CpuSourceMatchesPublishedMesh = available &&
@@ -100,6 +114,10 @@ internal sealed partial class ClientTerrainLodRenderer
             LocalDropoffScale = _qualityDropoff,
             Shading = "terrain-texture-array",
             MinimumSpatialLevel = MinimumSpatialGpuLevel,
+            PresentationRevision = _spatialPresentations.Revision,
+            CachedForestRevision = _spatialForestCacheKey?.PresentationRevision,
+            ReadySpatialTiles = _spatialPresentations.ReadyKeys.OrderBy(key => key.Level)
+                .ThenBy(key => key.X).ThenBy(key => key.Z).ToArray(),
             Spatial = spatial,
             Local = local
         };
