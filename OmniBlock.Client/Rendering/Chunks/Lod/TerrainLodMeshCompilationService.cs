@@ -11,7 +11,8 @@ internal sealed record TerrainLodMeshCompilationRequest(
     WorldRegionSnapshot Visuals,
     bool HasSkyLight,
     TerrainLodMeshWorkKind WorkKind = TerrainLodMeshWorkKind.Coverage,
-    int? CaveCullBelowY = null);
+    int? CaveCullBelowY = null,
+    TerrainLodSourceLifetime? SourceLifetime = null);
 
 internal sealed record TerrainLodMeshCompilationResult(
     TerrainLodConversionResult Conversion,
@@ -23,7 +24,8 @@ internal sealed record TerrainLodMeshCompilationResult(
     double CompilationMs = 0,
     long RetainedBytes = 0,
     long UploadBytes = 0,
-    Exception? Failure = null);
+    Exception? Failure = null,
+    TerrainLodSourceLifetime? SourceLifetime = null);
 
 internal readonly record struct TerrainLodMeshCompilationSnapshot(
     int Owned,
@@ -256,7 +258,7 @@ internal sealed class TerrainLodMeshCompilationService : IDisposable
                 result = new TerrainLodMeshCompilationResult(
                     request.Conversion, minimum, boundaries, levels,
                     request.WorkKind, work.Estimate.WorkCells, compilationMs,
-                    retainedBytes, uploadBytes);
+                    retainedBytes, uploadBytes, SourceLifetime: request.SourceLifetime);
                 _costModel.RecordCompilation(
                     compilationMs, work.Estimate.WorkCells, retainedBytes);
             }

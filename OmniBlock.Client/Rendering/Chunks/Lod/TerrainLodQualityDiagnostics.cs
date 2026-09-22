@@ -114,6 +114,9 @@ internal sealed partial class ClientTerrainLodRenderer
             LocalDropoffScale = _qualityDropoff,
             Shading = "terrain-texture-array",
             MinimumSpatialLevel = MinimumSpatialGpuLevel,
+            RetainedConversionVisuals = _conversionVisuals.Count,
+            RetainedConversionVisualArrayBytes = _conversionVisuals.RetainedArrayBytes,
+            UnloadedConversionsPreserved = _unloadedConversionsPreserved,
             PresentationRevision = _spatialPresentations.Revision,
             CachedForestRevision = _spatialForestCacheKey?.PresentationRevision,
             ReadySpatialTiles = _spatialPresentations.ReadyKeys.OrderBy(key => key.Level)

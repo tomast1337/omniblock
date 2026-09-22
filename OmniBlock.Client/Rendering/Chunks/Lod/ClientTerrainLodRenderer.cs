@@ -160,6 +160,8 @@ internal readonly record struct TerrainLodSpatialSnapshot(
 internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPresentationHandoff
 {
     private const int ConversionCapacity = 16;
+    private readonly TerrainLodVisualCaptures _conversionVisuals = new(ConversionCapacity);
+    private long _unloadedConversionsPreserved;
     private const int PendingCapacity = 4096;
     private const int ResidentCapacity = 2048;
     private const long ResidentGpuByteCapacity = 128L * 1024 * 1024;
@@ -808,6 +810,25 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                 continue;
             }
 
+            if (result != TerrainLodAdmissionResult.RejectedStaleRevision)
+            {
+                // Capture metadata/tint/bounds evidence on this same client-thread turn, before
+                // packets can edit/unload the source. Do not copy visuals for rejected work.
+                // The conversion worker cannot consume these; only the render thread transfers
+                // them to the compiler after completion.
+                var visuals = new WorldRegionSnapshot(_world, key.X * 16, 0, key.Z * 16,
+                    key.X * 16 + 15, ChuckFormat.WorldHeight - 1, key.Z * 16 + 15);
+                try
+                {
+                    _conversionVisuals.Replace(key, new(new TerrainLodSourceLifetime(chunk), visuals));
+                }
+                catch
+                {
+                    visuals.Dispose();
+                    throw;
+                }
+            }
+
             _pending.Remove(key);
         }
 
@@ -1198,6 +1219,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         if (_disposed) return;
         _disposed = true;
         _conversion.Dispose();
+        _conversionVisuals.Dispose();
         _meshCompilation.Dispose();
         _spatialMeshCompilation.Dispose();
         _spatialSeamCompilation.Dispose();
@@ -1311,9 +1333,16 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
 
             var result = compiled.Conversion;
             var key = (result.ChunkX, result.ChunkZ);
-            if (_world.BlockHost.HasChunk(key.ChunkX, key.ChunkZ))
+            var currentChunk = _world.BlockHost.HasChunk(key.ChunkX, key.ChunkZ)
+                ? _world.BlockHost.GetChunk(key.ChunkX, key.ChunkZ) : null;
+            if (compiled.SourceLifetime is { } lifetime && !lifetime.IsCurrent(currentChunk))
             {
-                var chunk = _world.BlockHost.GetChunk(key.ChunkX, key.ChunkZ);
+                _staleResults++;
+                if (currentChunk is not null) ObserveColumn(key.ChunkX, key.ChunkZ);
+                continue;
+            }
+            if (currentChunk is { } chunk)
+            {
                 if (chunk.Loaded && chunk.TerrainRevision != result.TerrainRevision)
                 {
                     _staleResults++;
@@ -1359,7 +1388,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         return installed;
     }
 
-    private void QueueCompletedConversions(
+    // CPU-only boundary, also exercised without a GPU by the unload/reload regression tests.
+    internal void QueueCompletedConversions(
         Vector3D<double> viewPosition,
         double verticalFovDegrees,
         int viewportHeight,
@@ -1368,7 +1398,10 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         while (TryPeekCoverageFirst(out var result) && result is not null)
         {
             var key = (result.ChunkX, result.ChunkZ);
-            if (!_world.BlockHost.HasChunk(key.ChunkX, key.ChunkZ))
+            var chunk = _world.BlockHost.HasChunk(key.ChunkX, key.ChunkZ)
+                ? _world.BlockHost.GetChunk(key.ChunkX, key.ChunkZ) : null;
+            if (!_conversionVisuals.TryGet(key, out var captured) ||
+                captured.Lifetime.Revision != result.TerrainRevision)
             {
                 _conversion.AcknowledgeCompleted(
                     result.ChunkX, result.ChunkZ, result.TerrainRevision);
@@ -1376,13 +1409,13 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                 continue;
             }
 
-            var chunk = _world.BlockHost.GetChunk(key.ChunkX, key.ChunkZ);
-            if (!chunk.Loaded || chunk.TerrainRevision != result.TerrainRevision)
+            if (!captured.Lifetime.IsCurrent(chunk))
             {
                 _conversion.AcknowledgeCompleted(
                     result.ChunkX, result.ChunkZ, result.TerrainRevision);
                 _staleResults++;
-                ObserveColumn(key.ChunkX, key.ChunkZ);
+                _conversionVisuals.Discard(key);
+                if (chunk is not null) ObserveColumn(key.ChunkX, key.ChunkZ);
                 continue;
             }
 
@@ -1397,28 +1430,24 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             var workKind = previous is null
                 ? TerrainLodMeshWorkKind.Coverage
                 : TerrainLodMeshWorkKind.Refinement;
-            // Check the learned time/byte admission before copying a complete visual column.
+            // Keep the capture owned here while learned time/byte admission defers compilation.
             if (!_meshCompilation.CanSubmit(
                     result, minimumLevel, MaximumMeshLevel, workKind)) break;
-            var originX = result.ChunkX * 16;
-            var originZ = result.ChunkZ * 16;
-            var visuals = new WorldRegionSnapshot(
-                _world,
-                originX, 0, originZ,
-                originX + 15, ChuckFormat.WorldHeight - 1, originZ + 15);
             var request = new TerrainLodMeshCompilationRequest(
                 result,
                 minimumLevel,
                 MaximumMeshLevel,
-                visuals,
+                captured.Visuals,
                 !_world.Dimension.HasCeiling,
                 workKind,
-                _world.Dimension.HasCeiling ? null : OverworldCaveCullCeilingY);
+                _world.Dimension.HasCeiling ? null : OverworldCaveCullCeilingY,
+                captured.Lifetime);
             if (!_meshCompilation.TrySubmit(request))
             {
-                visuals.Dispose();
                 break;
             }
+            _conversionVisuals.TransferToCompiler(key);
+            if (chunk is null || !chunk.Loaded) _unloadedConversionsPreserved++;
 
             if (result.SpatialLeaf is { } spatialLeaf)
                 _spatialHierarchy.PublishLeaf(spatialLeaf);

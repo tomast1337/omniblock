@@ -113,6 +113,8 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
     }
 
     public IBlockRuntimeView ContentBlocks { get; }
+    /// <summary>Retained pooled terrain arrays, excluding the small biome clone and shared runtime.</summary>
+    public long RetainedArrayBytes => (long)_blocks.Length + _meta.Length + _skyLight.Length + _blockLight.Length;
 
     public bool IsLit { get; private set; }
 

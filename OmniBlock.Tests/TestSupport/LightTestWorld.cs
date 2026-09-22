@@ -53,6 +53,11 @@ public sealed class ControlledChunkSource(World world) : IChunkSource
 
     public Chunk LoadChunk(int x, int z) => GetChunk(x, z);
 
+    public void Remove(int x, int z)
+    {
+        if (_chunks.Remove((x, z), out var chunk)) chunk.Unload();
+    }
+
     public void DecorateTerrain(IChunkSource source, int x, int z)
     {
     }
