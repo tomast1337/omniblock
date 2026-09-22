@@ -62,6 +62,11 @@ pending. Its separate preparation process persists overlapping radial partitions
 The measured process samples coverage, queue ages, GPU memory, and validation errors while moving,
 checks actual arrival coordinates, and writes terrain/profiler artifacts at each stage and on
 failure. Run with `xvfb-run -a tests/e2e/run-local.sh terrain-lod-scale-512-movement`.
+`terrain-lod-scale-1024-movement` repeats the identical route at L8 with the same 256 MiB spatial
+GPU ceiling, queue-age bounds, timeouts, and coverage assertions. Its own preparation process
+persists the larger radial partitions; it does not carry resident tiles into the measured process.
+Run with `xvfb-run -a tests/e2e/run-local.sh terrain-lod-scale-1024-movement`. A parity test keeps
+the two standalone scripts aligned so the larger gate cannot quietly relax its guarantees.
 The restricted `OMNI.test.prepareTerrainLodFixture(radius, x, z)` accepts an optional world-space
 center for preparing routes (omitting both coordinates uses the player). `OMNI.test.disconnect()`
 queues the normal world teardown after the Luau callback returns.

@@ -225,6 +225,22 @@ public sealed class TerrainLodSpatialHierarchyTests
     }
 
     [Fact]
+    public void Missing_large_parent_stops_at_the_first_uncovered_quadrant()
+    {
+        var policy = TerrainLodSpatialPolicy.CreateForMaximumHorizon(4096);
+        var root = new TerrainLodTileKey(10, 0, 0);
+        var probes = 0;
+        var selection = TerrainLodSpatialSelector.Select(root, 0, 0, policy, _ =>
+        {
+            probes++;
+            return false;
+        });
+        Assert.False(selection.CompleteCoverage);
+        Assert.Empty(selection.Nodes);
+        Assert.Equal(root.Level + 1, probes);
+    }
+
+    [Fact]
     public void Missing_parent_and_incomplete_children_report_no_partial_coverage()
     {
         var root = new TerrainLodTileKey(1, 0, 0);

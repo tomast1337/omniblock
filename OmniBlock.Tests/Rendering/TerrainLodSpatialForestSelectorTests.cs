@@ -10,6 +10,63 @@ public sealed class TerrainLodSpatialForestSelectorTests
         horizontalSampleLevelBySpatialLevel: [0, 0, 1, 1, 2],
         verticalSliceBudgetBySpatialLevel: [32, 24, 16, 12, 8]);
 
+    [Theory]
+    [InlineData(512)]
+    [InlineData(1024)]
+    [InlineData(4096)]
+    public void Sparse_large_domains_probe_residency_not_their_theoretical_area(int horizon)
+    {
+        var policy = TerrainLodSpatialPolicy.CreateForMaximumHorizon(horizon);
+        HashSet<TerrainLodTileKey> ready = [new(2, 0, 0), new(2, -1, -1)];
+        var probes = 0;
+        var forest = TerrainLodSpatialForestSelector.Select(
+            ready, 2, 0, 0, horizon, policy, key =>
+            {
+                probes++;
+                return ready.Contains(key);
+            });
+
+        Assert.Equal(ready.OrderBy(key => key.X),
+            forest.Roots.SelectMany(root => root.Nodes).Select(node => node.Tile).OrderBy(key => key.X));
+        Assert.All(forest.Roots, root => Assert.False(root.CompleteCoverage));
+        Assert.InRange(probes, 1, 256);
+    }
+
+    [Fact]
+    public void Occupancy_pruning_preserves_full_scan_partitions()
+    {
+        var managementRoot = new TerrainLodTileKey(4, 0, 0);
+        HashSet<TerrainLodTileKey> candidates = [managementRoot];
+        AddDescendants(managementRoot, 0, candidates);
+        var random = new Random(1024);
+        for (var sample = 0; sample < 100; sample++)
+        {
+            var ready = candidates.Where(_ => random.Next(4) == 0).ToHashSet();
+            var cameraX = random.Next(-64, 65);
+            var cameraZ = random.Next(-64, 65);
+            List<TerrainLodTileSelection> expected = [];
+            var complete = FullScan(managementRoot);
+            var actual = TerrainLodSpatialForestSelector.Select(
+                ready, 2, cameraX, cameraZ, 256, Policy, ready.Contains);
+            Assert.Equal(expected, actual.Roots.SelectMany(root => root.Nodes));
+            if (expected.Count > 0) Assert.Equal(complete, Assert.Single(actual.Roots).CompleteCoverage);
+
+            bool FullScan(TerrainLodTileKey root)
+            {
+                var selection = TerrainLodSpatialSelector.Select(root, cameraX, cameraZ, Policy, ready.Contains);
+                if (selection.CompleteCoverage)
+                {
+                    expected.AddRange(selection.Nodes);
+                    return true;
+                }
+                if (root.Level == 2) return false;
+                var all = true;
+                for (var i = 0; i < 4; i++) all &= FullScan(root.Child(i));
+                return all;
+            }
+        }
+    }
+
     [Fact]
     public void Incomplete_management_root_exposes_available_level_two_descendants()
     {

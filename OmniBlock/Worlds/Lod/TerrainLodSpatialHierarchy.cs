@@ -325,7 +325,8 @@ public static class TerrainLodSpatialSelector
         double cameraChunkX,
         double cameraChunkZ,
         TerrainLodSpatialPolicy policy,
-        Func<TerrainLodTileKey, bool> isGpuReady)
+        Func<TerrainLodTileKey, bool> isGpuReady,
+        Func<TerrainLodTileKey, bool>? hasReadySubtree = null)
     {
         ArgumentNullException.ThrowIfNull(policy);
         ArgumentNullException.ThrowIfNull(isGpuReady);
@@ -339,6 +340,11 @@ public static class TerrainLodSpatialSelector
 
         bool Cover(TerrainLodTileKey tile)
         {
+            if (hasReadySubtree is not null && !hasReadySubtree(tile))
+            {
+                missingCoverageGroups++;
+                return false;
+            }
             var desiredLevel = policy.DesiredSpatialLevel(
                 tile.DistanceTo(cameraChunkX, cameraChunkZ));
             var shouldRefine = tile.Level > desiredLevel;
@@ -377,7 +383,13 @@ public static class TerrainLodSpatialSelector
                 var childStart = selected.Count;
                 var allChildrenCovered = true;
                 for (var i = 0; i < 4; i++)
-                    allChildrenCovered &= Cover(tile.Child(i));
+                    if (!Cover(tile.Child(i)))
+                    {
+                        // One missing quadrant disproves complete coverage. Other quadrants are
+                        // explored separately by the forest's partial-cover path, not here.
+                        allChildrenCovered = false;
+                        break;
+                    }
                 if (allChildrenCovered) return true;
                 selected.RemoveRange(childStart, selected.Count - childStart);
             }
@@ -461,7 +473,22 @@ public static class TerrainLodSpatialForestSelector
         if (!double.IsFinite(maximumDistanceChunks) || maximumDistanceChunks < 0)
             throw new ArgumentOutOfRangeException(nameof(maximumDistanceChunks));
 
-        var managementRoots = readyKeys
+        var availableKeys = readyKeys
+            .Where(key => key.Level <= policy.MaximumSpatialLevel)
+            .ToArray();
+        HashSet<TerrainLodTileKey> occupiedSubtrees = [];
+        foreach (var key in availableKeys)
+        {
+            var ancestor = key;
+            while (true)
+            {
+                if (!occupiedSubtrees.Add(ancestor)) break;
+                if (ancestor.Level == policy.MaximumSpatialLevel) break;
+                ancestor = ancestor.Parent();
+            }
+        }
+
+        var managementRoots = availableKeys
             .Where(key => key.Level >= minimumVisibleLevel &&
                           key.Level <= policy.MaximumSpatialLevel)
             .Where(key => key.DistanceTo(cameraChunkX, cameraChunkZ) <=
@@ -495,8 +522,15 @@ public static class TerrainLodSpatialForestSelector
             ref int parentFallbacks,
             ref int missingCoverageGroups)
         {
+            // This index is proportional to actual residency and hierarchy depth. Never walk
+            // the full theoretical L8/L10 footprint merely to discover absent terrain.
+            if (!occupiedSubtrees.Contains(root))
+            {
+                missingCoverageGroups++;
+                return false;
+            }
             var selection = TerrainLodSpatialSelector.Select(
-                root, cameraChunkX, cameraChunkZ, policy, isGpuReady);
+                root, cameraChunkX, cameraChunkZ, policy, isGpuReady, occupiedSubtrees.Contains);
             parentFallbacks += selection.ParentFallbacks;
             missingCoverageGroups += selection.MissingCoverageGroups;
             if (selection.CompleteCoverage)
