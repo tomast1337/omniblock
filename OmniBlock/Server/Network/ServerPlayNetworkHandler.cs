@@ -27,7 +27,8 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     ///     or elevator/piston ride without being long enough to be useful as a fly hack.
     /// </summary>
     private const int MaxFloatingTicks = 20;
-    private const int MaximumTerrainLodResponsesPerRequest = 4;
+    private const int MaximumTerrainLodResponsesPerRequest =
+        TerrainLodScaleBudget.MaximumRequestKeys;
 
     private readonly ILogger<ServerPlayNetworkHandler> _logger = Log.Instance.For<ServerPlayNetworkHandler>();
     private readonly OmniBlockServer server;

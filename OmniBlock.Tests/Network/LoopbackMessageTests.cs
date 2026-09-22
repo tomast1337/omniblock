@@ -99,6 +99,49 @@ public sealed class LoopbackMessageTests
         Assert.Same(bulk, handler.Received[1]);
     }
 
+    [Fact]
+    public void Bulk_drain_has_a_finite_loopback_catch_up_ceiling()
+    {
+        var (sender, handler) = Pair();
+        var bulk = Enumerable.Range(0, InternalConnection.MaximumBulkPacketsPerTick + 1)
+            .Select(static _ => new TerrainLodTileStatusMessage())
+            .ToArray();
+        foreach (var message in bulk) sender.sendMessage(Negotiated(), message);
+
+        sender.RemoteConnection.tick();
+
+        Assert.Equal(InternalConnection.MaximumBulkPacketsPerTick, handler.Received.Count);
+        Assert.Same(bulk[0], handler.Received[0]);
+        Assert.Same(bulk[1], handler.Received[1]);
+        Assert.Equal(1, sender.getBulkPacketBacklog());
+    }
+
+    [Fact]
+    public void Bulk_gets_a_bounded_turn_after_gameplay_uses_its_time_budget()
+    {
+        ManualClock clock = new();
+        Recorder handler = new();
+        InternalConnection receiver = new(handler, "receiver", clock);
+        InternalConnection sender = new(null, "sender");
+        sender.AssignRemote(receiver);
+        CountingPacket.Applied = 0;
+
+        // The first normal packet consumes the entire normal-lane budget, leaving the second one
+        // queued. Bulk must still receive its separate bounded turn in this tick; waiting for the
+        // normal queue to become empty starves LOD throughout initial chunk streaming.
+        sender.sendPacket(new CountingPacket(clock, Connection.DrainBudgetMs));
+        sender.sendPacket(new CountingPacket(clock, 0));
+        TerrainLodTileStatusMessage bulk = new();
+        sender.sendMessage(Negotiated(), bulk);
+
+        receiver.tick();
+
+        Assert.Equal(1, CountingPacket.Applied);
+        Assert.Same(bulk, Assert.Single(handler.Received));
+        Assert.Equal(1, sender.getWorldPacketBacklog());
+        Assert.Equal(0, sender.getBulkPacketBacklog());
+    }
+
     /// <summary>
     ///     A real connection does serialise, and the receiving side gets a distinct instance. Stated
     ///     here so the loopback assertion above reads as a property of that transport rather than of
@@ -119,5 +162,38 @@ public sealed class LoopbackMessageTests
         public override bool isServerSide() => true;
 
         public override void onMessage(Message message) => Received.Add(message);
+    }
+
+    private sealed class ManualClock : TimeProvider
+    {
+        private long _microseconds;
+
+        public override long TimestampFrequency => 1_000_000;
+
+        public override long GetTimestamp() => _microseconds;
+
+        public void Advance(double milliseconds) =>
+            _microseconds += (long)(milliseconds * 1000.0);
+    }
+
+    private sealed class CountingPacket(ManualClock clock, double costMs) : Packet(PacketId.Handshake)
+    {
+        public static int Applied;
+
+        public override void Read(Stream stream)
+        {
+        }
+
+        public override void Write(Stream stream)
+        {
+        }
+
+        public override int Size() => 0;
+
+        public override void Apply(NetHandler handler)
+        {
+            Applied++;
+            clock.Advance(costMs);
+        }
     }
 }

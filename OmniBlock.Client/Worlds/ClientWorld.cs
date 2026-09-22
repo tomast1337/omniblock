@@ -23,6 +23,9 @@ public class ClientWorld : World
     private readonly HashSet<Entity> pendingEntities = [];
     private readonly ConcurrentQueue<TerrainLodTileTransfer> _terrainLodTiles = new();
     private readonly ConcurrentQueue<TerrainLodTileStatusUpdate> _terrainLodStatuses = new();
+    private long _terrainLodTilesEnqueued;
+    private long _terrainLodTilesDequeued;
+    private int _terrainLodTileQueuePeak;
     private MultiplayerChunkCache _chunkCache;
 
     public ClientWorld(
@@ -52,12 +55,33 @@ public class ClientWorld : World
     internal IReadOnlyList<ClientEntityDespawnVisual> DistanceDespawnVisuals => _distanceDespawnVisuals;
     internal int DistanceDespawnPresentationCount { get; private set; }
 
-    internal void EnqueueTerrainLodTile(TerrainLodColumnTile tile, int wireBytes) =>
+    internal long TerrainLodTilesEnqueued => Interlocked.Read(ref _terrainLodTilesEnqueued);
+    internal long TerrainLodTilesDequeued => Interlocked.Read(ref _terrainLodTilesDequeued);
+    internal int TerrainLodTileQueueDepth => _terrainLodTiles.Count;
+    internal int TerrainLodTileQueuePeak => Volatile.Read(ref _terrainLodTileQueuePeak);
+
+    internal void EnqueueTerrainLodTile(TerrainLodColumnTile tile, int wireBytes)
+    {
         _terrainLodTiles.Enqueue(new TerrainLodTileTransfer(
             tile ?? throw new ArgumentNullException(nameof(tile)), wireBytes));
+        Interlocked.Increment(ref _terrainLodTilesEnqueued);
+        var depth = _terrainLodTiles.Count;
+        var peak = Volatile.Read(ref _terrainLodTileQueuePeak);
+        while (depth > peak)
+        {
+            var observed = Interlocked.CompareExchange(
+                ref _terrainLodTileQueuePeak, depth, peak);
+            if (observed == peak) break;
+            peak = observed;
+        }
+    }
 
-    internal bool TryDequeueTerrainLodTile(out TerrainLodTileTransfer transfer) =>
-        _terrainLodTiles.TryDequeue(out transfer);
+    internal bool TryDequeueTerrainLodTile(out TerrainLodTileTransfer transfer)
+    {
+        if (!_terrainLodTiles.TryDequeue(out transfer)) return false;
+        Interlocked.Increment(ref _terrainLodTilesDequeued);
+        return true;
+    }
 
     internal void EnqueueTerrainLodStatus(TerrainLodTileKey tile, TerrainLodTileStatus status) =>
         _terrainLodStatuses.Enqueue(new TerrainLodTileStatusUpdate(tile, status));

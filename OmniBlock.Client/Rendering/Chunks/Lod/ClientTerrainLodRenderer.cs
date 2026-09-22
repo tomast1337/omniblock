@@ -2,6 +2,7 @@ using System.Diagnostics;
 using OmniBlock.Blocks;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.WebGPU;
+using OmniBlock.Client.Worlds;
 using OmniBlock.Network.Messages;
 using OmniBlock.Profiling;
 using OmniBlock.Util.Maths;
@@ -72,6 +73,12 @@ internal readonly record struct ClientTerrainLodSnapshot(
     long RemoteRequests,
     long RemoteTiles,
     long RemoteWireBytes,
+    long NetworkTilesReceived,
+    long NetworkTilesAdmitted,
+    int NetworkTileQueueDepth,
+    int NetworkTileQueuePeak,
+    int TransportQueueDepth,
+    int TransportQueuePeak,
     long RemotePendingResponses,
     long RemoteMissingResponses,
     long RemoteDeferredResponses,
@@ -92,7 +99,23 @@ internal readonly record struct ClientTerrainLodSnapshot(
     bool CoarseCoverRetainingPrevious,
     double ColdCoverMs,
     double FirstCompleteHorizonMs,
-    double RefinementMs);
+    double RefinementMs,
+    TerrainLodConvergenceSnapshot Convergence);
+
+/// <summary>
+///     Generation-scoped time-to-first-cover milestones. Values are milliseconds from the moment
+///     the required radial partition changed; -1 means that stage has not completed yet.
+/// </summary>
+internal readonly record struct TerrainLodConvergenceSnapshot(
+    long Generation,
+    double FirstRequestMs,
+    double FirstSourceTileMs,
+    double SourceCompleteMs,
+    double FirstBodyUploadMs,
+    double BodiesCompleteMs,
+    double FirstSeamUploadMs,
+    double SeamsCompleteMs,
+    double PublicationMs);
 
 internal readonly record struct TerrainLodSpatialSnapshot(
     TerrainLodTileKey Root,
@@ -151,6 +174,11 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private const int SpatialSeamAdmissionsPerFrame = 8;
     private const int SpatialSeamUploadsPerFrame =
         TerrainLodScaleBudget.SpatialSeamUploadsPerFrame;
+    // A cold horizon can install hundreds of bodies. Re-running connected-cover selection after
+    // every individual upload made startup quadratic and produced visible 300 ms frame spikes.
+    // Partial covers advance atomically in small batches; the final complete cover bypasses the
+    // batch immediately.
+    private const int SpatialForestRevisionBatchSize = 8;
     private const int MaximumRemoteOutstandingRequests =
         TerrainLodScaleBudget.MaximumRemoteOutstandingRequests;
     private const int OverworldCaveCullCeilingY = 60;
@@ -248,6 +276,14 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
     private double _coldCoverMs = -1;
     private double _firstCompleteHorizonMs = -1;
     private double _refinementMs = -1;
+    private double _firstRequestMs = -1;
+    private double _firstSourceTileMs = -1;
+    private double _sourceCompleteMs = -1;
+    private double _firstBodyUploadMs = -1;
+    private double _bodiesCompleteMs = -1;
+    private double _firstSeamUploadMs = -1;
+    private double _seamsCompleteMs = -1;
+    private double _publicationMs = -1;
     private int _coarseCoverSelectedTiles;
     private int _coarseCoverParentFallbacks;
     private int _coarseCoverMissingGroups;
@@ -335,6 +371,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         if (publication != TerrainLodTilePublicationResult.IgnoredCurrent)
             QueueSpatialMesh(tile);
         _remoteRequestStates.Remove(tile.Key);
+        if (_firstSourceTileMs < 0)
+            _firstSourceTileMs = CoarseCoverElapsedMs();
         _remoteTiles++;
         _remoteWireBytes += Math.Max(0, wireBytes);
     }
@@ -399,7 +437,10 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         UpdateCoarseCoverPlan(requiredTiles);
         UpdateRemoteCoverage(requiredTiles, cameraX, cameraZ, horizonDistanceChunks,
             outerBoundaryMinimumLevel);
-        if (maximumRequests <= 0 || requiredTiles.Length == 0 || (_tick & 3) != 0)
+        // Outstanding-request and server transport budgets already bound this lane. The old
+        // every-fourth-tick gate turned a 289-node warm cache into a tens-of-seconds handshake,
+        // especially when mesh work lengthened client ticks.
+        if (maximumRequests <= 0 || requiredTiles.Length == 0)
             return [];
 
         var availableCapacity = MaximumRemoteOutstandingRequests -
@@ -458,6 +499,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         foreach (var key in selected)
             _remoteRequestStates[key] = new RemoteTileRequestState(
                 _tick + 20, RemoteTileRequestDisposition.InFlight);
+        if (selected.Count > 0 && _firstRequestMs < 0)
+            _firstRequestMs = CoarseCoverElapsedMs();
         _remoteRequests += selected.Count;
         return [.. selected];
 
@@ -560,6 +603,12 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         }
         _coarseCoverComplete = requiredTiles.Count != 0 &&
                                _coarseCoverReady == requiredTiles.Count;
+        if (requiredTiles.Count != 0 &&
+            _remoteCoverageAvailable == requiredTiles.Count &&
+            _sourceCompleteMs < 0)
+            _sourceCompleteMs = CoarseCoverElapsedMs();
+        if (_coarseCoverComplete && _bodiesCompleteMs < 0)
+            _bodiesCompleteMs = CoarseCoverElapsedMs();
         _coarseCoverFrontierUnknown = requiredTiles.Count - _coarseCoverReady;
         _coarseCoverRetainingPrevious = _spatialFrame is not null &&
                                          _publishedCoarseCoverGeneration !=
@@ -632,6 +681,14 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _coarseCoverStartedTimestamp = Stopwatch.GetTimestamp();
         _firstCompleteHorizonMs = -1;
         _refinementMs = -1;
+        _firstRequestMs = -1;
+        _firstSourceTileMs = -1;
+        _sourceCompleteMs = -1;
+        _firstBodyUploadMs = -1;
+        _bodiesCompleteMs = -1;
+        _firstSeamUploadMs = -1;
+        _seamsCompleteMs = -1;
+        _publicationMs = -1;
         _coarseCoverComplete = false;
         _coarseCoverRetainingPrevious = _spatialFrame is not null;
         _spatialForestCacheKey = null;
@@ -1514,6 +1571,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             {
                 installed++;
                 uploadedBytes += mesh.EstimatedBytes;
+                if (_firstBodyUploadMs < 0)
+                    _firstBodyUploadMs = CoarseCoverElapsedMs();
             }
         }
         return installed;
@@ -1586,6 +1645,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
                 candidate = null;
                 installed++;
                 uploadedBytes += mesh.EstimatedBytes;
+                if (_firstSeamUploadMs < 0)
+                    _firstSeamUploadMs = CoarseCoverElapsedMs();
             }
             finally
             {
@@ -1702,16 +1763,20 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         // rather than the previous simulation tick.
         UpdateRemoteCoverage(requiredTiles, cameraChunkX, cameraChunkZ, horizonDistance,
             outerBoundaryMinimumLevel);
+        var presentationRevision = _coarseCoverComplete
+            ? _spatialPresentations.Revision
+            : _spatialPresentations.Revision / SpatialForestRevisionBatchSize;
         var cacheKey = new SpatialForestCacheKey(
             cameraChunkX,
             cameraChunkZ,
             nearDistance,
             horizonDistance,
             _coarseCoverGeneration,
-            _spatialPresentations.Revision);
+            presentationRevision);
         if (_spatialForestCacheKey == cacheKey &&
-            _spatialForestCachedFrame is not null)
-            return _spatialForestCachedFrame;
+            _spatialForestCachedFrame is { } cachedFrame &&
+            SpatialForestReferencesCurrentPresentations(cachedFrame))
+            return cachedFrame;
 
         var horizonCover = TerrainLodCoveragePlanner.SelectCompleteCover(
             requiredTiles, cameraChunkX, cameraChunkZ,
@@ -1811,6 +1876,23 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         _spatialForestCacheKey = cacheKey;
         _spatialForestCachedFrame = frame;
         return frame;
+    }
+
+    /// <summary>
+    ///     Batched cold-cover selection may outlive an individual catalog entry. Replacing an
+    ///     unpublished entry releases its owner reference immediately, so a cache hit is valid
+    ///     only while every draw still names the exact live presentation object. Published frames
+    ///     have independent leases and are deliberately handled by the publication owner instead.
+    /// </summary>
+    private bool SpatialForestReferencesCurrentPresentations(
+        TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation> frame)
+    {
+        foreach (var draw in frame.Draws)
+            if (!_spatialPresentations.TryGetPresentation(
+                    draw.Selection.Tile, out var current) ||
+                !ReferenceEquals(current, draw.Presentation))
+                return false;
+        return true;
     }
 
     /// <summary>
@@ -1935,6 +2017,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
 
         if (frame.CompleteCoverage && _desiredSpatialSeams.All(SpatialSeamIsCurrent))
         {
+            if (_seamsCompleteMs < 0)
+                _seamsCompleteMs = CoarseCoverElapsedMs();
             var seams = _desiredSpatialSeams.ToDictionary(
                 static key => key,
                 key => new PublishedTerrainSeam<TerrainLodSpatialGpuSeamPresentation>(
@@ -1945,6 +2029,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             {
                 _publishedCoarseCoverGeneration = _coarseCoverGeneration;
                 _coarseCoverRetainingPrevious = false;
+                if (_publicationMs < 0)
+                    _publicationMs = CoarseCoverElapsedMs();
                 if (_coldCoverMs < 0)
                     _coldCoverMs = Stopwatch.GetElapsedTime(
                         _coarseCoverStartedTimestamp).TotalMilliseconds;
@@ -2928,6 +3014,8 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
         var cacheWriter = _cacheWriter?.Snapshot();
         var compilation = _meshCompilation.Snapshot();
         var cost = compilation.Cost;
+        var clientWorld = _world as ClientWorld;
+        var terrainNetwork = clientWorld?.NetworkHandler;
         _snapshot = new ClientTerrainLodSnapshot(
             _pending.Count,
             conversion.OwnedChunks,
@@ -2993,6 +3081,12 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             _remoteRequests,
             _remoteTiles,
             _remoteWireBytes,
+            clientWorld?.TerrainLodTilesEnqueued ?? 0,
+            clientWorld?.TerrainLodTilesDequeued ?? 0,
+            clientWorld?.TerrainLodTileQueueDepth ?? 0,
+            clientWorld?.TerrainLodTileQueuePeak ?? 0,
+            terrainNetwork?.TerrainLodTransportQueueDepth ?? 0,
+            terrainNetwork?.TerrainLodTransportQueuePeak ?? 0,
             _remotePendingResponses,
             _remoteMissingResponses,
             _remoteDeferredResponses,
@@ -3013,8 +3107,22 @@ internal sealed class ClientTerrainLodRenderer : IDisposable, ITerrainPresentati
             _coarseCoverRetainingPrevious,
             _coldCoverMs,
             _firstCompleteHorizonMs,
-            _refinementMs);
+            _refinementMs,
+            new TerrainLodConvergenceSnapshot(
+                _coarseCoverGeneration,
+                _firstRequestMs,
+                _firstSourceTileMs,
+                _sourceCompleteMs,
+                _firstBodyUploadMs,
+                _bodiesCompleteMs,
+                _firstSeamUploadMs,
+                _seamsCompleteMs,
+                _publicationMs));
     }
+
+    private double CoarseCoverElapsedMs() => _coarseCoverStartedTimestamp == 0
+        ? -1
+        : Stopwatch.GetElapsedTime(_coarseCoverStartedTimestamp).TotalMilliseconds;
 
     private long ResidentGpuBytes() =>
         _resident.Values.Sum(static value => value.EstimatedBytes) +

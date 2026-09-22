@@ -492,10 +492,12 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         {
             if (_world is ClientWorld clientWorld)
             {
-                for (var observed = 0; observed < 8 &&
+                for (var observed = 0;
+                     observed < TerrainLodScaleBudget.MaximumSourceStatusesObservedPerFrame &&
                      clientWorld.TryDequeueTerrainLodStatus(out var status); observed++)
                     terrainLod.ObserveRemoteSpatialStatus(status.Tile, status.Status);
-                for (var admitted = 0; admitted < 2 &&
+                for (var admitted = 0;
+                     admitted < TerrainLodScaleBudget.MaximumSourceTilesAdmittedPerFrame &&
                      clientWorld.TryDequeueTerrainLodTile(out var transfer); admitted++)
                     terrainLod.ObserveRemoteSpatialTile(transfer.Tile, transfer.WireBytes);
             }
@@ -511,7 +513,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                         viewPosition,
                         _game.Options.RenderDistance,
                         _game.EffectiveTerrainHorizonDistance,
-                        maximumRequests: 4,
+                        maximumRequests: TerrainLodScaleBudget.MaximumRequestKeys,
                         maximumSpatialLevel: negotiatedMaximum);
                     if (requests.Length > 0)
                         remoteWorld.NetworkHandler.SendMessage(new TerrainLodTileRequestMessage

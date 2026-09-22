@@ -129,7 +129,10 @@ public sealed class LuauClientStateHostIntegrationTests
             "terrainLodSpatialMeshCancelled" => 7,
             "terrainLodSpatialMeshOverBudget" => 2,
             "terrainLodSpatialMeshOldestQueuedMs" => 12.5,
+            "terrainLodSpatialMeshCompilationTotalMs" => 987.5,
             "terrainLodSpatialSeamCancelled" => 5,
+            "terrainLodPublicationMs" => 4321.5,
+            "terrainLodNetworkTileQueuePeak" => 8,
             "clientWorkingSetBytes" => 536_870_912,
             _ => 0
         };
@@ -216,6 +219,8 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.meshPending", "7");
             AssertValue(state, "OMNI.client.state.meshRequestToGpuMs", "12.5");
             AssertValue(state, "OMNI.client.state.frameTimeMs", "6.25");
+            AssertValue(state, "OMNI.client.state.terrainLodPublicationMs", "4321.5");
+            AssertValue(state, "OMNI.client.state.terrainLodNetworkTileQueuePeak", "8");
             AssertValue(state, "OMNI.client.state.meshSafetyLoadedColumns", "29");
             AssertValue(state, "OMNI.client.state.meshSafetyExpectedSections", "232");
             AssertValue(state, "OMNI.client.state.meshSafetyHoles", "3");
@@ -269,6 +274,7 @@ public sealed class LuauClientStateHostIntegrationTests
             AssertValue(state, "OMNI.client.state.terrainLodSpatialMeshCancelled", "7");
             AssertValue(state, "OMNI.client.state.terrainLodSpatialMeshOverBudget", "2");
             AssertValue(state, "OMNI.client.state.terrainLodSpatialMeshOldestQueuedMs", "12.5");
+            AssertValue(state, "OMNI.client.state.terrainLodSpatialMeshCompilationTotalMs", "987.5");
             AssertValue(state, "OMNI.client.state.terrainLodSpatialSeamCancelled", "5");
             AssertValue(state, "OMNI.client.state.clientWorkingSetBytes", "536870912");
             LuauClientStateHost.TerrainLodMetric = _ => throw new InvalidOperationException();

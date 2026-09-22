@@ -3,15 +3,25 @@ using System.Net;
 using Microsoft.Extensions.Logging;
 using OmniBlock.Network.Messages;
 using OmniBlock.Network.Packets;
+using OmniBlock.Worlds.Lod;
 
 namespace OmniBlock.Network;
 
 public class InternalConnection : Connection
 {
+    // The integrated server can produce several bounded response batches while the render thread
+    // is inside one expensive cold-LOD frame. Catch up those already-produced replies without
+    // making the application queue unbounded. This isolated lane currently carries only terrain
+    // LOD messages; actual tile ownership remains limited by the client's sixteen outstanding
+    // requests. Ordinary chunks and gameplay stay in the normal lane above.
+    internal const int MaximumBulkPacketsPerTick =
+        TerrainLodScaleBudget.MaximumLoopbackBulkPacketsPerTick;
+
     private readonly ILogger<InternalConnection> _logger = Log.Instance.For<InternalConnection>();
     private readonly ConcurrentQueue<Packet> _bulkReadQueue = [];
 
-    public InternalConnection(NetHandler? netHandler, string name)
+    public InternalConnection(NetHandler? netHandler, string name, TimeProvider? clock = null)
+        : base(clock: clock)
     {
         this.netHandler = netHandler;
         Name = name;
@@ -63,13 +73,20 @@ public class InternalConnection : Connection
     protected override void processPackets()
     {
         // Loopback has no transport channels, so preserve the same priority contract with two
-        // application queues. Drain gameplay/control first, then spend at most one unit of idle
-        // application capacity on bulk. Testing only at tick entry starves this lane under a
-        // continuous tick-stamp/entity stream even though the normal queue is drained each tick.
+        // application queues. Drain gameplay/control first, then admit only the amount of bulk
+        // work its bounded consumer can accept in one tick. Testing only at tick entry starves
+        // this lane under a continuous tick-stamp/entity stream even though the normal queue is
+        // drained each tick.
         base.processPackets();
-        if (!readQueue.IsEmpty || !_bulkReadQueue.TryDequeue(out var bulk)) return;
+        // The normal lane has already received its complete wall-clock budget. Do not require it
+        // to become empty: initial chunk streaming can keep that queue non-empty for many frames,
+        // which used to starve the independent LOD lane despite its producer and consumer both
+        // being bounded.
+        if (_bulkReadQueue.IsEmpty) return;
         if (netHandler is null) throw new Exception("networkHandler is null");
-        ApplyPacket(bulk, netHandler);
+        for (var admitted = 0; admitted < MaximumBulkPacketsPerTick &&
+             _bulkReadQueue.TryDequeue(out var bulk); admitted++)
+            ApplyPacket(bulk, netHandler);
     }
 
     public override void disconnect(string disconnectedReason, params object[] disconnectReasonArgs)

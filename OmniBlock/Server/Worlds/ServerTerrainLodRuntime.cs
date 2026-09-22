@@ -31,7 +31,12 @@ public sealed record ServerTerrainLodSnapshot(
     TerrainLodCacheSnapshot Cache,
     TerrainLodCacheWriterSnapshot Writer,
     TerrainLodColumnTileCacheSnapshot SpatialCache,
-    TerrainLodSpatialHierarchyCoordinatorSnapshot SpatialHierarchy);
+    TerrainLodSpatialHierarchyCoordinatorSnapshot SpatialHierarchy,
+    int SpatialReadQueued,
+    int SpatialReadPending,
+    int SpatialEncodeQueued,
+    int SpatialEncodePending,
+    int SpatialWirePayloads);
 
 /// <summary>
 ///     Per-dimension lifecycle owner joining live chunks to the bounded converter and disposable
@@ -657,7 +662,12 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             _cache.Snapshot(),
             _writer.Snapshot(),
             _spatialCache.Snapshot(),
-            _spatialHierarchy.Snapshot()));
+            _spatialHierarchy.Snapshot(),
+            _spatialReadRequests.Count,
+            _spatialReadsPending.Count,
+            _spatialEncodeRequests.Count,
+            _spatialEncodesPending.Count,
+            _spatialWirePayloads.Count));
 
     public void Dispose()
     {

@@ -38,7 +38,13 @@ internal readonly record struct TerrainLodSpatialMeshCompilationSnapshot(
     long Cancelled,
     long OverBudget,
     long StaleResults,
-    double OldestQueuedMs);
+    double OldestQueuedMs,
+    long Completed,
+    double TotalCompilationMs,
+    double MaximumCompilationMs,
+    int PeakQueued,
+    int PeakRunning,
+    int PeakCompleted);
 
 /// <summary>
 ///     Bounded, key-coalescing worker between immutable spatial column tiles and GPU staging.
@@ -46,11 +52,12 @@ internal readonly record struct TerrainLodSpatialMeshCompilationSnapshot(
 /// </summary>
 internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
 {
+    private const int DefaultWorkerCount = 2;
     private readonly object _gate = new();
     private readonly int _capacity;
     private readonly int _completedCapacity;
     private readonly Dictionary<TerrainLodTileKey, WorkItem> _items = [];
-    private readonly Thread _worker;
+    private readonly Thread[] _workers;
     private bool _disposed;
     private long _sequence;
     private long _coalesced;
@@ -58,23 +65,38 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
     private long _cancelled;
     private long _overBudget;
     private long _staleResults;
+    private long _completed;
+    private double _totalCompilationMs;
+    private double _maximumCompilationMs;
+    private int _peakQueued;
+    private int _peakRunning;
+    private int _peakCompleted;
 
     public TerrainLodSpatialMeshCompilationService(
         int capacity = 32,
-        int completedCapacity = 8)
+        int completedCapacity = 8,
+        int? workerCount = null)
     {
         if (capacity <= 0) throw new ArgumentOutOfRangeException(nameof(capacity));
         if (completedCapacity <= 0 || completedCapacity > capacity)
             throw new ArgumentOutOfRangeException(nameof(completedCapacity));
+        var resolvedWorkerCount = workerCount ?? Math.Min(
+            DefaultWorkerCount, Math.Min(capacity, completedCapacity));
+        if (resolvedWorkerCount <= 0 || resolvedWorkerCount > capacity)
+            throw new ArgumentOutOfRangeException(nameof(workerCount));
         _capacity = capacity;
         _completedCapacity = completedCapacity;
-        _worker = new Thread(WorkerLoop)
+        _workers = new Thread[resolvedWorkerCount];
+        for (var index = 0; index < _workers.Length; index++)
         {
-            IsBackground = true,
-            Name = "TerrainLOD-SpatialMesh",
-            Priority = ThreadPriority.BelowNormal
-        };
-        _worker.Start();
+            _workers[index] = new Thread(WorkerLoop)
+            {
+                IsBackground = true,
+                Name = $"TerrainLOD-SpatialMesh-{index}",
+                Priority = ThreadPriority.BelowNormal
+            };
+            _workers[index].Start();
+        }
     }
 
     public TerrainLodSpatialMeshAdmissionResult Submit(
@@ -119,6 +141,7 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
                 if (existing.State != State.Running) existing.State = State.Queued;
                 _coalesced++;
                 _cancelled++;
+                UpdatePressurePeaksLocked();
                 Monitor.PulseAll(_gate);
                 return TerrainLodSpatialMeshAdmissionResult.Coalesced;
             }
@@ -128,6 +151,7 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
                 return TerrainLodSpatialMeshAdmissionResult.RejectedAtCapacity;
             }
             _items.Add(tile.Key, new WorkItem(input with { Sequence = _sequence++ }));
+            UpdatePressurePeaksLocked();
             Monitor.PulseAll(_gate);
             return TerrainLodSpatialMeshAdmissionResult.Accepted;
         }
@@ -194,7 +218,13 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
                 _cancelled,
                 _overBudget,
                 _staleResults,
-                OldestQueuedMsLocked());
+                OldestQueuedMsLocked(),
+                _completed,
+                _totalCompilationMs,
+                _maximumCompilationMs,
+                _peakQueued,
+                _peakRunning,
+                _peakCompleted);
     }
 
     public void Dispose()
@@ -208,7 +238,8 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
             _items.Clear();
             Monitor.PulseAll(_gate);
         }
-        if (Thread.CurrentThread != _worker) _worker.Join();
+        foreach (var worker in _workers)
+            if (Thread.CurrentThread != worker) worker.Join();
     }
 
     private void WorkerLoop()
@@ -224,8 +255,8 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
                 while (true)
                 {
                     if (_disposed) return;
-                    if (_items.Values.Count(static value => value.State == State.Ready) >=
-                        _completedCapacity)
+                    if (_items.Values.Count(static value =>
+                            value.State is State.Ready or State.Running) >= _completedCapacity)
                     {
                         Monitor.Wait(_gate);
                         continue;
@@ -246,6 +277,7 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
                     generation = item.Generation;
                     cancellationToken = item.CancellationToken;
                     item.State = State.Running;
+                    UpdatePressurePeaksLocked();
                     break;
                 }
             }
@@ -302,6 +334,10 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
                 item.Failure = failure;
                 item.CompilationMs = elapsed;
                 item.State = failure is null ? State.Ready : State.Failed;
+                _completed++;
+                _totalCompilationMs += elapsed;
+                _maximumCompilationMs = Math.Max(_maximumCompilationMs, elapsed);
+                UpdatePressurePeaksLocked();
                 Monitor.PulseAll(_gate);
             }
         }
@@ -350,5 +386,15 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
             .DefaultIfEmpty(0)
             .Min();
         return oldest == 0 ? 0 : Stopwatch.GetElapsedTime(oldest).TotalMilliseconds;
+    }
+
+    private void UpdatePressurePeaksLocked()
+    {
+        _peakQueued = Math.Max(_peakQueued,
+            _items.Values.Count(static item => item.State == State.Queued));
+        _peakRunning = Math.Max(_peakRunning,
+            _items.Values.Count(static item => item.State == State.Running));
+        _peakCompleted = Math.Max(_peakCompleted,
+            _items.Values.Count(static item => item.State is State.Ready or State.Failed));
     }
 }

@@ -31,7 +31,7 @@ internal sealed class TerrainLodSpatialSeamCompilationService : IDisposable
     private readonly int _capacity;
     private readonly int _completedCapacity;
     private readonly Dictionary<TerrainLodSpatialSeamSegment, WorkItem> _items = [];
-    private readonly Thread _worker;
+    private readonly Thread[] _workers;
     private bool _disposed;
     private long _sequence;
     private long _coalesced;
@@ -40,20 +40,29 @@ internal sealed class TerrainLodSpatialSeamCompilationService : IDisposable
     private long _overBudget;
     private long _stale;
 
-    public TerrainLodSpatialSeamCompilationService(int capacity = 64, int completedCapacity = 16)
+    public TerrainLodSpatialSeamCompilationService(
+        int capacity = 64,
+        int completedCapacity = 16,
+        int workerCount = 2)
     {
         if (capacity <= 0) throw new ArgumentOutOfRangeException(nameof(capacity));
         if (completedCapacity <= 0 || completedCapacity > capacity)
             throw new ArgumentOutOfRangeException(nameof(completedCapacity));
+        if (workerCount <= 0 || workerCount > capacity)
+            throw new ArgumentOutOfRangeException(nameof(workerCount));
         _capacity = capacity;
         _completedCapacity = completedCapacity;
-        _worker = new Thread(WorkerLoop)
+        _workers = new Thread[workerCount];
+        for (var index = 0; index < _workers.Length; index++)
         {
-            IsBackground = true,
-            Name = "TerrainLOD-SpatialSeam",
-            Priority = ThreadPriority.BelowNormal
-        };
-        _worker.Start();
+            _workers[index] = new Thread(WorkerLoop)
+            {
+                IsBackground = true,
+                Name = $"TerrainLOD-SpatialSeam-{index}",
+                Priority = ThreadPriority.BelowNormal
+            };
+            _workers[index].Start();
+        }
     }
 
     public bool Submit(
@@ -171,7 +180,8 @@ internal sealed class TerrainLodSpatialSeamCompilationService : IDisposable
             _items.Clear();
             Monitor.PulseAll(_gate);
         }
-        if (Thread.CurrentThread != _worker) _worker.Join();
+        foreach (var worker in _workers)
+            if (Thread.CurrentThread != worker) worker.Join();
     }
 
     private void WorkerLoop()
@@ -187,8 +197,8 @@ internal sealed class TerrainLodSpatialSeamCompilationService : IDisposable
                 while (true)
                 {
                     if (_disposed) return;
-                    if (_items.Values.Count(static value => value.State == State.Ready) >=
-                        _completedCapacity)
+                    if (_items.Values.Count(static value =>
+                            value.State is State.Ready or State.Running) >= _completedCapacity)
                     {
                         Monitor.Wait(_gate);
                         continue;

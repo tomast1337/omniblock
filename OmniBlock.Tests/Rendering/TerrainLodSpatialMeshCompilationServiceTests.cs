@@ -23,7 +23,14 @@ public sealed class TerrainLodSpatialMeshCompilationServiceTests
         Assert.Equal(tile.CanonicalHash, result.Mesh.CanonicalHash);
         Assert.True(result.Mesh.SolidQuadCount > 0);
         Assert.True(result.CompilationMs >= 0);
-        Assert.Equal(0, service.Snapshot().Owned);
+        var snapshot = service.Snapshot();
+        Assert.Equal(0, snapshot.Owned);
+        Assert.Equal(1, snapshot.Completed);
+        Assert.True(snapshot.TotalCompilationMs >= 0);
+        Assert.True(snapshot.MaximumCompilationMs >= 0);
+        Assert.InRange(snapshot.PeakQueued, 1, 2);
+        Assert.Equal(1, snapshot.PeakRunning);
+        Assert.Equal(1, snapshot.PeakCompleted);
     }
 
     [Fact]

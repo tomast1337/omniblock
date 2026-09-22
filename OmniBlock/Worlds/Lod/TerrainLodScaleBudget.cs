@@ -29,6 +29,12 @@ public static class TerrainLodScaleBudget
 
     public const int MaximumRemoteOutstandingRequests = 16;
     public const int MaximumRequestKeys = 8;
+    // Apply one complete request batch per render tick. Source publication only updates the
+    // bounded CPU hierarchy and mesh-pending set; compilation and GPU upload retain their own
+    // stricter budgets below. Keeping this at two made an L8 partition require about 147 costly
+    // render frames before the client could even know its complete source set.
+    public const int MaximumSourceTilesAdmittedPerFrame = MaximumRequestKeys;
+    public const int MaximumSourceStatusesObservedPerFrame = MaximumRequestKeys * 4;
     public const int MaximumCompressedTileBytes = 2 * 1024 * 1024 - 128;
     public const int MaximumDecodedTileBytes = 64 * 1024 * 1024;
     public const int TransportBytesPerSecond = 256 * 1024;
@@ -38,4 +44,9 @@ public static class TerrainLodScaleBudget
     public const int GlobalTransportBytesPerSecond = 2 * 1024 * 1024;
     public const int GlobalTransportBurstBytes = 4 * 1024 * 1024;
     public const int MaximumTransportResponsesPerTick = 8;
+    // An integrated server ticks independently from the render thread. Expensive cold LOD frames
+    // can therefore accumulate several server ticks of already-bounded replies before the client
+    // gets another chance to apply them. Loopback application only transfers message ownership to
+    // the client's bounded queues, so give it a larger, still finite catch-up ceiling.
+    public const int MaximumLoopbackBulkPacketsPerTick = 64;
 }

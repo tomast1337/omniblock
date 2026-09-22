@@ -634,6 +634,15 @@ public partial class OmniBlock :
                     "terrainLodSpatialMeshOverBudget" => spatial.MeshCompilation.OverBudget,
                     "terrainLodSpatialMeshOldestQueuedMs" =>
                         spatial.MeshCompilation.OldestQueuedMs,
+                    "terrainLodSpatialMeshCompleted" => spatial.MeshCompilation.Completed,
+                    "terrainLodSpatialMeshCompilationTotalMs" =>
+                        spatial.MeshCompilation.TotalCompilationMs,
+                    "terrainLodSpatialMeshCompilationMaxMs" =>
+                        spatial.MeshCompilation.MaximumCompilationMs,
+                    "terrainLodSpatialMeshPeakQueued" => spatial.MeshCompilation.PeakQueued,
+                    "terrainLodSpatialMeshPeakRunning" => spatial.MeshCompilation.PeakRunning,
+                    "terrainLodSpatialMeshPeakCompleted" =>
+                        spatial.MeshCompilation.PeakCompleted,
                     "terrainLodSpatialSeamDesired" => spatial.DesiredSeams,
                     "terrainLodSpatialSeamGpuResident" => spatial.GpuSeams,
                     "terrainLodSpatialSeamQueued" => spatial.SeamCompilation.Queued,
@@ -684,6 +693,18 @@ public partial class OmniBlock :
                     "terrainLodRemoteCoverageComplete" =>
                         state.RemoteCoverageRequired > 0 &&
                         state.RemoteCoverageAvailable == state.RemoteCoverageRequired ? 1 : 0,
+                    "terrainLodNetworkTilesReceived" =>
+                        state.NetworkTilesReceived,
+                    "terrainLodNetworkTilesAdmitted" =>
+                        state.NetworkTilesAdmitted,
+                    "terrainLodNetworkTileQueue" =>
+                        state.NetworkTileQueueDepth,
+                    "terrainLodNetworkTileQueuePeak" =>
+                        state.NetworkTileQueuePeak,
+                    "terrainLodTransportQueue" =>
+                        state.TransportQueueDepth,
+                    "terrainLodTransportQueuePeak" =>
+                        state.TransportQueuePeak,
                     "terrainLodCoarseSourceUnavailable" => state.CoarseCoverSourceUnavailable,
                     "terrainLodCoarseBuilding" => state.CoarseCoverBuilding,
                     "terrainLodCoarseTransportPending" => state.CoarseCoverTransportPending,
@@ -697,6 +718,15 @@ public partial class OmniBlock :
                     "terrainLodColdCoverMs" => state.ColdCoverMs,
                     "terrainLodFirstCompleteHorizonMs" => state.FirstCompleteHorizonMs,
                     "terrainLodRefinementMs" => state.RefinementMs,
+                    "terrainLodConvergenceGeneration" => state.Convergence.Generation,
+                    "terrainLodFirstRequestMs" => state.Convergence.FirstRequestMs,
+                    "terrainLodFirstSourceTileMs" => state.Convergence.FirstSourceTileMs,
+                    "terrainLodSourceCompleteMs" => state.Convergence.SourceCompleteMs,
+                    "terrainLodFirstBodyUploadMs" => state.Convergence.FirstBodyUploadMs,
+                    "terrainLodBodiesCompleteMs" => state.Convergence.BodiesCompleteMs,
+                    "terrainLodFirstSeamUploadMs" => state.Convergence.FirstSeamUploadMs,
+                    "terrainLodSeamsCompleteMs" => state.Convergence.SeamsCompleteMs,
+                    "terrainLodPublicationMs" => state.Convergence.PublicationMs,
                     "terrainLodIdentityReady" =>
                         terrainNetwork?.TerrainLodIdentityReady == true ? 1 : 0,
                     "terrainLodIdentityMismatches" =>
@@ -986,6 +1016,22 @@ public partial class OmniBlock :
                         var dimension = Player?.DimensionId ?? 0;
                         return InternalServer?.getWorld(dimension).TerrainLodSnapshot?
                             .SpatialCache.EntryCount ?? 0;
+                    }
+                    if (metric is "cacheBytes" or "readQueued" or "readPending" or
+                        "encodeQueued" or "encodePending" or "wirePayloads")
+                    {
+                        var dimension = Player?.DimensionId ?? 0;
+                        var terrain = InternalServer?.getWorld(dimension).TerrainLodSnapshot;
+                        return metric switch
+                        {
+                            "cacheBytes" => terrain?.SpatialCache.CurrentBytes ?? 0,
+                            "readQueued" => terrain?.SpatialReadQueued ?? 0,
+                            "readPending" => terrain?.SpatialReadPending ?? 0,
+                            "encodeQueued" => terrain?.SpatialEncodeQueued ?? 0,
+                            "encodePending" => terrain?.SpatialEncodePending ?? 0,
+                            "wirePayloads" => terrain?.SpatialWirePayloads ?? 0,
+                            _ => 0
+                        };
                     }
                     if (snapshot is null) return 0;
                     return metric switch

@@ -190,6 +190,8 @@ public class ClientNetworkHandler : NetHandler
     public long TickStampsReceived { get; private set; }
     public int ServerRenderDistance { get; private set; }
     public int ServerSimulationDistance { get; private set; }
+    internal int TerrainLodTransportQueueDepth => _netManager.ReadQueueDepth;
+    internal int TerrainLodTransportQueuePeak => _netManager.PeakReadQueueDepth;
 
     /// <summary>
     ///     Registers the same set the server does. Both sides go through
