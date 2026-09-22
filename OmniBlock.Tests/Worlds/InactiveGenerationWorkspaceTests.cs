@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Entities;
+using OmniBlock.Network.Messages;
 using OmniBlock.Server.Worlds;
 using OmniBlock.Tests.TestSupport;
 using OmniBlock.Util.Maths;
@@ -12,6 +13,7 @@ using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Dimensions;
 using OmniBlock.Worlds.Generation;
+using OmniBlock.Worlds.Lod;
 using OmniBlock.Worlds.Storage;
 using OmniBlock.Worlds.Storage.RegionFormat;
 
@@ -20,6 +22,146 @@ namespace OmniBlock.Tests.Worlds;
 [Collection(ChunkGeneratorCharacterizationCollection.Name)]
 public sealed class InactiveGenerationWorkspaceTests
 {
+    // Unlike the uniform scale fixtures, these go through the actual generator, decoration and
+    // lighting. Keep the patch small: fidelity evidence is not a 1024-chunk performance claim.
+    [Theory]
+    [InlineData("default", -17, 15, false)]
+    [InlineData("sky", -17, 15, false)]
+    [InlineData("nether", -17, 15, false)]
+    [InlineData("default", 0, 0, true)]
+    public async Task TerrainLod_generated_columns_survive_reduction_cache_reopen_and_transport(
+        string profile, int parentX, int parentZ, bool requireLiquid)
+    {
+        var root = Directory.CreateTempSubdirectory("omniblock-generated-lod-");
+        try
+        {
+            var world = new SourceWorld(246813579L, profile);
+            var batch = new InactiveGenerationWorkspace(world).GenerateCompletedNeighborhood(parentX * 2 + 1, parentZ * 2 + 1);
+            var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+            var key = new TerrainLodTileKey(1, parentX, parentZ);
+            var leaves = new TerrainLodColumnTile[4];
+            HashSet<int> surfaceHeights = [];
+            var undergroundAir = 0;
+            var liquidVoxels = 0;
+            using (var runtime = new ServerTerrainLodRuntime(
+                       world.Dimension.Id, materials, root, world, conversionCapacity: 8))
+            {
+                for (var i = 0; i < 4; i++)
+                {
+                    var child = key.Child(i);
+                    var offline = batch.Get(child.X, child.Z);
+                    var source = offline.CaptureTerrain();
+                    var leaf = leaves[i] = TerrainLodColumnTile.BuildLeaf(source, materials);
+                    Assert.NotNull(source.Lighting);
+                    for (var x = 0; x < 16; x++)
+                    for (var z = 0; z < 16; z++)
+                    {
+                        var top = -1;
+                        for (var y = source.Height - 1; y >= 0; y--)
+                        {
+                            var expected = materials.Resolve(source.GetBlock(x, y, z), source.GetMetadata(x, y, z));
+                            var actual = leaf[x, z].At(y);
+                            var light = source.Lighting.GetLightLevels(child.X * 16 + x, y, child.Z * 16 + z, 0);
+                            Assert.Equal(expected, actual.Material);
+                            Assert.Equal(light.Block, actual.BlockLight);
+                            Assert.Equal(light.Sky, actual.SkyLight);
+                            if (!expected.IsAir && top < 0) top = y;
+                            if (expected.IsAir && top >= 0) undergroundAir++;
+                            if (expected.Geometry == TerrainLodGeometryClass.Liquid) liquidVoxels++;
+                        }
+                        surfaceHeights.Add(top);
+                    }
+                    runtime.SubmitOffline(offline);
+                }
+
+                await WaitForTerrainLod(() => runtime.TryGetSpatialCoverage(key, out _) &&
+                    runtime.Snapshot().SpatialCache.Writes >= 5);
+                Assert.True(runtime.TryGetSpatialCoverage(key, out var built));
+                var expectedParent = TerrainLodColumnTile.BuildParent(key, leaves,
+                    TerrainLodSpatialPolicy.CreateDefault().HorizontalSampleLevelForSpatialLevel(key.Level));
+                Assert.Equal(expectedParent.CanonicalHash, built!.CanonicalHash);
+                // The near parent retains 1:1 columns, not merely one highest surface per column.
+                Assert.Equal(0, built.HorizontalSampleLevel);
+                for (var i = 0; i < 4; i++)
+                for (var x = 0; x < 16; x++)
+                for (var z = 0; z < 16; z++)
+                {
+                    var child = key.Child(i);
+                    Assert.Equal(leaves[i][x, z].Spans,
+                        built[(child.X - key.X * 2) * 16 + x, (child.Z - key.Z * 2) * 16 + z].Spans);
+                }
+                Assert.Equal(0, runtime.Snapshot().OfflineSnapshotsDropped);
+            }
+
+            // Guard the fixture itself: a flat synthetic slab cannot satisfy this test.
+            Assert.True(undergroundAir > 0, $"{profile}: no cave/overhang air was exercised");
+            if (profile != "nether") Assert.True(surfaceHeights.Count > 1, $"{profile}: fixture was flat");
+            if (requireLiquid) Assert.True(liquidVoxels > 0, $"{profile}: no liquid was exercised");
+
+            using var reopened = new ServerTerrainLodRuntime(world.Dimension.Id, materials, root, world);
+            await WaitForTerrainLod(() => reopened.TryGetSpatialPayload(key, out _));
+            Assert.True(reopened.TryGetSpatialPayload(key, out var payload));
+            var transported = TerrainLodTileMessage.FromCompressed(world.Dimension.Id, payload!).Decode();
+            var expectedHash = TerrainLodColumnTile.BuildParent(key, leaves, 0).CanonicalHash;
+            Assert.Equal(expectedHash, transported.CanonicalHash);
+            Assert.True(reopened.Snapshot().SpatialCache.ReadHits > 0);
+            Assert.Equal(0, reopened.Snapshot().TrackedChunks);
+            Assert.Equal(0, reopened.Snapshot().OfflineSnapshotsSubmitted);
+            Assert.False(world.Chunks.IsChunkLoaded(parentX * 2, parentZ * 2));
+
+            // An absent neighbor must stay missing, never be filled by extrapolating this patch.
+            var absent = new TerrainLodTileKey(1, 100, 100);
+            await WaitForTerrainLod(() => reopened.GetSpatialCoverage(absent, out _) == TerrainLodTileAvailability.Missing);
+        }
+        finally
+        {
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData(246813579L, "flat")]
+    [InlineData(123456789L, "default")]
+    public void TerrainLod_generated_cache_cannot_leak_into_another_generator_or_seed(long seed, string profile)
+    {
+        var root = Directory.CreateTempSubdirectory("omniblock-generated-lod-identity-");
+        try
+        {
+            var original = new SourceWorld(246813579L);
+            var materials = TerrainLodMaterialCatalog.FromRuntime(original.Content);
+            var source = new InactiveGenerationWorkspace(original)
+                .GenerateCompletedNeighborhood(0, 0).Get(0, 0).CaptureTerrain();
+            var leaf = TerrainLodColumnTile.BuildLeaf(source, materials);
+            var originalIdentity = TerrainLodCacheIdentity.FromWorld(original, materials, root.FullName);
+            var store = new TerrainLodColumnTileCacheStore(root, originalIdentity);
+            Assert.Equal(TerrainLodColumnTileCacheWriteStatus.Written, store.Write(leaf));
+
+            // Even reusing the physical cache directory cannot turn a flat world's cache into
+            // valid terrain for a regular world (or vice versa).
+            var other = new SourceWorld(seed, profile);
+            var otherIdentity = TerrainLodCacheIdentity.FromWorld(other, materials, root.FullName);
+            var rejected = new TerrainLodColumnTileCacheStore(root, otherIdentity).Read(leaf.Key);
+            Assert.Equal(TerrainLodColumnTileCacheReadStatus.Incompatible, rejected.Status);
+            Assert.Null(rejected.Tile);
+            // A rejected read must not destroy a still-valid record for the original world.
+            Assert.Equal(leaf.CanonicalHash, store.Read(leaf.Key).Tile!.CanonicalHash);
+        }
+        finally
+        {
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    private static async Task WaitForTerrainLod(Func<bool> predicate)
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(15);
+        while (!predicate())
+        {
+            if (DateTime.UtcNow >= deadline) throw new TimeoutException("Generated terrain LOD pipeline did not settle.");
+            await Task.Delay(5);
+        }
+    }
+
     public static TheoryData<string, string> GoldenInactiveNeighborhoods => new()
     {
         { "default", "3243eec63e6652fdb476fbad9f04049475e90c6afe688aedd696de1cd9fac709" },

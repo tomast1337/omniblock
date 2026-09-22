@@ -13,6 +13,9 @@ fi
 if [[ "$requested_scenario" == terrain-lod-scale-* && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
     timeout_seconds=600
 fi
+if [[ "$requested_scenario" == "terrain-lod-generated-patch" && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
+    timeout_seconds=360
+fi
 scenarios=(menu world-management multiplayer language-options create-world smoke debug-smoke fps-limit simulation-distance chunk-mesh-deadlines teleport-preload flying-chunk-streaming frustum-directional liquid-boundary-visibility world-generation-control world-generation-job-lifecycle terrain-lod-presentation terrain-lod-spatial-shadow terrain-lod-server-cache-transport)
 run_roots=()
 
