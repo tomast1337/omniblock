@@ -38,8 +38,10 @@ public sealed class TerrainLodTileStatusMessage : Message
         CacheIdentity = stream.ReadString(MaximumIdentityLength);
         Tile = new TerrainLodTileKey(stream.ReadVarInt(), stream.ReadInt(), stream.ReadInt());
         var status = checked((byte)stream.ReadByte());
+
         if (!Enum.IsDefined(typeof(TerrainLodTileStatus), status))
             throw new InvalidDataException($"Unknown terrain LOD tile status {status}.");
+
         Status = (TerrainLodTileStatus)status;
         Diagnostic = stream.ReadString(MaximumDiagnosticLength);
     }
@@ -48,9 +50,10 @@ public sealed class TerrainLodTileStatusMessage : Message
     {
         if (!Enum.IsDefined(Status))
             throw new InvalidOperationException($"Unknown terrain LOD tile status {(byte)Status}.");
+        
         if (ModifiedUtf8.GetByteCount(Diagnostic) > MaximumDiagnosticLength)
-            throw new InvalidOperationException(
-                $"Terrain LOD status diagnostic exceeds {MaximumDiagnosticLength} bytes.");
+            throw new InvalidOperationException($"Terrain LOD status diagnostic exceeds {MaximumDiagnosticLength} bytes.");
+
         stream.WriteInt(Dimension);
         stream.WriteString(CacheIdentity);
         stream.WriteVarInt(Tile.Level);
