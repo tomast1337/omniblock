@@ -86,7 +86,14 @@ internal static class BlockFactory
                 $"Terrain LOD geometry '{geometry}' cannot conservatively occlude neighboring faces.",
                 nameof(definition));
         }
-        return new BlockTerrainLodDescriptor(geometry, occludesFaces);
+        var maxSampleSize = definition.MaxSampleSize ??
+            (geometry == TerrainLodGeometryClass.CrossedQuad ? 1 : int.MaxValue);
+        if (maxSampleSize != int.MaxValue &&
+            (maxSampleSize is < 1 or > 64 || !System.Numerics.BitOperations.IsPow2((uint)maxSampleSize)))
+            throw new ArgumentException(
+                $"Terrain LOD MaxSampleSize '{maxSampleSize}' must be a power of two between 1 and 64.",
+                nameof(definition));
+        return new BlockTerrainLodDescriptor(geometry, occludesFaces, maxSampleSize);
     }
 
     internal static void AttachBehaviors(

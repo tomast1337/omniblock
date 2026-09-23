@@ -120,12 +120,14 @@ public static class TerrainLodColumnReducer
         TerrainLodColumn northWest,
         TerrainLodColumn northEast,
         TerrainLodColumn southWest,
-        TerrainLodColumn southEast)
+        TerrainLodColumn southEast,
+        int sampleSize = 2)
     {
         ArgumentNullException.ThrowIfNull(northWest);
         ArgumentNullException.ThrowIfNull(northEast);
         ArgumentNullException.ThrowIfNull(southWest);
         ArgumentNullException.ThrowIfNull(southEast);
+        if (sampleSize < 1) throw new ArgumentOutOfRangeException(nameof(sampleSize));
         TerrainLodColumn[] inputs = [northWest, northEast, southWest, southEast];
         var worldHeight = northWest.WorldHeight;
         if (inputs.Any(column => column.WorldHeight != worldHeight))
@@ -150,7 +152,7 @@ public static class TerrainLodColumnReducer
                 northWest.At(bottom), northEast.At(bottom),
                 southWest.At(bottom), southEast.At(bottom)
             ];
-            var material = SelectMaterial(samples);
+            var material = SelectMaterial(samples, sampleSize);
             var supporters = samples.Where(sample => sample.Material == material).ToArray();
             // Air is ignored while selecting a visible material, matching DH's conservative rule
             // that prevents tiny cave samples from punching holes through distant solid terrain.
@@ -167,19 +169,21 @@ public static class TerrainLodColumnReducer
         return TerrainLodColumn.Create(worldHeight, output);
     }
 
-    private static TerrainLodMaterial SelectMaterial(ReadOnlySpan<TerrainLodColumnSpan> samples)
+    private static TerrainLodMaterial SelectMaterial(ReadOnlySpan<TerrainLodColumnSpan> samples, int sampleSize)
     {
         Dictionary<TerrainLodMaterial, int> counts = [];
         var hasVisible = false;
         foreach (ref readonly var sample in samples)
         {
-            if (!sample.IsAir) hasVisible = true;
+            if (sample.Material.CanRepresentAt(sampleSize)) hasVisible = true;
         }
         foreach (ref readonly var sample in samples)
         {
+            if (!sample.IsAir && !sample.Material.CanRepresentAt(sampleSize)) continue;
             if (hasVisible && sample.IsAir) continue;
             counts[sample.Material] = counts.GetValueOrDefault(sample.Material) + 1;
         }
+        if (counts.Count == 0) return TerrainLodMaterial.Air;
         return counts
             .OrderByDescending(static pair => pair.Value)
             .ThenBy(static pair => pair.Key.BlockId)
@@ -356,7 +360,7 @@ public static class TerrainLodVerticalSliceReducer
 /// </summary>
 public sealed class TerrainLodColumnTile
 {
-    internal const int SchemaVersion = 1;
+    internal const int SchemaVersion = 2;
     private const int MaximumSamplesPerSide = 256;
     private readonly TerrainLodColumn[] _columns;
 
@@ -539,7 +543,8 @@ public sealed class TerrainLodColumnTile
                     Mosaic(x * 2, z * 2),
                     Mosaic(x * 2 + 1, z * 2),
                     Mosaic(x * 2, z * 2 + 1),
-                    Mosaic(x * 2 + 1, z * 2 + 1))
+                    Mosaic(x * 2 + 1, z * 2 + 1),
+                    1 << horizontalSampleLevel)
                 : Mosaic(x, z);
         }
 
@@ -658,6 +663,7 @@ public sealed class TerrainLodColumnTile
                     writer.Write((byte)span.Material.Geometry);
                     writer.Write(span.Material.OccludesFaces);
                     writer.Write(span.Material.MapColor);
+                    writer.Write(span.Material.MaxSampleSize);
                     writer.Write(span.BlockLight);
                     writer.Write(span.SkyLight);
                 }

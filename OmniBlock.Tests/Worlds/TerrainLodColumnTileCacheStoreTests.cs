@@ -8,6 +8,31 @@ namespace OmniBlock.Tests.Worlds;
 
 public sealed class TerrainLodColumnTileCacheStoreTests
 {
+    [Fact]
+    public void Detail_policy_round_trips_through_disk_and_portable_transport()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var key = new TerrainLodTileKey(1, 0, 0);
+            var flower = new TerrainLodMaterial("example:flower", 0,
+                TerrainLodGeometryClass.CrossedQuad, false, 0x00AA00, 1);
+            var tile = TerrainLodColumnTile.CreateUniform(key, 0, 4,
+                TerrainLodColumn.Create(4,
+                [new TerrainLodColumnSpan(0, 4, flower, 0, 15)]), "detail-policy");
+            var store = Store(root);
+
+            Assert.Equal(TerrainLodColumnTileCacheWriteStatus.Written, store.Write(tile));
+            Assert.Equal(1, store.Read(key).Tile![0, 0].Spans[0].Material.MaxSampleSize);
+            Assert.Equal(1, TerrainLodTileMessage.Of(0, tile).Decode()[0, 0]
+                .Spans[0].Material.MaxSampleSize);
+        }
+        finally
+        {
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
     private static readonly TerrainLodMaterialCatalog Materials = new(
     [
         new TerrainLodMaterialDefinition(1, "example:stone",
@@ -383,7 +408,7 @@ public sealed class TerrainLodColumnTileCacheStoreTests
     }
 
     [Fact]
-    public void Policy_v1_tile_is_a_nondestructive_miss_then_replaced_by_block_scale_v2()
+    public void Policy_v1_tile_is_a_nondestructive_miss_then_replaced_by_current_format()
     {
         var root = CreateTemporaryDirectory();
         try
@@ -396,13 +421,13 @@ public sealed class TerrainLodColumnTileCacheStoreTests
             store.Write(previous);
             var file = Assert.Single(root.EnumerateFiles("*.ocol", SearchOption.AllDirectories));
             var record = File.ReadAllBytes(file.FullName);
-            // Construct a checksummed format-v2 / policy-v1 fixture. Production writers only
+            // Construct a checksummed current-format / policy-v1 fixture. Production writers only
             // accept the current policy, so alter the identity field, not the decoder rules.
             using (var stream = new MemoryStream(record))
             using (var reader = new BinaryReader(stream))
             {
                 reader.ReadUInt64(); // signature
-                Assert.Equal(2, reader.ReadInt32()); // disk format, independent of quality policy
+                Assert.Equal(3, reader.ReadInt32()); // disk format, independent of quality policy
                 reader.ReadBytes(reader.ReadInt32()); // world
                 reader.ReadInt32(); // dimension
                 reader.ReadBytes(reader.ReadInt32()); // content

@@ -16,6 +16,46 @@ public sealed class TerrainLodColumnTileTests
     private static readonly TerrainLodMaterial Water = Materials.Resolve(2, 0);
 
     [Fact]
+    public void Detail_only_cactus_and_flowers_do_not_expand_to_two_block_columns()
+    {
+        var cactus = Stone with
+        {
+            BlockId = "example:cactus", Geometry = TerrainLodGeometryClass.BoundedCube,
+            OccludesFaces = false, MaxSampleSize = 1
+        };
+        var flower = cactus with
+        {
+            BlockId = "example:flower", Geometry = TerrainLodGeometryClass.CrossedQuad
+        };
+        var air = Column(4, new TerrainLodColumnSpan(
+            0, 4, TerrainLodMaterial.Air, 0, 15));
+        foreach (var detail in new[] { cactus, flower })
+        {
+            var single = Column(4, new TerrainLodColumnSpan(0, 4, detail, 0, 15));
+            var reduced = TerrainLodColumnReducer.MergeFour(single, air, air, air);
+            Assert.All(reduced.Spans, span => Assert.True(span.IsAir));
+            Assert.Equal(detail, single.Spans[0].Material);
+        }
+    }
+
+    [Fact]
+    public void Snow_surface_layer_remains_eligible_when_horizontal_samples_grow()
+    {
+        var snow = Stone with
+        {
+            BlockId = "example:snow", Geometry = TerrainLodGeometryClass.SurfaceLayer,
+            OccludesFaces = false
+        };
+        var single = Column(4, new TerrainLodColumnSpan(0, 4, snow, 0, 15));
+        var air = Column(4, new TerrainLodColumnSpan(
+            0, 4, TerrainLodMaterial.Air, 0, 15));
+
+        var reduced = TerrainLodColumnReducer.MergeFour(single, air, air, air);
+
+        Assert.Equal(snow, Assert.Single(reduced.Spans).Material);
+    }
+
+    [Fact]
     public void Leaf_columns_preserve_explicit_cave_air_intervals()
     {
         var source = Snapshot(3, (x, y, z) =>

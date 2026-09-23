@@ -69,12 +69,14 @@ public sealed record BlockTerrainLodDefinition
 {
     public string Geometry { get; init; } = nameof(TerrainLodGeometryClass.ConservativeCube);
     public bool? OccludesFaces { get; init; }
+    public int? MaxSampleSize { get; init; }
 }
 
 /// <summary>Validated immutable form stored on a finalized runtime block.</summary>
 public readonly record struct BlockTerrainLodDescriptor(
     TerrainLodGeometryClass Geometry,
-    bool OccludesFaces);
+    bool OccludesFaces,
+    int MaxSampleSize = int.MaxValue);
 
 public sealed record BlockItemDefinition
 {

@@ -49,7 +49,7 @@ public sealed record TerrainLodColumnTileCacheSnapshot(
 public sealed class TerrainLodColumnTileCacheStore
 {
     private const ulong Magic = 0x314C4F43494E4D4F; // OMNICOL1
-    private const int CurrentFormatVersion = 2;
+    private const int CurrentFormatVersion = 3;
     private const int ChecksumBytes = 32;
     private const int MaximumStringBytes = 4096;
     private const int MaximumSamplesPerSide = 256;
@@ -60,7 +60,7 @@ public sealed class TerrainLodColumnTileCacheStore
     private const int LinuxOpenReadOnly = 0;
     private const int LinuxOpenDirectory = 0x10000;
     private const uint PortableMagic = 0x314C5450; // PTL1
-    private const int PortableVersion = 1;
+    private const int PortableVersion = 2;
 
     private readonly object _gate = new();
     private readonly TerrainLodCacheIdentity _identity;
@@ -612,6 +612,7 @@ public sealed class TerrainLodColumnTileCacheStore
             .ThenBy(static material => material.Geometry)
             .ThenBy(static material => material.OccludesFaces)
             .ThenBy(static material => material.MapColor)
+            .ThenBy(static material => material.MaxSampleSize)
             .ToArray();
     }
 
@@ -730,6 +731,7 @@ public sealed class TerrainLodColumnTileCacheStore
         writer.Write((byte)material.Geometry);
         writer.Write(material.OccludesFaces);
         writer.Write(material.MapColor);
+        writer.Write(material.MaxSampleSize);
     }
 
     private static TerrainLodMaterial ReadMaterial(BinaryReader reader)
@@ -745,7 +747,8 @@ public sealed class TerrainLodColumnTileCacheStore
             metadata,
             (TerrainLodGeometryClass)geometryValue,
             reader.ReadBoolean(),
-            reader.ReadUInt32());
+            reader.ReadUInt32(),
+            reader.ReadInt32());
     }
 
     private static void WriteString(BinaryWriter writer, string value)

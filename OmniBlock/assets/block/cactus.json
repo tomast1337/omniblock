@@ -12,6 +12,7 @@
   "BottomVariance": "All",
   "SideVariance": "Rotate180",
   "RenderType": "Cactus",
+  "TerrainLod": { "Geometry": "BoundedCube", "MaxSampleSize": 1 },
   "NotFullCube": true,
   "BoundingBox": {
     "MinX": 0.0625,

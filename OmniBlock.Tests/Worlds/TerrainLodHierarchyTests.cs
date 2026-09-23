@@ -50,6 +50,39 @@ public sealed class TerrainLodHierarchyTests
     }
 
     [Fact]
+    public void Detail_only_material_remains_available_for_coarse_surface_tint()
+    {
+        var materials = new TerrainLodMaterialCatalog(
+        [
+            new TerrainLodMaterialDefinition(1, "example:flower",
+                TerrainLodGeometryClass.CrossedQuad, false, 0x00AA00, 1),
+            new TerrainLodMaterialDefinition(2, "example:snow",
+                TerrainLodGeometryClass.SurfaceLayer, false, 0xFFFFFF)
+        ]);
+        var flower = Snapshot(2, 2, 2, (_, _, _) => 1);
+        var snow = Snapshot(2, 2, 2, (_, _, _) => 2);
+
+        Assert.False(TerrainLodReducer.Build(flower, materials,
+            TerrainLodReductionStrategy.SurfacePreserving).Levels[0][0, 0, 0].IsEmpty);
+        Assert.False(TerrainLodReducer.Build(flower, materials,
+            TerrainLodReductionStrategy.SurfacePreserving).Levels[1][0, 0, 0].IsEmpty);
+        Assert.False(TerrainLodReducer.Build(snow, materials,
+            TerrainLodReductionStrategy.SurfacePreserving).Levels[1][0, 0, 0].IsEmpty);
+    }
+
+    [Fact]
+    public void Material_rules_fingerprint_includes_maximum_sample_size()
+    {
+        TerrainLodMaterialCatalog Catalog(int maxSampleSize) => new(
+        [
+            new TerrainLodMaterialDefinition(1, "example:flower",
+                TerrainLodGeometryClass.CrossedQuad, false, 0x00AA00, maxSampleSize)
+        ]);
+
+        Assert.NotEqual(Catalog(1).RulesFingerprint, Catalog(2).RulesFingerprint);
+    }
+
+    [Fact]
     public void Mixed_cell_keeps_octant_topology_and_external_silhouette()
     {
         var hierarchy = Build(2, 2, 2, (x, y, z) =>
@@ -209,10 +242,13 @@ public sealed class TerrainLodHierarchyTests
             Resolve("omniblock:moving_piston").Geometry);
         Assert.Equal(TerrainLodGeometryClass.CrossedQuad,
             Resolve("omniblock:grass").Geometry);
+        Assert.Equal(1, Resolve("omniblock:grass").MaxSampleSize);
         Assert.Equal(TerrainLodGeometryClass.CrossedQuad,
             Resolve("omniblock:wheat").Geometry);
         Assert.Equal(TerrainLodGeometryClass.SurfaceLayer,
             Resolve("omniblock:snow").Geometry);
+        Assert.True(Resolve("omniblock:snow").MaxSampleSize > 2);
+        Assert.Equal(1, Resolve("omniblock:cactus").MaxSampleSize);
         Assert.Equal(TerrainLodGeometryClass.BoundedCube,
             Resolve("omniblock:slab").Geometry);
 
@@ -248,7 +284,7 @@ public sealed class TerrainLodHierarchyTests
 
         Assert.True(block.IsFrozen);
         Assert.Equal(
-            new BlockTerrainLodDescriptor(TerrainLodGeometryClass.CrossedQuad, false),
+            new BlockTerrainLodDescriptor(TerrainLodGeometryClass.CrossedQuad, false, 1),
             block.TerrainLod);
         Assert.Equal(TerrainLodGeometryClass.CrossedQuad, material.Geometry);
         Assert.False(material.OccludesFaces);
@@ -303,6 +339,28 @@ public sealed class TerrainLodHierarchyTests
 
         Assert.Contains("Block 'example:bad_lod' failed construction", error.Message);
         Assert.Contains(expected, error.Message);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(3)]
+    [InlineData(128)]
+    public void Invalid_maximum_sample_size_names_the_owning_block(int maxSampleSize)
+    {
+        var builder = ContentRuntimeBuilder.CreateBuiltIns();
+        builder.AddBlockDefinition(new BlockDefinition
+        {
+            Name = "bad_lod_size",
+            Namespace = Namespace.Get("example"),
+            ProtocolId = 240,
+            Material = "stone",
+            TerrainLod = new BlockTerrainLodDefinition { MaxSampleSize = maxSampleSize }
+        });
+
+        var error = Assert.Throws<InvalidOperationException>(() => builder.Build());
+
+        Assert.Contains("example:bad_lod_size", error.Message);
+        Assert.Contains("MaxSampleSize", error.ToString());
     }
 
     private static TerrainLodHierarchy Build(

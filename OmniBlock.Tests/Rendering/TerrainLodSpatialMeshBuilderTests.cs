@@ -1,5 +1,7 @@
 using OmniBlock.Client.Rendering.Chunks.Lod;
+using OmniBlock.Client.Rendering.Chunks;
 using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Chunks.Occlusion;
 using OmniBlock.Tests.TestSupport;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Lod;
@@ -124,6 +126,66 @@ public sealed class TerrainLodSpatialMeshBuilderTests
             Assert.InRange(light.Block, (byte)0, (byte)60);
             Assert.InRange(light.Sky, (byte)0, (byte)60);
         });
+    }
+
+    [Fact]
+    public void Finest_spatial_samples_preserve_crossed_plants_as_two_sided_non_directional_quads()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var grass = checked((byte)world.Content.Blocks.Get("omniblock:grass").Id);
+        var tile = BuildTile(new TerrainLodTileKey(2, 0, 0));
+
+        var mesh = TerrainLodSpatialMeshBuilder.Build(
+            tile, world.Content.Blocks, verticalSliceBudget: 8,
+            emitTileBoundaryFaces: false);
+
+        Assert.Equal(4, mesh.SolidQuadCount);
+        Assert.Equal(0, mesh.TranslucentQuadCount);
+        var page = Assert.Single(mesh.Pages);
+        Assert.Equal(4, page.SolidRanges.UnassignedQuadCount);
+        Assert.Equal(16, page.Vertices.Length);
+        Assert.Equal(page.Vertices.Length, page.Lights.Length);
+        Assert.Equal(0, page.Vertices[0].U);
+        Assert.Equal(4095, page.Vertices[2].U);
+        Assert.True(page.SolidRanges.Down.IsEmpty && page.SolidRanges.Up.IsEmpty);
+        Span<ChunkQuadRange> selected = stackalloc ChunkQuadRange[7];
+        Assert.Equal(1, page.SolidRanges.Select(ChunkDirectionMask.None, selected));
+        Assert.Equal(4, selected[0].QuadCount);
+
+        TerrainLodColumnTile BuildTile(TerrainLodTileKey key)
+        {
+            if (key.Level == 0)
+                return Leaf(materials, key.X, key.Z, 32,
+                    (x, y, z) => key.X == 0 && key.Z == 0 &&
+                        x == 3 && z == 4 && y == 8 ? grass : (byte)0);
+            var children = Enumerable.Range(0, 4)
+                .Select(index => BuildTile(key.Child(index))).ToArray();
+            return TerrainLodColumnTile.BuildParent(
+                key, children, horizontalSampleLevel: 0);
+        }
+    }
+
+    [Fact]
+    public void Coarser_spatial_samples_do_not_expand_crossed_plants_into_cubes_or_quads()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var grass = world.Content.Blocks.Get("omniblock:grass");
+        var column = TerrainLodColumn.Create(32,
+        [
+            new TerrainLodColumnSpan(0, 8, TerrainLodMaterial.Air, 0, 15),
+            new TerrainLodColumnSpan(8, 1, materials.Resolve(grass.Id, 0), 0, 15),
+            new TerrainLodColumnSpan(9, 23, TerrainLodMaterial.Air, 0, 15)
+        ]);
+        var tile = TerrainLodColumnTile.CreateUniform(
+            new TerrainLodTileKey(3, 0, 0), 1, 32, column, "coarse-crossed-sample");
+
+        var mesh = TerrainLodSpatialMeshBuilder.Build(
+            tile, world.Content.Blocks, verticalSliceBudget: 8);
+
+        Assert.Empty(mesh.Pages);
+        Assert.Equal(0, mesh.SolidQuadCount);
     }
 
     [Fact]

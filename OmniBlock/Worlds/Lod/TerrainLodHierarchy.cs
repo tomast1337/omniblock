@@ -51,7 +51,8 @@ public readonly record struct TerrainLodMaterial(
     byte Metadata,
     TerrainLodGeometryClass Geometry,
     bool OccludesFaces,
-    uint MapColor)
+    uint MapColor,
+    int MaxSampleSize = int.MaxValue)
 {
     public static TerrainLodMaterial Air { get; } = new(
         new ResourceLocation(Namespace.OmniBlock, "air"),
@@ -61,6 +62,9 @@ public readonly record struct TerrainLodMaterial(
         0);
 
     public bool IsAir => Geometry == TerrainLodGeometryClass.Air;
+    // Spatial columns expand one selected material across a whole horizontal sample.
+    // Thin detail can still inform local-hierarchy surface tint without gaining that volume.
+    public bool CanRepresentAt(int sampleSize) => !IsAir && sampleSize <= MaxSampleSize;
 }
 
 public readonly record struct TerrainLodMaterialDefinition(
@@ -68,7 +72,8 @@ public readonly record struct TerrainLodMaterialDefinition(
     ResourceLocation BlockId,
     TerrainLodGeometryClass Geometry,
     bool OccludesFaces,
-    uint MapColor);
+    uint MapColor,
+    int MaxSampleSize = int.MaxValue);
 
 /// <summary>Resolves transport IDs into stable catalog identities before reduction.</summary>
 public sealed class TerrainLodMaterialCatalog
@@ -81,6 +86,11 @@ public sealed class TerrainLodMaterialCatalog
         var byProtocolId = new Dictionary<int, TerrainLodMaterialDefinition>();
         foreach (var definition in definitions)
         {
+            if (definition.MaxSampleSize != int.MaxValue &&
+                (definition.MaxSampleSize is < 1 or > 64 ||
+                 !System.Numerics.BitOperations.IsPow2((uint)definition.MaxSampleSize)))
+                throw new ArgumentOutOfRangeException(nameof(definitions), definition.MaxSampleSize,
+                    $"Terrain LOD material '{definition.BlockId}' has an invalid maximum sample size.");
             if (definition.ProtocolId is <= 0 or > byte.MaxValue)
                 throw new ArgumentOutOfRangeException(nameof(definitions), definition.ProtocolId,
                     "Terrain LOD block protocol IDs must be between 1 and 255; zero is air.");
@@ -113,7 +123,9 @@ public sealed class TerrainLodMaterialCatalog
                     explicitDescriptor?.OccludesFaces ??
                     (geometry is TerrainLodGeometryClass.Opaque or
                         TerrainLodGeometryClass.ConservativeCube),
-                    block.Material.MapColor.ColorValue);
+                    block.Material.MapColor.ColorValue,
+                    explicitDescriptor?.MaxSampleSize ??
+                    (geometry == TerrainLodGeometryClass.CrossedQuad ? 1 : int.MaxValue));
             }));
     }
 
@@ -130,7 +142,8 @@ public sealed class TerrainLodMaterialCatalog
             (byte)metadata,
             definition.Geometry,
             definition.OccludesFaces,
-            definition.MapColor);
+            definition.MapColor,
+            definition.MaxSampleSize);
     }
 
     private static TerrainLodGeometryClass Classify(Block block)
@@ -176,6 +189,7 @@ public sealed class TerrainLodMaterialCatalog
                 writer.Write((byte)definition.Geometry);
                 writer.Write(definition.OccludesFaces);
                 writer.Write(definition.MapColor);
+                writer.Write(definition.MaxSampleSize);
             }
         }
         return Convert.ToHexStringLower(
@@ -482,7 +496,7 @@ public sealed class TerrainLodHierarchy
         CanonicalHash = ComputeCanonicalHash();
     }
 
-    public const int ReductionSchemaVersion = 2;
+    public const int ReductionSchemaVersion = 3;
     public int ChunkX { get; }
     public int ChunkZ { get; }
     public long TerrainRevision { get; }
@@ -524,11 +538,13 @@ public sealed class TerrainLodHierarchy
 
     private static void WriteMaterial(BinaryWriter writer, TerrainLodMaterial material)
     {
+        if (material.BlockId is null) material = TerrainLodMaterial.Air;
         writer.Write(material.BlockId?.ToString() ?? TerrainLodMaterial.Air.BlockId.ToString());
         writer.Write(material.Metadata);
         writer.Write((byte)material.Geometry);
         writer.Write(material.OccludesFaces);
         writer.Write(material.MapColor);
+        writer.Write(material.MaxSampleSize);
     }
 }
 

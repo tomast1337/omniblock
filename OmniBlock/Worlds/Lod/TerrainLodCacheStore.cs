@@ -225,7 +225,7 @@ internal enum TerrainLodCacheWriteStage
 public sealed class TerrainLodCacheStore
 {
     private const ulong Magic = 0x31444F4C494E4D4F; // OMNILOD1
-    private const int CurrentFormatVersion = 3;
+    private const int CurrentFormatVersion = 4;
     private const int ChecksumBytes = 32;
     private const int MaxStringBytes = 4096;
     private const int MaxLevels = 16;
@@ -769,6 +769,7 @@ public sealed class TerrainLodCacheStore
         writer.Write((byte)material.Geometry);
         writer.Write(material.OccludesFaces);
         writer.Write(material.MapColor);
+        writer.Write(material.MaxSampleSize);
     }
 
     private static TerrainLodMaterial ReadMaterial(BinaryReader reader)
@@ -783,7 +784,8 @@ public sealed class TerrainLodCacheStore
             metadata,
             (TerrainLodGeometryClass)geometryValue,
             reader.ReadBoolean(),
-            reader.ReadUInt32());
+            reader.ReadUInt32(),
+            reader.ReadInt32());
     }
 
     private static IReadOnlyList<TerrainLodMaterial> BuildPalette(TerrainLodHierarchy hierarchy)
@@ -808,6 +810,7 @@ public sealed class TerrainLodCacheStore
             .ThenBy(static material => material.Geometry)
             .ThenBy(static material => material.OccludesFaces)
             .ThenBy(static material => material.MapColor)
+            .ThenBy(static material => material.MaxSampleSize)
             .ToArray();
     }
 

@@ -173,6 +173,16 @@ internal static class TerrainLodSpatialMeshBuilder
             var column = Column(x, z);
             foreach (var span in column.Spans)
             {
+                // The first spatial tier has genuine 1x1 samples. Plants have no cube volume:
+                // preserve their crossed silhouette here, but leave wider tiers as surface
+                // samples so distant vegetation cannot multiply the horizon's draw cost.
+                if (span.Material.Geometry == TerrainLodGeometryClass.CrossedQuad)
+                {
+                    if (sampleSize == 1 &&
+                        blocks.TryGet(span.Material.BlockId, out var plant) && plant is not null)
+                        EmitCrossedPlant(plant, span);
+                    continue;
+                }
                 if (!TryLayer(span.Material, out var translucent)) continue;
                 if (!blocks.TryGet(span.Material.BlockId, out var block) || block is null) continue;
 
@@ -198,6 +208,42 @@ internal static class TerrainLodSpatialMeshBuilder
                 EmitSide(Side.East, x + 1, z, maxX, minZ, maxZ, 0.6f);
                 EmitSide(Side.North, x, z - 1, minZ, minX, maxX, 0.8f);
                 EmitSide(Side.South, x, z + 1, maxZ, minX, maxX, 0.8f);
+
+                void EmitCrossedPlant(Block plant, TerrainLodColumnSpan plantSpan)
+                {
+                    var worldX = checked((int)tileMinX + x);
+                    var worldZ = checked((int)tileMinZ + z);
+                    var appearance = Appearance(plant, plantSpan.Material, Side.Down);
+                    const float inset = 0.05f;
+                    var left = worldX + inset;
+                    var right = worldX + 1 - inset;
+                    var north = worldZ + inset;
+                    var south = worldZ + 1 - inset;
+                    for (var plantY = plantSpan.BottomY; plantY < plantSpan.TopY; plantY++)
+                    {
+                        guard.Checkpoint();
+                        var page = PageFor(worldX + 0.5, plantY + 0.5, worldZ + 0.5);
+                        var light = FaceLight(plantSpan, NeighborAt(column, plantY + 1), Side.Up);
+                        EmitPlane(
+                            (left, plantY + 1, north), (left, plantY, north),
+                            (right, plantY, south), (right, plantY + 1, south));
+                        EmitPlane(
+                            (left, plantY + 1, south), (left, plantY, south),
+                            (right, plantY, north), (right, plantY + 1, north));
+
+                        void EmitPlane(
+                            (float X, float Y, float Z) a,
+                            (float X, float Y, float Z) b,
+                            (float X, float Y, float Z) c,
+                            (float X, float Y, float Z) d)
+                        {
+                            Emit(page, false, Side.Up, appearance, 1, light, 1, 1,
+                                a, b, c, d, guard, nonDirectional: true);
+                            Emit(page, false, Side.Up, appearance, 1, light, 1, 1,
+                                d, c, b, a, guard, nonDirectional: true);
+                        }
+                    }
+                }
 
                 void EmitHorizontal(
                     Side side,
@@ -487,7 +533,8 @@ internal static class TerrainLodSpatialMeshBuilder
         (float X, float Y, float Z) b,
         (float X, float Y, float Z) c,
         (float X, float Y, float Z) d,
-        TerrainLodSpatialMeshBuildGuard? guard = null)
+        TerrainLodSpatialMeshBuildGuard? guard = null,
+        bool nonDirectional = false)
     {
         EmitTexture(appearance.Texture, appearance.Tint);
         if (appearance.OverlayTexture >= 0)
@@ -501,11 +548,15 @@ internal static class TerrainLodSpatialMeshBuilder
             var color = TerrainLodMeshBuilder.PackTintedColor(tint, shade);
             var uvScaleExponent = UvScaleExponent(Math.Max(tileU, tileV));
             var uvScale = 1 << uvScaleExponent;
-            page.Add(translucent, side, light,
-                Vertex(a, tileU, 0),
-                Vertex(b, tileU, tileV),
-                Vertex(c, 0, tileV),
-                Vertex(d, 0, 0));
+            if (nonDirectional)
+                // Crossed plants use the same UV orientation as local level-zero plants.
+                page.AddUnassigned(translucent, light,
+                    Vertex(a, 0, 0), Vertex(b, 0, tileV),
+                    Vertex(c, tileU, tileV), Vertex(d, tileU, 0));
+            else
+                page.Add(translucent, side, light,
+                    Vertex(a, tileU, 0), Vertex(b, tileU, tileV),
+                    Vertex(c, 0, tileV), Vertex(d, 0, 0));
 
             ChunkVertex Vertex((float X, float Y, float Z) value, float u, float v) =>
                 ChunkVertexHelper.Create(
@@ -658,6 +709,15 @@ internal static class TerrainLodSpatialMeshBuilder
             (translucent ? _translucent : _solid)[bucket].Add(new Quad(a, b, c, d, light));
         }
 
+        public void AddUnassigned(
+            bool translucent,
+            ChunkLightVertex light,
+            ChunkVertex a,
+            ChunkVertex b,
+            ChunkVertex c,
+            ChunkVertex d) =>
+            (translucent ? _translucent : _solid)[6].Add(new Quad(a, b, c, d, light));
+
         public TerrainLodSpatialMeshPage Build(
             TerrainLodSpatialMeshPageKey key,
             TerrainLodSpatialMeshBuildGuard? guard = null)
@@ -673,7 +733,7 @@ internal static class TerrainLodSpatialMeshBuilder
         }
 
         private static List<Quad>[] CreateBuckets() =>
-            Enumerable.Range(0, 6).Select(static _ => new List<Quad>()).ToArray();
+            Enumerable.Range(0, 7).Select(static _ => new List<Quad>()).ToArray();
 
         private static LayerData Flatten(
             List<Quad>[] buckets,
@@ -708,7 +768,6 @@ internal static class TerrainLodSpatialMeshBuilder
                 lights.AddRange(merged.Lights);
                 ranges[bucket] = new ChunkQuadRange(firstQuad, merged.Vertices.Length / 4);
             }
-            ranges[6] = new ChunkQuadRange(vertices.Count / 4, 0);
             return new LayerData(
                 [.. vertices], [.. lights],
                 new ChunkDirectionalRanges(
