@@ -10,7 +10,9 @@ namespace OmniBlock.Loot.Conditions;
 /// </summary>
 public sealed class KilledByCondition(string killerId) : ILootCondition
 {
-    public bool Test(in LootContext context) =>
-        context.Killer is { } killer &&
-        killer.World.Content.EntityTypes.GetKey(killer)?.Path.Equals(killerId, StringComparison.OrdinalIgnoreCase) == true;
+    public bool Test(in LootContext context)
+    {
+        return context.Killer is { } killer &&
+               killer.World.Content.EntityTypes.GetKey(killer)?.Path.Equals(killerId, StringComparison.OrdinalIgnoreCase) == true;
+    }
 }

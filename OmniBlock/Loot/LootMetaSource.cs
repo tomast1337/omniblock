@@ -17,11 +17,14 @@ public enum LootMetaSource
 
 internal static class LootMetaSourceExtensions
 {
-    public static int Resolve(this LootMetaSource source, in LootContext context, int literal) => source switch
+    public static int Resolve(this LootMetaSource source, in LootContext context, int literal)
     {
-        LootMetaSource.FleeceColor => context.Self?.Behaviors.Find<WoolBehavior>() is { } wool
-            ? wool.ColorOf(context.Self)
-            : literal,
-        _ => literal
-    };
+        switch (source)
+        {
+            case LootMetaSource.FleeceColor:
+                return context.Self?.Behaviors.Find<WoolBehavior>() is { } wool ? wool.ColorOf(context.Self) : literal;
+            default:
+                return literal;
+        }
+    }
 }

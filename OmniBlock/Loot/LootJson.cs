@@ -21,12 +21,7 @@ internal static class LootJson
 
     public static LootTable ParseTable(JsonElement json, IItemRuntimeView items)
     {
-        if (!json.TryGetProperty("Pools", out var pools))
-        {
-            throw new ArgumentException("Loot behavior is missing its 'Pools' array.");
-        }
-
-        return new LootTable(pools.EnumerateArray().Select(pool => ParsePool(pool, items)).ToArray());
+        return !json.TryGetProperty("Pools", out var pools) ? throw new ArgumentException("Loot behavior is missing its 'Pools' array.") : new LootTable(pools.EnumerateArray().Select(pool => ParsePool(pool, items)).ToArray());
     }
 
     private static LootPool ParsePool(JsonElement json, IItemRuntimeView items)
