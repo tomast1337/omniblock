@@ -1,7 +1,9 @@
 using System.Text.Json;
+using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Chunks.Lod;
 using OmniBlock.Network.Messages;
 using OmniBlock.Server.Worlds;
+using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Lod;
 using Xunit.Abstractions;
 
@@ -26,6 +28,8 @@ public sealed partial class InactiveGenerationWorkspaceTests
         var batch = new InactiveGenerationWorkspace(world)
             .GenerateCompletedNeighborhood(checked((int)key.MinChunkX + 1), checked((int)key.MinChunkZ + 1));
         var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        if (tileX == 0)
+            AssertLocalStoneFaceCoverage(batch.Get(1, 1).CaptureTerrain(), materials, world);
         var policy = TerrainLodSpatialPolicy.CreateDefault();
         var children = Enumerable.Range(0, 4).Select(i =>
         {
@@ -43,6 +47,9 @@ public sealed partial class InactiveGenerationWorkspaceTests
         var hash = exact.CanonicalHash;
 
         var current = Measure("shipped", shipped, policy.VerticalSliceBudgetForSpatialLevel(key.Level), 60);
+        var withoutCaveCull = Measure("16-span-without-cave-cull", shipped,
+            policy.VerticalSliceBudgetForSpatialLevel(key.Level), null);
+        var withoutSpanReduction = Measure("32-span-with-cave-cull", shipped, 32, 60);
         // Keep an explicit policy-v1 counterfactual so the historical loss remains measurable
         // after the shipped policy adopts 1x1. This never enters the live cache/runtime.
         var legacy = Measure("legacy-v1-2x2", TerrainLodColumnTile.BuildParent(key, children, 1),
@@ -57,6 +64,11 @@ public sealed partial class InactiveGenerationWorkspaceTests
         Assert.Equal(64, shipped.Width);
         Assert.Equal(0, current.CanonicalMaterialMismatches);
         Assert.Equal(0, current.PresentedClosedSkylitCaveAir);
+        Assert.True(withoutCaveCull.PresentedClosedCaveAir <= current.PresentedClosedCaveAir);
+        Assert.True(withoutSpanReduction.PresentedClosedCaveAir <= current.PresentedClosedCaveAir);
+        Assert.True(current.PresentedClosedCaveAir - withoutCaveCull.PresentedClosedCaveAir >
+                    current.PresentedClosedCaveAir - withoutSpanReduction.PresentedClosedCaveAir,
+            "Cave sealing should be the dominant loss in this generated near-detail fixture.");
         Assert.True(legacy.CanonicalMaterialMismatches > 0, "Fixture did not exercise horizontal reduction");
         Assert.Equal(0, reference.PresentedMaterialMismatches);
         Assert.Equal(0, reference.PresentedClosedCaveAir);
@@ -132,4 +144,75 @@ public sealed partial class InactiveGenerationWorkspaceTests
         long CanonicalClosedCaveAir, long PresentedClosedCaveAir,
         long CanonicalClosedSkylitCaveAir, long PresentedClosedSkylitCaveAir,
         (long X, int Y, long Z)? FirstSkylitAirUnderRoof);
+
+    private static void AssertLocalStoneFaceCoverage(
+        TerrainLodSourceSnapshot source,
+        TerrainLodMaterialCatalog materials,
+        SourceWorld world)
+    {
+        var hierarchy = TerrainLodReducer.Build(source, materials,
+            TerrainLodReductionStrategy.SurfacePreserving);
+        var leaf = hierarchy.Levels[0];
+        var mesh = TerrainLodMeshBuilder.Build(hierarchy, 0, world.Content.Blocks, true);
+        var stone = materials.Resolve(world.Content.Blocks.Get("omniblock:stone").Id, 0).BlockId;
+        TerrainLodFaceMask[] faces =
+        [
+            TerrainLodFaceMask.Down, TerrainLodFaceMask.Up,
+            TerrainLodFaceMask.North, TerrainLodFaceMask.South,
+            TerrainLodFaceMask.West, TerrainLodFaceMask.East
+        ];
+        HashSet<(int X, int Y, int Z, TerrainLodFaceMask Face)> emitted = [];
+        for (var index = 0; index < mesh.Vertices.Length; index += 4)
+        {
+            var a = Position(mesh.Vertices[index]);
+            var b = Position(mesh.Vertices[index + 1]);
+            var c = Position(mesh.Vertices[index + 2]);
+            var d = Position(mesh.Vertices[index + 3]);
+            var normalX = (b.Y - a.Y) * (c.Z - a.Z) - (b.Z - a.Z) * (c.Y - a.Y);
+            var normalY = (b.Z - a.Z) * (c.X - a.X) - (b.X - a.X) * (c.Z - a.Z);
+            var normalZ = (b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X);
+            if (a.X == b.X && a.X == c.X && a.X == d.X)
+            {
+                var face = normalX > 0 ? TerrainLodFaceMask.East : TerrainLodFaceMask.West;
+                emitted.Add((a.X - (normalX > 0 ? 1 : 0),
+                    Math.Min(Math.Min(a.Y, b.Y), Math.Min(c.Y, d.Y)),
+                    Math.Min(Math.Min(a.Z, b.Z), Math.Min(c.Z, d.Z)), face));
+            }
+            else if (a.Y == b.Y && a.Y == c.Y && a.Y == d.Y)
+            {
+                var face = normalY > 0 ? TerrainLodFaceMask.Up : TerrainLodFaceMask.Down;
+                emitted.Add((Math.Min(Math.Min(a.X, b.X), Math.Min(c.X, d.X)),
+                    a.Y - (normalY > 0 ? 1 : 0),
+                    Math.Min(Math.Min(a.Z, b.Z), Math.Min(c.Z, d.Z)), face));
+            }
+            else if (a.Z == b.Z && a.Z == c.Z && a.Z == d.Z)
+            {
+                var face = normalZ > 0 ? TerrainLodFaceMask.South : TerrainLodFaceMask.North;
+                emitted.Add((Math.Min(Math.Min(a.X, b.X), Math.Min(c.X, d.X)),
+                    Math.Min(Math.Min(a.Y, b.Y), Math.Min(c.Y, d.Y)),
+                    a.Z - (normalZ > 0 ? 1 : 0), face));
+            }
+        }
+
+        var checkedFaces = 0;
+        for (var x = 1; x < 15; x++)
+        for (var z = 1; z < 15; z++)
+        for (var y = 60; y < source.Height - 1; y++)
+        {
+            var cell = leaf[x, y, z];
+            if (cell.IsEmpty || cell.Primary.BlockId != stone) continue;
+            foreach (var face in faces)
+            {
+                if ((cell.ExposedFaces & face) == 0) continue;
+                Assert.Contains((x, y, z, face), emitted);
+                checkedFaces++;
+            }
+        }
+        Assert.True(checkedFaces > 100, "Generated cave fixture did not test enough stone faces.");
+
+        static (int X, int Y, int Z) Position(ChunkVertex vertex) =>
+            ((int)MathF.Round(vertex.X * 64f / 32767f),
+                (int)MathF.Round(vertex.Y * 64f / 32767f + ChuckFormat.WorldHeight / 2f),
+                (int)MathF.Round(vertex.Z * 64f / 32767f));
+    }
 }
