@@ -14,9 +14,7 @@ internal sealed class ThrowableBehavior : IItemBehavior
         itemStack.ConsumeItem(player);
         world.Broadcaster.PlaySoundAtEntity(player, "random.bow", 0.5F, 0.4F / (Item.s_itemRand.NextFloat() * 0.4F + 0.8F));
         if (!world.IsRemote)
-        {
             world.SpawnEntity(_createProjectile(world, player));
-        }
 
         return itemStack;
     }

@@ -26,7 +26,7 @@ public interface IItemBehavior
     bool IsHandheld(Item item) => false;
     bool IsHandheldRod(Item item) => false;
     int GetTextureId(Item item, int meta) => item._textureId;
-    string GetItemNameIS(Item item, ItemStack itemStack) => item.GetItemName();
+    string GetItemNameIs(Item item, ItemStack itemStack) => item.GetItemName();
     IReadOnlyList<string> GetItemAliases(Item item) => [];
 
     void InventoryTick(Item item, ItemStack itemStack, IWorldContext world, Entity entity, int slotIndex, bool shouldUpdate)

@@ -17,14 +17,6 @@ public class ItemStack
     public int Count;
     public int ItemId;
 
-    public ItemStack(IItemRuntimeView items, Block block) : this(items, block, 1)
-    {
-    }
-
-    public ItemStack(IItemRuntimeView items, Block block, int count) : this(items.GetByProtocolId(block.Id), count, 0)
-    {
-    }
-
     public ItemStack(Item item) : this(item, 1, 0)
     {
     }
@@ -59,8 +51,10 @@ public class ItemStack
     public ItemStack Split(int splitAmount)
     {
         Count -= splitAmount;
-        var split = new ItemStack(_item, splitAmount, _damage);
-        split._components = CloneComponents();
+        var split = new ItemStack(_item, splitAmount, _damage)
+        {
+            _components = CloneComponents()
+        };
         return split;
     }
 
@@ -124,10 +118,7 @@ public class ItemStack
 
     public void ConsumeItem(EntityPlayer player)
     {
-        if (!player.GameMode.FiniteResources)
-        {
-            return;
-        }
+        if (!player.GameMode.FiniteResources) return;
 
         Count--;
     }
@@ -294,7 +285,7 @@ public class ItemStack
 
     public string GetDisplayName() => _item.GetDisplayName(this);
 
-    public static ItemStack Clone(ItemStack itemStack) => itemStack == null ? null : itemStack.Copy();
+    public static ItemStack? Clone(ItemStack? itemStack) => itemStack?.Copy();
 
     public override string ToString() => $"{Count}x{_item.GetItemName()}@{_damage}";
 

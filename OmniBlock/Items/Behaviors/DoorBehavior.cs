@@ -14,40 +14,31 @@ internal sealed class DoorBehavior : IItemBehavior
 
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int side)
     {
-        if (side != 1)
-        {
-            return false;
-        }
+        if (side != 1) return false;
 
         y++;
 
         var blockId = _doorMaterial == MaterialRegistry.Get("wood") ? world.Content.Blocks.Get("omniblock:door").Id : world.Content.Blocks.Get("omniblock:iron_door").Id;
         if (!world.Content.Blocks.GetByProtocolId(blockId).CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
-        {
             return false;
-        }
 
         var facing = MathHelper.Floor((player.Yaw + 180.0f) * 4.0f / 360.0f - 0.5f) & 3;
         var offsetX = 0;
         var offsetZ = 0;
-        if (facing == 0)
+        switch (facing)
         {
-            offsetZ = 1;
-        }
-
-        if (facing == 1)
-        {
-            offsetX = -1;
-        }
-
-        if (facing == 2)
-        {
-            offsetZ = -1;
-        }
-
-        if (facing == 3)
-        {
-            offsetX = 1;
+            case 0:
+                offsetZ = 1;
+                break;
+            case 1:
+                offsetX = -1;
+                break;
+            case 2:
+                offsetZ = -1;
+                break;
+            case 3:
+                offsetX = 1;
+                break;
         }
 
         var leftSolid = (world.Reader.ShouldSuffocate(x - offsetX, y, z - offsetZ) ? 1 : 0) +
@@ -74,6 +65,5 @@ internal sealed class DoorBehavior : IItemBehavior
         return true;
     }
 
-    public IReadOnlyList<string> GetItemAliases(Item item)
-        => _doorMaterial == MaterialRegistry.Get("wood") ? ["door", "woodDoor"] : [];
+    public IReadOnlyList<string> GetItemAliases(Item item) => _doorMaterial == MaterialRegistry.Get("wood") ? ["door", "woodDoor"] : [];
 }

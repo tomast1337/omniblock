@@ -25,8 +25,7 @@ internal sealed class ItemDefinitionJsonLoader(string path, LoadLocations locati
 
     public ResourceLocation RegistryKey => new(Namespace.OmniBlock, path);
 
-    public Holder<ItemDefinition>? Get(ResourceLocation key) =>
-        _byLocation.TryGetValue(key, out var value) ? new Holder<ItemDefinition>(value) : null;
+    public Holder<ItemDefinition>? Get(ResourceLocation key) => _byLocation.TryGetValue(key, out var value) ? new Holder<ItemDefinition>(value) : null;
 
     public ItemDefinition? Get(int id) => _byId.TryGetValue(id, out var value) ? value : null;
 
@@ -160,6 +159,4 @@ internal sealed class ItemDefinitionJsonLoader(string path, LoadLocations locati
         clone.LoadPacksFrom(worldDatapackPath, LoadLocations.WorldDatapack);
         return clone;
     }
-
-    public bool ContainsId(int id) => _byId.ContainsKey(id);
 }

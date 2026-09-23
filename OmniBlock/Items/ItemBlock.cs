@@ -52,21 +52,12 @@ internal class ItemBlock : Item
             }
         }
 
-        if (itemStack.Count == 0)
-        {
-            return false;
-        }
+        if (itemStack.Count == 0) return false;
 
         var existingBlockId = world.Reader.GetBlockId(x, y, z);
-        if (existingBlockId != 0 && !world.Content.Blocks.GetByProtocolId(existingBlockId).Material.IsReplaceable)
-        {
-            return false;
-        }
+        if (existingBlockId != 0 && !world.Content.Blocks.GetByProtocolId(existingBlockId).Material.IsReplaceable) return false;
 
-        if (y >= ChuckFormat.WorldHeight)
-        {
-            return false;
-        }
+        if (y >= ChuckFormat.WorldHeight) return false;
 
         var block = world.Content.Blocks.GetByProtocolId(BlockId);
         var collisionBox = block.GetCollisionShape(world.Reader, world.Entities, x, y, z);
@@ -74,22 +65,13 @@ internal class ItemBlock : Item
         {
             var entitiesInBox = world.Entities.CollectEntitiesOfType<Entity>(box);
             var hasBlockingEntity = entitiesInBox.Any(entity => entity.PreventEntitySpawning);
-            if (hasBlockingEntity)
-            {
-                return false;
-            }
+            if (hasBlockingEntity) return false;
         }
 
-        if (!block.CanPlaceAt(new CanPlaceAtContext(world, meta.ToSide(), x, y, z)))
-        {
-            return false;
-        }
+        if (!block.CanPlaceAt(new CanPlaceAtContext(world, meta.ToSide(), x, y, z))) return false;
 
         var placementMeta = GetPlacementMetadata(itemStack.GetDamage());
-        if (!world.Writer.SetBlockWithoutCallingOnPlaced(x, y, z, BlockId, placementMeta))
-        {
-            return true;
-        }
+        if (!world.Writer.SetBlockWithoutCallingOnPlaced(x, y, z, BlockId, placementMeta)) return true;
 
         if (block.HasBlockEntity
             && world.Entities.GetBlockEntity<BlockEntity>(x, y, z) is IBlockEntityItemData itemData)

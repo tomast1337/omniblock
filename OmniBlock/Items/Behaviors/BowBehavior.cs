@@ -12,14 +12,10 @@ internal sealed class BowBehavior : IItemBehavior
 
     public ItemStack Use(Item item, ItemStack itemStack, IWorldContext world, EntityPlayer player)
     {
-        if (player.Inventory.ConsumeInventoryItem(_arrow.Id))
-        {
-            world.Broadcaster.PlaySoundAtEntity(player, "random.bow", 1.0F, 1.0F / (Item.s_itemRand.NextFloat() * 0.4F + 0.8F));
-            if (!world.IsRemote)
-            {
-                world.SpawnEntity(ArrowBehavior.Shoot(world, player));
-            }
-        }
+        if (!player.Inventory.ConsumeInventoryItem(_arrow.Id)) return itemStack;
+        world.Broadcaster.PlaySoundAtEntity(player, "random.bow", 1.0F, 1.0F / (Item.s_itemRand.NextFloat() * 0.4F + 0.8F));
+
+        if (!world.IsRemote) world.SpawnEntity(ArrowBehavior.Shoot(world, player));
 
         return itemStack;
     }

@@ -8,37 +8,20 @@ internal sealed class PaintingBehavior : IItemBehavior
 {
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
-        if (meta is 0 or 1)
-        {
-            return false;
-        }
+        if (meta is 0 or 1) return false;
 
-        byte direction = 0;
-        if (meta == 4)
+        byte direction = meta switch
         {
-            direction = 1;
-        }
-
-        if (meta == 3)
-        {
-            direction = 2;
-        }
-
-        if (meta == 5)
-        {
-            direction = 3;
-        }
+            4 => 1,
+            3 => 2,
+            5 => 3,
+            _ => 0
+        };
 
         var painting = HangingArtBehavior.HangAt(world, x, y, z, direction);
-        if (!painting.Behaviors.Find<HangingArtBehavior>()!.CanHang(painting))
-        {
-            return true;
-        }
+        if (!painting.Behaviors.Find<HangingArtBehavior>()!.CanHang(painting)) return true;
 
-        if (!world.IsRemote)
-        {
-            world.SpawnEntity(painting);
-        }
+        if (!world.IsRemote) world.SpawnEntity(painting);
 
         itemStack.ConsumeItem(player);
         return true;

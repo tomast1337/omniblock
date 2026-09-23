@@ -16,8 +16,7 @@ internal static class BlockItemFactory
             "grass" => new ItemGrass(block),
             "leaves" => new ItemLeaves(block),
             "piston" => new ItemPiston(block),
-            string type => throw new ArgumentException(
-                $"Unknown block-item type '{type}' for block '{definition.Namespace}:{definition.Name}'.")
+            string type => throw new ArgumentException($"Unknown block-item type '{type}' for block '{definition.Namespace}:{definition.Name}'.")
         };
 
         return item.SetItemName(definition.BlockItem.TranslationKey

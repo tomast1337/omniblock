@@ -18,25 +18,14 @@ internal sealed class ShearsBehavior : IItemBehavior
 
     public float GetMiningSpeedMultiplier(Item item, ItemStack itemStack, Block block)
     {
-        if (block == _cobweb || block == _leaves)
-        {
-            return 15.0F;
-        }
-
-        if (block == _wool)
-        {
-            return 5.0F;
-        }
-
-        return 1.0F;
+        if (block == _cobweb || block == _leaves) return 15.0F;
+        return block == _wool ? 5.0F : 1.0F;
     }
 
     public bool PostMine(Item item, ItemStack itemStack, int blockId, int x, int y, int z, EntityLiving player)
     {
         if (blockId == _leaves.Id || blockId == _cobweb.Id)
-        {
             itemStack.DamageItem(1, player);
-        }
 
         return false;
     }

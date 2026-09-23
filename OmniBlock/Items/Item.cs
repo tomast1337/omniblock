@@ -241,7 +241,7 @@ public class Item
     {
         for (var i = 0; i < BehaviorCount; i++)
         {
-            var name = _behaviors[i]!.GetItemNameIS(this, itemStack);
+            var name = _behaviors[i]!.GetItemNameIs(this, itemStack);
             if (name != _translationKey) return name;
         }
 

@@ -8,33 +8,26 @@ internal sealed class BedBehavior : IItemBehavior
 {
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
-        if (meta != 1)
-        {
-            return false;
-        }
+        if (meta != 1) return false;
 
         ++y;
         var dir = MathHelper.Floor(player.Yaw * 4.0F / 360.0F + 0.5D) & 3;
         var offsetX = 0;
         var offsetZ = 0;
-        if (dir == 0)
+        switch (dir)
         {
-            offsetZ = 1;
-        }
-
-        if (dir == 1)
-        {
-            offsetX = -1;
-        }
-
-        if (dir == 2)
-        {
-            offsetZ = -1;
-        }
-
-        if (dir == 3)
-        {
-            offsetX = 1;
+            case 0:
+                offsetZ = 1;
+                break;
+            case 1:
+                offsetX = -1;
+                break;
+            case 2:
+                offsetZ = -1;
+                break;
+            case 3:
+                offsetX = 1;
+                break;
         }
 
         var footReplaceable = IsReplaceable(world, x, y, z);
@@ -42,10 +35,7 @@ internal sealed class BedBehavior : IItemBehavior
         var footSupported = world.Reader.ShouldSuffocate(x, y - 1, z);
         var headSupported = world.Reader.ShouldSuffocate(x + offsetX, y - 1, z + offsetZ);
 
-        if (!footReplaceable || !headReplaceable || !footSupported || !headSupported)
-        {
-            return false;
-        }
+        if (!footReplaceable || !headReplaceable || !footSupported || !headSupported) return false;
 
         var bedId = world.Content.Blocks.Get("omniblock:bed").Id;
         world.Writer.SetBlock(x, y, z, bedId, dir);

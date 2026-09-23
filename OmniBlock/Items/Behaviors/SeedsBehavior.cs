@@ -10,23 +10,18 @@ internal sealed class SeedsBehavior : IItemBehavior
     private readonly Func<int> _blockIdFactory;
 
     internal SeedsBehavior(Func<int> blockId) => _blockIdFactory = blockId;
-    private int _blockId => _blockIdFactory();
+    private int BlockId => _blockIdFactory();
 
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
-        if (meta != 1)
-        {
-            return false;
-        }
+        if (meta != 1) return false;
 
         var blockId = world.Reader.GetBlockId(x, y, z);
-        if (blockId == world.Content.Blocks.Get("omniblock:farmland").Id && world.Reader.IsAir(x, y + 1, z))
-        {
-            world.Writer.SetBlock(x, y + 1, z, _blockId);
-            itemStack.ConsumeItem(player);
-            return true;
-        }
 
-        return false;
+        if (blockId != world.Content.Blocks.Get("omniblock:farmland").Id || !world.Reader.IsAir(x, y + 1, z)) return false;
+
+        world.Writer.SetBlock(x, y + 1, z, BlockId);
+        itemStack.ConsumeItem(player);
+        return true;
     }
 }

@@ -4,23 +4,17 @@ using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Items.Behaviors;
 
-public sealed class RecordBehavior : IItemBehavior
+public sealed class RecordBehavior(string recordName) : IItemBehavior
 {
-    public RecordBehavior(string recordName) => RecordName = recordName;
-
-    public string RecordName { get; }
+    public string RecordName { get; } = recordName;
 
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
         if (world.Reader.GetBlockId(x, y, z) != world.Content.Blocks.Get("omniblock:jukebox").Id || world.Reader.GetBlockMeta(x, y, z) != 0)
-        {
             return false;
-        }
 
         if (world.IsRemote)
-        {
             return true;
-        }
 
         JukeboxBehavior.InsertRecord(world, x, y, z, item.Id);
         world.Broadcaster.WorldEvent(1005, x, y, z, item.Id);

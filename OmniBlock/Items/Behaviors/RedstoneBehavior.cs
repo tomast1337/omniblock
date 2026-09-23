@@ -10,34 +10,26 @@ internal sealed class RedstoneBehavior : IItemBehavior
     {
         if (world.Reader.GetBlockId(x, y, z) != world.Content.Blocks.Get("omniblock:snow").Id)
         {
-            if (meta == 0)
+            switch (meta)
             {
-                --y;
-            }
-
-            if (meta == 1)
-            {
-                ++y;
-            }
-
-            if (meta == 2)
-            {
-                --z;
-            }
-
-            if (meta == 3)
-            {
-                ++z;
-            }
-
-            if (meta == 4)
-            {
-                --x;
-            }
-
-            if (meta == 5)
-            {
-                ++x;
+                case 0:
+                    --y;
+                    break;
+                case 1:
+                    ++y;
+                    break;
+                case 2:
+                    --z;
+                    break;
+                case 3:
+                    ++z;
+                    break;
+                case 4:
+                    --x;
+                    break;
+                case 5:
+                    ++x;
+                    break;
             }
 
             if (!world.Reader.IsAir(x, y, z))
@@ -47,11 +39,11 @@ internal sealed class RedstoneBehavior : IItemBehavior
         }
 
         var redstoneWire = world.Content.Blocks.Get("omniblock:redstone_wire");
-        if (redstoneWire.CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
-        {
-            itemStack.ConsumeItem(player);
-            world.Writer.SetBlock(x, y, z, redstoneWire.Id);
-        }
+
+        if (!redstoneWire.CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z))) return true;
+
+        itemStack.ConsumeItem(player);
+        world.Writer.SetBlock(x, y, z, redstoneWire.Id);
 
         return true;
     }

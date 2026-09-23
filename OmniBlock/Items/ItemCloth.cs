@@ -16,5 +16,5 @@ internal class ItemCloth : ItemBlock
 
     protected override int GetPlacementMetadata(int meta) => meta;
 
-    public override string GetItemNameIs(ItemStack itemStack) => $"{base.GetItemName()}.{DyeBehavior.ColorNames[ClothVisualBehavior.GetBlockMeta(itemStack.GetDamage())]}";
+    public override string GetItemNameIs(ItemStack itemStack) => $"{base.GetItemName()}.{DyeBehavior.s_colorNames[ClothVisualBehavior.GetBlockMeta(itemStack.GetDamage())]}";
 }

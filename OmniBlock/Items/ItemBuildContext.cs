@@ -112,6 +112,5 @@ public readonly struct ItemBuildContext
         }
     }
 
-    private static InvalidOperationException Uninitialized() =>
-        new($"{nameof(ItemBuildContext)} must be initialized before resolving dependencies.");
+    private static InvalidOperationException Uninitialized() => new($"{nameof(ItemBuildContext)} must be initialized before resolving dependencies.");
 }

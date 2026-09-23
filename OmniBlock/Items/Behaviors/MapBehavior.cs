@@ -15,10 +15,7 @@ public sealed class MapBehavior : IItemBehavior
 
     public void InventoryTick(Item item, ItemStack itemStack, IWorldContext world, Entity entity, int slotIndex, bool shouldUpdate)
     {
-        if (world.IsRemote)
-        {
-            return;
-        }
+        if (world.IsRemote) return;
 
         var mapState = GetMapState(itemStack.GetDamage(), world);
         if (entity is EntityPlayer player)
@@ -35,7 +32,7 @@ public sealed class MapBehavior : IItemBehavior
     public void OnCraft(Item item, ItemStack itemStack, IWorldContext world, EntityPlayer player)
     {
         itemStack.SetDamage(world.StateManager.GetUniqueDataId("map"));
-        var mapName = "map_" + itemStack.GetDamage();
+        var mapName = $"map_{itemStack.GetDamage()}";
         MapState mapState = new(mapName);
         world.StateManager.SetData(mapName, mapState);
         mapState.CenterX = MathHelper.Floor(player.X);
@@ -84,11 +81,13 @@ public sealed class MapBehavior : IItemBehavior
         }
 
         stack.SetDamage(world.StateManager.GetUniqueDataId("map"));
-        mapState = new MapState(mapName);
-        mapState.CenterX = world.Properties.SpawnX;
-        mapState.CenterZ = world.Properties.SpawnZ;
-        mapState.Scale = 3;
-        mapState.Dimension = (sbyte)world.Dimension.Id;
+        mapState = new MapState(mapName)
+        {
+            CenterX = world.Properties.SpawnX,
+            CenterZ = world.Properties.SpawnZ,
+            Scale = 3,
+            Dimension = (sbyte)world.Dimension.Id
+        };
         mapState.MarkDirty();
         world.StateManager.SetData(mapName, mapState);
         return mapState;
@@ -116,10 +115,7 @@ public sealed class MapBehavior : IItemBehavior
 
         for (var pixelX = entityPosX - scanRadius + 1; pixelX < entityPosX + scanRadius; ++pixelX)
         {
-            if ((pixelX & 15) != (map.InventoryTicks & 15))
-            {
-                continue;
-            }
+            if ((pixelX & 15) != (map.InventoryTicks & 15)) continue;
 
             var minDirtyZ = 255;
             var maxDirtyZ = 0;
@@ -127,10 +123,7 @@ public sealed class MapBehavior : IItemBehavior
 
             for (var pixelZ = entityPosZ - scanRadius - 1; pixelZ < entityPosZ + scanRadius; ++pixelZ)
             {
-                if (pixelX < 0 || pixelZ < -1 || pixelX >= MapWidth || pixelZ >= MapHeight)
-                {
-                    continue;
-                }
+                if (pixelX < 0 || pixelZ < -1 || pixelX >= MapWidth || pixelZ >= MapHeight) continue;
 
                 var dx = pixelX - entityPosX;
                 var dy = pixelZ - entityPosZ;
@@ -143,7 +136,7 @@ public sealed class MapBehavior : IItemBehavior
                 var chunkOffsetZ = worldZ & 15;
                 var fluidDepth = 0;
                 var avgHeight = 0.0D;
-                int sampleX, sampleZ, currentY, colorIndex;
+                int sampleX, sampleZ, currentY;
 
                 if (world.Dimension.HasCeiling)
                 {
@@ -195,7 +188,7 @@ public sealed class MapBehavior : IItemBehavior
                     brightness = 0;
                 }
 
-                colorIndex = 0;
+                var colorIndex = 0;
                 if (sampleZ > 0)
                 {
                     var mapColor = world.Content.Blocks.GetByProtocolId(sampleZ).Material.MapColor;
@@ -218,25 +211,21 @@ public sealed class MapBehavior : IItemBehavior
                 }
 
                 lastHeight = avgHeight;
-                if (pixelZ >= 0 && dx * dx + dy * dy < scanRadius * scanRadius && (!isOutside || ((pixelX + pixelZ) & 1) != 0))
+                if (pixelZ < 0 || dx * dx + dy * dy >= scanRadius * scanRadius || (isOutside && ((pixelX + pixelZ) & 1) == 0)) continue;
+                var currentColor = map.Colors[pixelX + pixelZ * MapWidth];
+                var pixelColor = (byte)(colorIndex * 4 + brightness);
+                if (currentColor == pixelColor) continue;
+                if (minDirtyZ > pixelZ)
                 {
-                    var currentColor = map.Colors[pixelX + pixelZ * MapWidth];
-                    var pixelColor = (byte)(colorIndex * 4 + brightness);
-                    if (currentColor != pixelColor)
-                    {
-                        if (minDirtyZ > pixelZ)
-                        {
-                            minDirtyZ = pixelZ;
-                        }
-
-                        if (maxDirtyZ < pixelZ)
-                        {
-                            maxDirtyZ = pixelZ;
-                        }
-
-                        map.Colors[pixelX + pixelZ * MapWidth] = pixelColor;
-                    }
+                    minDirtyZ = pixelZ;
                 }
+
+                if (maxDirtyZ < pixelZ)
+                {
+                    maxDirtyZ = pixelZ;
+                }
+
+                map.Colors[pixelX + pixelZ * MapWidth] = pixelColor;
             }
 
             if (minDirtyZ <= maxDirtyZ)
@@ -255,11 +244,7 @@ public sealed class MapBehavior : IItemBehavior
         {
             var foundSurface = true;
             blockId = chunk.GetBlockId(chunkX + dx, scanY - 1, chunkZ + dz);
-            if (blockId == 0)
-            {
-                foundSurface = false;
-            }
-            else if (scanY > 0 && blockId > 0 && blocks.GetByProtocolId(blockId).Material.MapColor == MapColor.Air)
+            if (blockId == 0 || (scanY > 0 && blockId > 0 && blocks.GetByProtocolId(blockId).Material.MapColor == MapColor.Air))
             {
                 foundSurface = false;
             }
@@ -270,24 +255,22 @@ public sealed class MapBehavior : IItemBehavior
                 blockId = chunk.GetBlockId(chunkX + dx, scanY - 1, chunkZ + dz);
             }
 
-            if (foundSurface)
+            if (!foundSurface) continue;
+            if (blockId == 0 || !blocks.GetByProtocolId(blockId).Material.IsFluid)
             {
-                if (blockId == 0 || !blocks.GetByProtocolId(blockId).Material.IsFluid)
+                exitLoop = true;
+            }
+            else
+            {
+                var depthCheckY = scanY - 1;
+                while (true)
                 {
-                    exitLoop = true;
-                }
-                else
-                {
-                    var depthCheckY = scanY - 1;
-                    while (true)
+                    var fluidBlockId = chunk.GetBlockId(chunkX + dx, depthCheckY--, chunkZ + dz);
+                    ++fluidDepth;
+                    if (depthCheckY <= 0 || fluidBlockId == 0 || !blocks.GetByProtocolId(fluidBlockId).Material.IsFluid)
                     {
-                        var fluidBlockId = chunk.GetBlockId(chunkX + dx, depthCheckY--, chunkZ + dz);
-                        ++fluidDepth;
-                        if (depthCheckY <= 0 || fluidBlockId == 0 || !blocks.GetByProtocolId(fluidBlockId).Material.IsFluid)
-                        {
-                            exitLoop = true;
-                            break;
-                        }
+                        exitLoop = true;
+                        break;
                     }
                 }
             }

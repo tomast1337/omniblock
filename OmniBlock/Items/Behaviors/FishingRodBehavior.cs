@@ -18,18 +18,14 @@ internal sealed class FishingRodBehavior(int cast) : IItemBehavior
         {
             var durabilityLoss = bobber.Behaviors.Find<FishingBobberBehavior>()!.Reel(bobber);
             itemStack.DamageItem(durabilityLoss, player);
-            player.SwingHand();
         }
         else
         {
             world.Broadcaster.PlaySoundAtEntity(player, "random.bow", 0.5F, 0.4F / (Item.s_itemRand.NextFloat() * 0.4F + 0.8F));
-            if (!world.IsRemote)
-            {
-                world.SpawnEntity(FishingBobberBehavior.Cast(world, player));
-            }
-
-            player.SwingHand();
+            if (!world.IsRemote) world.SpawnEntity(FishingBobberBehavior.Cast(world, player));
         }
+
+        player.SwingHand();
 
         return itemStack;
     }

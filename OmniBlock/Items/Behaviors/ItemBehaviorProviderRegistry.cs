@@ -6,24 +6,19 @@ using OmniBlock.Blocks.Materials;
 namespace OmniBlock.Items.Behaviors;
 
 /// <summary>Namespaced item behavior providers. Future native or Luau providers share this boundary.</summary>
-public sealed class ItemBehaviorProviderRegistry : IItemBehaviorProviderRegistry
+public sealed class ItemBehaviorProviderRegistry(IEnumerable<KeyValuePair<ResourceLocation, ItemBehaviorProviderRegistry.BehaviorFactory>> factories) : IItemBehaviorProviderRegistry
 {
     public delegate IItemBehavior BehaviorFactory(JsonElement definition, ItemBuildContext context);
 
-    private readonly FrozenDictionary<ResourceLocation, BehaviorFactory> _factories;
+    private readonly FrozenDictionary<ResourceLocation, BehaviorFactory> _factories = factories.ToFrozenDictionary();
 
     public ItemBehaviorProviderRegistry() : this(BuiltInFactories())
     {
     }
 
-    public ItemBehaviorProviderRegistry(IEnumerable<KeyValuePair<ResourceLocation, BehaviorFactory>> factories) =>
-        _factories = factories.ToFrozenDictionary();
-
     public IItemBehavior Build(ResourceLocation type, JsonElement definition, in ItemBuildContext context)
     {
-        if (!_factories.TryGetValue(type, out var factory))
-            throw new ArgumentException($"Unknown item behavior type '{type}'.");
-        return factory(definition, context);
+        return !_factories.TryGetValue(type, out var factory) ? throw new ArgumentException($"Unknown item behavior type '{type}'.") : factory(definition, context);
     }
 
     private static Dictionary<ResourceLocation, BehaviorFactory> BuiltInFactories() => new()

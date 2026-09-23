@@ -4,10 +4,7 @@ namespace OmniBlock.Items;
 
 public static class ItemFactory
 {
-    public static Item Create(
-        ItemDefinition def,
-        in ItemBuildContext context,
-        IItemBehaviorProviderRegistry behaviorProviders)
+    public static Item Create( ItemDefinition def, in ItemBuildContext context, IItemBehaviorProviderRegistry behaviorProviders)
     {
         ArgumentNullException.ThrowIfNull(def);
         ArgumentNullException.ThrowIfNull(behaviorProviders);
@@ -29,11 +26,7 @@ public static class ItemFactory
         return item;
     }
 
-    internal static void AttachBehavior(
-        Item item,
-        ItemDefinition def,
-        in ItemBuildContext context,
-        IItemBehaviorProviderRegistry behaviorProviders)
+    internal static void AttachBehavior(Item item, ItemDefinition def, in ItemBuildContext context, IItemBehaviorProviderRegistry behaviorProviders)
     {
         foreach (var definition in def.Behaviors)
         {
