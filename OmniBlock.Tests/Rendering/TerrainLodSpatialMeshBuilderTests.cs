@@ -11,6 +11,35 @@ namespace OmniBlock.Tests.Rendering;
 public sealed class TerrainLodSpatialMeshBuilderTests
 {
     [Fact]
+    public void Published_source_probe_samples_world_coordinates_without_wrapping_at_negative_tile_edges()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var snow = checked((byte)world.Content.Blocks.Get("omniblock:snow").Id);
+        var stone = checked((byte)world.Content.Blocks.Get("omniblock:stone").Id);
+        var tile = Build(new TerrainLodTileKey(2, -1, 1));
+
+        Assert.Equal("omniblock:snow",
+            TerrainLodQualityDiagnostics.Sample(tile, -13, 8, 68)?.Material.BlockId.ToString());
+        Assert.Equal("omniblock:stone",
+            TerrainLodQualityDiagnostics.Sample(tile, -12, 8, 68)?.Material.BlockId.ToString());
+        Assert.Null(TerrainLodQualityDiagnostics.Sample(tile, 0, 8, 68));
+        Assert.Null(TerrainLodQualityDiagnostics.Sample(tile, -13, 8, 128));
+        Assert.Null(TerrainLodQualityDiagnostics.Sample(tile, -13, 16, 68));
+
+        TerrainLodColumnTile Build(TerrainLodTileKey key)
+        {
+            if (key.Level == 0)
+                return Leaf(materials, key.X, key.Z, 16,
+                    (x, y, z) => y == 8 && key.X == -1 && key.Z == 4 && x == 3 && z == 4
+                        ? snow : stone);
+            return TerrainLodColumnTile.BuildParent(key,
+                Enumerable.Range(0, 4).Select(index => Build(key.Child(index))).ToArray(),
+                horizontalSampleLevel: 0);
+        }
+    }
+
+    [Fact]
     public void Build_observes_cancellation_before_allocating_mesh_output()
     {
         var world = new FakeWorldContext();

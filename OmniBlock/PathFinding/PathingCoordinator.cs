@@ -28,10 +28,7 @@ internal sealed class PathingCoordinator(IWorldContext world)
     /// <summary>Runs every request queued since the last call. Call once per world tick, after all entities have ticked.</summary>
     internal void RunBatch()
     {
-        if (_pendingRequests.Count == 0)
-        {
-            return;
-        }
+        if (_pendingRequests.Count == 0) return;
 
         PathRequest[] requests = [.. _pendingRequests];
         var results = new PathEntity?[requests.Length];

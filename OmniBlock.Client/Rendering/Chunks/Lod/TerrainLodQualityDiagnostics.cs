@@ -34,6 +34,17 @@ internal static class TerrainLodQualityDiagnostics
         selected > Math.Max(desired, minimum) ? "coarser-than-distance-target" :
         selected == minimum && desired < minimum ? "minimum-spatial-level" :
         selected < desired ? "finer-than-distance-target" : "distance-target";
+
+    public static TerrainLodColumnSpan? Sample(TerrainLodColumnTile tile, int x, int y, int z)
+    {
+        var sampleSize = 1 << tile.HorizontalSampleLevel;
+        var localX = (long)x - tile.Key.MinChunkX * 16;
+        var localZ = (long)z - tile.Key.MinChunkZ * 16;
+        if (localX < 0 || localZ < 0 || localX >= (long)tile.Width * sampleSize ||
+            localZ >= (long)tile.Width * sampleSize || (uint)y >= (uint)tile.WorldHeight)
+            return null;
+        return tile[(int)(localX / sampleSize), (int)(localZ / sampleSize)].At(y);
+    }
 }
 
 internal sealed partial class ClientTerrainLodRenderer
@@ -47,6 +58,48 @@ internal sealed partial class ClientTerrainLodRenderer
     // Bounded provenance evidence for dumps, not a second source cache. Older remote receipts
     // may age out, so a false match means unknown provenance rather than locally generated.
     private readonly Queue<(TerrainLodTileKey Tile, string Hash)> _recentRemoteSources = new(64);
+
+    /// <summary>
+    /// E2E-only observation of the source behind an installed local or spatial LOD presentation.
+    /// A null result is deliberately different from air: no matching publication was found.
+    /// Local columns require the same terrain revision; spatial tiles require a canonical hash
+    /// match. Neither condition proves pixel-perfect raster output.
+    /// </summary>
+    internal (string? Material, int SampleSize) PresentedSpatialMaterialAt(int x, int y, int z)
+    {
+        var chunkX = x >> 4;
+        var chunkZ = z >> 4;
+        var columnKey = (chunkX, chunkZ);
+        if (!IsAuthoritativeSpatialChunk(columnKey) &&
+            _resident.TryGetValue(columnKey, out var local) && local.HasLevel(0) &&
+            _spatialHierarchy.TryGetCoverage(new TerrainLodTileKey(0, chunkX, chunkZ),
+                out var leaf, out _) &&
+            leaf?.LeafTerrainRevision == local.TerrainRevision &&
+            TerrainLodQualityDiagnostics.Sample(leaf, x, y, z) is { } localSpan)
+        {
+            var block = _world.Content.Blocks.Get(localSpan.Material.BlockId);
+            var translucent = block.RenderLayer != 0;
+            var selected = translucent ? _selectedTranslucentLevels : _selectedSolidLevels;
+            if (selected.TryGetValue(columnKey, out var level) && level == 0 &&
+                local.TryGetLevel(0, translucent, out _))
+                return (localSpan.Material.BlockId.ToString(), 1);
+        }
+        if (!IsAuthoritativeSpatialChunk((chunkX, chunkZ)) || _spatialFrame is not { } frame)
+            return (null, -1);
+        foreach (var draw in frame.Draws)
+        {
+            var key = draw.Selection.Tile;
+            if (!key.ContainsChunk(chunkX, chunkZ) || !_authoritativeSpatialTiles.Contains(key) ||
+                !_spatialHierarchy.TryGetCoverage(key, out var source, out var current) ||
+                !current || source is null ||
+                source.CanonicalHash != draw.Presentation.CanonicalHash)
+                continue;
+            var span = TerrainLodQualityDiagnostics.Sample(source, x, y, z);
+            if (span is { } value)
+                return (value.Material.BlockId.ToString(), draw.Presentation.Quality.HorizontalSampleBlocks);
+        }
+        return (null, -1);
+    }
 
     private void RecordRemoteSource(TerrainLodColumnTile tile)
     {

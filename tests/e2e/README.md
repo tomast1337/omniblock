@@ -475,6 +475,13 @@ server, one JSON generation profile:
 - `world-generation-label.json`: bounded timing/allocation distributions per generation stage,
   queue depths and peak, failures, and a conservative retained chunk-payload lower bound.
 
+`OMNI.test.terrainLodPresentedMaterial(x, y, z)` returns the material resource name and
+horizontal sample size for a block coordinate. It returns `nil, -1` unless the selected local
+1x1 column has a matching source revision, or an authoritative spatial tile has a matching
+canonical source/mesh hash. It is restricted to E2E launches. It checks publication/source
+consistency, not the final rasterized pixel; use it with material mesh tests and same-camera
+screenshots for near-LOD visual comparisons.
+
 `OMNI.test.dumpProfiler("label")` writes `profiler-label.tsv` with the last, rolling average,
 P50, P95, and recent period maximum for every main/client and integrated-server profiler scope.
 It also writes `gpu-profiler-label.tsv` when WebGPU is active. That sibling contains a delayed,

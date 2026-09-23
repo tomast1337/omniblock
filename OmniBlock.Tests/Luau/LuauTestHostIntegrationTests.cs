@@ -60,6 +60,8 @@ public sealed class LuauTestHostIntegrationTests
             path = (ax, ay, az, bx, by, bz, seconds);
         LuauTestHost.Screenshot = () => screenshots++;
         LuauTestHost.DumpTerrain = label => terrainDump = label;
+        LuauTestHost.TerrainLodPresentedMaterial = (x, y, z) =>
+            (x, y, z) == (8, 95, 72) ? ("omniblock:grass_block", 1) : (null, -1);
         LuauTestHost.DumpProfiler = label => profilerDump = label;
         LuauTestHost.WorldGenerationAuto = (profile, radius) =>
         {
@@ -110,6 +112,10 @@ public sealed class LuauTestHostIntegrationTests
                 "OMNI.test.setLook(45.5, 90); OMNI.test.setMovement(1, -0.5, 0.25); " +
                 "OMNI.test.flyPath(160, 256, 0, 160, 256, 160, 20); " +
                 "OMNI.test.screenshot(); OMNI.test.dumpTerrain('airborne'); OMNI.test.dumpProfiler('steady'); " +
+                "local material, sample = OMNI.test.terrainLodPresentedMaterial(8, 95, 72); " +
+                "assert(material == 'omniblock:grass_block' and sample == 1); " +
+                "local missing, missingSample = OMNI.test.terrainLodPresentedMaterial(0, 0, 0); " +
+                "assert(missing == nil and missingSample == -1); " +
                 "assert(OMNI.test.worldGenerationAuto('prepare', 24)); " +
                 "assert(OMNI.test.worldGenerationMetric('saved') == 17); " +
                 "assert(OMNI.test.configureTerrainLodScaleProfile(512)); " +
@@ -171,6 +177,7 @@ public sealed class LuauTestHostIntegrationTests
             LuauTestHost.FlyPath = null;
             LuauTestHost.Screenshot = null;
             LuauTestHost.DumpTerrain = null;
+            LuauTestHost.TerrainLodPresentedMaterial = null;
             LuauTestHost.DumpProfiler = null;
             LuauTestHost.WorldGenerationAuto = null;
             LuauTestHost.WorldGenerationMetric = null;

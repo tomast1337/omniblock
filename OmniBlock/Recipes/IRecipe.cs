@@ -5,9 +5,7 @@ namespace OmniBlock.Recipes;
 
 public interface IRecipe
 {
-    bool Matches(InventoryCrafting InventoryCrafting);
-
-    ItemStack GetCraftingResult(InventoryCrafting InventoryCrafting);
+    bool Matches(InventoryCrafting inventoryCrafting);
 
     int GetRecipeSize();
 
@@ -22,8 +20,6 @@ public interface IRecipe
         if (a.GetHashCode() != b.GetHashCode()) return false;
         if (a.GetType() != b.GetType()) return false;
         if (!a.GetRecipeOutput().Equals(b.GetRecipeOutput())) return false;
-        if (a.GetRecipeSize() != b.GetRecipeSize()) return false;
-
-        return true;
+        return a.GetRecipeSize() == b.GetRecipeSize();
     }
 }

@@ -14,9 +14,9 @@ internal class ShapedRecipes(int width, int height, ItemStack?[] items, ItemStac
         {
             for (var offsetY = 0; offsetY <= 3 - height; ++offsetY)
             {
-                if (matchesAtOffset(craftingInventory, offsetX, offsetY, true))
+                if (MatchesAtOffset(craftingInventory, offsetX, offsetY, true))
                     return true;
-                if (matchesAtOffset(craftingInventory, offsetX, offsetY, false))
+                if (MatchesAtOffset(craftingInventory, offsetX, offsetY, false))
                     return true;
             }
         }
@@ -28,7 +28,7 @@ internal class ShapedRecipes(int width, int height, ItemStack?[] items, ItemStac
 
     public int GetRecipeSize() => width * height;
 
-    private bool matchesAtOffset(InventoryCrafting craftingInventory, int offsetX, int offsetY, bool mirrored)
+    private bool MatchesAtOffset(InventoryCrafting craftingInventory, int offsetX, int offsetY, bool mirrored)
     {
         for (var gridX = 0; gridX < 3; ++gridX)
         {
@@ -53,12 +53,12 @@ internal class ShapedRecipes(int width, int height, ItemStack?[] items, ItemStac
                     return false;
                 }
 
-                if (expected.ItemId != actual.ItemId)
+                if (expected != null && actual != null && expected.ItemId != actual.ItemId)
                 {
                     return false;
                 }
 
-                if (expected.GetDamage() != -1 && expected.GetDamage() != actual.GetDamage())
+                if (expected != null && expected.GetDamage() != -1 && actual != null && expected.GetDamage() != actual.GetDamage())
                 {
                     return false;
                 }
@@ -75,7 +75,7 @@ internal class ShapedRecipes(int width, int height, ItemStack?[] items, ItemStac
         for (var i = 0; i < items.Length; i++)
         {
             if (items[i] != null)
-                hash += (items[i].ItemId + (items[i].GetDamage() << 8)) * (i + 1);
+                hash += (items[i]!.ItemId + (items[i]!.GetDamage() << 8)) * (i + 1);
         }
 
         hash += (output.ItemId << 12) + (output.GetDamage() << 20) + output.Count;
