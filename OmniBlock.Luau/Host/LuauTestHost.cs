@@ -71,7 +71,7 @@ public static unsafe class LuauTestHost
     public static Action<string>? DumpTerrain;
     public static Func<int, int, int>? TerrainLodColumnMinimumLevel;
     public static Func<int, int, bool>? TerrainLodColumnSourceLoaded;
-    public static Func<int, int, int, (string? Material, int SampleSize)>? TerrainLodPresentedMaterial;
+    public static Func<int, int, int, (string? Material, int SampleSize, string? Owner)>? TerrainLodPresentedMaterial;
     public static Action<string>? DumpProfiler;
     public static Func<string, int, bool>? WorldGenerationAuto;
     public static Func<string, double>? WorldGenerationMetric;
@@ -615,13 +615,13 @@ public static unsafe class LuauTestHost
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static int TerrainLodPresentedMaterialClosure(IntPtr l)
     {
-        (string? Material, int SampleSize) result = (null, -1);
+        (string? Material, int SampleSize, string? Owner) result = (null, -1, null);
         try
         {
             result = TerrainLodPresentedMaterial?.Invoke(
                 LuauNative.luaL_checkinteger(l, 1),
                 LuauNative.luaL_checkinteger(l, 2),
-                LuauNative.luaL_checkinteger(l, 3)) ?? (null, -1);
+                LuauNative.luaL_checkinteger(l, 3)) ?? (null, -1, null);
         }
         catch (Exception error)
         {
@@ -630,7 +630,9 @@ public static unsafe class LuauTestHost
         if (result.Material is { } material) LuauNative.lua_pushstring(l, material);
         else LuauNative.lua_pushnil(l);
         LuauNative.lua_pushinteger(l, result.SampleSize);
-        return 2;
+        if (result.Owner is { } owner) LuauNative.lua_pushstring(l, owner);
+        else LuauNative.lua_pushnil(l);
+        return 3;
     }
 
     private static void Invoke(Action? action)

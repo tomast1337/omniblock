@@ -5,6 +5,7 @@ OMNI.config.pauseOnFocusLoss = false
 OMNI.config.captureMouse = false
 OMNI.config.bobView = false
 OMNI.config.chunkFade = false
+OMNI.config.fov = 0.44444445 -- fixed 70-degree reference; do not inherit saved options
 assert(OMNI.client.worlds.load("e2e-smoke"))
 local state = OMNI.client.state
 local function waitFor(predicate, seconds, describeFailure)
@@ -94,6 +95,9 @@ local function capture(label)
 end
 
 capture("near-quality-exact-reference")
+OMNI.config.fov = 0 -- 30-degree diagnostic view, same camera and exact ownership
+capture("near-quality-exact-zoom")
+OMNI.config.fov = 0.44444445
 OMNI.config.viewDistance = 0 -- same camera, four exact chunks; landmark now belongs to LOD
 OMNI.wait(3) -- let the new radius apply before accepting a published material sample
 local presented = {
@@ -106,30 +110,35 @@ local presented = {
 waitFor(function()
     if not state.playerReady or state.terrainLodSpatialSubmissionReady ~= 1 then return false end
     for _, target in ipairs(presented) do
-        local material, sampleSize = OMNI.test.terrainLodPresentedMaterial(target[2], target[3], target[4])
-        if material ~= target[1] or sampleSize ~= 1 then return false end
+        local material, sampleSize, owner = OMNI.test.terrainLodPresentedMaterial(target[2], target[3], target[4])
+        if material ~= target[1] or sampleSize ~= 1 or owner == nil then return false end
     end
     return true
 end, 90, function()
     for _, target in ipairs(presented) do
-        local material, sampleSize = OMNI.test.terrainLodPresentedMaterial(target[2], target[3], target[4])
-        if material ~= target[1] or sampleSize ~= 1 then
+        local material, sampleSize, owner = OMNI.test.terrainLodPresentedMaterial(target[2], target[3], target[4])
+        if material ~= target[1] or sampleSize ~= 1 or owner == nil then
             print("near-quality missing LOD target=" .. target[1] .. " at " .. target[2] .. "," ..
                 target[3] .. "," .. target[4] .. " presented=" .. tostring(material) ..
-                " sample=" .. tostring(sampleSize))
+                " sample=" .. tostring(sampleSize) .. " owner=" .. tostring(owner))
         end
     end
 end)
 for _, target in ipairs(presented) do
-    local material, sampleSize = OMNI.test.terrainLodPresentedMaterial(target[2], target[3], target[4])
-    assert(material == target[1] and sampleSize == 1,
+    local material, sampleSize, owner = OMNI.test.terrainLodPresentedMaterial(target[2], target[3], target[4])
+    assert(material == target[1] and sampleSize == 1 and (owner == "local" or owner == "spatial"),
         "wrong presented near-LOD sample at " .. target[2] .. "," .. target[3] .. "," .. target[4] ..
-        ": " .. tostring(material) .. " / " .. tostring(sampleSize))
+        ": " .. tostring(material) .. " / " .. tostring(sampleSize) .. " / " .. tostring(owner))
+    print("near-quality owner=" .. owner .. " material=" .. material .. " at " ..
+        target[2] .. "," .. target[3] .. "," .. target[4])
 end
 capture("near-quality-lod-initial")
 OMNI.wait(12)
 -- A later time sample, not an assertion that source coverage or visual quality has converged.
 capture("near-quality-lod-settled")
+OMNI.config.fov = 0 -- matching close-up of water, cactus, snow, foliage and arch
+capture("near-quality-lod-zoom")
+OMNI.config.fov = 0.44444445
 OMNI.test.setLook(0, 55)
 capture("near-quality-downward")
 OMNI.test.pass()

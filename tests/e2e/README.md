@@ -124,14 +124,17 @@ It creates an isolated default world with seed `246813579`, then views the gener
 containing a skylit under-roof opening at `(24,76,33)` from a fixed flying camera. It captures
 the eight-chunk exact reference, a four-chunk LOD view at 1x (compiling L0 while source is
 loaded), then views at 0.75x and 1x (the former 96-block and current 128-block near bands).
-All captures use the same camera.
+All captures use the same camera. The fixture also takes paired 30-degree-FOV close-ups of
+the exact and final 1x LOD views; the checker requires their cameras, FOV, and drawn local L0
+source to agree. The separate near-quality fixture reports whether each sampled material is
+owned by exact/local/spatial terrain. These checks identify what was presented, not pixel parity.
 `check_natural_cave.py` requires the opening's drawn local column to refine from L1/2x2 to
 L0/1x1 without changing that column's terrain revision, resource generation, or owner. The
 quality dump also records selected-layer vertex counts, an on-demand geometry-cost proxy, not measured GPU
 time or total residency. Starting at 0.75x and requesting 1x only after the gameplay chunk
 unloads currently cannot compile a missing L0; that separate quality-upgrade lifecycle defect
 remains open. Resident local columns own this same-session handoff, so the checker deliberately
-does **not** claim remote spatial L2 authority. The screenshots and stage counters are for manual
+does **not** require remote spatial L2 authority. The screenshots and stage counters are for manual
 cave/terrain comparison; metadata cannot assert cave-mouth pixel fidelity. This is a small
 generated patch, not a pregenerated horizon.
 One fixed run compared 90 stable drawn layers: 12 changed level and selected vertices increased

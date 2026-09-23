@@ -430,7 +430,8 @@ public class Chunk
         var worldZ = Z * 16 + localZ;
         Blocks[pos] = newId;
 
-        if (notifyBlockPlaced && oldId != 0 && !World.IsRemote)
+        // A metadata-only update must retain the existing block entity and its inventory.
+        if (notifyBlockPlaced && !sameId && oldId != 0 && !World.IsRemote)
         {
             World.Content.Blocks.GetByProtocolId(oldId).OnBreak(new OnBreakEvent(World, null, worldX, y, worldZ));
         }
@@ -456,7 +457,7 @@ public class Chunk
 
         if (notifyBlockPlaced)
         {
-            if (rawId != 0 && !World.IsRemote)
+            if (!sameId && rawId != 0 && !World.IsRemote)
             {
                 World.Content.Blocks.GetByProtocolId(rawId).OnPlaced(new OnPlacedEvent(World, null, 0, 0, worldX, y, worldZ));
             }

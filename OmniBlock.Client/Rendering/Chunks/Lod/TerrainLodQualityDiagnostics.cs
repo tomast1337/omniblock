@@ -65,7 +65,7 @@ internal sealed partial class ClientTerrainLodRenderer
     /// Local columns require the same terrain revision; spatial tiles require a canonical hash
     /// match. Neither condition proves pixel-perfect raster output.
     /// </summary>
-    internal (string? Material, int SampleSize) PresentedSpatialMaterialAt(int x, int y, int z)
+    internal (string? Material, int SampleSize, string? Owner) PresentedSpatialMaterialAt(int x, int y, int z)
     {
         var chunkX = x >> 4;
         var chunkZ = z >> 4;
@@ -82,10 +82,10 @@ internal sealed partial class ClientTerrainLodRenderer
             var selected = translucent ? _selectedTranslucentLevels : _selectedSolidLevels;
             if (selected.TryGetValue(columnKey, out var level) && level == 0 &&
                 local.TryGetLevel(0, translucent, out _))
-                return (localSpan.Material.BlockId.ToString(), 1);
+                return (localSpan.Material.BlockId.ToString(), 1, "local");
         }
         if (!IsAuthoritativeSpatialChunk((chunkX, chunkZ)) || _spatialFrame is not { } frame)
-            return (null, -1);
+            return (null, -1, null);
         foreach (var draw in frame.Draws)
         {
             var key = draw.Selection.Tile;
@@ -96,9 +96,10 @@ internal sealed partial class ClientTerrainLodRenderer
                 continue;
             var span = TerrainLodQualityDiagnostics.Sample(source, x, y, z);
             if (span is { } value)
-                return (value.Material.BlockId.ToString(), draw.Presentation.Quality.HorizontalSampleBlocks);
+                return (value.Material.BlockId.ToString(), draw.Presentation.Quality.HorizontalSampleBlocks,
+                    "spatial");
         }
-        return (null, -1);
+        return (null, -1, null);
     }
 
     private void RecordRemoteSource(TerrainLodColumnTile tile)

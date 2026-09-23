@@ -10,12 +10,16 @@ def check(artifacts):
     fine_before = json.loads((artifacts / "terrain-lod-natural-cave-fine-before.json").read_text())
     coarse = json.loads((artifacts / "terrain-lod-natural-cave-coarse.json").read_text())
     lod = json.loads((artifacts / "terrain-lod-natural-cave-lod.json").read_text())
+    exact_zoom = json.loads((artifacts / "terrain-lod-natural-cave-exact-zoom.json").read_text())
+    lod_zoom = json.loads((artifacts / "terrain-lod-natural-cave-lod-zoom.json").read_text())
     before = exact["Quality"]
     initial = fine_before["Quality"]
     middle = coarse["Quality"]
     after = lod["Quality"]
+    zoom_before = exact_zoom["Quality"]
+    zoom_after = lod_zoom["Quality"]
     if len({(q["Camera"]["X"], q["Camera"]["Y"], q["Camera"]["Z"])
-            for q in (before, initial, middle, after)}) != 1:
+            for q in (before, initial, middle, after, zoom_before, zoom_after)}) != 1:
         raise ValueError("Exact and LOD captures used different cameras")
     camera = before["Camera"]
     if camera["X"] != 24 or camera["Z"] != -70 or not 114 < camera["Y"] < 118:
@@ -25,6 +29,13 @@ def check(artifacts):
         raise ValueError("The eight-to-four exact-distance handoff was not presented")
     if any(snapshot["HorizonRadiusChunks"] != 16 for snapshot in (before, initial, middle, after)):
         raise ValueError("Expected the bounded sixteen-chunk horizon")
+    if (zoom_before["ExactRadiusChunks"], zoom_after["ExactRadiusChunks"]) != (8, 4):
+        raise ValueError("Zoomed natural-opening pair changed the exact-to-LOD handoff")
+    if not (zoom_before["VerticalFov"] < before["VerticalFov"] and
+            zoom_after["VerticalFov"] < after["VerticalFov"]):
+        raise ValueError("Natural-opening close-ups are not narrower than the reference views")
+    if abs(zoom_before["VerticalFov"] - zoom_after["VerticalFov"]) > 0.01:
+        raise ValueError("Natural-opening exact and LOD close-ups used different fields of view")
     if (initial["LocalDropoffScale"], middle["LocalDropoffScale"],
             after["LocalDropoffScale"]) != (1, 0.75, 1):
         raise ValueError("Expected the 1x, 0.75x, 1x presentation-quality comparison")
@@ -50,6 +61,9 @@ def check(artifacts):
     first = cave_column(initial)
     old = cave_column(middle)
     new = cave_column(after)
+    close = cave_column(zoom_after)
+    if close["SelectedLevel"] != 0 or close["TerrainRevision"] != new["TerrainRevision"]:
+        raise ValueError("Natural-opening close-up lost the drawn local 1x1 cave source")
     same_revision = len({first["TerrainRevision"], old["TerrainRevision"], new["TerrainRevision"]}) == 1
     same_levels = first["UploadedLevels"] == old["UploadedLevels"] == new["UploadedLevels"]
     if not same_revision or not same_levels:

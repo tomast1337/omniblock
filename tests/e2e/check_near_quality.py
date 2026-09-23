@@ -6,11 +6,24 @@ import sys
 
 
 def check(artifacts):
+    exact = json.loads((artifacts / "terrain-lod-near-quality-exact-reference.json").read_text())
+    exact_zoom = json.loads((artifacts / "terrain-lod-near-quality-exact-zoom.json").read_text())
     snapshot = json.loads((artifacts / "terrain-lod-near-quality-lod-settled.json").read_text())
+    lod_zoom = json.loads((artifacts / "terrain-lod-near-quality-lod-zoom.json").read_text())
     quality = snapshot["Quality"]
     camera = quality["Camera"]
     if (camera["X"], camera["Z"]) != (8, -8) or quality["ExactRadiusChunks"] != 4:
         raise ValueError("Expected the fixed near-quality camera and four-chunk exact radius")
+    views = [view["Quality"] for view in (exact, exact_zoom, snapshot, lod_zoom)]
+    if any(view["Camera"] != camera or view["HorizonRadiusChunks"] != 16 for view in views):
+        raise ValueError("Exact and LOD close-ups must share one camera and horizon")
+    if [view["ExactRadiusChunks"] for view in views] != [8, 8, 4, 4]:
+        raise ValueError("Close-ups did not preserve the exact-to-LOD handoff")
+    if not (views[1]["VerticalFov"] < views[0]["VerticalFov"] and
+            views[3]["VerticalFov"] < views[2]["VerticalFov"]):
+        raise ValueError("Close-ups must use a narrower field of view than their references")
+    if abs(views[1]["VerticalFov"] - views[3]["VerticalFov"]) > 0.01:
+        raise ValueError("Exact and LOD close-ups must have matching fields of view")
     rows = {(r["ChunkX"], r["ChunkZ"], r["Layer"]): r for r in quality["Local"]}
     for x in (0, 1):
         for layer in ("solid", "translucent"):
@@ -31,6 +44,11 @@ def check(artifacts):
         raise ValueError("Adjacent basin must keep its real fine water geometry")
     if not water["LayerBodyDrawn"]:
         raise ValueError("Adjacent basin's fine water must actually be submitted")
+    zoom_rows = {(r["ChunkX"], r["ChunkZ"], r["Layer"]): r for r in views[3]["Local"]}
+    for key in ((0, 4, "solid"), (1, 4, "translucent")):
+        row = zoom_rows.get(key)
+        if row is None or row["SpatialOwned"] or row["SelectedLevel"] != 0 or not row["LayerBodyDrawn"]:
+            raise ValueError(f"Close-up lost the drawn local L0 landmark layer {key}")
 
 
 if __name__ == "__main__":
@@ -38,4 +56,4 @@ if __name__ == "__main__":
         check(Path(sys.argv[1]))
     except (IndexError, KeyError, OSError, ValueError) as error:
         sys.exit(f"Near-quality layer regression: {error}")
-    print("Near-quality layer regression passed (empty L0 retained; adjacent water remains L0)")
+    print("Near-quality close-up passed (matching camera/FOV; drawn local L0 landmarks remain)")

@@ -1048,7 +1048,7 @@ public partial class OmniBlock :
                 LuauTestHost.TerrainLodColumnSourceLoaded = (x, z) =>
                     World?.BlockHost.HasChunk(x, z) == true;
                 LuauTestHost.TerrainLodPresentedMaterial = (x, y, z) =>
-                    WorldRenderer?.TerrainLod?.PresentedSpatialMaterialAt(x, y, z) ?? (null, -1);
+                    WorldRenderer?.TerrainLod?.PresentedSpatialMaterialAt(x, y, z) ?? (null, -1, null);
                 LuauTestHost.DumpProfiler = label =>
                 {
                     _e2eTestController.WriteTextArtifact(
