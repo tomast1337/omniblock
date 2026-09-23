@@ -93,7 +93,16 @@ internal static class BlockFactory
             throw new ArgumentException(
                 $"Terrain LOD MaxSampleSize '{maxSampleSize}' must be a power of two between 1 and 64.",
                 nameof(definition));
-        return new BlockTerrainLodDescriptor(geometry, occludesFaces, maxSampleSize);
+        var metadataHeightLevels = definition.MetadataHeightLevels ?? 0;
+        if (metadataHeightLevels != 0 &&
+            (geometry != TerrainLodGeometryClass.SurfaceLayer ||
+             metadataHeightLevels is < 2 or > 16 ||
+             !System.Numerics.BitOperations.IsPow2((uint)metadataHeightLevels)))
+            throw new ArgumentException(
+                $"Terrain LOD MetadataHeightLevels '{metadataHeightLevels}' requires a surface layer " +
+                "and a power of two between 2 and 16.", nameof(definition));
+        return new BlockTerrainLodDescriptor(
+            geometry, occludesFaces, maxSampleSize, metadataHeightLevels);
     }
 
     internal static void AttachBehaviors(

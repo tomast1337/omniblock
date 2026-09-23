@@ -47,6 +47,10 @@ public class Block
         ? runtimeBounds
         : _boundingBox;
 
+    // Immutable definition bounds; unlike BoundingBox these are never replaced by a
+    // thread-local physics/visual behavior while a mesh worker is compiling terrain.
+    public Box DefinitionBoundingBox => _boundingBox;
+
     public float Hardness { get; private set; }
     public float ParticleFallSpeedModifier { get; }
     public float Slipperiness { get; private set; }

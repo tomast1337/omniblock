@@ -189,6 +189,80 @@ public sealed class TerrainLodSpatialMeshBuilderTests
     }
 
     [Fact]
+    public void Finest_spatial_snow_uses_metadata_height_instead_of_a_full_cube()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var snow = world.Content.Blocks.Get("omniblock:snow");
+        var column = TerrainLodColumn.Create(16,
+        [
+            new TerrainLodColumnSpan(0, 8, TerrainLodMaterial.Air, 0, 15),
+            new TerrainLodColumnSpan(8, 1, materials.Resolve(snow.Id, 3), 0, 15),
+            new TerrainLodColumnSpan(9, 7, TerrainLodMaterial.Air, 0, 15)
+        ]);
+        var tile = TerrainLodColumnTile.CreateUniform(
+            new TerrainLodTileKey(1, 0, 0), 0, 16, column, "snow-height");
+
+        var mesh = TerrainLodSpatialMeshBuilder.Build(
+            tile, world.Content.Blocks, verticalSliceBudget: 8);
+        var top = mesh.Pages.SelectMany(page => page.Vertices.Select(vertex =>
+            page.OriginY + vertex.Y * 64f / 32767f)).Max();
+
+        Assert.InRange(top, 8.49f, 8.51f);
+        Assert.True(mesh.SolidQuadCount > 0);
+        Assert.DoesNotContain(mesh.Pages, page => HasQuadOnWorldPlane(
+            page, page.Vertices, axis: 0, position: 1));
+    }
+
+    [Fact]
+    public void Finest_spatial_cactus_uses_definition_bounds()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var cactus = world.Content.Blocks.Get("omniblock:cactus");
+        var column = TerrainLodColumn.Create(16,
+        [
+            new TerrainLodColumnSpan(0, 8, TerrainLodMaterial.Air, 0, 15),
+            new TerrainLodColumnSpan(8, 1, materials.Resolve(cactus.Id, 0), 0, 15),
+            new TerrainLodColumnSpan(9, 7, TerrainLodMaterial.Air, 0, 15)
+        ]);
+        var tile = TerrainLodColumnTile.CreateUniform(
+            new TerrainLodTileKey(1, 0, 0), 0, 16, column, "cactus-bounds");
+
+        var mesh = TerrainLodSpatialMeshBuilder.Build(
+            tile, world.Content.Blocks, verticalSliceBudget: 8,
+            emitTileBoundaryFaces: false);
+        var xPositions = mesh.Pages.SelectMany(page => page.Vertices.Select(vertex =>
+            page.OriginX + vertex.X * 64f / 32767f)).ToArray();
+
+        Assert.InRange(xPositions.Min(), 0.0525f, 0.0725f);
+        Assert.InRange(xPositions.Max(), 31.9275f, 31.9475f);
+    }
+
+    [Fact]
+    public void Worldless_grass_side_overlay_uses_green_top_tint()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var grass = checked((byte)world.Content.Blocks.Get("omniblock:grass_block").Id);
+        var tile = Leaf(materials, 0, 0, 16,
+            (_, y, _) => y < 8 ? grass : (byte)0);
+        var overlayLayer = OmniBlock.Textures.Atlases.Terrain.LayerOfGridIndex(
+            OmniBlock.Textures.Atlases.Terrain.IndexOf("omniblock:grass_block_side_overlay"));
+
+        var mesh = TerrainLodSpatialMeshBuilder.Build(
+            tile, world.Content.Blocks, verticalSliceBudget: 8);
+        var overlay = mesh.Pages.SelectMany(page => page.Vertices)
+            .Where(vertex => vertex.ArrayLayer == overlayLayer).ToArray();
+
+        Assert.NotEmpty(overlay);
+        Assert.Contains(overlay, vertex => vertex.Color ==
+            TerrainLodMeshBuilder.PackTintedColor(0x79C05A, 0.6f));
+        Assert.DoesNotContain(overlay, vertex => vertex.Color ==
+            TerrainLodMeshBuilder.PackTintedColor(0xFFFFFF, 0.6f));
+    }
+
+    [Fact]
     public void Stationary_and_flowing_water_do_not_create_internal_tile_walls()
     {
         var world = new FakeWorldContext();

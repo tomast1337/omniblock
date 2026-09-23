@@ -12,6 +12,7 @@
   "BottomVariance": "All",
   "SideVariance": "FlipBoth",
   "NotFullCube": true,
+  "TerrainLod": { "Geometry": "SurfaceLayer", "MetadataHeightLevels": 8 },
   "BoundingBox": {
     "MinX": 0,
     "MinY": 0,

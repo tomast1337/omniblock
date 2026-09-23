@@ -70,13 +70,16 @@ public sealed record BlockTerrainLodDefinition
     public string Geometry { get; init; } = nameof(TerrainLodGeometryClass.ConservativeCube);
     public bool? OccludesFaces { get; init; }
     public int? MaxSampleSize { get; init; }
+    // For metadata-indexed surface layers: height = ((metadata & (levels - 1)) + 1) / levels.
+    public int? MetadataHeightLevels { get; init; }
 }
 
 /// <summary>Validated immutable form stored on a finalized runtime block.</summary>
 public readonly record struct BlockTerrainLodDescriptor(
     TerrainLodGeometryClass Geometry,
     bool OccludesFaces,
-    int MaxSampleSize = int.MaxValue);
+    int MaxSampleSize = int.MaxValue,
+    int MetadataHeightLevels = 0);
 
 public sealed record BlockItemDefinition
 {

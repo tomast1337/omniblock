@@ -7,6 +7,47 @@ namespace OmniBlock.Tests.Rendering;
 public sealed class TerrainLodSpatialSeamMeshBuilderTests
 {
     [Fact]
+    public void Fine_snow_seam_ends_at_its_metadata_height()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var snow = checked((byte)world.Content.Blocks.Get("omniblock:snow").Id);
+        var tile = Leaf(materials, 0, 0, 16,
+            (_, y, _) => y == 8 ? snow : (byte)0,
+            (_, y, _) => y == 8 ? (byte)3 : (byte)0);
+        var segment = TerrainLodSpatialSeamPlanner.Plan(
+            [new TerrainLodTileSelection(tile.Key, 0, 8)])
+            .Single(static seam => seam.OwnerSide == TerrainLodSpatialBoundarySide.East);
+
+        var seam = TerrainLodSpatialSeamMeshBuilder.Build(
+            segment, tile, neighbor: null, world.Content.Blocks);
+        var yPositions = seam.Pages.SelectMany(page => page.Vertices.Select(vertex =>
+            page.OriginY + vertex.Y * 64f / 32767f)).ToArray();
+
+        Assert.NotEmpty(yPositions);
+        Assert.InRange(yPositions.Min(), 7.99f, 8.01f);
+        Assert.InRange(yPositions.Max(), 8.49f, 8.51f);
+    }
+
+    [Fact]
+    public void Inset_cactus_face_is_owned_by_the_body_not_a_tile_edge_seam()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var cactus = checked((byte)world.Content.Blocks.Get("omniblock:cactus").Id);
+        var tile = Leaf(materials, 0, 0, 16,
+            (_, y, _) => y == 8 ? cactus : (byte)0);
+        var segment = TerrainLodSpatialSeamPlanner.Plan(
+            [new TerrainLodTileSelection(tile.Key, 0, 8)])
+            .Single(static seam => seam.OwnerSide == TerrainLodSpatialBoundarySide.East);
+
+        var seam = TerrainLodSpatialSeamMeshBuilder.Build(
+            segment, tile, neighbor: null, world.Content.Blocks);
+
+        Assert.Empty(seam.Pages);
+    }
+
+    [Fact]
     public void Seam_build_stops_when_the_result_cannot_fit_its_budget()
     {
         var world = new FakeWorldContext();

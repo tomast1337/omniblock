@@ -133,27 +133,45 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                 }
                 EmitVisible(
                     ownerSpan, ownerColumn, neighborSpan, segment.OwnerSide,
-                    neighborColumn is null ? exteriorBottom : bottom);
+                    neighborColumn is null ? exteriorBottom : bottom, ownerSample);
                 if (neighborSpan is { } adjacent)
                     EmitVisible(
-                        adjacent, neighborColumn!, ownerSpan, Opposite(segment.OwnerSide), bottom);
+                        adjacent, neighborColumn!, ownerSpan, Opposite(segment.OwnerSide),
+                        bottom, neighborSample);
 
                 void EmitVisible(
                     TerrainLodColumnSpan source,
                     TerrainLodColumn sourceColumn,
                     TerrainLodColumnSpan? opposite,
                     TerrainLodSpatialBoundarySide sourceSide,
-                    int minimumY)
+                    int minimumY,
+                    int sourceSampleSize)
                 {
                     if (!TerrainLodSpatialMeshBuilder.TryLayer(
-                        source.Material, out var translucent) ||
+                        source.Material, sourceSampleSize, out var translucent) ||
                         !TerrainLodSpatialMeshBuilder.IsFaceVisible(
                             source.Material, opposite, translucent, blocks) ||
                         !blocks.TryGet(source.Material.BlockId, out var block) || block is null)
                         return;
+                    if (sourceSampleSize == 1 &&
+                        TerrainLodSpatialMeshBuilder.IsHorizontallyInsetOnSide(
+                            block, ToBlockSide(sourceSide)))
+                        return; // The inset face belongs to the body mesh, not the tile edge.
 
-                    var renderBottom = Math.Max(bottom, minimumY);
+                    var renderBottom = (float)Math.Max(bottom, minimumY);
                     var renderTop = (float)top;
+                    if (sourceSampleSize == 1 &&
+                        source.Material.Geometry == TerrainLodGeometryClass.SurfaceLayer)
+                    {
+                        var bounds = block.DefinitionBoundingBox;
+                        var height = block.TerrainLod is { MetadataHeightLevels: > 0 } descriptor
+                            ? ((source.Material.Metadata & (descriptor.MetadataHeightLevels - 1)) + 1f) /
+                              descriptor.MetadataHeightLevels
+                            : (float)bounds.MaxY;
+                        renderBottom = Math.Max(renderBottom,
+                            source.BottomY + (float)bounds.MinY);
+                        renderTop = Math.Min(renderTop, source.TopY - 1 + height);
+                    }
                     if (source.Material.Geometry == TerrainLodGeometryClass.Liquid &&
                         top == source.TopY && top < sourceColumn.WorldHeight &&
                         sourceColumn.At(top).IsAir)
@@ -289,7 +307,8 @@ internal static class TerrainLodSpatialSeamMeshBuilder
             int patchEnd)
         {
             var side = ToBlockSide(boundarySide);
-            var tint = block.GetColorForFace(span.Material.Metadata, (int)side);
+            var tint = TerrainLodMeshBuilder.WorldlessFaceTint(
+                block, span.Material.Metadata, side, ReferenceEquals(block, grassBlock));
             var appearance = TerrainLodMeshBuilder.ResolveFaceAppearance(
                 block, span.Material.Metadata, side, tint,
                 ReferenceEquals(block, grassBlock), grassOverlayTexture);

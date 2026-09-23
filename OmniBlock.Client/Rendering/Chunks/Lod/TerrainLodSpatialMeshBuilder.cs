@@ -183,7 +183,7 @@ internal static class TerrainLodSpatialMeshBuilder
                         EmitCrossedPlant(plant, span);
                     continue;
                 }
-                if (!TryLayer(span.Material, out var translucent)) continue;
+                if (!TryLayer(span.Material, sampleSize, out var translucent)) continue;
                 if (!blocks.TryGet(span.Material.BlockId, out var block) || block is null) continue;
 
                 var minX = checked((int)tileMinX + x * sampleSize);
@@ -192,7 +192,27 @@ internal static class TerrainLodSpatialMeshBuilder
                 var maxZ = checked(minZ + sampleSize);
                 var minY = span.BottomY;
                 var maxY = span.TopY;
+                var renderMinX = (float)minX;
+                var renderMaxX = (float)maxX;
+                var renderMinZ = (float)minZ;
+                var renderMaxZ = (float)maxZ;
+                var renderMinY = (float)minY;
                 var renderMaxY = (float)maxY;
+                if (sampleSize == 1 && span.Material.Geometry is
+                    TerrainLodGeometryClass.SurfaceLayer or TerrainLodGeometryClass.BoundedCube)
+                {
+                    var bounds = block.DefinitionBoundingBox;
+                    renderMinX += (float)bounds.MinX;
+                    renderMaxX = minX + (float)bounds.MaxX;
+                    renderMinZ += (float)bounds.MinZ;
+                    renderMaxZ = minZ + (float)bounds.MaxZ;
+                    renderMinY += (float)bounds.MinY;
+                    renderMaxY = maxY - 1 + (float)bounds.MaxY;
+                    if (block.TerrainLod is { MetadataHeightLevels: > 0 } descriptor)
+                        renderMaxY = maxY - 1 +
+                            ((span.Material.Metadata & (descriptor.MetadataHeightLevels - 1)) + 1f) /
+                            descriptor.MetadataHeightLevels;
+                }
                 if (span.Material.Geometry == TerrainLodGeometryClass.Liquid &&
                     IsFaceVisible(span.Material, NeighborAt(column, maxY), translucent, blocks))
                     renderMaxY -= FluidMath.GetFluidHeightFromMeta(span.Material.Metadata);
@@ -200,14 +220,14 @@ internal static class TerrainLodSpatialMeshBuilder
                 var below = NeighborAt(column, minY - 1);
                 var above = NeighborAt(column, maxY);
                 if (IsFaceVisible(span.Material, below, translucent, blocks))
-                    EmitHorizontal(Side.Down, minY, anchorY: minY, 0.5f, below);
+                    EmitHorizontal(Side.Down, renderMinY, anchorY: minY, 0.5f, below);
                 if (IsFaceVisible(span.Material, above, translucent, blocks))
                     EmitHorizontal(Side.Up, renderMaxY, anchorY: maxY - 1, 1.0f, above);
 
-                EmitSide(Side.West, x - 1, z, minX, minZ, maxZ, 0.6f);
-                EmitSide(Side.East, x + 1, z, maxX, minZ, maxZ, 0.6f);
-                EmitSide(Side.North, x, z - 1, minZ, minX, maxX, 0.8f);
-                EmitSide(Side.South, x, z + 1, maxZ, minX, maxX, 0.8f);
+                EmitSide(Side.West, x - 1, z, renderMinX, renderMinZ, renderMaxZ, 0.6f);
+                EmitSide(Side.East, x + 1, z, renderMaxX, renderMinZ, renderMaxZ, 0.6f);
+                EmitSide(Side.North, x, z - 1, renderMinZ, renderMinX, renderMaxX, 0.8f);
+                EmitSide(Side.South, x, z + 1, renderMaxZ, renderMinX, renderMaxX, 0.8f);
 
                 void EmitCrossedPlant(Block plant, TerrainLodColumnSpan plantSpan)
                 {
@@ -262,25 +282,27 @@ internal static class TerrainLodSpatialMeshBuilder
                         minZ + sampleSize / 2.0);
                     if (side == Side.Up)
                         Emit(page, translucent, side, appearance, shade, light, sampleSize, sampleSize,
-                            (maxX, faceY, maxZ), (maxX, faceY, minZ),
-                            (minX, faceY, minZ), (minX, faceY, maxZ), guard);
+                            (renderMaxX, faceY, renderMaxZ), (renderMaxX, faceY, renderMinZ),
+                            (renderMinX, faceY, renderMinZ), (renderMinX, faceY, renderMaxZ), guard);
                     else
                         Emit(page, translucent, side, appearance, shade, light, sampleSize, sampleSize,
-                            (minX, faceY, maxZ), (minX, faceY, minZ),
-                            (maxX, faceY, minZ), (maxX, faceY, maxZ), guard);
+                            (renderMinX, faceY, renderMaxZ), (renderMinX, faceY, renderMinZ),
+                            (renderMaxX, faceY, renderMinZ), (renderMaxX, faceY, renderMaxZ), guard);
                 }
 
                 void EmitSide(
                     Side side,
                     int neighborX,
                     int neighborZ,
-                    int fixedCoordinate,
-                    int alongStart,
-                    int alongEnd,
+                    float fixedCoordinate,
+                    float alongStart,
+                    float alongEnd,
                     float shade)
                 {
                     var neighborInBounds = InBounds(neighborX, neighborZ);
-                    if (!neighborInBounds && !emitTileBoundaryFaces) return;
+                    var insetFace = sampleSize == 1 && IsHorizontallyInsetOnSide(block, side);
+                    if (!neighborInBounds && !emitTileBoundaryFaces &&
+                        !insetFace) return;
                     var neighbor = neighborInBounds ? Column(neighborX, neighborZ) : null;
                     var runStart = -1.0f;
                     var runLight = default(ChunkLightVertex);
@@ -305,7 +327,7 @@ internal static class TerrainLodSpatialMeshBuilder
                             var rangeBottom = Math.Max(minY, adjacentValue.BottomY);
                             var rangeTop = Math.Min(maxY, adjacentValue.TopY);
                             TerrainLodColumnSpan? adjacent = adjacentValue;
-                            var visible = IsFaceVisible(
+                            var visible = insetFace || IsFaceVisible(
                                 span.Material, adjacent, translucent, blocks);
                             var light = FaceLight(span, adjacent, side);
                             if (!visible)
@@ -344,6 +366,8 @@ internal static class TerrainLodSpatialMeshBuilder
                         float top,
                         ChunkLightVertex light)
                     {
+                        bottom = Math.Max(bottom, renderMinY);
+                        top = Math.Min(top, renderMaxY);
                         for (var y0 = bottom; y0 < top;)
                         {
                             var pageBoundary = (FloorDivide((int)MathF.Floor(y0), PageSize) + 1) * PageSize;
@@ -461,7 +485,8 @@ internal static class TerrainLodSpatialMeshBuilder
             TerrainLodMaterial material,
             Side side)
         {
-            var tint = owner.GetColorForFace(material.Metadata, (int)side);
+            var tint = TerrainLodMeshBuilder.WorldlessFaceTint(
+                owner, material.Metadata, side, ReferenceEquals(owner, grassBlock));
             return TerrainLodMeshBuilder.ResolveFaceAppearance(
                 owner, material.Metadata, side, tint,
                 ReferenceEquals(owner, grassBlock), grassOverlayTexture);
@@ -479,16 +504,33 @@ internal static class TerrainLodSpatialMeshBuilder
     {
         if (neighbor is null || neighbor.Value.IsAir) return true;
         if (neighbor.Value.Material.OccludesFaces) return false;
+        if (material.Geometry == TerrainLodGeometryClass.SurfaceLayer &&
+            neighbor.Value.Material == material) return false;
         if (translucent && TerrainLodMeshBuilder.SharesLiquidMedium(
                 material, neighbor.Value.Material, blocks))
             return false;
         return !translucent || neighbor.Value.Material != material;
     }
 
-    internal static bool TryLayer(TerrainLodMaterial material, out bool translucent)
+    internal static bool TryLayer(TerrainLodMaterial material, int sampleSize, out bool translucent)
     {
         translucent = TerrainLodMeshBuilder.IsTranslucent(material);
-        return translucent || TerrainLodMeshBuilder.IsVolumetricDepthWriting(material);
+        return translucent || TerrainLodMeshBuilder.IsVolumetricDepthWriting(material) ||
+               (sampleSize == 1 && material.Geometry == TerrainLodGeometryClass.SurfaceLayer);
+    }
+
+    internal static bool IsHorizontallyInsetOnSide(Block block, Side side)
+    {
+        var bounds = block.DefinitionBoundingBox;
+        const double epsilon = 0.0001;
+        return side switch
+        {
+            Side.West => bounds.MinX > epsilon,
+            Side.East => bounds.MaxX < 1 - epsilon,
+            Side.North => bounds.MinZ > epsilon,
+            Side.South => bounds.MaxZ < 1 - epsilon,
+            _ => false
+        };
     }
 
     internal static ChunkLightVertex Light(in TerrainLodColumnSpan span) => new(

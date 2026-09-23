@@ -711,6 +711,13 @@ internal static class TerrainLodMeshBuilder
         return new TerrainLodFaceAppearance(texture, 0xFFFFFF, grassOverlayTexture, tint);
     }
 
+    internal static int WorldlessFaceTint(
+        Block block, int metadata, Side side, bool isGrassBlock) =>
+        // Remote spatial tiles have no biome visual snapshot yet. Their grass-side overlay
+        // must at least use the same green as the top, never the untinted white side base.
+        block.GetColorForFace(metadata,
+            (int)(isGrassBlock && side != Side.Down ? Side.Up : side));
+
     internal static int PackTintedColor(int tint, float shade)
     {
         var red = Shade((tint >> 16) & 255);
