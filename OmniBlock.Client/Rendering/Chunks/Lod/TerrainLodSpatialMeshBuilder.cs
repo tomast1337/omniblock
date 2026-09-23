@@ -164,6 +164,9 @@ internal static class TerrainLodSpatialMeshBuilder
         var grassOverlayTexture = grassBlock is null
             ? -1
             : Atlases.Terrain.IndexOf("omniblock:grass_block_side_overlay");
+        var snowyGrassTexture = grassBlock is null
+            ? -1
+            : Atlases.Terrain.IndexOf("omniblock:grass_block_side_snowy");
 
         stageStarted = Stopwatch.GetTimestamp();
         for (var x = 0; x < tile.Width; x++)
@@ -233,7 +236,7 @@ internal static class TerrainLodSpatialMeshBuilder
                 {
                     var worldX = checked((int)tileMinX + x);
                     var worldZ = checked((int)tileMinZ + z);
-                    var appearance = Appearance(plant, plantSpan.Material, Side.Down);
+                    var appearance = Appearance(plant, plantSpan.Material, Side.Down, null);
                     const float inset = 0.05f;
                     var left = worldX + inset;
                     var right = worldX + 1 - inset;
@@ -272,7 +275,19 @@ internal static class TerrainLodSpatialMeshBuilder
                     float shade,
                     TerrainLodColumnSpan? exposedNeighbor)
                 {
-                    var appearance = Appearance(block, span.Material, side);
+                    var faceBlock = block;
+                    var faceMaterial = span.Material;
+                    if (side == Side.Up && sampleSize > 1 &&
+                        exposedNeighbor is { Material.Geometry: TerrainLodGeometryClass.SurfaceLayer } layer &&
+                        blocks.TryGet(layer.Material.BlockId, out var layerBlock) &&
+                        layerBlock is not null)
+                    {
+                        // Coarse layers are samples, not enlarged cubes. Use their surface
+                        // appearance on the supporting top rather than dropping them entirely.
+                        faceBlock = layerBlock;
+                        faceMaterial = layer.Material;
+                    }
+                    var appearance = Appearance(faceBlock, faceMaterial, side, above);
                     var light = FaceLight(span, exposedNeighbor, side);
                     // sampleSize is bounded by MaximumSampleSpan and the power-of-two sample grid is
                     // aligned to every page boundary, so this quad can never straddle a page.
@@ -373,7 +388,7 @@ internal static class TerrainLodSpatialMeshBuilder
                             var pageBoundary = (FloorDivide((int)MathF.Floor(y0), PageSize) + 1) * PageSize;
                             var y1 = Math.Min(top, Math.Min(y0 + MaximumQuadSpan, pageBoundary));
                             if (y1 <= y0) y1 = Math.Min(top, y0 + MaximumQuadSpan);
-                            var appearance = Appearance(block, span.Material, side);
+                            var appearance = Appearance(block, span.Material, side, above);
                             var anchorX = side is Side.West or Side.East
                                 ? (side == Side.West ? fixedCoordinate + 0.001 : fixedCoordinate - 0.001)
                                 : (alongStart + alongEnd) * 0.5;
@@ -483,13 +498,13 @@ internal static class TerrainLodSpatialMeshBuilder
         TerrainLodFaceAppearance Appearance(
             Block owner,
             TerrainLodMaterial material,
-            Side side)
+            Side side,
+            TerrainLodColumnSpan? above)
         {
-            var tint = TerrainLodMeshBuilder.WorldlessFaceTint(
-                owner, material.Metadata, side, ReferenceEquals(owner, grassBlock));
-            return TerrainLodMeshBuilder.ResolveFaceAppearance(
-                owner, material.Metadata, side, tint,
-                ReferenceEquals(owner, grassBlock), grassOverlayTexture);
+            return TerrainLodMeshBuilder.ResolveWorldlessFaceAppearance(
+                owner, material, side, ReferenceEquals(owner, grassBlock),
+                TerrainLodMeshBuilder.HasSnowCover(above),
+                grassOverlayTexture, snowyGrassTexture);
         }
     }
 

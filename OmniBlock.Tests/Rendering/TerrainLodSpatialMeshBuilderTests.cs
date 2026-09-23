@@ -263,6 +263,61 @@ public sealed class TerrainLodSpatialMeshBuilderTests
     }
 
     [Fact]
+    public void Coarse_snow_samples_color_the_supporting_top_without_a_snow_cube()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var stone = world.Content.Blocks.Get("omniblock:stone");
+        var snow = world.Content.Blocks.Get("omniblock:snow");
+        var column = TerrainLodColumn.Create(16,
+        [
+            new TerrainLodColumnSpan(0, 8, materials.Resolve(stone.Id, 0), 0, 15),
+            new TerrainLodColumnSpan(8, 1, materials.Resolve(snow.Id, 3), 0, 15),
+            new TerrainLodColumnSpan(9, 7, TerrainLodMaterial.Air, 0, 15)
+        ]);
+        var tile = TerrainLodColumnTile.CreateUniform(
+            new TerrainLodTileKey(1, 0, 0), 1, 16, column, "coarse-snow-cap");
+        var snowLayer = OmniBlock.Textures.Atlases.Terrain.LayerOfGridIndex(
+            snow.GetTexture(OmniBlock.Blocks.Side.Up, 3));
+
+        var mesh = TerrainLodSpatialMeshBuilder.Build(
+            tile, world.Content.Blocks, verticalSliceBudget: 8);
+
+        Assert.Contains(mesh.Pages.SelectMany(page => page.Vertices), vertex =>
+            vertex.ArrayLayer == snowLayer);
+        Assert.DoesNotContain(mesh.Pages.SelectMany(page => page.Vertices), vertex =>
+            vertex.ArrayLayer == snowLayer && vertex.Y > 8 * 32767f / 64f + 1);
+    }
+
+    [Fact]
+    public void Grass_beneath_snow_uses_untinted_snowy_side_without_green_overlay()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var grass = world.Content.Blocks.Get("omniblock:grass_block");
+        var snow = world.Content.Blocks.Get("omniblock:snow");
+        var column = TerrainLodColumn.Create(16,
+        [
+            new TerrainLodColumnSpan(0, 8, materials.Resolve(grass.Id, 0), 0, 15),
+            new TerrainLodColumnSpan(8, 1, materials.Resolve(snow.Id, 0), 0, 15),
+            new TerrainLodColumnSpan(9, 7, TerrainLodMaterial.Air, 0, 15)
+        ]);
+        var tile = TerrainLodColumnTile.CreateUniform(
+            new TerrainLodTileKey(1, 0, 0), 0, 16, column, "snowy-grass-side");
+        var snowyLayer = OmniBlock.Textures.Atlases.Terrain.LayerOfGridIndex(
+            OmniBlock.Textures.Atlases.Terrain.IndexOf("omniblock:grass_block_side_snowy"));
+        var overlayLayer = OmniBlock.Textures.Atlases.Terrain.LayerOfGridIndex(
+            OmniBlock.Textures.Atlases.Terrain.IndexOf("omniblock:grass_block_side_overlay"));
+
+        var mesh = TerrainLodSpatialMeshBuilder.Build(
+            tile, world.Content.Blocks, verticalSliceBudget: 8);
+        var vertices = mesh.Pages.SelectMany(page => page.Vertices).ToArray();
+
+        Assert.Contains(vertices, vertex => vertex.ArrayLayer == snowyLayer);
+        Assert.DoesNotContain(vertices, vertex => vertex.ArrayLayer == overlayLayer);
+    }
+
+    [Fact]
     public void Stationary_and_flowing_water_do_not_create_internal_tile_walls()
     {
         var world = new FakeWorldContext();

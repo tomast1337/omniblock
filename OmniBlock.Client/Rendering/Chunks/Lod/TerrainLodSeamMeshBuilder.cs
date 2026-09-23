@@ -178,14 +178,24 @@ internal static class TerrainLodSeamMeshBuilder
             var sampleX = owner.ChunkX * 16 + (ownerSide == Side.East ? 16 : (minAlong + maxAlong) * 0.5f);
             var sampleZ = owner.ChunkZ * 16 + (ownerSide == Side.South ? 16 : (minAlong + maxAlong) * 0.5f);
             var sampleY = y + fineScale * 0.5f;
+            var sampleBlockX = (int)MathF.Floor(sampleX) - (faceSide == Side.East ? 1 : 0);
+            var sampleBlockZ = (int)MathF.Floor(sampleZ) - (faceSide == Side.South ? 1 : 0);
             var tint = visuals is null
-                ? block.GetColorForFace(material.Metadata, (int)faceSide)
+                ? TerrainLodMeshBuilder.WorldlessFaceTint(
+                    block, material.Metadata, faceSide, ReferenceEquals(block, grassBlock))
                 : block.GetColorMultiplier(
-                    visuals, (int)MathF.Floor(sampleX), (int)MathF.Floor(sampleY),
-                    (int)MathF.Floor(sampleZ), material.Metadata);
+                    visuals, sampleBlockX, (int)MathF.Floor(sampleY),
+                    sampleBlockZ, material.Metadata);
+            var textureOverride = visuals is not null && fineLevel == 0 &&
+                                  ReferenceEquals(block, grassBlock)
+                ? block.GetTextureId(visuals,
+                    sampleBlockX, (int)MathF.Floor(sampleY),
+                    sampleBlockZ, faceSide)
+                : (int?)null;
             var appearance = TerrainLodMeshBuilder.ResolveFaceAppearance(
                 block, material.Metadata, faceSide, tint,
-                ReferenceEquals(block, grassBlock), grassOverlayTexture);
+                ReferenceEquals(block, grassBlock), grassOverlayTexture,
+                textureOverride);
             var light = SampleLight(faceSide, block.LightEmission, sampleX, sampleY, sampleZ);
             if (caveCullBelowY is { } ceilingY && hasSkyLight && lighting is not null &&
                 y + fineScale <= ceilingY && light.Sky == 0)

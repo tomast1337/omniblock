@@ -723,6 +723,30 @@ public sealed class TerrainLodMeshBuilderTests
     }
 
     [Fact]
+    public void Fine_local_grass_uses_snowy_side_from_world_visuals()
+    {
+        var world = new FakeWorldContext();
+        var grass = world.Content.Blocks.Get("omniblock:grass_block");
+        var snow = world.Content.Blocks.Get("omniblock:snow");
+        world.ReaderWriter.BiomeSource = new OmniBlock.Worlds.Biomes.Source.BiomeSource(world);
+        world.ReaderWriter.SetBlock(8, 32, 8, grass.Id);
+        world.ReaderWriter.SetBlock(8, 33, 8, snow.Id);
+        var hierarchy = Build(world, (x, y, z) =>
+            x == 8 && z == 8 && y == 32 ? (byte)grass.Id :
+            x == 8 && z == 8 && y == 33 ? (byte)snow.Id : (byte)0);
+        var snowyLayer = OmniBlock.Textures.Atlases.Terrain.LayerOfGridIndex(
+            OmniBlock.Textures.Atlases.Terrain.IndexOf("omniblock:grass_block_side_snowy"));
+        var overlayLayer = OmniBlock.Textures.Atlases.Terrain.LayerOfGridIndex(
+            OmniBlock.Textures.Atlases.Terrain.IndexOf("omniblock:grass_block_side_overlay"));
+
+        var mesh = TerrainLodMeshBuilder.Build(
+            hierarchy, 0, world.Content.Blocks, true, visuals: world.Reader);
+
+        Assert.Contains(mesh.Vertices, vertex => vertex.ArrayLayer == snowyLayer);
+        Assert.DoesNotContain(mesh.Vertices, vertex => vertex.ArrayLayer == overlayLayer);
+    }
+
+    [Fact]
     public void Available_source_lighting_replaces_the_full_sky_fallback()
     {
         var world = new FakeWorldContext();

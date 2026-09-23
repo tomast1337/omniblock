@@ -381,12 +381,18 @@ internal static class TerrainLodMeshBuilder
                 var sampleZ = (int)MathF.Floor(
                     hierarchy.ChunkZ * 16 + (minZ + maxZ) * 0.5f);
                 var tint = visuals is null
-                    ? block.GetColorForFace(material.Metadata, (int)side)
+                    ? WorldlessFaceTint(
+                        block, material.Metadata, side, ReferenceEquals(block, grassBlock))
                     : block.GetColorMultiplier(
                         visuals, sampleX, sampleY, sampleZ, material.Metadata);
+                var textureOverride = visuals is not null && levelIndex == 0 &&
+                                      ReferenceEquals(block, grassBlock)
+                    ? block.GetTextureId(visuals, sampleX, sampleY, sampleZ, side)
+                    : (int?)null;
                 var appearance = ResolveFaceAppearance(
                     block, material.Metadata, side, tint,
-                    ReferenceEquals(block, grassBlock), grassOverlayTexture);
+                    ReferenceEquals(block, grassBlock), grassOverlayTexture,
+                    textureOverride);
                 if (levelIndex > 0 && side == Side.Up &&
                     TryFindSurfaceSample(out var sample, out var sampleCoverage))
                     appearance = ApplySurfaceSample(
@@ -702,13 +708,40 @@ internal static class TerrainLodMeshBuilder
         Side side,
         int tint,
         bool isGrassBlock,
-        int grassOverlayTexture)
+        int grassOverlayTexture,
+        int? textureOverride = null)
     {
-        var texture = block.GetTexture(side, metadata);
+        var texture = textureOverride ?? block.GetTexture(side, metadata);
         if (!isGrassBlock) return new TerrainLodFaceAppearance(texture, tint);
         if (side == Side.Up) return new TerrainLodFaceAppearance(texture, tint);
         if (side == Side.Down) return new TerrainLodFaceAppearance(texture, 0xFFFFFF);
+        // World-aware grass visuals choose the snowy side instead of the ordinary side/overlay.
+        if (textureOverride is { } selected && selected != block.GetTexture(side, metadata))
+            return new TerrainLodFaceAppearance(texture, 0xFFFFFF);
         return new TerrainLodFaceAppearance(texture, 0xFFFFFF, grassOverlayTexture, tint);
+    }
+
+    internal static bool HasSnowCover(TerrainLodColumnSpan? above) =>
+        above is { } span && span.Material.BlockId is { IsVanilla: true } id &&
+        id.Path is "snow" or "snow_block";
+
+    internal static TerrainLodFaceAppearance ResolveWorldlessFaceAppearance(
+        Block block,
+        TerrainLodMaterial material,
+        Side side,
+        bool isGrassBlock,
+        bool snowAbove,
+        int grassOverlayTexture,
+        int snowyGrassTexture)
+    {
+        var tint = WorldlessFaceTint(block, material.Metadata, side, isGrassBlock);
+        var overrideTexture = isGrassBlock && snowAbove &&
+                              side is not Side.Up and not Side.Down
+            ? snowyGrassTexture
+            : (int?)null;
+        return ResolveFaceAppearance(
+            block, material.Metadata, side, tint, isGrassBlock,
+            grassOverlayTexture, overrideTexture);
     }
 
     internal static int WorldlessFaceTint(

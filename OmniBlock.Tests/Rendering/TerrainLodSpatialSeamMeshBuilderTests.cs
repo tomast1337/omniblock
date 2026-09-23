@@ -48,6 +48,31 @@ public sealed class TerrainLodSpatialSeamMeshBuilderTests
     }
 
     [Fact]
+    public void Grass_under_snow_uses_snowy_side_at_the_spatial_tile_edge()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var grass = checked((byte)world.Content.Blocks.Get("omniblock:grass_block").Id);
+        var snow = checked((byte)world.Content.Blocks.Get("omniblock:snow").Id);
+        var tile = Leaf(materials, 0, 0, 16,
+            (_, y, _) => y < 8 ? grass : y == 8 ? snow : (byte)0);
+        var segment = TerrainLodSpatialSeamPlanner.Plan(
+            [new TerrainLodTileSelection(tile.Key, 0, 8)])
+            .Single(static seam => seam.OwnerSide == TerrainLodSpatialBoundarySide.East);
+        var snowyLayer = OmniBlock.Textures.Atlases.Terrain.LayerOfGridIndex(
+            OmniBlock.Textures.Atlases.Terrain.IndexOf("omniblock:grass_block_side_snowy"));
+        var overlayLayer = OmniBlock.Textures.Atlases.Terrain.LayerOfGridIndex(
+            OmniBlock.Textures.Atlases.Terrain.IndexOf("omniblock:grass_block_side_overlay"));
+
+        var seam = TerrainLodSpatialSeamMeshBuilder.Build(
+            segment, tile, neighbor: null, world.Content.Blocks);
+        var vertices = seam.Pages.SelectMany(page => page.Vertices).ToArray();
+
+        Assert.Contains(vertices, vertex => vertex.ArrayLayer == snowyLayer);
+        Assert.DoesNotContain(vertices, vertex => vertex.ArrayLayer == overlayLayer);
+    }
+
+    [Fact]
     public void Seam_build_stops_when_the_result_cannot_fit_its_budget()
     {
         var world = new FakeWorldContext();

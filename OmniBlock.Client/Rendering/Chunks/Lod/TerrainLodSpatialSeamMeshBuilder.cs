@@ -94,6 +94,9 @@ internal static class TerrainLodSpatialSeamMeshBuilder
         var grassOverlayTexture = grassBlock is null
             ? -1
             : Atlases.Terrain.IndexOf("omniblock:grass_block_side_overlay");
+        var snowyGrassTexture = grassBlock is null
+            ? -1
+            : Atlases.Terrain.IndexOf("omniblock:grass_block_side_snowy");
 
         for (var along = alongStart; along < alongEnd; along += step)
         {
@@ -190,7 +193,10 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                             y0 + TerrainLodSpatialMeshBuilder.MaximumQuadSpan);
                         EmitPatch(
                             source, opposite, block, translucent, sourceSide,
-                            y0, y1, along, end);
+                            y0, y1, along, end,
+                            source.TopY < sourceColumn.WorldHeight &&
+                            TerrainLodMeshBuilder.HasSnowCover(
+                                sourceColumn.At(source.TopY)));
                         y0 = y1;
                     }
                 }
@@ -220,7 +226,7 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                     EmitPatch(
                         source, opposite, liquidBlock, translucent: true, sourceSide,
                         Math.Max(intervalBottom, Math.Min(ownerTop, neighborTop)),
-                        Math.Max(ownerTop, neighborTop), along, end);
+                        Math.Max(ownerTop, neighborTop), along, end, snowAbove: false);
                 }
 
                 static float LiquidTop(
@@ -304,14 +310,13 @@ internal static class TerrainLodSpatialSeamMeshBuilder
             float y0,
             float y1,
             int patchStart,
-            int patchEnd)
+            int patchEnd,
+            bool snowAbove)
         {
             var side = ToBlockSide(boundarySide);
-            var tint = TerrainLodMeshBuilder.WorldlessFaceTint(
-                block, span.Material.Metadata, side, ReferenceEquals(block, grassBlock));
-            var appearance = TerrainLodMeshBuilder.ResolveFaceAppearance(
-                block, span.Material.Metadata, side, tint,
-                ReferenceEquals(block, grassBlock), grassOverlayTexture);
+            var appearance = TerrainLodMeshBuilder.ResolveWorldlessFaceAppearance(
+                block, span.Material, side, ReferenceEquals(block, grassBlock),
+                snowAbove, grassOverlayTexture, snowyGrassTexture);
             var shade = boundarySide is TerrainLodSpatialBoundarySide.West or
                 TerrainLodSpatialBoundarySide.East ? 0.6f : 0.8f;
             var anchorX = boundarySide switch

@@ -299,6 +299,8 @@ public sealed class FakeBlockGrid : IBlockReader, IBlockWriter
 
     public IBlockRuntimeView ContentBlocks { get; set; } = null!;
 
+    public BiomeSource? BiomeSource { get; set; }
+
     public int GetBlockId(int x, int y, int z) => _cells.TryGetValue((x, y, z), out var state) ? state.BlockId : 0;
     public int GetBlockMeta(int x, int y, int z) => _cells.TryGetValue((x, y, z), out var state) ? state.Meta : 0;
 
@@ -320,7 +322,7 @@ public sealed class FakeBlockGrid : IBlockReader, IBlockWriter
         return id != 0 && TestBlocks.IsOpaque(id);
     }
 
-    public BiomeSource GetBiomeSource() => throw new NotSupportedException();
+    public BiomeSource GetBiomeSource() => BiomeSource ?? throw new NotSupportedException();
     public bool IsAir(int x, int y, int z) => GetBlockId(x, y, z) == 0;
 
     public int GetBrightness(int x, int y, int z) => Brightness;
