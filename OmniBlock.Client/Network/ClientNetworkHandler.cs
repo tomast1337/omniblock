@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Client.Diagnostics;
+using OmniBlock.Client.Entities;
 using OmniBlock.Client.Entities.FX;
 using OmniBlock.Client.Rendering.Entities;
 using OmniBlock.Client.Rendering.Particles;
@@ -87,8 +88,20 @@ public class ClientNetworkHandler : NetHandler
     private bool _awaitingRespawnPosition;
 
     private int _ticks;
-    private ClientWorld _worldClient;
-    public string StatusMessage;
+    private ClientWorld? _activeWorld;
+    private ClientWorld _worldClient
+    {
+        get => _activeWorld ?? throw new InvalidOperationException("World packet received before the client world was created.");
+        set => _activeWorld = value;
+    }
+
+    private ClientPlayerEntity ReadyPlayer => _context.PlayerHost.Player
+        ?? throw new InvalidOperationException("Player packet received before the local player was created.");
+
+    private World ReadyWorld => _context.WorldHost.World
+        ?? throw new InvalidOperationException("World packet received before the client world was created.");
+
+    public string StatusMessage = string.Empty;
 
     public ClientNetworkHandler(ClientNetworkContext context, string address, int port)
     {
@@ -492,7 +505,7 @@ public class ClientNetworkHandler : NetHandler
         MessageHandlers.On<PaintingSpawnMessage>(onPaintingSpawn);
         MessageHandlers.On<PlayerSpawnMessage>(onPlayerSpawn);
         MessageHandlers.On<OpenScreenMessage>(onOpenScreen);
-        MessageHandlers.On<CloseScreenMessage>(_ => _context.PlayerHost.Player.CloseHandledScreen());
+        MessageHandlers.On<CloseScreenMessage>(_ => ReadyPlayer.CloseHandledScreen());
         MessageHandlers.On<InventoryMessage>(onInventory);
         MessageHandlers.On<ScreenHandlerSlotMessage>(onScreenHandlerSlot);
         MessageHandlers.On<ScreenHandlerPropertyMessage>(onScreenHandlerProperty);
@@ -547,7 +560,7 @@ public class ClientNetworkHandler : NetHandler
 
     private void onTerrainLodTile(TerrainLodTileMessage message)
     {
-        if (_worldClient is null || message.Dimension != _worldClient.Dimension.Id) return;
+        if (_activeWorld is null || message.Dimension != _activeWorld.Dimension.Id) return;
         if (!TryGetTerrainLodIdentity(
                 message.Dimension, message.CacheIdentity, out var identity))
         {
@@ -570,7 +583,7 @@ public class ClientNetworkHandler : NetHandler
 
     private void onTerrainLodTileStatus(TerrainLodTileStatusMessage message)
     {
-        if (_worldClient is null || message.Dimension != _worldClient.Dimension.Id) return;
+        if (_activeWorld is null || message.Dimension != _activeWorld.Dimension.Id) return;
         if (!HasTerrainLodIdentity(message.Dimension, message.CacheIdentity))
         {
             _terrainLodIdentityRejectedMessages++;
@@ -654,7 +667,7 @@ public class ClientNetworkHandler : NetHandler
     }
 
     internal bool TerrainLodIdentityReady =>
-        _worldClient is not null && _terrainLodIdentities.ContainsKey(_worldClient.Dimension.Id);
+        _activeWorld is not null && _terrainLodIdentities.ContainsKey(_activeWorld.Dimension.Id);
     internal long TerrainLodIdentityMismatches => _terrainLodIdentityMismatches;
     internal long TerrainLodIdentityRejectedMessages => _terrainLodIdentityRejectedMessages;
 
@@ -920,9 +933,9 @@ public class ClientNetworkHandler : NetHandler
             IsRemote = true
         };
         _context.WorldHost.ChangeWorld(_worldClient);
-        _context.PlayerHost.Player.DimensionId = packet.DimensionId;
+        ReadyPlayer.DimensionId = packet.DimensionId;
         _context.Navigator.Navigate(_context.Factory.CreateTerrainScreen(this));
-        _context.PlayerHost.Player.ID = packet.ProtocolVersion;
+        ReadyPlayer.ID = packet.ProtocolVersion;
     }
 
     private void onItemEntitySpawn(ItemEntitySpawnMessage packet)
@@ -1068,7 +1081,7 @@ public class ClientNetworkHandler : NetHandler
         var z = packet.Z / 32.0D;
         var rotation = packet.Yaw * 360 / 256.0F;
         var pitch = packet.Pitch * 360 / 256.0F;
-        OtherPlayerEntity ent = new(_context.WorldHost.World, packet.Name);
+        OtherPlayerEntity ent = new(ReadyWorld, packet.Name);
         ent.PrevX = ent.LastTickX = ent.TrackedPosX = packet.X;
         ent.PrevY = ent.LastTickY = ent.TrackedPosY = packet.Y;
         ent.PrevZ = ent.LastTickZ = ent.TrackedPosZ = packet.Z;
@@ -1168,7 +1181,7 @@ public class ClientNetworkHandler : NetHandler
 
         var removed = _worldClient.RemoveEntityFromWorld(packet.EntityId);
         if (packet.Reason == EntityRemovalReason.DistanceDespawn && removed is EntityLiving living &&
-            living.Type?.Definition.SpawnCategory == CreatureKind.MonsterCategory)
+            living.Type?.Definition?.SpawnCategory == CreatureKind.MonsterCategory)
             _worldClient.BeginDistanceDespawnPresentation(removed);
     }
 
@@ -1363,12 +1376,12 @@ public class ClientNetworkHandler : NetHandler
     private void onItemPickup(ItemPickupMessage packet)
     {
         var ent = GetEntityById(packet.EntityId);
-        Entity collector = GetEntityById(packet.CollectorEntityId) as EntityLiving ?? _context.PlayerHost.Player;
+        Entity collector = GetEntityById(packet.CollectorEntityId) as EntityLiving ?? ReadyPlayer;
 
         if (ent != null && collector != null)
         {
             _worldClient.Broadcaster.PlaySoundAtEntity(ent, "random.pop", 0.2F, ((_rand.NextFloat() - _rand.NextFloat()) * 0.7F + 1.0F) * 2.0F);
-            _context.ParticleManager.AddSpecialParticle(new LegacyParticleAdapter(new EntityPickupFX(_context.WorldHost.World, ent, collector, -0.5F)));
+            _context.ParticleManager.AddSpecialParticle(new LegacyParticleAdapter(new EntityPickupFX(ReadyWorld, ent, collector, -0.5F)));
             _worldClient.RemoveEntityFromWorld(packet.EntityId);
         }
     }
@@ -1460,8 +1473,9 @@ public class ClientNetworkHandler : NetHandler
         var z = packet.Z / 32.0D;
         var yaw = packet.Yaw * 360 / 256.0F;
         var pitch = packet.Pitch * 360 / 256.0F;
-        var ent = (EntityLiving)_context.WorldHost.World.Content.EntityTypes
-            .CreateByProtocolId(packet.Type, _context.WorldHost.World);
+        var world = ReadyWorld;
+        var ent = (EntityLiving)world.Content.EntityTypes
+            .CreateByProtocolId(packet.Type, world);
         ent.TrackedPosX = packet.X;
         ent.TrackedPosY = packet.Y;
         ent.TrackedPosZ = packet.Z;
@@ -1479,7 +1493,7 @@ public class ClientNetworkHandler : NetHandler
 
     private void onPlayerSpawnPosition(PlayerSpawnPositionMessage packet)
     {
-        _context.PlayerHost.Player.SetSpawnPos(new Vec3I(packet.X, packet.Y, packet.Z));
+        ReadyPlayer.SetSpawnPos(new Vec3I(packet.X, packet.Y, packet.Z));
         _context.WorldHost.World?.Properties.SetSpawn(packet.X, packet.Y, packet.Z);
     }
 
@@ -1487,9 +1501,9 @@ public class ClientNetworkHandler : NetHandler
     {
         object? rider = GetEntityById(packet.EntityId);
         var ent = GetEntityById(packet.VehicleEntityId);
-        if (packet.EntityId == _context.PlayerHost.Player.ID)
+        if (packet.EntityId == ReadyPlayer.ID)
         {
-            rider = _context.PlayerHost.Player;
+            rider = ReadyPlayer;
         }
 
         if (rider is Entity riderEntity)
@@ -1506,21 +1520,22 @@ public class ClientNetworkHandler : NetHandler
 
     private Entity? GetEntityById(int entityId)
     {
-        if (_context.PlayerHost.Player == null || _worldClient == null)
+        var player = _context.PlayerHost.Player;
+        if (player == null || _activeWorld == null)
         {
             return null;
         }
 
-        return entityId == _context.PlayerHost.Player.ID ? _context.PlayerHost.Player : _worldClient.GetEntity(entityId);
+        return entityId == player.ID ? player : _activeWorld.GetEntity(entityId);
     }
 
-    private void onHealthUpdate(HealthUpdateMessage packet) => _context.PlayerHost.Player.setHealth(packet.HealthMp);
+    private void onHealthUpdate(HealthUpdateMessage packet) => ReadyPlayer.setHealth(packet.HealthMp);
 
     private void onPlayerRespawn(PlayerRespawnMessage packet)
     {
         PresentationRelocated?.Invoke(null);
-        _awaitingRespawnPosition = packet.DimensionId == _context.PlayerHost.Player.DimensionId;
-        if (packet.DimensionId != _context.PlayerHost.Player.DimensionId)
+        _awaitingRespawnPosition = packet.DimensionId == ReadyPlayer.DimensionId;
+        if (packet.DimensionId != ReadyPlayer.DimensionId)
         {
             // Every entity in the old world is about to go away without a destroy packet each, so
             // the baseline is asked to start over rather than left holding states for entities whose
@@ -1540,7 +1555,7 @@ public class ClientNetworkHandler : NetHandler
                 IsRemote = true
             };
             _context.WorldHost.ChangeWorld(_worldClient);
-            _context.PlayerHost.Player.DimensionId = packet.DimensionId;
+            ReadyPlayer.DimensionId = packet.DimensionId;
             _context.Navigator.Navigate(_context.Factory.CreateTerrainScreen(this));
         }
 
@@ -1549,7 +1564,7 @@ public class ClientNetworkHandler : NetHandler
 
     private void onExplosion(ExplosionMessage packet)
     {
-        Explosion explosion = new(_context.WorldHost.World, null, packet.X, packet.Y, packet.Z, packet.Radius)
+        Explosion explosion = new(ReadyWorld, null, packet.X, packet.Y, packet.Z, packet.Radius)
         {
             destroyedBlockPositions = [.. packet.DestroyedBlocks]
         };
@@ -1558,37 +1573,37 @@ public class ClientNetworkHandler : NetHandler
 
     private void onOpenScreen(OpenScreenMessage packet)
     {
-        var player = _context.PlayerHost.Player;
+        var player = ReadyPlayer;
         if (!player.GameMode.CanInteract) return;
 
         if (packet.ScreenHandlerId == 0)
         {
             InventoryBasic inventory = new(packet.Name, packet.SlotsCount);
             player.openChestScreen(inventory);
-            player.CurrentScreenHandler.SyncId = packet.SyncId;
+            (player.CurrentScreenHandler ?? throw new InvalidOperationException("Chest screen was not opened.")).SyncId = packet.SyncId;
         }
         else if (packet.ScreenHandlerId == 2)
         {
             BlockEntityFurnace furnace = new();
             player.openFurnaceScreen(furnace);
-            player.CurrentScreenHandler.SyncId = packet.SyncId;
+            (player.CurrentScreenHandler ?? throw new InvalidOperationException("Furnace screen was not opened.")).SyncId = packet.SyncId;
         }
         else if (packet.ScreenHandlerId == 3)
         {
             BlockEntityDispenser dispenser = new();
             player.openDispenserScreen(dispenser);
-            player.CurrentScreenHandler.SyncId = packet.SyncId;
+            (player.CurrentScreenHandler ?? throw new InvalidOperationException("Dispenser screen was not opened.")).SyncId = packet.SyncId;
         }
         else if (packet.ScreenHandlerId == 1)
         {
             player.openCraftingScreen(MathHelper.Floor(player.X), MathHelper.Floor(player.Y), MathHelper.Floor(player.Z));
-            player.CurrentScreenHandler.SyncId = packet.SyncId;
+            (player.CurrentScreenHandler ?? throw new InvalidOperationException("Crafting screen was not opened.")).SyncId = packet.SyncId;
         }
     }
 
     private void onScreenHandlerSlot(ScreenHandlerSlotMessage packet)
     {
-        var player = _context.PlayerHost.Player;
+        var player = ReadyPlayer;
         if (packet.SyncId == -1)
         {
             player.Inventory.SetCursorStack(packet.Stack);
@@ -1603,23 +1618,23 @@ public class ClientNetworkHandler : NetHandler
 
             player.PlayerScreenHandler.setStackInSlot(packet.Slot, packet.Stack);
         }
-        else if (packet.SyncId == player.CurrentScreenHandler.SyncId)
+        else if (player.CurrentScreenHandler is { } activeScreen && packet.SyncId == activeScreen.SyncId)
         {
-            player.CurrentScreenHandler.setStackInSlot(packet.Slot, packet.Stack);
+            activeScreen.setStackInSlot(packet.Slot, packet.Stack);
         }
     }
 
     private void onScreenHandlerAck(ScreenHandlerAckMessage packet)
     {
-        var player = _context.PlayerHost.Player;
+        var player = ReadyPlayer;
         ScreenHandler? screenHandler = null;
         if (packet.SyncId == 0)
         {
             screenHandler = player.PlayerScreenHandler;
         }
-        else if (packet.SyncId == player.CurrentScreenHandler.SyncId)
+        else if (player.CurrentScreenHandler is { } activeScreen && packet.SyncId == activeScreen.SyncId)
         {
-            screenHandler = player.CurrentScreenHandler;
+            screenHandler = activeScreen;
         }
 
         if (screenHandler != null)
@@ -1643,22 +1658,23 @@ public class ClientNetworkHandler : NetHandler
 
     private void onInventory(InventoryMessage packet)
     {
-        var player = _context.PlayerHost.Player;
+        var player = ReadyPlayer;
         if (packet.SyncId == 0)
         {
             player.PlayerScreenHandler.updateSlotStacks(packet.Contents);
         }
-        else if (packet.SyncId == player.CurrentScreenHandler.SyncId)
+        else if (player.CurrentScreenHandler is { } activeScreen && packet.SyncId == activeScreen.SyncId)
         {
-            player.CurrentScreenHandler.updateSlotStacks(packet.Contents);
+            activeScreen.updateSlotStacks(packet.Contents);
         }
     }
 
     private void onUpdateSign(UpdateSignMessage packet)
     {
-        if (_context.WorldHost.World.BlockHost.IsPosLoaded(packet.X, packet.Y, packet.Z))
+        var world = ReadyWorld;
+        if (world.BlockHost.IsPosLoaded(packet.X, packet.Y, packet.Z))
         {
-            var signEntity = _context.WorldHost.World.Entities.GetBlockEntity<BlockEntitySign>(packet.X, packet.Y, packet.Z);
+            var signEntity = world.Entities.GetBlockEntity<BlockEntitySign>(packet.X, packet.Y, packet.Z);
 
             if (signEntity != null)
             {
@@ -1674,7 +1690,7 @@ public class ClientNetworkHandler : NetHandler
 
     private void onMobSpawnerUpdate(MobSpawnerUpdateMessage packet)
     {
-        var world = _context.WorldHost.World;
+        var world = ReadyWorld;
         if (!world.BlockHost.IsPosLoaded(packet.X, packet.Y, packet.Z)) return;
 
         world.Entities
@@ -1684,10 +1700,10 @@ public class ClientNetworkHandler : NetHandler
 
     private void onScreenHandlerProperty(ScreenHandlerPropertyMessage packet)
     {
-        var player = _context.PlayerHost.Player;
-        if (player.CurrentScreenHandler != null && player.CurrentScreenHandler.SyncId == packet.SyncId)
+        var player = ReadyPlayer;
+        if (player.CurrentScreenHandler is { } activeScreen && activeScreen.SyncId == packet.SyncId)
         {
-            player.CurrentScreenHandler.setProperty(packet.PropertyId, packet.Value);
+            activeScreen.setProperty(packet.PropertyId, packet.Value);
         }
     }
 
@@ -1702,9 +1718,9 @@ public class ClientNetworkHandler : NetHandler
     private void onGameStateChange(GameStateChangeMessage packet)
     {
         int reason = packet.Reason;
-        if (reason >= 0 && reason < GameStateChangeMessage.Reasons.Length && GameStateChangeMessage.Reasons[reason] != null)
+        if (reason >= 0 && reason < GameStateChangeMessage.Reasons.Length && GameStateChangeMessage.Reasons[reason] is { } message)
         {
-            _context.PlayerHost.Player.SendMessage(GameStateChangeMessage.Reasons[reason]);
+            ReadyPlayer.SendMessage(message);
         }
 
         if (reason == 1)
@@ -1733,7 +1749,7 @@ public class ClientNetworkHandler : NetHandler
     {
         if (packet.ItemRawId == _context.Content.Items.Get("omniblock:map").Id)
         {
-            MapBehavior.GetMapState(packet.MapId, _context.WorldHost.World).UpdateData(packet.Data);
+            MapBehavior.GetMapState(packet.MapId, ReadyWorld).UpdateData(packet.Data);
         }
         else
         {
@@ -1748,7 +1764,7 @@ public class ClientNetworkHandler : NetHandler
         try
         {
             var stat = Stats.Stats.GetStatById(packet.StatId);
-            ((EntityClientPlayerMP)_context.PlayerHost.Player).IncreaseRemoteStat(stat, packet.Amount);
+            ((EntityClientPlayerMP)ReadyPlayer).IncreaseRemoteStat(stat, packet.Amount);
         }
         catch (KeyNotFoundException ex)
         {

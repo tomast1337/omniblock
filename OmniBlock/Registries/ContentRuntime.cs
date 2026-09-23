@@ -134,8 +134,8 @@ public interface IItemRuntimeView
 {
     Item Get(ResourceLocation key);
     Item GetByProtocolId(int protocolId);
-    bool TryGet(ResourceLocation key, out Item? item);
-    bool TryGetByProtocolId(int protocolId, out Item? item);
+    bool TryGet(ResourceLocation key, [NotNullWhen(true)] out Item? item);
+    bool TryGetByProtocolId(int protocolId, [NotNullWhen(true)] out Item? item);
 
     bool TryParse(string input, [NotNullWhen(true)] out ItemStack? stack, int count = 1, int defaultMeta = 0)
     {
@@ -246,8 +246,8 @@ public sealed class RuntimeItemRegistry : IItemRuntimeView
         ? item
         : throw new KeyNotFoundException($"Unknown item protocol id {protocolId}.");
 
-    public bool TryGet(ResourceLocation key, out Item? item) => _byKey.TryGetValue(key, out item);
-    public bool TryGetByProtocolId(int protocolId, out Item? item) => _byProtocolId.TryGetValue(protocolId, out item);
+    public bool TryGet(ResourceLocation key, [NotNullWhen(true)] out Item? item) => _byKey.TryGetValue(key, out item);
+    public bool TryGetByProtocolId(int protocolId, [NotNullWhen(true)] out Item? item) => _byProtocolId.TryGetValue(protocolId, out item);
 
     public bool TryParse(string input, [NotNullWhen(true)] out ItemStack? stack, int count = 1, int defaultMeta = 0)
     {
@@ -360,13 +360,13 @@ public sealed class RuntimeBlockRegistry : IBlockRuntimeView
             ? block
             : throw new KeyNotFoundException($"Unknown block protocol id {protocolId}.");
 
-    public bool TryGetByProtocolId(int protocolId, out Block? block)
+    public bool TryGetByProtocolId(int protocolId, [NotNullWhen(true)] out Block? block)
     {
         block = (uint)protocolId < _byProtocolId.Length ? _byProtocolId[protocolId] : null;
         return block is not null;
     }
 
-    public bool TryGet(ResourceLocation key, out Block? block) => _byKey.TryGetValue(key, out block);
+    public bool TryGet(ResourceLocation key, [NotNullWhen(true)] out Block? block) => _byKey.TryGetValue(key, out block);
 
     public Block Get(string key) => Get(ResourceLocation.Parse(key));
 

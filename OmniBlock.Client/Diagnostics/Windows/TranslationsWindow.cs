@@ -108,7 +108,7 @@ internal sealed class TranslationsWindow : DebugWindow
 
                 if (_displayMissing)
                 {
-                    if (Translations.Instance.DefaultLanguage is null)
+                    if (Translations.Instance.DefaultLanguage is not { } defaultLanguage)
                     {
                         ImGuiTextSafe.TextDisabled("Cannot show missing translations - default language is null.");
                     }
@@ -117,7 +117,7 @@ internal sealed class TranslationsWindow : DebugWindow
                         ImGuiTextSafe.TextDisabled("Displaying translations missing in this language:");
 
                         var anyMissing = false;
-                        foreach (var translation in Translations.Instance.DefaultLanguage.Translations)
+                        foreach (var translation in defaultLanguage.Translations ?? new Dictionary<string, string>())
                         {
                             if (_language.Translations.ContainsKey(translation.Key)) continue;
 

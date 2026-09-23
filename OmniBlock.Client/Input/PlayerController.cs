@@ -20,13 +20,13 @@ public class PlayerController
 
     public virtual void ClickBlock(int x, int y, int z, int direction)
     {
-        Game.World.ExtinguishFire(Game.Player, x, y, z, direction);
+        (Game.World ?? throw new InvalidOperationException("No active world.")).ExtinguishFire(Game.Player, x, y, z, direction);
         SendBlockRemoved(x, y, z, direction);
     }
 
     public virtual bool SendBlockRemoved(int x, int y, int z, int direction)
     {
-        var world = Game.World;
+        var world = Game.World ?? throw new InvalidOperationException("No active world.");
         var block = world.Content.Blocks.GetByProtocolId(world.Reader.GetBlockId(x, y, z));
         world.Broadcaster.NotifyNeighbors(x, y, z, world.Reader.GetBlockId(x, y, z));
         var blockMeta = world.Reader.GetBlockMeta(x, y, z);
@@ -89,7 +89,7 @@ public class PlayerController
     public virtual bool SendPlaceBlock(
         ClientPlayerEntity player,
         IWorldContext world,
-        ItemStack selectedItem,
+        ItemStack? selectedItem,
         int blockX,
         int blockY,
         int blockZ,
@@ -119,11 +119,12 @@ public class PlayerController
     public virtual void AttackEntity(EntityPlayer player, Entity target) =>
         player.Attack(target);
 
-    public virtual ItemStack OnSlotClick(int windowId, int slotIndex, int mouseButton, bool shiftClick, EntityPlayer player) => player.CurrentScreenHandler.onSlotClick(slotIndex, mouseButton, shiftClick, player);
+    public virtual ItemStack? OnSlotClick(int windowId, int slotIndex, int mouseButton, bool shiftClick, EntityPlayer player) =>
+        player.CurrentScreenHandler?.onSlotClick(slotIndex, mouseButton, shiftClick, player);
 
     public virtual void OnGuiClosed(int windowId, EntityPlayer player)
     {
-        player.CurrentScreenHandler.onClosed(player);
+        player.CurrentScreenHandler?.onClosed(player);
         player.CurrentScreenHandler = player.PlayerScreenHandler;
     }
 }

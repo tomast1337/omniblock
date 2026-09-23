@@ -37,7 +37,10 @@ public abstract class OmniBlockServer : ICommandOutput
     /// </summary>
     private long _broadcastSimulationTimeMs;
 
-    private ServerCommandHandler _commandHandler;
+    private ServerCommandHandler? _commandHandler;
+    private ConnectionListener? _connections;
+    private PlayerManager? _playerManager;
+    private ServerWorld[]? _worlds;
     private float _currentTps;
 
     private volatile bool _isPaused;
@@ -59,21 +62,33 @@ public abstract class OmniBlockServer : ICommandOutput
     private int _ticksThisSecond;
     private volatile int _pendingSimulationDistance = -1;
     public IServerConfiguration config;
-    public ConnectionListener connections;
+    public ConnectionListener connections
+    {
+        get => _connections ?? throw new InvalidOperationException("Server connections are not initialized.");
+        set => _connections = value;
+    }
     public EntityTracker[] entityTrackers = new EntityTracker[2];
     public bool flightEnabled;
 
     public Dictionary<string, int> GIVE_COMMANDS_COOLDOWNS = [];
     protected bool logHelp = true;
     public bool onlineMode;
-    public PlayerManager playerManager;
+    public PlayerManager playerManager
+    {
+        get => _playerManager ?? throw new InvalidOperationException("Server player manager is not initialized.");
+        set => _playerManager = value;
+    }
     public int progress;
     public string? progressMessage;
     public bool pvpEnabled;
     public bool running = true;
     public bool spawnAnimals;
     public bool stopped;
-    public ServerWorld[] worlds;
+    public ServerWorld[] worlds
+    {
+        get => _worlds ?? throw new InvalidOperationException("Server worlds are not initialized.");
+        set => _worlds = value;
+    }
 
     protected OmniBlockServer(
         IServerConfiguration config,
@@ -275,7 +290,11 @@ public abstract class OmniBlockServer : ICommandOutput
                 // Terrain, in parallel. Generation reads no neighbours, so it is the only stage
                 // that can be.
                 var sw1 = Stopwatch.StartNew();
-                var threadLocalGen = new ThreadLocal<IChunkSource>(world.ChunkCache.CreateParallelGenerator, false);
+                var threadLocalGen = new ThreadLocal<IChunkSource>(
+                    () => world.ChunkCache.CreateParallelGenerator() ??
+                        throw new InvalidOperationException(
+                            "The spawn region's chunk provider did not create a parallel generator."),
+                    false);
                 Parallel.For(0, totalChunks, idx =>
                 {
                     if (!running)
@@ -367,14 +386,14 @@ public abstract class OmniBlockServer : ICommandOutput
         // Before saving, so no player is accepted into a world that is mid-save. The stream
         // listener leaked its socket here; a UDP transport holds a bound port and a receive thread,
         // and leaving those behind makes a restart on the same port fail.
-        connections?.StopAsync().GetAwaiter().GetResult();
+        _connections?.StopAsync().GetAwaiter().GetResult();
 
-        foreach (var world in worlds)
-            world?.ChunkMap.Shutdown();
+        foreach (var world in _worlds ?? [])
+            world?.ChunkMap?.Shutdown();
 
-        playerManager?.savePlayers();
+        _playerManager?.savePlayers();
 
-        foreach (var world in worlds)
+        foreach (var world in _worlds ?? [])
         {
             if (world != null)
             {
@@ -383,7 +402,7 @@ public abstract class OmniBlockServer : ICommandOutput
             }
         }
 
-        foreach (var world in worlds)
+        foreach (var world in _worlds ?? [])
             world?.ShutdownTerrainLod();
 
         if (this is InternalServer)
@@ -669,11 +688,11 @@ public abstract class OmniBlockServer : ICommandOutput
         if (requested < 0) return;
 
         SimulationDistance = GetEffectiveSimulationDistance(requested, config.GetViewDistance(10));
-        if (worlds == null) return;
+        if (_worlds == null) return;
         foreach (var world in worlds)
             world?.SetSimulationDistance(SimulationDistance);
 
-        if (playerManager != null)
+        if (_playerManager != null)
             playerManager.sendToAll(new SessionDistanceMessage
             {
                 RenderDistance = RenderDistance,
@@ -695,12 +714,12 @@ public abstract class OmniBlockServer : ICommandOutput
         var candidate = Interlocked.Exchange(ref _pendingContent, null);
         if (candidate is null) return;
         Content = candidate;
-        if (worlds is null) return;
+        if (_worlds is null) return;
         foreach (var world in worlds)
             world?.ReplaceRuntimeContent(candidate);
-        if (playerManager is not null)
+        if (_playerManager is not null)
             foreach (var player in playerManager.players)
-                player.NetworkHandler.SendTerrainLodIdentity();
+                player.ConnectedNetworkHandler.SendTerrainLodIdentity();
     }
 
     public void QueueCommands(string str, ICommandOutput cmd)
@@ -753,7 +772,7 @@ public abstract class OmniBlockServer : ICommandOutput
                 cmd = _pendingCommands.Dequeue();
             }
 
-            _commandHandler.ExecuteCommand(cmd);
+            (_commandHandler ?? throw new InvalidOperationException("Server commands are not initialized.")).ExecuteCommand(cmd);
         }
 
         while (true)

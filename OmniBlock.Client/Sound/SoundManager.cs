@@ -15,13 +15,14 @@ public class SoundManager : IDisposable
     private readonly JavaRandom _rand = new();
 
     private readonly Dictionary<string, List<SoundBuffer>> _soundBuffers = [];
-    private readonly SFML.Audio.Sound[] _soundChannels = new SFML.Audio.Sound[MaxChannels];
+    private readonly SFML.Audio.Sound?[] _soundChannels = new SFML.Audio.Sound?[MaxChannels];
     private readonly SoundPool _soundPoolSounds = new();
     private readonly SoundPool _soundPoolStreaming = new();
 
-    private Music _currentMusic;
-    private Music _currentStreaming;
-    private GameOptions _options;
+    private Music? _currentMusic;
+    private Music? _currentStreaming;
+    private GameOptions? _options;
+    private GameOptions Options => _options ?? throw new InvalidOperationException("Sound settings have not been loaded.");
 
     private int _soundSourceSuffix;
 
@@ -32,7 +33,7 @@ public class SoundManager : IDisposable
             var count = 0;
             for (var i = 0; i < MaxChannels; i++)
             {
-                if (_soundChannels[i] != null && _soundChannels[i].Status == SoundStatus.Playing)
+                if (_soundChannels[i] is { Status: SoundStatus.Playing })
                     count++;
             }
 
@@ -63,10 +64,10 @@ public class SoundManager : IDisposable
 
         for (var i = 0; i < MaxChannels; i++)
         {
-            if (_soundChannels[i] != null)
+            if (_soundChannels[i] is { } channel)
             {
-                _soundChannels[i].Stop();
-                _soundChannels[i].Dispose();
+                channel.Stop();
+                channel.Dispose();
                 _soundChannels[i] = null;
             }
         }
@@ -109,35 +110,35 @@ public class SoundManager : IDisposable
 
     private void TryToSetLibraryAndCodecs()
     {
-        var soundVolume = _options.SoundVolume;
-        var musicVolume = _options.MusicVolume;
-        _options.SoundVolume = 0.0F;
-        _options.MusicVolume = 0.0F;
-        _options.SaveOptions();
+        var soundVolume = Options.SoundVolume;
+        var musicVolume = Options.MusicVolume;
+        Options.SoundVolume = 0.0F;
+        Options.MusicVolume = 0.0F;
+        Options.SaveOptions();
 
-        _options.SoundVolume = soundVolume;
-        _options.MusicVolume = musicVolume;
-        _options.SaveOptions();
+        Options.SoundVolume = soundVolume;
+        Options.MusicVolume = musicVolume;
+        Options.SaveOptions();
 
         s_started = true;
     }
 
     public void OnSoundOptionsChanged()
     {
-        if (!s_started && (_options.SoundVolume != 0.0F || _options.MusicVolume != 0.0F))
+        if (!s_started && (Options.SoundVolume != 0.0F || Options.MusicVolume != 0.0F))
         {
             TryToSetLibraryAndCodecs();
         }
 
         if (s_started)
         {
-            if (_options.MusicVolume == 0.0F)
+            if (Options.MusicVolume == 0.0F)
             {
                 _currentMusic?.Stop();
             }
             else
             {
-                _currentMusic?.Volume = _options.MusicVolume * 100.0F;
+                _currentMusic?.Volume = Options.MusicVolume * 100.0F;
             }
         }
     }
@@ -189,7 +190,7 @@ public class SoundManager : IDisposable
         value.Add(buffer);
     }
 
-    private SoundBuffer getRandomSoundBuffer(string name)
+    private SoundBuffer? getRandomSoundBuffer(string? name)
     {
         if (name == null)
         {
@@ -209,20 +210,22 @@ public class SoundManager : IDisposable
     {
         for (var i = 0; i < MaxChannels; i++)
         {
-            if (_soundChannels[i] == null)
+            if (_soundChannels[i] is not { } channel)
             {
-                _soundChannels[i] = new SFML.Audio.Sound(buffer);
-                return _soundChannels[i];
+                channel = new SFML.Audio.Sound(buffer);
+                _soundChannels[i] = channel;
+                return channel;
             }
 
-            if (_soundChannels[i].Status == SoundStatus.Stopped)
+            if (channel.Status == SoundStatus.Stopped)
             {
-                _soundChannels[i].SoundBuffer = buffer;
-                return _soundChannels[i];
+                channel.SoundBuffer = buffer;
+                return channel;
             }
         }
 
-        var stolen = _soundChannels[0];
+        var stolen = _soundChannels[0] ?? new SFML.Audio.Sound(buffer);
+        _soundChannels[0] = stolen;
         stolen.Stop();
         stolen.SoundBuffer = buffer;
         return stolen;
@@ -230,7 +233,7 @@ public class SoundManager : IDisposable
 
     public void PlayRandomMusicIfReady(ResourceLocation category)
     {
-        if (!s_started || _options.MusicVolume == 0.0F) return;
+        if (!s_started || Options.MusicVolume == 0.0F) return;
 
         if (!_musicCategories.TryGetValue(category, out var musicCategory)) return;
 
@@ -258,7 +261,7 @@ public class SoundManager : IDisposable
 
         _currentMusic = new Music(musicName)
         {
-            Volume = _options.MusicVolume * 100.0F,
+            Volume = Options.MusicVolume * 100.0F,
             IsLooping = false,
             RelativeToListener = true,
             Position = new Vector3f(0, 0, 0)
@@ -295,9 +298,9 @@ public class SoundManager : IDisposable
         }
     }
 
-    public void UpdateListener(EntityLiving player, float partialTicks)
+    public void UpdateListener(EntityLiving? player, float partialTicks)
     {
-        if (!s_started || _options.SoundVolume == 0.0F || player == null) return;
+        if (!s_started || Options.SoundVolume == 0.0F || player == null) return;
 
 
         var yaw = player.PrevYaw + (player.Yaw - player.PrevYaw) * partialTicks;
@@ -315,7 +318,7 @@ public class SoundManager : IDisposable
 
     public void PlayStreaming(string? name, float x, float y, float z, float volume, float pitch)
     {
-        if (!(s_started && _options.SoundVolume != 0.0F)) return;
+        if (!(s_started && Options.SoundVolume != 0.0F)) return;
 
         if (_currentStreaming != null && _currentStreaming.Status == SoundStatus.Playing)
         {
@@ -336,7 +339,7 @@ public class SoundManager : IDisposable
         _currentStreaming?.Dispose();
         _currentStreaming = new Music(SanitizePath(entry.SoundUrl.LocalPath))
         {
-            Volume = 0.5F * _options.SoundVolume * 100.0F,
+            Volume = 0.5F * Options.SoundVolume * 100.0F,
             IsLooping = false,
             RelativeToListener = false,
             Position = new Vector3f(x, y, z)
@@ -359,7 +362,7 @@ public class SoundManager : IDisposable
 
     public void PlaySound(string name, float x, float y, float z, float volume, float pitch)
     {
-        if (!(s_started && _options.SoundVolume != 0.0F)) return;
+        if (!(s_started && Options.SoundVolume != 0.0F)) return;
 
         var buffer = getRandomSoundBuffer(name);
         if (buffer == null || volume <= 0.0F) return;
@@ -389,14 +392,14 @@ public class SoundManager : IDisposable
             finalVolume = 1.0F;
         }
 
-        sound.Volume = finalVolume * _options.SoundVolume * 100.0F;
+        sound.Volume = finalVolume * Options.SoundVolume * 100.0F;
 
         sound.Play();
     }
 
     public void PlaySoundFX(string name, float volume, float pitch)
     {
-        if (!(s_started && _options.SoundVolume != 0.0F)) return;
+        if (!(s_started && Options.SoundVolume != 0.0F)) return;
 
         var buffer = getRandomSoundBuffer(name);
         if (buffer == null) return;
@@ -417,7 +420,7 @@ public class SoundManager : IDisposable
         }
 
         finalVolume *= 0.25F;
-        sound.Volume = finalVolume * _options.SoundVolume * 100.0F;
+        sound.Volume = finalVolume * Options.SoundVolume * 100.0F;
 
         sound.MinDistance = 1.0f;
         sound.Attenuation = 1.0f;

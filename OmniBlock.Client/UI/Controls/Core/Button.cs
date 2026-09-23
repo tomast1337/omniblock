@@ -5,7 +5,7 @@ namespace OmniBlock.Client.UI.Controls.Core;
 
 public class Button : UIElement
 {
-    public Action ClickSound;
+    public Action? ClickSound;
 
 
     public Button(Action clickSound)

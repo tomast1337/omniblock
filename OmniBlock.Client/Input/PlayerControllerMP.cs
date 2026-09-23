@@ -34,7 +34,7 @@ public class PlayerControllerMP : PlayerController
     {
         if (!Game.Player.GameMode.CanBreak) return false;
 
-        var blockId = Game.World.Reader.GetBlockId(x, y, z);
+        var blockId = (Game.World ?? throw new InvalidOperationException("No active world.")).Reader.GetBlockId(x, y, z);
         var blockRemoved = base.SendBlockRemoved(x, y, z, direction);
         var hand = Game.Player.GetHand();
         if (hand != null)
@@ -55,7 +55,7 @@ public class PlayerControllerMP : PlayerController
         if (!_isHittingBlock || x != _targetBlockPos.X || y != _targetBlockPos.Y || z != _targetBlockPos.Z)
         {
             _netClientHandler.SendMessage(PlayerAction(PlayerActionMessage.Actions.BlockClick, x, y, z, direction));
-            var blockId = Game.World.Reader.GetBlockId(x, y, z);
+            var blockId = (Game.World ?? throw new InvalidOperationException("No active world.")).Reader.GetBlockId(x, y, z);
             if (blockId > 0 && _curBlockDamageMp == 0.0F && Game.Player.GameMode.CanInteract)
             {
                 Game.Content.Blocks.GetByProtocolId(blockId).OnBlockBreakStart(new OnBlockBreakStartEvent(Game.World, Game.Player, x, y, z));
@@ -103,7 +103,7 @@ public class PlayerControllerMP : PlayerController
                 {
                     if (!Game.Player.GameMode.CanBreak) return;
 
-                    var blockId = Game.World.Reader.GetBlockId(x, y, z);
+                    var blockId = (Game.World ?? throw new InvalidOperationException("No active world.")).Reader.GetBlockId(x, y, z);
                     if (blockId == 0)
                     {
                         _isHittingBlock = false;
@@ -188,7 +188,7 @@ public class PlayerControllerMP : PlayerController
     public override bool SendPlaceBlock(
         ClientPlayerEntity player,
         IWorldContext world,
-        ItemStack selectedItem,
+        ItemStack? selectedItem,
         int blockX,
         int blockY,
         int blockZ,
@@ -226,9 +226,9 @@ public class PlayerControllerMP : PlayerController
         player.Interact(target);
     }
 
-    public override ItemStack OnSlotClick(int windowId, int slotIndex, int mouseButton, bool shiftClick, EntityPlayer player)
+    public override ItemStack? OnSlotClick(int windowId, int slotIndex, int mouseButton, bool shiftClick, EntityPlayer player)
     {
-        var revision = player.CurrentScreenHandler.nextRevision(player.Inventory);
+        var revision = (player.CurrentScreenHandler ?? throw new InvalidOperationException("Player has no open screen handler.")).nextRevision(player.Inventory);
         var resultStack = base.OnSlotClick(windowId, slotIndex, mouseButton, shiftClick, player);
         _netClientHandler.SendMessage(new ClickSlotMessage
         {

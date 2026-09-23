@@ -170,7 +170,8 @@ internal static class NaturalSpawner
                         if (pathEntity != null && pathEntity.PathLength > 1)
                         {
                             var pathPoint = pathEntity.GetFinalPoint();
-                            if (Math.Abs(pathPoint.X - player.X) < 1.5D && Math.Abs(pathPoint.Z - player.Z) < 1.5D &&
+                            if (pathPoint is not null &&
+                                Math.Abs(pathPoint.X - player.X) < 1.5D && Math.Abs(pathPoint.Z - player.Z) < 1.5D &&
                                 Math.Abs(pathPoint.Y - player.Y) < 1.5D)
                             {
                                 var wakeUpPos =

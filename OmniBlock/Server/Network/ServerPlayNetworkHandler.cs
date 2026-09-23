@@ -121,8 +121,8 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         Text = "§7" + message
     });
 
-    public string Name => player.Name;
-    public byte PermissionLevel => server.playerManager.isOperator(player.Name) ? (byte)4 : (byte)0;
+    public string Name => player.PlayerName;
+    public byte PermissionLevel => server.playerManager.isOperator(player.PlayerName) ? (byte)4 : (byte)0;
 
     public void tick()
     {
@@ -147,7 +147,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         {
             EntityId = player.ID,
             Type = PlayerConnectionUpdateMessage.UpdateType.Leave,
-            Name = player.Name
+            Name = player.PlayerName
         });
         server.playerManager.sendToAll(new ChatMessage
         {
@@ -647,7 +647,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         // until that acknowledgement (or a later movement) arrived.
         server.playerManager.updatePlayerChunks(player);
 
-        player.NetworkHandler.SendMessage(new PlayerMoveFullMessage
+        SendMessage(new PlayerMoveFullMessage
         {
             X = x,
             Y = y + 1.62F,
@@ -677,7 +677,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             {
                 if (MathHelper.GetDistSqr(player.X, player.Y, player.Z, x, y, z) < 256.0)
                 {
-                    player.NetworkHandler.SendMessage(new BlockUpdateMessage
+                    SendMessage(new BlockUpdateMessage
                     {
                         X = x,
                         Y = (sbyte)y,
@@ -704,7 +704,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             {
                 if (!CanBypassSpawnProtection(x, z, world))
                 {
-                    player.NetworkHandler.SendMessage(new BlockUpdateMessage
+                    SendMessage(new BlockUpdateMessage
                     {
                         X = x,
                         Y = (sbyte)y,
@@ -723,7 +723,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 player.InteractionManager.continueMining(x, y, z);
                 if (world.Reader.GetBlockId(x, y, z) != 0)
                 {
-                    player.NetworkHandler.SendMessage(new BlockUpdateMessage
+                    SendMessage(new BlockUpdateMessage
                     {
                         X = x,
                         Y = (sbyte)y,
@@ -741,7 +741,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         const int spawnProtection = 16;
         var spawnPos = world.Properties.GetSpawnPos();
         var notBlockedFromSpawnProtection = Math.Abs(x - spawnPos.X) > spawnProtection || Math.Abs(z - spawnPos.Z) > spawnProtection;
-        notBlockedFromSpawnProtection = notBlockedFromSpawnProtection || world.BypassSpawnProtection || server is InternalServer || server.playerManager.isOperator(player.Name);
+        notBlockedFromSpawnProtection = notBlockedFromSpawnProtection || world.BypassSpawnProtection || server is InternalServer || server.playerManager.isOperator(player.PlayerName);
         return notBlockedFromSpawnProtection;
     }
 
@@ -770,7 +770,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 player.InteractionManager.interactBlock(player, world, stack, x, y, z, side);
             }
 
-            player.NetworkHandler.SendMessage(new BlockUpdateMessage
+            SendMessage(new BlockUpdateMessage
             {
                 X = x,
                 Y = (sbyte)y,
@@ -800,7 +800,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                     break;
             }
 
-            player.NetworkHandler.SendMessage(new BlockUpdateMessage
+            SendMessage(new BlockUpdateMessage
             {
                 X = x,
                 Y = (sbyte)y,
@@ -818,14 +818,16 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
         player.SkipPacketSlotUpdates = true;
         player.Inventory.Main[player.Inventory.SelectedSlot] = ItemStack.Clone(player.Inventory.Main[player.Inventory.SelectedSlot]);
-        var slot = player.CurrentScreenHandler.GetSlot(player.Inventory, player.Inventory.SelectedSlot);
-        player.CurrentScreenHandler.SendContentUpdates();
+        var screenHandler = player.CurrentScreenHandler ?? player.PlayerScreenHandler;
+        var slot = screenHandler.GetSlot(player.Inventory, player.Inventory.SelectedSlot)
+            ?? throw new InvalidOperationException("Selected inventory slot is not present in the active screen.");
+        screenHandler.SendContentUpdates();
         player.SkipPacketSlotUpdates = false;
         if (!ItemStack.AreEqual(player.Inventory.ItemInHand, packet.Stack))
         {
             SendMessage(new ScreenHandlerSlotMessage
             {
-                SyncId = (sbyte)player.CurrentScreenHandler.SyncId,
+                SyncId = (sbyte)screenHandler.SyncId,
                 Slot = (short)slot.id,
                 Stack = player.Inventory.ItemInHand
             });
@@ -840,7 +842,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         {
             EntityId = player.ID,
             Type = PlayerConnectionUpdateMessage.UpdateType.Leave,
-            Name = player.Name
+            Name = player.PlayerName
         });
         server.playerManager.sendToAll(new ChatMessage
         {
@@ -927,7 +929,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 Text = emote
             });
         }
-        else if (server is InternalServer || server.playerManager.isOperator(player.Name))
+        else if (server is InternalServer || server.playerManager.isOperator(player.PlayerName))
         {
             var commandText = message[1..];
             _logger.LogInformation($"{player.Name} issued server command: {commandText}");
@@ -1039,33 +1041,34 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
     private void onClickSlot(ClickSlotMessage packet)
     {
-        if (player.CurrentScreenHandler.SyncId == packet.SyncId && player.CurrentScreenHandler.canOpen(player))
+        var screenHandler = player.CurrentScreenHandler ?? player.PlayerScreenHandler;
+        if (screenHandler.SyncId == packet.SyncId && screenHandler.canOpen(player))
         {
-            var clickedStack = player.CurrentScreenHandler.onSlotClick(packet.Slot, packet.Button, packet.HoldingShift, player);
+            var clickedStack = screenHandler.onSlotClick(packet.Slot, packet.Button, packet.HoldingShift, player);
             if (ItemStack.AreEqual(packet.Stack, clickedStack))
             {
-                player.NetworkHandler.SendMessage(Acknowledge(packet.SyncId, packet.ActionType, true));
+                SendMessage(Acknowledge(packet.SyncId, packet.ActionType, true));
                 player.SkipPacketSlotUpdates = true;
-                player.CurrentScreenHandler.SendContentUpdates();
+                screenHandler.SendContentUpdates();
                 player.updateCursorStack();
                 player.SkipPacketSlotUpdates = false;
             }
             else
             {
                 // should something be done adding fails?
-                transactions.TryAdd(player.CurrentScreenHandler.SyncId, packet.ActionType);
-                player.NetworkHandler.SendMessage(Acknowledge(packet.SyncId, packet.ActionType, false));
-                player.CurrentScreenHandler.updatePlayerList(player, false);
+                transactions.TryAdd(screenHandler.SyncId, packet.ActionType);
+                SendMessage(Acknowledge(packet.SyncId, packet.ActionType, false));
+                screenHandler.updatePlayerList(player, false);
 
-                var size = player.CurrentScreenHandler.Slots.Count;
-                var slotStacks = new List<ItemStack>(size);
+                var size = screenHandler.Slots.Count;
+                var slotStacks = new List<ItemStack?>(size);
 
                 for (var i = 0; i < size; i++)
                 {
-                    slotStacks.Add(player.CurrentScreenHandler.Slots[i].getStack());
+                    slotStacks.Add(screenHandler.Slots[i].getStack());
                 }
 
-                player.onContentsUpdate(player.CurrentScreenHandler, slotStacks);
+                player.onContentsUpdate(screenHandler, slotStacks);
             }
         }
     }
@@ -1079,12 +1082,13 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
     private void onScreenHandlerAck(ScreenHandlerAckMessage packet)
     {
-        if (transactions.TryGetValue(player.CurrentScreenHandler.SyncId, out var value)
+        var screenHandler = player.CurrentScreenHandler ?? player.PlayerScreenHandler;
+        if (transactions.TryGetValue(screenHandler.SyncId, out var value)
             && packet.ActionType == value
-            && player.CurrentScreenHandler.SyncId == packet.SyncId
-            && !player.CurrentScreenHandler.canOpen(player))
+            && screenHandler.SyncId == packet.SyncId
+            && !screenHandler.canOpen(player))
         {
-            player.CurrentScreenHandler.updatePlayerList(player, true);
+            screenHandler.updatePlayerList(player, true);
         }
     }
 
@@ -1093,7 +1097,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         var playerWorld = server.getWorld(player.DimensionId);
         if (playerWorld.Reader.IsPosLoaded(packet.X, packet.Y, packet.Z))
         {
-            BlockEntity blockEntity = playerWorld.Entities.GetBlockEntity<BlockEntitySign>(packet.X, packet.Y, packet.Z);
+            BlockEntity? blockEntity = playerWorld.Entities.GetBlockEntity<BlockEntitySign>(packet.X, packet.Y, packet.Z);
             var sign = blockEntity as BlockEntitySign;
             if (sign != null)
             {

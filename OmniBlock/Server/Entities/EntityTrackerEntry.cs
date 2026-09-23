@@ -255,7 +255,7 @@ internal class EntityTrackerEntry
     {
         foreach (var player in listeners)
         {
-            player.NetworkHandler.SendPacket(packet);
+            player.ConnectedNetworkHandler.SendPacket(packet);
         }
     }
 
@@ -263,7 +263,7 @@ internal class EntityTrackerEntry
     {
         foreach (var player in listeners)
         {
-            player.NetworkHandler.SendMessage(message);
+            player.ConnectedNetworkHandler.SendMessage(message);
         }
     }
 
@@ -287,7 +287,7 @@ internal class EntityTrackerEntry
                 continue;
             }
 
-            player.NetworkHandler.SendMessage(message);
+            player.ConnectedNetworkHandler.SendMessage(message);
         }
     }
 
@@ -295,12 +295,12 @@ internal class EntityTrackerEntry
     {
         foreach (var p in listeners)
         {
-            p.NetworkHandler.SendPacket(packet);
+            p.ConnectedNetworkHandler.SendPacket(packet);
         }
 
         if (currentTrackedEntity is ServerPlayerEntity entity)
         {
-            entity.NetworkHandler.SendPacket(packet);
+            entity.ConnectedNetworkHandler.SendPacket(packet);
         }
     }
 
@@ -308,12 +308,12 @@ internal class EntityTrackerEntry
     {
         foreach (var p in listeners)
         {
-            p.NetworkHandler.SendMessage(message);
+            p.ConnectedNetworkHandler.SendMessage(message);
         }
 
         if (currentTrackedEntity is ServerPlayerEntity entity)
         {
-            entity.NetworkHandler.SendMessage(message);
+            entity.ConnectedNetworkHandler.SendMessage(message);
         }
     }
 
@@ -362,10 +362,10 @@ internal class EntityTrackerEntry
                     }
 
                     listeners.Add(player);
-                    player.NetworkHandler.SendMessage(createSpawnMessage());
+                    player.ConnectedNetworkHandler.SendMessage(createSpawnMessage());
                     if (alwaysUpdateVelocity)
                     {
-                        player.NetworkHandler.SendMessage(Velocity(
+                        player.ConnectedNetworkHandler.SendMessage(Velocity(
                             currentTrackedEntity.ID,
                             currentTrackedEntity.VelocityX,
                             currentTrackedEntity.VelocityY,
@@ -377,7 +377,7 @@ internal class EntityTrackerEntry
                     {
                         for (var slot = 0; slot < equipment.Length; slot++)
                         {
-                            player.NetworkHandler.SendMessage(Equipment(currentTrackedEntity.ID, slot, equipment[slot]));
+                            player.ConnectedNetworkHandler.SendMessage(Equipment(currentTrackedEntity.ID, slot, equipment[slot]));
                         }
                     }
 
@@ -385,7 +385,7 @@ internal class EntityTrackerEntry
                     {
                         if (trackedPlayer.IsSleeping)
                         {
-                            player.NetworkHandler.SendMessage(new PlayerSleepUpdateMessage
+                            player.ConnectedNetworkHandler.SendMessage(new PlayerSleepUpdateMessage
                             {
                                 PlayerId = currentTrackedEntity.ID,
                                 Status = 0,
@@ -400,7 +400,7 @@ internal class EntityTrackerEntry
             else if (listeners.Remove(player))
             {
                 player.SnapshotStream.Forget(currentTrackedEntity.ID);
-                player.NetworkHandler.SendMessage(new EntityDestroyMessage
+                player.ConnectedNetworkHandler.SendMessage(new EntityDestroyMessage
                 {
                     EntityId = currentTrackedEntity.ID,
                     Reason = EntityRemovalReason.TrackingRange
@@ -459,7 +459,7 @@ internal class EntityTrackerEntry
             return new PlayerSpawnMessage
             {
                 EntityId = p.ID,
-                Name = p.Name,
+                Name = p.PlayerName,
                 X = Fixed(p.X),
                 Y = Fixed(p.Y),
                 Z = Fixed(p.Z),
@@ -584,7 +584,7 @@ internal class EntityTrackerEntry
         if (listeners.Remove(player))
         {
             player.SnapshotStream.Forget(currentTrackedEntity.ID);
-            player.NetworkHandler.SendMessage(new EntityDestroyMessage
+            player.ConnectedNetworkHandler.SendMessage(new EntityDestroyMessage
             {
                 EntityId = currentTrackedEntity.ID,
                 Reason = EntityRemovalReason.TrackingRange

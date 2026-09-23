@@ -217,15 +217,16 @@ internal sealed class EntityRenderBaseline : IDisposable
     public void PrepareFrame()
     {
         // Pin client presentation only, never touch the integrated server's world/RNG.
-        if (!BelongsTo(_game.World)) { _changed = true; return; }
-        _game.World.SetTime(_worldTime);
-        _game.World.Environment.SetRainGradient(_rain);
-        _game.World.Environment.SetThunderGradient(_thunder);
-        _game.World.Environment.UpdateSkyBrightness();
+        var world = _game.World;
+        if (world is null || !BelongsTo(world)) { _changed = true; return; }
+        world.SetTime(_worldTime);
+        world.Environment.SetRainGradient(_rain);
+        world.Environment.SetThunderGradient(_thunder);
+        world.Environment.UpdateSkyBrightness();
         var camera = _game.Camera;
         if (camera != null)
         {
-            var luminance = _game.World.GetLuminance(
+            var luminance = world.GetLuminance(
                 MathHelper.Floor(camera.X), MathHelper.Floor(camera.Y), MathHelper.Floor(camera.Z));
             var renderDistanceFactor = Math.Clamp((_game.Options.RenderDistance - 4f) / 28f, 0f, 1f);
             _game.GameRenderer.CameraController.PinWorldBrightness(

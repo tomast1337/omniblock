@@ -28,7 +28,12 @@ public class StatBase
     public int Id { get; }
     public string StatName { get; }
     public bool LocalOnly { get; set; }
-    public string StatGuid { get; set; }
+    private string? _statGuid;
+    public string StatGuid
+    {
+        get => _statGuid ?? throw new InvalidOperationException($"Stat {Id} has not been registered.");
+        set => _statGuid = value;
+    }
 
     public virtual StatBase SetLocalOnly()
     {

@@ -32,7 +32,7 @@ public interface IWorldEventListener
 
     void PlayNote(int x, int y, int z, int soundType, int pitch);
 
-    void PlayStreaming(string trackName, int x, int y, int z);
+    void PlayStreaming(string? trackName, int x, int y, int z);
 
     void UpdateBlockEntity(int x, int y, int z, BlockEntity blockEntity);
 

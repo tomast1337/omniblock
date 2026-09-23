@@ -20,11 +20,11 @@ public class ServerWorld : World
     private readonly Dictionary<int, Entity> entitiesById = [];
     private readonly OmniBlockServer server;
     public ServerChunkCache ChunkCache;
-    internal ChunkMap ChunkMap;
+    internal ChunkMap? ChunkMap;
     public bool savingDisabled;
     private ServerTerrainLodRuntime? _terrainLod;
 
-    public ServerWorld(OmniBlockServer server, IWorldStorage storage, string saveName, int dimensionId, WorldSettings settings, ServerWorld del,
+    public ServerWorld(OmniBlockServer server, IWorldStorage storage, string saveName, int dimensionId, WorldSettings settings, ServerWorld? del,
         ContentRuntime content) : base(storage, saveName, settings, Dimension.FromId(dimensionId, content), content)
     {
         this.server = server;
@@ -38,7 +38,7 @@ public class ServerWorld : World
         Entities.OnGlobalEntityAdded += HandleGlobalEntityAdded;
 
         _terrainLod = ServerTerrainLodRuntime.TryCreate(this, server.TerrainLodPolicy);
-        ChunkCache.AttachTerrainLod(_terrainLod);
+        (ChunkCache ?? throw new InvalidOperationException("Server chunk cache was not initialized.")).AttachTerrainLod(_terrainLod);
     }
 
     public bool BypassSpawnProtection { get; }
@@ -110,7 +110,9 @@ public class ServerWorld : World
     protected override IChunkSource CreateChunkCache()
     {
         var chunkStorage = Storage.GetChunkStorage(Dimension);
-        ChunkCache = new ServerChunkCache(this, chunkStorage, Dimension.CreateChunkGenerator());
+        ChunkCache = new ServerChunkCache(this,
+            chunkStorage ?? throw new InvalidOperationException($"No chunk storage for dimension {Dimension.Id}."),
+            Dimension.CreateChunkGenerator());
         return ChunkCache;
     }
 
@@ -171,7 +173,7 @@ public class ServerWorld : World
     {
         var absX = Math.Abs(x - Properties.SpawnX);
         var absZ = Math.Abs(z - Properties.SpawnZ);
-        return absX > 16 || absZ > 16 || server.playerManager.isOperator(player.Name) || server is InternalServer;
+        return absX > 16 || absZ > 16 || player.Name is { } name && server.playerManager.isOperator(name) || server is InternalServer;
     }
 
     public override Explosion CreateExplosion(Entity? source, double x, double y, double z, float power, bool fire)

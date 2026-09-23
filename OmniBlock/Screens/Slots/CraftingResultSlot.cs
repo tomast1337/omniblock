@@ -59,9 +59,9 @@ internal class CraftingResultSlot : Slot
             if (ingredientStack != null)
             {
                 craftMatrix.RemoveStack(slotIndex, 1);
-                if (ingredientStack.GetItem().HasContainerItem())
+                if (ingredientStack.GetItem().GetContainerItem() is { } containerItem)
                 {
-                    craftMatrix.SetStack(slotIndex, new ItemStack(ingredientStack.GetItem().GetContainerItem()));
+                    craftMatrix.SetStack(slotIndex, new ItemStack(containerItem));
                 }
             }
         }

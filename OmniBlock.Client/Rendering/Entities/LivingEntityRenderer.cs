@@ -17,7 +17,7 @@ public class LivingEntityRenderer : EntityRenderer
     private readonly ILogger<LivingEntityRenderer> _logger = Log.Instance.For<LivingEntityRenderer>();
 
     protected ModelBase Main;
-    protected ModelBase renderPassModel;
+    protected ModelBase? renderPassModel;
 
     public LivingEntityRenderer(ModelBase main, float shadowRadius)
     {
@@ -77,7 +77,7 @@ public class LivingEntityRenderer : EntityRenderer
             {
                 if (ShouldRenderPass(entity, renderPass, tickDelta))
                 {
-                    renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
+                    renderPassModel?.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
                     RenderSystem.State.Apply(PresentationState(RenderState.Entity));
                     RenderSystem.AlphaTestEnabled = true;
                 }
@@ -112,7 +112,7 @@ public class LivingEntityRenderer : EntityRenderer
                         if (func_27005_b(entity, damagePass, tickDelta))
                         {
                             RenderSystem.Color = new Vector4D<float>(brightness, 0.0F, 0.0F, 0.4F);
-                            renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
+                            renderPassModel?.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
                         }
                     }
                 }
@@ -131,7 +131,7 @@ public class LivingEntityRenderer : EntityRenderer
                         if (func_27005_b(entity, overlayPass, tickDelta))
                         {
                             RenderSystem.Color = new Vector4D<float>(red, green, blue, alpha);
-                            renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
+                            renderPassModel?.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
                         }
                     }
                 }

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Blocks.Materials;
@@ -28,9 +29,9 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
     private readonly OctavePerlinNoiseSampler _minLimitPerlinNoise;
     private readonly OctavePerlinNoiseSampler _selectorNoise;
     private readonly Settings _settings;
-    private Biome[] _biomes;
+    private Biome[] _biomes = [];
     private double[] _depthBuffer = new double[256];
-    private double[] _depthNoiseBuffer;
+    private double[] _depthNoiseBuffer = [];
     private PlantPatchFeature _featureBrownMushroom;
     private ClayOreFeature _featureClay;
     private OreFeature _featureCoal;
@@ -49,12 +50,12 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
 
     private LakeFeature _featureWaterLake;
     private SpringFeature _featureWaterSpring;
-    private double[] _heightMap;
-    private double[] _maxLimitPerlinNoiseBuffer;
-    private double[] _minLimitPerlinNoiseBuffer;
-    private double[] _scaleNoiseBuffer;
-    private double[] _selectorNoiseBuffer;
-    private double[] _temperatures;
+    private double[] _heightMap = [];
+    private double[] _maxLimitPerlinNoiseBuffer = [];
+    private double[] _minLimitPerlinNoiseBuffer = [];
+    private double[] _scaleNoiseBuffer = [];
+    private double[] _selectorNoiseBuffer = [];
+    private double[] _temperatures = [];
 
     public SkyChunkGenerator(IWorldContext world, long seed)
         : this(world, seed, world.Dimension.BiomeSource, BlockIds.Resolve(world.Content.Blocks), Settings.Default)
@@ -378,7 +379,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
 
     }
 
-    public bool Save(bool b, LoadingDisplay display) => true;
+    public bool Save(bool b, LoadingDisplay? display) => true;
 
     public bool Tick() => false;
 
@@ -386,6 +387,13 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
 
     public string GetDebugInfo() => "RandomLevelSource";
 
+    [MemberNotNull(
+        nameof(_featureWaterLake), nameof(_featureLavaLake), nameof(_featureClay),
+        nameof(_featureDirt), nameof(_featureGravel), nameof(_featureCoal),
+        nameof(_featureIron), nameof(_featureGold), nameof(_featureRedstone),
+        nameof(_featureDiamond), nameof(_featureLapis), nameof(_featureDandelion),
+        nameof(_featureRose), nameof(_featureBrownMushroom), nameof(_featureRedMushroom),
+        nameof(_featureWaterSpring), nameof(_featureLavaSpring))]
     private void InitFeatures()
     {
         _featureWaterLake = new LakeFeature(_blocks.Water);
@@ -535,7 +543,8 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
 
     private double[] GenerateHeightMap(double[]? heightMap, int x, int y, int z, int sizeX, int sizeY, int sizeZ)
     {
-        heightMap ??= new double[sizeX * sizeY * sizeZ];
+        if (heightMap is null || heightMap.Length < checked(sizeX * sizeY * sizeZ))
+            heightMap = new double[sizeX * sizeY * sizeZ];
 
         var horizontalScale = _settings.HorizontalNoiseScale;
         var verticalScale = _settings.VerticalNoiseScale;

@@ -31,9 +31,9 @@ internal class OctavePerlinNoiseSampler : NoiseSampler
         return value;
     }
 
-    public double[] Create(double[] buffer, double xStart, double yStart, double zStart, int xSize, int ySize, int zSize, double xFrequency, double yFrequency, double zFrequency)
+    public double[] Create(double[]? buffer, double xStart, double yStart, double zStart, int xSize, int ySize, int zSize, double xFrequency, double yFrequency, double zFrequency)
     {
-        if (buffer == null)
+        if (buffer == null || buffer.Length < checked(xSize * ySize * zSize))
         {
             buffer = new double[xSize * ySize * zSize];
         }
@@ -65,5 +65,5 @@ internal class OctavePerlinNoiseSampler : NoiseSampler
     }
 
     // The last argument goes unused, but if it were used, it would definitely be that.
-    public double[] Create(double[] buffer, int xStart, int zStart, int xSize, int zSize, double xFrequency, double zFrequency, double inverseAmplitude) => Create(buffer, xStart, 10.0D, zStart, xSize, 1, zSize, xFrequency, 1.0D, zFrequency);
+    public double[] Create(double[]? buffer, int xStart, int zStart, int xSize, int zSize, double xFrequency, double zFrequency, double inverseAmplitude) => Create(buffer, xStart, 10.0D, zStart, xSize, 1, zSize, xFrequency, 1.0D, zFrequency);
 }

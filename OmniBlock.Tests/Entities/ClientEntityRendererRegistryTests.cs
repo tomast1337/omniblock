@@ -25,23 +25,24 @@ public sealed class ClientEntityRendererRegistryTests
     [Fact]
     public void Built_in_capture_dependencies_come_only_from_entity_descriptors()
     {
-        var dependencies = new ClientEntityRendererRegistry().CaptureDependencies(ContentRuntime.Current);
+        IEnumerable<string> dependencies =
+            new ClientEntityRendererRegistry().CaptureDependencies(ContentRuntime.Current);
 
-        Assert.Equal(14, dependencies.Count);
-        Assert.True(dependencies.Contains("/mob/cow.png"));
-        Assert.True(dependencies.Contains("/mob/chicken.png"));
-        Assert.True(dependencies.Contains("/mob/creeper.png"));
-        Assert.True(dependencies.Contains("/mob/ghast.png"));
-        Assert.True(dependencies.Contains("/mob/pig.png"));
-        Assert.True(dependencies.Contains("/mob/pigzombie.png"));
-        Assert.True(dependencies.Contains("/mob/sheep.png"));
-        Assert.True(dependencies.Contains("/mob/sheep_fur.png"));
-        Assert.True(dependencies.Contains("/mob/skeleton.png"));
-        Assert.True(dependencies.Contains("/mob/slime.png"));
-        Assert.True(dependencies.Contains("/mob/spider.png"));
-        Assert.True(dependencies.Contains("/mob/squid.png"));
-        Assert.True(dependencies.Contains("/mob/zombie.png"));
-        Assert.True(dependencies.Contains("/mob/wolf.png"));
+        Assert.Equal(14, dependencies.Count());
+        Assert.Contains("/mob/cow.png", dependencies);
+        Assert.Contains("/mob/chicken.png", dependencies);
+        Assert.Contains("/mob/creeper.png", dependencies);
+        Assert.Contains("/mob/ghast.png", dependencies);
+        Assert.Contains("/mob/pig.png", dependencies);
+        Assert.Contains("/mob/pigzombie.png", dependencies);
+        Assert.Contains("/mob/sheep.png", dependencies);
+        Assert.Contains("/mob/sheep_fur.png", dependencies);
+        Assert.Contains("/mob/skeleton.png", dependencies);
+        Assert.Contains("/mob/slime.png", dependencies);
+        Assert.Contains("/mob/spider.png", dependencies);
+        Assert.Contains("/mob/squid.png", dependencies);
+        Assert.Contains("/mob/zombie.png", dependencies);
+        Assert.Contains("/mob/wolf.png", dependencies);
     }
 
     [Fact]

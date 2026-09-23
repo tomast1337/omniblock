@@ -79,13 +79,12 @@ public class PlayerScreenHandler : ScreenHandler
 
     public override bool canUse(EntityPlayer player) => true;
 
-    public override ItemStack quickMove(int slotNumber)
+    public override ItemStack? quickMove(int slotNumber)
     {
-        ItemStack movedStack = null;
+        ItemStack? movedStack = null;
         var slot = Slots[slotNumber];
-        if (slot != null && slot.hasStack())
+        if (slot is not null && slot.hasStack() && slot.getStack() is { } slotStack)
         {
-            var slotStack = slot.getStack();
             movedStack = slotStack.Copy();
             if (slotNumber == 0)
             {

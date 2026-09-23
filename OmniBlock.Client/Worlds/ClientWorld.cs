@@ -26,7 +26,7 @@ public class ClientWorld : World
     private long _terrainLodTilesEnqueued;
     private long _terrainLodTilesDequeued;
     private int _terrainLodTileQueuePeak;
-    private MultiplayerChunkCache _chunkCache;
+    private MultiplayerChunkCache? _chunkCache;
 
     public ClientWorld(
         ClientNetworkHandler netHandler,
@@ -182,13 +182,14 @@ public class ClientWorld : World
 
     public void UpdateChunk(int chunkX, int chunkZ, bool load)
     {
+        var chunkCache = _chunkCache ?? throw new InvalidOperationException("Client chunk cache is not initialized.");
         if (load)
         {
-            _chunkCache.LoadChunk(chunkX, chunkZ);
+            chunkCache.LoadChunk(chunkX, chunkZ);
         }
         else
         {
-            _chunkCache.UnloadChunk(chunkX, chunkZ);
+            chunkCache.UnloadChunk(chunkX, chunkZ);
         }
 
         if (!load)

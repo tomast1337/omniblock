@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
@@ -315,7 +316,7 @@ public sealed class EntityBehaviorJsonTests
         public EntityType Get(ResourceLocation key) =>
             ContentRuntime.Current.EntityTypes.Get(key);
 
-        public bool TryGet(ResourceLocation key, out EntityType? type) =>
+        public bool TryGet(ResourceLocation key, [NotNullWhen(true)] out EntityType? type) =>
             ContentRuntime.Current.EntityTypes.TryGet(key, out type);
     }
 }

@@ -101,7 +101,7 @@ internal class RegionFile
             return !OutOfBounds(chunkX, chunkZ) && GetOffset(chunkX, chunkZ) != 0;
     }
 
-    public ChunkDataStream GetChunkDataInputStream(int chunkX, int chunkZ)
+    public ChunkDataStream? GetChunkDataInputStream(int chunkX, int chunkZ)
     {
         lock (this)
         {
@@ -154,7 +154,7 @@ internal class RegionFile
         }
     }
 
-    public Stream GetChunkDataOutputStream(int chunkX, int chunkZ)
+    public Stream? GetChunkDataOutputStream(int chunkX, int chunkZ)
     {
         if (OutOfBounds(chunkX, chunkZ))
         {

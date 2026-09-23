@@ -473,7 +473,7 @@ internal class ChunkMap
 
             if (player.ActiveChunks.Add(_chunkPos))
             {
-                player.NetworkHandler.SendMessage(new ChunkStatusUpdateMessage
+                player.ConnectedNetworkHandler.SendMessage(new ChunkStatusUpdateMessage
                 {
                     X = _chunkPos.X,
                     Z = _chunkPos.Z,
@@ -523,7 +523,7 @@ internal class ChunkMap
                     // unload lets light/block deltas race ahead of the full chunk when a player
                     // teleports away and later returns.
                     player.ChunksTerrainSentToClient.Remove(_chunkPos);
-                    player.NetworkHandler.SendMessage(new ChunkStatusUpdateMessage
+                    player.ConnectedNetworkHandler.SendMessage(new ChunkStatusUpdateMessage
                     {
                         X = _chunkPos.X,
                         Z = _chunkPos.Z,
@@ -598,7 +598,7 @@ internal class ChunkMap
             {
                 if (serverPlayer.ActiveChunks.Contains(_chunkPos))
                 {
-                    serverPlayer.NetworkHandler.SendMessage(message);
+                    serverPlayer.ConnectedNetworkHandler.SendMessage(message);
                 }
             }
         }

@@ -7,7 +7,12 @@ public static class Mouse
     public const int EVENT_SIZE = 1 + 1 + 4 + 4 + 4 + 8;
 
     private static bool s_created;
-    private static Glfw s_glfw;
+    private static Glfw? s_glfwBacking;
+    private static Glfw s_glfw
+    {
+        get => s_glfwBacking ?? throw new InvalidOperationException("Mouse has not been initialized.");
+        set => s_glfwBacking = value;
+    }
     private static unsafe WindowHandle* s_window;
 
     private static unsafe Cursor* s_normalCursor;

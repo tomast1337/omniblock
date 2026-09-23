@@ -7,13 +7,19 @@ namespace OmniBlock.Worlds.Biomes.Source;
 
 public class BiomeSource
 {
-    private readonly OctaveSimplexNoiseSampler _downfallSampler;
-    private readonly OctaveSimplexNoiseSampler _temperatureSampler;
-    private readonly OctaveSimplexNoiseSampler _weirdnessSampler;
-    public Biome[] Biomes;
-    public double[] DownfallMap;
-    public double[] TemperatureMap;
-    public double[] WeirdnessMap;
+    private readonly OctaveSimplexNoiseSampler? _downfallSampler;
+    private readonly OctaveSimplexNoiseSampler? _temperatureSampler;
+    private readonly OctaveSimplexNoiseSampler? _weirdnessSampler;
+    private OctaveSimplexNoiseSampler DownfallSampler => _downfallSampler ??
+        throw new InvalidOperationException("Fixed biome sources must override sampling.");
+    private OctaveSimplexNoiseSampler TemperatureSampler => _temperatureSampler ??
+        throw new InvalidOperationException("Fixed biome sources must override sampling.");
+    private OctaveSimplexNoiseSampler WeirdnessSampler => _weirdnessSampler ??
+        throw new InvalidOperationException("Fixed biome sources must override sampling.");
+    public Biome[] Biomes = [];
+    public double[] DownfallMap = [];
+    public double[] TemperatureMap = [];
+    public double[] WeirdnessMap = [];
 
     protected BiomeSource()
     {
@@ -39,7 +45,7 @@ public class BiomeSource
 
     public virtual double GetTemperature(int x, int z)
     {
-        TemperatureMap = _temperatureSampler.Sample(TemperatureMap, x, z, 1, 1, 0.025F, 0.025F, 0.5D);
+        TemperatureMap = TemperatureSampler.Sample(TemperatureMap, x, z, 1, 1, 0.025F, 0.025F, 0.5D);
         return TemperatureMap[0];
     }
 
@@ -57,8 +63,8 @@ public class BiomeSource
             map = new double[size];
         }
 
-        map = _temperatureSampler.Sample(map, x, z, width, depth, 0.025F, 0.025F, 0.25D);
-        WeirdnessMap = _weirdnessSampler.Sample(WeirdnessMap, x, z, width, depth, 0.25D, 0.25D, 10 / 17d);
+        map = TemperatureSampler.Sample(map, x, z, width, depth, 0.025F, 0.025F, 0.25D);
+        WeirdnessMap = WeirdnessSampler.Sample(WeirdnessMap, x, z, width, depth, 0.25D, 0.25D, 10 / 17d);
         var index = 0;
 
         for (var i = 0; i < width; ++i)
@@ -96,9 +102,9 @@ public class BiomeSource
             biomes = new Biome[size];
         }
 
-        TemperatureMap = _temperatureSampler.Sample(TemperatureMap, x, z, width, width, 0.025F, 0.025F, 0.25D);
-        DownfallMap = _downfallSampler.Sample(DownfallMap, x, z, width, width, 0.05F, 0.05F, 1.0D / 3.0D);
-        WeirdnessMap = _weirdnessSampler.Sample(WeirdnessMap, x, z, width, width, 0.25D, 0.25D, 0.5882352941176471D);
+        TemperatureMap = TemperatureSampler.Sample(TemperatureMap, x, z, width, width, 0.025F, 0.025F, 0.25D);
+        DownfallMap = DownfallSampler.Sample(DownfallMap, x, z, width, width, 0.05F, 0.05F, 1.0D / 3.0D);
+        WeirdnessMap = WeirdnessSampler.Sample(WeirdnessMap, x, z, width, width, 0.25D, 0.25D, 0.5882352941176471D);
         var index = 0;
 
         for (var i = 0; i < width; ++i)

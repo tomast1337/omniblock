@@ -50,7 +50,7 @@ public class Chunk
     public Dictionary<BlockPos, BlockEntity> BlockEntities;
     public ChunkNibbleArray BlockLight;
 
-    public byte[] Blocks;
+    public byte[] Blocks = [];
     public bool Dirty;
     public List<Entity>[] Entities;
     public bool LastSaveHadEntities;
@@ -810,7 +810,7 @@ public class Chunk
 
     public virtual void MarkDirty() => Dirty = true;
 
-    public virtual void CollectOtherEntities(Entity except, Box box, List<Entity> result)
+    public virtual void CollectOtherEntities(Entity? except, Box box, List<Entity> result)
     {
         var minSlice = MathHelper.Floor((box.MinY - 2.0D) / 16.0D);
         var maxSlice = MathHelper.Floor((box.MaxY + 2.0D) / 16.0D);

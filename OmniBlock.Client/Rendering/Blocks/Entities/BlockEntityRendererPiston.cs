@@ -18,7 +18,8 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
             throw new ArgumentException("BlockEntity is not a Piston");
         }
 
-        var block = tileEntityRenderer.World.Content.Blocks.GetByProtocolId(piston.PushedBlockId);
+        var world = piston.World ?? throw new InvalidOperationException("Moving piston has no active world.");
+        var block = world.Content.Blocks.GetByProtocolId(piston.PushedBlockId);
         if (block == null) return;
         if (piston.GetProgress(tickDelta) < 1.0F)
         {
@@ -48,9 +49,9 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
             tess.setColorOpaque(1, 1, 1);
 
             var baseCtx = new BlockRenderContext(
-                piston.World.Reader,
-                piston.World.Content.Blocks,
-                lighting: piston.World.Lighting,
+                world.Reader,
+                world.Content.Blocks,
+                lighting: world.Lighting,
                 tess: tess,
                 renderAllFaces: true,
                 aoBlendMode: 1

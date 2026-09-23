@@ -23,7 +23,7 @@ public class HeldItemRenderer
     private float equippedProgress;
 
     private int field_20099_f = -1;
-    private ItemStack itemToRender;
+    private ItemStack? itemToRender;
     private float prevEquippedProgress;
 
     public HeldItemRenderer(OmniBlock game)
@@ -156,7 +156,7 @@ public class HeldItemRenderer
         Lighting.turnOn();
         RenderSystem.ModelView.Pop();
         var heldStack = itemToRender;
-        var brightness = _game.World.GetLuminance(MathHelper.Floor(player.X), MathHelper.Floor(player.Y), MathHelper.Floor(player.Z));
+        var brightness = (_game.World ?? throw new InvalidOperationException("No active world.")).GetLuminance(MathHelper.Floor(player.X), MathHelper.Floor(player.Y), MathHelper.Floor(player.Z));
         float red;
         float sineSwing;
         float sqrtSwing;
@@ -318,7 +318,7 @@ public class HeldItemRenderer
             var blockY = MathHelper.Floor(_game.Player.Y);
             var blockZ = MathHelper.Floor(_game.Player.Z);
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId("/terrain.png"));
-            var blockId = _game.World.Reader.GetBlockId(blockX, blockY, blockZ);
+            var blockId = (_game.World ?? throw new InvalidOperationException("No active world.")).Reader.GetBlockId(blockX, blockY, blockZ);
             if (_game.World.Reader.ShouldSuffocate(blockX, blockY, blockZ))
             {
                 renderInsideOfBlock(tickDelta, _game.Content.Blocks.GetByProtocolId(blockId).GetTexture(Side.North));
@@ -504,6 +504,7 @@ public class HeldItemRenderer
             return;
         }
 
-        _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId(_game.Player.GetTexture()));
+        if (_game.Player is { } player)
+            _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId(player.GetTexture()));
     }
 }

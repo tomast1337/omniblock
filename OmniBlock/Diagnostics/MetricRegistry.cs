@@ -83,7 +83,7 @@ public static class MetricRegistry
         for (var i = 0; i < count; i++)
         {
             var d = s_all[i];
-            if (d?.Key.Namespace == @namespace)
+            if (d is not null && d.Key.Namespace == @namespace)
                 yield return d;
         }
     }

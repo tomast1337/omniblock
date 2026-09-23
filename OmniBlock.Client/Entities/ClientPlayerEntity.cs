@@ -34,7 +34,7 @@ public class ClientPlayerEntity : EntityPlayer
     private int _testFlightPathTick;
     private int _testFlightPathTicks;
     protected OmniBlock Game;
-    public MovementInput movementInput;
+    public MovementInput movementInput = new();
 
     public ClientPlayerEntity(OmniBlock game, IWorldContext world, Session session, int dimensionId) : base(world)
     {
@@ -334,7 +334,11 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void openDispenserScreen(BlockEntityDispenser dispenser) => Game.Navigate(new DispenserScreen(Game.UIContext, this, Game.PlayerController, Inventory, dispenser));
 
-    public override void sendPickup(Entity entity, int count) => Game.ParticleManager.AddSpecialParticle(new LegacyParticleAdapter(new EntityPickupFX(Game.World, entity, this, -0.5F)));
+    public override void sendPickup(Entity entity, int count)
+    {
+        if (Game.World is { } world)
+            Game.ParticleManager.AddSpecialParticle(new LegacyParticleAdapter(new EntityPickupFX(world, entity, this, -0.5F)));
+    }
 
     public int getPlayerArmorValue() => Inventory.GetTotalArmorValue();
 

@@ -288,7 +288,7 @@ public partial class Flex
     }
 
     // SetMeasureFunc sets measure function
-    internal static void SetMeasureFunc(Node node, MeasureFunc measureFunc)
+    internal static void SetMeasureFunc(Node node, MeasureFunc? measureFunc)
     {
         if (measureFunc == null)
         {
@@ -331,7 +331,7 @@ public partial class Flex
     }
 
     // GetChild returns a child at a given index
-    internal static Node GetChild(Node node, int idx) => idx < node.Children.Count ? node.Children[idx] : null;
+    internal static Node? GetChild(Node node, int idx) => idx < node.Children.Count ? node.Children[idx] : null;
 
     // MarkDirty marks node as dirty
     internal static void MarkDirty(Node node)
@@ -594,7 +594,7 @@ public partial class Flex
         }
         else
         {
-            Node baselineChild = null;
+            Node? baselineChild = null;
             foreach (var child in node.Children)
             {
                 if (child.lineIndex > 0)
@@ -1286,7 +1286,8 @@ public partial class Flex
         else
         {
             // Measure the text under the current raints.
-            var measuredSize = node.measureFunc(node, innerWidth, widthMeasureMode, innerHeight, heightMeasureMode);
+            var measure = node.measureFunc ?? throw new InvalidOperationException("Measured node has no measure function.");
+            var measuredSize = measure(node, innerWidth, widthMeasureMode, innerHeight, heightMeasureMode);
 
             var width = availableWidth - marginAxisRow;
             if (widthMeasureMode == MeasureMode.Undefined ||
@@ -1548,8 +1549,8 @@ public partial class Flex
             crossAxisParentSize = parentHeight;
         }
 
-        Node firstAbsoluteChild = null;
-        Node currentAbsoluteChild = null;
+        Node? firstAbsoluteChild = null;
+        Node? currentAbsoluteChild = null;
 
         var leadingPaddingAndBorderMain = nodeLeadingPaddingAndBorder(node, mainAxis, parentWidth);
         var trailingPaddingAndBorderMain = nodeTrailingPaddingAndBorder(node, mainAxis, parentWidth);
@@ -1622,7 +1623,7 @@ public partial class Flex
         // If there is only one child with flexGrow + flexShrink it means we can set the
         // computedFlexBasis to 0 instead of measuring and shrinking / flexing the child to exactly
         // match the remaining space
-        Node singleFlexChild = null;
+        Node? singleFlexChild = null;
         if (measureModeMainDim == MeasureMode.Exactly)
         {
             foreach (var child in node.Children)
@@ -1760,8 +1761,8 @@ public partial class Flex
             float totalFlexShrinkScaledFactors = 0;
 
             // Maintain a linked list of the child nodes that can shrink and/or grow.
-            Node firstRelativeChild = null;
-            Node currentRelativeChild = null;
+            Node? firstRelativeChild = null;
+            Node? currentRelativeChild = null;
 
             // Add items to the current line until it's full or we run out of items.
             for (var i = startOfLineIndex; i < childCount; i++)
@@ -2902,7 +2903,7 @@ public partial class Flex
         var effectiveLastWidth = lastWidth;
         var effectiveLastHeight = lastHeight;
 
-        if (useRoundedComparison)
+        if (useRoundedComparison && config is not null)
         {
             effectiveWidth = RoundValueToPixelGrid(width, config.PointScaleFactor, false, false);
             effectiveHeight = RoundValueToPixelGrid(height, config.PointScaleFactor, false, false);
@@ -2957,7 +2958,7 @@ public partial class Flex
             layout.cachedLayout.computedHeight = -1;
         }
 
-        CachedMeasurement cachedResults = null;
+        CachedMeasurement? cachedResults = null;
 
         // Determine whether the results are already cached. We maintain a separate
         // cache for layouts and measurements. A layout operation modifies the
@@ -3163,7 +3164,7 @@ public partial class Flex
                     layout.nextCachedMeasurementsIndex = 0;
                 }
 
-                CachedMeasurement newCacheEntry = null;
+                CachedMeasurement? newCacheEntry = null;
                 if (performLayout)
                 {
                     // Use the single layout cache entry.

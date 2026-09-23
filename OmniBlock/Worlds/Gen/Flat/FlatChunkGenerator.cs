@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using OmniBlock.Blocks;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Chunks;
@@ -104,7 +105,7 @@ internal class FlatChunkGenerator : IChunkSource
         return chunk;
     }
 
-    public bool Save(bool bl, LoadingDisplay loadingDisplay) => true;
+    public bool Save(bool bl, LoadingDisplay? loadingDisplay) => true;
 
     public bool CanSave() => true;
 
@@ -353,6 +354,14 @@ internal class FlatChunkGenerator : IChunkSource
     public bool Tick() => false;
     public string GetDebugInfo() => "FlatLevelSource";
 
+    [MemberNotNull(
+        nameof(_featureWaterLake), nameof(_featureLavaLake), nameof(_featureClay),
+        nameof(_featureDirt), nameof(_featureGravel), nameof(_featureCoal),
+        nameof(_featureIron), nameof(_featureGold), nameof(_featureRedstone),
+        nameof(_featureDiamond), nameof(_featureLapis), nameof(_featureDandelion),
+        nameof(_featureRose), nameof(_featureBrownMushroom), nameof(_featureRedMushroom),
+        nameof(_featureDeadBush), nameof(_featureGrass), nameof(_featureWaterSpring),
+        nameof(_featureLavaSpring))]
     private void InitFeatures()
     {
         _featureWaterLake = new LakeFeature(_blocks.Water);

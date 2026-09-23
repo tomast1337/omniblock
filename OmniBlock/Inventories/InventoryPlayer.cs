@@ -283,7 +283,8 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
             slotIndex = GetFreeSlot();
             if (slotIndex < 0) return false;
 
-            var stack = Main[slotIndex] = ItemStack.Clone(itemStack);
+            var stack = itemStack.Copy();
+            Main[slotIndex] = stack;
             stack.AnimationTime = 5;
             itemStack.Count = 0;
             return true;

@@ -144,7 +144,9 @@ public class BlockEntityFurnace : BlockEntity, IInventory
             {
                 stateChanged = true;
                 var furnaceBlock = World.Content.Blocks.GetByProtocolId(World.Reader.GetBlockId(X, Y, Z));
-                ((FurnaceBehavior)furnaceBlock.Visuals).UpdateLitState(BurnTime > 0, World, X, Y, Z);
+                var furnaceBehavior = furnaceBlock.Visuals as FurnaceBehavior
+                    ?? throw new InvalidOperationException("Furnace block has no furnace behavior.");
+                furnaceBehavior.UpdateLitState(BurnTime > 0, World, X, Y, Z);
             }
         }
 

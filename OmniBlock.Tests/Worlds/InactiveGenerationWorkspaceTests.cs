@@ -611,7 +611,7 @@ public sealed partial class InactiveGenerationWorkspaceTests
             : new EmptyChunk(world, new byte[ChuckFormat.ChunkSize], x, z);
         public Chunk LoadChunk(int x, int z) => GetChunk(x, z);
         public void DecorateTerrain(IChunkSource source, int x, int z) { }
-        public bool Save(bool saveEntities, LoadingDisplay display) => true;
+        public bool Save(bool saveEntities, LoadingDisplay? display) => true;
         public bool Tick() => false;
         public bool CanSave() => false;
         public string GetDebugInfo() => nameof(MemorySource);

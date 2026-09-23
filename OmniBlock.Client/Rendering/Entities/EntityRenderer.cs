@@ -43,7 +43,7 @@ public abstract class EntityRenderer
         textureManager.BindTexture(handle);
     }
 
-    protected bool LoadDownloadableImageTexture(string? url, string fallbackPath)
+    protected bool LoadDownloadableImageTexture(string? url, string? fallbackPath)
     {
         if (!string.IsNullOrEmpty(url))
         {

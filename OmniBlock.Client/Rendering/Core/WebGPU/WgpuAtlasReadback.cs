@@ -35,7 +35,8 @@ internal sealed unsafe class WgpuAtlasReadback : IDisposable
         });
         ImageCopyTexture source = new() { Texture = texture.Texture, Aspect = TextureAspect.All };
         ImageCopyBuffer destination = new() { Buffer = _buffer, Layout = new TextureDataLayout { BytesPerRow = _rowBytes, RowsPerImage = _height } };
-        device.Api.CommandEncoderCopyTextureToBuffer(encoder, in source, in destination, new Extent3D(_width, _height, 1));
+        Extent3D extent = new(_width, _height, 1);
+        device.Api.CommandEncoderCopyTextureToBuffer(encoder, in source, in destination, in extent);
     }
 
     public void AfterSubmit()

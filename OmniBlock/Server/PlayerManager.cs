@@ -24,7 +24,8 @@ public class PlayerManager
     protected readonly HashSet<string> whitelist = [];
     private volatile int _pendingViewDistance = -1;
     private int _terrainLodRoundRobinCursor;
-    private IPlayerStorage _saveHandler;
+    private IPlayerStorage? _saveHandler;
+    private IPlayerStorage SaveHandler => _saveHandler ?? throw new InvalidOperationException("Player storage is not initialized.");
     public List<ServerPlayerEntity> players = [];
 
     public PlayerManager(OmniBlockServer server)
@@ -40,7 +41,11 @@ public class PlayerManager
 
     public void saveAllPlayers(ServerWorld[] world)
     {
-        _saveHandler = world[0].GetWorldStorage().GetPlayerStorage();
+        if (world.Length == 0)
+            throw new ArgumentException("At least one world is required to initialize player storage.", nameof(world));
+
+        _saveHandler = world[0].GetWorldStorage().GetPlayerStorage()
+            ?? throw new InvalidOperationException("The primary world has no player storage.");
         if (world.Length > 0 && world[0] != null)
         {
             world[0].ChunkMap = _chunkMaps[0];
@@ -86,7 +91,7 @@ public class PlayerManager
     public IReadOnlyList<AutomaticPregenerationSnapshot> GetAutomaticPregenerationSnapshots() =>
         _chunkMaps.Select(static chunkMap => chunkMap.AutomaticPregenerationSnapshot).ToArray();
 
-    public void loadPlayerData(ServerPlayerEntity player) => _saveHandler.LoadPlayerData(player);
+    public void loadPlayerData(ServerPlayerEntity player) => SaveHandler.LoadPlayerData(player);
 
     public void addPlayer(ServerPlayerEntity player)
     {
@@ -108,7 +113,7 @@ public class PlayerManager
 
     public void disconnect(ServerPlayerEntity player)
     {
-        _saveHandler.SavePlayerData(player);
+        SaveHandler.SavePlayerData(player);
         _server.getWorld(player.DimensionId).Entities.Remove(player);
         players.Remove(player);
         GetChunkMap(player.DimensionId).removePlayer(player);
@@ -139,7 +144,12 @@ public class PlayerManager
         }
 
         // TODO: This does not work with IPEndpoint's ToString
-        var address = loginNetworkHandler.connection.getAddress().ToString();
+        var address = loginNetworkHandler.connection.getAddress()?.ToString();
+        if (address is null)
+        {
+            loginNetworkHandler.disconnect("Could not determine your network address.");
+            return null;
+        }
         address = address.Substring(address.IndexOf("/") + 1);
         address = address.Substring(0, address.IndexOf(":"));
         if (bannedIps.Contains(address))
@@ -156,9 +166,9 @@ public class PlayerManager
 
         foreach (var playerEntity in players)
         {
-            if (playerEntity.Name.EqualsIgnoreCase(name))
+            if (playerEntity.PlayerName.EqualsIgnoreCase(name))
             {
-                playerEntity.NetworkHandler.disconnect("You logged in from another location");
+                playerEntity.ConnectedNetworkHandler.disconnect("You logged in from another location");
             }
         }
 
@@ -175,7 +185,7 @@ public class PlayerManager
         var spawnPos = player.GetSpawnPos();
         player.DimensionId = dimensionId;
         ServerPlayerEntity serverPlayer = new(
-            _server, _server.getWorld(player.DimensionId), player.Name, new ServerPlayerInteractionManager(_server.getWorld(player.DimensionId))
+            _server, _server.getWorld(player.DimensionId), player.PlayerName, new ServerPlayerInteractionManager(_server.getWorld(player.DimensionId))
         )
         {
             ID = player.ID,
@@ -192,7 +202,7 @@ public class PlayerManager
             }
             else
             {
-                serverPlayer.NetworkHandler.SendMessage(new GameStateChangeMessage
+                serverPlayer.ConnectedNetworkHandler.SendMessage(new GameStateChangeMessage
                 {
                     Reason = 0
                 });
@@ -206,12 +216,12 @@ public class PlayerManager
             serverPlayer.SetPosition(serverPlayer.X, serverPlayer.Y + 1.0, serverPlayer.Z);
         }
 
-        serverPlayer.NetworkHandler.SendTerrainLodIdentity();
-        serverPlayer.NetworkHandler.SendMessage(new PlayerRespawnMessage
+        serverPlayer.ConnectedNetworkHandler.SendTerrainLodIdentity();
+        serverPlayer.ConnectedNetworkHandler.SendMessage(new PlayerRespawnMessage
         {
             DimensionId = (sbyte)serverPlayer.DimensionId
         });
-        serverPlayer.NetworkHandler.teleport(serverPlayer.X, serverPlayer.Y, serverPlayer.Z, serverPlayer.Yaw, serverPlayer.Pitch);
+        serverPlayer.ConnectedNetworkHandler.teleport(serverPlayer.X, serverPlayer.Y, serverPlayer.Z, serverPlayer.Yaw, serverPlayer.Pitch);
         sendWorldInfo(serverPlayer, targetWorld);
         GetChunkMap(serverPlayer.DimensionId).addPlayer(serverPlayer);
         targetWorld.SpawnEntity(serverPlayer);
@@ -251,12 +261,12 @@ public class PlayerManager
         GetChunkMap(sourceDim).removePlayer(player);
 
         player.DimensionId = targetDim;
-        player.NetworkHandler.SendTerrainLodIdentity();
-        player.NetworkHandler.SendMessage(new PlayerRespawnMessage
+        player.ConnectedNetworkHandler.SendTerrainLodIdentity();
+        player.ConnectedNetworkHandler.SendMessage(new PlayerRespawnMessage
         {
             DimensionId = (sbyte)player.DimensionId
         });
-        player.NetworkHandler.SendMessage(new PlayerGameModeUpdateMessage
+        player.ConnectedNetworkHandler.SendMessage(new PlayerGameModeUpdateMessage
         {
             GameModeNamespace = player.GameMode.Namespace.ToString(),
             GameModeName = player.GameMode.Name
@@ -306,7 +316,7 @@ public class PlayerManager
         }
 
         updatePlayerAfterDimensionChange(player);
-        player.NetworkHandler.teleport(player.X, player.Y, player.Z, player.Yaw, player.Pitch);
+        player.ConnectedNetworkHandler.teleport(player.X, player.Y, player.Z, player.Yaw, player.Pitch);
         player.SetWorld(targetWorld);
         sendWorldInfo(player, targetWorld);
         sendPlayerStatus(player);
@@ -375,7 +385,7 @@ public class PlayerManager
         for (var playerIndex = 0; playerIndex < players.Count; playerIndex++)
         {
             var playerEntity = players[playerIndex];
-            playerEntity.NetworkHandler.SendPacket(packet);
+            playerEntity.ConnectedNetworkHandler.SendPacket(packet);
         }
     }
 
@@ -384,7 +394,7 @@ public class PlayerManager
         for (var playerIndex = 0; playerIndex < players.Count; playerIndex++)
         {
             var playerEntity = players[playerIndex];
-            playerEntity.NetworkHandler.SendMessage(message);
+            playerEntity.ConnectedNetworkHandler.SendMessage(message);
         }
     }
 
@@ -395,7 +405,7 @@ public class PlayerManager
             var playerEntity = players[playerIndex];
             if (playerEntity.DimensionId == dimensionId)
             {
-                playerEntity.NetworkHandler.SendPacket(packet);
+                playerEntity.ConnectedNetworkHandler.SendPacket(packet);
             }
         }
     }
@@ -407,7 +417,7 @@ public class PlayerManager
             var playerEntity = players[playerIndex];
             if (playerEntity.DimensionId == dimensionId)
             {
-                playerEntity.NetworkHandler.SendMessage(message);
+                playerEntity.ConnectedNetworkHandler.SendMessage(message);
             }
         }
     }
@@ -495,7 +505,7 @@ public class PlayerManager
         for (var playerIndex = 0; playerIndex < players.Count; playerIndex++)
         {
             var playerEntity = players[playerIndex];
-            if (playerEntity.Name.EqualsIgnoreCase(name))
+            if (playerEntity.PlayerName.EqualsIgnoreCase(name))
             {
                 return playerEntity;
             }
@@ -612,7 +622,7 @@ public class PlayerManager
         var playerEntity = getPlayer(name);
         if (playerEntity != null)
         {
-            playerEntity.NetworkHandler.SendMessage(new ChatMessage
+            playerEntity.ConnectedNetworkHandler.SendMessage(new ChatMessage
             {
                 Text = message
             });
@@ -636,7 +646,7 @@ public class PlayerManager
                 var deltaZ = z - playerEntity.Z;
                 if (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ < range * range)
                 {
-                    playerEntity.NetworkHandler.SendMessage(message);
+                    playerEntity.ConnectedNetworkHandler.SendMessage(message);
                 }
             }
         }
@@ -654,7 +664,7 @@ public class PlayerManager
                 var deltaZ = z - playerEntity.Z;
                 if (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ < range * range)
                 {
-                    playerEntity.NetworkHandler.SendPacket(packet);
+                    playerEntity.ConnectedNetworkHandler.SendPacket(packet);
                 }
             }
         }
@@ -673,9 +683,9 @@ public class PlayerManager
 
         foreach (var player in players)
         {
-            if (isOperator(player.Name))
+            if (isOperator(player.PlayerName))
             {
-                player.NetworkHandler.SendMessage(chatMessage);
+                player.ConnectedNetworkHandler.SendMessage(chatMessage);
             }
         }
     }
@@ -686,7 +696,7 @@ public class PlayerManager
     {
         if (player != null)
         {
-            player.NetworkHandler.SendPacket(packet);
+            player.ConnectedNetworkHandler.SendPacket(packet);
             return true;
         }
 
@@ -697,7 +707,7 @@ public class PlayerManager
     {
         for (var playerIndex = 0; playerIndex < players.Count; playerIndex++)
         {
-            _saveHandler.SavePlayerData(players[playerIndex]);
+            SaveHandler.SavePlayerData(players[playerIndex]);
         }
     }
 
@@ -723,13 +733,13 @@ public class PlayerManager
 
     public static void sendWorldInfo(ServerPlayerEntity player, ServerWorld world)
     {
-        player.NetworkHandler.SendMessage(new WorldTimeUpdateMessage
+        player.ConnectedNetworkHandler.SendMessage(new WorldTimeUpdateMessage
         {
             Time = world.GetTime()
         });
         if (world.Properties.IsRaining)
         {
-            player.NetworkHandler.SendMessage(new GameStateChangeMessage
+            player.ConnectedNetworkHandler.SendMessage(new GameStateChangeMessage
             {
                 Reason = 1
             });

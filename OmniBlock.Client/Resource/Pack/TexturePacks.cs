@@ -15,6 +15,7 @@ public class TexturePacks
     public TexturePacks(OmniBlock game, DirectoryInfo texturePackDir)
     {
         _game = game;
+        SelectedTexturePack = _defaultTexturePack;
         _texturePackDir = new DirectoryInfo(Path.Combine(texturePackDir.FullName, "texturepacks"));
         if (!_texturePackDir.Exists)
         {
@@ -39,7 +40,7 @@ public class TexturePacks
         _currentTexturePack = texturePack.TexturePackFileName;
         SelectedTexturePack = texturePack;
 
-        _game.Options.Skin = _currentTexturePack;
+        _game.Options.Skin = _currentTexturePack ?? "Default";
         _game.Options.SaveOptions();
 
         SelectedTexturePack.func_6482_a();
@@ -49,7 +50,7 @@ public class TexturePacks
     public void updateAvaliableTexturePacks()
     {
         List<TexturePack> availablePacks = [];
-        SelectedTexturePack = null!;
+        SelectedTexturePack = _defaultTexturePack;
         availablePacks.Add(_defaultTexturePack);
 
         if (_texturePackDir.Exists)

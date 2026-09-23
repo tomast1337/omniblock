@@ -91,7 +91,12 @@ public partial class OmniBlock :
     public Timer Timer { get; } = new(20.0F);
     public int TicksRan { get; private set; }
     public Session Session { get; private set; }
-    public GameOptions Options { get; private set; }
+    private GameOptions? _options;
+    public GameOptions Options
+    {
+        get => RequireInitialized(_options, nameof(Options));
+        private set => _options = value;
+    }
 
     /// <summary>
     ///     Set from the <c>--debug</c> launch flag, before <see cref="Run" />. Applied to
@@ -101,7 +106,12 @@ public partial class OmniBlock :
     /// </summary>
     public bool ForceDebugOnStart { get; set; }
 
-    public IWorldStorageSource SaveLoader { get; private set; }
+    private IWorldStorageSource? _saveLoader;
+    public IWorldStorageSource SaveLoader
+    {
+        get => RequireInitialized(_saveLoader, nameof(SaveLoader));
+        private set => _saveLoader = value;
+    }
     public InternalServer? InternalServer { get; private set; }
     public RegistryAccess RegistryAccess { get; private set; } = RegistryAccess.Empty;
     private int? _terrainLodTestHorizonChunks;
@@ -127,11 +137,19 @@ public partial class OmniBlock :
     World? IWorldHost.World => World;
     void IWorldHost.ChangeWorld(World? world) => ChangeWorld(world);
 
-    public ClientPlayerEntity Player { get; private set; }
+    private ClientPlayerEntity? _player;
+    public ClientPlayerEntity Player =>
+        _player ?? throw new InvalidOperationException("No active client player.");
     public EntityLiving Camera => Player;
-    ClientPlayerEntity? IClientPlayerHost.Player => Player;
+    public EntityLiving? CameraOrNull => _player;
+    ClientPlayerEntity? IClientPlayerHost.Player => _player;
 
-    public PlayerController PlayerController { get; set; }
+    private PlayerController? _playerController;
+    public PlayerController PlayerController
+    {
+        get => RequireInitialized(_playerController, nameof(PlayerController));
+        set => _playerController = value;
+    }
     void IClientPlayerHost.SetPlayerController(PlayerController controller) => PlayerController = controller;
 
     #endregion
@@ -152,25 +170,70 @@ public partial class OmniBlock :
     ///     The top-left screen position of the game viewport in ImGui/window pixels.
     ///     Zero when the debug menu is closed.
     /// </summary>
-    public Vector2 DebugViewportScreenPos => _debugWindowManager?.ViewportPos ?? Vector2.Zero;
+    public Vector2 DebugViewportScreenPos => _debugWindowManagerBacking?.ViewportPos ?? Vector2.Zero;
 
     public bool ShowChunkBorders { get; private set; }
     private bool SkipRenderWorld { get; set; }
     public string DebugText { get; private set; } = "";
     public HitResult ObjectMouseOver = new(HitResultType.Miss);
 
-    public GameRenderer GameRenderer { get; private set; }
+    private GameRenderer? _gameRenderer;
+    public GameRenderer GameRenderer
+    {
+        get => RequireInitialized(_gameRenderer, nameof(GameRenderer));
+        private set => _gameRenderer = value;
+    }
 
     /// <summary>Reaches the WebGPU renderer for <see cref="LoadingScreenRenderer" /> and <see cref="LoadScreen" />, both of which draw and present frames of their own outside the main game loop.</summary>
-    internal WebGpuGameRenderer WebGpuRenderer { get; private set; }
+    private WebGpuGameRenderer? _webGpuRenderer;
+    internal WebGpuGameRenderer WebGpuRenderer
+    {
+        get => RequireInitialized(_webGpuRenderer, nameof(WebGpuRenderer));
+        private set => _webGpuRenderer = value;
+    }
 
-    public WorldRenderer WorldRenderer { get; private set; }
-    public TextureManager TextureManager { get; private set; }
-    public SkinManager SkinManager { get; private set; }
-    public TextRenderer TextRenderer { get; private set; }
-    public UIBatchRenderer UiBatchRenderer { get; private set; }
-    public TexturePacks TexturePackList { get; private set; }
-    public ParticleManager ParticleManager { get; private set; }
+    private WorldRenderer? _worldRenderer;
+    public WorldRenderer WorldRenderer
+    {
+        get => RequireInitialized(_worldRenderer, nameof(WorldRenderer));
+        private set => _worldRenderer = value;
+    }
+    private TextureManager? _textureManager;
+    public TextureManager TextureManager
+    {
+        get => RequireInitialized(_textureManager, nameof(TextureManager));
+        private set => _textureManager = value;
+    }
+    private SkinManager? _skinManager;
+    public SkinManager SkinManager
+    {
+        get => RequireInitialized(_skinManager, nameof(SkinManager));
+        private set => _skinManager = value;
+    }
+    private TextRenderer? _textRenderer;
+    public TextRenderer TextRenderer
+    {
+        get => RequireInitialized(_textRenderer, nameof(TextRenderer));
+        private set => _textRenderer = value;
+    }
+    private UIBatchRenderer? _uiBatchRenderer;
+    public UIBatchRenderer UiBatchRenderer
+    {
+        get => RequireInitialized(_uiBatchRenderer, nameof(UiBatchRenderer));
+        private set => _uiBatchRenderer = value;
+    }
+    private TexturePacks? _texturePackList;
+    public TexturePacks TexturePackList
+    {
+        get => RequireInitialized(_texturePackList, nameof(TexturePackList));
+        private set => _texturePackList = value;
+    }
+    private ParticleManager? _particleManager;
+    public ParticleManager ParticleManager
+    {
+        get => RequireInitialized(_particleManager, nameof(ParticleManager));
+        private set => _particleManager = value;
+    }
 
     #endregion
 
@@ -180,7 +243,12 @@ public partial class OmniBlock :
     public UIScreen? CurrentScreen { get; private set; }
     public HUD HUD { get; private set; } = null!;
 
-    public MouseHelper MouseHelper { get; private set; }
+    private MouseHelper? _mouseHelper;
+    public MouseHelper MouseHelper
+    {
+        get => RequireInitialized(_mouseHelper, nameof(MouseHelper));
+        private set => _mouseHelper = value;
+    }
     public VirtualCursor VirtualCursor { get; } = new();
     public bool IsControllerMode { get; set; }
     public int MouseTicksRan { get; set; }
@@ -191,7 +259,12 @@ public partial class OmniBlock :
     #region Audio & Diagnostics
 
     public SoundManager SoundManager { get; private set; } = new();
-    public StatFileWriter StatFileWriter { get; private set; }
+    private StatFileWriter? _statFileWriter;
+    public StatFileWriter StatFileWriter
+    {
+        get => RequireInitialized(_statFileWriter, nameof(StatFileWriter));
+        private set => _statFileWriter = value;
+    }
 
     /// <summary>
     ///     Persistent Luau VM for the UI Host API (docs/luau-ui-host-api-plan.md,
@@ -221,6 +294,8 @@ public partial class OmniBlock :
     #region Private Fields
 
     private readonly ILogger<OmniBlock> _logger = Log.Instance.For<OmniBlock>();
+    private static T RequireInitialized<T>(T? value, string name) where T : class =>
+        value ?? throw new InvalidOperationException($"Client component '{name}' has not been initialized.");
     private readonly ClientLaunchOptions _launchOptions;
     private readonly ClientReadySignal _clientReady = new();
     private readonly E2ETestController? _e2eTestController;
@@ -231,7 +306,12 @@ public partial class OmniBlock :
     private readonly DebugTelemetry _debugTelemetry = new();
     private readonly FramePacer _framePacer = new();
 
-    private DebugWindowManager _debugWindowManager;
+    private DebugWindowManager? _debugWindowManagerBacking;
+    private DebugWindowManager _debugWindowManager
+    {
+        get => RequireInitialized(_debugWindowManagerBacking, nameof(_debugWindowManager));
+        set => _debugWindowManagerBacking = value;
+    }
     private nint _imguiIniFilename;
     private LuauWorldService? _luauWorldService;
     private string? _singleplayerWorldId;
@@ -266,6 +346,8 @@ public partial class OmniBlock :
     private OmniBlock(int width, int height, bool isFullscreen, ClientLaunchOptions launchOptions, ContentRuntime content)
     {
         Content = content;
+        Session = new Session(launchOptions.Username, launchOptions.SessionToken);
+        GameDataDir = OmniBlockDir;
         _textureWaterFX = new WaterSprite(content.Blocks);
         _textureLavaFX = new LavaSprite(content.Blocks);
         _launchOptions = launchOptions;
@@ -379,7 +461,6 @@ public partial class OmniBlock :
 
         Display.setTitle($"OmniBlock {Version} ( a BetaSharp fork )");
 
-        GameDataDir = OmniBlockDir;
         SaveLoader = new RegionWorldStorageSource(Path.Combine(GameDataDir, "saves"));
         Options = new GameOptions(this, GameDataDir);
         if (ForceDebugOnStart) Options.ShowDebugInfo = true;
@@ -467,7 +548,7 @@ public partial class OmniBlock :
 
             LuauClientStateHost.WorldLoaded = () => World != null;
             LuauClientStateHost.PlayerReady = () =>
-                World != null && Player != null &&
+                World != null && _player != null &&
                 CurrentScreen is not (LevelLoadingScreen or ConnectingScreen or DownloadingTerrainScreen);
             LuauClientStateHost.WorldId = () => World != null && InternalServer != null ? _singleplayerWorldId : null;
             LuauClientStateHost.DebugOpen = () => Options.ShowDebugInfo;
@@ -815,9 +896,9 @@ public partial class OmniBlock :
             LuauClientStateHost.OldestForegroundAge = () => WorldRenderer?.ChunkRenderer.OldestForegroundAge ?? 0;
             LuauClientStateHost.PresentationRegressionCount = () =>
                 WorldRenderer?.ChunkRenderer.PresentationRegressionCount ?? 0;
-            LuauClientStateHost.PlayerX = () => Player?.X ?? 0;
-            LuauClientStateHost.PlayerY = () => Player?.Y ?? 0;
-            LuauClientStateHost.PlayerZ = () => Player?.Z ?? 0;
+            LuauClientStateHost.PlayerX = () => _player?.X ?? 0;
+            LuauClientStateHost.PlayerY = () => _player?.Y ?? 0;
+            LuauClientStateHost.PlayerZ = () => _player?.Z ?? 0;
             LuauClientStateHost.Install(LuauState.Handle);
             if (!LuauState.TryExecute(LuauClientStateHost.Bootstrap, out var clientStateBootstrapError))
             {
@@ -828,17 +909,17 @@ public partial class OmniBlock :
             {
                 LuauTestHost.Pass = _e2eTestController.Pass;
                 LuauTestHost.Fail = reason => _e2eTestController.Fail(reason);
-                LuauTestHost.Creative = () => Player?.SendChatMessage("/gm c");
+                LuauTestHost.Creative = () => _player?.SendChatMessage("/gm c");
                 LuauTestHost.Summon = (entity, count) =>
                 {
-                    if (Player == null || count is < 1 or > 256 || !ResourceLocation.TryParse(entity, out _))
+                    if (_player == null || count is < 1 or > 256 || !ResourceLocation.TryParse(entity, out _))
                         return false;
                     Player.SendChatMessage($"/summon {entity} {count}");
                     return true;
                 };
                 LuauTestHost.CountEntities = (entity, minDistance, maxDistance) =>
                 {
-                    if (World == null || Player == null || minDistance < 0 || maxDistance < minDistance ||
+                    if (World == null || _player == null || minDistance < 0 || maxDistance < minDistance ||
                         !ResourceLocation.TryParse(entity, out var key) ||
                         !World.Content.EntityTypes.TryGet(key!, out var type)) return 0;
                     var minSquared = minDistance * minDistance;
@@ -852,7 +933,7 @@ public partial class OmniBlock :
                 };
                 LuauTestHost.BreakBlock = (x, y, z) =>
                 {
-                    if (PlayerController == null || World == null ||
+                    if (_playerController == null || World == null ||
                         World.Reader.GetBlockId(x, y, z) == 0)
                         return false;
                     PlayerController.ClickBlock(x, y, z, 1);
@@ -861,7 +942,7 @@ public partial class OmniBlock :
                 LuauTestHost.SetBlock = (id, x, y, z) =>
                 {
                     if (string.IsNullOrWhiteSpace(id)) return;
-                    Player?.SendChatMessage($"/block set {id} {x} {y} {z}");
+                    _player?.SendChatMessage($"/block set {id} {x} {y} {z}");
                 };
                 LuauTestHost.IsMeshCurrent = (x, y, z) =>
                     WorldRenderer?.ChunkRenderer.IsMeshCurrent(x, y, z) == true;
@@ -872,18 +953,18 @@ public partial class OmniBlock :
                     (id == "omniblock:air" ? 0 : World.Content.Blocks.Get(id).Id);
                 LuauTestHost.MeshDeadlineMissCount = (x, y, z) =>
                     WorldRenderer?.ChunkRenderer.CriticalDeadlineMissesAt(x, y, z) ?? 0;
-                LuauTestHost.SetFlying = flying => Player?.SetFlyingForTest(flying);
-                LuauTestHost.Teleport = (x, y, z) => Player?.SendChatMessage($"/tp {x} {y} {z}");
+                LuauTestHost.SetFlying = flying => _player?.SetFlyingForTest(flying);
+                LuauTestHost.Teleport = (x, y, z) => _player?.SendChatMessage($"/tp {x} {y} {z}");
                 LuauTestHost.SetLook = (yaw, pitch) =>
                 {
-                    if (Player == null) return;
+                    if (_player == null) return;
                     Player.PrevYaw = Player.Yaw = (float)yaw;
                     Player.PrevPitch = Player.Pitch = Math.Clamp((float)pitch, -90.0F, 90.0F);
                 };
                 LuauTestHost.SetMovement = (forward, strafe, vertical) =>
-                    Player?.SetMovementForTest((float)forward, (float)strafe, (float)vertical);
+                    _player?.SetMovementForTest((float)forward, (float)strafe, (float)vertical);
                 LuauTestHost.FlyPath = (ax, ay, az, bx, by, bz, seconds) =>
-                    Player?.StartFlightPathForTest(ax, ay, az, bx, by, bz, seconds);
+                    _player?.StartFlightPathForTest(ax, ay, az, bx, by, bz, seconds);
                 LuauTestHost.Screenshot = () => WebGpuRenderer.ScreenshotRequested = true;
                 var impostorTestControls = new EntityImpostorTestControls(this);
                 LuauTestHost.ImpostorCache = impostorTestControls.Apply;
@@ -924,15 +1005,16 @@ public partial class OmniBlock :
                 };
                 LuauTestHost.DumpTerrain = label =>
                 {
-                    if (Player == null || WorldRenderer?.ChunkRenderer == null) return;
+                    var world = World;
+                    if (_player is not { } player || world is null || _worldRenderer?.ChunkRenderer is not { } chunkRenderer) return;
                     _e2eTestController.WriteTextArtifact(
                         $"terrain-{label}.tsv",
-                        WorldRenderer.ChunkRenderer.CreateTerrainStateDump(
-                            new Vector3D<double>(Player.X, Player.Y, Player.Z)));
+                        chunkRenderer.CreateTerrainStateDump(
+                            new Vector3D<double>(player.X, player.Y, player.Z)));
                     _e2eTestController.WriteTextArtifact(
-                        $"mesh-lifecycle-{label}.tsv", WorldRenderer.ChunkRenderer.CreateMeshLifecycleDump());
+                        $"mesh-lifecycle-{label}.tsv", chunkRenderer.CreateMeshLifecycleDump());
                     _e2eTestController.WriteTextArtifact(
-                        $"mesh-sections-{label}.tsv", WorldRenderer.ChunkRenderer.CreateMeshSectionDump());
+                        $"mesh-sections-{label}.tsv", chunkRenderer.CreateMeshSectionDump());
                     if (WorldRenderer.TerrainLod is { } terrainLod)
                         _e2eTestController.WriteTextArtifact(
                             $"terrain-lod-{label}.json",
@@ -943,14 +1025,14 @@ public partial class OmniBlock :
                                 Coverage = terrainLod.CoverageSnapshot,
                                 Quality = terrainLod.CaptureQualitySnapshot(),
                                 Server = InternalServer?.worlds?
-                                    .FirstOrDefault(world => world.Dimension.Id == World.Dimension.Id)?
+                                    .FirstOrDefault(serverWorld => serverWorld.Dimension.Id == world.Dimension.Id)?
                                     .TerrainLodSnapshot,
                                 ServerIdentity = InternalServer?.worlds?
-                                    .FirstOrDefault(world => world.Dimension.Id == World.Dimension.Id)?
+                                    .FirstOrDefault(serverWorld => serverWorld.Dimension.Id == world.Dimension.Id)?
                                     .TerrainLodIdentity
                             }, new JsonSerializerOptions { WriteIndented = true }));
                     var worldGeneration = InternalServer?.worlds?
-                        .FirstOrDefault(world => world.Dimension.Id == World.Dimension.Id)?
+                        .FirstOrDefault(serverWorld => serverWorld.Dimension.Id == world.Dimension.Id)?
                         .ChunkCache.GenerationTelemetry.Snapshot()
                         ?? InternalServer?.worlds?.FirstOrDefault()?.ChunkCache.GenerationTelemetry.Snapshot();
                     if (worldGeneration is not null)
@@ -981,7 +1063,7 @@ public partial class OmniBlock :
                 };
                 LuauTestHost.WorldGenerationAuto = (profile, radius) =>
                 {
-                    if (Player == null || InternalServer == null) return false;
+                    if (_player == null || InternalServer == null) return false;
                     var normalized = profile.ToLowerInvariant();
                     if (normalized == "off")
                     {
@@ -995,7 +1077,7 @@ public partial class OmniBlock :
                 };
                 LuauTestHost.WorldGenerationMetric = metric =>
                 {
-                    var dimension = Player?.DimensionId ?? 0;
+                    var dimension = _player?.DimensionId ?? 0;
                     var snapshot = InternalServer?.GetAutomaticPregenerationSnapshots()
                         .FirstOrDefault(candidate => candidate.Dimension == dimension);
                     if (snapshot is null) return 0;
@@ -1046,7 +1128,7 @@ public partial class OmniBlock :
                 };
                 LuauTestHost.PrepareTerrainLodFixture = (radius, x, z) =>
                 {
-                    if (Player == null || InternalServer == null ||
+                    if (_player == null || InternalServer == null ||
                         radius <= 0 ||
                         radius > (_terrainLodTestHorizonChunks ?? 64) ||
                         x.HasValue != z.HasValue ||
@@ -1065,13 +1147,13 @@ public partial class OmniBlock :
                     var snapshot = InternalServer?.TerrainLodScaleFixture;
                     if (metric == "cacheReadHits")
                     {
-                        var dimension = Player?.DimensionId ?? 0;
+                        var dimension = _player?.DimensionId ?? 0;
                         return InternalServer?.getWorld(dimension).TerrainLodSnapshot?
                             .SpatialCache.ReadHits ?? 0;
                     }
                     if (metric == "cacheEntries")
                     {
-                        var dimension = Player?.DimensionId ?? 0;
+                        var dimension = _player?.DimensionId ?? 0;
                         return InternalServer?.getWorld(dimension).TerrainLodSnapshot?
                             .SpatialCache.EntryCount ?? 0;
                     }
@@ -1080,7 +1162,7 @@ public partial class OmniBlock :
                         "preparationPending" or "preparationFailures" or "offlineSubmitted" or
                         "offlineDropped" or "persistenceDeferred" or "persistenceRunning")
                     {
-                        var dimension = Player?.DimensionId ?? 0;
+                        var dimension = _player?.DimensionId ?? 0;
                         var terrain = InternalServer?.getWorld(dimension).TerrainLodSnapshot;
                         return metric switch
                         {
@@ -1202,7 +1284,7 @@ public partial class OmniBlock :
             () => new Vector2D<int>(DisplayWidth, DisplayHeight),
             () =>
             {
-                if (!Options.ShowDebugInfo || _debugWindowManager == null)
+                if (!Options.ShowDebugInfo || _debugWindowManagerBacking == null)
                 {
                     return new Vector2D<int>(DisplayWidth, DisplayHeight);
                 }
@@ -1307,7 +1389,7 @@ public partial class OmniBlock :
         {
             GetUngrabCenter = () =>
             {
-                if (!Options.ShowDebugInfo || _debugWindowManager == null)
+                if (!Options.ShowDebugInfo || _debugWindowManagerBacking == null)
                 {
                     return new Vector2D<int>(Display.getWidth() / 2, Display.getHeight() / 2);
                 }
@@ -1369,10 +1451,10 @@ public partial class OmniBlock :
             ])).LoadAllAsync();
 
         HUD = new HUD(UIContext, new HUDContext(
-            () => Player,
-            () => PlayerController,
+            () => _player,
+            () => _playerController,
             () => World,
-            () => CurrentScreen == null && Player != null && World != null
+            () => CurrentScreen == null && _player != null && World != null
                 ? new InGameTipContext(ObjectMouseOver, World.Reader, Content.Blocks, Player.Inventory.ItemInHand)
                 : null,
             () => _isMainMenuOpen
@@ -1718,7 +1800,7 @@ public partial class OmniBlock :
 
                     EntityBaseline?.PrepareFrame();
 
-                    SoundManager.UpdateListener(Player, Timer.RenderPartialTicks);
+                    SoundManager.UpdateListener(_player, Timer.RenderPartialTicks);
 
                     if (!Keyboard.isKeyDown(Keyboard.KEY_F7))
                     {
@@ -1728,7 +1810,7 @@ public partial class OmniBlock :
                         }
                     }
 
-                    if (Player != null && Player.IsInsideWall())
+                    if (_player != null && Player.IsInsideWall())
                     {
                         Options.CameraMode = CameraMode.FirstPerson;
                     }
@@ -1801,7 +1883,7 @@ public partial class OmniBlock :
 
                     if (!SkipRenderWorld)
                     {
-                        PlayerController?.SetPartialTime(Timer.RenderPartialTicks);
+                        _playerController?.SetPartialTime(Timer.RenderPartialTicks);
 
                         TextureStats.StartFrame();
 
@@ -2073,7 +2155,7 @@ public partial class OmniBlock :
             }
         }
 
-        if (CurrentScreen == null && Player != null)
+        if (CurrentScreen == null && _player != null)
         {
             if (Player.Health <= 0)
             {
@@ -2084,7 +2166,7 @@ public partial class OmniBlock :
                 Navigate(new SleepScreen(UIContext, Player));
             }
         }
-        else if (CurrentScreen is SleepScreen && !Player.IsSleeping)
+        else if (CurrentScreen is SleepScreen && _player?.IsSleeping != true)
         {
             Navigate(null);
         }
@@ -2108,7 +2190,7 @@ public partial class OmniBlock :
 
         if (World != null)
         {
-            if (Player != null)
+            if (_player != null)
             {
                 ++_joinPlayerCounter;
                 if (_joinPlayerCounter == 30)
@@ -2169,9 +2251,9 @@ public partial class OmniBlock :
                 }
             }
 
-            if (!IsGamePaused && World != null)
+            if (!IsGamePaused && World is { } world && _player is { } player)
             {
-                World.displayTick(MathHelper.Floor(Player.X), MathHelper.Floor(Player.Y), MathHelper.Floor(Player.Z));
+                world.displayTick(MathHelper.Floor(player.X), MathHelper.Floor(player.Y), MathHelper.Floor(player.Z));
             }
 
             if (!IsGamePaused)
@@ -2313,7 +2395,7 @@ public partial class OmniBlock :
                 continue;
             }
 
-            Player?.handleKeyPress(Keyboard.getEventKey(), Keyboard.getEventKeyState());
+            _player?.handleKeyPress(Keyboard.getEventKey(), Keyboard.getEventKeyState());
 
             if (Keyboard.getEventKeyState())
             {
@@ -2416,6 +2498,8 @@ public partial class OmniBlock :
 
     public void ClickMouse(int mouseButton)
     {
+        var world = World;
+        if (_player is null || world is null) return;
         if (mouseButton != 0 || _leftClickCounter <= 0)
         {
             if (mouseButton == 0)
@@ -2433,14 +2517,14 @@ public partial class OmniBlock :
             }
             else if (ObjectMouseOver.Type == HitResultType.Entity)
             {
-                if (mouseButton == 0)
+                if (mouseButton == 0 && ObjectMouseOver.Entity is { } attackedEntity)
                 {
-                    PlayerController.AttackEntity(Player, ObjectMouseOver.Entity);
+                    PlayerController.AttackEntity(Player, attackedEntity);
                 }
 
-                if (mouseButton == 1)
+                if (mouseButton == 1 && ObjectMouseOver.Entity is { } interactedEntity)
                 {
-                    PlayerController.InteractWithEntity(Player, ObjectMouseOver.Entity);
+                    PlayerController.InteractWithEntity(Player, interactedEntity);
                 }
             }
             else if (ObjectMouseOver.Type == HitResultType.Tile)
@@ -2457,7 +2541,7 @@ public partial class OmniBlock :
                 {
                     var selectedItem = Player.Inventory.ItemInHand;
                     var itemCountBefore = selectedItem != null ? selectedItem.Count : 0;
-                    if (PlayerController.SendPlaceBlock(Player, World, selectedItem, blockX, blockY, blockZ, blockSide))
+                    if (PlayerController.SendPlaceBlock(Player, world, selectedItem, blockX, blockY, blockZ, blockSide))
                     {
                         shouldPerformSecondaryAction = false;
                         Player.SwingHand();
@@ -2482,7 +2566,7 @@ public partial class OmniBlock :
             if (shouldPerformSecondaryAction && mouseButton == 1)
             {
                 var selectedItem = Player.Inventory.ItemInHand;
-                if (selectedItem != null && PlayerController.SendUseItem(Player, World, selectedItem))
+                if (selectedItem != null && PlayerController.SendUseItem(Player, world, selectedItem))
                 {
                     GameRenderer.ItemRenderer.ResetEquippedProgress();
                 }
@@ -2492,10 +2576,12 @@ public partial class OmniBlock :
 
     public void ClickMiddleMouseButton()
     {
+        var world = World;
+        if (_player is null || world is null) return;
         if (ObjectMouseOver.Type != HitResultType.Miss)
         {
-            var blockId = World.Reader.GetBlockId(ObjectMouseOver.BlockX, ObjectMouseOver.BlockY, ObjectMouseOver.BlockZ);
-            var blockMeta = World.Reader.GetBlockMeta(ObjectMouseOver.BlockX, ObjectMouseOver.BlockY, ObjectMouseOver.BlockZ);
+            var blockId = world.Reader.GetBlockId(ObjectMouseOver.BlockX, ObjectMouseOver.BlockY, ObjectMouseOver.BlockZ);
+            var blockMeta = world.Reader.GetBlockMeta(ObjectMouseOver.BlockX, ObjectMouseOver.BlockY, ObjectMouseOver.BlockZ);
             var hitBlock = Content.Blocks.GetByProtocolId(blockId);
 
             var (primaryMeta, backupId, backupMeta) = hitBlock.GetPickBlockItem(blockMeta);
@@ -2555,9 +2641,9 @@ public partial class OmniBlock :
         StatFileWriter.SyncStats();
         _loadingScreen.BeginLoading(loadingText);
         _loadingScreen.SetStage("");
-        SoundManager.PlayStreaming(null!, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+        SoundManager.PlayStreaming(null, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
 
-        World = newWorld!;
+        World = newWorld;
         if (newWorld != null)
         {
             PlayerController.ChangeWorld(newWorld);
@@ -2565,25 +2651,25 @@ public partial class OmniBlock :
             {
                 if (targetEntity == null)
                 {
-                    Player = (ClientPlayerEntity?)World.GetPlayerForProxy(typeof(ClientPlayerEntity));
+                    _player = (ClientPlayerEntity?)World.GetPlayerForProxy(typeof(ClientPlayerEntity));
                 }
             }
-            else if (Player != null)
+            else if (_player != null)
             {
                 Player.TeleportToTop();
-                newWorld?.Entities.SpawnEntity(Player);
+                newWorld.Entities.SpawnEntity(Player);
             }
 
-            if (Player == null)
+            if (_player == null)
             {
-                Player = (ClientPlayerEntity)PlayerController.CreatePlayer(newWorld);
+                _player = (ClientPlayerEntity)PlayerController.CreatePlayer(newWorld);
                 Player.TeleportToTop();
                 PlayerController.FlipPlayer(Player);
             }
 
             Player.movementInput = new MovementInputFromOptions(Options);
-            WorldRenderer?.ChangeWorld(newWorld);
-            ParticleManager?.clearEffects(newWorld);
+            _worldRenderer?.ChangeWorld(newWorld);
+            _particleManager?.clearEffects(newWorld);
 
             PlayerController.FillHotbar(Player);
             if (targetEntity != null)
@@ -2601,9 +2687,9 @@ public partial class OmniBlock :
         }
         else
         {
-            WorldRenderer?.ChangeWorld(null!);
-            ParticleManager?.clearEffects(null!);
-            Player = null;
+            _worldRenderer?.ChangeWorld(null);
+            _particleManager?.clearEffects(null);
+            _player = null;
         }
 
         _systemTime = 0L;
@@ -2611,16 +2697,17 @@ public partial class OmniBlock :
 
     public void Respawn(bool ignoreSpawnPosition, int newDimensionId)
     {
+        var world = World ?? throw new InvalidOperationException("Cannot respawn without an active world.");
         Vec3I? playerSpawnPos = null;
         Vec3I? respawnPos = null;
 
-        if (Player is not null && !ignoreSpawnPosition)
+        if (_player is not null && !ignoreSpawnPosition)
         {
             playerSpawnPos = Player.GetSpawnPos();
 
             if (playerSpawnPos is not null)
             {
-                respawnPos = EntityPlayer.FindRespawnPosition(World, playerSpawnPos);
+                respawnPos = EntityPlayer.FindRespawnPosition(world, playerSpawnPos);
 
                 if (respawnPos is null)
                 {
@@ -2630,22 +2717,22 @@ public partial class OmniBlock :
         }
 
         var useBedSpawn = respawnPos is not null;
-        var finalRespawnPos = respawnPos ?? World.Properties.GetSpawnPos();
+        var finalRespawnPos = respawnPos ?? world.Properties.GetSpawnPos();
 
-        World.UpdateSpawnPosition();
-        World.Entities.UpdateEntityLists();
+        world.UpdateSpawnPosition();
+        world.Entities.UpdateEntityLists();
 
         var previousPlayerId = 0;
         Holder<GameMode>? previousGameModeHolder = null;
 
-        if (Player is not null)
+        if (_player is not null)
         {
             previousPlayerId = Player.ID;
             previousGameModeHolder = Player.GameModeHolder;
-            World.Entities.Remove(Player);
+            world.Entities.Remove(Player);
         }
 
-        Player = (ClientPlayerEntity)PlayerController.CreatePlayer(World);
+        _player = (ClientPlayerEntity)PlayerController.CreatePlayer(world);
         Player.DimensionId = newDimensionId;
         Player.TeleportToTop();
 
@@ -2666,7 +2753,7 @@ public partial class OmniBlock :
         }
 
         PlayerController.FlipPlayer(Player);
-        World.AddPlayer(Player);
+        world.AddPlayer(Player);
         Player.movementInput = new MovementInputFromOptions(Options);
         Player.ID = previousPlayerId;
         Player.Spawn();
@@ -2718,9 +2805,9 @@ public partial class OmniBlock :
         var loadedChunkCount = 0;
         var totalChunksToLoad = loadingRadius * 2 / 16 + 1;
         totalChunksToLoad *= totalChunksToLoad;
-        var centerPos = World.Properties.GetSpawnPos();
+        var centerPos = (World ?? throw new InvalidOperationException("No active world to load.")).Properties.GetSpawnPos();
 
-        if (Player != null)
+        if (_player != null)
         {
             centerPos.X = (int)Player.X;
             centerPos.Z = (int)Player.Z;
@@ -2731,12 +2818,12 @@ public partial class OmniBlock :
             for (var zOffset = -loadingRadius; zOffset <= loadingRadius; zOffset += 16)
             {
                 _loadingScreen.SetProgress(loadedChunkCount++ * 100 / totalChunksToLoad);
-                World.Reader.GetBlockId(centerPos.X + xOffset, 64, centerPos.Z + zOffset);
+                (World ?? throw new InvalidOperationException("No active world to load.")).Reader.GetBlockId(centerPos.X + xOffset, 64, centerPos.Z + zOffset);
             }
         }
 
         _loadingScreen.SetStage("Simulating world for a bit");
-        World.TickChunks();
+        (World ?? throw new InvalidOperationException("No active world to load.")).TickChunks();
     }
 
     #endregion
@@ -2822,7 +2909,7 @@ public partial class OmniBlock :
         var integratedServer = InternalServer;
         Navigate(new IngameMenuScreen(UIContext, StatFileWriter, () => Navigate(null), quitText, () =>
         {
-            if (IsMultiplayerWorld()) World.Disconnect();
+            if (IsMultiplayerWorld()) World?.Disconnect();
             StopInternalServer();
             ChangeWorld(null);
         }, () => World?.AttemptSaving(saveStep++) ?? false, TexturePackList,
@@ -2955,7 +3042,7 @@ public partial class OmniBlock :
             return;
         }
 
-        Player?.resetPlayerKeyState();
+        _player?.resetPlayerKeyState();
         InGameHasFocus = false;
         GCSettings.LatencyMode = GCLatencyMode.Batch;
         MouseHelper.UngrabMouseCursor();
@@ -3081,7 +3168,7 @@ public partial class OmniBlock :
 
     private MeshSafetyRingState CurrentMeshSafetyRingState()
     {
-        if (WorldRenderer?.ChunkRenderer == null || Player == null) return default;
+        if (WorldRenderer?.ChunkRenderer == null || _player == null) return default;
         return WorldRenderer.ChunkRenderer.GetMeshSafetyRingState(
             new Vector3D<double>(Player.X, Player.Y, Player.Z));
     }
@@ -3239,8 +3326,6 @@ public partial class OmniBlock :
         {
             ForceDebugOnStart = options.Debug
         };
-        game.Session = new Session(options.Username, options.SessionToken);
-
         if (options.SessionToken == "-")
         {
             HasPaidCheckTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();

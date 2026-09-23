@@ -18,7 +18,7 @@ public class KickCommand : Command.Command
     {
         var targetPlayer = context.GetArgument<ServerPlayerEntity>("player");
 
-        targetPlayer.NetworkHandler.disconnect("Kicked by admin");
+        targetPlayer.ConnectedNetworkHandler.disconnect("Kicked by admin");
         context.Source.LogOp("Kicking " + targetPlayer.Name);
 
         return 1;

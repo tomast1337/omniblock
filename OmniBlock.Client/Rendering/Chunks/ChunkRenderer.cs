@@ -140,7 +140,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     /// </summary>
     private readonly Dictionary<RenderState, WgpuPipeline> _wgpuWireframePipelines = [];
 
-    private readonly World _world;
+    private readonly World? _worldBacking;
+    private World _world => _worldBacking ?? throw new InvalidOperationException("Chunk renderer has no active world.");
     private double _averageFrameDurationMs = 1000.0 / 60.0;
     private int _criticalDispatchesSincePump;
     private int _currentIndex;
@@ -320,7 +321,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         return (-x, -z, 1);
     }
 
-    public ChunkRenderer(World world, GameOptions options)
+    public ChunkRenderer(World? world, GameOptions options)
     {
         _options = options;
 
@@ -329,7 +330,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         // even when the mesh queue is already draining immediately.
         _meshGenerator = new ChunkMeshGenerator((ushort)GetMeshWorkerCount(Environment.ProcessorCount), _meshLifecycle);
         _lightEvaluation = new SectionLightEvaluationService(LightEvaluationCapacity);
-        _world = world;
+        _worldBacking = world;
     }
 
     /// <summary>

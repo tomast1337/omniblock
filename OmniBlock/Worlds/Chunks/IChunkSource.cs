@@ -10,7 +10,7 @@ public interface IChunkSource
 
     void DecorateTerrain(IChunkSource source, int x, int z);
 
-    bool Save(bool saveEntities, LoadingDisplay display);
+    bool Save(bool saveEntities, LoadingDisplay? display);
 
     bool Tick();
 

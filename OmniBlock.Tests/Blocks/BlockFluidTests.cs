@@ -168,7 +168,7 @@ public sealed class BlockFluidTests
         {
         }
 
-        public void PlayStreaming(string var1, int var2, int var3, int var4)
+        public void PlayStreaming(string? var1, int var2, int var3, int var4)
         {
         }
 

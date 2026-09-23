@@ -91,7 +91,7 @@ public sealed class NBTTagCompound : NBTBase
 
     public void SetString(string key, string? value)
     {
-        _dictionary[key] = new NBTTagString(value)
+        _dictionary[key] = new NBTTagString(value ?? string.Empty)
         {
             Key = key
         };

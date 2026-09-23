@@ -6,7 +6,9 @@ namespace OmniBlock.Client.Rendering.Blocks.Entities;
 
 public abstract class BlockEntitySpecialRenderer
 {
-    protected BlockEntityRenderer tileEntityRenderer;
+    private BlockEntityRenderer? _tileEntityRenderer;
+    protected BlockEntityRenderer tileEntityRenderer =>
+        _tileEntityRenderer ?? throw new InvalidOperationException("Block-entity renderer has not been attached.");
 
     public abstract void renderTileEntityAt(BlockEntity blockEntity, double x, double y, double z, float tickDelta);
 
@@ -30,7 +32,7 @@ public abstract class BlockEntitySpecialRenderer
         textureManager.BindTexture(handle);
     }
 
-    public void setTileEntityRenderer(BlockEntityRenderer renderer) => tileEntityRenderer = renderer;
+    public void setTileEntityRenderer(BlockEntityRenderer renderer) => _tileEntityRenderer = renderer;
 
     public virtual void func_31069_a(World world)
     {

@@ -61,7 +61,7 @@ public class GameRenderer
 
     public void Tick(float tickDelta)
     {
-        if (_client.WorldRenderer != null)
+        if (_client.World is not null && _client.CameraOrNull is not null)
         {
             _client.WorldRenderer.Tick(_client.Camera, tickDelta);
         }
@@ -69,7 +69,7 @@ public class GameRenderer
 
     public void UpdateTargetedEntity(float tickDelta)
     {
-        if (_client.Camera == null)
+        if (_client.CameraOrNull == null)
         {
             return;
         }
@@ -589,13 +589,13 @@ public class GameRenderer
 
     private void RenderRain()
     {
-        var rainGradient = _client.World.Environment.GetRainGradient(1.0F);
+        var rainGradient = (_client.World ?? throw new InvalidOperationException("No active world.")).Environment.GetRainGradient(1.0F);
 
         if (rainGradient != 0.0F)
         {
             _random.SetSeed(_ticks * 312987231L);
             var camera = _client.Camera;
-            var world = _client.World;
+            var world = _client.World ?? throw new InvalidOperationException("No active world.");
             var cameraBlockX = MathHelper.Floor(camera.X);
             var cameraBlockY = MathHelper.Floor(camera.Y);
             var cameraBlockZ = MathHelper.Floor(camera.Z);
@@ -657,11 +657,11 @@ public class GameRenderer
 
     protected void RenderSnow(float tickDelta)
     {
-        var rainGradient = _client.World.Environment.GetRainGradient(tickDelta);
+        var rainGradient = (_client.World ?? throw new InvalidOperationException("No active world.")).Environment.GetRainGradient(tickDelta);
         if (rainGradient > 0.0F)
         {
             var camera = _client.Camera;
-            var world = _client.World;
+            var world = _client.World ?? throw new InvalidOperationException("No active world.");
             var cameraBlockX = MathHelper.Floor(camera.X);
             var cameraBlockY = MathHelper.Floor(camera.Y);
             var cameraBlockZ = MathHelper.Floor(camera.Z);
@@ -926,7 +926,7 @@ public class GameRenderer
 
     private void UpdateSkyAndFogColors(float tickDelta)
     {
-        var world = _client.World;
+        var world = _client.World ?? throw new InvalidOperationException("No active world.");
         var camera = _client.Camera;
         var fogBlend = 4.0F / _client.Options.RenderDistance;
         fogBlend = Math.Clamp(fogBlend, 0.25f, 1.0f);
@@ -1027,7 +1027,7 @@ public class GameRenderer
                 end *= 0.8F;
             }
 
-            if (_client.World.Dimension.IsNether)
+            if ((_client.World ?? throw new InvalidOperationException("No active world.")).Dimension.IsNether)
             {
                 start = 0.0F;
             }

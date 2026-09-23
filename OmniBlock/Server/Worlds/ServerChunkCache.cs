@@ -62,14 +62,12 @@ public class ServerChunkCache : IChunkSource
                 }
             }
 
+            chunk = chunk ?? throw new InvalidOperationException($"Chunk generator returned null for {chunkX},{chunkZ}.");
             ValidateChunkCoordinates(chunk, chunkX, chunkZ);
 
             _chunksByPos.Add(hash, chunk);
             _chunks.Add(chunk);
-            if (chunk != null)
-            {
-                PrepareLoadedChunk(chunk);
-            }
+            PrepareLoadedChunk(chunk);
 
             if (!chunk.TerrainPopulated
                 && IsChunkLoaded(chunkX + 1, chunkZ + 1)
@@ -135,12 +133,12 @@ public class ServerChunkCache : IChunkSource
                     WorldGenerationStage.Decoration,
                     () => _generator.DecorateTerrain(source, x, z));
                 chunk.MarkDirty();
-                _world.ChunkMap.OnChunkDecorated(x, z);
+                _world.ChunkMap?.OnChunkDecorated(x, z);
             }
         }
     }
 
-    public bool Save(bool saveEntities, LoadingDisplay display)
+    public bool Save(bool saveEntities, LoadingDisplay? display)
     {
         var savedChunkCount = 0;
 

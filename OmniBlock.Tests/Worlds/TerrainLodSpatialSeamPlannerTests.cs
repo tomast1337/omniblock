@@ -66,9 +66,8 @@ public sealed class TerrainLodSpatialSeamPlannerTests
 
         var seams = TerrainLodSpatialSeamPlanner.Plan(selected);
 
-        Assert.Single(seams.Where(static seam => !seam.IsExterior));
         Assert.Equal(6, seams.Count(static seam => seam.IsExterior));
-        var shared = Assert.Single(seams.Where(static seam => !seam.IsExterior));
+        var shared = Assert.Single(seams, static seam => !seam.IsExterior);
         AssertSeam(shared, fixedCoordinate: -1, alongStart: -1, alongEnd: 0);
         Assert.Equal(TerrainLodSpatialBoundarySide.East, shared.OwnerSide);
     }

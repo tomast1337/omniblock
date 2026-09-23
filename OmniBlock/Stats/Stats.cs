@@ -36,9 +36,24 @@ public static class Stats
     public static StatBase FishCaughtStat = new StatBasic(2025, "stat.fishCaught").RegisterStat();
 
     public static StatBase[] MineBlockStatArray = new StatBase[RuntimeBlockRegistry.ProtocolIdCapacity];
-    public static StatBase[] Crafted;
-    public static StatBase[] Used;
-    public static StatBase[] Broken;
+    private static StatBase[]? _crafted;
+    private static StatBase[]? _used;
+    private static StatBase[]? _broken;
+    public static StatBase[] Crafted
+    {
+        get => _crafted ?? throw new InvalidOperationException("Crafted-item statistics are not initialized.");
+        private set => _crafted = value;
+    }
+    public static StatBase[] Used
+    {
+        get => _used ?? throw new InvalidOperationException("Used-item statistics are not initialized.");
+        private set => _used = value;
+    }
+    public static StatBase[] Broken
+    {
+        get => _broken ?? throw new InvalidOperationException("Broken-item statistics are not initialized.");
+        private set => _broken = value;
+    }
 
     private static bool _hasBasicItemStatsInitialized;
     private static bool _hasExtendedItemStatsInitialized;
@@ -47,15 +62,15 @@ public static class Stats
     {
         OmniBlock.Achievements.Initialize(content);
         MineBlockStatArray = InitBlocksMined(content, "stat.mineBlock", 16777216);
-        Used = InitItemUsedStats(content, Used, "stat.useItem", 16908288, 0, RuntimeBlockRegistry.ProtocolIdCapacity);
-        Broken = InitializeBrokenItemStats(content, Broken, "stat.breakItem", 16973824, 0, RuntimeBlockRegistry.ProtocolIdCapacity);
+        Used = InitItemUsedStats(content, _used, "stat.useItem", 16908288, 0, RuntimeBlockRegistry.ProtocolIdCapacity);
+        Broken = InitializeBrokenItemStats(content, _broken, "stat.breakItem", 16973824, 0, RuntimeBlockRegistry.ProtocolIdCapacity);
         _hasBasicItemStatsInitialized = true;
     }
 
     public static void InitializeExtendedItemStats(IItemRuntimeView items)
     {
-        Used = InitItemUsedStats(items, Used, "stat.useItem", 16908288, RuntimeBlockRegistry.ProtocolIdCapacity, 32000);
-        Broken = InitializeBrokenItemStats(items, Broken, "stat.breakItem", 16973824, RuntimeBlockRegistry.ProtocolIdCapacity, 32000);
+        Used = InitItemUsedStats(items, _used, "stat.useItem", 16908288, RuntimeBlockRegistry.ProtocolIdCapacity, 32000);
+        Broken = InitializeBrokenItemStats(items, _broken, "stat.breakItem", 16973824, RuntimeBlockRegistry.ProtocolIdCapacity, 32000);
         _hasExtendedItemStatsInitialized = true;
     }
 
@@ -113,7 +128,7 @@ public static class Stats
         return statsArray;
     }
 
-    private static StatBase[] InitItemUsedStats(IItemRuntimeView items, StatBase[] statsArray, string baseName, int baseId, int startIdx, int endIdx)
+    private static StatBase[] InitItemUsedStats(IItemRuntimeView items, StatBase[]? statsArray, string baseName, int baseId, int startIdx, int endIdx)
     {
         statsArray ??= new StatBase[32000];
 
@@ -135,7 +150,7 @@ public static class Stats
         return statsArray;
     }
 
-    private static StatBase[] InitializeBrokenItemStats(IItemRuntimeView items, StatBase[] statsArray, string baseName, int baseId, int startIdx, int endIdx)
+    private static StatBase[] InitializeBrokenItemStats(IItemRuntimeView items, StatBase[]? statsArray, string baseName, int baseId, int startIdx, int endIdx)
     {
         statsArray ??= new StatBase[32000];
 

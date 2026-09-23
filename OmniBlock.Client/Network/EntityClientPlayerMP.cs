@@ -217,7 +217,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
     {
         sendQueue.SendMessage(new CloseScreenMessage
         {
-            SyncId = (sbyte)CurrentScreenHandler.SyncId
+            SyncId = (sbyte)(CurrentScreenHandler?.SyncId ?? 0)
         });
         Inventory.SetCursorStack(null);
         base.CloseHandledScreen();

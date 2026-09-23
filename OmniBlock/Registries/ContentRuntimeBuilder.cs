@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
@@ -83,7 +84,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
 
     EntityType IEntityTypeBuildView.Get(ResourceLocation key) => GetEntityType(key);
 
-    bool IEntityTypeBuildView.TryGet(ResourceLocation key, out EntityType? type) =>
+    bool IEntityTypeBuildView.TryGet(ResourceLocation key, [NotNullWhen(true)] out EntityType? type) =>
         _entityTypesByKey.TryGetValue(key, out type);
 
     public Item Get(ResourceLocation key) => _itemsByKey.TryGetValue(key, out var item)
@@ -94,8 +95,8 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         ? item
         : throw new KeyNotFoundException($"Unknown item protocol id {protocolId}.");
 
-    public bool TryGet(ResourceLocation key, out Item? item) => _itemsByKey.TryGetValue(key, out item);
-    public bool TryGetByProtocolId(int protocolId, out Item? item) => _itemsByProtocolId.TryGetValue(protocolId, out item);
+    public bool TryGet(ResourceLocation key, [NotNullWhen(true)] out Item? item) => _itemsByKey.TryGetValue(key, out item);
+    public bool TryGetByProtocolId(int protocolId, [NotNullWhen(true)] out Item? item) => _itemsByProtocolId.TryGetValue(protocolId, out item);
 
     public object BuildBlockBehavior(ResourceLocation type, JsonElement definition) =>
         BlockBehaviorProviders.Build(type, definition, BehaviorBuildContext);

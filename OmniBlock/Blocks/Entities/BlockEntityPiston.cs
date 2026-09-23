@@ -51,7 +51,9 @@ public class BlockEntityPiston : BlockEntity
             collisionShapeSizeMultiplier = 1.0F - collisionShapeSizeMultiplier;
 
         var movingPiston = World!.Content.Blocks.Get("moving_piston");
-        var pushCollisionBox = ((PistonMovingBehavior)movingPiston.Physics)
+        var movingBehavior = movingPiston.Physics as PistonMovingBehavior
+            ?? throw new InvalidOperationException("Moving piston block has no piston movement behavior.");
+        var pushCollisionBox = movingBehavior
             .GetPushedBlockCollisionShape(movingPiston, World!.Reader, entities, X, Y, Z, PushedBlockId, collisionShapeSizeMultiplier, Facing);
         if (pushCollisionBox == null) return;
 

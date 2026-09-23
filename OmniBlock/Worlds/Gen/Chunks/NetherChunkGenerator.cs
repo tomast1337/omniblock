@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Util.Maths.Noise;
@@ -21,7 +22,7 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
     private readonly OctavePerlinNoiseSampler _scaleNoise;
     private readonly Settings _settings;
     private double[] _depthBuffer = new double[256];
-    private double[] _depthNoiseBuffer;
+    private double[] _depthNoiseBuffer = [];
     private PlantPatchFeature _featureBrownMushroom;
     private GlowstoneClusterFeature _featureGlowstoneFull;
     private GlowstoneClusterFeatureRare _featureGlowstoneRare;
@@ -29,12 +30,12 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
     private NetherLavaSpringFeature _featureNetherLavaSpring;
     private PlantPatchFeature _featureRedMushroom;
     private double[] _gravelBuffer = new double[256];
-    private double[] _heightMap;
-    private double[] _maxLimitPerlinNoiseBuffer;
-    private double[] _minLimitPerlinNoiseBuffer;
-    private double[] _perlinNoiseBuffer;
+    private double[] _heightMap = [];
+    private double[] _maxLimitPerlinNoiseBuffer = [];
+    private double[] _minLimitPerlinNoiseBuffer = [];
+    private double[] _perlinNoiseBuffer = [];
     private double[] _sandBuffer = new double[256];
-    private double[] _scaleNoiseBuffer;
+    private double[] _scaleNoiseBuffer = [];
 
     public NetherChunkGenerator(IWorldContext world, long seed)
         : this(world, seed, BlockIds.Resolve(world.Content.Blocks), Settings.Default)
@@ -139,11 +140,15 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
 
     }
 
-    public bool Save(bool bl, LoadingDisplay display) => true;
+    public bool Save(bool bl, LoadingDisplay? display) => true;
     public bool Tick() => false;
     public bool CanSave() => true;
     public string GetDebugInfo() => "HellRandomLevelSource";
 
+    [MemberNotNull(
+        nameof(_featureNetherLavaSpring), nameof(_featureNetherFire),
+        nameof(_featureGlowstoneFull), nameof(_featureGlowstoneRare),
+        nameof(_featureBrownMushroom), nameof(_featureRedMushroom))]
     private void InitFeatures()
     {
         _featureNetherLavaSpring = new NetherLavaSpringFeature(_blocks.FlowingLava);
@@ -327,7 +332,7 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
 
     private double[] GenerateHeightMap(double[]? heightMap, int x, int y, int z, int sizeX, int sizeY, int sizeZ)
     {
-        if (heightMap == null)
+        if (heightMap == null || heightMap.Length < checked(sizeX * sizeY * sizeZ))
         {
             heightMap = new double[sizeX * sizeY * sizeZ];
         }

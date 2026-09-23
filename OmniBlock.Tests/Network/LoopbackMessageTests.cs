@@ -48,7 +48,7 @@ public sealed class LoopbackMessageTests
         };
 
         sender.sendMessage(Negotiated(), sent);
-        sender.RemoteConnection.tick();
+        Assert.IsType<InternalConnection>(sender.RemoteConnection).tick();
 
         // Reference equality, deliberately. An equal-but-distinct instance would mean it went
         // through bytes, which is the cost this path exists to avoid.
@@ -70,7 +70,7 @@ public sealed class LoopbackMessageTests
             EntityId = 3,
             Reason = EntityRemovalReason.DistanceDespawn
         });
-        sender.RemoteConnection.tick();
+        Assert.IsType<InternalConnection>(sender.RemoteConnection).tick();
 
         var received = Assert.IsType<EntityDestroyMessage>(Assert.Single(handler.Received));
         Assert.Equal(3, received.EntityId);
@@ -93,7 +93,7 @@ public sealed class LoopbackMessageTests
         Assert.Equal(1, sender.getWorldPacketBacklog());
         Assert.Equal(1, sender.getBulkPacketBacklog());
 
-        sender.RemoteConnection.tick();
+        Assert.IsType<InternalConnection>(sender.RemoteConnection).tick();
         Assert.Equal(2, handler.Received.Count);
         Assert.Same(gameplay, handler.Received[0]);
         Assert.Same(bulk, handler.Received[1]);
@@ -108,17 +108,18 @@ public sealed class LoopbackMessageTests
             .ToArray();
         foreach (var message in bulk) sender.sendMessage(Negotiated(), message);
 
-        Assert.Equal(bulk.Length, sender.RemoteConnection.BulkReadQueueDepth);
-        Assert.Equal(bulk.Length, sender.RemoteConnection.PeakBulkReadQueueDepth);
+        var remote = Assert.IsType<InternalConnection>(sender.RemoteConnection);
+        Assert.Equal(bulk.Length, remote.BulkReadQueueDepth);
+        Assert.Equal(bulk.Length, remote.PeakBulkReadQueueDepth);
 
-        sender.RemoteConnection.tick();
+        remote.tick();
 
         Assert.Equal(InternalConnection.MaximumBulkPacketsPerTick, handler.Received.Count);
         Assert.Same(bulk[0], handler.Received[0]);
         Assert.Same(bulk[1], handler.Received[1]);
         Assert.Equal(1, sender.getBulkPacketBacklog());
-        Assert.Equal(1, sender.RemoteConnection.BulkReadQueueDepth);
-        Assert.Equal(bulk.Length, sender.RemoteConnection.PeakBulkReadQueueDepth);
+        Assert.Equal(1, remote.BulkReadQueueDepth);
+        Assert.Equal(bulk.Length, remote.PeakBulkReadQueueDepth);
     }
 
     [Fact]

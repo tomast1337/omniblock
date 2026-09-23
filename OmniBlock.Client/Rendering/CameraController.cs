@@ -43,7 +43,7 @@ public class CameraController
         _prevCameraRoll = _cameraRoll;
         _prevCameraRollAmount = _cameraRollAmount;
 
-        var luminance = _game.World.GetLuminance(MathHelper.Floor(_game.Camera.X), MathHelper.Floor(_game.Camera.Y), MathHelper.Floor(_game.Camera.Z));
+        var luminance = (_game.World ?? throw new InvalidOperationException("No active world.")).GetLuminance(MathHelper.Floor(_game.Camera.X), MathHelper.Floor(_game.Camera.Y), MathHelper.Floor(_game.Camera.Z));
         var renderDistFactor = Math.Clamp((_game.Options.RenderDistance - 4.0F) / 28.0F, 0.0F, 1.0F);
         var targetBob = luminance * (1.0F - renderDistFactor) + renderDistFactor;
         ViewBob += (targetBob - ViewBob) * 0.1F;
@@ -109,7 +109,7 @@ public class CameraController
 
     public void ApplyViewBobbing(float tickDelta)
     {
-        if (_game.Camera is EntityPlayer player)
+        if (_game.CameraOrNull is EntityPlayer player)
         {
             var speedDelta = player.HorizontalSpeed - player.PrevHorizontalSpeed;
             var speed = -(player.HorizontalSpeed + speedDelta * tickDelta);
@@ -139,7 +139,7 @@ public class CameraController
             RenderSystem.ModelView.Translate(0.0F, 0.3F, 0.0F);
             if (!_game.Options.DebugCamera)
             {
-                var blockId = _game.World.Reader.GetBlockId(MathHelper.Floor(cameraEntity.X), MathHelper.Floor(cameraEntity.Y), MathHelper.Floor(cameraEntity.Z));
+                var blockId = (_game.World ?? throw new InvalidOperationException("No active world.")).Reader.GetBlockId(MathHelper.Floor(cameraEntity.X), MathHelper.Floor(cameraEntity.Y), MathHelper.Floor(cameraEntity.Z));
                 if (blockId == _game.Content.Blocks.Get("bed").Id)
                 {
                     var meta = _game.World.Reader.GetBlockMeta(MathHelper.Floor(cameraEntity.X), MathHelper.Floor(cameraEntity.Y), MathHelper.Floor(cameraEntity.Z));
@@ -193,14 +193,14 @@ public class CameraController
 
                     if (_game.Options.CameraMode == CameraMode.FrontThirdPerson)
                     {
-                        hit = _game.World.Reader.Raycast(
+                        hit = (_game.World ?? throw new InvalidOperationException("No active world.")).Reader.Raycast(
                             new Vec3D(x + offsetX, y + offsetY, z + offsetZ),
                             new Vec3D(x + vecX + offsetX + offsetZ, y + vecY + offsetY, z + vecZ + offsetZ)
                         );
                     }
                     else
                     {
-                        hit = _game.World.Reader.Raycast(
+                        hit = (_game.World ?? throw new InvalidOperationException("No active world.")).Reader.Raycast(
                             new Vec3D(x + offsetX, y + offsetY, z + offsetZ),
                             new Vec3D(x - vecX + offsetX + offsetZ, y - vecY + offsetY, z - vecZ + offsetZ)
                         );

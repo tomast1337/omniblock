@@ -11,8 +11,9 @@ internal class LargeOakTreeFeature : Feature
     private readonly int[] origin = [0, 0, 0];
     private readonly double trunkScale = 0.618D;
     private readonly int trunkWidth = 1;
-    private IWorldContext _level;
-    private int[][] branches;
+    private IWorldContext? _level;
+    private IWorldContext Level => _level ?? throw new InvalidOperationException("Large oak feature has not been initialized for a world.");
+    private int[][] branches = [];
     private double branchLengthScale = 1.0D;
     private int foliageClusterHeight = 4;
     private double foliageDensity = 1.0D;
@@ -143,7 +144,7 @@ internal class LargeOakTreeFeature : Feature
                 }
 
                 currentPos[secondMinorAxis] = centerPos[secondMinorAxis] + secondaryOffset;
-                var currentBlockId = _level.Reader.GetBlockId(currentPos[0], currentPos[1], currentPos[2]);
+                var currentBlockId = Level.Reader.GetBlockId(currentPos[0], currentPos[1], currentPos[2]);
 
                 if (currentBlockId != 0 && currentBlockId != 18)
                 {
@@ -151,7 +152,7 @@ internal class LargeOakTreeFeature : Feature
                     continue;
                 }
 
-                _level.Writer.SetBlock(currentPos[0], currentPos[1], currentPos[2], blockId, 0, false);
+                Level.Writer.SetBlock(currentPos[0], currentPos[1], currentPos[2], blockId, 0, false);
                 ++secondaryOffset;
             }
         }
@@ -236,7 +237,7 @@ internal class LargeOakTreeFeature : Feature
                 currentPos[dominantAxis] = MathHelper.Floor(fromPos[dominantAxis] + step + 0.5D);
                 currentPos[firstMinorAxis] = MathHelper.Floor(fromPos[firstMinorAxis] + step * firstMinorSlope + 0.5D);
                 currentPos[secondMinorAxis] = MathHelper.Floor(fromPos[secondMinorAxis] + step * secondMinorSlope + 0.5D);
-                _level.Writer.SetBlockWithoutNotifyingNeighbors(currentPos[0], currentPos[1], currentPos[2], blockId, 0, false);
+                Level.Writer.SetBlockWithoutNotifyingNeighbors(currentPos[0], currentPos[1], currentPos[2], blockId, 0, false);
             }
         }
     }
@@ -340,7 +341,7 @@ internal class LargeOakTreeFeature : Feature
             currentPos[dominantAxis] = fromPos[dominantAxis] + step;
             currentPos[firstMinorAxis] = MathHelper.Floor(fromPos[firstMinorAxis] + step * firstMinorSlope);
             currentPos[secondMinorAxis] = MathHelper.Floor(fromPos[secondMinorAxis] + step * secondMinorSlope);
-            var blockId = _level.Reader.GetBlockId(currentPos[0], currentPos[1], currentPos[2]);
+            var blockId = Level.Reader.GetBlockId(currentPos[0], currentPos[1], currentPos[2]);
             if (blockId != 0 && blockId != 18)
             {
                 break;
@@ -354,7 +355,7 @@ internal class LargeOakTreeFeature : Feature
     {
         int[] basePos = [origin[0], origin[1], origin[2]];
         int[] topPos = [origin[0], origin[1] + height - 1, origin[2]];
-        var soilBlockId = _level.Reader.GetBlockId(origin[0], origin[1] - 1, origin[2]);
+        var soilBlockId = Level.Reader.GetBlockId(origin[0], origin[1] - 1, origin[2]);
         if (soilBlockId != 2 && soilBlockId != 3)
         {
             return false;

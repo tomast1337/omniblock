@@ -164,7 +164,7 @@ public sealed class FakeChunkSource(IWorldContext world) : IChunkSource
     {
     }
 
-    public bool Save(bool saveEntities, LoadingDisplay display) => true;
+    public bool Save(bool saveEntities, LoadingDisplay? display) => true;
     public bool Tick() => false;
     public bool CanSave() => false;
     public string GetDebugInfo() => "FakeChunkSource";
@@ -246,7 +246,7 @@ sealed file class StubChunkSource(IWorldContext world) : IChunkSource
     {
     }
 
-    public bool Save(bool saveEntities, LoadingDisplay display) => true;
+    public bool Save(bool saveEntities, LoadingDisplay? display) => true;
     public bool Tick() => false;
     public bool CanSave() => false;
     public string GetDebugInfo() => "StubChunkSource";

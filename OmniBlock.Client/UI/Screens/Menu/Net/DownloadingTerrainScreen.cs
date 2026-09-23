@@ -48,7 +48,7 @@ public class DownloadingTerrainScreen(UIContext context, ClientNetworkHandler ne
             _networkHandler.SendMessage(new KeepAliveMessage());
         }
 
-        _networkHandler?.Tick();
+        _networkHandler.Tick();
 
         var preload = _networkHandler.Preload;
         if (_tickCounter % 100 == 0)

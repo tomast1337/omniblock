@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
@@ -98,6 +99,6 @@ public sealed class EntityBehaviorProviderRegistryTests
     private sealed class RegistryEntityTypeView : IEntityTypeBuildView
     {
         public EntityType Get(ResourceLocation key) => ContentRuntime.Current.EntityTypes.Get(key);
-        public bool TryGet(ResourceLocation key, out EntityType? type) => ContentRuntime.Current.EntityTypes.TryGet(key, out type);
+        public bool TryGet(ResourceLocation key, [NotNullWhen(true)] out EntityType? type) => ContentRuntime.Current.EntityTypes.TryGet(key, out type);
     }
 }

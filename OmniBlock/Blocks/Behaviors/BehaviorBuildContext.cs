@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Items;
 using OmniBlock.Textures;
@@ -90,7 +91,7 @@ public readonly struct BehaviorBuildContext
     {
         public Block Get(ResourceLocation key) => resolveBlock(key);
 
-        public bool TryGet(ResourceLocation key, out Block? block)
+        public bool TryGet(ResourceLocation key, [NotNullWhen(true)] out Block? block)
         {
             try
             {
@@ -107,7 +108,7 @@ public readonly struct BehaviorBuildContext
         public Block GetByProtocolId(int protocolId) => throw new InvalidOperationException(
             "Protocol-ID block resolution requires an explicit block runtime view.");
 
-        public bool TryGetByProtocolId(int protocolId, out Block? block)
+        public bool TryGetByProtocolId(int protocolId, [NotNullWhen(true)] out Block? block)
         {
             block = null;
             return false;

@@ -103,6 +103,11 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public ServerPlayNetworkHandler? NetworkHandler { get; set; }
 
+    public string PlayerName => Name ?? throw new InvalidOperationException("Server player has no name.");
+
+    public ServerPlayNetworkHandler ConnectedNetworkHandler => NetworkHandler ??
+        throw new InvalidOperationException($"Player '{PlayerName}' has no active network handler.");
+
     public override ItemStack?[] Equipment => _equipment;
 
 
@@ -123,7 +128,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     }
 
 
-    public void onContentsUpdate(ScreenHandler handler, List<ItemStack> stacks)
+    public void onContentsUpdate(ScreenHandler handler, List<ItemStack?> stacks)
     {
         NetworkHandler?.SendMessage(new InventoryMessage
         {
@@ -673,7 +678,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     {
         NetworkHandler?.SendMessage(new CloseScreenMessage
         {
-            SyncId = (sbyte)CurrentScreenHandler.SyncId
+            SyncId = (sbyte)(CurrentScreenHandler ?? PlayerScreenHandler).SyncId
         });
         onHandledScreenClosed();
     }
@@ -688,7 +693,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public void onHandledScreenClosed()
     {
-        CurrentScreenHandler.onClosed(this);
+        CurrentScreenHandler?.onClosed(this);
         CurrentScreenHandler = PlayerScreenHandler;
     }
 

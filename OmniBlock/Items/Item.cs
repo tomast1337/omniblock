@@ -16,12 +16,12 @@ public class Item
 
     public readonly int Id;
     private string[] _aliases = [];
-    private Item _craftingReturnItem;
+    private Item? _craftingReturnItem;
     private int _maxCount = 64;
     private int _maxDamage;
     private Item[] _repairIngredients = [];
     internal int _textureId;
-    private string _translationKey;
+    private string _translationKey = string.Empty;
 
     internal Item(int id) => Id = 256 + id;
     public bool Handheld { get; private set; }
@@ -263,7 +263,7 @@ public class Item
         return this;
     }
 
-    public Item GetContainerItem() => _craftingReturnItem;
+    public Item? GetContainerItem() => _craftingReturnItem;
 
     public bool HasContainerItem() => _craftingReturnItem != null;
 

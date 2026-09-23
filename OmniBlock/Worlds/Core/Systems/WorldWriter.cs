@@ -110,7 +110,7 @@ public sealed class WorldWriter : IBlockWriter
 
         if (!changed || chunk.World is not ServerWorld serverWorld || serverWorld.IsRemote) return changed;
 
-        if (serverWorld.ChunkMap.IsChunkTrackedAndSent(chunkX, chunkZ))
+        if (serverWorld.ChunkMap?.IsChunkTrackedAndSent(chunkX, chunkZ) == true)
         {
             serverWorld.Broadcaster.BlockUpdateEvent(x, y, z);
         }
@@ -132,7 +132,7 @@ public sealed class WorldWriter : IBlockWriter
 
         if (!changed || chunk.World is not ServerWorld serverWorld || serverWorld.IsRemote) return changed;
 
-        if (serverWorld.ChunkMap.IsChunkTrackedAndSent(chunkX, chunkZ))
+        if (serverWorld.ChunkMap?.IsChunkTrackedAndSent(chunkX, chunkZ) == true)
         {
             serverWorld.Broadcaster.BlockUpdateEvent(x, y, z);
         }

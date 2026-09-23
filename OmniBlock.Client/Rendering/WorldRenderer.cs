@@ -54,7 +54,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     private int _renderDistance = -1;
     private int _renderEntitiesStartupCounter = 2;
 
-    private World _world;
+    private World? _worldBacking;
+    private World _world => _worldBacking ?? throw new InvalidOperationException("World renderer has no active world.");
 
     public WorldRenderer(OmniBlock gameInstance, TextureManager textureManager)
     {
@@ -190,7 +191,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         return (start, end);
     }
 
-    public void PlayStreaming(string soundName, int x, int y, int z)
+    public void PlayStreaming(string? soundName, int x, int y, int z)
     {
         if (soundName != null)
         {
@@ -216,7 +217,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void SpawnParticle(string particleName, double x, double y, double z, double velocityX, double velocityY, double velocityZ)
     {
-        if (_game != null && _game.Camera != null && _game.ParticleManager != null)
+        if (_game.CameraOrNull is not null)
         {
             var cameraDx = _game.Camera.X - x;
             var cameraDy = _game.Camera.Y - y;
@@ -454,17 +455,17 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         return tessellator.captureStatic();
     }
 
-    public void ChangeWorld(World world)
+    public void ChangeWorld(World? world)
     {
         EntityImpostors.Reset();
-        if (_world is Worlds.ClientWorld previousClientWorld)
+        if (_worldBacking is Worlds.ClientWorld previousClientWorld)
             previousClientWorld.NetworkHandler.PresentationRelocated -= OnPresentationRelocated;
         EntityLod.Clear();
-        _world?.EventListeners.Remove(this);
+        _worldBacking?.EventListeners.Remove(this);
 
-        EntityRenderDispatcher.Instance.World = world;
-        _world = world;
-        if (_world is Worlds.ClientWorld clientWorld)
+        EntityRenderDispatcher.Instance.SetWorld(world);
+        _worldBacking = world;
+        if (_worldBacking is Worlds.ClientWorld clientWorld)
             clientWorld.NetworkHandler.PresentationRelocated += OnPresentationRelocated;
         if (world != null)
         {
@@ -817,7 +818,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         else
         {
             TerrainLod?.RenderTransparent(renderParams, ChunkRenderer);
-            ChunkRenderer.RenderTransparent(renderParams);
+            ChunkRenderer?.RenderTransparent(renderParams);
         }
 
         return 0;
@@ -827,7 +828,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void RenderSky(float tickDelta)
     {
-        if (_game.World.Dimension.IsNether) return;
+        if (_world.Dimension.IsNether) return;
 
         if (!HasSkySlotPipeline)
         {
@@ -1063,7 +1064,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             // mesh and RenderLegacyCloudsFancy indexes past the end of it.
             OnCloudsQualityChanged();
 
-            if (!_game.World.Dimension.IsNether)
+            if (!_world.Dimension.IsNether)
             {
                 if (_game.Options.CloudsQuality <= 0)
                 {
@@ -1340,7 +1341,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         RenderSystem.State.Apply(RenderState.Opaque);
     }
 
-    public void DrawBlockBreaking(EntityPlayer entityPlayer, HitResult hit, ItemStack itemStack, float tickDelta)
+    public void DrawBlockBreaking(EntityPlayer entityPlayer, HitResult hit, ItemStack? itemStack, float tickDelta)
     {
         if (DamagePartialTime <= 0.0F) return;
 
@@ -1388,7 +1389,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         RenderSystem.ModelView.Pop();
     }
 
-    public void DrawSelectionBox(EntityPlayer player, HitResult hit, int renderPass, ItemStack itemStack, float tickDelta)
+    public void DrawSelectionBox(EntityPlayer player, HitResult hit, int renderPass, ItemStack? itemStack, float tickDelta)
     {
         if (renderPass == 0 && hit.Type == HitResultType.Tile)
         {

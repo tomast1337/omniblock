@@ -28,7 +28,7 @@ public class InternalConnection : Connection
         Name = name;
     }
 
-    public InternalConnection RemoteConnection { get; set; }
+    public InternalConnection? RemoteConnection { get; set; }
 
     public string Name { get; set; }
 

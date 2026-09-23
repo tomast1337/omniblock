@@ -37,9 +37,9 @@ public abstract class ScreenHandler
         SendContentUpdates();
     }
 
-    public List<ItemStack> GetStacks()
+    public List<ItemStack?> GetStacks()
     {
-        var stacks = new List<ItemStack>();
+        var stacks = new List<ItemStack?>();
 
         for (var slotIndex = 0; slotIndex < Slots.Count; slotIndex++)
         {
@@ -100,11 +100,11 @@ public abstract class ScreenHandler
             var playerInventory = player.Inventory;
             if (index == NullSlot)
             {
-                if (playerInventory.GetCursorStack() is not null)
+                if (playerInventory.GetCursorStack() is { } cursorStack)
                 {
                     if (button == 0)
                     {
-                        if (player.DropItem(playerInventory.GetCursorStack()))
+                        if (player.DropItem(cursorStack))
                         {
                             playerInventory.SetCursorStack(null);
                         }
@@ -112,8 +112,8 @@ public abstract class ScreenHandler
 
                     if (button == 1 && player.GameMode.CanDrop)
                     {
-                        player.DropItem(playerInventory.GetCursorStack().Split(1));
-                        if (playerInventory.GetCursorStack().Count == 0)
+                        player.DropItem(cursorStack.Split(1));
+                        if (cursorStack.Count == 0)
                         {
                             playerInventory.SetCursorStack(null);
                         }
@@ -131,9 +131,9 @@ public abstract class ScreenHandler
                         var itemStackSize = itemStack.Count;
                         returnStack = itemStack.Copy();
                         var slot = Slots[index];
-                        if (slot is not null && slot.getStack() is not null)
+                        if (slot is not null && slot.getStack() is { } currentStack)
                         {
-                            slotItemStackSize = slot.getStack().Count;
+                            slotItemStackSize = currentStack.Count;
                             if (slotItemStackSize < itemStackSize)
                             {
                                 onSlotClick(index, button, shift, player);
@@ -181,7 +181,8 @@ public abstract class ScreenHandler
                                 slot.setStack(null);
                             }
 
-                            slot.onTakeItem(playerInventory.GetCursorStack());
+                            if (takenStack is not null)
+                                slot.onTakeItem(takenStack);
                         }
                         else if (slot.canInsert(cursorStack))
                         {
@@ -227,7 +228,7 @@ public abstract class ScreenHandler
                                     slot.setStack(null);
                                 }
 
-                                slot.onTakeItem(playerInventory.GetCursorStack());
+                                slot.onTakeItem(cursorStack);
                             }
                         }
                     }
@@ -241,25 +242,25 @@ public abstract class ScreenHandler
     public virtual void onClosed(EntityPlayer player)
     {
         var playerInventory = player.Inventory;
-        if (playerInventory.GetCursorStack() is not null)
+        if (playerInventory.GetCursorStack() is { } cursorStack)
         {
             if (player.GameMode.CanDrop)
             {
-                if (player.DropItem(playerInventory.GetCursorStack()))
+                if (player.DropItem(cursorStack))
                 {
                     playerInventory.SetCursorStack(null);
                 }
             }
             else
             {
-                player.Inventory.AddItemStackToInventoryOrDrop(playerInventory.GetCursorStack());
+                player.Inventory.AddItemStackToInventoryOrDrop(cursorStack);
             }
         }
     }
 
     public virtual void onSlotUpdate(IInventory inventory) => SendContentUpdates();
 
-    public void setStackInSlot(int index, ItemStack stack) => GetSlot(index).setStack(stack);
+    public void setStackInSlot(int index, ItemStack? stack) => GetSlot(index).setStack(stack);
 
     public void updateSlotStacks(ItemStack?[] stacks)
     {
@@ -312,7 +313,7 @@ public abstract class ScreenHandler
         }
 
         Slot slotToInsertStack;
-        ItemStack itemStackToInsert;
+        ItemStack? itemStackToInsert;
         if (stack.IsStackable())
         {
             while (stack.Count > 0 && ((!fromLast && slotIndex < end) || (fromLast && slotIndex >= start)))

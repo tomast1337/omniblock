@@ -40,7 +40,7 @@ internal sealed class DefaultGameModeListener(OmniBlockServer server) : IRegistr
             player.GameModeHolder = server.DefaultGameMode;
         }
 
-        player.NetworkHandler.SendMessage(new PlayerGameModeUpdateMessage
+        player.ConnectedNetworkHandler.SendMessage(new PlayerGameModeUpdateMessage
         {
             GameModeNamespace = player.GameMode.Namespace.ToString(),
             GameModeName = player.GameMode.Name

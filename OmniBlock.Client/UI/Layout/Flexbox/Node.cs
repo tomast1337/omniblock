@@ -8,20 +8,20 @@ public partial class Node
     internal readonly Value[] resolvedDimensions = new Value[2] { Flex.ValueUndefined, Flex.ValueUndefined };
 
     private Layout? _layout;
-    internal BaselineFunc baselineFunc;
+    internal BaselineFunc? baselineFunc;
     internal Config config = Constant.configDefaults;
-    public object Context;
+    public object? Context;
     internal bool hasNewLayout = true;
     internal int lineIndex;
 
-    internal MeasureFunc measureFunc;
+    internal MeasureFunc? measureFunc;
 
-    internal Node NextChild;
+    internal Node? NextChild;
     public Style nodeStyle = new();
     internal NodeType NodeType = NodeType.Default;
 
-    internal Node Parent = null;
-    internal PrintFunc printFunc;
+    internal Node? Parent;
+    internal PrintFunc? printFunc;
 
     public Node()
     {
@@ -44,8 +44,8 @@ public partial class Node
 
     public int ChildrenCount => Children.Count;
 
-    public Node firstChild => Children.Count > 0 ? Children.First() : null;
-    public Node lastChild => Children.Count > 0 ? Children.Last() : null;
+    public Node? firstChild => Children.Count > 0 ? Children.First() : null;
+    public Node? lastChild => Children.Count > 0 ? Children.Last() : null;
 
     public bool IsDirty { get; internal set; }
 
@@ -192,23 +192,23 @@ public partial class Node
 
     #region other props
 
-    public void SetMeasureFunc(MeasureFunc measureFunc) => Flex.SetMeasureFunc(this, measureFunc);
+    public void SetMeasureFunc(MeasureFunc? measureFunc) => Flex.SetMeasureFunc(this, measureFunc);
 
-    public MeasureFunc GetMeasureFunc() => measureFunc;
+    public MeasureFunc? GetMeasureFunc() => measureFunc;
 
-    public void SetBaselineFunc(BaselineFunc baselineFunc) => this.baselineFunc = baselineFunc;
+    public void SetBaselineFunc(BaselineFunc? baselineFunc) => this.baselineFunc = baselineFunc;
 
-    public BaselineFunc GetBaselineFunc() => baselineFunc;
+    public BaselineFunc? GetBaselineFunc() => baselineFunc;
 
-    public void SetPrintFunc(PrintFunc printFunc) => this.printFunc = printFunc;
+    public void SetPrintFunc(PrintFunc? printFunc) => this.printFunc = printFunc;
 
-    public PrintFunc GetPrintFunc() => printFunc;
+    public PrintFunc? GetPrintFunc() => printFunc;
 
     #endregion
 
     #region tree
 
-    public Node GetChild(int idx) => Flex.GetChild(this, idx);
+    public Node? GetChild(int idx) => Flex.GetChild(this, idx);
     public void AddChild(Node child) => Flex.InsertChild(this, child, ChildrenCount);
 
     public void InsertChild(Node child, int idx) => Flex.InsertChild(this, child, idx);

@@ -66,7 +66,7 @@ internal sealed class ItemBlockBrowserWindow : DebugWindow
         ImGui.Separator();
 
         var canGive = _ctx.Player is not null;
-        var visible = _entries.Where(IsVisible).ToList();
+        var visible = _entries.Where(MatchesFilter).ToList();
         ImGuiTextSafe.TextDisabled($"{visible.Count} of {_entries.Count} entries · click an icon to inspect");
 
         var inspectorWidth = Math.Clamp(ImGui.GetContentRegionAvail().X * 0.34f, 230f, 330f);
@@ -104,7 +104,7 @@ internal sealed class ItemBlockBrowserWindow : DebugWindow
         ImGui.EndChild();
     }
 
-    private bool IsVisible(BrowserEntry entry)
+    private bool MatchesFilter(BrowserEntry entry)
     {
         if (_filter == Filter.Items && entry.IsBlock) return false;
         if (_filter == Filter.Blocks && !entry.IsBlock) return false;

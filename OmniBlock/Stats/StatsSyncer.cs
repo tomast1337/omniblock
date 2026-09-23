@@ -11,8 +11,8 @@ internal class StatsSynchronizer
     private readonly StatFileWriter _statFileWriter;
 
     private volatile bool _busy;
-    private volatile Dictionary<StatBase, int> _downloadedData;
-    private volatile Dictionary<StatBase, int> _mergedData;
+    private volatile Dictionary<StatBase, int>? _downloadedData;
+    private volatile Dictionary<StatBase, int>? _mergedData;
 
     private int _syncTimeout;
     private int _timeoutCounter;
@@ -41,15 +41,16 @@ internal class StatsSynchronizer
         _statFileWriter = statFileWriter;
         _session = session;
 
-        if (File.Exists(UnsentStatsFile))
+        if (File.Exists(UnsentStatsFile) &&
+            GetNewestAvailableStats(UnsentStatsFile, TempUnsentStatsFile, OldUnsentStatsFile) is { } initialStats)
         {
-            statFileWriter.LoadStats(GetNewestAvailableStats(UnsentStatsFile, TempUnsentStatsFile, OldUnsentStatsFile));
+            statFileWriter.LoadStats(initialStats);
         }
 
         ReceiveStats();
     }
 
-    internal Dictionary<StatBase, int> MergedData
+    internal Dictionary<StatBase, int>? MergedData
     {
         get => _mergedData;
         set => _mergedData = value;
@@ -82,7 +83,7 @@ internal class StatsSynchronizer
         }
     }
 
-    private Dictionary<StatBase, int> GetNewestAvailableStats(string unsent, string tempUnsent, string oldUnsent)
+    private Dictionary<StatBase, int>? GetNewestAvailableStats(string unsent, string tempUnsent, string oldUnsent)
     {
         if (File.Exists(unsent)) return CreateStatsMapFromFile(unsent);
         if (File.Exists(oldUnsent)) return CreateStatsMapFromFile(oldUnsent);
@@ -90,7 +91,7 @@ internal class StatsSynchronizer
         return null;
     }
 
-    private static Dictionary<StatBase, int> CreateStatsMapFromFile(string filePath)
+    private static Dictionary<StatBase, int>? CreateStatsMapFromFile(string filePath)
     {
         try
         {
@@ -207,5 +208,5 @@ internal class StatsSynchronizer
         }
     }
 
-    internal Dictionary<StatBase, int> FetchNewestAvailableStats(string unsent, string tempUnsent, string oldUnsent) => GetNewestAvailableStats(unsent, tempUnsent, oldUnsent);
+    internal Dictionary<StatBase, int>? FetchNewestAvailableStats(string unsent, string tempUnsent, string oldUnsent) => GetNewestAvailableStats(unsent, tempUnsent, oldUnsent);
 }

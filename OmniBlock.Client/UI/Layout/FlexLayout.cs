@@ -110,7 +110,8 @@ public static class FlexLayout
 
         for (var i = 0; i < element.Children.Count; i++)
         {
-            ApplyResults(node.GetChild(i), element.Children[i], measureString);
+            if (node.GetChild(i) is { } child)
+                ApplyResults(child, element.Children[i], measureString);
         }
     }
 

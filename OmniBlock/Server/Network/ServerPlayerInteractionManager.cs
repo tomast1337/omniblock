@@ -29,7 +29,12 @@ public class ServerPlayerInteractionManager
     private int miningX;
     private int miningY;
     private int miningZ;
-    public EntityPlayer player;
+    private EntityPlayer? _player;
+    public EntityPlayer player
+    {
+        get => _player ?? throw new InvalidOperationException("Interaction manager is not attached to a player.");
+        set => _player = value;
+    }
     private int startMiningTime;
     private int tickCounter;
 
@@ -166,7 +171,7 @@ public class ServerPlayerInteractionManager
             if (player.GameMode.BlockDrops && player.CanHarvest(block))
             {
                 block.OnAfterBreak(new OnAfterBreakEvent(world, player, blockMeta, x, y, z));
-                ((ServerPlayerEntity)player).NetworkHandler.SendMessage(new BlockUpdateMessage
+                ((ServerPlayerEntity)player).ConnectedNetworkHandler.SendMessage(new BlockUpdateMessage
                 {
                     X = x,
                     Y = (sbyte)y,

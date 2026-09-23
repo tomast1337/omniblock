@@ -26,7 +26,7 @@ public static class RegistryReloadPipeline
             // length prefix, not from a wrapper.
             foreach (var message in syncMessages)
             {
-                player.NetworkHandler.SendMessage(message);
+                player.ConnectedNetworkHandler.SendMessage(message);
             }
 
             // Collect per-player migration packets from each listener
@@ -36,11 +36,11 @@ public static class RegistryReloadPipeline
 
                 foreach (var packet in packets)
                 {
-                    player.NetworkHandler.SendPacket(packet);
+                    player.ConnectedNetworkHandler.SendPacket(packet);
                 }
             }
 
-            player.NetworkHandler.SendMessage(new FinishConfigurationMessage());
+            player.ConnectedNetworkHandler.SendMessage(new FinishConfigurationMessage());
         }
     }
 }

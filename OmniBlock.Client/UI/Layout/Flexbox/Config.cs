@@ -3,7 +3,7 @@ namespace OmniBlock.Client.UI.Layout.Flexbox;
 public class Config
 {
     internal readonly bool[] experimentalFeatures = new bool[Constant.ExperimentalFeatureCount + 1];
-    public object Context;
+    public object? Context;
     public LoggerFunc Logger = DefaultLog;
     internal float PointScaleFactor = 1;
     internal bool UseLegacyStretchBehaviour;

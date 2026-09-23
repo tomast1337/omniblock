@@ -109,7 +109,7 @@ public class BlockRenderer
             NullBlockReader.Instance,
             blocks,
             tess,
-            null,
+            new ItemRenderBlockAccess(block.Id, metadata, brightness),
             renderAllFaces: true,
             enableAo: false,
             overrideTexture: -1

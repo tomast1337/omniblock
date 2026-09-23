@@ -384,7 +384,7 @@ public class Block
         return Lifecycle?.GetDroppedItemMeta(this, blockMeta, defaultMeta) ?? defaultMeta;
     }
 
-    public float GetBlastResistance(Entity entity) => _resistance / 5.0F;
+    public float GetBlastResistance(Entity? entity) => _resistance / 5.0F;
 
     public HitResult Raycast(IBlockReader world, EntityManager entities, int x, int y, int z, Vec3D startPos, Vec3D endPos)
     {

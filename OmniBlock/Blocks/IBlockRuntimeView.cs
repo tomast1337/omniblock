@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace OmniBlock.Blocks;
 
 /// <summary>Protocol-ID view shared by blocks and their compiled behaviors.</summary>
@@ -5,8 +7,8 @@ public interface IBlockRuntimeView
 {
     Block Get(ResourceLocation key);
     Block GetByProtocolId(int protocolId);
-    bool TryGet(ResourceLocation key, out Block? block);
-    bool TryGetByProtocolId(int protocolId, out Block? block);
+    bool TryGet(ResourceLocation key, [NotNullWhen(true)] out Block? block);
+    bool TryGetByProtocolId(int protocolId, [NotNullWhen(true)] out Block? block);
 }
 
 public static class BlockRuntimeViewExtensions
@@ -41,9 +43,9 @@ public sealed class StagedBlockRuntimeView : IBlockRuntimeView
             : throw new KeyNotFoundException($"Unknown block protocol id {protocolId}.");
     }
 
-    public bool TryGetByProtocolId(int protocolId, out Block? block) => _blocks.TryGetValue(protocolId, out block);
+    public bool TryGetByProtocolId(int protocolId, [NotNullWhen(true)] out Block? block) => _blocks.TryGetValue(protocolId, out block);
 
-    public bool TryGet(ResourceLocation key, out Block? block) => _blocksByKey.TryGetValue(key, out block);
+    public bool TryGet(ResourceLocation key, [NotNullWhen(true)] out Block? block) => _blocksByKey.TryGetValue(key, out block);
 
     internal void Add(ResourceLocation key, Block block)
     {

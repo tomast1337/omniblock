@@ -7,9 +7,7 @@ namespace OmniBlock.Worlds.Core.Systems;
 
 public class WorldProperties
 {
-    protected WorldProperties()
-    {
-    }
+    protected WorldProperties() { }
 
     public WorldProperties(NBTTagCompound nbt)
     {
@@ -102,9 +100,9 @@ public class WorldProperties
     public virtual NBTTagCompound? PlayerTag { get; set; }
     public virtual NBTTagCompound? RulesTag { get; set; }
     public virtual int Dimension { get; }
-    public virtual string LevelName { get; set; }
+    public virtual string LevelName { get; set; } = string.Empty;
     public virtual int SaveVersion { get; set; }
-    public virtual WorldType TerrainType { get; set; }
+    public virtual WorldType TerrainType { get; set; } = WorldType.Default;
     public virtual bool IsRaining { get; set; }
     public virtual int RainTime { get; set; }
     public virtual bool IsThundering { get; set; }
@@ -134,7 +132,7 @@ public class WorldProperties
         return nbt;
     }
 
-    private void UpdateTagCompound(NBTTagCompound worldNbt, NBTTagCompound playerNbt)
+    private void UpdateTagCompound(NBTTagCompound worldNbt, NBTTagCompound? playerNbt)
     {
         worldNbt.SetLong("RandomSeed", RandomSeed);
         worldNbt.SetInteger("SpawnX", SpawnX);

@@ -20,11 +20,12 @@ public class ParticleManager
     private readonly List<ISpecialParticle> _specialParticles = [];
     private readonly TextureManager _textureManager;
     private readonly GameOptions _options;
-    protected World worldObj;
+    private World? _worldObj;
+    protected World worldObj => _worldObj ?? throw new InvalidOperationException("Particle manager has no active world.");
 
-    public ParticleManager(World world, TextureManager textureManager, GameOptions options)
+    public ParticleManager(World? world, TextureManager textureManager, GameOptions options)
     {
-        worldObj = world;
+        _worldObj = world;
         _textureManager = textureManager;
         _options = options;
 
@@ -85,9 +86,9 @@ public class ParticleManager
         HiddenParticleCount = stats.Hidden;
     }
 
-    public void clearEffects(World world)
+    public void clearEffects(World? world)
     {
-        worldObj = world;
+        _worldObj = world;
         for (var i = 0; i < 3; i++)
         {
             _layers[i].Clear();

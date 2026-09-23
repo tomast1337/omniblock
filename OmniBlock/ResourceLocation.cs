@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 namespace OmniBlock;
@@ -53,7 +54,7 @@ public sealed partial class ResourceLocation : IEquatable<ResourceLocation>, ICo
         };
     }
 
-    public static bool TryParse(string location, out ResourceLocation? result)
+    public static bool TryParse(string location, [NotNullWhen(true)] out ResourceLocation? result)
     {
         try
         {

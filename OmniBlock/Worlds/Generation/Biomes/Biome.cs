@@ -34,7 +34,12 @@ public class Biome
     }
 
     public string Name { get; private set; } = "";
-    public ResourceLocation Key { get; private set; }
+    private ResourceLocation? _key;
+    public ResourceLocation Key
+    {
+        get => _key ?? throw new InvalidOperationException("Biome has not been registered.");
+        private set => _key = value;
+    }
     public int GrassColor { get; private set; }
     public int FoliageColor { get; private set; } = 0x4EE031;
     protected WeightedRandomSelector<SpawnListEntry> MonsterList { get; } = new();

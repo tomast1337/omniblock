@@ -62,7 +62,7 @@ public sealed class ControlledChunkSource(World world) : IChunkSource
     {
     }
 
-    public bool Save(bool saveEntities, LoadingDisplay display) => true;
+    public bool Save(bool saveEntities, LoadingDisplay? display) => true;
     public bool Tick() => false;
     public bool CanSave() => false;
     public string GetDebugInfo() => "ControlledChunkSource";

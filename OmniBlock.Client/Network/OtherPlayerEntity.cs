@@ -107,7 +107,7 @@ public class OtherPlayerEntity : EntityPlayer
 
     public override void SetEquipmentStack(int slotIndex, int itemId, int damage)
     {
-        ItemStack itemStack = null;
+        ItemStack? itemStack = null;
         if (itemId >= 0)
         {
             itemStack = new ItemStack(World.Content.Items, itemId, 1, damage);

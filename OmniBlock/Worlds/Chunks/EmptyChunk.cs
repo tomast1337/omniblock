@@ -116,7 +116,7 @@ public class EmptyChunk : Chunk
     {
     }
 
-    public override void CollectOtherEntities(Entity excludeEntity, Box box, List<Entity> result)
+    public override void CollectOtherEntities(Entity? excludeEntity, Box box, List<Entity> result)
     {
     }
 

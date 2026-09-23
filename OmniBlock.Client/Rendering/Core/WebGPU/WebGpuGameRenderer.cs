@@ -173,7 +173,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         // Null in the menus, before a world is loaded — the frame still runs, so the clear, the
         // blit and the ImGui overlay are drawn; only the world is not. Drawing the world without
         // the terrain array would sample nothing, so that is waited on too.
-        var drawWorld = _game.World is not null && _game.Camera is not null && terrain is not null;
+        var drawWorld = _game.World is not null && _game.CameraOrNull is not null && terrain is not null;
 
         // Settled before the pass opens, because WebGPU clears as part of beginning one rather than
         // with a call inside it.
@@ -351,7 +351,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         Profiler.Record("NativeQueueSubmitCpu", Stopwatch.GetElapsedTime(nativeSubmitStarted).TotalMilliseconds);
         api.CommandBufferRelease(cmdBuf);
         var impostorAfterSubmitStarted = Stopwatch.GetTimestamp();
-        _game.WorldRenderer?.EntityImpostors.AfterSubmit(device);
+        _game.WorldRenderer.EntityImpostors.AfterSubmit(device);
         Profiler.Record("EntityImpostorAfterSubmitCpu",
             Stopwatch.GetElapsedTime(impostorAfterSubmitStarted).TotalMilliseconds);
         Profiler.Record("QueueSubmitCpu", Stopwatch.GetElapsedTime(submitStarted).TotalMilliseconds);

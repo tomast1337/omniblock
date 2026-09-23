@@ -24,6 +24,7 @@ public sealed class EntityCombatBehaviorTests
 
         Assert.Equal(30, skeleton.ExposedAttackTime);
         Assert.True(skeleton.ExposedHasAttacked);
+        Assert.NotNull(skeleton.HeldItem);
         Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:bow").Id, skeleton.HeldItem.ItemId);
     }
 

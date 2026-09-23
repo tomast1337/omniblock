@@ -173,7 +173,7 @@ public abstract partial class Entity : IEntity
 
     public bool HasVehicle => Vehicle != null || GetFlag(2);
 
-    public virtual ItemStack?[] Equipment => null;
+    public virtual ItemStack?[] Equipment => [];
 
     protected internal bool IsWet => InWater || World.Environment.IsRainingAt(MathHelper.Floor(X), MathHelper.Floor(Y), MathHelper.Floor(Z));
 

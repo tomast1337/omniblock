@@ -2455,12 +2455,12 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         out string canonicalHash)
     {
         canonicalHash = string.Empty;
-        if (!TryResolveSpatialSeamTiles(seam, out owner, out neighbor)) return false;
+        if (!TryResolveSpatialSeamTiles(seam, out owner, out neighbor) || owner is null) return false;
         int? caveCullBelowY = _world.Dimension.HasCeiling
             ? null
             : OverworldCaveCullCeilingY;
         if (_spatialSeamHashes.TryGetValue(seam, out var cached) &&
-            string.Equals(cached.OwnerCanonicalHash, owner!.CanonicalHash,
+            string.Equals(cached.OwnerCanonicalHash, owner.CanonicalHash,
                 StringComparison.Ordinal) &&
             string.Equals(cached.NeighborCanonicalHash, neighbor?.CanonicalHash,
                 StringComparison.Ordinal) &&
@@ -2471,7 +2471,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         }
 
         canonicalHash = TerrainLodSpatialSeamMeshBuilder.ComputeCanonicalHash(
-            seam, owner!, neighbor, caveCullBelowY);
+            seam, owner, neighbor, caveCullBelowY);
         _spatialSeamHashes[seam] = new SpatialSeamHashCache(
             owner.CanonicalHash,
             neighbor?.CanonicalHash,

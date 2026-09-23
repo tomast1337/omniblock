@@ -131,7 +131,7 @@ public sealed class ItemCatalogCharacterizationTests
                 .Append(" texture1=").Append(item.GetTextureId(1).ToString(CultureInfo.InvariantCulture))
                 .Append(" texture15=").Append(item.GetTextureId(15).ToString(CultureInfo.InvariantCulture))
                 .Append(" aliases=").Append(string.Join(',', item.GetItemAlias.Order(StringComparer.Ordinal)))
-                .Append(" return=").Append(item.HasContainerItem() ? item.GetContainerItem().Id : -1)
+                .Append(" return=").Append(item.GetContainerItem()?.Id ?? -1)
                 .AppendLine();
         }
 

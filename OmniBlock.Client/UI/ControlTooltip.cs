@@ -36,7 +36,7 @@ public record InGameTipContext(
     HitResult ObjectMouseOver,
     IBlockReader WorldReader,
     IBlockRuntimeView Blocks,
-    ItemStack HeldItem);
+    ItemStack? HeldItem);
 
 public static class ControlTooltip
 {
@@ -91,7 +91,8 @@ public static class ControlTooltip
         }
         else if (hit.Type == HitResultType.Entity)
         {
-            if (MinecartBehavior.IsMinecart(hit.Entity) || hit.Entity.Behaviors.Find<BoatBehavior>() is not null)
+            if (hit.Entity is { } hitEntity &&
+                (MinecartBehavior.IsMinecart(hitEntity) || hitEntity.Behaviors.Find<BoatBehavior>() is not null))
             {
                 useAction = "Enter";
             }
@@ -175,7 +176,7 @@ public static class ControlTooltip
         return $"/gui/controls/{ControllerType.Key}/{iconName}.png";
     }
 
-    private static bool IsItemUsable(ItemStack stack)
+    private static bool IsItemUsable(ItemStack? stack)
     {
         if (stack == null)
         {
@@ -213,7 +214,7 @@ public static class ControlTooltip
         return usable;
     }
 
-    private static string GetItemActionLabel(ItemStack stack)
+    private static string GetItemActionLabel(ItemStack? stack)
     {
         if (stack == null)
         {

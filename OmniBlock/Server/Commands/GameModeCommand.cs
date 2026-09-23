@@ -70,7 +70,7 @@ public class GameModeCommand : Command.Command
     private static void SetGameMode(ServerPlayerEntity p, Holder<GameMode> holder, CommandSource c)
     {
         p.GameModeHolder = holder;
-        p.NetworkHandler.SendMessage(new PlayerGameModeUpdateMessage
+        p.ConnectedNetworkHandler.SendMessage(new PlayerGameModeUpdateMessage
         {
             GameModeNamespace = holder.Value.Namespace.ToString(),
             GameModeName = holder.Value.Name

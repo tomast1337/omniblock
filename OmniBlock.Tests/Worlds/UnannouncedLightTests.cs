@@ -187,7 +187,7 @@ public sealed class UnannouncedLightTests
         {
         }
 
-        public void PlayStreaming(string trackName, int x, int y, int z)
+        public void PlayStreaming(string? trackName, int x, int y, int z)
         {
         }
 

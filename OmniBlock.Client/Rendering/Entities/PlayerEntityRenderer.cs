@@ -71,7 +71,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
             var maxDistance = playerEntity.IsSneaking() ? 32.0F : 64.0F;
             if (distance < maxDistance)
             {
-                var displayName = playerEntity.Name;
+                if (playerEntity.Name is not { } displayName) return;
                 if (!playerEntity.IsSneaking())
                 {
                     if (playerEntity.IsSleeping)
@@ -148,7 +148,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         }
 
         float heldItemScale;
-        if (playerEntity.Name.Equals("deadmau5") && LoadDownloadableImageTexture(playerEntity.Name, null))
+        if (playerEntity.Name is "deadmau5" && LoadDownloadableImageTexture(playerEntity.Name, null))
         {
             for (var earIndex = 0; earIndex < 2; ++earIndex)
             {

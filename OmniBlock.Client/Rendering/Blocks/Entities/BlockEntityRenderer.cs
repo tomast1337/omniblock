@@ -13,7 +13,10 @@ public class BlockEntityRenderer
     public static double StaticPlayerY;
     public static double StaticPlayerZ;
     private readonly Dictionary<Type, BlockEntitySpecialRenderer?> _specialRendererMap = [];
-    private TextRenderer _fontRenderer;
+    private TextRenderer? _fontRenderer;
+    private TextureManager? _textureManager;
+    private World? _world;
+    private EntityLiving? _playerEntity;
 
     private BlockEntityRenderer()
     {
@@ -28,17 +31,30 @@ public class BlockEntityRenderer
     }
 
     public static BlockEntityRenderer Instance { get; } = new();
-    public TextureManager TextureManager { get; set; }
-    public World World { get; set; }
-    public EntityLiving PlayerEntity { get; set; }
+    public TextureManager TextureManager
+    {
+        get => _textureManager ?? throw new InvalidOperationException("Block-entity renderer has no texture manager.");
+        set => _textureManager = value;
+    }
+    public World World
+    {
+        get => _world ?? throw new InvalidOperationException("Block-entity renderer has no active world.");
+        set => _world = value;
+    }
+    public EntityLiving PlayerEntity
+    {
+        get => _playerEntity ?? throw new InvalidOperationException("Block-entity renderer has no active player.");
+        set => _playerEntity = value;
+    }
     public float PlayerYaw { get; set; }
     public float PlayerPitch { get; set; }
     public double PlayerX { get; set; }
     public double PlayerY { get; set; }
     public double PlayerZ { get; set; }
 
-    public BlockEntitySpecialRenderer? GetSpecialRendererForClass(Type t)
+    public BlockEntitySpecialRenderer? GetSpecialRendererForClass(Type? t)
     {
+        if (t is null) return null;
         _specialRendererMap.TryGetValue(t, out var renderer);
         if (renderer == null && t != typeof(BlockEntity))
         {
@@ -53,7 +69,7 @@ public class BlockEntityRenderer
 
     public void CacheActiveRenderInfo(World world, TextureManager textureManager, TextRenderer fontRenderer, EntityLiving player, float tickDelta)
     {
-        if (World != world)
+        if (_world != world)
         {
             func_31072_a(world);
         }
@@ -98,5 +114,5 @@ public class BlockEntityRenderer
         }
     }
 
-    public TextRenderer GetFontRenderer() => _fontRenderer;
+    public TextRenderer GetFontRenderer() => _fontRenderer ?? throw new InvalidOperationException("Block-entity renderer has no font renderer.");
 }

@@ -146,7 +146,12 @@ public class Keyboard
     public const int KEYBOARD_SIZE = 256;
 
     private static bool created;
-    private static Glfw glfw;
+    private static Glfw? _glfw;
+    private static Glfw glfw
+    {
+        get => _glfw ?? throw new InvalidOperationException("Keyboard has not been initialized.");
+        set => _glfw = value;
+    }
     private static unsafe WindowHandle* window;
 
     private static readonly bool[] keyDownBuffer = new bool[KEYBOARD_SIZE];

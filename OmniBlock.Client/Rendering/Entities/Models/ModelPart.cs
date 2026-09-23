@@ -23,12 +23,12 @@ public class ModelPart
 
     private readonly int TextureOffsetX;
     private readonly int TextureOffsetY;
-    private ModelVertexLocal[] _bakedVertices;
+    private ModelVertexLocal[] _bakedVertices = [];
 
     private string? _name;
 
-    private PositionTextureVertex[] Corners;
-    private Quad[] Faces;
+    private PositionTextureVertex[] Corners = [];
+    private Quad[] Faces = [];
     public bool Hidden = false;
     public bool Mirror = false;
     public float RotateAngleX;

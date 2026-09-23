@@ -68,7 +68,7 @@ internal class ServerWorldEventListener : IWorldEventListener
     {
     }
 
-    public void PlayStreaming(string stream, int x, int y, int z)
+    public void PlayStreaming(string? stream, int x, int y, int z)
     {
     }
 

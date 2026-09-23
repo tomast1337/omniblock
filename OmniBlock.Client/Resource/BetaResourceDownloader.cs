@@ -212,7 +212,7 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
 
     private class ResourceEntry
     {
-        public string Key { get; set; }
+        public string Key { get; set; } = string.Empty;
         public long Size { get; set; }
     }
 }

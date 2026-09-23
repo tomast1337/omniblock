@@ -15,10 +15,9 @@ public class ServerLoginNetworkHandler : NetHandler
     private readonly OmniBlockServer server;
     public bool closed;
     public Connection connection;
-    private LoginHelloPacket loginPacket;
     private int loginTicks;
     private string serverId = "";
-    private string username;
+    private string username = string.Empty;
 
     public ServerLoginNetworkHandler(OmniBlockServer server, Connection connection)
     {
@@ -29,12 +28,6 @@ public class ServerLoginNetworkHandler : NetHandler
 
     public void tick()
     {
-        if (loginPacket != null)
-        {
-            accept(loginPacket);
-            loginPacket = null;
-        }
-
         if (loginTicks++ == 600)
         {
             disconnect("Took too long to log in");
@@ -148,7 +141,7 @@ public class ServerLoginNetworkHandler : NetHandler
             {
                 EntityId = ent.ID,
                 Type = PlayerConnectionUpdateMessage.UpdateType.Join,
-                Name = ent.Name
+                Name = ent.PlayerName
             });
             server.playerManager.sendToAll(new ChatMessage
             {

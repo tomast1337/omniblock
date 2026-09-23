@@ -116,7 +116,7 @@ public abstract partial class Command
             {
                 foreach (var p in context.Source.Server.playerManager.players)
                 {
-                    if (p.Name.StartsWith(s, StringComparison.OrdinalIgnoreCase))
+                    if (p.Name?.StartsWith(s, StringComparison.OrdinalIgnoreCase) == true)
                     {
                         builder.Suggest(p.Name);
                     }

@@ -52,7 +52,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
             player.Write(tag);
 
             var tempFile = Path.Combine(_playersDirectory.FullName, "_tmp_.dat");
-            var finalFile = Path.Combine(_playersDirectory.FullName, $"{HashPlayerFileName(player.Name)}.dat");
+            var finalFile = Path.Combine(_playersDirectory.FullName, $"{HashPlayerFileName(player.Name ?? throw new InvalidOperationException("Cannot save player data without a name."))}.dat");
 
             using (var stream = File.Create(tempFile))
             {
@@ -69,7 +69,8 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
 
     public void LoadPlayerData(EntityPlayer player)
     {
-        var tag = loadPlayerData(player.Name);
+        if (player.Name is not { } playerName) return;
+        var tag = loadPlayerData(playerName);
         if (tag != null)
         {
             player.Read(tag);
@@ -289,7 +290,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
         return Convert.ToHexStringLower(hash);
     }
 
-    public NBTTagCompound loadPlayerData(string playerName)
+    public NBTTagCompound? loadPlayerData(string playerName)
     {
         try
         {

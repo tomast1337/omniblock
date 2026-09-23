@@ -26,7 +26,13 @@ public class EntityRenderDispatcher
     private readonly HashSet<Type> _reportedUnported = [];
 
     private ContentRuntime? _declaredRendererContent;
-    private TextRenderer _fontRenderer;
+    private TextRenderer? _fontRenderer;
+    private TextureManager? _textureManager;
+    private SkinManager? _skinManager;
+    private HeldItemRenderer? _heldItemRenderer;
+    private World? _world;
+    private EntityLiving? _cameraEntity;
+    private GameOptions? _options;
     private double _x;
     private double _y;
     private double _z;
@@ -46,14 +52,39 @@ public class EntityRenderDispatcher
     public static double OffsetX { get; set; }
     public static double OffsetY { get; set; }
     public static double OffsetZ { get; set; }
-    public TextureManager TextureManager { get; private set; }
-    public SkinManager SkinManager { get; set; }
-    public HeldItemRenderer HeldItemRenderer { get; set; }
-    public World World { get; set; }
-    public EntityLiving CameraEntity { get; private set; }
+    public TextureManager TextureManager
+    {
+        get => _textureManager ?? throw new InvalidOperationException("Entity renderer has no texture manager.");
+        private set => _textureManager = value;
+    }
+    public SkinManager SkinManager
+    {
+        get => _skinManager ?? throw new InvalidOperationException("Entity renderer has no skin manager.");
+        set => _skinManager = value;
+    }
+    public HeldItemRenderer HeldItemRenderer
+    {
+        get => _heldItemRenderer ?? throw new InvalidOperationException("Entity renderer has no held-item renderer.");
+        set => _heldItemRenderer = value;
+    }
+    public World World
+    {
+        get => _world ?? throw new InvalidOperationException("Entity renderer has no active world.");
+        set => _world = value;
+    }
+    public void SetWorld(World? world) => _world = world;
+    public EntityLiving CameraEntity
+    {
+        get => _cameraEntity ?? throw new InvalidOperationException("Entity renderer has no active camera.");
+        private set => _cameraEntity = value;
+    }
     public float PlayerViewY { get; set; }
     public float PlayerViewX { get; private set; }
-    public GameOptions Options { get; private set; }
+    public GameOptions Options
+    {
+        get => _options ?? throw new InvalidOperationException("Entity renderer has no game options.");
+        private set => _options = value;
+    }
     internal IReadOnlySet<string> ImpostorTextureDependencies { get; private set; } =
         Array.Empty<string>().ToFrozenSet(StringComparer.Ordinal);
 
@@ -86,11 +117,11 @@ public class EntityRenderDispatcher
     {
         if (!_entityRenderMap.TryGetValue(type, out var entityRenderer) && type != typeof(Entity))
         {
-            entityRenderer = GetEntityClassRenderObject(type.BaseType);
+            entityRenderer = GetEntityClassRenderObject(type.BaseType ?? throw new InvalidOperationException($"No renderer base type for {type}."));
             RegisterRenderer(type, entityRenderer);
         }
 
-        return entityRenderer;
+        return entityRenderer ?? throw new InvalidOperationException($"No entity renderer for {type}.");
     }
 
     public EntityRenderer GetEntityRenderObject(Entity entity)
@@ -206,5 +237,6 @@ public class EntityRenderDispatcher
         return xDelta * xDelta + yDelta * yDelta + zDelta * zDelta;
     }
 
-    public TextRenderer getTextRenderer() => _fontRenderer;
+    public TextRenderer getTextRenderer() => _fontRenderer ??
+        throw new InvalidOperationException("Entity renderer has no text renderer.");
 }

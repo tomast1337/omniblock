@@ -33,7 +33,7 @@ public class MultiplayerChunkCache(World world) : IChunkSource
         return chunk ?? _empty;
     }
 
-    public bool Save(bool bl, LoadingDisplay display) => true;
+    public bool Save(bool bl, LoadingDisplay? display) => true;
 
     public bool Tick() => false;
 

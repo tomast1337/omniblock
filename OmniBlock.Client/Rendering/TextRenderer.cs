@@ -92,10 +92,10 @@ public class TextRenderer : IDisposable
     internal uint FontTextureId => fontTextureName != null ? (uint)fontTextureName.Id : 0;
 
     private bool UseUnifontPrimary =>
-        Translations.Instance.CurrentLanguage.Unifont;
+        Translations.Instance.CurrentLanguage?.Unifont ?? false;
 
     private bool UseSevenishPrimary =>
-        Translations.Instance.CurrentLanguage.Sevenish;
+        Translations.Instance.CurrentLanguage?.Sevenish ?? false;
 
     public void Dispose() => Translations.LanguageChanged -= ReloadForLanguage;
 
