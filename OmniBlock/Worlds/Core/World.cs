@@ -36,6 +36,8 @@ public abstract class World : IWorldContext
 
     protected int AutosavePeriod = s_autosavePeriod;
     public bool IsNewWorld;
+    internal int InitialSpawnSearchAttempts { get; private set; }
+    internal bool InitialSpawnUsedFallback { get; private set; }
 
     protected World(IWorldStorage worldStorage, string levelName, WorldSettings settings, Dimension? dim,
         ContentRuntime content)
@@ -263,24 +265,21 @@ public abstract class World : IWorldContext
         IsFindingSpawnPoint = true;
         try
         {
-            var x = 0;
-            var z = 0;
+            // Spawn placement belongs to the world seed, not the world's unseeded gameplay
+            // RNG. Keep its draws isolated so creating a fresh world is repeatable without
+            // changing random ticks, entities, or the generator's own RNG sequence.
+            var spawnRandom = new JavaRandom(Properties.RandomSeed);
             var y = 64;
-
-            const int maxAttempts = 512;
-            var attempts = 0;
-
-            while (!Dimension.IsValidSpawnPoint(x, z) && attempts++ < maxAttempts)
-            {
-                x += Random.NextInt(64) - Random.NextInt(64);
-                z += Random.NextInt(64) - Random.NextInt(64);
-            }
-
-            if (!Dimension.IsValidSpawnPoint(x, z))
+            var candidate = FindInitialSpawnCandidate(spawnRandom, Dimension.IsValidSpawnPoint);
+            var x = candidate.X;
+            var z = candidate.Z;
+            InitialSpawnSearchAttempts = candidate.Attempts;
+            InitialSpawnUsedFallback = !candidate.Valid;
+            if (!candidate.Valid)
             {
                 x = 0;
                 z = 0;
-                UpdateSpawnPosition();
+                UpdateSpawnPosition(spawnRandom);
                 x = Properties.SpawnX;
                 z = Properties.SpawnZ;
             }
@@ -302,7 +301,30 @@ public abstract class World : IWorldContext
         }
     }
 
+    internal static (int X, int Z, int Attempts, bool Valid) FindInitialSpawnCandidate(
+        JavaRandom random, Func<int, int, bool> isValid)
+    {
+        ArgumentNullException.ThrowIfNull(random);
+        ArgumentNullException.ThrowIfNull(isValid);
+        var x = 0;
+        var z = 0;
+        var attempts = 0;
+        var valid = isValid(x, z);
+        while (!valid && attempts < 512)
+        {
+            attempts++;
+            x += random.NextInt(64) - random.NextInt(64);
+            z += random.NextInt(64) - random.NextInt(64);
+            valid = isValid(x, z);
+        }
+
+        return (x, z, attempts, valid);
+    }
+
     public virtual void UpdateSpawnPosition()
+        => UpdateSpawnPosition(Random);
+
+    private void UpdateSpawnPosition(JavaRandom random)
     {
         if (Properties.SpawnY <= 0)
         {
@@ -314,9 +336,9 @@ public abstract class World : IWorldContext
         int spawnZ;
         for (spawnZ = Properties.SpawnZ;
              GetSpawnBlockId(spawnX, spawnZ) == 0;
-             spawnZ += Random.NextInt(8) - Random.NextInt(8))
+             spawnZ += random.NextInt(8) - random.NextInt(8))
         {
-            spawnX += Random.NextInt(8) - Random.NextInt(8);
+            spawnX += random.NextInt(8) - random.NextInt(8);
         }
 
         Properties.SpawnX = spawnX;

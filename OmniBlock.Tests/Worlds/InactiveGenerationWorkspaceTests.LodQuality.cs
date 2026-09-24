@@ -16,6 +16,80 @@ public sealed partial class InactiveGenerationWorkspaceTests
     public InactiveGenerationWorkspaceTests(ITestOutputHelper output) => _output = output;
 
     [Theory]
+    [InlineData("GLACIER", 826164623L,
+        "beb3edf41dce0f86934c93019f0384e0afa381427cec660fa98471d3f6fbfeb6",
+        995L, 170L, 69, 83)]
+    [InlineData("GARGAMEL", -841147678L,
+        "963ceabdbf3eea1a1a2dded557beb464b15a4dea1655daaf5b53c68b8bbb7a1e",
+        13927L, 1L, 58, 71)]
+    public void Historical_seed_completed_neighborhood_has_a_stable_lod_source(
+        string name, long seed, string expectedHash,
+        long expectedCaveAir, long expectedSkylitCaveAir,
+        int expectedMinimumSurface, int expectedMaximumSurface)
+    {
+        // Use the completed-neighborhood path so decoration order and its dependency halo
+        // match the source used by real distant terrain, not a bare chunk-noise preview.
+        var world = new SourceWorld(seed);
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var key = new TerrainLodTileKey(2, 0, 0);
+        TerrainLodColumnTile BuildTile()
+        {
+            var batch = new InactiveGenerationWorkspace(world).GenerateCompletedNeighborhood(1, 1);
+            var children = Enumerable.Range(0, 4).Select(index =>
+            {
+                var child = key.Child(index);
+                var leaves = Enumerable.Range(0, 4).Select(leafIndex =>
+                {
+                    var leaf = child.Child(leafIndex);
+                    return TerrainLodColumnTile.BuildLeaf(
+                        batch.Get(leaf.X, leaf.Z).CaptureTerrain(), materials);
+                }).ToArray();
+                return TerrainLodColumnTile.BuildParent(child, leaves, horizontalSampleLevel: 0);
+            }).ToArray();
+            return TerrainLodColumnTile.BuildParent(key, children, horizontalSampleLevel: 0);
+        }
+
+        var tile = BuildTile();
+        Assert.Equal(tile.CanonicalHash, BuildTile().CanonicalHash);
+        var caveAir = 0L;
+        var skylitCaveAir = 0L;
+        var minimumSurface = int.MaxValue;
+        var maximumSurface = int.MinValue;
+        for (var x = 0; x < tile.Width; x++)
+        for (var z = 0; z < tile.Width; z++)
+        {
+            var spans = tile[x, z].Spans;
+            var roof = false;
+            for (var index = spans.Count - 1; index >= 0; index--)
+            {
+                var span = spans[index];
+                if (span.Material.OccludesFaces)
+                {
+                    if (!roof)
+                    {
+                        minimumSurface = Math.Min(minimumSurface, span.TopY);
+                        maximumSurface = Math.Max(maximumSurface, span.TopY);
+                    }
+                    roof = true;
+                }
+                else if (roof && span.IsAir)
+                {
+                    caveAir += span.Height;
+                    if (span.SkyLight != 0) skylitCaveAir += span.Height;
+                }
+            }
+        }
+        _output.WriteLine($"{name} seed={seed} tile={key} hash={tile.CanonicalHash} " +
+                          $"caveAir={caveAir} skylitCaveAir={skylitCaveAir} " +
+                          $"surfaceRange={minimumSurface}..{maximumSurface}");
+        Assert.Equal(expectedHash, tile.CanonicalHash);
+        Assert.Equal(expectedCaveAir, caveAir);
+        Assert.Equal(expectedSkylitCaveAir, skylitCaveAir);
+        Assert.Equal(expectedMinimumSurface, minimumSurface);
+        Assert.Equal(expectedMaximumSurface, maximumSurface);
+    }
+
+    [Theory]
     [InlineData(0, 0)]
     [InlineData(-1, 0)]
     [InlineData(8, 0)]

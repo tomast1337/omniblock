@@ -21,7 +21,7 @@ internal class LargeOakTreeFeature : Feature
     private int maxTrunkHeight = 12;
     private int trunkHeight;
 
-    private void makeBranches()
+    private void makeBranches(JavaRandom branchRandom)
     {
         trunkHeight = (int)(height * trunkScale);
         if (trunkHeight >= height)
@@ -67,8 +67,8 @@ internal class LargeOakTreeFeature : Feature
                 {
                     for (var coordinateBias = 0.5D; attemptIndex < branchCountTarget; ++attemptIndex)
                     {
-                        var branchDistance = branchLengthScale * treeShapeRadius * (Random.Shared.NextSingle() + 0.328D);
-                        var branchAngle = Random.Shared.NextSingle() * 2.0D * 3.14159D;
+                        var branchDistance = branchLengthScale * treeShapeRadius * (branchRandom.NextDouble() + 0.328D);
+                        var branchAngle = branchRandom.NextDouble() * 2.0D * 3.14159D;
                         var branchX = MathHelper.Floor(branchDistance * Math.Sin(branchAngle) + origin[0] + coordinateBias);
                         var branchZ = MathHelper.Floor(branchDistance * Math.Cos(branchAngle) + origin[2] + coordinateBias);
                         int[] branchBasePos = [branchX, foliageY, branchZ];
@@ -408,7 +408,10 @@ internal class LargeOakTreeFeature : Feature
             return false;
         }
 
-        makeBranches();
+        // Keep branch-shape draws separate from the caller's decoration RNG. The seed is
+        // already consumed above; using process-global randomness made the same world seed
+        // produce different trees (and different LOD source tiles) on repeated builds.
+        makeBranches(new JavaRandom(seed));
         placeFoliage();
         placeTrunk();
         placeBranches();

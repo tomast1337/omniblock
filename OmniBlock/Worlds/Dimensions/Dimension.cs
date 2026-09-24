@@ -47,8 +47,13 @@ public abstract class Dimension
 
     public virtual bool IsValidSpawnPoint(int x, int z)
     {
-        var y = World.Reader.GetTopY(x, z);
-        var topBlockId = World.Reader.GetBlockId(x, y, z);
+        // The server permits candidate chunk generation while searching for a new-world
+        // spawn. GetTopY returns the first air cell above the height-map surface, not the
+        // surface block itself.
+        var chunk = World.ChunkHost.GetChunk(x >> 4, z >> 4);
+        var y = chunk.GetHeight(x & 15, z & 15) - 1;
+        if (y < 0) return false;
+        var topBlockId = chunk.GetBlockId(x & 15, y, z & 15);
 
         return topBlockId != 0
                && World.Content.Blocks.TryGetByProtocolId(topBlockId, out var block)

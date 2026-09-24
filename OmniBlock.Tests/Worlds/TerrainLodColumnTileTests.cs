@@ -197,6 +197,24 @@ public sealed class TerrainLodColumnTileTests
     }
 
     [Fact]
+    public void Vertical_budget_keeps_an_exposed_liquid_surface_before_simplifying_cave_intervals()
+    {
+        var spans = new List<TerrainLodColumnSpan>();
+        for (var y = 0; y < 15; y++)
+            spans.Add(new TerrainLodColumnSpan(y, 1,
+                y % 2 == 0 ? Stone : TerrainLodMaterial.Air, 0, 0));
+        spans.Add(new TerrainLodColumnSpan(15, 1, Water, 0, 15));
+        spans.Add(new TerrainLodColumnSpan(16, 1, TerrainLodMaterial.Air, 0, 15));
+        var source = Column(17, [.. spans]);
+
+        var reduced = TerrainLodVerticalSliceReducer.Reduce(source, 16);
+
+        Assert.Contains(reduced.Spans, span => span.BottomY == 15 &&
+            span.TopY == 16 && span.Material == Water);
+        Assert.Equal(17, source.Spans.Count);
+    }
+
+    [Fact]
     public void Vertical_budget_is_deterministic_complete_and_does_not_mutate_source()
     {
         var source = Column(10,

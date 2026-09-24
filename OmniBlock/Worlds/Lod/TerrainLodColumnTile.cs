@@ -268,8 +268,16 @@ public static class TerrainLodVerticalSliceReducer
                                 lower.Material != upper.Material
             ? 2
             : 0;
+        // A liquid/solid merge can erase an entire exposed lake surface while leaving
+        // its dark bed visible. Spend the vertical budget on cave intervals first;
+        // only sacrifice a liquid boundary if the budget cannot retain it at all.
+        var liquidBoundaryPenalty = lower.Material != upper.Material &&
+                                    (lower.Material.Geometry == TerrainLodGeometryClass.Liquid ||
+                                     upper.Material.Geometry == TerrainLodGeometryClass.Liquid)
+            ? 4
+            : 0;
         return new ReductionCost(
-            compatibility + topSurfacePenalty,
+            compatibility + topSurfacePenalty + liquidBoundaryPenalty,
             checked(lower.Height + upper.Height));
     }
 
