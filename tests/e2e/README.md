@@ -145,8 +145,13 @@ neither a whole-scene GPU-time measurement nor a residency budget.
 watchdog). Run `xvfb-run -a tests/e2e/run-local.sh terrain-lod-cave-mouth-remote`.
 The first process pregenerates a modest seed-`246813579` patch away from spawn and waits for
 server L2 tile `(8,0)`; the second reopens that save and checks that the client presents its
-under-roof air sample `(532,70,22)` from a matching, authoritative 1x1 spatial tile. It dumps
-the terrain state and takes a screenshot. A cached fallback is acceptable when its source hash
+under-roof air sample `(532,70,22)` from a matching, authoritative 1x1 spatial tile. It then
+expands exact distance from four to fourteen chunks without moving or changing FOV, waits for
+the same cave sample to be loaded and meshed, and captures a second terrain dump and screenshot.
+`check_remote_cave.py` verifies the paired camera/source/ownership metadata and a small sea patch
+where an earlier LOD screenshot briefly went black. The PNG check uses only Python's standard
+library; it is a fixture-specific black-region guard, not a general image similarity score.
+A cached fallback is acceptable when its source hash
 matches the installed mesh; the hierarchy's `Current` flag describes rebuild readiness, not
 whether that mesh is being drawn. This does not prove cave-face pixels or complete horizon
 coverage; inspect the capture and missing-coverage counters separately.

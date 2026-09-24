@@ -228,6 +228,11 @@ for scenario in "${scenarios[@]}"; do
             status=1
         fi
     fi
+    if (( status == 0 )) && [[ "$scenario" == "terrain-lod-cave-mouth-remote" ]]; then
+        if ! python3 "$script_dir/check_remote_cave.py" "$scenario_artifacts"; then
+            status=1
+        fi
+    fi
 
     if (( status == 0 )); then
         echo "Scenario passed: $scenario"

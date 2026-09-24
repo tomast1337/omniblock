@@ -51,6 +51,20 @@ end, 90, "spatial-cave")
 OMNI.wait(5)
 OMNI.test.dumpTerrain("remote-cave-mouth")
 OMNI.test.screenshot()
+OMNI.wait(2) -- finish the LOD capture before changing the exact radius
+
+-- The prepared world has the same source patch in both captures. If the black
+-- region remains at the same camera with detailed chunks, it is not an L2-only
+-- presentation defect. Do not change FOV, look direction, or player position.
+OMNI.config.viewDistance = 0.36 -- fourteen exact chunks; the cave is about nine away
+waitFor(function()
+    return OMNI.test.hasBlock("omniblock:air", 532, 70, 22) and
+        OMNI.test.isMeshCurrent(532, 70, 22)
+end, 90, "exact-cave")
+OMNI.wait(5)
+OMNI.test.dumpTerrain("remote-cave-mouth-exact")
+OMNI.test.screenshot()
+OMNI.wait(2)
 assert(state.webGpuErrorCount == 0 and state.meshBuildFailureCount == 0,
-    "render failure during remote cave-mouth capture")
+    "render failure during remote cave-mouth comparison")
 OMNI.test.pass()
