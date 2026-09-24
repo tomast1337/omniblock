@@ -27,6 +27,7 @@ internal sealed class InactiveGenerationWorkspace
     private readonly IChunkStorage? _storage;
     private readonly HashSet<ChunkPos> _storedDependencies = [];
     private readonly HashSet<ChunkPos> _writableStoredTargets = [];
+    private readonly Dictionary<ChunkPos, long> _storedTerrainRevisions = [];
     private int _started;
 
     public InactiveGenerationWorkspace(IWorldContext source)
@@ -98,6 +99,7 @@ internal sealed class InactiveGenerationWorkspace
                         $"Stored dependency chunk {position.X},{position.Z} exists but could not be decoded; " +
                         "inactive generation will not replace it.");
                 _storedDependencies.Add(position);
+                _storedTerrainRevisions.Add(position, chunk.TerrainRevision);
             }
 
             _world.Chunks.Store(chunk ?? _generator.GetChunk(position.X, position.Z));
@@ -124,6 +126,18 @@ internal sealed class InactiveGenerationWorkspace
 
             while (_world.Lighting.DoLightingUpdates())
                 cancellationToken.ThrowIfCancellationRequested();
+        }
+
+        // Decoration can cross from its owning chunk into a previously saved neighbor (trees,
+        // ores, lakes, etc.). Omitting that neighbor from the durable batch discards those writes
+        // and leaves a hard cut at the chunk border. Only include neighbors whose terrain was
+        // actually changed; untouched stored chunks remain read-only dependencies.
+        foreach (var position in _storedDependencies.ToArray())
+        {
+            if (_world.Chunks.GetChunk(position.X, position.Z).TerrainRevision ==
+                _storedTerrainRevisions[position]) continue;
+            _storedDependencies.Remove(position);
+            _writableStoredTargets.Add(position);
         }
 
         return new InactiveGenerationBatch(

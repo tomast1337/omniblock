@@ -445,6 +445,44 @@ public sealed partial class InactiveGenerationWorkspaceTests
     }
 
     [Fact]
+    public void Adjacent_inactive_batches_preserve_cross_border_decoration()
+    {
+        var root = Directory.CreateTempSubdirectory("omniblock-inactive-border-");
+        try
+        {
+            var storage = new RegionChunkStorage(root.FullName);
+            var world = new SourceWorld(246813579L, storage: new ChunkBackedStorage(storage));
+            var first = new InactiveGenerationWorkspace(world).GenerateCompletedNeighborhood(0, 0);
+            first.SaveDurably(world, storage);
+            var second = new InactiveGenerationWorkspace(world).GenerateCompletedNeighborhood(1, 0);
+            Assert.Contains(new ChunkPos(1, 1), second.WritableStoredTargets);
+            second.SaveDurably(world, storage);
+
+            var expectedWorld = new SourceWorld(246813579L);
+            var expected = new InactiveGenerationWorkspace(expectedWorld)
+                .GenerateCompletedRegion([new ChunkPos(0, 0), new ChunkPos(1, 0)]);
+            foreach (var chunk in expected.Chunks)
+            {
+                var saved = storage.LoadChunk(world, chunk.X, chunk.Z);
+                Assert.NotNull(saved);
+                var expectedChunk = chunk.Materialize(expectedWorld);
+                var expectedBlocks = expectedChunk.Blocks;
+                var firstDifference = Enumerable.Range(0, expectedBlocks.Length)
+                    .FirstOrDefault(index => expectedBlocks[index] != saved.Blocks[index], -1);
+                if (firstDifference >= 0)
+                    Assert.Fail($"Chunk {chunk.X},{chunk.Z} differs at block index {firstDifference}: " +
+                        $"expected {expectedBlocks[firstDifference]}, saved {saved.Blocks[firstDifference]}.");
+                Assert.Equal(expectedChunk.Meta.Bytes, saved.Meta.Bytes);
+            }
+        }
+        finally
+        {
+            RegionIo.Flush();
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
     public void Failed_batch_write_identifies_chunk_and_never_reports_a_durable_commit()
     {
         var world = new SourceWorld(1L);
