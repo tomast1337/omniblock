@@ -164,6 +164,30 @@ internal sealed partial class ClientTerrainLodRenderer
             .Concat(_selectedTranslucentLevels.Where(pair => _resident.ContainsKey(pair.Key))
                 .Select(pair => LocalRow(pair.Key, pair.Value, "translucent")))
             .ToArray();
+        var selectedSolidSeams = _visibleSeams.Select(static seam => seam.Key).ToHashSet();
+        var localSolidSeams = _desiredSolidSeams
+            .OrderBy(static pair => pair.Key.Owner.X)
+            .ThenBy(static pair => pair.Key.Owner.Z)
+            .ThenBy(static pair => pair.Key.BoundarySide)
+            .ThenBy(static pair => pair.Key.MaterialSide)
+            .Select(pair =>
+            {
+                var installed = _solidSeams.TryGetValue(pair.Key, out var seam);
+                return new
+                {
+                    OwnerX = pair.Key.Owner.X,
+                    OwnerZ = pair.Key.Owner.Z,
+                    NeighborX = pair.Key.Neighbor.X,
+                    NeighborZ = pair.Key.Neighbor.Z,
+                    BoundarySide = pair.Key.BoundarySide.ToString(),
+                    MaterialSide = pair.Key.MaterialSide.ToString(),
+                    pair.Value.OwnerLevel,
+                    pair.Value.NeighborLevel,
+                    InstalledMatchesDesired = installed && seam!.Selection == pair.Value,
+                    InstalledVertices = installed ? seam!.Mesh?.VertexCount ?? 0u : 0u,
+                    SelectedForDraw = selectedSolidSeams.Contains(pair.Key)
+                };
+            }).ToArray();
         return new
         {
             Schema = 1,
@@ -185,7 +209,8 @@ internal sealed partial class ClientTerrainLodRenderer
             ReadySpatialTiles = _spatialPresentations.ReadyKeys.OrderBy(key => key.Level)
                 .ThenBy(key => key.X).ThenBy(key => key.Z).ToArray(),
             Spatial = spatial,
-            Local = local
+            Local = local,
+            LocalSolidSeams = localSolidSeams
         };
 
         object LocalRow((int X, int Z) key, int level, string layer)

@@ -112,7 +112,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     public void Dispose()
     {
         EntityImpostors.Dispose();
-        if (_world is Worlds.ClientWorld clientWorld)
+        if (_worldBacking is Worlds.ClientWorld clientWorld)
             clientWorld.NetworkHandler.PresentationRelocated -= OnPresentationRelocated;
         EntityLod.Clear();
         TerrainLod?.Dispose();

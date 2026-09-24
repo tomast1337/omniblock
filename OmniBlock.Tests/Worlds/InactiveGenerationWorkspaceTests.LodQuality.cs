@@ -29,7 +29,12 @@ public sealed partial class InactiveGenerationWorkspaceTests
             .GenerateCompletedNeighborhood(checked((int)key.MinChunkX + 1), checked((int)key.MinChunkZ + 1));
         var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
         if (tileX == 0)
-            AssertLocalStoneFaceCoverage(batch.Get(1, 1).CaptureTerrain(), materials, world);
+        {
+            AssertLocalStoneFaceCoverage(batch.Get(1, 2).CaptureTerrain(), materials, world);
+            AssertGeneratedCaveBoundaryFace(
+                batch.Get(1, 1).CaptureTerrain(), batch.Get(1, 2).CaptureTerrain(),
+                materials, world);
+        }
         var policy = TerrainLodSpatialPolicy.CreateDefault();
         var children = Enumerable.Range(0, 4).Select(i =>
         {
@@ -214,5 +219,54 @@ public sealed partial class InactiveGenerationWorkspaceTests
             ((int)MathF.Round(vertex.X * 64f / 32767f),
                 (int)MathF.Round(vertex.Y * 64f / 32767f + ChuckFormat.WorldHeight / 2f),
                 (int)MathF.Round(vertex.Z * 64f / 32767f));
+    }
+
+    private static void AssertGeneratedCaveBoundaryFace(
+        TerrainLodSourceSnapshot northSource,
+        TerrainLodSourceSnapshot southSource,
+        TerrainLodMaterialCatalog materials,
+        SourceWorld world)
+    {
+        var north = TerrainLodReducer.Build(northSource, materials,
+            TerrainLodReductionStrategy.SurfacePreserving);
+        var south = TerrainLodReducer.Build(southSource, materials,
+            TerrainLodReductionStrategy.SurfacePreserving);
+        var owner = TerrainLodBoundarySummary.Capture(north, 0, 4);
+        var neighbor = TerrainLodBoundarySummary.Capture(south, 0, 4);
+        var stone = materials.Resolve(world.Content.Blocks.Get("omniblock:stone").Id, 0).BlockId;
+        Assert.True(north.Levels[0][13, 76, 15].IsEmpty);
+        Assert.Equal(stone, south.Levels[0][13, 76, 0].Primary.BlockId);
+
+        var seam = TerrainLodSeamMeshBuilder.BuildSolid(
+            owner, 0, neighbor, 0, OmniBlock.Blocks.Side.South,
+            world.Content.Blocks, true,
+            materialSide: TerrainLodSeamMaterialSide.Neighbor);
+        var face = false;
+        for (var index = 0; index < seam.Vertices.Length; index += 4)
+        {
+            var vertices = seam.Vertices.AsSpan(index, 4);
+            var minimumX = int.MaxValue;
+            var maximumX = int.MinValue;
+            var minimumY = int.MaxValue;
+            var maximumY = int.MinValue;
+            var onBoundary = true;
+            foreach (var vertex in vertices)
+            {
+                onBoundary &= (int)MathF.Round(vertex.Z * 64f / 32767f) == 16;
+                var x = (int)MathF.Round(vertex.X * 64f / 32767f);
+                var y = (int)MathF.Round(vertex.Y * 64f / 32767f + ChuckFormat.WorldHeight / 2f);
+                minimumX = Math.Min(minimumX, x);
+                maximumX = Math.Max(maximumX, x);
+                minimumY = Math.Min(minimumY, y);
+                maximumY = Math.Max(maximumY, y);
+            }
+            if (onBoundary && minimumX == 13 && maximumX == 14 &&
+                minimumY == 76 && maximumY == 77)
+            {
+                face = true;
+                break;
+            }
+        }
+        Assert.True(face, "Generated local L0 seam omitted the cave's north-facing stone face.");
     }
 }

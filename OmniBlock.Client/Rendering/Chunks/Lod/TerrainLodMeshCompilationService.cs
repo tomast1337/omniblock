@@ -238,7 +238,8 @@ internal sealed class TerrainLodMeshCompilationService : IDisposable
                 var hierarchy = request.Conversion.Hierarchy;
                 var maximum = Math.Min(request.MaximumLevel, hierarchy.Levels.Count - 1);
                 var minimum = Math.Clamp(request.MinimumLevel, 0, maximum);
-                var boundaries = TerrainLodBoundarySummary.Capture(hierarchy, minimum, maximum);
+                var boundaries = TerrainLodBoundarySummary.Capture(
+                    hierarchy, minimum, maximum, request.Conversion.Lighting);
                 var levels = new TerrainLodMeshData[maximum - minimum + 1];
                 for (var level = minimum; level <= maximum; level++)
                 {

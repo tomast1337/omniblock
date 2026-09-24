@@ -197,7 +197,8 @@ internal static class TerrainLodSeamMeshBuilder
                 ReferenceEquals(block, grassBlock), grassOverlayTexture,
                 textureOverride);
             var light = SampleLight(faceSide, block.LightEmission, sampleX, sampleY, sampleZ);
-            if (caveCullBelowY is { } ceilingY && hasSkyLight && lighting is not null &&
+            if (caveCullBelowY is { } ceilingY && hasSkyLight &&
+                (lighting is not null || owner.HasRetainedLighting || neighbor.HasRetainedLighting) &&
                 y + fineScale <= ceilingY && light.Sky == 0)
                 continue;
 
@@ -257,14 +258,24 @@ internal static class TerrainLodSeamMeshBuilder
             ChunkLightVertex SampleLight(
                 Side side, int minimumBlockLight, float x, float sampleAtY, float z)
             {
-                if (lighting is null) return fallbackLight;
                 if (side == Side.East) x += 0.01f;
                 else if (side == Side.West) x -= 0.01f;
                 else if (side == Side.South) z += 0.01f;
                 else z -= 0.01f;
-                var levels = lighting.GetLightLevels(
-                    (int)MathF.Floor(x), (int)MathF.Floor(sampleAtY),
-                    (int)MathF.Floor(z), minimumBlockLight);
+                var cellX = (int)MathF.Floor(x);
+                var cellY = (int)MathF.Floor(sampleAtY);
+                var cellZ = (int)MathF.Floor(z);
+                // The outward sample can belong to either half of the seam. Prefer the immutable
+                // light captured with that half's terrain; the live chunk may already be unloaded.
+                LightLevels levels;
+                if (!owner.TryGetRetainedLight(cellX, cellY, cellZ, minimumBlockLight,
+                        out levels) &&
+                    !neighbor.TryGetRetainedLight(cellX, cellY, cellZ, minimumBlockLight,
+                        out levels))
+                {
+                    if (lighting is null) return fallbackLight;
+                    levels = lighting.GetLightLevels(cellX, cellY, cellZ, minimumBlockLight);
+                }
                 return new ChunkLightVertex(
                     ChunkVertexHelper.ToQuarterLevels(levels.Sky),
                     ChunkVertexHelper.ToQuarterLevels(levels.Block));

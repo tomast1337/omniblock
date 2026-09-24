@@ -273,7 +273,14 @@ public class Connection
                 depth);
         }
 
-        if (readQueue.IsEmpty)
+        // A loopback peer has no network transport to time out. In particular, the integrated
+        // server continues its fixed/network ticks while the client is paused on a menu and may
+        // receive no application packets for arbitrarily long periods.
+        if (IsInternal)
+        {
+            _timeout = 0;
+        }
+        else if (readQueue.IsEmpty)
         {
             if (_timeout++ == 1200)
             {

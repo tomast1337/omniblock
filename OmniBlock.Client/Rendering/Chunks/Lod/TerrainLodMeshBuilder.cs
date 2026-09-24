@@ -33,13 +33,15 @@ internal readonly record struct TerrainLodFaceAppearance(
 
 /// <summary>
 ///     Four compact edge planes retained after a hierarchy is uploaded. Material values are
-///     palette-backed, so seam evidence costs O(surface) small indices instead of retaining the
-///     O(volume) hierarchy or repeating resource-location strings per boundary cell.
+///     palette-backed. Only the one-cell-wide source-light edges are retained: a seam may be
+///     built after its gameplay chunks unload, when querying live-world light would return zero.
 /// </summary>
 internal sealed class TerrainLodBoundarySummary
 {
+    private static readonly int LightEdgeStride = 16 * ChuckFormat.WorldHeight;
     private readonly TerrainLodMaterial[] _palette;
     private readonly Dictionary<int, BoundaryLevel> _levels;
+    private readonly byte[]? _edgeLights;
 
     private TerrainLodBoundarySummary(
         int chunkX,
@@ -47,7 +49,8 @@ internal sealed class TerrainLodBoundarySummary
         long terrainRevision,
         int minimumLevel,
         TerrainLodMaterial[] palette,
-        Dictionary<int, BoundaryLevel> levels)
+        Dictionary<int, BoundaryLevel> levels,
+        byte[]? edgeLights)
     {
         ChunkX = chunkX;
         ChunkZ = chunkZ;
@@ -55,9 +58,11 @@ internal sealed class TerrainLodBoundarySummary
         MinimumLevel = minimumLevel;
         _palette = palette;
         _levels = levels;
+        _edgeLights = edgeLights;
         EstimatedBytes = palette.Length * 32L + levels.Values.Sum(static level =>
             (long)(level.North.Length + level.South.Length +
-                   level.West.Length + level.East.Length) * 4);
+                   level.West.Length + level.East.Length) * 4) +
+            (edgeLights?.Length ?? 0);
     }
 
     public int ChunkX { get; }
@@ -65,6 +70,8 @@ internal sealed class TerrainLodBoundarySummary
     public long TerrainRevision { get; }
     public int MinimumLevel { get; }
     public long EstimatedBytes { get; }
+    public bool HasRetainedLighting => _edgeLights is not null;
+    public int RetainedLightingBytes => _edgeLights?.Length ?? 0;
     public TerrainLodBoundaryIdentity Identity => new(TerrainRevision, MinimumLevel);
     public bool HasLevel(int level) => _levels.ContainsKey(level);
     public int NearestLevel(int requested) => _levels.Keys
@@ -73,9 +80,28 @@ internal sealed class TerrainLodBoundarySummary
         .First();
 
     public static TerrainLodBoundarySummary Capture(
-        TerrainLodHierarchy hierarchy, int minimumLevel, int maximumLevel)
+        TerrainLodHierarchy hierarchy, int minimumLevel, int maximumLevel,
+        TerrainLodLightingSnapshot? lighting = null)
     {
         ArgumentNullException.ThrowIfNull(hierarchy);
+        if (lighting is not null &&
+            (lighting.ChunkX != hierarchy.ChunkX || lighting.ChunkZ != hierarchy.ChunkZ ||
+             lighting.TerrainRevision != hierarchy.TerrainRevision))
+            throw new ArgumentException("Terrain LOD boundary lighting must match its hierarchy.",
+                nameof(lighting));
+        byte[]? edgeLights = null;
+        if (lighting is not null)
+        {
+            edgeLights = new byte[4 * LightEdgeStride];
+            for (var along = 0; along < 16; along++)
+            for (var y = 0; y < ChuckFormat.WorldHeight; y++)
+            {
+                Store(Side.North, along, y, along, 0);
+                Store(Side.South, along, y, along, 15);
+                Store(Side.West, along, y, 0, along);
+                Store(Side.East, along, y, 15, along);
+            }
+        }
         List<TerrainLodMaterial> palette = [TerrainLodMaterial.Air];
         Dictionary<TerrainLodMaterial, ushort> paletteIndices = [];
         Dictionary<int, BoundaryLevel> levels = [];
@@ -106,7 +132,16 @@ internal sealed class TerrainLodBoundarySummary
         return new TerrainLodBoundarySummary(
             hierarchy.ChunkX, hierarchy.ChunkZ, hierarchy.TerrainRevision,
             Math.Max(0, minimumLevel),
-            [.. palette], levels);
+            [.. palette], levels, edgeLights);
+
+        void Store(Side side, int along, int y, int localX, int localZ)
+        {
+            var levels = lighting!.GetLightLevels(
+                hierarchy.ChunkX * 16 + localX, y, hierarchy.ChunkZ * 16 + localZ, 0);
+            edgeLights![((int)side - (int)Side.North) * LightEdgeStride +
+                        along * ChuckFormat.WorldHeight + y] =
+                (byte)((levels.Sky << 4) | levels.Block);
+        }
 
         BoundarySample Sample(TerrainLodCell cell)
         {
@@ -130,6 +165,27 @@ internal sealed class TerrainLodBoundarySummary
             paletteIndices.Add(material, index);
             return index;
         }
+    }
+
+    public bool TryGetRetainedLight(int worldX, int y, int worldZ, int minimumBlockLight,
+        out LightLevels levels)
+    {
+        levels = default;
+        if (_edgeLights is null || (uint)y >= ChuckFormat.WorldHeight) return false;
+        var x = worldX - ChunkX * 16;
+        var z = worldZ - ChunkZ * 16;
+        if ((uint)x >= 16 || (uint)z >= 16) return false;
+        Side side;
+        int along;
+        if (z == 0) { side = Side.North; along = x; }
+        else if (z == 15) { side = Side.South; along = x; }
+        else if (x == 0) { side = Side.West; along = z; }
+        else if (x == 15) { side = Side.East; along = z; }
+        else return false;
+        var packed = _edgeLights[((int)side - (int)Side.North) * LightEdgeStride +
+                                 along * ChuckFormat.WorldHeight + y];
+        levels = LightLevels.Of(packed >> 4, packed & 0xF).WithBlockFloor(minimumBlockLight);
+        return true;
     }
 
     public bool TryGet(

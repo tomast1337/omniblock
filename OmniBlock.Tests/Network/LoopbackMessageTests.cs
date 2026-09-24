@@ -17,6 +17,29 @@ namespace OmniBlock.Tests.Network;
 /// </summary>
 public sealed class LoopbackMessageTests
 {
+    [Fact]
+    public void Idle_integrated_connections_remain_usable_past_the_remote_timeout()
+    {
+        Recorder clientHandler = new();
+        Recorder serverHandler = new();
+        InternalConnection client = new(clientHandler, "client");
+        InternalConnection server = new(serverHandler, "server");
+        client.AssignRemote(server);
+        server.AssignRemote(client);
+
+        for (var tick = 0; tick < 1_205; tick++)
+        {
+            client.tick();
+            server.tick();
+        }
+
+        Assert.Null(clientHandler.DisconnectReason);
+        Assert.Null(serverHandler.DisconnectReason);
+        client.sendMessage(new MessageRegistry(), new EntityDestroyMessage { EntityId = 42 });
+        server.tick();
+        Assert.Equal(42, Assert.IsType<EntityDestroyMessage>(Assert.Single(serverHandler.Received)).EntityId);
+    }
+
     private static (InternalConnection Sender, Recorder Handler) Pair()
     {
         Recorder handler = new();
@@ -164,10 +187,13 @@ public sealed class LoopbackMessageTests
     private sealed class Recorder : NetHandler
     {
         public List<Message> Received { get; } = [];
+        public string? DisconnectReason { get; private set; }
 
         public override bool isServerSide() => true;
 
         public override void onMessage(Message message) => Received.Add(message);
+
+        public override void onDisconnected(string reason, object[]? details) => DisconnectReason = reason;
     }
 
     private sealed class ManualClock : TimeProvider

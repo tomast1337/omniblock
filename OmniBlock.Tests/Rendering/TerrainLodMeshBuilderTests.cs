@@ -415,6 +415,58 @@ public sealed class TerrainLodMeshBuilderTests
     }
 
     [Fact]
+    public void Seam_uses_retained_source_light_after_gameplay_chunks_unload()
+    {
+        var world = new FakeWorldContext();
+        var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+        var northAir = Build(world, (x, y, z) => 0, chunkX: 1, chunkZ: 1);
+        var southStone = Build(world, (x, y, z) => y < 8 ? (byte)stone : (byte)0,
+            chunkX: 1, chunkZ: 2);
+        var sky = Enumerable.Repeat((byte)0xFF, ChuckFormat.ChunkSize / 2).ToArray();
+        var block = new byte[sky.Length];
+        var retainedNorthLight = new TerrainLodLightingSnapshot(1, 1, 7, sky, block, true);
+        var owner = TerrainLodBoundarySummary.Capture(northAir, 0, 4, retainedNorthLight);
+        var neighbor = TerrainLodBoundarySummary.Capture(southStone, 0, 4);
+
+        // Live-world light is zero, as it can be once the gameplay chunk leaves the exact radius.
+        var seam = TerrainLodSeamMeshBuilder.BuildSolid(
+            owner, 0, neighbor, 0, OmniBlock.Blocks.Side.South,
+            world.Content.Blocks, true, lighting: new ConstantLight(0, 0));
+
+        Assert.NotEmpty(seam.Vertices);
+        Assert.All(seam.Lights, light => Assert.Equal(60, light.Sky));
+        Assert.Equal(4 * 16 * ChuckFormat.WorldHeight, owner.RetainedLightingBytes);
+        Assert.True(owner.RetainedLightingBytes < retainedNorthLight.EstimatedBytes);
+    }
+
+    [Fact]
+    public void Retained_seam_light_edges_keep_their_world_coordinates_and_channels()
+    {
+        var world = new FakeWorldContext();
+        var hierarchy = Build(world, (x, y, z) => 0, chunkX: -2, chunkZ: 3);
+        var sky = new ChunkNibbleArray(ChuckFormat.ChunkSize);
+        var block = new ChunkNibbleArray(ChuckFormat.ChunkSize);
+        sky.SetNibble(7, 5, 0, 1);
+        sky.SetNibble(7, 5, 15, 2);
+        sky.SetNibble(0, 5, 7, 3);
+        sky.SetNibble(15, 5, 7, 4);
+        block.SetNibble(7, 5, 15, 6);
+        var lighting = new TerrainLodLightingSnapshot(-2, 3, 7,
+            sky.Bytes, block.Bytes, true);
+        var summary = TerrainLodBoundarySummary.Capture(hierarchy, 0, 4, lighting);
+
+        Assert.True(summary.TryGetRetainedLight(-25, 5, 48, 0, out var north));
+        Assert.Equal(new LightLevels(1, 0), north);
+        Assert.True(summary.TryGetRetainedLight(-25, 5, 63, 0, out var south));
+        Assert.Equal(new LightLevels(2, 6), south);
+        Assert.True(summary.TryGetRetainedLight(-32, 5, 55, 0, out var west));
+        Assert.Equal(new LightLevels(3, 0), west);
+        Assert.True(summary.TryGetRetainedLight(-17, 5, 55, 0, out var east));
+        Assert.Equal(new LightLevels(4, 0), east);
+        Assert.False(summary.TryGetRetainedLight(-24, 5, 55, 0, out _));
+    }
+
+    [Fact]
     public void Exact_to_lod_boundary_emits_only_the_lod_owned_solid_surface()
     {
         var world = new FakeWorldContext();

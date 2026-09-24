@@ -2249,6 +2249,12 @@ public partial class OmniBlock :
                     World.allowSpawning(Options.Difficulty > 0, true);
                     World.Tick();
                 }
+                else if (World is ClientWorld pausedWorld)
+                {
+                    // A paused integrated world does not simulate, but its loopback inbox still
+                    // needs to drain (keepalives, disconnects and bounded preparation traffic).
+                    pausedWorld.NetworkHandler.Tick();
+                }
             }
 
             if (!IsGamePaused && World is { } world && _player is { } player)
@@ -2256,7 +2262,7 @@ public partial class OmniBlock :
                 world.displayTick(MathHelper.Floor(player.X), MathHelper.Floor(player.Y), MathHelper.Floor(player.Z));
             }
 
-            if (!IsGamePaused)
+            if (!IsGamePaused && World != null)
             {
                 ParticleManager.updateEffects();
             }

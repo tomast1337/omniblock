@@ -171,6 +171,16 @@ public sealed class UdpConnectionTests
         Assert.Equal(DisconnectReason.Local, transport.ClosedWith);
     }
 
+    [Fact]
+    public void Remote_connection_still_times_out_without_packets()
+    {
+        var (connection, _, handler) = Fixture();
+
+        for (var tick = 0; tick < 1_205; tick++) connection.tick();
+
+        Assert.Equal("disconnect.timeout", handler.DisconnectReason);
+    }
+
     /// <summary>
     ///     Two <see cref="UdpConnection" />s over a real loopback socket. The tests above use a fake
     ///     transport because the questions are about framing and channels; this one exists because
@@ -234,11 +244,14 @@ public sealed class UdpConnectionTests
     private sealed class RecordingHandler : NetHandler
     {
         public List<Packet> Applied { get; } = [];
+        public string? DisconnectReason { get; private set; }
 
         public override bool isServerSide() => true;
 
         public override void handle(Packet packet) => Applied.Add(packet);
 
         public override void onOmniMessage(OmniMessagePacket packet) => Applied.Add(packet);
+
+        public override void onDisconnected(string reason, object[]? details) => DisconnectReason = reason;
     }
 }
