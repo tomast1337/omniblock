@@ -141,6 +141,16 @@ One fixed run compared 90 stable drawn layers: 12 changed level and selected ver
 from 225,352 at 0.75x to 279,556 at 1x. Streaming still changed other columns, so this is
 neither a whole-scene GPU-time measurement nor a residency budget.
 
+`terrain-lod-cave-mouth-remote` is an opt-in, two-process natural-source gate (480-second
+watchdog). Run `xvfb-run -a tests/e2e/run-local.sh terrain-lod-cave-mouth-remote`.
+The first process pregenerates a modest seed-`246813579` patch away from spawn and waits for
+server L2 tile `(8,0)`; the second reopens that save and checks that the client presents its
+under-roof air sample `(532,70,22)` from a matching, authoritative 1x1 spatial tile. It dumps
+the terrain state and takes a screenshot. A cached fallback is acceptable when its source hash
+matches the installed mesh; the hierarchy's `Current` flag describes rebuild readiness, not
+whether that mesh is being drawn. This does not prove cave-face pixels or complete horizon
+coverage; inspect the capture and missing-coverage counters separately.
+
 `terrain-lod-remote-handoff` is an opt-in stationary **real-source handoff** check (240-second
 watchdog). Run `xvfb-run -a tests/e2e/run-local.sh terrain-lod-remote-handoff`. It uses the ordinary
 generated spawn region, waits for initial streaming, then reduces exact distance from eight to
@@ -478,12 +488,15 @@ server, one JSON generation profile:
 - `world-generation-label.json`: bounded timing/allocation distributions per generation stage,
   queue depths and peak, failures, and a conservative retained chunk-payload lower bound.
 
-`OMNI.test.terrainLodPresentedMaterial(x, y, z)` returns the material resource name and
-horizontal sample size for a block coordinate. It returns `nil, -1` unless the selected local
+`OMNI.test.terrainLodPresentedMaterial(x, y, z)` returns the material resource name,
+horizontal sample size, and owner (`local` or `spatial`) for a block coordinate. It returns
+`nil, -1, nil` unless the selected local
 1x1 column has a matching source revision, or an authoritative spatial tile has a matching
 canonical source/mesh hash. It is restricted to E2E launches. It checks publication/source
 consistency, not the final rasterized pixel; use it with material mesh tests and same-camera
 screenshots for near-LOD visual comparisons.
+`OMNI.test.terrainLodServerTileReady(level, x, z)` reports whether the integrated server has a
+ready natural L2+ tile; it does not cause generation or imply client receipt.
 
 `OMNI.test.dumpProfiler("label")` writes `profiler-label.tsv` with the last, rolling average,
 P50, P95, and recent period maximum for every main/client and integrated-server profiler scope.

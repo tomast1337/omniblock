@@ -435,6 +435,66 @@ public sealed class TerrainLodSpatialMeshBuilderTests
         Assert.True(culled.Profile.SourceSpans < culled.Profile.CanonicalSpans);
         Assert.Equal(culled.Profile.RenderedSpans, culled.Profile.SourceSpans);
         Assert.Equal(canonicalSpans, tile[0, 0].Spans);
+
+        // Block-lit cave air is visible even without skylight. The presentation-only culler
+        // must not erase it, and the canonical source remains the same in both cases.
+        for (var x = 0; x < 16; x++)
+        for (var z = 0; z < 16; z++)
+        for (var y = 16; y < 24; y++)
+            block.SetNibble(x, y, z, 8);
+        var litSource = new TerrainLodSourceSnapshot(
+            0, 0, 16, ChuckFormat.ChunkHeight, 16,
+            blocks, metadata, terrainRevision: 2,
+            new TerrainLodLightingSnapshot(
+                0, 0, 2, sky.Bytes, block.Bytes, hasSkyLight: true));
+        var litTile = TerrainLodColumnTile.BuildLeaf(litSource, materials);
+        var litUnculled = TerrainLodSpatialMeshBuilder.Build(
+            litTile, world.Content.Blocks, verticalSliceBudget: 8,
+            emitTileBoundaryFaces: false);
+        var litCulled = TerrainLodSpatialMeshBuilder.Build(
+            litTile, world.Content.Blocks, verticalSliceBudget: 8,
+            emitTileBoundaryFaces: false, caveCullBelowY: 32);
+
+        Assert.Equal(0, litCulled.Profile.CaveCulledColumns);
+        Assert.Equal(litUnculled.SolidQuadCount, litCulled.SolidQuadCount);
+        Assert.Equal(litTile.CanonicalHash, litCulled.CanonicalHash);
+    }
+
+    [Fact]
+    public void Spatial_mesh_keeps_a_bounded_dark_cave_mouth()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var stone = checked((byte)world.Content.Blocks.Get("omniblock:stone").Id);
+        var blocks = new byte[ChuckFormat.ChunkSize];
+        var metadata = new byte[blocks.Length];
+        var sky = new ChunkNibbleArray(ChuckFormat.ChunkSize);
+        var block = new ChunkNibbleArray(ChuckFormat.ChunkSize);
+        for (var x = 0; x < 16; x++)
+        for (var z = 0; z < 16; z++)
+        for (var y = 0; y < ChuckFormat.ChunkHeight; y++)
+        {
+            var shaft = x == 8 && z == 8 && y is >= 24 and < 32;
+            blocks[ChuckFormat.GetIndex(x, y, z)] = y < 16 ||
+                y is >= 24 and < 32 && !shaft ? stone : (byte)0;
+            if (y >= 32 || shaft || (x == 8 && z == 8 && y is >= 16 and < 24))
+                sky.SetNibble(x, y, z, 15);
+        }
+        var source = new TerrainLodSourceSnapshot(
+            0, 0, 16, ChuckFormat.ChunkHeight, 16, blocks, metadata, 1,
+            new TerrainLodLightingSnapshot(0, 0, 1, sky.Bytes, block.Bytes, true));
+        var tile = TerrainLodColumnTile.BuildLeaf(source, materials);
+
+        var unculled = TerrainLodSpatialMeshBuilder.Build(
+            tile, world.Content.Blocks, 8, emitTileBoundaryFaces: false);
+        var culled = TerrainLodSpatialMeshBuilder.Build(
+            tile, world.Content.Blocks, 8, emitTileBoundaryFaces: false, caveCullBelowY: 32);
+
+        Assert.InRange(culled.Profile.CaveCulledColumns, 1, 255);
+        Assert.True(culled.SolidQuadCount < unculled.SolidQuadCount);
+        Assert.True(TerrainLodCaveCuller.SealUndergroundAir(tile[11, 8], 32,
+            TerrainLodCaveCuller.GetDefaultExposure(tile).ForColumn(11, 8)).At(20).IsAir);
+        Assert.Equal(tile.CanonicalHash, culled.CanonicalHash);
     }
 
     [Fact]

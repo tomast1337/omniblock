@@ -90,6 +90,12 @@ internal static class TerrainLodSpatialSeamMeshBuilder
         var alongEnd = CheckedBlock(segment.AlongEndChunk);
         Dictionary<TerrainLodSpatialMeshPageKey, TerrainLodSpatialMeshBuilder.PageBuilder> pages = [];
         Dictionary<(TerrainLodColumnTile Tile, int X, int Z, int Budget), TerrainLodColumn> reduced = [];
+        var ownerExposure = caveCullBelowY is not null && ownerSample == 1
+            ? TerrainLodCaveCuller.GetDefaultExposure(owner, cancellationToken)
+            : null;
+        var neighborExposure = caveCullBelowY is not null && neighborSample == 1 && neighbor is not null
+            ? TerrainLodCaveCuller.GetDefaultExposure(neighbor, cancellationToken)
+            : null;
         blocks.TryGet("omniblock:grass_block", out var grassBlock);
         var grassOverlayTexture = grassBlock is null
             ? -1
@@ -293,7 +299,9 @@ internal static class TerrainLodSpatialSeamMeshBuilder
             {
                 var source = caveCullBelowY is { } ceilingY
                     ? TerrainLodCaveCuller.SealUndergroundAir(
-                        tile[localX, localZ], ceilingY)
+                        tile[localX, localZ], ceilingY,
+                        (ReferenceEquals(tile, owner) ? ownerExposure : neighborExposure) is
+                            { } exposure ? exposure.ForColumn(localX, localZ) : [])
                     : tile[localX, localZ];
                 column = TerrainLodVerticalSliceReducer.Reduce(source, budget);
                 reduced.Add(key, column);

@@ -18,6 +18,7 @@ public sealed partial class InactiveGenerationWorkspaceTests
     [Theory]
     [InlineData(0, 0)]
     [InlineData(-1, 0)]
+    [InlineData(8, 0)]
     public void TerrainLod_generated_near_detail_separates_source_loss_from_presentation_loss(int tileX, int tileZ)
     {
         // Actual generation, decoration and lighting, never a fabricated cave or uniform tile.
@@ -52,6 +53,8 @@ public sealed partial class InactiveGenerationWorkspaceTests
         var hash = exact.CanonicalHash;
 
         var current = Measure("shipped", shipped, policy.VerticalSliceBudgetForSpatialLevel(key.Level), 60);
+        var withoutCaveMouths = Measure("without-cave-mouth-exposure", shipped,
+            policy.VerticalSliceBudgetForSpatialLevel(key.Level), 60, preserveCaveMouths: false);
         var withoutCaveCull = Measure("16-span-without-cave-cull", shipped,
             policy.VerticalSliceBudgetForSpatialLevel(key.Level), null);
         var withoutSpanReduction = Measure("32-span-with-cave-cull", shipped, 32, 60);
@@ -71,6 +74,9 @@ public sealed partial class InactiveGenerationWorkspaceTests
         Assert.Equal(0, current.PresentedClosedSkylitCaveAir);
         Assert.True(withoutCaveCull.PresentedClosedCaveAir <= current.PresentedClosedCaveAir);
         Assert.True(withoutSpanReduction.PresentedClosedCaveAir <= current.PresentedClosedCaveAir);
+        Assert.True(current.PresentedClosedCaveAir < withoutCaveMouths.PresentedClosedCaveAir,
+            "The generated cave mouth should preserve dark air the old sealing policy lost.");
+        Assert.True(current.MeshBytes <= TerrainLodScaleBudget.MaximumUploadBytesPerFrame);
         Assert.True(current.PresentedClosedCaveAir - withoutCaveCull.PresentedClosedCaveAir >
                     current.PresentedClosedCaveAir - withoutSpanReduction.PresentedClosedCaveAir,
             "Cave sealing should be the dominant loss in this generated near-detail fixture.");
@@ -79,19 +85,26 @@ public sealed partial class InactiveGenerationWorkspaceTests
         Assert.Equal(0, reference.PresentedClosedCaveAir);
         Assert.Equal(hash, exact.CanonicalHash); // Rendering never changes durable source data.
 
-        Fidelity Measure(string name, TerrainLodColumnTile source, int verticalBudget, int? caveCeiling)
+        Fidelity Measure(string name, TerrainLodColumnTile source, int verticalBudget,
+            int? caveCeiling, bool preserveCaveMouths = true)
         {
             // Exercise compressed transport too, not only the integrated-server shortcut.
             var message = TerrainLodTileMessage.Of(world.Dimension.Id, source);
             var decoded = message.Decode();
             Assert.Equal(source.CanonicalHash, decoded.CanonicalHash);
             var columns = new TerrainLodColumn[decoded.Width, decoded.Width];
+            var exposure = preserveCaveMouths && caveCeiling is not null &&
+                           decoded.HorizontalSampleLevel == 0
+                ? TerrainLodCaveCuller.GetDefaultExposure(decoded)
+                : null;
             for (var x = 0; x < decoded.Width; x++)
             for (var z = 0; z < decoded.Width; z++)
             {
                 var canonical = decoded[x, z];
                 columns[x, z] = TerrainLodVerticalSliceReducer.Reduce(caveCeiling is { } ceiling
-                    ? TerrainLodCaveCuller.SealUndergroundAir(canonical, ceiling) : canonical, verticalBudget);
+                    ? TerrainLodCaveCuller.SealUndergroundAir(canonical, ceiling,
+                        exposure is null ? [] : exposure.ForColumn(x, z))
+                    : canonical, verticalBudget);
             }
 
             long canonicalMismatch = 0, presentedMismatch = 0, caveAir = 0, skylitCaveAir = 0;
@@ -123,20 +136,26 @@ public sealed partial class InactiveGenerationWorkspaceTests
                 }
             }
 
-            var mesh = TerrainLodSpatialMeshBuilder.Build(decoded, world.Content.Blocks, verticalBudget,
-                emitTileBoundaryFaces: false, caveCullBelowY: caveCeiling,
-                maximumResultBytes: TerrainLodScaleBudget.MaximumUploadBytesPerFrame);
-            Assert.InRange(mesh.EstimatedBytes, 1, TerrainLodScaleBudget.MaximumUploadBytesPerFrame);
+            // The legacy sealing counterfactual has no live mesh policy; measure its voxel loss
+            // only, while compiling every shipped candidate through the actual builder.
+            var mesh = preserveCaveMouths
+                ? TerrainLodSpatialMeshBuilder.Build(decoded, world.Content.Blocks, verticalBudget,
+                    emitTileBoundaryFaces: false, caveCullBelowY: caveCeiling,
+                    maximumResultBytes: TerrainLodScaleBudget.MaximumUploadBytesPerFrame)
+                : null;
+            if (mesh is not null)
+                Assert.InRange(mesh.EstimatedBytes, 1, TerrainLodScaleBudget.MaximumUploadBytesPerFrame);
             Assert.InRange(message.Compressed.Length, 1, TerrainLodScaleBudget.MaximumCompressedTileBytes);
-            var quality = TerrainLodSpatialMeshQuality.FromMesh(mesh);
+            TerrainLodSpatialMeshQuality? quality = mesh is null
+                ? null : TerrainLodSpatialMeshQuality.FromMesh(mesh);
             var result = new Fidelity(caveAir, skylitCaveAir, canonicalMismatch, presentedMismatch,
                 canonicalClosed, presentedClosed, canonicalSkylitClosed, presentedSkylitClosed,
-                firstOpening);
+                firstOpening, mesh?.EstimatedBytes ?? 0);
             _output.WriteLine(JsonSerializer.Serialize(new
             {
                 Fixture = name, Seed = 246813579L, Tile = key,
                 FirstSkylitAirUnderRoof = firstOpening?.ToString(),
-                Fidelity = result, Mesh = quality, mesh.EstimatedBytes,
+                Fidelity = result, Mesh = quality, EstimatedBytes = mesh?.EstimatedBytes,
                 CompressedBytes = message.Compressed.Length
             }));
             return result;
@@ -148,7 +167,7 @@ public sealed partial class InactiveGenerationWorkspaceTests
         long CanonicalMaterialMismatches, long PresentedMaterialMismatches,
         long CanonicalClosedCaveAir, long PresentedClosedCaveAir,
         long CanonicalClosedSkylitCaveAir, long PresentedClosedSkylitCaveAir,
-        (long X, int Y, long Z)? FirstSkylitAirUnderRoof);
+        (long X, int Y, long Z)? FirstSkylitAirUnderRoof, long MeshBytes);
 
     private static void AssertLocalStoneFaceCoverage(
         TerrainLodSourceSnapshot source,

@@ -1104,6 +1104,9 @@ public partial class OmniBlock :
                         _ => 0
                     };
                 };
+                LuauTestHost.TerrainLodServerTileReady = (level, x, z) =>
+                    _player != null && InternalServer?.IsTerrainLodTileReady(
+                        Player.DimensionId, level, x, z) == true;
                 LuauTestHost.ConfigureTerrainLodScaleProfile = horizonChunks =>
                 {
                     // This capability exists only in an explicit E2E launch. Keep it immutable for
@@ -1633,6 +1636,7 @@ public partial class OmniBlock :
             LuauTestHost.DumpProfiler = null;
             LuauTestHost.WorldGenerationAuto = null;
             LuauTestHost.WorldGenerationMetric = null;
+            LuauTestHost.TerrainLodServerTileReady = null;
             LuauTestHost.ConfigureTerrainLodScaleProfile = null;
             LuauTestHost.PrepareTerrainLodFixture = null;
             LuauTestHost.TerrainLodFixtureMetric = null;

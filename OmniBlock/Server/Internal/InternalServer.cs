@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using OmniBlock.Network.Messages;
 using OmniBlock.Registries;
 using OmniBlock.Server.Network;
+using OmniBlock.Server.Worlds;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Lod;
 
@@ -70,6 +71,12 @@ public class InternalServer : OmniBlockServer
 
     public TerrainLodScaleFixtureSnapshot TerrainLodScaleFixture =>
         Volatile.Read(ref _terrainLodScaleFixture);
+
+    /// <summary>Read-only E2E probe of a server-approved natural spatial tile.</summary>
+    public bool IsTerrainLodTileReady(int dimension, int level, int x, int z) =>
+        dimension is 0 or -1 && level is >= 2 and <= 6 &&
+        getWorld(dimension).GetTerrainLodCoverage(
+            new TerrainLodTileKey(level, x, z), out _) == TerrainLodTileAvailability.Ready;
 
     /// <summary>
     ///     E2E-only preparation entry point. The Luau test capability is the sole caller; work is

@@ -139,12 +139,17 @@ internal static class TerrainLodSpatialMeshBuilder
         var caveCulledColumns = 0;
         var verticalReducedColumns = 0;
         var renderedSpans = 0;
+        var caveExposure = caveCullBelowY is not null && sampleSize == 1
+            ? TerrainLodCaveCuller.GetDefaultExposure(tile, cancellationToken)
+            : null;
         for (var x = 0; x < tile.Width; x++)
         for (var z = 0; z < tile.Width; z++)
         {
             guard.Checkpoint();
             var source = caveCullBelowY is { } ceilingY
-                ? TerrainLodCaveCuller.SealUndergroundAir(tile[x, z], ceilingY)
+                ? TerrainLodCaveCuller.SealUndergroundAir(
+                    tile[x, z], ceilingY,
+                    caveExposure is null ? [] : caveExposure.ForColumn(x, z))
                 : tile[x, z];
             var reduced = TerrainLodVerticalSliceReducer.Reduce(source, verticalSliceBudget);
             // Constant-time evidence from the actual build, not a second fidelity scan. These

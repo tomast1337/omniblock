@@ -63,7 +63,8 @@ internal sealed partial class ClientTerrainLodRenderer
     /// E2E-only observation of the source behind an installed local or spatial LOD presentation.
     /// A null result is deliberately different from air: no matching publication was found.
     /// Local columns require the same terrain revision; spatial tiles require a canonical hash
-    /// match. Neither condition proves pixel-perfect raster output.
+    /// match. A matching cached fallback is valid: Current describes hierarchy rebuild readiness,
+    /// not whether this mesh is drawn. Neither condition proves pixel-perfect raster output.
     /// </summary>
     internal (string? Material, int SampleSize, string? Owner) PresentedSpatialMaterialAt(int x, int y, int z)
     {
@@ -90,8 +91,7 @@ internal sealed partial class ClientTerrainLodRenderer
         {
             var key = draw.Selection.Tile;
             if (!key.ContainsChunk(chunkX, chunkZ) || !_authoritativeSpatialTiles.Contains(key) ||
-                !_spatialHierarchy.TryGetCoverage(key, out var source, out var current) ||
-                !current || source is null ||
+                !_spatialHierarchy.TryGetCoverage(key, out var source, out _) || source is null ||
                 source.CanonicalHash != draw.Presentation.CanonicalHash)
                 continue;
             var span = TerrainLodQualityDiagnostics.Sample(source, x, y, z);
