@@ -95,6 +95,11 @@ assert(OMNI.client.state.terrainLodGpuBytes >= gpuBytesBeforeDistanceChange,
     "view-distance contraction rebuilt the LOD GPU cache")
 OMNI.config.viewDistance = 1.0
 OMNI.wait(0.5)
+-- Expanding exact detail over already-resident LOD must be a readiness-gated switch,
+-- not another 250 ms chunk-load animation over existing terrain.
+assert(OMNI.client.state.terrainLodHandoffOverlap == 0 and
+       OMNI.client.state.terrainLodHandoffsStarted == 0,
+    "LOD-to-exact handoff replayed the chunk-load fade")
 
 local px = math.floor(OMNI.client.state.playerX)
 local py = math.floor(OMNI.client.state.playerY)

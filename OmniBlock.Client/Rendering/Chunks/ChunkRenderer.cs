@@ -225,6 +225,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private double _portalTraversalMsThisFrame;
     private double _terrainSubmitMsThisFrame;
     private FogState _terrainFog = FogState.Default;
+    private bool _chunkFadeEnabled;
     internal ITerrainPresentationHandoff? PresentationHandoff { get; set; }
 
     /// <summary>
@@ -870,6 +871,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _modelView = renderParams.ModelView;
         _projection = renderParams.Projection;
         _terrainFog = renderParams.Fog;
+        _chunkFadeEnabled = renderParams.ChunkFade;
 
         // The frame that took buffers out of these pools has been submitted by now, so they are
         // free to hand out again. Both terrain passes of this frame draw from them.
@@ -4093,11 +4095,16 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             ChunkPosX = chunkPos.X,
             ChunkPosY = chunkPos.Z,
             FadeProgress = handoff.Active ? handoff.Progress : fadeProgress,
-            ChunkFadeEnabled = handoff.Active ? 0u : 1u,
+            ChunkFadeEnabled = ShouldAnimateLoadingEdge(_chunkFadeEnabled, handoff) ? 1u : 0u,
             PresentationFadeMode = handoff.Active ? 1u : 0u,
             PresentationFadeSeed = handoff.Seed
         };
     }
+
+    // Existing LOD coverage is a replacement, not a newly exposed streaming edge. The video
+    // toggle applies to the first exact-section fog fade only when there is no predecessor.
+    internal static bool ShouldAnimateLoadingEdge(bool fadeEnabled, TerrainNearHandoff handoff) =>
+        fadeEnabled && !handoff.Active;
 
     private ChunkFrameUniforms BuildChunkFrameUniforms()
     {

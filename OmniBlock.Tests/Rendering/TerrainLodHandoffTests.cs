@@ -1,3 +1,4 @@
+using OmniBlock.Client.Rendering.Chunks;
 using OmniBlock.Client.Rendering.Chunks.Lod;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Tests.TestSupport;
@@ -131,6 +132,19 @@ public sealed class TerrainLodHandoffTests
         transition.Update(nearPresent: true, nearReady: true, 0, fadeEnabled: false);
         Assert.Equal(TerrainLodHandoffState.NearOnly, transition.State);
         Assert.Equal(1, transition.Progress);
+    }
+
+    [Fact]
+    public void Chunk_load_animation_is_only_for_uncovered_streaming_edges()
+    {
+        Assert.True(ChunkRenderer.ShouldAnimateLoadingEdge(
+            true, TerrainNearHandoff.Inactive));
+        Assert.False(ChunkRenderer.ShouldAnimateLoadingEdge(
+            false, TerrainNearHandoff.Inactive));
+        Assert.False(ChunkRenderer.ShouldAnimateLoadingEdge(
+            true, new TerrainNearHandoff(true, 0, 1)));
+        Assert.False(ChunkRenderer.ShouldAnimateLoadingEdge(
+            true, new TerrainNearHandoff(true, 1, 1)));
     }
 
     [Fact]

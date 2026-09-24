@@ -746,9 +746,13 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
 
     public TerrainNearHandoff GetNearHandoff(int chunkX, int chunkZ, bool translucent)
     {
-        // Only columns still covered by spatial LOD suppress their partial exact replacement.
+        // Spatial LOD hides partial exact replacement until the near column is complete.
         if (IsAuthoritativeSpatialChunk((chunkX, chunkZ)))
             return new TerrainNearHandoff(true, 0, FadeSeed((chunkX, chunkZ)));
+        // A completed spatial handoff is still covered terrain, even after the spatial tile
+        // releases ownership. Do not turn the exact mesh's initial fog fade back on then.
+        if (_completedSpatialHandoffs.Contains((chunkX, chunkZ)))
+            return new TerrainNearHandoff(true, 1, FadeSeed((chunkX, chunkZ)));
         if (!_resident.TryGetValue((chunkX, chunkZ), out var presentation) ||
             !presentation.HasLayer(translucent)) return TerrainNearHandoff.Inactive;
         return new TerrainNearHandoff(
@@ -915,9 +919,11 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                 key, distanceSquared, parameters.RenderDistance, nearRenderer,
                 RequiresBoundaryCleanHandoff(
                     presentation.HandoffFor(translucent: false).State));
+            // LOD already covers this column. Switch atomically once exact is ready; the
+            // chunk-load animation belongs at an uncovered streaming edge, not here.
             var handoff = UpdateHandoff(presentation,
                 translucent: false, nearPresent, nearReady,
-                parameters.DeltaTime, parameters.ChunkFade);
+                parameters.DeltaTime, fadeEnabled: false);
             var requestedLevel = TerrainLodDetailSelector.SelectLevel(
                 Math.Sqrt(distanceSquared), presentation.MaximumLevel,
                 presentation.SelectionLevel(translucent: false),
@@ -1089,9 +1095,10 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                 key, distanceSquared, parameters.RenderDistance, nearRenderer,
                 RequiresBoundaryCleanHandoff(
                     presentation.HandoffFor(translucent: true).State));
+            // Match the solid layer: water must not replay the load animation over LOD.
             var handoff = UpdateHandoff(presentation,
                 translucent: true, nearPresent, nearReady,
-                parameters.DeltaTime, parameters.ChunkFade);
+                parameters.DeltaTime, fadeEnabled: false);
             var requestedLevel = TerrainLodDetailSelector.SelectLevel(
                 Math.Sqrt(distanceSquared), presentation.MaximumLevel,
                 presentation.SelectionLevel(translucent: true),
