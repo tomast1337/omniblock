@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Reflection;
 
 namespace OmniBlock.Luau.Host;
 
@@ -245,6 +246,27 @@ public static unsafe class LuauClientStateHost
         "entityImpostorDrawBatches", "entityImpostorResidentAtlases", "entityDistanceDespawnVisuals",
         "entityDistanceDespawnPresentationCount"
     };
+
+    /// <summary>The state properties exposed to scripts, for editor definitions and completion.</summary>
+    public static IReadOnlyList<(string Name, string LuauType)> GetStateDefinition()
+    {
+        List<(string Name, string LuauType)> properties = [];
+        foreach (var key in StateReaders.Keys)
+        {
+            var fieldName = char.ToUpperInvariant(key[0]) + key[1..];
+            var field = typeof(LuauClientStateHost).GetField(fieldName, BindingFlags.Public | BindingFlags.Static)
+                ?? throw new InvalidOperationException($"No state getter exists for '{key}'.");
+            var type = field.FieldType == typeof(Func<bool>) ? "boolean"
+                : field.FieldType == typeof(Func<double>) ? "number"
+                : field.FieldType == typeof(Func<string>) ? "string?"
+                : throw new InvalidOperationException($"Unsupported state getter type for '{key}'.");
+            properties.Add((key, type));
+        }
+
+        properties.AddRange(TerrainLodKeys.Select(key => (key, "number")));
+        properties.AddRange(EntityLodKeys.Select(key => (key, "number")));
+        return properties.OrderBy(property => property.Name, StringComparer.Ordinal).ToArray();
+    }
 
     public static void Install(IntPtr l)
     {

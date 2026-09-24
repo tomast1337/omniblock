@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check the persisted natural-cave LOD/exact pair without an image dependency."""
+"""Check the persisted natural-cave pair and report its publication timeline."""
 
 import json
 from pathlib import Path
@@ -9,6 +9,15 @@ import zlib
 
 
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+CAPTURES = (
+    "remote-cave-arrival",
+    "remote-cave-source-ready",
+    "remote-cave-first-spatial",
+    "remote-cave-mouth",
+    "remote-cave-exact-request",
+    "remote-cave-first-exact",
+    "remote-cave-mouth-exact",
+)
 
 
 def water_band_brightness(path):
@@ -41,8 +50,10 @@ def water_band_brightness(path):
     stride = width * 3
     if len(pixels) != height * (stride + 1):
         raise ValueError(f"Invalid screenshot pixel length: {path}")
-    x0, x1 = int(width * .67), int(width * .69)
-    y0, y1 = int(height * .69), int(height * .715)
+    # The old black wedge starts at this sea patch. Keep it right of the
+    # temporary chat overlay and above the player's hand in every capture.
+    x0, x1 = int(width * .84), int(width * .86)
+    y0, y1 = int(height * .69), int(height * .705)
     if x1 <= x0 or y1 <= y0:
         raise ValueError(f"Screenshot is too small for the sea patch: {path}")
     previous = bytearray(stride)
@@ -79,11 +90,14 @@ def water_band_brightness(path):
 
 
 def check(artifacts):
-    lod = json.loads((artifacts / "terrain-lod-remote-cave-mouth.json").read_text())
-    exact = json.loads((artifacts / "terrain-lod-remote-cave-mouth-exact.json").read_text())
+    captures = [json.loads((artifacts / f"terrain-lod-{label}.json").read_text())
+                for label in CAPTURES]
+    lod, exact = captures[3], captures[6]
     near, detailed = lod["Quality"], exact["Quality"]
-    if near["Camera"] != detailed["Camera"] or near["VerticalFov"] != detailed["VerticalFov"]:
-        raise ValueError("LOD and exact screenshots did not use the same camera and FOV")
+    if (near["Camera"] != detailed["Camera"] or
+            lod["View"] != exact["View"] or
+            near["VerticalFov"] != detailed["VerticalFov"]):
+        raise ValueError("LOD and exact screenshots did not use the same camera, view and FOV")
     if (near["ExactRadiusChunks"], detailed["ExactRadiusChunks"]) != (4, 14):
         raise ValueError("The expected four-to-fourteen exact-radius comparison did not occur")
     if near["HorizonRadiusChunks"] != 16 or detailed["HorizonRadiusChunks"] != 16:
@@ -103,22 +117,60 @@ def check(artifacts):
         raise ValueError("Expanding exact distance did not increase exact ownership")
 
     screenshots = sorted((artifacts / "screenshots").glob("*.png"))
-    if len(screenshots) != 2:
-        raise ValueError(f"Expected two chronological screenshots, found {len(screenshots)}")
-    lod_width, lod_height, lod_brightness = water_band_brightness(screenshots[0])
-    exact_width, exact_height, exact_brightness = water_band_brightness(screenshots[1])
-    if (lod_width, lod_height) != (exact_width, exact_height):
-        raise ValueError("LOD and exact screenshots changed resolution")
+    if len(screenshots) != len(CAPTURES):
+        raise ValueError(f"Expected {len(CAPTURES)} chronological screenshots, "
+                         f"found {len(screenshots)}")
+    temporal = []
+    dimensions = None
+    for label, sample, screenshot in zip(CAPTURES, captures, screenshots, strict=True):
+        quality = sample["Quality"]
+        if (quality["Camera"] != near["Camera"] or sample["View"] != lod["View"] or
+                quality["VerticalFov"] != near["VerticalFov"]):
+            raise ValueError(f"{label} moved the comparison camera, view or FOV")
+        expected_radius = 4 if len(temporal) < 4 else 14
+        if quality["ExactRadiusChunks"] != expected_radius:
+            raise ValueError(f"{label} did not apply exact radius {expected_radius}")
+        width, height, brightness = water_band_brightness(screenshot)
+        if dimensions is not None and dimensions != (width, height):
+            raise ValueError(f"{label} changed screenshot resolution")
+        dimensions = (width, height)
+        cave_tiles = [row for row in quality["Spatial"] or [] if row["Tile"]["Level"] == 2
+                      and row["Tile"]["X"] == 8 and row["Tile"]["Z"] == 0]
+        cave_tile = cave_tiles[0] if len(cave_tiles) == 1 else None
+        temporal.append({
+            "label": label,
+            "screenshot": screenshot.name,
+            "seaPatchBrightness": round(brightness, 4),
+            "nearOwnershipHoles": sample["Coverage"]["HoleCount"],
+            "nearOwnershipOverlaps": sample["Coverage"]["OverlapCount"],
+            "remoteMissingSourceGroups": sample["Terrain"]["CoarseCoverSourceUnavailable"],
+            "remoteGpuPendingGroups": sample["Terrain"]["CoarseCoverGpuPending"],
+            "spatialMissingCoverageGroups": sample["Spatial"]["MissingCoverageGroups"],
+            "caveTileAuthoritative": bool(cave_tile and cave_tile["Authoritative"]),
+            "caveTileSelectedSolidPages": cave_tile["SelectedSolidPages"] if cave_tile else 0,
+            "presentationRevision": quality["PresentationRevision"],
+            "selectionRevision": quality["CachedForestRevision"],
+        })
+    lod_brightness = temporal[3]["seaPatchBrightness"]
+    exact_brightness = temporal[6]["seaPatchBrightness"]
+    # These are correlated frame-level observations, not pixel-to-tile ownership claims.
+    (artifacts / "remote-cave-publication-timeline.json").write_text(
+        json.dumps(temporal, indent=2) + "\n")
     # This is a fixture-specific black-region regression check, not an image-diff fidelity score.
-    if exact_brightness < .12 or lod_brightness < .12:
-        raise ValueError(f"Sea patch went dark: LOD={lod_brightness:.3f}, exact={exact_brightness:.3f}")
-    return lod_brightness, exact_brightness
+    for index in (2, 3, 5, 6):
+        if temporal[index]["seaPatchBrightness"] < .12:
+            raise ValueError(f"Sea patch went dark at {temporal[index]['label']}: "
+                             f"{temporal[index]['seaPatchBrightness']:.3f}")
+    return lod_brightness, exact_brightness, temporal
 
 
 if __name__ == "__main__":
     try:
-        lod_value, exact_value = check(Path(sys.argv[1]))
+        lod_value, exact_value, temporal = check(Path(sys.argv[1]))
     except (IndexError, KeyError, OSError, TypeError, ValueError, zlib.error) as error:
         sys.exit(f"Remote cave comparison: {error}")
     print(f"Remote cave LOD/exact comparison passed; sea-patch brightness "
           f"{lod_value:.3f}/{exact_value:.3f}")
+    print("Remote cave publication timeline: " + ", ".join(
+        f"{row['label']}={row['seaPatchBrightness']:.3f}"
+        for row in temporal))

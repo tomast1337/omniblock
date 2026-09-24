@@ -405,13 +405,18 @@ public static class TerrainLodCoveragePlanner
             components.Add(component);
         }
 
+        // Retain a previously displayed island while another is only marginally larger, but
+        // never let one early tile pin the entire cold horizon after a substantially larger
+        // connected patch becomes ready. Area is measured in chunks because mixed spatial
+        // levels can cover very different footprints with the same node count.
+        var largestArea = components.Max(ComponentArea);
         var selected = components
-            .OrderByDescending(component => PreferredOverlapArea(
+            .OrderByDescending(component => ComponentArea(component) * 4 >= largestArea)
+            .ThenByDescending(component => PreferredOverlapArea(
                 component, preferredTiles))
             .ThenBy(component => component.Min(selection =>
                 selection.Tile.DistanceTo(cameraChunkX, cameraChunkZ)))
-            .ThenByDescending(static component => component.Sum(selection =>
-                (long)selection.Tile.ChunkWidth * selection.Tile.ChunkWidth))
+            .ThenByDescending(ComponentArea)
             .ThenBy(static component => component.Min(selection => selection.Tile.X))
             .ThenBy(static component => component.Min(selection => selection.Tile.Z))
             .First();
@@ -433,6 +438,10 @@ public static class TerrainLodCoveragePlanner
             forest.Roots.Sum(static root => root.ParentFallbacks),
             forest.Roots.Sum(static root => root.MissingCoverageGroups));
     }
+
+    private static long ComponentArea(IEnumerable<TerrainLodTileSelection> component) =>
+        component.Sum(static selection =>
+            (long)selection.Tile.ChunkWidth * selection.Tile.ChunkWidth);
 
     private static long PreferredOverlapArea(
         IEnumerable<TerrainLodTileSelection> component,

@@ -1024,6 +1024,7 @@ public partial class OmniBlock :
                                 Spatial = terrainLod.SpatialSnapshot,
                                 Coverage = terrainLod.CoverageSnapshot,
                                 Quality = terrainLod.CaptureQualitySnapshot(),
+                                View = new { player.Yaw, player.Pitch },
                                 Server = InternalServer?.worlds?
                                     .FirstOrDefault(serverWorld => serverWorld.Dimension.Id == world.Dimension.Id)?
                                     .TerrainLodSnapshot,

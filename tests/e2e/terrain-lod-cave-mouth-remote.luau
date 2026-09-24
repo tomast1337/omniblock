@@ -15,6 +15,14 @@ local function waitFor(predicate, seconds, label)
     error(tostring(reason))
 end
 
+local function capture(label)
+    -- The dump describes the presentation immediately before the requested screenshot frame.
+    -- Screenshots use second-resolution filenames, so keep captures at least a second apart.
+    OMNI.test.dumpTerrain(label)
+    OMNI.test.screenshot()
+    OMNI.wait(1.2)
+end
+
 local caveWorld
 for _, world in ipairs(OMNI.client.worlds.list()) do
     if world.name == "LOD Remote Cave Mouth" then caveWorld = world.id end
@@ -35,36 +43,45 @@ waitFor(function()
 end, 45, "remote-camera")
 OMNI.test.setFlying(true)
 OMNI.test.setLook(0, 18)
+capture("remote-cave-arrival")
 
 waitFor(function() return OMNI.test.terrainLodServerTileReady(2, 8, 0) end,
     60, "server-cave-tile")
+capture("remote-cave-source-ready")
 
 OMNI.wait(5)
-local observedMaterial, observedSampleSize, observedOwner =
-    OMNI.test.terrainLodPresentedMaterial(532, 70, 22)
-print("remote cave first presentation:", tostring(observedMaterial),
-    tostring(observedSampleSize), tostring(observedOwner))
+-- Decoration can finish a tree over the cave mouth before the second process
+-- opens it. Compare the same published block in LOD and exact terrain without
+-- assuming the mouth remains air after cross-border decoration.
+local probeX, probeY, probeZ = 532, 70, 22
+local probeMaterial
 waitFor(function()
-    local material, sampleSize, owner = OMNI.test.terrainLodPresentedMaterial(532, 70, 22)
-    return material == "omniblock:air" and sampleSize == 1 and owner == "spatial"
-end, 90, "spatial-cave")
+    local material, sampleSize, owner =
+        OMNI.test.terrainLodPresentedMaterial(probeX, probeY, probeZ)
+    if material ~= nil and sampleSize == 1 and owner == "spatial" then
+        probeMaterial = material
+        return true
+    end
+    return false
+end, 90, "spatial-cave-tile")
+print("remote cave tile sample:", probeX, probeY, probeZ, probeMaterial)
+capture("remote-cave-first-spatial")
 OMNI.wait(5)
-OMNI.test.dumpTerrain("remote-cave-mouth")
-OMNI.test.screenshot()
-OMNI.wait(2) -- finish the LOD capture before changing the exact radius
+capture("remote-cave-mouth")
 
 -- The prepared world has the same source patch in both captures. If the black
 -- region remains at the same camera with detailed chunks, it is not an L2-only
 -- presentation defect. Do not change FOV, look direction, or player position.
 OMNI.config.viewDistance = 0.36 -- fourteen exact chunks; the cave is about nine away
+OMNI.wait(0.2) -- let the new radius reach the render frame before the first takeover sample
+capture("remote-cave-exact-request")
 waitFor(function()
-    return OMNI.test.hasBlock("omniblock:air", 532, 70, 22) and
-        OMNI.test.isMeshCurrent(532, 70, 22)
+    return OMNI.test.hasBlock(probeMaterial, probeX, probeY, probeZ) and
+        OMNI.test.isMeshCurrent(probeX, probeY, probeZ)
 end, 90, "exact-cave")
+capture("remote-cave-first-exact")
 OMNI.wait(5)
-OMNI.test.dumpTerrain("remote-cave-mouth-exact")
-OMNI.test.screenshot()
-OMNI.wait(2)
+capture("remote-cave-mouth-exact")
 assert(state.webGpuErrorCount == 0 and state.meshBuildFailureCount == 0,
     "render failure during remote cave-mouth comparison")
 OMNI.test.pass()

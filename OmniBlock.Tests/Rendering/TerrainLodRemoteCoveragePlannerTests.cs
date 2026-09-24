@@ -255,6 +255,27 @@ public sealed class TerrainLodRemoteCoveragePlannerTests
     }
 
     [Fact]
+    public void Cold_cover_replaces_a_tiny_preferred_island_with_a_much_larger_ready_patch()
+    {
+        var policy = TerrainLodSpatialPolicy.CreateDefault();
+        var tiny = new TerrainLodTileKey(2, 8, -5);
+        var patch = (from x in Enumerable.Range(7, 3)
+                     from z in Enumerable.Range(-2, 4)
+                     select new TerrainLodTileKey(2, x, z)).ToArray();
+        var ready = patch.Append(tiny).ToHashSet();
+
+        var selection = TerrainLodCoveragePlanner.SelectContiguousAvailableCover(
+            ready, minimumVisibleLevel: 2,
+            cameraChunkX: 33, cameraChunkZ: -8,
+            maximumDistanceChunks: 20, policy, ready.Contains,
+            new HashSet<TerrainLodTileKey> { tiny });
+
+        Assert.Equal(patch.Length, selection.SelectedNodes);
+        Assert.DoesNotContain(selection.Roots, root => root.Root == tiny);
+        Assert.Contains(selection.Roots, root => root.Root == new TerrainLodTileKey(2, 8, 0));
+    }
+
+    [Fact]
     public void Recenter_keeps_a_larger_previous_cover_until_the_leading_edge_catches_up()
     {
         TerrainLodTileSelection[] previous =
