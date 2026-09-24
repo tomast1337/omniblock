@@ -25,12 +25,26 @@ The file's language mode should be **Luau**. These settings use the current
 Luau Language Server format; update the extension if it expects an array for
 `definitionFiles`.
 
-The declarations are editor metadata: do not execute or `require` them. Keep
-them in sync with `OmniBlock.Luau/Host` and
-`OmniBlock.Client/Options/GameOptions.cs` when changing the host API. Nullable
-results reflect runtime behavior: a selector can miss,
-and `OMNI.test` exists only during explicit E2E launches. In strict scripts,
-use `local test = assert(OMNI.test)` before calling `test.pass()`.
+The declarations are editor metadata: do not execute or `require` them.
+
+`OmniClientState` is generated from the keys registered in
+`OmniBlock.Luau/Host/LuauClientStateHost.cs`. After changing those keys, run:
+
+```sh
+dotnet run --project Scripting/GenerateDefinitions
+```
+
+To verify the committed file is current without changing it, run:
+
+```sh
+dotnet run --project Scripting/GenerateDefinitions -- --check
+```
+
+The other declarations still need to match their host APIs and
+`OmniBlock.Client/Options/GameOptions.cs`. Nullable results reflect runtime
+behavior: a selector can miss, and `OMNI.test` exists only during explicit E2E
+launches. In strict scripts, use `local test = assert(OMNI.test)` before calling
+`test.pass()`.
 
 Configuration follows the language server's
 [custom-environment setup](https://github.com/JohnnyMorganz/luau-lsp#with-other-editors).

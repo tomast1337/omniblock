@@ -67,6 +67,16 @@ dotnet test
 dotnet test --filter "FullyQualifiedName=OmniBlock.Tests.UnitTest1.Test1"
 ```
 
+## Luau editor definitions
+
+When changing a C# API exposed to Luau scripts, update `Scripting/omni.d.luau`
+in the same change. For `LuauClientStateHost` state keys or getter types, run
+`dotnet run --project Scripting/GenerateDefinitions` from the repository root;
+its `OmniClientState` section is generated. Update the other declarations by
+hand when their host APIs or `OmniBlock.Client/Options/GameOptions.cs` change.
+Run `dotnet run --project Scripting/GenerateDefinitions -- --check` before
+finishing. See `Scripting/README.md` for details.
+
 ## Formatting & Analysis
 
 ```bash

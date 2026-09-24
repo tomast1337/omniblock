@@ -26,6 +26,9 @@ jobs:
             - name: Build
               run: dotnet build --configuration Release --no-restore
 
+            - name: Validate Luau definitions
+              run: dotnet run --project Scripting/GenerateDefinitions --configuration Release -- --check
+
             - name: Validate translation catalogs
               run: dotnet test OmniBlock.Tests/OmniBlock.Tests.csproj --configuration Release --no-build --filter FullyQualifiedName~TranslationCompletenessTests --verbosity normal
 

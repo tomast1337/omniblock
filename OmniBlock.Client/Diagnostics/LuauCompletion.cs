@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using OmniBlock.Luau.Host;
 
 namespace OmniBlock.Client.Diagnostics;
 
@@ -17,61 +18,8 @@ internal sealed partial class LuauCompletion
 
     private static readonly string[] s_omniMembers = ["client", "config", "environment", "has", "run", "test", "ui", "wait", "waitUntil", "worldgen"];
     private static readonly string[] s_clientMembers = ["state", "worlds"];
-    private static readonly string[] s_entityLodMembers =
-    [
-        "entityLodObserved", "entityLodIntendedImpostors", "entityLodModelSubmissions",
-        "entityLodImpostorSubmissions", "entityLodUnsupportedProvider", "entityLodUnsupportedState",
-        "entityLodInvalidView", "entityLodCapacityFallbacks", "entityLodTransitions", "entityLodStateCount", "entityLodResets",
-        "entityImpostorViews", "entityImpostorReady", "entityImpostorFailures", "entityImpostorReplacements", "entityImpostorPendingFallbacks",
-        "entityImpostorPoseMask", "entityImpostorHurtSubmissions", "entityImpostorOverlaySubmissions", "webGpuErrorCount",
-        "entityImpostorMemoryHits", "entityImpostorDiskHits", "entityImpostorCacheMisses", "entityImpostorCacheWrites",
-        "entityImpostorCacheErrors", "entityImpostorCancellations", "entityImpostorStaleResults", "entityImpostorCapturedViews", "entityImpostorMemoryBytes", "entityImpostorReadbackPending",
-        "entityImpostorInvalidations", "entityImpostorBakeQueueAgeMs", "entityImpostorLastBakeMs", "entityImpostorAverageBakeMs", "entityImpostorCaptureCpuMs",
-        "entityImpostorResidentGpuBytes", "entityImpostorStagingBytes", "entityImpostorDrawBatches", "entityImpostorResidentAtlases"
-    ];
-
     private static readonly string[] s_clientStateMembers =
-        ["backgroundPending", "clientWorkingSetBytes", "debugOpen", "emptyLayersSubmitted", "findVisibleMs", "foregroundPending", "frameTimeMs", "frustumTests", "geometryUploadsLastFrame", "lightRefreshCompletedCount", "lightRefreshPending", "lightUploadsLastFrame", "meshAwaitingDraw", "meshAwaitingUpload", "meshBuildFailureCount", "meshCancelledCount", "meshCooperativeCancellationCount", "meshCriticalCompletedCount", "meshCriticalDeadlineMissCount", "meshCriticalOverdueCount", "meshEvictionGraceCount", "meshLeadingEdgePending", "meshLeadingEdgeQueued", "meshPending", "meshReadyRadius", "meshRequestToGpuMs", "meshSafetyExpectedSections", "meshSafetyHoles", "meshSafetyLoadedColumns", "meshSupersededCount", "oldestForegroundAge", "playerReady", "playerX", "playerY", "playerZ", "portalVisited", "presentationRegressionCount", "presentedMeshCount", "presentedSolidLayerCount", "presentedTranslucentLayerCount", "renderDistance", "residentMeshCount", "residentSolidLayerCount", "residentTranslucentLayerCount", "safetyRescued", "simulationDistance", "solidDrawsLastFrame", "terrainCoverageReady", "terrainCoverageExpected", "terrainCoverageCovered", "terrainCoverageExact", "terrainCoverageColumnLod", "terrainCoverageSpatial", "terrainCoverageTransitions", "terrainCoverageHoles", "terrainCoverageOverlaps", "terrainCoverageExpectedSeams", "terrainCoverageMissingSeams", "terrainCoverageUnexpectedSeams", "terrainCoverageFailureKind", "terrainCoverageFailureX", "terrainCoverageFailureZ", "terrainDrawCalls", "terrainLodBoundaryBytes", "terrainLodBoundaryLinked", "terrainLodBoundaryPending", "terrainLodBoundaryRefreshes", "terrainLodCacheBytes", "terrainLodCacheHits", "terrainLodCacheMisses", "terrainLodConverting", "terrainLodEvictions", "terrainLodGpuBytes", "terrainLodHandoffOverlap", "terrainLodHandoffPreparing", "terrainLodHandoffReversals", "terrainLodHandoffsStarted", "terrainLodLevel0Resident", "terrainLodLevel1Resident", "terrainLodLevelTransitionReversals", "terrainLodLevelTransitions", "terrainLodLevelTransitionsStarted", "terrainLodMeshAdmissionDeferrals", "terrainLodMeshCompilationMsPerKCell", "terrainLodMeshCompilationSamples", "terrainLodMeshCompletedBytes", "terrainLodMeshCoverageCompleted", "terrainLodMeshCoverageQueued", "terrainLodMeshOversizedUploads", "terrainLodMeshOwned", "terrainLodMeshPredictedBytes", "terrainLodMeshPredictedMs", "terrainLodMeshRefinementCompleted", "terrainLodMeshRefinementQueued", "terrainLodMeshResultBytesPerKCell", "terrainLodMeshUploadBaseMs", "terrainLodMeshUploadDeferrals", "terrainLodMeshUploadMsPerMiB", "terrainLodMeshUploadSamples", "terrainLodPending", "terrainLodPresented", "terrainLodRejected", "terrainLodRemoteBytes", "terrainLodRemoteDeferred", "terrainLodRemoteMissing", "terrainLodRemotePending", "terrainLodRemoteRequests", "terrainLodRemoteTiles", "terrainLodResident", "terrainLodResourceGeneration", "terrainLodResourceReloads", "terrainLodResourceReusedColumns", "terrainLodResourceReusedGpuBytes", "terrainLodSolidCpuMs", "terrainLodSpatialComplete", "terrainLodSpatialCpuEvictions", "terrainLodSpatialCpuTiles", "terrainLodSpatialCurrentTiles", "terrainLodSpatialGpuBytes", "terrainLodSpatialGpuEvictions", "terrainLodSpatialGpuResident", "terrainLodSpatialMeshPending", "terrainLodSpatialMeshQueued", "terrainLodSpatialMeshReady", "terrainLodSpatialMeshRunning", "terrainLodSpatialMissingGroups", "terrainLodSpatialParentFallbacks", "terrainLodSpatialPinned", "terrainLodSpatialSeamDesired", "terrainLodSpatialSeamGpuResident", "terrainLodSpatialSeamQueued", "terrainLodSpatialSeamReady", "terrainLodSpatialSeamRunning", "terrainLodSpatialSelected", "terrainLodStaleResults", "terrainLodTranslucentCpuMs", "terrainLodTranslucentPresented", "terrainLodUploads", "terrainPipelineBinds", "terrainSubmissionBatches", "terrainSubmitCpuMs", "terrainTextureBinds", "terrainUniformArenaCapacity", "terrainUniformArenaGrowths", "terrainUniformEntries", "translucentDrawsLastFrame", "visibilityBuildCancellations", "visibilityBuildInFlight", "visibilityBuilds", "visibilityCandidates", "visibilityReuseFrames", "visibilityStaleResults", "visibilitySynchronousFrames", "visibilityWorkerCandidates", "worldId", "worldLoaded"];
-
-    private static readonly string[] s_additionalClientStateMembers =
-        ["terrainLodSpatialSubmissionReady", "terrainLodSpatialAuthoritativeTiles",
-            "terrainLodSpatialHighestAuthoritativeLevel", "terrainLodSpatialHighestGpuLevel",
-            "terrainLodSpatialSolidPages", "terrainLodSpatialTranslucentPages",
-            "terrainLodSpatialGpuBytes",
-            "terrainLodSpatialMeshCancelled", "terrainLodSpatialMeshOverBudget",
-            "terrainLodSpatialMeshOldestQueuedMs", "terrainLodSpatialMeshCompleted",
-            "terrainLodSpatialMeshCompilationTotalMs", "terrainLodSpatialMeshCompilationMaxMs",
-            "terrainLodSpatialMeshPeakQueued", "terrainLodSpatialMeshPeakRunning",
-            "terrainLodSpatialMeshPeakCompleted", "terrainLodSpatialMeshReductionMs",
-            "terrainLodSpatialMeshFaceEmissionMs", "terrainLodSpatialMeshFlatteningMs",
-            "terrainLodSpatialMeshCoalescingMs", "terrainLodSpatialMeshSourceColumns",
-            "terrainLodSpatialMeshSourceSpans", "terrainLodSpatialMeshConstructionPages",
-            "terrainLodSpatialSeamCancelled", "terrainLodSpatialSeamOverBudget",
-            "terrainLodSpatialSeamOldestQueuedMs",
-            "terrainCoveragePendingSeams",
-            "terrainLodRemoteCoverageRequired", "terrainLodRemoteCoverageAvailable",
-            "terrainLodRemoteCoverageInFlight", "terrainLodRemoteCoveragePending",
-            "terrainLodRemoteCoverageMissing", "terrainLodRemoteCoverageDeferred",
-            "terrainLodRemoteCoverageComplete",
-            "terrainLodNetworkTilesReceived", "terrainLodNetworkTilesAdmitted",
-            "terrainLodNetworkTileQueue", "terrainLodNetworkTileQueuePeak",
-            "terrainLodTransportQueue", "terrainLodTransportQueuePeak",
-            "terrainLodCoarseSourceUnavailable", "terrainLodCoarseBuilding",
-            "terrainLodCoarseTransportPending", "terrainLodCoarseGpuPending",
-            "terrainLodCoarseReady", "terrainLodCoarseAwaitingRequest",
-            "terrainLodCoarseFrontierUnknown", "terrainLodCoarseComplete",
-            "terrainLodCoarseRetainingPrevious", "terrainLodColdCoverMs",
-            "terrainLodFirstCompleteHorizonMs", "terrainLodRefinementMs",
-            "terrainLodConvergenceGeneration", "terrainLodFirstRequestMs",
-            "terrainLodFirstSourceTileMs", "terrainLodSourceCompleteMs",
-            "terrainLodFirstBodyUploadMs", "terrainLodBodiesCompleteMs",
-            "terrainLodFirstSeamUploadMs", "terrainLodSeamsCompleteMs",
-            "terrainLodPublicationMs", "terrainLodBodyUploads",
-            "terrainLodBodyUploadBytes", "terrainLodBodyInstallMs",
-            "terrainLodSeamUploads", "terrainLodSeamUploadBytes",
-            "terrainLodSeamInstallMs",
-            "terrainLodIdentityReady", "terrainLodIdentityMismatches",
-            "terrainLodIdentityRejectedMessages"];
+        LuauClientStateHost.GetStateDefinition().Select(property => property.Name).ToArray();
 
     private static readonly string[] s_testMembers = ["breakBlock", "configureTerrainLodScaleProfile", "countEntities", "creative", "disconnect", "dumpProfiler", "dumpTerrain", "entityBaselineEnvironment", "fail", "flyPath", "hasBlock", "isMeshCurrent", "meshDeadlineMissCount", "pass", "prepareTerrainLodFixture", "screenshot", "setBlock", "setFlying", "setLook", "setMovement", "summon", "teleport", "terrainLodFixtureMetric", "terrainLodPresentedMaterial", "terrainLodServerTileReady", "worldGenerationAuto", "worldGenerationMetric"];
     private static readonly string[] s_worldMembers = ["list", "load"];
@@ -139,8 +87,7 @@ internal sealed partial class LuauCompletion
         if (receiver == "OMNI") return s_omniMembers;
         if (receiver.EndsWith("OMNI.client", StringComparison.Ordinal)) return s_clientMembers;
         if (receiver.EndsWith("OMNI.client.state", StringComparison.Ordinal))
-            return s_clientStateMembers.Concat(s_additionalClientStateMembers)
-                .Concat(s_entityLodMembers);
+            return s_clientStateMembers;
         if (receiver.EndsWith("OMNI.test", StringComparison.Ordinal)) return s_testMembers;
         if (receiver.EndsWith("OMNI.client.worlds", StringComparison.Ordinal)) return s_worldMembers;
         if (receiver.EndsWith("OMNI.worldgen", StringComparison.Ordinal)) return s_worldGenerationMembers;
