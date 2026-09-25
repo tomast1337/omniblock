@@ -57,6 +57,53 @@ public sealed class TerrainPresentationCoverageOracleTests
         Assert.Equal(TerrainCoverageFailureKind.MissingOwner, report.FirstFailureKind);
         Assert.Equal(-9, report.FirstFailureX);
         Assert.Equal(12, report.FirstFailureZ);
+        Assert.Equal(1, report.MissingExactMeshColumns);
+    }
+
+    [Fact]
+    public void Exact_footprint_includes_columns_with_no_loaded_chunk_or_mesh()
+    {
+        HashSet<(int X, int Z)> footprint = [];
+        TerrainPresentationCoverageOracle.AddExactRadiusColumns(footprint, 0.5, 0.5, 2);
+
+        Assert.Contains((0, 0), footprint);
+        Assert.Contains((1, 0), footprint);
+        Assert.Contains((-1, 0), footprint);
+        Assert.DoesNotContain((2, 0), footprint);
+        var report = Evaluate(footprint.Select(column => new TerrainCoverageColumn(
+            column.X, column.Z, false, false, 0, false,
+            ChunkDataLoaded: false)).ToArray());
+        Assert.Equal(footprint.Count, report.ExpectedColumns);
+        Assert.Equal(footprint.Count, report.MissingChunkDataColumns);
+        Assert.Equal(footprint.Count, report.HoleCount);
+    }
+
+    [Fact]
+    public void Missing_coverage_distinguishes_data_mesh_and_presentation()
+    {
+        var report = Evaluate([
+            new(0, 0, false, false, 0, false, ChunkDataLoaded: false),
+            new(1, 0, false, false, 0, false),
+            new(2, 0, true, true, 0.5f, false),
+            new(3, 0, false, true, 0.5f, false)
+        ]);
+
+        Assert.Equal(3, report.HoleCount);
+        Assert.Equal(1, report.MissingChunkDataColumns);
+        Assert.Equal(2, report.MissingExactMeshColumns);
+        Assert.Equal(0, report.MissingPresentationColumns);
+    }
+
+    [Fact]
+    public void Spatial_cover_is_valid_without_an_exact_chunk()
+    {
+        var report = Evaluate([
+            new(4, -3, false, false, 0, true, ChunkDataLoaded: false)
+        ]);
+
+        Assert.True(report.IsComplete);
+        Assert.Equal(0, report.MissingChunkDataColumns);
+        Assert.Equal(1, report.SpatialOwnedColumns);
     }
 
     [Fact]

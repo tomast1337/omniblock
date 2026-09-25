@@ -20,7 +20,8 @@ internal readonly record struct TerrainCoverageColumn(
     bool ColumnLodPresent,
     float ColumnLodHandoff,
     bool SpatialAuthoritative,
-    bool SpatialBodyConflict = false);
+    bool SpatialBodyConflict = false,
+    bool ChunkDataLoaded = true);
 
 internal readonly record struct TerrainCoverageSnapshot(
     int ExpectedColumns,
@@ -37,7 +38,10 @@ internal readonly record struct TerrainCoverageSnapshot(
     int UnexpectedSeams,
     TerrainCoverageFailureKind FirstFailureKind,
     int FirstFailureX,
-    int FirstFailureZ)
+    int FirstFailureZ,
+    int MissingChunkDataColumns,
+    int MissingExactMeshColumns,
+    int MissingPresentationColumns)
 {
     public bool IsComplete =>
         ExpectedColumns > 0 && HoleCount == 0 && OverlapCount == 0 &&
@@ -52,6 +56,31 @@ internal readonly record struct TerrainCoverageSnapshot(
 /// </summary>
 internal static class TerrainPresentationCoverageOracle
 {
+    /// <summary>
+    ///     The intended exact-terrain footprint is independent of what the server has sent or
+    ///     what the mesher has published. Otherwise an absent chunk disappears from the audit.
+    /// </summary>
+    internal static void AddExactRadiusColumns(
+        HashSet<(int X, int Z)> footprint,
+        double cameraChunkX,
+        double cameraChunkZ,
+        int radius)
+    {
+        ArgumentNullException.ThrowIfNull(footprint);
+        if (radius <= 0) return;
+        var radiusSquared = (double)radius * radius;
+        for (var z = (int)Math.Floor(cameraChunkZ - radius - 1);
+             z <= (int)Math.Ceiling(cameraChunkZ + radius + 1); z++)
+        for (var x = (int)Math.Floor(cameraChunkX - radius - 1);
+             x <= (int)Math.Ceiling(cameraChunkX + radius + 1); x++)
+        {
+            var dx = x + 0.5 - cameraChunkX;
+            var dz = z + 0.5 - cameraChunkZ;
+            if (dx * dx + dz * dz < radiusSquared)
+                footprint.Add((x, z));
+        }
+    }
+
     public static TerrainCoverageSnapshot Evaluate(
         IEnumerable<TerrainCoverageColumn> columns,
         int expectedColumnSeams,
@@ -72,6 +101,9 @@ internal static class TerrainPresentationCoverageOracle
         var spatial = 0;
         var transitions = 0;
         var holes = 0;
+        var missingChunkData = 0;
+        var missingExactMesh = 0;
+        var missingPresentation = 0;
         var overlaps = 0;
         var firstKind = TerrainCoverageFailureKind.None;
         var firstX = 0;
@@ -107,6 +139,7 @@ internal static class TerrainPresentationCoverageOracle
                 if (!column.ExactPresent)
                 {
                     holes++;
+                    ClassifyMissing(column);
                     RecordFailure(TerrainCoverageFailureKind.InvalidHandoff,
                         column.X, column.Z);
                     continue;
@@ -131,6 +164,7 @@ internal static class TerrainPresentationCoverageOracle
             }
 
             holes++;
+            ClassifyMissing(column);
             RecordFailure(TerrainCoverageFailureKind.MissingOwner, column.X, column.Z);
         }
 
@@ -162,7 +196,15 @@ internal static class TerrainPresentationCoverageOracle
             expected, covered, exact, columnLod, spatial, transitions,
             holes, overlaps, expectedSeams, missingSeams,
             Math.Max(0, pendingColumnSeams), unexpectedSpatial,
-            firstKind, firstX, firstZ);
+            firstKind, firstX, firstZ,
+            missingChunkData, missingExactMesh, missingPresentation);
+
+        void ClassifyMissing(TerrainCoverageColumn column)
+        {
+            if (!column.ChunkDataLoaded) missingChunkData++;
+            else if (!column.ExactPresent) missingExactMesh++;
+            else missingPresentation++;
+        }
 
         void RecordFailure(TerrainCoverageFailureKind kind, int x, int z)
         {

@@ -109,8 +109,19 @@ def check(artifacts):
             cave[0]["SelectedSolidPages"] == 0):
         raise ValueError("Stone-roof cave tile was not authoritative selected 1x1 LOD")
     for label, sample in (("spatial", spatial), ("exact", exact), ("settled", settled)):
-        if sample["Coverage"]["HoleCount"] or sample["Coverage"]["OverlapCount"]:
-            raise ValueError(f"{label} capture had a near-field ownership defect")
+        coverage = sample["Coverage"]
+        # The requested exact radius can grow faster than the integrated server generates and
+        # sends its newly requested outer-ring chunks. Those are real, now-reported data gaps,
+        # not a failed LOD/exact handoff. The fixed central pixel patch below still guards the
+        # hillside presentation, while any mesh/ownership gap remains a regression here.
+        if (coverage["HoleCount"] != coverage["MissingChunkDataColumns"] or
+                coverage["MissingExactMeshColumns"] or
+                coverage["MissingPresentationColumns"] or
+                coverage["OverlapCount"]):
+            raise ValueError(f"{label} capture had a mesh/presentation ownership defect: "
+                             f"{coverage['HoleCount']} holes, "
+                             f"{coverage['MissingChunkDataColumns']} missing data, "
+                             f"{coverage['MissingExactMeshColumns']} missing meshes")
     if exact["Coverage"]["ExactOwnedColumns"] <= spatial["Coverage"]["ExactOwnedColumns"]:
         raise ValueError("Exact radius expansion did not increase exact ownership")
     screenshots = sorted((artifacts / "screenshots").glob("*.png"))

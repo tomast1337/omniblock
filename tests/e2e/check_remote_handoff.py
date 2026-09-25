@@ -41,7 +41,11 @@ def check(artifacts):
     # Do not demand a fabricated new tile as proof of a successful handoff.
     if after["Coverage"]["ExactOwnedColumns"] >= before["Coverage"]["ExactOwnedColumns"]:
         raise ValueError("Shrinking exact distance did not change local ownership")
-    if after["Coverage"]["HoleCount"] or after["Coverage"]["OverlapCount"]:
+    coverage = after["Coverage"]
+    if (coverage["HoleCount"] != coverage["MissingChunkDataColumns"] or
+            coverage["MissingExactMeshColumns"] or
+            coverage["MissingPresentationColumns"] or
+            coverage["OverlapCount"]):
         raise ValueError("Local exact/LOD ownership regressed during the handoff")
 
 

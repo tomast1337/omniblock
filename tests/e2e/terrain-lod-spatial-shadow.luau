@@ -37,6 +37,9 @@ assert(type(OMNI.client.state.terrainLodSpatialAuthoritativeTiles) == "number")
 assert(type(OMNI.client.state.terrainLodSpatialHighestAuthoritativeLevel) == "number")
 assert(type(OMNI.client.state.terrainCoverageReady) == "number")
 assert(type(OMNI.client.state.terrainCoverageHoles) == "number")
+assert(type(OMNI.client.state.terrainCoverageMissingChunkData) == "number")
+assert(type(OMNI.client.state.terrainCoverageMissingExactMeshes) == "number")
+assert(type(OMNI.client.state.terrainCoverageMissingPresentation) == "number")
 assert(type(OMNI.client.state.terrainCoverageOverlaps) == "number")
 assert(type(OMNI.client.state.terrainCoverageMissingSeams) == "number")
 assert(type(OMNI.client.state.terrainCoveragePendingSeams) == "number")
@@ -62,7 +65,11 @@ end
 
 local function assertCoverage(stage)
     assert(OMNI.client.state.terrainCoverageExpected > 0, coverageDiagnostic(stage))
-    assert(OMNI.client.state.terrainCoverageHoles == 0, coverageDiagnostic(stage))
+    assert(OMNI.client.state.terrainCoverageHoles ==
+        OMNI.client.state.terrainCoverageMissingChunkData, coverageDiagnostic(stage))
+    assert(OMNI.client.state.terrainCoverageMissingExactMeshes == 0 and
+        OMNI.client.state.terrainCoverageMissingPresentation == 0,
+        coverageDiagnostic(stage))
     assert(OMNI.client.state.terrainCoverageOverlaps == 0, coverageDiagnostic(stage))
     assert(OMNI.client.state.terrainCoverageMissingSeams == 0, coverageDiagnostic(stage))
     assert(OMNI.client.state.terrainCoverageUnexpectedSeams == 0, coverageDiagnostic(stage))

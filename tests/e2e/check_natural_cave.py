@@ -75,7 +75,11 @@ def check(artifacts):
     if len({sample["Terrain"]["ResourceGeneration"] for sample in (fine_before, coarse, lod)}) != 1:
         raise ValueError("Resource generation changed during the quality comparison")
     for sample in (fine_before, coarse, lod):
-        if sample["Coverage"]["HoleCount"] or sample["Coverage"]["OverlapCount"]:
+        coverage = sample["Coverage"]
+        if (coverage["HoleCount"] != coverage["MissingChunkDataColumns"] or
+                coverage["MissingExactMeshColumns"] or
+                coverage["MissingPresentationColumns"] or
+                coverage["OverlapCount"]):
             raise ValueError("Local ownership has holes or overlaps during the comparison")
 
     def drawn_rows(quality):

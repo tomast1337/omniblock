@@ -2600,23 +2600,10 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         var cameraChunkX = parameters.ViewPos.X / SubChunkRenderer.Size;
         var cameraChunkZ = parameters.ViewPos.Z / SubChunkRenderer.Size;
         var detail = Math.Max(0, parameters.RenderDistance);
-        var detailSquared = (double)detail * detail;
         var auditRadius = detail + 2;
         var auditRadiusSquared = (double)auditRadius * auditRadius;
-        var minX = (int)Math.Floor(cameraChunkX - detail - 1);
-        var maxX = (int)Math.Ceiling(cameraChunkX + detail + 1);
-        var minZ = (int)Math.Floor(cameraChunkZ - detail - 1);
-        var maxZ = (int)Math.Ceiling(cameraChunkZ + detail + 1);
-        for (var z = minZ; z <= maxZ; z++)
-        for (var x = minX; x <= maxX; x++)
-        {
-            if (ColumnDistanceSquared(x, z) >= detailSquared ||
-                !_world.BlockHost.HasChunk(x, z) ||
-                !_world.BlockHost.GetChunk(x, z).Loaded ||
-                !nearRenderer.IsMeshColumnResident(x, z))
-                continue;
-            _coverageFootprint.Add((x, z));
-        }
+        TerrainPresentationCoverageOracle.AddExactRadiusColumns(
+            _coverageFootprint, cameraChunkX, cameraChunkZ, detail);
 
         foreach (var key in _resident.Keys)
             if (ColumnDistanceSquared(key.X, key.Z) <= auditRadiusSquared)
@@ -2662,7 +2649,9 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                     (key.X + 1) * SubChunkRenderer.Size, ChuckFormat.WorldHeight,
                     (key.Z + 1) * SubChunkRenderer.Size)))
                 continue;
-            var exactPresent = nearRenderer.IsMeshColumnResident(key.X, key.Z);
+            var chunkLoaded = _world.BlockHost.HasChunk(key.X, key.Z) &&
+                              _world.BlockHost.GetChunk(key.X, key.Z).Loaded;
+            var exactPresent = chunkLoaded && nearRenderer.IsMeshColumnResident(key.X, key.Z);
             var hasColumnLod = _resident.TryGetValue(key, out var columnLod);
             var handoff = hasColumnLod
                 ? Math.Min(
@@ -2671,7 +2660,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                 : 0;
             _coverageColumns.Add(new TerrainCoverageColumn(
                 key.X, key.Z, exactPresent, hasColumnLod, handoff,
-                IsAuthoritativeSpatialChunk(key), _coverageSpatialConflicts.Contains(key)));
+                IsAuthoritativeSpatialChunk(key), _coverageSpatialConflicts.Contains(key),
+                chunkLoaded));
         }
 
         var expectedColumnSeams =

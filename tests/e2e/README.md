@@ -478,6 +478,9 @@ OMNI.client.state.terrainLodRemoteCoveragePending  -- required tiles awaiting se
 OMNI.client.state.terrainLodRemoteCoverageMissing  -- required tiles absent from the server cache
 OMNI.client.state.terrainLodRemoteCoverageDeferred -- required tiles delayed by gameplay/bandwidth pressure
 OMNI.client.state.terrainLodRemoteCoverageComplete -- 1 only when every required tile has source coverage
+OMNI.client.state.terrainCoverageMissingChunkData -- visible exact-radius columns lacking received chunk data
+OMNI.client.state.terrainCoverageMissingExactMeshes -- loaded exact-radius columns lacking complete meshes
+OMNI.client.state.terrainCoverageMissingPresentation -- logical ownership gaps after data and mesh readiness
 OMNI.client.state.terrainLodSpatialGpuBytes         -- resident spatial-tile and seam GPU estimate
 OMNI.client.state.clientWorkingSetBytes           -- current client process working set
 OMNI.client.state.meshCancelledCount  -- discarded/abandoned requests, including superseded work
@@ -490,6 +493,14 @@ OMNI.client.state.meshCriticalCompletedCount -- completed critical revisions wit
 OMNI.client.state.meshCriticalDeadlineMissCount -- completed critical revisions after their deadline
 OMNI.client.state.meshCriticalOverdueCount -- currently live critical revisions past their deadline
 ```
+
+The near-field coverage audit counts every frustum-intersecting column in the
+requested exact radius, including columns not yet received from the server.
+These classify logical ownership holes, not pixel-level visibility. A fresh,
+unvisited horizon may also report `terrainLodRemoteCoverageMissing`: distant
+tile requests do not generate unknown terrain. For an integrated-server manual
+check, use `/worldgen auto on 32 play` to enable bounded background preparation,
+or `/worldgen start <id> here <radius>` for a fixed area.
 
 These values are live and read-only. They are intended for streaming-health assertions and
 diagnostics; performance budgets should account for the CI renderer and host hardware.

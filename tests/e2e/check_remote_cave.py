@@ -111,7 +111,11 @@ def check(artifacts):
     if cave[0]["Mesh"]["HorizontalSampleBlocks"] != 1 or cave[0]["SelectedSolidPages"] == 0:
         raise ValueError("Natural cave tile was not selected as visible block-scale geometry")
     for label, sample in (("LOD", lod), ("exact", exact)):
-        if sample["Coverage"]["HoleCount"] or sample["Coverage"]["OverlapCount"]:
+        coverage = sample["Coverage"]
+        if (coverage["HoleCount"] != coverage["MissingChunkDataColumns"] or
+                coverage["MissingExactMeshColumns"] or
+                coverage["MissingPresentationColumns"] or
+                coverage["OverlapCount"]):
             raise ValueError(f"{label} capture had a near-field ownership defect")
     if exact["Coverage"]["ExactOwnedColumns"] <= lod["Coverage"]["ExactOwnedColumns"]:
         raise ValueError("Expanding exact distance did not increase exact ownership")
