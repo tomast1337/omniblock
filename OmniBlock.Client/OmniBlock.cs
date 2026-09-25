@@ -1114,6 +1114,9 @@ public partial class OmniBlock :
                 LuauTestHost.TerrainLodServerTileReady = (level, x, z) =>
                     _player != null && InternalServer?.IsTerrainLodTileReady(
                         Player.DimensionId, level, x, z) == true;
+                LuauTestHost.TerrainLodClientTileReady = (level, x, z) =>
+                    WorldRenderer?.TerrainLod?.HasSpatialPresentation(
+                        new TerrainLodTileKey(level, x, z)) == true;
                 LuauTestHost.ConfigureTerrainLodScaleProfile = horizonChunks =>
                 {
                     // This capability exists only in an explicit E2E launch. Keep it immutable for
@@ -1170,7 +1173,9 @@ public partial class OmniBlock :
                     if (metric is "cacheBytes" or "readQueued" or "readPending" or
                         "encodeQueued" or "encodePending" or "wirePayloads" or
                         "preparationPending" or "preparationFailures" or "offlineSubmitted" or
-                        "offlineDropped" or "persistenceDeferred" or "persistenceRunning")
+                        "offlineDropped" or "persistenceDeferred" or "persistenceRunning" or
+                        "savedImportsPending" or "savedChunksImported" or
+                        "savedImportsMissing" or "savedImportsFailed")
                     {
                         var dimension = _player?.DimensionId ?? 0;
                         var terrain = InternalServer?.getWorld(dimension).TerrainLodSnapshot;
@@ -1188,6 +1193,10 @@ public partial class OmniBlock :
                             "offlineDropped" => terrain?.OfflineSnapshotsDropped ?? -1,
                             "persistenceDeferred" => terrain?.SpatialHierarchy.PersistenceDeferrals ?? -1,
                             "persistenceRunning" => terrain?.SpatialHierarchy.Persistence?.Running ?? -1,
+                            "savedImportsPending" => terrain?.SavedTileImportsPending ?? -1,
+                            "savedChunksImported" => terrain?.SavedChunksImported ?? -1,
+                            "savedImportsMissing" => terrain?.SavedTileImportsMissing ?? -1,
+                            "savedImportsFailed" => terrain?.SavedTileImportsFailed ?? -1,
                             _ => 0
                         };
                     }
@@ -1645,6 +1654,7 @@ public partial class OmniBlock :
             LuauTestHost.WorldGenerationAuto = null;
             LuauTestHost.WorldGenerationMetric = null;
             LuauTestHost.TerrainLodServerTileReady = null;
+            LuauTestHost.TerrainLodClientTileReady = null;
             LuauTestHost.ConfigureTerrainLodScaleProfile = null;
             LuauTestHost.PrepareTerrainLodFixture = null;
             LuauTestHost.TerrainLodFixtureMetric = null;

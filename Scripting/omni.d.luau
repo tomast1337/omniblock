@@ -134,6 +134,9 @@ export type OmniClientState = {
     terrainCoverageFailureX: number,
     terrainCoverageFailureZ: number,
     terrainCoverageHoles: number,
+    terrainCoverageMissingChunkData: number,
+    terrainCoverageMissingExactMeshes: number,
+    terrainCoverageMissingPresentation: number,
     terrainCoverageMissingSeams: number,
     terrainCoverageOverlaps: number,
     terrainCoveragePendingSeams: number,
@@ -384,6 +387,11 @@ export type OmniTest = {
     flyPath: (ax: number, ay: number, az: number, bx: number, by: number, bz: number, seconds: number) -> (),
     screenshot: () -> (),
     dumpTerrain: (label: unknown?) -> (),
+    -- Restricted E2E diagnostics; saved-import metrics are observational only.
+    terrainLodFixtureMetric: (metric: string) -> number,
+    terrainLodServerTileReady: (level: number, x: number, z: number) -> boolean,
+    terrainLodClientTileReady: (level: number, x: number, z: number) -> boolean,
+    terrainLodColumnSourceLoaded: (chunkX: number, chunkZ: number) -> boolean,
 }
 
 declare OMNI: {

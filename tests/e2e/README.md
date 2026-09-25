@@ -170,6 +170,15 @@ metadata. It also checks an overlay-free central hillside patch where an exact-r
 previously exposed sky until surrounding meshes arrived. This catches that handoff regression,
 but does not identify a raster pixel for the cave mouth or prove cave-face visual fidelity.
 
+`terrain-lod-saved-cold` is an opt-in, two-process saved-source import check. Preparation writes
+a complete distant 8×8-chunk patch and exits; the runner moves only the isolated world's
+`data/terrain_lod` derived cache into the scenario artifacts before reopening the same save. The
+measurement process never moves or teleports the player. It requires the server to import the
+saved L3 tile `(4,4)` and the client to install its GPU-ready presentation, then reports import
+counters and profiler artifacts. Run
+`xvfb-run -a tests/e2e/run-local.sh terrain-lod-saved-cold`. This checks stationary cold-cache
+availability, not full-horizon visual completeness or a 256-chunk latency target.
+
 `terrain-lod-remote-handoff` is an opt-in stationary **real-source handoff** check (240-second
 watchdog). Run `xvfb-run -a tests/e2e/run-local.sh terrain-lod-remote-handoff`. It uses the ordinary
 generated spawn region, waits for initial streaming, then reduces exact distance from eight to

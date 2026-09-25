@@ -10,7 +10,7 @@ requested_scenario="${1:-all}"
 if [[ ( "$requested_scenario" == "terrain-lod-near-quality" || "$requested_scenario" == "terrain-lod-remote-handoff" || "$requested_scenario" == "terrain-lod-natural-cave" || "$requested_scenario" == "terrain-lod-cave-mouth-remote" || "$requested_scenario" == "terrain-lod-rock-cave-remote" || "$requested_scenario" == "terrain-lod-quality-upgrade" ) && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
     timeout_seconds=240
 fi
-if [[ ( "$requested_scenario" == "terrain-lod-cave-mouth-remote" || "$requested_scenario" == "terrain-lod-rock-cave-remote" ) && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
+if [[ ( "$requested_scenario" == "terrain-lod-cave-mouth-remote" || "$requested_scenario" == "terrain-lod-rock-cave-remote" || "$requested_scenario" == "terrain-lod-saved-cold" ) && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
     timeout_seconds=480
 fi
 prepared_fixture="${E2E_PREPARED_FIXTURE:-}"
@@ -144,6 +144,17 @@ for scenario in "${scenarios[@]}"; do
                 --artifacts "$prepare_artifacts"
             cp "$prepared_fixture/baseline/manifest.json" "$scenario_artifacts/prepared-fixture.json"
             echo "Prepared baseline retained at: $prepared_fixture (subsequent runs restore it before measuring)"
+        fi
+        if [[ "$scenario" == "terrain-lod-saved-cold" ]]; then
+            # Preserve the disposable derived cache as an artifact. Only the saved region
+            # sources remain in the isolated world when the measurement process starts.
+            derived_cache="$world_dir/data/terrain_lod"
+            if [[ ! -f "$world_dir/region/r.1.1.mcr" || ! -d "$derived_cache" ]]; then
+                echo "Saved-cold fixture lacks its source region or derived cache." >&2
+                suite_status=1
+                continue
+            fi
+            mv -- "$derived_cache" "$scenario_artifacts/prepared-derived-cache"
         fi
     fi
     set +e

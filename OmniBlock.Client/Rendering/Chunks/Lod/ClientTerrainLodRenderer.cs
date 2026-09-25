@@ -770,6 +770,10 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         _resident.TryGetValue((chunkX, chunkZ), out var presentation)
             ? presentation.MinimumLevel : -1;
 
+    /// <summary>Restricted E2E observation of an installed, GPU-ready spatial tile.</summary>
+    internal bool HasSpatialPresentation(TerrainLodTileKey key) =>
+        _spatialPresentations.IsReady(key);
+
     /// <summary>Coalesces terrain changes by chunk coordinate without retaining source arrays.</summary>
     public void ObserveRegion(int minX, int minZ, int maxX, int maxZ)
     {

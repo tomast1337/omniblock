@@ -69,9 +69,9 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     private const int MaximumDirtyTicks = 20;
     private const int WritesPerDrain = 4;
     private const int MaximumPendingSavedTileImports = 32;
-    // Reconstructing level six or higher from individual leaves can fill the 8K hierarchy
-    // before its parent is publishable. A coarse-first importer is needed for those levels.
-    private const int MaximumSavedImportLevel = 5;
+    private const int DefaultTransientImportMinimumLevel = 6;
+    // Dormant 512/1024+ scale profiles have not passed cold saved-source I/O gates.
+    private const int MaximumTransientImportLevel = TerrainLodSpatialPolicy.MaximumSupportedSpatialLevel;
 
     private readonly object _gate = new();
     private readonly ILogger<ServerTerrainLodRuntime> _logger =
@@ -81,6 +81,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     private readonly TerrainLodMaterialCatalog _materials;
     private readonly TerrainLodSpatialPolicy _spatialPolicy;
     private readonly int _conversionCapacity;
+    private readonly int _transientImportMinimumLevel;
     private readonly Dictionary<ChunkKey, TrackedChunk> _tracked = [];
     private readonly TerrainLodConversionService _conversions;
     private readonly TerrainLodCacheStore _cache;
@@ -139,7 +140,8 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         IWorldContext identitySource,
         int conversionCapacity = ConversionCapacity,
         TerrainLodSpatialPolicy? spatialPolicy = null,
-        IChunkStorage? storedTerrain = null)
+        IChunkStorage? storedTerrain = null,
+        int transientImportMinimumLevel = DefaultTransientImportMinimumLevel)
     {
         if (conversionCapacity <= 0)
             throw new ArgumentOutOfRangeException(nameof(conversionCapacity));
@@ -147,6 +149,9 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         _materials = materials;
         _spatialPolicy = spatialPolicy ?? TerrainLodSpatialPolicy.CreateDefault();
         _conversionCapacity = conversionCapacity;
+        if (transientImportMinimumLevel is < 3 or > 10)
+            throw new ArgumentOutOfRangeException(nameof(transientImportMinimumLevel));
+        _transientImportMinimumLevel = transientImportMinimumLevel;
         _storedTerrain = storedTerrain;
         _hasSkyLight = !identitySource.Dimension.HasCeiling;
         // The absolute cache root never crosses the wire; only its hash does. Including it keeps
@@ -661,16 +666,21 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                               _savedTileImports.Values.Count(static import =>
                                   import.Key.Level > TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel) < 8;
                         if (key.Level >= TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel &&
-                            key.Level <= MaximumSavedImportLevel &&
+                            key.Level <= Math.Min(_spatialPolicy.MaximumSpatialLevel,
+                                MaximumTransientImportLevel) &&
                             _storedTerrain is not null && canAdmit)
                         {
-                            var import = new SavedTileImport(key);
+                            var import = new SavedTileImport(key,
+                                key.Level >= _transientImportMinimumLevel
+                                    ? new TerrainLodTransientTileBuilder(key, _spatialPolicy, _materials)
+                                    : null);
                             _savedTileImports.Add(key, import);
                             _savedTileImportQueue.Enqueue(import);
                             _writerWake.Set();
                         }
                         else if (key.Level < TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel ||
-                                 key.Level > MaximumSavedImportLevel ||
+                                 key.Level > Math.Min(_spatialPolicy.MaximumSpatialLevel,
+                                     MaximumTransientImportLevel) ||
                                  _storedTerrain is null)
                             _spatialMissing.Add(key);
                         // At capacity report Pending; the next request retries admission.
@@ -708,6 +718,40 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                 if (_spatialHierarchy.TryGetCoverage(import.Key, out _, out _))
                 {
                     lock (_gate) _savedTileImports.Remove(import.Key);
+                    continue;
+                }
+                if (import.TransientBuilder is { } builder)
+                {
+                    var (sourceX, sourceZ) = builder.NextChunkCoordinates();
+                    var savedSource = _storedTerrain.ReadTerrainLodSource(
+                        sourceX, sourceZ, _hasSkyLight);
+                    if (savedSource is null)
+                    {
+                        FinishSavedTileImport(import, missing: true);
+                        continue;
+                    }
+                    builder.AddSource(savedSource);
+                    consumed++;
+                    lock (_gate) _savedChunksImported++;
+                    if (builder.Result is { } completed)
+                    {
+                        var write = _spatialCache.Write(completed);
+                        if (write != TerrainLodColumnTileCacheWriteStatus.Written)
+                            throw new InvalidOperationException(
+                                $"Saved terrain tile {import.Key} could not be persisted: {write}.");
+                        var publication = _spatialHierarchy.PublishCached(completed);
+                        if (publication == TerrainLodTilePublicationResult.RejectedAtCapacity)
+                            throw new InvalidOperationException(
+                                $"Saved terrain tile {import.Key} exceeded resident hierarchy capacity.");
+                        lock (_gate)
+                        {
+                            _savedTileImports.Remove(import.Key);
+                            _spatialMissing.Remove(import.Key);
+                            _spatialWirePayloads.Remove(import.Key);
+                        }
+                    }
+                    else
+                        lock (_gate) _savedTileImportQueue.Enqueue(import);
                     continue;
                 }
                 if (import.Key.Level > TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel)
@@ -942,9 +986,11 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
 
     private readonly record struct ChunkKey(int X, int Z);
 
-    private sealed class SavedTileImport(TerrainLodTileKey key)
+    private sealed class SavedTileImport(
+        TerrainLodTileKey key, TerrainLodTransientTileBuilder? transientBuilder)
     {
         public TerrainLodTileKey Key { get; } = key;
+        public TerrainLodTransientTileBuilder? TransientBuilder { get; } = transientBuilder;
         public int NextChunk { get; set; }
         public TerrainLodSourceSnapshot? DeferredSource { get; set; }
         public DateTime? AwaitingPublicationSince { get; set; }
