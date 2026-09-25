@@ -380,6 +380,10 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
     public TerrainCoverageSnapshot CoverageSnapshot => _coverageSnapshot;
     internal bool HasPendingRemoteRefresh(TerrainLodTileKey key) =>
         _remoteRefreshNeeded.ContainsKey(key);
+    internal string? GetResidentSpatialSourceHash(TerrainLodTileKey key) =>
+        _spatialHierarchy.TryGetCoverage(key, out var tile, out _)
+            ? tile?.CanonicalHash
+            : null;
 
     public void ObserveRemoteSpatialTile(TerrainLodColumnTile tile, int wireBytes = 0,
         long generation = 0)

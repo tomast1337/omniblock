@@ -92,6 +92,13 @@ public sealed class TerrainLodColumnTileCacheStore
     internal TerrainLodColumnTileCacheStore(
         DirectoryInfo root,
         TerrainLodCacheIdentity identity,
+        Action<TerrainLodCacheWriteStage>? stageObserver)
+        : this(root, identity, 4L * 1024 * 1024 * 1024, 64L * 1024 * 1024,
+            stageObserver) { }
+
+    internal TerrainLodColumnTileCacheStore(
+        DirectoryInfo root,
+        TerrainLodCacheIdentity identity,
         long maxBytes,
         long maxRecordBytes,
         Action<TerrainLodCacheWriteStage>? stageObserver)
@@ -254,6 +261,126 @@ public sealed class TerrainLodColumnTileCacheStore
                 {
                     // Temporary records are ignored and removed when the cache reopens.
                 }
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Makes a complete durable temporary record without publishing it. The caller can
+    ///     validate its source revision immediately before final publication, while the
+    ///     expensive serialization and temporary-file write stay off that caller's lock.
+    /// </summary>
+    internal PreparedWrite StageWrite(TerrainLodColumnTile tile)
+    {
+        ArgumentNullException.ThrowIfNull(tile);
+        if (tile.Key.Level > _identity.MaximumSpatialLevel)
+            throw new InvalidOperationException(
+                $"Column tile level {tile.Key.Level} exceeds cache manifest maximum " +
+                $"{_identity.MaximumSpatialLevel}.");
+        var bytes = Serialize(tile);
+        if (bytes.LongLength > _maxRecordBytes || bytes.LongLength > _maxBytes)
+        {
+            lock (_gate)
+            {
+                _rejectedOversizeWrites++;
+                PublishSnapshotLocked();
+            }
+            throw new InvalidOperationException(
+                $"Column tile {tile.Key} exceeds its cache record budget.");
+        }
+
+        var finalPath = GetRecordPath(tile.Key);
+        var finalDirectory = Directory.GetParent(finalPath)!;
+        finalDirectory.Create();
+        var temporaryPath = $"{finalPath}.tmp-{Guid.NewGuid():N}";
+        try
+        {
+            using (var stream = new FileStream(
+                       temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None,
+                       64 * 1024, FileOptions.WriteThrough))
+            {
+                stream.Write(bytes);
+                stream.Flush(flushToDisk: true);
+            }
+            _stageObserver?.Invoke(TerrainLodCacheWriteStage.TemporaryDurable);
+            return new PreparedWrite(this, finalPath, temporaryPath, bytes.LongLength);
+        }
+        catch
+        {
+            lock (_gate)
+            {
+                _writeFailures++;
+                PublishSnapshotLocked();
+            }
+            try
+            {
+                if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
+            }
+            catch (IOException)
+            {
+                // A stranded temporary record is ignored and removed when the cache reopens.
+            }
+            throw;
+        }
+    }
+
+    internal sealed class PreparedWrite(
+        TerrainLodColumnTileCacheStore owner,
+        string finalPath,
+        string temporaryPath,
+        long length) : IDisposable
+    {
+        private int _completed;
+
+        public TerrainLodColumnTileCacheWriteStatus Commit()
+        {
+            if (Interlocked.Exchange(ref _completed, 1) != 0)
+                throw new InvalidOperationException("The staged column tile was already completed.");
+            try
+            {
+                lock (owner._gate)
+                {
+                    var finalDirectory = Directory.GetParent(finalPath)!;
+                    var previousLength = File.Exists(finalPath)
+                        ? new FileInfo(finalPath).Length : 0;
+                    owner.EvictForWriteLocked(finalPath, previousLength, length);
+                    File.Move(temporaryPath, finalPath, overwrite: true);
+                    FlushDirectory(finalDirectory.FullName);
+                    owner._stageObserver?.Invoke(TerrainLodCacheWriteStage.Published);
+                    owner._currentBytes = checked(
+                        owner._currentBytes - previousLength + length);
+                    if (previousLength == 0) owner._entryCount++;
+                    else owner._replacements++;
+                    owner._writes++;
+                    owner.PublishSnapshotLocked();
+                    return TerrainLodColumnTileCacheWriteStatus.Written;
+                }
+            }
+            catch
+            {
+                lock (owner._gate)
+                {
+                    owner._writeFailures++;
+                    owner.PublishSnapshotLocked();
+                }
+                throw;
+            }
+            finally
+            {
+                Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Interlocked.Exchange(ref _completed, 1);
+            try
+            {
+                if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
+            }
+            catch (IOException)
+            {
+                // A stranded temporary record is ignored and removed when the cache reopens.
             }
         }
     }

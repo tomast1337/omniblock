@@ -1,3 +1,4 @@
+using OmniBlock.Client.Rendering.Chunks.Lod;
 using OmniBlock.NBT;
 using OmniBlock.Network.Messages;
 using OmniBlock.Server.Worlds;
@@ -7,6 +8,7 @@ using OmniBlock.Worlds.Chunks.Storage;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Lod;
 using OmniBlock.Worlds.Storage.RegionFormat;
+using Silk.NET.Maths;
 
 namespace OmniBlock.Tests.Worlds;
 
@@ -568,8 +570,9 @@ public sealed class ServerTerrainLodRuntimeTests
             // The source already consumed at (0,0) is now stale while a later read is in flight.
             live![0, 4, 0] = 0;
             releaseRead.Set();
-            await WaitUntil(() => runtime.GetSpatialCoverage(key, out _) ==
-                                  TerrainLodTileAvailability.Missing);
+            await WaitUntil(() => runtime.Snapshot().SavedTileImportsFailed == 1);
+            Assert.Equal(TerrainLodTileAvailability.Pending,
+                runtime.GetSpatialCoverage(key, out _));
 
             Assert.Equal(0, runtime.Snapshot().SpatialHierarchy.Tiles);
             Assert.Equal(0, runtime.Snapshot().SpatialCache.Writes);
@@ -580,7 +583,7 @@ public sealed class ServerTerrainLodRuntimeTests
             secondLive![0, 4, 0] = 0;
             storage.Replace(TerrainLodSourceSnapshot.Capture(live));
             runtime.NotifyChunkSaved(live);
-            Assert.Equal(TerrainLodTileAvailability.Missing,
+            Assert.Equal(TerrainLodTileAvailability.Pending,
                 runtime.GetSpatialCoverage(key, out _));
             storage.Replace(TerrainLodSourceSnapshot.Capture(secondLive));
             runtime.NotifyChunkSaved(secondLive);
@@ -604,6 +607,151 @@ public sealed class ServerTerrainLodRuntimeTests
         finally
         {
             releaseRead.Set();
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task Live_edit_during_level_two_import_discards_old_reads_and_retries_after_save()
+    {
+        var root = CreateTemporaryDirectory();
+        using var releaseRead = new ManualResetEventSlim();
+        using var blockedRead = new ManualResetEventSlim();
+        try
+        {
+            var world = new FakeWorldContext();
+            var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+            var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+            var sources = new Dictionary<(int X, int Z), TerrainLodSourceSnapshot>();
+            Chunk? live = null;
+            for (var x = 0; x < 4; x++)
+            for (var z = 0; z < 4; z++)
+            {
+                var chunk = Chunk(world, x, z);
+                chunk[0, 4, 0] = stone;
+                sources.Add((x, z), TerrainLodSourceSnapshot.Capture(chunk));
+                if (x == 0 && z == 0) live = chunk;
+            }
+            var storage = new PausingTerrainSourceStorage(sources, blockedRead, releaseRead);
+            using var runtime = new ServerTerrainLodRuntime(
+                0, materials, root, world, storedTerrain: storage);
+            runtime.TrackChunk(live!);
+            var key = new TerrainLodTileKey(2, 0, 0);
+
+            Assert.Equal(TerrainLodTileAvailability.Pending,
+                runtime.GetSpatialCoverage(key, out _));
+            await WaitUntil(() => blockedRead.IsSet, TimeSpan.FromSeconds(30));
+            // The importer already consumed (0,0), then stops during a later saved-source read.
+            live![0, 4, 0] = 0;
+            releaseRead.Set();
+            await WaitUntil(() => runtime.Snapshot().SavedTileImportsFailed == 1,
+                TimeSpan.FromSeconds(30));
+            Assert.False(runtime.TryGetSpatialCoverage(key, out _));
+            Assert.InRange(runtime.Snapshot().SpatialHierarchy.Tiles, 0, 7);
+
+            runtime.BeforeChunkSave(live);
+            storage.Replace(TerrainLodSourceSnapshot.Capture(live));
+            runtime.NotifyChunkSaved(live);
+            Assert.Equal(TerrainLodTileAvailability.Pending,
+                runtime.GetSpatialCoverage(key, out _));
+            await WaitUntil(() => runtime.GetSpatialCoverage(key, out _) ==
+                                  TerrainLodTileAvailability.Ready,
+                TimeSpan.FromSeconds(30));
+
+            var expected = new TerrainLodTransientTileBuilder(
+                key, TerrainLodSpatialPolicy.CreateDefault(), materials);
+            while (expected.Result is null)
+            {
+                var (x, z) = expected.NextChunkCoordinates();
+                expected.AddSource(sources[(x, z)]);
+            }
+            Assert.True(runtime.TryGetSpatialCoverage(key, out var replacement));
+            Assert.Equal(expected.Result.CanonicalHash, replacement!.CanonicalHash);
+        }
+        finally
+        {
+            releaseRead.Set();
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task Edit_after_temporary_coarse_write_cannot_publish_stale_record_after_save()
+    {
+        var root = CreateTemporaryDirectory();
+        using var staged = new ManualResetEventSlim();
+        using var releaseWrite = new ManualResetEventSlim();
+        using var releaseRead = new ManualResetEventSlim(true);
+        using var unusedReadPause = new ManualResetEventSlim();
+        try
+        {
+            var world = new FakeWorldContext();
+            var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+            var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+            var sources = new Dictionary<(int X, int Z), TerrainLodSourceSnapshot>();
+            Chunk? live = null;
+            for (var x = 0; x < 8; x++)
+            for (var z = 0; z < 8; z++)
+            {
+                var chunk = Chunk(world, x, z);
+                chunk[0, 4, 0] = stone;
+                sources.Add((x, z), TerrainLodSourceSnapshot.Capture(chunk));
+                if (x == 0 && z == 0) live = chunk;
+            }
+            var storage = new PausingTerrainSourceStorage(
+                sources, unusedReadPause, releaseRead);
+            using var runtime = new ServerTerrainLodRuntime(
+                0, materials, root, world, storedTerrain: storage,
+                transientImportMinimumLevel: 3,
+                spatialWriteObserver: stage =>
+                {
+                    if (stage != TerrainLodCacheWriteStage.TemporaryDurable) return;
+                    staged.Set();
+                    if (!releaseWrite.Wait(TimeSpan.FromSeconds(30)))
+                        throw new TimeoutException("Test did not release the staged tile.");
+                });
+            runtime.TrackChunk(live!);
+            var key = new TerrainLodTileKey(3, 0, 0);
+
+            Assert.Equal(TerrainLodTileAvailability.Pending,
+                runtime.GetSpatialCoverage(key, out _));
+            await WaitUntil(() => staged.IsSet, TimeSpan.FromSeconds(30));
+            Assert.Empty(root.EnumerateFiles("*.ocol", SearchOption.AllDirectories));
+            Assert.Single(root.EnumerateFiles("*.tmp-*", SearchOption.AllDirectories));
+
+            live![0, 4, 0] = 0;
+            runtime.BeforeChunkSave(live);
+            storage.Replace(TerrainLodSourceSnapshot.Capture(live));
+            runtime.NotifyChunkSaved(live);
+            // A process dying at this exact point would reopen only the authoritative new
+            // chunk; the old derived candidate is still an unpublished temporary file.
+            var reopenedCache = new TerrainLodColumnTileCacheStore(root, runtime.Identity);
+            Assert.Equal(TerrainLodColumnTileCacheReadStatus.Missing,
+                reopenedCache.Read(key).Status);
+
+            releaseWrite.Set();
+            await WaitUntil(() => runtime.Snapshot().SavedTileImportsFailed == 1,
+                TimeSpan.FromSeconds(30));
+            Assert.Empty(root.EnumerateFiles("*.ocol", SearchOption.AllDirectories));
+            Assert.Equal(TerrainLodTileAvailability.Pending,
+                runtime.GetSpatialCoverage(key, out _));
+            await WaitUntil(() => runtime.GetSpatialCoverage(key, out _) ==
+                                  TerrainLodTileAvailability.Ready,
+                TimeSpan.FromSeconds(30));
+
+            var expected = new TerrainLodTransientTileBuilder(
+                key, TerrainLodSpatialPolicy.CreateDefault(), materials);
+            while (expected.Result is null)
+            {
+                var (x, z) = expected.NextChunkCoordinates();
+                expected.AddSource(sources[(x, z)]);
+            }
+            Assert.True(runtime.TryGetSpatialCoverage(key, out var replacement));
+            Assert.Equal(expected.Result.CanonicalHash, replacement!.CanonicalHash);
+        }
+        finally
+        {
+            releaseWrite.Set();
             Directory.Delete(root.FullName, recursive: true);
         }
     }
@@ -751,6 +899,153 @@ public sealed class ServerTerrainLodRuntimeTests
                 TimeSpan.FromSeconds(30));
             Assert.True(reopened.TryGetSpatialCoverage(key, out var cachedTile));
             Assert.Equal(replacementHash, cachedTile!.CanonicalHash);
+        }
+        finally
+        {
+            RegionIo.Flush();
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void Two_clients_keep_old_lod_until_latest_saved_generation_arrives()
+    {
+        var root = CreateTemporaryDirectory();
+        var save = new DirectoryInfo(Path.Combine(root.FullName, "saved"));
+        save.Create();
+        try
+        {
+            var world = new FakeWorldContext();
+            var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+            var storage = new RegionChunkStorage(save.FullName);
+            var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+            Chunk? edited = null;
+            for (var x = 0; x < 4; x++)
+            for (var z = 0; z < 4; z++)
+            {
+                var chunk = Chunk(world, x, z);
+                chunk[0, 4, 0] = stone;
+                storage.SaveChunk(world, chunk, null, 1);
+                if (x == 0 && z == 0) edited = chunk;
+            }
+            storage.FlushToDisk();
+            using var runtime = new ServerTerrainLodRuntime(
+                0, materials, root, world, storedTerrain: storage);
+            var key = new TerrainLodTileKey(2, 0, 0);
+            Assert.True(SpinWait.SpinUntil(
+                () => runtime.TryGetSpatialCoverage(key, out _),
+                TimeSpan.FromSeconds(30)));
+            Assert.True(runtime.TryGetSpatialCoverage(key, out var initial));
+            var initialTile = Assert.IsType<TerrainLodColumnTile>(initial);
+
+            using var first = new ClientTerrainLodRenderer(new LightTestWorld());
+            using var second = new ClientTerrainLodRenderer(new LightTestWorld());
+            var identity = runtime.Identity.CompatibilityFingerprint;
+            static TerrainLodTileMessage WireTile(TerrainLodColumnTile tile,
+                string cacheIdentity, long generation)
+            {
+                var outgoing = TerrainLodTileMessage.Of(
+                    0, tile, cacheIdentity, generation);
+                using MemoryStream stream = new();
+                outgoing.Write(stream);
+                stream.Position = 0;
+                TerrainLodTileMessage incoming = new();
+                incoming.Read(stream);
+                return incoming;
+            }
+            static TerrainLodTileStatusMessage WireInvalidation(
+                TerrainLodTileKey tile, string cacheIdentity, long generation)
+            {
+                TerrainLodTileStatusMessage outgoing = new()
+                {
+                    Dimension = 0,
+                    CacheIdentity = cacheIdentity,
+                    Tile = tile,
+                    Generation = generation,
+                    Status = TerrainLodTileStatus.Invalidated
+                };
+                using MemoryStream stream = new();
+                outgoing.Write(stream);
+                stream.Position = 0;
+                TerrainLodTileStatusMessage incoming = new();
+                incoming.Read(stream);
+                return incoming;
+            }
+
+            var initialWire = WireTile(initialTile, identity, 0);
+            first.ObserveRemoteSpatialTile(
+                initialWire.Decode(), generation: initialWire.Generation);
+            second.ObserveRemoteSpatialTile(
+                initialWire.Decode(), generation: initialWire.Generation);
+            Assert.Equal(initialTile.CanonicalHash, first.GetResidentSpatialSourceHash(key));
+            Assert.Equal(initialTile.CanonicalHash, second.GetResidentSpatialSourceHash(key));
+            runtime.TrackChunk(edited!);
+
+            edited![0, 4, 0] = 0;
+            runtime.BeforeChunkSave(edited);
+            storage.SaveChunk(world, edited, null, 2);
+            storage.FlushToDisk();
+            var firstNotice = Assert.Single(runtime.NotifyChunkSaved(edited));
+            var invalidation = WireInvalidation(key, identity, firstNotice.Generation);
+            first.ObserveRemoteSpatialStatus(invalidation.Tile,
+                invalidation.Status, invalidation.Generation);
+            second.ObserveRemoteSpatialStatus(invalidation.Tile,
+                invalidation.Status, invalidation.Generation);
+            Assert.True(first.HasPendingRemoteRefresh(key));
+            Assert.True(second.HasPendingRemoteRefresh(key));
+            Assert.Equal(initialTile.CanonicalHash, first.GetResidentSpatialSourceHash(key));
+            Assert.Equal(initialTile.CanonicalHash, second.GetResidentSpatialSourceHash(key));
+
+            var camera = new Vector3D<double>(32, 80, 32);
+            Assert.Contains(key, first.TakeRemoteSpatialRequests(camera, 0, 4, 16));
+            Assert.Contains(key, second.TakeRemoteSpatialRequests(camera, 0, 4, 16));
+            Assert.True(SpinWait.SpinUntil(
+                () => runtime.GetSpatialCoverage(key, out var tile) ==
+                      TerrainLodTileAvailability.Ready &&
+                      tile!.CanonicalHash != initialTile.CanonicalHash,
+                TimeSpan.FromSeconds(30)));
+            Assert.True(runtime.TryGetSpatialCoverage(key, out var firstReplacement));
+            var firstReplacementTile = Assert.IsType<TerrainLodColumnTile>(firstReplacement);
+
+            edited[1, 4, 0] = stone;
+            runtime.BeforeChunkSave(edited);
+            storage.SaveChunk(world, edited, null, 3);
+            storage.FlushToDisk();
+            var secondNotice = Assert.Single(runtime.NotifyChunkSaved(edited));
+            Assert.True(secondNotice.Generation > firstNotice.Generation);
+            invalidation = WireInvalidation(key, identity, secondNotice.Generation);
+            first.ObserveRemoteSpatialStatus(invalidation.Tile,
+                invalidation.Status, invalidation.Generation);
+            second.ObserveRemoteSpatialStatus(invalidation.Tile,
+                invalidation.Status, invalidation.Generation);
+
+            var delayed = WireTile(firstReplacementTile, identity, firstNotice.Generation);
+            first.ObserveRemoteSpatialTile(delayed.Decode(), generation: delayed.Generation);
+            second.ObserveRemoteSpatialTile(delayed.Decode(), generation: delayed.Generation);
+            Assert.True(first.HasPendingRemoteRefresh(key));
+            Assert.True(second.HasPendingRemoteRefresh(key));
+            Assert.Equal(initialTile.CanonicalHash, first.GetResidentSpatialSourceHash(key));
+            Assert.Equal(initialTile.CanonicalHash, second.GetResidentSpatialSourceHash(key));
+
+            Assert.True(SpinWait.SpinUntil(
+                () => runtime.GetSpatialCoverage(key, out var tile) ==
+                      TerrainLodTileAvailability.Ready &&
+                      tile!.CanonicalHash != firstReplacementTile.CanonicalHash,
+                TimeSpan.FromSeconds(30)));
+            Assert.True(runtime.TryGetSpatialCoverage(key, out var latest));
+            var latestTile = Assert.IsType<TerrainLodColumnTile>(latest);
+            var latestWire = WireTile(latestTile, identity, secondNotice.Generation);
+            first.ObserveRemoteSpatialTile(
+                latestWire.Decode(), generation: latestWire.Generation);
+            Assert.False(first.HasPendingRemoteRefresh(key));
+            Assert.Equal(latestTile.CanonicalHash, first.GetResidentSpatialSourceHash(key));
+            Assert.True(second.HasPendingRemoteRefresh(key));
+            Assert.Equal(initialTile.CanonicalHash, second.GetResidentSpatialSourceHash(key));
+
+            second.ObserveRemoteSpatialTile(
+                latestWire.Decode(), generation: latestWire.Generation);
+            Assert.False(second.HasPendingRemoteRefresh(key));
+            Assert.Equal(latestTile.CanonicalHash, second.GetResidentSpatialSourceHash(key));
         }
         finally
         {

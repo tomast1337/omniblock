@@ -99,7 +99,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     private readonly HashSet<TerrainLodTileKey> _spatialMissing = [];
     private readonly Queue<SavedTileImport> _savedTileImportQueue = [];
     private readonly Dictionary<TerrainLodTileKey, SavedTileImport> _savedTileImports = [];
-    private readonly Dictionary<TerrainLodTileKey, HashSet<ChunkKey>> _blockedTransientImports = [];
+    private readonly Dictionary<TerrainLodTileKey, HashSet<ChunkKey>> _blockedSavedImports = [];
     private readonly HashSet<TerrainLodTileKey> _refreshRequired = [];
     private readonly Dictionary<TerrainLodTileKey, long> _refreshAnnounced = [];
     private readonly Dictionary<TerrainLodTileKey, long> _tileGenerations = [];
@@ -149,7 +149,8 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         int conversionCapacity = ConversionCapacity,
         TerrainLodSpatialPolicy? spatialPolicy = null,
         IChunkStorage? storedTerrain = null,
-        int transientImportMinimumLevel = DefaultTransientImportMinimumLevel)
+        int transientImportMinimumLevel = DefaultTransientImportMinimumLevel,
+        Action<TerrainLodCacheWriteStage>? spatialWriteObserver = null)
     {
         if (conversionCapacity <= 0)
             throw new ArgumentOutOfRangeException(nameof(conversionCapacity));
@@ -172,7 +173,8 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                 $"Identity world dimension {_identity.Dimension} does not match {dimension}.",
                 nameof(identitySource));
         _cache = new TerrainLodCacheStore(cacheRoot, _identity);
-        _spatialCache = new TerrainLodColumnTileCacheStore(cacheRoot, _identity);
+        _spatialCache = new TerrainLodColumnTileCacheStore(
+            cacheRoot, _identity, spatialWriteObserver);
         _spatialHierarchy = new TerrainLodSpatialHierarchyCoordinator(
             _spatialPolicy,
             _spatialCache,
@@ -257,7 +259,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             }
             if (_refreshRequired.Contains(key))
             {
-                if (!_blockedTransientImports.ContainsKey(key) &&
+                if (!_blockedSavedImports.ContainsKey(key) &&
                     key.Level < _transientImportMinimumLevel &&
                     _spatialHierarchy.TryGetCoverage(key, out tile, out var current) &&
                     current)
@@ -268,7 +270,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                     return TerrainLodTileAvailability.Ready;
                 }
                 tile = null;
-                if (_blockedTransientImports.ContainsKey(key) ||
+                if (_blockedSavedImports.ContainsKey(key) ||
                     _savedTileImports.ContainsKey(key))
                     return TerrainLodTileAvailability.Pending;
                 if (_spatialMissing.Contains(key))
@@ -288,6 +290,11 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         }
         lock (_gate)
         {
+            if (_blockedSavedImports.ContainsKey(key))
+            {
+                tile = null;
+                return TerrainLodTileAvailability.Pending;
+            }
             if (_savedTileImports.ContainsKey(key))
             {
                 tile = null;
@@ -483,8 +490,8 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                 if (_refreshRequired.Add(key))
                     _tileGenerations[key] = ++_nextTileGeneration;
                 _spatialWirePayloads.Remove(key);
-                if (!_blockedTransientImports.TryGetValue(key, out var unsaved))
-                    _blockedTransientImports[key] = unsaved = [];
+                if (!_blockedSavedImports.TryGetValue(key, out var unsaved))
+                    _blockedSavedImports[key] = unsaved = [];
                 unsaved.Add(new ChunkKey(chunk.X, chunk.Z));
             }
         }
@@ -502,10 +509,10 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             List<TerrainLodTileInvalidation> notifications = [];
             foreach (var import in _savedTileImports.Values)
                 import.UnsavedEditedSources.Remove(source);
-            foreach (var (key, unsaved) in _blockedTransientImports.ToArray())
+            foreach (var (key, unsaved) in _blockedSavedImports.ToArray())
             {
                 if (!unsaved.Remove(source) || unsaved.Count != 0) continue;
-                _blockedTransientImports.Remove(key);
+                _blockedSavedImports.Remove(key);
                 _spatialMissing.Remove(key);
                 if (!_refreshRequired.Contains(key)) continue;
                 var generation = _tileGenerations[key];
@@ -679,13 +686,12 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             // live source changes, finishing that read would publish a mixture of revisions.
             // The worker observes this flag before accepting another source or publishing.
             foreach (var import in _savedTileImports.Values)
-                if (import.TransientBuilder is not null &&
-                    import.Key.ContainsChunk(chunk.X, chunk.Z))
+                if (import.Key.ContainsChunk(chunk.X, chunk.Z))
                 {
                     import.InvalidatedByLiveEdit = true;
                     import.UnsavedEditedSources.Add(new ChunkKey(chunk.X, chunk.Z));
                 }
-            foreach (var (key, unsaved) in _blockedTransientImports)
+            foreach (var (key, unsaved) in _blockedSavedImports)
                 if (key.ContainsChunk(chunk.X, chunk.Z))
                     unsaved.Add(new ChunkKey(chunk.X, chunk.Z));
             for (var level = _transientImportMinimumLevel;
@@ -701,8 +707,8 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                 _refreshRequired.Add(key);
                 _tileGenerations[key] = ++_nextTileGeneration;
                 _spatialWirePayloads.Remove(key);
-                if (!_blockedTransientImports.TryGetValue(key, out var unsaved))
-                    _blockedTransientImports[key] = unsaved = [];
+                if (!_blockedSavedImports.TryGetValue(key, out var unsaved))
+                    _blockedSavedImports[key] = unsaved = [];
                 unsaved.Add(new ChunkKey(chunk.X, chunk.Z));
             }
             if (!state.Dirty)
@@ -855,6 +861,9 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             lock (_gate)
             {
                 if (!_savedTileImportQueue.TryDequeue(out import!)) break;
+                if (!_savedTileImports.TryGetValue(import.Key, out var active) ||
+                    !ReferenceEquals(import, active))
+                    continue;
             }
             try
             {
@@ -892,27 +901,18 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                     lock (_gate) _savedChunksImported++;
                     if (builder.Result is { } completed)
                     {
-                        lock (_gate)
-                            if (import.InvalidatedByLiveEdit)
-                            {
-                                FinishSavedTileImport(import, missing: false);
-                                continue;
-                            }
-                        var write = _spatialCache.Write(completed);
-                        if (write != TerrainLodColumnTileCacheWriteStatus.Written)
-                            throw new InvalidOperationException(
-                                $"Saved terrain tile {import.Key} could not be persisted: {write}.");
-                        // The edit may have arrived while the durable write was in progress.
-                        // Serialize the final revision check with publication; discard the new
-                        // record if its source has become stale in the meantime.
+                        // Only the durable temporary bytes are prepared outside the server
+                        // lock. An edit/save may proceed during that slow step; the final source
+                        // check and rename must form one publication boundary.
+                        using var staged = _spatialCache.StageWrite(completed);
                         lock (_gate)
                         {
                             if (import.InvalidatedByLiveEdit)
                             {
-                                _spatialCache.Invalidate(import.Key);
                                 FinishSavedTileImport(import, missing: false);
                                 continue;
                             }
+                            staged.Commit();
                             var publication = _spatialHierarchy.PublishCached(completed);
                             if (publication == TerrainLodTilePublicationResult.RejectedAtCapacity)
                                 throw new InvalidOperationException(
@@ -973,7 +973,19 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                 if (source.ChunkX != x || source.ChunkZ != z)
                     throw new InvalidDataException(
                         $"Saved terrain slot {x},{z} returned {source.ChunkX},{source.ChunkZ}.");
-                var admission = _conversions.Submit(source);
+                TerrainLodAdmissionResult admission;
+                lock (_gate)
+                {
+                    // The read is outside the server lock. Serialize the final edit check and
+                    // admission so a source consumed before an edit cannot enter the converter
+                    // after that edit has cancelled this import.
+                    if (import.InvalidatedByLiveEdit)
+                    {
+                        FinishSavedTileImport(import, missing: false);
+                        continue;
+                    }
+                    admission = _conversions.Submit(source);
+                }
                 if (admission == TerrainLodAdmissionResult.RejectedAtCapacity)
                 {
                     import.DeferredSource = source;
@@ -1014,6 +1026,11 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         {
             lock (_gate)
             {
+                if (import.InvalidatedByLiveEdit)
+                {
+                    FinishSavedTileImport(import, missing: false);
+                    continue;
+                }
                 if (_savedTileImports.ContainsKey(import.Key) &&
                     _spatialHierarchy.TryGetCoverage(import.Key, out _, out var current) &&
                     (!_refreshRequired.Contains(import.Key) || current))
@@ -1047,7 +1064,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             {
                 if (import.UnsavedEditedSources.Count > 0)
                 {
-                    _blockedTransientImports[import.Key] = import.UnsavedEditedSources;
+                    _blockedSavedImports[import.Key] = import.UnsavedEditedSources;
                     _spatialMissing.Add(import.Key);
                 }
                 else _spatialMissing.Remove(import.Key);
@@ -1178,7 +1195,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             _spatialMissing.Clear();
             _savedTileImportQueue.Clear();
             _savedTileImports.Clear();
-            _blockedTransientImports.Clear();
+            _blockedSavedImports.Clear();
             _refreshRequired.Clear();
             _refreshAnnounced.Clear();
             _tileGenerations.Clear();

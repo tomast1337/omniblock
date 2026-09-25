@@ -438,6 +438,35 @@ public sealed class TerrainLodColumnTileCacheStoreTests
     }
 
     [Fact]
+    public void Uncommitted_staged_tile_is_never_a_cache_hit_and_cleans_up()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var store = Store(root);
+            var key = new TerrainLodTileKey(0, 4, -9);
+            using (store.StageWrite(Leaf(key, 1, 3)))
+            {
+                Assert.Equal(TerrainLodColumnTileCacheReadStatus.Missing,
+                    store.Read(key).Status);
+                Assert.Single(root.EnumerateFiles("*.tmp-*", SearchOption.AllDirectories));
+            }
+            Assert.Equal(TerrainLodColumnTileCacheReadStatus.Missing,
+                store.Read(key).Status);
+            Assert.Empty(root.EnumerateFiles("*.tmp-*", SearchOption.AllDirectories));
+
+            using var staged = store.StageWrite(Leaf(key, 2, 4));
+            Assert.Equal(TerrainLodColumnTileCacheWriteStatus.Written, staged.Commit());
+            Assert.Equal(TerrainLodColumnTileCacheReadStatus.Hit,
+                store.Read(key).Status);
+        }
+        finally
+        {
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
     public void Incompatible_and_corrupt_tiles_are_safe_cache_misses()
     {
         var root = CreateTemporaryDirectory();

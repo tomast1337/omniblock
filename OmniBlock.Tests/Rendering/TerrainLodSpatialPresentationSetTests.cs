@@ -75,6 +75,38 @@ public sealed class TerrainLodSpatialPresentationSetTests
     }
 
     [Fact]
+    public void Two_clients_retain_independent_presentations_when_one_refresh_upload_fails()
+    {
+        var key = new TerrainLodTileKey(0, 0, 0);
+        var policy = new TerrainLodSpatialPolicy(8, 2, [0], [16]);
+        using var first = new TerrainLodSpatialPresentationSet<FakePresentation>();
+        using var second = new TerrainLodSpatialPresentationSet<FakePresentation>();
+        var firstOld = new FakePresentation("first-old");
+        var secondOld = new FakePresentation("second-old");
+        Assert.True(first.TryInstall(key, "generation-0", () => firstOld, out _));
+        Assert.True(second.TryInstall(key, "generation-0", () => secondOld, out _));
+
+        Assert.False(first.TryInstall(key, "generation-2",
+            static () => throw new InvalidOperationException("delayed GPU upload"), out _));
+        var secondNew = new FakePresentation("second-new");
+        Assert.True(second.TryInstall(key, "generation-2", () => secondNew, out _));
+
+        var firstFrame = first.Update(key, 0, 0, policy, 0, fadeEnabled: false);
+        var secondFrame = second.Update(key, 0, 0, policy, 0, fadeEnabled: false);
+        Assert.Same(firstOld, Assert.Single(firstFrame.Draws).Presentation);
+        Assert.Same(secondNew, Assert.Single(secondFrame.Draws).Presentation);
+        Assert.False(firstOld.Disposed);
+        Assert.True(secondOld.Disposed);
+
+        var firstNew = new FakePresentation("first-new");
+        Assert.True(first.TryInstall(key, "generation-2", () => firstNew, out _));
+        Assert.Same(firstNew, Assert.Single(first.Update(
+            key, 0, 0, policy, 0, fadeEnabled: false).Draws).Presentation);
+        Assert.True(firstOld.Disposed);
+        Assert.False(firstNew.Disposed);
+    }
+
+    [Fact]
     public void Unpinned_catalog_entry_can_be_evicted_and_releases_its_resource()
     {
         var key = new TerrainLodTileKey(0, 9, -4);
