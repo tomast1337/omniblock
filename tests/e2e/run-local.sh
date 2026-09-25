@@ -38,7 +38,7 @@ if [[ "$requested_scenario" == "terrain-lod-generated-patch" && -z "${E2E_TIMEOU
     # allowance only: worker, queue, GPU and per-sample starvation ceilings stay unchanged.
     timeout_seconds=1080
 fi
-scenarios=(menu world-management multiplayer language-options create-world smoke debug-smoke fps-limit simulation-distance chunk-mesh-deadlines teleport-preload flying-chunk-streaming frustum-directional liquid-boundary-visibility world-generation-control world-generation-job-lifecycle terrain-lod-presentation terrain-lod-spatial-shadow terrain-lod-server-cache-transport)
+scenarios=(menu world-management multiplayer language-options create-world smoke debug-smoke fps-limit simulation-distance chunk-mesh-deadlines teleport-preload flying-chunk-streaming frustum-directional short-view-sky liquid-boundary-visibility world-generation-control world-generation-job-lifecycle terrain-lod-presentation terrain-lod-spatial-shadow terrain-lod-server-cache-transport)
 run_roots=()
 
 cleanup() {
@@ -229,6 +229,11 @@ for scenario in "${scenarios[@]}"; do
 
     if (( status == 0 )) && [[ "$scenario" == "terrain-lod-near-quality" ]]; then
         if ! python3 "$script_dir/check_near_quality.py" "$scenario_artifacts"; then
+            status=1
+        fi
+    fi
+    if (( status == 0 )) && [[ "$scenario" == "short-view-sky" ]]; then
+        if ! python3 "$script_dir/check_short_view_sky.py" "$scenario_artifacts"; then
             status=1
         fi
     fi

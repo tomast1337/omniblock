@@ -342,13 +342,12 @@ public class GameRenderer
         var worldModelView = RenderSystem.ModelView.Top;
         var worldProjection = RenderSystem.Projection.Top;
         Frustum.Instance();
-        if (_client.Options.RenderDistance >= 8)
+        // Sky visibility is independent of terrain draw distance. RenderSky itself skips
+        // dimensions without a sky (such as the Nether).
+        ApplyFog(-1);
+        using (Profiler.Begin("RenderSky"))
         {
-            ApplyFog(-1);
-            using (Profiler.Begin("RenderSky"))
-            {
-                worldRenderer.RenderSky(tickDelta);
-            }
+            worldRenderer.RenderSky(tickDelta);
         }
 
         RenderSystem.FogEnabled = true;
