@@ -384,3 +384,45 @@ internal static class TerrainLodSpatialAuthority
         int renderDistance) =>
         tile.DistanceTo(cameraChunkX, cameraChunkZ) >= Math.Max(0, renderDistance) + 1.0;
 }
+
+/// <summary>
+/// Keeps the source annulus behind a growing exact radius until published LOD
+/// columns inside the new radius have complete exact replacements. Per-column
+/// authority can hand ready columns off earlier; this only prevents the coverage
+/// planner from discarding the remaining published LOD tiles prematurely.
+/// </summary>
+internal static class TerrainLodSpatialNearDistance
+{
+    public static int Resolve(
+        int previousDistance,
+        int requestedDistance,
+        double cameraChunkX,
+        double cameraChunkZ,
+        IEnumerable<TerrainLodTileKey> publishedTiles,
+        Func<int, int, bool> exactReady)
+    {
+        if (requestedDistance <= previousDistance) return requestedDistance;
+        var radiusSquared = (double)requestedDistance * requestedDistance;
+        foreach (var tile in publishedTiles)
+        {
+            var minX = Math.Max(tile.MinChunkX,
+                (long)Math.Floor(cameraChunkX - requestedDistance));
+            var maxX = Math.Min(tile.MaxChunkX,
+                (long)Math.Ceiling(cameraChunkX + requestedDistance));
+            var minZ = Math.Max(tile.MinChunkZ,
+                (long)Math.Floor(cameraChunkZ - requestedDistance));
+            var maxZ = Math.Min(tile.MaxChunkZ,
+                (long)Math.Ceiling(cameraChunkZ + requestedDistance));
+            for (var z = minZ; z <= maxZ; z++)
+            for (var x = minX; x <= maxX; x++)
+            {
+                var dx = x + 0.5 - cameraChunkX;
+                var dz = z + 0.5 - cameraChunkZ;
+                if (dx * dx + dz * dz >= radiusSquared) continue;
+                if (!exactReady(checked((int)x), checked((int)z)))
+                    return previousDistance;
+            }
+        }
+        return requestedDistance;
+    }
+}

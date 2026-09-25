@@ -214,6 +214,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
     private readonly HashSet<TerrainLodTileKey> _authoritativeSpatialTiles = [];
     private readonly HashSet<(int X, int Z)> _spatialReplacementColumns = [];
     private readonly HashSet<(int X, int Z)> _completedSpatialHandoffs = [];
+    private int _spatialPlanningNearDistance = -1;
     private readonly Dictionary<(int X, int Z), ulong> _spatialColumnMasks = [];
     private readonly List<VisibleSpatialPage> _visibleSpatialSolid = [];
     private readonly List<VisibleSpatialPage> _visibleSpatialTranslucent = [];
@@ -431,6 +432,10 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         if (maximumSpatialLevel < MinimumSpatialGpuLevel ||
             maximumSpatialLevel > _spatialPolicy.MaximumSpatialLevel)
             throw new ArgumentOutOfRangeException(nameof(maximumSpatialLevel));
+        // Render-thread publication may still need the old inner annulus while a newly
+        // requested exact radius streams in. Keep requesting that same cover.
+        if (_spatialPlanningNearDistance >= 0)
+            nearDistanceChunks = Math.Min(nearDistanceChunks, _spatialPlanningNearDistance);
         horizonDistanceChunks = Math.Min(
             horizonDistanceChunks,
             TerrainLodSpatialPolicy.MaximumHorizonChunksForSpatialLevel(maximumSpatialLevel));
@@ -1743,6 +1748,15 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         var cameraChunkZ = parameters.ViewPos.Z / SubChunkRenderer.Size;
         var chunkX = (int)Math.Floor(cameraChunkX);
         var chunkZ = (int)Math.Floor(cameraChunkZ);
+        var requestedNearDistance = parameters.RenderDistance;
+        _spatialPlanningNearDistance = _spatialPlanningNearDistance < 0 ||
+                                       _spatialFrame is not { } previousFrame
+            ? requestedNearDistance
+            : TerrainLodSpatialNearDistance.Resolve(
+                _spatialPlanningNearDistance, requestedNearDistance,
+                cameraChunkX, cameraChunkZ,
+                previousFrame.Draws.Select(static draw => draw.Selection.Tile),
+                nearRenderer.IsMeshColumnReadyForLodHandoff);
         var root = TerrainLodTileKey.ContainingChunk(
             _spatialPolicy.MaximumSpatialLevel, chunkX, chunkZ);
         var selection = TerrainLodSpatialSelector.Select(
@@ -1770,14 +1784,14 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         stageStarted = Stopwatch.GetTimestamp();
         var frame = BuildSpatialForestFrame(
             cameraChunkX, cameraChunkZ,
-            parameters.RenderDistance,
+            _spatialPlanningNearDistance,
             parameters.TerrainHorizonDistance,
             parameters.DeltaTime);
         Profiler.Record("SpatialForestCpu",
             Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
         stageStarted = Stopwatch.GetTimestamp();
         UpdateSpatialSeams(
-            frame, cameraChunkX, cameraChunkZ, parameters.RenderDistance, nearRenderer);
+            frame, cameraChunkX, cameraChunkZ, _spatialPlanningNearDistance, nearRenderer);
         Profiler.Record("SpatialSeamCpu",
             Stopwatch.GetElapsedTime(stageStarted).TotalMilliseconds);
         EvictSpatialResidency(
@@ -2185,8 +2199,9 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
 
         bool ReplacementReady(int x, int z)
         {
-            // A published legacy column includes both layers, including deliberately empty ones.
-            if (_resident.ContainsKey((x, z))) return true;
+            // A cached legacy LOD column is not necessarily submitted this frame. Masking the
+            // spatial page merely because it exists can expose an empty exact section during a
+            // detail-radius increase. Only a complete exact column may take spatial ownership.
             var dx = x + 0.5 - cameraChunkX;
             var dz = z + 0.5 - cameraChunkZ;
             var ready = dx * dx + dz * dz < (double)renderDistance * renderDistance &&

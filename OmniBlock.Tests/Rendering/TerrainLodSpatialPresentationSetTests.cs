@@ -311,6 +311,39 @@ public sealed class TerrainLodSpatialPresentationSetTests
     }
 
     [Fact]
+    public void Growing_exact_radius_keeps_the_published_spatial_annulus_until_replacements_are_ready()
+    {
+        var caveTile = new TerrainLodTileKey(2, 0, 0);
+        HashSet<(int X, int Z)> ready = [];
+        bool ExactReady(int x, int z) => ready.Contains((x, z));
+        const double cameraX = 1.5;
+        const double cameraZ = -7.5;
+
+        Assert.Equal(4, TerrainLodSpatialNearDistance.Resolve(
+            4, 14, cameraX, cameraZ, [caveTile], ExactReady));
+        for (var z = caveTile.MinChunkZ; z <= caveTile.MaxChunkZ; z++)
+        for (var x = caveTile.MinChunkX; x <= caveTile.MaxChunkX; x++)
+        {
+            Assert.Equal(4, TerrainLodSpatialNearDistance.Resolve(
+                4, 14, cameraX, cameraZ, [caveTile], ExactReady));
+            ready.Add(((int)x, (int)z));
+        }
+        Assert.Equal(14, TerrainLodSpatialNearDistance.Resolve(
+            4, 14, cameraX, cameraZ, [caveTile], ExactReady));
+        Assert.Equal(4, TerrainLodSpatialNearDistance.Resolve(
+            14, 4, cameraX, cameraZ, [caveTile],
+            static (_, _) => throw new InvalidOperationException("Shrinking needs no readiness scan.")));
+    }
+
+    [Fact]
+    public void Growing_exact_radius_ignores_published_tiles_outside_the_requested_circle()
+    {
+        Assert.Equal(14, TerrainLodSpatialNearDistance.Resolve(
+            4, 14, 0, 0, [new TerrainLodTileKey(2, 10, 10)],
+            static (_, _) => throw new InvalidOperationException("Distant tile was inspected.")));
+    }
+
+    [Fact]
     public void Distant_tile_stays_authoritative_even_when_legacy_replacements_exist()
     {
         var tile = new TerrainLodTileKey(2, 10, 0);

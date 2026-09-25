@@ -166,7 +166,9 @@ air, then expands exact distance at a fixed camera and requires matching air and
 current exact terrain, then takes a settled exact capture eight seconds later. Run
 `xvfb-run -a tests/e2e/run-local.sh terrain-lod-rock-cave-remote`.
 `check_remote_rock_cave.py` checks the three captures' camera, ownership, tile and screenshot
-metadata; it does not yet identify a raster pixel for the cave mouth or prove visual fidelity.
+metadata. It also checks an overlay-free central hillside patch where an exact-radius increase
+previously exposed sky until surrounding meshes arrived. This catches that handoff regression,
+but does not identify a raster pixel for the cave mouth or prove cave-face visual fidelity.
 
 `terrain-lod-remote-handoff` is an opt-in stationary **real-source handoff** check (240-second
 watchdog). Run `xvfb-run -a tests/e2e/run-local.sh terrain-lod-remote-handoff`. It uses the ordinary
