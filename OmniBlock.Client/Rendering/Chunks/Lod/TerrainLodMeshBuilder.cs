@@ -788,9 +788,10 @@ internal static class TerrainLodMeshBuilder
         bool isGrassBlock,
         bool snowAbove,
         int grassOverlayTexture,
-        int snowyGrassTexture)
+        int snowyGrassTexture,
+        int? biomeTint = null)
     {
-        var tint = WorldlessFaceTint(block, material.Metadata, side, isGrassBlock);
+        var tint = biomeTint ?? WorldlessFaceTint(block, material.Metadata, side, isGrassBlock);
         var overrideTexture = isGrassBlock && snowAbove &&
                               side is not Side.Up and not Side.Down
             ? snowyGrassTexture

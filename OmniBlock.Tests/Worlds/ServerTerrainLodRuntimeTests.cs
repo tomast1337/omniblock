@@ -599,7 +599,7 @@ public sealed class ServerTerrainLodRuntimeTests
             while (expected.Result is null)
             {
                 var (x, z) = expected.NextChunkCoordinates();
-                expected.AddSource(sources[(x, z)]);
+                expected.AddSource(sources[(x, z)].WithClimate(world.Dimension.BiomeSource));
             }
             Assert.True(runtime.TryGetSpatialCoverage(key, out var replacement));
             Assert.Equal(expected.Result.CanonicalHash, replacement!.CanonicalHash);
@@ -663,7 +663,7 @@ public sealed class ServerTerrainLodRuntimeTests
             while (expected.Result is null)
             {
                 var (x, z) = expected.NextChunkCoordinates();
-                expected.AddSource(sources[(x, z)]);
+                expected.AddSource(sources[(x, z)].WithClimate(world.Dimension.BiomeSource));
             }
             Assert.True(runtime.TryGetSpatialCoverage(key, out var replacement));
             Assert.Equal(expected.Result.CanonicalHash, replacement!.CanonicalHash);
@@ -744,7 +744,7 @@ public sealed class ServerTerrainLodRuntimeTests
             while (expected.Result is null)
             {
                 var (x, z) = expected.NextChunkCoordinates();
-                expected.AddSource(sources[(x, z)]);
+                expected.AddSource(sources[(x, z)].WithClimate(world.Dimension.BiomeSource));
             }
             Assert.True(runtime.TryGetSpatialCoverage(key, out var replacement));
             Assert.Equal(expected.Result.CanonicalHash, replacement!.CanonicalHash);

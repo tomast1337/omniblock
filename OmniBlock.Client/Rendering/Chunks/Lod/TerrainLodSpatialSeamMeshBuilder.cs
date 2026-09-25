@@ -97,6 +97,8 @@ internal static class TerrainLodSpatialSeamMeshBuilder
             ? TerrainLodCaveCuller.GetDefaultExposure(neighbor, cancellationToken)
             : null;
         blocks.TryGet("omniblock:grass_block", out var grassBlock);
+        blocks.TryGet("omniblock:leaves", out var leavesBlock);
+        blocks.TryGet("omniblock:grass", out var tallGrassBlock);
         var grassOverlayTexture = grassBlock is null
             ? -1
             : Atlases.Terrain.IndexOf("omniblock:grass_block_side_overlay");
@@ -141,16 +143,17 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                     continue;
                 }
                 EmitVisible(
-                    ownerSpan, ownerColumn, neighborSpan, segment.OwnerSide,
+                    ownerSpan, ownerColumn, owner, neighborSpan, segment.OwnerSide,
                     neighborColumn is null ? exteriorBottom : bottom, ownerSample);
                 if (neighborSpan is { } adjacent)
                     EmitVisible(
-                        adjacent, neighborColumn!, ownerSpan, Opposite(segment.OwnerSide),
+                        adjacent, neighborColumn!, neighbor!, ownerSpan, Opposite(segment.OwnerSide),
                         bottom, neighborSample);
 
                 void EmitVisible(
                     TerrainLodColumnSpan source,
                     TerrainLodColumn sourceColumn,
+                    TerrainLodColumnTile sourceTile,
                     TerrainLodColumnSpan? opposite,
                     TerrainLodSpatialBoundarySide sourceSide,
                     int minimumY,
@@ -198,7 +201,7 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                         if (y1 <= y0) y1 = Math.Min(renderTop,
                             y0 + TerrainLodSpatialMeshBuilder.MaximumQuadSpan);
                         EmitPatch(
-                            source, opposite, block, translucent, sourceSide,
+                            source, opposite, block, sourceTile, translucent, sourceSide,
                             y0, y1, along, end,
                             source.TopY < sourceColumn.WorldHeight &&
                             TerrainLodMeshBuilder.HasSnowCover(
@@ -230,7 +233,8 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                         liquidBlock is null)
                         return;
                     EmitPatch(
-                        source, opposite, liquidBlock, translucent: true, sourceSide,
+                        source, opposite, liquidBlock, useOwner ? owner : neighbor!,
+                        translucent: true, sourceSide,
                         Math.Max(intervalBottom, Math.Min(ownerTop, neighborTop)),
                         Math.Max(ownerTop, neighborTop), along, end, snowAbove: false);
                 }
@@ -313,6 +317,7 @@ internal static class TerrainLodSpatialSeamMeshBuilder
             TerrainLodColumnSpan span,
             TerrainLodColumnSpan? exposedNeighbor,
             Block block,
+            TerrainLodColumnTile sourceTile,
             bool translucent,
             TerrainLodSpatialBoundarySide boundarySide,
             float y0,
@@ -322,9 +327,25 @@ internal static class TerrainLodSpatialSeamMeshBuilder
             bool snowAbove)
         {
             var side = ToBlockSide(boundarySide);
+            var worldX = boundarySide is TerrainLodSpatialBoundarySide.West or
+                TerrainLodSpatialBoundarySide.East
+                ? fixedBlock + (boundarySide == TerrainLodSpatialBoundarySide.West ? 0 : -1)
+                : patchStart;
+            var worldZ = boundarySide is TerrainLodSpatialBoundarySide.North or
+                TerrainLodSpatialBoundarySide.South
+                ? fixedBlock + (boundarySide == TerrainLodSpatialBoundarySide.North ? 0 : -1)
+                : patchStart;
+            var sampleSize = 1 << sourceTile.HorizontalSampleLevel;
+            var sampleX = (int)((worldX - sourceTile.Key.MinChunkX * 16) / sampleSize);
+            var sampleZ = (int)((worldZ - sourceTile.Key.MinChunkZ * 16) / sampleSize);
+            var tint = sourceTile.Climate is { } climate
+                ? TerrainLodSpatialMeshBuilder.ClimateTint(
+                    block, grassBlock, leavesBlock, tallGrassBlock, span.Material,
+                    climate[sampleX, sampleZ])
+                : null;
             var appearance = TerrainLodMeshBuilder.ResolveWorldlessFaceAppearance(
                 block, span.Material, side, ReferenceEquals(block, grassBlock),
-                snowAbove, grassOverlayTexture, snowyGrassTexture);
+                snowAbove, grassOverlayTexture, snowyGrassTexture, tint);
             var shade = boundarySide is TerrainLodSpatialBoundarySide.West or
                 TerrainLodSpatialBoundarySide.East ? 0.6f : 0.8f;
             var anchorX = boundarySide switch

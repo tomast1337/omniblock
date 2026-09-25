@@ -16,6 +16,35 @@ public sealed class TerrainLodColumnTileTests
     private static readonly TerrainLodMaterial Water = Materials.Resolve(2, 0);
 
     [Fact]
+    public void Climate_is_retained_at_block_scale_and_reduced_independently_of_materials()
+    {
+        var key = new TerrainLodTileKey(1, 0, 0);
+        var children = Enumerable.Range(0, 4).Select(index =>
+        {
+            var child = key.Child(index);
+            var sample = new TerrainLodClimateSample(
+                (ushort)(10000 + index * 10000), (ushort)(20000 + index * 5000));
+            const int height = 8;
+            var blocks = Enumerable.Repeat((byte)1, 16 * height * 16).ToArray();
+            return TerrainLodColumnTile.BuildLeaf(new TerrainLodSourceSnapshot(
+                child.X, child.Z, 16, height, 16,
+                blocks, new byte[blocks.Length], terrainRevision: 1,
+                climate: new TerrainLodClimateGrid(16,
+                    Enumerable.Repeat(sample, 256).ToArray())), Materials);
+        }).ToArray();
+
+        var retained = TerrainLodColumnTile.BuildParent(key, children, 0);
+        var reduced = TerrainLodColumnTile.BuildParent(key, children, 1);
+        Assert.Equal(children[0].Climate![0, 0], retained.Climate![0, 0]);
+        Assert.Equal(children[3].Climate![15, 15], retained.Climate![31, 31]);
+        Assert.Equal(children[0].Climate![0, 0], reduced.Climate![0, 0]);
+        Assert.Equal(children[3].Climate![0, 0], reduced.Climate![15, 15]);
+        Assert.NotEqual(retained.CanonicalHash, reduced.CanonicalHash);
+        Assert.NotEqual(children[0].CanonicalHash,
+            TerrainLodColumnTile.BuildLeaf(Snapshot(0, (_, _, _) => 1, 0), Materials).CanonicalHash);
+    }
+
+    [Fact]
     public void Detail_only_cactus_and_flowers_do_not_expand_to_two_block_columns()
     {
         var cactus = Stone with

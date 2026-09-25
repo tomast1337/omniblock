@@ -368,7 +368,7 @@ public static class TerrainLodVerticalSliceReducer
 /// </summary>
 public sealed class TerrainLodColumnTile
 {
-    internal const int SchemaVersion = 2;
+    internal const int SchemaVersion = 3;
     private const int MaximumSamplesPerSide = 256;
     private readonly TerrainLodColumn[] _columns;
 
@@ -379,13 +379,17 @@ public sealed class TerrainLodColumnTile
         int worldHeight,
         TerrainLodColumn[] columns,
         long? leafTerrainRevision,
-        string[] inputHashes)
+        string[] inputHashes,
+        TerrainLodClimateGrid? climate = null)
     {
         Key = key;
         HorizontalSampleLevel = horizontalSampleLevel;
         Width = width;
         WorldHeight = worldHeight;
         _columns = columns;
+        if (climate is not null && climate.Width != width)
+            throw new ArgumentException("Terrain tile climate must match its columns.", nameof(climate));
+        Climate = climate;
         LeafTerrainRevision = leafTerrainRevision;
         InputHashes = Array.AsReadOnly(inputHashes);
         CanonicalHash = ComputeCanonicalHash();
@@ -398,6 +402,7 @@ public sealed class TerrainLodColumnTile
     public long? LeafTerrainRevision { get; }
     public ReadOnlyCollection<string> InputHashes { get; }
     public string CanonicalHash { get; }
+    public TerrainLodClimateGrid? Climate { get; }
     public TerrainLodColumn this[int x, int z] => _columns[Index(x, z)];
 
     public bool MatchesLeafSource(long terrainRevision, string sourceFingerprint)
@@ -495,7 +500,8 @@ public sealed class TerrainLodColumnTile
             source.Height,
             columns,
             source.TerrainRevision,
-            [LeafInputIdentity(source.TerrainRevision, source.SourceFingerprint)]);
+            [LeafInputIdentity(source.TerrainRevision, source.SourceFingerprint)],
+            source.Climate);
     }
 
     public static TerrainLodColumnTile BuildParent(
@@ -543,6 +549,9 @@ public sealed class TerrainLodColumnTile
                 $"Terrain LOD parent would contain {outputWidth} samples per side; " +
                 $"the supported maximum is {MaximumSamplesPerSide}.");
         var columns = new TerrainLodColumn[checked(outputWidth * outputWidth)];
+        var climateSamples = children.All(static child => child.Climate is not null)
+            ? new TerrainLodClimateSample[columns.Length]
+            : null;
         for (var x = 0; x < outputWidth; x++)
         for (var z = 0; z < outputWidth; z++)
         {
@@ -554,6 +563,14 @@ public sealed class TerrainLodColumnTile
                     Mosaic(x * 2 + 1, z * 2 + 1),
                     1 << horizontalSampleLevel)
                 : Mosaic(x, z);
+            if (climateSamples is not null)
+                climateSamples[x * outputWidth + z] = reduce
+                    ? TerrainLodClimateSample.Average(
+                        MosaicClimate(x * 2, z * 2),
+                        MosaicClimate(x * 2 + 1, z * 2),
+                        MosaicClimate(x * 2, z * 2 + 1),
+                        MosaicClimate(x * 2 + 1, z * 2 + 1))
+                    : MosaicClimate(x, z);
         }
 
         return new TerrainLodColumnTile(
@@ -563,7 +580,8 @@ public sealed class TerrainLodColumnTile
             worldHeight,
             columns,
             leafTerrainRevision: null,
-            children.Select(static child => child.CanonicalHash).ToArray());
+            children.Select(static child => child.CanonicalHash).ToArray(),
+            climateSamples is null ? null : new TerrainLodClimateGrid(outputWidth, climateSamples));
 
         TerrainLodColumn Mosaic(int x, int z)
         {
@@ -571,6 +589,14 @@ public sealed class TerrainLodColumnTile
             var south = z >= childWidth ? 1 : 0;
             var child = children[east | (south << 1)];
             return child[x - east * childWidth, z - south * childWidth];
+        }
+
+        TerrainLodClimateSample MosaicClimate(int x, int z)
+        {
+            var east = x >= childWidth ? 1 : 0;
+            var south = z >= childWidth ? 1 : 0;
+            var child = children[east | (south << 1)];
+            return child.Climate![x - east * childWidth, z - south * childWidth];
         }
     }
 
@@ -582,7 +608,8 @@ public sealed class TerrainLodColumnTile
         TerrainLodColumn[] columns,
         long? leafTerrainRevision,
         string[] inputHashes,
-        string expectedCanonicalHash)
+        string expectedCanonicalHash,
+        TerrainLodClimateGrid? climate = null)
     {
         ArgumentNullException.ThrowIfNull(columns);
         ArgumentNullException.ThrowIfNull(inputHashes);
@@ -624,7 +651,8 @@ public sealed class TerrainLodColumnTile
             worldHeight,
             columns.ToArray(),
             leafTerrainRevision,
-            inputHashes.ToArray());
+            inputHashes.ToArray(),
+            climate);
         if (!string.Equals(tile.CanonicalHash, expectedCanonicalHash,
                 StringComparison.Ordinal))
             throw new InvalidDataException(
@@ -659,6 +687,15 @@ public sealed class TerrainLodColumnTile
             writer.Write(LeafTerrainRevision ?? -1);
             writer.Write(InputHashes.Count);
             foreach (var hash in InputHashes) writer.Write(hash);
+            writer.Write(Climate is not null);
+            if (Climate is { } climate)
+                for (var x = 0; x < Width; x++)
+                for (var z = 0; z < Width; z++)
+                {
+                    var sample = climate[x, z];
+                    writer.Write(sample.Temperature);
+                    writer.Write(sample.Downfall);
+                }
             foreach (var column in _columns)
             {
                 writer.Write(column.Spans.Count);

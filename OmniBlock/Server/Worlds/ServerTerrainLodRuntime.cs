@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using OmniBlock.Network.Messages;
 using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Biomes.Source;
 using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Lod;
@@ -93,6 +94,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     private readonly TerrainLodSpatialHierarchyCoordinator _spatialHierarchy;
     private readonly IChunkStorage? _storedTerrain;
     private readonly bool _hasSkyLight;
+    private readonly BiomeSource _biomeSource;
     private readonly List<TerrainLodColumnTile> _completedSpatialParents = [];
     private readonly Queue<TerrainLodTileKey> _spatialReadRequests = [];
     private readonly HashSet<TerrainLodTileKey> _spatialReadsPending = [];
@@ -163,6 +165,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         _transientImportMinimumLevel = transientImportMinimumLevel;
         _storedTerrain = storedTerrain;
         _hasSkyLight = !identitySource.Dimension.HasCeiling;
+        _biomeSource = identitySource.Dimension.BiomeSource;
         // The absolute cache root never crosses the wire; only its hash does. Including it keeps
         // two saves with the same seed/content from sharing a transport identity, while reopening
         // this save remains stable.
@@ -548,7 +551,8 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         {
             try
             {
-                var snapshot = TerrainLodSourceSnapshot.Capture(state.Chunk);
+                var snapshot = TerrainLodSourceSnapshot.Capture(state.Chunk)
+                    .WithClimate(_biomeSource);
                 var admission = _conversions.Submit(snapshot);
                 lock (_gate)
                 {
@@ -594,7 +598,8 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         }
         try
         {
-            var admission = _conversions.Submit(snapshot.CaptureTerrain());
+            var admission = _conversions.Submit(
+                snapshot.CaptureTerrain().WithClimate(_biomeSource));
             lock (_gate)
             {
                 if (admission is TerrainLodAdmissionResult.RejectedAtCapacity or
@@ -629,7 +634,8 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         try
         {
             var admission = await _conversions.SubmitWhenAvailableAsync(
-                snapshot.CaptureTerrain(), cancellationToken).ConfigureAwait(false);
+                snapshot.CaptureTerrain().WithClimate(_biomeSource), cancellationToken)
+                .ConfigureAwait(false);
             lock (_gate)
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
@@ -896,7 +902,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                         FinishSavedTileImport(import, missing: true);
                         continue;
                     }
-                    builder.AddSource(savedSource);
+                    builder.AddSource(savedSource.WithClimate(_biomeSource));
                     consumed++;
                     lock (_gate) _savedChunksImported++;
                     if (builder.Result is { } completed)
@@ -973,6 +979,8 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                 if (source.ChunkX != x || source.ChunkZ != z)
                     throw new InvalidDataException(
                         $"Saved terrain slot {x},{z} returned {source.ChunkX},{source.ChunkZ}.");
+                if (source.Climate is null)
+                    source = source.WithClimate(_biomeSource);
                 TerrainLodAdmissionResult admission;
                 lock (_gate)
                 {

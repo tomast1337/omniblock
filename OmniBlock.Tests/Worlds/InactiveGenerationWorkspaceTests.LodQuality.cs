@@ -33,12 +33,13 @@ public sealed partial class InactiveGenerationWorkspaceTests
             {
                 var leaf = child.Child(leafIndex);
                 return TerrainLodColumnTile.BuildLeaf(
-                    batch.Get(leaf.X, leaf.Z).CaptureTerrain(), materials);
+                    batch.Get(leaf.X, leaf.Z).CaptureTerrain()
+                        .WithClimate(world.Dimension.BiomeSource), materials);
             }).ToArray();
             return TerrainLodColumnTile.BuildParent(child, leaves, 0);
         }).ToArray();
         var tile = TerrainLodColumnTile.BuildParent(key, children, 0);
-        Assert.Equal("caff2e716f58def8d9eecc41391e44bbf29fa3efd5144cfcbfd26b894cb282b2",
+        Assert.Equal("a692f76a803bc99b126d0afd6d4c1be51d7c998f38d1aba748fb669815b9b599",
             tile.CanonicalHash);
         var column = tile[24, 33];
         var opening = column.At(76);
@@ -55,10 +56,10 @@ public sealed partial class InactiveGenerationWorkspaceTests
 
     [Theory]
     [InlineData("GLACIER", 826164623L,
-        "beb3edf41dce0f86934c93019f0384e0afa381427cec660fa98471d3f6fbfeb6",
+        "e944cf608890d3e5c31fc60ddc509501645ce94e88467f192b6a2ef885b8887c",
         995L, 170L, 69, 83)]
     [InlineData("GARGAMEL", -841147678L,
-        "963ceabdbf3eea1a1a2dded557beb464b15a4dea1655daaf5b53c68b8bbb7a1e",
+        "18be3a8d86212fe1bb9ff30d64e81d320c6d3ab6d2cda4e774e25dc09f50d97c",
         13927L, 1L, 58, 71)]
     public void Historical_seed_completed_neighborhood_has_a_stable_lod_source(
         string name, long seed, string expectedHash,
@@ -80,7 +81,8 @@ public sealed partial class InactiveGenerationWorkspaceTests
                 {
                     var leaf = child.Child(leafIndex);
                     return TerrainLodColumnTile.BuildLeaf(
-                        batch.Get(leaf.X, leaf.Z).CaptureTerrain(), materials);
+                        batch.Get(leaf.X, leaf.Z).CaptureTerrain()
+                            .WithClimate(world.Dimension.BiomeSource), materials);
                 }).ToArray();
                 return TerrainLodColumnTile.BuildParent(child, leaves, horizontalSampleLevel: 0);
             }).ToArray();

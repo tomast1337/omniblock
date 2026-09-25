@@ -50,7 +50,7 @@ public sealed partial class InactiveGenerationWorkspaceTests
                 {
                     var child = key.Child(i);
                     var offline = batch.Get(child.X, child.Z);
-                    var source = offline.CaptureTerrain();
+                    var source = offline.CaptureTerrain().WithClimate(world.Dimension.BiomeSource);
                     var leaf = leaves[i] = TerrainLodColumnTile.BuildLeaf(source, materials);
                     Assert.NotNull(source.Lighting);
                     for (var x = 0; x < 16; x++)
@@ -77,9 +77,10 @@ public sealed partial class InactiveGenerationWorkspaceTests
                 await WaitForTerrainLod(() => runtime.TryGetSpatialCoverage(key, out _) &&
                     runtime.Snapshot().SpatialCache.Writes >= 5);
                 Assert.True(runtime.TryGetSpatialCoverage(key, out var built));
+                Assert.NotNull(built!.Climate);
                 var expectedParent = TerrainLodColumnTile.BuildParent(key, leaves,
                     TerrainLodSpatialPolicy.CreateDefault().HorizontalSampleLevelForSpatialLevel(key.Level));
-                Assert.Equal(expectedParent.CanonicalHash, built!.CanonicalHash);
+                Assert.Equal(expectedParent.CanonicalHash, built.CanonicalHash);
                 // The near parent retains 1:1 columns, not merely one highest surface per column.
                 Assert.Equal(0, built.HorizontalSampleLevel);
                 for (var i = 0; i < 4; i++)
@@ -102,6 +103,7 @@ public sealed partial class InactiveGenerationWorkspaceTests
             await WaitForTerrainLod(() => reopened.TryGetSpatialPayload(key, out _));
             Assert.True(reopened.TryGetSpatialPayload(key, out var payload));
             var transported = TerrainLodTileMessage.FromCompressed(world.Dimension.Id, payload!).Decode();
+            Assert.NotNull(transported.Climate);
             var expectedHash = TerrainLodColumnTile.BuildParent(key, leaves, 0).CanonicalHash;
             Assert.Equal(expectedHash, transported.CanonicalHash);
             Assert.True(reopened.Snapshot().SpatialCache.ReadHits > 0);
@@ -169,7 +171,8 @@ public sealed partial class InactiveGenerationWorkspaceTests
             Dictionary<TerrainLodTileKey, TerrainLodColumnTile> leaves = [];
             foreach (var snapshot in batch.Chunks)
             {
-                var leaf = TerrainLodColumnTile.BuildLeaf(snapshot.CaptureTerrain(), materials);
+                var leaf = TerrainLodColumnTile.BuildLeaf(
+                    snapshot.CaptureTerrain().WithClimate(world.Dimension.BiomeSource), materials);
                 leaves.Add(leaf.Key, leaf);
             }
 
@@ -204,7 +207,8 @@ public sealed partial class InactiveGenerationWorkspaceTests
                 for (var z = 0; z < 2; z++)
                     chunk[x, 100, z] = chunk[x, 100, z] == stone ? 0 : stone;
                 var edited = InactiveChunkSnapshot.Capture(chunk, world);
-                var editedLeaf = TerrainLodColumnTile.BuildLeaf(edited.CaptureTerrain(), materials);
+                var editedLeaf = TerrainLodColumnTile.BuildLeaf(
+                    edited.CaptureTerrain().WithClimate(world.Dimension.BiomeSource), materials);
                 leaves[editedLeaf.Key] = editedLeaf;
                 var expected = ExpectedParent();
                 editedHash = expected.CanonicalHash;

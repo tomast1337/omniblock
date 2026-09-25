@@ -292,6 +292,29 @@ public sealed class TerrainLodSpatialMeshBuilderTests
     }
 
     [Fact]
+    public void Spatial_grass_uses_transport_climate_instead_of_default_green()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var grass = checked((byte)world.Content.Blocks.Get("omniblock:grass_block").Id);
+        var sample = new TerrainLodClimateSample(ushort.MaxValue, ushort.MaxValue);
+        var tile = Leaf(materials, 0, 0, 16,
+            (_, y, _) => y < 8 ? grass : (byte)0,
+            new TerrainLodClimateGrid(16, Enumerable.Repeat(sample, 256).ToArray()));
+        var overlayLayer = OmniBlock.Textures.Atlases.Terrain.LayerOfGridIndex(
+            OmniBlock.Textures.Atlases.Terrain.IndexOf("omniblock:grass_block_side_overlay"));
+
+        var mesh = TerrainLodSpatialMeshBuilder.Build(tile, world.Content.Blocks, 8);
+        var overlay = mesh.Pages.SelectMany(page => page.Vertices)
+            .Where(vertex => vertex.ArrayLayer == overlayLayer).ToArray();
+
+        Assert.NotEmpty(overlay);
+        Assert.Contains(overlay, vertex => vertex.Color ==
+            TerrainLodMeshBuilder.PackTintedColor(
+                OmniBlock.Worlds.ClientData.Colors.GrassColors.getColor(1, 1), 0.6f));
+    }
+
+    [Fact]
     public void Coarse_snow_samples_color_the_supporting_top_without_a_snow_cube()
     {
         var world = new FakeWorldContext();
@@ -632,7 +655,8 @@ public sealed class TerrainLodSpatialMeshBuilderTests
         int chunkX,
         int chunkZ,
         int height,
-        Func<int, int, int, byte> block)
+        Func<int, int, int, byte> block,
+        TerrainLodClimateGrid? climate = null)
     {
         var blocks = new byte[checked(16 * height * 16)];
         var metadata = new byte[blocks.Length];
@@ -641,7 +665,8 @@ public sealed class TerrainLodSpatialMeshBuilderTests
         for (var y = 0; y < height; y++)
             blocks[(x * 16 + z) * height + y] = block(x, y, z);
         var source = new TerrainLodSourceSnapshot(
-            chunkX, chunkZ, 16, height, 16, blocks, metadata, terrainRevision: 1);
+            chunkX, chunkZ, 16, height, 16, blocks, metadata,
+            terrainRevision: 1, climate: climate);
         return TerrainLodColumnTile.BuildLeaf(source, materials);
     }
 

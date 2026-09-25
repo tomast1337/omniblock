@@ -10,6 +10,41 @@ namespace OmniBlock.Tests.Worlds;
 public sealed class TerrainLodColumnTileCacheStoreTests
 {
     [Fact]
+    public void Climate_round_trips_through_disk_and_portable_tile_records()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var key = new TerrainLodTileKey(0, 2, -3);
+            var source = Snapshot(key, (_, _, _) => 1, revision: 7);
+            var climate = new TerrainLodClimateSample[256];
+            for (var x = 0; x < 16; x++)
+            for (var z = 0; z < 16; z++)
+                climate[x * 16 + z] = new TerrainLodClimateSample(
+                    checked((ushort)(x * 4000)), checked((ushort)(z * 4000)));
+            var tile = TerrainLodColumnTile.BuildLeaf(new TerrainLodSourceSnapshot(
+                source.ChunkX, source.ChunkZ, source.Width, source.Height, source.Depth,
+                Enumerable.Repeat((byte)1, 16 * source.Height * 16).ToArray(),
+                new byte[16 * source.Height * 16], source.TerrainRevision,
+                climate: new TerrainLodClimateGrid(16, climate)), Materials);
+
+            var store = Store(root);
+            Assert.Equal(TerrainLodColumnTileCacheWriteStatus.Written, store.Write(tile));
+            var disk = Assert.IsType<TerrainLodColumnTile>(store.Read(key).Tile);
+            var wire = TerrainLodColumnTileCacheStore.DecodePortable(
+                TerrainLodColumnTileCacheStore.EncodePortable(tile));
+            Assert.Equal(tile.CanonicalHash, disk.CanonicalHash);
+            Assert.Equal(tile.CanonicalHash, wire.CanonicalHash);
+            Assert.Equal(climate[15 * 16 + 7], disk.Climate![15, 7]);
+            Assert.Equal(climate[15 * 16 + 7], wire.Climate![15, 7]);
+        }
+        finally
+        {
+            root.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task Discarded_async_write_cannot_recreate_an_invalidated_record()
     {
         using ManualResetEventSlim entered = new();
@@ -548,7 +583,7 @@ public sealed class TerrainLodColumnTileCacheStoreTests
             using (var reader = new BinaryReader(stream))
             {
                 reader.ReadUInt64(); // signature
-                Assert.Equal(3, reader.ReadInt32()); // disk format, independent of quality policy
+                Assert.Equal(4, reader.ReadInt32()); // disk format, independent of quality policy
                 reader.ReadBytes(reader.ReadInt32()); // world
                 reader.ReadInt32(); // dimension
                 reader.ReadBytes(reader.ReadInt32()); // content

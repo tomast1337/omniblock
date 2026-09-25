@@ -11,7 +11,7 @@ public sealed class TerrainLodTileMessage : Message
     private const int MaximumCompressedBytes = TerrainLodScaleBudget.MaximumCompressedTileBytes;
     private const int MaximumDecodedBytes = TerrainLodScaleBudget.MaximumDecodedTileBytes;
     public static readonly ResourceLocation Id = new(
-        Namespace.Get("omniblock"), "terrain_lod_tile_v3");
+        Namespace.Get("omniblock"), "terrain_lod_tile_v4");
 
     public int Dimension { get; set; }
     public string CacheIdentity { get; set; } = "";
@@ -19,7 +19,7 @@ public sealed class TerrainLodTileMessage : Message
     public byte[] Compressed { get; set; } = [];
     private TerrainLodColumnTile? LoopbackTile { get; set; }
     public override ResourceLocation Key => Id;
-    public override int SchemaVersion => 3;
+    public override int SchemaVersion => 4;
     public override SendPriority Priority => SendPriority.Bulk;
 
     public static TerrainLodTileMessage Of(

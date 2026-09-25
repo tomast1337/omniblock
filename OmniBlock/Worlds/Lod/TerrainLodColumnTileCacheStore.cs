@@ -49,7 +49,7 @@ public sealed record TerrainLodColumnTileCacheSnapshot(
 public sealed class TerrainLodColumnTileCacheStore
 {
     private const ulong Magic = 0x314C4F43494E4D4F; // OMNICOL1
-    private const int CurrentFormatVersion = 3;
+    private const int CurrentFormatVersion = 4;
     private const int ChecksumBytes = 32;
     private const int MaximumStringBytes = 4096;
     private const int MaximumSamplesPerSide = 256;
@@ -60,7 +60,7 @@ public sealed class TerrainLodColumnTileCacheStore
     private const int LinuxOpenReadOnly = 0;
     private const int LinuxOpenDirectory = 0x10000;
     private const uint PortableMagic = 0x314C5450; // PTL1
-    private const int PortableVersion = 2;
+    private const int PortableVersion = 3;
 
     private readonly object _gate = new();
     private readonly TerrainLodCacheIdentity _identity;
@@ -438,6 +438,7 @@ public sealed class TerrainLodColumnTileCacheStore
             WriteString(writer, tile.CanonicalHash);
             writer.Write(palette.Count);
             foreach (var material in palette) WriteMaterial(writer, material);
+            WriteClimate(writer, tile);
             writer.Write(checked(tile.Width * tile.Width));
             for (var x = 0; x < tile.Width; x++)
             for (var z = 0; z < tile.Width; z++)
@@ -492,6 +493,7 @@ public sealed class TerrainLodColumnTileCacheStore
             if (!unique.Add(palette[index]))
                 throw new InvalidDataException("Terrain LOD wire tile repeats a palette entry.");
         }
+        var climate = ReadClimate(reader, width);
         var columnCount = reader.ReadInt32();
         if (columnCount != checked(width * width))
             throw new InvalidDataException("Terrain LOD wire tile has an invalid column count.");
@@ -520,7 +522,7 @@ public sealed class TerrainLodColumnTileCacheStore
         if (stream.Position != stream.Length)
             throw new InvalidDataException("Terrain LOD wire tile contains trailing data.");
         return TerrainLodColumnTile.FromSerialized(
-            key, sampleLevel, width, worldHeight, columns, revision, inputs, hash);
+            key, sampleLevel, width, worldHeight, columns, revision, inputs, hash, climate);
     }
 
     private byte[] Serialize(TerrainLodColumnTile tile)
@@ -550,6 +552,7 @@ public sealed class TerrainLodColumnTileCacheStore
             WriteString(writer, tile.CanonicalHash);
             writer.Write(palette.Count);
             foreach (var material in palette) WriteMaterial(writer, material);
+            WriteClimate(writer, tile);
             writer.Write(checked(tile.Width * tile.Width));
             for (var x = 0; x < tile.Width; x++)
             for (var z = 0; z < tile.Width; z++)
@@ -641,6 +644,8 @@ public sealed class TerrainLodColumnTileCacheStore
                     $"Column-tile palette repeats material {palette[index]}.");
         }
 
+        var climate = ReadClimate(reader, width);
+
         var columnCount = reader.ReadInt32();
         if (columnCount != checked(width * width))
             throw new InvalidDataException(
@@ -684,12 +689,36 @@ public sealed class TerrainLodColumnTileCacheStore
             columns,
             leafRevision,
             inputHashes,
-            canonicalHash);
+            canonicalHash,
+            climate);
         return new TerrainLodColumnTileCacheReadResult(
             TerrainLodColumnTileCacheReadStatus.Hit, tile);
 
         static TerrainLodColumnTileCacheReadResult Incompatible(string diagnostic) => new(
             TerrainLodColumnTileCacheReadStatus.Incompatible, null, diagnostic);
+    }
+
+    private static void WriteClimate(BinaryWriter writer, TerrainLodColumnTile tile)
+    {
+        writer.Write(tile.Climate is not null);
+        if (tile.Climate is not { } climate) return;
+        for (var x = 0; x < tile.Width; x++)
+        for (var z = 0; z < tile.Width; z++)
+        {
+            var sample = climate[x, z];
+            writer.Write(sample.Temperature);
+            writer.Write(sample.Downfall);
+        }
+    }
+
+    private static TerrainLodClimateGrid? ReadClimate(BinaryReader reader, int width)
+    {
+        if (!reader.ReadBoolean()) return null;
+        var samples = new TerrainLodClimateSample[checked(width * width)];
+        for (var index = 0; index < samples.Length; index++)
+            samples[index] = new TerrainLodClimateSample(
+                reader.ReadUInt16(), reader.ReadUInt16());
+        return new TerrainLodClimateGrid(width, samples);
     }
 
     private static void ValidateDimensions(

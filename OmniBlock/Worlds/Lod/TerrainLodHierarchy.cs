@@ -6,6 +6,7 @@ using OmniBlock.Blocks;
 using OmniBlock.NBT;
 using OmniBlock.Registries;
 using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Biomes.Source;
 using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Worlds.Lod;
@@ -213,7 +214,8 @@ public sealed class TerrainLodSourceSnapshot
         ReadOnlySpan<byte> blocks,
         ReadOnlySpan<byte> metadata,
         long terrainRevision = 0,
-        TerrainLodLightingSnapshot? lighting = null)
+        TerrainLodLightingSnapshot? lighting = null,
+        TerrainLodClimateGrid? climate = null)
     {
         if (width <= 0) throw new ArgumentOutOfRangeException(nameof(width));
         if (height <= 0) throw new ArgumentOutOfRangeException(nameof(height));
@@ -235,8 +237,28 @@ public sealed class TerrainLodSourceSnapshot
                 "Terrain lighting must identify the same chunk and revision as its source.",
                 nameof(lighting));
         Lighting = lighting;
+        if (climate is not null && (width != depth || climate.Width != width))
+            throw new ArgumentException("Terrain climate must match the horizontal snapshot.", nameof(climate));
+        Climate = climate;
         _blocks = blocks.ToArray();
         _metadata = metadata.ToArray();
+    }
+
+    private TerrainLodSourceSnapshot(
+        TerrainLodSourceSnapshot source, TerrainLodClimateGrid climate)
+    {
+        // Both arrays were copied on source construction and are never exposed for mutation.
+        // Adding climate must not recopy the 64-KiB terrain twice on each server snapshot.
+        _blocks = source._blocks;
+        _metadata = source._metadata;
+        ChunkX = source.ChunkX;
+        ChunkZ = source.ChunkZ;
+        Width = source.Width;
+        Height = source.Height;
+        Depth = source.Depth;
+        TerrainRevision = source.TerrainRevision;
+        Lighting = source.Lighting;
+        Climate = climate;
     }
 
     public int ChunkX { get; }
@@ -246,9 +268,19 @@ public sealed class TerrainLodSourceSnapshot
     public int Depth { get; }
     public long TerrainRevision { get; }
     public TerrainLodLightingSnapshot? Lighting { get; }
+    public TerrainLodClimateGrid? Climate { get; }
     public long EstimatedBytes => (long)_blocks.Length + _metadata.Length +
-                                  (Lighting?.EstimatedBytes ?? 0);
+                                  (Lighting?.EstimatedBytes ?? 0) +
+                                  (Climate is null ? 0 : (long)Width * Depth * 4);
     public string SourceFingerprint => _sourceFingerprint ??= ComputeSourceFingerprint();
+
+    public TerrainLodSourceSnapshot WithClimate(BiomeSource biomeSource)
+    {
+        if (Width != 16 || Depth != 16)
+            throw new InvalidOperationException("Biome climate capture requires a 16x16 chunk source.");
+        return new TerrainLodSourceSnapshot(this,
+            TerrainLodClimateGrid.Capture(biomeSource, ChunkX, ChunkZ));
+    }
 
     public static TerrainLodSourceSnapshot Capture(Chunk chunk, long? terrainRevision = null)
     {
@@ -347,6 +379,19 @@ public sealed class TerrainLodSourceSnapshot
         {
             hash.AppendData(lighting.SkyLight);
             hash.AppendData(lighting.BlockLight);
+        }
+        hash.AppendData(Climate is null ? [(byte)0] : [(byte)1]);
+        if (Climate is { } climate)
+        {
+            Span<byte> sampleBytes = stackalloc byte[4];
+            for (var x = 0; x < Width; x++)
+            for (var z = 0; z < Depth; z++)
+            {
+                var sample = climate[x, z];
+                BinaryPrimitives.WriteUInt16LittleEndian(sampleBytes, sample.Temperature);
+                BinaryPrimitives.WriteUInt16LittleEndian(sampleBytes[2..], sample.Downfall);
+                hash.AppendData(sampleBytes);
+            }
         }
         return Convert.ToHexStringLower(hash.GetHashAndReset());
     }

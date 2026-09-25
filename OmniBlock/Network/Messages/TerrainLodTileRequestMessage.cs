@@ -13,7 +13,7 @@ public sealed class TerrainLodTileRequestMessage : Message
     public const int MaximumKeys = TerrainLodScaleBudget.MaximumRequestKeys;
     private const int MaximumIdentityLength = 128;
     public static readonly ResourceLocation Id = new(
-        Namespace.Get("omniblock"), "terrain_lod_tile_request_v3");
+        Namespace.Get("omniblock"), "terrain_lod_tile_request_v4");
 
     public int Dimension { get; set; }
     public string CacheIdentity { get; set; } = "";
@@ -23,7 +23,7 @@ public sealed class TerrainLodTileRequestMessage : Message
         TerrainLodSpatialPolicy.CurrentQualityPolicyVersion;
     public TerrainLodTileKey[] Keys { get; set; } = [];
     public override ResourceLocation Key => Id;
-    public override int SchemaVersion => 3;
+    public override int SchemaVersion => 4;
     public override SendPriority Priority => SendPriority.Bulk;
 
     public override void Read(Stream stream)

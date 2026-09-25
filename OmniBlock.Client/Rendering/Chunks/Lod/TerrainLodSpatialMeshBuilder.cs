@@ -5,6 +5,8 @@ using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.WebGPU;
 using OmniBlock.Registries;
 using OmniBlock.Textures;
+using OmniBlock.Worlds.ClientData.Colors;
+using OmniBlock.Worlds.Colors;
 using OmniBlock.Worlds.Lod;
 
 namespace OmniBlock.Client.Rendering.Chunks.Lod;
@@ -166,6 +168,8 @@ internal static class TerrainLodSpatialMeshBuilder
 
         Dictionary<TerrainLodSpatialMeshPageKey, PageBuilder> pages = [];
         blocks.TryGet("omniblock:grass_block", out var grassBlock);
+        blocks.TryGet("omniblock:leaves", out var leavesBlock);
+        blocks.TryGet("omniblock:grass", out var tallGrassBlock);
         var grassOverlayTexture = grassBlock is null
             ? -1
             : Atlases.Terrain.IndexOf("omniblock:grass_block_side_overlay");
@@ -241,7 +245,7 @@ internal static class TerrainLodSpatialMeshBuilder
                 {
                     var worldX = checked((int)tileMinX + x);
                     var worldZ = checked((int)tileMinZ + z);
-                    var appearance = Appearance(plant, plantSpan.Material, Side.Down, null);
+                    var appearance = Appearance(plant, plantSpan.Material, Side.Down, null, x, z);
                     const float inset = 0.05f;
                     var left = worldX + inset;
                     var right = worldX + 1 - inset;
@@ -292,7 +296,7 @@ internal static class TerrainLodSpatialMeshBuilder
                         faceBlock = layerBlock;
                         faceMaterial = layer.Material;
                     }
-                    var appearance = Appearance(faceBlock, faceMaterial, side, above);
+                    var appearance = Appearance(faceBlock, faceMaterial, side, above, x, z);
                     var light = FaceLight(span, exposedNeighbor, side);
                     // sampleSize is bounded by MaximumSampleSpan and the power-of-two sample grid is
                     // aligned to every page boundary, so this quad can never straddle a page.
@@ -393,7 +397,7 @@ internal static class TerrainLodSpatialMeshBuilder
                             var pageBoundary = (FloorDivide((int)MathF.Floor(y0), PageSize) + 1) * PageSize;
                             var y1 = Math.Min(top, Math.Min(y0 + MaximumQuadSpan, pageBoundary));
                             if (y1 <= y0) y1 = Math.Min(top, y0 + MaximumQuadSpan);
-                            var appearance = Appearance(block, span.Material, side, above);
+                            var appearance = Appearance(block, span.Material, side, above, x, z);
                             var anchorX = side is Side.West or Side.East
                                 ? (side == Side.West ? fixedCoordinate + 0.001 : fixedCoordinate - 0.001)
                                 : (alongStart + alongEnd) * 0.5;
@@ -504,13 +508,44 @@ internal static class TerrainLodSpatialMeshBuilder
             Block owner,
             TerrainLodMaterial material,
             Side side,
-            TerrainLodColumnSpan? above)
+            TerrainLodColumnSpan? above,
+            int sampleX,
+            int sampleZ)
         {
+            var tint = tile.Climate is { } climate
+                ? ClimateTint(owner, grassBlock, leavesBlock, tallGrassBlock, material,
+                    climate[sampleX, sampleZ])
+                : null;
             return TerrainLodMeshBuilder.ResolveWorldlessFaceAppearance(
                 owner, material, side, ReferenceEquals(owner, grassBlock),
                 TerrainLodMeshBuilder.HasSnowCover(above),
-                grassOverlayTexture, snowyGrassTexture);
+                grassOverlayTexture, snowyGrassTexture, tint);
         }
+    }
+
+    internal static int? ClimateTint(
+        Block owner,
+        Block? grassBlock,
+        Block? leavesBlock,
+        Block? tallGrassBlock,
+        TerrainLodMaterial material,
+        TerrainLodClimateSample sample)
+    {
+        // Only the shipped biome-tinted visuals are mapped here. Other blocks retain their
+        // definition tint until LOD visual providers become part of the content runtime.
+        if (ReferenceEquals(owner, grassBlock))
+            return GrassColors.getColor(sample.TemperatureValue, sample.DownfallValue);
+        if (ReferenceEquals(owner, leavesBlock))
+            return (material.Metadata & 1) != 0
+                ? FoliageColors.getSpruceColor()
+                : (material.Metadata & 2) != 0
+                    ? FoliageColors.getBirchColor()
+                    : FoliageColors.getFoliageColor(
+                        sample.TemperatureValue, sample.DownfallValue);
+        if (ReferenceEquals(owner, tallGrassBlock))
+            return material.Metadata == 0 ? 0xFFFFFF : GrassColors.getColor(
+                sample.TemperatureValue, sample.DownfallValue);
+        return null;
     }
 
     private static TerrainLodColumnSpan? NeighborAt(TerrainLodColumn column, int y) =>

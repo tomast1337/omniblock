@@ -73,6 +73,30 @@ public sealed class TerrainLodSpatialSeamMeshBuilderTests
     }
 
     [Fact]
+    public void Exterior_grass_seam_uses_the_same_climate_tint_as_its_tile()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var grass = checked((byte)world.Content.Blocks.Get("omniblock:grass_block").Id);
+        var sample = new TerrainLodClimateSample(ushort.MaxValue, ushort.MaxValue);
+        var tile = Leaf(materials, 0, 0, 16,
+            (_, y, _) => y < 8 ? grass : (byte)0,
+            climate: new TerrainLodClimateGrid(16, Enumerable.Repeat(sample, 256).ToArray()));
+        var segment = TerrainLodSpatialSeamPlanner.Plan(
+            [new TerrainLodTileSelection(tile.Key, 0, 8)])
+            .Single(static seam => seam.OwnerSide == TerrainLodSpatialBoundarySide.East);
+        var overlayLayer = OmniBlock.Textures.Atlases.Terrain.LayerOfGridIndex(
+            OmniBlock.Textures.Atlases.Terrain.IndexOf("omniblock:grass_block_side_overlay"));
+
+        var seam = TerrainLodSpatialSeamMeshBuilder.Build(
+            segment, tile, neighbor: null, world.Content.Blocks);
+        var expected = TerrainLodMeshBuilder.PackTintedColor(
+            OmniBlock.Worlds.ClientData.Colors.GrassColors.getColor(1, 1), 0.6f);
+        Assert.Contains(seam.Pages.SelectMany(page => page.Vertices), vertex =>
+            vertex.ArrayLayer == overlayLayer && vertex.Color == expected);
+    }
+
+    [Fact]
     public void Seam_build_stops_when_the_result_cannot_fit_its_budget()
     {
         var world = new FakeWorldContext();
@@ -300,7 +324,8 @@ public sealed class TerrainLodSpatialSeamMeshBuilderTests
         int chunkZ,
         int height,
         Func<int, int, int, byte> block,
-        Func<int, int, int, byte>? metadataAt = null)
+        Func<int, int, int, byte>? metadataAt = null,
+        TerrainLodClimateGrid? climate = null)
     {
         var blocks = new byte[checked(16 * height * 16)];
         var metadata = new byte[blocks.Length];
@@ -314,7 +339,8 @@ public sealed class TerrainLodSpatialSeamMeshBuilderTests
         }
         return TerrainLodColumnTile.BuildLeaf(
             new TerrainLodSourceSnapshot(
-                chunkX, chunkZ, 16, height, 16, blocks, metadata, terrainRevision: 1),
+                chunkX, chunkZ, 16, height, 16, blocks, metadata,
+                terrainRevision: 1, climate: climate),
             materials);
     }
 }
