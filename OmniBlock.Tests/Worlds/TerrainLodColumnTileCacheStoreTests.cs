@@ -10,6 +10,41 @@ namespace OmniBlock.Tests.Worlds;
 public sealed class TerrainLodColumnTileCacheStoreTests
 {
     [Fact]
+    public async Task Discarded_async_write_cannot_recreate_an_invalidated_record()
+    {
+        using ManualResetEventSlim entered = new();
+        using ManualResetEventSlim release = new();
+        var writes = 0;
+        using var writer = new TerrainLodColumnTileAsyncCacheWriter(4, _ =>
+        {
+            entered.Set();
+            release.Wait(TimeSpan.FromSeconds(5));
+            Interlocked.Increment(ref writes);
+            return TerrainLodColumnTileCacheWriteStatus.Written;
+        });
+        var key = new TerrainLodTileKey(0, 0, 0);
+        try
+        {
+            Assert.True(writer.TrySubmit(Leaf(key, 1, 1)));
+            Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
+            Assert.True(writer.TrySubmit(Leaf(key, 1, 2)));
+
+            var discard = Task.Run(() => writer.DiscardAndWait(key));
+            await Task.Delay(20);
+            Assert.False(discard.IsCompleted);
+            release.Set();
+            await discard.WaitAsync(TimeSpan.FromSeconds(5));
+
+            Assert.Equal(1, Volatile.Read(ref writes));
+            Assert.Equal(0, writer.Snapshot().Queued);
+        }
+        finally
+        {
+            release.Set();
+        }
+    }
+
+    [Fact]
     public void Invalidation_status_round_trips_on_versioned_protocol()
     {
         TerrainLodTileStatusMessage outgoing = new()

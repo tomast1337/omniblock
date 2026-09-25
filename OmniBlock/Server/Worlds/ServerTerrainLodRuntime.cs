@@ -257,6 +257,16 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             }
             if (_refreshRequired.Contains(key))
             {
+                if (!_blockedTransientImports.ContainsKey(key) &&
+                    key.Level < _transientImportMinimumLevel &&
+                    _spatialHierarchy.TryGetCoverage(key, out tile, out var current) &&
+                    current)
+                {
+                    _refreshRequired.Remove(key);
+                    _refreshAnnounced.Remove(key);
+                    _spatialMissing.Remove(key);
+                    return TerrainLodTileAvailability.Ready;
+                }
                 tile = null;
                 if (_blockedTransientImports.ContainsKey(key) ||
                     _savedTileImports.ContainsKey(key))
@@ -314,7 +324,9 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             if (_refreshRequired.Contains(key))
             {
                 payload = null;
-                return GetSpatialCoverage(key, out _);
+                var availability = GetSpatialCoverage(key, out _);
+                if (availability != TerrainLodTileAvailability.Ready)
+                    return availability;
             }
             if (_spatialWirePayloads.TryGetValue(key, out payload))
                 return TerrainLodTileAvailability.Ready;
@@ -454,15 +466,19 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             if (_disposed || !_tracked.TryGetValue(new ChunkKey(chunk.X, chunk.Z),
                     out var state) || !ReferenceEquals(state.Chunk, chunk) ||
                 state.LastSavedRevision == chunk.TerrainRevision) return;
+            _spatialHierarchy.MarkSourceChanged(chunk.X, chunk.Z);
             // Delete before the authoritative write, so an ordinary save/reopen cannot use a
-            // parent compiled from the previous source. The direct importer is the only writer
-            // of these fallback records and checks live-edit cancellation after its write.
-            for (var level = _transientImportMinimumLevel;
+            // parent compiled from the previous source. Quiesce the normal hierarchy's async
+            // persistence first; otherwise it could recreate an old record after deletion.
+            for (var level = TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel;
                  level <= Math.Min(_spatialPolicy.MaximumSpatialLevel,
                      MaximumTransientImportLevel); level++)
             {
                 var key = TerrainLodTileKey.ContainingChunk(level, chunk.X, chunk.Z);
-                if (!_spatialCache.Invalidate(key) && !_refreshRequired.Contains(key))
+                _spatialHierarchy.QuiescePersistence(key);
+                var resident = _spatialHierarchy.TryGetCoverage(key, out _, out _);
+                if (!_spatialCache.Invalidate(key) && !resident &&
+                    !_refreshRequired.Contains(key))
                     continue;
                 if (_refreshRequired.Add(key))
                     _tileGenerations[key] = ++_nextTileGeneration;
@@ -657,6 +673,8 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                     new ChunkKey(chunk.X, chunk.Z), out var state) ||
                 !ReferenceEquals(state.Chunk, chunk)) return;
             _terrainChangesObserved++;
+            if (!state.Dirty)
+                _spatialHierarchy.MarkSourceChanged(chunk.X, chunk.Z);
             // A transient parent is assembled from many separately read saved chunks. Once a
             // live source changes, finishing that read would publish a mixture of revisions.
             // The worker observes this flag before accepting another source or publishing.
@@ -994,16 +1012,24 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                 .ToArray();
         foreach (var import in waiting)
         {
-            if (_spatialHierarchy.TryGetCoverage(import.Key, out _, out _))
+            lock (_gate)
             {
-                lock (_gate)
+                if (_savedTileImports.ContainsKey(import.Key) &&
+                    _spatialHierarchy.TryGetCoverage(import.Key, out _, out var current) &&
+                    (!_refreshRequired.Contains(import.Key) || current))
                 {
                     _savedTileImports.Remove(import.Key);
                     _spatialMissing.Remove(import.Key);
+                    if (current)
+                    {
+                        _refreshRequired.Remove(import.Key);
+                        _refreshAnnounced.Remove(import.Key);
+                    }
+                    continue;
                 }
             }
-            else if (DateTime.UtcNow - import.AwaitingPublicationSince!.Value >
-                     TimeSpan.FromMinutes(2))
+            if (DateTime.UtcNow - import.AwaitingPublicationSince!.Value >
+                TimeSpan.FromMinutes(2))
             {
                 // A failed conversion or tile-capacity rejection must not leave a client
                 // waiting forever. A later live chunk update can still publish the parent.
@@ -1057,9 +1083,19 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             {
                 if (!_spatialHierarchy.TryGetCoverage(key, out var tile, out _) || tile is null)
                     continue;
+                long generation;
+                lock (_gate) generation = _tileGenerations.GetValueOrDefault(key);
                 var payload = TerrainLodTileMessage.Encode(tile);
                 lock (_gate)
                 {
+                    // Encoding is off the server tick. A save or parent rebuild can supersede
+                    // this tile while its bytes are being produced; never publish those old
+                    // bytes into the response cache after the newer generation is announced.
+                    if (_refreshRequired.Contains(key) ||
+                        _tileGenerations.GetValueOrDefault(key) != generation ||
+                        !_spatialHierarchy.TryGetCoverage(key, out var latest, out _) ||
+                        !ReferenceEquals(tile, latest))
+                        continue;
                     const int capacity = 512;
                     if (!_spatialWirePayloads.ContainsKey(key)) _spatialWirePayloadOrder.Enqueue(key);
                     _spatialWirePayloads[key] = payload;
@@ -1088,7 +1124,15 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         if (result.SpatialLeaf is not { } leaf)
             throw new InvalidOperationException(
                 $"Terrain LOD conversion {result.ChunkX},{result.ChunkZ} has no spatial leaf.");
-        _spatialHierarchy.PublishLeaf(leaf);
+        lock (_gate)
+        {
+            // A queued conversion may finish after a newer live edit. It can remain in the
+            // revision-keyed per-chunk cache, but it must not make stale parents current again.
+            if (_tracked.TryGetValue(new ChunkKey(result.ChunkX, result.ChunkZ), out var live) &&
+                live.Chunk.TerrainRevision > result.TerrainRevision)
+                return;
+            _spatialHierarchy.PublishLeaf(leaf);
+        }
     }
 
     private void PublishSnapshotLocked() => Volatile.Write(ref _publishedSnapshot,

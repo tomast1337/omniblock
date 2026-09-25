@@ -681,6 +681,84 @@ public sealed class ServerTerrainLodRuntimeTests
         }
     }
 
+    [Fact]
+    public async Task Saved_edit_refreshes_normal_hierarchy_tile_and_reopen_rejects_old_record()
+    {
+        var root = CreateTemporaryDirectory();
+        var save = new DirectoryInfo(Path.Combine(root.FullName, "saved"));
+        save.Create();
+        try
+        {
+            var world = new FakeWorldContext();
+            var storage = new RegionChunkStorage(save.FullName);
+            var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+            Chunk? edited = null;
+            for (var x = 0; x < 4; x++)
+            for (var z = 0; z < 4; z++)
+            {
+                var chunk = Chunk(world, x, z);
+                chunk[0, 4, 0] = stone;
+                storage.SaveChunk(world, chunk, null, 1);
+                if (x == 0 && z == 0) edited = chunk;
+            }
+            storage.FlushToDisk();
+            var key = new TerrainLodTileKey(2, 0, 0);
+            string replacementHash;
+            using (var runtime = new ServerTerrainLodRuntime(
+                       0, TerrainLodMaterialCatalog.FromRuntime(world.Content), root, world,
+                       storedTerrain: storage))
+            {
+                await WaitUntil(() => runtime.TryGetSpatialCoverage(key, out _),
+                    TimeSpan.FromSeconds(30));
+                Assert.True(runtime.TryGetSpatialCoverage(key, out var original));
+                await WaitUntil(() => new TerrainLodColumnTileCacheStore(root, runtime.Identity)
+                    .Read(key).Status == TerrainLodColumnTileCacheReadStatus.Hit,
+                    TimeSpan.FromSeconds(30));
+
+                runtime.TrackChunk(edited!);
+                edited![0, 4, 0] = 0;
+                runtime.BeforeChunkSave(edited);
+                Assert.Equal(TerrainLodTileAvailability.Pending,
+                    runtime.GetSpatialCoverage(key, out _));
+                Assert.Equal(TerrainLodColumnTileCacheReadStatus.Missing,
+                    new TerrainLodColumnTileCacheStore(root, runtime.Identity)
+                        .Read(key).Status);
+                storage.SaveChunk(world, edited, null, 2);
+                storage.FlushToDisk();
+                var invalidation = Assert.Single(runtime.NotifyChunkSaved(edited));
+                Assert.Equal(key, invalidation.Key);
+                Assert.True(invalidation.Generation > 0);
+
+                await WaitUntil(() => runtime.GetSpatialCoverage(key, out var tile) ==
+                                      TerrainLodTileAvailability.Ready &&
+                                      tile!.CanonicalHash != original!.CanonicalHash,
+                    TimeSpan.FromSeconds(30));
+                Assert.True(runtime.TryGetSpatialCoverage(key, out var replacement));
+                replacementHash = replacement!.CanonicalHash;
+                await WaitUntil(() =>
+                {
+                    var cached = new TerrainLodColumnTileCacheStore(root, runtime.Identity)
+                        .Read(key);
+                    return cached.Status == TerrainLodColumnTileCacheReadStatus.Hit &&
+                           cached.Tile!.CanonicalHash == replacementHash;
+                }, TimeSpan.FromSeconds(30));
+            }
+
+            using var reopened = new ServerTerrainLodRuntime(
+                0, TerrainLodMaterialCatalog.FromRuntime(world.Content), root, world,
+                storedTerrain: storage);
+            await WaitUntil(() => reopened.TryGetSpatialCoverage(key, out _),
+                TimeSpan.FromSeconds(30));
+            Assert.True(reopened.TryGetSpatialCoverage(key, out var cachedTile));
+            Assert.Equal(replacementHash, cachedTile!.CanonicalHash);
+        }
+        finally
+        {
+            RegionIo.Flush();
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
     [Theory]
     [InlineData(512, 7, 289)]
     [InlineData(1024, 8, 297)]

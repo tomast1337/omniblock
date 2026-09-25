@@ -239,6 +239,28 @@ public sealed class TerrainLodSpatialHierarchyCoordinator : IDisposable
             return _nodes.TryGetValue(key, out var node) && node.Current;
     }
 
+    /// <summary>
+    ///     A live source has changed but its replacement leaf has not been converted yet. Retain
+    ///     the old tiles as presentation fallbacks, while preventing their old child hashes from
+    ///     qualifying as a current parent or completing a saved-source refresh.
+    /// </summary>
+    public void MarkSourceChanged(int chunkX, int chunkZ)
+    {
+        lock (_gate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            for (var level = 0; level <= _policy.MaximumSpatialLevel; level++)
+            {
+                var key = TerrainLodTileKey.ContainingChunk(level, chunkX, chunkZ);
+                if (_nodes.TryGetValue(key, out var node)) node.Current = false;
+                _construction.Discard(key);
+            }
+        }
+    }
+
+    public void QuiescePersistence(TerrainLodTileKey key) =>
+        _persistence?.DiscardAndWait(key);
+
     public bool Evict(TerrainLodTileKey key)
     {
         lock (_gate)

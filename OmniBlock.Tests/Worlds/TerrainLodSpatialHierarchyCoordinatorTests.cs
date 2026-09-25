@@ -73,6 +73,27 @@ public sealed class TerrainLodSpatialHierarchyCoordinatorTests
     }
 
     [Fact]
+    public async Task Pending_source_edit_marks_only_its_ancestor_chain_noncurrent()
+    {
+        using var coordinator = Coordinator(MaximumLevelTwoPolicy(), tileCapacity: 64);
+        var root = new TerrainLodTileKey(2, 0, 0);
+        foreach (var leaf in Leaves(root, block: 1, revision: 1))
+            coordinator.PublishLeaf(leaf);
+        await PumpUntil(coordinator, () => coordinator.IsCurrent(root));
+
+        var changed = root.Child(0).Child(0);
+        coordinator.MarkSourceChanged((int)changed.MinChunkX, (int)changed.MinChunkZ);
+
+        Assert.True(coordinator.TryGetCoverage(root, out _, out var rootCurrent));
+        Assert.False(rootCurrent);
+        Assert.True(coordinator.TryGetCoverage(root.Child(0), out _, out var parentCurrent));
+        Assert.False(parentCurrent);
+        Assert.True(coordinator.TryGetCoverage(changed, out _, out var leafCurrent));
+        Assert.False(leafCurrent);
+        Assert.True(coordinator.IsCurrent(root.Child(1)));
+    }
+
+    [Fact]
     public async Task Published_parents_recursively_wake_the_next_complete_ancestor()
     {
         using var coordinator = Coordinator(MaximumLevelTwoPolicy(), tileCapacity: 32);

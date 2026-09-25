@@ -30,6 +30,7 @@ public sealed class TerrainLodColumnTileAsyncCacheWriter : IDisposable
     private long _written;
     private long _failed;
     private int _running;
+    private TerrainLodTileKey? _runningKey;
     private string? _lastError;
     private TerrainLodColumnTileAsyncCacheWriterSnapshot _snapshot = null!;
 
@@ -85,6 +86,20 @@ public sealed class TerrainLodColumnTileAsyncCacheWriter : IDisposable
     public TerrainLodColumnTileAsyncCacheWriterSnapshot Snapshot() =>
         Volatile.Read(ref _snapshot);
 
+    /// <summary>
+    ///     Quiesces an old derived write before the authoritative chunk save invalidates its
+    ///     record. Otherwise a queued/running cache write can recreate a stale record afterwards.
+    /// </summary>
+    public void DiscardAndWait(TerrainLodTileKey key)
+    {
+        lock (_gate)
+        {
+            _pending.Remove(key);
+            while (_runningKey == key) Monitor.Wait(_gate);
+            PublishSnapshotLocked();
+        }
+    }
+
     private void WorkerLoop()
     {
         while (true)
@@ -97,6 +112,7 @@ public sealed class TerrainLodColumnTileAsyncCacheWriter : IDisposable
                 var key = _order.Dequeue();
                 if (!_pending.Remove(key, out tile!)) continue;
                 _running = 1;
+                _runningKey = key;
                 PublishSnapshotLocked();
             }
 
@@ -106,6 +122,7 @@ public sealed class TerrainLodColumnTileAsyncCacheWriter : IDisposable
                 lock (_gate)
                 {
                     _running = 0;
+                    _runningKey = null;
                     if (status == TerrainLodColumnTileCacheWriteStatus.Written)
                     {
                         _written++;
@@ -118,6 +135,7 @@ public sealed class TerrainLodColumnTileAsyncCacheWriter : IDisposable
                             "Terrain LOD column-tile record exceeded its cache budget.";
                     }
                     PublishSnapshotLocked();
+                    Monitor.PulseAll(_gate);
                 }
             }
             catch (Exception error) when (error is IOException or UnauthorizedAccessException or
@@ -127,9 +145,11 @@ public sealed class TerrainLodColumnTileAsyncCacheWriter : IDisposable
                 lock (_gate)
                 {
                     _running = 0;
+                    _runningKey = null;
                     _failed++;
                     _lastError = error.GetBaseException().Message;
                     PublishSnapshotLocked();
+                    Monitor.PulseAll(_gate);
                 }
             }
         }
