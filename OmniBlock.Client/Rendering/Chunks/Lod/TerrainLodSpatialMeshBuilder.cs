@@ -40,6 +40,16 @@ internal sealed record TerrainLodSpatialMeshPage(
 
 internal readonly record struct TerrainLodSpatialMeshPageKey(int X, int Y, int Z);
 
+internal readonly record struct TerrainLodQuadLighting(
+    ChunkLightVertex A,
+    ChunkLightVertex B,
+    ChunkLightVertex C,
+    ChunkLightVertex D)
+{
+    public static TerrainLodQuadLighting Uniform(ChunkLightVertex light) =>
+        new(light, light, light, light);
+}
+
 internal readonly record struct TerrainLodSpatialMeshBuildProfile(
     double ReductionMs,
     double FaceEmissionMs,
@@ -305,13 +315,25 @@ internal static class TerrainLodSpatialMeshBuilder
                         Math.Clamp(anchorY, 0, tile.WorldHeight - 1) + 0.5,
                         minZ + sampleSize / 2.0);
                     if (side == Side.Up)
-                        Emit(page, translucent, side, appearance, shade, light, sampleSize, sampleSize,
-                            (renderMaxX, faceY, renderMaxZ), (renderMaxX, faceY, renderMinZ),
-                            (renderMinX, faceY, renderMinZ), (renderMinX, faceY, renderMaxZ), guard);
+                    {
+                        var a = (renderMaxX, faceY, renderMaxZ);
+                        var b = (renderMaxX, faceY, renderMinZ);
+                        var c = (renderMinX, faceY, renderMinZ);
+                        var d = (renderMinX, faceY, renderMaxZ);
+                        Emit(page, translucent, side, appearance, shade,
+                            SmoothLighting(side, span.Material, light, a, b, c, d),
+                            sampleSize, sampleSize, a, b, c, d, guard);
+                    }
                     else
-                        Emit(page, translucent, side, appearance, shade, light, sampleSize, sampleSize,
-                            (renderMinX, faceY, renderMaxZ), (renderMinX, faceY, renderMinZ),
-                            (renderMaxX, faceY, renderMinZ), (renderMaxX, faceY, renderMaxZ), guard);
+                    {
+                        var a = (renderMinX, faceY, renderMaxZ);
+                        var b = (renderMinX, faceY, renderMinZ);
+                        var c = (renderMaxX, faceY, renderMinZ);
+                        var d = (renderMaxX, faceY, renderMaxZ);
+                        Emit(page, translucent, side, appearance, shade,
+                            SmoothLighting(side, span.Material, light, a, b, c, d),
+                            sampleSize, sampleSize, a, b, c, d, guard);
+                    }
                 }
 
                 void EmitSide(
@@ -409,39 +431,44 @@ internal static class TerrainLodSpatialMeshBuilder
                             switch (side)
                             {
                                 case Side.West:
-                                    Emit(page, translucent, side, appearance, shade, light,
-                                        alongEnd - alongStart, height,
+                                    EmitSideQuad(
                                         (fixedCoordinate, y1, alongStart),
                                         (fixedCoordinate, y0, alongStart),
                                         (fixedCoordinate, y0, alongEnd),
-                                        (fixedCoordinate, y1, alongEnd), guard);
+                                        (fixedCoordinate, y1, alongEnd));
                                     break;
                                 case Side.East:
-                                    Emit(page, translucent, side, appearance, shade, light,
-                                        alongEnd - alongStart, height,
+                                    EmitSideQuad(
                                         (fixedCoordinate, y1, alongEnd),
                                         (fixedCoordinate, y0, alongEnd),
                                         (fixedCoordinate, y0, alongStart),
-                                        (fixedCoordinate, y1, alongStart), guard);
+                                        (fixedCoordinate, y1, alongStart));
                                     break;
                                 case Side.North:
-                                    Emit(page, translucent, side, appearance, shade, light,
-                                        alongEnd - alongStart, height,
+                                    EmitSideQuad(
                                         (alongEnd, y1, fixedCoordinate),
                                         (alongEnd, y0, fixedCoordinate),
                                         (alongStart, y0, fixedCoordinate),
-                                        (alongStart, y1, fixedCoordinate), guard);
+                                        (alongStart, y1, fixedCoordinate));
                                     break;
                                 case Side.South:
-                                    Emit(page, translucent, side, appearance, shade, light,
-                                        alongEnd - alongStart, height,
+                                    EmitSideQuad(
                                         (alongStart, y1, fixedCoordinate),
                                         (alongStart, y0, fixedCoordinate),
                                         (alongEnd, y0, fixedCoordinate),
-                                        (alongEnd, y1, fixedCoordinate), guard);
+                                        (alongEnd, y1, fixedCoordinate));
                                     break;
                             }
                             y0 = y1;
+
+                            void EmitSideQuad(
+                                (float X, float Y, float Z) a,
+                                (float X, float Y, float Z) b,
+                                (float X, float Y, float Z) c,
+                                (float X, float Y, float Z) d) =>
+                                Emit(page, translucent, side, appearance, shade,
+                                    SmoothLighting(side, span.Material, light, a, b, c, d),
+                                    alongEnd - alongStart, height, a, b, c, d, guard);
                         }
                     }
                 }
@@ -520,6 +547,68 @@ internal static class TerrainLodSpatialMeshBuilder
                 owner, material, side, ReferenceEquals(owner, grassBlock),
                 TerrainLodMeshBuilder.HasSnowCover(above),
                 grassOverlayTexture, snowyGrassTexture, tint);
+        }
+
+        TerrainLodQuadLighting SmoothLighting(
+            Side side,
+            TerrainLodMaterial material,
+            ChunkLightVertex flat,
+            (float X, float Y, float Z) a,
+            (float X, float Y, float Z) b,
+            (float X, float Y, float Z) c,
+            (float X, float Y, float Z) d)
+        {
+            // Near LOD retains the original 1x1 columns. Average the four exposed cells
+            // meeting each corner, following the exact cube renderer's smooth-light layout. Coarse
+            // levels, liquids and inset shapes keep flat light: their vertices do not map to
+            // individual block corners. Tile-edge corners lack a neighbor tile, so retain the
+            // face's light instead of inventing a dark seam.
+            if (sampleSize != 1 || material.Geometry is not
+                    (TerrainLodGeometryClass.Opaque or TerrainLodGeometryClass.Cutout))
+                return TerrainLodQuadLighting.Uniform(flat);
+            return new TerrainLodQuadLighting(
+                Corner(side, a, flat), Corner(side, b, flat),
+                Corner(side, c, flat), Corner(side, d, flat));
+        }
+
+        ChunkLightVertex Corner(
+            Side side,
+            (float X, float Y, float Z) vertex,
+            ChunkLightVertex fallback)
+        {
+            var worldX = (int)MathF.Round(vertex.X);
+            var worldY = (int)MathF.Round(vertex.Y);
+            var worldZ = (int)MathF.Round(vertex.Z);
+            if (MathF.Abs(vertex.X - worldX) > 0.001f ||
+                MathF.Abs(vertex.Y - worldY) > 0.001f ||
+                MathF.Abs(vertex.Z - worldZ) > 0.001f)
+                return fallback;
+
+            var firstX = side == Side.East ? worldX : worldX - 1;
+            var firstZ = side == Side.South ? worldZ : worldZ - 1;
+            var firstY = side == Side.Up ? worldY : worldY - 1;
+            var xCount = side is Side.West or Side.East ? 1 : 2;
+            var yCount = side is Side.Up or Side.Down ? 1 : 2;
+            var zCount = side is Side.North or Side.South ? 1 : 2;
+            var sky = 0;
+            var block = 0;
+            for (var dx = 0; dx < xCount; dx++)
+            for (var dy = 0; dy < yCount; dy++)
+            for (var dz = 0; dz < zCount; dz++)
+            {
+                var sampleX = firstX + dx - (int)tileMinX;
+                var sampleZ = firstZ + dz - (int)tileMinZ;
+                var sampleY = firstY + dy;
+                if (!InBounds(sampleX, sampleZ) || sampleY < 0 || sampleY >= tile.WorldHeight)
+                    return fallback;
+                var sample = Column(sampleX, sampleZ).At(sampleY);
+                sky += sample.SkyLight;
+                block += sample.BlockLight;
+            }
+            var count = xCount * yCount * zCount;
+            return new ChunkLightVertex(
+                ChunkVertexHelper.ToQuarterLevels((float)sky / count),
+                ChunkVertexHelper.ToQuarterLevels((float)block / count));
         }
     }
 
@@ -632,6 +721,25 @@ internal static class TerrainLodSpatialMeshBuilder
         (float X, float Y, float Z) d,
         TerrainLodSpatialMeshBuildGuard? guard = null,
         bool nonDirectional = false)
+        => Emit(page, translucent, side, appearance, shade,
+            TerrainLodQuadLighting.Uniform(light), tileU, tileV,
+            a, b, c, d, guard, nonDirectional);
+
+    internal static void Emit(
+        PageBuilder page,
+        bool translucent,
+        Side side,
+        TerrainLodFaceAppearance appearance,
+        float shade,
+        TerrainLodQuadLighting lights,
+        float tileU,
+        float tileV,
+        (float X, float Y, float Z) a,
+        (float X, float Y, float Z) b,
+        (float X, float Y, float Z) c,
+        (float X, float Y, float Z) d,
+        TerrainLodSpatialMeshBuildGuard? guard = null,
+        bool nonDirectional = false)
     {
         EmitTexture(appearance.Texture, appearance.Tint);
         if (appearance.OverlayTexture >= 0)
@@ -647,11 +755,11 @@ internal static class TerrainLodSpatialMeshBuilder
             var uvScale = 1 << uvScaleExponent;
             if (nonDirectional)
                 // Crossed plants use the same UV orientation as local level-zero plants.
-                page.AddUnassigned(translucent, light,
+                page.AddUnassigned(translucent, lights,
                     Vertex(a, 0, 0), Vertex(b, 0, tileV),
                     Vertex(c, tileU, tileV), Vertex(d, tileU, 0));
             else
-                page.Add(translucent, side, light,
+                page.Add(translucent, side, lights,
                     Vertex(a, tileU, 0), Vertex(b, tileU, tileV),
                     Vertex(c, 0, tileV), Vertex(d, 0, 0));
 
@@ -799,21 +907,30 @@ internal static class TerrainLodSpatialMeshBuilder
             ChunkVertex a,
             ChunkVertex b,
             ChunkVertex c,
+            ChunkVertex d) => Add(translucent, side, TerrainLodQuadLighting.Uniform(light), a, b, c, d);
+
+        public void Add(
+            bool translucent,
+            Side side,
+            TerrainLodQuadLighting lights,
+            ChunkVertex a,
+            ChunkVertex b,
+            ChunkVertex c,
             ChunkVertex d)
         {
             var bucket = (int)side;
             if ((uint)bucket >= 6) throw new ArgumentOutOfRangeException(nameof(side));
-            (translucent ? _translucent : _solid)[bucket].Add(new Quad(a, b, c, d, light));
+            (translucent ? _translucent : _solid)[bucket].Add(new Quad(a, b, c, d, lights));
         }
 
         public void AddUnassigned(
             bool translucent,
-            ChunkLightVertex light,
+            TerrainLodQuadLighting lights,
             ChunkVertex a,
             ChunkVertex b,
             ChunkVertex c,
             ChunkVertex d) =>
-            (translucent ? _translucent : _solid)[6].Add(new Quad(a, b, c, d, light));
+            (translucent ? _translucent : _solid)[6].Add(new Quad(a, b, c, d, lights));
 
         public TerrainLodSpatialMeshPage Build(
             TerrainLodSpatialMeshPageKey key,
@@ -852,7 +969,10 @@ internal static class TerrainLodSpatialMeshBuilder
                     bucketVertices.Add(quad.B);
                     bucketVertices.Add(quad.C);
                     bucketVertices.Add(quad.D);
-                    for (var index = 0; index < 4; index++) bucketLights.Add(quad.Light);
+                    bucketLights.Add(quad.Lights.A);
+                    bucketLights.Add(quad.Lights.B);
+                    bucketLights.Add(quad.Lights.C);
+                    bucketLights.Add(quad.Lights.D);
                 }
                 var merged = mergeHorizontal &&
                              bucket is (int)Side.Down or (int)Side.Up
@@ -877,7 +997,7 @@ internal static class TerrainLodSpatialMeshBuilder
             ChunkVertex B,
             ChunkVertex C,
             ChunkVertex D,
-            ChunkLightVertex Light);
+            TerrainLodQuadLighting Lights);
 
         private readonly record struct LayerData(
             ChunkVertex[] Vertices,

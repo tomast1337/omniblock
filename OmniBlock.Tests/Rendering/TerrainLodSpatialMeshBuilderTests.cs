@@ -559,6 +559,54 @@ public sealed class TerrainLodSpatialMeshBuilderTests
     }
 
     [Fact]
+    public void Finest_spatial_faces_interpolate_retained_light_at_corners()
+    {
+        var world = new FakeWorldContext();
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var stone = checked((byte)world.Content.Blocks.Get("omniblock:stone").Id);
+        var blocks = new byte[ChuckFormat.ChunkSize];
+        var metadata = new byte[blocks.Length];
+        var sky = new ChunkNibbleArray(ChuckFormat.ChunkSize);
+        var block = new ChunkNibbleArray(ChuckFormat.ChunkSize);
+        for (var x = 0; x < 16; x++)
+        for (var z = 0; z < 16; z++)
+        for (var y = 0; y < ChuckFormat.ChunkHeight; y++)
+        {
+            blocks[ChuckFormat.GetIndex(x, y, z)] =
+                y < 16 || (x == 8 && z == 8 && y == 16) ? stone : (byte)0;
+            if (y >= 16 && (x != 8 || z != 8 || y != 16))
+                sky.SetNibble(x, y, z, 15);
+        }
+        var tile = TerrainLodColumnTile.BuildLeaf(new TerrainLodSourceSnapshot(
+            0, 0, 16, ChuckFormat.ChunkHeight, 16, blocks, metadata, 1,
+            new TerrainLodLightingSnapshot(
+                0, 0, 1, sky.Bytes, block.Bytes, hasSkyLight: true)), materials);
+
+        var mesh = TerrainLodSpatialMeshBuilder.Build(
+            tile, world.Content.Blocks, verticalSliceBudget: 8,
+            emitTileBoundaryFaces: false);
+        var topLights = mesh.Pages.SelectMany(page =>
+        {
+            var range = page.SolidRanges.Up;
+            return page.Lights.Skip(range.FirstQuad * 4).Take(range.QuadCount * 4)
+                .Chunk(4);
+        }).ToArray();
+
+        Assert.Contains(topLights, quad => quad.Select(static light => light.Sky)
+            .Distinct().Count() > 1);
+        Assert.Contains(topLights, quad => quad.All(static light => light.Sky == 60));
+        var westLights = mesh.Pages.SelectMany(page =>
+        {
+            var range = page.SolidRanges.West;
+            return page.Lights.Skip(range.FirstQuad * 4).Take(range.QuadCount * 4)
+                .Chunk(4);
+        }).ToArray();
+        Assert.Contains(westLights, quad => quad.Select(static light => light.Sky)
+            .Distinct().Count() > 1);
+        Assert.Equal(tile.CanonicalHash, mesh.CanonicalHash);
+    }
+
+    [Fact]
     public void Large_parent_is_partitioned_into_packed_vertex_safe_pages()
     {
         var world = new FakeWorldContext();
