@@ -4,6 +4,7 @@ using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Lod;
+using OmniBlock.Worlds.Storage.RegionFormat;
 
 namespace OmniBlock.Server.Worlds;
 
@@ -36,7 +37,11 @@ public sealed record ServerTerrainLodSnapshot(
     int SpatialReadPending,
     int SpatialEncodeQueued,
     int SpatialEncodePending,
-    int SpatialWirePayloads)
+    int SpatialWirePayloads,
+    int SavedTileImportsPending,
+    long SavedChunksImported,
+    long SavedTileImportsMissing,
+    long SavedTileImportsFailed)
 {
     // Observational only: asynchronous stages publish independently. Consumers should require
     // a quiet interval after generation completes, not treat a single sample as a flush barrier.
@@ -63,6 +68,10 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     private const int QuietTicks = 2;
     private const int MaximumDirtyTicks = 20;
     private const int WritesPerDrain = 4;
+    private const int MaximumPendingSavedTileImports = 32;
+    // Reconstructing level six or higher from individual leaves can fill the 8K hierarchy
+    // before its parent is publishable. A coarse-first importer is needed for those levels.
+    private const int MaximumSavedImportLevel = 5;
 
     private readonly object _gate = new();
     private readonly ILogger<ServerTerrainLodRuntime> _logger =
@@ -78,10 +87,14 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     private readonly TerrainLodCacheWriter _writer;
     private readonly TerrainLodColumnTileCacheStore _spatialCache;
     private readonly TerrainLodSpatialHierarchyCoordinator _spatialHierarchy;
+    private readonly IChunkStorage? _storedTerrain;
+    private readonly bool _hasSkyLight;
     private readonly List<TerrainLodColumnTile> _completedSpatialParents = [];
     private readonly Queue<TerrainLodTileKey> _spatialReadRequests = [];
     private readonly HashSet<TerrainLodTileKey> _spatialReadsPending = [];
     private readonly HashSet<TerrainLodTileKey> _spatialMissing = [];
+    private readonly Queue<SavedTileImport> _savedTileImportQueue = [];
+    private readonly Dictionary<TerrainLodTileKey, SavedTileImport> _savedTileImports = [];
     private readonly Queue<TerrainLodTileKey> _spatialEncodeRequests = [];
     private readonly HashSet<TerrainLodTileKey> _spatialEncodesPending = [];
     private readonly Dictionary<TerrainLodTileKey, byte[]> _spatialWirePayloads = [];
@@ -99,6 +112,9 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     private long _offlineSnapshotsSubmitted;
     private long _offlineSnapshotsDropped;
     private long _pipelineFailures;
+    private long _savedChunksImported;
+    private long _savedTileImportsMissing;
+    private long _savedTileImportsFailed;
     private string? _lastPipelineFailure;
     private ServerTerrainLodSnapshot _publishedSnapshot = null!;
 
@@ -111,6 +127,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             TerrainLodMaterialCatalog.FromRuntime(world.Content),
             cacheRoot,
             world,
+            storedTerrain: world.GetWorldStorage().GetChunkStorage(world.Dimension),
             spatialPolicy: spatialPolicy)
     {
     }
@@ -121,7 +138,8 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         DirectoryInfo cacheRoot,
         IWorldContext identitySource,
         int conversionCapacity = ConversionCapacity,
-        TerrainLodSpatialPolicy? spatialPolicy = null)
+        TerrainLodSpatialPolicy? spatialPolicy = null,
+        IChunkStorage? storedTerrain = null)
     {
         if (conversionCapacity <= 0)
             throw new ArgumentOutOfRangeException(nameof(conversionCapacity));
@@ -129,6 +147,8 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         _materials = materials;
         _spatialPolicy = spatialPolicy ?? TerrainLodSpatialPolicy.CreateDefault();
         _conversionCapacity = conversionCapacity;
+        _storedTerrain = storedTerrain;
+        _hasSkyLight = !identitySource.Dimension.HasCeiling;
         // The absolute cache root never crosses the wire; only its hash does. Including it keeps
         // two saves with the same seed/content from sharing a transport identity, while reopening
         // this save remains stable.
@@ -230,6 +250,11 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         }
         lock (_gate)
         {
+            if (_savedTileImports.ContainsKey(key))
+            {
+                tile = null;
+                return TerrainLodTileAvailability.Pending;
+            }
             if (_spatialMissing.Contains(key))
             {
                 tile = null;
@@ -583,6 +608,8 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                 maximumResults: 16,
                 _completedSpatialParents);
             var spatialReads = DrainSpatialReads(maximumReads: 4);
+            var savedImports = DrainSavedTileImports(maximumSources: 2);
+            CompleteSavedTileImports();
             foreach (var parent in _completedSpatialParents)
                 lock (_gate)
                 {
@@ -599,7 +626,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             if (_writer.Snapshot().Failures != failuresBefore)
                 _writerWake.WaitOne(TimeSpan.FromMilliseconds(250));
             else if (consumed == 0 && spatialPublished == 0 && spatialReads == 0 &&
-                     spatialEncodes == 0)
+                     savedImports == 0 && spatialEncodes == 0)
                 _writerWake.WaitOne(TimeSpan.FromMilliseconds(50));
         }
     }
@@ -624,7 +651,30 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                 }
                 else
                 {
-                    lock (_gate) _spatialMissing.Add(key);
+                    lock (_gate)
+                    {
+                        // Reserve slots for the level-two children of in-flight coarse imports.
+                        // Filling the queue entirely with parents would otherwise deadlock them.
+                        var canAdmit = key.Level == TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel
+                            ? _savedTileImports.Count < MaximumPendingSavedTileImports
+                            : _savedTileImports.Count < MaximumPendingSavedTileImports - 8 &&
+                              _savedTileImports.Values.Count(static import =>
+                                  import.Key.Level > TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel) < 8;
+                        if (key.Level >= TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel &&
+                            key.Level <= MaximumSavedImportLevel &&
+                            _storedTerrain is not null && canAdmit)
+                        {
+                            var import = new SavedTileImport(key);
+                            _savedTileImports.Add(key, import);
+                            _savedTileImportQueue.Enqueue(import);
+                            _writerWake.Set();
+                        }
+                        else if (key.Level < TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel ||
+                                 key.Level > MaximumSavedImportLevel ||
+                                 _storedTerrain is null)
+                            _spatialMissing.Add(key);
+                        // At capacity report Pending; the next request retries admission.
+                    }
                 }
             }
             finally
@@ -634,6 +684,143 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             consumed++;
         }
         return consumed;
+    }
+
+    /// <summary>
+    ///     Imports at most a few already-saved chunks per pass. Higher-level requests traverse
+    ///     their level-two source tiles incrementally, so a cold coarse request does not require
+    ///     the client to request thousands of descendants. This work never enters the gameplay
+    ///     chunk cache or generator.
+    /// </summary>
+    private int DrainSavedTileImports(int maximumSources)
+    {
+        if (_storedTerrain is null) return 0;
+        var consumed = 0;
+        while (consumed < maximumSources)
+        {
+            SavedTileImport import;
+            lock (_gate)
+            {
+                if (!_savedTileImportQueue.TryDequeue(out import!)) break;
+            }
+            try
+            {
+                if (_spatialHierarchy.TryGetCoverage(import.Key, out _, out _))
+                {
+                    lock (_gate) _savedTileImports.Remove(import.Key);
+                    continue;
+                }
+                if (import.Key.Level > TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel)
+                {
+                    var tilesPerSide = 1 <<
+                        (import.Key.Level - TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel);
+                    var child = new TerrainLodTileKey(
+                        TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel,
+                        checked(import.Key.X * tilesPerSide +
+                                import.NextChunk % tilesPerSide),
+                        checked(import.Key.Z * tilesPerSide +
+                                import.NextChunk / tilesPerSide));
+                    var availability = GetSpatialCoverage(child, out _);
+                    if (availability == TerrainLodTileAvailability.Missing)
+                    {
+                        FinishSavedTileImport(import, missing: true);
+                        continue;
+                    }
+                    if (availability == TerrainLodTileAvailability.Pending)
+                    {
+                        lock (_gate) _savedTileImportQueue.Enqueue(import);
+                        // Wait for this child to publish before requesting the next one.
+                        break;
+                    }
+                    import.NextChunk++;
+                    consumed++;
+                    lock (_gate)
+                    {
+                        if (import.NextChunk < tilesPerSide * tilesPerSide)
+                            _savedTileImportQueue.Enqueue(import);
+                        else
+                            import.AwaitingPublicationSince = DateTime.UtcNow;
+                    }
+                    continue;
+                }
+                var x = checked((int)import.Key.MinChunkX + (import.NextChunk & 3));
+                var z = checked((int)import.Key.MinChunkZ + (import.NextChunk >> 2));
+                var source = import.DeferredSource ??
+                    _storedTerrain.ReadTerrainLodSource(x, z, _hasSkyLight);
+                if (source is null)
+                {
+                    FinishSavedTileImport(import, missing: true);
+                    continue;
+                }
+                if (source.ChunkX != x || source.ChunkZ != z)
+                    throw new InvalidDataException(
+                        $"Saved terrain slot {x},{z} returned {source.ChunkX},{source.ChunkZ}.");
+                var admission = _conversions.Submit(source);
+                if (admission == TerrainLodAdmissionResult.RejectedAtCapacity)
+                {
+                    import.DeferredSource = source;
+                    lock (_gate) _savedTileImportQueue.Enqueue(import);
+                    break;
+                }
+                import.DeferredSource = null;
+                import.NextChunk++;
+                consumed++;
+                lock (_gate)
+                {
+                    _savedChunksImported++;
+                    RecordAdmissionLocked(admission);
+                    if (import.NextChunk < 16) _savedTileImportQueue.Enqueue(import);
+                    else import.AwaitingPublicationSince = DateTime.UtcNow;
+                }
+            }
+            catch (Exception error) when (error is IOException or InvalidDataException or
+                                          ArgumentException or InvalidOperationException or
+                                          OverflowException)
+            {
+                FinishSavedTileImport(import, missing: false);
+                RecordPipelineFailure(error, checked((int)import.Key.MinChunkX),
+                    checked((int)import.Key.MinChunkZ));
+            }
+        }
+        return consumed;
+    }
+
+    private void CompleteSavedTileImports()
+    {
+        SavedTileImport[] waiting;
+        lock (_gate)
+            waiting = _savedTileImports.Values
+                .Where(static import => import.AwaitingPublicationSince is not null)
+                .ToArray();
+        foreach (var import in waiting)
+        {
+            if (_spatialHierarchy.TryGetCoverage(import.Key, out _, out _))
+            {
+                lock (_gate)
+                {
+                    _savedTileImports.Remove(import.Key);
+                    _spatialMissing.Remove(import.Key);
+                }
+            }
+            else if (DateTime.UtcNow - import.AwaitingPublicationSince!.Value >
+                     TimeSpan.FromMinutes(2))
+            {
+                // A failed conversion or tile-capacity rejection must not leave a client
+                // waiting forever. A later live chunk update can still publish the parent.
+                FinishSavedTileImport(import, missing: false);
+            }
+        }
+    }
+
+    private void FinishSavedTileImport(SavedTileImport import, bool missing)
+    {
+        lock (_gate)
+        {
+            if (!_savedTileImports.Remove(import.Key)) return;
+            _spatialMissing.Add(import.Key);
+            if (missing) _savedTileImportsMissing++;
+            else _savedTileImportsFailed++;
+        }
     }
 
     private void QueueSpatialEncode(TerrainLodTileKey key)
@@ -718,7 +905,11 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             _spatialReadsPending.Count,
             _spatialEncodeRequests.Count,
             _spatialEncodesPending.Count,
-            _spatialWirePayloads.Count));
+            _spatialWirePayloads.Count,
+            _savedTileImports.Count,
+            _savedChunksImported,
+            _savedTileImportsMissing,
+            _savedTileImportsFailed));
 
     public void Dispose()
     {
@@ -732,6 +923,8 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             _spatialReadRequests.Clear();
             _spatialReadsPending.Clear();
             _spatialMissing.Clear();
+            _savedTileImportQueue.Clear();
+            _savedTileImports.Clear();
             _spatialEncodeRequests.Clear();
             _spatialEncodesPending.Clear();
             _spatialWirePayloads.Clear();
@@ -748,6 +941,14 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     }
 
     private readonly record struct ChunkKey(int X, int Z);
+
+    private sealed class SavedTileImport(TerrainLodTileKey key)
+    {
+        public TerrainLodTileKey Key { get; } = key;
+        public int NextChunk { get; set; }
+        public TerrainLodSourceSnapshot? DeferredSource { get; set; }
+        public DateTime? AwaitingPublicationSince { get; set; }
+    }
 
     private sealed class TrackedChunk(Chunk chunk, long firstDirtyTick, long dueTick)
     {

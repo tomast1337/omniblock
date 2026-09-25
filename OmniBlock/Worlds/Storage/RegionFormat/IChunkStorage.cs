@@ -1,5 +1,6 @@
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Lod;
 
 namespace OmniBlock.Worlds.Storage.RegionFormat;
 
@@ -11,6 +12,13 @@ public interface IChunkStorage
     ///     empty generation target. Implementations without a probe conservatively report false.
     /// </summary>
     bool ContainsChunk(int chunkX, int chunkZ) => false;
+
+    /// <summary>
+    ///     Reads saved terrain for distant rendering without activating a gameplay chunk or
+    ///     generating missing terrain. Unsupported stores return null.
+    /// </summary>
+    TerrainLodSourceSnapshot? ReadTerrainLodSource(
+        int chunkX, int chunkZ, bool hasSkyLight) => null;
 
     Chunk? LoadChunk(IWorldContext world, int chunkX, int chunkZ);
 

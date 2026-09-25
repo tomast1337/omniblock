@@ -294,6 +294,156 @@ public sealed class ServerTerrainLodRuntimeTests
         }
     }
 
+    [Fact]
+    public async Task Cold_saved_tile_imports_without_loading_gameplay_chunks_or_changing_region_bytes()
+    {
+        var root = CreateTemporaryDirectory();
+        var save = new DirectoryInfo(Path.Combine(root.FullName, "saved"));
+        save.Create();
+        try
+        {
+            var world = new FakeWorldContext();
+            var storage = new RegionChunkStorage(save.FullName);
+            var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+            for (var x = 0; x < 4; x++)
+            for (var z = 0; z < 4; z++)
+            {
+                var chunk = Chunk(world, x, z);
+                chunk[0, 4, 0] = stone;
+                storage.SaveChunk(world, chunk, null, 1);
+            }
+            storage.FlushToDisk();
+            var region = Path.Combine(save.FullName, "region", "r.0.0.mcr");
+            var before = File.ReadAllBytes(region);
+            using var runtime = new ServerTerrainLodRuntime(
+                0, TerrainLodMaterialCatalog.FromRuntime(world.Content), root, world,
+                conversionCapacity: 4, storedTerrain: storage);
+            var key = new TerrainLodTileKey(2, 0, 0);
+
+            Assert.Equal(TerrainLodTileAvailability.Pending,
+                runtime.GetSpatialCoverage(key, out _));
+            await WaitUntil(() => runtime.GetSpatialCoverage(key, out _) ==
+                                  TerrainLodTileAvailability.Ready, TimeSpan.FromSeconds(20));
+
+            Assert.True(runtime.TryGetSpatialCoverage(key, out var tile));
+            Assert.Equal(key, tile!.Key);
+            Assert.Equal(0, runtime.Snapshot().TrackedChunks);
+            Assert.Equal(before, File.ReadAllBytes(region));
+        }
+        finally
+        {
+            RegionIo.Flush();
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task Incomplete_saved_tile_stays_missing_without_generating_the_absent_chunk()
+    {
+        var root = CreateTemporaryDirectory();
+        var save = new DirectoryInfo(Path.Combine(root.FullName, "saved"));
+        save.Create();
+        try
+        {
+            var world = new FakeWorldContext();
+            var storage = new RegionChunkStorage(save.FullName);
+            var chunk = Chunk(world, 0, 0);
+            chunk[0, 4, 0] = world.Content.Blocks.Get("omniblock:stone").Id;
+            storage.SaveChunk(world, chunk, null, 1);
+            storage.FlushToDisk();
+            using var runtime = new ServerTerrainLodRuntime(
+                0, TerrainLodMaterialCatalog.FromRuntime(world.Content), root, world,
+                storedTerrain: storage);
+            var key = new TerrainLodTileKey(2, 0, 0);
+
+            Assert.Equal(TerrainLodTileAvailability.Pending,
+                runtime.GetSpatialCoverage(key, out _));
+            await WaitUntil(() => runtime.GetSpatialCoverage(key, out _) ==
+                                  TerrainLodTileAvailability.Missing);
+
+            Assert.False(storage.ContainsChunk(3, 3));
+            Assert.Equal(0, runtime.Snapshot().TrackedChunks);
+        }
+        finally
+        {
+            RegionIo.Flush();
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task Cold_coarse_request_imports_saved_descendants_without_client_leaf_requests()
+    {
+        var root = CreateTemporaryDirectory();
+        var save = new DirectoryInfo(Path.Combine(root.FullName, "saved"));
+        save.Create();
+        try
+        {
+            var world = new FakeWorldContext();
+            var storage = new RegionChunkStorage(save.FullName);
+            var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+            for (var x = 0; x < 8; x++)
+            for (var z = 0; z < 8; z++)
+            {
+                var chunk = Chunk(world, x, z);
+                chunk[0, 4, 0] = stone;
+                storage.SaveChunk(world, chunk, null, 1);
+            }
+            storage.FlushToDisk();
+            var region = Path.Combine(save.FullName, "region", "r.0.0.mcr");
+            var before = File.ReadAllBytes(region);
+            using var runtime = new ServerTerrainLodRuntime(
+                0, TerrainLodMaterialCatalog.FromRuntime(world.Content), root, world,
+                conversionCapacity: 8, storedTerrain: storage);
+            var coarse = new TerrainLodTileKey(3, 0, 0);
+
+            Assert.Equal(TerrainLodTileAvailability.Pending,
+                runtime.GetSpatialCoverage(coarse, out _));
+            await WaitUntil(() => runtime.GetSpatialCoverage(coarse, out _) ==
+                                  TerrainLodTileAvailability.Ready, TimeSpan.FromSeconds(30));
+
+            Assert.True(runtime.TryGetSpatialCoverage(coarse, out var tile));
+            Assert.Equal(coarse, tile!.Key);
+            Assert.Equal(0, runtime.Snapshot().TrackedChunks);
+            Assert.Equal(64, runtime.Snapshot().SavedChunksImported);
+            Assert.Equal(before, File.ReadAllBytes(region));
+        }
+        finally
+        {
+            RegionIo.Flush();
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task Cold_levels_above_the_safe_import_limit_return_a_miss_without_scanning_chunks()
+    {
+        var root = CreateTemporaryDirectory();
+        var save = new DirectoryInfo(Path.Combine(root.FullName, "saved"));
+        save.Create();
+        try
+        {
+            var world = new FakeWorldContext();
+            using var runtime = new ServerTerrainLodRuntime(
+                0, TerrainLodMaterialCatalog.FromRuntime(world.Content), root, world,
+                storedTerrain: new RegionChunkStorage(save.FullName));
+            var key = new TerrainLodTileKey(6, 0, 0);
+
+            Assert.Equal(TerrainLodTileAvailability.Pending,
+                runtime.GetSpatialCoverage(key, out _));
+            await WaitUntil(() => runtime.GetSpatialCoverage(key, out _) ==
+                                  TerrainLodTileAvailability.Missing);
+
+            Assert.Equal(0, runtime.Snapshot().SavedChunksImported);
+            Assert.Equal(0, runtime.Snapshot().SavedTileImportsPending);
+        }
+        finally
+        {
+            RegionIo.Flush();
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
     [Theory]
     [InlineData(512, 7, 289)]
     [InlineData(1024, 8, 297)]
@@ -367,9 +517,9 @@ public sealed class ServerTerrainLodRuntimeTests
         return directory;
     }
 
-    private static async Task WaitUntil(Func<bool> condition)
+    private static async Task WaitUntil(Func<bool> condition, TimeSpan? timeout = null)
     {
-        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
+        var deadline = DateTime.UtcNow + (timeout ?? TimeSpan.FromSeconds(5));
         while (!condition())
         {
             if (DateTime.UtcNow >= deadline) throw new TimeoutException();

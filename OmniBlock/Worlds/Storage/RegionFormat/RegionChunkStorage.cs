@@ -1,7 +1,9 @@
+using System.IO.Compression;
 using Microsoft.Extensions.Logging;
 using OmniBlock.Blocks.Entities;
 using OmniBlock.NBT;
 using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Lod;
 using OmniBlock.Worlds.Storage.RegionFormat;
 
 namespace OmniBlock.Worlds.Chunks.Storage;
@@ -14,6 +16,68 @@ internal class RegionChunkStorage : IChunkStorage
     public RegionChunkStorage(string inputDir) => _dir = inputDir;
 
     public bool ContainsChunk(int chunkX, int chunkZ) => RegionIo.ContainsChunk(_dir, chunkX, chunkZ);
+
+    /// <summary>
+    ///     Reads only the saved terrain arrays. Open gameplay regions are read through their
+    ///     cached handle; unopened regions use a separate read-only handle. The ordinary RegionIo
+    ///     path can create a file on a miss, while constructing a Chunk activates saved entities.
+    /// </summary>
+    public TerrainLodSourceSnapshot? ReadTerrainLodSource(
+        int chunkX, int chunkZ, bool hasSkyLight)
+    {
+        if (RegionIo.TryGetCachedChunkInputStream(_dir, chunkX, chunkZ, out var cached))
+        {
+            using (cached)
+                return cached is null ? null : ReadTerrainSource(
+                    cached.Stream, chunkX, chunkZ, hasSkyLight);
+        }
+        var path = Path.Combine(_dir, "region",
+            $"r.{chunkX >> 5}.{chunkZ >> 5}.mcr");
+        if (!File.Exists(path)) return null;
+
+        using FileStream file = new(path, FileMode.Open, FileAccess.Read,
+            FileShare.ReadWrite, bufferSize: 4096, FileOptions.SequentialScan);
+        if (file.Length < 8192)
+            throw new InvalidDataException($"Region file '{path}' has no complete header.");
+        var slot = (chunkX & 31) + ((chunkZ & 31) << 5);
+        file.Position = slot * sizeof(int);
+        var offset = file.ReadInt();
+        if (offset == 0) return null;
+        var sector = offset >> 8;
+        var sectors = offset & 255;
+        if (sector < 2 || sectors == 0 ||
+            (long)(sector + sectors) * 4096 > file.Length)
+            throw new InvalidDataException(
+                $"Saved chunk {chunkX},{chunkZ} has an invalid region offset.");
+
+        file.Position = (long)sector * 4096;
+        var compressedLength = file.ReadInt();
+        if (compressedLength <= 1 || compressedLength > sectors * 4096 - sizeof(int))
+            throw new InvalidDataException(
+                $"Saved chunk {chunkX},{chunkZ} has an invalid compressed length.");
+        if (file.ReadByte() != (byte)RegionFile.CompressionType.ZLibDeflate)
+            throw new InvalidDataException(
+                $"Saved chunk {chunkX},{chunkZ} has an unsupported compression type.");
+        var compressed = new byte[compressedLength - 1];
+        file.ReadExactly(compressed);
+        using MemoryStream payload = new(compressed, writable: false);
+        using ZLibStream decompressed = new(payload, CompressionMode.Decompress);
+        return ReadTerrainSource(decompressed, chunkX, chunkZ, hasSkyLight);
+    }
+
+    private static TerrainLodSourceSnapshot ReadTerrainSource(
+        Stream decompressed, int chunkX, int chunkZ, bool hasSkyLight)
+    {
+        var root = NbtIo.Read(decompressed);
+        if (!root.HasKey("Level"))
+            throw new InvalidDataException($"Saved chunk {chunkX},{chunkZ} has no Level compound.");
+        var level = root.GetCompoundTag("Level");
+        if (!HasExpectedCoordinates(level, chunkX, chunkZ))
+            throw new InvalidDataException(
+                $"Saved chunk slot {chunkX},{chunkZ} contains terrain for " +
+                $"{level.GetInteger("xPos")},{level.GetInteger("zPos")}.");
+        return TerrainLodSourceSnapshot.FromRegionNbt(level, hasSkyLight: hasSkyLight);
+    }
 
     public Chunk? LoadChunk(IWorldContext world, int chunkX, int chunkZ)
     {

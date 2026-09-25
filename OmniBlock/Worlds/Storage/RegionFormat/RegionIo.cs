@@ -99,6 +99,28 @@ internal static class RegionIo
         return regionFile.GetChunkDataInputStream(chunkX & 31, chunkZ & 31);
     }
 
+    /// <summary>
+    ///     Reads through an already-open region handle without creating or opening a region.
+    ///     The returned stream owns an in-memory copy of the compressed chunk payload, so it
+    ///     remains valid if the region cache is flushed after this method returns.
+    /// </summary>
+    public static bool TryGetCachedChunkInputStream(
+        string worldDir, int chunkX, int chunkZ, out ChunkDataStream? stream)
+    {
+        var path = Path.Combine(worldDir, "region",
+            $"r.{chunkX >> 5}.{chunkZ >> 5}.mcr");
+        lock (gate)
+        {
+            if (!cache.TryGetValue(path, out var region))
+            {
+                stream = null;
+                return false;
+            }
+            stream = region.GetChunkDataInputStream(chunkX & 31, chunkZ & 31);
+            return true;
+        }
+    }
+
     public static Stream? GetChunkOutputStream(string worldDir, int chunkX, int chunkZ)
     {
         var regionFile = CreateRegionFile(worldDir, chunkX, chunkZ);
