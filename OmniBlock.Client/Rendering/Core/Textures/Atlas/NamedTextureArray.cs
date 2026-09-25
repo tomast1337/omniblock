@@ -21,18 +21,22 @@ namespace OmniBlock.Client.Rendering.Core.Textures.Atlas;
 public sealed class NamedTextureArray : IDisposable
 {
     private readonly Func<TexturePack> _activePack;
+    private readonly Func<bool> _mipmapsEnabled;
     private readonly string _domain;
     private readonly Func<Image<Rgba32>> _loadDefaultGridImage;
 
     private readonly Dictionary<string, TextureSource> _sourceByName = [];
     private readonly AtlasTileMap _tileMap;
 
-    public NamedTextureArray(string domain, AtlasTileMap tileMap, Func<Image<Rgba32>> loadDefaultGridImage, Func<TexturePack> activePack)
+    public NamedTextureArray(string domain, AtlasTileMap tileMap,
+        Func<Image<Rgba32>> loadDefaultGridImage, Func<TexturePack> activePack,
+        Func<bool>? mipmapsEnabled = null)
     {
         _domain = domain;
         _tileMap = tileMap;
         _loadDefaultGridImage = loadDefaultGridImage;
         _activePack = activePack;
+        _mipmapsEnabled = mipmapsEnabled ?? (() => true);
     }
 
     public TextureArray? Texture { get; private set; }
@@ -84,13 +88,18 @@ public sealed class NamedTextureArray : IDisposable
                 if (i != AtlasTileMap.MissingLayer) _sourceByName[_tileMap.Tiles[i - 1].Name] = resolved[i].Source;
             }
 
-            Texture ??= new TextureArray($"NamedTextureArray[{_domain}]");
+            // Only terrain meshes select filtered levels. Inventory/UI icons keep their exact
+            // pixels, while each named terrain tile gets its own isolated mip chain.
+            Texture ??= new TextureArray($"NamedTextureArray[{_domain}]",
+                mipmapped: _domain == "terrain");
             fixed (byte* ptr = packed)
             {
                 Texture.Upload(targetSize, targetSize, resolved.Length, ptr);
             }
 
             Texture.SetFilter(TextureMinFilter.Nearest, TextureMagFilter.Nearest);
+            Texture.SetMaxLevel(_domain == "terrain" && _mipmapsEnabled()
+                ? Texture.MipLevelCount - 1 : 0);
 
             // Repeat rather than clamp, for the one caller that runs past a layer's edge: flowing
             // water turns its quad about the tile's corner. Beta answered that by writing the frame

@@ -392,7 +392,8 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                 (float X, float Y, float Z) c,
                 (float X, float Y, float Z) d) => TerrainLodSpatialMeshBuilder.Emit(
                 page, translucent, side, appearance, shade,
-                light, length, height, a, b, c, d, guard);
+                light, length, height, a, b, c, d, guard,
+                textureMipLevel: TerrainLodTextureDetail.MipLevel(span.Material, sampleSize));
         }
 
         TerrainLodSpatialMeshBuilder.PageBuilder PageFor(

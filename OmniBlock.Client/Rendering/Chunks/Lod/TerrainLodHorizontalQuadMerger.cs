@@ -141,7 +141,8 @@ internal static class TerrainLodHorizontalQuadMerger
                     Color = style.Color,
                     U = vertexU,
                     V = vertexV,
-                    ArrayLayer = style.ArrayLayer
+                    ArrayLayer = style.ArrayLayer,
+                    TextureMipLevel = style.TextureMipLevel
                 });
                 mergedLights.Add(style.Light);
             }
@@ -161,6 +162,9 @@ internal static class TerrainLodHorizontalQuadMerger
             a.Color != b.Color || a.Color != c.Color || a.Color != d.Color ||
             a.ArrayLayer != b.ArrayLayer || a.ArrayLayer != c.ArrayLayer ||
             a.ArrayLayer != d.ArrayLayer ||
+            a.TextureMipLevel != b.TextureMipLevel ||
+            a.TextureMipLevel != c.TextureMipLevel ||
+            a.TextureMipLevel != d.TextureMipLevel ||
             lights[0] != lights[1] || lights[0] != lights[2] || lights[0] != lights[3] ||
             a.U == 0 || b.V == 0 ||
             a.U != b.U || b.V != c.V || c.U != 0 || d.U != 0 ||
@@ -201,6 +205,7 @@ internal static class TerrainLodHorizontalQuadMerger
                 checked((short)depth),
                 a.Color,
                 a.ArrayLayer,
+                a.TextureMipLevel,
                 a.U,
                 b.V,
                 lights[0]),
@@ -218,6 +223,7 @@ internal static class TerrainLodHorizontalQuadMerger
         short Depth,
         int Color,
         byte ArrayLayer,
+        byte TextureMipLevel,
         ushort TileU,
         ushort TileV,
         ChunkLightVertex Light);

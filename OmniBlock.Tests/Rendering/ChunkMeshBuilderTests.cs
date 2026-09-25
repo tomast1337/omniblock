@@ -116,7 +116,7 @@ public sealed class ChunkMeshBuilderTests
             {
                 Assert.Equal(0, vertex.UvScaleExponent);
                 Assert.Equal(0, vertex.PageOffsetY);
-                Assert.Equal(0, vertex.Reserved);
+                Assert.Equal(0, vertex.TextureMipLevel);
             });
         }
     }
@@ -185,7 +185,7 @@ public sealed class ChunkMeshBuilderTests
         Assert.Equal(expected.ArrayLayer, actual.ArrayLayer);
         Assert.Equal(0, actual.UvScaleExponent);
         Assert.Equal(0, actual.PageOffsetY);
-        Assert.Equal(0, actual.Reserved);
+        Assert.Equal(0, actual.TextureMipLevel);
     }
 
     private static void AssertVertexPosition(ChunkVertex actual, float x, float y, float z)

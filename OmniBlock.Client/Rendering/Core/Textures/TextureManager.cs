@@ -95,7 +95,8 @@ public class TextureManager : IDisposable
             domain,
             tileMap,
             () => LoadImageFromResource(defaultGridPath),
-            () => _texturePacks.SelectedTexturePack);
+            () => _texturePacks.SelectedTexturePack,
+            () => _gameOptions.UseMipmaps);
 
         array.Rebuild();
         return array;
@@ -517,17 +518,23 @@ public class TextureManager : IDisposable
         if (layer == AtlasTileMap.MissingLayer || array.Texture == null) return;
 
         var scale = Math.Max(1, array.LayerSize / fxSize);
-        var size = fxSize * scale;
+        // A filtered terrain layer must replace its complete base level before its mip chain
+        // can be rebuilt. Packs may use a tile size that is not a multiple of the animation's
+        // source frame, so do not rely on integer upscaling for this path.
+        var size = isTerrain ? array.LayerSize : fxSize * scale;
 
         byte[]? rented = null;
         var pixels = texture.Pixels;
 
         try
         {
-            if (scale > 1)
+            if (size != fxSize)
             {
                 rented = ArrayPool<byte>.Shared.Rent(size * size * 4);
-                UpscaleNearestNeighbor(texture.Pixels, rented, fxSize, size, scale);
+                if (size == fxSize * scale)
+                    UpscaleNearestNeighbor(texture.Pixels, rented, fxSize, size, scale);
+                else
+                    ResampleNearestNeighbor(texture.Pixels, rented, fxSize, size);
                 pixels = rented;
             }
 
@@ -561,6 +568,17 @@ public class TextureManager : IDisposable
                 dstSpan[dstIdx + 2] = srcSpan[srcIdx + 2];
                 dstSpan[dstIdx + 3] = srcSpan[srcIdx + 3];
             }
+        }
+    }
+
+    private static void ResampleNearestNeighbor(byte[] src, byte[] dst, int srcSize, int dstSize)
+    {
+        for (var y = 0; y < dstSize; y++)
+        for (var x = 0; x < dstSize; x++)
+        {
+            var source = ((y * srcSize / dstSize) * srcSize + x * srcSize / dstSize) * 4;
+            var target = (y * dstSize + x) * 4;
+            src.AsSpan(source, 4).CopyTo(dst.AsSpan(target, 4));
         }
     }
 

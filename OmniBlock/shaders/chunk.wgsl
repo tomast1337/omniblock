@@ -130,7 +130,8 @@ struct VertexInput {
     @location(3) light: vec2<u32>,          // Uint8x2 at offset 16
     // Uint8x2 at offset 16: .x is the texture-array layer and .y is the power-of-two UV scale.
     @location(4) @interpolate(flat) arrayLayer: vec2<u32>,
-    // Uint8x2 at offset 18: .x is distant page Y offset; .y is reserved.
+    // Uint8x2 at offset 18: .x is distant page Y offset; .y selects the filtered
+    // terrain texture level (zero for exact chunks and thin/translucent geometry).
     @location(5) @interpolate(flat) pageData: vec2<u32>,
 }
 
@@ -146,6 +147,7 @@ struct VertexOutput {
     @location(7) @interpolate(flat) presentationFadeSeed: u32,
     @location(8) pagePosition: vec2<f32>,
     @location(9) @interpolate(flat) hiddenColumns: vec2<u32>,
+    @location(10) @interpolate(flat) textureMipLevel: u32,
 }
 
 @vertex
@@ -192,6 +194,7 @@ fn vs_main(in: VertexInput, @builtin(instance_index) drawIndex: u32) -> VertexOu
     out.presentationFadeSeed = draw.presentationFadeSeed;
     out.pagePosition = pagePos.xz;
     out.hiddenColumns = draw.hiddenColumns;
+    out.textureMipLevel = in.pageData.y;
     return out;
 }
 
@@ -250,7 +253,8 @@ fn presentationDitherThreshold(position: vec2<f32>, seed: u32) -> f32 {
 
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
-    let texColor = textureSample(terrainArray, terrainSampler, in.texCoord, in.arrayLayer);
+    let texColor = textureSampleLevel(terrainArray, terrainSampler,
+        in.texCoord, in.arrayLayer, f32(in.textureMipLevel));
     if (hiddenSpatialColumn(in)) { discard; }
     var finalColor = texColor * in.color;
 

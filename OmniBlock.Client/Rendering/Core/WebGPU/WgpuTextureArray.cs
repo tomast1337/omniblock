@@ -24,12 +24,13 @@ public sealed unsafe class WgpuTextureArray : IDisposable
 
     /// <summary>Creates an empty array; the caller fills layers with <see cref="UploadLayer" />.</summary>
     public WgpuTextureArray(WebGpuDevice device, uint width, uint height, uint layerCount,
-        WgpuSamplerDescription sampler)
+        WgpuSamplerDescription sampler, uint mipLevelCount = 1)
     {
         _device = device;
         Width = Math.Max(1, width);
         Height = Math.Max(1, height);
         LayerCount = Math.Max(1, layerCount);
+        MipLevelCount = Math.Max(1, mipLevelCount);
         var api = device.Api;
 
         TextureDescriptor desc = new()
@@ -38,7 +39,7 @@ public sealed unsafe class WgpuTextureArray : IDisposable
             Dimension = TextureDimension.Dimension2D,
             Size = new Extent3D(Width, Height, LayerCount),
             Format = Format,
-            MipLevelCount = 1,
+            MipLevelCount = MipLevelCount,
             SampleCount = 1
         };
 
@@ -48,7 +49,7 @@ public sealed unsafe class WgpuTextureArray : IDisposable
         {
             Format = Format,
             Dimension = TextureViewDimension.Dimension2DArray,
-            MipLevelCount = 1,
+            MipLevelCount = MipLevelCount,
             ArrayLayerCount = LayerCount,
             Aspect = TextureAspect.All
         };
@@ -72,6 +73,7 @@ public sealed unsafe class WgpuTextureArray : IDisposable
     public uint Width { get; }
     public uint Height { get; }
     public uint LayerCount { get; }
+    public uint MipLevelCount { get; }
 
     /// <summary>The bind group made by the single-layout constructor.</summary>
     public BindGroup* BindGroup { get; }
@@ -135,10 +137,17 @@ public sealed unsafe class WgpuTextureArray : IDisposable
     public void UploadLayer(uint layerIndex, ReadOnlySpan<byte> rgba) =>
         UploadRegion(0, 0, layerIndex, Width, Height, rgba);
 
+    /// <summary>Uploads one filtered level of a whole layer.</summary>
+    public void UploadMipLayer(uint layerIndex, uint mipLevel, ReadOnlySpan<byte> rgba) =>
+        UploadRegion(0, 0, layerIndex,
+            Math.Max(1u, Width >> (int)mipLevel), Math.Max(1u, Height >> (int)mipLevel),
+            rgba, mipLevel);
+
     /// <summary>Uploads a sub-rectangle of one layer — a texture-pack override, or an animated tile tick.</summary>
-    public void UploadRegion(uint x, uint y, uint layerIndex, uint width, uint height, ReadOnlySpan<byte> rgba)
+    public void UploadRegion(uint x, uint y, uint layerIndex, uint width, uint height,
+        ReadOnlySpan<byte> rgba, uint mipLevel = 0)
     {
-        if (width == 0 || height == 0 || layerIndex >= LayerCount) return;
+        if (width == 0 || height == 0 || layerIndex >= LayerCount || mipLevel >= MipLevelCount) return;
 
         var rows = WgpuPixelRows.Align(rgba, width, height, out var bytesPerRow);
         var api = _device.Api;
@@ -146,7 +155,7 @@ public sealed unsafe class WgpuTextureArray : IDisposable
         ImageCopyTexture destination = new()
         {
             Texture = Texture,
-            MipLevel = 0,
+            MipLevel = mipLevel,
             Origin = new Origin3D(x, y, layerIndex),
             Aspect = TextureAspect.All
         };

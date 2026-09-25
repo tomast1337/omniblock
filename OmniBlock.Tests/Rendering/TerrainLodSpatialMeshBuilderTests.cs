@@ -150,6 +150,8 @@ public sealed class TerrainLodSpatialMeshBuilderTests
         // The 16x16 liquid top and bottom are each one tiled quad. Only the 64 outer wall
         // segments remain separate; the former per-column top/bottom grid is gone.
         Assert.Equal(66, mesh.TranslucentQuadCount);
+        Assert.All(mesh.Pages.SelectMany(static page => page.TranslucentVertices),
+            vertex => Assert.Equal(0, vertex.TextureMipLevel));
         Assert.All(mesh.Pages.SelectMany(static page => page.TranslucentLights), light =>
         {
             Assert.InRange(light.Block, (byte)0, (byte)60);
@@ -674,6 +676,9 @@ public sealed class TerrainLodSpatialMeshBuilderTests
         Assert.Contains(vertices, static vertex =>
             vertex.PageOffsetXZ != 0 || vertex.PageOffsetY != 0);
         Assert.All(vertices, vertex => Assert.Equal(expectedExponent, vertex.UvScaleExponent));
+        Assert.All(vertices, vertex => Assert.Equal(
+            Math.Min(horizontalSampleLevel, TerrainLodTextureDetail.MaximumFilteredLevel),
+            vertex.TextureMipLevel));
         Assert.Equal(expectedSampleSize,
             vertices.Max(vertex => vertex.U / 4095f * (1 << vertex.UvScaleExponent)),
             precision: 3);

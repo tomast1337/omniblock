@@ -67,7 +67,8 @@ public struct ChunkVertex
     [FieldOffset(17)] public byte UvScaleExponent;
     /// <summary>Distant-page Y offset in 64-block units; zero for exact terrain.</summary>
     [FieldOffset(18)] public byte PageOffsetY;
-    [FieldOffset(19)] public byte Reserved; // 4-byte-stride alignment
+    /// <summary>Filtered terrain texture level; exact chunks and non-opaque LOD geometry use zero.</summary>
+    [FieldOffset(19)] public byte TextureMipLevel;
 }
 
 public static class ChunkVertexHelper
@@ -102,7 +103,7 @@ public static class ChunkVertexHelper
             PageOffsetXZ = 0,
             UvScaleExponent = uvScaleExponent,
             PageOffsetY = 0,
-            Reserved = 0
+            TextureMipLevel = 0
         };
     }
 

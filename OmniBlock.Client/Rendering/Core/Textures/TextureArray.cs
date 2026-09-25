@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using OmniBlock.Client.Rendering.Core.WebGPU;
+using OmniBlock.Client.Rendering.Core.Textures.Atlas;
 using Silk.NET.OpenGL;
 using AddressMode = Silk.NET.WebGPU.AddressMode;
 using FilterMode = Silk.NET.WebGPU.FilterMode;
@@ -23,11 +24,13 @@ public sealed class TextureArray : IDisposable
     private static readonly Dictionary<uint, (string Source, DateTime CreatedAt)> s_activeTextures = [];
     private static uint s_nextWebGpuId;
 
+    private readonly bool _mipmapped;
     private WgpuSamplerDescription _sampler = WgpuSamplerDescription.Nearest;
 
-    public TextureArray(string source)
+    public TextureArray(string source, bool mipmapped = false)
     {
         Source = source;
+        _mipmapped = mipmapped;
         Id = ++s_nextWebGpuId;
         s_activeTextures.Add(Id, (source, DateTime.Now));
     }
@@ -37,6 +40,7 @@ public sealed class TextureArray : IDisposable
     public int Width { get; private set; }
     public int Height { get; private set; }
     public int LayerCount { get; private set; }
+    public int MipLevelCount { get; private set; } = 1;
     public static int ActiveTextureCount => s_activeTextures.Count;
 
     /// <summary>The WebGPU array, once an upload has given it a size.</summary>
@@ -107,10 +111,13 @@ public sealed class TextureArray : IDisposable
             Width = width;
             Height = height;
             LayerCount = layerCount;
+            MipLevelCount = _mipmapped
+                ? 1 + (int)Math.Floor(Math.Log2(Math.Max(width, height)))
+                : 1;
         }
 
-        // Only the base level exists on this path — nothing builds mips for an array, and a level
-        // arriving here would have nowhere to go in a one-level texture.
+        // Callers provide only the base level. The terrain array derives each layer's filtered
+        // levels independently below; item arrays still have one level.
         if (level != 0) return;
 
         Materialize();
@@ -119,7 +126,17 @@ public sealed class TextureArray : IDisposable
         var layerBytes = width * height * 4;
         for (var layer = 0; layer < layerCount; layer++)
         {
-            Wgpu.UploadLayer((uint)layer, new ReadOnlySpan<byte>(ptr + layer * layerBytes, layerBytes));
+            var pixels = new ReadOnlySpan<byte>(ptr + layer * layerBytes, layerBytes);
+            if (_mipmapped)
+            {
+                var mips = TerrainTileMipmaps.Build(pixels, width, height);
+                for (var mip = 0; mip < mips.Length; mip++)
+                    Wgpu.UploadMipLayer((uint)layer, (uint)mip, mips[mip]);
+            }
+            else
+            {
+                Wgpu.UploadLayer((uint)layer, pixels);
+            }
         }
     }
 
@@ -127,9 +144,21 @@ public sealed class TextureArray : IDisposable
     public unsafe void UploadLayer(int layer, int width, int height, byte* ptr, int level = 0, GLEnum format = GLEnum.Rgba)
     {
         if (level != 0 || Wgpu is null) return;
+        if (_mipmapped && (width != Width || height != Height))
+            throw new ArgumentException(
+                "Filtered terrain layers must replace the whole base tile before rebuilding mipmaps.");
 
-        Wgpu.UploadRegion(0, 0, (uint)layer, (uint)width, (uint)height,
-            new ReadOnlySpan<byte>(ptr, width * height * 4));
+        var pixels = new ReadOnlySpan<byte>(ptr, checked(width * height * 4));
+        if (_mipmapped)
+        {
+            var mips = TerrainTileMipmaps.Build(pixels, width, height);
+            for (var mip = 0; mip < mips.Length; mip++)
+                Wgpu.UploadMipLayer((uint)layer, (uint)mip, mips[mip]);
+        }
+        else
+        {
+            Wgpu.UploadLayer((uint)layer, pixels);
+        }
     }
 
     public static void LogLeakReport()
@@ -148,7 +177,8 @@ public sealed class TextureArray : IDisposable
         if (WebGpuDevice.Current is not { } device) return;
 
         Wgpu?.Dispose();
-        Wgpu = new WgpuTextureArray(device, (uint)Width, (uint)Height, (uint)LayerCount, _sampler);
+        Wgpu = new WgpuTextureArray(device, (uint)Width, (uint)Height, (uint)LayerCount,
+            _sampler, (uint)MipLevelCount);
     }
 
     private void UpdateSampler(WgpuSamplerDescription sampler)

@@ -322,7 +322,8 @@ internal static class TerrainLodSpatialMeshBuilder
                         var d = (renderMinX, faceY, renderMaxZ);
                         Emit(page, translucent, side, appearance, shade,
                             SmoothLighting(side, span.Material, light, a, b, c, d),
-                            sampleSize, sampleSize, a, b, c, d, guard);
+                            sampleSize, sampleSize, a, b, c, d, guard,
+                            textureMipLevel: TerrainLodTextureDetail.MipLevel(faceMaterial, sampleSize));
                     }
                     else
                     {
@@ -332,7 +333,8 @@ internal static class TerrainLodSpatialMeshBuilder
                         var d = (renderMaxX, faceY, renderMaxZ);
                         Emit(page, translucent, side, appearance, shade,
                             SmoothLighting(side, span.Material, light, a, b, c, d),
-                            sampleSize, sampleSize, a, b, c, d, guard);
+                            sampleSize, sampleSize, a, b, c, d, guard,
+                            textureMipLevel: TerrainLodTextureDetail.MipLevel(faceMaterial, sampleSize));
                     }
                 }
 
@@ -468,7 +470,9 @@ internal static class TerrainLodSpatialMeshBuilder
                                 (float X, float Y, float Z) d) =>
                                 Emit(page, translucent, side, appearance, shade,
                                     SmoothLighting(side, span.Material, light, a, b, c, d),
-                                    alongEnd - alongStart, height, a, b, c, d, guard);
+                                    alongEnd - alongStart, height, a, b, c, d, guard,
+                                    textureMipLevel: TerrainLodTextureDetail.MipLevel(
+                                        span.Material, sampleSize));
                         }
                     }
                 }
@@ -720,10 +724,11 @@ internal static class TerrainLodSpatialMeshBuilder
         (float X, float Y, float Z) c,
         (float X, float Y, float Z) d,
         TerrainLodSpatialMeshBuildGuard? guard = null,
-        bool nonDirectional = false)
+        bool nonDirectional = false,
+        byte textureMipLevel = 0)
         => Emit(page, translucent, side, appearance, shade,
             TerrainLodQuadLighting.Uniform(light), tileU, tileV,
-            a, b, c, d, guard, nonDirectional);
+            a, b, c, d, guard, nonDirectional, textureMipLevel);
 
     internal static void Emit(
         PageBuilder page,
@@ -739,7 +744,8 @@ internal static class TerrainLodSpatialMeshBuilder
         (float X, float Y, float Z) c,
         (float X, float Y, float Z) d,
         TerrainLodSpatialMeshBuildGuard? guard = null,
-        bool nonDirectional = false)
+        bool nonDirectional = false,
+        byte textureMipLevel = 0)
     {
         EmitTexture(appearance.Texture, appearance.Tint);
         if (appearance.OverlayTexture >= 0)
@@ -763,13 +769,17 @@ internal static class TerrainLodSpatialMeshBuilder
                     Vertex(a, tileU, 0), Vertex(b, tileU, tileV),
                     Vertex(c, 0, tileV), Vertex(d, 0, 0));
 
-            ChunkVertex Vertex((float X, float Y, float Z) value, float u, float v) =>
-                ChunkVertexHelper.Create(
+            ChunkVertex Vertex((float X, float Y, float Z) value, float u, float v)
+            {
+                var vertex = ChunkVertexHelper.Create(
                     color,
                     value.X - page.OriginX,
                     value.Y - page.OriginY,
                     value.Z - page.OriginZ,
                     u / uvScale, v / uvScale, layer, uvScaleExponent);
+                vertex.TextureMipLevel = textureMipLevel;
+                return vertex;
+            }
         }
     }
 

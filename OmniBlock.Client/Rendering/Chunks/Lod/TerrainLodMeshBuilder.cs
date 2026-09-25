@@ -463,14 +463,23 @@ internal static class TerrainLodMeshBuilder
                 {
                     var layer = Atlases.Terrain.LayerOfGridIndex(texture);
                     var color = PackTintedColor(faceTint, shade);
-                    vertices.Add(ChunkVertexHelper.Create(color, a.X, a.Y, a.Z, tileU, 0, layer));
-                    vertices.Add(ChunkVertexHelper.Create(color, b.X, b.Y, b.Z, tileU, tileV, layer));
-                    vertices.Add(ChunkVertexHelper.Create(color, c.X, c.Y, c.Z, 0, tileV, layer));
-                    vertices.Add(ChunkVertexHelper.Create(color, d.X, d.Y, d.Z, 0, 0, layer));
+                    var mip = TerrainLodTextureDetail.MipLevel(material, level.Scale);
+                    vertices.Add(Vertex(a, tileU, 0));
+                    vertices.Add(Vertex(b, tileU, tileV));
+                    vertices.Add(Vertex(c, 0, tileV));
+                    vertices.Add(Vertex(d, 0, 0));
                     lights.Add(light);
                     lights.Add(light);
                     lights.Add(light);
                     lights.Add(light);
+
+                    ChunkVertex Vertex((float X, float Y, float Z) point, float u, float v)
+                    {
+                        var vertex = ChunkVertexHelper.Create(
+                            color, point.X, point.Y, point.Z, u, v, layer);
+                        vertex.TextureMipLevel = mip;
+                        return vertex;
+                    }
                 }
             }
 

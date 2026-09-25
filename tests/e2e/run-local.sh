@@ -10,7 +10,7 @@ requested_scenario="${1:-all}"
 if [[ ( "$requested_scenario" == "terrain-lod-near-quality" || "$requested_scenario" == "terrain-lod-remote-handoff" || "$requested_scenario" == "terrain-lod-natural-cave" || "$requested_scenario" == "terrain-lod-cave-mouth-remote" || "$requested_scenario" == "terrain-lod-rock-cave-remote" || "$requested_scenario" == "terrain-lod-quality-upgrade" ) && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
     timeout_seconds=240
 fi
-if [[ "$requested_scenario" == "terrain-lod-visual-baseline" && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
+if [[ ( "$requested_scenario" == "terrain-lod-visual-baseline" || "$requested_scenario" == "terrain-lod-filtered-textures" ) && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
     timeout_seconds=360
 fi
 if [[ ( "$requested_scenario" == "terrain-lod-cave-mouth-remote" || "$requested_scenario" == "terrain-lod-rock-cave-remote" || "$requested_scenario" == "terrain-lod-saved-cold" ) && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
