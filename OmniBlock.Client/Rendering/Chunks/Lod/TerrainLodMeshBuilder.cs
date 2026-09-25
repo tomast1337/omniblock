@@ -463,7 +463,7 @@ internal static class TerrainLodMeshBuilder
                 {
                     var layer = Atlases.Terrain.LayerOfGridIndex(texture);
                     var color = PackTintedColor(faceTint, shade);
-                    var mip = TerrainLodTextureDetail.MipLevel(material, level.Scale);
+                    var mip = TerrainLodTextureDetail.Pack(material, level.Scale);
                     vertices.Add(Vertex(a, tileU, 0));
                     vertices.Add(Vertex(b, tileU, tileV));
                     vertices.Add(Vertex(c, 0, tileV));

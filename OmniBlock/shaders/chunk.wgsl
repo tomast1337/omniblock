@@ -47,6 +47,10 @@ struct FrameUniforms {
 @group(2) @binding(0) var<storage, read> drawMetadata: array<DrawMetadata>;
 
 const POSITION_SCALE_INV: f32 = 64.0 / 32767.0;
+// Independent of geometry tier and terrain horizon: texture detail gradually gives way to
+// each resource-pack tile's representative color over the middle/far range.
+const REPRESENTATIVE_COLOR_START: f32 = 256.0;
+const REPRESENTATIVE_COLOR_END: f32 = 640.0;
 
 fn unpackPosition(packed: vec4<i32>) -> vec3<f32> {
     return vec3<f32>(f32(packed.x), f32(packed.y), f32(packed.z)) * POSITION_SCALE_INV;
@@ -130,8 +134,8 @@ struct VertexInput {
     @location(3) light: vec2<u32>,          // Uint8x2 at offset 16
     // Uint8x2 at offset 16: .x is the texture-array layer and .y is the power-of-two UV scale.
     @location(4) @interpolate(flat) arrayLayer: vec2<u32>,
-    // Uint8x2 at offset 18: .x is distant page Y offset; .y selects the filtered
-    // terrain texture level (zero for exact chunks and thin/translucent geometry).
+    // Uint8x2 at offset 18: .x is distant page Y offset; .y packs the filtered terrain
+    // texture level in low bits and opaque-LOD representative-color eligibility in bit 7.
     @location(5) @interpolate(flat) pageData: vec2<u32>,
 }
 
@@ -253,9 +257,24 @@ fn presentationDitherThreshold(position: vec2<f32>, seed: u32) -> f32 {
 
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
-    let texColor = textureSampleLevel(terrainArray, terrainSampler,
-        in.texCoord, in.arrayLayer, f32(in.textureMipLevel));
+    var texColor = textureSampleLevel(terrainArray, terrainSampler,
+        in.texCoord, in.arrayLayer, f32(in.textureMipLevel & 0x7fu));
     if (hiddenSpatialColumn(in)) { discard; }
+    if ((in.textureMipLevel & 0x80u) != 0u &&
+        in.fogDistance > REPRESENTATIVE_COLOR_START) {
+        // The last mip is a pack-derived, alpha-aware 1x1 color for this *one* tile. Loading it
+        // directly keeps the color schedule independent of the sampler's mipmap setting and
+        // geometry sampling level. Only opaque LOD material faces carry the flag; preserve
+        // alpha-masked pack overlays.
+        let lastMip = i32(textureNumLevels(terrainArray) - 1u);
+        let representative = textureLoad(terrainArray, vec2<i32>(0, 0),
+            in.arrayLayer, lastMip);
+        if (representative.a >= 0.995) {
+            let amount = smoothstep(REPRESENTATIVE_COLOR_START,
+                REPRESENTATIVE_COLOR_END, in.fogDistance);
+            texColor = vec4<f32>(mix(texColor.rgb, representative.rgb, amount), texColor.a);
+        }
+    }
     var finalColor = texColor * in.color;
 
     if (finalColor.a < 0.001) {

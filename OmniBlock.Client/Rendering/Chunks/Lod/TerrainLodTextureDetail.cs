@@ -11,6 +11,15 @@ namespace OmniBlock.Client.Rendering.Chunks.Lod;
 internal static class TerrainLodTextureDetail
 {
     internal const int MaximumFilteredLevel = 4; // the shipped terrain tile is at least 16x16
+    internal const byte RepresentativeColorFlag = 0x80;
+
+    // The low bits select the tile's mip; the high bit independently permits the far-color
+    // transition. In particular, opaque 1x1 LOD may blend at a great distance while nearby
+    // 1x1 LOD and all exact chunks still sample the sharp level-zero texture.
+    public static byte Pack(TerrainLodMaterial material, int sampleSize) =>
+        (byte)(MipLevel(material, sampleSize) |
+               (material.Geometry == TerrainLodGeometryClass.Opaque
+                   ? RepresentativeColorFlag : 0));
 
     public static byte MipLevel(TerrainLodMaterial material, int sampleSize)
     {

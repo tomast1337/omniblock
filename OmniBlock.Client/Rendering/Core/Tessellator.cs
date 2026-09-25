@@ -67,7 +67,7 @@ public struct ChunkVertex
     [FieldOffset(17)] public byte UvScaleExponent;
     /// <summary>Distant-page Y offset in 64-block units; zero for exact terrain.</summary>
     [FieldOffset(18)] public byte PageOffsetY;
-    /// <summary>Filtered terrain texture level; exact chunks and non-opaque LOD geometry use zero.</summary>
+    /// <summary>Low 7 bits: texture mip level; bit 7: opaque LOD may blend toward its tile color.</summary>
     [FieldOffset(19)] public byte TextureMipLevel;
 }
 

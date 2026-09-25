@@ -323,7 +323,7 @@ internal static class TerrainLodSpatialMeshBuilder
                         Emit(page, translucent, side, appearance, shade,
                             SmoothLighting(side, span.Material, light, a, b, c, d),
                             sampleSize, sampleSize, a, b, c, d, guard,
-                            textureMipLevel: TerrainLodTextureDetail.MipLevel(faceMaterial, sampleSize));
+                            textureMipLevel: TerrainLodTextureDetail.Pack(faceMaterial, sampleSize));
                     }
                     else
                     {
@@ -334,7 +334,7 @@ internal static class TerrainLodSpatialMeshBuilder
                         Emit(page, translucent, side, appearance, shade,
                             SmoothLighting(side, span.Material, light, a, b, c, d),
                             sampleSize, sampleSize, a, b, c, d, guard,
-                            textureMipLevel: TerrainLodTextureDetail.MipLevel(faceMaterial, sampleSize));
+                            textureMipLevel: TerrainLodTextureDetail.Pack(faceMaterial, sampleSize));
                     }
                 }
 
@@ -471,7 +471,7 @@ internal static class TerrainLodSpatialMeshBuilder
                                 Emit(page, translucent, side, appearance, shade,
                                     SmoothLighting(side, span.Material, light, a, b, c, d),
                                     alongEnd - alongStart, height, a, b, c, d, guard,
-                                    textureMipLevel: TerrainLodTextureDetail.MipLevel(
+                                    textureMipLevel: TerrainLodTextureDetail.Pack(
                                         span.Material, sampleSize));
                         }
                     }

@@ -1,5 +1,7 @@
--- Opt-in visual gate for the first coarse spatial tier (2x2 source samples). It generates a
+-- Opt-in rendering gate for the first coarse spatial tier (2x2 source samples). It generates a
 -- bounded natural patch, then observes it from outside the patch so L3 must own visible terrain.
+-- The camera sees both the filtered-texture and representative-color distance bands; this is a
+-- shader/runtime smoke test, not an automated visual-quality score.
 OMNI.config.viewDistance = 0 -- four exact chunks
 OMNI.config.terrainHorizonDistance = 0.06666667 -- 32 chunks; L3 cannot be selected at 16
 OMNI.config.pauseOnFocusLoss = false

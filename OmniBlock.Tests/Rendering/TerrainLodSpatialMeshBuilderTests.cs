@@ -639,10 +639,11 @@ public sealed class TerrainLodSpatialMeshBuilderTests
     }
 
     [Theory]
+    [InlineData(0, 1, 0)]
     [InlineData(3, 8, 0)]
     [InlineData(5, 32, 1)]
     [InlineData(6, 64, 2)]
-    public void Public_large_horizon_samples_use_packed_uv_scale_without_losing_tiling(
+    public void Spatial_samples_pack_texture_detail_and_uv_scale_without_losing_tiling(
         int horizontalSampleLevel,
         int expectedSampleSize,
         byte expectedExponent)
@@ -673,11 +674,13 @@ public sealed class TerrainLodSpatialMeshBuilderTests
         Assert.NotEmpty(vertices);
         Assert.Equal(tile.Key.ChunkWidth * 16, page.ExtentX);
         Assert.Equal(tile.Key.ChunkWidth * 16, page.ExtentZ);
-        Assert.Contains(vertices, static vertex =>
-            vertex.PageOffsetXZ != 0 || vertex.PageOffsetY != 0);
+        if (horizontalSampleLevel >= 3)
+            Assert.Contains(vertices, static vertex =>
+                vertex.PageOffsetXZ != 0 || vertex.PageOffsetY != 0);
         Assert.All(vertices, vertex => Assert.Equal(expectedExponent, vertex.UvScaleExponent));
         Assert.All(vertices, vertex => Assert.Equal(
-            Math.Min(horizontalSampleLevel, TerrainLodTextureDetail.MaximumFilteredLevel),
+            TerrainLodTextureDetail.RepresentativeColorFlag |
+                Math.Min(horizontalSampleLevel, TerrainLodTextureDetail.MaximumFilteredLevel),
             vertex.TextureMipLevel));
         Assert.Equal(expectedSampleSize,
             vertices.Max(vertex => vertex.U / 4095f * (1 << vertex.UvScaleExponent)),
