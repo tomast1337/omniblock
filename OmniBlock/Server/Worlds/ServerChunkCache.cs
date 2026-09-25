@@ -284,6 +284,7 @@ public class ServerChunkCache : IChunkSource
                 GenerationTelemetry.Measure(
                     WorldGenerationStage.EncodeSave,
                     () => _storage.SaveChunk(_world, chunk, null, -1));
+                _terrainLod?.NotifyChunkSaved(chunk);
             }
             catch (Exception ex)
             {

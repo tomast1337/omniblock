@@ -258,6 +258,23 @@ public sealed class TerrainLodColumnTileCacheStore
         }
     }
 
+    /// <summary>Removes a derived record whose authoritative terrain changed.</summary>
+    public bool Invalidate(TerrainLodTileKey key)
+    {
+        lock (_gate)
+        {
+            var path = GetRecordPath(key);
+            if (!File.Exists(path)) return false;
+            var length = new FileInfo(path).Length;
+            File.Delete(path);
+            _currentBytes -= length;
+            _entryCount--;
+            _evictions++;
+            PublishSnapshotLocked();
+            return true;
+        }
+    }
+
     public TerrainLodColumnTileCacheSnapshot Snapshot() =>
         Volatile.Read(ref _publishedSnapshot);
 

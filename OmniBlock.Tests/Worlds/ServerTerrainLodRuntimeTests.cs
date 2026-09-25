@@ -4,7 +4,9 @@ using OmniBlock.Server.Worlds;
 using OmniBlock.Tests.TestSupport;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Chunks.Storage;
+using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Lod;
+using OmniBlock.Worlds.Storage.RegionFormat;
 
 namespace OmniBlock.Tests.Worlds;
 
@@ -530,6 +532,82 @@ public sealed class ServerTerrainLodRuntimeTests
         }
     }
 
+    [Fact]
+    public async Task Live_edit_during_transient_import_rejects_mixed_revision_parent()
+    {
+        var root = CreateTemporaryDirectory();
+        using var releaseRead = new ManualResetEventSlim();
+        using var blockedRead = new ManualResetEventSlim();
+        try
+        {
+            var world = new FakeWorldContext();
+            var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+            var sources = new Dictionary<(int X, int Z), TerrainLodSourceSnapshot>();
+            Chunk? live = null;
+            Chunk? secondLive = null;
+            for (var x = 0; x < 8; x++)
+            for (var z = 0; z < 8; z++)
+            {
+                var chunk = Chunk(world, x, z);
+                chunk[0, 4, 0] = stone;
+                sources.Add((x, z), TerrainLodSourceSnapshot.Capture(chunk));
+                if (x == 0 && z == 0) live = chunk;
+                if (x == 1 && z == 0) secondLive = chunk;
+            }
+            var storage = new PausingTerrainSourceStorage(sources, blockedRead, releaseRead);
+            using var runtime = new ServerTerrainLodRuntime(
+                0, TerrainLodMaterialCatalog.FromRuntime(world.Content), root, world,
+                storedTerrain: storage, transientImportMinimumLevel: 3);
+            runtime.TrackChunk(live!);
+            runtime.TrackChunk(secondLive!);
+            var key = new TerrainLodTileKey(3, 0, 0);
+
+            Assert.Equal(TerrainLodTileAvailability.Pending,
+                runtime.GetSpatialCoverage(key, out _));
+            await WaitUntil(() => blockedRead.IsSet, TimeSpan.FromSeconds(30));
+            // The source already consumed at (0,0) is now stale while a later read is in flight.
+            live![0, 4, 0] = 0;
+            releaseRead.Set();
+            await WaitUntil(() => runtime.GetSpatialCoverage(key, out _) ==
+                                  TerrainLodTileAvailability.Missing);
+
+            Assert.Equal(0, runtime.Snapshot().SpatialHierarchy.Tiles);
+            Assert.Equal(0, runtime.Snapshot().SpatialCache.Writes);
+            Assert.Equal(1, runtime.Snapshot().SavedTileImportsFailed);
+
+            // A later durable save removes the retry barrier and the replacement uses the
+            // updated source, rather than publishing the rejected mixed-revision candidate.
+            secondLive![0, 4, 0] = 0;
+            storage.Replace(TerrainLodSourceSnapshot.Capture(live));
+            runtime.NotifyChunkSaved(live);
+            Assert.Equal(TerrainLodTileAvailability.Missing,
+                runtime.GetSpatialCoverage(key, out _));
+            storage.Replace(TerrainLodSourceSnapshot.Capture(secondLive));
+            runtime.NotifyChunkSaved(secondLive);
+            Assert.Equal(TerrainLodTileAvailability.Pending,
+                runtime.GetSpatialCoverage(key, out _));
+            await WaitUntil(() => runtime.GetSpatialCoverage(key, out _) ==
+                                  TerrainLodTileAvailability.Ready, TimeSpan.FromSeconds(30));
+            Assert.Equal(1, runtime.Snapshot().SpatialCache.Writes);
+            Assert.Equal(1, runtime.Snapshot().SpatialHierarchy.Tiles);
+            var expected = new TerrainLodTransientTileBuilder(
+                key, TerrainLodSpatialPolicy.CreateDefault(),
+                TerrainLodMaterialCatalog.FromRuntime(world.Content));
+            while (expected.Result is null)
+            {
+                var (x, z) = expected.NextChunkCoordinates();
+                expected.AddSource(sources[(x, z)]);
+            }
+            Assert.True(runtime.TryGetSpatialCoverage(key, out var replacement));
+            Assert.Equal(expected.Result.CanonicalHash, replacement!.CanonicalHash);
+        }
+        finally
+        {
+            releaseRead.Set();
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
     [Theory]
     [InlineData(512, 7, 289)]
     [InlineData(1024, 8, 297)]
@@ -594,6 +672,40 @@ public sealed class ServerTerrainLodRuntimeTests
 
     private static Chunk Chunk(FakeWorldContext world, int x, int z) =>
         new(world, new byte[ChuckFormat.ChunkSize], x, z);
+
+    private sealed class PausingTerrainSourceStorage(
+        Dictionary<(int X, int Z), TerrainLodSourceSnapshot> sources,
+        ManualResetEventSlim blocked,
+        ManualResetEventSlim release) : IChunkStorage
+    {
+        private int _reads;
+
+        public void Replace(TerrainLodSourceSnapshot source) =>
+            sources[(source.ChunkX, source.ChunkZ)] = source;
+
+        public TerrainLodSourceSnapshot? ReadTerrainLodSource(
+            int chunkX, int chunkZ, bool hasSkyLight)
+        {
+            if (Interlocked.Increment(ref _reads) == 8)
+            {
+                blocked.Set();
+                if (!release.Wait(TimeSpan.FromSeconds(30)))
+                    throw new TimeoutException("Test did not release the saved-source read.");
+            }
+            return sources.GetValueOrDefault((chunkX, chunkZ));
+        }
+
+        public Chunk? LoadChunk(IWorldContext world, int chunkX, int chunkZ) =>
+            throw new NotSupportedException();
+        public ChunkSaveResult SaveChunk(
+            IWorldContext world, Chunk chunk, Action? onSave, long sequence) =>
+            throw new NotSupportedException();
+        public void SaveEntities(IWorldContext world, Chunk chunk) =>
+            throw new NotSupportedException();
+        public void Tick() { }
+        public void Flush() { }
+        public void FlushToDisk() { }
+    }
 
     private static DirectoryInfo CreateTemporaryDirectory()
     {

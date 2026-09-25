@@ -96,6 +96,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     private readonly HashSet<TerrainLodTileKey> _spatialMissing = [];
     private readonly Queue<SavedTileImport> _savedTileImportQueue = [];
     private readonly Dictionary<TerrainLodTileKey, SavedTileImport> _savedTileImports = [];
+    private readonly Dictionary<TerrainLodTileKey, HashSet<ChunkKey>> _blockedTransientImports = [];
     private readonly Queue<TerrainLodTileKey> _spatialEncodeRequests = [];
     private readonly HashSet<TerrainLodTileKey> _spatialEncodesPending = [];
     private readonly Dictionary<TerrainLodTileKey, byte[]> _spatialWirePayloads = [];
@@ -409,6 +410,29 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         }
     }
 
+    /// <summary>
+    ///     A cancelled saved-source import may retry only after every live edit that invalidated
+    ///     it has reached storage. Chunk saves are synchronous; this notification follows the
+    ///     successful write rather than the earlier terrain-change event.
+    /// </summary>
+    internal void NotifyChunkSaved(Chunk chunk)
+    {
+        var source = new ChunkKey(chunk.X, chunk.Z);
+        lock (_gate)
+        {
+            if (_disposed) return;
+            foreach (var import in _savedTileImports.Values)
+                import.UnsavedEditedSources.Remove(source);
+            foreach (var (key, unsaved) in _blockedTransientImports.ToArray())
+            {
+                if (!unsaved.Remove(source) || unsaved.Count != 0) continue;
+                _blockedTransientImports.Remove(key);
+                _spatialMissing.Remove(key);
+            }
+            _writerWake.Set();
+        }
+    }
+
     /// <summary>Captures a small, deterministic amount of immutable work on the server tick.</summary>
     public void Tick(int maxSnapshots = DefaultSnapshotsPerTick)
     {
@@ -564,6 +588,19 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                     new ChunkKey(chunk.X, chunk.Z), out var state) ||
                 !ReferenceEquals(state.Chunk, chunk)) return;
             _terrainChangesObserved++;
+            // A transient parent is assembled from many separately read saved chunks. Once a
+            // live source changes, finishing that read would publish a mixture of revisions.
+            // The worker observes this flag before accepting another source or publishing.
+            foreach (var import in _savedTileImports.Values)
+                if (import.TransientBuilder is not null &&
+                    import.Key.ContainsChunk(chunk.X, chunk.Z))
+                {
+                    import.InvalidatedByLiveEdit = true;
+                    import.UnsavedEditedSources.Add(new ChunkKey(chunk.X, chunk.Z));
+                }
+            foreach (var (key, unsaved) in _blockedTransientImports)
+                if (key.ContainsChunk(chunk.X, chunk.Z))
+                    unsaved.Add(new ChunkKey(chunk.X, chunk.Z));
             if (!state.Dirty)
             {
                 state.Dirty = true;
@@ -715,6 +752,12 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             }
             try
             {
+                lock (_gate)
+                    if (import.InvalidatedByLiveEdit)
+                    {
+                        FinishSavedTileImport(import, missing: false);
+                        continue;
+                    }
                 if (_spatialHierarchy.TryGetCoverage(import.Key, out _, out _))
                 {
                     lock (_gate) _savedTileImports.Remove(import.Key);
@@ -725,6 +768,12 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                     var (sourceX, sourceZ) = builder.NextChunkCoordinates();
                     var savedSource = _storedTerrain.ReadTerrainLodSource(
                         sourceX, sourceZ, _hasSkyLight);
+                    lock (_gate)
+                        if (import.InvalidatedByLiveEdit)
+                        {
+                            FinishSavedTileImport(import, missing: false);
+                            continue;
+                        }
                     if (savedSource is null)
                     {
                         FinishSavedTileImport(import, missing: true);
@@ -735,16 +784,31 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                     lock (_gate) _savedChunksImported++;
                     if (builder.Result is { } completed)
                     {
+                        lock (_gate)
+                            if (import.InvalidatedByLiveEdit)
+                            {
+                                FinishSavedTileImport(import, missing: false);
+                                continue;
+                            }
                         var write = _spatialCache.Write(completed);
                         if (write != TerrainLodColumnTileCacheWriteStatus.Written)
                             throw new InvalidOperationException(
                                 $"Saved terrain tile {import.Key} could not be persisted: {write}.");
-                        var publication = _spatialHierarchy.PublishCached(completed);
-                        if (publication == TerrainLodTilePublicationResult.RejectedAtCapacity)
-                            throw new InvalidOperationException(
-                                $"Saved terrain tile {import.Key} exceeded resident hierarchy capacity.");
+                        // The edit may have arrived while the durable write was in progress.
+                        // Serialize the final revision check with publication; discard the new
+                        // record if its source has become stale in the meantime.
                         lock (_gate)
                         {
+                            if (import.InvalidatedByLiveEdit)
+                            {
+                                _spatialCache.Invalidate(import.Key);
+                                FinishSavedTileImport(import, missing: false);
+                                continue;
+                            }
+                            var publication = _spatialHierarchy.PublishCached(completed);
+                            if (publication == TerrainLodTilePublicationResult.RejectedAtCapacity)
+                                throw new InvalidOperationException(
+                                    $"Saved terrain tile {import.Key} exceeded resident hierarchy capacity.");
                             _savedTileImports.Remove(import.Key);
                             _spatialMissing.Remove(import.Key);
                             _spatialWirePayloads.Remove(import.Key);
@@ -861,7 +925,16 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         lock (_gate)
         {
             if (!_savedTileImports.Remove(import.Key)) return;
-            _spatialMissing.Add(import.Key);
+            if (import.InvalidatedByLiveEdit)
+            {
+                if (import.UnsavedEditedSources.Count > 0)
+                {
+                    _blockedTransientImports[import.Key] = import.UnsavedEditedSources;
+                    _spatialMissing.Add(import.Key);
+                }
+                else _spatialMissing.Remove(import.Key);
+            }
+            else _spatialMissing.Add(import.Key);
             if (missing) _savedTileImportsMissing++;
             else _savedTileImportsFailed++;
         }
@@ -969,6 +1042,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             _spatialMissing.Clear();
             _savedTileImportQueue.Clear();
             _savedTileImports.Clear();
+            _blockedTransientImports.Clear();
             _spatialEncodeRequests.Clear();
             _spatialEncodesPending.Clear();
             _spatialWirePayloads.Clear();
@@ -991,6 +1065,8 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     {
         public TerrainLodTileKey Key { get; } = key;
         public TerrainLodTransientTileBuilder? TransientBuilder { get; } = transientBuilder;
+        public bool InvalidatedByLiveEdit { get; set; }
+        public HashSet<ChunkKey> UnsavedEditedSources { get; } = [];
         public int NextChunk { get; set; }
         public TerrainLodSourceSnapshot? DeferredSource { get; set; }
         public DateTime? AwaitingPublicationSince { get; set; }

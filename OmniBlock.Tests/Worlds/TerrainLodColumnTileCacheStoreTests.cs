@@ -9,6 +9,37 @@ namespace OmniBlock.Tests.Worlds;
 public sealed class TerrainLodColumnTileCacheStoreTests
 {
     [Fact]
+    public void Invalidated_derived_tile_is_absent_after_cache_reopen()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var key = new TerrainLodTileKey(1, -2, 3);
+            var store = Store(root);
+            store.Write(Leaf(key.Child(0), 1, 11));
+            var parent = TerrainLodColumnTile.BuildParent(key,
+            [
+                Leaf(key.Child(0), 1, 11),
+                Leaf(key.Child(1), 1, 12),
+                Leaf(key.Child(2), 1, 13),
+                Leaf(key.Child(3), 1, 14)
+            ], horizontalSampleLevel: 0);
+            store.Write(parent);
+
+            Assert.True(store.Invalidate(key));
+            Assert.False(store.Invalidate(key));
+            Assert.Equal(TerrainLodColumnTileCacheReadStatus.Missing,
+                Store(root).Read(key).Status);
+            Assert.Equal(TerrainLodColumnTileCacheReadStatus.Hit,
+                Store(root).Read(key.Child(0)).Status);
+        }
+        finally
+        {
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
     public void Detail_policy_round_trips_through_disk_and_portable_transport()
     {
         var root = CreateTemporaryDirectory();
