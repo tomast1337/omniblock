@@ -68,6 +68,13 @@ internal sealed partial class ClientTerrainLodRenderer
     /// </summary>
     internal (string? Material, int SampleSize, string? Owner) PresentedSpatialMaterialAt(int x, int y, int z)
     {
+        var sample = PresentedSpatialSampleAt(x, y, z);
+        return (sample.Material, sample.SampleSize, sample.Owner);
+    }
+
+    internal (string? Material, int SampleSize, string? Owner, int SkyLight, int BlockLight,
+        bool OccludesFaces, string? PresentedMaterial) PresentedSpatialSampleAt(int x, int y, int z)
+    {
         var chunkX = x >> 4;
         var chunkZ = z >> 4;
         var columnKey = (chunkX, chunkZ);
@@ -78,15 +85,19 @@ internal sealed partial class ClientTerrainLodRenderer
             leaf?.LeafTerrainRevision == local.TerrainRevision &&
             TerrainLodQualityDiagnostics.Sample(leaf, x, y, z) is { } localSpan)
         {
-            var block = _world.Content.Blocks.Get(localSpan.Material.BlockId);
-            var translucent = block.RenderLayer != 0;
+            // Air is a canonical LOD material, not a registered block. A probe
+            // can hit it while a local column is selected during handoff.
+            var translucent = !localSpan.IsAir &&
+                _world.Content.Blocks.Get(localSpan.Material.BlockId).RenderLayer != 0;
             var selected = translucent ? _selectedTranslucentLevels : _selectedSolidLevels;
             if (selected.TryGetValue(columnKey, out var level) && level == 0 &&
                 local.TryGetLevel(0, translucent, out _))
-                return (localSpan.Material.BlockId.ToString(), 1, "local");
+                return (localSpan.Material.BlockId.ToString(), 1, "local",
+                    localSpan.SkyLight, localSpan.BlockLight, localSpan.Material.OccludesFaces,
+                    localSpan.Material.BlockId.ToString());
         }
         if (!IsAuthoritativeSpatialChunk((chunkX, chunkZ)) || _spatialFrame is not { } frame)
-            return (null, -1, null);
+            return (null, -1, null, -1, -1, false, null);
         foreach (var draw in frame.Draws)
         {
             var key = draw.Selection.Tile;
@@ -96,10 +107,28 @@ internal sealed partial class ClientTerrainLodRenderer
                 continue;
             var span = TerrainLodQualityDiagnostics.Sample(source, x, y, z);
             if (span is { } value)
+            {
+                // Reconstruct this one column with the immutable policy attached to the
+                // installed mesh. Canonical air alone does not prove the cave survived
+                // culling/reduction; this still does not claim a particular raster pixel.
+                var quality = draw.Presentation.Quality;
+                var sampleSize = 1 << source.HorizontalSampleLevel;
+                var localX = (int)(((long)x - key.MinChunkX * 16) / sampleSize);
+                var localZ = (int)(((long)z - key.MinChunkZ * 16) / sampleSize);
+                var exposure = quality.CaveCullBelowY is not null && sampleSize == 1
+                    ? TerrainLodCaveCuller.GetDefaultExposure(source)
+                    : null;
+                var column = quality.CaveCullBelowY is { } ceilingY
+                    ? TerrainLodCaveCuller.SealUndergroundAir(source[localX, localZ], ceilingY,
+                        exposure is null ? [] : exposure.ForColumn(localX, localZ))
+                    : source[localX, localZ];
+                var presented = TerrainLodVerticalSliceReducer.Reduce(column, quality.VerticalSliceBudget).At(y);
                 return (value.Material.BlockId.ToString(), draw.Presentation.Quality.HorizontalSampleBlocks,
-                    "spatial");
+                    "spatial", value.SkyLight, value.BlockLight, value.Material.OccludesFaces,
+                    presented.Material.BlockId.ToString());
+            }
         }
-        return (null, -1, null);
+        return (null, -1, null, -1, -1, false, null);
     }
 
     private void RecordRemoteSource(TerrainLodColumnTile tile)

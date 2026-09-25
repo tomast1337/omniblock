@@ -62,6 +62,10 @@ public sealed class LuauTestHostIntegrationTests
         LuauTestHost.DumpTerrain = label => terrainDump = label;
         LuauTestHost.TerrainLodPresentedMaterial = (x, y, z) =>
             (x, y, z) == (8, 95, 72) ? ("omniblock:grass_block", 1, "local") : (null, -1, null);
+        LuauTestHost.TerrainLodPresentedSample = (x, y, z) =>
+            (x, y, z) == (8, 95, 72)
+                ? ("omniblock:grass_block", 1, "local", 12, 3, true, "omniblock:grass_block")
+                : (null, -1, null, -1, -1, false, null);
         LuauTestHost.DumpProfiler = label => profilerDump = label;
         LuauTestHost.WorldGenerationAuto = (profile, radius) =>
         {
@@ -116,6 +120,10 @@ public sealed class LuauTestHostIntegrationTests
                 "assert(material == 'omniblock:grass_block' and sample == 1 and owner == 'local'); " +
                 "local missing, missingSample, missingOwner = OMNI.test.terrainLodPresentedMaterial(0, 0, 0); " +
                 "assert(missing == nil and missingSample == -1 and missingOwner == nil); " +
+                "local sm, ss, so, sky, block, opaque, presented = OMNI.test.terrainLodPresentedSample(8, 95, 72); " +
+                "assert(sm == 'omniblock:grass_block' and ss == 1 and so == 'local' and sky == 12 and block == 3 and opaque and presented == sm); " +
+                "local noMaterial, noSize, noOwner, noSky, noBlock, noOpaque, noPresented = OMNI.test.terrainLodPresentedSample(0, 0, 0); " +
+                "assert(noMaterial == nil and noSize == -1 and noOwner == nil and noSky == -1 and noBlock == -1 and not noOpaque and noPresented == nil); " +
                 "assert(OMNI.test.worldGenerationAuto('prepare', 24)); " +
                 "assert(OMNI.test.worldGenerationMetric('saved') == 17); " +
                 "assert(OMNI.test.configureTerrainLodScaleProfile(512)); " +
@@ -178,6 +186,7 @@ public sealed class LuauTestHostIntegrationTests
             LuauTestHost.Screenshot = null;
             LuauTestHost.DumpTerrain = null;
             LuauTestHost.TerrainLodPresentedMaterial = null;
+            LuauTestHost.TerrainLodPresentedSample = null;
             LuauTestHost.DumpProfiler = null;
             LuauTestHost.WorldGenerationAuto = null;
             LuauTestHost.WorldGenerationMetric = null;

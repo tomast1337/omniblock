@@ -21,7 +21,7 @@ internal sealed partial class LuauCompletion
     private static readonly string[] s_clientStateMembers =
         LuauClientStateHost.GetStateDefinition().Select(property => property.Name).ToArray();
 
-    private static readonly string[] s_testMembers = ["breakBlock", "configureTerrainLodScaleProfile", "countEntities", "creative", "disconnect", "dumpProfiler", "dumpTerrain", "entityBaselineEnvironment", "fail", "flyPath", "hasBlock", "isMeshCurrent", "meshDeadlineMissCount", "pass", "prepareTerrainLodFixture", "screenshot", "setBlock", "setFlying", "setLook", "setMovement", "summon", "teleport", "terrainLodFixtureMetric", "terrainLodPresentedMaterial", "terrainLodServerTileReady", "worldGenerationAuto", "worldGenerationMetric"];
+    private static readonly string[] s_testMembers = ["breakBlock", "configureTerrainLodScaleProfile", "countEntities", "creative", "disconnect", "dumpProfiler", "dumpTerrain", "entityBaselineEnvironment", "fail", "flyPath", "hasBlock", "isMeshCurrent", "meshDeadlineMissCount", "pass", "prepareTerrainLodFixture", "screenshot", "setBlock", "setFlying", "setLook", "setMovement", "summon", "teleport", "terrainLodFixtureMetric", "terrainLodPresentedMaterial", "terrainLodPresentedSample", "terrainLodServerTileReady", "worldGenerationAuto", "worldGenerationMetric"];
     private static readonly string[] s_worldMembers = ["list", "load"];
     private static readonly string[] s_worldGenerationMembers = ["available", "get", "list", "start"];
     private static readonly string[] s_uiMembers = ["hud", "querySelector", "root", "screen"];

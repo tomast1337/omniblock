@@ -145,16 +145,28 @@ neither a whole-scene GPU-time measurement nor a residency budget.
 watchdog). Run `xvfb-run -a tests/e2e/run-local.sh terrain-lod-cave-mouth-remote`.
 The first process pregenerates a modest seed-`246813579` patch away from spawn and waits for
 server L2 tile `(8,0)`; the second reopens that save and checks that the client presents its
-under-roof air sample `(532,70,22)` from a matching, authoritative 1x1 spatial tile. It then
+source sample `(532,70,22)` from a matching, authoritative 1x1 spatial tile. That sample may
+be occupied by tree leaves after cross-border decoration; this scenario is a remote-handoff and
+dark-water regression guard, not a rock-cave fidelity proof. It then
 expands exact distance from four to fourteen chunks without moving or changing FOV, waits for
-the same cave sample to be loaded and meshed, and captures a second terrain dump and screenshot.
+the same source block to be loaded and meshed, and captures a second terrain dump and screenshot.
 `check_remote_cave.py` verifies the paired camera/source/ownership metadata and a small sea patch
 where an earlier LOD screenshot briefly went black. The PNG check uses only Python's standard
 library; it is a fixture-specific black-region guard, not a general image similarity score.
-A cached fallback is acceptable when its source hash
-matches the installed mesh; the hierarchy's `Current` flag describes rebuild readiness, not
-whether that mesh is being drawn. This does not prove cave-face pixels or complete horizon
-coverage; inspect the capture and missing-coverage counters separately.
+A cached fallback is acceptable when its source hash matches the installed mesh; the
+hierarchy's `Current` flag describes rebuild readiness, not whether that mesh is being drawn.
+This does not prove cave-face pixels or complete horizon coverage; inspect the capture and
+missing-coverage counters separately.
+
+`terrain-lod-rock-cave-remote` is a separate opt-in rock-roof source/mesh-policy gate. It prepares seed
+`246813579` tile `(0,0)` in one process, reopens it in another, and requires `(24,76,33)` to be
+skylit air under stone in an authoritative 1x1 selected spatial tile. Its read-only diagnostic
+reconstructs the installed mesh's culling/reduction decision and requires the opening to remain
+air, then expands exact distance at a fixed camera and requires matching air and stone in loaded,
+current exact terrain, then takes a settled exact capture eight seconds later. Run
+`xvfb-run -a tests/e2e/run-local.sh terrain-lod-rock-cave-remote`.
+`check_remote_rock_cave.py` checks the three captures' camera, ownership, tile and screenshot
+metadata; it does not yet identify a raster pixel for the cave mouth or prove visual fidelity.
 
 `terrain-lod-remote-handoff` is an opt-in stationary **real-source handoff** check (240-second
 watchdog). Run `xvfb-run -a tests/e2e/run-local.sh terrain-lod-remote-handoff`. It uses the ordinary
@@ -500,6 +512,11 @@ horizontal sample size, and owner (`local` or `spatial`) for a block coordinate.
 canonical source/mesh hash. It is restricted to E2E launches. It checks publication/source
 consistency, not the final rasterized pixel; use it with material mesh tests and same-camera
 screenshots for near-LOD visual comparisons.
+`OMNI.test.terrainLodPresentedSample(x, y, z)` adds sky light, block light, whether the
+canonical material occludes faces, and the material after the installed mesh's cave-culling
+and vertical-reduction policy. Missing/unselected samples return `nil, -1, nil, -1, -1, false, nil`.
+The last value reconstructs one column from the mesh's immutable quality policy; it is stronger
+than a canonical-source check but still does not identify or read a rasterized pixel.
 `OMNI.test.terrainLodServerTileReady(level, x, z)` reports whether the integrated server has a
 ready natural L2+ tile; it does not cause generation or imply client receipt.
 

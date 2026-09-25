@@ -3,6 +3,7 @@ using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Chunks.Lod;
 using OmniBlock.Network.Messages;
 using OmniBlock.Server.Worlds;
+using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Lod;
 using Xunit.Abstractions;
@@ -14,6 +15,43 @@ public sealed partial class InactiveGenerationWorkspaceTests
     private readonly ITestOutputHelper _output;
 
     public InactiveGenerationWorkspaceTests(ITestOutputHelper output) => _output = output;
+
+    [Fact]
+    public void Near_cave_tile_has_a_rock_roof_opening()
+    {
+        var world = new SourceWorld(246813579L);
+        var targets = from x in Enumerable.Range(0, 4)
+            from z in Enumerable.Range(0, 4)
+            select new ChunkPos(x, z);
+        var batch = new InactiveGenerationWorkspace(world).GenerateCompletedRegion(targets);
+        var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        var key = new TerrainLodTileKey(2, 0, 0);
+        var children = Enumerable.Range(0, 4).Select(index =>
+        {
+            var child = key.Child(index);
+            var leaves = Enumerable.Range(0, 4).Select(leafIndex =>
+            {
+                var leaf = child.Child(leafIndex);
+                return TerrainLodColumnTile.BuildLeaf(
+                    batch.Get(leaf.X, leaf.Z).CaptureTerrain(), materials);
+            }).ToArray();
+            return TerrainLodColumnTile.BuildParent(child, leaves, 0);
+        }).ToArray();
+        var tile = TerrainLodColumnTile.BuildParent(key, children, 0);
+        Assert.Equal("caff2e716f58def8d9eecc41391e44bbf29fa3efd5144cfcbfd26b894cb282b2",
+            tile.CanonicalHash);
+        var column = tile[24, 33];
+        var opening = column.At(76);
+        Assert.True(opening.IsAir);
+        Assert.Equal(14, opening.SkyLight);
+        Assert.Contains(Enumerable.Range(77, 8), y =>
+            column.At(y).Material.BlockId.ToString() == "omniblock:stone");
+        var exposure = TerrainLodCaveCuller.GetDefaultExposure(tile);
+        var presented = TerrainLodVerticalSliceReducer.Reduce(
+            TerrainLodCaveCuller.SealUndergroundAir(column, 60,
+                exposure.ForColumn(24, 33)), 16);
+        Assert.True(presented.At(76).IsAir);
+    }
 
     [Theory]
     [InlineData("GLACIER", 826164623L,
