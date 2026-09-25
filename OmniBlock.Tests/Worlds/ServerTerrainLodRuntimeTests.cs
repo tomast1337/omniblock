@@ -608,6 +608,79 @@ public sealed class ServerTerrainLodRuntimeTests
         }
     }
 
+    [Fact]
+    public async Task Published_coarse_tile_is_replaced_after_save_and_reopen_uses_new_record()
+    {
+        var root = CreateTemporaryDirectory();
+        var save = new DirectoryInfo(Path.Combine(root.FullName, "saved"));
+        save.Create();
+        try
+        {
+            var world = new FakeWorldContext();
+            var storage = new RegionChunkStorage(save.FullName);
+            var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+            Chunk? edited = null;
+            for (var x = 0; x < 8; x++)
+            for (var z = 0; z < 8; z++)
+            {
+                var chunk = Chunk(world, x, z);
+                chunk[0, 4, 0] = stone;
+                storage.SaveChunk(world, chunk, null, 1);
+                if (x == 0 && z == 0) edited = chunk;
+            }
+            storage.FlushToDisk();
+            var key = new TerrainLodTileKey(3, 0, 0);
+            string replacementHash;
+            using (var runtime = new ServerTerrainLodRuntime(
+                       0, TerrainLodMaterialCatalog.FromRuntime(world.Content), root, world,
+                       storedTerrain: storage, transientImportMinimumLevel: 3))
+            {
+                await WaitUntil(() => runtime.TryGetSpatialCoverage(key, out _),
+                    TimeSpan.FromSeconds(30));
+                Assert.True(runtime.TryGetSpatialCoverage(key, out var original));
+                runtime.TrackChunk(edited!);
+                edited![0, 4, 0] = 0;
+
+                Assert.Equal(TerrainLodTileAvailability.Pending,
+                    runtime.GetSpatialCoverage(key, out _));
+                runtime.BeforeChunkSave(edited);
+                Assert.Equal(TerrainLodColumnTileCacheReadStatus.Missing,
+                    new TerrainLodColumnTileCacheStore(root, runtime.Identity)
+                        .Read(key).Status);
+                storage.SaveChunk(world, edited, null, 2);
+                storage.FlushToDisk();
+                var firstInvalidation = Assert.Single(runtime.NotifyChunkSaved(edited));
+                Assert.Equal(key, firstInvalidation.Key);
+                edited[1, 4, 0] = stone;
+                runtime.BeforeChunkSave(edited);
+                storage.SaveChunk(world, edited, null, 3);
+                storage.FlushToDisk();
+                var secondInvalidation = Assert.Single(runtime.NotifyChunkSaved(edited));
+                Assert.Equal(key, secondInvalidation.Key);
+                Assert.True(secondInvalidation.Generation > firstInvalidation.Generation);
+                await WaitUntil(() => runtime.GetSpatialCoverage(key, out _) ==
+                                      TerrainLodTileAvailability.Ready,
+                    TimeSpan.FromSeconds(30));
+                Assert.True(runtime.TryGetSpatialCoverage(key, out var replacement));
+                replacementHash = replacement!.CanonicalHash;
+                Assert.NotEqual(original!.CanonicalHash, replacementHash);
+            }
+
+            using var reopened = new ServerTerrainLodRuntime(
+                0, TerrainLodMaterialCatalog.FromRuntime(world.Content), root, world,
+                storedTerrain: storage, transientImportMinimumLevel: 3);
+            await WaitUntil(() => reopened.TryGetSpatialCoverage(key, out _));
+            Assert.True(reopened.TryGetSpatialCoverage(key, out var cached));
+            Assert.Equal(replacementHash, cached!.CanonicalHash);
+            Assert.Equal(0, reopened.Snapshot().SavedChunksImported);
+        }
+        finally
+        {
+            RegionIo.Flush();
+            Directory.Delete(root.FullName, recursive: true);
+        }
+    }
+
     [Theory]
     [InlineData(512, 7, 289)]
     [InlineData(1024, 8, 297)]

@@ -204,6 +204,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         _spatialPresentations = new();
     private readonly Dictionary<TerrainLodTileKey, TerrainLodColumnTile> _spatialMeshPending = [];
     private readonly Dictionary<TerrainLodTileKey, RemoteTileRequestState> _remoteRequestStates = [];
+    private readonly Dictionary<TerrainLodTileKey, long> _remoteRefreshNeeded = [];
+    private readonly Dictionary<TerrainLodTileKey, long> _remoteTileGenerations = [];
     private readonly HashSet<TerrainLodSpatialSeamSegment> _desiredSpatialSeams = [];
     private readonly Dictionary<TerrainLodSpatialSeamSegment,
         TerrainLodSpatialGpuSeamPresentation> _spatialSeams = [];
@@ -376,31 +378,54 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
     public ClientTerrainLodSnapshot Snapshot => _snapshot;
     public TerrainLodSpatialSnapshot SpatialSnapshot => _spatialSnapshot;
     public TerrainCoverageSnapshot CoverageSnapshot => _coverageSnapshot;
+    internal bool HasPendingRemoteRefresh(TerrainLodTileKey key) =>
+        _remoteRefreshNeeded.ContainsKey(key);
 
-    public void ObserveRemoteSpatialTile(TerrainLodColumnTile tile, int wireBytes = 0)
+    public void ObserveRemoteSpatialTile(TerrainLodColumnTile tile, int wireBytes = 0,
+        long generation = 0)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(tile);
         if (tile.Key.Level < MinimumSpatialGpuLevel ||
             tile.Key.Level > _spatialPolicy.MaximumSpatialLevel) return;
+        if (generation < _remoteRefreshNeeded.GetValueOrDefault(tile.Key) ||
+            generation < _remoteTileGenerations.GetValueOrDefault(tile.Key)) return;
         RecordRemoteSource(tile);
+        var unchanged = _spatialHierarchy.TryGetCoverage(tile.Key, out var previous, out _) &&
+                        previous?.CanonicalHash == tile.CanonicalHash;
         var publication = _spatialHierarchy.PublishCached(tile);
-        if (publication != TerrainLodTilePublicationResult.IgnoredCurrent)
+        if (!unchanged && publication != TerrainLodTilePublicationResult.IgnoredCurrent)
             QueueSpatialMesh(tile);
+        _remoteTileGenerations[tile.Key] = generation;
         _remoteRequestStates.Remove(tile.Key);
+        _remoteRefreshNeeded.Remove(tile.Key);
         if (_firstSourceTileMs < 0)
             _firstSourceTileMs = CoarseCoverElapsedMs();
         _remoteTiles++;
         _remoteWireBytes += Math.Max(0, wireBytes);
     }
 
-    public void ObserveRemoteSpatialStatus(TerrainLodTileKey key, TerrainLodTileStatus status)
+    public void ObserveRemoteSpatialStatus(TerrainLodTileKey key, TerrainLodTileStatus status,
+        long generation = 0)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (key.Level < MinimumSpatialGpuLevel ||
             key.Level > _spatialPolicy.MaximumSpatialLevel) return;
+        if (generation < _remoteRefreshNeeded.GetValueOrDefault(key) ||
+            generation < _remoteTileGenerations.GetValueOrDefault(key)) return;
         switch (status)
         {
+            case TerrainLodTileStatus.Invalidated:
+                // Keep both the old source and GPU presentation until a replacement is fully
+                // built. Refresh requests bypass the ordinary "already covered" shortcut.
+                if (generation <= _remoteTileGenerations.GetValueOrDefault(key)) break;
+                if (_remoteRequestStates.ContainsKey(key) ||
+                    _spatialHierarchy.TryGetCoverage(key, out _, out _) ||
+                    _spatialPresentations.IsReady(key))
+                    _remoteRefreshNeeded[key] = Math.Max(generation,
+                        _remoteRefreshNeeded.GetValueOrDefault(key));
+                _remoteRequestStates.Remove(key);
+                break;
             case TerrainLodTileStatus.Pending:
                 _remotePendingResponses++;
                 _remoteRequestStates[key] = new RemoteTileRequestState(
@@ -472,8 +497,23 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
 
         var requestCount = Math.Min(maximumRequests, availableCapacity);
         List<TerrainLodTileKey> selected = [];
+        // Reserve a tiny fair lane for previously presented tiles that the server invalidated.
+        // Otherwise an endless newly discovered horizon can starve a visible replacement.
+        foreach (var key in _remoteRefreshNeeded.Keys
+                     .Where(key => key.DistanceTo(cameraX, cameraZ) <= horizonDistanceChunks)
+                     .OrderBy(key => key.DistanceTo(cameraX, cameraZ))
+                     .ThenBy(static key => key.Level)
+                     .ThenBy(static key => key.X)
+                     .ThenBy(static key => key.Z))
+        {
+            if (selected.Count >= Math.Min(2, requestCount)) break;
+            if (_remoteRequestStates.TryGetValue(key, out var state) &&
+                _tick < state.RetryAfterTick) continue;
+            selected.Add(key);
+        }
         // The adaptive partition defines the no-hole contract and always consumes request capacity
-        // before visual refinement. It is already deterministic and near-to-far.
+        // before visual refinement, apart from the bounded invalidation lane above. It is already
+        // deterministic and near-to-far.
         foreach (var key in requiredTiles)
         {
             if (selected.Count >= requestCount) break;
@@ -585,14 +625,16 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             {
                 _coarseCoverReady++;
                 _remoteCoverageAvailable++;
-                _remoteRequestStates.Remove(key);
+                if (!_remoteRefreshNeeded.ContainsKey(key))
+                    _remoteRequestStates.Remove(key);
                 continue;
             }
             if (HasRemoteCoverage(key, fallbackMinimumLevel))
             {
                 _coarseCoverGpuPending++;
                 _remoteCoverageAvailable++;
-                _remoteRequestStates.Remove(key);
+                if (!_remoteRefreshNeeded.ContainsKey(key))
+                    _remoteRequestStates.Remove(key);
                 continue;
             }
             var disposition = CoverageDisposition(key, fallbackMinimumLevel);
@@ -2423,6 +2465,24 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             cpuCount--;
             _spatialCpuEvictions++;
         }
+
+        foreach (var key in _remoteRefreshNeeded.Keys
+                     .Where(key => key.DistanceTo(cameraChunkX, cameraChunkZ) >
+                                   retentionDistance &&
+                                   !_spatialHierarchy.TryGetCoverage(key, out _, out _) &&
+                                   !_spatialPresentations.IsReady(key) &&
+                                   !_remoteRequestStates.ContainsKey(key)).ToArray())
+            _remoteRefreshNeeded.Remove(key);
+
+        // Revision tokens belong to resident/pending presentations, not the entire route a
+        // player has ever flown. Re-entering an evicted area starts a fresh source request.
+        var retainedVersions = _spatialHierarchy.ResidentKeys().ToHashSet();
+        retainedVersions.UnionWith(_spatialPresentations.ReadyKeys);
+        retainedVersions.UnionWith(_remoteRefreshNeeded.Keys);
+        retainedVersions.UnionWith(_remoteRequestStates.Keys);
+        foreach (var key in _remoteTileGenerations.Keys
+                     .Where(key => !retainedVersions.Contains(key)).ToArray())
+            _remoteTileGenerations.Remove(key);
 
         RememberResidency(gpuBytes, cpuCount);
 

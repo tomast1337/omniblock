@@ -60,10 +60,11 @@ public class ClientWorld : World
     internal int TerrainLodTileQueueDepth => _terrainLodTiles.Count;
     internal int TerrainLodTileQueuePeak => Volatile.Read(ref _terrainLodTileQueuePeak);
 
-    internal void EnqueueTerrainLodTile(TerrainLodColumnTile tile, int wireBytes)
+    internal void EnqueueTerrainLodTile(TerrainLodColumnTile tile, int wireBytes,
+        long generation = 0)
     {
         _terrainLodTiles.Enqueue(new TerrainLodTileTransfer(
-            tile ?? throw new ArgumentNullException(nameof(tile)), wireBytes));
+            tile ?? throw new ArgumentNullException(nameof(tile)), wireBytes, generation));
         Interlocked.Increment(ref _terrainLodTilesEnqueued);
         var depth = _terrainLodTiles.Count;
         var peak = Volatile.Read(ref _terrainLodTileQueuePeak);
@@ -83,8 +84,9 @@ public class ClientWorld : World
         return true;
     }
 
-    internal void EnqueueTerrainLodStatus(TerrainLodTileKey tile, TerrainLodTileStatus status) =>
-        _terrainLodStatuses.Enqueue(new TerrainLodTileStatusUpdate(tile, status));
+    internal void EnqueueTerrainLodStatus(TerrainLodTileKey tile, TerrainLodTileStatus status,
+        long generation = 0) =>
+        _terrainLodStatuses.Enqueue(new TerrainLodTileStatusUpdate(tile, status, generation));
 
     internal bool TryDequeueTerrainLodStatus(out TerrainLodTileStatusUpdate status) =>
         _terrainLodStatuses.TryDequeue(out status);
@@ -335,10 +337,12 @@ public class ClientWorld : World
     }
 }
 
-internal readonly record struct TerrainLodTileTransfer(TerrainLodColumnTile Tile, int WireBytes);
+internal readonly record struct TerrainLodTileTransfer(
+    TerrainLodColumnTile Tile, int WireBytes, long Generation);
 internal readonly record struct TerrainLodTileStatusUpdate(
     TerrainLodTileKey Tile,
-    TerrainLodTileStatus Status);
+    TerrainLodTileStatus Status,
+    long Generation);
 
 internal sealed class ClientEntityDespawnVisual(Entity entity)
 {

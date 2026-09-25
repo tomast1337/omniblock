@@ -320,7 +320,8 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 availability = world.GetTerrainLodPayload(request.Tile, out var payload);
                 response = availability == TerrainLodTileAvailability.Ready && payload is not null
                     ? TerrainLodTileMessage.FromCompressed(
-                        player.DimensionId, payload, request.CacheIdentity)
+                        player.DimensionId, payload, request.CacheIdentity,
+                        world.GetTerrainLodGeneration(request.Tile))
                     : CreateTerrainLodStatus(
                         request.Tile,
                         availability == TerrainLodTileAvailability.Missing
@@ -333,7 +334,8 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 availability = world.GetTerrainLodCoverage(request.Tile, out var tile);
                 response = availability == TerrainLodTileAvailability.Ready && tile is not null
                     ? TerrainLodTileMessage.Loopback(
-                        player.DimensionId, tile, request.CacheIdentity)
+                        player.DimensionId, tile, request.CacheIdentity,
+                        world.GetTerrainLodGeneration(request.Tile))
                     : CreateTerrainLodStatus(
                         request.Tile,
                         availability == TerrainLodTileAvailability.Missing
@@ -400,6 +402,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             Dimension = player.DimensionId,
             CacheIdentity = cacheIdentity,
             Tile = key,
+            Generation = server.getWorld(player.DimensionId).GetTerrainLodGeneration(key),
             Status = status,
             Diagnostic = diagnostic
         };

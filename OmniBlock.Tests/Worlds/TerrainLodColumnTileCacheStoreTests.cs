@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 using System.Security.Cryptography;
+using OmniBlock.Network;
 using OmniBlock.Network.Messages;
 using OmniBlock.Worlds.Lod;
 using OmniBlock.Worlds.Chunks;
@@ -8,6 +9,30 @@ namespace OmniBlock.Tests.Worlds;
 
 public sealed class TerrainLodColumnTileCacheStoreTests
 {
+    [Fact]
+    public void Invalidation_status_round_trips_on_versioned_protocol()
+    {
+        TerrainLodTileStatusMessage outgoing = new()
+        {
+            Dimension = -1,
+            CacheIdentity = "fixture-identity",
+            Tile = new TerrainLodTileKey(3, -2, 4),
+            Generation = 42,
+            Status = TerrainLodTileStatus.Invalidated
+        };
+        using MemoryStream stream = new();
+        outgoing.Write(stream);
+        stream.Position = 0;
+        TerrainLodTileStatusMessage incoming = new();
+        incoming.Read(stream);
+
+        Assert.Equal(4, incoming.SchemaVersion);
+        Assert.Equal(TerrainLodTileStatus.Invalidated, incoming.Status);
+        Assert.Equal(outgoing.Tile, incoming.Tile);
+        Assert.Equal(42, incoming.Generation);
+        Assert.Equal(SendPriority.Normal, incoming.Priority);
+    }
+
     [Fact]
     public void Invalidated_derived_tile_is_absent_after_cache_reopen()
     {
@@ -122,7 +147,7 @@ public sealed class TerrainLodColumnTileCacheStoreTests
             Leaf(key.Child(2), 1, 33),
             Leaf(key.Child(3), 2, 34)
         ], horizontalSampleLevel: 1);
-        var outgoing = TerrainLodTileMessage.Of(-1, expected);
+        var outgoing = TerrainLodTileMessage.Of(-1, expected, generation: 42);
         using MemoryStream stream = new();
         outgoing.Write(stream);
         Assert.Equal(outgoing.Size(), stream.Length);
@@ -133,6 +158,7 @@ public sealed class TerrainLodColumnTileCacheStoreTests
         var actual = incoming.Decode();
 
         Assert.Equal(-1, incoming.Dimension);
+        Assert.Equal(42, incoming.Generation);
         Assert.Equal(expected.Key, actual.Key);
         Assert.Equal(expected.CanonicalHash, actual.CanonicalHash);
         Assert.Equal(expected.InputHashes, actual.InputHashes);

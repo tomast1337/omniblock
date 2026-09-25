@@ -15,6 +15,9 @@ internal enum TerrainLodTileAvailability
     Missing
 }
 
+internal readonly record struct TerrainLodTileInvalidation(
+    TerrainLodTileKey Key, long Generation);
+
 public sealed record ServerTerrainLodSnapshot(
     int Dimension,
     int TrackedChunks,
@@ -97,6 +100,10 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     private readonly Queue<SavedTileImport> _savedTileImportQueue = [];
     private readonly Dictionary<TerrainLodTileKey, SavedTileImport> _savedTileImports = [];
     private readonly Dictionary<TerrainLodTileKey, HashSet<ChunkKey>> _blockedTransientImports = [];
+    private readonly HashSet<TerrainLodTileKey> _refreshRequired = [];
+    private readonly Dictionary<TerrainLodTileKey, long> _refreshAnnounced = [];
+    private readonly Dictionary<TerrainLodTileKey, long> _tileGenerations = [];
+    private long _nextTileGeneration;
     private readonly Queue<TerrainLodTileKey> _spatialEncodeRequests = [];
     private readonly HashSet<TerrainLodTileKey> _spatialEncodesPending = [];
     private readonly Dictionary<TerrainLodTileKey, byte[]> _spatialWirePayloads = [];
@@ -248,6 +255,21 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                 tile = null;
                 return TerrainLodTileAvailability.Missing;
             }
+            if (_refreshRequired.Contains(key))
+            {
+                tile = null;
+                if (_blockedTransientImports.ContainsKey(key) ||
+                    _savedTileImports.ContainsKey(key))
+                    return TerrainLodTileAvailability.Pending;
+                if (_spatialMissing.Contains(key))
+                    return TerrainLodTileAvailability.Missing;
+                if (_spatialReadsPending.Add(key))
+                {
+                    _spatialReadRequests.Enqueue(key);
+                    _writerWake.Set();
+                }
+                return TerrainLodTileAvailability.Pending;
+            }
         }
         if (_spatialHierarchy.TryGetCoverage(key, out tile, out _))
         {
@@ -279,11 +301,21 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     internal bool TryGetSpatialCoverage(TerrainLodTileKey key, out TerrainLodColumnTile? tile) =>
         GetSpatialCoverage(key, out tile) == TerrainLodTileAvailability.Ready;
 
+    internal long GetSpatialGeneration(TerrainLodTileKey key)
+    {
+        lock (_gate) return _tileGenerations.GetValueOrDefault(key);
+    }
+
     /// <summary>Returns a pre-encoded remote payload or queues encoding on the LOD worker.</summary>
     public TerrainLodTileAvailability GetSpatialPayload(TerrainLodTileKey key, out byte[]? payload)
     {
         lock (_gate)
         {
+            if (_refreshRequired.Contains(key))
+            {
+                payload = null;
+                return GetSpatialCoverage(key, out _);
+            }
             if (_spatialWirePayloads.TryGetValue(key, out payload))
                 return TerrainLodTileAvailability.Ready;
             if (_disposed)
@@ -415,12 +447,43 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     ///     it has reached storage. Chunk saves are synchronous; this notification follows the
     ///     successful write rather than the earlier terrain-change event.
     /// </summary>
-    internal void NotifyChunkSaved(Chunk chunk)
+    internal void BeforeChunkSave(Chunk chunk)
+    {
+        lock (_gate)
+        {
+            if (_disposed || !_tracked.TryGetValue(new ChunkKey(chunk.X, chunk.Z),
+                    out var state) || !ReferenceEquals(state.Chunk, chunk) ||
+                state.LastSavedRevision == chunk.TerrainRevision) return;
+            // Delete before the authoritative write, so an ordinary save/reopen cannot use a
+            // parent compiled from the previous source. The direct importer is the only writer
+            // of these fallback records and checks live-edit cancellation after its write.
+            for (var level = _transientImportMinimumLevel;
+                 level <= Math.Min(_spatialPolicy.MaximumSpatialLevel,
+                     MaximumTransientImportLevel); level++)
+            {
+                var key = TerrainLodTileKey.ContainingChunk(level, chunk.X, chunk.Z);
+                if (!_spatialCache.Invalidate(key) && !_refreshRequired.Contains(key))
+                    continue;
+                if (_refreshRequired.Add(key))
+                    _tileGenerations[key] = ++_nextTileGeneration;
+                _spatialWirePayloads.Remove(key);
+                if (!_blockedTransientImports.TryGetValue(key, out var unsaved))
+                    _blockedTransientImports[key] = unsaved = [];
+                unsaved.Add(new ChunkKey(chunk.X, chunk.Z));
+            }
+        }
+    }
+
+    internal TerrainLodTileInvalidation[] NotifyChunkSaved(Chunk chunk)
     {
         var source = new ChunkKey(chunk.X, chunk.Z);
         lock (_gate)
         {
-            if (_disposed) return;
+            if (_disposed) return [];
+            if (_tracked.TryGetValue(source, out var state) &&
+                ReferenceEquals(state.Chunk, chunk))
+                state.LastSavedRevision = chunk.TerrainRevision;
+            List<TerrainLodTileInvalidation> notifications = [];
             foreach (var import in _savedTileImports.Values)
                 import.UnsavedEditedSources.Remove(source);
             foreach (var (key, unsaved) in _blockedTransientImports.ToArray())
@@ -428,8 +491,14 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                 if (!unsaved.Remove(source) || unsaved.Count != 0) continue;
                 _blockedTransientImports.Remove(key);
                 _spatialMissing.Remove(key);
+                if (!_refreshRequired.Contains(key)) continue;
+                var generation = _tileGenerations[key];
+                if (_refreshAnnounced.GetValueOrDefault(key) == generation) continue;
+                _refreshAnnounced[key] = generation;
+                notifications.Add(new TerrainLodTileInvalidation(key, generation));
             }
             _writerWake.Set();
+            return [.. notifications];
         }
     }
 
@@ -601,6 +670,23 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             foreach (var (key, unsaved) in _blockedTransientImports)
                 if (key.ContainsChunk(chunk.X, chunk.Z))
                     unsaved.Add(new ChunkKey(chunk.X, chunk.Z));
+            for (var level = _transientImportMinimumLevel;
+                 level <= Math.Min(_spatialPolicy.MaximumSpatialLevel,
+                     MaximumTransientImportLevel); level++)
+            {
+                var key = TerrainLodTileKey.ContainingChunk(level, chunk.X, chunk.Z);
+                var refreshing = _refreshRequired.Contains(key);
+                var hasFallback = _spatialHierarchy.TryGetCoverage(
+                    key, out _, out var current) && !current;
+                if (!refreshing && !hasFallback)
+                    continue;
+                _refreshRequired.Add(key);
+                _tileGenerations[key] = ++_nextTileGeneration;
+                _spatialWirePayloads.Remove(key);
+                if (!_blockedTransientImports.TryGetValue(key, out var unsaved))
+                    _blockedTransientImports[key] = unsaved = [];
+                unsaved.Add(new ChunkKey(chunk.X, chunk.Z));
+            }
             if (!state.Dirty)
             {
                 state.Dirty = true;
@@ -685,8 +771,10 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             }
             try
             {
-                var cached = _spatialCache.Read(key);
-                if (cached.Status == TerrainLodColumnTileCacheReadStatus.Hit)
+                bool refreshing;
+                lock (_gate) refreshing = _refreshRequired.Contains(key);
+                var cached = refreshing ? null : _spatialCache.Read(key);
+                if (cached?.Status == TerrainLodColumnTileCacheReadStatus.Hit)
                 {
                     _spatialHierarchy.PublishCached(cached.Tile!);
                     lock (_gate) _spatialMissing.Remove(key);
@@ -758,7 +846,9 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                         FinishSavedTileImport(import, missing: false);
                         continue;
                     }
-                if (_spatialHierarchy.TryGetCoverage(import.Key, out _, out _))
+                bool refreshing;
+                lock (_gate) refreshing = _refreshRequired.Contains(import.Key);
+                if (!refreshing && _spatialHierarchy.TryGetCoverage(import.Key, out _, out _))
                 {
                     lock (_gate) _savedTileImports.Remove(import.Key);
                     continue;
@@ -810,6 +900,8 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                                 throw new InvalidOperationException(
                                     $"Saved terrain tile {import.Key} exceeded resident hierarchy capacity.");
                             _savedTileImports.Remove(import.Key);
+                            _refreshRequired.Remove(import.Key);
+                            _refreshAnnounced.Remove(import.Key);
                             _spatialMissing.Remove(import.Key);
                             _spatialWirePayloads.Remove(import.Key);
                         }
@@ -1043,6 +1135,9 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
             _savedTileImportQueue.Clear();
             _savedTileImports.Clear();
             _blockedTransientImports.Clear();
+            _refreshRequired.Clear();
+            _refreshAnnounced.Clear();
+            _tileGenerations.Clear();
             _spatialEncodeRequests.Clear();
             _spatialEncodesPending.Clear();
             _spatialWirePayloads.Clear();
@@ -1078,6 +1173,7 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
         public long FirstDirtyTick { get; set; } = firstDirtyTick;
         public long DueTick { get; set; } = dueTick;
         public long LastSubmittedRevision { get; set; } = -1;
+        public long LastSavedRevision { get; set; } = chunk.TerrainRevision;
         public bool Dirty { get; set; } = true;
     }
 }

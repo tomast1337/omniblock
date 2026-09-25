@@ -11,35 +11,41 @@ public sealed class TerrainLodTileMessage : Message
     private const int MaximumCompressedBytes = TerrainLodScaleBudget.MaximumCompressedTileBytes;
     private const int MaximumDecodedBytes = TerrainLodScaleBudget.MaximumDecodedTileBytes;
     public static readonly ResourceLocation Id = new(
-        Namespace.Get("omniblock"), "terrain_lod_tile_v2");
+        Namespace.Get("omniblock"), "terrain_lod_tile_v3");
 
     public int Dimension { get; set; }
     public string CacheIdentity { get; set; } = "";
+    public long Generation { get; set; }
     public byte[] Compressed { get; set; } = [];
     private TerrainLodColumnTile? LoopbackTile { get; set; }
     public override ResourceLocation Key => Id;
-    public override int SchemaVersion => 2;
+    public override int SchemaVersion => 3;
     public override SendPriority Priority => SendPriority.Bulk;
 
     public static TerrainLodTileMessage Of(
         int dimension,
         TerrainLodColumnTile tile,
-        string cacheIdentity = "")
+        string cacheIdentity = "",
+        long generation = 0)
     {
-        return FromCompressed(dimension, Encode(tile), cacheIdentity);
+        return FromCompressed(dimension, Encode(tile), cacheIdentity, generation);
     }
 
     internal static TerrainLodTileMessage Loopback(
         int dimension,
         TerrainLodColumnTile tile,
-        string cacheIdentity = "") =>
-        new() { Dimension = dimension, CacheIdentity = cacheIdentity, LoopbackTile = tile };
+        string cacheIdentity = "",
+        long generation = 0) =>
+        new() { Dimension = dimension, CacheIdentity = cacheIdentity,
+            Generation = generation, LoopbackTile = tile };
 
     internal static TerrainLodTileMessage FromCompressed(
         int dimension,
         byte[] compressed,
-        string cacheIdentity = "") =>
-        new() { Dimension = dimension, CacheIdentity = cacheIdentity, Compressed = compressed };
+        string cacheIdentity = "",
+        long generation = 0) =>
+        new() { Dimension = dimension, CacheIdentity = cacheIdentity,
+            Generation = generation, Compressed = compressed };
 
     internal static byte[] Encode(TerrainLodColumnTile tile)
     {
@@ -89,6 +95,8 @@ public sealed class TerrainLodTileMessage : Message
     {
         Dimension = stream.ReadInt();
         CacheIdentity = stream.ReadString(MaximumIdentityLength);
+        Generation = stream.ReadLong();
+        if (Generation < 0) throw new InvalidDataException("Negative terrain LOD generation.");
         Compressed = stream.ReadByteArray(MaximumCompressedBytes);
     }
 
@@ -98,12 +106,15 @@ public sealed class TerrainLodTileMessage : Message
             throw new InvalidOperationException("A loopback terrain LOD tile has no wire payload.");
         if (Compressed.Length > MaximumCompressedBytes)
             throw new InvalidOperationException("Terrain LOD tile payload exceeds its wire limit.");
+        if (Generation < 0)
+            throw new InvalidOperationException("Negative terrain LOD generation.");
         stream.WriteInt(Dimension);
         stream.WriteString(CacheIdentity);
+        stream.WriteLong(Generation);
         stream.WriteByteArray(Compressed);
     }
 
-    public override int Size() => sizeof(int) + sizeof(ushort) +
+    public override int Size() => sizeof(int) + sizeof(long) + sizeof(ushort) +
                                   ModifiedUtf8.GetByteCount(CacheIdentity) +
                                   StreamExtensions.ByteArraySize(Compressed);
 

@@ -8,7 +8,8 @@ public enum TerrainLodTileStatus : byte
     Pending = 0,
     Missing = 1,
     Deferred = 2,
-    Incompatible = 3
+    Incompatible = 3,
+    Invalidated = 4
 }
 
 /// <summary>
@@ -21,22 +22,26 @@ public sealed class TerrainLodTileStatusMessage : Message
     private const int MaximumIdentityLength = 128;
     private const int MaximumDiagnosticLength = 512;
     public static readonly ResourceLocation Id = new(
-        Namespace.Get("omniblock"), "terrain_lod_tile_status_v3");
+        Namespace.Get("omniblock"), "terrain_lod_tile_status_v4");
 
     public int Dimension { get; set; }
     public string CacheIdentity { get; set; } = "";
     public TerrainLodTileKey Tile { get; set; }
+    public long Generation { get; set; }
     public TerrainLodTileStatus Status { get; set; }
     public string Diagnostic { get; set; } = "";
     public override ResourceLocation Key => Id;
-    public override int SchemaVersion => 3;
-    public override SendPriority Priority => SendPriority.Bulk;
+    public override int SchemaVersion => 4;
+    public override SendPriority Priority => Status == TerrainLodTileStatus.Invalidated
+        ? SendPriority.Normal : SendPriority.Bulk;
 
     public override void Read(Stream stream)
     {
         Dimension = stream.ReadInt();
         CacheIdentity = stream.ReadString(MaximumIdentityLength);
         Tile = new TerrainLodTileKey(stream.ReadVarInt(), stream.ReadInt(), stream.ReadInt());
+        Generation = stream.ReadLong();
+        if (Generation < 0) throw new InvalidDataException("Negative terrain LOD generation.");
         var status = checked((byte)stream.ReadByte());
 
         if (!Enum.IsDefined(typeof(TerrainLodTileStatus), status))
@@ -50,6 +55,8 @@ public sealed class TerrainLodTileStatusMessage : Message
     {
         if (!Enum.IsDefined(Status))
             throw new InvalidOperationException($"Unknown terrain LOD tile status {(byte)Status}.");
+        if (Generation < 0)
+            throw new InvalidOperationException("Negative terrain LOD generation.");
         
         if (ModifiedUtf8.GetByteCount(Diagnostic) > MaximumDiagnosticLength)
             throw new InvalidOperationException($"Terrain LOD status diagnostic exceeds {MaximumDiagnosticLength} bytes.");
@@ -59,6 +66,7 @@ public sealed class TerrainLodTileStatusMessage : Message
         stream.WriteVarInt(Tile.Level);
         stream.WriteInt(Tile.X);
         stream.WriteInt(Tile.Z);
+        stream.WriteLong(Generation);
         stream.WriteByte((byte)Status);
         stream.WriteString(Diagnostic);
     }
@@ -66,6 +74,7 @@ public sealed class TerrainLodTileStatusMessage : Message
     public override int Size() => sizeof(int) + sizeof(ushort) +
                                   ModifiedUtf8.GetByteCount(CacheIdentity) +
                                   StreamExtensions.VarIntSize(Tile.Level) + sizeof(int) * 2 +
+                                  sizeof(long) +
                                   sizeof(byte) + sizeof(ushort) +
                                   ModifiedUtf8.GetByteCount(Diagnostic);
 }

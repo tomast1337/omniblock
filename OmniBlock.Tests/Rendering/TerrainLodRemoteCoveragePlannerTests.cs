@@ -348,6 +348,54 @@ public sealed class TerrainLodRemoteCoveragePlannerTests
     }
 
     [Fact]
+    public void Invalidated_remote_tile_is_requested_while_old_coverage_is_retained()
+    {
+        using var renderer = new ClientTerrainLodRenderer(new LightTestWorld());
+        Vector3D<double> camera = new(0, 80, 0);
+        var column = TerrainLodColumn.Create(4,
+        [new TerrainLodColumnSpan(0, 4, TerrainLodMaterial.Air, 0, 15)]);
+        List<TerrainLodTileKey> received = [];
+        for (var batch = 0; batch < 8; batch++)
+        {
+            var requests = renderer.TakeRemoteSpatialRequests(
+                camera, nearDistanceChunks: 0, horizonDistanceChunks: 4,
+                maximumRequests: 16);
+            if (requests.Length == 0) break;
+            foreach (var key in requests)
+            {
+                received.Add(key);
+                renderer.ObserveRemoteSpatialTile(TerrainLodColumnTile.CreateUniform(
+                    key, 0, 4, column, "refresh-test"));
+            }
+        }
+        Assert.NotEmpty(received);
+        Assert.Empty(renderer.TakeRemoteSpatialRequests(
+            camera, 0, 4, maximumRequests: 16));
+
+        var stale = received[0];
+        renderer.ObserveRemoteSpatialStatus(stale, TerrainLodTileStatus.Invalidated,
+            generation: 1);
+        Assert.Equal([stale], renderer.TakeRemoteSpatialRequests(
+            camera, 0, 4, maximumRequests: 16));
+        Assert.Empty(renderer.TakeRemoteSpatialRequests(
+            camera, 0, 4, maximumRequests: 16));
+
+        renderer.ObserveRemoteSpatialTile(TerrainLodColumnTile.CreateUniform(
+            stale, 0, 4, column, "refresh-test"));
+        Assert.True(renderer.HasPendingRemoteRefresh(stale));
+        renderer.ObserveRemoteSpatialStatus(stale, TerrainLodTileStatus.Invalidated,
+            generation: 2);
+        renderer.ObserveRemoteSpatialTile(TerrainLodColumnTile.CreateUniform(
+            stale, 0, 4, column, "refresh-test-intermediate"), generation: 1);
+        Assert.True(renderer.HasPendingRemoteRefresh(stale));
+        renderer.ObserveRemoteSpatialTile(TerrainLodColumnTile.CreateUniform(
+            stale, 0, 4, column, "refresh-test-replacement"), generation: 2);
+        Assert.False(renderer.HasPendingRemoteRefresh(stale));
+        Assert.Empty(renderer.TakeRemoteSpatialRequests(
+            camera, 0, 4, maximumRequests: 16));
+    }
+
+    [Fact]
     public void Coverage_root_scale_tracks_the_configured_horizon()
     {
         Vector3D<double> camera = new(0, 80, 0);

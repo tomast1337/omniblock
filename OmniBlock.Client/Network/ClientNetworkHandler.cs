@@ -572,7 +572,8 @@ public class ClientNetworkHandler : NetHandler
             var negotiatedMaximum = identity.NegotiateMaximumSpatialLevel(
                 _context.Factory.MaximumTerrainLodSpatialLevel);
             _worldClient.EnqueueTerrainLodTile(
-                message.Decode(negotiatedMaximum), message.Compressed.Length);
+                message.Decode(negotiatedMaximum), message.Compressed.Length,
+                message.Generation);
         }
         catch (Exception error) when (error is InvalidDataException or ArgumentException or
                                       EndOfStreamException or OverflowException)
@@ -601,7 +602,8 @@ public class ClientNetworkHandler : NetHandler
                     : message.Diagnostic);
             return;
         }
-        _worldClient.EnqueueTerrainLodStatus(message.Tile, message.Status);
+        _worldClient.EnqueueTerrainLodStatus(
+            message.Tile, message.Status, message.Generation);
     }
 
     private void onTerrainLodIdentity(TerrainLodIdentityMessage message)

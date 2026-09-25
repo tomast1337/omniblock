@@ -45,6 +45,25 @@ public class ServerWorld : World
     public ServerTerrainLodSnapshot? TerrainLodSnapshot => _terrainLod?.Snapshot();
     public TerrainLodCacheIdentity? TerrainLodIdentity => _terrainLod?.Identity;
 
+    internal long GetTerrainLodGeneration(TerrainLodTileKey key) =>
+        _terrainLod?.GetSpatialGeneration(key) ?? 0;
+
+    internal void BroadcastTerrainLodRefresh(
+        IReadOnlyCollection<TerrainLodTileInvalidation> invalidations)
+    {
+        if (invalidations.Count == 0 || _terrainLod is null) return;
+        var identity = _terrainLod.Identity.CompatibilityFingerprint;
+        foreach (var invalidation in invalidations)
+            server.playerManager.sendToDimension(new TerrainLodTileStatusMessage
+            {
+                Dimension = Dimension.Id,
+                CacheIdentity = identity,
+                Tile = invalidation.Key,
+                Generation = invalidation.Generation,
+                Status = TerrainLodTileStatus.Invalidated
+            }, Dimension.Id);
+    }
+
     internal void ShutdownTerrainLod()
     {
         ChunkCache.AttachTerrainLod(null);

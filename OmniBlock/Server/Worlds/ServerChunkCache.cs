@@ -281,10 +281,12 @@ public class ServerChunkCache : IChunkSource
             try
             {
                 chunk.LastSaveTime = _world.GetTime();
+                _terrainLod?.BeforeChunkSave(chunk);
                 GenerationTelemetry.Measure(
                     WorldGenerationStage.EncodeSave,
                     () => _storage.SaveChunk(_world, chunk, null, -1));
-                _terrainLod?.NotifyChunkSaved(chunk);
+                if (_terrainLod is { } lod)
+                    _world.BroadcastTerrainLodRefresh(lod.NotifyChunkSaved(chunk));
             }
             catch (Exception ex)
             {
