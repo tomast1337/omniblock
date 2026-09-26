@@ -43,7 +43,16 @@ OMNI.waitUntil(function()
 end, 45, 0.1)
 OMNI.test.setFlying(true)
 OMNI.test.setLook(0, 22)
-OMNI.wait(20) -- let normal chunk generation and L2 conversion reach the server cache
+OMNI.waitUntil(function()
+    return state.terrainCoverageReady == 1 and
+        state.terrainCoverageExpected > 0 and
+        state.terrainCoverageMissingChunkData == 0 and
+        state.terrainCoverageMissingExactMeshes == 0 and
+        state.terrainCoverageMissingPresentation == 0 and
+        state.terrainCoverageHoles == 0 and state.terrainCoverageOverlaps == 0 and
+        state.webGpuErrorCount == 0 and state.meshBuildFailureCount == 0
+end, 90, 0.1)
+OMNI.wait(2) -- let the completed exact presentation settle before its reference screenshot
 OMNI.test.dumpTerrain("natural-cave-exact")
 OMNI.test.screenshot()
 OMNI.wait(10) -- let the screenshot notification clear before the LOD image
@@ -55,15 +64,13 @@ OMNI.wait(10)
 OMNI.config.fov = 0.44444445
 
 OMNI.config.viewDistance = 0 -- same camera, four exact chunks
--- This opening belongs to a retained local column after the exact-radius shrink.
--- Remote spatial ownership is unrelated to this comparison and may legitimately
--- remain zero; the artifact checker verifies that the local cave layer is drawn.
+-- The opening may be drawn from a retained local column or an authoritative 1x1
+-- spatial tile. The checker verifies the actual owner and stable source identity.
 OMNI.wait(15)
 OMNI.test.dumpTerrain("natural-cave-fine-before")
 
--- Switch only presentation quality after L0 was compiled from the live source.
--- This isolates selection cost; a low-first, source-unloaded quality upgrade is a
--- separate lifecycle gap, not a valid apples-to-apples geometry measurement.
+-- Switch only local presentation quality. If spatial L2 owns the cave, this will not
+-- change its sampling; that is explicitly reported rather than counted as a quality win.
 OMNI.config.terrainLodDropoffDistance = 0.2 -- 0.75x: 96-block near band
 OMNI.wait(5)
 OMNI.test.dumpTerrain("natural-cave-coarse")

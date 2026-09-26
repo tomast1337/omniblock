@@ -131,21 +131,26 @@ CPU/source fidelity measurements, not frame-time, screenshot, or complete-horizo
 `xvfb-run -a tests/e2e/run-local.sh terrain-lod-natural-cave` (240-second watchdog).
 It creates an isolated default world with seed `246813579`, then views the generated patch
 containing a skylit under-roof opening at `(24,76,33)` from a fixed flying camera. It captures
-the eight-chunk exact reference, a four-chunk LOD view at 1x (compiling L0 while source is
-loaded), then views at 0.75x and 1x (the former 96-block and current 128-block near bands).
+the eight-chunk exact reference only after central coverage has no missing data, exact meshes,
+presentation, holes or overlaps; then a four-chunk LOD view at 1x, then views at 0.75x and 1x
+(the former 96-block and current 128-block local near bands). A ready spatial L2 tile can take
+authority before either local selection is drawn.
 All captures use the same camera. The fixture also takes paired 30-degree-FOV close-ups of
 the exact and final 1x LOD views; the checker requires their cameras, FOV, and drawn local L0
 source to agree. The separate near-quality fixture reports whether each sampled material is
 owned by exact/local/spatial terrain. These checks identify what was presented, not pixel parity.
-`check_natural_cave.py` requires the opening's drawn local column to refine from L1/2x2 to
-L0/1x1 without changing that column's terrain revision, resource generation, or owner. The
-quality dump also records selected-layer vertex counts, an on-demand geometry-cost proxy, not measured GPU
-time or total residency. Starting at 0.75x and requesting 1x only after the gameplay chunk
-unloads currently cannot compile a missing L0; that separate quality-upgrade lifecycle defect
-remains open. Resident local columns own this same-session handoff, so the checker deliberately
-does **not** require remote spatial L2 authority. The screenshots and stage counters are for manual
-cave/terrain comparison; metadata cannot assert cave-mouth pixel fidelity. This is a small
-generated patch, not a pregenerated horizon.
+`check_natural_cave.py` accepts either a drawn local LOD column that refines L1/2x2 → L0/1x1,
+or the authoritative 1x1 spatial L2 tile if remote compilation takes ownership first. It
+requires unchanged source identity across the quality pair; a spatial owner is not expected to
+respond to the local dropoff setting. The dump records selected-layer vertices for local rows
+and compiled quad counts for spatial rows—geometry-cost proxies, not measured GPU time. The
+separate `terrain-lod-quality-upgrade` scenario covers a missing local L0 after the gameplay
+chunk unloads. The checker writes
+`natural-cave-quality-metrics.json` with exact/coarse/fine, zoomed and cave-centered image
+differences, plus the exact reference's coverage counters. Those
+numbers characterize the scene but are not an aesthetic pass threshold: this ordinary-streaming
+fixture does not pre-generate the whole outer camera footprint, and deep water can trigger the generic
+blue-pixel sky mask. It cannot yet assert cave-mouth pixel fidelity.
 One fixed run compared 90 stable drawn layers: 12 changed level and selected vertices increased
 from 225,352 at 0.75x to 279,556 at 1x. Streaming still changed other columns, so this is
 neither a whole-scene GPU-time measurement nor a residency budget.
