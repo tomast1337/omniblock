@@ -10,7 +10,36 @@
         "luau-lsp.sourcemap.enabled": false,
         "luau-lsp.types.definitionFiles": {
             "@omniblock": "Scripting/omni.d.luau"
-        }
+        },
+        "workbench.colorCustomizations": {
+            "activityBar.activeBackground": "#407fa8",
+            "activityBar.activeBorder": "#e7e7e7",
+            "activityBar.background": "#407fa8",
+            "activityBar.foreground": "#e7e7e7",
+            "activityBar.inactiveForeground": "#e7e7e799",
+            "activityBarBadge.background": "#dca3c5",
+            "activityBarBadge.foreground": "#15202b",
+            "activityBarTop.activeBackground": "#407fa8",
+            "activityBarTop.activeBorder": "#e7e7e7",
+            "activityBarTop.background": "#407fa8",
+            "activityBarTop.foreground": "#e7e7e7",
+            "activityBarTop.inactiveForeground": "#e7e7e799",
+            "commandCenter.border": "#e7e7e799",
+            "commandCenter.foreground": "#e7e7e7",
+            "sash.hoverBorder": "#407fa8",
+            "statusBar.background": "#326383",
+            "statusBar.debuggingBackground": "#326383",
+            "statusBar.debuggingForeground": "#e7e7e7",
+            "statusBar.foreground": "#e7e7e7",
+            "statusBarItem.hoverBackground": "#407fa8",
+            "statusBarItem.remoteBackground": "#ca75a8",
+            "statusBarItem.remoteForeground": "#e7e7e7",
+            "titleBar.activeBackground": "#326383",
+            "titleBar.activeForeground": "#e7e7e7",
+            "titleBar.inactiveBackground": "#32638399",
+            "titleBar.inactiveForeground": "#e7e7e799"
+        },
+        "peacock.color": "#326383"
     },
     "extensions": {
         "recommendations": ["JohnnyMorganz.luau-lsp"]
