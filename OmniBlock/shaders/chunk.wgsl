@@ -284,7 +284,12 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     }
 
     if (in.presentationFadeMode != 0u) {
-        let threshold = presentationDitherThreshold(in.position.xy, in.presentationFadeSeed);
+        // Use the terrain-local X/Z lattice rather than screen pixels. Parent/child water
+        // surfaces can sit at slightly different heights; their screen-space masks then drift
+        // apart as the camera moves and briefly reveal the lake bed between LOD levels. Every
+        // terrain origin is chunk-aligned, so this quarter-block pattern agrees across exact,
+        // column-LOD and spatial pages while remaining fixed during camera movement.
+        let threshold = presentationDitherThreshold(in.pagePosition * 4.0, in.presentationFadeSeed);
         if (in.presentationFadeMode == 1u && threshold >= in.fadeProgress) {
             discard;
         }
