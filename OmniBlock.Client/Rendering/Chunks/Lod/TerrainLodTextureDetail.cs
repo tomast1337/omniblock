@@ -5,8 +5,9 @@ namespace OmniBlock.Client.Rendering.Chunks.Lod;
 
 /// <summary>
 ///     Geometry detail and texture detail are separate: exact and 1x1 terrain keep crisp level
-///     zero, while opaque aggregate cells sample a prefiltered tile. Thin, cutout and translucent
-///     materials stay at level zero until they have material-specific distant representations.
+///     zero, while opaque and liquid aggregate cells sample a prefiltered tile. Thin, cutout and
+///     other translucent materials stay at level zero until they have material-specific distant
+///     representations.
 /// </summary>
 internal static class TerrainLodTextureDetail
 {
@@ -23,7 +24,8 @@ internal static class TerrainLodTextureDetail
 
     public static byte MipLevel(TerrainLodMaterial material, int sampleSize)
     {
-        if (material.Geometry != TerrainLodGeometryClass.Opaque || sampleSize <= 1)
+        if (material.Geometry is not (TerrainLodGeometryClass.Opaque or TerrainLodGeometryClass.Liquid) ||
+            sampleSize <= 1)
             return 0;
         if (!BitOperations.IsPow2((uint)sampleSize))
             throw new ArgumentOutOfRangeException(nameof(sampleSize));

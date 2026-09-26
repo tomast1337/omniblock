@@ -1056,6 +1056,12 @@ public partial class OmniBlock :
                 LuauTestHost.TerrainLodPresentedSample = (x, y, z) =>
                     WorldRenderer?.TerrainLod?.PresentedSpatialSampleAt(x, y, z)
                     ?? (null, -1, null, -1, -1, false, null);
+                LuauTestHost.TerrainLodRepresentativeColors = enabled =>
+                {
+                    if (WorldRenderer?.TerrainLod is not { } terrainLod) return false;
+                    terrainLod.RepresentativeColorsEnabled = enabled;
+                    return true;
+                };
                 LuauTestHost.DumpProfiler = label =>
                 {
                     _e2eTestController.WriteTextArtifact(
@@ -1650,6 +1656,7 @@ public partial class OmniBlock :
             LuauTestHost.TerrainLodColumnSourceLoaded = null;
             LuauTestHost.TerrainLodPresentedMaterial = null;
             LuauTestHost.TerrainLodPresentedSample = null;
+            LuauTestHost.TerrainLodRepresentativeColors = null;
             LuauTestHost.DumpProfiler = null;
             LuauTestHost.WorldGenerationAuto = null;
             LuauTestHost.WorldGenerationMetric = null;

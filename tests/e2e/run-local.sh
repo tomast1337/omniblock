@@ -242,6 +242,11 @@ for scenario in "${scenarios[@]}"; do
             status=1
         fi
     fi
+    if (( status == 0 )) && [[ "$scenario" == "terrain-lod-filtered-textures" ]]; then
+        if ! python3 "$script_dir/check_terrain_lod_color_comparison.py" "$scenario_artifacts"; then
+            status=1
+        fi
+    fi
     if (( status == 0 )) && [[ "$scenario" == "terrain-lod-remote-handoff" ]]; then
         if ! python3 "$script_dir/check_remote_handoff.py" "$scenario_artifacts"; then
             status=1

@@ -39,6 +39,7 @@ struct FrameUniforms {
     fogEnd: f32,
     fogDensity: f32,
     fogMode: u32,              // 0=linear, else=exponential
+    representativeColorsEnabled: u32, // LOD-only A/B capture control; exact chunks carry no color flag
 };
 
 @group(0) @binding(0) var<uniform> frame: FrameUniforms;
@@ -260,7 +261,8 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     var texColor = textureSampleLevel(terrainArray, terrainSampler,
         in.texCoord, in.arrayLayer, f32(in.textureMipLevel & 0x7fu));
     if (hiddenSpatialColumn(in)) { discard; }
-    if ((in.textureMipLevel & 0x80u) != 0u &&
+    if (frame.representativeColorsEnabled != 0u &&
+        (in.textureMipLevel & 0x80u) != 0u &&
         in.fogDistance > REPRESENTATIVE_COLOR_START) {
         // The last mip is a pack-derived, alpha-aware 1x1 color for this *one* tile. Loading it
         // directly keeps the color schedule independent of the sampler's mipmap setting and

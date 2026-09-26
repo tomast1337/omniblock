@@ -392,6 +392,7 @@ export type OmniTest = {
     terrainLodServerTileReady: (level: number, x: number, z: number) -> boolean,
     terrainLodClientTileReady: (level: number, x: number, z: number) -> boolean,
     terrainLodColumnSourceLoaded: (chunkX: number, chunkZ: number) -> boolean,
+    terrainLodRepresentativeColors: (enabled: boolean) -> boolean,
 }
 
 declare OMNI: {

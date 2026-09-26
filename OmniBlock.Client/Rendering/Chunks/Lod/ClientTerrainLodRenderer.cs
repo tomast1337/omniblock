@@ -159,6 +159,10 @@ internal readonly record struct TerrainLodSpatialSnapshot(
 /// </remarks>
 internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPresentationHandoff
 {
+    // Test captures can compare the same resident geometry and camera with/without the far
+    // representative-color blend. Ordinary sessions leave it enabled.
+    internal bool RepresentativeColorsEnabled { get; set; } = true;
+
     private const int ConversionCapacity = 16;
     private readonly TerrainLodVisualCaptures _conversionVisuals = new(ConversionCapacity);
     // Full-detail upgrades are rare, but must remain possible after the simulation unloads a
@@ -3537,7 +3541,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         }
     }
 
-    private static ChunkFrameUniforms BuildFrameUniforms(in ChunkRenderParams parameters)
+    private ChunkFrameUniforms BuildFrameUniforms(in ChunkRenderParams parameters)
     {
         var fog = parameters.Fog;
         var light = RenderSystem.WorldLight;
@@ -3563,7 +3567,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             FogColorR = fog.Color.X,
             FogColorG = fog.Color.Y,
             FogColorB = fog.Color.Z,
-            FogColorA = fog.Color.W
+            FogColorA = fog.Color.W,
+            RepresentativeColorsEnabled = RepresentativeColorsEnabled ? 1u : 0u
         };
     }
 

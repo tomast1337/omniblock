@@ -23,7 +23,7 @@ public sealed class ChunkUniformLayoutTests
     [Fact]
     public void Frame_uniform_layout_matches_chunk_shader()
     {
-        Assert.Equal(336, Marshal.SizeOf<ChunkFrameUniforms>());
+        Assert.Equal(352, Marshal.SizeOf<ChunkFrameUniforms>());
         AssertOffset<ChunkFrameUniforms>(nameof(ChunkFrameUniforms.ModelViewMatrix), 0);
         AssertOffset<ChunkFrameUniforms>(nameof(ChunkFrameUniforms.ProjectionMatrix), 64);
         AssertOffset<ChunkFrameUniforms>(nameof(ChunkFrameUniforms.CameraCellX), 128);
@@ -37,6 +37,7 @@ public sealed class ChunkUniformLayoutTests
         AssertOffset<ChunkFrameUniforms>(nameof(ChunkFrameUniforms.WavyPlantCount), 288);
         AssertOffset<ChunkFrameUniforms>(nameof(ChunkFrameUniforms.FogColorR), 304);
         AssertOffset<ChunkFrameUniforms>(nameof(ChunkFrameUniforms.FogMode), 332);
+        AssertOffset<ChunkFrameUniforms>(nameof(ChunkFrameUniforms.RepresentativeColorsEnabled), 336);
     }
 
     [Theory]

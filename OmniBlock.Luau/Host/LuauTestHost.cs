@@ -31,6 +31,7 @@ public static unsafe class LuauTestHost
                                         terrainLodColumnSourceLoaded = function(x, z) return __Test.terrainLodColumnSourceLoaded(x, z) end,
                                         terrainLodPresentedMaterial = function(x, y, z) return __Test.terrainLodPresentedMaterial(x, y, z) end,
                                         terrainLodPresentedSample = function(x, y, z) return __Test.terrainLodPresentedSample(x, y, z) end,
+                                        terrainLodRepresentativeColors = function(enabled) return __Test.terrainLodRepresentativeColors(enabled) end,
                                         dumpProfiler = function(label) __Test.dumpProfiler(tostring(label or "profile")) end,
                                         worldGenerationAuto = function(profile, radius) return __Test.worldGenerationAuto(tostring(profile), radius or 32) end,
                                         worldGenerationMetric = function(metric) return __Test.worldGenerationMetric(tostring(metric)) end,
@@ -77,6 +78,7 @@ public static unsafe class LuauTestHost
     public static Func<int, int, int, (string? Material, int SampleSize, string? Owner)>? TerrainLodPresentedMaterial;
     public static Func<int, int, int, (string? Material, int SampleSize, string? Owner,
         int SkyLight, int BlockLight, bool OccludesFaces, string? PresentedMaterial)>? TerrainLodPresentedSample;
+    public static Func<bool, bool>? TerrainLodRepresentativeColors;
     public static Action<string>? DumpProfiler;
     public static Func<string, int, bool>? WorldGenerationAuto;
     public static Func<string, double>? WorldGenerationMetric;
@@ -96,7 +98,7 @@ public static unsafe class LuauTestHost
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 34);
+        LuauNative.lua_createtable(l, 0, 0);
         Add(l, "pass", &PassClosure);
         Add(l, "fail", &FailClosure);
         Add(l, "creative", &CreativeClosure);
@@ -119,6 +121,7 @@ public static unsafe class LuauTestHost
         Add(l, "terrainLodColumnSourceLoaded", &TerrainLodColumnSourceLoadedClosure);
         Add(l, "terrainLodPresentedMaterial", &TerrainLodPresentedMaterialClosure);
         Add(l, "terrainLodPresentedSample", &TerrainLodPresentedSampleClosure);
+        Add(l, "terrainLodRepresentativeColors", &TerrainLodRepresentativeColorsClosure);
         Add(l, "dumpProfiler", &DumpProfilerClosure);
         Add(l, "worldGenerationAuto", &WorldGenerationAutoClosure);
         Add(l, "worldGenerationMetric", &WorldGenerationMetricClosure);
@@ -704,6 +707,23 @@ public static unsafe class LuauTestHost
         if (result.PresentedMaterial is { } presentedMaterial) LuauNative.lua_pushstring(l, presentedMaterial);
         else LuauNative.lua_pushnil(l);
         return 7;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int TerrainLodRepresentativeColorsClosure(IntPtr l)
+    {
+        var applied = false;
+        try
+        {
+            applied = TerrainLodRepresentativeColors?.Invoke(
+                LuauNative.lua_toboolean(l, 1) != 0) == true;
+        }
+        catch (Exception error)
+        {
+            Fail?.Invoke($"Terrain LOD color comparison: {error.Message}");
+        }
+        LuauNative.lua_pushboolean(l, applied ? 1 : 0);
+        return 1;
     }
 
     private static void Invoke(Action? action)

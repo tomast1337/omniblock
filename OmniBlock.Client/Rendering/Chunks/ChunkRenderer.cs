@@ -65,7 +65,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     /// <summary>Bytes of <see cref="ChunkDrawMetadata" />, as chunk.wgsl declares the block.</summary>
     private static readonly uint ChunkDrawMetadataSize = (uint)Marshal.SizeOf<ChunkDrawMetadata>();
     /// <summary>Bytes of <see cref="ChunkFrameUniforms" />, as chunk.wgsl declares the block.</summary>
-    private const uint ChunkFrameUniformSize = 336;
+    private const uint ChunkFrameUniformSize = 352;
 
     private static readonly Vector3D<int>[] s_spiralOffsets;
     private static readonly Vector2D<int>[] s_safetyColumnOffsets;
@@ -4260,7 +4260,7 @@ public struct ChunkDrawMetadata
 }
 
 /// <summary>Frame/pass-wide chunk.wgsl terrain uniforms and exact camera coordinate frame.</summary>
-[StructLayout(LayoutKind.Explicit, Size = 336)]
+[StructLayout(LayoutKind.Explicit, Size = 352)]
 public struct ChunkFrameUniforms
 {
     [FieldOffset(0)] public Matrix4X4<float> ModelViewMatrix;
@@ -4339,6 +4339,8 @@ public struct ChunkFrameUniforms
 
     // u32 fogMode at offset 316
     [FieldOffset(332)] public uint FogMode;
+
+    [FieldOffset(336)] public uint RepresentativeColorsEnabled;
 }
 
 internal static class TerrainCoordinateFrame

@@ -8,12 +8,13 @@ namespace OmniBlock.Tests.Rendering.Textures;
 public sealed class TerrainTileMipmapsTests
 {
     [Fact]
-    public void Only_opaque_aggregate_cells_request_filtered_levels()
+    public void Opaque_and_liquid_aggregate_cells_request_filtered_levels()
     {
         var world = new FakeWorldContext();
         var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
         var stone = materials.Resolve(world.Content.Blocks.Get("omniblock:stone").Id, 0);
         var water = materials.Resolve(world.Content.Blocks.Get("omniblock:flowing_water").Id, 0);
+        var lava = materials.Resolve(world.Content.Blocks.Get("omniblock:flowing_lava").Id, 0);
         var leaves = materials.Resolve(world.Content.Blocks.Get("omniblock:leaves").Id, 0);
 
         Assert.Equal(0, TerrainLodTextureDetail.MipLevel(stone, 1));
@@ -21,13 +22,17 @@ public sealed class TerrainTileMipmapsTests
         Assert.Equal(2, TerrainLodTextureDetail.MipLevel(stone, 4));
         Assert.Equal(4, TerrainLodTextureDetail.MipLevel(stone, 16));
         Assert.Equal(4, TerrainLodTextureDetail.MipLevel(stone, 64));
-        Assert.Equal(0, TerrainLodTextureDetail.MipLevel(water, 16));
+        Assert.Equal(0, TerrainLodTextureDetail.MipLevel(water, 1));
+        Assert.Equal(1, TerrainLodTextureDetail.MipLevel(water, 2));
+        Assert.Equal(4, TerrainLodTextureDetail.MipLevel(water, 16));
+        Assert.Equal(2, TerrainLodTextureDetail.MipLevel(lava, 4));
         Assert.Equal(0, TerrainLodTextureDetail.MipLevel(leaves, 16));
         Assert.Equal(TerrainLodTextureDetail.RepresentativeColorFlag,
             TerrainLodTextureDetail.Pack(stone, 1));
         Assert.Equal(TerrainLodTextureDetail.RepresentativeColorFlag | 2,
             TerrainLodTextureDetail.Pack(stone, 4));
-        Assert.Equal(0, TerrainLodTextureDetail.Pack(water, 16));
+        Assert.Equal(4, TerrainLodTextureDetail.Pack(water, 16));
+        Assert.Equal(2, TerrainLodTextureDetail.Pack(lava, 4));
         Assert.Equal(0, TerrainLodTextureDetail.Pack(leaves, 16));
     }
 

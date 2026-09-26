@@ -89,6 +89,15 @@ errors. The runner also checks the captured selected levels: the arch column mus
 L0 translucent selection without a body draw, and the adjacent basin must present real L0 water.
 It does **not** assert full terrain convergence, whole-scene visual fidelity, or natural-cave correctness.
 
+`terrain-lod-filtered-textures` is an opt-in, fixed-camera land/water LOD comparison (360-second
+watchdog). It pregenerates the complete 16-chunk source circle under a downward 30-degree view,
+waits for local coverage and authoritative L3 terrain, then captures representative colors off
+and on without moving the camera. `check_terrain_lod_color_comparison.py` rejects a footprint
+outside that circle, changed drawn tile hashes, missing presentation, a broad flat-blue hole,
+and crops that no longer contain mostly water or land. It writes paired `material-crops/*.png`
+and `color-comparison-metrics.json` for visual review. Water animates between screenshots, so its
+RGB difference is a diagnostic, not an acceptance target or proof of liquid color improvement.
+
 `terrain-lod-<label>.json` now includes an on-demand `Quality` snapshot: camera/FOV/viewport and
 distance settings, published spatial tile bounds and mesh sampling/span budgets, current CPU
 source/hash agreement and immediate child availability, plus selected local solid/translucent
@@ -416,6 +425,7 @@ OMNI.test.prepareTerrainLodFixture(64)    -- E2E-only derived-data scale fixture
 OMNI.test.configureTerrainLodScaleProfile(512) -- before loading a world; accepts 512 or 1024
 OMNI.test.terrainLodFixtureMetric("complete")
 OMNI.test.terrainLodFixtureMetric("cacheReadHits") -- proves warm-process disk reuse
+OMNI.test.terrainLodRepresentativeColors(false) -- paired LOD screenshots; true restores default
 OMNI.test.countEntities("omniblock:cow", 180, 220) -- client-resident entities in a distance band
 OMNI.test.isMeshCurrent(x, y, z) -- latest section epoch has an installed mesh
 OMNI.test.meshDeadlineMissCount(x, y, z) -- section-scoped lifetime counter
