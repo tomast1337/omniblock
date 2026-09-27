@@ -8,14 +8,14 @@ import zlib
 from check_terrain_lod_visual_baseline import compare, rgb_rows
 
 
-def cave_crop_difference(first_path, second_path):
+def cave_crop_difference(first_path, second_path, region=(.38, .59, .38, .60)):
     """Compare the central rock opening, excluding the changing outer streaming horizon."""
     width, height, first = rgb_rows(first_path)
     second_width, second_height, second = rgb_rows(second_path)
     if (width, height) != (second_width, second_height):
         raise ValueError("Natural-cave close-ups have different dimensions")
-    x0, x1 = int(width * .38), int(width * .59)
-    y0, y1 = int(height * .38), int(height * .60)
+    x0, x1 = int(width * region[0]), int(width * region[1])
+    y0, y1 = int(height * region[2]), int(height * region[3])
     channel_error = strongly_changed = 0
     for y in range(y0, y1):
         for x in range(x0, x1):
@@ -26,7 +26,7 @@ def cave_crop_difference(first_path, second_path):
             strongly_changed += max(difference) > 40
     count = (x1 - x0) * (y1 - y0)
     return {
-        "region": [.38, .59, .38, .60],
+        "region": list(region),
         "meanAbsoluteRgbError": round(channel_error / (3 * count), 3),
         "stronglyChangedFraction": round(strongly_changed / count, 5),
     }

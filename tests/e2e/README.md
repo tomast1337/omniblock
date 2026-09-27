@@ -155,6 +155,22 @@ One fixed run compared 90 stable drawn layers: 12 changed level and selected ver
 from 225,352 at 0.75x to 279,556 at 1x. Streaming still changed other columns, so this is
 neither a whole-scene GPU-time measurement nor a residency budget.
 
+`terrain-lod-natural-cave-stable` is a separate opt-in, persisted-cave-source comparison. Run
+`xvfb-run -a tests/e2e/run-local.sh terrain-lod-natural-cave-stable` (480-second watchdog per
+process). Preparation creates the same seed-`246813579` world, loads the exact eight-chunk
+neighborhood around the cave and saves its source chunks. A fresh process holds a fixed camera,
+captures a complete central presentation at eight exact chunks,
+exact view, then waits for the current authoritative 1x1 spatial cave tile before capturing
+the four-chunk view. Both captures require zero central coverage holes and rendering errors.
+`check_natural_cave_stable.py` checks unchanged camera, resource generation and current spatial
+source hash, and writes `natural-cave-stable-metrics.json` with cave-centered and wider image
+differences. This prepares the cave's source chunks, **not** the whole camera footprint; the crop difference
+has loose gross-regression ceilings but is not a parity target. Two isolated runs reproduced
+17.345 mean RGB error and 19.36% dark-pixel disagreement in the cave crop. Their complete L2
+tile hashes differed, so the fixture does not assert bit-identical whole-tile generation across
+fresh worlds; it checks each drawn tile against its own current CPU source. An attempted radius-16 full-patch preparation timed out in its decoration dependency
+halo before writing a target chunk, so it is not used as a routine E2E gate.
+
 `terrain-lod-cave-mouth-remote` is an opt-in, two-process natural-source gate (480-second
 watchdog). Run `xvfb-run -a tests/e2e/run-local.sh terrain-lod-cave-mouth-remote`.
 The first process pregenerates a modest seed-`246813579` patch away from spawn and waits for

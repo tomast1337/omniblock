@@ -13,7 +13,7 @@ fi
 if [[ ( "$requested_scenario" == "terrain-lod-visual-baseline" || "$requested_scenario" == "terrain-lod-filtered-textures" || "$requested_scenario" == "terrain-lod-water-motion" ) && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
     timeout_seconds=360
 fi
-if [[ ( "$requested_scenario" == "terrain-lod-cave-mouth-remote" || "$requested_scenario" == "terrain-lod-rock-cave-remote" || "$requested_scenario" == "terrain-lod-saved-cold" ) && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
+if [[ ( "$requested_scenario" == "terrain-lod-cave-mouth-remote" || "$requested_scenario" == "terrain-lod-rock-cave-remote" || "$requested_scenario" == "terrain-lod-natural-cave-stable" || "$requested_scenario" == "terrain-lod-saved-cold" ) && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
     timeout_seconds=480
 fi
 prepared_fixture="${E2E_PREPARED_FIXTURE:-}"
@@ -254,6 +254,11 @@ for scenario in "${scenarios[@]}"; do
     fi
     if (( status == 0 )) && [[ "$scenario" == "terrain-lod-natural-cave" ]]; then
         if ! python3 "$script_dir/check_natural_cave.py" "$scenario_artifacts"; then
+            status=1
+        fi
+    fi
+    if (( status == 0 )) && [[ "$scenario" == "terrain-lod-natural-cave-stable" ]]; then
+        if ! python3 "$script_dir/check_natural_cave_stable.py" "$scenario_artifacts"; then
             status=1
         fi
     fi
