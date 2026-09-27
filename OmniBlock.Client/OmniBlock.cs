@@ -140,6 +140,7 @@ public partial class OmniBlock :
     private ClientPlayerEntity? _player;
     public ClientPlayerEntity Player =>
         _player ?? throw new InvalidOperationException("No active client player.");
+    internal ClientPlayerEntity? PlayerOrNull => _player;
     public EntityLiving Camera => Player;
     public EntityLiving? CameraOrNull => _player;
     ClientPlayerEntity? IClientPlayerHost.Player => _player;

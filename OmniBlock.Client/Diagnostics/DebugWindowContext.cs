@@ -46,7 +46,7 @@ namespace OmniBlock.Client.Diagnostics;
 internal sealed class DebugWindowContext(OmniBlock game)
 {
     public World? World => game.World;
-    public ClientPlayerEntity? Player => game.Player;
+    public ClientPlayerEntity? Player => game.PlayerOrNull;
     public HitResult ObjectMouseOver => game.ObjectMouseOver;
     public ChunkRenderer? ChunkRenderer => game.WorldRenderer?.ChunkRenderer;
     public ClientTerrainLodSnapshot? TerrainLod => game.WorldRenderer?.TerrainLod?.Snapshot;
