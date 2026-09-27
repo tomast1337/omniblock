@@ -43,6 +43,13 @@ public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidifie
 
     public void OnTick(Block block, OnTickEvent ctx)
     {
+        // A scheduled lava tick can be the first update after two fluids meet (for example
+        // across a chunk boundary). Resolve contact before flow replaces the water cell.
+        FluidMath.CheckBlockCollisions(block, ctx.World.Reader, ctx.World.Writer,
+            ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z, sourceSolidified,
+            flowSolidified);
+        if (ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z) != block.Id) return;
+
         var currentState = GetLiquidState(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z, block.Material);
         sbyte spreadRate = 1;
         if (block.Material == Material.Lava && !ctx.World.Dimension.EvaporatesWater) spreadRate = 2;
@@ -157,6 +164,16 @@ public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidifie
     private void SpreadTo(Block block, IWorldContext world, int x, int y, int z, int depth)
     {
         if (!CanSpreadTo(world, x, y, z, block.Material)) return;
+
+        // Falling lava can enter the water cell itself, where OnPlaced would see no water
+        // after replacement. Form the solid at that boundary instead of leaving a lava block.
+        if (block.Material == Material.Lava &&
+            world.Reader.GetMaterial(x, y, z) == Material.Water)
+        {
+            if (world.Writer.SetBlock(x, y, z, flowSolidified.Id))
+                FluidMath.Fizz(world.Broadcaster, x, y, z);
+            return;
+        }
 
         var currentId = world.Reader.GetBlockId(x, y, z);
         if (currentId > 0)

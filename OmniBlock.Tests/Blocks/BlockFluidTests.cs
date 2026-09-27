@@ -127,6 +127,42 @@ public sealed class BlockFluidTests
         Assert.Equal(8, listener.LargeSmokeParticles);
     }
 
+    [Fact]
+    public void FlowingLavaTickBesideWater_HardensLavaAndPreservesWater()
+    {
+        FakeWorldContext world = new();
+        var lava = TestBlocks.Get("flowing_lava");
+        var stone = TestBlocks.Get("stone").Id;
+        world.ReaderWriter.SetInitial(0, 64, 0, lava.Id, 3);
+        world.ReaderWriter.SetInitial(0, 63, 0, stone);
+        world.ReaderWriter.SetInitial(-1, 64, 0, stone);
+        world.ReaderWriter.SetInitial(0, 64, -1, stone);
+        world.ReaderWriter.SetInitial(0, 64, 1, stone);
+        world.ReaderWriter.SetInitial(1, 64, 0, TestBlocks.Get("water").Id);
+        world.ReaderWriter.SetInitial(1, 63, 0, stone);
+
+        lava.OnTick(new OnTickEvent(world, 0, 64, 0, 0, lava.Id));
+
+        Assert.Equal(TestBlocks.Get("cobblestone").Id,
+            world.Reader.GetBlockId(0, 64, 0));
+        Assert.Equal(TestBlocks.Get("water").Id,
+            world.Reader.GetBlockId(1, 64, 0));
+    }
+
+    [Fact]
+    public void FlowingLavaFallingIntoWater_HardensInsteadOfReplacingWater()
+    {
+        FakeWorldContext world = new();
+        var lava = TestBlocks.Get("flowing_lava");
+        world.ReaderWriter.SetInitial(0, 64, 0, lava.Id);
+        world.ReaderWriter.SetInitial(0, 63, 0, TestBlocks.Get("water").Id);
+
+        lava.OnTick(new OnTickEvent(world, 0, 64, 0, 0, lava.Id));
+
+        Assert.Equal(TestBlocks.Get("cobblestone").Id,
+            world.Reader.GetBlockId(0, 63, 0));
+    }
+
     private sealed class RecordingWorldEventListener : IWorldEventListener
     {
         public List<(int EventId, int X, int Y, int Z, int Data)> WorldEvents { get; } = [];
