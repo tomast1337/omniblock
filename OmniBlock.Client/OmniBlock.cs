@@ -2956,7 +2956,22 @@ public partial class OmniBlock :
                     integratedServer.GetPregenerationSnapshots,
                     integratedServer.GetAutomaticPregenerationSnapshots,
                     (action, id) => integratedServer.QueueCommands(
-                        $"worldgen {action} {id}", integratedServer))));
+                        $"worldgen {action} {id}", integratedServer),
+                    () => Options.TerrainHorizonDistance,
+                    radius =>
+                    {
+                        if (World is null || _player is null ||
+                            !ReferenceEquals(InternalServer, integratedServer))
+                            return "the current world is no longer available";
+                        var id = $"horizon-{Guid.NewGuid():N}";
+                        var result = QueueLuauWorldGenerationStart(
+                            id,
+                            World.Dimension.Id,
+                            (int)Math.Floor(_player.X / 16.0),
+                            (int)Math.Floor(_player.Z / 16.0),
+                            radius);
+                        return result.Accepted ? null : result.Error;
+                    })));
     }
 
     private IReadOnlyList<LuauWorldGenerationInfo> GetLuauWorldGenerationSnapshots() =>

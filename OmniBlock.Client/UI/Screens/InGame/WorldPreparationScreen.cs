@@ -3,6 +3,7 @@ using OmniBlock.Client.UI.Controls;
 using OmniBlock.Client.UI.Controls.Core;
 using OmniBlock.Client.UI.Layout.Flexbox;
 using OmniBlock.Server.Worlds;
+using OmniBlock.Worlds.Lod;
 using Color = OmniBlock.Client.UI.Colors.Color;
 
 namespace OmniBlock.Client.UI.Screens.InGame;
@@ -16,12 +17,19 @@ public sealed class WorldPreparationScreen(
     UIScreen? parent,
     Func<IReadOnlyList<FixedAreaPregenerationSnapshot>> getSnapshots,
     Func<IReadOnlyList<AutomaticPregenerationSnapshot>> getAutomaticSnapshots,
-    Action<string, string> queueAction) : UIScreen(context)
+    Action<string, string> queueAction,
+    Func<int> getHorizonDistance,
+    Func<int, string?> startHorizonPreparation) : UIScreen(context)
 {
     private Panel _jobList = null!;
     private Label _automaticSummary = null!;
+    private Label _horizonSummary = null!;
+    private Label _horizonDetail = null!;
+    private Button _prepareHorizonButton = null!;
     private Label _summary = null!;
     private int _refreshTicks;
+    private int? _confirmPreparationRadius;
+    private string? _horizonFeedback;
 
     // Pregeneration orchestration advances from the server tick. Keeping this screen non-pausing
     // also makes its throughput and throttling display truthful while the operator watches it.
@@ -59,6 +67,29 @@ public sealed class WorldPreparationScreen(
         };
         _automaticSummary.Style.MarginBottom = 6;
         Root.AddChild(_automaticSummary);
+
+        _horizonSummary = new Label
+        {
+            TextColor = Color.GrayA0,
+            AutomationId = "worldPreparation.horizonSummary"
+        };
+        _horizonSummary.Style.MarginBottom = 4;
+        Root.AddChild(_horizonSummary);
+
+        _horizonDetail = new Label
+        {
+            TextColor = Color.GrayA0,
+            AutomationId = "worldPreparation.horizonDetail"
+        };
+        _horizonDetail.Style.MarginBottom = 4;
+        Root.AddChild(_horizonDetail);
+
+        _prepareHorizonButton = CreateButton();
+        _prepareHorizonButton.AutomationId = "worldPreparation.prepareHorizon";
+        _prepareHorizonButton.Style.Width = 220;
+        _prepareHorizonButton.Style.MarginBottom = 6;
+        _prepareHorizonButton.OnClick += _ => PrepareHorizon();
+        Root.AddChild(_prepareHorizonButton);
 
         var content = new Panel();
         content.Style.Width = 440;
@@ -110,8 +141,48 @@ public sealed class WorldPreparationScreen(
             : $"Automatic: {enabled.Options.Profile.ToString().ToLowerInvariant()} " +
               $"radius {enabled.Options.RadiusChunks}; {enabled.ThrottleReason}";
 
+        var horizon = getHorizonDistance();
+        var preparationRadius = PreparationRadius(horizon);
+        if (_confirmPreparationRadius != preparationRadius) _confirmPreparationRadius = null;
+        _horizonSummary.Text = _confirmPreparationRadius == preparationRadius
+            ? $"Generate radius {preparationRadius} (~{Math.PI * preparationRadius * preparationRadius:N0} chunks)?"
+            : $"Horizon {horizon} chunks: missing terrain must be generated.";
+        _horizonDetail.Text = _confirmPreparationRadius == preparationRadius
+            ? "May take hours and use significant disk. Click again to start."
+            : _horizonFeedback ?? $"Preparation includes a {preparationRadius - horizon}-chunk source halo.";
+        _prepareHorizonButton.Text = _confirmPreparationRadius == preparationRadius
+            ? "Confirm generation"
+            : "Prepare selected horizon...";
+
         foreach (var child in _jobList.Children.ToArray()) _jobList.RemoveChild(child);
         foreach (var snapshot in snapshots) _jobList.AddChild(CreateJobCard(snapshot));
+    }
+
+    private void PrepareHorizon()
+    {
+        var preparationRadius = PreparationRadius(getHorizonDistance());
+        if (_confirmPreparationRadius != preparationRadius)
+        {
+            _confirmPreparationRadius = preparationRadius;
+            _horizonFeedback = null;
+        }
+        else
+        {
+            _confirmPreparationRadius = null;
+            var error = startHorizonPreparation(preparationRadius);
+            _horizonFeedback = error is null
+                ? "Persistent generation queued. Distant terrain will appear as it completes."
+                : $"Could not start horizon preparation: {error}";
+        }
+        Refresh();
+    }
+
+    private static int PreparationRadius(int horizon)
+    {
+        // Spatial parents require every source chunk in their square footprint. A circular
+        // generation job ending exactly at the visible horizon leaves partial outer tiles.
+        var tileWidth = 1 << TerrainLodSpatialPolicy.RequiredMaximumSpatialLevel(horizon);
+        return checked(horizon + (int)Math.Ceiling(tileWidth * Math.Sqrt(2)));
     }
 
     private Panel CreateJobCard(FixedAreaPregenerationSnapshot snapshot)
