@@ -96,7 +96,7 @@ public sealed class TerrainLodColumnTileCacheStoreTests
         TerrainLodTileStatusMessage incoming = new();
         incoming.Read(stream);
 
-        Assert.Equal(4, incoming.SchemaVersion);
+        Assert.Equal(5, incoming.SchemaVersion);
         Assert.Equal(TerrainLodTileStatus.Invalidated, incoming.Status);
         Assert.Equal(outgoing.Tile, incoming.Tile);
         Assert.Equal(42, incoming.Generation);

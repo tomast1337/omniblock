@@ -17,7 +17,8 @@ internal readonly record struct QueuedTerrainLodRequest(
     int QualityPolicyVersion,
     TerrainLodTileKey Tile,
     TerrainLodTileStatus? ImmediateStatus = null,
-    string Diagnostic = "");
+    string Diagnostic = "",
+    string CachedHash = "");
 
 /// <summary>
 ///     Bounded per-client FIFO for remote LOD disclosure. Requests are deduplicated while queued,

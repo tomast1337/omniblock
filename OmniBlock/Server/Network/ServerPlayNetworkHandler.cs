@@ -216,8 +216,11 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         var playerChunkX = player.X / 16.0;
         var playerChunkZ = player.Z / 16.0;
         var accepted = 0;
-        foreach (var key in request.Keys.Distinct())
+        HashSet<TerrainLodTileKey> seen = [];
+        for (var index = 0; index < request.Keys.Length; index++)
         {
+            var key = request.Keys[index];
+            if (!seen.Add(key)) continue;
             // Level-zero/one records reveal almost full chunk detail and belong to ordinary chunk
             // streaming. The distant lane begins at a 4x4-chunk aggregate and never generates on
             // demand; it can only return an already-approved persistent server record.
@@ -231,7 +234,9 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 identityFingerprint,
                 request.MaximumSpatialLevel,
                 request.QualityPolicyVersion,
-                key);
+                key,
+                CachedHash: request.CachedHashes.Length == request.Keys.Length
+                    ? request.CachedHashes[index] : "");
             switch (_terrainLodRequests.Enqueue(queued))
             {
                 case TerrainLodRequestEnqueueResult.Added:
@@ -315,7 +320,22 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         {
             TerrainLodTileAvailability availability;
             Message response;
-            if (WantsCompactPayloads)
+            // A client cache offer is never authority to reveal a tile. Resolve the current
+            // server-owned record under the same disclosure check as a full reply, then compare
+            // hashes. This also catches stale cached terrain after a saved block edit.
+            if (request.CachedHash.Length != 0 &&
+                world.GetTerrainLodCoverage(request.Tile, out var currentTile) ==
+                    TerrainLodTileAvailability.Ready &&
+                currentTile is not null &&
+                string.Equals(currentTile.CanonicalHash, request.CachedHash,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                availability = TerrainLodTileAvailability.Ready;
+                response = CreateTerrainLodStatus(
+                    request.Tile, TerrainLodTileStatus.NotModified,
+                    request.CacheIdentity);
+            }
+            else if (WantsCompactPayloads)
             {
                 availability = world.GetTerrainLodPayload(request.Tile, out var payload);
                 response = availability == TerrainLodTileAvailability.Ready && payload is not null

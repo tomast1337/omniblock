@@ -208,6 +208,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         _spatialPresentations = new();
     private readonly Dictionary<TerrainLodTileKey, TerrainLodColumnTile> _spatialMeshPending = [];
     private readonly Dictionary<TerrainLodTileKey, RemoteTileRequestState> _remoteRequestStates = [];
+    private ClientTerrainLodSpatialCache? _remoteSpatialCache;
+    private string? _remoteSpatialCacheIdentity;
     private readonly Dictionary<TerrainLodTileKey, long> _remoteRefreshNeeded = [];
     private readonly Dictionary<TerrainLodTileKey, long> _remoteTileGenerations = [];
     private readonly HashSet<TerrainLodSpatialSeamSegment> _desiredSpatialSeams = [];
@@ -382,6 +384,19 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
     public ClientTerrainLodSnapshot Snapshot => _snapshot;
     public TerrainLodSpatialSnapshot SpatialSnapshot => _spatialSnapshot;
     public TerrainCoverageSnapshot CoverageSnapshot => _coverageSnapshot;
+    public void ConfigureRemoteSpatialCache(
+        TerrainLodCacheIdentity identity, DirectoryInfo root)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_remoteSpatialCacheIdentity == identity.CompatibilityFingerprint) return;
+        _remoteSpatialCache?.Dispose();
+        _remoteSpatialCache = new ClientTerrainLodSpatialCache(root, identity);
+        _remoteSpatialCacheIdentity = identity.CompatibilityFingerprint;
+        _remoteRequestStates.Clear();
+    }
+
+    public string CachedRemoteHash(TerrainLodTileKey key) =>
+        _remoteRequestStates.TryGetValue(key, out var request) ? request.OfferedHash : "";
     internal bool HasPendingRemoteRefresh(TerrainLodTileKey key) =>
         _remoteRefreshNeeded.ContainsKey(key);
     internal string? GetResidentSpatialSourceHash(TerrainLodTileKey key) =>
@@ -390,7 +405,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             : null;
 
     public void ObserveRemoteSpatialTile(TerrainLodColumnTile tile, int wireBytes = 0,
-        long generation = 0)
+        long generation = 0, bool persistToCache = true)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(tile);
@@ -405,6 +420,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         if (!unchanged && publication != TerrainLodTilePublicationResult.IgnoredCurrent)
             QueueSpatialMesh(tile);
         _remoteTileGenerations[tile.Key] = generation;
+        if (persistToCache) _remoteSpatialCache?.QueueWrite(tile);
         _remoteRequestStates.Remove(tile.Key);
         _remoteRefreshNeeded.Remove(tile.Key);
         if (_firstSourceTileMs < 0)
@@ -423,6 +439,22 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             generation < _remoteTileGenerations.GetValueOrDefault(key)) return;
         switch (status)
         {
+            case TerrainLodTileStatus.NotModified:
+                if (_remoteRequestStates.TryGetValue(key, out var offered) &&
+                    offered.OfferedHash.Length != 0 &&
+                    _remoteSpatialCache?.TryGetValidatedTile(key, out var cached) == true &&
+                    cached is not null &&
+                    string.Equals(cached.CanonicalHash, offered.OfferedHash,
+                        StringComparison.OrdinalIgnoreCase))
+                    ObserveRemoteSpatialTile(cached, generation: generation, persistToCache: false);
+                else
+                {
+                    // The local record was evicted or corrupted while the server validated it.
+                    // Do not claim coverage; retry without offering this cache key again.
+                    _remoteSpatialCache?.DisableOffer(key);
+                    _remoteRequestStates.Remove(key);
+                }
+                break;
             case TerrainLodTileStatus.Invalidated:
                 // Keep both the old source and GPU presentation until a replacement is fully
                 // built. Refresh requests bypass the ordinary "already covered" shortcut.
@@ -505,6 +537,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
 
         var requestCount = Math.Min(maximumRequests, availableCapacity);
         List<TerrainLodTileKey> selected = [];
+        var cacheLookupsPending = 0;
+        var cacheBlocked = false;
         // Reserve a tiny fair lane for previously presented tiles that the server invalidated.
         // Otherwise an endless newly discovered horizon can starve a visible replacement.
         foreach (var key in _remoteRefreshNeeded.Keys
@@ -514,9 +548,11 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                      .ThenBy(static key => key.X)
                      .ThenBy(static key => key.Z))
         {
-            if (selected.Count >= Math.Min(2, requestCount)) break;
+            if (selected.Count >= Math.Min(2, requestCount) ||
+                cacheLookupsPending >= requestCount) break;
             if (_remoteRequestStates.TryGetValue(key, out var state) &&
                 _tick < state.RetryAfterTick) continue;
+            if (!CacheProbeReady(key)) continue;
             selected.Add(key);
         }
         // The adaptive partition defines the no-hole contract and always consumes request capacity
@@ -524,13 +560,13 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         // deterministic and near-to-far.
         foreach (var key in requiredTiles)
         {
-            if (selected.Count >= requestCount) break;
+            if (selected.Count >= requestCount || cacheLookupsPending >= requestCount) break;
             CollectCoverageRequests(key, Math.Min(key.Level, outerBoundaryMinimumLevel));
         }
 
         // Refinement may use only capacity not needed by a due coverage tile. Cycling levels keeps
         // the request set bounded while the near-to-far order remains stable within each level.
-        if (selected.Count < requestCount && requiredTiles.All(key =>
+        if (!cacheBlocked && selected.Count < requestCount && requiredTiles.All(key =>
                 CoverageRequestResolved(
                     key, Math.Min(key.Level, outerBoundaryMinimumLevel))))
         {
@@ -554,6 +590,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                         if (_remoteRequestStates.TryGetValue(key, out var state) &&
                             _tick < state.RetryAfterTick)
                             continue;
+                        if (!CacheProbeReady(key)) break;
                         refinements.Add(key);
                     }
                 }
@@ -567,7 +604,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
 
         foreach (var key in selected)
             _remoteRequestStates[key] = new RemoteTileRequestState(
-                _tick + 20, RemoteTileRequestDisposition.InFlight);
+                _tick + 20, RemoteTileRequestDisposition.InFlight,
+                _remoteSpatialCache?.OfferedHash(key) ?? "");
         if (selected.Count > 0 && _firstRequestMs < 0)
             _firstRequestMs = CoarseCoverElapsedMs();
         _remoteRequests += selected.Count;
@@ -575,13 +613,14 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
 
         void CollectCoverageRequests(TerrainLodTileKey key, int fallbackMinimumLevel)
         {
-            if (selected.Count >= requestCount ||
+            if (selected.Count >= requestCount || cacheLookupsPending >= requestCount ||
                 _spatialHierarchy.HasCompleteCoverage(key, fallbackMinimumLevel))
                 return;
             if (_remoteRequestStates.TryGetValue(key, out var state))
             {
                 if (_tick >= state.RetryAfterTick)
                 {
+                    if (!CacheProbeReady(key)) return;
                     selected.Add(key);
                     return;
                 }
@@ -595,7 +634,21 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                     CollectCoverageRequests(key.Child(index), fallbackMinimumLevel);
                 return;
             }
+            if (!CacheProbeReady(key)) return;
             selected.Add(key);
+        }
+
+        bool CacheProbeReady(TerrainLodTileKey key)
+        {
+            if (_remoteSpatialCache?.Probe(key, out _) == ClientTerrainLodCacheProbe.Pending)
+            {
+                cacheLookupsPending++;
+                cacheBlocked = true;
+            }
+            // Probe several nearby keys in parallel, but do not send a farther ready key ahead
+            // of one whose local cache read is still pending. Without this batch, a cold empty
+            // client cache would limit requests to one key per render frame.
+            return !cacheBlocked;
         }
     }
 
@@ -1302,6 +1355,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         _spatialPublication.Dispose();
         _spatialPresentations.Dispose();
         _spatialHierarchy.Dispose();
+        _remoteSpatialCache?.Dispose();
         _cacheWriter?.Dispose();
         foreach (var presentation in _resident.Values) presentation.Dispose();
         foreach (var seam in _solidSeams.Values) seam.Dispose();
@@ -3582,7 +3636,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
 
     private readonly record struct RemoteTileRequestState(
         long RetryAfterTick,
-        RemoteTileRequestDisposition Disposition);
+        RemoteTileRequestDisposition Disposition,
+        string OfferedHash = "");
 
     private readonly record struct PendingColumn(long DueTick);
     private readonly record struct VisibleColumn(

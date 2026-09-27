@@ -518,6 +518,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                 if (remoteWorld.NetworkHandler.TryGetTerrainLodIdentity(
                         _world.Dimension.Id, out var identity))
                 {
+                    terrainLod.ConfigureRemoteSpatialCache(
+                        identity, remoteWorld.NetworkHandler.TerrainLodSpatialCacheRoot);
                     var negotiatedMaximum = identity.NegotiateMaximumSpatialLevel(
                         _game.MaximumTerrainLodSpatialLevel);
                     var requests = terrainLod.TakeRemoteSpatialRequests(
@@ -533,7 +535,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                             CacheIdentity = identity.CompatibilityFingerprint,
                             MaximumSpatialLevel = negotiatedMaximum,
                             QualityPolicyVersion = identity.QualityPolicyVersion,
-                            Keys = requests
+                            Keys = requests,
+                            CachedHashes = requests.Select(terrainLod.CachedRemoteHash).ToArray()
                         });
                 }
             }

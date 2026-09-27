@@ -156,7 +156,7 @@ internal class ChunkMap
                 player.VelocityZ)).ToArray());
     }
 
-    private AutomaticPregenerationPressure CaptureAutomaticGenerationPressure()
+    internal AutomaticPregenerationPressure CaptureAutomaticGenerationPressure()
     {
         var queue = loadQueue.SnapshotPressure();
         var memory = GC.GetGCMemoryInfo();

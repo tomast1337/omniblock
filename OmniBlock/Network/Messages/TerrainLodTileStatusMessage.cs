@@ -9,7 +9,8 @@ public enum TerrainLodTileStatus : byte
     Missing = 1,
     Deferred = 2,
     Incompatible = 3,
-    Invalidated = 4
+    Invalidated = 4,
+    NotModified = 5
 }
 
 /// <summary>
@@ -22,7 +23,7 @@ public sealed class TerrainLodTileStatusMessage : Message
     private const int MaximumIdentityLength = 128;
     private const int MaximumDiagnosticLength = 512;
     public static readonly ResourceLocation Id = new(
-        Namespace.Get("omniblock"), "terrain_lod_tile_status_v4");
+        Namespace.Get("omniblock"), "terrain_lod_tile_status_v5");
 
     public int Dimension { get; set; }
     public string CacheIdentity { get; set; } = "";
@@ -31,7 +32,7 @@ public sealed class TerrainLodTileStatusMessage : Message
     public TerrainLodTileStatus Status { get; set; }
     public string Diagnostic { get; set; } = "";
     public override ResourceLocation Key => Id;
-    public override int SchemaVersion => 4;
+    public override int SchemaVersion => 5;
     public override SendPriority Priority => Status == TerrainLodTileStatus.Invalidated
         ? SendPriority.Normal : SendPriority.Bulk;
 

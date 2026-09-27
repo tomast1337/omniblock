@@ -856,6 +856,18 @@ public class ClientNetworkHandler : NetHandler
         }
     }
 
+    internal DirectoryInfo TerrainLodSpatialCacheRoot
+    {
+        get
+        {
+            var serverIdentity = _cacheKey ?? "integrated";
+            var safeKey = string.Concat(serverIdentity.Select(c =>
+                Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));
+            return new DirectoryInfo(Path.Combine(
+                _context.ChunkCacheDirectory, safeKey, "terrain-lod-authoritative"));
+        }
+    }
+
     /// <summary>
     ///     Advertises the cached chunks near where the player was last in this world.
     ///     <para>

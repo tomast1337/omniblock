@@ -72,9 +72,9 @@ internal static class MessageRegistrations
         registry.Register(TerrainLodIdentityMessage.Id, 2,
             static () => new TerrainLodIdentityMessage());
         registry.Register(TerrainLodTileMessage.Id, 3, static () => new TerrainLodTileMessage());
-        registry.Register(TerrainLodTileRequestMessage.Id, 3,
+        registry.Register(TerrainLodTileRequestMessage.Id, 5,
             static () => new TerrainLodTileRequestMessage());
-        registry.Register(TerrainLodTileStatusMessage.Id, 4,
+        registry.Register(TerrainLodTileStatusMessage.Id, 5,
             static () => new TerrainLodTileStatusMessage());
         registry.Register(TimeSyncRequestMessage.Id, 1, static () => new TimeSyncRequestMessage());
         registry.Register(TimeSyncResponseMessage.Id, 1, static () => new TimeSyncResponseMessage());

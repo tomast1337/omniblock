@@ -99,7 +99,8 @@ public sealed class GeneratedMessageTests
             CacheIdentity = new string('b', 64),
             MaximumSpatialLevel = 5,
             QualityPolicyVersion = TerrainLodSpatialPolicy.CurrentQualityPolicyVersion,
-            Keys = [new TerrainLodTileKey(5, -3, 9)]
+            Keys = [new TerrainLodTileKey(5, -3, 9)],
+            CachedHashes = [new string('a', 64)]
         };
 
         TerrainLodTileRequestMessage read = new();
@@ -110,6 +111,27 @@ public sealed class GeneratedMessageTests
         Assert.Equal(written.MaximumSpatialLevel, read.MaximumSpatialLevel);
         Assert.Equal(written.QualityPolicyVersion, read.QualityPolicyVersion);
         Assert.Equal(written.Keys, read.Keys);
+        Assert.Equal(written.CachedHashes, read.CachedHashes);
+        Assert.Equal(written.Size(), Serialise(written).Length);
+    }
+
+    [Fact]
+    public void A_validated_cached_terrain_status_round_trips()
+    {
+        TerrainLodTileStatusMessage written = new()
+        {
+            Dimension = 0,
+            CacheIdentity = new string('c', 64),
+            Tile = new TerrainLodTileKey(2, 1, -1),
+            Generation = 17,
+            Status = TerrainLodTileStatus.NotModified
+        };
+        TerrainLodTileStatusMessage read = new();
+        read.Read(new MemoryStream(Serialise(written), false));
+
+        Assert.Equal(TerrainLodTileStatus.NotModified, read.Status);
+        Assert.Equal(written.Tile, read.Tile);
+        Assert.Equal(17, read.Generation);
         Assert.Equal(written.Size(), Serialise(written).Length);
     }
 

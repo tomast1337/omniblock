@@ -75,12 +75,15 @@ internal sealed class FixedAreaPregenerationService : IDisposable
     private readonly Dictionary<string, Job> _jobs = new(StringComparer.Ordinal);
     private readonly DirectoryInfo _directory;
     private readonly Func<Job, ChunkPos, CancellationToken, Task<FixedAreaPregenerationWorkResult>> _execute;
+    private readonly Func<AutomaticPregenerationPressure>? _getPressure;
     private Job? _activeJob;
     private Task<FixedAreaPregenerationWorkResult>? _activeWork;
     private CancellationTokenSource? _activeCancellation;
     private IReadOnlyList<FixedAreaPregenerationSnapshot> _publishedSnapshots =
         Array.Empty<FixedAreaPregenerationSnapshot>();
     private bool _disposed;
+    private bool _pressureThrottled;
+    private int _ticksUntilAdmission;
 
     public FixedAreaPregenerationService(ServerWorld world, ChunkMap chunkMap)
     {
@@ -95,16 +98,19 @@ internal sealed class FixedAreaPregenerationService : IDisposable
             ?? throw new NotSupportedException($"Dimension {world.Dimension.Id} has no chunk storage.");
         _execute = (job, position, token) =>
             Execute(world, chunkMap, storage, job, position, token);
+        _getPressure = chunkMap.CaptureAutomaticGenerationPressure;
         Load(world);
     }
 
     internal FixedAreaPregenerationService(
         DirectoryInfo directory,
         Func<FixedAreaPregenerationDefinition, ChunkPos, CancellationToken,
-            Task<FixedAreaPregenerationWorkResult>> execute)
+            Task<FixedAreaPregenerationWorkResult>> execute,
+        Func<AutomaticPregenerationPressure>? getPressure = null)
     {
         _directory = directory;
         _execute = (job, position, token) => execute(job.Record.Definition, position, token);
+        _getPressure = getPressure;
         Load(null);
     }
 
@@ -281,6 +287,29 @@ internal sealed class FixedAreaPregenerationService : IDisposable
             return;
         }
 
+        if (_getPressure is not null)
+        {
+            var pressure = _getPressure();
+            var reason = AutomaticPregenerationService.EvaluatePressure(
+                AutomaticPregenerationProfile.Play, pressure, _pressureThrottled);
+            if (reason is not null)
+            {
+                _pressureThrottled = true;
+                PublishThrottleReason(job, reason);
+                return;
+            }
+            _pressureThrottled = false;
+            // Fixed-area jobs used to admit a new durable transaction immediately after the
+            // previous one finished. Give gameplay a few ticks of breathing room, as the
+            // automatic play profile does, without slowing a server that has no client load.
+            if (pressure.IntegratedClientFrameMs is not null && _ticksUntilAdmission-- > 0)
+            {
+                PublishThrottleReason(job, "paced for integrated-client rendering");
+                return;
+            }
+            _ticksUntilAdmission = pressure.IntegratedClientFrameMs is null ? 0 : 3;
+        }
+
         var position = job.GetTarget();
         var recovery = new InactiveGenerationCheckpointStore(_directory, job.Record.Definition.Id).Recover();
         var retryInterrupted = recovery.Status == InactiveGenerationRecoveryStatus.InterruptedBatch;
@@ -305,6 +334,15 @@ internal sealed class FixedAreaPregenerationService : IDisposable
             Fail(job, error);
             ClearActive();
         }
+    }
+
+    private void PublishThrottleReason(Job job, string reason)
+    {
+        if (job.Record.ThrottleReason == reason) return;
+        // Pressure is ephemeral. Do not rewrite a durable job record every server tick or
+        // change its ordering among other jobs merely because a frame was slow.
+        job.Record = job.Record with { ThrottleReason = reason };
+        PublishSnapshots();
     }
 
     private async Task<FixedAreaPregenerationWorkResult> Execute(

@@ -53,6 +53,39 @@ public sealed class FixedAreaPregenerationServiceTests
     }
 
     [Fact]
+    public void Fixed_job_yields_to_integrated_client_frame_pressure()
+    {
+        using var fixture = new TempDirectory();
+        var frameMs = 35.0;
+        var started = 0;
+        using var service = new FixedAreaPregenerationService(
+            fixture.Directory,
+            (_, _, _) =>
+            {
+                started++;
+                return Task.FromResult(new FixedAreaPregenerationWorkResult(
+                    false, false, 1, 1, 1));
+            },
+            () => new AutomaticPregenerationPressure(
+                0, 0, 0, 10, frameMs, 0.25, long.MaxValue));
+        service.Start(Definition("frame-pressure", 1));
+
+        service.Tick();
+        Assert.Equal(0, started);
+        Assert.Contains("integrated client frame pressure",
+            service.Inspect("frame-pressure").ThrottleReason);
+
+        frameMs = 16;
+        service.Tick();
+        Assert.Equal(1, started);
+        service.Tick(); // Complete the first transaction.
+        service.Tick(); // The next transaction must not start immediately.
+        Assert.Equal(1, started);
+        Assert.Equal("paced for integrated-client rendering",
+            service.Inspect("frame-pressure").ThrottleReason);
+    }
+
+    [Fact]
     public async Task Job_is_bounded_and_persists_completed_progress()
     {
         using var fixture = new TempDirectory();
