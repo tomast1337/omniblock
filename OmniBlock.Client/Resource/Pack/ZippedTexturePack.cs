@@ -11,6 +11,7 @@ public class ZippedTexturePack : TexturePack
     private readonly ILogger _logger = Log.Instance.For<ZippedTexturePack>();
 
     private readonly FileInfo _texturePackFile;
+    internal FileInfo SourceFile => _texturePackFile;
     private TextureHandle? _texturePackName;
     private Image<Rgba32>? _texturePackThumbnail;
     private ZipArchive? _texturePackZipFile;

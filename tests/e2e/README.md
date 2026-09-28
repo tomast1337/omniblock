@@ -671,6 +671,13 @@ desktop use `tests/e2e/run-local.sh block-render-gallery` directly on the availa
 An opaque studio backdrop hides terrain streaming underneath. Cosmetic animation textures use
 a fixed seeded frame, and particles are excluded; gameplay animation is not altered outside this fixture.
 
+The first gallery request also runs the model-resource upload smoke check. It prepares the shipped
+`omniblock:block/model_probe` and all legacy terrain layers from the actual selected/built-in pack,
+uploads and installs a matched model/texture pair in a shadow resource slot, rejects a deliberately
+malformed reload, and replaces it with a second valid pair. `block-model-resources.json` records
+the upload, generation and previous-wrapper disposal assertions. This does not switch gameplay
+geometry to compiled models or make the ordinary texture-pack menu transaction atomic yet.
+
 Review a first run before treating it as a reference. Subsequent comparisons are explicit:
 
 ```sh

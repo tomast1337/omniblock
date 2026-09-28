@@ -17,6 +17,7 @@ namespace OmniBlock.Client.Rendering.Core.Textures;
 
 public class TextureManager : IDisposable
 {
+    internal global::OmniBlock.Client.Rendering.Blocks.Models.BlockModelResourceSlot BlockModels { get; } = new();
     private readonly Dictionary<string, int> _atlasTileSizes = [];
     private readonly Dictionary<string, int[]> _colors = [];
     private readonly List<DynamicTexture> _dynamicTextures = [];
@@ -84,6 +85,7 @@ public class TextureManager : IDisposable
 
         _terrainArray?.Dispose();
         _itemsArray?.Dispose();
+        BlockModels.Dispose();
 
         _missingTextureImage.Dispose();
         _colors.Clear();

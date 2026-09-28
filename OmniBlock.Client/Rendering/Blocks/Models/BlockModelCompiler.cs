@@ -5,7 +5,7 @@ using OmniBlock.Blocks;
 namespace OmniBlock.Client.Rendering.Blocks.Models;
 
 /// <summary>
-/// Strict first subset of Java-style block model JSON: explicit elements, textures and face UVs.
+/// Strict first subset of Java-style block model JSON: explicit elements and textures.
 /// No mutable JSON, world, GPU object or registry is retained by the compiled result.
 /// </summary>
 internal static class BlockModelCompiler
@@ -14,7 +14,7 @@ internal static class BlockModelCompiler
     public const int MaximumElements = 64;
     public const int MaximumTextureVariables = 128;
 
-    public static CompiledBlockModel Compile(ResourceLocation id, string json, Func<ResourceLocation, int> resolveTextureLayer)
+    public static CompiledBlockModel Compile(RenderResourceId id, string json, Func<RenderResourceId, int> resolveTextureLayer)
     {
         ArgumentNullException.ThrowIfNull(id);
         ArgumentNullException.ThrowIfNull(json);
@@ -24,7 +24,8 @@ internal static class BlockModelCompiler
             if (json.Length > MaximumJsonCharacters) throw Error("definition exceeds JSON size limit");
             using var document = JsonDocument.Parse(json, new JsonDocumentOptions { MaxDepth = 16 });
             var root = document.RootElement;
-            CheckProperties(root, "model", "textures", "elements", "ambientocclusion", "credit");
+            ValidateDefinition(root);
+            if (root.TryGetProperty("parent", out _)) throw Error("parent requires catalog resolution before compilation");
             var textures = new Dictionary<string, string>(StringComparer.Ordinal);
             if (root.TryGetProperty("textures", out var textureObject))
             {
@@ -38,7 +39,7 @@ internal static class BlockModelCompiler
 
             // Resolve even unused declarations: misspelled dependencies must not hide until a
             // different state happens to draw. Cache only within this candidate build.
-            var materials = new Dictionary<string, (ResourceLocation Id, int Layer)>(StringComparer.Ordinal);
+            var materials = new Dictionary<string, (RenderResourceId Id, int Layer)>(StringComparer.Ordinal);
             foreach (var name in textures.Keys) Resolve("#" + name);
 
             var elements = Required(root, "elements");
@@ -66,7 +67,9 @@ internal static class BlockModelCompiler
                     var faceOwner = owner + " face " + side;
                     CheckProperties(face, faceOwner, "uv", "texture", "rotation", "cullface", "tintindex");
                     var material = Resolve(ReadString(Required(face, "texture"), faceOwner + " texture"));
-                    var uv = ReadNumbers(Required(face, "uv"), 4, faceOwner + " uv", 0, 16);
+                    var uv = face.TryGetProperty("uv", out var explicitUv)
+                        ? ReadNumbers(explicitUv, 4, faceOwner + " uv", 0, 16)
+                        : DefaultUv(side, from, to);
                     var rotation = face.TryGetProperty("rotation", out var rot) ? ReadInt(rot, faceOwner + " rotation") : 0;
                     if (rotation is not (0 or 90 or 180 or 270)) throw Error(faceOwner + ": rotation must be 0, 90, 180 or 270");
                     var tint = face.TryGetProperty("tintindex", out var tintValue) ? ReadInt(tintValue, faceOwner + " tintindex") : -1;
@@ -90,7 +93,7 @@ internal static class BlockModelCompiler
             }
             return new CompiledBlockModel(id, ReadBool(root, "ambientocclusion", true), quads);
 
-            (ResourceLocation Id, int Layer) Resolve(string reference)
+            (RenderResourceId Id, int Layer) Resolve(string reference)
             {
                 if (materials.TryGetValue(reference, out var cached)) return cached;
                 var path = reference;
@@ -102,7 +105,7 @@ internal static class BlockModelCompiler
                     path = target;
                 }
                 if (!path.Contains(':', StringComparison.Ordinal)) throw Error($"texture '{reference}': expected a namespaced texture, got '{path}'");
-                var textureId = ResourceLocation.Parse(path);
+                var textureId = RenderResourceId.Parse(path);
                 int layer;
                 try { layer = resolveTextureLayer(textureId); }
                 catch (Exception ex) when (ex is KeyNotFoundException or ArgumentException or InvalidOperationException)
@@ -120,6 +123,41 @@ internal static class BlockModelCompiler
             throw new InvalidDataException($"Block model '{id}': {ex.Message}", ex);
         }
     }
+
+    // Validate each source before inheritance, so overrides cannot conceal invalid root fields.
+    internal static void ValidateDefinition(JsonElement root)
+    {
+        CheckProperties(root, "model", "textures", "elements", "ambientocclusion", "credit", "parent");
+        if (root.TryGetProperty("parent", out var parent))
+        {
+            var name = ReadString(parent, "parent");
+            if (!name.Contains(':', StringComparison.Ordinal)) throw Error("parent must be namespaced: '" + name + "'");
+            _ = RenderResourceId.Parse(name);
+        }
+        _ = ReadBool(root, "ambientocclusion", true);
+        if (root.TryGetProperty("elements", out var elements) &&
+            (elements.ValueKind != JsonValueKind.Array || elements.GetArrayLength() > MaximumElements))
+            throw Error($"elements must be an array of at most {MaximumElements} elements");
+        if (!root.TryGetProperty("textures", out var textures)) return;
+        CheckObject(textures, "textures");
+        var count = 0;
+        foreach (var texture in textures.EnumerateObject())
+        {
+            if (++count > MaximumTextureVariables) throw Error("too many texture variables");
+            _ = ReadString(texture.Value, "texture '" + texture.Name + "'");
+        }
+    }
+
+    // Normalized face projection, matching the existing cuboid renderer's orientation. In
+    // particular slab sides retain their cropped texture region instead of stretching a full tile.
+    private static float[] DefaultUv(Side side, Vector3 a, Vector3 b) => side switch
+    {
+        Side.Down or Side.Up => [a.X, a.Z, b.X, b.Z],
+        Side.North => [1 - b.X, 1 - b.Y, 1 - a.X, 1 - a.Y],
+        Side.South => [a.X, 1 - b.Y, b.X, 1 - a.Y],
+        Side.West => [a.Z, 1 - b.Y, b.Z, 1 - a.Y],
+        _ => [1 - b.Z, 1 - b.Y, 1 - a.Z, 1 - a.Y]
+    };
 
     private static InvalidDataException Error(string message) => new(message);
     private static JsonElement Required(JsonElement obj, string key) => obj.TryGetProperty(key, out var value)

@@ -12,7 +12,7 @@ namespace OmniBlock.Tests.Rendering;
 
 public sealed class BlockModelCompilerTests
 {
-    private static readonly ResourceLocation ModelId = ResourceLocation.Parse("example:test_cube");
+    private static readonly RenderResourceId ModelId = RenderResourceId.Parse("example:test_cube");
     private const string Plane = """
         {"textures":{"all":"omniblock:stone"},"elements":[
           {"from":[0,8,0],"to":[16,8,16],"faces":{
@@ -42,7 +42,12 @@ public sealed class BlockModelCompilerTests
                 3 => ["cobblestone", "cobblestone", "cobblestone"],
                 _ => ["stone_slab_top", "stone_slab_top", "stone_slab_side"]
             };
-        var model = Compile(Cuboid(minY, maxY, textures));
+        var json = Cuboid(minY, maxY, textures);
+        var model = Compile(json);
+        var defaultUvs = System.Text.Json.Nodes.JsonNode.Parse(json)!;
+        foreach (var face in defaultUvs["elements"]![0]!["faces"]!.AsObject())
+            face.Value!.AsObject().Remove("uv");
+        Assert.Equal(model.Quads.ToArray(), Compile(defaultUvs.ToJsonString()).Quads.ToArray());
         var sink = new GeometrySink();
         Assert.True(BlockRenderer.RenderBlockByRenderType(world.Reader, world.Content.Blocks, new FullLight(),
             block, new BlockPos(0, 64, 0), sink));
@@ -116,7 +121,6 @@ public sealed class BlockModelCompilerTests
     [InlineData("\"all\":\"omniblock:stone\"", "\"all\":\"#all\"", "cyclic")]
     [InlineData("omniblock:stone", "example:missing", "example:missing")]
     [InlineData("omniblock:stone", "stone", "namespaced")]
-    [InlineData("\"uv\":[0,0,16,16],", "", "uv")]
     [InlineData("\"uv\":[0,0,16,16]", "\"uv\":[0,0,17,16]", "coordinates")]
     [InlineData("\"tintindex\":2", "\"tintindex\":2,\"tintindex\":3", "duplicate")]
     [InlineData("\"tintindex\":2", "\"glow\":true", "unsupported")]
@@ -126,7 +130,6 @@ public sealed class BlockModelCompilerTests
     }
 
     [Theory]
-    [InlineData("parent", "\"example:base\"")]
     [InlineData("display", "{}")]
     [InlineData("loader", "\"example:custom\"")]
     public void Unsupported_features_fail_instead_of_silently_changing_the_model(string key, string value) =>
@@ -140,7 +143,7 @@ public sealed class BlockModelCompilerTests
     public void Alias_chains_resolve_and_unused_bad_dependencies_fail()
     {
         var chain = Plane.Replace("\"all\":\"omniblock:stone\"", "\"all\":\"#base\",\"base\":\"omniblock:stone\"");
-        Assert.Equal(ResourceLocation.Parse("omniblock:stone"), Compile(chain).Quads[0].Texture);
+        Assert.Equal(RenderResourceId.Parse("omniblock:stone"), Compile(chain).Quads[0].Texture);
         Fails(chain.Replace("\"base\":\"omniblock:stone\"", "\"base\":\"#all\""), "cyclic");
         Fails(Plane.Replace("\"all\":", "\"unused\":\"example:missing\",\"all\":"), "example:missing");
     }
@@ -163,7 +166,7 @@ public sealed class BlockModelCompilerTests
         var active = BlockModelCatalog.Build(definitions, Resolve);
         var previous = active;
         var original = active.Get(ModelId).Quads.ToArray();
-        var bad = KeyValuePair.Create(ResourceLocation.Parse("example:broken"), "{}");
+        var bad = KeyValuePair.Create(RenderResourceId.Parse("example:broken"), "{}");
         Assert.Throws<InvalidDataException>(() => active = BlockModelCatalog.Build([definitions[0], bad], Resolve));
         Assert.Same(previous, active);
         Assert.Equal(original, active.Get(ModelId).Quads.ToArray());
@@ -184,7 +187,7 @@ public sealed class BlockModelCompilerTests
             .ToDictionary(i => "t" + i, _ => "omniblock:stone");
         Fails(JsonSerializer.Serialize(new { textures, elements = Array.Empty<object>() }), "texture variables");
         var definitions = Enumerable.Range(0, BlockModelCatalog.MaximumModels + 1)
-            .Select(i => KeyValuePair.Create(ResourceLocation.Parse("example:m" + i), Plane));
+            .Select(i => KeyValuePair.Create(RenderResourceId.Parse("example:m" + i), Plane));
         Assert.Contains("exceeds", Assert.Throws<InvalidDataException>(() => BlockModelCatalog.Build(definitions, Resolve)).Message);
     }
 
@@ -223,7 +226,7 @@ public sealed class BlockModelCompilerTests
     }
 
     private static CompiledBlockModel Compile(string json) => BlockModelCompiler.Compile(ModelId, json, Resolve);
-    private static int Resolve(ResourceLocation id) => id.IsVanilla ? Atlases.Terrain.LayerOf(id.ToString()) : throw new KeyNotFoundException($"Unknown texture '{id}'.");
+    private static int Resolve(RenderResourceId id) => id.Namespace == "omniblock" ? Atlases.Terrain.LayerOf(id.ToString()) : throw new KeyNotFoundException($"Unknown texture '{id}'.");
     private static void Fails(string json, string message)
     {
         var error = Assert.Throws<InvalidDataException>(() => Compile(json));

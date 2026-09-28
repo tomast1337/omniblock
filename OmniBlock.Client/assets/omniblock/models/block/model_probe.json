@@ -1,0 +1,16 @@
+{
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "up": { "texture": "omniblock:stone", "cullface": "up" },
+        "down": { "texture": "omniblock:stone", "cullface": "down" },
+        "north": { "texture": "omniblock:stone", "cullface": "north" },
+        "south": { "texture": "omniblock:stone", "cullface": "south" },
+        "west": { "texture": "omniblock:stone", "cullface": "west" },
+        "east": { "texture": "omniblock:stone", "cullface": "east" }
+      }
+    }
+  ]
+}

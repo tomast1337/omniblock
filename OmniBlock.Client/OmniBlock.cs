@@ -974,6 +974,12 @@ public partial class OmniBlock :
                 LuauTestHost.Screenshot = () => WebGpuRenderer.ScreenshotRequested = true;
                 LuauTestHost.BlockGallery = page =>
                 {
+                    if (_blockGallery == null)
+                    {
+                        var report = Rendering.Blocks.Models.BlockModelResourceSmoke.Run(TextureManager,
+                            TexturePackList.SelectedTexturePack, Options.UseMipmaps);
+                        _e2eTestController.WriteTextArtifact("block-model-resources.json", System.Text.Json.JsonSerializer.Serialize(report));
+                    }
                     _blockGallery ??= new BlockRenderGallery(this);
                     _blockGallery.ShowPage(page);
                     return _blockGallery.PageCount;
