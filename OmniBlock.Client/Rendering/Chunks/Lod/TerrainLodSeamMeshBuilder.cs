@@ -129,6 +129,12 @@ internal static class TerrainLodSeamMeshBuilder
                 ? TerrainLodMeshBuilder.IsTranslucent(neighborMaterial)
                 : TerrainLodMeshBuilder.IsDepthWriting(neighborMaterial) &&
                   (ownerMaterial.IsAir || !ownerMaterial.OccludesFaces);
+            // Fine stair bodies already own their complete shaped surface, including edges.
+            // A rectangular seam here would refill the missing half of the stair.
+            if (ownerLevel == 0 && ownerMaterial.Geometry == TerrainLodGeometryClass.Stairs)
+                ownerVisible = false;
+            if (neighborLevel == 0 && neighborMaterial.Geometry == TerrainLodGeometryClass.Stairs)
+                neighborVisible = false;
             if (!ownerVisible && !neighborVisible) continue;
 
             var minY = y - VerticalOrigin;

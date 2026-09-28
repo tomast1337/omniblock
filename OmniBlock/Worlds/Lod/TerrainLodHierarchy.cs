@@ -23,7 +23,8 @@ public enum TerrainLodGeometryClass : byte
     SurfaceLayer,
     BoundedCube,
     // Catalog-only policy; resolved to canonical air before reduction or serialization.
-    Omitted
+    Omitted,
+    Stairs
 }
 
 public enum TerrainLodReductionStrategy : byte
@@ -157,6 +158,8 @@ public sealed class TerrainLodMaterialCatalog
     {
         if (block.Material.IsFluid || block.RenderType == BlockRendererType.Fluids)
             return TerrainLodGeometryClass.Liquid;
+        if (block.RenderType == BlockRendererType.Stairs)
+            return TerrainLodGeometryClass.Stairs;
         if (block.RenderType == BlockRendererType.Entity)
             return TerrainLodGeometryClass.Omitted;
         // Plants and crops have no volume. Level zero can preserve their silhouette as crossed

@@ -159,6 +159,10 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                     int minimumY,
                     int sourceSampleSize)
                 {
+                    // Fine stair bodies own edge faces too. Never replace their silhouette with
+                    // a full-height rectangular seam/skirt (coarse structural cells still use it).
+                    if (sourceSampleSize == 1 && source.Material.Geometry == TerrainLodGeometryClass.Stairs)
+                        return;
                     if (!TerrainLodSpatialMeshBuilder.TryLayer(
                         source.Material, sourceSampleSize, out var translucent) ||
                         !TerrainLodSpatialMeshBuilder.IsFaceVisible(

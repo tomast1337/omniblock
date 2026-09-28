@@ -58,6 +58,10 @@ block("stone", 18, 95, 80)
 block("torch", 18, 96, 80)
 block("netherrack", 21, 95, 80)
 block("fire", 21, 96, 80)
+-- A structural handoff at the X=15/16 chunk boundary, plus a stacked source span.
+block("wooden_stairs", 7, 95, 84)
+block("wooden_stairs", 7, 96, 84)
+block("cobblestone_stairs", 8, 95, 84)
 for y = 90, 93 do block("log", -17, y, 80) end
 for dx = -18, -16 do block("leaves", dx, 94, 80) end
 for dx = 8, 12 do
@@ -116,6 +120,9 @@ local presented = {
     {"omniblock:netherrack", x + 21, 95, z + 80},
     {"omniblock:air", x + 18, 96, z + 80}, -- omitted torch, not missing publication
     {"omniblock:air", x + 21, 96, z + 80}, -- omitted fire
+    {"omniblock:wooden_stairs", x + 7, 95, z + 84},
+    {"omniblock:wooden_stairs", x + 7, 96, z + 84},
+    {"omniblock:cobblestone_stairs", x + 8, 95, z + 84},
 }
 waitFor(function()
     if not state.playerReady or state.terrainLodSpatialSubmissionReady ~= 1 then return false end

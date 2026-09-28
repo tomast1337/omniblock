@@ -331,6 +331,17 @@ internal static class TerrainLodMeshBuilder
             float maxX = Math.Min((x + 1) * level.Scale, 16);
             var maxY = Math.Min((y + 1) * level.Scale, ChuckFormat.WorldHeight) - VerticalOrigin;
             float maxZ = Math.Min((z + 1) * level.Scale, 16);
+            if (levelIndex == 0 && material.Geometry == TerrainLodGeometryClass.Stairs)
+            {
+                foreach (var face in TerrainLodStairGeometry.Get(material.Metadata))
+                    AddFace(face.Side, face.Shade, .5f, .5f,
+                        Offset(face.A), Offset(face.B), Offset(face.C), Offset(face.D),
+                        blockAlignedUv: true);
+                continue;
+
+                (float X, float Y, float Z) Offset((float X, float Y, float Z) p) =>
+                    (minX + p.X, minY + p.Y, minZ + p.Z);
+            }
             if (levelIndex == 0 && material.Geometry is
                     TerrainLodGeometryClass.SurfaceLayer or TerrainLodGeometryClass.BoundedCube)
             {
@@ -428,7 +439,8 @@ internal static class TerrainLodMeshBuilder
                 (float X, float Y, float Z) a,
                 (float X, float Y, float Z) b,
                 (float X, float Y, float Z) c,
-                (float X, float Y, float Z) d)
+                (float X, float Y, float Z) d,
+                bool blockAlignedUv = false)
             {
                 var light = SampleFaceLight(side, block.LightEmission);
                 var sampleX = (int)MathF.Floor(
@@ -475,6 +487,9 @@ internal static class TerrainLodMeshBuilder
 
                     ChunkVertex Vertex((float X, float Y, float Z) point, float u, float v)
                     {
+                        if (blockAlignedUv)
+                            (u, v) = TerrainLodStairGeometry.Uv(side,
+                                (point.X - minX, point.Y - minY, point.Z - minZ));
                         var vertex = ChunkVertexHelper.Create(
                             color, point.X, point.Y, point.Z, u, v, layer);
                         vertex.TextureMipLevel = mip;
@@ -615,6 +630,7 @@ internal static class TerrainLodMeshBuilder
 
     internal static bool IsDepthWriting(TerrainLodMaterial material) =>
         material.Geometry is TerrainLodGeometryClass.Opaque or
+            TerrainLodGeometryClass.Stairs or
             TerrainLodGeometryClass.Cutout or
             TerrainLodGeometryClass.ConservativeCube or
             TerrainLodGeometryClass.BoundedCube or
@@ -623,6 +639,7 @@ internal static class TerrainLodMeshBuilder
 
     internal static bool IsVolumetricDepthWriting(TerrainLodMaterial material) =>
         material.Geometry is TerrainLodGeometryClass.Opaque or
+            TerrainLodGeometryClass.Stairs or
             TerrainLodGeometryClass.Cutout or
             TerrainLodGeometryClass.ConservativeCube or
             TerrainLodGeometryClass.BoundedCube;

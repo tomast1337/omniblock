@@ -36,47 +36,11 @@ internal sealed class StairsBehavior(Func<Block> baseBlock) : IBlockPhysics, IBl
 
     public void AddCollisionBoxes(Block block, IBlockReader reader, int x, int y, int z, Box queryBox, List<Box> results)
     {
-        var meta = reader.GetBlockMeta(x, y, z);
-        var facing = meta & 3;
-        var upsideDown = (meta & 4) != 0;
-
-        var lower = facing switch
-        {
-            0 => upsideDown
-                ? new Box(0.0F, 0.5F, 0.0F, 0.5F, 1.0F, 1.0F)
-                : new Box(0.0F, 0.0F, 0.0F, 0.5F, 0.5F, 1.0F),
-            1 => upsideDown
-                ? new Box(0.5F, 0.5F, 0.0F, 1.0F, 1.0F, 1.0F)
-                : new Box(0.5F, 0.0F, 0.0F, 1.0F, 0.5F, 1.0F),
-            2 => upsideDown
-                ? new Box(0.0F, 0.5F, 0.0F, 1.0F, 1.0F, 0.5F)
-                : new Box(0.0F, 0.0F, 0.0F, 1.0F, 0.5F, 0.5F),
-            _ => upsideDown
-                ? new Box(0.0F, 0.5F, 0.5F, 1.0F, 1.0F, 1.0F)
-                : new Box(0.0F, 0.0F, 0.5F, 1.0F, 0.5F, 1.0F)
-        };
-
-        var upper = facing switch
-        {
-            0 => upsideDown
-                ? new Box(0.5F, 0.0F, 0.0F, 1.0F, 0.5F, 1.0F)
-                : new Box(0.5F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F),
-            1 => upsideDown
-                ? new Box(0.0F, 0.0F, 0.0F, 0.5F, 0.5F, 1.0F)
-                : new Box(0.0F, 0.0F, 0.0F, 0.5F, 1.0F, 1.0F),
-            2 => upsideDown
-                ? new Box(0.0F, 0.0F, 0.5F, 1.0F, 0.5F, 1.0F)
-                : new Box(0.0F, 0.0F, 0.5F, 1.0F, 1.0F, 1.0F),
-            _ => upsideDown
-                ? new Box(0.0F, 0.0F, 0.0F, 1.0F, 0.5F, 0.5F)
-                : new Box(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.5F)
-        };
-
-        var lowerOffset = lower.Offset(x, y, z);
-        if (queryBox.Intersects(lowerOffset)) results.Add(lowerOffset);
-
-        var upperOffset = upper.Offset(x, y, z);
-        if (queryBox.Intersects(upperOffset)) results.Add(upperOffset);
+        var shape = StairShape.GetBounds(reader.GetBlockMeta(x, y, z));
+        var baseOffset = shape.Base.Offset(x, y, z);
+        var stepOffset = shape.Step.Offset(x, y, z);
+        if (queryBox.Intersects(baseOffset)) results.Add(baseOffset);
+        if (queryBox.Intersects(stepOffset)) results.Add(stepOffset);
     }
 
     public int GetTexture(Block block, Side side, int defaultTexture) => baseBlock().GetTexture(side);

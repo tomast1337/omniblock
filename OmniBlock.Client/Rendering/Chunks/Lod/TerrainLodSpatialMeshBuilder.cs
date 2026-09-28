@@ -208,6 +208,32 @@ internal static class TerrainLodSpatialMeshBuilder
                 if (!TryLayer(span.Material, sampleSize, out var translucent)) continue;
                 if (!blocks.TryGet(span.Material.BlockId, out var block) || block is null) continue;
 
+                if (sampleSize == 1 && span.Material.Geometry == TerrainLodGeometryClass.Stairs)
+                {
+                    var worldX = checked((int)tileMinX + x);
+                    var worldZ = checked((int)tileMinZ + z);
+                    // Equal-material spans may contain stacked stairs. Reconstruct each block;
+                    // stretching one stair over the entire span fills the gaps between steps.
+                    for (var stairY = span.BottomY; stairY < span.TopY; stairY++)
+                    {
+                        guard.Checkpoint();
+                        var page = PageFor(worldX + .5, stairY + .5, worldZ + .5);
+                        foreach (var face in TerrainLodStairGeometry.Get(span.Material.Metadata))
+                        {
+                            var appearance = Appearance(block, span.Material, face.Side, null, x, z);
+                            var neighbor = NeighborAt(column, face.Side == Side.Down ? stairY - 1 : stairY + 1);
+                            Emit(page, false, face.Side, appearance, face.Shade,
+                                FaceLight(span, neighbor, face.Side), .5f, .5f,
+                                Offset(face.A), Offset(face.B), Offset(face.C), Offset(face.D), guard,
+                                textureOrigin: (worldX, stairY, worldZ));
+                        }
+
+                        (float X, float Y, float Z) Offset((float X, float Y, float Z) p) =>
+                            (worldX + p.X, stairY + p.Y, worldZ + p.Z);
+                    }
+                    continue;
+                }
+
                 var minX = checked((int)tileMinX + x * sampleSize);
                 var maxX = checked(minX + sampleSize);
                 var minZ = checked((int)tileMinZ + z * sampleSize);
@@ -725,10 +751,11 @@ internal static class TerrainLodSpatialMeshBuilder
         (float X, float Y, float Z) d,
         TerrainLodSpatialMeshBuildGuard? guard = null,
         bool nonDirectional = false,
-        byte textureMipLevel = 0)
+        byte textureMipLevel = 0,
+        (float X, float Y, float Z)? textureOrigin = null)
         => Emit(page, translucent, side, appearance, shade,
             TerrainLodQuadLighting.Uniform(light), tileU, tileV,
-            a, b, c, d, guard, nonDirectional, textureMipLevel);
+            a, b, c, d, guard, nonDirectional, textureMipLevel, textureOrigin);
 
     internal static void Emit(
         PageBuilder page,
@@ -745,7 +772,8 @@ internal static class TerrainLodSpatialMeshBuilder
         (float X, float Y, float Z) d,
         TerrainLodSpatialMeshBuildGuard? guard = null,
         bool nonDirectional = false,
-        byte textureMipLevel = 0)
+        byte textureMipLevel = 0,
+        (float X, float Y, float Z)? textureOrigin = null)
     {
         EmitTexture(appearance.Texture, appearance.Tint);
         if (appearance.OverlayTexture >= 0)
@@ -771,6 +799,9 @@ internal static class TerrainLodSpatialMeshBuilder
 
             ChunkVertex Vertex((float X, float Y, float Z) value, float u, float v)
             {
+                if (textureOrigin is { } origin)
+                    (u, v) = TerrainLodStairGeometry.Uv(side,
+                        (value.X - origin.X, value.Y - origin.Y, value.Z - origin.Z));
                 var vertex = ChunkVertexHelper.Create(
                     color,
                     value.X - page.OriginX,
