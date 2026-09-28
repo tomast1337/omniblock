@@ -657,3 +657,31 @@ backend lands, only this launcher branch and client bootstrap should change;
 `teleport-preload.luau` performs a ten-chunk same-dimension relocation. It asserts that gameplay is
 covered by the terrain-loading screen while the destination is incomplete, then waits for the same
 decoded-column and uploaded-mesh contract used by initial world entry before accepting the player.
+
+## Block-render migration gallery
+
+`env -u WAYLAND_DISPLAY XDG_SESSION_TYPE=x11 tests/e2e/run-with-display.sh block-render-gallery` captures the finalized block catalog
+in close-up pages in the isolated flat fixture. Requires Python Pillow (`python3-pillow`).
+The script uses client-only replicas through the real chunk mesher; it does not test server
+placement, survival rules, inventory models or animated block entities. Manifests identify each
+block/metadata sample. HUD is hidden, weather/time/camera/FOV fixed, studio lighting supplied,
+and current meshes required. Comparisons cover the complete frame with no masked regions.
+The gallery pins a 1280x720 viewport. Xvfb requires a software Vulkan driver; on a hardware-only
+desktop use `tests/e2e/run-local.sh block-render-gallery` directly on the available display.
+An opaque studio backdrop hides terrain streaming underneath. Cosmetic animation textures use
+a fixed seeded frame, and particles are excluded; gameplay animation is not altered outside this fixture.
+
+Review a first run before treating it as a reference. Subsequent comparisons are explicit:
+
+```sh
+E2E_GALLERY_REFERENCE=/absolute/reference/block-render-gallery \
+  env -u WAYLAND_DISPLAY XDG_SESSION_TYPE=x11 tests/e2e/run-with-display.sh block-render-gallery
+```
+
+Alternatively use `python3 tests/e2e/check_block_gallery.py CANDIDATE --reference REFERENCE`.
+Both paths are scenario artifact directories, not suite roots. Comparisons fail on missing pages,
+changed fixture contracts, or large visual differences. `gallery-diff/` retains metrics and amplified
+PNG differences. A capture without a reference is **not a visual comparison pass**. Use the same
+GPU/backend, viewport and resource pack. Baselines must not be automatically updated to pass a test.
+
+Run comparator unit tests with `python3 -m unittest discover -s tests/e2e -p test_block_gallery.py`.

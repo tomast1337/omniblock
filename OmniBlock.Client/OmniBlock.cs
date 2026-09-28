@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using OmniBlock.Client.Rendering.Blocks;
 using System.Numerics;
 using System.Runtime;
 using System.Runtime.InteropServices;
@@ -301,6 +302,7 @@ public partial class OmniBlock :
     private readonly ClientReadySignal _clientReady = new();
     private readonly E2ETestController? _e2eTestController;
     internal EntityRenderBaseline? EntityBaseline { get; private set; }
+    private BlockRenderGallery? _blockGallery;
     private readonly LoadingScreenRenderer _loadingScreen;
     private readonly WaterSprite _textureWaterFX;
     private readonly LavaSprite _textureLavaFX;
@@ -970,6 +972,18 @@ public partial class OmniBlock :
                 LuauTestHost.FlyPath = (ax, ay, az, bx, by, bz, seconds) =>
                     _player?.StartFlightPathForTest(ax, ay, az, bx, by, bz, seconds);
                 LuauTestHost.Screenshot = () => WebGpuRenderer.ScreenshotRequested = true;
+                LuauTestHost.BlockGallery = page =>
+                {
+                    _blockGallery ??= new BlockRenderGallery(this);
+                    _blockGallery.ShowPage(page);
+                    return _blockGallery.PageCount;
+                };
+                LuauTestHost.BlockGalleryReady = () =>
+                {
+                    if (_blockGallery == null) return false;
+                    _e2eTestController.WriteTextArtifact(_blockGallery.ArtifactName, _blockGallery.Manifest());
+                    return _blockGallery.IsReady();
+                };
                 var impostorTestControls = new EntityImpostorTestControls(this);
                 LuauTestHost.ImpostorCache = impostorTestControls.Apply;
                 LuauTestHost.EntityImpostors = (enabled, forceForTest) =>
@@ -1652,6 +1666,10 @@ public partial class OmniBlock :
             LuauTestHost.SetMovement = null;
             LuauTestHost.FlyPath = null;
             LuauTestHost.Screenshot = null;
+            LuauTestHost.BlockGallery = null;
+            LuauTestHost.BlockGalleryReady = null;
+            _blockGallery?.Dispose();
+            _blockGallery = null;
             LuauTestHost.DumpTerrain = null;
             LuauTestHost.TerrainLodColumnMinimumLevel = null;
             LuauTestHost.TerrainLodColumnSourceLoaded = null;
@@ -1829,6 +1847,7 @@ public partial class OmniBlock :
                     var tickElapsedTime = Stopwatch.GetTimestamp() - tickStartTime;
 
                     EntityBaseline?.PrepareFrame();
+                    _blockGallery?.PrepareFrame();
 
                     SoundManager.UpdateListener(_player, Timer.RenderPartialTicks);
 
@@ -1909,6 +1928,15 @@ public partial class OmniBlock :
                         {
                             ImGui.Render();
                         }
+                    }
+
+                    if (_blockGallery != null)
+                    {
+                        // Pin capture/projection dimensions independently of the OS window.
+                        DisplayWidth = BlockRenderGallery.CaptureWidth;
+                        DisplayHeight = BlockRenderGallery.CaptureHeight;
+                        WebGpuRenderer.ViewportSize = (BlockRenderGallery.CaptureWidth, BlockRenderGallery.CaptureHeight);
+                        WebGpuRenderer.ViewportPosition = null;
                     }
 
                     if (!SkipRenderWorld)

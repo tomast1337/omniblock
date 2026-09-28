@@ -59,6 +59,8 @@ public sealed class LuauTestHostIntegrationTests
         LuauTestHost.FlyPath = (ax, ay, az, bx, by, bz, seconds) =>
             path = (ax, ay, az, bx, by, bz, seconds);
         LuauTestHost.Screenshot = () => screenshots++;
+        LuauTestHost.BlockGallery = page => page == 2 ? 13 : 0;
+        LuauTestHost.BlockGalleryReady = () => true;
         LuauTestHost.DumpTerrain = label => terrainDump = label;
         LuauTestHost.TerrainLodPresentedMaterial = (x, y, z) =>
             (x, y, z) == (8, 95, 72) ? ("omniblock:grass_block", 1, "local") : (null, -1, null);
@@ -116,6 +118,7 @@ public sealed class LuauTestHostIntegrationTests
                 "OMNI.test.setLook(45.5, 90); OMNI.test.setMovement(1, -0.5, 0.25); " +
                 "OMNI.test.flyPath(160, 256, 0, 160, 256, 160, 20); " +
                 "OMNI.test.screenshot(); OMNI.test.dumpTerrain('airborne'); OMNI.test.dumpProfiler('steady'); " +
+                "assert(OMNI.test.blockGallery(2) == 13); assert(OMNI.test.blockGalleryReady()); " +
                 "local material, sample, owner = OMNI.test.terrainLodPresentedMaterial(8, 95, 72); " +
                 "assert(material == 'omniblock:grass_block' and sample == 1 and owner == 'local'); " +
                 "local missing, missingSample, missingOwner = OMNI.test.terrainLodPresentedMaterial(0, 0, 0); " +
@@ -184,6 +187,8 @@ public sealed class LuauTestHostIntegrationTests
             LuauTestHost.SetMovement = null;
             LuauTestHost.FlyPath = null;
             LuauTestHost.Screenshot = null;
+            LuauTestHost.BlockGallery = null;
+            LuauTestHost.BlockGalleryReady = null;
             LuauTestHost.DumpTerrain = null;
             LuauTestHost.TerrainLodPresentedMaterial = null;
             LuauTestHost.TerrainLodPresentedSample = null;

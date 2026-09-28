@@ -50,7 +50,7 @@ internal class WaterSprite(IBlockRuntimeView blocks) : Rendering.Core.Textures.D
 
                 _heatDelta[x + y * 16] -= 0.1F;
 
-                if (Random.Shared.NextDouble() < 0.05D)
+                if (AnimationRandom.NextDouble() < 0.05D)
                 {
                     _heatDelta[x + y * 16] = 0.5F;
                 }

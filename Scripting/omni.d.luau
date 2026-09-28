@@ -386,6 +386,9 @@ export type OmniTest = {
     setMovement: (forward: number, strafe: number, vertical: number) -> (),
     flyPath: (ax: number, ay: number, az: number, bx: number, by: number, bz: number, seconds: number) -> (),
     screenshot: () -> (),
+    -- E2E-only client replicas. Zero-based page; returns total pages. Never edits saved terrain.
+    blockGallery: (page: number) -> number,
+    blockGalleryReady: () -> boolean,
     dumpTerrain: (label: unknown?) -> (),
     -- Restricted E2E diagnostics; saved-import metrics are observational only.
     terrainLodFixtureMetric: (metric: string) -> number,

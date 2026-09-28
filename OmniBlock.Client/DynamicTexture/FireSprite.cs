@@ -47,7 +47,7 @@ internal class FireSprite(string tile, string customTexture) : Rendering.Core.Te
 
                 if (y >= 19)
                 {
-                    _next[x + y * 16] = (float)(Random.Shared.NextDouble() * Random.Shared.NextDouble() * Random.Shared.NextDouble() * 4.0D + Random.Shared.NextDouble() * 0.1F + 0.2F);
+                    _next[x + y * 16] = (float)(AnimationRandom.NextDouble() * AnimationRandom.NextDouble() * AnimationRandom.NextDouble() * 4.0D + AnimationRandom.NextDouble() * 0.1F + 0.2F);
                 }
             }
         }

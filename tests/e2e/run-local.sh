@@ -7,6 +7,9 @@ artifact_dir="${E2E_ARTIFACTS_DIR:-$repo_root/artifacts/e2e-local/$(date -u +%Y%
 timeout_seconds="${E2E_TIMEOUT_SECONDS:-90}"
 configuration="${CONFIGURATION:-Debug}"
 requested_scenario="${1:-all}"
+if [[ "$requested_scenario" == "block-render-gallery" && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
+    timeout_seconds=240
+fi
 if [[ "$requested_scenario" == "terrain-lod-remote-refinement" && -z "${E2E_TIMEOUT_SECONDS:-}" ]]; then
     timeout_seconds=300
 fi
@@ -230,6 +233,15 @@ for scenario in "${scenarios[@]}"; do
         fi
     fi
 
+    if (( status == 0 )) && [[ "$scenario" == "block-render-gallery" ]]; then
+        gallery_args=("$scenario_artifacts")
+        if [[ -n "${E2E_GALLERY_REFERENCE:-}" ]]; then
+            gallery_args+=(--reference "$E2E_GALLERY_REFERENCE")
+        fi
+        if ! python3 "$script_dir/check_block_gallery.py" "${gallery_args[@]}"; then
+            status=1
+        fi
+    fi
     if (( status == 0 )) && [[ "$scenario" == "terrain-lod-near-quality" ]]; then
         if ! python3 "$script_dir/check_near_quality.py" "$scenario_artifacts"; then
             status=1

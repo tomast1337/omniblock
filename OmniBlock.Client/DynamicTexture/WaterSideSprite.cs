@@ -55,7 +55,7 @@ internal class WaterSideSprite : Rendering.Core.Textures.DynamicTexture
 
                 _heatDelta[x + y * 16] -= 0.3F;
 
-                if (Random.Shared.NextDouble() < 0.2D)
+                if (AnimationRandom.NextDouble() < 0.2D)
                 {
                     _heatDelta[x + y * 16] = 0.5F;
                 }

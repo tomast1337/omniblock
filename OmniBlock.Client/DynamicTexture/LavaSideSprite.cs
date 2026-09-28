@@ -54,7 +54,7 @@ internal class LavaSideSprite : Rendering.Core.Textures.DynamicTexture
 
                 _heatDelta[x + y * 16] -= 0.06F;
 
-                if (Random.Shared.NextDouble() < 0.005D)
+                if (AnimationRandom.NextDouble() < 0.005D)
                 {
                     _heatDelta[x + y * 16] = 1.5F;
                 }

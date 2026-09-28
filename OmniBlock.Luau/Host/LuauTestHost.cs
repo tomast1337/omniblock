@@ -26,6 +26,8 @@ public static unsafe class LuauTestHost
                                         setMovement = function(forward, strafe, vertical) __Test.setMovement(forward, strafe, vertical) end,
                                         flyPath = function(ax, ay, az, bx, by, bz, seconds) __Test.flyPath(ax, ay, az, bx, by, bz, seconds) end,
                                         screenshot = function() __Test.screenshot() end,
+                                        blockGallery = function(page) return __Test.blockGallery(page) end,
+                                        blockGalleryReady = function() return __Test.blockGalleryReady() end,
                                         dumpTerrain = function(label) __Test.dumpTerrain(tostring(label or "terrain")) end,
                                         terrainLodColumnMinimumLevel = function(x, z) return __Test.terrainLodColumnMinimumLevel(x, z) end,
                                         terrainLodColumnSourceLoaded = function(x, z) return __Test.terrainLodColumnSourceLoaded(x, z) end,
@@ -72,6 +74,8 @@ public static unsafe class LuauTestHost
     public static Action<double, double, double>? SetMovement;
     public static Action<double, double, double, double, double, double, double>? FlyPath;
     public static Action? Screenshot;
+    public static Func<int, int>? BlockGallery;
+    public static Func<bool>? BlockGalleryReady;
     public static Action<string>? DumpTerrain;
     public static Func<int, int, int>? TerrainLodColumnMinimumLevel;
     public static Func<int, int, bool>? TerrainLodColumnSourceLoaded;
@@ -116,6 +120,8 @@ public static unsafe class LuauTestHost
         Add(l, "setMovement", &SetMovementClosure);
         Add(l, "flyPath", &FlyPathClosure);
         Add(l, "screenshot", &ScreenshotClosure);
+        Add(l, "blockGallery", &BlockGalleryClosure);
+        Add(l, "blockGalleryReady", &BlockGalleryReadyClosure);
         Add(l, "dumpTerrain", &DumpTerrainClosure);
         Add(l, "terrainLodColumnMinimumLevel", &TerrainLodColumnMinimumLevelClosure);
         Add(l, "terrainLodColumnSourceLoaded", &TerrainLodColumnSourceLoadedClosure);
@@ -145,6 +151,26 @@ public static unsafe class LuauTestHost
     {
         LuauNative.lua_pushcclosurek(l, function, "__Test." + name, 0, IntPtr.Zero);
         LuauNative.lua_setfield(l, -2, name);
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int BlockGalleryClosure(IntPtr l)
+    {
+        var pages = 0;
+        try { pages = BlockGallery?.Invoke(LuauNative.luaL_checkinteger(l, 1)) ?? 0; }
+        catch (Exception ex) { Fail?.Invoke("Block gallery: " + ex.Message); }
+        LuauNative.lua_pushinteger(l, pages);
+        return 1;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int BlockGalleryReadyClosure(IntPtr l)
+    {
+        var ready = false;
+        try { ready = BlockGalleryReady?.Invoke() == true; }
+        catch (Exception ex) { Fail?.Invoke("Block gallery readiness: " + ex.Message); }
+        LuauNative.lua_pushboolean(l, ready ? 1 : 0);
+        return 1;
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]

@@ -20,6 +20,9 @@ public class DynamicTexture(int iconIdx)
     protected byte[][]? CustomFrames;
     public byte[] Pixels = new byte[1024];
     public int Replicate = 1;
+    // A per-instance cosmetic RNG override for render fixtures; never changes simulation RNG.
+    internal Random? RandomForTest { get; set; }
+    protected Random AnimationRandom => RandomForTest ?? Random.Shared;
 
     public virtual void Setup(OmniBlock game)
     {

@@ -20,6 +20,7 @@ public class TextureManager : IDisposable
     private readonly Dictionary<string, int> _atlasTileSizes = [];
     private readonly Dictionary<string, int[]> _colors = [];
     private readonly List<DynamicTexture> _dynamicTextures = [];
+    internal IReadOnlyDictionary<int, byte[]>? TerrainAnimationFramesForTest { get; set; }
     private readonly OmniBlock _game;
     private readonly GameOptions _gameOptions;
     private readonly Dictionary<uint, (Image<Rgba32> Image, TextureHandle Handle)> _images = [];
@@ -412,7 +413,14 @@ public class TextureManager : IDisposable
         foreach (var texture in _dynamicTextures)
         {
             var phaseStart = Stopwatch.GetTimestamp();
-            texture.tick();
+            if (texture.Atlas == DynamicTexture.FxImage.Terrain &&
+                TerrainAnimationFramesForTest?.TryGetValue(texture.Sprite, out var frame) == true)
+            {
+                if (texture.Pixels.Length != frame.Length) texture.Pixels = new byte[frame.Length];
+                frame.CopyTo(texture.Pixels, 0);
+            }
+            else
+                texture.tick();
             animateTicks += Stopwatch.GetTimestamp() - phaseStart;
 
             var atlasHandle = texture.Atlas == DynamicTexture.FxImage.Terrain
