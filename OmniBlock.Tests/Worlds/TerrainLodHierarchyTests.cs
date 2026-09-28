@@ -238,8 +238,7 @@ public sealed class TerrainLodHierarchyTests
             Resolve("omniblock:leaves").Geometry);
         Assert.Equal(TerrainLodGeometryClass.Translucent,
             Resolve("omniblock:glass").Geometry);
-        Assert.Equal(TerrainLodGeometryClass.ConservativeCube,
-            Resolve("omniblock:moving_piston").Geometry);
+        Assert.True(Resolve("omniblock:moving_piston").IsAir);
         Assert.Equal(TerrainLodGeometryClass.CrossedQuad,
             Resolve("omniblock:grass").Geometry);
         Assert.Equal(1, Resolve("omniblock:grass").MaxSampleSize);
@@ -257,6 +256,60 @@ public sealed class TerrainLodHierarchyTests
             var block = world.Content.Blocks.Get(key);
             return catalog.Resolve(block.Id, 0);
         }
+    }
+
+    [Fact]
+    public void Unsupported_non_full_shapes_never_become_lod_cubes()
+    {
+        var world = new FakeWorldContext();
+        var catalog = TerrainLodMaterialCatalog.FromRuntime(world.Content);
+        string[] omitted = ["fire", "torch", "lit_redstone_torch", "redstone_torch",
+            "rail", "powered_rail", "detector_rail", "ladder", "lever", "button",
+            "trapdoor", "door", "iron_door", "sign", "wall_sign", "redstone_wire",
+            "moving_piston", "piston_head", "wooden_stairs", "cobblestone_stairs", "fence"];
+        foreach (var name in omitted)
+        {
+            var block = world.Content.Blocks.Get("omniblock:" + name);
+            for (var metadata = 0; metadata < 16; metadata++)
+                Assert.Equal(TerrainLodMaterial.Air, catalog.Resolve(block.Id, metadata));
+
+            foreach (var strategy in Enum.GetValues<TerrainLodReductionStrategy>())
+            {
+                var hierarchy = TerrainLodReducer.Build(
+                    Snapshot(4, 4, 4, (_, _, _) => (byte)block.Id), catalog, strategy);
+                foreach (var level in hierarchy.Levels)
+                    Assert.True(level[0, 0, 0].IsEmpty, name);
+            }
+        }
+    }
+
+    [Fact]
+    public void Explicit_omission_is_frozen_and_changes_material_rules_identity()
+    {
+        var builder = ContentRuntimeBuilder.CreateBuiltIns();
+        builder.AddBlockDefinition(new BlockDefinition
+        {
+            Name = "omitted_detail",
+            Namespace = Namespace.Get("example"),
+            ProtocolId = 240,
+            Material = "stone",
+            TerrainLod = new BlockTerrainLodDefinition { Geometry = "Omitted" }
+        });
+        var runtime = builder.Build();
+        var block = runtime.Blocks.Get("example:omitted_detail");
+        Assert.True(block.IsFrozen);
+        Assert.Equal(TerrainLodGeometryClass.Omitted, block.TerrainLod!.Value.Geometry);
+        Assert.False(block.TerrainLod.Value.OccludesFaces);
+        Assert.Equal(TerrainLodMaterial.Air,
+            TerrainLodMaterialCatalog.FromRuntime(runtime).Resolve(block.Id, 15));
+
+        var previous = new TerrainLodMaterialDefinition(240, "example:omitted_detail",
+            TerrainLodGeometryClass.Cutout, false, 0);
+        Assert.NotEqual(new TerrainLodMaterialCatalog([previous]).RulesFingerprint,
+            new TerrainLodMaterialCatalog([previous with
+            {
+                Geometry = TerrainLodGeometryClass.Omitted
+            }]).RulesFingerprint);
     }
 
     [Fact]
@@ -315,6 +368,7 @@ public sealed class TerrainLodHierarchyTests
     [Theory]
     [InlineData("Air", true, "cannot use the terrain LOD air geometry")]
     [InlineData("CrossedQuad", true, "cannot conservatively occlude")]
+    [InlineData("Omitted", true, "cannot conservatively occlude")]
     [InlineData("NotAGeometry", false, "Unknown terrain LOD geometry")]
     public void Invalid_block_descriptor_fails_catalog_construction_with_owner(
         string geometry,

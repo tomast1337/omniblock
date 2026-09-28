@@ -64,6 +64,8 @@ public sealed record BoundingBoxDefinition(float MinX, float MinY, float MinZ, f
 ///     Resource-pack-independent distant-terrain representation for blocks whose rendering cannot
 ///     be inferred safely. Omitting the descriptor retains the built-in classifier; declaring an
 ///     empty descriptor deliberately selects the conservative-cube fallback.
+///     Geometry "Omitted" excludes a block from all LOD geometry and surface samples, without
+///     affecting detailed rendering, simulation, or the light stored in the source snapshot.
 /// </summary>
 public sealed record BlockTerrainLodDefinition
 {

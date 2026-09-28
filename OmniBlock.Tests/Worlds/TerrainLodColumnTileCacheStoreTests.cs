@@ -519,6 +519,16 @@ public sealed class TerrainLodColumnTileCacheStoreTests
             Assert.Equal(TerrainLodColumnTileCacheReadStatus.Incompatible,
                 incompatible.Read(key).Status);
 
+            var changedLodPolicy = new TerrainLodColumnTileCacheStore(
+                root,
+                Identity() with { MaterialRulesFingerprint = "different-shape-policy" },
+                8 * 1024 * 1024,
+                8 * 1024 * 1024);
+            Assert.Equal(TerrainLodColumnTileCacheReadStatus.Incompatible,
+                changedLodPolicy.Read(key).Status);
+            // A policy mismatch does not damage the old cache or the world data.
+            Assert.Equal(TerrainLodColumnTileCacheReadStatus.Hit, store.Read(key).Status);
+
             var file = Assert.Single(root.EnumerateFiles("*.ocol", SearchOption.AllDirectories));
             var bytes = File.ReadAllBytes(file.FullName);
             bytes[bytes.Length / 2] ^= 0x20;

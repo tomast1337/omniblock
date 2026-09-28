@@ -21,7 +21,9 @@ public enum TerrainLodGeometryClass : byte
     ConservativeCube,
     CrossedQuad,
     SurfaceLayer,
-    BoundedCube
+    BoundedCube,
+    // Catalog-only policy; resolved to canonical air before reduction or serialization.
+    Omitted
 }
 
 public enum TerrainLodReductionStrategy : byte
@@ -138,6 +140,10 @@ public sealed class TerrainLodMaterialCatalog
                 $"Terrain snapshot references unknown block protocol ID {protocolId}.");
         if (metadata is < 0 or > 15)
             throw new InvalidDataException($"Terrain snapshot metadata {metadata} is outside 0..15.");
+        // Apply omission before either hierarchy samples surfaces. Filtering only at draw time
+        // would let a parent resurrect the block as a solid column or use its color as terrain.
+        if (definition.Geometry == TerrainLodGeometryClass.Omitted)
+            return TerrainLodMaterial.Air;
         return new TerrainLodMaterial(
             definition.BlockId,
             (byte)metadata,
@@ -152,21 +158,30 @@ public sealed class TerrainLodMaterialCatalog
         if (block.Material.IsFluid || block.RenderType == BlockRendererType.Fluids)
             return TerrainLodGeometryClass.Liquid;
         if (block.RenderType == BlockRendererType.Entity)
-            return TerrainLodGeometryClass.ConservativeCube;
+            return TerrainLodGeometryClass.Omitted;
         // Plants and crops have no volume. Level zero can preserve their silhouette as crossed
         // cutout planes; parent levels retain them only as surface samples.
         if (block.RenderType is BlockRendererType.Reed or BlockRendererType.Crops)
             return TerrainLodGeometryClass.CrossedQuad;
         if (block.RenderType == BlockRendererType.Standard && !block.IsFullCube())
         {
-            var bounds = block.BoundingBox;
+            // Never classify from behavior-mutated bounds: server/client catalogs must agree.
+            var bounds = block.DefinitionBoundingBox;
             var isThinHorizontalLayer = !block.Material.IsSolid &&
                                         bounds.MaxY - bounds.MinY < 0.999 &&
                                         bounds.MaxX - bounds.MinX > 0.999 &&
                                         bounds.MaxZ - bounds.MinZ > 0.999;
             if (isThinHorizontalLayer) return TerrainLodGeometryClass.SurfaceLayer;
-            if (block.Material.IsSolid) return TerrainLodGeometryClass.BoundedCube;
+            var hasBoundedShape = bounds.MaxX - bounds.MinX < 0.999 ||
+                                  bounds.MaxY - bounds.MinY < 0.999 ||
+                                  bounds.MaxZ - bounds.MinZ < 0.999;
+            if (block.Material.IsSolid && hasBoundedShape)
+                return TerrainLodGeometryClass.BoundedCube;
         }
+        // Torch/fire/rail renderers and metadata/connection-dependent shapes cannot be
+        // represented by their default unit bounds. Omit unsupported geometry until a faithful
+        // shape exists; a content author can explicitly opt into a descriptor/approximation.
+        if (!block.IsFullCube()) return TerrainLodGeometryClass.Omitted;
         // Transparent burnable material describes porous vegetation rather than a continuous
         // refractive surface. This fallback is independent of the fancy-leaves runtime toggle.
         if (block.Material.IsTransparent && block.Material.IsBurnable)

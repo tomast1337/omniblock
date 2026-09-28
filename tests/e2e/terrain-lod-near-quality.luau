@@ -52,6 +52,12 @@ block("snow", 5, 96, 80)
 block("stone", 6, 93, 82) -- keep the sand/cactus column from falling into open terrain
 block("sand", 6, 94, 82)
 block("cactus", 6, 95, 82)
+-- Unsupported effects/details must remain real blocks in exact terrain, but become canonical
+-- air before either LOD hierarchy reduces them. Netherrack keeps the fire fixture alive.
+block("stone", 18, 95, 80)
+block("torch", 18, 96, 80)
+block("netherrack", 21, 95, 80)
+block("fire", 21, 96, 80)
 for y = 90, 93 do block("log", -17, y, 80) end
 for dx = -18, -16 do block("leaves", dx, 94, 80) end
 for dx = 8, 12 do
@@ -106,6 +112,10 @@ local presented = {
     {"omniblock:grass_block", x + 5, 95, z + 80},
     {"omniblock:cactus", x + 6, 95, z + 82},
     {"omniblock:water", x + 10, 91, z + 80},
+    {"omniblock:stone", x + 18, 95, z + 80},
+    {"omniblock:netherrack", x + 21, 95, z + 80},
+    {"omniblock:air", x + 18, 96, z + 80}, -- omitted torch, not missing publication
+    {"omniblock:air", x + 21, 96, z + 80}, -- omitted fire
 }
 waitFor(function()
     if not state.playerReady or state.terrainLodSpatialSubmissionReady ~= 1 then return false end
