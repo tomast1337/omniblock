@@ -4,7 +4,7 @@ using OmniBlock.Util;
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
-///     Requests already-generated coarse terrain records. The server validates every key against
+///     Requests already-generated terrain records, including retained-column refreshes. The server validates every key against
 ///     the player's dimension and position; this message is never authority to generate or reveal
 ///     arbitrary terrain.
 /// </summary>
@@ -13,7 +13,7 @@ public sealed class TerrainLodTileRequestMessage : Message
     public const int MaximumKeys = TerrainLodScaleBudget.MaximumRequestKeys;
     private const int MaximumIdentityLength = 128;
     public static readonly ResourceLocation Id = new(
-        Namespace.Get("omniblock"), "terrain_lod_tile_request_v5");
+        Namespace.Get("omniblock"), "terrain_lod_tile_request_v6");
 
     public int Dimension { get; set; }
     public string CacheIdentity { get; set; } = "";
@@ -25,7 +25,7 @@ public sealed class TerrainLodTileRequestMessage : Message
     /// <summary>Optional, aligned canonical hashes of locally cached tiles.</summary>
     public string[] CachedHashes { get; set; } = [];
     public override ResourceLocation Key => Id;
-    public override int SchemaVersion => 5;
+    public override int SchemaVersion => 6;
     public override SendPriority Priority => SendPriority.Bulk;
 
     public override void Read(Stream stream)
@@ -52,11 +52,11 @@ public sealed class TerrainLodTileRequestMessage : Message
         {
             var key = new TerrainLodTileKey(
                 stream.ReadVarInt(), stream.ReadInt(), stream.ReadInt());
-            if (key.Level < TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel ||
+            if (!IsRequestLevel(key.Level) ||
                 key.Level > MaximumSpatialLevel)
                 throw new InvalidDataException(
                     $"Terrain LOD request contains spatial level {key.Level} outside its " +
-                    $"declared range {TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel}-" +
+                    $"declared level-zero/aggregate range {TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel}-" +
                     $"{MaximumSpatialLevel}.");
             Keys[index] = key;
             var hash = stream.ReadString(64);
@@ -84,7 +84,7 @@ public sealed class TerrainLodTileRequestMessage : Message
         if (QualityPolicyVersion != TerrainLodSpatialPolicy.CurrentQualityPolicyVersion)
             throw new InvalidOperationException(
                 $"Terrain LOD request quality-policy version {QualityPolicyVersion} is unsupported.");
-        if (Keys.Any(key => key.Level < TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel ||
+        if (Keys.Any(key => !IsRequestLevel(key.Level) ||
                             key.Level > MaximumSpatialLevel))
             throw new InvalidOperationException(
                 "Terrain LOD request contains a spatial level outside its negotiated range.");
@@ -117,5 +117,9 @@ public sealed class TerrainLodTileRequestMessage : Message
     private static bool IsValidHash(string hash) =>
         hash.Length == 0 || hash.Length == 64 &&
         hash.All(static character => char.IsAsciiHexDigit(character));
+
+    // Level zero is a retained-column refresh, not a change to the horizon planning floor.
+    public static bool IsRequestLevel(int level) =>
+        level == 0 || level >= TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel;
 
 }

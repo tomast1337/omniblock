@@ -106,6 +106,8 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     private readonly Dictionary<TerrainLodTileKey, long> _refreshAnnounced = [];
     private readonly Dictionary<TerrainLodTileKey, long> _tileGenerations = [];
     private long _nextTileGeneration;
+    private readonly HashSet<TerrainLodTileKey> _liveRefreshPending = [];
+    private readonly Dictionary<TerrainLodTileKey, long> _liveRefreshReady = [];
     private readonly Queue<TerrainLodTileKey> _spatialEncodeRequests = [];
     private readonly HashSet<TerrainLodTileKey> _spatialEncodesPending = [];
     private readonly Dictionary<TerrainLodTileKey, byte[]> _spatialWirePayloads = [];
@@ -324,6 +326,20 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
     internal long GetSpatialGeneration(TerrainLodTileKey key)
     {
         lock (_gate) return _tileGenerations.GetValueOrDefault(key);
+    }
+
+    // Called on the simulation thread. Worker publications coalesce by tile; networking never
+    // runs on the LOD writer and live edits do not have to wait for an autosave to become visible.
+    internal TerrainLodTileInvalidation[] TakeLiveInvalidations()
+    {
+        lock (_gate)
+        {
+            _liveRefreshPending.RemoveWhere(key => !_spatialHierarchy.TryGetCoverage(key, out _, out _));
+            var result = _liveRefreshReady.Select(pair =>
+                new TerrainLodTileInvalidation(pair.Key, pair.Value)).ToArray();
+            _liveRefreshReady.Clear();
+            return result;
+        }
     }
 
     /// <summary>Returns a pre-encoded remote payload or queues encoding on the LOD worker.</summary>
@@ -686,6 +702,17 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                     new ChunkKey(chunk.X, chunk.Z), out var state) ||
                 !ReferenceEquals(state.Chunk, chunk)) return;
             _terrainChangesObserved++;
+            var leafKey = new TerrainLodTileKey(0, chunk.X, chunk.Z);
+            if (_spatialHierarchy.TryGetCoverage(leafKey, out _, out _))
+                _liveRefreshPending.Add(leafKey);
+            for (var level = TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel;
+                 level < _transientImportMinimumLevel && level <= _spatialPolicy.MaximumSpatialLevel;
+                 level++)
+            {
+                var key = TerrainLodTileKey.ContainingChunk(level, chunk.X, chunk.Z);
+                if (_spatialHierarchy.TryGetCoverage(key, out _, out _))
+                    _liveRefreshPending.Add(key);
+            }
             if (!state.Dirty)
                 _spatialHierarchy.MarkSourceChanged(chunk.X, chunk.Z);
             // A transient parent is assembled from many separately read saved chunks. Once a
@@ -778,6 +805,14 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                     // session could never consume.
                     _spatialWirePayloads.Remove(parent.Key);
                     _spatialMissing.Remove(parent.Key);
+                    if (_spatialHierarchy.TryGetCoverage(parent.Key, out var latest, out var current) &&
+                        current && ReferenceEquals(parent, latest) &&
+                        _liveRefreshPending.Remove(parent.Key))
+                    {
+                        var generation = ++_nextTileGeneration;
+                        _tileGenerations[parent.Key] = generation;
+                        _liveRefreshReady[parent.Key] = generation;
+                    }
                 }
             var spatialEncodes = DrainSpatialEncodes(maximumEncodes: 2);
             lock (_gate) PublishSnapshotLocked();
@@ -1157,6 +1192,13 @@ internal sealed class ServerTerrainLodRuntime : IDisposable
                 live.Chunk.TerrainRevision > result.TerrainRevision)
                 return;
             _spatialHierarchy.PublishLeaf(leaf);
+            if (_liveRefreshPending.Remove(leaf.Key))
+            {
+                var generation = ++_nextTileGeneration;
+                _tileGenerations[leaf.Key] = generation;
+                _liveRefreshReady[leaf.Key] = generation;
+                _spatialWirePayloads.Remove(leaf.Key);
+            }
         }
     }
 

@@ -87,7 +87,7 @@ internal static class BlockFactory
                 nameof(definition));
         }
         var maxSampleSize = definition.MaxSampleSize ??
-            (geometry == TerrainLodGeometryClass.CrossedQuad ? 1 : int.MaxValue);
+            (geometry is TerrainLodGeometryClass.CrossedQuad or TerrainLodGeometryClass.Fence ? 1 : int.MaxValue);
         if (maxSampleSize != int.MaxValue &&
             (maxSampleSize is < 1 or > 64 || !System.Numerics.BitOperations.IsPow2((uint)maxSampleSize)))
             throw new ArgumentException(

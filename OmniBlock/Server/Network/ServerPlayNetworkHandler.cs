@@ -221,10 +221,9 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         {
             var key = request.Keys[index];
             if (!seen.Add(key)) continue;
-            // Level-zero/one records reveal almost full chunk detail and belong to ordinary chunk
-            // streaming. The distant lane begins at a 4x4-chunk aggregate and never generates on
-            // demand; it can only return an already-approved persistent server record.
-            if (key.Level < TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel ||
+            // Aggregate coverage and retained-column refreshes share disclosure and send budgets.
+            // Neither request authorizes gameplay chunk loading or terrain generation.
+            if (!TerrainLodTileRequestMessage.IsRequestLevel(key.Level) ||
                 key.Level > request.MaximumSpatialLevel ||
                 key.DistanceTo(playerChunkX, playerChunkZ) >
                 server.TerrainLodMaximumHorizonChunks)
@@ -307,7 +306,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         // Disclosure is decided when bytes leave, not merely when the request arrived. A player
         // can teleport or run far enough while this request waits that the tile no longer belongs
         // to the server-approved horizon around their current position.
-        if (request.Tile.Level < TerrainLodSpatialPolicy.MinimumRemoteSpatialLevel ||
+        if (!TerrainLodTileRequestMessage.IsRequestLevel(request.Tile.Level) ||
             request.Tile.Level > request.MaximumSpatialLevel ||
             request.Tile.DistanceTo(player.X / 16.0, player.Z / 16.0) >
             server.TerrainLodMaximumHorizonChunks)

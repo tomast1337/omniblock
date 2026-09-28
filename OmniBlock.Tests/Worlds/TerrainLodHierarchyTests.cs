@@ -266,7 +266,7 @@ public sealed class TerrainLodHierarchyTests
         string[] omitted = ["fire", "torch", "lit_redstone_torch", "redstone_torch",
             "rail", "powered_rail", "detector_rail", "ladder", "lever", "button",
             "trapdoor", "door", "iron_door", "sign", "wall_sign", "redstone_wire",
-            "moving_piston", "piston_head", "fence"];
+            "moving_piston", "piston_head"];
         foreach (var name in omitted)
         {
             var block = world.Content.Blocks.Get("omniblock:" + name);

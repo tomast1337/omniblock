@@ -261,6 +261,27 @@ public sealed class TerrainLodSpatialHierarchyCoordinator : IDisposable
     public void QuiescePersistence(TerrainLodTileKey key) =>
         _persistence?.DiscardAndWait(key);
 
+    /// <summary>
+    /// A remote invalidation names a tile, not the edited leaf. Its retained descendants can no
+    /// longer certify a current parent. Keep their coverage, but fence all overlapping CPU work.
+    /// Walk resident nodes rather than expanding a potentially enormous tile into chunk cells.
+    /// </summary>
+    public void MarkTileChanged(TerrainLodTileKey changed)
+    {
+        lock (_gate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            foreach (var (key, node) in _nodes)
+                if (key.MinChunkX <= changed.MaxChunkX && key.MaxChunkX >= changed.MinChunkX &&
+                    key.MinChunkZ <= changed.MaxChunkZ && key.MaxChunkZ >= changed.MinChunkZ)
+                {
+                    node.Current = false;
+                    _construction.Discard(key);
+                    _deferredParents.Remove(key);
+                }
+        }
+    }
+
     public bool Evict(TerrainLodTileKey key)
     {
         lock (_gate)

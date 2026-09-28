@@ -15,6 +15,93 @@ namespace OmniBlock.Tests.Worlds;
 public sealed class ServerTerrainLodRuntimeTests
 {
     [Fact]
+    public async Task Isolated_live_column_refresh_does_not_require_siblings_or_a_save()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var world = new FakeWorldContext();
+            using var runtime = new ServerTerrainLodRuntime(
+                0, TerrainLodMaterialCatalog.FromRuntime(world.Content), root, world);
+            var chunk = Chunk(world, -2, 3);
+            var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+            chunk[0, 95, 0] = stone;
+            runtime.TrackChunk(chunk);
+            var key = new TerrainLodTileKey(0, -2, 3);
+            await WaitUntil(() => { runtime.Tick(); return runtime.TryGetSpatialCoverage(key, out _); });
+            var previousGeneration = 0L;
+            foreach (var id in new[] { 0, stone })
+            {
+                chunk[0, 95, 0] = id;
+                TerrainLodTileInvalidation[] notices = [];
+                await WaitUntil(() =>
+                {
+                    runtime.Tick();
+                    notices = runtime.TakeLiveInvalidations();
+                    return notices.Length != 0;
+                });
+                var notice = Assert.Single(notices);
+                Assert.Equal(key, notice.Key);
+                Assert.True(notice.Generation > previousGeneration);
+                previousGeneration = notice.Generation;
+                Assert.True(runtime.TryGetSpatialCoverage(key, out var tile));
+                // Exercise the actual compressed transport, not only loopback references.
+                var received = TerrainLodTileMessage.Of(0, tile!, generation: notice.Generation).Decode();
+                var expanded = TerrainLodRemoteColumnSource.Expand(received, world.Content.Blocks, true);
+                Assert.Equal(id, expanded.GetBlock(0, 95, 0));
+            }
+        }
+        finally { Directory.Delete(root.FullName, recursive: true); }
+    }
+
+    [Fact]
+    public async Task Live_edit_announces_rebuilt_remote_tile_without_saving()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var world = new FakeWorldContext();
+            using var runtime = new ServerTerrainLodRuntime(
+                0, TerrainLodMaterialCatalog.FromRuntime(world.Content), root, world);
+            var stone = world.Content.Blocks.Get("omniblock:stone").Id;
+            Chunk? edited = null;
+            for (var x = 0; x < 4; x++)
+            for (var z = 0; z < 4; z++)
+            {
+                var chunk = Chunk(world, x, z);
+                chunk[0, 4, 0] = stone;
+                runtime.TrackChunk(chunk);
+                if (x == 0 && z == 0) edited = chunk;
+            }
+            var key = new TerrainLodTileKey(2, 0, 0);
+            await WaitUntil(() =>
+            {
+                runtime.Tick();
+                return runtime.TryGetSpatialCoverage(key, out _);
+            });
+            Assert.True(runtime.TryGetSpatialCoverage(key, out var original));
+            Assert.Empty(runtime.TakeLiveInvalidations());
+            edited![0, 4, 0] = 0;
+            List<TerrainLodTileInvalidation> notices = [];
+            await WaitUntil(() =>
+            {
+                runtime.Tick();
+                notices.AddRange(runtime.TakeLiveInvalidations());
+                return notices.Any(notice => notice.Key == key);
+            });
+            var notice = Assert.Single(notices, notice => notice.Key == key);
+            Assert.Contains(notices, notice => notice.Key == new TerrainLodTileKey(0, 0, 0));
+            Assert.Equal(key, notice.Key);
+            Assert.Equal(runtime.GetSpatialGeneration(key), notice.Generation);
+            Assert.True(notice.Generation > 0);
+            Assert.True(runtime.TryGetSpatialCoverage(key, out var replacement));
+            Assert.NotEqual(original!.CanonicalHash, replacement!.CanonicalHash);
+            Assert.Empty(runtime.TakeLiveInvalidations());
+        }
+        finally { Directory.Delete(root.FullName, recursive: true); }
+    }
+
+    [Fact]
     public void Preparation_diagnostics_include_every_build_and_persistence_stage()
     {
         var root = CreateTemporaryDirectory();

@@ -54,14 +54,21 @@ public class ServerWorld : World
         if (invalidations.Count == 0 || _terrainLod is null) return;
         var identity = _terrainLod.Identity.CompatibilityFingerprint;
         foreach (var invalidation in invalidations)
-            server.playerManager.sendToDimension(new TerrainLodTileStatusMessage
+        {
+            var message = new TerrainLodTileStatusMessage
             {
                 Dimension = Dimension.Id,
                 CacheIdentity = identity,
                 Tile = invalidation.Key,
                 Generation = invalidation.Generation,
                 Status = TerrainLodTileStatus.Invalidated
-            }, Dimension.Id);
+            };
+            foreach (var player in server.playerManager.players)
+                if (player.DimensionId == Dimension.Id &&
+                    invalidation.Key.DistanceTo(player.X / 16.0, player.Z / 16.0) <=
+                    server.TerrainLodMaximumHorizonChunks)
+                    player.ConnectedNetworkHandler.SendMessage(message);
+        }
     }
 
     internal void ShutdownTerrainLod()

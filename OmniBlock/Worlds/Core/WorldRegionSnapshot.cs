@@ -7,6 +7,7 @@ using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Biomes.Source;
 using OmniBlock.Worlds.Chunks;
 using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Lod;
 
 namespace OmniBlock.Worlds.Core;
 
@@ -110,6 +111,37 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 
         _lightTable = world.Dimension.LightLevelToLuminance;
         _skylightSubtracted = world.Environment.AmbientDarkness;
+    }
+
+    /// <summary>Visual evidence from an authoritative LOD leaf, without loading a gameplay chunk.</summary>
+    public WorldRegionSnapshot(IWorldContext world, TerrainLodSourceSnapshot source)
+    {
+        ContentBlocks = world.Content.Blocks;
+        _biomeSource = world.Dimension.BiomeSource.Clone();
+        _minX = source.ChunkX * 16;
+        _minY = 0;
+        _minZ = source.ChunkZ * 16;
+        _sizeX = source.Width;
+        _sizeY = source.Height;
+        _sizeZ = source.Depth;
+        _lightTable = world.Dimension.LightLevelToLuminance;
+        _skylightSubtracted = world.Environment.AmbientDarkness;
+        var cells = checked(_sizeX * _sizeY * _sizeZ);
+        _blocks = ArrayPool<byte>.Shared.Rent(cells);
+        _meta = ArrayPool<byte>.Shared.Rent((cells + 1) / 2);
+        _skyLight = ArrayPool<byte>.Shared.Rent((cells + 1) / 2);
+        _blockLight = ArrayPool<byte>.Shared.Rent((cells + 1) / 2);
+        for (var x = 0; x < _sizeX; x++)
+        for (var z = 0; z < _sizeZ; z++)
+        for (var y = 0; y < _sizeY; y++)
+        {
+            var index = LocalIndex(x, y, z);
+            _blocks[index] = source.GetBlock(x, y, z);
+            SetNibble(_meta, index, source.GetMetadata(x, y, z));
+            var light = source.Lighting?.GetLightLevels(_minX + x, y, _minZ + z, 0) ?? default;
+            SetNibble(_skyLight, index, light.Sky);
+            SetNibble(_blockLight, index, light.Block);
+        }
     }
 
     private WorldRegionSnapshot(WorldRegionSnapshot source)

@@ -134,6 +134,13 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                 var top = heights[index + 1];
                 var ownerSpan = ownerColumn.At(bottom);
                 TerrainLodColumnSpan? neighborSpan = neighborColumn?.At(bottom);
+                if (ownerSample == 1 && neighborSample == 1 && neighborSpan is { } fenceNeighbor &&
+                    TerrainLodFenceGeometry.Connects(ownerSpan.Material, fenceNeighbor.Material))
+                {
+                    EmitFenceHalf(ownerSpan, fenceNeighbor, true);
+                    EmitFenceHalf(fenceNeighbor, ownerSpan, false);
+                    continue;
+                }
                 if (neighborSpan is { } liquidNeighbor &&
                     TerrainLodMeshBuilder.SharesLiquidMedium(
                         ownerSpan.Material, liquidNeighbor.Material, blocks))
@@ -159,6 +166,8 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                     int minimumY,
                     int sourceSampleSize)
                 {
+                    // Fence connections are rail geometry, never rectangular walls or skirts.
+                    if (source.Material.Geometry == TerrainLodGeometryClass.Fence) return;
                     // Fine stair bodies own edge faces too. Never replace their silhouette with
                     // a full-height rectangular seam/skirt (coarse structural cells still use it).
                     if (sourceSampleSize == 1 && source.Material.Geometry == TerrainLodGeometryClass.Stairs)
@@ -211,6 +220,30 @@ internal static class TerrainLodSpatialSeamMeshBuilder
                             TerrainLodMeshBuilder.HasSnowCover(
                                 sourceColumn.At(source.TopY)));
                         y0 = y1;
+                    }
+                }
+
+                void EmitFenceHalf(TerrainLodColumnSpan source, TerrainLodColumnSpan opposite, bool fromOwner)
+                {
+                    if (!blocks.TryGet(source.Material.BlockId, out var fence) || fence is null) return;
+                    var side = ToBlockSide(fromOwner ? segment.OwnerSide : Opposite(segment.OwnerSide));
+                    var worldX = SourceX(segment.OwnerSide, fixedBlock, along, fromOwner);
+                    var worldZ = SourceZ(segment.OwnerSide, fixedBlock, along, fromOwner);
+                    for (var fenceY = bottom; fenceY < top; fenceY++)
+                    {
+                        guard.Checkpoint();
+                        var page = PageFor(worldX + .5, fenceY + .5, worldZ + .5);
+                        foreach (var face in TerrainLodFenceGeometry.Rail(side))
+                        {
+                            var appearance = TerrainLodMeshBuilder.ResolveWorldlessFaceAppearance(
+                                fence, source.Material, face.Side, false, false, -1, -1);
+                            TerrainLodSpatialMeshBuilder.Emit(page, false, face.Side, appearance,
+                                face.Shade, TerrainLodSpatialMeshBuilder.FaceLight(source, opposite, face.Side),
+                                1, 1, Offset(face.A), Offset(face.B), Offset(face.C), Offset(face.D), guard,
+                                textureOrigin: (worldX, fenceY, worldZ));
+                        }
+                        (float X, float Y, float Z) Offset((float X, float Y, float Z) p) =>
+                            (worldX + p.X, fenceY + p.Y, worldZ + p.Z);
                     }
                 }
 

@@ -178,6 +178,8 @@ public class ServerChunkCache : IChunkSource
     public bool Tick()
     {
         _terrainLod?.Tick();
+        if (_terrainLod is { } lod)
+            _world.BroadcastTerrainLodRefresh(lod.TakeLiveInvalidations());
         if (!_world.savingDisabled)
         {
             for (var unloadIndex = 0; unloadIndex < 100; unloadIndex++)

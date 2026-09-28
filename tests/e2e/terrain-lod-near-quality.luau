@@ -62,6 +62,11 @@ block("fire", 21, 96, 80)
 block("wooden_stairs", 7, 95, 84)
 block("wooden_stairs", 7, 96, 84)
 block("cobblestone_stairs", 8, 95, 84)
+-- A fence line crosses X=15/16, with a branch that requires north/south connections too.
+block("fence", 7, 95, 86)
+block("fence", 8, 95, 86)
+block("fence", 9, 95, 86)
+block("fence", 8, 95, 87)
 for y = 90, 93 do block("log", -17, y, 80) end
 for dx = -18, -16 do block("leaves", dx, 94, 80) end
 for dx = 8, 12 do
@@ -123,6 +128,10 @@ local presented = {
     {"omniblock:wooden_stairs", x + 7, 95, z + 84},
     {"omniblock:wooden_stairs", x + 7, 96, z + 84},
     {"omniblock:cobblestone_stairs", x + 8, 95, z + 84},
+    {"omniblock:fence", x + 7, 95, z + 86},
+    {"omniblock:fence", x + 8, 95, z + 86},
+    {"omniblock:fence", x + 9, 95, z + 86},
+    {"omniblock:fence", x + 8, 95, z + 87},
 }
 waitFor(function()
     if not state.playerReady or state.terrainLodSpatialSubmissionReady ~= 1 then return false end
@@ -155,6 +164,30 @@ OMNI.wait(12)
 capture("near-quality-lod-settled")
 OMNI.config.fov = 0 -- matching close-up of water, cactus, snow, foliage and arch
 capture("near-quality-lod-zoom")
+-- Edit outside the exact subscription without moving or increasing detailed view distance.
+-- The server's live LOD refresh must replace retained local terrain without an autosave/rejoin.
+OMNI.test.setBlock("omniblock:air", x + 8, 95, z + 86)
+waitFor(function()
+    local removed, sample, owner = OMNI.test.terrainLodPresentedMaterial(x + 8, 95, z + 86)
+    local retained, retainedSample, retainedOwner = OMNI.test.terrainLodPresentedMaterial(x + 7, 95, z + 86)
+    return removed == "omniblock:air" and sample == 1 and owner ~= nil and
+        retained == "omniblock:fence" and retainedSample == 1 and retainedOwner ~= nil
+end, 60, function()
+    print("removed fence probe", OMNI.test.terrainLodPresentedMaterial(x + 8, 95, z + 86))
+    print("retained fence probe", OMNI.test.terrainLodPresentedMaterial(x + 7, 95, z + 86))
+end)
+capture("near-quality-fence-neighbor-removed")
+-- A second edit must advance the same source again, not reuse a once-refreshed snapshot.
+OMNI.test.setBlock("omniblock:fence", x + 8, 95, z + 86)
+waitFor(function()
+    local restored, sample, owner = OMNI.test.terrainLodPresentedMaterial(x + 8, 95, z + 86)
+    return restored == "omniblock:fence" and sample == 1 and owner ~= nil
+end, 60)
+OMNI.wait(5)
+assert(OMNI.config.viewDistance == 0, "remote edit test changed detailed view distance")
+assert(OMNI.test.terrainLodPresentedMaterial(x + 8, 95, z + 86) == "omniblock:fence",
+    "a stale reply replaced the restored fence")
+capture("near-quality-fence-neighbor-restored")
 OMNI.config.fov = 0.44444445
 OMNI.test.setLook(0, 55)
 capture("near-quality-downward")

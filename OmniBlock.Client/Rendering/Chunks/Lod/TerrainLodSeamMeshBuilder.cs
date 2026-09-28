@@ -121,6 +121,16 @@ internal static class TerrainLodSeamMeshBuilder
                     along / neighborScale, y / neighborScale, translucent, out var neighborMaterial))
                 continue;
 
+            // Boundary connection is a relation between immutable snapshots, not a cached bit
+            // guessed when one source was absent. Each side contributes only its own half-rails.
+            if (!translucent && ownerLevel == 0 && neighborLevel == 0 &&
+                TerrainLodFenceGeometry.Connects(ownerMaterial, neighborMaterial))
+            {
+                if (materialSide != TerrainLodSeamMaterialSide.Neighbor) EmitFenceHalf(true);
+                if (materialSide != TerrainLodSeamMaterialSide.Owner) EmitFenceHalf(false);
+                continue;
+            }
+
             var ownerVisible = translucent
                 ? TerrainLodMeshBuilder.IsTranslucent(ownerMaterial)
                 : TerrainLodMeshBuilder.IsDepthWriting(ownerMaterial) &&
@@ -135,6 +145,8 @@ internal static class TerrainLodSeamMeshBuilder
                 ownerVisible = false;
             if (neighborLevel == 0 && neighborMaterial.Geometry == TerrainLodGeometryClass.Stairs)
                 neighborVisible = false;
+            if (ownerMaterial.Geometry == TerrainLodGeometryClass.Fence) ownerVisible = false;
+            if (neighborMaterial.Geometry == TerrainLodGeometryClass.Fence) neighborVisible = false;
             if (!ownerVisible && !neighborVisible) continue;
 
             var minY = y - VerticalOrigin;
@@ -231,6 +243,35 @@ internal static class TerrainLodSeamMeshBuilder
                     AddFace(0.8f, maxAlong - minAlong, maxY - minY,
                         (maxAlong, maxY, z), (maxAlong, minY, z),
                         (minAlong, minY, z), (minAlong, maxY, z));
+            }
+
+            void EmitFenceHalf(bool fromOwner)
+            {
+                var source = fromOwner ? ownerMaterial : neighborMaterial;
+                if (!blocks.TryGet(source.BlockId, out var fence) || fence is null) return;
+                var direction = fromOwner ? ownerSide : neighborSide;
+                var originX = ownerSide == Side.East ? (fromOwner ? 15 : 16) : along;
+                var originZ = ownerSide == Side.South ? (fromOwner ? 15 : 16) : along;
+                var originY = y - VerticalOrigin;
+                foreach (var face in TerrainLodFenceGeometry.Rail(direction))
+                {
+                    var texture = fence.GetTexture(face.Side, source.Metadata);
+                    var tint = TerrainLodMeshBuilder.WorldlessFaceTint(fence, source.Metadata, face.Side, false);
+                    var color = TerrainLodMeshBuilder.PackTintedColor(tint, face.Shade);
+                    var layer = Atlases.Terrain.LayerOfGridIndex(texture);
+                    var railLight = SampleLight(direction, fence.LightEmission,
+                        owner.ChunkX * 16 + originX + .5f, y + .5f,
+                        owner.ChunkZ * 16 + originZ + .5f);
+                    Add(face.A); Add(face.B); Add(face.C); Add(face.D);
+
+                    void Add((float X, float Y, float Z) p)
+                    {
+                        var uv = TerrainLodShapeGeometry.Uv(face.Side, p);
+                        vertices.Add(ChunkVertexHelper.Create(color,
+                            originX + p.X, originY + p.Y, originZ + p.Z, uv.U, uv.V, layer));
+                        lights.Add(railLight);
+                    }
+                }
             }
 
             void AddFace(

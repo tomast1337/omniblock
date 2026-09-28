@@ -208,28 +208,37 @@ internal static class TerrainLodSpatialMeshBuilder
                 if (!TryLayer(span.Material, sampleSize, out var translucent)) continue;
                 if (!blocks.TryGet(span.Material.BlockId, out var block) || block is null) continue;
 
-                if (sampleSize == 1 && span.Material.Geometry == TerrainLodGeometryClass.Stairs)
+                if (sampleSize == 1 && span.Material.Geometry is TerrainLodGeometryClass.Stairs or TerrainLodGeometryClass.Fence)
                 {
                     var worldX = checked((int)tileMinX + x);
                     var worldZ = checked((int)tileMinZ + z);
-                    // Equal-material spans may contain stacked stairs. Reconstruct each block;
-                    // stretching one stair over the entire span fills the gaps between steps.
-                    for (var stairY = span.BottomY; stairY < span.TopY; stairY++)
+                    // Reconstruct each block in a merged span, including per-height fence joins.
+                    for (var shapeY = span.BottomY; shapeY < span.TopY; shapeY++)
                     {
                         guard.Checkpoint();
-                        var page = PageFor(worldX + .5, stairY + .5, worldZ + .5);
-                        foreach (var face in TerrainLodStairGeometry.Get(span.Material.Metadata))
+                        var page = PageFor(worldX + .5, shapeY + .5, worldZ + .5);
+                        var mask = (FenceAt(x - 1, z) ? FenceShape.West : 0) |
+                                   (FenceAt(x + 1, z) ? FenceShape.East : 0) |
+                                   (FenceAt(x, z - 1) ? FenceShape.North : 0) |
+                                   (FenceAt(x, z + 1) ? FenceShape.South : 0);
+                        var faces = span.Material.Geometry == TerrainLodGeometryClass.Stairs
+                            ? TerrainLodStairGeometry.Get(span.Material.Metadata) : TerrainLodFenceGeometry.Body(mask);
+                        foreach (var face in faces)
                         {
                             var appearance = Appearance(block, span.Material, face.Side, null, x, z);
-                            var neighbor = NeighborAt(column, face.Side == Side.Down ? stairY - 1 : stairY + 1);
+                            var neighbor = NeighborAt(column, face.Side == Side.Down ? shapeY - 1 : shapeY + 1);
                             Emit(page, false, face.Side, appearance, face.Shade,
                                 FaceLight(span, neighbor, face.Side), .5f, .5f,
                                 Offset(face.A), Offset(face.B), Offset(face.C), Offset(face.D), guard,
-                                textureOrigin: (worldX, stairY, worldZ));
+                                textureOrigin: (worldX, shapeY, worldZ));
                         }
 
                         (float X, float Y, float Z) Offset((float X, float Y, float Z) p) =>
-                            (worldX + p.X, stairY + p.Y, worldZ + p.Z);
+                            (worldX + p.X, shapeY + p.Y, worldZ + p.Z);
+                        bool FenceAt(int nx, int nz) => span.Material.Geometry == TerrainLodGeometryClass.Fence &&
+                            (uint)nx < (uint)tile.Width &&
+                            (uint)nz < (uint)tile.Width &&
+                            TerrainLodFenceGeometry.Connects(span.Material, Column(nx, nz).At(shapeY).Material);
                     }
                     continue;
                 }
@@ -690,7 +699,7 @@ internal static class TerrainLodSpatialMeshBuilder
     {
         translucent = TerrainLodMeshBuilder.IsTranslucent(material);
         return translucent || TerrainLodMeshBuilder.IsVolumetricDepthWriting(material) ||
-               (sampleSize == 1 && material.Geometry == TerrainLodGeometryClass.SurfaceLayer);
+               (sampleSize == 1 && material.Geometry is TerrainLodGeometryClass.SurfaceLayer or TerrainLodGeometryClass.Fence);
     }
 
     internal static bool IsHorizontallyInsetOnSide(Block block, Side side)
@@ -800,7 +809,7 @@ internal static class TerrainLodSpatialMeshBuilder
             ChunkVertex Vertex((float X, float Y, float Z) value, float u, float v)
             {
                 if (textureOrigin is { } origin)
-                    (u, v) = TerrainLodStairGeometry.Uv(side,
+                    (u, v) = TerrainLodShapeGeometry.Uv(side,
                         (value.X - origin.X, value.Y - origin.Y, value.Z - origin.Z));
                 var vertex = ChunkVertexHelper.Create(
                     color,

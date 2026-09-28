@@ -326,6 +326,9 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
 
 internal static class TerrainLodSpatialAuthority
 {
+    internal static bool PreferRefreshedColumn(long columnGeneration, long aggregateGeneration,
+        bool aggregateMatchesInstalledMesh) => columnGeneration > 0 &&
+        (!aggregateMatchesInstalledMesh || columnGeneration > aggregateGeneration);
     internal const ulong AllColumnsHidden = (1UL << 36) - 1;
 
     /// <summary>Published tiles own their complete extent except explicitly replaced columns.</summary>

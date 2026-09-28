@@ -5,16 +5,32 @@ using OmniBlock.Worlds.Lod;
 namespace OmniBlock.Client.Rendering.Chunks.Lod;
 
 /// <summary>Distinguishes an unloaded source from a new chunk lifetime at the same coordinates.</summary>
-internal sealed class TerrainLodSourceLifetime(Chunk source)
+internal sealed class TerrainLodSourceLifetime
 {
-    private readonly WeakReference<Chunk> _source = new(source);
-    public long Revision { get; } = source.TerrainRevision;
+    private readonly WeakReference<Chunk>? _source;
+    private readonly Func<bool>? _remoteIsCurrent;
+    public long Revision { get; }
+    public long RemoteGeneration { get; }
+    public TerrainLodSourceLifetime(Chunk source)
+    {
+        _source = new(source);
+        Revision = source.TerrainRevision;
+    }
+    public TerrainLodSourceLifetime(long revision, Func<bool> remoteIsCurrent, long remoteGeneration = 0)
+    {
+        Revision = revision;
+        _remoteIsCurrent = remoteIsCurrent;
+        RemoteGeneration = remoteGeneration;
+    }
 
-    public bool IsCurrent(Chunk? current)
+    public bool IsCurrent(Chunk? current, long latestRemoteGeneration = 0)
     {
         // The immutable capture remains usable after unload/collection, but never replaces a new
         // chunk instance merely because its local revision counter happens to have the same value.
-        if (!_source.TryGetTarget(out var original)) return current is null;
+        if (_remoteIsCurrent is not null)
+            return _remoteIsCurrent() && (current is null || !current.Loaded);
+        if (latestRemoteGeneration > 0 && (current is null || !current.Loaded)) return false;
+        if (_source is null || !_source.TryGetTarget(out var original)) return current is null;
         return original.TerrainRevision == Revision &&
                (current is null || ReferenceEquals(original, current));
     }

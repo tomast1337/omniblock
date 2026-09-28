@@ -116,14 +116,14 @@ internal sealed class TerrainLodBoundarySummary
             for (var x = 0; x < level.Width; x++)
             for (var y = 0; y < level.Height; y++)
             {
-                north[x * level.Height + y] = Sample(level[x, y, 0]);
-                south[x * level.Height + y] = Sample(level[x, y, level.Depth - 1]);
+                north[x * level.Height + y] = Sample(level[x, y, 0], levelIndex);
+                south[x * level.Height + y] = Sample(level[x, y, level.Depth - 1], levelIndex);
             }
             for (var z = 0; z < level.Depth; z++)
             for (var y = 0; y < level.Height; y++)
             {
-                west[z * level.Height + y] = Sample(level[0, y, z]);
-                east[z * level.Height + y] = Sample(level[level.Width - 1, y, z]);
+                west[z * level.Height + y] = Sample(level[0, y, z], levelIndex);
+                east[z * level.Height + y] = Sample(level[level.Width - 1, y, z], levelIndex);
             }
             levels.Add(levelIndex, new BoundaryLevel(
                 level.Width, level.Height, level.Depth, north, south, west, east));
@@ -143,11 +143,12 @@ internal sealed class TerrainLodBoundarySummary
                 (byte)((levels.Sky << 4) | levels.Block);
         }
 
-        BoundarySample Sample(TerrainLodCell cell)
+        BoundarySample Sample(TerrainLodCell cell, int levelIndex)
         {
             var solid = TerrainLodMeshBuilder.TrySelectVolumetricDepthMaterial(cell, out var depth)
                 ? Index(depth)
-                : (ushort)0;
+                : levelIndex == 0 && cell.Primary.Geometry == TerrainLodGeometryClass.Fence
+                    ? Index(cell.Primary) : (ushort)0;
             var translucent = TerrainLodMeshBuilder.TrySelectTranslucentMaterial(
                     cell, out var transparent)
                 ? Index(transparent)
@@ -331,9 +332,15 @@ internal static class TerrainLodMeshBuilder
             float maxX = Math.Min((x + 1) * level.Scale, 16);
             var maxY = Math.Min((y + 1) * level.Scale, ChuckFormat.WorldHeight) - VerticalOrigin;
             float maxZ = Math.Min((z + 1) * level.Scale, 16);
-            if (levelIndex == 0 && material.Geometry == TerrainLodGeometryClass.Stairs)
+            if (levelIndex == 0 && material.Geometry is TerrainLodGeometryClass.Stairs or TerrainLodGeometryClass.Fence)
             {
-                foreach (var face in TerrainLodStairGeometry.Get(material.Metadata))
+                var mask = (FenceAt(x - 1, z) ? FenceShape.West : 0) |
+                           (FenceAt(x + 1, z) ? FenceShape.East : 0) |
+                           (FenceAt(x, z - 1) ? FenceShape.North : 0) |
+                           (FenceAt(x, z + 1) ? FenceShape.South : 0);
+                var faces = material.Geometry == TerrainLodGeometryClass.Stairs
+                    ? TerrainLodStairGeometry.Get(material.Metadata) : TerrainLodFenceGeometry.Body(mask);
+                foreach (var face in faces)
                     AddFace(face.Side, face.Shade, .5f, .5f,
                         Offset(face.A), Offset(face.B), Offset(face.C), Offset(face.D),
                         blockAlignedUv: true);
@@ -341,6 +348,11 @@ internal static class TerrainLodMeshBuilder
 
                 (float X, float Y, float Z) Offset((float X, float Y, float Z) p) =>
                     (minX + p.X, minY + p.Y, minZ + p.Z);
+                // Out-of-snapshot connections belong to the separately versioned boundary mesh.
+                bool FenceAt(int nx, int nz) => material.Geometry == TerrainLodGeometryClass.Fence &&
+                    (uint)nx < (uint)level.Width &&
+                    (uint)nz < (uint)level.Depth &&
+                    TerrainLodFenceGeometry.Connects(material, level[nx, y, nz].Primary);
             }
             if (levelIndex == 0 && material.Geometry is
                     TerrainLodGeometryClass.SurfaceLayer or TerrainLodGeometryClass.BoundedCube)
@@ -488,7 +500,7 @@ internal static class TerrainLodMeshBuilder
                     ChunkVertex Vertex((float X, float Y, float Z) point, float u, float v)
                     {
                         if (blockAlignedUv)
-                            (u, v) = TerrainLodStairGeometry.Uv(side,
+                            (u, v) = TerrainLodShapeGeometry.Uv(side,
                                 (point.X - minX, point.Y - minY, point.Z - minZ));
                         var vertex = ChunkVertexHelper.Create(
                             color, point.X, point.Y, point.Z, u, v, layer);
@@ -630,6 +642,7 @@ internal static class TerrainLodMeshBuilder
 
     internal static bool IsDepthWriting(TerrainLodMaterial material) =>
         material.Geometry is TerrainLodGeometryClass.Opaque or
+            TerrainLodGeometryClass.Fence or
             TerrainLodGeometryClass.Stairs or
             TerrainLodGeometryClass.Cutout or
             TerrainLodGeometryClass.ConservativeCube or

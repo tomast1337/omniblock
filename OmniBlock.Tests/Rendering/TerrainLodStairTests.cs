@@ -37,7 +37,7 @@ public sealed class TerrainLodStairTests
             volume += Vector3.Dot(a, Vector3.Cross(c, d)) / 6;
             foreach (var point in new[] { face.A, face.B, face.C, face.D })
             {
-                var uv = TerrainLodStairGeometry.Uv(face.Side, point);
+                var uv = TerrainLodShapeGeometry.Uv(face.Side, point);
                 Assert.InRange(uv.U, 0, 1);
                 Assert.InRange(uv.V, 0, 1);
             }

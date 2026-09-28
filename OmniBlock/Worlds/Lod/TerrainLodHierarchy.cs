@@ -24,7 +24,8 @@ public enum TerrainLodGeometryClass : byte
     BoundedCube,
     // Catalog-only policy; resolved to canonical air before reduction or serialization.
     Omitted,
-    Stairs
+    Stairs,
+    Fence
 }
 
 public enum TerrainLodReductionStrategy : byte
@@ -129,7 +130,7 @@ public sealed class TerrainLodMaterialCatalog
                         TerrainLodGeometryClass.ConservativeCube),
                     block.Material.MapColor.ColorValue,
                     explicitDescriptor?.MaxSampleSize ??
-                    (geometry == TerrainLodGeometryClass.CrossedQuad ? 1 : int.MaxValue));
+                    (geometry is TerrainLodGeometryClass.CrossedQuad or TerrainLodGeometryClass.Fence ? 1 : int.MaxValue));
             }));
     }
 
@@ -160,6 +161,8 @@ public sealed class TerrainLodMaterialCatalog
             return TerrainLodGeometryClass.Liquid;
         if (block.RenderType == BlockRendererType.Stairs)
             return TerrainLodGeometryClass.Stairs;
+        if (block.RenderType == BlockRendererType.Fence)
+            return TerrainLodGeometryClass.Fence;
         if (block.RenderType == BlockRendererType.Entity)
             return TerrainLodGeometryClass.Omitted;
         // Plants and crops have no volume. Level zero can preserve their silhouette as crossed

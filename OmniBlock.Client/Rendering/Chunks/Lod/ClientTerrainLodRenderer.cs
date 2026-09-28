@@ -412,10 +412,39 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(tile);
-        if (tile.Key.Level < MinimumSpatialGpuLevel ||
+        if (!TerrainLodTileRequestMessage.IsRequestLevel(tile.Key.Level) ||
             tile.Key.Level > _spatialPolicy.MaximumSpatialLevel) return;
         if (generation < _remoteRefreshNeeded.GetValueOrDefault(tile.Key) ||
             generation < _remoteTileGenerations.GetValueOrDefault(tile.Key)) return;
+        if (tile.Key.Level == 0)
+        {
+            var column = (tile.Key.X, tile.Key.Z);
+            if (!_resident.ContainsKey(column) ||
+                _world.BlockHost.HasChunk(column.X, column.Z) &&
+                _world.BlockHost.GetChunk(column.X, column.Z).Loaded)
+            {
+                _remoteRefreshNeeded.Remove(tile.Key);
+                _remoteRequestStates.Remove(tile.Key);
+                return;
+            }
+            var source = TerrainLodRemoteColumnSource.Expand(tile, _world.Content.Blocks,
+                !_world.Dimension.HasCeiling);
+            var admission = _conversion.Submit(source);
+            if (admission is TerrainLodAdmissionResult.RejectedAtCapacity or
+                TerrainLodAdmissionResult.RejectedStaleRevision) return;
+            var lifetime = new TerrainLodSourceLifetime(source.TerrainRevision, () =>
+                _remoteTileGenerations.GetValueOrDefault(tile.Key) == generation &&
+                _remoteRefreshNeeded.GetValueOrDefault(tile.Key) <= generation, generation);
+            _conversionVisuals.Replace(column, new(lifetime, new WorldRegionSnapshot(_world, source), source));
+            _refinementSources.Remove(column);
+            _pending.Remove(column);
+            _remoteTileGenerations[tile.Key] = generation;
+            _remoteRequestStates.Remove(tile.Key);
+            _remoteRefreshNeeded.Remove(tile.Key);
+            _remoteTiles++;
+            _remoteWireBytes += Math.Max(0, wireBytes);
+            return;
+        }
         RecordRemoteSource(tile);
         var unchanged = _spatialHierarchy.TryGetCoverage(tile.Key, out var previous, out _) &&
                         previous?.CanonicalHash == tile.CanonicalHash;
@@ -436,7 +465,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         long generation = 0)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (key.Level < MinimumSpatialGpuLevel ||
+        if (!TerrainLodTileRequestMessage.IsRequestLevel(key.Level) ||
             key.Level > _spatialPolicy.MaximumSpatialLevel) return;
         if (generation < _remoteRefreshNeeded.GetValueOrDefault(key) ||
             generation < _remoteTileGenerations.GetValueOrDefault(key)) return;
@@ -461,8 +490,21 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             case TerrainLodTileStatus.Invalidated:
                 // Keep both the old source and GPU presentation until a replacement is fully
                 // built. Refresh requests bypass the ordinary "already covered" shortcut.
-                if (generation <= _remoteTileGenerations.GetValueOrDefault(key)) break;
+                if (generation <= Math.Max(_remoteTileGenerations.GetValueOrDefault(key),
+                        _remoteRefreshNeeded.GetValueOrDefault(key))) break;
+                if (key.Level == 0 && (!_resident.ContainsKey((key.X, key.Z)) ||
+                        _world.BlockHost.HasChunk(key.X, key.Z) &&
+                        _world.BlockHost.GetChunk(key.X, key.Z).Loaded))
+                {
+                    // Exact subscriptions already carry these edits. Requesting their leaves as
+                    // well lets active fluids consume the entire fair remote-refresh lane.
+                    _remoteRefreshNeeded.Remove(key);
+                    _remoteRequestStates.Remove(key);
+                    break;
+                }
+                _spatialHierarchy.MarkTileChanged(key);
                 if (_remoteRequestStates.ContainsKey(key) ||
+                    key.Level == 0 && _resident.ContainsKey((key.X, key.Z)) ||
                     _spatialHierarchy.TryGetCoverage(key, out _, out _) ||
                     _spatialPresentations.IsReady(key))
                     _remoteRefreshNeeded[key] = Math.Max(generation,
@@ -654,7 +696,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         int outerBoundaryMinimumLevel)
     {
         foreach (var key in _remoteRequestStates.Keys
-                     .Where(key => key.Level < MinimumSpatialGpuLevel ||
+                     .Where(key => !TerrainLodTileRequestMessage.IsRequestLevel(key.Level) ||
                                    key.Level > _spatialPolicy.MaximumSpatialLevel ||
                                    key.DistanceTo(cameraChunkX, cameraChunkZ) >
                                    horizonDistanceChunks)
@@ -916,6 +958,16 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                 continue;
             }
 
+            // A newly subscribed exact source supersedes any in-flight remote refresh. Its local
+            // revision counter is not comparable to the server leaf's revision counter.
+            var leafKey = new TerrainLodTileKey(0, key.X, key.Z);
+            if (_remoteTileGenerations.Remove(leafKey))
+            {
+                _conversion.Discard(key.X, key.Z);
+                _conversionVisuals.Discard(key);
+            }
+            _remoteRefreshNeeded.Remove(leafKey);
+            _remoteRequestStates.Remove(leafKey);
             var source = TerrainLodSourceSnapshot.Capture(chunk);
             var result = _conversion.Submit(source);
             if (result == TerrainLodAdmissionResult.RejectedAtCapacity)
@@ -1455,7 +1507,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             var key = (result.ChunkX, result.ChunkZ);
             var currentChunk = _world.BlockHost.HasChunk(key.ChunkX, key.ChunkZ)
                 ? _world.BlockHost.GetChunk(key.ChunkX, key.ChunkZ) : null;
-            if (compiled.SourceLifetime is { } lifetime && !lifetime.IsCurrent(currentChunk))
+            if (compiled.SourceLifetime is { } lifetime && !lifetime.IsCurrent(currentChunk,
+                    _remoteTileGenerations.GetValueOrDefault(new TerrainLodTileKey(0, key.ChunkX, key.ChunkZ))))
             {
                 _staleResults++;
                 if (currentChunk is not null) ObserveColumn(key.ChunkX, key.ChunkZ);
@@ -1529,7 +1582,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                 continue;
             }
 
-            if (!captured.Lifetime.IsCurrent(chunk))
+            if (!captured.Lifetime.IsCurrent(chunk,
+                    _remoteTileGenerations.GetValueOrDefault(new TerrainLodTileKey(0, key.ChunkX, key.ChunkZ))))
             {
                 _conversion.AcknowledgeCompleted(
                     result.ChunkX, result.ChunkZ, result.TerrainRevision);
@@ -2304,6 +2358,22 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                             _completedSpatialHandoffs.Remove(((int)x, (int)z));
                 }
             }
+            // A newer leaf may arrive while its aggregate lacks siblings or is still rebuilding.
+            // Keep the aggregate elsewhere, but do not cover this fresh installed column with it.
+            foreach (var (column, local) in _resident)
+            {
+                if (local.RemoteGeneration == 0) continue;
+                foreach (var draw in published.Draws)
+                {
+                    var tile = draw.Selection.Tile;
+                    if (!tile.ContainsChunk(column.X, column.Z)) continue;
+                    var aggregateCurrent = _spatialHierarchy.TryGetCoverage(tile, out var source, out _) &&
+                        source?.CanonicalHash == draw.Presentation.CanonicalHash;
+                    if (TerrainLodSpatialAuthority.PreferRefreshedColumn(local.RemoteGeneration,
+                            _remoteTileGenerations.GetValueOrDefault(tile), aggregateCurrent))
+                        _spatialReplacementColumns.Add(column);
+                }
+            }
         }
 
         bool ReplacementReady(int x, int z)
@@ -2543,6 +2613,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         retainedVersions.UnionWith(_spatialPresentations.ReadyKeys);
         retainedVersions.UnionWith(_remoteRefreshNeeded.Keys);
         retainedVersions.UnionWith(_remoteRequestStates.Keys);
+        retainedVersions.UnionWith(_resident.Keys.Select(column => new TerrainLodTileKey(0, column.X, column.Z)));
         foreach (var key in _remoteTileGenerations.Keys
                      .Where(key => !retainedVersions.Contains(key)).ToArray())
             _remoteTileGenerations.Remove(key);
@@ -3717,9 +3788,11 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         private ColumnPresentation(
             long terrainRevision,
             Dictionary<int, GpuLevel> levels,
-            TerrainLodBoundarySummary boundaries)
+            TerrainLodBoundarySummary boundaries,
+            long remoteGeneration)
         {
             TerrainRevision = terrainRevision;
+            RemoteGeneration = remoteGeneration;
             Levels = levels;
             Boundaries = boundaries;
             MinimumLevel = levels.Count == 0 ? MinimumHorizonMeshLevel : levels.Keys.Min();
@@ -3727,6 +3800,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         }
 
         public long TerrainRevision { get; }
+        public long RemoteGeneration { get; }
         public Dictionary<int, GpuLevel> Levels { get; }
         public TerrainLodBoundarySummary Boundaries { get; }
         public int MinimumLevel { get; }
@@ -3827,7 +3901,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                     compiled.Conversion.TerrainRevision,
                     levels,
                     compiled.Boundaries ?? throw new InvalidOperationException(
-                        "Compiled terrain LOD result has no boundary summary."));
+                        "Compiled terrain LOD result has no boundary summary."),
+                    compiled.SourceLifetime?.RemoteGeneration ?? 0);
             }
             catch
             {

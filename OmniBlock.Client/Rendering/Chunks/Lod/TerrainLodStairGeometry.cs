@@ -1,5 +1,6 @@
 using OmniBlock.Blocks;
 using OmniBlock.Util.Maths;
+using Face = OmniBlock.Client.Rendering.Chunks.Lod.TerrainLodShapeGeometry.Face;
 
 namespace OmniBlock.Client.Rendering.Chunks.Lod;
 
@@ -10,24 +11,9 @@ namespace OmniBlock.Client.Rendering.Chunks.Lod;
 /// </summary>
 internal static class TerrainLodStairGeometry
 {
-    internal readonly record struct Face(Side Side, float Shade,
-        (float X, float Y, float Z) A, (float X, float Y, float Z) B,
-        (float X, float Y, float Z) C, (float X, float Y, float Z) D);
-
     private static readonly Face[][] Shapes = Enumerable.Range(0, 8).Select(Build).ToArray();
 
     internal static ReadOnlySpan<Face> Get(byte metadata) => Shapes[metadata & 7];
-
-    // Crop from the block texture rather than restarting/stretching it on every half-cell.
-    internal static (float U, float V) Uv(Side side, (float X, float Y, float Z) point) => side switch
-    {
-        Side.Down => (1 - point.X, 1 - point.Z),
-        Side.Up => (point.X, 1 - point.Z),
-        Side.West => (1 - point.Z, 1 - point.Y),
-        Side.East => (point.Z, 1 - point.Y),
-        Side.North => (point.X, 1 - point.Y),
-        _ => (1 - point.X, 1 - point.Y)
-    };
 
     private static Face[] Build(int metadata)
     {

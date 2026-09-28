@@ -14,6 +14,29 @@ public sealed class TerrainLodSpatialHierarchyCoordinatorTests
     ]);
 
     [Fact]
+    public async Task Remote_invalidation_keeps_coverage_but_does_not_let_old_leaves_reject_replacement()
+    {
+        using var coordinator = Coordinator(MaximumLevelTwoPolicy(), tileCapacity: 64);
+        var root = new TerrainLodTileKey(2, -1, 0);
+        foreach (var leaf in Leaves(root, block: 1, revision: 1)) coordinator.PublishLeaf(leaf);
+        await PumpUntil(coordinator, () => coordinator.IsCurrent(root));
+        Assert.True(coordinator.TryGetCoverage(root, out var old, out _));
+        coordinator.MarkTileChanged(root);
+        Assert.True(coordinator.TryGetCoverage(root, out var fallback, out var current));
+        Assert.Same(old, fallback);
+        Assert.False(current);
+        Assert.False(coordinator.IsCurrent(root.Child(0).Child(0)));
+        var replacement = TerrainLodColumnTile.CreateUniform(root, 0, 4,
+            TerrainLodColumn.Create(4, [new TerrainLodColumnSpan(0, 4, TerrainLodMaterial.Air, 0, 15)]),
+            "remote-replacement");
+        Assert.NotEqual(TerrainLodTilePublicationResult.IgnoredCurrent,
+            coordinator.PublishCached(replacement));
+        coordinator.DrainCompleted(16);
+        Assert.True(coordinator.TryGetCoverage(root, out var installed, out _));
+        Assert.Equal(replacement.CanonicalHash, installed!.CanonicalHash);
+    }
+
+    [Fact]
     public async Task Candidate_is_not_coverage_until_the_coordinator_publishes_it()
     {
         using var coordinator = Coordinator(MaximumLevelOnePolicy());
