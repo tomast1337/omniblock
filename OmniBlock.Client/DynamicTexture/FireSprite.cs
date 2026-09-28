@@ -1,3 +1,4 @@
+using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Textures;
 
 namespace OmniBlock.Client.DynamicTexture;
@@ -7,11 +8,13 @@ internal class FireSprite(string tile, string customTexture) : Rendering.Core.Te
     private float[] _current = new float[320];
     private float[] _next = new float[320];
 
-    public override void Setup(OmniBlock game)
+    internal override Rendering.Core.Textures.DynamicTexture CreateReloadCopy() => new FireSprite(tile, customTexture);
+
+    internal override void Setup(TextureAnimationContext context)
     {
         Array.Clear(_current);
         Array.Clear(_next);
-        TryLoadCustomTexture(game, customTexture);
+        TryLoadCustomTexture(context, customTexture);
     }
 
     public override void tick()

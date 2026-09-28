@@ -64,6 +64,10 @@ internal sealed class SectionRenderState(Vector3D<int> position, MeshLifecycleDi
     public Vector3D<int> Position { get; } = position;
     public ChunkMeshVersion Version { get; } = ChunkMeshVersion.Get();
     public SubChunkRenderer? Renderer { get; private set; }
+    internal global::OmniBlock.Client.Rendering.Blocks.Models.BlockModelBindings? PresentationModels { get; set; }
+
+    internal bool CanComposeModelPages(in MeshBuildResult result) => result.RebuildPlan.IsFull ||
+        ReferenceEquals(PresentationModels, result.Models);
     public bool IsLit => Renderer?.IsLit == true;
     public MeshWorkPriority RequestedPriority { get; private set; } = MeshWorkPriority.Background;
     public long RequestedAt { get; private set; } = -1;

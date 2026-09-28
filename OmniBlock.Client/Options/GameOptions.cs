@@ -1000,7 +1000,11 @@ public class GameOptions
         _ => throw new JsonException("Shader option must be a scalar value.")
     };
 
-    public void SaveOptions()
+    public void SaveOptions() => SaveOptionsCore();
+
+    internal bool SaveTexturePackSelection(string name) => SaveOptionsCore(name);
+
+    private bool SaveOptionsCore(string? texturePack = null)
     {
         string? temporaryPath = null;
         try
@@ -1011,7 +1015,7 @@ public class GameOptions
                 ["options"] = BuildOptionsJson(),
                 ["client"] = new JsonObject
                 {
-                    ["skin"] = Skin,
+                    ["skin"] = texturePack ?? Skin,
                     ["advancedItemTooltips"] = AdvancedItemTooltips,
                     ["lastServer"] = LastServer,
                     ["cameraMode"] = (int)CameraMode
@@ -1027,10 +1031,12 @@ public class GameOptions
             File.WriteAllText(temporaryPath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
             File.Move(temporaryPath, _optionsPath, true);
             temporaryPath = null;
+            return true;
         }
         catch (Exception exception)
         {
             _logger.LogError(exception, "Failed to save options to {OptionsPath}", _optionsPath);
+            return false;
         }
         finally
         {

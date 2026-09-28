@@ -15,12 +15,12 @@ using static OmniBlock.Client.Rendering.Core.Textures.TextureAtlasMipmapGenerato
 
 namespace OmniBlock.Client.Rendering.Core.Textures;
 
-public class TextureManager : IDisposable
+public partial class TextureManager : IDisposable
 {
     internal global::OmniBlock.Client.Rendering.Blocks.Models.BlockModelResourceSlot BlockModels { get; } = new();
-    private readonly Dictionary<string, int> _atlasTileSizes = [];
-    private readonly Dictionary<string, int[]> _colors = [];
-    private readonly List<DynamicTexture> _dynamicTextures = [];
+    private Dictionary<string, int> _atlasTileSizes = [];
+    private Dictionary<string, int[]> _colors = [];
+    private List<DynamicTexture> _dynamicTextures = [];
     internal IReadOnlyDictionary<int, byte[]>? TerrainAnimationFramesForTest { get; set; }
     private readonly OmniBlock _game;
     private readonly GameOptions _gameOptions;
@@ -102,6 +102,7 @@ public class TextureManager : IDisposable
             () => _gameOptions.UseMipmaps);
 
         array.Rebuild();
+        array.Seal();
         return array;
     }
 
@@ -164,28 +165,33 @@ public class TextureManager : IDisposable
         }
     }
 
-    public unsafe void Load(Image<Rgba32> image, Texture2D texture, bool isTerrain)
+    public void Load(Image<Rgba32> image, Texture2D texture, bool isTerrain)
     {
-        texture.Bind();
+        try { UploadImage(image, texture, isTerrain, _blur, _clamp); texture.Bind(); }
+        finally { _blur = false; _clamp = false; }
+    }
+
+    private unsafe void UploadImage(Image<Rgba32> image, Texture2D texture, bool isTerrain, bool blur, bool clamp)
+    {
 
         if (isTerrain)
         {
             var tileSize = image.Width / 16;
-            var mips = GenerateMipmaps(image, tileSize);
+            var mips = _gameOptions.UseMipmaps ? GenerateMipmaps(image, tileSize) : [image];
             var mipCount = _gameOptions.UseMipmaps ? mips.Length : 1;
 
-            for (var level = 0; level < mipCount; level++)
+            try
             {
-                var mip = mips[level];
-                var pixels = new byte[mip.Width * mip.Height * 4];
-                mip.CopyPixelDataTo(pixels);
-                fixed (byte* ptr = pixels)
+                for (var level = 0; level < mipCount; level++)
                 {
-                    texture.Upload(mip.Width, mip.Height, ptr, level, PixelFormat.Rgba, InternalFormat.Rgba8);
+                    var mip = mips[level];
+                    var pixels = new byte[mip.Width * mip.Height * 4];
+                    mip.CopyPixelDataTo(pixels);
+                    fixed (byte* ptr = pixels)
+                        texture.Upload(mip.Width, mip.Height, ptr, level, PixelFormat.Rgba, InternalFormat.Rgba8);
                 }
-
-                if (level > 0) mip.Dispose();
             }
+            finally { for (var level = 1; level < mips.Length; level++) mips[level].Dispose(); }
 
             texture.SetFilter(_gameOptions.UseMipmaps ? TextureMinFilter.NearestMipmapNearest : TextureMinFilter.Nearest, TextureMagFilter.Nearest);
             texture.SetMaxLevel(mipCount - 1);
@@ -198,8 +204,8 @@ public class TextureManager : IDisposable
             return;
         }
 
-        texture.SetFilter(_blur ? TextureMinFilter.Linear : TextureMinFilter.Nearest, _blur ? TextureMagFilter.Linear : TextureMagFilter.Nearest);
-        texture.SetWrap(_clamp ? TextureWrapMode.ClampToEdge : TextureWrapMode.Repeat, _clamp ? TextureWrapMode.ClampToEdge : TextureWrapMode.Repeat);
+        texture.SetFilter(blur ? TextureMinFilter.Linear : TextureMinFilter.Nearest, blur ? TextureMagFilter.Linear : TextureMagFilter.Nearest);
+        texture.SetWrap(clamp ? TextureWrapMode.ClampToEdge : TextureWrapMode.Repeat, clamp ? TextureWrapMode.ClampToEdge : TextureWrapMode.Repeat);
 
         var rawPixels = new byte[image.Width * image.Height * 4];
         image.CopyPixelDataTo(rawPixels);
@@ -208,8 +214,6 @@ public class TextureManager : IDisposable
             texture.Upload(image.Width, image.Height, ptr);
         }
 
-        _clamp = false;
-        _blur = false;
     }
 
     public void BindTexture(TextureHandle? handle) => handle?.Bind();
@@ -328,66 +332,21 @@ public class TextureManager : IDisposable
 
     public void AddDynamicTexture(DynamicTexture t)
     {
-        _dynamicTextures.Add(t);
         t.Setup(_game);
         t.tick();
+        _dynamicTextures.Add(t);
 
         _terrainHandle = null;
         _itemsHandle = null;
     }
 
-    public void Reload()
+    public void Reload() => TryReload(_texturePacks.SelectedTexturePack);
+
+    internal List<DynamicTexture> PrepareAnimations(TexturePack pack)
     {
-        // Invalidate remembered visual selections even if reload subsequently fails.
-        ResourceGeneration++;
-        _atlasTileSizes.Clear();
-        foreach (var entry in _textures)
-        {
-            entry.Value.Texture?.Dispose();
-
-            var newTexture = new Texture2D(entry.Key, _impostorCaptureDependencies.Contains(entry.Key));
-            entry.Value.Texture = newTexture;
-
-            try
-            {
-                using var img = LoadImageFromResource(entry.Key);
-                _atlasTileSizes[entry.Key] = img.Width / 16;
-                Load(img, newTexture, entry.Key.Contains("terrain.png"));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to reload texture {Path}", entry.Key);
-                _atlasTileSizes[entry.Key] = _missingTextureImage.Width / 16;
-                Load(_missingTextureImage, newTexture, false);
-            }
-        }
-
-        var oldImages = new Dictionary<uint, (Image<Rgba32> Image, TextureHandle Handle)>(_images);
-        _images.Clear();
-        foreach (var entry in oldImages)
-        {
-            entry.Value.Handle.Texture?.Dispose();
-
-            var newTexture = new Texture2D(entry.Value.Handle.Texture?.Source ?? "Image_Direct_Reload");
-            entry.Value.Handle.Texture = newTexture;
-            Load(entry.Value.Image, newTexture, false);
-            _images[newTexture.Id] = entry.Value;
-        }
-
-        foreach (var key in new List<string>(_colors.Keys)) GetColors(key);
-
-        foreach (var dynamicTexture in _dynamicTextures)
-        {
-            dynamicTexture.Setup(_game);
-        }
-
-        // Re-resolves every name through the new pack. Only the arrays that were already built get
-        // one: a pack switch is no reason to pay for an array nothing has asked for yet.
-        _terrainArray?.Rebuild();
-        _itemsArray?.Rebuild();
-
-        _terrainHandle = null;
-        _itemsHandle = null;
+        using var source = new TexturePackSnapshot(pack);
+        using var context = new TextureAnimationContext(source.Open);
+        return DynamicTexture.PrepareReload(_dynamicTextures, context);
     }
 
     /// <summary>Atomically replaces the catalog-selected CPU capture sources and reloads changed residency.</summary>
@@ -395,8 +354,7 @@ public class TextureManager : IDisposable
     {
         var replacement = paths.ToHashSet(StringComparer.Ordinal);
         if (_impostorCaptureDependencies.SetEquals(replacement)) return;
-        _impostorCaptureDependencies = replacement;
-        Reload();
+        TryReload(_texturePacks.SelectedTexturePack, captureDependencies: replacement);
     }
 
     public unsafe void Tick()

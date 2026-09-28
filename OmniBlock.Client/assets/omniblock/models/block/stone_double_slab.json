@@ -1,0 +1,8 @@
+{
+  "parent": "omniblock:block/templates/cube",
+  "textures": {
+    "top": "omniblock:stone_slab_top",
+    "side": "omniblock:stone_slab_side",
+    "bottom": "omniblock:stone_slab_top"
+  }
+}

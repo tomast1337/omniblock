@@ -1,3 +1,4 @@
+using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Textures;
 
 namespace OmniBlock.Client.DynamicTexture;
@@ -12,7 +13,9 @@ internal class WaterSideSprite : Rendering.Core.Textures.DynamicTexture
 
     public WaterSideSprite() : base(Atlases.Terrain.IndexOf("water_texture_1")) => Replicate = 2;
 
-    public override void Setup(OmniBlock game) => TryLoadCustomTexture(game, "custom_water_flowing.png");
+    internal override Rendering.Core.Textures.DynamicTexture CreateReloadCopy() => new WaterSideSprite();
+
+    internal override void Setup(TextureAnimationContext context) => TryLoadCustomTexture(context, "custom_water_flowing.png");
 
     public override void tick()
     {

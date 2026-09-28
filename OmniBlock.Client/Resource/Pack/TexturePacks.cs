@@ -23,7 +23,7 @@ public class TexturePacks
         }
 
         _currentTexturePack = game.Options.Skin;
-        updateAvaliableTexturePacks();
+        UpdateAvailableTexturePacks(initial: true);
         SelectedTexturePack.func_6482_a();
     }
 
@@ -31,26 +31,39 @@ public class TexturePacks
 
     public bool setTexturePack(TexturePack texturePack)
     {
-        if (texturePack == SelectedTexturePack)
+        if (texturePack == SelectedTexturePack) return false;
+        var name = texturePack.TexturePackFileName ?? "Default";
+        try
         {
+            // Keep legacy lazy resource reads ready, without closing or changing the active pack.
+            if (texturePack is ZippedTexturePack zipped) zipped.OpenForSelection();
+            else texturePack.func_6482_a();
+            if (!_game.TextureManager.TryReload(texturePack, () => _game.Options.SaveTexturePackSelection(name)))
+            {
+                texturePack.CloseTexturePackFile();
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            texturePack.CloseTexturePackFile();
+            _logger.LogError(ex, "Failed to prepare texture pack {Pack}.", name);
             return false;
         }
-
-        SelectedTexturePack.CloseTexturePackFile();
-        _currentTexturePack = texturePack.TexturePackFileName;
+        var previous = SelectedTexturePack;
+        _currentTexturePack = name;
         SelectedTexturePack = texturePack;
-
-        _game.Options.Skin = _currentTexturePack ?? "Default";
-        _game.Options.SaveOptions();
-
-        SelectedTexturePack.func_6482_a();
+        _game.Options.Skin = name;
+        try { previous.CloseTexturePackFile(); }
+        catch (Exception ex) { _logger.LogWarning(ex, "Failed to close retired texture pack."); }
         return true;
     }
 
-    public void updateAvaliableTexturePacks()
+    public void updateAvaliableTexturePacks() => UpdateAvailableTexturePacks(initial: false);
+
+    private void UpdateAvailableTexturePacks(bool initial)
     {
         List<TexturePack> availablePacks = [];
-        SelectedTexturePack = _defaultTexturePack;
         availablePacks.Add(_defaultTexturePack);
 
         if (_texturePackDir.Exists)
@@ -72,7 +85,7 @@ public class TexturePacks
                         cachedPack = newPack;
                     }
 
-                    if (cachedPack.TexturePackFileName == _currentTexturePack)
+                    if (initial && cachedPack.TexturePackFileName == _currentTexturePack)
                     {
                         SelectedTexturePack = cachedPack;
                     }
@@ -86,7 +99,9 @@ public class TexturePacks
             }
         }
 
-        SelectedTexturePack ??= _defaultTexturePack;
+        // A directory refresh is not a resource transaction. Keep a removed/updated active pack
+        // alive until the user explicitly selects a replacement that successfully prepares.
+        if (!availablePacks.Contains(SelectedTexturePack)) availablePacks.Add(SelectedTexturePack);
 
         foreach (var oldPack in AvailableTexturePacks)
         {

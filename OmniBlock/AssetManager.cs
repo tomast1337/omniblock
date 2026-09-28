@@ -287,6 +287,9 @@ public class AssetManager
         return _loadedAssets.TryGetValue(assetPath, out var asset) ? asset : throw new Exception($"Unknown asset: {assetPath}");
     }
 
+    public bool TryGetAsset(string assetPath, out Asset? asset) =>
+        _loadedAssets.TryGetValue(assetPath.TrimStart('/'), out asset);
+
     private void ExtractNeccessaryAssets()
     {
         Directory.CreateDirectory("assets");

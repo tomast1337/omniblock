@@ -21,7 +21,7 @@ internal sealed class EntityImpostorTestControls(OmniBlock game)
             case "release-readback": prototype.HoldReadbackForTest = false; return true;
             case "hold-capture": prototype.HoldCaptureForTest = true; return true;
             case "release-capture": prototype.HoldCaptureForTest = false; return true;
-            case "reload": game.TextureManager.Reload(); return true;
+            case "reload": return game.TextureManager.TryReload(game.TexturePackList.SelectedTexturePack);
             case "pack-red":
             case "pack-green":
             case "pack-original":
@@ -29,8 +29,7 @@ internal sealed class EntityImpostorTestControls(OmniBlock game)
                 // The fixture overlay leaves all other resources on the ordinary fallback path.
                 var pack = action == "pack-red" ? _red ??= new TintPack(true) :
                     action == "pack-green" ? _green ??= new TintPack(false) : _original;
-                game.TexturePackList.setTexturePack(pack);
-                game.TextureManager.Reload(); return true;
+                return ReferenceEquals(pack, game.TexturePackList.SelectedTexturePack) || game.TexturePackList.setTexturePack(pack);
             default: return false;
         }
     }
@@ -52,5 +51,6 @@ internal sealed class EntityImpostorTestControls(OmniBlock game)
             using var output = new MemoryStream(); image.SaveAsPng(output); _skin = output.ToArray();
         }
         public override Stream? GetResourceAsStream(string path) => path == "/mob/cow.png" ? new MemoryStream(_skin, false) : base.GetResourceAsStream(path);
+        internal override Stream? OpenReloadOverride(string path) => path == "mob/cow.png" ? new MemoryStream(_skin, false) : null;
     }
 }

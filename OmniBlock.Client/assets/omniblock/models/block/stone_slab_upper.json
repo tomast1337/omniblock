@@ -1,0 +1,41 @@
+{
+  "elements": [
+    {
+      "from": [
+        0,
+        8,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "omniblock:stone_slab_side"
+        },
+        "up": {
+          "texture": "omniblock:stone_slab_side",
+          "cullface": "up"
+        },
+        "north": {
+          "texture": "omniblock:stone_slab_side",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "omniblock:stone_slab_side",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "omniblock:stone_slab_side",
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "omniblock:stone_slab_side",
+          "cullface": "east"
+        }
+      }
+    }
+  ]
+}

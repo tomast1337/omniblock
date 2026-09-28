@@ -977,7 +977,7 @@ public partial class OmniBlock :
                     if (_blockGallery == null)
                     {
                         var report = Rendering.Blocks.Models.BlockModelResourceSmoke.Run(TextureManager,
-                            TexturePackList.SelectedTexturePack, Options.UseMipmaps);
+                            TexturePackList.SelectedTexturePack, Options.UseMipmaps, Content.Blocks);
                         _e2eTestController.WriteTextArtifact("block-model-resources.json", System.Text.Json.JsonSerializer.Serialize(report));
                     }
                     _blockGallery ??= new BlockRenderGallery(this);
@@ -1483,6 +1483,8 @@ public partial class OmniBlock :
         TextureManager.AddDynamicTexture(new FireSprite("fire_layer_1", "custom_fire_n_s.png"));
 
         WorldRenderer = new WorldRenderer(this, TextureManager);
+        if (!TextureManager.TryReload(TexturePackList.SelectedTexturePack))
+            throw new InvalidOperationException("Initial block-model resource preparation failed; see the resource diagnostic above.");
         ApplyEntityImpostorOption(Options.EntityImpostors);
         ParticleManager = new ParticleManager(World, TextureManager, Options);
 

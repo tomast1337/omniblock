@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using OmniBlock.Blocks;
+using OmniBlock.Client.Rendering.Blocks.Models;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Textures;
 using OmniBlock.Util.Maths;
@@ -9,6 +10,7 @@ namespace OmniBlock.Client.Rendering.Blocks;
 
 public ref struct BlockRenderContext
 {
+    internal CompiledCuboidGeometry? CompiledCuboid;
     public readonly IBlockReader BlockReader;
     public readonly IBlockRuntimeView Blocks;
     public readonly ILightProvider Lighting;
@@ -53,6 +55,7 @@ public ref struct BlockRenderContext
         int aoBlendMode = 0)
     {
         BlockReader = blockReader;
+        CompiledCuboid = null;
         Blocks = blocks;
         Tess = tess;
         Lighting = lighting;
@@ -115,6 +118,11 @@ public ref struct BlockRenderContext
 
     internal readonly void DrawBottomFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
+        if (CompiledCuboid != null)
+        {
+            DrawCompiledFace(Side.Down, pos, colors, textureId, UvRotateBottom, FlipBottom, flipped);
+            return;
+        }
         Tess.setQuadDirection(Side.Down);
         var bb = OverrideBounds ?? block.BoundingBox;
         Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
@@ -180,6 +188,11 @@ public ref struct BlockRenderContext
 
     internal readonly void DrawTopFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
+        if (CompiledCuboid != null)
+        {
+            DrawCompiledFace(Side.Up, pos, colors, textureId, UvRotateTop, FlipTop, flipped);
+            return;
+        }
         Tess.setQuadDirection(Side.Up);
         var bb = OverrideBounds ?? block.BoundingBox;
         Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
@@ -245,6 +258,11 @@ public ref struct BlockRenderContext
 
     internal readonly void DrawNorthFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
+        if (CompiledCuboid != null)
+        {
+            DrawCompiledFace(Side.West, pos, colors, textureId, UvRotateNorth, FlipNorth, flipped);
+            return;
+        }
         Tess.setQuadDirection(Side.West);
         var bb = OverrideBounds ?? block.BoundingBox;
         Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
@@ -305,6 +323,11 @@ public ref struct BlockRenderContext
 
     internal readonly void DrawSouthFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
+        if (CompiledCuboid != null)
+        {
+            DrawCompiledFace(Side.East, pos, colors, textureId, UvRotateSouth, FlipSouth, flipped);
+            return;
+        }
         Tess.setQuadDirection(Side.East);
         var bb = OverrideBounds ?? block.BoundingBox;
         Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
@@ -370,6 +393,11 @@ public ref struct BlockRenderContext
 
     internal readonly void DrawEastFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
+        if (CompiledCuboid != null)
+        {
+            DrawCompiledFace(Side.North, pos, colors, textureId, UvRotateEast, FlipEast, flipped);
+            return;
+        }
         Tess.setQuadDirection(Side.North);
         var bb = OverrideBounds ?? block.BoundingBox;
         Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
@@ -435,6 +463,11 @@ public ref struct BlockRenderContext
 
     internal readonly void DrawWestFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
+        if (CompiledCuboid != null)
+        {
+            DrawCompiledFace(Side.South, pos, colors, textureId, UvRotateWest, FlipWest, flipped);
+            return;
+        }
         Tess.setQuadDirection(Side.South);
         var bb = OverrideBounds ?? block.BoundingBox;
         Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
@@ -500,6 +533,49 @@ public ref struct BlockRenderContext
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private readonly bool IsOpaque(int x, int y, int z) => !Blocks.AllowsVision(BlockReader.GetBlockId(x, y, z));
+
+    private readonly void DrawCompiledFace(Side side, in Vec3D pos, in FaceColors colors,
+        int textureId, int rotation, int flipMask, bool flipped)
+    {
+        ref readonly var face = ref CompiledCuboid!.Face(side);
+        Tess.setQuadDirection(side);
+        Tess.setArrayLayer(CompiledCuboid.UseModelMaterials && OverrideTexture < 0
+            ? face.ArrayLayer : Atlases.Terrain.LayerOfGridIndex(textureId));
+        // A cyclic shift changes the triangle diagonal, not the association between a corner's
+        // position, UV, color and light. Without AO, retain the caller's flat color/light state.
+        if (EnableAo && flipped)
+        {
+            colors.ApplyBottomLeft(Tess);
+            EmitCompiledVertex(face.B, pos, rotation, flipMask);
+            colors.ApplyBottomRight(Tess);
+            EmitCompiledVertex(face.C, pos, rotation, flipMask);
+            colors.ApplyTopRight(Tess);
+            EmitCompiledVertex(face.D, pos, rotation, flipMask);
+            colors.ApplyTopLeft(Tess);
+            EmitCompiledVertex(face.A, pos, rotation, flipMask);
+        }
+        else
+        {
+            if (EnableAo) colors.ApplyTopLeft(Tess);
+            EmitCompiledVertex(face.A, pos, rotation, flipMask);
+            if (EnableAo) colors.ApplyBottomLeft(Tess);
+            EmitCompiledVertex(face.B, pos, rotation, flipMask);
+            if (EnableAo) colors.ApplyBottomRight(Tess);
+            EmitCompiledVertex(face.C, pos, rotation, flipMask);
+            if (EnableAo) colors.ApplyTopRight(Tess);
+            EmitCompiledVertex(face.D, pos, rotation, flipMask);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private readonly void EmitCompiledVertex(in ModelVertex vertex, in Vec3D pos, int rotation, int flipMask)
+    {
+        CalculateUv(vertex.Uv.X, vertex.Uv.Y, rotation, flipMask, out var u, out var v);
+        // Match the old float rebasing exactly, including at distant world coordinates. The sink
+        // still owns quantization, atlas inset, light samples and directional draw ranges.
+        Tess.addVertexWithUV((float)pos.X + vertex.Position.X, (float)pos.Y + vertex.Position.Y,
+            (float)pos.Z + vertex.Position.Z, u, v);
+    }
 
     /// <summary>
     ///     Sets the light the next vertices carry from one cell, for a primitive lit as a whole.

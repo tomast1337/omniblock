@@ -39,6 +39,7 @@ internal sealed class BlockModelCatalog
     private BlockModelCatalog(Dictionary<RenderResourceId, CompiledBlockModel> models) => _models = models.ToFrozenDictionary();
 
     public int Count => _models.Count;
+    public IEnumerable<RenderResourceId> Ids => _models.Keys;
     public CompiledBlockModel Get(RenderResourceId id) => _models.TryGetValue(id, out var model)
         ? model : throw new KeyNotFoundException($"Unknown block model '{id}'.");
 

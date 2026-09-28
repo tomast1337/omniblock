@@ -1,19 +1,16 @@
-using Microsoft.Extensions.Logging;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
+using OmniBlock.Client.Rendering.Core.Textures;
 
 namespace OmniBlock.Client.DynamicTexture;
 
 internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
 {
-    private readonly ILogger<ClockSprite> _logger = Log.Instance.For<ClockSprite>();
 
     private double _angle;
     private double _angleDelta;
     private int[] _clock = new int[256];
     private int[] _dial = new int[256];
     private int _dialResolution = 16;
-    private OmniBlock _game;
+    private readonly OmniBlock _game;
     private int _resolution = 16;
 
     public ClockSprite(OmniBlock game) : base(game.Content.Items.Get("omniblock:clock").GetTextureId(0))
@@ -22,79 +19,13 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
         Atlas = FxImage.Items;
     }
 
-    public override void Setup(OmniBlock game)
+    internal override Rendering.Core.Textures.DynamicTexture CreateReloadCopy() => new ClockSprite(_game);
+
+    internal override void Setup(TextureAnimationContext context)
     {
-        _game = game;
-        var tm = game.TextureManager;
-        var atlasPath = "/gui/items.png";
-
-        var handle = tm.GetTextureId(atlasPath);
-        if (handle.Texture != null)
-        {
-            _resolution = handle.Texture.Width / 16;
-        }
-        else
-        {
-            _resolution = 16;
-        }
-
-        var pixelCount = _resolution * _resolution;
-        if (_clock.Length != pixelCount)
-        {
-            _clock = new int[pixelCount];
-            _dial = new int[pixelCount];
-            Pixels = new byte[pixelCount * 4];
-        }
-
-        try
-        {
-            using var stream = game.TexturePackList.SelectedTexturePack.GetResourceAsStream("gui/items.png");
-            if (stream != null)
-            {
-                using var atlasImage = Image.Load<Rgba32>(stream);
-                var atlasResolution = atlasImage.Width / 16;
-                var sourceX = Sprite % 16 * atlasResolution;
-                var sourceY = Sprite / 16 * atlasResolution;
-
-                for (var y = 0; y < _resolution; y++)
-                {
-                    for (var x = 0; x < _resolution; x++)
-                    {
-                        var srcX = sourceX + x * atlasResolution / _resolution;
-                        var srcY = sourceY + y * atlasResolution / _resolution;
-
-                        var pixel = atlasImage[srcX, srcY];
-                        _clock[y * _resolution + x] = (pixel.A << 24) | (pixel.R << 16) | (pixel.G << 8) | pixel.B;
-                    }
-                }
-            }
-
-            using var dialStream = game.TexturePackList.SelectedTexturePack.GetResourceAsStream("misc/dial.png");
-            if (dialStream != null)
-            {
-                using var dialImage = Image.Load<Rgba32>(dialStream);
-                _dialResolution = dialImage.Width;
-                var dialPixelCount = _dialResolution * _dialResolution;
-
-                if (_dial.Length != dialPixelCount)
-                {
-                    _dial = new int[dialPixelCount];
-                }
-
-                for (var y = 0; y < _dialResolution; y++)
-                {
-                    for (var x = 0; x < _dialResolution; x++)
-                    {
-                        var pixel = dialImage[x, y];
-                        _dial[y * _dialResolution + x] = (pixel.A << 24) | (pixel.R << 16) | (pixel.G << 8) | pixel.B;
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error loading clock sprite");
-        }
+        (_resolution, _clock) = context.ReadItemTile(Sprite);
+        (_dialResolution, _dial) = context.ReadClockDial();
+        Pixels = new byte[_resolution * _resolution * 4];
     }
 
     public override void tick()

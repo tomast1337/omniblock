@@ -323,13 +323,17 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     }
 
     public ChunkRenderer(World? world, GameOptions options)
+        : this(world, options, null) { }
+
+    internal ChunkRenderer(World? world, GameOptions options,
+        Func<global::OmniBlock.Client.Rendering.Blocks.Models.BlockModelBindings?>? modelSnapshot)
     {
         _options = options;
 
         // Meshes are CPU-heavy. Reserving two logical processors is not enough on high-core-count
         // machines: dozens of workers contend with entity rendering, simulation and networking
         // even when the mesh queue is already draining immediately.
-        _meshGenerator = new ChunkMeshGenerator((ushort)GetMeshWorkerCount(Environment.ProcessorCount), _meshLifecycle);
+        _meshGenerator = new ChunkMeshGenerator((ushort)GetMeshWorkerCount(Environment.ProcessorCount), _meshLifecycle, modelSnapshot);
         _lightEvaluation = new SectionLightEvaluationService(LightEvaluationCapacity);
         _worldBacking = world;
     }
@@ -1600,8 +1604,14 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     continue;
                 }
 
-                var stale = version.IsStale(mesh.Version);
-                var installIntermediate = stale &&
+                var resourcesCurrent = _meshGenerator.HasCurrentResources(mesh) && section.CanComposeModelPages(mesh);
+                // Critical fluid/player edits may display intermediate world epochs, but never
+                // obsolete resource geometry or a page set assembled from two model snapshots.
+                if (!resourcesCurrent)
+                    section.RememberRequest(SectionDirtyReason.Maintenance, section.RequestedPriority,
+                        _schedulerTick, rebuildPlan: SectionMeshRebuildPlan.Full);
+                var stale = !resourcesCurrent || version.IsStale(mesh.Version);
+                var installIntermediate = resourcesCurrent && stale &&
                                           mesh.Priority == MeshWorkPriority.Critical &&
                                           section.Renderer != null;
                 if (stale && !installIntermediate)
@@ -1663,6 +1673,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 try
                 {
                     section.CommitPresentation(resident, presentation);
+                    section.PresentationModels = mesh.Models;
                     // Presentation identity always advances. Portal traversal only needs the more
                     // expensive conservative exposure when compiled connectivity actually changed.
                     InvalidateVisibilityGraph(
@@ -2768,7 +2779,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         SectionDirtyReason reason,
         SectionMeshRebuildPlan rebuildPlan = default)
     {
-        if (!IsChunkInMeshPrepareDistance(chunkPos, _lastViewPos))
+        // Resource reload also invalidates retained sections beyond the current prepare radius.
+        // They must not return with permanently old model UVs after the player turns back.
+        if (reason != SectionDirtyReason.Maintenance && !IsChunkInMeshPrepareDistance(chunkPos, _lastViewPos))
             return false;
 
         // The snapshot needs one cell of neighbor padding, but it already reads a missing column

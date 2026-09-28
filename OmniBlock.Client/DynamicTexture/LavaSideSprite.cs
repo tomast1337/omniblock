@@ -1,3 +1,4 @@
+using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Textures;
 using OmniBlock.Util.Maths;
 
@@ -13,7 +14,9 @@ internal class LavaSideSprite : Rendering.Core.Textures.DynamicTexture
 
     public LavaSideSprite() : base(Atlases.Terrain.IndexOf("lava_texture")) => Replicate = 2;
 
-    public override void Setup(OmniBlock game) => TryLoadCustomTexture(game, "custom_lava_flowing.png");
+    internal override Rendering.Core.Textures.DynamicTexture CreateReloadCopy() => new LavaSideSprite();
+
+    internal override void Setup(TextureAnimationContext context) => TryLoadCustomTexture(context, "custom_lava_flowing.png");
 
     public override void tick()
     {

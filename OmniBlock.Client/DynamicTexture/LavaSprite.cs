@@ -1,3 +1,4 @@
+using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Blocks;
 using OmniBlock.Util.Maths;
 
@@ -10,7 +11,9 @@ internal class LavaSprite(IBlockRuntimeView blocks) : Rendering.Core.Textures.Dy
     private float[] _current = new float[256];
     private float[] _next = new float[256];
 
-    public override void Setup(OmniBlock game) => TryLoadCustomTexture(game, "custom_lava_still.png");
+    internal override Rendering.Core.Textures.DynamicTexture CreateReloadCopy() => new LavaSprite(blocks);
+
+    internal override void Setup(TextureAnimationContext context) => TryLoadCustomTexture(context, "custom_lava_still.png");
 
     public override void tick()
     {

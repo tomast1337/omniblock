@@ -1,16 +1,13 @@
-using Microsoft.Extensions.Logging;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
+using OmniBlock.Client.Rendering.Core.Textures;
 
 namespace OmniBlock.Client.DynamicTexture;
 
 internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
 {
-    private readonly ILogger<CompassSprite> _logger = Log.Instance.For<CompassSprite>();
     private double _angle;
     private double _angleDelta;
     private int[] _compass = new int[256];
-    private OmniBlock _game;
+    private readonly OmniBlock _game;
     private int _resolution = 16;
 
     public CompassSprite(OmniBlock game) : base(game.Content.Items.Get("omniblock:compass").GetTextureId(0))
@@ -19,56 +16,12 @@ internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
         Atlas = FxImage.Items;
     }
 
-    public override void Setup(OmniBlock game)
+    internal override Rendering.Core.Textures.DynamicTexture CreateReloadCopy() => new CompassSprite(_game);
+
+    internal override void Setup(TextureAnimationContext context)
     {
-        _game = game;
-        var tm = game.TextureManager;
-        var atlasPath = "/gui/items.png";
-
-        var handle = tm.GetTextureId(atlasPath);
-        if (handle.Texture != null)
-        {
-            _resolution = handle.Texture.Width / 16;
-        }
-        else
-        {
-            _resolution = 16;
-        }
-
-        var pixelCount = _resolution * _resolution;
-        if (_compass.Length != pixelCount)
-        {
-            _compass = new int[pixelCount];
-            Pixels = new byte[pixelCount * 4];
-        }
-
-        try
-        {
-            using var stream = game.TexturePackList.SelectedTexturePack.GetResourceAsStream("gui/items.png");
-            if (stream != null)
-            {
-                using var atlasImage = Image.Load<Rgba32>(stream);
-                var localRes = atlasImage.Width / 16;
-                var sourceX = Sprite % 16 * localRes;
-                var sourceY = Sprite / 16 * localRes;
-
-                for (var y = 0; y < _resolution; y++)
-                {
-                    for (var x = 0; x < _resolution; x++)
-                    {
-                        var srcX = sourceX + x * localRes / _resolution;
-                        var srcY = sourceY + y * localRes / _resolution;
-
-                        var pixel = atlasImage[srcX, srcY];
-                        _compass[y * _resolution + x] = (pixel.A << 24) | (pixel.R << 16) | (pixel.G << 8) | pixel.B;
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error loading compass sprite");
-        }
+        (_resolution, _compass) = context.ReadItemTile(Sprite);
+        Pixels = new byte[_resolution * _resolution * 4];
     }
 
     public override void tick()

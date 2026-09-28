@@ -1,7 +1,10 @@
 using System.Numerics;
+using System.Runtime.InteropServices;
 using OmniBlock.Blocks;
 using OmniBlock.Client.Rendering.Blocks;
+using OmniBlock.Client.Rendering.Blocks.Models;
 using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Chunks;
 using OmniBlock.Textures;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Biomes.Source;
@@ -16,6 +19,157 @@ namespace OmniBlock.Tests.Rendering;
 public sealed class BlockGeometryCharacterizationTests
 {
     private static readonly BlockPos Origin = new(7, 64, 9);
+
+    [Theory]
+    [MemberData(nameof(BoundStates))]
+    public void Session_bound_models_preserve_builtin_emission(string name, int meta)
+    {
+        var fixture = new Fixture(name, meta);
+        var models = BlockModelBindingTests.Build(fixture.World.Content.Blocks);
+        for (var x = -1; x <= 1; x++)
+        for (var y = -1; y <= 1; y++)
+        for (var z = -1; z <= 1; z++)
+            if ((x * 3 + y * 5 + z * 7) % 4 == 1)
+                fixture.World.Writer.SetBlock(Origin.X + x, Origin.Y + y, Origin.Z + z, fixture.World.Content.Blocks.Get("stone").Id);
+        foreach (var variance in new[] { false, true })
+        foreach (var allFaces in new[] { false, true })
+        foreach (var overrideTexture in new[] { -1, Atlases.Terrain.IndexOf("cobblestone") })
+            Assert.Equal(fixture.Render(allFaces, new NonuniformLight(), compiled: false, variance: variance, texture: overrideTexture),
+                fixture.Render(allFaces, new NonuniformLight(), variance: variance, texture: overrideTexture, models: models));
+    }
+
+    public static IEnumerable<object[]> BoundStates()
+    {
+        foreach (var name in new[] { "stone", "slab", "double_slab" })
+        for (var meta = 0; meta < 16; meta++) yield return [name, meta];
+    }
+
+    [Fact]
+    public void Session_pack_material_changes_reach_the_vertex_sink_without_changing_other_sessions()
+    {
+        var fixture = new Fixture("stone");
+        var original = BlockModelBindingTests.Build(fixture.World.Content.Blocks);
+        var changed = BlockModelBindingTests.Build(fixture.World.Content.Blocks,
+            json => json.Replace("omniblock:stone\"", "omniblock:cobblestone\"", StringComparison.Ordinal));
+        Assert.All(fixture.Render(models: changed), v => Assert.Equal(Layer("cobblestone"), v.Layer));
+        Assert.All(fixture.Render(models: original), v => Assert.Equal(Layer("stone"), v.Layer));
+        Assert.All(fixture.Render(models: changed, texture: Atlases.Terrain.IndexOf("stone")),
+            v => Assert.Equal(Layer("stone"), v.Layer));
+    }
+
+    [Fact]
+    public void Compiled_templates_do_not_claim_partial_or_out_of_cell_shapes()
+    {
+        Assert.Null(CompiledCuboidGeometry.ForBounds(new Box(0, 0, 0, 1, .125, 1)));
+        Assert.Null(CompiledCuboidGeometry.ForBounds(new Box(.0625, 0, .0625, .9375, 1, .9375)));
+        Assert.Null(CompiledCuboidGeometry.ForBounds(new Box(0, 0, 0, 2, 1, 1)));
+        Assert.Null(CompiledCuboidGeometry.ForBounds(new Box(0, -.5, 0, 1, 1, 1)));
+    }
+
+    [Theory]
+    [InlineData("stone", 0)]
+    [InlineData("slab", 0)]
+    [InlineData("slab", 8)]
+    public void Compiled_face_emitter_matches_all_rotations_flips_and_flat_color_state(string name, int meta)
+    {
+        var fixture = new Fixture(name, meta);
+        fixture.Block.UpdateBoundingBox(fixture.World.Reader, Origin.X, Origin.Y, Origin.Z);
+        var bounds = fixture.Block.BoundingBox;
+        Assert.NotNull(CompiledCuboidGeometry.ForBounds(bounds));
+        foreach (var ao in new[] { false, true })
+        foreach (var diagonal in new[] { false, true })
+        foreach (var flipTexture in new[] { false, true })
+        for (var rotation = 0; rotation <= 4; rotation++)
+        for (var mask = 0; mask < 4; mask++)
+        foreach (var position in new[] { new Vec3D(7, 64, 9), new Vec3D(-16777217, 89, 16777217) })
+        {
+            Assert.Equal(Emit(false), Emit(true));
+            List<Vertex> Emit(bool compiled)
+            {
+                var sink = new RecordingSink();
+                sink.setColorOpaque_F(.1f, .2f, .3f);
+                sink.setLight(6, 7);
+                var ctx = new BlockRenderContext(fixture.World.Reader, fixture.World.Content.Blocks,
+                    sink, new NonuniformLight(), bounds: bounds, enableAo: ao, flipTexture: flipTexture,
+                    uvTop: rotation, uvBottom: rotation, uvNorth: rotation, uvSouth: rotation,
+                    uvEast: rotation, uvWest: rotation, flipTop: mask, flipBottom: mask,
+                    flipNorth: mask, flipSouth: mask, flipEast: mask, flipWest: mask);
+                if (compiled) ctx.CompiledCuboid = CompiledCuboidGeometry.ForBounds(bounds);
+                var colors = new FaceColors(.1f, .2f, .3f, .4f, .5f, .6f, .7f, .8f, .9f, .2f, .4f, .8f,
+                    new CornerLight(1, 2), new CornerLight(3, 4), new CornerLight(5, 6), new CornerLight(7, 8));
+                var block = fixture.Block;
+                ctx.DrawBottomFace(block, position, colors, block.TextureId, diagonal);
+                ctx.DrawTopFace(block, position, colors, block.TextureId, diagonal);
+                ctx.DrawNorthFace(block, position, colors, block.TextureId, diagonal);
+                ctx.DrawSouthFace(block, position, colors, block.TextureId, diagonal);
+                ctx.DrawEastFace(block, position, colors, block.TextureId, diagonal);
+                ctx.DrawWestFace(block, position, colors, block.TextureId, diagonal);
+                return sink.Vertices;
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("stone", 0)]
+    [InlineData("grass_block", 0)]
+    [InlineData("glass", 0)]
+    [InlineData("leaves", 0)]
+    [InlineData("slab", 0)]
+    [InlineData("slab", 1)]
+    [InlineData("slab", 2)]
+    [InlineData("slab", 3)]
+    [InlineData("slab", 8)]
+    [InlineData("slab", 9)]
+    [InlineData("slab", 10)]
+    [InlineData("slab", 11)]
+    [InlineData("double_slab", 0)]
+    [InlineData("double_slab", 1)]
+    [InlineData("double_slab", 2)]
+    [InlineData("double_slab", 3)]
+    public void Compiled_faces_match_legacy_corner_order_materials_and_nonuniform_light(string name, int meta)
+    {
+        var fixture = new Fixture(name, meta);
+        // Mixed edge/corner occluders exercise both AO diagonal choices and conservative culling.
+        for (var x = -1; x <= 1; x++)
+        for (var y = -1; y <= 1; y++)
+        for (var z = -1; z <= 1; z++)
+            if ((x * 3 + y * 5 + z * 7) % 4 == 1)
+                fixture.World.Writer.SetBlock(Origin.X + x, Origin.Y + y, Origin.Z + z, fixture.World.Content.Blocks.Get("stone").Id);
+
+        foreach (var all in new[] { false, true })
+        foreach (var variance in new[] { false, true })
+        foreach (var texture in new[] { -1, Atlases.Terrain.IndexOf("stone") })
+        {
+            var legacy = fixture.Render(all, new NonuniformLight(), compiled: false, variance, texture);
+            var compiled = fixture.Render(all, new NonuniformLight(), compiled: true, variance, texture);
+            Assert.Equal(legacy, compiled);
+        }
+    }
+
+    [Theory]
+    [InlineData("stone", 0)]
+    [InlineData("grass_block", 0)]
+    [InlineData("slab", 0)]
+    [InlineData("slab", 8)]
+    public void Compiled_faces_preserve_packed_geometry_light_and_direction_ranges(string name, int meta)
+    {
+        var fixture = new Fixture(name, meta);
+        (byte[] Geometry, byte[] Light, ChunkDirectionalRanges Ranges) Packed(bool compiled)
+        {
+            using var builder = new ChunkMeshBuilder();
+            builder.Begin(-Origin.X, -Origin.Y, -Origin.Z);
+            BlockRenderer.RenderBlockByRenderType(fixture.World.Reader, fixture.World.Content.Blocks,
+                new NonuniformLight(), fixture.Block, Origin, builder, doVariance: true, useCompiledCuboids: compiled);
+            using var vertices = builder.Finish(out var lights, out var ranges);
+            using (lights)
+                return (MemoryMarshal.AsBytes(vertices.Span).ToArray(), MemoryMarshal.AsBytes(lights.Span).ToArray(), ranges);
+        }
+        var old = Packed(false);
+        var candidate = Packed(true);
+        Assert.Equal(old.Geometry, candidate.Geometry);
+        Assert.Equal(old.Light, candidate.Light);
+        Assert.Equal(old.Ranges, candidate.Ranges);
+    }
 
     [Theory]
     [InlineData("stone", 0, 0f, 1f)]
@@ -282,11 +436,13 @@ public sealed class BlockGeometryCharacterizationTests
             World.Writer.SetBlock(Origin.X + (int)d.X, Origin.Y + (int)d.Y, Origin.Z + (int)d.Z, World.Content.Blocks.Get(name).Id);
         }
 
-        public List<Vertex> Render(bool allFaces = false, ConstantLight? light = null)
+        public List<Vertex> Render(bool allFaces = false, ILightProvider? light = null, bool compiled = true,
+            bool variance = false, int texture = -1, BlockModelBindings? models = null)
         {
             var sink = new RecordingSink();
-            var rendered = BlockRenderer.RenderBlockByRenderType(World.Reader, World.Content.Blocks,
-                light ?? new ConstantLight(15, 3), Block, Origin, sink, renderAllFaces: allFaces);
+            var rendered = BlockRenderer.RenderBoundBlock(models, World.Reader, World.Content.Blocks,
+                light ?? new ConstantLight(15, 3), Block, Origin, sink, overrideTexture: texture,
+                renderAllFaces: allFaces, doVariance: variance, useCompiledCuboids: compiled);
             Assert.Equal(sink.Vertices.Count != 0, rendered);
             return sink.Vertices;
         }
@@ -297,6 +453,14 @@ public sealed class BlockGeometryCharacterizationTests
         public float GetNaturalBrightness(int x, int y, int z, int minLight) => throw new InvalidOperationException("Geometry must retain separate light channels.");
         public float GetLuminance(int x, int y, int z) => throw new InvalidOperationException("Geometry must retain separate light channels.");
         public LightLevels GetLightLevels(int x, int y, int z, int minBlockLight) => new LightLevels(sky, block).WithBlockFloor(minBlockLight);
+    }
+
+    private sealed class NonuniformLight : ILightProvider
+    {
+        public float GetNaturalBrightness(int x, int y, int z, int minLight) => throw new InvalidOperationException();
+        public float GetLuminance(int x, int y, int z) => throw new InvalidOperationException();
+        public LightLevels GetLightLevels(int x, int y, int z, int minBlockLight) =>
+            new LightLevels((byte)((x * 3 + y * 7 + z * 11) & 15), (byte)((x * 13 + y * 5 + z) & 15)).WithBlockFloor(minBlockLight);
     }
 
     private readonly record struct Vertex(Vector3 Position, Vector2 Uv, Vector3 Color, Vector2 Light, int Layer, Side Side);

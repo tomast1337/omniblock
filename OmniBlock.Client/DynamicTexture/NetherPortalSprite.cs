@@ -1,3 +1,4 @@
+using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Blocks;
 using OmniBlock.Util.Maths;
 
@@ -8,9 +9,11 @@ internal class NetherPortalSprite(IBlockRuntimeView blocks) : Rendering.Core.Tex
     private readonly byte[][] _frames = new byte[32][];
     private int _ticks;
 
-    public override void Setup(OmniBlock game)
+    internal override Rendering.Core.Textures.DynamicTexture CreateReloadCopy() => new NetherPortalSprite(blocks);
+
+    internal override void Setup(TextureAnimationContext context)
     {
-        TryLoadCustomTexture(game, "custom_portal.png");
+        TryLoadCustomTexture(context, "custom_portal.png");
         if (CustomFrames != null)
         {
             return;

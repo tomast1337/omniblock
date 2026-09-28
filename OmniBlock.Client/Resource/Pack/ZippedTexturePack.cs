@@ -86,12 +86,19 @@ public class ZippedTexturePack : TexturePack
         try
         {
             // Opens the zip file and keeps it open for reading resources
-            _texturePackZipFile = ZipFile.OpenRead(_texturePackFile.FullName);
+            OpenForSelection();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to open texture pack zip file {File}", _texturePackFile.Name);
         }
+    }
+
+    internal void OpenForSelection()
+    {
+        var candidate = ZipFile.OpenRead(_texturePackFile.FullName);
+        _texturePackZipFile?.Dispose();
+        _texturePackZipFile = candidate;
     }
 
     public override void CloseTexturePackFile()

@@ -1,4 +1,5 @@
 using OmniBlock.Blocks;
+using OmniBlock.Client.Rendering.Blocks.Models;
 using OmniBlock.Client.Rendering.Blocks.Renderers;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Util.Maths;
@@ -29,7 +30,10 @@ public class BlockRenderer
     private static readonly PistonExtensionRenderer s_pistonExt = new();
 
 
-    public static bool RenderBlockByRenderType(IBlockReader world, IBlockRuntimeView blocks, ILightProvider lighting, Block block, BlockPos pos, IBlockVertexSink tess, int overrideTexture = -1, bool renderAllFaces = false, bool doVariance = false)
+    public static bool RenderBlockByRenderType(IBlockReader world, IBlockRuntimeView blocks, ILightProvider lighting, Block block, BlockPos pos, IBlockVertexSink tess, int overrideTexture = -1, bool renderAllFaces = false, bool doVariance = false, bool useCompiledCuboids = true)
+        => RenderBoundBlock(null, world, blocks, lighting, block, pos, tess, overrideTexture, renderAllFaces, doVariance, useCompiledCuboids);
+
+    internal static bool RenderBoundBlock(BlockModelBindings? models, IBlockReader world, IBlockRuntimeView blocks, ILightProvider lighting, Block block, BlockPos pos, IBlockVertexSink tess, int overrideTexture = -1, bool renderAllFaces = false, bool doVariance = false, bool useCompiledCuboids = true)
     {
         // The initial light values already include this floor. Retaining it separately lets the
         // light-only rebuild path reach the same result without invoking the block renderer again.
@@ -76,6 +80,11 @@ public class BlockRenderer
 
         if (type == BlockRendererType.Standard)
         {
+            // Breaking overlays retain their legacy UV mapping; normal mesh jobs use the
+            // session's validated geometry/material snapshot, never a live global catalog.
+            if (useCompiledCuboids) ctx.CompiledCuboid =
+                (overrideTexture < 0 ? models?.Get(block.Id, world.GetBlockMeta(pos.X, pos.Y, pos.Z)) : null)
+                ?? CompiledCuboidGeometry.ForBounds(block.BoundingBox);
             return ctx.DrawBlock(block, pos);
         }
 

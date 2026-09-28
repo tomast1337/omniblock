@@ -673,10 +673,31 @@ a fixed seeded frame, and particles are excluded; gameplay animation is not alte
 
 The first gallery request also runs the model-resource upload smoke check. It prepares the shipped
 `omniblock:block/model_probe` and all legacy terrain layers from the actual selected/built-in pack,
-uploads and installs a matched model/texture pair in a shadow resource slot, rejects a deliberately
+uploads and installs a matched model/texture pair in an isolated smoke-test resource slot, rejects a deliberately
 malformed reload, and replaces it with a second valid pair. `block-model-resources.json` records
-the upload, generation and previous-wrapper disposal assertions. This does not switch gameplay
-geometry to compiled models or make the ordinary texture-pack menu transaction atomic yet.
+the upload, generation and previous-wrapper disposal assertions. It also prepares all nine built-in
+animations against explicit candidate resources, rejects a corrupt fire strip without changing live
+texture handles/generation, and exercises a successful same-pack texture/animation reload before
+pinning the gallery frames. The reload smoke also injects a corrupt named item texture after other
+GPU candidates were uploaded and rejects a fully uploaded candidate at the settings-persistence
+boundary. Both must preserve live handles, arrays, color maps, models and generation, with no
+leaked texture wrappers. The intentionally corrupt item produces an expected rejection log.
+Ordinary pack selection now uses this transaction; `entity-impostor-cache` exercises repeated real
+selection changes and a warm-cache restart. Standard unit cubes and half-slabs now emit compiled
+builtin geometry templates through the existing lighting/material path; greedy meshes, other
+shapes and ordinary inventory rendering retain their existing paths. All 16 metadata values of stone,
+slabs and double slabs now use client state definitions selected by
+`assets/omniblock/blockstates/catalog.json`. Pack overrides of each block's `variants` file can select
+different models; they must keep all 16 entries and the installed per-state shape contract. The smoke
+check rejects an incompatible state override, installs a valid lower-stone-slab to wooden-slab model
+remap, checks variant isolation, and restores the selected pack before capture. Both intentional
+rejections (corrupt item and incompatible state) appear in the log. The report records
+`invalidStateReloadPreservedLive` and `stateRemapInstalledAndRestored`.
+The bound models preserve their exact cube/slab shape, AO and culling; pack UVs and materials may
+vary within existing terrain tile identities. Unsupported shapes/new material slots reject the
+candidate. Mesh jobs capture the binding snapshot, stale-resource results are rejected,
+and partial page installs cannot mix model snapshots. Terrain animation/rendering share the model
+texture array. Compare against a pre-emitter gallery to check this migration's visual parity.
 
 Review a first run before treating it as a reference. Subsequent comparisons are explicit:
 

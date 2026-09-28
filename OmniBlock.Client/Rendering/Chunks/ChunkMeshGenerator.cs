@@ -4,12 +4,14 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using OmniBlock.Blocks;
 using OmniBlock.Client.Rendering.Blocks;
+using OmniBlock.Client.Rendering.Blocks.Models;
 using OmniBlock.Client.Rendering.Chunks.Occlusion;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Textures;
 using OmniBlock.Util;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Core.Systems;
 using Silk.NET.Maths;
 
 namespace OmniBlock.Client.Rendering.Chunks;
@@ -22,6 +24,7 @@ internal struct MeshBuildResult : IDisposable
     public ChunkVisibilityStore VisibilityData;
     public Vector3D<int> Pos;
     public long Version;
+    public BlockModelBindings? Models;
     public long SectionId;
     public MeshWorkPriority Priority;
     public long RequestedAt;
@@ -102,8 +105,15 @@ internal class ChunkMeshGenerator : IDisposable
     private long _uploadAdmissionDeferrals;
     private long _oversizedUploadAdmissions;
 
-    public ChunkMeshGenerator(ushort maxConcurrentTasks = 0, MeshLifecycleDiagnostics? lifecycle = null)
+    private readonly Func<BlockModelBindings?>? _modelSnapshot;
+
+    // Render-thread check only. Workers retain the admission snapshot and never read the live slot.
+    internal bool HasCurrentResources(in MeshBuildResult result) => ReferenceEquals(result.Models, _modelSnapshot?.Invoke());
+
+    public ChunkMeshGenerator(ushort maxConcurrentTasks = 0, MeshLifecycleDiagnostics? lifecycle = null,
+        Func<BlockModelBindings?>? modelSnapshot = null)
     {
+        _modelSnapshot = modelSnapshot;
         _lifecycle = lifecycle;
         MaxConcurrentTasks = maxConcurrentTasks == 0 ? (ushort)1 : maxConcurrentTasks;
         _workers = new Task[MaxConcurrentTasks];
@@ -262,7 +272,7 @@ internal class ChunkMeshGenerator : IDisposable
 
     //TODO: Make a chunk mesh config struct for alternateBlocks and other flags
     public void MeshChunk(
-        World world,
+        IWorldContext world,
         Vector3D<int> pos,
         long version,
         bool alternateBlocks,
@@ -297,7 +307,7 @@ internal class ChunkMeshGenerator : IDisposable
 
         var control = new MeshBuildCancellation(priority);
         var request = new MeshBuildRequest(pos, version, cache, alternateBlocks, requestedAt,
-            Stopwatch.GetTimestamp(), trace, sectionId, rebuildPlan, control, estimate);
+            Stopwatch.GetTimestamp(), trace, sectionId, rebuildPlan, control, estimate, _modelSnapshot?.Invoke());
         if (!_outstanding.TryAdd(pos, control))
         {
             _lifecycle?.Cancel(trace, MeshCancellationReason.DuplicateRequest);
@@ -362,7 +372,7 @@ internal class ChunkMeshGenerator : IDisposable
                     _lifecycle?.Move(request.Trace, MeshLifecycleStage.Building, priority);
                     var mesh = GenerateMesh(
                         request.Pos, request.Version, request.Cache, request.AlternateBlocks,
-                        request.RebuildPlan, request.Control.Token);
+                        request.RebuildPlan, request.Control.Token, request.Models);
                     request.Control.Token.ThrowIfCancellationRequested();
                     mesh.Priority = request.Control.Priority;
                     mesh.RequestedAt = request.RequestedAt;
@@ -421,15 +431,16 @@ internal class ChunkMeshGenerator : IDisposable
         _ => _backgroundResults
     };
 
-    private MeshBuildResult GenerateMesh(
+    internal MeshBuildResult GenerateMesh(
         Vector3D<int> pos, long version, WorldRegionSnapshot cache, bool alternateBlocks,
-        SectionMeshRebuildPlan rebuildPlan, CancellationToken cancellationToken)
+        SectionMeshRebuildPlan rebuildPlan, CancellationToken cancellationToken, BlockModelBindings? models)
     {
         var generationStart = Stopwatch.GetTimestamp();
         var result = new MeshBuildResult
         {
             Pos = pos,
             Version = version,
+            Models = models,
             RebuildPlan = rebuildPlan,
             Pages = new MeshPageBuildResult[rebuildPlan.PageBuildCount]
         };
@@ -444,7 +455,7 @@ internal class ChunkMeshGenerator : IDisposable
                 if (!rebuildPlan.Includes(page)) continue;
                 result.Pages[resultIndex++] = GeneratePage(
                     pos, page, cache, alternateBlocks, cancellationToken,
-                    ref classificationTicks, ref geometryTicks);
+                    ref classificationTicks, ref geometryTicks, models);
             }
 
             _profile.RecordClassification(classificationTicks);
@@ -476,7 +487,7 @@ internal class ChunkMeshGenerator : IDisposable
         bool alternateBlocks,
         CancellationToken cancellationToken,
         ref long classificationTicks,
-        ref long geometryTicks)
+        ref long geometryTicks, BlockModelBindings? models)
     {
         var minX = pos.X;
         var minY = pos.Y + page * SectionMeshRebuildPlan.PageHeight;
@@ -498,7 +509,8 @@ internal class ChunkMeshGenerator : IDisposable
             for (var z = minZ; z < maxZ; z++)
             for (var x = minX; x < maxX; x++)
             {
-                if (TryGetGreedyEligibleBlock(cache, x, y, z, alternateBlocks, out var eligible))
+                if (TryGetGreedyEligibleBlock(cache, x, y, z, alternateBlocks, out var eligible) &&
+                    (models?.AllowsLegacyGreedy(eligible!.Id, cache.GetBlockMeta(x, y, z)) ?? true))
                     greedyEligible[PageLocalIndex(x - pos.X, y - minY, z - pos.Z)] = eligible;
             }
         }
@@ -535,8 +547,8 @@ internal class ChunkMeshGenerator : IDisposable
                         else if (pass != 0 ||
                                  greedyEligible[PageLocalIndex(x - pos.X, y - minY, z - pos.Z)] is null)
                         {
-                            BlockRenderer.RenderBlockByRenderType(
-                                cache, cache.ContentBlocks, cache, block, new BlockPos(x, y, z), mesh,
+                            BlockRenderer.RenderBoundBlock(
+                                models, cache, cache.ContentBlocks, cache, block, new BlockPos(x, y, z), mesh,
                                 doVariance: alternateBlocks);
                         }
                     }
@@ -1110,7 +1122,8 @@ internal class ChunkMeshGenerator : IDisposable
         long SectionId,
         SectionMeshRebuildPlan RebuildPlan,
         MeshBuildCancellation Control,
-        ChunkMeshCostEstimate Estimate);
+        ChunkMeshCostEstimate Estimate,
+        BlockModelBindings? Models);
 
     /// <summary>One corner of a quad about to be emitted: world position, tiled UV, and its light.</summary>
     private readonly record struct QuadCorner(float X, float Y, float Z, float U, float V, CornerLight Light);

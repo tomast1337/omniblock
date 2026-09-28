@@ -64,7 +64,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         _stars = BuildStars();
 
-        ChunkRenderer = new ChunkRenderer(gameInstance.World, _game.Options);
+        ChunkRenderer = new ChunkRenderer(gameInstance.World, _game.Options, () => _textureManager.BlockBindings);
         EntityBatchRenderer.Initialize(_game.Options);
 
         OnCloudsQualityChanged();
@@ -552,7 +552,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         // release those leases before destroying their shared arena owner.
         TerrainLod?.Dispose();
         ChunkRenderer?.Dispose();
-        ChunkRenderer = new ChunkRenderer(_world, _game.Options);
+        ChunkRenderer = new ChunkRenderer(_world, _game.Options, () => _textureManager.BlockBindings);
         TerrainLod = new ClientTerrainLodRenderer(
             _world, (_world as ClientWorld)?.TerrainLodCache, _game.TerrainLodPolicy);
         ChunkRenderer.PresentationHandoff = TerrainLod;

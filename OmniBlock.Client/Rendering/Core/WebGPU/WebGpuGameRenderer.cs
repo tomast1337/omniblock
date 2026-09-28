@@ -133,6 +133,16 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
 
     public void RenderFrame(float tickDelta, long time)
     {
+        var previous = IsRecordingFrame;
+        IsRecordingFrame = true;
+        try { RenderFrameCore(tickDelta, time); }
+        finally { IsRecordingFrame = previous; }
+    }
+
+    internal static bool IsRecordingFrame { get; private set; }
+
+    private void RenderFrameCore(float tickDelta, long time)
+    {
         var setupStarted = Stopwatch.GetTimestamp();
         var device = WebGpuDevice.Current!;
         var api = device.Api;
@@ -404,6 +414,14 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     ///     ImGui frame while loading blocks the main loop — instead of disappearing for the load.
     /// </remarks>
     public void RenderLoadingFrame(Action draw)
+    {
+        var previous = IsRecordingFrame;
+        IsRecordingFrame = true;
+        try { RenderLoadingFrameCore(draw); }
+        finally { IsRecordingFrame = previous; }
+    }
+
+    private void RenderLoadingFrameCore(Action draw)
     {
         var device = WebGpuDevice.Current!;
         var api = device.Api;

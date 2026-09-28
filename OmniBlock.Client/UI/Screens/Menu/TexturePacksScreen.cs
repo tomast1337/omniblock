@@ -104,6 +104,8 @@ public class TexturePacksScreen(
 
     private void SelectPack(TexturePackListItem selectedItem)
     {
+        if (!texturePackList.setTexturePack(selectedItem.Value)) return;
+
         foreach (var item in _listItems)
         {
             item.IsSelected = false;
@@ -111,8 +113,6 @@ public class TexturePacksScreen(
 
         selectedItem.IsSelected = true;
 
-        texturePackList.setTexturePack(selectedItem.Value);
-        Context.TextureManager.Reload();
     }
 
     private void OpenFolder()
@@ -133,7 +133,6 @@ public class TexturePacksScreen(
 
     private void OnDone()
     {
-        Context.TextureManager.Reload();
         if (_parent != null)
         {
             Context.Navigator.Navigate(_parent);

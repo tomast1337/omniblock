@@ -18,12 +18,19 @@ internal sealed class BlockModelResourceSlot : IDisposable
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(prepare);
         var candidate = prepare() ?? throw new InvalidOperationException("Preparation returned no resource candidate.");
-        if (ReferenceEquals(candidate, Current)) throw new InvalidOperationException("Replacement must be independently owned.");
-        if (candidate.Texture.Id == 0) throw new ObjectDisposedException(nameof(candidate));
+        ValidateCandidate(candidate);
         var previous = Current;
         Current = candidate;
         Generation++;
         previous?.Dispose();
+    }
+
+    internal void ValidateCandidate(UploadedBlockModelResources candidate)
+    {
+        CheckThread();
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (ReferenceEquals(candidate, Current)) throw new InvalidOperationException("Replacement must be independently owned.");
+        if (candidate.Texture.Id == 0) throw new ObjectDisposedException(nameof(candidate));
     }
 
     public void Dispose()

@@ -1,22 +1,13 @@
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-
 namespace OmniBlock.Client.Rendering.Core.Textures;
 
 public class DynamicTexture(int iconIdx)
 {
-    public enum FxImage
-    {
-        Terrain,
-        Items
-    }
+    public enum FxImage { Terrain, Items }
 
     public readonly int Sprite = iconIdx;
     public FxImage Atlas = FxImage.Terrain;
     protected int CustomFrameCount;
     protected int CustomFrameIndex;
-
     protected byte[][]? CustomFrames;
     public byte[] Pixels = new byte[1024];
     public int Replicate = 1;
@@ -24,77 +15,37 @@ public class DynamicTexture(int iconIdx)
     internal Random? RandomForTest { get; set; }
     protected Random AnimationRandom => RandomForTest ?? Random.Shared;
 
-    public virtual void Setup(OmniBlock game)
+    public void Setup(OmniBlock game)
     {
+        using var context = new TextureAnimationContext(game.TexturePackList.SelectedTexturePack.GetResourceAsStream);
+        Setup(context);
     }
 
-    public virtual void tick()
+    internal virtual void Setup(TextureAnimationContext context) { }
+    internal virtual DynamicTexture CreateReloadCopy() => throw new NotSupportedException($"Animation '{GetType().Name}' has no reload factory.");
+
+    /// <summary>Prepare a fresh set; failure cannot modify any live animation or its RNG.</summary>
+    internal static List<DynamicTexture> PrepareReload(IEnumerable<DynamicTexture> current, TextureAnimationContext context)
     {
+        var candidate = new List<DynamicTexture>();
+        foreach (var active in current)
+        {
+            var copy = active.CreateReloadCopy();
+            if (ReferenceEquals(copy, active)) throw new InvalidOperationException("Animation reload factory returned the live instance.");
+            copy.Setup(context);
+            candidate.Add(copy);
+        }
+        return candidate;
     }
 
-    protected virtual void TryLoadCustomTexture(OmniBlock game, string resourceName)
+    public virtual void tick() { }
+
+    private protected void TryLoadCustomTexture(TextureAnimationContext context, string resourceName)
     {
-        CustomFrames = null;
+        var frames = context.ReadStrip(resourceName, Atlas);
+        CustomFrames = frames;
         CustomFrameIndex = 0;
-        CustomFrameCount = 0;
-
-        using var stream = game.TexturePackList.SelectedTexturePack.GetResourceAsStream(resourceName);
-        if (stream == null)
-        {
-            if (Pixels.Length != 1024) Pixels = new byte[1024];
-            return;
-        }
-
-        try
-        {
-            var atlasPath = Atlas == FxImage.Terrain ? "/terrain.png" : "/gui/items.png";
-            var targetWidth = game.TextureManager.GetTextureId(atlasPath).Texture?.Width ?? 256;
-            var targetTileSize = targetWidth / 16;
-
-            if (targetTileSize < 1) targetTileSize = 1;
-
-            using var image = Image.Load<Rgba32>(stream);
-            var width = image.Width;
-            var height = image.Height;
-
-            if (height % width != 0) return;
-
-            CustomFrameCount = height / width;
-
-            if (width != targetTileSize)
-            {
-                image.Mutate(x => x.Resize(new ResizeOptions
-                {
-                    Size = new Size(targetTileSize, targetTileSize * CustomFrameCount),
-                    Sampler = KnownResamplers.NearestNeighbor
-                }));
-                width = image.Width;
-                height = image.Height;
-            }
-
-            CustomFrames = new byte[CustomFrameCount][];
-
-            var pixelsPerFrame = width * height;
-            var bytesPerFrame = pixelsPerFrame * 4;
-
-            if (Pixels.Length != bytesPerFrame)
-            {
-                Pixels = new byte[bytesPerFrame];
-            }
-
-            for (var i = 0; i < CustomFrameCount; i++)
-            {
-                CustomFrames[i] = new byte[bytesPerFrame];
-                var currentFrameIndex = i;
-
-                using var frame = image.Clone(ctx => ctx.Crop(new Rectangle(0, currentFrameIndex * width, width, width)));
-                frame.CopyPixelDataTo(CustomFrames[i]);
-            }
-        }
-        catch (Exception)
-        {
-            CustomFrames = null;
-            if (Pixels.Length != 1024) Pixels = new byte[1024];
-        }
+        CustomFrameCount = frames?.Length ?? 0;
+        Pixels = new byte[frames?[0].Length ?? 1024];
     }
 }

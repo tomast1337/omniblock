@@ -1,0 +1,8 @@
+{
+  "parent": "omniblock:block/templates/cube",
+  "textures": {
+    "top": "omniblock:wooden_planks",
+    "side": "omniblock:wooden_planks",
+    "bottom": "omniblock:wooden_planks"
+  }
+}

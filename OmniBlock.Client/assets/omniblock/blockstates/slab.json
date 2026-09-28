@@ -1,0 +1,68 @@
+{
+  "variants": {
+    "0": {
+      "model": "omniblock:block/stone_slab",
+      "shape": "lower_slab"
+    },
+    "1": {
+      "model": "omniblock:block/sandstone_slab",
+      "shape": "lower_slab"
+    },
+    "2": {
+      "model": "omniblock:block/wooden_slab",
+      "shape": "lower_slab"
+    },
+    "3": {
+      "model": "omniblock:block/cobblestone_slab",
+      "shape": "lower_slab"
+    },
+    "4": {
+      "model": "omniblock:block/stone_slab_fallback",
+      "shape": "lower_slab"
+    },
+    "5": {
+      "model": "omniblock:block/stone_slab_fallback",
+      "shape": "lower_slab"
+    },
+    "6": {
+      "model": "omniblock:block/stone_slab_fallback",
+      "shape": "lower_slab"
+    },
+    "7": {
+      "model": "omniblock:block/stone_slab_fallback",
+      "shape": "lower_slab"
+    },
+    "8": {
+      "model": "omniblock:block/stone_slab_upper",
+      "shape": "upper_slab"
+    },
+    "9": {
+      "model": "omniblock:block/stone_slab_upper",
+      "shape": "upper_slab"
+    },
+    "10": {
+      "model": "omniblock:block/stone_slab_upper",
+      "shape": "upper_slab"
+    },
+    "11": {
+      "model": "omniblock:block/stone_slab_upper",
+      "shape": "upper_slab"
+    },
+    "12": {
+      "model": "omniblock:block/stone_slab_upper",
+      "shape": "upper_slab"
+    },
+    "13": {
+      "model": "omniblock:block/stone_slab_upper",
+      "shape": "upper_slab"
+    },
+    "14": {
+      "model": "omniblock:block/stone_slab_upper",
+      "shape": "upper_slab"
+    },
+    "15": {
+      "model": "omniblock:block/stone_slab_upper",
+      "shape": "upper_slab"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "parent": "omniblock:block/templates/lower_slab",
+  "textures": {
+    "top": "omniblock:sandstone_top",
+    "side": "omniblock:sandstone_side",
+    "bottom": "omniblock:sandstone_bottom"
+  }
+}

@@ -4,6 +4,9 @@ namespace OmniBlock.Client.Resource.Pack;
 
 public abstract class TexturePack
 {
+    // Reload readers must distinguish absence from I/O failure. Custom providers opt in explicitly.
+    internal virtual Stream? OpenReloadOverride(string path) => this is BuiltInTexturePack ? null
+        : throw new NotSupportedException($"Pack '{GetType().Name}' has no strict reload reader.");
     public string? FirstDescriptionLine;
     public string? SecondDescriptionLine;
     public string? Signature;

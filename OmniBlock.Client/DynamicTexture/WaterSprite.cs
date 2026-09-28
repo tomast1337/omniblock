@@ -1,3 +1,4 @@
+using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Blocks;
 
 namespace OmniBlock.Client.DynamicTexture;
@@ -9,7 +10,9 @@ internal class WaterSprite(IBlockRuntimeView blocks) : Rendering.Core.Textures.D
     private float[] _current = new float[256];
     private float[] _next = new float[256];
 
-    public override void Setup(OmniBlock game) => TryLoadCustomTexture(game, "custom_water_still.png");
+    internal override Rendering.Core.Textures.DynamicTexture CreateReloadCopy() => new WaterSprite(blocks);
+
+    internal override void Setup(TextureAnimationContext context) => TryLoadCustomTexture(context, "custom_water_still.png");
 
     public override void tick()
     {
