@@ -8,6 +8,115 @@ namespace OmniBlock.Tests.Rendering;
 
 public sealed class TerrainLodRemoteCoveragePlannerTests
 {
+    [Theory]
+    [InlineData(64)]
+    [InlineData(128)]
+    [InlineData(256)]
+    public void Refinement_reaches_block_scale_nearby_independent_of_the_outer_horizon(int horizon)
+    {
+        var policy = TerrainLodSpatialPolicy.CreateDefault();
+        var rootLevel = policy.DesiredSpatialLevel(horizon);
+        var roots = TerrainLodCoveragePlanner.PlanRequiredTiles(
+            0, 0, 4, horizon, rootLevel, 2,
+            TerrainLodCoveragePlanner.RecommendedOuterBoundaryMinimumLevel(rootLevel, 2)).Tiles;
+        var fine = TerrainLodCoveragePlanner.RefinementTiles(roots, 0, 0, policy, 2);
+
+        Assert.InRange(fine.Length, 4, TerrainLodScaleBudget.MaximumCoverageTiles);
+        Assert.Equal(fine.Length, fine.Distinct().Count());
+        Assert.Contains(fine, key => key.Level == 2 && key.DistanceTo(0, 0) < 16);
+        Assert.Equal(fine, TerrainLodCoveragePlanner.RefinementTiles(roots.Reverse(), 0, 0, policy, 2));
+        HashSet<TerrainLodTileKey> planned = [.. roots];
+        foreach (var group in fine.Chunk(4))
+        {
+            var parent = group[0].Parent();
+            Assert.Contains(parent, planned); // no unreachable grandchildren
+            Assert.Equal(Enumerable.Range(0, 4).Select(parent.Child), group);
+            Assert.True(parent.Level > policy.DesiredSpatialLevel(parent.DistanceTo(0, 0)));
+            planned.UnionWith(group);
+        }
+    }
+
+    [Theory]
+    [InlineData(0, 0)]
+    [InlineData(3, 0)]
+    [InlineData(4, 4)]
+    [InlineData(7, 4)]
+    [InlineData(12, 12)]
+    public void Refinement_budget_never_truncates_a_sibling_group(int budget, int expected)
+    {
+        var root = new TerrainLodTileKey(4, -1, -1);
+        var plan = TerrainLodCoveragePlanner.RefinementTiles(
+            [root], -1, -1, TerrainLodSpatialPolicy.CreateDefault(), 2, budget);
+        Assert.Equal(expected, plan.Length);
+        foreach (var group in plan.Chunk(4))
+            Assert.Equal(Enumerable.Range(0, 4).Select(group[0].Parent().Child), group);
+    }
+
+    [Fact]
+    public void Nearby_refinement_gets_requests_before_the_whole_horizon_is_available()
+    {
+        using var renderer = new ClientTerrainLodRenderer(new LightTestWorld());
+        Vector3D<double> camera = new(0, 80, 0);
+        var roots = renderer.TakeRemoteSpatialRequests(camera, 0, 64, 4);
+        var parent = roots[0];
+        var column = TerrainLodColumn.Create(4,
+            [new TerrainLodColumnSpan(0, 4, TerrainLodMaterial.Air, 0, 15)]);
+        renderer.ObserveRemoteSpatialTile(TerrainLodColumnTile.CreateUniform(
+            parent, 2, 4, column, "refinement-test"));
+
+        var next = renderer.TakeRemoteSpatialRequests(camera, 0, 64, 4);
+
+        Assert.Equal(4, next.Length);
+        Assert.Equal(parent, next[0].Parent());
+        Assert.Equal(3, next.Count(key => key.Level == parent.Level));
+        Assert.Equal(next.Length, next.Distinct().Count());
+    }
+
+    [Fact]
+    public void Fine_source_survives_retention_and_can_be_requeued_without_another_network_response()
+    {
+        using var renderer = new ClientTerrainLodRenderer(new LightTestWorld());
+        var parent = new TerrainLodTileKey(4, 0, 0);
+        var fine = parent.Child(0).Child(0);
+        var plan = TerrainLodCoveragePlanner.RefinementTiles(
+            [parent], 0, 0, TerrainLodSpatialPolicy.CreateDefault(), 2);
+        Assert.Contains(fine, plan);
+        var column = TerrainLodColumn.Create(4,
+            [new TerrainLodColumnSpan(0, 4, TerrainLodMaterial.Air, 0, 15)]);
+        renderer.ObserveRemoteSpatialTile(TerrainLodColumnTile.CreateUniform(
+            fine, 0, 4, column, "retention-test"));
+
+        renderer.RetainSpatialMeshCandidates([parent], plan);
+        Assert.True(renderer.HasPendingSpatialMesh(fine));
+
+        renderer.RetainSpatialMeshCandidates([], []); // camera moved away
+        Assert.False(renderer.HasPendingSpatialMesh(fine));
+        renderer.RetainSpatialMeshCandidates([parent], plan); // returns; CPU source still resident
+        Assert.True(renderer.HasPendingSpatialMesh(fine));
+    }
+
+    [Fact]
+    public void One_slot_transport_shares_capacity_between_coverage_and_nearby_refinement()
+    {
+        using var renderer = new ClientTerrainLodRenderer(new LightTestWorld());
+        Vector3D<double> camera = new(0, 80, 0);
+        var parent = Assert.Single(renderer.TakeRemoteSpatialRequests(camera, 0, 64, 1));
+        var column = TerrainLodColumn.Create(4,
+            [new TerrainLodColumnSpan(0, 4, TerrainLodMaterial.Air, 0, 15)]);
+        renderer.ObserveRemoteSpatialTile(TerrainLodColumnTile.CreateUniform(
+            parent, 2, 4, column, "single-slot"));
+
+        List<TerrainLodTileKey> next = [];
+        for (var i = 0; i < 4; i++)
+        {
+            var key = Assert.Single(renderer.TakeRemoteSpatialRequests(camera, 0, 64, 1));
+            next.Add(key);
+            renderer.ObserveRemoteSpatialStatus(key, TerrainLodTileStatus.Pending);
+        }
+        Assert.Equal(1, next.Count(key => key.Level == parent.Level - 1));
+        Assert.Equal(3, next.Count(key => key.Level == parent.Level));
+    }
+
     [Fact]
     public void Required_tiles_form_a_deterministic_radial_annulus()
     {

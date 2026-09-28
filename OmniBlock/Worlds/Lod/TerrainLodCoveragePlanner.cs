@@ -254,6 +254,54 @@ public static class TerrainLodCoveragePlanner
     }
 
     /// <summary>
+    ///     Plans the descendants the distance selector actually needs, independently of the
+    ///     coarse horizon partition. Include intermediate parents and complete sibling groups:
+    ///     the selector cannot replace a ready parent with an incomplete set of children.
+    ///     The budget limits optional work, never truncates a sibling group or removes coverage.
+    /// </summary>
+    public static TerrainLodTileKey[] RefinementTiles(
+        IEnumerable<TerrainLodTileKey> coverageRoots,
+        double cameraChunkX,
+        double cameraChunkZ,
+        TerrainLodSpatialPolicy policy,
+        int minimumLevel,
+        int maximumTiles = TerrainLodScaleBudget.MaximumCoverageTiles)
+    {
+        ArgumentNullException.ThrowIfNull(coverageRoots);
+        ArgumentNullException.ThrowIfNull(policy);
+        if (!double.IsFinite(cameraChunkX))
+            throw new ArgumentOutOfRangeException(nameof(cameraChunkX));
+        if (!double.IsFinite(cameraChunkZ))
+            throw new ArgumentOutOfRangeException(nameof(cameraChunkZ));
+        if (minimumLevel < 0 || minimumLevel > policy.MaximumSpatialLevel)
+            throw new ArgumentOutOfRangeException(nameof(minimumLevel));
+        if (maximumTiles < 0) throw new ArgumentOutOfRangeException(nameof(maximumTiles));
+
+        PriorityQueue<TerrainLodTileKey, (double Distance, int Level, int X, int Z)> pending = new();
+        HashSet<TerrainLodTileKey> visited = [];
+        List<TerrainLodTileKey> result = [];
+        foreach (var root in coverageRoots) Enqueue(root);
+        while (result.Count <= maximumTiles - 4 && pending.TryDequeue(out var parent, out _))
+        {
+            for (var index = 0; index < 4; index++)
+            {
+                var child = parent.Child(index);
+                result.Add(child);
+                Enqueue(child);
+            }
+        }
+        return [.. result];
+
+        void Enqueue(TerrainLodTileKey key)
+        {
+            var distance = key.DistanceTo(cameraChunkX, cameraChunkZ);
+            if (key.Level <= Math.Max(minimumLevel, policy.DesiredSpatialLevel(distance)) ||
+                !visited.Add(key)) return;
+            pending.Enqueue(key, (distance, -key.Level, key.X, key.Z));
+        }
+    }
+
+    /// <summary>
     ///     Selects a distance-closed radial prefix of the required annulus. A frontier band moves
     ///     only when every root in that band is ready; <see cref="TerrainLodCoarseCoverSelection.CompleteHorizon"/>
     ///     separately reports whether the prefix reached the configured horizon.

@@ -235,6 +235,20 @@ internal sealed partial class ClientTerrainLodRenderer
             UnloadedConversionsPreserved = _unloadedConversionsPreserved,
             PresentationRevision = _spatialPresentations.Revision,
             CachedForestRevision = _spatialForestCacheKey?.PresentationRevision,
+            RemoteRequests = new
+            {
+                Tick = _tick,
+                PlannedRefinementTiles = _refinementTiles.Length,
+                States = _remoteRequestStates.OrderBy(pair => pair.Key.Level)
+                    .ThenBy(pair => pair.Key.X).ThenBy(pair => pair.Key.Z)
+                    .Select(pair => new
+                    {
+                        Tile = pair.Key,
+                        Status = pair.Value.Disposition.ToString(),
+                        RetryInTicks = pair.Value.RetryAfterTick - _tick,
+                        HasCachedHash = pair.Value.OfferedHash.Length != 0
+                    }).ToArray()
+            },
             ReadySpatialTiles = _spatialPresentations.ReadyKeys.OrderBy(key => key.Level)
                 .ThenBy(key => key.X).ThenBy(key => key.Z).ToArray(),
             Spatial = spatial,

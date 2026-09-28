@@ -77,6 +77,13 @@ worker queues, and coverage-oracle snapshots, so admission stalls can be diagnos
 The scale fixture uses uniform synthetic reduced terrain to isolate lifecycle and budget behavior;
 it is not a visual-quality baseline for caves, foliage, liquids, or arbitrary modded content.
 
+`terrain-lod-remote-refinement` is an opt-in refinement pipeline regression:
+`xvfb-run -a tests/e2e/run-local.sh terrain-lod-remote-refinement` (300-second watchdog).
+Its preparation process persists synthetic coarse 64-chunk coverage and a fine 16-chunk central
+partition. A fresh client must publish a remote 1x1 spatial sample without moving into or loading
+that column as gameplay terrain. This checks source requests, mesh retention and publication
+together; the deliberately uniform fixture is **not** natural-terrain visual-quality evidence.
+
 `terrain-lod-near-quality` is an opt-in **visual characterization** with a narrow empty-layer
 regression gate, not a whole-scene quality acceptance gate.
 Run `xvfb-run -a tests/e2e/run-local.sh terrain-lod-near-quality` (240-second watchdog).

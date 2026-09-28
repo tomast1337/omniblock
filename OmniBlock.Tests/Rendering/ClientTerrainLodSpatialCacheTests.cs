@@ -9,6 +9,43 @@ namespace OmniBlock.Tests.Rendering;
 public sealed class ClientTerrainLodSpatialCacheTests
 {
     [Fact]
+    public void Cold_cache_does_not_stop_pending_remote_requests_from_retrying()
+    {
+        var root = new DirectoryInfo(Path.Combine(
+            Path.GetTempPath(), $"omniblock-client-spatial-{Guid.NewGuid():N}"));
+        var identity = new TerrainLodCacheIdentity(
+            "retry-world", 0, "content", "generator",
+            TerrainLodHierarchy.ReductionSchemaVersion, "materials", 6,
+            TerrainLodSpatialPolicy.CurrentQualityPolicyVersion);
+        try
+        {
+            using var renderer = new ClientTerrainLodRenderer(new LightTestWorld());
+            renderer.ConfigureRemoteSpatialCache(identity, root);
+            Vector3D<double> camera = new(0, 192, 320);
+            Dictionary<TerrainLodTileKey, int> attempts = [];
+            for (var tick = 0; tick < 150; tick++)
+            {
+                renderer.Tick(camera);
+                foreach (var key in renderer.TakeRemoteSpatialRequests(camera, 4, 64, 8))
+                {
+                    attempts[key] = attempts.GetValueOrDefault(key) + 1;
+                    renderer.ObserveRemoteSpatialStatus(key, TerrainLodTileStatus.Pending);
+                }
+                // Keep renderer access on its owning thread while the disk worker completes.
+                Thread.Sleep(5);
+            }
+            Assert.NotEmpty(attempts);
+            Assert.True(attempts.Values.Sum() > 64,
+                $"Only {attempts.Values.Sum()} requests across {attempts.Count} tiles.");
+            Assert.Contains(attempts.Values, count => count > 2);
+        }
+        finally
+        {
+            if (root.Exists) root.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task Server_scoped_tile_is_available_after_reopening_without_render_thread_io()
     {
         var root = new DirectoryInfo(Path.Combine(

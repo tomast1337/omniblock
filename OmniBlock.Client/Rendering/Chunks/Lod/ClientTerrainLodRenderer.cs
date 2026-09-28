@@ -327,6 +327,9 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
     private long _coarseCoverGeneration;
     private long _publishedCoarseCoverGeneration = -1;
     private TerrainLodTileKey[] _coarseRequiredTiles = [];
+    private TerrainLodTileKey[] _refinementTiles = [];
+    private (double X, double Z, long CoverageGeneration)? _refinementPlanKey;
+    private int _remoteRefinementBatch;
     private bool _disposed;
     private long _lastCoverageTick = -1;
     private ClientTerrainLodSnapshot _snapshot;
@@ -521,6 +524,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             coveragePlan.Tiles,
             cameraX, cameraZ, _spatialPolicy);
         UpdateCoarseCoverPlan(requiredTiles);
+        var refinementTiles = GetSpatialRefinementPlan(cameraX, cameraZ);
         UpdateRemoteCoverage(requiredTiles, cameraX, cameraZ, horizonDistanceChunks,
             outerBoundaryMinimumLevel);
         // Outstanding-request and server transport budgets already bound this lane. The old
@@ -538,7 +542,6 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         var requestCount = Math.Min(maximumRequests, availableCapacity);
         List<TerrainLodTileKey> selected = [];
         var cacheLookupsPending = 0;
-        var cacheBlocked = false;
         // Reserve a tiny fair lane for previously presented tiles that the server invalidated.
         // Otherwise an endless newly discovered horizon can starve a visible replacement.
         foreach (var key in _remoteRefreshNeeded.Keys
@@ -555,52 +558,21 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             if (!CacheProbeReady(key)) continue;
             selected.Add(key);
         }
-        // The adaptive partition defines the no-hole contract and always consumes request capacity
-        // before visual refinement, apart from the bounded invalidation lane above. It is already
-        // deterministic and near-to-far.
+        // Give ready nearby parents a small refinement lane even while the outer horizon is
+        // unavailable. Coarse coverage retains the majority of every request batch. Cold starts
+        // still request coverage first: refinement is eligible only after its parent source exists.
+        // If backpressure leaves fewer than four slots, reserve one only every fourth batch;
+        // otherwise a one-slot transport could indefinitely favor refinement over missing cover.
+        _remoteRefinementBatch = (_remoteRefinementBatch + 1) % 4;
+        var refinementSlots = requestCount >= 4 ? requestCount / 4 : _remoteRefinementBatch == 0 ? 1 : 0;
+        CollectRefinementRequests(Math.Min(requestCount, selected.Count + refinementSlots));
         foreach (var key in requiredTiles)
         {
             if (selected.Count >= requestCount || cacheLookupsPending >= requestCount) break;
             CollectCoverageRequests(key, Math.Min(key.Level, outerBoundaryMinimumLevel));
         }
 
-        // Refinement may use only capacity not needed by a due coverage tile. Cycling levels keeps
-        // the request set bounded while the near-to-far order remains stable within each level.
-        if (!cacheBlocked && selected.Count < requestCount && requiredTiles.All(key =>
-                CoverageRequestResolved(
-                    key, Math.Min(key.Level, outerBoundaryMinimumLevel))))
-        {
-            var refinementLevels = coverageRootLevel - outerBoundaryMinimumLevel;
-            if (refinementLevels > 0)
-            {
-                var level = coverageRootLevel - 1 -
-                            (int)((_tick >> 2) % refinementLevels);
-                var refinements = new List<TerrainLodTileKey>();
-                if (TerrainLodCoveragePlanner.TryPlanRequiredTiles(
-                        cameraX, cameraZ, nearDistanceChunks,
-                        horizonDistanceChunks, level, MinimumSpatialGpuLevel,
-                        Math.Min(level, outerBoundaryMinimumLevel),
-                        out var refinementPlan))
-                {
-                    foreach (var key in refinementPlan!.Tiles)
-                    {
-                        if (selected.Contains(key) ||
-                            _spatialHierarchy.TryGetCoverage(key, out _, out _))
-                            continue;
-                        if (_remoteRequestStates.TryGetValue(key, out var state) &&
-                            _tick < state.RetryAfterTick)
-                            continue;
-                        if (!CacheProbeReady(key)) break;
-                        refinements.Add(key);
-                    }
-                }
-                selected.AddRange(refinements
-                    .OrderBy(key => key.DistanceTo(cameraX, cameraZ))
-                    .ThenBy(static key => key.X)
-                    .ThenBy(static key => key.Z)
-                    .Take(requestCount - selected.Count));
-            }
-        }
+        CollectRefinementRequests(requestCount);
 
         foreach (var key in selected)
             _remoteRequestStates[key] = new RemoteTileRequestState(
@@ -611,9 +583,25 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         _remoteRequests += selected.Count;
         return [.. selected];
 
+        void CollectRefinementRequests(int limit)
+        {
+            foreach (var key in refinementTiles)
+            {
+                if (selected.Count >= limit || cacheLookupsPending >= requestCount) break;
+                if (selected.Contains(key) ||
+                    _spatialHierarchy.TryGetCoverage(key, out _, out _) ||
+                    !_spatialHierarchy.TryGetCoverage(key.Parent(), out _, out _)) continue;
+                if (_remoteRequestStates.TryGetValue(key, out var state) &&
+                    _tick < state.RetryAfterTick) continue;
+                if (!CacheProbeReady(key)) continue;
+                selected.Add(key);
+            }
+        }
+
         void CollectCoverageRequests(TerrainLodTileKey key, int fallbackMinimumLevel)
         {
             if (selected.Count >= requestCount || cacheLookupsPending >= requestCount ||
+                selected.Contains(key) ||
                 _spatialHierarchy.HasCompleteCoverage(key, fallbackMinimumLevel))
                 return;
             if (_remoteRequestStates.TryGetValue(key, out var state))
@@ -640,15 +628,21 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
 
         bool CacheProbeReady(TerrainLodTileKey key)
         {
+            // A pending/missing response retries the server request, not the disk lookup. The
+            // small disk-result cache may have evicted our first probe while other keys loaded;
+            // probing again can cycle the same >32 keys forever without sending any requests.
+            // OfferedHash below uses only a still-resident result. If it was evicted, retry with
+            // no hash and let the server send the tile normally (NotModified also has a fallback).
+            if (_remoteRequestStates.ContainsKey(key)) return true;
             if (_remoteSpatialCache?.Probe(key, out _) == ClientTerrainLodCacheProbe.Pending)
             {
                 cacheLookupsPending++;
-                cacheBlocked = true;
+                return false;
             }
-            // Probe several nearby keys in parallel, but do not send a farther ready key ahead
-            // of one whose local cache read is still pending. Without this batch, a cold empty
-            // client cache would limit requests to one key per render frame.
-            return !cacheBlocked;
+            // Cache reads are optional bandwidth savings, not an ordering barrier for the whole
+            // horizon. Let ready keys and due retries proceed while this bounded batch reads.
+            // Otherwise eviction of the first key can repeatedly invalidate an entire batch.
+            return true;
         }
     }
 
@@ -778,18 +772,14 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         TerrainLodCoveragePlanner.HasCompleteCoverage(
             root, fallbackMinimumLevel, _spatialPresentations.IsReady);
 
-    private bool CoverageRequestResolved(
-        TerrainLodTileKey key,
-        int fallbackMinimumLevel)
+    private TerrainLodTileKey[] GetSpatialRefinementPlan(double cameraChunkX, double cameraChunkZ)
     {
-        if (HasRemoteCoverage(key, fallbackMinimumLevel)) return true;
-        if (!_remoteRequestStates.TryGetValue(key, out var state) ||
-            state.Disposition != RemoteTileRequestDisposition.Missing)
-            return false;
-        if (key.Level == fallbackMinimumLevel) return true;
-        for (var index = 0; index < 4; index++)
-            if (!CoverageRequestResolved(key.Child(index), fallbackMinimumLevel)) return false;
-        return true;
+        var key = (cameraChunkX, cameraChunkZ, _coarseCoverGeneration);
+        if (_refinementPlanKey == key) return _refinementTiles;
+        _refinementTiles = TerrainLodCoveragePlanner.RefinementTiles(
+            _coarseRequiredTiles, cameraChunkX, cameraChunkZ, _spatialPolicy, MinimumSpatialGpuLevel);
+        _refinementPlanKey = key;
+        return _refinementTiles;
     }
 
     private void UpdateCoarseCoverPlan(TerrainLodTileKey[] requiredTiles)
@@ -1958,8 +1948,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         var requiredTiles = TerrainLodCoveragePlanner.PrioritizeMissing(
             coveragePlan.Tiles,
             cameraChunkX, cameraChunkZ, _spatialPolicy);
-        RetainSpatialMeshCandidates(requiredTiles);
         UpdateCoarseCoverPlan(requiredTiles);
+        RetainSpatialMeshCandidates(requiredTiles, GetSpatialRefinementPlan(cameraChunkX, cameraChunkZ));
         // Uploads happen earlier in this render pass than presentation evaluation. Reclassify the
         // same immutable partition here so GPU-pending/ready diagnostics describe this frame,
         // rather than the previous simulation tick.
@@ -2103,7 +2093,9 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
     ///     eligible because they are the conservative fallback while a complete child group is
     ///     being compiled; the currently published frame is retained for the same reason.
     /// </summary>
-    private void RetainSpatialMeshCandidates(IReadOnlyList<TerrainLodTileKey> requiredTiles)
+    internal void RetainSpatialMeshCandidates(
+        IReadOnlyList<TerrainLodTileKey> requiredTiles,
+        IReadOnlyList<TerrainLodTileKey> refinementTiles)
     {
         HashSet<TerrainLodTileKey> desired = [];
         foreach (var required in requiredTiles)
@@ -2119,6 +2111,9 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         if (_spatialFrame is { } published)
             foreach (var draw in published.Draws)
                 desired.Add(draw.Selection.Tile);
+        // A finer tile is not redundant merely because its coarse parent already covers the
+        // horizon. Keep the same complete child groups that transport and selection are pursuing.
+        desired.UnionWith(refinementTiles);
 
         _spatialMeshCompilation.Retain(desired);
         if (_deferredSpatialMeshUpload?.Mesh is { } deferred && !desired.Contains(deferred.Key))
@@ -2132,7 +2127,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
 
         // Source residency outlives GPU residency. A returning required tile must be rebuilt
         // from its cached CPU record even when no network or hierarchy publication fires again.
-        foreach (var required in requiredTiles)
+        foreach (var required in requiredTiles.Concat(refinementTiles))
         {
             if (_spatialPresentations.IsReady(required) ||
                 _spatialMeshPending.ContainsKey(required) ||
@@ -2142,6 +2137,12 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             QueueSpatialMesh(tile);
         }
     }
+
+    internal bool HasPendingSpatialMesh(TerrainLodTileKey key) =>
+        _spatialMeshPending.ContainsKey(key) ||
+        _deferredSpatialMeshUpload?.Mesh?.Key == key ||
+        (_spatialHierarchy.TryGetCoverage(key, out var tile, out _) && tile is not null &&
+         _spatialMeshCompilation.Contains(key, tile.CanonicalHash));
 
     private void UpdateSpatialSeams(
         TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation> frame,
