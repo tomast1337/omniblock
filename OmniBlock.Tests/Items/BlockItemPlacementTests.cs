@@ -74,6 +74,51 @@ public sealed class BlockItemPlacementTests
         Assert.Equal(expectedHalf, world.Reader.GetBlockMeta(1, 64, 0) & 4);
     }
 
+    [Theory]
+    [InlineData(0F, 2)]
+    [InlineData(90F, 1)]
+    [InlineData(180F, 3)]
+    [InlineData(270F, 0)]
+    public void Stair_placement_preserves_all_four_legacy_facings(float yaw, int facing)
+    {
+        Assert.Equal(facing, StairShape.PlacementMetadata(yaw, Side.East, 0.25F));
+        Assert.Equal(facing | 4, StairShape.PlacementMetadata(yaw, Side.East, 0.75F));
+        Assert.Equal(facing, StairShape.PlacementMetadata(yaw, Side.Up, 0.75F));
+        Assert.Equal(facing | 4, StairShape.PlacementMetadata(yaw, Side.Down, 0.25F));
+    }
+
+    [Fact]
+    public void Half_selection_is_stable_at_the_wire_midpoint()
+    {
+        var lower = 127 / 255F;
+        var upper = 128 / 255F;
+        Assert.Equal(0, StairShape.PlacementMetadata(270, Side.East, lower) & 4);
+        Assert.Equal(4, StairShape.PlacementMetadata(270, Side.East, upper) & 4);
+    }
+
+    [Theory]
+    [InlineData("slab")]
+    [InlineData("cobblestone_stairs")]
+    public void Placement_collision_checks_the_selected_half_before_writing(string blockName)
+    {
+        Assert.True(TryPlace(0.25F));
+        Assert.False(TryPlace(0.75F));
+
+        bool TryPlace(float hitY)
+        {
+            FakeWorldContext world = new();
+            world.ReaderWriter.SetInitial(0, 64, 0, world.Content.Blocks.Get("stone").Id);
+            var blocker = new TestEntityPlayer(world);
+            blocker.SetPosition(1.5, 64.7 + blocker.StandingEyeHeight - blocker.CameraOffset,
+                blockName == "slab" ? 0.5 : 0.15);
+            Assert.True(world.SpawnEntity(blocker));
+            ItemStack stack = new(world.Content.Items.Get(blockName));
+            var placed = stack.useOnBlock(new TestEntityPlayer(world), world, 0, 64, 0, (int)Side.East, hitY);
+            Assert.Equal(placed ? world.Content.Blocks.Get(blockName).Id : 0, world.Reader.GetBlockId(1, 64, 0));
+            return placed;
+        }
+    }
+
     [Fact]
     public void Interaction_packet_round_trips_hit_height_and_declares_new_schema()
     {

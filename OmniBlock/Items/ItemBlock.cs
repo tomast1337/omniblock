@@ -32,6 +32,7 @@ internal class ItemBlock : Item
         var block = world.Content.Blocks.GetByProtocolId(BlockId);
         var slab = world.Content.Blocks.Get("slab");
         var isSlab = block.Id == slab.Id;
+        var isStairs = block.RenderType == BlockRendererType.Stairs;
         var placementMeta = GetPlacementMetadata(itemStack.GetDamage());
 
         // Merge into the clicked slab before moving to the neighboring cell. Both halves must
@@ -93,18 +94,25 @@ internal class ItemBlock : Item
 
         if (isSlab && placementMeta is >= 0 and <= 3 &&
             (meta == (int)Side.Down || (meta != (int)Side.Up && hitY > 0.5F))) placementMeta |= 8;
+        if (isStairs) placementMeta = StairShape.PlacementMetadata(entityPlayer.Yaw, clickedSide, hitY);
         // Existing-world bounds cannot describe an unplaced upper slab. Test the candidate half
         // before mutating the grid, so collision and published metadata agree.
         var collisionBox = isSlab
             ? new Box(x, y + ((placementMeta & 8) != 0 ? 0.5 : 0), z,
                 x + 1, y + ((placementMeta & 8) != 0 ? 1 : 0.5), z + 1)
-            : block.GetCollisionShape(world.Reader, world.Entities, x, y, z);
+            : isStairs ? null : block.GetCollisionShape(world.Reader, world.Entities, x, y, z);
+        if (isStairs)
+        {
+            var (baseBounds, stepBounds) = StairShape.GetBounds(placementMeta);
+            if (HasBlockingEntity(baseBounds.Offset(x, y, z)) || HasBlockingEntity(stepBounds.Offset(x, y, z))) return false;
+        }
         if (collisionBox is { } box)
         {
-            var entitiesInBox = world.Entities.CollectEntitiesOfType<Entity>(box);
-            var hasBlockingEntity = entitiesInBox.Any(entity => entity.PreventEntitySpawning);
-            if (hasBlockingEntity) return false;
+            if (HasBlockingEntity(box)) return false;
         }
+
+        bool HasBlockingEntity(Box bounds) => world.Entities.CollectEntitiesOfType<Entity>(bounds)
+            .Any(entity => entity.PreventEntitySpawning);
 
         if (!block.CanPlaceAt(new CanPlaceAtContext(world, meta.ToSide(), x, y, z))) return false;
 

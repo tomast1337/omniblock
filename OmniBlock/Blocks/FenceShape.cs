@@ -1,4 +1,5 @@
 using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Blocks;
 
@@ -10,6 +11,11 @@ public static class FenceShape
     private static readonly Box[][] Rails = [BuildRails(West), BuildRails(East), BuildRails(North), BuildRails(South)];
 
     public static ReadOnlySpan<Box> GetBounds(int connections) => Shapes[connections & 15];
+    public static int ConnectionMask(IBlockReader reader, int blockId, int x, int y, int z) =>
+        (reader.GetBlockId(x - 1, y, z) == blockId ? West : 0) |
+        (reader.GetBlockId(x + 1, y, z) == blockId ? East : 0) |
+        (reader.GetBlockId(x, y, z - 1) == blockId ? North : 0) |
+        (reader.GetBlockId(x, y, z + 1) == blockId ? South : 0);
     public static int Bit(Side side) => side switch
     {
         Side.West => West, Side.East => East, Side.North => North, Side.South => South,

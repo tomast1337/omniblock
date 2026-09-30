@@ -5,6 +5,14 @@ namespace OmniBlock.Blocks;
 /// <summary>Two non-overlapping boxes for the straight stair shape used by physics and rendering.</summary>
 public static class StairShape
 {
+    /// <summary>Legacy four-facing/two-half metadata; corner shape is derived from neighbors later.</summary>
+    public static int PlacementMetadata(float yaw, Side side, float hitY)
+    {
+        var facing = MathHelper.Floor(yaw * 4.0F / 360.0F + 0.5D) & 3;
+        var horizontal = facing switch { 0 => 2, 1 => 1, 2 => 3, _ => 0 };
+        return horizontal | (side == Side.Down || (side != Side.Up && hitY > 0.5F) ? 4 : 0);
+    }
+
     public static (Box Base, Box Step) GetBounds(int metadata)
     {
         var inverted = (metadata & 4) != 0;

@@ -12,21 +12,7 @@ internal sealed class StairsBehavior(Func<Block> baseBlock) : IBlockPhysics, IBl
 {
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        var meta = 0;
-        if (@event.Placer != null)
-        {
-            var facing = MathHelper.Floor(@event.Placer.Yaw * 4.0F / 360.0F + 0.5D) & 3;
-
-            // A horizontal-face click chooses the half from the actual hit height.
-            if (@event.Side == Side.Down || (@event.Side != Side.Up && @event.HitY > 0.5F)) meta |= 4;
-
-            if (facing == 0) meta |= 2;
-
-            if (facing == 1) meta |= 1;
-
-            if (facing == 2) meta |= 3;
-            // facing == 3 → meta 0 (south-facing), already the default
-        }
+        var meta = @event.Placer is null ? 0 : StairShape.PlacementMetadata(@event.Placer.Yaw, @event.Side, @event.HitY);
 
         @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, block.Id);
