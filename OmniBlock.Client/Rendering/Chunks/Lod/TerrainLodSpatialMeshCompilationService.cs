@@ -120,7 +120,8 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
         TerrainLodSpatialMeshWorkKind workKind,
         double distanceChunks,
         int? caveCullBelowY = null,
-        long maximumResultBytes = TerrainLodScaleBudget.MaximumUploadBytesPerFrame)
+        long maximumResultBytes = TerrainLodScaleBudget.MaximumUploadBytesPerFrame,
+        TerrainLodStairBorder? stairBorder = null)
     {
         ArgumentNullException.ThrowIfNull(tile);
         ArgumentNullException.ThrowIfNull(blocks);
@@ -132,7 +133,7 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
             throw new ArgumentOutOfRangeException(nameof(maximumResultBytes));
         var input = new Input(
             tile, blocks, verticalSliceBudget, workKind, distanceChunks,
-            caveCullBelowY, maximumResultBytes, 0, Stopwatch.GetTimestamp());
+            caveCullBelowY, maximumResultBytes, stairBorder, 0, Stopwatch.GetTimestamp());
         lock (_gate)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -145,7 +146,8 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
             {
                 if (existing.Input.Tile.CanonicalHash == tile.CanonicalHash &&
                     existing.Input.VerticalSliceBudget == verticalSliceBudget &&
-                    existing.Input.CaveCullBelowY == caveCullBelowY)
+                    existing.Input.CaveCullBelowY == caveCullBelowY &&
+                    (existing.Input.StairBorder?.Identity ?? "") == (stairBorder?.Identity ?? ""))
                     return TerrainLodSpatialMeshAdmissionResult.Coalesced;
                 existing.CancelCurrentGeneration();
                 existing.Input = input with { Sequence = _sequence++ };
@@ -171,11 +173,14 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
         }
     }
 
-    public bool Contains(TerrainLodTileKey key, string canonicalHash)
+    public bool Contains(TerrainLodTileKey key, string canonicalHash,
+        string? stairBorderIdentity = null)
     {
         lock (_gate)
             return _items.TryGetValue(key, out var item) &&
-                   item.Input.Tile.CanonicalHash == canonicalHash;
+                   item.Input.Tile.CanonicalHash == canonicalHash &&
+                   (stairBorderIdentity is null ||
+                    (item.Input.StairBorder?.Identity ?? "") == stairBorderIdentity);
     }
 
     public void Retain(IReadOnlySet<TerrainLodTileKey> desired)
@@ -322,7 +327,8 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
                     emitTileBoundaryFaces: false,
                     caveCullBelowY: input.CaveCullBelowY,
                     cancellationToken: cancellationToken,
-                    maximumResultBytes: input.MaximumResultBytes);
+                    maximumResultBytes: input.MaximumResultBytes,
+                    stairBorder: input.StairBorder);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -413,6 +419,7 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
         double DistanceChunks,
         int? CaveCullBelowY,
         long MaximumResultBytes,
+        TerrainLodStairBorder? StairBorder,
         long Sequence,
         long QueuedTimestamp);
 

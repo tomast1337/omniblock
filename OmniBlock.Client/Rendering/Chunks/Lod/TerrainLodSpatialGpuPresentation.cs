@@ -13,12 +13,14 @@ internal sealed class TerrainLodSpatialGpuPresentation : RetainedTerrainResource
     private TerrainLodSpatialGpuPresentation(
         TerrainLodTileKey key,
         string canonicalHash,
+        string stairBorderIdentity,
         GpuPage[] pages,
         long estimatedBytes,
         TerrainLodSpatialMeshQuality quality)
     {
         Key = key;
         CanonicalHash = canonicalHash;
+        StairBorderIdentity = stairBorderIdentity;
         Pages = pages;
         EstimatedBytes = estimatedBytes;
         Quality = quality;
@@ -26,6 +28,7 @@ internal sealed class TerrainLodSpatialGpuPresentation : RetainedTerrainResource
 
     public TerrainLodTileKey Key { get; }
     public string CanonicalHash { get; }
+    public string StairBorderIdentity { get; }
     public IReadOnlyList<GpuPage> Pages { get; }
     public long EstimatedBytes { get; }
     public TerrainLodSpatialMeshQuality Quality { get; }
@@ -46,7 +49,7 @@ internal sealed class TerrainLodSpatialGpuPresentation : RetainedTerrainResource
             foreach (var page in data.Pages)
                 pages.Add(GpuPage.Create(device, arenas, page));
             return new TerrainLodSpatialGpuPresentation(
-                data.Key, data.CanonicalHash, [.. pages], data.EstimatedBytes,
+                data.Key, data.CanonicalHash, data.StairBorderIdentity, [.. pages], data.EstimatedBytes,
                 TerrainLodSpatialMeshQuality.FromMesh(data));
         }
         catch

@@ -207,6 +207,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
     private readonly TerrainLodSpatialPresentationSet<TerrainLodSpatialGpuPresentation>
         _spatialPresentations = new();
     private readonly Dictionary<TerrainLodTileKey, TerrainLodColumnTile> _spatialMeshPending = [];
+    private readonly HashSet<TerrainLodTileKey> _stairBorderDirty = [];
     private readonly Dictionary<TerrainLodTileKey, RemoteTileRequestState> _remoteRequestStates = [];
     private ClientTerrainLodSpatialCache? _remoteSpatialCache;
     private string? _remoteSpatialCacheIdentity;
@@ -450,7 +451,10 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                         previous?.CanonicalHash == tile.CanonicalHash;
         var publication = _spatialHierarchy.PublishCached(tile);
         if (!unchanged && publication != TerrainLodTilePublicationResult.IgnoredCurrent)
+        {
             QueueSpatialMesh(tile);
+            QueueAdjacentStairMeshes(tile);
+        }
         _remoteTileGenerations[tile.Key] = generation;
         if (persistToCache) _remoteSpatialCache?.QueueWrite(tile);
         _remoteRequestStates.Remove(tile.Key);
@@ -935,7 +939,11 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         _completedSpatialParents.Clear();
         _spatialHierarchy.DrainCompleted(
             SpatialParentResultsPerTick, _completedSpatialParents);
-        foreach (var parent in _completedSpatialParents) QueueSpatialMesh(parent);
+        foreach (var parent in _completedSpatialParents)
+        {
+            QueueSpatialMesh(parent);
+            QueueAdjacentStairMeshes(parent);
+        }
         DispatchSpatialMeshCompilation(viewPosition);
 
         var due = TerrainLodAdmissionOrder.TakeNearest(
@@ -1428,6 +1436,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         _pending.Clear();
         _detailLevelRequests.Clear();
         _spatialMeshPending.Clear();
+        _stairBorderDirty.Clear();
         _completedSpatialParents.Clear();
         _opaquePipeline?.Dispose();
         _opaquePipeline = null;
@@ -1665,6 +1674,36 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         _spatialMeshPending[tile.Key] = tile;
     }
 
+    private TerrainLodStairBorder? CaptureStairBorder(TerrainLodColumnTile tile)
+    {
+        if (tile.HorizontalSampleLevel != 0) return null;
+        return TerrainLodStairBorder.Capture(tile, key =>
+            _spatialHierarchy.TryGetCoverage(key, out var adjacent, out _) ? adjacent : null);
+    }
+
+    private void QueueAdjacentStairMeshes(TerrainLodColumnTile changed)
+    {
+        if (changed.Key.Level < MinimumSpatialGpuLevel) return;
+        foreach (var (dx, dz) in new[] { (-1, 0), (1, 0), (0, -1), (0, 1) })
+        {
+            var x = (long)changed.Key.X + dx;
+            var z = (long)changed.Key.Z + dz;
+            if (x is < int.MinValue or > int.MaxValue || z is < int.MinValue or > int.MaxValue) continue;
+            var key = new TerrainLodTileKey(changed.Key.Level, (int)x, (int)z);
+            if (_spatialHierarchy.TryGetCoverage(key, out var neighbor, out _) &&
+                neighbor is { HorizontalSampleLevel: 0 })
+            {
+                var identity = CaptureStairBorder(neighbor)?.Identity ?? "";
+                if (_spatialPresentations.TryGetPresentation(key, out var ready) &&
+                    ready?.CanonicalHash == neighbor.CanonicalHash &&
+                    ready.StairBorderIdentity == identity) continue;
+                if (ready is not null) _stairBorderDirty.Add(key);
+                if (_spatialMeshCompilation.Contains(key, neighbor.CanonicalHash, identity)) continue;
+                QueueSpatialMesh(neighbor);
+            }
+        }
+    }
+
     private void DispatchSpatialMeshCompilation(Vector3D<double> viewPosition)
     {
         var cameraChunkX = viewPosition.X / SubChunkRenderer.Size;
@@ -1699,7 +1738,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                 workKind,
                 pair.Key.DistanceTo(cameraChunkX, cameraChunkZ),
                 _world.Dimension.HasCeiling ? null : OverworldCaveCullCeilingY,
-                maximumResultBytes);
+                maximumResultBytes,
+                CaptureStairBorder(pair.Value));
             if (result == TerrainLodSpatialMeshAdmissionResult.RejectedAtCapacity) break;
             if (result == TerrainLodSpatialMeshAdmissionResult.RejectedOverBudget)
             {
@@ -1750,11 +1790,23 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                 continue;
             }
 
+            if ((CaptureStairBorder(current)?.Identity ?? "") != mesh.StairBorderIdentity)
+            {
+                _staleResults++;
+                QueueSpatialMesh(current);
+                continue;
+            }
+
             _spatialPresentations.TryGetPresentation(mesh.Key, out var previous);
             if (previous is not null &&
                 string.Equals(previous.CanonicalHash, mesh.CanonicalHash,
+                    StringComparison.Ordinal) &&
+                string.Equals(previous.StairBorderIdentity, mesh.StairBorderIdentity,
                     StringComparison.Ordinal))
+            {
+                _stairBorderDirty.Remove(mesh.Key);
                 continue;
+            }
             if (previous is null &&
                 _spatialPresentations.Count >=
                 TerrainLodScaleBudget.MaximumSpatialPresentations)
@@ -1788,7 +1840,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             var installStarted = Stopwatch.GetTimestamp();
             var installedCandidate = _spatialPresentations.TryInstall(
                 mesh.Key,
-                mesh.CanonicalHash,
+                mesh.CanonicalHash + ":" + mesh.StairBorderIdentity,
                 () => TerrainLodSpatialGpuPresentation.Create(
                     device, arenas, mesh),
                 out var failure);
@@ -1798,6 +1850,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                     $"Spatial terrain LOD upload failed for {mesh.Key}.", failure);
             if (installedCandidate)
             {
+                _stairBorderDirty.Remove(mesh.Key);
                 installed++;
                 uploadedBytes += mesh.EstimatedBytes;
                 _bodyUploads++;
@@ -2183,11 +2236,23 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         // from its cached CPU record even when no network or hierarchy publication fires again.
         foreach (var required in requiredTiles.Concat(refinementTiles))
         {
-            if (_spatialPresentations.IsReady(required) ||
-                _spatialMeshPending.ContainsKey(required) ||
-                _deferredSpatialMeshUpload?.Mesh?.Key == required ||
-                !_spatialHierarchy.TryGetCoverage(required, out var tile, out _) || tile is null ||
-                _spatialMeshCompilation.Contains(required, tile.CanonicalHash)) continue;
+            if (!_spatialHierarchy.TryGetCoverage(required, out var tile, out _) || tile is null) continue;
+            if (_spatialPresentations.TryGetPresentation(required, out var currentPresentation) &&
+                currentPresentation?.CanonicalHash == tile.CanonicalHash &&
+                !_stairBorderDirty.Contains(required)) continue;
+            var borderIdentity = CaptureStairBorder(tile)?.Identity ?? "";
+            if (_spatialPresentations.TryGetPresentation(required, out var ready) &&
+                ready?.CanonicalHash == tile.CanonicalHash &&
+                ready.StairBorderIdentity == borderIdentity)
+            {
+                _stairBorderDirty.Remove(required);
+                continue;
+            }
+            if (_spatialMeshPending.ContainsKey(required) ||
+                _deferredSpatialMeshUpload?.Mesh is { } deferredMesh &&
+                deferredMesh.Key == required && deferredMesh.CanonicalHash == tile.CanonicalHash &&
+                deferredMesh.StairBorderIdentity == borderIdentity ||
+                _spatialMeshCompilation.Contains(required, tile.CanonicalHash, borderIdentity)) continue;
             QueueSpatialMesh(tile);
         }
     }
@@ -2554,6 +2619,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                 gpuBytes > TerrainLodScaleBudget.TargetSpatialGpuBytes;
             if (!outsideRetention && !underPressure) break;
             if (!_spatialPresentations.TryEvict(candidate.Key)) continue;
+            _stairBorderDirty.Remove(candidate.Key);
             gpuBytes -= candidate.Presentation!.EstimatedBytes;
             _spatialGpuEvictions++;
         }

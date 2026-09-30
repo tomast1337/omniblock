@@ -75,6 +75,7 @@ internal sealed record TerrainLodSpatialMeshData(
     TerrainLodSpatialMeshBuildProfile Profile)
 {
     public int? CaveCullBelowY { get; init; }
+    public string StairBorderIdentity { get; init; } = "";
     public long EstimatedBytes => Pages.Sum(static page => page.EstimatedBytes);
     public int[] ArenaAllocationVertexCounts => Pages
         .SelectMany(static page => new[]
@@ -115,7 +116,8 @@ internal static class TerrainLodSpatialMeshBuilder
         bool emitTileBoundaryFaces = true,
         int? caveCullBelowY = null,
         CancellationToken cancellationToken = default,
-        long maximumResultBytes = long.MaxValue)
+        long maximumResultBytes = long.MaxValue,
+        TerrainLodStairBorder? stairBorder = null)
     {
         ArgumentNullException.ThrowIfNull(tile);
         ArgumentNullException.ThrowIfNull(blocks);
@@ -241,10 +243,14 @@ internal static class TerrainLodSpatialMeshBuilder
                             (uint)nx < (uint)tile.Width &&
                             (uint)nz < (uint)tile.Width &&
                             TerrainLodFenceGeometry.Connects(span.Material, Column(nx, nz).At(shapeY).Material);
-                        int? StairAt(int nx, int nz) =>
-                            (uint)nx < (uint)tile.Width && (uint)nz < (uint)tile.Width &&
-                            Column(nx, nz).At(shapeY).Material.Geometry == TerrainLodGeometryClass.Stairs
-                                ? Column(nx, nz).At(shapeY).Material.Metadata : null;
+                        int? StairAt(int nx, int nz)
+                        {
+                            if ((uint)nx >= (uint)tile.Width || (uint)nz >= (uint)tile.Width)
+                                return stairBorder?.StairAt(nx, nz, shapeY, tile.Width);
+                            var adjacent = Column(nx, nz).At(shapeY).Material;
+                            return adjacent.Geometry == TerrainLodGeometryClass.Stairs
+                                ? adjacent.Metadata : null;
+                        }
                     }
                     continue;
                 }
@@ -553,7 +559,11 @@ internal static class TerrainLodSpatialMeshBuilder
                 columns.Length,
                 sourceSpans,
                 constructionPages, canonicalSpans, caveCulledColumns,
-                verticalReducedColumns, renderedSpans)) { CaveCullBelowY = caveCullBelowY };
+                verticalReducedColumns, renderedSpans))
+        {
+            CaveCullBelowY = caveCullBelowY,
+            StairBorderIdentity = stairBorder?.Identity ?? ""
+        };
 
         TerrainLodColumn Column(int x, int z) => columns[x * tile.Width + z];
         bool InBounds(int x, int z) =>
