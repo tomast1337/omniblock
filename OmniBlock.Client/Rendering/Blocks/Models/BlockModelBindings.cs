@@ -13,17 +13,21 @@ namespace OmniBlock.Client.Rendering.Blocks.Models;
 internal sealed class BlockModelBindings
 {
     private readonly FrozenDictionary<(int Block, int Meta), Binding> _states;
+    private readonly FrozenDictionary<int, CompiledStairGeometry> _stairs;
     private sealed record Binding(CompiledCuboidGeometry Geometry, bool LegacyGreedyCompatible);
 
-    private BlockModelBindings(long generation, Dictionary<(int, int), Binding> states, CompiledFenceGeometry? fence)
+    private BlockModelBindings(long generation, Dictionary<(int, int), Binding> states,
+        Dictionary<int, CompiledStairGeometry> stairs, CompiledFenceGeometry? fence)
     {
         Generation = generation;
         _states = states.ToFrozenDictionary();
+        _stairs = stairs.ToFrozenDictionary();
         Fence = fence;
     }
 
     internal long Generation { get; }
     internal CompiledFenceGeometry? Fence { get; }
+    internal CompiledStairGeometry? GetStair(int block) => _stairs.TryGetValue(block, out var geometry) ? geometry : null;
     internal CompiledCuboidGeometry? Get(int block, int meta) =>
         _states.TryGetValue((block, meta), out var binding) ? binding.Geometry : null;
     internal bool AllowsLegacyGreedy(int block, int meta) =>
@@ -41,6 +45,25 @@ internal sealed class BlockModelBindings
             var top = definition.Shape == CuboidStateShape.LowerSlab ? .5 : 1;
             Add(definition.Block, definition.Metadata, definition.Model, bottom, top);
         }
+        var stairs = new Dictionary<int, CompiledStairGeometry>();
+        foreach (ref readonly var definition in definitions.Stairs)
+        {
+            if (!blocks.TryGet(definition.Block, out var block))
+                throw new InvalidDataException($"Stair block '{definition.Block}': unknown block for model '{definition.Model}'.");
+            if (block.RenderType != BlockRendererType.Stairs)
+                throw new InvalidDataException($"Stair block '{definition.Block}': target must use Stairs rendering.");
+            CompiledBlockModel model;
+            try { model = models.Get(definition.Model); }
+            catch (KeyNotFoundException ex)
+            {
+                throw new InvalidDataException($"Stair block '{definition.Block}': unknown model '{definition.Model}'.", ex);
+            }
+            try { stairs.Add(block.Id, CompiledStairGeometry.Build(model, fixedLayers)); }
+            catch (InvalidDataException ex)
+            {
+                throw new InvalidDataException($"Stair block '{definition.Block}': {ex.Message}", ex);
+            }
+        }
         CompiledFenceGeometry? compiledFence = null;
         if (fence is not null)
         {
@@ -55,7 +78,7 @@ internal sealed class BlockModelBindings
             }
             compiledFence = CompiledFenceGeometry.Build(model, fence, fixedLayers);
         }
-        return new BlockModelBindings(generation, states, compiledFence);
+        return new BlockModelBindings(generation, states, stairs, compiledFence);
 
         void Add(ResourceLocation blockName, int meta, RenderResourceId modelName, double bottom, double top)
         {

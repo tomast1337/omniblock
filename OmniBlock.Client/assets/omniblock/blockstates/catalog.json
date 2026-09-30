@@ -3,5 +3,9 @@
     "omniblock:stone",
     "omniblock:slab",
     "omniblock:double_slab"
+  ],
+  "stairs": [
+    "omniblock:cobblestone_stairs",
+    "omniblock:wooden_stairs"
   ]
 }

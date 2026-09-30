@@ -8,6 +8,7 @@ internal enum CuboidStateShape { Cube, LowerSlab, UpperSlab }
 
 internal readonly record struct BlockStateModelDefinition(
     ResourceLocation Block, int Metadata, RenderResourceId Model, CuboidStateShape Shape);
+internal readonly record struct StairStateModelDefinition(ResourceLocation Block, RenderResourceId Model);
 
 /// <summary>
 /// Build-local metadata adapter, not gameplay state or a save-format change. The installed catalog
@@ -20,9 +21,15 @@ internal sealed class BlockStateDefinitions
     internal const int MaximumFileBytes = 64 * 1024;
     internal const int MaximumCatalogBytes = 4 * 1024 * 1024;
     private readonly BlockStateModelDefinition[] _states;
-    private BlockStateDefinitions(List<BlockStateModelDefinition> states) => _states = states.ToArray();
+    private readonly StairStateModelDefinition[] _stairs;
+    private BlockStateDefinitions(List<BlockStateModelDefinition> states, List<StairStateModelDefinition> stairs)
+    {
+        _states = states.ToArray();
+        _stairs = stairs.ToArray();
+    }
     internal ReadOnlySpan<BlockStateModelDefinition> States => _states;
-    internal IEnumerable<RenderResourceId> ModelRoots => _states.Select(s => s.Model).Distinct()
+    internal ReadOnlySpan<StairStateModelDefinition> Stairs => _stairs;
+    internal IEnumerable<RenderResourceId> ModelRoots => _states.Select(s => s.Model).Concat(_stairs.Select(s => s.Model)).Distinct()
         .OrderBy(id => id.ToString(), StringComparer.Ordinal);
     internal static string PathFor(ResourceLocation block) => $"assets/{block.Namespace}/blockstates/{block.Path}.json";
 
@@ -40,9 +47,10 @@ internal sealed class BlockStateDefinitions
     {
         var totalBytes = 0;
         var states = new List<BlockStateModelDefinition>();
+        var stairs = new List<StairStateModelDefinition>();
         var blocks = new HashSet<ResourceLocation>();
         using var catalog = Read(CatalogPath, openInstalled);
-        CheckProperties(catalog.RootElement, "blocks");
+        CheckProperties(catalog.RootElement, "blocks", "stairs");
         var entries = catalog.RootElement.GetProperty("blocks");
         if (entries.ValueKind != JsonValueKind.Array || entries.GetArrayLength() > BlockModelCatalog.MaximumModels)
             throw new InvalidDataException($"Block states '{CatalogPath}': expected at most {BlockModelCatalog.MaximumModels} blocks.");
@@ -71,7 +79,32 @@ internal sealed class BlockStateDefinitions
                 throw new InvalidDataException($"Block states '{block}' ({path}): {ex.Message}", ex);
             }
         }
-        return new BlockStateDefinitions(states);
+        if (catalog.RootElement.TryGetProperty("stairs", out var stairEntries))
+        {
+            if (stairEntries.ValueKind != JsonValueKind.Array ||
+                stairEntries.GetArrayLength() + blocks.Count > BlockModelCatalog.MaximumModels)
+                throw new InvalidDataException($"Block states '{CatalogPath}': too many stair models.");
+            foreach (var entry in stairEntries.EnumerateArray())
+            {
+                var block = ResourceLocation.Parse(RenderResourceId.Parse(entry.GetString()!).ToString());
+                if (!blocks.Add(block)) throw new InvalidDataException($"Block states '{CatalogPath}': duplicate block '{block}'.");
+                var path = PathFor(block);
+                try
+                {
+                    using var installed = Read(path, openInstalled);
+                    var baseline = ParseStairModel(installed.RootElement);
+                    using var replacement = ReadDocument(path, openOverride, optional: true);
+                    stairs.Add(new StairStateModelDefinition(block,
+                        replacement is null ? baseline : ParseStairModel(replacement.RootElement)));
+                }
+                catch (Exception ex) when (ex is InvalidDataException or JsonException or ArgumentException or
+                    FormatException or KeyNotFoundException or InvalidOperationException or IOException or UnauthorizedAccessException)
+                {
+                    throw new InvalidDataException($"Block states '{block}' ({path}): {ex.Message}", ex);
+                }
+            }
+        }
+        return new BlockStateDefinitions(states, stairs);
 
         JsonDocument Read(string path, Func<string, Stream?> open) => ReadDocument(path, open, false)!;
         JsonDocument? ReadDocument(string path, Func<string, Stream?> open, bool optional)
@@ -94,6 +127,12 @@ internal sealed class BlockStateDefinitions
             var json = new UTF8Encoding(false, true).GetString(bytes.GetBuffer(), 0, (int)bytes.Length);
             return JsonDocument.Parse(json.TrimStart('\uFEFF'), new JsonDocumentOptions { MaxDepth = 8 });
         }
+    }
+
+    private static RenderResourceId ParseStairModel(JsonElement root)
+    {
+        CheckProperties(root, "model");
+        return RenderResourceId.Parse(root.GetProperty("model").GetString()!);
     }
 
     private static BlockStateModelDefinition[] Parse(ResourceLocation block, JsonElement root, BlockStateModelDefinition[]? baseline)

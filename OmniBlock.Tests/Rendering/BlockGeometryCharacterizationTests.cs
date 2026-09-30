@@ -63,6 +63,41 @@ public sealed class BlockGeometryCharacterizationTests
 
     public static IEnumerable<object[]> FenceMasks() => Enumerable.Range(0, 16).Select(mask => new object[] { mask });
 
+    [Theory]
+    [MemberData(nameof(StairStates))]
+    public void Session_bound_straight_stairs_preserve_all_legacy_states(string name, int meta)
+    {
+        var fixture = new Fixture(name, meta);
+        var models = BlockModelBindingTests.Build(fixture.World.Content.Blocks);
+        foreach (var allFaces in new[] { false, true })
+        foreach (var variance in new[] { false, true })
+        foreach (var overrideTexture in new[] { -1, Atlases.Terrain.IndexOf("stone") })
+            Assert.Equal(fixture.Render(allFaces, new NonuniformLight(), variance: variance, texture: overrideTexture),
+                fixture.Render(allFaces, new NonuniformLight(), variance: variance, texture: overrideTexture, models: models));
+    }
+
+    public static IEnumerable<object[]> StairStates() =>
+        from name in new[] { "cobblestone_stairs", "wooden_stairs" }
+        from meta in Enumerable.Range(0, 8)
+        select new object[] { name, meta };
+
+    [Fact]
+    public void Stair_pack_material_replacement_changes_only_the_new_snapshot()
+    {
+        const string path = "assets/omniblock/models/block/wooden_stairs.json";
+        var fixture = new Fixture("wooden_stairs", 5);
+        var original = BlockModelBindingTests.Build(fixture.World.Content.Blocks);
+        var changed = BlockModelBindingTests.Build(fixture.World.Content.Blocks, overrides: requested =>
+        {
+            if (requested != path) return null;
+            var json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, path))
+                .Replace("omniblock:wooden_planks", "omniblock:cobblestone", StringComparison.Ordinal);
+            return new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json));
+        });
+        Assert.All(fixture.Render(models: changed), vertex => Assert.Equal(Layer("cobblestone"), vertex.Layer));
+        Assert.All(fixture.Render(models: original), vertex => Assert.Equal(Layer("wooden_planks"), vertex.Layer));
+    }
+
     [Fact]
     public void Fence_pack_material_replacement_is_snapshot_local()
     {

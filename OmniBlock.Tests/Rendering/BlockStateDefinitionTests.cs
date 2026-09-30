@@ -9,6 +9,8 @@ namespace OmniBlock.Tests.Rendering;
 public sealed class BlockStateDefinitionTests
 {
     private const string SlabPath = "assets/omniblock/blockstates/slab.json";
+    private const string StairPath = "assets/omniblock/blockstates/wooden_stairs.json";
+    private const string StairTemplatePath = "assets/omniblock/models/block/templates/stairs.json";
     private static string SlabJson => File.ReadAllText(Path.Combine(AppContext.BaseDirectory, SlabPath));
     private static Stream Bytes(string value) => new MemoryStream(Encoding.UTF8.GetBytes(value));
     private static BlockStateDefinitions Load(string slab) => BlockStateDefinitions.Load(
@@ -21,10 +23,35 @@ public sealed class BlockStateDefinitionTests
     {
         var definitions = BlockStateDefinitions.Load(_ => null, BlockModelBindingTests.OpenInstalled);
         Assert.Equal(48, definitions.States.Length);
-        Assert.Equal(12, definitions.ModelRoots.Count());
+        Assert.Equal(14, definitions.ModelRoots.Count());
+        Assert.Equal(2, definitions.Stairs.Length);
         foreach (var block in new[] { "stone", "slab", "double_slab" })
             Assert.Equal(Enumerable.Range(0, 16), definitions.States.ToArray()
                 .Where(s => s.Block == ResourceLocation.Parse("omniblock:" + block)).Select(s => s.Metadata));
+    }
+
+    [Fact]
+    public void Stair_model_override_must_preserve_the_collision_shape_and_previous_snapshot()
+    {
+        var blocks = new FakeWorldContext().Content.Blocks;
+        var previous = BlockModelBindingTests.Build(blocks);
+        var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, StairTemplatePath));
+        var invalid = source.Replace("\"to\":[8,16,16]", "\"to\":[9,16,16]", StringComparison.Ordinal);
+        var error = Assert.Throws<InvalidDataException>(() => BlockModelBindingTests.Build(blocks,
+            overrides: path => path == StairTemplatePath ? Bytes(invalid) : null));
+        Assert.Contains("omniblock:cobblestone_stairs", error.Message);
+        Assert.Contains("state 1", error.Message);
+        Assert.NotNull(previous.GetStair(blocks.Get("wooden_stairs").Id));
+    }
+
+    [Fact]
+    public void Stair_state_errors_identify_the_owner()
+    {
+        var error = Assert.Throws<InvalidDataException>(() => BlockStateDefinitions.Load(
+            path => path == StairPath ? Bytes("{\"modle\":\"omniblock:block/wooden_stairs\"}") : null,
+            BlockModelBindingTests.OpenInstalled));
+        Assert.Contains("omniblock:wooden_stairs", error.Message);
+        Assert.Contains("modle", error.Message);
     }
 
     [Fact]
