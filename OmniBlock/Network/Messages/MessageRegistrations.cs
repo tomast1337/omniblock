@@ -35,7 +35,7 @@ internal static class MessageRegistrations
         registry.Register(GlobalEntitySpawnMessage.Id, 1, static () => new GlobalEntitySpawnMessage());
         registry.Register(HealthUpdateMessage.Id, 1, static () => new HealthUpdateMessage());
         registry.Register(IncreaseStatMessage.Id, 1, static () => new IncreaseStatMessage());
-        registry.Register(InteractBlockMessage.Id, 1, () => new InteractBlockMessage(items));
+        registry.Register(InteractBlockMessage.Id, 2, () => new InteractBlockMessage(items));
         registry.Register(InteractEntityMessage.Id, 1, static () => new InteractEntityMessage());
         registry.Register(InventoryMessage.Id, 1, () => new InventoryMessage(items));
         registry.Register(ItemEntitySpawnMessage.Id, 1, static () => new ItemEntitySpawnMessage());

@@ -216,7 +216,7 @@ public class ServerPlayerInteractionManager
         return false;
     }
 
-    public bool interactBlock(EntityPlayer player, World world, ItemStack? stack, int x, int y, int z, int side)
+    public bool interactBlock(EntityPlayer player, World world, ItemStack? stack, int x, int y, int z, int side, float hitY)
     {
         if (!player.IsSneaking())
         {
@@ -230,7 +230,7 @@ public class ServerPlayerInteractionManager
         }
 
         if (stack == null || !player.GameMode.CanPlace) return false;
-        if (stack.useOnBlock(player, world, x, y, z, side))
+        if (stack.useOnBlock(player, world, x, y, z, side, hitY))
         {
             miningProgress = -1;
             return true;

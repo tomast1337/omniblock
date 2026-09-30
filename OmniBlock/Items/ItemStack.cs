@@ -63,8 +63,11 @@ public class ItemStack
     public int GetTextureId() => GetItem().GetTextureId(this);
 
     public bool useOnBlock(EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
+        => useOnBlock(entityPlayer, world, x, y, z, meta, 0.5F);
+
+    public bool useOnBlock(EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta, float hitY)
     {
-        var item = GetItem().useOnBlock(this, entityPlayer, world, x, y, z, meta);
+        var item = GetItem().useOnBlock(this, entityPlayer, world, x, y, z, meta, hitY);
         if (item)
         {
             entityPlayer.IncreaseStat(Stats.Stats.Used[ItemId], 1);

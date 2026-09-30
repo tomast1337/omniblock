@@ -789,7 +789,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
             if (teleported && CanBypassSpawnProtection(x, z, world) && player.GetSquaredDistance(x + 0.5, y + 0.5, z + 0.5) < 64.0)
             {
-                player.InteractionManager.interactBlock(player, world, stack, x, y, z, side);
+                player.InteractionManager.interactBlock(player, world, stack, x, y, z, side, packet.HitY / 255.0F);
             }
 
             SendMessage(new BlockUpdateMessage

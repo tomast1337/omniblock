@@ -5,7 +5,7 @@ namespace OmniBlock.Blocks;
 
 public readonly record struct OnTickEvent(IWorldContext World, int X, int Y, int Z, int Meta, int BlockId);
 
-public readonly record struct OnPlacedEvent(IWorldContext World, EntityLiving? Placer, Side Direction, Side Side, int X, int Y, int Z);
+public readonly record struct OnPlacedEvent(IWorldContext World, EntityLiving? Placer, Side Direction, Side Side, int X, int Y, int Z, float HitY = 0.5F);
 
 public readonly record struct CanPlaceAtContext(IWorldContext World, Side Direction, int X, int Y, int Z);
 

@@ -17,8 +17,8 @@ internal sealed class StairsBehavior(Func<Block> baseBlock) : IBlockPhysics, IBl
         {
             var facing = MathHelper.Floor(@event.Placer.Yaw * 4.0F / 360.0F + 0.5D) & 3;
 
-            // Upside-down stair: player clicked the bottom face of a block above.
-            if (@event.Side == Side.Down) meta |= 4;
+            // A horizontal-face click chooses the half from the actual hit height.
+            if (@event.Side == Side.Down || (@event.Side != Side.Up && @event.HitY > 0.5F)) meta |= 4;
 
             if (facing == 0) meta |= 2;
 

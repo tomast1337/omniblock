@@ -21,25 +21,8 @@ internal sealed class SlabBehavior : BlockRuntimeBehavior, IBlockPhysics, IBlock
 
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        if (_isDoubleSlab) return;
-
-        // Top-slab placement: Side.Down means the player clicked the bottom face of a
-        // block above, which places a slab in the upper half of this block space.
-        if (@event.Side == Side.Down)
-        {
-            var existingMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-            @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, existingMeta | 8);
-        }
-
-        // Double-slab merge: if the block below is a single slab with matching meta,
-        // convert both into a double slab.
-        var blockBelowId = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z);
-        var slabMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        var blockBelowMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y - 1, @event.Z);
-        if (slabMeta != blockBelowMeta) return;
-        if (blockBelowId != Blocks.Get("slab").Id) return;
-        @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
-        @event.World.Writer.SetBlock(@event.X, @event.Y - 1, @event.Z, Blocks.Get("double_slab").Id, slabMeta);
+        // Placement chooses the half and checks same-cell merges before writing the block.
+        // OnPlaced must not move a newly placed slab into another cell after collision checks.
     }
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)

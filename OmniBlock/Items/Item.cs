@@ -116,6 +116,9 @@ public class Item
         return false;
     }
 
+    public virtual bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta, float hitY) =>
+        useOnBlock(itemStack, entityPlayer, world, x, y, z, meta);
+
     public float GetMiningSpeedMultiplier(ItemStack itemStack, Block block)
     {
         for (var i = 0; i < BehaviorCount; i++)

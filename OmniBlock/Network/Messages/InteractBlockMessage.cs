@@ -32,6 +32,9 @@ public sealed class InteractBlockMessage : Message
     /// <summary>Block face, or 255 for an interaction with no block behind it.</summary>
     public byte Side { get; set; }
 
+    /// <summary>Normalized vertical hit coordinate, quantized to one byte.</summary>
+    public byte HitY { get; set; } = 128;
+
     /// <summary>
     ///     What the client believes it is holding. Advisory — the server uses its own record of the
     ///     player's inventory — and carried because the packet it replaces carried it.
@@ -40,7 +43,7 @@ public sealed class InteractBlockMessage : Message
 
     public override ResourceLocation Key => Id;
 
-    public override int SchemaVersion => 1;
+    public override int SchemaVersion => 2;
 
     public override void Read(Stream stream)
     {
@@ -48,6 +51,7 @@ public sealed class InteractBlockMessage : Message
         Y = (byte)stream.ReadByte();
         Z = stream.ReadInt();
         Side = (byte)stream.ReadByte();
+        HitY = (byte)stream.ReadByte();
         Stack = stream.ReadItemStack(_items ?? throw new InvalidOperationException("No item catalog was supplied for decoding."));
     }
 
@@ -57,6 +61,7 @@ public sealed class InteractBlockMessage : Message
         stream.WriteByte(Y);
         stream.WriteInt(Z);
         stream.WriteByte(Side);
+        stream.WriteByte(HitY);
         stream.WriteItemStack(Stack);
     }
 
@@ -64,6 +69,7 @@ public sealed class InteractBlockMessage : Message
         4
         + 1
         + 4
+        + 1
         + 1
         + StreamExtensions.ItemStackSize(Stack);
 }

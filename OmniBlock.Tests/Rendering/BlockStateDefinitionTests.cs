@@ -13,6 +13,8 @@ public sealed class BlockStateDefinitionTests
     private static Stream Bytes(string value) => new MemoryStream(Encoding.UTF8.GetBytes(value));
     private static BlockStateDefinitions Load(string slab) => BlockStateDefinitions.Load(
         path => path == SlabPath ? Bytes(slab) : null, BlockModelBindingTests.OpenInstalled);
+    private static BlockStateDefinitions LoadInstalled(string slab) => BlockStateDefinitions.Load(_ => null,
+        path => path == SlabPath ? Bytes(slab) : BlockModelBindingTests.OpenInstalled(path));
 
     [Fact]
     public void Shipped_definitions_cover_every_metadata_value_and_deduplicate_model_roots()
@@ -71,9 +73,9 @@ public sealed class BlockStateDefinitionTests
         var variants = root["variants"]!.AsObject();
         switch (kind)
         {
-            case "missing": variants.Remove("15"); break;
+            case "missing": root.AsObject().Remove("default"); break;
             case "unknown_field": variants["0"]!["modle"] = "typo"; break;
-            case "missing_model": variants["0"]!.AsObject().Remove("model"); break;
+            case "missing_model": variants["0"]!.AsObject().Remove("model"); root["default"]!.AsObject().Remove("model"); break;
             case "invalid_model_id": variants["0"]!["model"] = "example:../unsafe"; break;
             case "shape_change": variants["0"]!["shape"] = "cube"; break;
             case "unknown_shape": variants["0"]!["shape"] = "stairs"; break;
@@ -82,9 +84,33 @@ public sealed class BlockStateDefinitionTests
         var json = root.ToJsonString();
         if (kind == "duplicate") json = json.Replace("\"1\":", "\"0\":", StringComparison.Ordinal);
         if (kind == "duplicate_field") json = json.Replace("\"model\":", "\"model\":\"example:one\",\"model\":", StringComparison.Ordinal);
-        var error = Assert.Throws<InvalidDataException>(() => Load(json));
+        var error = Assert.Throws<InvalidDataException>(() =>
+            kind is "missing" or "missing_model" ? LoadInstalled(json) : Load(json));
         Assert.Contains("omniblock:slab", error.Message);
         Assert.Contains(SlabPath, error.Message);
+    }
+
+    [Fact]
+    public void Sparse_pack_override_inherits_unselected_installed_states()
+    {
+        var overrideJson = """{"variants":{"0":{"model":"omniblock:block/wooden_slab"}}}""";
+        var selected = Load(overrideJson);
+        var installed = BlockStateDefinitions.Load(_ => null, BlockModelBindingTests.OpenInstalled);
+        var slab = ResourceLocation.Parse("omniblock:slab");
+        Assert.Equal(RenderResourceId.Parse("omniblock:block/wooden_slab"),
+            selected.States.ToArray().Single(s => s.Block == slab && s.Metadata == 0).Model);
+        Assert.Equal(installed.States.ToArray().Single(s => s.Block == slab && s.Metadata == 1),
+            selected.States.ToArray().Single(s => s.Block == slab && s.Metadata == 1));
+    }
+
+    [Fact]
+    public void Overlapping_range_selectors_are_rejected()
+    {
+        var error = Assert.Throws<InvalidDataException>(() => Load("""
+            {"variants":{"0..3":{"model":"omniblock:block/stone_slab"},
+                         "3":{"model":"omniblock:block/wooden_slab"}}}
+            """));
+        Assert.Contains("duplicate metadata selector '3'", error.Message);
     }
 
     [Fact]

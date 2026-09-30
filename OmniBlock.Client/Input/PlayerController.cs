@@ -93,7 +93,8 @@ public class PlayerController
         int blockX,
         int blockY,
         int blockZ,
-        int blockSide
+        int blockSide,
+        float hitY
     )
     {
         var targetId = world.Reader.GetBlockId(blockX, blockY, blockZ);
@@ -107,7 +108,7 @@ public class PlayerController
 
         if (selectedItem == null || !player.GameMode.CanPlace) return false;
 
-        return selectedItem.useOnBlock(player, world, blockX, blockY, blockZ, blockSide);
+        return selectedItem.useOnBlock(player, world, blockX, blockY, blockZ, blockSide, hitY);
     }
 
     public virtual EntityPlayer CreatePlayer(World world) =>

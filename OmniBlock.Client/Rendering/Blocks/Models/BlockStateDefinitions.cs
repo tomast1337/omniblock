@@ -55,9 +55,9 @@ internal sealed class BlockStateDefinitions
             try
             {
                 using var installed = Read(path, openInstalled);
-                var baseline = Parse(block, installed.RootElement);
+                var baseline = Parse(block, installed.RootElement, null);
                 using var replacement = ReadDocument(path, openOverride, optional: true);
-                var selected = replacement is null ? baseline : Parse(block, replacement.RootElement);
+                var selected = replacement is null ? baseline : Parse(block, replacement.RootElement, baseline);
                 for (var meta = 0; meta < 16; meta++)
                 {
                     if (baseline[meta].Shape != selected[meta].Shape)
@@ -96,41 +96,77 @@ internal sealed class BlockStateDefinitions
         }
     }
 
-    private static BlockStateModelDefinition[] Parse(ResourceLocation block, JsonElement root)
+    private static BlockStateModelDefinition[] Parse(ResourceLocation block, JsonElement root, BlockStateModelDefinition[]? baseline)
     {
-        CheckProperties(root, "variants");
-        var variants = root.GetProperty("variants");
-        if (variants.ValueKind != JsonValueKind.Object) throw new InvalidDataException("variants must be an object");
+        CheckProperties(root, "default", "variants");
         var states = new BlockStateModelDefinition[16];
         var seen = new bool[16];
-        foreach (var variant in variants.EnumerateObject())
+        if (baseline is not null) Array.Copy(baseline, states, 16);
+        if (root.TryGetProperty("default", out var defaultValue))
         {
-            if (!int.TryParse(variant.Name, NumberStyles.None, CultureInfo.InvariantCulture, out var meta) ||
-                meta is < 0 or > 15 || variant.Name != meta.ToString(CultureInfo.InvariantCulture))
-                throw new InvalidDataException($"invalid metadata selector '{variant.Name}'; expected 0..15");
-            if (seen[meta]) throw new InvalidDataException($"duplicate metadata selector '{meta}'");
-            seen[meta] = true;
+            for (var meta = 0; meta < 16; meta++)
+            {
+                states[meta] = Apply(meta, defaultValue, baseline is null ? null : states[meta]);
+                seen[meta] = true;
+            }
+        }
+        if (root.TryGetProperty("variants", out var variants))
+        {
+            if (variants.ValueKind != JsonValueKind.Object) throw new InvalidDataException("variants must be an object");
+            var selected = new bool[16];
+            foreach (var variant in variants.EnumerateObject())
+            {
+                foreach (var meta in ExpandSelector(variant.Name))
+                {
+                    if (selected[meta]) throw new InvalidDataException($"duplicate metadata selector '{meta}'");
+                    selected[meta] = true;
+                    states[meta] = Apply(meta, variant.Value, seen[meta] || baseline is not null ? states[meta] : null);
+                    seen[meta] = true;
+                }
+            }
+        }
+        for (var meta = 0; meta < 16; meta++)
+            if (!seen[meta] && baseline is null) throw new InvalidDataException($"missing metadata selector '{meta}'; provide a default or cover all 16 states");
+        return states;
+
+        BlockStateModelDefinition Apply(int meta, JsonElement value, BlockStateModelDefinition? inherited)
+        {
             try
             {
-                CheckProperties(variant.Value, "model", "shape");
-                var model = RenderResourceId.Parse(variant.Value.GetProperty("model").GetString()!);
-                var shape = variant.Value.GetProperty("shape").GetString() switch
-                {
-                    "cube" => CuboidStateShape.Cube,
-                    "lower_slab" => CuboidStateShape.LowerSlab,
-                    "upper_slab" => CuboidStateShape.UpperSlab,
-                    var unknown => throw new InvalidDataException($"unsupported shape '{unknown}'")
-                };
-                states[meta] = new(block, meta, model, shape);
+                CheckProperties(value, "model", "shape");
+                var model = value.TryGetProperty("model", out var modelValue)
+                    ? RenderResourceId.Parse(modelValue.GetString()!)
+                    : inherited?.Model ?? throw new InvalidDataException("missing model");
+                var shape = value.TryGetProperty("shape", out var shapeValue)
+                    ? shapeValue.GetString() switch
+                    {
+                        "cube" => CuboidStateShape.Cube,
+                        "lower_slab" => CuboidStateShape.LowerSlab,
+                        "upper_slab" => CuboidStateShape.UpperSlab,
+                        var unknown => throw new InvalidDataException($"unsupported shape '{unknown}'")
+                    }
+                    : inherited?.Shape ?? throw new InvalidDataException("missing shape");
+                return new(block, meta, model, shape);
             }
             catch (Exception ex) when (ex is InvalidDataException or KeyNotFoundException or InvalidOperationException or ArgumentException or FormatException)
             {
                 throw new InvalidDataException($"state {meta}: {ex.Message}", ex);
             }
         }
-        for (var meta = 0; meta < 16; meta++)
-            if (!seen[meta]) throw new InvalidDataException($"missing metadata selector '{meta}'; declare all 16 states explicitly");
-        return states;
+    }
+
+    private static IEnumerable<int> ExpandSelector(string selector)
+    {
+        var parts = selector.Split("..", StringSplitOptions.None);
+        if (parts.Length is < 1 or > 2 || !TryIndex(parts[0], out var first) ||
+            (parts.Length == 2 && (!TryIndex(parts[1], out var last) || last < first)))
+            throw new InvalidDataException($"invalid metadata selector '{selector}'; expected 0..15 or a bounded range");
+        var end = parts.Length == 1 ? first : int.Parse(parts[1], CultureInfo.InvariantCulture);
+        return Enumerable.Range(first, end - first + 1);
+
+        static bool TryIndex(string text, out int value) =>
+            int.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out value) &&
+            value is >= 0 and <= 15 && text == value.ToString(CultureInfo.InvariantCulture);
     }
 
     private static void CheckProperties(JsonElement element, params string[] allowed)

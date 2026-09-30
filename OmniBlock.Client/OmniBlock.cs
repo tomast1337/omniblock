@@ -2613,7 +2613,8 @@ public partial class OmniBlock :
                 {
                     var selectedItem = Player.Inventory.ItemInHand;
                     var itemCountBefore = selectedItem != null ? selectedItem.Count : 0;
-                    if (PlayerController.SendPlaceBlock(Player, world, selectedItem, blockX, blockY, blockZ, blockSide))
+                    if (PlayerController.SendPlaceBlock(Player, world, selectedItem, blockX, blockY, blockZ, blockSide,
+                        (float)(ObjectMouseOver.Pos.Y - blockY)))
                     {
                         shouldPerformSecondaryAction = false;
                         Player.SwingHand();

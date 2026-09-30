@@ -192,19 +192,21 @@ public class PlayerControllerMP : PlayerController
         int blockX,
         int blockY,
         int blockZ,
-        int blockSide
+        int blockSide,
+        float hitY
     )
     {
         SyncCurrentPlayItem();
-        _netClientHandler.SendMessage(InteractBlock(blockX, blockY, blockZ, blockSide, player.Inventory.ItemInHand));
-        var placed = base.SendPlaceBlock(player, world, selectedItem, blockX, blockY, blockZ, blockSide);
+        var quantizedHitY = (byte)Math.Clamp((int)(Math.Clamp(hitY, 0, 1) * 255), 0, 255);
+        _netClientHandler.SendMessage(InteractBlock(blockX, blockY, blockZ, blockSide, player.Inventory.ItemInHand, quantizedHitY));
+        var placed = base.SendPlaceBlock(player, world, selectedItem, blockX, blockY, blockZ, blockSide, quantizedHitY / 255.0F);
         return placed;
     }
 
     public override bool SendUseItem(EntityPlayer player, World world, ItemStack stack)
     {
         SyncCurrentPlayItem();
-        _netClientHandler.SendMessage(InteractBlock(-1, -1, -1, 255, player.Inventory.ItemInHand));
+        _netClientHandler.SendMessage(InteractBlock(-1, -1, -1, 255, player.Inventory.ItemInHand, 128));
         var usedItem = base.SendUseItem(player, world, stack);
         return usedItem;
     }
@@ -265,12 +267,13 @@ public class PlayerControllerMP : PlayerController
     };
 
     /// <summary>Side 255 with x, y and z at -1 is the "used an item with no block in front" case.</summary>
-    private static InteractBlockMessage InteractBlock(int x, int y, int z, int side, ItemStack? stack) => new()
+    private static InteractBlockMessage InteractBlock(int x, int y, int z, int side, ItemStack? stack, byte hitY) => new()
     {
         X = x,
         Y = (byte)y,
         Z = z,
         Side = (byte)side,
+        HitY = hitY,
         Stack = stack
     };
 }
