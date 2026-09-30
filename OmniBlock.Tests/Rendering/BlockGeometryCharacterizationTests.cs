@@ -44,6 +44,43 @@ public sealed class BlockGeometryCharacterizationTests
         for (var meta = 0; meta < 16; meta++) yield return [name, meta];
     }
 
+    [Theory]
+    [MemberData(nameof(FenceMasks))]
+    public void Conditional_fence_parts_match_procedural_geometry_for_every_neighbor_mask(int mask)
+    {
+        var fixture = new Fixture("fence");
+        if ((mask & FenceShape.West) != 0) fixture.Neighbor(Side.West, "fence");
+        if ((mask & FenceShape.East) != 0) fixture.Neighbor(Side.East, "fence");
+        if ((mask & FenceShape.North) != 0) fixture.Neighbor(Side.North, "fence");
+        if ((mask & FenceShape.South) != 0) fixture.Neighbor(Side.South, "fence");
+        var models = BlockModelBindingTests.Build(fixture.World.Content.Blocks);
+        foreach (var allFaces in new[] { false, true })
+        foreach (var variance in new[] { false, true })
+        foreach (var overrideTexture in new[] { -1, Atlases.Terrain.IndexOf("cobblestone") })
+            Assert.Equal(fixture.Render(allFaces, new NonuniformLight(), variance: variance, texture: overrideTexture),
+                fixture.Render(allFaces, new NonuniformLight(), variance: variance, texture: overrideTexture, models: models));
+    }
+
+    public static IEnumerable<object[]> FenceMasks() => Enumerable.Range(0, 16).Select(mask => new object[] { mask });
+
+    [Fact]
+    public void Fence_pack_material_replacement_is_snapshot_local()
+    {
+        const string path = "assets/omniblock/models/block/fence.json";
+        var fixture = new Fixture("fence");
+        fixture.Neighbor(Side.East, "fence");
+        var original = BlockModelBindingTests.Build(fixture.World.Content.Blocks);
+        var changed = BlockModelBindingTests.Build(fixture.World.Content.Blocks, overrides: requested =>
+        {
+            if (requested != path) return null;
+            var json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, path))
+                .Replace("omniblock:wooden_planks", "omniblock:cobblestone", StringComparison.Ordinal);
+            return new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json));
+        });
+        Assert.All(fixture.Render(models: changed), vertex => Assert.Equal(Layer("cobblestone"), vertex.Layer));
+        Assert.All(fixture.Render(models: original), vertex => Assert.Equal(Layer("wooden_planks"), vertex.Layer));
+    }
+
     [Fact]
     public void Session_pack_material_changes_reach_the_vertex_sink_without_changing_other_sessions()
     {

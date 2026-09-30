@@ -15,20 +15,23 @@ internal sealed class BlockModelBindings
     private readonly FrozenDictionary<(int Block, int Meta), Binding> _states;
     private sealed record Binding(CompiledCuboidGeometry Geometry, bool LegacyGreedyCompatible);
 
-    private BlockModelBindings(long generation, Dictionary<(int, int), Binding> states)
+    private BlockModelBindings(long generation, Dictionary<(int, int), Binding> states, CompiledFenceGeometry? fence)
     {
         Generation = generation;
         _states = states.ToFrozenDictionary();
+        Fence = fence;
     }
 
     internal long Generation { get; }
+    internal CompiledFenceGeometry? Fence { get; }
     internal CompiledCuboidGeometry? Get(int block, int meta) =>
         _states.TryGetValue((block, meta), out var binding) ? binding.Geometry : null;
     internal bool AllowsLegacyGreedy(int block, int meta) =>
         !_states.TryGetValue((block, meta), out var binding) || binding.LegacyGreedyCompatible;
 
     internal static BlockModelBindings Build(long generation, IBlockRuntimeView blocks,
-        BlockModelCatalog models, IReadOnlyDictionary<RenderResourceId, int> fixedLayers, BlockStateDefinitions definitions)
+        BlockModelCatalog models, IReadOnlyDictionary<RenderResourceId, int> fixedLayers, BlockStateDefinitions definitions,
+        FencePartDefinitions? fence = null)
     {
         var states = new Dictionary<(int, int), Binding>();
         var geometry = new Dictionary<RenderResourceId, CompiledCuboidGeometry>();
@@ -38,7 +41,21 @@ internal sealed class BlockModelBindings
             var top = definition.Shape == CuboidStateShape.LowerSlab ? .5 : 1;
             Add(definition.Block, definition.Metadata, definition.Model, bottom, top);
         }
-        return new BlockModelBindings(generation, states);
+        CompiledFenceGeometry? compiledFence = null;
+        if (fence is not null)
+        {
+            var block = blocks.Get("omniblock:fence");
+            if (block.RenderType != BlockRendererType.Fence)
+                throw new InvalidDataException("Fence parts 'omniblock:fence': target must use Fence rendering.");
+            CompiledBlockModel model;
+            try { model = models.Get(fence.Model); }
+            catch (KeyNotFoundException ex)
+            {
+                throw new InvalidDataException($"Fence parts 'omniblock:fence': unknown model '{fence.Model}'.", ex);
+            }
+            compiledFence = CompiledFenceGeometry.Build(model, fence, fixedLayers);
+        }
+        return new BlockModelBindings(generation, states, compiledFence);
 
         void Add(ResourceLocation blockName, int meta, RenderResourceId modelName, double bottom, double top)
         {

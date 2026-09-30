@@ -100,7 +100,7 @@ public class BlockRenderer
             BlockRendererType.Ladder => s_ladder.Draw(block, pos, ref ctx),
             BlockRendererType.MinecartTrack => s_track.Draw(block, pos, ref ctx),
             BlockRendererType.Stairs => s_stairs.Draw(block, pos, ref ctx),
-            BlockRendererType.Fence => s_fence.Draw(block, pos, ref ctx),
+            BlockRendererType.Fence => s_fence.Draw(block, pos, ref ctx, useCompiledCuboids ? models?.Fence : null),
             BlockRendererType.Lever => s_lever.Draw(block, pos, ref ctx),
             BlockRendererType.Cactus => s_cactus.Draw(block, pos, ref ctx),
             BlockRendererType.Bed => s_bed.Draw(block, pos, ref ctx),

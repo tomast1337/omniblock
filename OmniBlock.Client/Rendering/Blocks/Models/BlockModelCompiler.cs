@@ -51,6 +51,8 @@ internal static class BlockModelCompiler
             {
                 var owner = $"element {index++}";
                 CheckProperties(element, owner, "from", "to", "faces", "shade", "name");
+                var part = element.TryGetProperty("name", out var partValue)
+                    ? ReadString(partValue, owner + " name") : null;
                 var from = ReadVector(Required(element, "from"), owner + " from");
                 var to = ReadVector(Required(element, "to"), owner + " to");
                 if (from.X > to.X || from.Y > to.Y || from.Z > to.Z)
@@ -88,7 +90,7 @@ internal static class BlockModelCompiler
                     var uvs = FaceUvs(side, uv);
                     ModelVertex Vertex(int i) => new(corners[i], uvs[(i + rotation / 90) % 4]);
                     quads.Add(new CompiledBlockQuad(Vertex(0), Vertex(1), Vertex(2), Vertex(3), material.Id,
-                        material.Layer, side, cull, tint, ReadBool(element, "shade", true)));
+                        material.Layer, side, cull, tint, ReadBool(element, "shade", true), part));
                 }
             }
             return new CompiledBlockModel(id, ReadBool(root, "ambientocclusion", true), quads);

@@ -1,0 +1,14 @@
+{
+  "model": "omniblock:block/fence",
+  "parts": [
+    { "element": "post", "when": "always" },
+    { "element": "west_lower", "when": "west" },
+    { "element": "west_upper", "when": "west" },
+    { "element": "east_lower", "when": "east" },
+    { "element": "east_upper", "when": "east" },
+    { "element": "north_lower", "when": "north" },
+    { "element": "north_upper", "when": "north" },
+    { "element": "south_lower", "when": "south" },
+    { "element": "south_upper", "when": "south" }
+  ]
+}

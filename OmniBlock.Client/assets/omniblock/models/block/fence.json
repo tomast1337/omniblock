@@ -1,0 +1,32 @@
+{
+  "textures": { "all": "omniblock:wooden_planks" },
+  "elements": [
+    { "name": "post", "from": [6,0,6], "to": [10,16,10], "faces": {
+      "down":{"texture":"#all"},"up":{"texture":"#all"},"north":{"texture":"#all"},
+      "south":{"texture":"#all"},"west":{"texture":"#all"},"east":{"texture":"#all"} } },
+    { "name": "west_lower", "from": [0,6,7], "to": [6,9,9], "faces": {
+      "down":{"texture":"#all"},"up":{"texture":"#all"},"north":{"texture":"#all"},
+      "south":{"texture":"#all"},"west":{"texture":"#all"},"east":{"texture":"#all"} } },
+    { "name": "west_upper", "from": [0,12,7], "to": [6,15,9], "faces": {
+      "down":{"texture":"#all"},"up":{"texture":"#all"},"north":{"texture":"#all"},
+      "south":{"texture":"#all"},"west":{"texture":"#all"},"east":{"texture":"#all"} } },
+    { "name": "east_lower", "from": [10,6,7], "to": [16,9,9], "faces": {
+      "down":{"texture":"#all"},"up":{"texture":"#all"},"north":{"texture":"#all"},
+      "south":{"texture":"#all"},"west":{"texture":"#all"},"east":{"texture":"#all"} } },
+    { "name": "east_upper", "from": [10,12,7], "to": [16,15,9], "faces": {
+      "down":{"texture":"#all"},"up":{"texture":"#all"},"north":{"texture":"#all"},
+      "south":{"texture":"#all"},"west":{"texture":"#all"},"east":{"texture":"#all"} } },
+    { "name": "north_lower", "from": [7,6,0], "to": [9,9,6], "faces": {
+      "down":{"texture":"#all"},"up":{"texture":"#all"},"north":{"texture":"#all"},
+      "south":{"texture":"#all"},"west":{"texture":"#all"},"east":{"texture":"#all"} } },
+    { "name": "north_upper", "from": [7,12,0], "to": [9,15,6], "faces": {
+      "down":{"texture":"#all"},"up":{"texture":"#all"},"north":{"texture":"#all"},
+      "south":{"texture":"#all"},"west":{"texture":"#all"},"east":{"texture":"#all"} } },
+    { "name": "south_lower", "from": [7,6,10], "to": [9,9,16], "faces": {
+      "down":{"texture":"#all"},"up":{"texture":"#all"},"north":{"texture":"#all"},
+      "south":{"texture":"#all"},"west":{"texture":"#all"},"east":{"texture":"#all"} } },
+    { "name": "south_upper", "from": [7,12,10], "to": [9,15,16], "faces": {
+      "down":{"texture":"#all"},"up":{"texture":"#all"},"north":{"texture":"#all"},
+      "south":{"texture":"#all"},"west":{"texture":"#all"},"east":{"texture":"#all"} } }
+  ]
+}

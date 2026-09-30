@@ -9,7 +9,8 @@ internal readonly record struct ModelVertex(Vector3 Position, Vector2 Uv);
 /// <summary>Local-space geometry only. Lighting, biome tint and neighbor visibility are per mesh.</summary>
 internal readonly record struct CompiledBlockQuad(
     ModelVertex A, ModelVertex B, ModelVertex C, ModelVertex D,
-    RenderResourceId Texture, int ArrayLayer, Side Direction, Side? CullFace, int TintIndex, bool Shade);
+    RenderResourceId Texture, int ArrayLayer, Side Direction, Side? CullFace, int TintIndex, bool Shade,
+    string? Part = null);
 
 internal sealed class CompiledBlockModel
 {

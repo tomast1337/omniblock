@@ -51,13 +51,14 @@ public sealed class BlockModelBindingTests
         var layers = Atlases.Terrain.Tiles.ToDictionary(t => RenderResourceId.Parse("omniblock:" + t.Name),
             t => Atlases.Terrain.LayerOfGridIndex(Atlases.Terrain.IndexOf(t.Name)));
         var states = BlockStateDefinitions.Load(overrides ?? (_ => null), OpenInstalled);
-        var models = BlockModelPackLoader.Build(states.ModelRoots, path =>
+        var fence = FencePartDefinitions.Load(overrides ?? (_ => null), OpenInstalled);
+        var models = BlockModelPackLoader.Build(states.ModelRoots.Append(fence.Model), path =>
         {
             if (path != "assets/omniblock/models/block/stone.json" || changeStone is null) return overrides?.Invoke(path);
             var json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, path));
             return new MemoryStream(System.Text.Encoding.UTF8.GetBytes(changeStone(json)));
         }, OpenInstalled, id => layers.TryGetValue(id, out var layer) ? layer : 255);
-        return BlockModelBindings.Build(generation, blocks, models, layers, states);
+        return BlockModelBindings.Build(generation, blocks, models, layers, states, fence);
     }
 
     internal static Stream? OpenInstalled(string path)

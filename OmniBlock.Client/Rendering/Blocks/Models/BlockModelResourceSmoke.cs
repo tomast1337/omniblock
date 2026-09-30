@@ -51,6 +51,14 @@ internal static class BlockModelResourceSmoke
         if (textures.TryReload(new StateOverridePack(statePath, stateJson.ToJsonString(), selectedSource.OpenOverride)))
             throw new InvalidOperationException("Incompatible state shape override was accepted.");
         AssertUnchanged();
+        const string fenceStatePath = FencePartDefinitions.Path;
+        using var fenceStateStream = selectedSource.Open(fenceStatePath)
+            ?? throw new InvalidOperationException("Missing shipped fence parts.");
+        var fenceStateJson = JsonNode.Parse(fenceStateStream)!;
+        fenceStateJson["parts"]![0]!["element"] = "missing_post";
+        if (textures.TryReload(new StateOverridePack(fenceStatePath, fenceStateJson.ToJsonString(), selectedSource.OpenOverride)))
+            throw new InvalidOperationException("Fence rule with a missing model element was accepted.");
+        AssertUnchanged();
 
         void AssertUnchanged()
         {

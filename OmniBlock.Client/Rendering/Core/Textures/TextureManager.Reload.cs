@@ -101,8 +101,11 @@ public partial class TextureManager
                 });
             var fixedLayers = modelSource.FixedLayers();
             var states = BlockStateDefinitions.Load(source.OpenOverride, TexturePackSnapshot.OpenBuiltin);
-            var models = PreparedBlockModelResources.Build(states.ModelRoots, fixedLayers, modelSource.OpenOverride, modelSource.OpenBuiltin);
-            candidate.Bindings = BlockModelBindings.Build(ResourceGeneration + 1, _game.Content.Blocks, models.Models, fixedLayers, states);
+            var fence = FencePartDefinitions.Load(source.OpenOverride, TexturePackSnapshot.OpenBuiltin);
+            var models = PreparedBlockModelResources.Build(states.ModelRoots.Append(fence.Model), fixedLayers,
+                modelSource.OpenOverride, modelSource.OpenBuiltin);
+            candidate.Bindings = BlockModelBindings.Build(ResourceGeneration + 1, _game.Content.Blocks, models.Models,
+                fixedLayers, states, fence);
             var device = WebGpuDevice.Current ?? throw new InvalidOperationException("Texture reload requires a WebGPU device.");
             var errors = device.ErrorCount;
             foreach (var path in _textures.Keys)
