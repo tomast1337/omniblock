@@ -36,7 +36,8 @@ public sealed class BlockStateDefinitionTests
         var blocks = new FakeWorldContext().Content.Blocks;
         var previous = BlockModelBindingTests.Build(blocks);
         var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, StairTemplatePath));
-        var invalid = source.Replace("\"to\":[8,16,16]", "\"to\":[9,16,16]", StringComparison.Ordinal);
+        var invalid = source.Replace("\"name\":\"step_1\",\"from\":[0,8,0],\"to\":[8,16,16]",
+            "\"name\":\"step_1\",\"from\":[0,8,0],\"to\":[9,16,16]", StringComparison.Ordinal);
         var error = Assert.Throws<InvalidDataException>(() => BlockModelBindingTests.Build(blocks,
             overrides: path => path == StairTemplatePath ? Bytes(invalid) : null));
         Assert.Contains("omniblock:cobblestone_stairs", error.Message);

@@ -8,7 +8,7 @@ namespace OmniBlock.Blocks.Behaviors;
 ///     provider so the behavior can be instantiated before the material block static is
 ///     initialized. The provider is only resolved at texture-sampling time (render thread).
 /// </summary>
-internal sealed class StairsBehavior(Func<Block> baseBlock) : IBlockPhysics, IBlockLifecycle, IBlockVisuals
+internal sealed class StairsBehavior(Func<Block> baseBlock, IBlockRuntimeView blocks) : IBlockPhysics, IBlockLifecycle, IBlockVisuals
 {
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
@@ -22,11 +22,16 @@ internal sealed class StairsBehavior(Func<Block> baseBlock) : IBlockPhysics, IBl
 
     public void AddCollisionBoxes(Block block, IBlockReader reader, int x, int y, int z, Box queryBox, List<Box> results)
     {
-        var shape = StairShape.GetBounds(reader.GetBlockMeta(x, y, z));
+        var shape = StairShape.Resolve(reader, blocks, x, y, z, reader.GetBlockMeta(x, y, z));
         var baseOffset = shape.Base.Offset(x, y, z);
         var stepOffset = shape.Step.Offset(x, y, z);
         if (queryBox.Intersects(baseOffset)) results.Add(baseOffset);
         if (queryBox.Intersects(stepOffset)) results.Add(stepOffset);
+        if (shape.Extra is { } extra)
+        {
+            var offset = extra.Offset(x, y, z);
+            if (queryBox.Intersects(offset)) results.Add(offset);
+        }
     }
 
     public int GetTexture(Block block, Side side, int defaultTexture) => baseBlock().GetTexture(side);

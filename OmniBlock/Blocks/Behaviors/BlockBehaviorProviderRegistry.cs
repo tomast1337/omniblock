@@ -57,7 +57,7 @@ internal sealed class BlockBehaviorProviderRegistry : IBlockBehaviorProviderRegi
             ["stairs"] = json =>
             {
                 var baseBlock = ResolveBlock(json.GetProperty("base").GetString()!);
-                return new StairsBehavior(() => baseBlock);
+                return new StairsBehavior(() => baseBlock, _context.Blocks);
             },
             ["plant_survival"] = json => new PlantSurvivalBehavior(ResolveBlockArray(json.GetProperty("valid_ground"))),
             ["melt"] = json =>

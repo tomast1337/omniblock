@@ -11,6 +11,60 @@ namespace OmniBlock.Tests.Rendering;
 
 public sealed class TerrainLodStairTests
 {
+    [Fact]
+    public void Neighbor_corners_have_matching_collision_and_1_to_1_lod_volume()
+    {
+        var world = new FakeWorldContext();
+        var wooden = world.Content.Blocks.Get("wooden_stairs");
+        var cobble = world.Content.Blocks.Get("cobblestone_stairs");
+        world.Writer.SetBlock(15, 64, 7, wooden.Id, 0);
+        world.Writer.SetBlock(16, 64, 7, cobble.Id, 2);
+
+        var outer = StairShape.Resolve(world.Reader, world.Content.Blocks, 15, 64, 7, 0);
+        Assert.Null(outer.Extra);
+        Assert.Equal(new Box(.5, .5, .5, 1, 1, 1), outer.Step);
+        List<Box> collision = [];
+        wooden.AddIntersectingBoundingBox(world.Reader, world.Entities, 15, 64, 7,
+            new Box(15, 64, 7, 16, 65, 8), collision);
+        Assert.Equal(new[] { outer.Base.Offset(15, 64, 7), outer.Step.Offset(15, 64, 7) }, collision);
+        Assert.InRange(MeshVolume(outer), .62499f, .62501f);
+
+        world.Writer.SetBlock(16, 64, 7, 0);
+        world.Writer.SetBlock(14, 64, 7, cobble.Id, 2);
+        var inner = StairShape.Resolve(world.Reader, world.Content.Blocks, 15, 64, 7, 0);
+        Assert.Equal(new Box(0, .5, .5, .5, 1, 1), inner.Extra);
+        collision.Clear();
+        wooden.AddIntersectingBoundingBox(world.Reader, world.Entities, 15, 64, 7,
+            new Box(15, 64, 7, 16, 65, 8), collision);
+        Assert.Equal(new[] { inner.Base.Offset(15, 64, 7), inner.Step.Offset(15, 64, 7),
+            inner.Extra!.Value.Offset(15, 64, 7) }, collision);
+        Assert.InRange(MeshVolume(inner), .87499f, .87501f);
+
+        // FakeBlockGrid and FakeChunkSource are separate stores; seed the chunk data captured
+        // by a real mesh worker explicitly rather than relying on fake writer side effects.
+        var chunk = world.ChunkHost.GetChunk(0, 0);
+        chunk.Blocks[ChuckFormat.GetIndex(14, 64, 7)] = (byte)cobble.Id;
+        chunk.Meta.SetNibble(14, 64, 7, 2);
+        chunk.Blocks[ChuckFormat.GetIndex(15, 64, 7)] = (byte)wooden.Id;
+        using var snapshot = new OmniBlock.Worlds.Core.WorldRegionSnapshot(world, 14, 63, 6, 16, 65, 8);
+        Assert.Equal(inner, StairShape.Resolve(snapshot, snapshot.ContentBlocks, 15, 64, 7, 0));
+
+        static float MeshVolume(StairShape.Resolved shape)
+        {
+            float volume = 0;
+            foreach (var face in TerrainLodStairGeometry.Get(shape))
+            {
+                var a = new Vector3(face.A.X, face.A.Y, face.A.Z);
+                var b = new Vector3(face.B.X, face.B.Y, face.B.Z);
+                var c = new Vector3(face.C.X, face.C.Y, face.C.Z);
+                var d = new Vector3(face.D.X, face.D.Y, face.D.Z);
+                volume += Vector3.Dot(a, Vector3.Cross(b, c)) / 6;
+                volume += Vector3.Dot(a, Vector3.Cross(c, d)) / 6;
+            }
+            return volume;
+        }
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(1)]

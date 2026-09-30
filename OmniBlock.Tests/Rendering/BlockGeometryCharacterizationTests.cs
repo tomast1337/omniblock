@@ -81,6 +81,54 @@ public sealed class BlockGeometryCharacterizationTests
         from meta in Enumerable.Range(0, 8)
         select new object[] { name, meta };
 
+    [Theory]
+    [InlineData(0, Side.East, 2)]
+    [InlineData(1, Side.West, 3)]
+    [InlineData(2, Side.South, 0)]
+    [InlineData(3, Side.North, 1)]
+    [InlineData(4, Side.East, 6)]
+    [InlineData(5, Side.West, 7)]
+    [InlineData(6, Side.South, 4)]
+    [InlineData(7, Side.North, 5)]
+    public void Outer_corner_uses_the_same_captured_shape_for_procedural_and_compiled_rendering(
+        int meta, Side front, int neighborMeta)
+    {
+        var fixture = new Fixture("wooden_stairs", meta);
+        fixture.Neighbor(front, "cobblestone_stairs", neighborMeta);
+        var shape = StairShape.Resolve(fixture.World.Reader, fixture.World.Content.Blocks,
+            Origin.X, Origin.Y, Origin.Z, meta);
+        Assert.Null(shape.Extra);
+        Assert.Equal(.125, Volume(shape.Step));
+        var models = BlockModelBindingTests.Build(fixture.World.Content.Blocks);
+        Assert.Equal(fixture.Render(light: new NonuniformLight()),
+            fixture.Render(light: new NonuniformLight(), models: models));
+    }
+
+    [Theory]
+    [InlineData(0, Side.West, 2)]
+    [InlineData(1, Side.East, 3)]
+    [InlineData(2, Side.North, 0)]
+    [InlineData(3, Side.South, 1)]
+    [InlineData(4, Side.West, 6)]
+    [InlineData(5, Side.East, 7)]
+    [InlineData(6, Side.North, 4)]
+    [InlineData(7, Side.South, 5)]
+    public void Inner_corner_adds_a_quarter_with_compiled_visual_parity(int meta, Side back, int neighborMeta)
+    {
+        var fixture = new Fixture("cobblestone_stairs", meta);
+        fixture.Neighbor(back, "wooden_stairs", neighborMeta);
+        var shape = StairShape.Resolve(fixture.World.Reader, fixture.World.Content.Blocks,
+            Origin.X, Origin.Y, Origin.Z, meta);
+        Assert.NotNull(shape.Extra);
+        Assert.Equal(.125, Volume(shape.Extra!.Value));
+        var models = BlockModelBindingTests.Build(fixture.World.Content.Blocks);
+        Assert.Equal(fixture.Render(light: new NonuniformLight()),
+            fixture.Render(light: new NonuniformLight(), models: models));
+    }
+
+    private static double Volume(Box box) =>
+        (box.MaxX - box.MinX) * (box.MaxY - box.MinY) * (box.MaxZ - box.MinZ);
+
     [Fact]
     public void Stair_pack_material_replacement_changes_only_the_new_snapshot()
     {
@@ -502,10 +550,10 @@ public sealed class BlockGeometryCharacterizationTests
             World.Writer.SetBlock(Origin.X, Origin.Y, Origin.Z, Block.Id, meta);
         }
 
-        public void Neighbor(Side side, string name)
+        public void Neighbor(Side side, string name, int meta = 0)
         {
             var d = Direction(side);
-            World.Writer.SetBlock(Origin.X + (int)d.X, Origin.Y + (int)d.Y, Origin.Z + (int)d.Z, World.Content.Blocks.Get(name).Id);
+            World.Writer.SetBlock(Origin.X + (int)d.X, Origin.Y + (int)d.Y, Origin.Z + (int)d.Z, World.Content.Blocks.Get(name).Id, meta);
         }
 
         public List<Vertex> Render(bool allFaces = false, ILightProvider? light = null, bool compiled = true,

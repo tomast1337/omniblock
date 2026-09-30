@@ -11,13 +11,33 @@ namespace OmniBlock.Client.Rendering.Chunks.Lod;
 /// </summary>
 internal static class TerrainLodStairGeometry
 {
-    private static readonly Face[][] Shapes = Enumerable.Range(0, 8).Select(Build).ToArray();
+    private static readonly Dictionary<StairShape.Resolved, Face[]> Shapes = BuildShapes();
 
-    internal static ReadOnlySpan<Face> Get(byte metadata) => Shapes[metadata & 7];
+    internal static ReadOnlySpan<Face> Get(byte metadata) => Get(StairShape.Resolve(metadata, null, null, null, null));
+    internal static ReadOnlySpan<Face> Get(StairShape.Resolved shape) => Shapes[shape];
 
-    private static Face[] Build(int metadata)
+    private static Dictionary<StairShape.Resolved, Face[]> BuildShapes()
     {
-        var shape = StairShape.GetBounds(metadata);
+        var shapes = new Dictionary<StairShape.Resolved, Face[]>();
+        for (var meta = 0; meta < 8; meta++)
+        {
+            Add(StairShape.Resolve(meta, null, null, null, null));
+            for (var side = 0; side < 4; side++)
+            for (var neighbor = 0; neighbor < 8; neighbor++)
+                Add(StairShape.Resolve(meta,
+                    side == 0 ? neighbor : null, side == 1 ? neighbor : null,
+                    side == 2 ? neighbor : null, side == 3 ? neighbor : null));
+        }
+        return shapes;
+
+        void Add(StairShape.Resolved shape)
+        {
+            if (!shapes.ContainsKey(shape)) shapes.Add(shape, Build(shape));
+        }
+    }
+
+    private static Face[] Build(StairShape.Resolved shape)
+    {
         List<Face> faces = [];
         for (var x = 0; x < 2; x++)
         for (var y = 0; y < 2; y++)
@@ -49,7 +69,7 @@ internal static class TerrainLodStairGeometry
             var px = x * .5 + .25;
             var py = y * .5 + .25;
             var pz = z * .5 + .25;
-            return Inside(shape.Base) || Inside(shape.Step);
+            return Inside(shape.Base) || Inside(shape.Step) || shape.Extra is { } extra && Inside(extra);
 
             bool Inside(Box box) =>
                 px > box.MinX && px < box.MaxX && py > box.MinY && py < box.MaxY &&

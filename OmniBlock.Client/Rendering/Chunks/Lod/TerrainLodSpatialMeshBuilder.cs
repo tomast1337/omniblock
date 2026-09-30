@@ -222,7 +222,9 @@ internal static class TerrainLodSpatialMeshBuilder
                                    (FenceAt(x, z - 1) ? FenceShape.North : 0) |
                                    (FenceAt(x, z + 1) ? FenceShape.South : 0);
                         var faces = span.Material.Geometry == TerrainLodGeometryClass.Stairs
-                            ? TerrainLodStairGeometry.Get(span.Material.Metadata) : TerrainLodFenceGeometry.Body(mask);
+                            ? TerrainLodStairGeometry.Get(StairShape.Resolve(span.Material.Metadata,
+                                StairAt(x + 1, z), StairAt(x - 1, z), StairAt(x, z + 1), StairAt(x, z - 1)))
+                            : TerrainLodFenceGeometry.Body(mask);
                         foreach (var face in faces)
                         {
                             var appearance = Appearance(block, span.Material, face.Side, null, x, z);
@@ -239,6 +241,10 @@ internal static class TerrainLodSpatialMeshBuilder
                             (uint)nx < (uint)tile.Width &&
                             (uint)nz < (uint)tile.Width &&
                             TerrainLodFenceGeometry.Connects(span.Material, Column(nx, nz).At(shapeY).Material);
+                        int? StairAt(int nx, int nz) =>
+                            (uint)nx < (uint)tile.Width && (uint)nz < (uint)tile.Width &&
+                            Column(nx, nz).At(shapeY).Material.Geometry == TerrainLodGeometryClass.Stairs
+                                ? Column(nx, nz).At(shapeY).Material.Metadata : null;
                     }
                     continue;
                 }

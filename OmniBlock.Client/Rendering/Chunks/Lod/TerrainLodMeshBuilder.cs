@@ -339,7 +339,9 @@ internal static class TerrainLodMeshBuilder
                            (FenceAt(x, z - 1) ? FenceShape.North : 0) |
                            (FenceAt(x, z + 1) ? FenceShape.South : 0);
                 var faces = material.Geometry == TerrainLodGeometryClass.Stairs
-                    ? TerrainLodStairGeometry.Get(material.Metadata) : TerrainLodFenceGeometry.Body(mask);
+                    ? TerrainLodStairGeometry.Get(StairShape.Resolve(material.Metadata,
+                        StairAt(x + 1, z), StairAt(x - 1, z), StairAt(x, z + 1), StairAt(x, z - 1)))
+                    : TerrainLodFenceGeometry.Body(mask);
                 foreach (var face in faces)
                     AddFace(face.Side, face.Shade, .5f, .5f,
                         Offset(face.A), Offset(face.B), Offset(face.C), Offset(face.D),
@@ -353,6 +355,10 @@ internal static class TerrainLodMeshBuilder
                     (uint)nx < (uint)level.Width &&
                     (uint)nz < (uint)level.Depth &&
                     TerrainLodFenceGeometry.Connects(material, level[nx, y, nz].Primary);
+                int? StairAt(int nx, int nz) =>
+                    (uint)nx < (uint)level.Width && (uint)nz < (uint)level.Depth &&
+                    level[nx, y, nz].Primary.Geometry == TerrainLodGeometryClass.Stairs
+                        ? level[nx, y, nz].Primary.Metadata : null;
             }
             if (levelIndex == 0 && material.Geometry is
                     TerrainLodGeometryClass.SurfaceLayer or TerrainLodGeometryClass.BoundedCube)

@@ -224,7 +224,12 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
     public HitResult Raycast(Vec3D start, Vec3D end, bool includeFluids = false, bool ignoreNonSolid = false) => throw new NotImplementedException();
     public bool IsMaterialInBox(Box area, Func<Material, bool> predicate) => throw new NotImplementedException();
     public bool UpdateMovementInFluid(Box entityBox, Material fluidMaterial, Entity entity) => throw new NotImplementedException();
-    public bool IsPosLoaded(int x, int y, int z) => throw new NotImplementedException();
+    // The snapshot is the worker's complete readable region, not a live chunk-loading query.
+    public bool IsPosLoaded(int x, int y, int z) =>
+        y >= 0 && y < ChuckFormat.WorldHeight &&
+        x >= _minX && x - _minX < _sizeX &&
+        y >= _minY && y - _minY < _sizeY &&
+        z >= _minZ && z - _minZ < _sizeZ;
 
     public void MarkChunkDirty(int x, int z) => throw new NotImplementedException();
 

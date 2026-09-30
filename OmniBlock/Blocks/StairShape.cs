@@ -1,11 +1,14 @@
 using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Blocks;
 
-/// <summary>Two non-overlapping boxes for the straight stair shape used by physics and rendering.</summary>
+/// <summary>Legacy stair metadata and neighbor-derived collision/render shape.</summary>
 public static class StairShape
 {
-    /// <summary>Legacy four-facing/two-half metadata; corner shape is derived from neighbors later.</summary>
+    public readonly record struct Resolved(Box Base, Box Step, Box? Extra);
+
+    /// <summary>Legacy four-facing/two-half metadata; corners are never persisted.</summary>
     public static int PlacementMetadata(float yaw, Side side, float hitY)
     {
         var facing = MathHelper.Floor(yaw * 4.0F / 360.0F + 0.5D) & 3;
@@ -28,4 +31,61 @@ public static class StairShape
         };
         return (baseBox, step);
     }
+
+    public static Resolved Resolve(IBlockReader reader, IBlockRuntimeView blocks, int x, int y, int z, int metadata)
+    {
+        return Resolve(metadata,
+            Neighbor(x + 1, z), Neighbor(x - 1, z), Neighbor(x, z + 1), Neighbor(x, z - 1));
+
+        int? Neighbor(int nx, int nz)
+        {
+            if (!reader.IsPosLoaded(nx, y, nz) ||
+                !blocks.TryGetByProtocolId(reader.GetBlockId(nx, y, nz), out var block) ||
+                block.RenderType != BlockRendererType.Stairs) return null;
+            return reader.GetBlockMeta(nx, y, nz) & 7;
+        }
+    }
+
+    /// <summary>Pure selector for snapshots and 1:1 LOD cells; null means no stair at that side.</summary>
+    public static Resolved Resolve(int metadata, int? east, int? west, int? south, int? north)
+    {
+        var straight = GetBounds(metadata);
+        var facing = metadata & 3;
+        var half = metadata & 4;
+        var (dx, dz) = Direction(facing);
+        var front = Neighbor(dx, dz);
+        if (front is { } frontMeta && (frontMeta & 4) == half && Perpendicular(facing, frontMeta & 3))
+        {
+            var (sideX, sideZ) = Direction(frontMeta & 3);
+            if (Neighbor(sideX, sideZ) != (metadata & 7))
+                return new Resolved(straight.Base, Intersection(straight.Step, GetBounds(frontMeta).Step), null);
+        }
+        var back = Neighbor(-dx, -dz);
+        if (back is { } backMeta && (backMeta & 4) == half && Perpendicular(facing, backMeta & 3))
+        {
+            var (sideX, sideZ) = Direction(backMeta & 3);
+            if (Neighbor(sideX, sideZ) != (metadata & 7))
+            {
+                var opposite = GetBounds((facing ^ 1) | half).Step;
+                return new Resolved(straight.Base, straight.Step,
+                    Intersection(opposite, GetBounds(backMeta).Step));
+            }
+        }
+        return new Resolved(straight.Base, straight.Step, null);
+
+        int? Neighbor(int nx, int nz) => nx switch
+        {
+            1 => east, -1 => west, _ => nz > 0 ? south : north
+        };
+    }
+
+    private static bool Perpendicular(int a, int b) => (a < 2) != (b < 2);
+    private static (int X, int Z) Direction(int facing) => facing switch
+    {
+        0 => (1, 0), 1 => (-1, 0), 2 => (0, 1), _ => (0, -1)
+    };
+
+    private static Box Intersection(Box a, Box b) => new(
+        Math.Max(a.MinX, b.MinX), Math.Max(a.MinY, b.MinY), Math.Max(a.MinZ, b.MinZ),
+        Math.Min(a.MaxX, b.MaxX), Math.Min(a.MaxY, b.MaxY), Math.Min(a.MaxZ, b.MaxZ));
 }
