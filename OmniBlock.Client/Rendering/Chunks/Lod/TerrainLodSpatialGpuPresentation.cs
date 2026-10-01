@@ -16,7 +16,8 @@ internal sealed class TerrainLodSpatialGpuPresentation : RetainedTerrainResource
         string stairBorderIdentity,
         GpuPage[] pages,
         long estimatedBytes,
-        TerrainLodSpatialMeshQuality quality)
+        TerrainLodSpatialMeshQuality quality,
+        TerrainLodResourceIdentity resources)
     {
         Key = key;
         CanonicalHash = canonicalHash;
@@ -24,6 +25,7 @@ internal sealed class TerrainLodSpatialGpuPresentation : RetainedTerrainResource
         Pages = pages;
         EstimatedBytes = estimatedBytes;
         Quality = quality;
+        Resources = resources;
     }
 
     public TerrainLodTileKey Key { get; }
@@ -32,13 +34,15 @@ internal sealed class TerrainLodSpatialGpuPresentation : RetainedTerrainResource
     public IReadOnlyList<GpuPage> Pages { get; }
     public long EstimatedBytes { get; }
     public TerrainLodSpatialMeshQuality Quality { get; }
+    internal TerrainLodResourceIdentity Resources { get; }
     public bool HasSolidGeometry => Pages.Any(static page => page.Solid is not null);
     public bool HasTranslucentGeometry => Pages.Any(static page => page.Translucent is not null);
 
     public static TerrainLodSpatialGpuPresentation Create(
         WebGpuDevice device,
         TerrainGpuArenaSet arenas,
-        TerrainLodSpatialMeshData data)
+        TerrainLodSpatialMeshData data,
+        TerrainLodResourceIdentity resources = default)
     {
         ArgumentNullException.ThrowIfNull(device);
         ArgumentNullException.ThrowIfNull(arenas);
@@ -50,7 +54,7 @@ internal sealed class TerrainLodSpatialGpuPresentation : RetainedTerrainResource
                 pages.Add(GpuPage.Create(device, arenas, page));
             return new TerrainLodSpatialGpuPresentation(
                 data.Key, data.CanonicalHash, data.StairBorderIdentity, [.. pages], data.EstimatedBytes,
-                TerrainLodSpatialMeshQuality.FromMesh(data));
+                TerrainLodSpatialMeshQuality.FromMesh(data), resources);
         }
         catch
         {

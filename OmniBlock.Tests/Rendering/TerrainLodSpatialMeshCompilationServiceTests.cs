@@ -61,6 +61,35 @@ public sealed class TerrainLodSpatialMeshCompilationServiceTests
     }
 
     [Fact]
+    public async Task Resource_replacement_coalesces_same_tile_and_preserves_new_snapshot()
+    {
+        var world = new FakeWorldContext();
+        var tile = Leaf(world, 2, -1, revision: 1);
+        var first = new TerrainLodResourceIdentity(7,
+            BlockModelBindingTests.Build(world.Content.Blocks, generation: 7));
+        var next = new TerrainLodResourceIdentity(8,
+            BlockModelBindingTests.Build(world.Content.Blocks, generation: 8));
+        using var service = new TerrainLodSpatialMeshCompilationService(2, 1);
+
+        Assert.Equal(TerrainLodSpatialMeshAdmissionResult.Accepted,
+            service.Submit(tile, world.Content.Blocks, 8,
+                TerrainLodSpatialMeshWorkKind.Coverage, 2, resources: first));
+        Assert.True(service.Contains(tile.Key, tile.CanonicalHash, resources: first));
+        Assert.False(service.Contains(tile.Key, tile.CanonicalHash, resources: next));
+        Assert.Equal(TerrainLodSpatialMeshAdmissionResult.Coalesced,
+            service.Submit(tile, world.Content.Blocks, 8,
+                TerrainLodSpatialMeshWorkKind.Refinement, 2, resources: next));
+
+        var result = await Take(service);
+        Assert.Null(result.Failure);
+        Assert.Equal(tile.Key, result.Key);
+        Assert.True(result.Resources.Matches(next));
+        Assert.False(result.Resources.Matches(first));
+        Assert.Same(next.Models, result.Resources.Models);
+        Assert.Equal(tile.CanonicalHash, result.Mesh!.CanonicalHash);
+    }
+
+    [Fact]
     public async Task Completed_capacity_applies_backpressure_to_the_worker()
     {
         var world = new FakeWorldContext();

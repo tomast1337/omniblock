@@ -1,5 +1,6 @@
 using OmniBlock.Client.Rendering.Chunks;
 using OmniBlock.Client.Rendering.Chunks.Lod;
+using OmniBlock.Client.Rendering.Blocks.Models;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Tests.TestSupport;
 using Silk.NET.Maths;
@@ -34,6 +35,40 @@ public sealed class TerrainLodHandoffTests
         Assert.Equal(before.ResidentGpuBytes, after.LastResourceReloadReusedGpuBytes);
 
         renderer.ObserveResourceGeneration(5);
+        renderer.Tick(default);
+        Assert.Equal(1, renderer.Snapshot.ResourceReloads);
+    }
+
+    [Fact]
+    public void Model_binding_replacement_is_a_distinct_resource_identity()
+    {
+        var blocks = new FakeWorldContext().Content.Blocks;
+        BlockModelBindings first = BlockModelBindingTests.Build(blocks);
+        BlockModelBindings next = BlockModelBindingTests.Build(blocks);
+        var captured = new TerrainLodResourceIdentity(4, first);
+
+        Assert.True(captured.Matches(new TerrainLodResourceIdentity(4, first)));
+        Assert.False(captured.Matches(new TerrainLodResourceIdentity(4, next)));
+        Assert.False(captured.Matches(new TerrainLodResourceIdentity(5, first)));
+    }
+
+    [Fact]
+    public void Lod_renderer_rejects_in_flight_results_after_resource_replacement()
+    {
+        var blocks = new FakeWorldContext().Content.Blocks;
+        var current = BlockModelBindingTests.Build(blocks);
+        using var renderer = new ClientTerrainLodRenderer(new LightTestWorld(),
+            modelSnapshot: () => current);
+        renderer.ObserveResourceGeneration(4);
+        var admitted = new TerrainLodResourceIdentity(4, current);
+        Assert.True(renderer.AcceptsResourceSnapshot(admitted));
+
+        current = BlockModelBindingTests.Build(blocks);
+        Assert.False(renderer.AcceptsResourceSnapshot(admitted));
+        var replacement = new TerrainLodResourceIdentity(4, current);
+        Assert.True(renderer.AcceptsResourceSnapshot(replacement));
+        renderer.ObserveResourceGeneration(5);
+        Assert.False(renderer.AcceptsResourceSnapshot(replacement));
         renderer.Tick(default);
         Assert.Equal(1, renderer.Snapshot.ResourceReloads);
     }

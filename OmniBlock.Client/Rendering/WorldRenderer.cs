@@ -554,7 +554,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         ChunkRenderer?.Dispose();
         ChunkRenderer = new ChunkRenderer(_world, _game.Options, () => _textureManager.BlockBindings);
         TerrainLod = new ClientTerrainLodRenderer(
-            _world, (_world as ClientWorld)?.TerrainLodCache, _game.TerrainLodPolicy);
+            _world, (_world as ClientWorld)?.TerrainLodCache, _game.TerrainLodPolicy,
+            () => _textureManager.BlockBindings);
         ChunkRenderer.PresentationHandoff = TerrainLod;
         ChunkMeshVersion.ClearPool();
 

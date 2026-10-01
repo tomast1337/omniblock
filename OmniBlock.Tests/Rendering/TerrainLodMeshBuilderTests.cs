@@ -28,9 +28,11 @@ public sealed class TerrainLodMeshBuilderTests
         var conversion = new TerrainLodConversionResult(
             0, 0, 0, 7, hierarchy);
         using var compiler = new TerrainLodMeshCompilationService(1);
+        var models = BlockModelBindingTests.Build(world.Content.Blocks);
+        var resources = new TerrainLodResourceIdentity(4, models);
 
         Assert.True(compiler.TrySubmit(new TerrainLodMeshCompilationRequest(
-            conversion, 2, 4, visuals, true)));
+            conversion, 2, 4, visuals, true, Resources: resources)));
         Assert.False(compiler.HasCapacity);
         TerrainLodMeshCompilationResult? result = null;
         Assert.True(SpinWait.SpinUntil(
@@ -39,6 +41,9 @@ public sealed class TerrainLodMeshBuilderTests
 
         Assert.NotNull(result);
         Assert.Null(result.Failure);
+        Assert.True(result.Resources.Matches(resources));
+        Assert.Same(models, result.Resources.Models);
+        Assert.False(result.Resources.Matches(new TerrainLodResourceIdentity(5, models)));
         Assert.NotNull(result.Boundaries);
         Assert.Equal(TerrainLodMeshWorkKind.Coverage, result.WorkKind);
         Assert.True(result.CompilationMs > 0);

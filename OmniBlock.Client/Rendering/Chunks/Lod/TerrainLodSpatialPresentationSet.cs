@@ -63,7 +63,8 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
         TerrainLodTileKey key,
         string canonicalHash,
         Func<TPresentation> createCandidate,
-        out Exception? failure)
+        out Exception? failure,
+        bool forceReplacement = false)
     {
         AssertOwnerThread();
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -71,7 +72,8 @@ internal sealed class TerrainLodSpatialPresentationSet<TPresentation> : IDisposa
         ArgumentNullException.ThrowIfNull(createCandidate);
         failure = null;
 
-        if (_entries.TryGetValue(key, out var unchanged) &&
+        _entries.TryGetValue(key, out var unchanged);
+        if (!forceReplacement && unchanged is not null &&
             string.Equals(unchanged.CanonicalHash, canonicalHash, StringComparison.Ordinal))
             return false;
 

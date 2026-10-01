@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using OmniBlock.Blocks;
+using OmniBlock.Client.Rendering.Blocks.Models;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.WebGPU;
 using OmniBlock.Client.Worlds;
@@ -266,6 +267,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
     private long _levelTransitionReversals;
     private long _boundaryRefreshes;
     private long _resourceGeneration = -1;
+    private readonly Func<BlockModelBindings?>? _modelSnapshot;
     private long _resourceReloads;
     private int _lastResourceReloadReusedColumns;
     private long _lastResourceReloadReusedGpuBytes;
@@ -350,9 +352,11 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
     public ClientTerrainLodRenderer(
         World world,
         TerrainLodCacheStore? cache = null,
-        TerrainLodSpatialPolicy? spatialPolicy = null)
+        TerrainLodSpatialPolicy? spatialPolicy = null,
+        Func<BlockModelBindings?>? modelSnapshot = null)
     {
         _world = world ?? throw new ArgumentNullException(nameof(world));
+        _modelSnapshot = modelSnapshot;
         _cache = cache;
         var materials = TerrainLodMaterialCatalog.FromRuntime(world.Content);
         _conversion = cache is null
@@ -862,10 +866,10 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
     }
 
     /// <summary>
-    ///     Observes texture-resource replacement without invalidating terrain presentation. Both
-    ///     near and reduced terrain store stable named-atlas layer indices; the texture manager
-    ///     replaces the pixels and WebGPU binding behind those indices. Hierarchy data, meshes,
-    ///     seams, handoffs, and residency therefore remain compatible across a pack reload.
+    ///     Observes texture-resource replacement without evicting resident terrain. Existing
+    ///     meshes retain stable named-atlas layer indices while in-flight candidates carry their
+    ///     captured model-binding snapshot. Stale completions are rejected at installation; a
+    ///     replacement may publish only after the whole candidate is ready.
     /// </summary>
     /// <remarks>
     ///     Resource-dependent presentations such as entity impostor atlases own their own
@@ -887,6 +891,12 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         _lastResourceReloadReusedColumns = _resident.Count;
         _lastResourceReloadReusedGpuBytes = ResidentGpuBytes();
     }
+
+    private TerrainLodResourceIdentity CurrentResources =>
+        new(_resourceGeneration, _modelSnapshot?.Invoke());
+
+    internal bool AcceptsResourceSnapshot(TerrainLodResourceIdentity resources) =>
+        resources.Matches(CurrentResources);
 
     public TerrainNearHandoff GetNearHandoff(int chunkX, int chunkZ, bool translucent)
     {
@@ -1456,6 +1466,12 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                 !_pending.ContainsKey(key)) return;
         }
 
+        QueueColumnRefresh(chunkX, chunkZ);
+    }
+
+    private void QueueColumnRefresh(int chunkX, int chunkZ)
+    {
+        var key = (chunkX, chunkZ);
         if (_pending.ContainsKey(key))
         {
             _pending[key] = new PendingColumn(_tick + QuietTicks);
@@ -1490,6 +1506,20 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         while (_meshCompilation.TryPeekCompleted(out var next, out var workKind) &&
                next is not null)
         {
+            if (!AcceptsResourceSnapshot(next.Resources))
+            {
+                if (_meshCompilation.TryTakeCompleted(workKind, advanceFairness: true, out var stale) &&
+                    stale is not null)
+                {
+                    _staleResults++;
+                    // A remote/unloaded source is not reconstructible from the live world here;
+                    // its spatial hierarchy owns that refresh. Do not queue a phantom column.
+                    if (_world.BlockHost.HasChunk(stale.Conversion.ChunkX, stale.Conversion.ChunkZ) &&
+                        _world.BlockHost.GetChunk(stale.Conversion.ChunkX, stale.Conversion.ChunkZ).Loaded)
+                        QueueColumnRefresh(stale.Conversion.ChunkX, stale.Conversion.ChunkZ);
+                }
+                continue;
+            }
             var remainingMs = Math.Max(0, MeshUploadBudgetMs - stopwatch.Elapsed.TotalMilliseconds);
             var remainingBytes = Math.Max(0, MeshUploadBudgetBytes - admittedBytes);
             var predictedUploadMs = _meshCompilation.EstimateUploadMs(next.UploadBytes);
@@ -1624,7 +1654,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                 !_world.Dimension.HasCeiling,
                 workKind,
                 _world.Dimension.HasCeiling ? null : OverworldCaveCullCeilingY,
-                captured.Lifetime);
+                captured.Lifetime,
+                CurrentResources);
             // The worker may dispose captured.Visuals immediately after submission. Copy any
             // refinement evidence while this render-thread owner still holds the snapshot.
             if (minimumLevel > ExactVoxelMeshLevel)
@@ -1698,7 +1729,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                     ready?.CanonicalHash == neighbor.CanonicalHash &&
                     ready.StairBorderIdentity == identity) continue;
                 if (ready is not null) _stairBorderDirty.Add(key);
-                if (_spatialMeshCompilation.Contains(key, neighbor.CanonicalHash, identity)) continue;
+                if (_spatialMeshCompilation.Contains(key, neighbor.CanonicalHash, identity,
+                        CurrentResources)) continue;
                 QueueSpatialMesh(neighbor);
             }
         }
@@ -1739,7 +1771,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                 pair.Key.DistanceTo(cameraChunkX, cameraChunkZ),
                 _world.Dimension.HasCeiling ? null : OverworldCaveCullCeilingY,
                 maximumResultBytes,
-                CaptureStairBorder(pair.Value));
+                CaptureStairBorder(pair.Value),
+                CurrentResources);
             if (result == TerrainLodSpatialMeshAdmissionResult.RejectedAtCapacity) break;
             if (result == TerrainLodSpatialMeshAdmissionResult.RejectedOverBudget)
             {
@@ -1767,6 +1800,14 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             if (completed is null && !_spatialMeshCompilation.TryTakeCompleted(out completed))
                 break;
             if (completed is null) break;
+            if (!AcceptsResourceSnapshot(completed.Resources))
+            {
+                _staleResults++;
+                if (_spatialHierarchy.TryGetCoverage(completed.Key, out var source, out _) &&
+                    source is not null)
+                    QueueSpatialMesh(source);
+                continue;
+            }
             if (completed.Failure is not null)
                 throw new InvalidOperationException(
                     "Spatial terrain LOD mesh compilation failed.", completed.Failure);
@@ -1802,7 +1843,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                 string.Equals(previous.CanonicalHash, mesh.CanonicalHash,
                     StringComparison.Ordinal) &&
                 string.Equals(previous.StairBorderIdentity, mesh.StairBorderIdentity,
-                    StringComparison.Ordinal))
+                    StringComparison.Ordinal) &&
+                previous.Resources.Matches(completed.Resources))
             {
                 _stairBorderDirty.Remove(mesh.Key);
                 continue;
@@ -1842,8 +1884,10 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                 mesh.Key,
                 mesh.CanonicalHash + ":" + mesh.StairBorderIdentity,
                 () => TerrainLodSpatialGpuPresentation.Create(
-                    device, arenas, mesh),
-                out var failure);
+                    device, arenas, mesh, completed.Resources),
+                out var failure,
+                forceReplacement: previous is not null &&
+                    !previous.Resources.Matches(completed.Resources));
             _bodyInstallMs += Stopwatch.GetElapsedTime(installStarted).TotalMilliseconds;
             if (failure is not null)
                 throw new InvalidOperationException(
@@ -2252,7 +2296,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                 _deferredSpatialMeshUpload?.Mesh is { } deferredMesh &&
                 deferredMesh.Key == required && deferredMesh.CanonicalHash == tile.CanonicalHash &&
                 deferredMesh.StairBorderIdentity == borderIdentity ||
-                _spatialMeshCompilation.Contains(required, tile.CanonicalHash, borderIdentity)) continue;
+                _spatialMeshCompilation.Contains(required, tile.CanonicalHash, borderIdentity,
+                    CurrentResources)) continue;
             QueueSpatialMesh(tile);
         }
     }
@@ -2261,7 +2306,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         _spatialMeshPending.ContainsKey(key) ||
         _deferredSpatialMeshUpload?.Mesh?.Key == key ||
         (_spatialHierarchy.TryGetCoverage(key, out var tile, out _) && tile is not null &&
-         _spatialMeshCompilation.Contains(key, tile.CanonicalHash));
+         _spatialMeshCompilation.Contains(key, tile.CanonicalHash, resources: CurrentResources));
 
     private void UpdateSpatialSeams(
         TerrainLodSpatialPresentationFrame<TerrainLodSpatialGpuPresentation> frame,
@@ -3855,10 +3900,12 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
             long terrainRevision,
             Dictionary<int, GpuLevel> levels,
             TerrainLodBoundarySummary boundaries,
-            long remoteGeneration)
+            long remoteGeneration,
+            TerrainLodResourceIdentity resources)
         {
             TerrainRevision = terrainRevision;
             RemoteGeneration = remoteGeneration;
+            Resources = resources;
             Levels = levels;
             Boundaries = boundaries;
             MinimumLevel = levels.Count == 0 ? MinimumHorizonMeshLevel : levels.Keys.Min();
@@ -3867,6 +3914,7 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
 
         public long TerrainRevision { get; }
         public long RemoteGeneration { get; }
+        public TerrainLodResourceIdentity Resources { get; }
         public Dictionary<int, GpuLevel> Levels { get; }
         public TerrainLodBoundarySummary Boundaries { get; }
         public int MinimumLevel { get; }
@@ -3968,7 +4016,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
                     levels,
                     compiled.Boundaries ?? throw new InvalidOperationException(
                         "Compiled terrain LOD result has no boundary summary."),
-                    compiled.SourceLifetime?.RemoteGeneration ?? 0);
+                    compiled.SourceLifetime?.RemoteGeneration ?? 0,
+                    compiled.Resources);
             }
             catch
             {

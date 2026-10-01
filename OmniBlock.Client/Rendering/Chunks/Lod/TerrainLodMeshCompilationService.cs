@@ -12,7 +12,8 @@ internal sealed record TerrainLodMeshCompilationRequest(
     bool HasSkyLight,
     TerrainLodMeshWorkKind WorkKind = TerrainLodMeshWorkKind.Coverage,
     int? CaveCullBelowY = null,
-    TerrainLodSourceLifetime? SourceLifetime = null);
+    TerrainLodSourceLifetime? SourceLifetime = null,
+    TerrainLodResourceIdentity Resources = default);
 
 internal sealed record TerrainLodMeshCompilationResult(
     TerrainLodConversionResult Conversion,
@@ -25,7 +26,8 @@ internal sealed record TerrainLodMeshCompilationResult(
     long RetainedBytes = 0,
     long UploadBytes = 0,
     Exception? Failure = null,
-    TerrainLodSourceLifetime? SourceLifetime = null);
+    TerrainLodSourceLifetime? SourceLifetime = null,
+    TerrainLodResourceIdentity Resources = default);
 
 internal readonly record struct TerrainLodMeshCompilationSnapshot(
     int Owned,
@@ -259,7 +261,8 @@ internal sealed class TerrainLodMeshCompilationService : IDisposable
                 result = new TerrainLodMeshCompilationResult(
                     request.Conversion, minimum, boundaries, levels,
                     request.WorkKind, work.Estimate.WorkCells, compilationMs,
-                    retainedBytes, uploadBytes, SourceLifetime: request.SourceLifetime);
+                    retainedBytes, uploadBytes, SourceLifetime: request.SourceLifetime,
+                    Resources: request.Resources);
                 _costModel.RecordCompilation(
                     compilationMs, work.Estimate.WorkCells, retainedBytes);
             }
@@ -269,7 +272,7 @@ internal sealed class TerrainLodMeshCompilationService : IDisposable
                     request.Conversion, request.MinimumLevel, null, [],
                     request.WorkKind, work.Estimate.WorkCells,
                     Stopwatch.GetElapsedTime(started).TotalMilliseconds,
-                    Failure: error);
+                    Failure: error, Resources: request.Resources);
             }
             finally
             {

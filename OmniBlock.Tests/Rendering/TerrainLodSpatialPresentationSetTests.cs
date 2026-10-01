@@ -55,6 +55,29 @@ public sealed class TerrainLodSpatialPresentationSetTests
     }
 
     [Fact]
+    public void Resource_replacement_with_unchanged_terrain_keeps_old_mesh_until_upload_succeeds()
+    {
+        var key = new TerrainLodTileKey(0, 1, 2);
+        using var presentations = new TerrainLodSpatialPresentationSet<FakePresentation>();
+        var old = new FakePresentation("old");
+        Assert.True(presentations.TryInstall(key, "same-terrain", () => old, out _));
+
+        Assert.False(presentations.TryInstall(key, "same-terrain",
+            static () => throw new InvalidOperationException("upload failed"), out var failure,
+            forceReplacement: true));
+        Assert.IsType<InvalidOperationException>(failure);
+        Assert.False(old.Disposed);
+        Assert.Same(old, presentations.ReadyPresentations.Single());
+
+        var replacement = new FakePresentation("new");
+        Assert.True(presentations.TryInstall(key, "same-terrain", () => replacement, out failure,
+            forceReplacement: true));
+        Assert.Null(failure);
+        Assert.True(old.Disposed);
+        Assert.Same(replacement, presentations.ReadyPresentations.Single());
+    }
+
+    [Fact]
     public void Successful_candidate_is_published_before_predecessor_retires()
     {
         var key = new TerrainLodTileKey(0, 0, 0);
