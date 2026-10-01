@@ -118,7 +118,8 @@ internal static class TerrainLodSpatialMeshBuilder
         int? caveCullBelowY = null,
         CancellationToken cancellationToken = default,
         long maximumResultBytes = long.MaxValue,
-        TerrainLodStairBorder? stairBorder = null)
+        TerrainLodStairBorder? stairBorder = null,
+        BlockModelBindings? models = null)
     {
         ArgumentNullException.ThrowIfNull(tile);
         ArgumentNullException.ThrowIfNull(blocks);
@@ -309,11 +310,12 @@ internal static class TerrainLodSpatialMeshBuilder
                         guard.Checkpoint();
                         var page = PageFor(worldX + 0.5, plantY + 0.5, worldZ + 0.5);
                         var light = FaceLight(plantSpan, NeighborAt(column, plantY + 1), Side.Up);
-                        foreach (ref readonly var quad in CrossedPlantGeometry.Quads)
+                        var geometry = models?.GetCrossedPlant(plant.Id) ?? CrossedPlantGeometry.Builtin;
+                        foreach (ref readonly var quad in geometry.Quads)
                         {
                             Emit(page, false, Side.Up, appearance, 1, light, 1, 1,
                                 Point(quad.A), Point(quad.B), Point(quad.C), Point(quad.D),
-                                guard, nonDirectional: true);
+                                guard, nonDirectional: true, plantQuad: quad);
                         }
 
                         (float X, float Y, float Z) Point(CrossedPlantGeometry.Vertex vertex) =>
@@ -764,10 +766,11 @@ internal static class TerrainLodSpatialMeshBuilder
         TerrainLodSpatialMeshBuildGuard? guard = null,
         bool nonDirectional = false,
         byte textureMipLevel = 0,
-        (float X, float Y, float Z)? textureOrigin = null)
+        (float X, float Y, float Z)? textureOrigin = null,
+        CrossedPlantGeometry.Quad? plantQuad = null)
         => Emit(page, translucent, side, appearance, shade,
             TerrainLodQuadLighting.Uniform(light), tileU, tileV,
-            a, b, c, d, guard, nonDirectional, textureMipLevel, textureOrigin);
+            a, b, c, d, guard, nonDirectional, textureMipLevel, textureOrigin, plantQuad);
 
     internal static void Emit(
         PageBuilder page,
@@ -785,7 +788,8 @@ internal static class TerrainLodSpatialMeshBuilder
         TerrainLodSpatialMeshBuildGuard? guard = null,
         bool nonDirectional = false,
         byte textureMipLevel = 0,
-        (float X, float Y, float Z)? textureOrigin = null)
+        (float X, float Y, float Z)? textureOrigin = null,
+        CrossedPlantGeometry.Quad? plantQuad = null)
     {
         EmitTexture(appearance.Texture, appearance.Tint);
         if (appearance.OverlayTexture >= 0)
@@ -799,7 +803,11 @@ internal static class TerrainLodSpatialMeshBuilder
             var color = TerrainLodMeshBuilder.PackTintedColor(tint, shade);
             var uvScaleExponent = UvScaleExponent(Math.Max(tileU, tileV));
             var uvScale = 1 << uvScaleExponent;
-            if (nonDirectional)
+            if (plantQuad is { } plant)
+                page.AddUnassigned(translucent, lights,
+                    Vertex(a, plant.A.U, plant.A.V), Vertex(b, plant.B.U, plant.B.V),
+                    Vertex(c, plant.C.U, plant.C.V), Vertex(d, plant.D.U, plant.D.V));
+            else if (nonDirectional)
                 // Crossed plants use the same UV orientation as local level-zero plants.
                 page.AddUnassigned(translucent, lights,
                     Vertex(a, 0, 0), Vertex(b, 0, tileV),

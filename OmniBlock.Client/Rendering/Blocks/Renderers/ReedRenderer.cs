@@ -8,6 +8,10 @@ namespace OmniBlock.Client.Rendering.Blocks.Renderers;
 public class ReedRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
+        => Draw(block, pos, ref ctx, null);
+
+    internal bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx,
+        CompiledCrossedPlantGeometry? geometry)
     {
         ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
         var colorMultiplier = block.GetColorMultiplier(ctx.BlockReader, pos.X, pos.Y, pos.Z);
@@ -20,12 +24,12 @@ public class ReedRenderer : IBlockRenderer
         var offset = CrossedPlantGeometry.Offset(pos.X, pos.Y, pos.Z,
             block == ctx.Blocks.Get("grass"));
         RenderCrossedSquares(block, ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z),
-            pos.X + offset.X, pos.Y + offset.Y, pos.Z + offset.Z, ref ctx);
+            pos.X + offset.X, pos.Y + offset.Y, pos.Z + offset.Z, ref ctx, geometry);
         return true;
     }
 
     private void RenderCrossedSquares(Block block, int metadata, float x, float y, float z,
-        ref BlockRenderContext ctx)
+        ref BlockRenderContext ctx, CompiledCrossedPlantGeometry? geometry)
     {
         var textureId = block.GetTexture(0, metadata);
         if (ctx.OverrideTexture >= 0)
@@ -35,7 +39,7 @@ public class ReedRenderer : IBlockRenderer
 
         var tess = ctx.Tess;
         tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
-        foreach (ref readonly var quad in CrossedPlantGeometry.Quads)
+        foreach (ref readonly var quad in (geometry ?? CrossedPlantGeometry.Builtin).Quads)
         {
             Emit(quad.A);
             Emit(quad.B);

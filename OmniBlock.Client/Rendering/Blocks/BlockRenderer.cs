@@ -90,7 +90,8 @@ public class BlockRenderer
 
         return type switch
         {
-            BlockRendererType.Reed => s_reed.Draw(block, pos, ref ctx),
+            BlockRendererType.Reed => s_reed.Draw(block, pos, ref ctx,
+                models?.GetCrossedPlant(block.Id)),
             BlockRendererType.Torch => s_torch.Draw(block, pos, ref ctx),
             BlockRendererType.Fire => s_fire.Draw(block, pos, ref ctx),
             BlockRendererType.Fluids => s_fluids.Draw(block, pos, ref ctx),

@@ -335,7 +335,8 @@ internal sealed class TerrainLodSpatialMeshCompilationService : IDisposable
                     caveCullBelowY: input.CaveCullBelowY,
                     cancellationToken: cancellationToken,
                     maximumResultBytes: input.MaximumResultBytes,
-                    stairBorder: input.StairBorder);
+                    stairBorder: input.StairBorder,
+                    models: input.Resources.Models);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {

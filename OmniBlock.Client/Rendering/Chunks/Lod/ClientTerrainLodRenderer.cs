@@ -208,6 +208,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
     private readonly TerrainLodSpatialPresentationSet<TerrainLodSpatialGpuPresentation>
         _spatialPresentations = new();
     private readonly Dictionary<TerrainLodTileKey, TerrainLodColumnTile> _spatialMeshPending = [];
+    private readonly Queue<TerrainLodTileKey> _modelRefreshSpatial = [];
+    private readonly Queue<(int X, int Z)> _modelRefreshColumns = [];
     private readonly HashSet<TerrainLodTileKey> _stairBorderDirty = [];
     private readonly Dictionary<TerrainLodTileKey, RemoteTileRequestState> _remoteRequestStates = [];
     private ClientTerrainLodSpatialCache? _remoteSpatialCache;
@@ -268,6 +270,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
     private long _boundaryRefreshes;
     private long _resourceGeneration = -1;
     private readonly Func<BlockModelBindings?>? _modelSnapshot;
+    private BlockModelBindings? _observedModels;
+    private Vector3D<double> _lastViewPosition;
     private long _resourceReloads;
     private int _lastResourceReloadReusedColumns;
     private long _lastResourceReloadReusedGpuBytes;
@@ -882,14 +886,35 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         if (_resourceGeneration < 0)
         {
             _resourceGeneration = generation;
+            _observedModels = _modelSnapshot?.Invoke();
             return;
         }
 
         if (_resourceGeneration == generation) return;
+        var replacementModels = _modelSnapshot?.Invoke();
+        var crossedChanged = _observedModels is null
+            ? replacementModels is not null && !replacementModels.SameCrossedPlants(null)
+            : !_observedModels.SameCrossedPlants(replacementModels);
+        _observedModels = replacementModels;
         _resourceGeneration = generation;
         _resourceReloads++;
         _lastResourceReloadReusedColumns = _resident.Count;
         _lastResourceReloadReusedGpuBytes = ResidentGpuBytes();
+        if (crossedChanged) QueueModelRefresh();
+    }
+
+    private void QueueModelRefresh()
+    {
+        // Old GPU presentations stay resident. Spread rebuild admission over subsequent ticks;
+        // a pack reload must not enqueue an entire distant horizon in one frame.
+        _modelRefreshColumns.Clear();
+        _modelRefreshSpatial.Clear();
+        foreach (var key in _resident.Keys.OrderBy(key => DistanceSquared(key, _lastViewPosition)))
+            _modelRefreshColumns.Enqueue(key);
+        var cameraX = _lastViewPosition.X / SubChunkRenderer.Size;
+        var cameraZ = _lastViewPosition.Z / SubChunkRenderer.Size;
+        foreach (var key in _spatialPresentations.ReadyKeys.OrderBy(key => key.DistanceTo(cameraX, cameraZ)))
+            _modelRefreshSpatial.Enqueue(key);
     }
 
     private TerrainLodResourceIdentity CurrentResources =>
@@ -939,12 +964,28 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
     public void Tick(Vector3D<double> viewPosition)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        _lastViewPosition = viewPosition;
         _tick++;
         if ((_tick & 15) == 0)
             _refinementSources.Prune(viewPosition.X, viewPosition.Z);
         _spatialHierarchy.SetCameraChunkPosition(
             viewPosition.X / SubChunkRenderer.Size,
             viewPosition.Z / SubChunkRenderer.Size);
+
+        for (var i = 0; i < SnapshotsPerTick && _modelRefreshColumns.TryPeek(out var column); i++)
+        {
+            // A full normal streaming queue is backpressure, not permission to silently lose
+            // this reload refresh. The old presentation remains valid until admission resumes.
+            if (_pending.Count >= PendingCapacity && !_pending.ContainsKey(column)) break;
+            _modelRefreshColumns.Dequeue();
+            if (_world.BlockHost.HasChunk(column.X, column.Z) &&
+                _world.BlockHost.GetChunk(column.X, column.Z).Loaded)
+                QueueColumnRefresh(column.X, column.Z);
+        }
+        for (var i = 0; i < SpatialMeshAdmissionsPerTick && _modelRefreshSpatial.TryDequeue(out var key); i++)
+            if (_spatialPresentations.IsReady(key) &&
+                _spatialHierarchy.TryGetCoverage(key, out var tile, out _) && tile is not null)
+                QueueSpatialMesh(tile);
 
         _completedSpatialParents.Clear();
         _spatialHierarchy.DrainCompleted(
@@ -1422,6 +1463,8 @@ internal sealed partial class ClientTerrainLodRenderer : IDisposable, ITerrainPr
         foreach (var seam in _translucentSeams.Values) seam.Dispose();
         foreach (var seam in _spatialSeams.Values) seam.Dispose();
         _resident.Clear();
+        _modelRefreshColumns.Clear();
+        _modelRefreshSpatial.Clear();
         _solidSeams.Clear();
         _translucentSeams.Clear();
         _spatialSeams.Clear();

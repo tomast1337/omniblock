@@ -14,19 +14,25 @@ internal sealed class BlockModelBindings
 {
     private readonly FrozenDictionary<(int Block, int Meta), Binding> _states;
     private readonly FrozenDictionary<int, CompiledStairGeometry> _stairs;
+    private readonly CrossedPlantModelCatalog? _crossedPlants;
     private sealed record Binding(CompiledCuboidGeometry Geometry, bool LegacyGreedyCompatible);
 
     private BlockModelBindings(long generation, Dictionary<(int, int), Binding> states,
-        Dictionary<int, CompiledStairGeometry> stairs, CompiledFenceGeometry? fence)
+        Dictionary<int, CompiledStairGeometry> stairs, CompiledFenceGeometry? fence,
+        CrossedPlantModelCatalog? crossedPlants)
     {
         Generation = generation;
         _states = states.ToFrozenDictionary();
         _stairs = stairs.ToFrozenDictionary();
         Fence = fence;
+        _crossedPlants = crossedPlants;
     }
 
     internal long Generation { get; }
     internal CompiledFenceGeometry? Fence { get; }
+    internal CompiledCrossedPlantGeometry? GetCrossedPlant(int blockId) => _crossedPlants?.Get(blockId);
+    internal bool SameCrossedPlants(BlockModelBindings? other) =>
+        _crossedPlants is null ? other?._crossedPlants is null : _crossedPlants.ContentEquals(other?._crossedPlants);
     internal CompiledStairGeometry? GetStair(int block) => _stairs.TryGetValue(block, out var geometry) ? geometry : null;
     internal CompiledCuboidGeometry? Get(int block, int meta) =>
         _states.TryGetValue((block, meta), out var binding) ? binding.Geometry : null;
@@ -35,7 +41,7 @@ internal sealed class BlockModelBindings
 
     internal static BlockModelBindings Build(long generation, IBlockRuntimeView blocks,
         BlockModelCatalog models, IReadOnlyDictionary<RenderResourceId, int> fixedLayers, BlockStateDefinitions definitions,
-        FencePartDefinitions? fence = null)
+        FencePartDefinitions? fence = null, CrossedPlantModelCatalog? crossedPlants = null)
     {
         var states = new Dictionary<(int, int), Binding>();
         var geometry = new Dictionary<RenderResourceId, CompiledCuboidGeometry>();
@@ -78,7 +84,7 @@ internal sealed class BlockModelBindings
             }
             compiledFence = CompiledFenceGeometry.Build(model, fence, fixedLayers);
         }
-        return new BlockModelBindings(generation, states, stairs, compiledFence);
+        return new BlockModelBindings(generation, states, stairs, compiledFence, crossedPlants);
 
         void Add(ResourceLocation blockName, int meta, RenderResourceId modelName, double bottom, double top)
         {

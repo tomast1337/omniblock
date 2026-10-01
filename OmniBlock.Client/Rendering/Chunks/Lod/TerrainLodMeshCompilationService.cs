@@ -252,7 +252,8 @@ internal sealed class TerrainLodMeshCompilationService : IDisposable
                         request.HasSkyLight,
                         request.Conversion.Lighting,
                         request.Visuals,
-                        request.CaveCullBelowY);
+                        request.CaveCullBelowY,
+                        request.Resources.Models);
                 }
                 var compilationMs = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
                 var retainedBytes = levels.Sum(static level => level.EstimatedBytes) +

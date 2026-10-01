@@ -249,6 +249,28 @@ public sealed class BlockModelCompilerTests
         }
     }
 
+    [Fact]
+    public void Resource_bound_crossed_plant_changes_detailed_geometry_without_changing_material()
+    {
+        var world = new FakeWorldContext();
+        var block = world.Content.Blocks.Get("dandelion");
+        var pos = new BlockPos(3, 64, -2);
+        world.Writer.SetBlock(pos.X, pos.Y, pos.Z, block.Id, 0);
+        var bindings = BlockModelBindingTests.Build(world.Content.Blocks, overrides: path =>
+            path == CrossedPlantModelCatalog.Path
+                ? new MemoryStream(System.Text.Encoding.UTF8.GetBytes("{\"default\":{\"inset\":0.2}}"))
+                : null);
+        var sink = new GeometrySink();
+
+        Assert.True(BlockRenderer.RenderBoundBlock(bindings, world.Reader, world.Content.Blocks,
+            new FullLight(), block, pos, sink));
+        Assert.Equal(16, sink.Vertices.Count);
+        Assert.Equal(new Vector3(3.2f, 65, -1.8f), sink.Vertices[0].Position);
+        Assert.Equal(new Vector2(0, 0), sink.Vertices[0].Uv);
+        Assert.All(sink.Vertices, vertex =>
+            Assert.Equal(Atlases.Terrain.LayerOfGridIndex(block.GetTexture(0, 0)), vertex.Layer));
+    }
+
     private static string Cuboid(int minY, int maxY, string[] textures)
     {
         var faces = Enum.GetValues<Side>().ToDictionary(side => side.ToString().ToLowerInvariant(), side => new

@@ -59,6 +59,10 @@ internal static class BlockModelResourceSmoke
         if (textures.TryReload(new StateOverridePack(fenceStatePath, fenceStateJson.ToJsonString(), selectedSource.OpenOverride)))
             throw new InvalidOperationException("Fence rule with a missing model element was accepted.");
         AssertUnchanged();
+        if (textures.TryReload(new StateOverridePack(CrossedPlantModelCatalog.Path,
+                "{\"overrides\":{\"omniblock:dandelion\":{\"inset\":0.5}}}", selectedSource.OpenOverride)))
+            throw new InvalidOperationException("Invalid crossed-plant geometry was accepted.");
+        AssertUnchanged();
 
         void AssertUnchanged()
         {
@@ -123,7 +127,8 @@ internal static class BlockModelResourceSmoke
             gpuResident = second.Texture.Wgpu != null,
             preparedAnimations = animations.Count, failedAnimationPreparationPreservedLive = animationFailure,
             samePackReloadCompleted,
-            invalidStateReloadPreservedLive = true, stateRemapInstalledAndRestored = true,
+            invalidStateReloadPreservedLive = true, invalidPlantReloadPreservedLive = true,
+            stateRemapInstalledAndRestored = true,
             lateFailurePreservedLive = true, failedPersistencePreservedLive = true,
             failedCandidatesReleased = true,
             liveBindingsGeneration = textures.BlockBindings?.Generation,

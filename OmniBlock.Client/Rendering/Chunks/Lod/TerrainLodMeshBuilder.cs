@@ -269,7 +269,8 @@ internal static class TerrainLodMeshBuilder
         bool hasSkyLight,
         ILightProvider? lighting = null,
         IBlockReader? visuals = null,
-        int? caveCullBelowY = null)
+        int? caveCullBelowY = null,
+        BlockModelBindings? models = null)
     {
         ArgumentNullException.ThrowIfNull(hierarchy);
         ArgumentNullException.ThrowIfNull(blocks);
@@ -278,10 +279,10 @@ internal static class TerrainLodMeshBuilder
 
         var solid = BuildLayer(
             hierarchy, levelIndex, blocks, hasSkyLight, lighting, visuals,
-            caveCullBelowY, false);
+            caveCullBelowY, false, models);
         var translucent = BuildLayer(
             hierarchy, levelIndex, blocks, hasSkyLight, lighting, visuals,
-            caveCullBelowY, true);
+            caveCullBelowY, true, models);
         return new TerrainLodMeshData(
             levelIndex,
             solid.Vertices,
@@ -298,7 +299,8 @@ internal static class TerrainLodMeshBuilder
         ILightProvider? lighting,
         IBlockReader? visuals,
         int? caveCullBelowY,
-        bool translucent)
+        bool translucent,
+        BlockModelBindings? models)
     {
 
         var level = hierarchy.Levels[levelIndex];
@@ -530,28 +532,27 @@ internal static class TerrainLodMeshBuilder
                         visuals, (int)sampleX, sampleY, (int)sampleZ, material.Metadata);
                 var color = PackTintedColor(tint, 1);
                 var light = SampleFaceLight(Side.Up, block.LightEmission);
-                foreach (ref readonly var quad in CrossedPlantGeometry.Quads)
-                    Emit(Point(quad.A), Point(quad.B), Point(quad.C), Point(quad.D));
+                var geometry = models?.GetCrossedPlant(block.Id) ?? CrossedPlantGeometry.Builtin;
+                foreach (ref readonly var quad in geometry.Quads)
+                    Emit(quad);
 
                 (float X, float Y, float Z) Point(CrossedPlantGeometry.Vertex vertex) =>
                     (minX + vertex.X * (maxX - minX),
                         minY + vertex.Y * (maxY - minY),
                         minZ + vertex.Z * (maxZ - minZ));
 
-                void Emit(
-                    (float X, float Y, float Z) a,
-                    (float X, float Y, float Z) b,
-                    (float X, float Y, float Z) c,
-                    (float X, float Y, float Z) d)
+                void Emit(CrossedPlantGeometry.Quad quad)
                 {
+                    var a = Point(quad.A); var b = Point(quad.B);
+                    var c = Point(quad.C); var d = Point(quad.D);
                     vertices.Add(ChunkVertexHelper.Create(
-                        color, a.X, a.Y, a.Z, 0, 0, layerIndex));
+                        color, a.X, a.Y, a.Z, quad.A.U, quad.A.V, layerIndex));
                     vertices.Add(ChunkVertexHelper.Create(
-                        color, b.X, b.Y, b.Z, 0, 1, layerIndex));
+                        color, b.X, b.Y, b.Z, quad.B.U, quad.B.V, layerIndex));
                     vertices.Add(ChunkVertexHelper.Create(
-                        color, c.X, c.Y, c.Z, 1, 1, layerIndex));
+                        color, c.X, c.Y, c.Z, quad.C.U, quad.C.V, layerIndex));
                     vertices.Add(ChunkVertexHelper.Create(
-                        color, d.X, d.Y, d.Z, 1, 0, layerIndex));
+                        color, d.X, d.Y, d.Z, quad.D.U, quad.D.V, layerIndex));
                     for (var index = 0; index < 4; index++) lights.Add(light);
                 }
             }

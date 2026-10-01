@@ -103,10 +103,12 @@ public partial class TextureManager
             var states = BlockStateDefinitions.Load(source.OpenOverride, TexturePackSnapshot.OpenBuiltin,
                 _game.Content.BlockStateProperties);
             var fence = FencePartDefinitions.Load(source.OpenOverride, TexturePackSnapshot.OpenBuiltin);
+            var crossedPlants = CrossedPlantModelCatalog.Load(_game.Content.Blocks,
+                source.OpenOverride, TexturePackSnapshot.OpenBuiltin);
             var models = PreparedBlockModelResources.Build(states.ModelRoots.Append(fence.Model), fixedLayers,
                 modelSource.OpenOverride, modelSource.OpenBuiltin);
             candidate.Bindings = BlockModelBindings.Build(ResourceGeneration + 1, _game.Content.Blocks, models.Models,
-                fixedLayers, states, fence);
+                fixedLayers, states, fence, crossedPlants);
             var device = WebGpuDevice.Current ?? throw new InvalidOperationException("Texture reload requires a WebGPU device.");
             var errors = device.ErrorCount;
             foreach (var path in _textures.Keys)
