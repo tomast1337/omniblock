@@ -1,4 +1,5 @@
 using OmniBlock.Blocks;
+using OmniBlock.Client.Rendering.Blocks.Models;
 using OmniBlock.Textures;
 using OmniBlock.Util.Maths;
 
@@ -16,22 +17,10 @@ public class ReedRenderer : IBlockRenderer
 
         ctx.Tess.setColorOpaque_F(r, g, b);
 
-        float renderX = pos.X;
-        float renderY = pos.Y;
-        float renderZ = pos.Z;
-
-        // Apply random organic offset for grass so it doesn't look grid-aligned
-        if (block == ctx.Blocks.Get("grass")) // Assuming Block.TallGrass or equivalent
-        {
-            var hash = (pos.X * 3129871L) ^ (pos.Z * 116129781L) ^ pos.Y;
-            hash = hash * hash * 42317861L + hash * 11L;
-
-            renderX += (((hash >> 16) & 15L) / 15.0F - 0.5F) * 0.5F;
-            renderY += (((hash >> 20) & 15L) / 15.0F - 1.0F) * 0.2F;
-            renderZ += (((hash >> 24) & 15L) / 15.0F - 0.5F) * 0.5F;
-        }
-
-        RenderCrossedSquares(block, ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z), renderX, renderY, renderZ, ref ctx);
+        var offset = CrossedPlantGeometry.Offset(pos.X, pos.Y, pos.Z,
+            block == ctx.Blocks.Get("grass"));
+        RenderCrossedSquares(block, ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z),
+            pos.X + offset.X, pos.Y + offset.Y, pos.Z + offset.Z, ref ctx);
         return true;
     }
 
@@ -44,50 +33,18 @@ public class ReedRenderer : IBlockRenderer
             textureId = ctx.OverrideTexture;
         }
 
-        // Convert texture ID to UV coordinates (0.0 to 1.0 range)
-        ctx.Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
+        var tess = ctx.Tess;
+        tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
+        foreach (ref readonly var quad in CrossedPlantGeometry.Quads)
+        {
+            Emit(quad.A);
+            Emit(quad.B);
+            Emit(quad.C);
+            Emit(quad.D);
+        }
 
-        const float minU = 0.0F;
-        const float maxU = 1.0F;
-        const float minV = 0.0F;
-        const float maxV = 1.0F;
-
-        // Magic number 0.45 means the planes stretch from 0.05 to 0.95 within the block.
-        // This slight inset prevents Z-fighting (flickering) if the plant touches an adjacent solid block.
-        var minOffset = 0.5F - 0.45F; // 0.05
-        var maxOffset = 0.5F + 0.45F; // 0.95
-
-        var minX = x + minOffset;
-        var maxX = x + maxOffset;
-        var minZ = z + minOffset;
-        var maxZ = z + maxOffset;
-
-        // --- First Diagonal Plane (Bottom-Left to Top-Right across the X/Z grid) ---
-
-        // Front side
-        ctx.Tess.addVertexWithUV(minX, y + 1.0f, minZ, minU, minV);
-        ctx.Tess.addVertexWithUV(minX, y + 0.0f, minZ, minU, maxV);
-        ctx.Tess.addVertexWithUV(maxX, y + 0.0f, maxZ, maxU, maxV);
-        ctx.Tess.addVertexWithUV(maxX, y + 1.0f, maxZ, maxU, minV);
-
-        // Back side (reversed winding order and UVs)
-        ctx.Tess.addVertexWithUV(maxX, y + 1.0f, maxZ, minU, minV);
-        ctx.Tess.addVertexWithUV(maxX, y + 0.0f, maxZ, minU, maxV);
-        ctx.Tess.addVertexWithUV(minX, y + 0.0f, minZ, maxU, maxV);
-        ctx.Tess.addVertexWithUV(minX, y + 1.0f, minZ, maxU, minV);
-
-        // --- Second Diagonal Plane (Top-Left to Bottom-Right across the X/Z grid) ---
-
-        // Front side
-        ctx.Tess.addVertexWithUV(minX, y + 1.0f, maxZ, minU, minV);
-        ctx.Tess.addVertexWithUV(minX, y + 0.0f, maxZ, minU, maxV);
-        ctx.Tess.addVertexWithUV(maxX, y + 0.0f, minZ, maxU, maxV);
-        ctx.Tess.addVertexWithUV(maxX, y + 1.0f, minZ, maxU, minV);
-
-        // Back side (reversed winding order and UVs)
-        ctx.Tess.addVertexWithUV(maxX, y + 1.0f, minZ, minU, minV);
-        ctx.Tess.addVertexWithUV(maxX, y + 0.0f, minZ, minU, maxV);
-        ctx.Tess.addVertexWithUV(minX, y + 0.0f, maxZ, maxU, maxV);
-        ctx.Tess.addVertexWithUV(minX, y + 1.0f, maxZ, maxU, minV);
+        void Emit(CrossedPlantGeometry.Vertex vertex) =>
+            tess.addVertexWithUV(x + vertex.X, y + vertex.Y, z + vertex.Z,
+                vertex.U, vertex.V);
     }
 }

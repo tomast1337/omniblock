@@ -1,5 +1,6 @@
 using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Client.Rendering.Blocks.Models;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.WebGPU;
 using OmniBlock.Registries;
@@ -529,28 +530,13 @@ internal static class TerrainLodMeshBuilder
                         visuals, (int)sampleX, sampleY, (int)sampleZ, material.Metadata);
                 var color = PackTintedColor(tint, 1);
                 var light = SampleFaceLight(Side.Up, block.LightEmission);
-                const float inset = 0.05f;
-                var left = minX + inset;
-                var right = maxX - inset;
-                var north = minZ + inset;
-                var south = maxZ - inset;
+                foreach (ref readonly var quad in CrossedPlantGeometry.Quads)
+                    Emit(Point(quad.A), Point(quad.B), Point(quad.C), Point(quad.D));
 
-                EmitTwoSidedPlane(
-                    (left, maxY, north), (left, minY, north),
-                    (right, minY, south), (right, maxY, south));
-                EmitTwoSidedPlane(
-                    (left, maxY, south), (left, minY, south),
-                    (right, minY, north), (right, maxY, north));
-
-                void EmitTwoSidedPlane(
-                    (float X, float Y, float Z) a,
-                    (float X, float Y, float Z) b,
-                    (float X, float Y, float Z) c,
-                    (float X, float Y, float Z) d)
-                {
-                    Emit(a, b, c, d);
-                    Emit(d, c, b, a);
-                }
+                (float X, float Y, float Z) Point(CrossedPlantGeometry.Vertex vertex) =>
+                    (minX + vertex.X * (maxX - minX),
+                        minY + vertex.Y * (maxY - minY),
+                        minZ + vertex.Z * (maxZ - minZ));
 
                 void Emit(
                     (float X, float Y, float Z) a,

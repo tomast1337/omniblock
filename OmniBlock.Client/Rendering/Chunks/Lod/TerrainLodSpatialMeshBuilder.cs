@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Client.Rendering.Blocks.Models;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.WebGPU;
 using OmniBlock.Registries;
@@ -303,34 +304,20 @@ internal static class TerrainLodSpatialMeshBuilder
                     var worldX = checked((int)tileMinX + x);
                     var worldZ = checked((int)tileMinZ + z);
                     var appearance = Appearance(plant, plantSpan.Material, Side.Down, null, x, z);
-                    const float inset = 0.05f;
-                    var left = worldX + inset;
-                    var right = worldX + 1 - inset;
-                    var north = worldZ + inset;
-                    var south = worldZ + 1 - inset;
                     for (var plantY = plantSpan.BottomY; plantY < plantSpan.TopY; plantY++)
                     {
                         guard.Checkpoint();
                         var page = PageFor(worldX + 0.5, plantY + 0.5, worldZ + 0.5);
                         var light = FaceLight(plantSpan, NeighborAt(column, plantY + 1), Side.Up);
-                        EmitPlane(
-                            (left, plantY + 1, north), (left, plantY, north),
-                            (right, plantY, south), (right, plantY + 1, south));
-                        EmitPlane(
-                            (left, plantY + 1, south), (left, plantY, south),
-                            (right, plantY, north), (right, plantY + 1, north));
-
-                        void EmitPlane(
-                            (float X, float Y, float Z) a,
-                            (float X, float Y, float Z) b,
-                            (float X, float Y, float Z) c,
-                            (float X, float Y, float Z) d)
+                        foreach (ref readonly var quad in CrossedPlantGeometry.Quads)
                         {
                             Emit(page, false, Side.Up, appearance, 1, light, 1, 1,
-                                a, b, c, d, guard, nonDirectional: true);
-                            Emit(page, false, Side.Up, appearance, 1, light, 1, 1,
-                                d, c, b, a, guard, nonDirectional: true);
+                                Point(quad.A), Point(quad.B), Point(quad.C), Point(quad.D),
+                                guard, nonDirectional: true);
                         }
+
+                        (float X, float Y, float Z) Point(CrossedPlantGeometry.Vertex vertex) =>
+                            (worldX + vertex.X, plantY + vertex.Y, worldZ + vertex.Z);
                     }
                 }
 

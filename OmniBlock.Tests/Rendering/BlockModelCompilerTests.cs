@@ -215,6 +215,40 @@ public sealed class BlockModelCompilerTests
         Assert.False(saved.Shade);
     }
 
+    [Theory]
+    [InlineData("dandelion")]
+    [InlineData("grass")]
+    public void Crossed_plant_template_matches_live_terrain_vertices(string blockName)
+    {
+        var world = new FakeWorldContext();
+        var block = world.Content.Blocks.Get(blockName);
+        var pos = new BlockPos(3, 64, -2);
+        world.Writer.SetBlock(pos.X, pos.Y, pos.Z, block.Id, 0);
+        var sink = new GeometrySink();
+
+        Assert.True(BlockRenderer.RenderBlockByRenderType(world.Reader, world.Content.Blocks,
+            new FullLight(), block, pos, sink));
+
+        var quads = CrossedPlantGeometry.Quads.ToArray();
+        Assert.Equal(4, quads.Length);
+        Assert.Equal(16, sink.Vertices.Count);
+        var offset = CrossedPlantGeometry.Offset(pos.X, pos.Y, pos.Z, blockName == "grass");
+        var expectedLayer = Atlases.Terrain.LayerOfGridIndex(block.GetTexture(0, 0));
+        for (var i = 0; i < quads.Length; i++)
+        {
+            var expected = new[] { quads[i].A, quads[i].B, quads[i].C, quads[i].D };
+            for (var corner = 0; corner < 4; corner++)
+            {
+                var vertex = sink.Vertices[i * 4 + corner];
+                Assert.Equal(new Vector3(pos.X + offset.X + expected[corner].X,
+                    pos.Y + offset.Y + expected[corner].Y,
+                    pos.Z + offset.Z + expected[corner].Z), vertex.Position);
+                Assert.Equal(new Vector2(expected[corner].U, expected[corner].V), vertex.Uv);
+                Assert.Equal(expectedLayer, vertex.Layer);
+            }
+        }
+    }
+
     private static string Cuboid(int minY, int maxY, string[] textures)
     {
         var faces = Enum.GetValues<Side>().ToDictionary(side => side.ToString().ToLowerInvariant(), side => new
