@@ -1,9 +1,9 @@
 {
   "default": { "model": "omniblock:block/stone_double_slab_fallback", "shape": "cube" },
   "variants": {
-    "0": { "model": "omniblock:block/stone_double_slab" },
-    "1": { "model": "omniblock:block/sandstone_double_slab" },
-    "2": { "model": "omniblock:block/wooden_double_slab" },
-    "3": { "model": "omniblock:block/cobblestone_double_slab" }
+    "slab.material=stone": { "model": "omniblock:block/stone_double_slab" },
+    "slab.material=sandstone": { "model": "omniblock:block/sandstone_double_slab" },
+    "slab.material=wood": { "model": "omniblock:block/wooden_double_slab" },
+    "slab.material=cobblestone": { "model": "omniblock:block/cobblestone_double_slab" }
   }
 }

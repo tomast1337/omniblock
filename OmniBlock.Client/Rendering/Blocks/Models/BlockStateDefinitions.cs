@@ -155,7 +155,7 @@ internal sealed class BlockStateDefinitions
             var selected = new bool[16];
             foreach (var variant in variants.EnumerateObject())
             {
-                foreach (var meta in ExpandSelector(variant.Name))
+                foreach (var meta in ExpandSelector(block, variant.Name))
                 {
                     if (selected[meta]) throw new InvalidDataException($"duplicate metadata selector '{meta}'");
                     selected[meta] = true;
@@ -194,8 +194,9 @@ internal sealed class BlockStateDefinitions
         }
     }
 
-    private static IEnumerable<int> ExpandSelector(string selector)
+    private static IEnumerable<int> ExpandSelector(ResourceLocation block, string selector)
     {
+        if (selector.Contains('=')) return ExpandPropertySelector(block, selector);
         var parts = selector.Split("..", StringSplitOptions.None);
         if (parts.Length is < 1 or > 2 || !TryIndex(parts[0], out var first) ||
             (parts.Length == 2 && (!TryIndex(parts[1], out var last) || last < first)))
@@ -206,6 +207,35 @@ internal sealed class BlockStateDefinitions
         static bool TryIndex(string text, out int value) =>
             int.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out value) &&
             value is >= 0 and <= 15 && text == value.ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static int[] ExpandPropertySelector(ResourceLocation block, string selector)
+    {
+        var conditions = new List<(string Property, string Value)>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var term in selector.Split(',', StringSplitOptions.None))
+        {
+            var equals = term.IndexOf('=');
+            if (equals <= 0 || equals == term.Length - 1 ||
+                term.IndexOf('=', equals + 1) >= 0)
+                throw new InvalidDataException($"invalid property selector '{selector}'");
+            var property = term[..equals];
+            var value = term[(equals + 1)..];
+            if (!seen.Add(property))
+                throw new InvalidDataException($"property selector '{selector}' repeats '{property}'");
+            if (!BlockStatePropertyCodec.Supports(block, property))
+                throw new InvalidDataException($"property selector '{selector}' has unknown property '{property}' for '{block}'");
+            if (!BlockStatePropertyCodec.Accepts(property, value))
+                throw new InvalidDataException($"property selector '{selector}' has invalid value '{value}' for '{property}'");
+            conditions.Add((property, value));
+        }
+        var selected = Enumerable.Range(0, 16)
+            .Where(meta => conditions.All(condition =>
+                BlockStatePropertyCodec.Get(block, meta, condition.Property) == condition.Value))
+            .ToArray();
+        if (selected.Length == 0)
+            throw new InvalidDataException($"property selector '{selector}' matches no metadata states");
+        return selected;
     }
 
     private static void CheckProperties(JsonElement element, params string[] allowed)

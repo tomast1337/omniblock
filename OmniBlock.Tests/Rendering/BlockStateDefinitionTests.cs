@@ -9,6 +9,7 @@ namespace OmniBlock.Tests.Rendering;
 public sealed class BlockStateDefinitionTests
 {
     private const string SlabPath = "assets/omniblock/blockstates/slab.json";
+    private const string DoubleSlabPath = "assets/omniblock/blockstates/double_slab.json";
     private const string StairPath = "assets/omniblock/blockstates/wooden_stairs.json";
     private const string StairTemplatePath = "assets/omniblock/models/block/templates/stairs.json";
     private static string SlabJson => File.ReadAllText(Path.Combine(AppContext.BaseDirectory, SlabPath));
@@ -28,6 +29,69 @@ public sealed class BlockStateDefinitionTests
         foreach (var block in new[] { "stone", "slab", "double_slab" })
             Assert.Equal(Enumerable.Range(0, 16), definitions.States.ToArray()
                 .Where(s => s.Block == ResourceLocation.Parse("omniblock:" + block)).Select(s => s.Metadata));
+    }
+
+    [Fact]
+    public void Shipped_double_slab_property_variants_preserve_all_legacy_metadata_bindings()
+    {
+        var selected = BlockStateDefinitions.Load(_ => null, BlockModelBindingTests.OpenInstalled);
+        var legacy = BlockStateDefinitions.Load(_ => null, path => path == DoubleSlabPath
+            ? Bytes("""
+                {"default":{"model":"omniblock:block/stone_double_slab_fallback","shape":"cube"},
+                 "variants":{"0":{"model":"omniblock:block/stone_double_slab"},
+                             "1":{"model":"omniblock:block/sandstone_double_slab"},
+                             "2":{"model":"omniblock:block/wooden_double_slab"},
+                             "3":{"model":"omniblock:block/cobblestone_double_slab"}}}
+                """)
+            : BlockModelBindingTests.OpenInstalled(path));
+        var block = ResourceLocation.Parse("omniblock:double_slab");
+        Assert.Equal(legacy.States.ToArray().Where(state => state.Block == block),
+            selected.States.ToArray().Where(state => state.Block == block));
+        for (var metadata = 0; metadata < 16; metadata++)
+            Assert.Equal(metadata is >= 0 and <= 3 ? new[] { "stone", "sandstone", "wood", "cobblestone" }[metadata] : null,
+                BlockStatePropertyCodec.Get(block, metadata, "slab.material"));
+    }
+
+    [Fact]
+    public void Compound_property_selector_matches_only_its_declared_legacy_state()
+    {
+        var selected = Load("""
+            {"variants":{"slab.material=wood,slab.half=lower":{"model":"omniblock:block/stone_slab"}}}
+            """);
+        var installed = BlockStateDefinitions.Load(_ => null, BlockModelBindingTests.OpenInstalled);
+        var block = ResourceLocation.Parse("omniblock:slab");
+        var before = installed.States.ToArray().Where(state => state.Block == block).ToArray();
+        var after = selected.States.ToArray().Where(state => state.Block == block).ToArray();
+        Assert.Equal(RenderResourceId.Parse("omniblock:block/stone_slab"), after[2].Model);
+        for (var metadata = 0; metadata < 16; metadata++)
+            if (metadata != 2) Assert.Equal(before[metadata], after[metadata]);
+        Assert.Equal("upper", BlockStatePropertyCodec.Get(block, 10, "slab.half"));
+        Assert.Equal("wood", BlockStatePropertyCodec.Get(block, 10, "slab.material"));
+    }
+
+    [Theory]
+    [InlineData("slab.material=oak", "invalid value")]
+    [InlineData("slab.color=stone", "unknown property")]
+    [InlineData("slab.material=stone,slab.material=wood", "repeats")]
+    [InlineData("slab.material=stone,", "invalid property selector")]
+    [InlineData("slab.material=stone=wood", "invalid property selector")]
+    public void Bad_property_selectors_fail_with_the_owning_block(string selector, string reason)
+    {
+        var error = Assert.Throws<InvalidDataException>(() => Load(
+            "{\"variants\":{\"" + selector + "\":{\"model\":\"omniblock:block/stone_slab\"}}}"));
+        Assert.Contains("omniblock:slab", error.Message);
+        Assert.Contains(selector, error.Message);
+        Assert.Contains(reason, error.Message);
+    }
+
+    [Fact]
+    public void Property_and_numeric_selectors_cannot_claim_the_same_state()
+    {
+        var error = Assert.Throws<InvalidDataException>(() => Load("""
+            {"variants":{"0":{"model":"omniblock:block/stone_slab"},
+                         "slab.material=stone,slab.half=lower":{"model":"omniblock:block/wooden_slab"}}}
+            """));
+        Assert.Contains("duplicate metadata selector '0'", error.Message);
     }
 
     [Fact]

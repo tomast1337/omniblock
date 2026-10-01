@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using OmniBlock.Client.Rendering.Blocks.Models;
 using OmniBlock.Client.Rendering.Chunks;
 using OmniBlock.Worlds.Chunks;
@@ -15,7 +16,7 @@ public sealed class FenceModelBindingTests
     private static string Installed(string path) => File.ReadAllText(Path.Combine(AppContext.BaseDirectory, path));
 
     [Theory]
-    [InlineData("\"when\": \"west\"", "\"when\": \"diagonal\"", "unknown condition")]
+    [InlineData("\"when\": { \"neighbor.west\": true }", "\"when\": { \"neighbor.diagonal\": true }", "unknown condition")]
     [InlineData("\"element\": \"west_lower\"", "\"element\": \"post\"", "duplicate")]
     [InlineData("\"when\": \"always\"", "\"when\": \"east\"", "missing unconditional")]
     public void Invalid_fence_state_fails_before_publication(string from, string to, string reason)
@@ -24,6 +25,53 @@ public sealed class FenceModelBindingTests
         var error = Assert.Throws<InvalidDataException>(() => FencePartDefinitions.Load(
             path => path == StatePath ? Bytes(json) : null, BlockModelBindingTests.OpenInstalled));
         Assert.Contains("omniblock:fence", error.Message);
+        Assert.Contains(reason, error.Message);
+    }
+
+    [Fact]
+    public void An_unconditional_rail_cannot_substitute_for_the_required_post()
+    {
+        var json = Installed(StatePath)
+            .Replace("\"element\": \"post\", \"when\": \"always\"",
+                "\"element\": \"post\", \"when\": { \"neighbor.east\": true }", StringComparison.Ordinal)
+            .Replace("\"element\": \"west_lower\", \"when\": { \"neighbor.west\": true }",
+                "\"element\": \"west_lower\", \"when\": \"always\"", StringComparison.Ordinal);
+        var error = Assert.Throws<InvalidDataException>(() => FencePartDefinitions.Load(
+            path => path == StatePath ? Bytes(json) : null, BlockModelBindingTests.OpenInstalled));
+        Assert.Contains("missing unconditional post", error.Message);
+    }
+
+    [Fact]
+    public void Named_condition_inputs_support_conjunction_and_negation_without_world_access()
+    {
+        var inputs = new Dictionary<string, int>
+        {
+            ["neighbor.west"] = 1, ["neighbor.north"] = 2
+        };
+        using var document = JsonDocument.Parse("""
+            {"neighbor.west":true,"neighbor.north":false}
+            """);
+        var condition = BlockModelCondition.Parse(document.RootElement, inputs);
+        Assert.False(condition.IsUnconditional);
+        Assert.True(condition.Matches(1));
+        Assert.False(condition.Matches(0));
+        Assert.False(condition.Matches(3));
+    }
+
+    [Theory]
+    [InlineData("{}", "empty condition")]
+    [InlineData("{\"neighbor.west\":1}", "must be boolean")]
+    [InlineData("{\"neighbor.west\":true,\"neighbor.west\":false}", "duplicate condition")]
+    [InlineData("{\"neighbor.west\":true,\"west\":false}", "requires and forbids")]
+    public void Invalid_condition_objects_are_rejected(string json, string reason)
+    {
+        using var document = JsonDocument.Parse(json);
+        var inputs = new Dictionary<string, int>
+        {
+            ["neighbor.west"] = 1, ["west"] = 1
+        };
+        var error = Assert.Throws<InvalidDataException>(() =>
+            BlockModelCondition.Parse(document.RootElement, inputs));
         Assert.Contains(reason, error.Message);
     }
 

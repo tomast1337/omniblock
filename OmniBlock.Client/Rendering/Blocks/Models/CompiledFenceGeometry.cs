@@ -8,7 +8,7 @@ namespace OmniBlock.Client.Rendering.Blocks.Models;
 internal sealed class CompiledFenceGeometry
 {
     private readonly Part[] _parts;
-    private readonly record struct Part(int RequiredConnection, Box Bounds, CompiledCuboidGeometry Geometry);
+    private readonly record struct Part(BlockModelCondition Condition, Box Bounds, CompiledCuboidGeometry Geometry);
 
     private CompiledFenceGeometry(Part[] parts) => _parts = parts;
 
@@ -17,7 +17,7 @@ internal sealed class CompiledFenceGeometry
         var mask = FenceShape.ConnectionMask(context.BlockReader, block.Id, pos.X, pos.Y, pos.Z);
         foreach (var part in _parts)
         {
-            if (part.RequiredConnection != 0 && (mask & part.RequiredConnection) == 0) continue;
+            if (!part.Condition.Matches(mask)) continue;
             var selected = context with { OverrideBounds = part.Bounds, CompiledCuboid = part.Geometry };
             selected.DrawBlock(block, pos);
         }
@@ -32,7 +32,7 @@ internal sealed class CompiledFenceGeometry
         foreach (var rule in definitions.Rules)
         {
             var piece = cuboids.Get(rule.Element);
-            parts.Add(new Part(rule.RequiredConnection, piece.Bounds, piece.Geometry));
+            parts.Add(new Part(rule.Condition, piece.Bounds, piece.Geometry));
         }
         return new CompiledFenceGeometry(parts.ToArray());
     }

@@ -20,6 +20,16 @@ OMNI.wait(0.5)
 OMNI.test.setFlying(true)
 OMNI.test.setMovement(0, 0, 0)
 
+-- The wide exact radius is only a source-preparation step. Spatial GPU bodies are deliberately
+-- ineligible under exact terrain, so lower it before asserting spatial staging. Retained CPU
+-- parents around spawn then cover the newly exposed annulus without asking the server to
+-- generate terrain merely for a distant-LOD request.
+OMNI.waitUntil(function()
+    return OMNI.client.state.terrainLodSpatialCpuTiles >= 600 and
+        OMNI.client.state.terrainLodSpatialParentTiles > 0
+end, 75, 0.1)
+OMNI.config.viewDistance = 0
+
 assert(type(OMNI.client.state.terrainLodSpatialComplete) == "number")
 assert(type(OMNI.client.state.terrainLodSpatialSelected) == "number")
 assert(type(OMNI.client.state.terrainLodSpatialGpuResident) == "number")
@@ -106,6 +116,25 @@ assert(stagingReady,
     "spatial presentation staging did not become ready: cpu=" ..
     tostring(OMNI.client.state.terrainLodSpatialCpuTiles) ..
     " gpu=" .. tostring(OMNI.client.state.terrainLodSpatialGpuResident) ..
+    " meshPending=" .. tostring(OMNI.client.state.terrainLodSpatialMeshPending) ..
+    " meshQueued=" .. tostring(OMNI.client.state.terrainLodSpatialMeshQueued) ..
+    " meshRunning=" .. tostring(OMNI.client.state.terrainLodSpatialMeshRunning) ..
+    " meshReady=" .. tostring(OMNI.client.state.terrainLodSpatialMeshReady) ..
+    " current=" .. tostring(OMNI.client.state.terrainLodSpatialCurrentTiles) ..
+    " parents=" .. tostring(OMNI.client.state.terrainLodSpatialParentTiles) ..
+    " parentDeferred=" .. tostring(OMNI.client.state.terrainLodSpatialParentDeferred) ..
+    " parentQueued=" .. tostring(OMNI.client.state.terrainLodSpatialParentQueued) ..
+    " parentReady=" .. tostring(OMNI.client.state.terrainLodSpatialParentReady) ..
+    " parentCompleted=" .. tostring(OMNI.client.state.terrainLodSpatialParentCompleted) ..
+    " meshCompleted=" .. tostring(OMNI.client.state.terrainLodSpatialMeshCompleted) ..
+    " meshOverBudget=" .. tostring(OMNI.client.state.terrainLodSpatialMeshOverBudget) ..
+    " remoteRequests=" .. tostring(OMNI.client.state.terrainLodRemoteRequests) ..
+    " remoteTiles=" .. tostring(OMNI.client.state.terrainLodRemoteTiles) ..
+    " remoteMissing=" .. tostring(OMNI.client.state.terrainLodRemoteMissing) ..
+    " remotePending=" .. tostring(OMNI.client.state.terrainLodRemotePending) ..
+    " coarseSourceUnavailable=" .. tostring(OMNI.client.state.terrainLodCoarseSourceUnavailable) ..
+    " coarseBuilding=" .. tostring(OMNI.client.state.terrainLodCoarseBuilding) ..
+    " coarseTransportPending=" .. tostring(OMNI.client.state.terrainLodCoarseTransportPending) ..
     " highestGpuLevel=" .. tostring(OMNI.client.state.terrainLodSpatialHighestGpuLevel) ..
     " complete=" .. tostring(OMNI.client.state.terrainLodSpatialComplete) ..
     " selected=" .. tostring(OMNI.client.state.terrainLodSpatialSelected) ..
@@ -119,14 +148,13 @@ assert(stagingReady,
 assert(OMNI.client.state.terrainLodColdCoverMs >= 0,
     "cold coarse-cover completion time was not recorded")
 
--- Move far enough that the retained roots around spawn lie wholly outside the exact-render guard
+-- Move far enough that retained roots around spawn lie wholly outside the exact-render guard
 -- band, then look back at them. This makes the live spatial path authoritative without ever
 -- allowing a coarse tile to overlap the near renderer.
 local px = OMNI.client.state.playerX
 local pz = OMNI.client.state.playerZ
 -- Reproduce the reported setup: four detailed chunks and a 64-chunk LOD horizon.
 -- Only the initial hierarchy seeding above uses a larger detailed radius.
-OMNI.config.viewDistance = 0
 OMNI.test.teleport(px, 192, pz + 640)
 OMNI.test.setLook(0, 25)
 OMNI.waitUntil(function()

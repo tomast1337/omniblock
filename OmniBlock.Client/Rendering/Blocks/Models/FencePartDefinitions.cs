@@ -4,11 +4,18 @@ using OmniBlock.Blocks;
 
 namespace OmniBlock.Client.Rendering.Blocks.Models;
 
-/// <summary>Restricted first multipart state: named cuboids selected by a four-bit neighbor mask.</summary>
+/// <summary>Fence model parts selected by validated named neighbor inputs.</summary>
 internal sealed class FencePartDefinitions
 {
     internal const string Path = "assets/omniblock/blockstates/fence.json";
-    internal readonly record struct Rule(string Element, int RequiredConnection);
+    internal readonly record struct Rule(string Element, BlockModelCondition Condition);
+    private static readonly IReadOnlyDictionary<string, int> s_conditionInputs = new Dictionary<string, int>(StringComparer.Ordinal)
+    {
+        ["west"] = FenceShape.West, ["east"] = FenceShape.East,
+        ["north"] = FenceShape.North, ["south"] = FenceShape.South,
+        ["neighbor.west"] = FenceShape.West, ["neighbor.east"] = FenceShape.East,
+        ["neighbor.north"] = FenceShape.North, ["neighbor.south"] = FenceShape.South
+    };
     private readonly Rule[] _rules;
 
     private FencePartDefinitions(RenderResourceId model, Rule[] rules)
@@ -51,18 +58,14 @@ internal sealed class FencePartDefinitions
                 var element = part.GetProperty("element").GetString();
                 if (string.IsNullOrWhiteSpace(element) || !names.Add(element))
                     throw new InvalidDataException($"duplicate or empty part '{element}'");
-                var condition = part.GetProperty("when").GetString();
-                var mask = condition switch
+                BlockModelCondition condition;
+                try { condition = BlockModelCondition.Parse(part.GetProperty("when"), s_conditionInputs); }
+                catch (InvalidDataException ex)
                 {
-                    "always" => 0,
-                    "west" => FenceShape.West,
-                    "east" => FenceShape.East,
-                    "north" => FenceShape.North,
-                    "south" => FenceShape.South,
-                    _ => throw new InvalidDataException($"part '{element}': unknown condition '{condition}'")
-                };
-                hasPost |= mask == 0;
-                rules.Add(new Rule(element, mask));
+                    throw new InvalidDataException($"part '{element}': {ex.Message}", ex);
+                }
+                hasPost |= element == "post" && condition.IsUnconditional;
+                rules.Add(new Rule(element, condition));
             }
             if (!hasPost) throw new InvalidDataException("missing unconditional post part");
             return new FencePartDefinitions(model, rules.ToArray());
