@@ -65,11 +65,13 @@ public class MinecartEntityRenderer : EntityRenderer
             RenderSystem.ModelView.Rotate(90.0F, 0.0F, 1.0F, 0.0F);
             if (cartType == MinecartBehavior.Chest)
             {
-                BlockRenderer.RenderBlockOnInventory(World.Content.Blocks, World.Content.Blocks.Get("chest"), 0, minecart.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
+                BlockRenderer.RenderBlockOnInventory(World.Content.Blocks, World.Content.Blocks.Get("chest"), 0,
+                    minecart.GetBrightnessAtEyes(tickDelta), Tessellator.instance, Dispatcher.TextureManager.BlockBindings);
             }
             else if (cartType == MinecartBehavior.Furnace)
             {
-                BlockRenderer.RenderBlockOnInventory(World.Content.Blocks, World.Content.Blocks.Get("furnace"), 0, minecart.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
+                BlockRenderer.RenderBlockOnInventory(World.Content.Blocks, World.Content.Blocks.Get("furnace"), 0,
+                    minecart.GetBrightnessAtEyes(tickDelta), Tessellator.instance, Dispatcher.TextureManager.BlockBindings);
             }
 
             RenderSystem.ModelView.Rotate(-90.0F, 0.0F, 1.0F, 0.0F);

@@ -79,7 +79,8 @@ public class ItemRenderer : EntityRenderer
                     RenderSystem.ModelView.Translate(minU, maxU, minV);
                 }
 
-                BlockRenderer.RenderBlockOnInventory(_blocks, _blocks.GetByProtocolId(stack.ItemId), stack.GetDamage(), entityItem.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
+                BlockRenderer.RenderBlockOnInventory(_blocks, _blocks.GetByProtocolId(stack.ItemId), stack.GetDamage(),
+                    entityItem.GetBrightnessAtEyes(tickDelta), Tessellator.instance, Dispatcher.TextureManager.BlockBindings);
                 RenderSystem.ModelView.Pop();
             }
         }
@@ -169,7 +170,8 @@ public class ItemRenderer : EntityRenderer
             }
 
             RenderSystem.ModelView.Rotate(-90.0F, 0.0F, 1.0F, 0.0F);
-            BlockRenderer.RenderBlockOnInventory(_blocks, block, itemDamage, 1.0F, Tessellator.instance);
+            BlockRenderer.RenderBlockOnInventory(_blocks, block, itemDamage, 1.0F,
+                Tessellator.instance, textureManager.BlockBindings);
             RenderSystem.ModelView.Pop();
         }
         else if (iconIndex >= 0)

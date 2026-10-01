@@ -1,4 +1,5 @@
 using OmniBlock.Blocks;
+using OmniBlock.Client.Rendering.Blocks;
 using OmniBlock.Client.Rendering.Blocks.Models;
 using OmniBlock.Client.Rendering.Chunks;
 using OmniBlock.Textures;
@@ -83,6 +84,26 @@ public sealed class BlockModelBindingTests
         var uv = Build(blocks, json => json.Replace("\"cullface\":", "\"rotation\": 90, \"cullface\":", StringComparison.Ordinal));
         Assert.False(uv.AllowsLegacyGreedy(stone, 0));
         Assert.True(builtins.AllowsLegacyGreedy(stone, 0));
+    }
+
+    [Fact]
+    public void Inventory_selects_the_committed_state_model_and_falls_back_for_unbound_blocks()
+    {
+        var blocks = new FakeWorldContext().Content.Blocks;
+        var stone = blocks.Get("stone");
+        var glass = blocks.Get("glass");
+        var builtins = Build(blocks);
+        var overrideBindings = Build(blocks,
+            json => json.Replace("omniblock:stone\"", "omniblock:cobblestone\"", StringComparison.Ordinal),
+            generation: 2);
+
+        Assert.Same(builtins.Get(stone.Id, 0), BlockRenderer.InventoryGeometry(builtins, stone, 0));
+        Assert.Same(overrideBindings.Get(stone.Id, 0),
+            BlockRenderer.InventoryGeometry(overrideBindings, stone, 0));
+        Assert.NotEqual(BlockRenderer.InventoryGeometry(builtins, stone, 0)!.Face(Side.Up).ArrayLayer,
+            BlockRenderer.InventoryGeometry(overrideBindings, stone, 0)!.Face(Side.Up).ArrayLayer);
+        Assert.Null(BlockRenderer.InventoryGeometry(builtins, glass, 0));
+        Assert.Null(BlockRenderer.InventoryGeometry(null, stone, 0));
     }
 
     [Theory]

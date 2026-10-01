@@ -113,6 +113,10 @@ public class BlockRenderer
     }
 
     public static void RenderBlockOnInventory(IBlockRuntimeView blocks, Block block, int metadata, float brightness, Tessellator tess)
+        => RenderBlockOnInventory(blocks, block, metadata, brightness, tess, null);
+
+    internal static void RenderBlockOnInventory(IBlockRuntimeView blocks, Block block, int metadata, float brightness,
+        Tessellator tess, BlockModelBindings? models)
     {
         var renderType = block.RenderType;
         var uiCtx = new BlockRenderContext(
@@ -130,6 +134,9 @@ public class BlockRenderer
 
         if (renderType == BlockRendererType.Standard || renderType == BlockRendererType.PistonBase)
         {
+            // Use the same committed model generation as detailed terrain. The legacy path
+            // remains the fallback for blocks that have no validated static binding.
+            uiCtx.CompiledCuboid = InventoryGeometry(models, block, metadata);
             var isPiston = renderType == BlockRendererType.PistonBase;
 
             void SetFaceColor(int face)
@@ -198,6 +205,9 @@ public class BlockRenderer
             RenderSystem.ModelView.Translate(0.5F, 0.5F, 0.5F);
         }
     }
+
+    internal static CompiledCuboidGeometry? InventoryGeometry(BlockModelBindings? models, Block block,
+        int metadata) => block.RenderType == BlockRendererType.Standard ? models?.Get(block.Id, metadata) : null;
 
     public static void RenderBlockFallingSand(Block block, IWorldContext world, int x, int y, int z, Tessellator tess)
     {

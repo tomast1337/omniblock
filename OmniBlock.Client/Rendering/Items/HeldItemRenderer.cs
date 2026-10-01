@@ -38,7 +38,9 @@ public class HeldItemRenderer
         if (item.ItemId < 256 && BlockRenderer.IsSideLit(_game.Content.Blocks.GetByProtocolId(item.ItemId).RenderType))
         {
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId("/terrain.png"));
-            BlockRenderer.RenderBlockOnInventory(_game.Content.Blocks, _game.Content.Blocks.GetByProtocolId(item.ItemId), item.GetDamage(), entity.GetBrightnessAtEyes(1.0F), Tessellator.instance);
+            BlockRenderer.RenderBlockOnInventory(_game.Content.Blocks, _game.Content.Blocks.GetByProtocolId(item.ItemId),
+                item.GetDamage(), entity.GetBrightnessAtEyes(1.0F), Tessellator.instance,
+                _game.TextureManager.BlockBindings);
         }
         else
         {
