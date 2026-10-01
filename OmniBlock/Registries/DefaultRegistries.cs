@@ -113,6 +113,24 @@ public static class DefaultRegistries
             content.AddBlockDefinition(definition);
         }
 
+        // Legacy metadata interpretation belongs to installed content, not texture packs.
+        // Registrations are builder-owned and frozen with the complete content runtime; future
+        // content sources can register their own properties before Build() without extending a
+        // client-side block-name switch.
+        var materials = new string?[] { "stone", "sandstone", "wood", "cobblestone" };
+        var slabMaterials = new string?[16];
+        Array.Copy(materials, slabMaterials, materials.Length);
+        Array.Copy(materials, 0, slabMaterials, 8, materials.Length);
+        content.RegisterBlockStateProperty(ResourceLocation.Parse("omniblock:slab"),
+            "slab.material", slabMaterials);
+        content.RegisterBlockStateProperty(ResourceLocation.Parse("omniblock:slab"),
+            "slab.half", Enumerable.Range(0, 16)
+                .Select(static metadata => metadata < 8 ? "lower" : "upper").ToArray());
+        var doubleSlabMaterials = new string?[16];
+        Array.Copy(materials, doubleSlabMaterials, materials.Length);
+        content.RegisterBlockStateProperty(ResourceLocation.Parse("omniblock:double_slab"),
+            "slab.material", doubleSlabMaterials);
+
         content.BuildBlocksForBootstrap();
 
         Stats.Stats.InitializeItemStats(content);

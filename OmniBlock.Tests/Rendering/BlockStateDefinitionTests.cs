@@ -15,14 +15,17 @@ public sealed class BlockStateDefinitionTests
     private static string SlabJson => File.ReadAllText(Path.Combine(AppContext.BaseDirectory, SlabPath));
     private static Stream Bytes(string value) => new MemoryStream(Encoding.UTF8.GetBytes(value));
     private static BlockStateDefinitions Load(string slab) => BlockStateDefinitions.Load(
-        path => path == SlabPath ? Bytes(slab) : null, BlockModelBindingTests.OpenInstalled);
+        path => path == SlabPath ? Bytes(slab) : null, BlockModelBindingTests.OpenInstalled,
+        ContentRuntime.Current.BlockStateProperties);
     private static BlockStateDefinitions LoadInstalled(string slab) => BlockStateDefinitions.Load(_ => null,
-        path => path == SlabPath ? Bytes(slab) : BlockModelBindingTests.OpenInstalled(path));
+        path => path == SlabPath ? Bytes(slab) : BlockModelBindingTests.OpenInstalled(path),
+        ContentRuntime.Current.BlockStateProperties);
 
     [Fact]
     public void Shipped_definitions_cover_every_metadata_value_and_deduplicate_model_roots()
     {
-        var definitions = BlockStateDefinitions.Load(_ => null, BlockModelBindingTests.OpenInstalled);
+        var definitions = BlockStateDefinitions.Load(_ => null, BlockModelBindingTests.OpenInstalled,
+            ContentRuntime.Current.BlockStateProperties);
         Assert.Equal(48, definitions.States.Length);
         Assert.Equal(14, definitions.ModelRoots.Count());
         Assert.Equal(2, definitions.Stairs.Length);
@@ -34,7 +37,8 @@ public sealed class BlockStateDefinitionTests
     [Fact]
     public void Shipped_double_slab_property_variants_preserve_all_legacy_metadata_bindings()
     {
-        var selected = BlockStateDefinitions.Load(_ => null, BlockModelBindingTests.OpenInstalled);
+        var selected = BlockStateDefinitions.Load(_ => null, BlockModelBindingTests.OpenInstalled,
+            ContentRuntime.Current.BlockStateProperties);
         var legacy = BlockStateDefinitions.Load(_ => null, path => path == DoubleSlabPath
             ? Bytes("""
                 {"default":{"model":"omniblock:block/stone_double_slab_fallback","shape":"cube"},
@@ -43,13 +47,13 @@ public sealed class BlockStateDefinitionTests
                              "2":{"model":"omniblock:block/wooden_double_slab"},
                              "3":{"model":"omniblock:block/cobblestone_double_slab"}}}
                 """)
-            : BlockModelBindingTests.OpenInstalled(path));
+            : BlockModelBindingTests.OpenInstalled(path), ContentRuntime.Current.BlockStateProperties);
         var block = ResourceLocation.Parse("omniblock:double_slab");
         Assert.Equal(legacy.States.ToArray().Where(state => state.Block == block),
             selected.States.ToArray().Where(state => state.Block == block));
         for (var metadata = 0; metadata < 16; metadata++)
             Assert.Equal(metadata is >= 0 and <= 3 ? new[] { "stone", "sandstone", "wood", "cobblestone" }[metadata] : null,
-                BlockStatePropertyCodec.Get(block, metadata, "slab.material"));
+                ContentRuntime.Current.BlockStateProperties.Get(block, metadata, "slab.material"));
     }
 
     [Fact]
@@ -58,15 +62,44 @@ public sealed class BlockStateDefinitionTests
         var selected = Load("""
             {"variants":{"slab.material=wood,slab.half=lower":{"model":"omniblock:block/stone_slab"}}}
             """);
-        var installed = BlockStateDefinitions.Load(_ => null, BlockModelBindingTests.OpenInstalled);
+        var installed = BlockStateDefinitions.Load(_ => null, BlockModelBindingTests.OpenInstalled,
+            ContentRuntime.Current.BlockStateProperties);
         var block = ResourceLocation.Parse("omniblock:slab");
         var before = installed.States.ToArray().Where(state => state.Block == block).ToArray();
         var after = selected.States.ToArray().Where(state => state.Block == block).ToArray();
         Assert.Equal(RenderResourceId.Parse("omniblock:block/stone_slab"), after[2].Model);
         for (var metadata = 0; metadata < 16; metadata++)
             if (metadata != 2) Assert.Equal(before[metadata], after[metadata]);
-        Assert.Equal("upper", BlockStatePropertyCodec.Get(block, 10, "slab.half"));
-        Assert.Equal("wood", BlockStatePropertyCodec.Get(block, 10, "slab.material"));
+        Assert.Equal("upper", ContentRuntime.Current.BlockStateProperties.Get(block, 10, "slab.half"));
+        Assert.Equal("wood", ContentRuntime.Current.BlockStateProperties.Get(block, 10, "slab.material"));
+    }
+
+    [Fact]
+    public void Custom_content_property_codec_can_select_a_model_without_client_block_switches()
+    {
+        var builder = ContentRuntimeBuilder.CreateBuiltIns();
+        var owner = ResourceLocation.Parse("omniblock:mod_state_probe");
+        builder.AddBlock(new BlockDefinition { Name = "mod_state_probe", ProtocolId = TestBlocks.Get("stone").Id },
+            TestBlocks.Get("stone"));
+        var values = new string?[16];
+        values[2] = "polished";
+        builder.RegisterBlockStateProperty(owner, "example:finish", values);
+        var runtime = builder.Build();
+        var definitions = BlockStateDefinitions.Load(_ => null, path => path switch
+        {
+            BlockStateDefinitions.CatalogPath => Bytes("""{"blocks":["omniblock:mod_state_probe"]}"""),
+            "assets/omniblock/blockstates/mod_state_probe.json" => Bytes("""
+                {"default":{"model":"omniblock:block/stone","shape":"cube"},
+                 "variants":{"example:finish=polished":{"model":"example:block/polished"}}}
+                """),
+            _ => null
+        }, runtime.BlockStateProperties);
+        var states = definitions.States.ToArray();
+        Assert.Equal(16, states.Length);
+        Assert.Equal(RenderResourceId.Parse("example:block/polished"), states[2].Model);
+        Assert.All(states.Where(state => state.Metadata != 2), state =>
+            Assert.Equal(RenderResourceId.Parse("omniblock:block/stone"), state.Model));
+        Assert.False(ContentRuntime.Current.BlockStateProperties.Supports(owner, "example:finish"));
     }
 
     [Theory]
@@ -114,7 +147,7 @@ public sealed class BlockStateDefinitionTests
     {
         var error = Assert.Throws<InvalidDataException>(() => BlockStateDefinitions.Load(
             path => path == StairPath ? Bytes("{\"modle\":\"omniblock:block/wooden_stairs\"}") : null,
-            BlockModelBindingTests.OpenInstalled));
+            BlockModelBindingTests.OpenInstalled, ContentRuntime.Current.BlockStateProperties));
         Assert.Contains("omniblock:wooden_stairs", error.Message);
         Assert.Contains("modle", error.Message);
     }
@@ -187,7 +220,8 @@ public sealed class BlockStateDefinitionTests
     {
         var overrideJson = """{"variants":{"0":{"model":"omniblock:block/wooden_slab"}}}""";
         var selected = Load(overrideJson);
-        var installed = BlockStateDefinitions.Load(_ => null, BlockModelBindingTests.OpenInstalled);
+        var installed = BlockStateDefinitions.Load(_ => null, BlockModelBindingTests.OpenInstalled,
+            ContentRuntime.Current.BlockStateProperties);
         var slab = ResourceLocation.Parse("omniblock:slab");
         Assert.Equal(RenderResourceId.Parse("omniblock:block/wooden_slab"),
             selected.States.ToArray().Single(s => s.Block == slab && s.Metadata == 0).Model);
@@ -233,7 +267,8 @@ public sealed class BlockStateDefinitionTests
         Assert.Throws<InvalidDataException>(() => Load("{bad"));
         Assert.Throws<InvalidDataException>(() => Load(new string(' ', BlockStateDefinitions.MaximumFileBytes + 1)));
         var error = Assert.Throws<InvalidDataException>(() => BlockStateDefinitions.Load(
-            path => path == SlabPath ? throw new IOException("disk failure") : null, BlockModelBindingTests.OpenInstalled));
+            path => path == SlabPath ? throw new IOException("disk failure") : null,
+            BlockModelBindingTests.OpenInstalled, ContentRuntime.Current.BlockStateProperties));
         Assert.Contains("disk failure", error.Message);
         Assert.Contains(SlabPath, error.Message);
     }
@@ -246,12 +281,13 @@ public sealed class BlockStateDefinitionTests
         {
             if (path == BlockStateDefinitions.CatalogPath) visitedCatalog = true;
             return null;
-        }, BlockModelBindingTests.OpenInstalled);
+        }, BlockModelBindingTests.OpenInstalled, ContentRuntime.Current.BlockStateProperties);
         Assert.False(visitedCatalog);
         Assert.Equal(48, definitions.States.Length);
         var error = Assert.Throws<InvalidDataException>(() => BlockStateDefinitions.Load(_ => null,
             path => path == BlockStateDefinitions.CatalogPath
-                ? Bytes("""{"blocks":["omniblock:stone","omniblock:stone"]}""") : BlockModelBindingTests.OpenInstalled(path)));
+                ? Bytes("""{"blocks":["omniblock:stone","omniblock:stone"]}""") : BlockModelBindingTests.OpenInstalled(path),
+            ContentRuntime.Current.BlockStateProperties));
         Assert.Contains("duplicate block", error.Message);
     }
 
@@ -263,7 +299,8 @@ public sealed class BlockStateDefinitionTests
         var world = new FakeWorldContext();
         var stone = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "assets/omniblock/blockstates/stone.json"));
         var definitions = BlockStateDefinitions.Load(_ => null, path =>
-            Bytes(path == BlockStateDefinitions.CatalogPath ? "{\"blocks\":[\"" + target + "\"]}" : stone));
+            Bytes(path == BlockStateDefinitions.CatalogPath ? "{\"blocks\":[\"" + target + "\"]}" : stone),
+            ContentRuntime.Current.BlockStateProperties);
         var emptyModels = BlockModelCatalog.Build([], _ => 1);
         var error = Assert.Throws<InvalidDataException>(() => BlockModelBindings.Build(1, world.Content.Blocks,
             emptyModels, new Dictionary<RenderResourceId, int>(), definitions));
@@ -275,7 +312,8 @@ public sealed class BlockStateDefinitionTests
     public void Model_lookup_failure_identifies_owning_block_and_metadata()
     {
         var world = new FakeWorldContext();
-        var definitions = BlockStateDefinitions.Load(_ => null, BlockModelBindingTests.OpenInstalled);
+        var definitions = BlockStateDefinitions.Load(_ => null, BlockModelBindingTests.OpenInstalled,
+            ContentRuntime.Current.BlockStateProperties);
         var error = Assert.Throws<InvalidDataException>(() => BlockModelBindings.Build(1, world.Content.Blocks,
             BlockModelCatalog.Build([], _ => 1), new Dictionary<RenderResourceId, int>(), definitions));
         Assert.Contains("omniblock:stone", error.Message);
@@ -295,7 +333,7 @@ public sealed class BlockStateDefinitionTests
             opened.Add(stream);
             return stream;
         }
-        _ = BlockStateDefinitions.Load(_ => null, Open);
+        _ = BlockStateDefinitions.Load(_ => null, Open, ContentRuntime.Current.BlockStateProperties);
         Assert.All(opened, s => Assert.False(s.CanRead));
         opened.Clear();
         Assert.Throws<InvalidDataException>(() => BlockStateDefinitions.Load(path =>
@@ -304,7 +342,7 @@ public sealed class BlockStateDefinitionTests
             var stream = new MemoryStream([0xff, 0xfe]);
             opened.Add(stream);
             return stream;
-        }, Open));
+        }, Open, ContentRuntime.Current.BlockStateProperties));
         Assert.All(opened, s => Assert.False(s.CanRead));
     }
 

@@ -35,6 +35,52 @@ public sealed class ContentRuntimeTests
     }
 
     [Fact]
+    public void Block_state_property_registration_is_copied_and_isolated_per_runtime()
+    {
+        var owner = ResourceLocation.Parse("omniblock:property_probe");
+        var values = new string?[16];
+        values[0] = "red";
+        var firstBuilder = ContentRuntimeBuilder.CreateBuiltIns();
+        firstBuilder.AddBlock(Definition("property_probe", TestBlocks.Get("stone").Id), TestBlocks.Get("stone"));
+        firstBuilder.RegisterBlockStateProperty(owner, "example:color", values);
+        values[0] = "mutated";
+        var first = firstBuilder.Build();
+
+        var secondBuilder = ContentRuntimeBuilder.CreateBuiltIns();
+        secondBuilder.AddBlock(Definition("property_probe", TestBlocks.Get("stone").Id), TestBlocks.Get("stone"));
+        values[0] = "blue";
+        secondBuilder.RegisterBlockStateProperty(owner, "example:color", values);
+        var second = secondBuilder.Build();
+
+        Assert.Equal("red", first.BlockStateProperties.Get(owner, 0, "example:color"));
+        Assert.Equal("blue", second.BlockStateProperties.Get(owner, 0, "example:color"));
+        Assert.True(first.BlockStateProperties.Accepts(owner, "example:color", "red"));
+        Assert.False(first.BlockStateProperties.Accepts(owner, "example:color", "blue"));
+        Assert.Null(first.BlockStateProperties.Get(owner, 1, "example:color"));
+        Assert.Null(first.BlockStateProperties.Get(owner, 16, "example:color"));
+        Assert.Same(first.BlockStateProperties, first.WithProcesses([]).BlockStateProperties);
+        Assert.Throws<InvalidOperationException>(() =>
+            firstBuilder.RegisterBlockStateProperty(owner, "example:other", values));
+    }
+
+    [Fact]
+    public void Unknown_or_duplicate_block_state_property_does_not_change_published_content()
+    {
+        var published = ContentRuntime.Current;
+        var owner = ResourceLocation.Parse("example:missing_block");
+        var values = new string?[16];
+        values[0] = "red";
+        var builder = ContentRuntimeBuilder.CreateBuiltIns();
+        builder.RegisterBlockStateProperty(owner, "example:color", values);
+        Assert.Throws<InvalidOperationException>(() =>
+            builder.RegisterBlockStateProperty(owner, "example:color", values));
+        var error = Assert.Throws<InvalidOperationException>(() => builder.Build());
+        Assert.Contains(owner.ToString(), error.Message);
+        Assert.Same(published, ContentRuntime.Current);
+        Assert.False(published.BlockStateProperties.Supports(owner, "example:color"));
+    }
+
+    [Fact]
     public void Published_runtime_has_one_unified_item_registry()
     {
         var runtime = ContentRuntime.Current;

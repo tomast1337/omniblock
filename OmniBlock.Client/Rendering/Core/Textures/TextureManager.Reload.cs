@@ -100,7 +100,8 @@ public partial class TextureManager
                     return Image.Load<Rgba32>(stream);
                 });
             var fixedLayers = modelSource.FixedLayers();
-            var states = BlockStateDefinitions.Load(source.OpenOverride, TexturePackSnapshot.OpenBuiltin);
+            var states = BlockStateDefinitions.Load(source.OpenOverride, TexturePackSnapshot.OpenBuiltin,
+                _game.Content.BlockStateProperties);
             var fence = FencePartDefinitions.Load(source.OpenOverride, TexturePackSnapshot.OpenBuiltin);
             var models = PreparedBlockModelResources.Build(states.ModelRoots.Append(fence.Model), fixedLayers,
                 modelSource.OpenOverride, modelSource.OpenBuiltin);

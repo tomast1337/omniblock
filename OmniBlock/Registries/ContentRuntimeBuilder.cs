@@ -25,6 +25,7 @@ namespace OmniBlock.Registries;
 public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildView
 {
     private readonly List<(ResourceLocation Key, Item Item)> _blockItems = [];
+    private readonly BlockStatePropertyRegistryBuilder _blockStateProperties = new();
     private readonly StagedBlockRuntimeView _blockRuntimeView;
     private readonly List<(ResourceLocation Key, BlockDefinition Definition, Block Block)> _blocks = [];
     private readonly Dictionary<ResourceLocation, Block> _blocksByKey = [];
@@ -81,6 +82,13 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
     public ItemBuildContext ItemBuildContext { get; }
     public BehaviorBuildContext BehaviorBuildContext => BlockBuildContext.Behaviors;
     internal IBlockRuntimeView StagedBlocks => _blockRuntimeView;
+
+    public void RegisterBlockStateProperty(ResourceLocation block, string property,
+        IReadOnlyList<string?> metadataValues)
+    {
+        if (_built) throw new InvalidOperationException("Cannot add content after the runtime has been built.");
+        _blockStateProperties.Register(block, property, metadataValues);
+    }
 
     EntityType IEntityTypeBuildView.Get(ResourceLocation key) => GetEntityType(key);
 
@@ -263,6 +271,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         BuildPendingItems();
         BuildPendingEntityDefinitions();
         ValidateBlocks();
+        var blockStateProperties = _blockStateProperties.Build(_blocksByKey.Keys);
         foreach (var (_, _, block) in _blocks) block.Freeze();
         foreach (var (_, _, item) in _items) item.Freeze();
         foreach (var (_, item) in _blockItems) item.Freeze();
@@ -277,6 +286,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
             _blockItems,
             _entityTypes.Select(static entry => (
                 entry.Key, entry.Definition?.ProtocolId ?? 100, entry.Type)),
+            blockStateProperties,
             BlockBehaviorProviders,
             ItemBehaviorProviders,
             ProcessProviders,

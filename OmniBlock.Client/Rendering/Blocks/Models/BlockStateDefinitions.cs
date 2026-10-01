@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Client.Rendering.Blocks.Models;
 
@@ -33,9 +34,11 @@ internal sealed class BlockStateDefinitions
         .OrderBy(id => id.ToString(), StringComparer.Ordinal);
     internal static string PathFor(ResourceLocation block) => $"assets/{block.Namespace}/blockstates/{block.Path}.json";
 
-    internal static BlockStateDefinitions Load(Func<string, Stream?> openOverride, Func<string, Stream?> openInstalled)
+    internal static BlockStateDefinitions Load(Func<string, Stream?> openOverride,
+        Func<string, Stream?> openInstalled, IBlockStatePropertyView properties)
     {
-        try { return LoadCore(openOverride, openInstalled); }
+        ArgumentNullException.ThrowIfNull(properties);
+        try { return LoadCore(openOverride, openInstalled, properties); }
         catch (Exception ex) when (ex is InvalidDataException or JsonException or ArgumentException or
             FormatException or KeyNotFoundException or InvalidOperationException or IOException or UnauthorizedAccessException)
         {
@@ -43,7 +46,8 @@ internal sealed class BlockStateDefinitions
         }
     }
 
-    private static BlockStateDefinitions LoadCore(Func<string, Stream?> openOverride, Func<string, Stream?> openInstalled)
+    private static BlockStateDefinitions LoadCore(Func<string, Stream?> openOverride,
+        Func<string, Stream?> openInstalled, IBlockStatePropertyView properties)
     {
         var totalBytes = 0;
         var states = new List<BlockStateModelDefinition>();
@@ -63,9 +67,9 @@ internal sealed class BlockStateDefinitions
             try
             {
                 using var installed = Read(path, openInstalled);
-                var baseline = Parse(block, installed.RootElement, null);
+                var baseline = Parse(block, installed.RootElement, null, properties);
                 using var replacement = ReadDocument(path, openOverride, optional: true);
-                var selected = replacement is null ? baseline : Parse(block, replacement.RootElement, baseline);
+                var selected = replacement is null ? baseline : Parse(block, replacement.RootElement, baseline, properties);
                 for (var meta = 0; meta < 16; meta++)
                 {
                     if (baseline[meta].Shape != selected[meta].Shape)
@@ -135,7 +139,8 @@ internal sealed class BlockStateDefinitions
         return RenderResourceId.Parse(root.GetProperty("model").GetString()!);
     }
 
-    private static BlockStateModelDefinition[] Parse(ResourceLocation block, JsonElement root, BlockStateModelDefinition[]? baseline)
+    private static BlockStateModelDefinition[] Parse(ResourceLocation block, JsonElement root,
+        BlockStateModelDefinition[]? baseline, IBlockStatePropertyView properties)
     {
         CheckProperties(root, "default", "variants");
         var states = new BlockStateModelDefinition[16];
@@ -155,7 +160,7 @@ internal sealed class BlockStateDefinitions
             var selected = new bool[16];
             foreach (var variant in variants.EnumerateObject())
             {
-                foreach (var meta in ExpandSelector(block, variant.Name))
+                foreach (var meta in ExpandSelector(block, variant.Name, properties))
                 {
                     if (selected[meta]) throw new InvalidDataException($"duplicate metadata selector '{meta}'");
                     selected[meta] = true;
@@ -194,9 +199,10 @@ internal sealed class BlockStateDefinitions
         }
     }
 
-    private static IEnumerable<int> ExpandSelector(ResourceLocation block, string selector)
+    private static IEnumerable<int> ExpandSelector(ResourceLocation block, string selector,
+        IBlockStatePropertyView properties)
     {
-        if (selector.Contains('=')) return ExpandPropertySelector(block, selector);
+        if (selector.Contains('=')) return ExpandPropertySelector(block, selector, properties);
         var parts = selector.Split("..", StringSplitOptions.None);
         if (parts.Length is < 1 or > 2 || !TryIndex(parts[0], out var first) ||
             (parts.Length == 2 && (!TryIndex(parts[1], out var last) || last < first)))
@@ -209,7 +215,8 @@ internal sealed class BlockStateDefinitions
             value is >= 0 and <= 15 && text == value.ToString(CultureInfo.InvariantCulture);
     }
 
-    private static int[] ExpandPropertySelector(ResourceLocation block, string selector)
+    private static int[] ExpandPropertySelector(ResourceLocation block, string selector,
+        IBlockStatePropertyView properties)
     {
         var conditions = new List<(string Property, string Value)>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
@@ -223,15 +230,15 @@ internal sealed class BlockStateDefinitions
             var value = term[(equals + 1)..];
             if (!seen.Add(property))
                 throw new InvalidDataException($"property selector '{selector}' repeats '{property}'");
-            if (!BlockStatePropertyCodec.Supports(block, property))
+            if (!properties.Supports(block, property))
                 throw new InvalidDataException($"property selector '{selector}' has unknown property '{property}' for '{block}'");
-            if (!BlockStatePropertyCodec.Accepts(property, value))
+            if (!properties.Accepts(block, property, value))
                 throw new InvalidDataException($"property selector '{selector}' has invalid value '{value}' for '{property}'");
             conditions.Add((property, value));
         }
         var selected = Enumerable.Range(0, 16)
             .Where(meta => conditions.All(condition =>
-                BlockStatePropertyCodec.Get(block, meta, condition.Property) == condition.Value))
+                properties.Get(block, meta, condition.Property) == condition.Value))
             .ToArray();
         if (selected.Length == 0)
             throw new InvalidDataException($"property selector '{selector}' matches no metadata states");

@@ -50,7 +50,8 @@ public sealed class BlockModelBindingTests
     {
         var layers = Atlases.Terrain.Tiles.ToDictionary(t => RenderResourceId.Parse("omniblock:" + t.Name),
             t => Atlases.Terrain.LayerOfGridIndex(Atlases.Terrain.IndexOf(t.Name)));
-        var states = BlockStateDefinitions.Load(overrides ?? (_ => null), OpenInstalled);
+        var states = BlockStateDefinitions.Load(overrides ?? (_ => null), OpenInstalled,
+            ContentRuntime.Current.BlockStateProperties);
         var fence = FencePartDefinitions.Load(overrides ?? (_ => null), OpenInstalled);
         var models = BlockModelPackLoader.Build(states.ModelRoots.Append(fence.Model), path =>
         {

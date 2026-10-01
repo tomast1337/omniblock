@@ -27,6 +27,7 @@ public sealed class ContentRuntime
         IEnumerable<(ResourceLocation Key, Item Item)> items,
         IEnumerable<(ResourceLocation Key, Item Item)> blockItems,
         IEnumerable<(ResourceLocation Key, int ProtocolId, EntityType Type)> entityTypes,
+        RuntimeBlockStatePropertyRegistry blockStateProperties,
         IBlockBehaviorProviderRegistry blockBehaviorProviders,
         IItemBehaviorProviderRegistry itemBehaviorProviders,
         IProcessProviderRegistry processProviders,
@@ -45,6 +46,7 @@ public sealed class ContentRuntime
         Blocks = new RuntimeBlockRegistry(blockEntries);
         Items = new RuntimeItemRegistry(itemEntries, blockItemEntries, Blocks);
         EntityTypes = new RuntimeEntityTypeRegistry(entityEntries);
+        BlockStateProperties = blockStateProperties;
         BiomeGeneration = biomeGeneration;
         WorldTypes = new RuntimeWorldTypeRegistry(worldTypes);
         DimensionGeneratorProfiles = new RuntimeDimensionGeneratorProfileRegistry(
@@ -71,6 +73,7 @@ public sealed class ContentRuntime
         Blocks = source.Blocks;
         Items = source.Items;
         EntityTypes = source.EntityTypes;
+        BlockStateProperties = source.BlockStateProperties;
         BiomeGeneration = source.BiomeGeneration;
         WorldTypes = source.WorldTypes;
         DimensionGeneratorProfiles = source.DimensionGeneratorProfiles;
@@ -91,6 +94,7 @@ public sealed class ContentRuntime
     public RuntimeBlockRegistry Blocks { get; }
     public RuntimeItemRegistry Items { get; }
     public RuntimeEntityTypeRegistry EntityTypes { get; }
+    public RuntimeBlockStatePropertyRegistry BlockStateProperties { get; }
     public RuntimeBiomeGenerationRegistry BiomeGeneration { get; }
     public RuntimeWorldTypeRegistry WorldTypes { get; }
     public RuntimeDimensionGeneratorProfileRegistry DimensionGeneratorProfiles { get; }
