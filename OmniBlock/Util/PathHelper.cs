@@ -9,6 +9,14 @@ public static class PathHelper
 
     public static string GetAppDir(string appName)
     {
+        var dataHome = Environment.GetEnvironmentVariable("OMNIBLOCK_DATA_HOME");
+        if (!string.IsNullOrWhiteSpace(dataHome))
+        {
+            var isolatedPath = Path.Combine(Path.GetFullPath(dataHome), appName);
+            Directory.CreateDirectory(isolatedPath);
+            return isolatedPath;
+        }
+
         var userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         if (string.IsNullOrEmpty(userHome))
             userHome = ".";

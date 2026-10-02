@@ -12,7 +12,7 @@ try
     {
         throw new DllNotFoundException(
             "Required Luau runtime 'omniblock_luau' was not found. " +
-            "For a source checkout, run native/luau/build-local.sh and rebuild the client. " +
+            "For a source checkout, rebuild the client with CMake and a C++17 toolchain installed. " +
             "Packaged builds must include the native library for their runtime identifier.");
     }
 

@@ -8,11 +8,18 @@ Each isolated run installs `e2e-smoke` for ordinary streaming/gameplay coverage 
 for repeatable entity/impostor visual scenes. The latter keeps the presentation camera close to a
 level surface so distant mobs remain locatable in screenshots instead of floating in empty sky.
 
-Before the first run, build the local Luau runtime:
+The client build compiles the native Luau runtime automatically. Initialize the
+submodule with `git submodule update --init --recursive` and install CMake 3.24+
+plus a C++17 toolchain before the first run. See the root README for Windows prerequisites.
+The shell runner below still targets Linux/macOS; its data isolation uses `XDG_DATA_HOME`
+and must not be used as a Windows isolation mechanism.
 
-```sh
-native/luau/build-local.sh
-```
+For direct Windows scenario launches, set `OMNIBLOCK_DATA_HOME` to a disposable
+absolute data root. The client stores its profile in `<root>/OmniBlock`, overriding
+the platform profile location, including saves, options, resources, and logs.
+Install the base64 fixtures there before running world scenarios, then launch the
+built client from the directory containing `b1.7.3.jar` with the same `--e2e-script`,
+`--e2e-timeout`, and `--e2e-artifacts` arguments used by the shell runner.
 
 Run the full suite or one scenario:
 

@@ -12,23 +12,48 @@
     <InternalsVisibleTo Include="OmniBlock.Tests"/>
   </ItemGroup>
 
-  <!--
-    Local dev bridge (docs/luau-ffi-embedding-plan.md Part 1.5) — before the
-    OmniBlock.Luau.Native RID package exists (Part 1.4, not built yet), set
-    LUAU_NATIVE_LOCAL=1 and this copies the artifact native/luau/build-local.sh
-    just produced straight into the output directory, so a bare
-    [LibraryImport("omniblock_luau")] resolves it with no packaging step.
-    Absent that env var, or if the local build hasn't been run, this ItemGroup
-    contributes nothing — a normal build/restore is unaffected either way.
-  -->
-  <PropertyGroup Condition="'$(LUAU_NATIVE_LOCAL)' == '1'">
-    <_LuauNativeBuildDir>$(MSBuildThisFileDirectory)../native/luau/build</_LuauNativeBuildDir>
-    <LuauNativeLocalOverride Condition="'$([MSBuild]::IsOSPlatform(Linux))' == 'true'">$(_LuauNativeBuildDir)/libomniblock_luau.so</LuauNativeLocalOverride>
-    <LuauNativeLocalOverride Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'true'">$(_LuauNativeBuildDir)/libomniblock_luau.dylib</LuauNativeLocalOverride>
-    <LuauNativeLocalOverride Condition="'$([MSBuild]::IsOSPlatform(Windows))' == 'true'">$(_LuauNativeBuildDir)/omniblock_luau.dll</LuauNativeLocalOverride>
+  <!-- Declare the native content before project-reference copy/publish discovery, even on a
+       clean checkout. PrepareForBuild creates it before any consumer tries to copy it. -->
+  <PropertyGroup>
+    <BuildLuauNative Condition="'$(BuildLuauNative)' == ''">true</BuildLuauNative>
+    <LuauCMakeExecutable Condition="'$(LuauCMakeExecutable)' == ''">cmake</LuauCMakeExecutable>
+    <_LuauSourceDir>$(MSBuildThisFileDirectory)../native/luau</_LuauSourceDir>
+    <_LuauNativeBuildDir>$(_LuauSourceDir)/build/msbuild/$(NETCoreSdkRuntimeIdentifier)/$(Configuration)</_LuauNativeBuildDir>
+    <_LuauTargetRid Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</_LuauTargetRid>
+    <_LuauTargetRid Condition="'$(_LuauTargetRid)' == ''">$(NETCoreSdkRuntimeIdentifier)</_LuauTargetRid>
+    <_LuauNativeName Condition="$(_LuauTargetRid.StartsWith('win-'))">omniblock_luau.dll</_LuauNativeName>
+    <_LuauNativeName Condition="$(_LuauTargetRid.StartsWith('linux-'))">libomniblock_luau.so</_LuauNativeName>
+    <_LuauNativeName Condition="$(_LuauTargetRid.StartsWith('osx-'))">libomniblock_luau.dylib</_LuauNativeName>
+    <LuauNativePath Condition="'$(LuauNativePath)' == ''">$(_LuauNativeBuildDir)/bin/$(_LuauNativeName)</LuauNativePath>
+    <_LuauGeneratorArgument Condition="'$(LuauCMakeGenerator)' != ''">-G &quot;$(LuauCMakeGenerator)&quot;</_LuauGeneratorArgument>
+    <_LuauConfigurationUpper>$(Configuration.ToUpperInvariant())</_LuauConfigurationUpper>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(LUAU_NATIVE_LOCAL)' == '1' And Exists('$(LuauNativeLocalOverride)')">
-    <None Include="$(LuauNativeLocalOverride)" CopyToOutputDirectory="PreserveNewest" Link="%(Filename)%(Extension)"/>
+  <ItemGroup Condition="'$(DesignTimeBuild)' != 'true'">
+    <None Include="$(LuauNativePath)" Link="$(_LuauNativeName)"
+          CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/>
   </ItemGroup>
+
+  <Target Name="BuildNativeLuau" BeforeTargets="PrepareForBuild"
+          Condition="'$(DesignTimeBuild)' != 'true'">
+    <Error Condition="'$(_LuauNativeName)' == ''" Text="Native Luau is not configured for this operating system."/>
+    <Error Condition="'$(BuildLuauNative)' == 'true' and '$(RuntimeIdentifier)' != '' and '$(RuntimeIdentifier)' != '$(NETCoreSdkRuntimeIdentifier)'"
+           Text="Native Luau must be built on the target platform. For cross-publishing, supply -p:BuildLuauNative=false -p:LuauNativePath=absolute/path/to/the/target/library."/>
+    <Error Condition="'$(BuildLuauNative)' == 'true' and !Exists('$(_LuauSourceDir)/vendor/luau/CMakeLists.txt')"
+           Text="The Luau submodule is missing. Run git submodule update --init --recursive from the repository root."/>
+    <Exec Condition="'$(BuildLuauNative)' == 'true'"
+          Command="&quot;$(LuauCMakeExecutable)&quot; -S &quot;$(_LuauSourceDir)&quot; -B &quot;$(_LuauNativeBuildDir)&quot; $(_LuauGeneratorArgument) -DCMAKE_BUILD_TYPE=$(Configuration) -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=&quot;$(_LuauNativeBuildDir)/bin&quot; -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=&quot;$(_LuauNativeBuildDir)/bin&quot; -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_$(_LuauConfigurationUpper)=&quot;$(_LuauNativeBuildDir)/bin&quot; -DCMAKE_LIBRARY_OUTPUT_DIRECTORY_$(_LuauConfigurationUpper)=&quot;$(_LuauNativeBuildDir)/bin&quot;"
+          IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="_LuauConfigureExitCode"/>
+    </Exec>
+    <Error Condition="'$(BuildLuauNative)' == 'true' and '$(_LuauConfigureExitCode)' != '0'"
+           Text="Native Luau configuration failed. Install CMake 3.24+ and a C++17 toolchain (Windows: LLVM-MinGW with Ninja, or Visual Studio Build Tools with Desktop development with C++ and a Windows SDK; Linux: a C++ compiler and make or Ninja). See the CMake diagnostics above. LuauCMakeGenerator can select an installed generator."/>
+    <Exec Condition="'$(BuildLuauNative)' == 'true'"
+          Command="&quot;$(LuauCMakeExecutable)&quot; --build &quot;$(_LuauNativeBuildDir)&quot; --config $(Configuration) --target omniblock_luau --parallel"
+          IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="_LuauBuildExitCode"/>
+    </Exec>
+    <Error Condition="'$(BuildLuauNative)' == 'true' and '$(_LuauBuildExitCode)' != '0'" Text="Native Luau compilation failed. See the compiler diagnostics above."/>
+    <Error Condition="!Exists('$(LuauNativePath)')" Text="Native Luau library was not found at $(LuauNativePath). Build it with CMake, or supply an existing library using LuauNativePath."/>
+  </Target>
 </Project>

@@ -14,6 +14,13 @@ jobs:
 
         steps:
             - uses: actions/checkout@v4
+              with:
+                  submodules: recursive
+
+            - name: Install native build tools
+              run: |
+                  apt-get update
+                  apt-get install --yes --no-install-recommends cmake g++ make
 
             - name: Setup .NET
               uses: actions/setup-dotnet@v4
@@ -34,3 +41,40 @@ jobs:
 
             - name: Test
               run: dotnet test --configuration Release --no-build --verbosity normal
+
+    windows-luau:
+        runs-on: windows-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  submodules: recursive
+            - uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: 10.0.x
+            - name: Build client and tests with native Luau
+              run: dotnet build OmniBlock.Tests/OmniBlock.Tests.csproj --configuration Release -p:LuauCMakeGenerator="Visual Studio 17 2022"
+            - name: Verify native output propagation
+              shell: pwsh
+              run: |
+                  foreach ($project in @('OmniBlock.Client', 'OmniBlock.Tests')) {
+                      if (!(Test-Path "$project/bin/Release/net10.0/omniblock_luau.dll")) {
+                          throw "Native Luau missing from $project output"
+                      }
+                  }
+            - name: Run Luau tests
+              run: dotnet test OmniBlock.Tests/OmniBlock.Tests.csproj --configuration Release --no-build --filter FullyQualifiedName~OmniBlock.Tests.Luau --logger "trx;LogFileName=luau.trx" --results-directory artifacts/windows-luau
+            - name: Require native Luau tests to execute
+              shell: pwsh
+              run: |
+                  [xml]$report = Get-Content artifacts/windows-luau/luau.trx
+                  if (@($report.TestRun.Results.UnitTestResult).Count -eq 0) { throw 'No Luau tests executed' }
+                  $skipped = @($report.TestRun.Results.UnitTestResult | Where-Object outcome -eq 'NotExecuted')
+                  if ($skipped.Count -gt 0) { throw "Luau tests skipped: $($skipped.Count)" }
+            - name: Verify client publish includes native Luau
+              shell: pwsh
+              run: |
+                  dotnet publish OmniBlock.Client/OmniBlock.Client.csproj --configuration Release --no-build --no-restore --output artifacts/windows-luau/publish
+                  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+                  if (!(Test-Path artifacts/windows-luau/publish/omniblock_luau.dll)) {
+                      throw 'Native Luau missing from client publish output'
+                  }

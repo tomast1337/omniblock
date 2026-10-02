@@ -52,6 +52,38 @@ cd OmniBlock.(Launcher/Client/Server)
 dotnet build
 ```
 
+### Native Luau build
+
+`OmniBlock.Luau` builds the native runtime with CMake as part of `dotnet build`.
+The resulting library is copied automatically into client, test, and publish outputs.
+Initialize the pinned sources once with `git submodule update --init --recursive`.
+
+Native builds require CMake 3.24 or newer and a C++17 toolchain. On Windows,
+install Visual Studio Build Tools with **Desktop development with C++**, including
+the MSVC compiler and Windows SDK. Clang alone does not supply the required headers
+and libraries. On Linux, install CMake, a C++ compiler, and make or Ninja; on macOS,
+install CMake and the Xcode command-line tools.
+
+LLVM-MinGW is also supported on Windows. Add its `bin` directory and Ninja to
+`PATH`, set `$env:CC='clang'; $env:CXX='clang++'` in PowerShell, and build with
+`dotnet build -p:LuauCMakeGenerator=Ninja`. The native DLL links its C++ runtime
+statically, so the packaged client does not require LLVM-MinGW runtime DLLs.
+
+To select a CMake generator explicitly, use
+`dotnet build -p:LuauCMakeGenerator="Visual Studio 17 2022"` or
+`dotnet build -p:LuauCMakeGenerator=Ninja`.
+Native build directories are separated by host runtime and .NET configuration.
+CMake handles incremental compilation; rerunning `dotnet build` updates changed native sources.
+When changing generators or installing a toolchain after a failed configuration,
+remove the corresponding directory under `native/luau/build/msbuild` so CMake can
+detect the new toolchain without reusing its previous cache.
+
+For a supplied native library or cross-publishing, use
+`-p:BuildLuauNative=false -p:LuauNativePath="absolute/path/to/library"`.
+The supplied library must match the target platform, architecture, and pinned Luau ABI.
+Missing prerequisites or native libraries fail the build rather than producing an
+executable without its required scripting runtime.
+
 ## Contributing
 
 Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for the code of conduct and pull request process. \

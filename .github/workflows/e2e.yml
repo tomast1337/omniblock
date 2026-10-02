@@ -24,6 +24,8 @@ jobs:
 
         steps:
             - uses: actions/checkout@v4
+              with:
+                  submodules: recursive
 
             - name: Install virtual display and software rendering
               run: |
@@ -36,6 +38,7 @@ jobs:
                       libxinerama1 \
                       libxrandr2 \
                       libvulkan1 \
+                      make \
                       mesa-vulkan-drivers \
                       ninja-build \
                       python3 \
@@ -53,9 +56,6 @@ jobs:
 
             - name: Restore dependencies
               run: dotnet restore
-
-            - name: Build Luau runtime
-              run: native/luau/build-local.sh
 
             - name: Run real-client smoke test
               run: |

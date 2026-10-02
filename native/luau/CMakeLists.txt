@@ -23,6 +23,13 @@ set(LUAU_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(LUAU_BUILD_SHARED OFF CACHE BOOL "" FORCE)
 set(LUAU_EXTERN_C ON CACHE BOOL "" FORCE)
 
+# The pinned sources use global malloc/abs/strto* declarations through transitive
+# standard-library includes. LLVM-MinGW's libc++ no longer supplies those includes.
+# Keep the compatibility include in our build rather than modifying the submodule.
+if(MINGW)
+    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-include>" "$<$<COMPILE_LANGUAGE:CXX>:cstdlib>")
+endif()
+
 add_subdirectory(vendor/luau)
 
 add_library(omniblock_luau SHARED shim.cpp)
@@ -46,12 +53,15 @@ target_link_libraries(omniblock_luau PRIVATE
 )
 
 if(WIN32)
-    # MSVC/MinGW DLLs export nothing by default even with extern "C" linkage
-    # (unlike ELF/Mach-O shared objects, which export non-hidden symbols by
-    # default). This is the modern CMake equivalent of hand-writing a .def file
-    # enumerating every lua_*/luaL_*/luau_* symbol, and it doesn't need updating
-    # when the vendored Luau version bumps and the symbol set changes.
+    # MSVC-compatible linkers need an explicit export list. CMake generates it
+    # from the objects, avoiding a handwritten list of lua_*/luaL_*/luau_* names.
     set_target_properties(omniblock_luau PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    set_target_properties(omniblock_luau PROPERTIES PREFIX "")
+    if(MINGW)
+        # Explicit shim exports disable MinGW's implicit export-all behavior. Preserve
+        # the whole-archived Luau C API and avoid shipping separate C++ runtime DLLs.
+        target_link_options(omniblock_luau PRIVATE -Wl,--export-all-symbols -static)
+    endif()
 endif()
 
 set_target_properties(omniblock_luau PROPERTIES OUTPUT_NAME "omniblock_luau")
